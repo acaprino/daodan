@@ -209,8 +209,8 @@ class CycleContextTests(unittest.TestCase):
 
     def test_source_mutation_during_provider_preparation_has_no_delivery(self):
         invoke = cycle._invoke
-        def concurrent_edit(config, owner, args):
-            result = invoke(config, owner, args)
+        def concurrent_edit(config, owner, args, **options):
+            result = invoke(config, owner, args, **options)
             if owner == 'provider':
                 (self.root / 'service.py').write_bytes(b'def calculate(value):\n    return 9\n')
             return result
@@ -424,8 +424,8 @@ class CycleContextTests(unittest.TestCase):
         self.protocol('update', {'barrier': 'source changed'})
         self.config['manifest'] = str(self.map_snapshot('changed'))
         invoke = cycle._invoke
-        def rewrite_base(config, owner, args):
-            result = invoke(config, owner, args)
+        def rewrite_base(config, owner, args, **options):
+            result = invoke(config, owner, args, **options)
             if owner == 'provider':
                 self.manifest.write_bytes(self.manifest.read_bytes() + b'rewritten after the provider read it')
             return result
@@ -479,6 +479,22 @@ class CycleContextTests(unittest.TestCase):
                 result = self.cli('task-packet', **documents)
                 self.assertEqual(result.returncode, 2)
                 self.assertNotIn(b'Traceback', result.stderr)
+
+    def test_the_provider_call_may_run_for_the_requests_own_time_cap(self):
+        real, limits = subprocess.run, {}
+
+        def spy(command, *args, **options):
+            limits['provider' if 'context' in command else 'protocol'] = options.get('timeout')
+            return real(command, *args, **options)
+
+        for seconds, expected in ((10, 120), (300, 300)):
+            with self.subTest(max_seconds=seconds):
+                self.request['budget']['max_seconds'] = seconds
+                self.config['manifest'] = str(self.map_snapshot(f'cap-{seconds}'))
+                limits.clear()
+                with patch.object(cycle.subprocess, 'run', spy):
+                    self.prepare('preflight')
+                self.assertEqual(limits, {'protocol': 120, 'provider': expected})
 
     def test_concurrent_identical_preparations_converge_on_one_receipt(self):
         from concurrent.futures import ThreadPoolExecutor

@@ -153,6 +153,7 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | `codebase_map_edit_impact` | `run_id`, `targets` (symbol ids `path::Name` or file paths), `neighbors=20`, `history=5`, `include_source=true`, `hops=1`, `include_neighbor_source=false`, `include_slices=false`, `budget_chars=120000`: for each target its digests, signature records and card, L1 callers/callees with exact reference sites, optional L2 signatures, optional verified L1 neighbour source, optional lazy Python slices, L4 related tests and obligations, unresolved references, recent changes and verified target source. Budget omissions and DO NOT TOUCH unavailability are explicit. Evidence and leads, never a verdict; an unreadable or stale source is reported in `source.error` and the metadata stays usable |
 | `codebase_map_symbols_at` | `run_id`, optional `requests` (each with `path` and line `ranges`), or `base_run_id` with a unified `diff`: symbols overlapping explicit ranges in the candidate run, or removed lines in the base run and added lines in the candidate. Stable entity keys are kept separate from revision anchors; unplaced files and ranges are declared gaps |
 | `codebase_map_stale_callers` | `run_id`, `base_run_id`, `limit=100`: compare two runs and classify candidate callers of changed symbols into RED `edit_impact`, GREEN `validation_impact` and `do_not_touch`, with changed symbols, digest-version incompatibilities and impacted SCCs in callees-before-callers order |
+| `codebase_map_context` | `run_id`, `request`, `recipient`, optional `out="context"`, `cursor`, `base_run_id`, `embedding_result`: bounded evidence packet and resumable cursor for a bound run; see "Preparing and calling the context tool". It writes artifacts, so it is not annotated read-only, and it refreshes no index |
 | `codebase_map_meta_query` | `run_id`, optional `paths`, `symbol`, `freshness`, `include_history=true`, `limit=100`: Meta-Code symbols with their digests and signature records, card freshness and the bounded changeset history. Cards come from the analysis root's `cards.sqlite`, judged against this run's snapshot; read-only, and cards are written with `snapshot.py meta-upsert` |
 | `codebase_map_diff` | `run_id`: read-only source and parser comparison; preserves the snapshot |
 | `codebase_map_artifact` | `run_id`, `name`: one declared artifact's content, `bytes` and digest of the whole file; content stops at 2,000,000 bytes with `truncated: true` |
@@ -191,6 +192,54 @@ than carrying incremental claims. `diff` provides change detection; existing CLI
 update/carry remains the owner of incremental re-derivation. Reading supports
 existing classic and team runs. Native team partitioning still belongs to the
 host and the team workflow.
+
+### Preparing and calling the context tool
+
+The tool reads derived inputs and creates none of them. Prepare each for the exact
+manifest the run is bound to:
+
+1. Retrieval index (required): `retrieval.refresh_index(<manifest>, <manifest
+   directory>/retrieval.sqlite)` from `scripts/retrieval.py`. No command-line
+   entry or MCP tool builds it; a missing index stays a bound missing input.
+2. Python call edges (recommended): `resolve_edges.py <manifest> --environment
+   <venv of the analyzed project> --compact` writes `engine-edges.sqlite` beside
+   the manifest. Without it callers come from the lexical edges alone, which
+   resolve fewer calls made through instances.
+3. Cards (optional): the project card store; only fresh cards enter a packet.
+
+Every index belongs to one manifest. After the map is refreshed into a new
+manifest, rebuild its index and edges: the old ones are refused with
+`retrieval index belongs to a different candidate`.
+
+```json
+{
+  "run_id": "src-analysis",
+  "request": {
+    "schema": "daodan/context-request/v1", "task_id": "t1", "intent": "bug",
+    "query": "set_cookie accepts names with spaces",
+    "read_boundary": ["."], "write_boundary": [],
+    "anchors": [{"entity_id": "src/responses.py::Response.set_cookie"}],
+    "base": null, "candidate": null, "diff": [], "proposed_edits": [],
+    "mandatory_requirements": [], "required_gates": [],
+    "budget": {"max_candidates": 100, "max_edges": 1000, "max_rounds": 100,
+               "max_seconds": 120, "max_input_tokens": 100000, "max_output_tokens": 100000},
+    "policy_version": "scope-v1"
+  },
+  "recipient": {"id": "host", "available_tokens": 30000, "reserve_tokens": 2000,
+                "max_chars": 24000, "max_evaluations": 2000}
+}
+```
+
+Reading the result: `status` is `ready`, `incomplete` or `needs_split`, with the
+packet path, digests, counts, gaps and cost. Retrieval hits are leads and localize
+nothing. A request with only a `query` usually stays `incomplete`, and a wide
+unlocalized plan makes its mandatory source larger than the recipient, so the
+packet returns `needs_split` with no input rather than dropping mandatory source.
+Supply an accepted target (`anchors`, `diff`, `proposed_edits`) or split the task,
+then call again. Pass the returned `cursor` only to continue the remaining
+evidence of the same request. Costs are characters, never tokens, unless the
+dispatch owner counts them. Building a packet for a 669-entity Python package took
+about 100 seconds, so allow the host call that long.
 
 ## Host execution and phase hooks
 

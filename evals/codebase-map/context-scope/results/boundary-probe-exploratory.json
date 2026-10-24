@@ -1,0 +1,1473 @@
+{
+ "note": "Exploratory and oracle-assisted: read boundary narrowed to the files of the gold entities and the first gold entity given as the anchor. Not part of the registered protocol.",
+ "budgets": {
+  "24000": [
+   {
+    "id": "q01",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 4,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.9
+   },
+   {
+    "id": "q02",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 3,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 1.7
+   },
+   {
+    "id": "q03",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.0
+   },
+   {
+    "id": "q04",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.4
+   },
+   {
+    "id": "q05",
+    "files": [
+     "starlette/responses.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.5
+   },
+   {
+    "id": "q06",
+    "files": [
+     "starlette/middleware/cors.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.7
+   },
+   {
+    "id": "q07",
+    "files": [
+     "starlette/middleware/sessions.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.1
+   },
+   {
+    "id": "q08",
+    "files": [
+     "starlette/middleware/gzip.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 6,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 5.3
+   },
+   {
+    "id": "q09",
+    "files": [
+     "starlette/middleware/base.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.5
+   },
+   {
+    "id": "q10",
+    "files": [
+     "starlette/staticfiles.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.3
+   },
+   {
+    "id": "q11",
+    "files": [
+     "starlette/background.py",
+     "starlette/responses.py"
+    ],
+    "gold": 3,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.0
+   },
+   {
+    "id": "q12",
+    "files": [
+     "starlette/applications.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.4
+   },
+   {
+    "id": "q13",
+    "files": [
+     "starlette/middleware/trustedhost.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.3
+   },
+   {
+    "id": "q14",
+    "files": [
+     "starlette/_exception_handler.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.9
+   },
+   {
+    "id": "q15",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.4
+   },
+   {
+    "id": "q16",
+    "files": [
+     "starlette/websockets.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.0
+   },
+   {
+    "id": "q17",
+    "files": [
+     "starlette/middleware/sessions.py",
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.7
+   },
+   {
+    "id": "q18",
+    "files": [
+     "starlette/datastructures.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.4
+   },
+   {
+    "id": "q19",
+    "files": [
+     "starlette/datastructures.py",
+     "starlette/requests.py",
+     "starlette/templating.py"
+    ],
+    "gold": 4,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 25,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 15.6
+   },
+   {
+    "id": "q20",
+    "files": [
+     "starlette/middleware/errors.py",
+     "starlette/testclient.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 7,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 5.7
+   },
+   {
+    "id": "q21",
+    "files": [
+     "starlette/schemas.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 5,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 4.4
+   },
+   {
+    "id": "q22",
+    "files": [
+     "starlette/config.py"
+    ],
+    "gold": 3,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.3
+   },
+   {
+    "id": "q23",
+    "files": [
+     "starlette/endpoints.py"
+    ],
+    "gold": 3,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.6
+   },
+   {
+    "id": "q24",
+    "files": [
+     "starlette/authentication.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 2.7
+   }
+  ],
+  "48000": [
+   {
+    "id": "q01",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 4,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 6.5
+   },
+   {
+    "id": "q02",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 3,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.9
+   },
+   {
+    "id": "q03",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 47880,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 4.5
+   },
+   {
+    "id": "q04",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 5.4
+   },
+   {
+    "id": "q05",
+    "files": [
+     "starlette/responses.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 5.9
+   },
+   {
+    "id": "q06",
+    "files": [
+     "starlette/middleware/cors.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 42741,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.0
+   },
+   {
+    "id": "q07",
+    "files": [
+     "starlette/middleware/sessions.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 41772,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.6
+   },
+   {
+    "id": "q08",
+    "files": [
+     "starlette/middleware/gzip.py"
+    ],
+    "gold": 2,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 6,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 8.4
+   },
+   {
+    "id": "q09",
+    "files": [
+     "starlette/middleware/base.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 44253,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.5
+   },
+   {
+    "id": "q10",
+    "files": [
+     "starlette/staticfiles.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 37358,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.8
+   },
+   {
+    "id": "q11",
+    "files": [
+     "starlette/background.py",
+     "starlette/responses.py"
+    ],
+    "gold": 3,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 4.8
+   },
+   {
+    "id": "q12",
+    "files": [
+     "starlette/applications.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 42645,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.7
+   },
+   {
+    "id": "q13",
+    "files": [
+     "starlette/middleware/trustedhost.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 44319,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.6
+   },
+   {
+    "id": "q14",
+    "files": [
+     "starlette/_exception_handler.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 47017,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 4.9
+   },
+   {
+    "id": "q15",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 3.9
+   },
+   {
+    "id": "q16",
+    "files": [
+     "starlette/websockets.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 45856,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 4.5
+   },
+   {
+    "id": "q17",
+    "files": [
+     "starlette/middleware/sessions.py",
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 43572,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.1
+   },
+   {
+    "id": "q18",
+    "files": [
+     "starlette/datastructures.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 47966,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.9
+   },
+   {
+    "id": "q19",
+    "files": [
+     "starlette/datastructures.py",
+     "starlette/requests.py",
+     "starlette/templating.py"
+    ],
+    "gold": 4,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 25,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 21.2
+   },
+   {
+    "id": "q20",
+    "files": [
+     "starlette/middleware/errors.py",
+     "starlette/testclient.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 7,
+    "chars": 47303,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 8.0
+   },
+   {
+    "id": "q21",
+    "files": [
+     "starlette/schemas.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 5,
+    "chars": 46787,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.8
+   },
+   {
+    "id": "q22",
+    "files": [
+     "starlette/config.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 34344,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.5
+   },
+   {
+    "id": "q23",
+    "files": [
+     "starlette/endpoints.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 46792,
+    "full": 0.6666666666666666,
+    "partial": 0.6666666666666666,
+    "seconds": 2.8
+   },
+   {
+    "id": "q24",
+    "files": [
+     "starlette/authentication.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 47738,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.6
+   }
+  ],
+  "96000": [
+   {
+    "id": "q01",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 4,
+    "chars": 94871,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 6.7
+   },
+   {
+    "id": "q02",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 68717,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.7
+   },
+   {
+    "id": "q03",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 57640,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 4.8
+   },
+   {
+    "id": "q04",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 80714,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.7
+   },
+   {
+    "id": "q05",
+    "files": [
+     "starlette/responses.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 79494,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.9
+   },
+   {
+    "id": "q06",
+    "files": [
+     "starlette/middleware/cors.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 51550,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.1
+   },
+   {
+    "id": "q07",
+    "files": [
+     "starlette/middleware/sessions.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 41772,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.9
+   },
+   {
+    "id": "q08",
+    "files": [
+     "starlette/middleware/gzip.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 6,
+    "chars": 94682,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 8.2
+   },
+   {
+    "id": "q09",
+    "files": [
+     "starlette/middleware/base.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 74232,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.9
+   },
+   {
+    "id": "q10",
+    "files": [
+     "starlette/staticfiles.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 37358,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.8
+   },
+   {
+    "id": "q11",
+    "files": [
+     "starlette/background.py",
+     "starlette/responses.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 70450,
+    "full": 0.3333333333333333,
+    "partial": 0.3333333333333333,
+    "seconds": 5.0
+   },
+   {
+    "id": "q12",
+    "files": [
+     "starlette/applications.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 42645,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.8
+   },
+   {
+    "id": "q13",
+    "files": [
+     "starlette/middleware/trustedhost.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 44319,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.7
+   },
+   {
+    "id": "q14",
+    "files": [
+     "starlette/_exception_handler.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 54810,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 4.8
+   },
+   {
+    "id": "q15",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 73281,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.8
+   },
+   {
+    "id": "q16",
+    "files": [
+     "starlette/websockets.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 56803,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 4.6
+   },
+   {
+    "id": "q17",
+    "files": [
+     "starlette/middleware/sessions.py",
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 65254,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.1
+   },
+   {
+    "id": "q18",
+    "files": [
+     "starlette/datastructures.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 51725,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.7
+   },
+   {
+    "id": "q19",
+    "files": [
+     "starlette/datastructures.py",
+     "starlette/requests.py",
+     "starlette/templating.py"
+    ],
+    "gold": 4,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 25,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 21.5
+   },
+   {
+    "id": "q20",
+    "files": [
+     "starlette/middleware/errors.py",
+     "starlette/testclient.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 7,
+    "chars": 92636,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 8.0
+   },
+   {
+    "id": "q21",
+    "files": [
+     "starlette/schemas.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 5,
+    "chars": 83334,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.8
+   },
+   {
+    "id": "q22",
+    "files": [
+     "starlette/config.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 34344,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.6
+   },
+   {
+    "id": "q23",
+    "files": [
+     "starlette/endpoints.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 56278,
+    "full": 0.6666666666666666,
+    "partial": 0.6666666666666666,
+    "seconds": 3.0
+   },
+   {
+    "id": "q24",
+    "files": [
+     "starlette/authentication.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 60707,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.6
+   }
+  ],
+  "192000": [
+   {
+    "id": "q01",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 4,
+    "chars": 102458,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 6.5
+   },
+   {
+    "id": "q02",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 68717,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.5
+   },
+   {
+    "id": "q03",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 57640,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 4.5
+   },
+   {
+    "id": "q04",
+    "files": [
+     "starlette/requests.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 80714,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.5
+   },
+   {
+    "id": "q05",
+    "files": [
+     "starlette/responses.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 79494,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.7
+   },
+   {
+    "id": "q06",
+    "files": [
+     "starlette/middleware/cors.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 51550,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 4.9
+   },
+   {
+    "id": "q07",
+    "files": [
+     "starlette/middleware/sessions.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 41772,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.9
+   },
+   {
+    "id": "q08",
+    "files": [
+     "starlette/middleware/gzip.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 6,
+    "chars": 99881,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 8.4
+   },
+   {
+    "id": "q09",
+    "files": [
+     "starlette/middleware/base.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 74232,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.6
+   },
+   {
+    "id": "q10",
+    "files": [
+     "starlette/staticfiles.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 37358,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.9
+   },
+   {
+    "id": "q11",
+    "files": [
+     "starlette/background.py",
+     "starlette/responses.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 70450,
+    "full": 0.3333333333333333,
+    "partial": 0.3333333333333333,
+    "seconds": 4.7
+   },
+   {
+    "id": "q12",
+    "files": [
+     "starlette/applications.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 42645,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.6
+   },
+   {
+    "id": "q13",
+    "files": [
+     "starlette/middleware/trustedhost.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 44319,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.6
+   },
+   {
+    "id": "q14",
+    "files": [
+     "starlette/_exception_handler.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 54810,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 4.8
+   },
+   {
+    "id": "q15",
+    "files": [
+     "starlette/routing.py"
+    ],
+    "gold": 1,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 73281,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.9
+   },
+   {
+    "id": "q16",
+    "files": [
+     "starlette/websockets.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 56803,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 4.9
+   },
+   {
+    "id": "q17",
+    "files": [
+     "starlette/middleware/sessions.py",
+     "starlette/requests.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 3,
+    "chars": 65254,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.0
+   },
+   {
+    "id": "q18",
+    "files": [
+     "starlette/datastructures.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 51725,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 3.7
+   },
+   {
+    "id": "q19",
+    "files": [
+     "starlette/datastructures.py",
+     "starlette/requests.py",
+     "starlette/templating.py"
+    ],
+    "gold": 4,
+    "status": "needs_split",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 25,
+    "chars": 0,
+    "full": 0.0,
+    "partial": 0.0,
+    "seconds": 21.6
+   },
+   {
+    "id": "q20",
+    "files": [
+     "starlette/middleware/errors.py",
+     "starlette/testclient.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 7,
+    "chars": 109419,
+    "full": 0.5,
+    "partial": 0.5,
+    "seconds": 8.0
+   },
+   {
+    "id": "q21",
+    "files": [
+     "starlette/schemas.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 5,
+    "chars": 83334,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 5.7
+   },
+   {
+    "id": "q22",
+    "files": [
+     "starlette/config.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 1,
+    "chars": 34344,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.5
+   },
+   {
+    "id": "q23",
+    "files": [
+     "starlette/endpoints.py"
+    ],
+    "gold": 3,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 56278,
+    "full": 0.6666666666666666,
+    "partial": 0.6666666666666666,
+    "seconds": 2.6
+   },
+   {
+    "id": "q24",
+    "files": [
+     "starlette/authentication.py"
+    ],
+    "gold": 2,
+    "status": "ready",
+    "plan_status": "ready_for_attempt",
+    "localized": true,
+    "analysis": 2,
+    "chars": 60707,
+    "full": 1.0,
+    "partial": 1.0,
+    "seconds": 3.7
+   }
+  ]
+ }
+}

@@ -1,0 +1,133 @@
+{
+ "kernel_schemas": [
+  "daodan/context-request/v1",
+  "daodan/scope-plan/v1",
+  "daodan/context-packet/v1",
+  "daodan/map-slice/v1"
+ ],
+ "hosts": {
+  "claude": {
+   "schemas": 4,
+   "files": {
+    "codebase-map/contracts/context.toml": "identical",
+    "codebase-map/skills/map-method/references/context.md": "bound-identical",
+    "codebase-map/skills/map-method/scripts/map_slice.py": "identical",
+    "codebase-map/skills/map-method/scripts/context_packet.py": "identical",
+    "codebase-map/skills/map-method/scripts/scope_planner.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/references/context-cycle.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/waves.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/verify.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/finish.md": "bound-identical",
+    "project-knowledge/skills/project-knowledge/references/preparation.md": "bound-identical",
+    "senior-review/skills/review-preparation/references/candidate-grounding.md": "bound-identical"
+   }
+  },
+  "codex": {
+   "schemas": 4,
+   "files": {
+    "codebase-map/contracts/context.toml": "identical",
+    "codebase-map/skills/map-method/references/context.md": "bound-identical",
+    "codebase-map/skills/map-method/scripts/map_slice.py": "identical",
+    "codebase-map/skills/map-method/scripts/context_packet.py": "identical",
+    "codebase-map/skills/map-method/scripts/scope_planner.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/references/context-cycle.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/waves.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/verify.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/finish.md": "bound-identical",
+    "project-knowledge/skills/project-knowledge/references/preparation.md": "bound-identical",
+    "senior-review/skills/review-preparation/references/candidate-grounding.md": "bound-identical"
+   }
+  },
+  "copilot": {
+   "schemas": 4,
+   "files": {
+    "codebase-map/contracts/context.toml": "identical",
+    "codebase-map/skills/map-method/references/context.md": "bound-identical",
+    "codebase-map/skills/map-method/scripts/map_slice.py": "identical",
+    "codebase-map/skills/map-method/scripts/context_packet.py": "identical",
+    "codebase-map/skills/map-method/scripts/scope_planner.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/references/context-cycle.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/waves.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/verify.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/finish.md": "bound-identical",
+    "project-knowledge/skills/project-knowledge/references/preparation.md": "bound-identical",
+    "senior-review/skills/review-preparation/references/candidate-grounding.md": "bound-identical"
+   }
+  },
+  "pi": {
+   "schemas": 4,
+   "files": {
+    "codebase-map/contracts/context.toml": "identical",
+    "codebase-map/skills/map-method/references/context.md": "bound-identical",
+    "codebase-map/skills/map-method/scripts/map_slice.py": "identical",
+    "codebase-map/skills/map-method/scripts/context_packet.py": "identical",
+    "codebase-map/skills/map-method/scripts/scope_planner.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/references/context-cycle.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/waves.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/verify.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/finish.md": "bound-identical",
+    "project-knowledge/skills/project-knowledge/references/preparation.md": "bound-identical",
+    "senior-review/skills/review-preparation/references/candidate-grounding.md": "bound-identical"
+   }
+  },
+  "opencode": {
+   "schemas": 4,
+   "files": {
+    "codebase-map/contracts/context.toml": "identical",
+    "codebase-map/skills/map-method/references/context.md": "bound-identical",
+    "codebase-map/skills/map-method/scripts/map_slice.py": "identical",
+    "codebase-map/skills/map-method/scripts/context_packet.py": "identical",
+    "codebase-map/skills/map-method/scripts/scope_planner.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py": "identical",
+    "project-lifecycle/skills/lifecycle-method/references/context-cycle.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/waves.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/verify.md": "bound-identical",
+    "project-lifecycle/skills/lifecycle-method/references/finish.md": "bound-identical",
+    "project-knowledge/skills/project-knowledge/references/preparation.md": "bound-identical",
+    "senior-review/skills/review-preparation/references/candidate-grounding.md": "bound-identical"
+   }
+  }
+ },
+ "mismatches": [],
+ "premise_auditor": {
+  "claude": [
+   [
+    "plugins\\senior-review\\agents\\premise-auditor.md",
+    true
+   ]
+  ],
+  "codex": [
+   [
+    "plugins\\senior-review\\roles\\premise-auditor.md",
+    true
+   ],
+   [
+    "plugins\\daodan\\contracts\\dispatch\\senior-review\\premise-auditor.md",
+    true
+   ]
+  ],
+  "copilot": [
+   [
+    "plugins\\senior-review\\agents\\premise-auditor.agent.md",
+    true
+   ]
+  ],
+  "pi": [
+   [
+    "plugins\\daodan\\contracts\\dispatch\\senior-review\\premise-auditor.md",
+    true
+   ]
+  ],
+  "opencode": [
+   [
+    "plugins\\senior-review\\agents\\premise-auditor.md",
+    true
+   ]
+  ]
+ },
+ "ok": true
+}

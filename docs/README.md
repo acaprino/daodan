@@ -64,7 +64,10 @@ The [code context implementation plan](superpowers/plans/2026-10-23-code-context
 connects semantic Markdown, Jedi graph evidence and local retrieval through a
 progressive scope-selection algorithm. It records planned checkpoints, checks,
 documentation updates and intermediate commits; implementation status remains
-separate from the design.
+separate from the design. The [delivery report](superpowers/reports/2026-10-23-code-context-delivery.md)
+states what the holdout measured, what the host exports were checked for and
+which limits remain; the harness and frozen gold live in
+[`evals/codebase-map/context-scope/`](../evals/codebase-map/context-scope/README.md).
 
 ## Installation and migration
 

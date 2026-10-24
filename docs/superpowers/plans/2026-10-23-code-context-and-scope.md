@@ -346,7 +346,7 @@ sull'albero principale, 599 sul candidato). I 36 test del ciclo, i 10 della
 proiezione I1 e i 5 del budget passano sul candidato. La revisione indipendente ha
 richiesto tre giri; l'ultimo non ha trovato difetti Critical, High o Medium e i
 cinque residui Low sono stati corretti con test, senza un quarto giro. Dettagli nel
-[report P8](../reports/2026-10-24-code-context-p8.md). P9-P10 restano da completare.
+[report P8](../reports/2026-10-24-code-context-p8.md). P9 e P10 sono consegnati più sotto.
 
 ## P9: consumatori e chiusura
 
@@ -394,14 +394,30 @@ fixture/harness/risultati, test di host binding, docs dei plugin e report finale
 **Interfaces:** consuma i checkpoint P0-P9; produce evidenza riproducibile e
 tabella delle capacità effettivamente verificate, per percorso e host.
 
-- [ ] Congelare holdout separato dalla taratura in un run dedicato (distinto dal run principale di questo repository per non invalidare `project_binding` in `run_state.py`): almeno un secondo progetto Python, query reali in italiano/inglese e scenari di firma/corpo/rimozione/hub/dinamismo. Gold verificato indipendentemente; pubblicare dimensione e limiti, non solo medie aggregate.
-- [ ] Congelare il corpus alla revisione di partenza: escludere patch gold, documentazione post-fix e test di sola valutazione dalla ricerca runtime. Distinguere recall di localizzazione, impatto e supporti obbligatori; includere astensioni, timeout, OOM e run senza misura d'uso.
-- [ ] Confrontare baseline testuale, Jedi, scope planner, embedding e composizione completa a pari budget. Includere full context solo quando entra; non contare un input impossibile come baseline battuta.
-- [ ] Misurare recall dei target/obblighi, risultato dei task, token di preparazione/card/dispatch/retry, cache, latenza, memoria e aggiornamenti. Dati di fatturazione assenti restano `unavailable`, distinti dalle stime locali.
-- [ ] Eseguire l'intero percorso Python su un host disponibile: richiesta naturale -> indice -> scope -> packet -> task -> delta -> verifiche -> aggiornamento documentale -> ripresa. Registrare modello/host/versione, tool reali e consegne; un mock non prova l'esecuzione.
-- [ ] Verificare staticamente tutti i cinque export host (`exports/{claude,copilot,codex,pi,opencode}`), i 4 schemi esportati in `plugins/codebase-map/contracts/context.toml` e i percorsi annidati. Eseguire i probe degli host disponibili; riportare separatamente quelli non esercitati, senza dichiarare compatibilità runtime universale.
+- [x] Congelare holdout separato dalla taratura in un run dedicato (distinto dal run principale di questo repository per non invalidare `project_binding` in `run_state.py`): almeno un secondo progetto Python, query reali in italiano/inglese e scenari di firma/corpo/rimozione/hub/dinamismo. Gold verificato indipendentemente; pubblicare dimensione e limiti, non solo medie aggregate. **Esito:** Starlette 1.9.0, 24 query (12 en, 12 it), gold scritto alla cieca e verificato da un secondo passaggio (23 conferme, 1 correzione); il dinamismo è coperto solo dai callable decorati. Vedi `evals/codebase-map/context-scope/`.
+- [x] Congelare il corpus alla revisione di partenza: escludere patch gold, documentazione post-fix e test di sola valutazione dalla ricerca runtime. Distinguere recall di localizzazione, impatto e supporti obbligatori; includere astensioni, timeout, OOM e run senza misura d'uso. **Esito:** hash dei sorgenti e delle query congelati; astensioni contate (72 rifiuti su 72); nessun timeout o OOM osservato oltre al limite fisso dell'adapter, corretto.
+- [x] Confrontare baseline testuale, Jedi, scope planner, embedding e composizione completa a pari budget. Includere full context solo quando entra; non contare un input impossibile come baseline battuta. **Esito:** testo, testo con grafo Jedi, scope planner e composizione misurati a 6 000, 12 000 e 24 000 caratteri; embedding misurato dopo l'autorizzazione al download (conversione INT8 della comunità): la fusione consegna il 74% dei corpi interi a 24 000 caratteri contro il 52% del testo, ma la composizione con le sue piste resta rifiutata 24 volte su 24; il full context (263 129 caratteri) non entra in nessun budget.
+- [ ] Misurare recall dei target/obblighi, risultato dei task, token di preparazione/card/dispatch/retry, cache, latenza, memoria e aggiornamenti. Dati di fatturazione assenti restano `unavailable`, distinti dalle stime locali. **Esito:** Parziale: recall di localizzazione e impatto, latenza e rifiuti misurati; memoria del codificatore (circa 410 MB) e tempo di indice a freddo (127 s per 669 entità) misurati; non misurati risultato dei task, token (nessun tokenizer né fatturazione), cache.
+- [ ] Eseguire l'intero percorso Python su un host disponibile: richiesta naturale -> indice -> scope -> packet -> task -> delta -> verifiche -> aggiornamento documentale -> ripresa. Registrare modello/host/versione, tool reali e consegne; un mock non prova l'esecuzione. **Esito:** Parziale: percorso eseguito con script come coordinatore e editor, senza host con modello; ricevute, ripresa e invalidazione provate, ma i tre pacchetti sono stati `needs_split` e nessun sorgente è arrivato a un lavoratore.
+- [ ] Verificare staticamente tutti i cinque export host (`exports/{claude,copilot,codex,pi,opencode}`), i 4 schemi esportati in `plugins/codebase-map/contracts/context.toml` e i percorsi annidati. Eseguire i probe degli host disponibili; riportare separatamente quelli non esercitati, senza dichiarare compatibilità runtime universale. **Esito:** Struttura verificata sui cinque export (12 file per host, 4 schemi identici); nessun probe di host installato eseguito, quindi nessuna compatibilità runtime dichiarata.
 - [ ] Eseguire la suite completa e i gate comuni sul candidato effettivo; risolvere i difetti, conservare log e motivi degli skip. Aggiornare report, stato della specifica, indice docs e commit P10.
 - [ ] Validare `run_state.py validate --project . --run-id <RUN_ID> --current`; chiudere solo se tutte le consegne e i gate obbligatori sono soddisfatti. Pubblicazione e refresh delle installazioni seguono il percorso autorizzato del repository.
+
+Checkpoint P10 (2026-10-24): holdout, impatto, percorso reale e verifica statica sono
+eseguiti e pubblicati con harness e gold in `evals/codebase-map/context-scope/`. Il
+risultato è negativo per la composizione: a 6 000 fino a 24 000 caratteri il
+pianificatore con il costruttore di pacchetti rifiuta (`needs_split`) in 72 tentativi su
+72, per una busta di circa 22 000 caratteri di profilo del resolver e perché ogni
+suggerimento della ricerca diventa sorgente obbligatorio; la ricerca testuale consegna
+dal 31% al 52%. Quattro difetti restano aperti (busta, obbligatorietà dei suggerimenti,
+callable decorati senza gap, nessun comando per l'indice) e sono decisioni del
+proprietario. Il braccio embedding, misurato dopo l'autorizzazione al download, migliora
+il recupero (74% contro 52% a 24 000 caratteri) ma non la composizione (24 rifiuti su 24,
+perimetro medio di 589 entità): l'indice embedding resta disponibile come opzione, e la sua
+abilitazione di default non è decisa (una sola libreria, conversione della comunità, le
+query di decisione peggiorano da 0,88 a 0,75). Corretti in P10: il timeout fisso dell'adapter e la documentazione d'uso
+di plugin, MCP e adapter. Le voci non spuntate sopra sono parziali e dicono perché.
+Dettagli nel [report di consegna](../reports/2026-10-23-code-context-delivery.md).
 
 ## Gate comuni per ogni commit che cambia il kernel
 

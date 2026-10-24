@@ -1,0 +1,296 @@
+{
+ "schema": "daodan/context-holdout-queries/v1",
+ "project": "starlette-1.9.0",
+ "authorship": "queries and gold written blind by one model; gold verified independently by a second pass reading every gold body",
+ "tuning": false,
+ "queries": [
+  {
+   "id": "q01",
+   "language": "en",
+   "type": "behavior",
+   "query": "If a visitor asks for an address that differs from one I registered only by a terminating '/', they get sent to the registered address instead of seeing a not-found page. Which code makes that call, and when is it skipped?",
+   "gold": [
+    "starlette/routing.py::Router.app"
+   ],
+   "why": "Router.app tries the alternate path form against every route after no route matched and builds the redirect, and it is also where the skip conditions (non-http scope, root path, disabled flag) are evaluated.",
+   "verification": "ok"
+  },
+  {
+   "id": "q02",
+   "language": "it",
+   "type": "symptom",
+   "query": "Se chiamo con GET un indirizzo che ho definito solo per POST, il server risponde 'metodo non consentito' e non 'non trovato', e nella risposta c'è l'elenco dei verbi ammessi. Dove si decide che l'indirizzo esiste solo a metà, chi lo sceglie tra più candidati e dove si costruisce quell'elenco?",
+   "gold": [
+    "starlette/routing.py::Route.matches",
+    "starlette/routing.py::Router.app",
+    "starlette/routing.py::Route.handle"
+   ],
+   "why": "Route.matches returns a partial match when the path fits but the verb does not; Router.app keeps the first partial match and dispatches to it only when no full match exists; Route.handle builds the list of allowed verbs and produces the 405.",
+   "verification": "ok"
+  },
+  {
+   "id": "q03",
+   "language": "en",
+   "type": "symptom",
+   "query": "In my endpoint I loop over the incoming payload chunk by chunk to hash it, and a later helper then tries to read the whole payload at once and crashes with a RuntimeError saying it was already used up. Reading the whole payload first and then looping works fine, though. Why is it asymmetric?",
+   "gold": [
+    "starlette/requests.py::Request.stream",
+    "starlette/requests.py::Request.body"
+   ],
+   "why": "Request.stream raises once the chunks were consumed but replays a cached copy if the whole payload was stored; Request.body is the one that stores that copy by draining stream, so it fails after a prior full iteration.",
+   "verification": "ok"
+  },
+  {
+   "id": "q04",
+   "language": "it",
+   "type": "decision",
+   "query": "Dove si sceglie, in base al tipo di contenuto dichiarato nella richiesta, quale parser usare per leggere i campi di un modulo inviato da una pagina web (con o senza file allegati)?",
+   "gold": [
+    "starlette/requests.py::Request._get_form"
+   ],
+   "why": "Request._get_form inspects the declared content type and picks the multipart parser, the urlencoded parser or an empty result.",
+   "verification": "ok"
+  },
+  {
+   "id": "q05",
+   "language": "en",
+   "type": "symptom",
+   "query": "A client sends a partial-download request naming hundreds of separate byte segments, and my server ignores it and answers with the entire file and a normal 200 status. Where is the cutoff, and what makes it fall back to sending everything?",
+   "gold": [
+    "starlette/responses.py::FileResponse._parse_range_header",
+    "starlette/responses.py::FileResponse.__call__"
+   ],
+   "why": "_parse_range_header returns an empty list when the number of requested segments exceeds the class limit; FileResponse.__call__ treats an empty list as no range and sends the whole file through the simple path.",
+   "verification": "ok"
+  },
+  {
+   "id": "q06",
+   "language": "it",
+   "type": "symptom",
+   "query": "Il browser blocca una chiamata cross-site: la richiesta preliminare torna 400 con un breve testo che elenca i motivi del rifiuto. Quali verifiche vengono fatte per decidere il rifiuto e dove si compone il testo?",
+   "gold": [
+    "starlette/middleware/cors.py::CORSMiddleware.preflight_response",
+    "starlette/middleware/cors.py::CORSMiddleware.is_allowed_origin"
+   ],
+   "why": "preflight_response collects the failed checks (origin, verb, requested headers, private network) and returns the 400 with the joined text; is_allowed_origin is the origin check it relies on, including the pattern and wildcard cases.",
+   "verification": "ok"
+  },
+  {
+   "id": "q07",
+   "language": "en",
+   "type": "behavior",
+   "query": "My app keeps per-visitor data in a signed browser cookie. How does the server know whether to send an updated cookie back on a given response rather than on every response, and how does it notice that the data was touched?",
+   "gold": [
+    "starlette/middleware/sessions.py::Session",
+    "starlette/middleware/sessions.py::SessionMiddleware.__call__"
+   ],
+   "why": "The Session dict subclass flips its accessed and modified flags on every mutating operation; SessionMiddleware.__call__ reads those flags in the response-start wrapper to decide whether to write, clear or skip the cookie.",
+   "verification": "ok"
+  },
+  {
+   "id": "q08",
+   "language": "it",
+   "type": "behavior",
+   "query": "Quando il client dichiara di accettare la compressione, in quali casi una risposta esce comunque così com'è (piccola, già compressa, parziale...)? E dove si guarda cosa dichiara il client?",
+   "gold": [
+    "starlette/middleware/gzip.py::GZipMiddleware.__call__",
+    "starlette/middleware/gzip.py::IdentityResponder.send_with_compression"
+   ],
+   "why": "GZipMiddleware.__call__ inspects the client's accepted encodings to pick the compressing or the pass-through responder; send_with_compression holds the skip rules (already encoded, partial content, excluded media type, minimum size).",
+   "verification": "ok"
+  },
+  {
+   "id": "q09",
+   "language": "en",
+   "type": "symptom",
+   "query": "A custom middleware of mine that calls the next layer and then adjusts what it returned sometimes dies with a RuntimeError claiming nothing came back from the inner application, even though the inner code finished with no exception. In what situation is that raised?",
+   "gold": [
+    "starlette/middleware/base.py::BaseHTTPMiddleware.__call__"
+   ],
+   "why": "The next-layer callable defined inside BaseHTTPMiddleware.__call__ raises that error when the inner app's message stream ends without a response start and without a captured exception.",
+   "verification": "ok"
+  },
+  {
+   "id": "q10",
+   "language": "it",
+   "type": "symptom",
+   "query": "Un link simbolico dentro la mia cartella di file pubblici che punta a un altro punto del disco restituisce 404. Quale controllo lo blocca e quale opzione lo disattiva?",
+   "gold": [
+    "starlette/staticfiles.py::StaticFiles.lookup_path",
+    "starlette/staticfiles.py::StaticFiles.__init__"
+   ],
+   "why": "lookup_path resolves the path and rejects anything whose common root is not the served directory, differently depending on the symlink flag; __init__ is where that flag is accepted and stored.",
+   "verification": "ok"
+  },
+  {
+   "id": "q11",
+   "language": "en",
+   "type": "behavior",
+   "query": "I attach several jobs to a response to run after it goes out. In what order do they execute, do they start only after the answer has been handed to the server, and how are plain blocking functions handled so they do not freeze the event loop?",
+   "gold": [
+    "starlette/responses.py::Response.__call__",
+    "starlette/background.py::BackgroundTasks.__call__",
+    "starlette/background.py::BackgroundTask.__call__"
+   ],
+   "why": "Response.__call__ sends start and body before awaiting the attached job; BackgroundTasks.__call__ runs its tasks sequentially in insertion order; BackgroundTask.__call__ awaits coroutine functions and pushes sync ones to a thread pool.",
+   "verification": "ok"
+  },
+  {
+   "id": "q12",
+   "language": "it",
+   "type": "decision",
+   "query": "In che punto si decide l'ordine con cui i livelli intermedi avvolgono le rotte (e perché il gestore degli errori 500 è sempre il più esterno mentre quello delle eccezioni gestite è il più interno)? E come finisce davanti agli altri un livello aggiunto con una chiamata successiva?",
+   "gold": [
+    "starlette/applications.py::Starlette.build_middleware_stack",
+    "starlette/applications.py::Starlette.add_middleware"
+   ],
+   "why": "build_middleware_stack fixes the layer order and wraps them around the router; add_middleware inserts new user layers at the front of the list, which determines their position relative to the others.",
+   "verification": "ok"
+  },
+  {
+   "id": "q13",
+   "language": "en",
+   "type": "decision",
+   "query": "Where is it decided whether the host name a visitor used to reach my site is acceptable (exact names, a leading wildcard pattern), and when does a visitor who left off the 'www.' prefix get redirected instead of refused?",
+   "gold": [
+    "starlette/middleware/trustedhost.py::TrustedHostMiddleware.__call__"
+   ],
+   "why": "TrustedHostMiddleware.__call__ matches the parsed host against exact and wildcard patterns and chooses between passing through, redirecting to the www form, or returning 400.",
+   "verification": "ok"
+  },
+  {
+   "id": "q14",
+   "language": "it",
+   "type": "exact",
+   "query": "In produzione compare `RuntimeError: Caught handled exception, but response already started.` Da quale funzione viene sollevato, e che cosa deve essere successo prima perché scatti?",
+   "gold": [
+    "starlette/_exception_handler.py::wrap_app_handling_exceptions"
+   ],
+   "why": "wrap_app_handling_exceptions tracks whether the response start message was already sent and raises this error if a registered handler would run after that point.",
+   "verification": "ok"
+  },
+  {
+   "id": "q15",
+   "language": "en",
+   "type": "exact",
+   "query": "Startup crashes with the traceback below. Which function turns my path template into a matching pattern, and what else does it validate besides repeated names?\n\n  File \"starlette/routing.py\", line 153, in compile_path\n    raise ValueError(f\"Duplicated param name{ending} {names} at path {path}\")\nValueError: Duplicated param name id at path /users/{id}/posts/{id}",
+   "gold": [
+    "starlette/routing.py::compile_path"
+   ],
+   "why": "compile_path parses the template parameters, rejects repeated names and unknown converter types, and builds the regex, the format string and the converter map.",
+   "verification": "ok"
+  },
+  {
+   "id": "q16",
+   "language": "en",
+   "type": "exact",
+   "query": "My echo loop keeps calling receive_text after the client has gone and I only caught the first disconnect. I now get this on the next iteration. What state makes it fail here?\n\n  File \".../starlette/websockets.py\", line 125, in receive_text\n    message = await self.receive()\n  File \".../starlette/websockets.py\", line 63, in receive\n    raise WebSocketDisconnected('Cannot call \"receive\" once a disconnect message has been received.')\nstarlette.websockets.WebSocketDisconnected: Cannot call \"receive\" once a disconnect message has been received.",
+   "gold": [
+    "starlette/websockets.py::WebSocket.receive",
+    "starlette/websockets.py::WebSocket.receive_text"
+   ],
+   "why": "WebSocket.receive moves the client state to disconnected on the first disconnect message and raises on any later call; receive_text is the caller that passes through the state check and into receive.",
+   "verification": "ok"
+  },
+  {
+   "id": "q17",
+   "language": "it",
+   "type": "exact",
+   "query": "Nella mia vista ottengo `AssertionError: SessionMiddleware must be installed to access request.session`, anche se ho aggiunto il middleware all'app. Che cosa controlla esattamente questa asserzione e chi dovrebbe aver messo il dato che cerca?",
+   "gold": [
+    "starlette/requests.py::HTTPConnection.session",
+    "starlette/middleware/sessions.py::SessionMiddleware.__call__"
+   ],
+   "why": "HTTPConnection.session asserts that the connection scope already holds a session entry; SessionMiddleware.__call__ is what populates that entry before calling the inner app.",
+   "verification": "ok"
+  },
+  {
+   "id": "q18",
+   "language": "en",
+   "type": "behavior",
+   "query": "If a response already carries the same header name more than once and my code assigns a new value to that name, what happens to the extra copies, and how can I deliberately add a second copy instead?",
+   "gold": [
+    "starlette/datastructures.py::MutableHeaders.__setitem__",
+    "starlette/datastructures.py::MutableHeaders.append"
+   ],
+   "why": "__setitem__ replaces the first matching entry in place and deletes the other entries of that name; append adds another entry without touching existing ones.",
+   "verification": "ok"
+  },
+  {
+   "id": "q19",
+   "language": "it",
+   "type": "behavior",
+   "query": "Nei modelli HTML posso generare l'indirizzo di un'altra pagina dell'app a partire dal suo nome. Chi registra questa funzione nel motore dei modelli, da dove prende la richiesta corrente e come costruisce l'indirizzo completo?",
+   "gold": [
+    "starlette/templating.py::Jinja2Templates._setup_env_defaults",
+    "starlette/templating.py::Jinja2Templates.TemplateResponse",
+    "starlette/requests.py::HTTPConnection.url_for",
+    "starlette/datastructures.py::URLPath.make_absolute_url"
+   ],
+   "why": "_setup_env_defaults registers the global helper that reads the request from the render context; TemplateResponse puts the request into that context; HTTPConnection.url_for resolves the name through the router and makes the URL absolute.",
+   "verification": "amend"
+  },
+  {
+   "id": "q20",
+   "language": "en",
+   "type": "symptom",
+   "query": "In my tests a crashing view makes the client call itself raise the original exception rather than returning an error response, even though the app does generate a generic 500 answer for a real client. Which two parts cooperate to produce that behavior?",
+   "gold": [
+    "starlette/middleware/errors.py::ServerErrorMiddleware.__call__",
+    "starlette/testclient.py::_TestClientTransport.handle_request"
+   ],
+   "why": "ServerErrorMiddleware.__call__ sends the 500 response and then deliberately re-raises the exception; the test transport's handle_request re-raises the application task's exception to the caller when server exceptions are enabled.",
+   "verification": "ok"
+  },
+  {
+   "id": "q21",
+   "language": "it",
+   "type": "symptom",
+   "query": "Nella specifica dell'API che generiamo dalle viste compaiono solo alcune rotte: quelle il cui commento di documentazione non è strutturato in un certo formato spariscono del tutto. Dove avviene questo scarto e come viene letto il commento (c'è un separatore che permette di scrivere anche prosa libera)?",
+   "gold": [
+    "starlette/schemas.py::SchemaGenerator.get_schema",
+    "starlette/schemas.py::BaseSchemaGenerator.parse_docstring"
+   ],
+   "why": "get_schema skips every endpoint whose parsed documentation is empty; parse_docstring takes the part after the last separator and returns nothing unless it parses to a mapping.",
+   "verification": "ok"
+  },
+  {
+   "id": "q22",
+   "language": "it",
+   "type": "behavior",
+   "query": "Come fa la configurazione a impedire che qualcuno modifichi o cancelli una variabile d'ambiente dopo che un altro componente l'ha già letta, e quale errore compare?",
+   "gold": [
+    "starlette/config.py::Environ.__getitem__",
+    "starlette/config.py::Environ.__setitem__",
+    "starlette/config.py::Environ.__delitem__"
+   ],
+   "why": "__getitem__ records each key that is read; __setitem__ and __delitem__ check that record and raise the configuration error for keys already read.",
+   "verification": "ok"
+  },
+  {
+   "id": "q23",
+   "language": "en",
+   "type": "decision",
+   "query": "In a class-based view, where is it decided which of my methods gets called for an incoming HTTP verb, how does a HEAD request get served when I only wrote the read method, and what happens for a verb I did not implement?",
+   "gold": [
+    "starlette/endpoints.py::HTTPEndpoint.dispatch",
+    "starlette/endpoints.py::HTTPEndpoint.__init__",
+    "starlette/endpoints.py::HTTPEndpoint.method_not_allowed"
+   ],
+   "why": "dispatch picks the handler by method name with the HEAD fallback; __init__ builds the list of allowed verbs (HEAD counted when a read handler exists); method_not_allowed produces the 405 for any other verb.",
+   "verification": "ok"
+  },
+  {
+   "id": "q24",
+   "language": "it",
+   "type": "behavior",
+   "query": "Se una vista richiede un certo permesso e l'utente non lo possiede, a volte la persona viene mandata a una pagina di accesso con un parametro per tornare indietro, altre volte riceve un errore. Cosa determina la differenza e dove si valuta il possesso del permesso?",
+   "gold": [
+    "starlette/authentication.py::requires",
+    "starlette/authentication.py::has_required_scope"
+   ],
+   "why": "requires builds the wrapper that either redirects with a return parameter (when a target is configured) or raises the status error; has_required_scope performs the check against the authenticated credentials.",
+   "verification": "ok"
+  }
+ ]
+}

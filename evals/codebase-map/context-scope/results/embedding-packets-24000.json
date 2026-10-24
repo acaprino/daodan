@@ -1,0 +1,408 @@
+{
+  "schema": "daodan/embedding-packet-result/v1",
+  "budget": 24000,
+  "queries": 24,
+  "tuning": false,
+  "lead_source": "dense result of the pinned CodeRankEmbed export, fused with FTS5 by the shipped policy",
+  "statuses": {
+    "needs_split": 24
+  },
+  "plan_statuses": {
+    "incomplete": 24
+  },
+  "localized": 1,
+  "analysis_entities": {
+    "mean": 589,
+    "min": 512,
+    "max": 669
+  },
+  "mean_gold_in_analysis": 1.0,
+  "mean_full_gold": 0.0,
+  "mean_seconds": 102.6,
+  "rows": [
+    {
+      "id": "q01",
+      "language": "en",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 623,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 107.80559610000637
+      }
+    },
+    {
+      "id": "q02",
+      "language": "it",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 550,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 112.61206420000235
+      }
+    },
+    {
+      "id": "q03",
+      "language": "en",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 594,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 111.36614189999818
+      }
+    },
+    {
+      "id": "q04",
+      "language": "it",
+      "type": "decision",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 587,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 99.44297219999135
+      }
+    },
+    {
+      "id": "q05",
+      "language": "en",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 578,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 109.336533099995
+      }
+    },
+    {
+      "id": "q06",
+      "language": "it",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 512,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 110.1711801999918
+      }
+    },
+    {
+      "id": "q07",
+      "language": "en",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 611,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 109.00753240000631
+      }
+    },
+    {
+      "id": "q08",
+      "language": "it",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 573,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 109.79067480000958
+      }
+    },
+    {
+      "id": "q09",
+      "language": "en",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 617,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 105.03591389999201
+      }
+    },
+    {
+      "id": "q10",
+      "language": "it",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 532,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 100.37716830000863
+      }
+    },
+    {
+      "id": "q11",
+      "language": "en",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 591,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 101.56783929999801
+      }
+    },
+    {
+      "id": "q12",
+      "language": "it",
+      "type": "decision",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 553,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 106.88866920000874
+      }
+    },
+    {
+      "id": "q13",
+      "language": "en",
+      "type": "decision",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 661,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 98.05888840000262
+      }
+    },
+    {
+      "id": "q14",
+      "language": "it",
+      "type": "exact",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 595,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 102.62582870000915
+      }
+    },
+    {
+      "id": "q15",
+      "language": "en",
+      "type": "exact",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": true,
+        "analysis_entities": 669,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 96.4240271000017
+      }
+    },
+    {
+      "id": "q16",
+      "language": "en",
+      "type": "exact",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 669,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 98.67518720000226
+      }
+    },
+    {
+      "id": "q17",
+      "language": "it",
+      "type": "exact",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 559,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 95.83880449998833
+      }
+    },
+    {
+      "id": "q18",
+      "language": "en",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 660,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 99.80834009998944
+      }
+    },
+    {
+      "id": "q19",
+      "language": "it",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 525,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 94.98726870000246
+      }
+    },
+    {
+      "id": "q20",
+      "language": "en",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 598,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 96.96523729999899
+      }
+    },
+    {
+      "id": "q21",
+      "language": "it",
+      "type": "symptom",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 581,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 100.03775050000695
+      }
+    },
+    {
+      "id": "q22",
+      "language": "it",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 536,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 95.9194012999942
+      }
+    },
+    {
+      "id": "q23",
+      "language": "en",
+      "type": "decision",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 620,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 97.65901339999982
+      }
+    },
+    {
+      "id": "q24",
+      "language": "it",
+      "type": "behavior",
+      "packet": {
+        "plan_status": "incomplete",
+        "localized": false,
+        "analysis_entities": 532,
+        "gold_in_analysis": 1.0,
+        "full": 0.0,
+        "partial": 0.0,
+        "status": "needs_split",
+        "chars": 0,
+        "seconds": 101.25329710000369
+      }
+    }
+  ]
+}

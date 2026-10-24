@@ -1,0 +1,348 @@
+{
+  "schema": "daodan/impact-holdout-result/v2",
+  "scenarios": {
+    "signature": [
+      {
+        "target": "starlette/applications.py::Starlette.build_middleware_stack",
+        "textual_call_sites": 1,
+        "mutation": "signature",
+        "callers_lexical_candidate": {
+          "oracle_sites": 1,
+          "reported_sites": 0,
+          "matched": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 2,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      },
+      {
+        "target": "starlette/requests.py::cookie_parser",
+        "textual_call_sites": 1,
+        "mutation": "signature",
+        "callers_lexical_candidate": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 1,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      },
+      {
+        "target": "starlette/formparsers.py::_user_safe_decode",
+        "textual_call_sites": 3,
+        "mutation": "signature",
+        "callers_lexical_candidate": {
+          "oracle_sites": 3,
+          "reported_sites": 3,
+          "matched": 3,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 3,
+          "reported_sites": 3,
+          "matched": 3,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 2,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      }
+    ],
+    "body": [
+      {
+        "target": "starlette/requests.py::Request._get_form",
+        "textual_call_sites": 1,
+        "mutation": "body",
+        "callers_lexical_candidate": {
+          "oracle_sites": 1,
+          "reported_sites": 0,
+          "matched": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 0,
+          "validation_impact": 63,
+          "truncated": 0
+        },
+        "change_detected": true
+      },
+      {
+        "target": "starlette/endpoints.py::WebSocketEndpoint.on_receive",
+        "textual_call_sites": 1,
+        "skipped": "could not be mutated into valid source"
+      },
+      {
+        "target": "starlette/middleware/gzip.py::_normalize_content_types",
+        "textual_call_sites": 2,
+        "mutation": "body",
+        "callers_lexical_candidate": {
+          "oracle_sites": 2,
+          "reported_sites": 2,
+          "matched": 2,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 2,
+          "reported_sites": 2,
+          "matched": 2,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 0,
+          "validation_impact": 6,
+          "truncated": 0
+        },
+        "change_detected": true
+      }
+    ],
+    "removal": [
+      {
+        "target": "starlette/middleware/errors.py::ServerErrorMiddleware.generate_frame_html",
+        "textual_call_sites": 1,
+        "mutation": "removal",
+        "callers_lexical_candidate": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 3,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      },
+      {
+        "target": "starlette/testclient.py::_is_asgi3",
+        "textual_call_sites": 1,
+        "mutation": "removal",
+        "callers_lexical_candidate": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 1,
+          "reported_sites": 1,
+          "matched": 1,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 2,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      },
+      {
+        "target": "starlette/responses.py::FileResponse._open_file",
+        "textual_call_sites": 3,
+        "mutation": "removal",
+        "callers_lexical_candidate": {
+          "oracle_sites": 3,
+          "reported_sites": 0,
+          "matched": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 3,
+          "reported_sites": 0,
+          "matched": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 2,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      }
+    ],
+    "hub": [
+      {
+        "target": "starlette/concurrency.py::run_in_threadpool",
+        "textual_call_sites": 9,
+        "skipped": "could not be mutated into valid source"
+      },
+      {
+        "target": "starlette/middleware/sessions.py::Session.mark_modified",
+        "textual_call_sites": 8,
+        "mutation": "signature",
+        "callers_lexical_candidate": {
+          "oracle_sites": 8,
+          "reported_sites": 0,
+          "matched": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 8,
+          "reported_sites": 8,
+          "matched": 8,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 11,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      },
+      {
+        "target": "starlette/_utils.py::is_async_callable",
+        "textual_call_sites": 7,
+        "mutation": "signature",
+        "callers_lexical_candidate": {
+          "oracle_sites": 7,
+          "reported_sites": 0,
+          "matched": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "callers_with_engine_edges_base": {
+          "oracle_sites": 7,
+          "reported_sites": 7,
+          "matched": 7,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "caller_listing_truncated": 0,
+        "stale_callers": {
+          "edit_impact": 7,
+          "validation_impact": 0,
+          "truncated": 0
+        },
+        "change_detected": true
+      }
+    ]
+  },
+  "aggregate": {
+    "body/callers_lexical_candidate": {
+      "oracle_sites": 3,
+      "reported_sites": 2,
+      "matched": 2,
+      "recall": 0.6666666666666666,
+      "precision": 1.0
+    },
+    "body/callers_with_engine_edges_base": {
+      "oracle_sites": 3,
+      "reported_sites": 3,
+      "matched": 3,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    "hub/callers_lexical_candidate": {
+      "oracle_sites": 15,
+      "reported_sites": 0,
+      "matched": 0,
+      "recall": 0.0,
+      "precision": null
+    },
+    "hub/callers_with_engine_edges_base": {
+      "oracle_sites": 15,
+      "reported_sites": 15,
+      "matched": 15,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    "removal/callers_lexical_candidate": {
+      "oracle_sites": 5,
+      "reported_sites": 2,
+      "matched": 2,
+      "recall": 0.4,
+      "precision": 1.0
+    },
+    "removal/callers_with_engine_edges_base": {
+      "oracle_sites": 5,
+      "reported_sites": 2,
+      "matched": 2,
+      "recall": 0.4,
+      "precision": 1.0
+    },
+    "signature/callers_lexical_candidate": {
+      "oracle_sites": 5,
+      "reported_sites": 4,
+      "matched": 4,
+      "recall": 0.8,
+      "precision": 1.0
+    },
+    "signature/callers_with_engine_edges_base": {
+      "oracle_sites": 5,
+      "reported_sites": 5,
+      "matched": 5,
+      "recall": 1.0,
+      "precision": 1.0
+    }
+  },
+  "oracle": "regular-expression call sites in the mutated copy, independent of the map",
+  "limits": [
+    "One public library; methods called through instances are matched by bare name, so the oracle may include same-named calls.",
+    "Names colliding with builtin container methods were excluded from selection.",
+    "Dynamic dispatch has no textual call site; absence of reported callers there is not independence.",
+    "Counts are per call site (file, line); a target with one site weighs as little as it should."
+  ]
+}

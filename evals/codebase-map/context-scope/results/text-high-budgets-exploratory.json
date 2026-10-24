@@ -1,0 +1,18 @@
+{
+ "24000": {
+  "text_blind_full": 0.521,
+  "text_in_boundary_with_anchor_full": 0.844
+ },
+ "48000": {
+  "text_blind_full": 0.635,
+  "text_in_boundary_with_anchor_full": 0.844
+ },
+ "96000": {
+  "text_blind_full": 0.698,
+  "text_in_boundary_with_anchor_full": 0.844
+ },
+ "192000": {
+  "text_blind_full": 0.698,
+  "text_in_boundary_with_anchor_full": 0.844
+ }
+}

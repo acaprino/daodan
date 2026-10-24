@@ -3,6 +3,10 @@
 Data: 23 ottobre 2026. Requisiti richiesti dall'utente; disegno operativo proposto,
 da verificare attraverso il [piano incrementale](../plans/2026-10-23-code-context-and-scope.md).
 Questa specifica non dichiara implementati embedding o composizione automatica.
+Stato al 24 ottobre 2026: P0-P10 del piano sono consegnati; le misure, i limiti e
+ciò che non è stato esercitato sono nel [report di consegna](../reports/2026-10-23-code-context-delivery.md).
+Gli embedding restano opzionali e disattivati per impostazione predefinita, e la
+composizione nel ciclo è l'adapter di lifecycle, non un programmatore automatico.
 La [valutazione della ricerca ricevuta](../reports/2026-10-23-code-context-research-assessment.md)
 motiva l'aggiunta del perimetro di impatto potenziale e la selezione di contesto
 con prerequisiti. Le modifiche restano requisiti da implementare e misurare.

@@ -1,0 +1,2531 @@
+{
+  "schema": "daodan/context-holdout-result/v1",
+  "anchor_mode": "top1",
+  "frozen": {
+    "queries_sha256": "5727a8cca35cc9e32c494e03257408e59f57971c0e608ed9787f45f0d05bd7ec",
+    "tuning": false
+  },
+  "project_chars": 263129,
+  "full_context_fits_budget": {
+    "6000": false,
+    "12000": false,
+    "24000": false
+  },
+  "queries": 24,
+  "lexical_recall_at": {
+    "5": 0.1875,
+    "10": 0.20833333333333334,
+    "20": 0.3125
+  },
+  "scope": {
+    "planned": 24,
+    "localized": 24,
+    "statuses": {
+      "incomplete": 24
+    },
+    "mean_analysis_entities": 385.5,
+    "mean_gold_in_analysis": 0.8194444444444444
+  },
+  "summary": {
+    "6000": {
+      "text": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.3125,
+          "partial_gold": 0.3125,
+          "mean_chars": 5928.916666666667,
+          "mean_seconds": 2.290198495832859
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.4583333333333333,
+          "partial_gold": 0.4583333333333333,
+          "mean_chars": 5934.083333333333,
+          "mean_seconds": 2.264919466665257
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.16666666666666666,
+          "partial_gold": 0.16666666666666666,
+          "mean_chars": 5923.75,
+          "mean_seconds": 2.3154775250004604
+        }
+      },
+      "text+graph": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.3541666666666667,
+          "partial_gold": 0.3541666666666667,
+          "mean_chars": 5939.125,
+          "mean_seconds": 2.904568512498978
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.5,
+          "partial_gold": 0.5,
+          "mean_chars": 5917.75,
+          "mean_seconds": 2.891449999997955
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.20833333333333334,
+          "partial_gold": 0.20833333333333334,
+          "mean_chars": 5960.5,
+          "mean_seconds": 2.9176870250000015
+        }
+      },
+      "scope+packet": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 118.8985875833326
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 127.1747821416684
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 110.62239302499681
+        }
+      },
+      "scope+packet_statuses": {
+        "needs_split": 24
+      },
+      "scope+packet_when_delivered": {
+        "queries": 0,
+        "full_gold": null,
+        "partial_gold": null
+      }
+    },
+    "12000": {
+      "text": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.46875,
+          "partial_gold": 0.46875,
+          "mean_chars": 11930.833333333334,
+          "mean_seconds": 2.290198495832859
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.5833333333333334,
+          "partial_gold": 0.5833333333333334,
+          "mean_chars": 11900.666666666666,
+          "mean_seconds": 2.264919466665257
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.3541666666666667,
+          "partial_gold": 0.3541666666666667,
+          "mean_chars": 11961,
+          "mean_seconds": 2.3154775250004604
+        }
+      },
+      "text+graph": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.4375,
+          "partial_gold": 0.4375,
+          "mean_chars": 11932.541666666666,
+          "mean_seconds": 2.904568512498978
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.5,
+          "partial_gold": 0.5,
+          "mean_chars": 11902.083333333334,
+          "mean_seconds": 2.891449999997955
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.375,
+          "partial_gold": 0.375,
+          "mean_chars": 11963,
+          "mean_seconds": 2.9176870250000015
+        }
+      },
+      "scope+packet": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 120.14891644166528
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 129.46706185833318
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 110.83077102499738
+        }
+      },
+      "scope+packet_statuses": {
+        "needs_split": 24
+      },
+      "scope+packet_when_delivered": {
+        "queries": 0,
+        "full_gold": null,
+        "partial_gold": null
+      }
+    },
+    "24000": {
+      "text": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.5208333333333334,
+          "partial_gold": 0.5208333333333334,
+          "mean_chars": 23917.291666666668,
+          "mean_seconds": 2.290198495832859
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.5833333333333334,
+          "partial_gold": 0.5833333333333334,
+          "mean_chars": 23913.166666666668,
+          "mean_seconds": 2.264919466665257
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.4583333333333333,
+          "partial_gold": 0.4583333333333333,
+          "mean_chars": 23921.416666666668,
+          "mean_seconds": 2.3154775250004604
+        }
+      },
+      "text+graph": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.5555555555555556,
+          "partial_gold": 0.5555555555555556,
+          "mean_chars": 23914.583333333332,
+          "mean_seconds": 2.904568512498978
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.6944444444444444,
+          "partial_gold": 0.6944444444444444,
+          "mean_chars": 23879.333333333332,
+          "mean_seconds": 2.891449999997955
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.4166666666666667,
+          "partial_gold": 0.4166666666666667,
+          "mean_chars": 23949.833333333332,
+          "mean_seconds": 2.9176870250000015
+        }
+      },
+      "scope+packet": {
+        "all": {
+          "queries": 24,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 120.23752787916722
+        },
+        "en": {
+          "queries": 12,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 131.63969307500278
+        },
+        "it": {
+          "queries": 12,
+          "full_gold": 0.0,
+          "partial_gold": 0.0,
+          "mean_chars": 0,
+          "mean_seconds": 108.83536268333167
+        }
+      },
+      "scope+packet_statuses": {
+        "needs_split": 24
+      },
+      "scope+packet_when_delivered": {
+        "queries": 0,
+        "full_gold": null,
+        "partial_gold": null
+      }
+    }
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "language": "en",
+      "type": "behavior",
+      "gold": [
+        "starlette/routing.py::Router.app"
+      ],
+      "lexical_rank": {
+        "starlette/routing.py::Router.app": 47
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5858,
+            "seconds": 3.0999811999936355
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5920,
+            "seconds": 3.7163087999942945
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 138.61294770000677,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11893,
+            "seconds": 3.0999811999936355
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11880,
+            "seconds": 3.7163087999942945
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 140.3841655000142,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23899,
+            "seconds": 3.0999811999936355
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23773,
+            "seconds": 3.7163087999942945
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 132.39843600000313,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.945419800002128,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 489,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q02",
+      "language": "it",
+      "type": "symptom",
+      "gold": [
+        "starlette/routing.py::Route.matches",
+        "starlette/routing.py::Router.app",
+        "starlette/routing.py::Route.handle"
+      ],
+      "lexical_rank": {
+        "starlette/routing.py::Route.matches": null,
+        "starlette/routing.py::Router.app": null,
+        "starlette/routing.py::Route.handle": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5907,
+            "seconds": 2.9397164000110934
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5994,
+            "seconds": 3.607087300013518
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 141.4723141999857,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11999,
+            "seconds": 2.9397164000110934
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11907,
+            "seconds": 3.607087300013518
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 143.4827277999866,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23933,
+            "seconds": 2.9397164000110934
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23978,
+            "seconds": 3.607087300013518
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 135.62971029999608,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.869336599993403,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 205,
+        "gold_in_analysis": 0.6666666666666666
+      }
+    },
+    {
+      "id": "q03",
+      "language": "en",
+      "type": "symptom",
+      "gold": [
+        "starlette/requests.py::Request.stream",
+        "starlette/requests.py::Request.body"
+      ],
+      "lexical_rank": {
+        "starlette/requests.py::Request.stream": null,
+        "starlette/requests.py::Request.body": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5937,
+            "seconds": 2.854568399998243
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5906,
+            "seconds": 3.457134700001916
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 142.3814080000011,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11970,
+            "seconds": 2.854568399998243
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11923,
+            "seconds": 3.457134700001916
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 145.54770299998927,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23890,
+            "seconds": 2.854568399998243
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23898,
+            "seconds": 3.457134700001916
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 135.98129830000107,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.861032899993006,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 418,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q04",
+      "language": "it",
+      "type": "decision",
+      "gold": [
+        "starlette/requests.py::Request._get_form"
+      ],
+      "lexical_rank": {
+        "starlette/requests.py::Request._get_form": 44
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5986,
+            "seconds": 2.8760886000090977
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5984,
+            "seconds": 3.466574500009301
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 121.4123862000124,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11987,
+            "seconds": 2.8760886000090977
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11979,
+            "seconds": 3.466574500009301
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 123.48315470000671,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23890,
+            "seconds": 2.8760886000090977
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23958,
+            "seconds": 3.466574500009301
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 120.45465870000771,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.751037300011376,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 388,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q05",
+      "language": "en",
+      "type": "symptom",
+      "gold": [
+        "starlette/responses.py::FileResponse._parse_range_header",
+        "starlette/responses.py::FileResponse.__call__"
+      ],
+      "lexical_rank": {
+        "starlette/responses.py::FileResponse._parse_range_header": null,
+        "starlette/responses.py::FileResponse.__call__": 27
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5889,
+            "seconds": 2.141970199998468
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5933,
+            "seconds": 2.8809345999907237
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 119.80192810000153,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11831,
+            "seconds": 2.141970199998468
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11771,
+            "seconds": 2.8809345999907237
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 120.4609233999945,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23898,
+            "seconds": 2.141970199998468
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23891,
+            "seconds": 2.8809345999907237
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 120.9653030000045,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.278015200005029,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 420,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q06",
+      "language": "it",
+      "type": "symptom",
+      "gold": [
+        "starlette/middleware/cors.py::CORSMiddleware.preflight_response",
+        "starlette/middleware/cors.py::CORSMiddleware.is_allowed_origin"
+      ],
+      "lexical_rank": {
+        "starlette/middleware/cors.py::CORSMiddleware.preflight_response": 4,
+        "starlette/middleware/cors.py::CORSMiddleware.is_allowed_origin": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5462,
+            "seconds": 2.172483899994404
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5971,
+            "seconds": 2.6833481999929063
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 47.53591019999294,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11914,
+            "seconds": 2.172483899994404
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11995,
+            "seconds": 2.6833481999929063
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 47.4413504999975,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23913,
+            "seconds": 2.172483899994404
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23892,
+            "seconds": 2.6833481999929063
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 48.620834700006526,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.247106800001347,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 68,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q07",
+      "language": "en",
+      "type": "behavior",
+      "gold": [
+        "starlette/middleware/sessions.py::Session",
+        "starlette/middleware/sessions.py::SessionMiddleware.__call__"
+      ],
+      "lexical_rank": {
+        "starlette/middleware/sessions.py::Session": null,
+        "starlette/middleware/sessions.py::SessionMiddleware.__call__": 5
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5939,
+            "seconds": 2.0524875999981305
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5710,
+            "seconds": 2.6005517000012333
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 126.99808740000299,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11986,
+            "seconds": 2.0524875999981305
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11886,
+            "seconds": 2.6005517000012333
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 125.55903119999857,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23997,
+            "seconds": 2.0524875999981305
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23900,
+            "seconds": 2.6005517000012333
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 130.09852990000218,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.608133799993084,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 471,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q08",
+      "language": "it",
+      "type": "behavior",
+      "gold": [
+        "starlette/middleware/gzip.py::GZipMiddleware.__call__",
+        "starlette/middleware/gzip.py::IdentityResponder.send_with_compression"
+      ],
+      "lexical_rank": {
+        "starlette/middleware/gzip.py::GZipMiddleware.__call__": null,
+        "starlette/middleware/gzip.py::IdentityResponder.send_with_compression": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5968,
+            "seconds": 3.098833600000944
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5980,
+            "seconds": 3.9437681999988854
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 129.53058360000432,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11964,
+            "seconds": 3.098833600000944
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11952,
+            "seconds": 3.9437681999988854
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 129.98749390001467,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23738,
+            "seconds": 3.098833600000944
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23885,
+            "seconds": 3.9437681999988854
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 130.1740196000028,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.878644700002042,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 279,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q09",
+      "language": "en",
+      "type": "symptom",
+      "gold": [
+        "starlette/middleware/base.py::BaseHTTPMiddleware.__call__"
+      ],
+      "lexical_rank": {
+        "starlette/middleware/base.py::BaseHTTPMiddleware.__call__": 3
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5985,
+            "seconds": 1.9736372000043048
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5993,
+            "seconds": 2.5562210000061896
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 117.0761169000034,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11867,
+            "seconds": 1.9736372000043048
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11895,
+            "seconds": 2.5562210000061896
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 118.88607940000657,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23949,
+            "seconds": 1.9736372000043048
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23941,
+            "seconds": 2.5562210000061896
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 118.31501170001866,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.593545200012159,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 486,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q10",
+      "language": "it",
+      "type": "symptom",
+      "gold": [
+        "starlette/staticfiles.py::StaticFiles.lookup_path",
+        "starlette/staticfiles.py::StaticFiles.__init__"
+      ],
+      "lexical_rank": {
+        "starlette/staticfiles.py::StaticFiles.lookup_path": null,
+        "starlette/staticfiles.py::StaticFiles.__init__": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5972,
+            "seconds": 1.7913177000009455
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5964,
+            "seconds": 2.316085099999327
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 103.93797240000276,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11995,
+            "seconds": 1.7913177000009455
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11971,
+            "seconds": 2.316085099999327
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 105.87253110000165,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23985,
+            "seconds": 1.7913177000009455
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23978,
+            "seconds": 2.316085099999327
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 105.22057569999015,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.31989220000105,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 188,
+        "gold_in_analysis": 0.5
+      }
+    },
+    {
+      "id": "q11",
+      "language": "en",
+      "type": "behavior",
+      "gold": [
+        "starlette/responses.py::Response.__call__",
+        "starlette/background.py::BackgroundTasks.__call__",
+        "starlette/background.py::BackgroundTask.__call__"
+      ],
+      "lexical_rank": {
+        "starlette/responses.py::Response.__call__": null,
+        "starlette/background.py::BackgroundTasks.__call__": null,
+        "starlette/background.py::BackgroundTask.__call__": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5860,
+            "seconds": 1.9500951999943936
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5860,
+            "seconds": 2.546733299983316
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 124.67970830001286,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11840,
+            "seconds": 1.9500951999943936
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11841,
+            "seconds": 2.546733299983316
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 125.27442980001797,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23978,
+            "seconds": 1.9500951999943936
+          },
+          "text+graph": {
+            "full": 0.3333333333333333,
+            "partial": 0.3333333333333333,
+            "chars": 23976,
+            "seconds": 2.546733299983316
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 125.20954690000508,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.46206260001054,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 446,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q12",
+      "language": "it",
+      "type": "decision",
+      "gold": [
+        "starlette/applications.py::Starlette.build_middleware_stack",
+        "starlette/applications.py::Starlette.add_middleware"
+      ],
+      "lexical_rank": {
+        "starlette/applications.py::Starlette.build_middleware_stack": 14,
+        "starlette/applications.py::Starlette.add_middleware": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5968,
+            "seconds": 1.8753369000041857
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5981,
+            "seconds": 2.450579700001981
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 125.02016220000223,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11841,
+            "seconds": 1.8753369000041857
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11988,
+            "seconds": 2.450579700001981
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 129.39141030001338,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23921,
+            "seconds": 1.8753369000041857
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23984,
+            "seconds": 2.450579700001981
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 126.15043290000176,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.496381200005999,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 256,
+        "gold_in_analysis": 0.5
+      }
+    },
+    {
+      "id": "q13",
+      "language": "en",
+      "type": "decision",
+      "gold": [
+        "starlette/middleware/trustedhost.py::TrustedHostMiddleware.__call__"
+      ],
+      "lexical_rank": {
+        "starlette/middleware/trustedhost.py::TrustedHostMiddleware.__call__": 3
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5994,
+            "seconds": 1.929330699989805
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5995,
+            "seconds": 2.5494223999849055
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 123.36701780000294,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11820,
+            "seconds": 1.929330699989805
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11938,
+            "seconds": 2.5494223999849055
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 128.67259020000347,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23887,
+            "seconds": 1.929330699989805
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23915,
+            "seconds": 2.5494223999849055
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 147.13157340000907,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.815918799999054,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 624,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q14",
+      "language": "it",
+      "type": "exact",
+      "gold": [
+        "starlette/_exception_handler.py::wrap_app_handling_exceptions"
+      ],
+      "lexical_rank": {
+        "starlette/_exception_handler.py::wrap_app_handling_exceptions": 2
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5977,
+            "seconds": 1.952118999994127
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5999,
+            "seconds": 2.6173578999878373
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 120.65639909998572,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11970,
+            "seconds": 1.952118999994127
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11986,
+            "seconds": 2.6173578999878373
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 122.51933329999156,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23988,
+            "seconds": 1.952118999994127
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23998,
+            "seconds": 2.6173578999878373
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 121.81829329999164,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.652061699991464,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 395,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q15",
+      "language": "en",
+      "type": "exact",
+      "gold": [
+        "starlette/routing.py::compile_path"
+      ],
+      "lexical_rank": {
+        "starlette/routing.py::compile_path": 1
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5887,
+            "seconds": 1.95519810001133
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 6000,
+            "seconds": 2.5855379000131506
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 124.05026090001047,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11942,
+            "seconds": 1.95519810001133
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11990,
+            "seconds": 2.5855379000131506
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 123.88745909999125,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23941,
+            "seconds": 1.95519810001133
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23711,
+            "seconds": 2.5855379000131506
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 148.08344649999344,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.916688299999805,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 669,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q16",
+      "language": "en",
+      "type": "exact",
+      "gold": [
+        "starlette/websockets.py::WebSocket.receive",
+        "starlette/websockets.py::WebSocket.receive_text"
+      ],
+      "lexical_rank": {
+        "starlette/websockets.py::WebSocket.receive": 1,
+        "starlette/websockets.py::WebSocket.receive_text": 3
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5962,
+            "seconds": 2.184210199993686
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5896,
+            "seconds": 2.842277899995679
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 120.72493179999583,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11877,
+            "seconds": 2.184210199993686
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11996,
+            "seconds": 2.842277899995679
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 126.48397299999488,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 24000,
+            "seconds": 2.184210199993686
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23940,
+            "seconds": 2.842277899995679
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 144.924259300009,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.177080199995544,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 669,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q17",
+      "language": "it",
+      "type": "exact",
+      "gold": [
+        "starlette/requests.py::HTTPConnection.session",
+        "starlette/middleware/sessions.py::SessionMiddleware.__call__"
+      ],
+      "lexical_rank": {
+        "starlette/requests.py::HTTPConnection.session": 1,
+        "starlette/middleware/sessions.py::SessionMiddleware.__call__": 33
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5997,
+            "seconds": 3.112929399998393
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5967,
+            "seconds": 3.729263000001083
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 131.84281580000243,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11946,
+            "seconds": 3.112929399998393
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11976,
+            "seconds": 3.729263000001083
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 125.9204444999923,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23939,
+            "seconds": 3.112929399998393
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23953,
+            "seconds": 3.729263000001083
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 123.65287150000222,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 6.694022700001369,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 399,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q18",
+      "language": "en",
+      "type": "behavior",
+      "gold": [
+        "starlette/datastructures.py::MutableHeaders.__setitem__",
+        "starlette/datastructures.py::MutableHeaders.append"
+      ],
+      "lexical_rank": {
+        "starlette/datastructures.py::MutableHeaders.__setitem__": null,
+        "starlette/datastructures.py::MutableHeaders.append": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5981,
+            "seconds": 1.9224966000037966
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5993,
+            "seconds": 2.5812348000035854
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 130.19529649999458,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11992,
+            "seconds": 1.9224966000037966
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11971,
+            "seconds": 2.5812348000035854
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 147.92083289998118,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23992,
+            "seconds": 1.9224966000037966
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23964,
+            "seconds": 2.5812348000035854
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 134.63993249999476,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.70052639998903,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 643,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q19",
+      "language": "it",
+      "type": "behavior",
+      "gold": [
+        "starlette/templating.py::Jinja2Templates._setup_env_defaults",
+        "starlette/templating.py::Jinja2Templates.TemplateResponse",
+        "starlette/requests.py::HTTPConnection.url_for",
+        "starlette/datastructures.py::URLPath.make_absolute_url"
+      ],
+      "lexical_rank": {
+        "starlette/templating.py::Jinja2Templates._setup_env_defaults": null,
+        "starlette/templating.py::Jinja2Templates.TemplateResponse": 11,
+        "starlette/requests.py::HTTPConnection.url_for": 32,
+        "starlette/datastructures.py::URLPath.make_absolute_url": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5979,
+            "seconds": 2.1342831999936607
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5947,
+            "seconds": 2.778163199996925
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 125.73919969999406,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.25,
+            "partial": 0.25,
+            "chars": 11998,
+            "seconds": 2.1342831999936607
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11985,
+            "seconds": 2.778163199996925
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 121.4688085999951,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23947,
+            "seconds": 2.1342831999936607
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23978,
+            "seconds": 2.778163199996925
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 114.96276209999633,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.52826219999406,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 225,
+        "gold_in_analysis": 0.5
+      }
+    },
+    {
+      "id": "q20",
+      "language": "en",
+      "type": "symptom",
+      "gold": [
+        "starlette/middleware/errors.py::ServerErrorMiddleware.__call__",
+        "starlette/testclient.py::_TestClientTransport.handle_request"
+      ],
+      "lexical_rank": {
+        "starlette/middleware/errors.py::ServerErrorMiddleware.__call__": 6,
+        "starlette/testclient.py::_TestClientTransport.handle_request": 31
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5970,
+            "seconds": 2.5556084999989253
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 5970,
+            "seconds": 3.2809026000031736
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 135.8329139999987,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11940,
+            "seconds": 2.5556084999989253
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11857,
+            "seconds": 3.2809026000031736
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 128.64173850000952,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23856,
+            "seconds": 2.5556084999989253
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23904,
+            "seconds": 3.2809026000031736
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 126.86810970000806,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 6.585271400006604,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 499,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q21",
+      "language": "it",
+      "type": "symptom",
+      "gold": [
+        "starlette/schemas.py::SchemaGenerator.get_schema",
+        "starlette/schemas.py::BaseSchemaGenerator.parse_docstring"
+      ],
+      "lexical_rank": {
+        "starlette/schemas.py::SchemaGenerator.get_schema": null,
+        "starlette/schemas.py::BaseSchemaGenerator.parse_docstring": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5933,
+            "seconds": 1.811038699990604
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5856,
+            "seconds": 2.285077699983958
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 119.56181929998274,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11966,
+            "seconds": 1.811038699990604
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 11919,
+            "seconds": 2.285077699983958
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 120.39452859997982,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23942,
+            "seconds": 1.811038699990604
+          },
+          "text+graph": {
+            "full": 0.5,
+            "partial": 0.5,
+            "chars": 23942,
+            "seconds": 2.285077699983958
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 116.44530659998418,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.164848499989603,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 259,
+        "gold_in_analysis": 0.5
+      }
+    },
+    {
+      "id": "q22",
+      "language": "it",
+      "type": "behavior",
+      "gold": [
+        "starlette/config.py::Environ.__getitem__",
+        "starlette/config.py::Environ.__setitem__",
+        "starlette/config.py::Environ.__delitem__"
+      ],
+      "lexical_rank": {
+        "starlette/config.py::Environ.__getitem__": null,
+        "starlette/config.py::Environ.__setitem__": null,
+        "starlette/config.py::Environ.__delitem__": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5942,
+            "seconds": 2.0384140000096522
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5990,
+            "seconds": 2.570585600013146
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 83.53487119999772,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11967,
+            "seconds": 2.0384140000096522
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11899,
+            "seconds": 2.570585600013146
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 81.29738809999253,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23873,
+            "seconds": 2.0384140000096522
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23873,
+            "seconds": 2.570585600013146
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 82.67080449999776,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.029218999989098,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 123,
+        "gold_in_analysis": 0.0
+      }
+    },
+    {
+      "id": "q23",
+      "language": "en",
+      "type": "decision",
+      "gold": [
+        "starlette/endpoints.py::HTTPEndpoint.dispatch",
+        "starlette/endpoints.py::HTTPEndpoint.__init__",
+        "starlette/endpoints.py::HTTPEndpoint.method_not_allowed"
+      ],
+      "lexical_rank": {
+        "starlette/endpoints.py::HTTPEndpoint.dispatch": 14,
+        "starlette/endpoints.py::HTTPEndpoint.__init__": 16,
+        "starlette/endpoints.py::HTTPEndpoint.method_not_allowed": 12
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5947,
+            "seconds": 2.5594496999983676
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 5837,
+            "seconds": 3.1001402999972925
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 122.37676829998964,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11850,
+            "seconds": 2.5594496999983676
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 11877,
+            "seconds": 3.1001402999972925
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 121.8858162999968,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23671,
+            "seconds": 2.5594496999983676
+          },
+          "text+graph": {
+            "full": 1.0,
+            "partial": 1.0,
+            "chars": 23739,
+            "seconds": 3.1001402999972925
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 115.06086969998432,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 5.110145699989516,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 505,
+        "gold_in_analysis": 1.0
+      }
+    },
+    {
+      "id": "q24",
+      "language": "it",
+      "type": "behavior",
+      "gold": [
+        "starlette/authentication.py::requires",
+        "starlette/authentication.py::has_required_scope"
+      ],
+      "lexical_rank": {
+        "starlette/authentication.py::requires": null,
+        "starlette/authentication.py::has_required_scope": null
+      },
+      "arms": {
+        "6000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5994,
+            "seconds": 1.983168899998418
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 5893,
+            "seconds": 2.5643539000011515
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 77.22428239999863,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "12000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11985,
+            "seconds": 1.983168899998418
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 11999,
+            "seconds": 2.5643539000011515
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 78.71008089999668,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        },
+        "24000": {
+          "text": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23988,
+            "seconds": 1.983168899998418
+          },
+          "text+graph": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 23979,
+            "seconds": 2.5643539000011515
+          },
+          "scope+packet": {
+            "full": 0.0,
+            "partial": 0.0,
+            "chars": 0,
+            "seconds": 80.22408230000292,
+            "status": "needs_split",
+            "blocks": 0,
+            "scope_status": "incomplete",
+            "localized": true
+          }
+        }
+      },
+      "scope": {
+        "seconds": 4.326089700000011,
+        "status": "incomplete",
+        "localized": true,
+        "analysis_entities": 128,
+        "gold_in_analysis": 0.0
+      }
+    }
+  ],
+  "limits": [
+    "One public library, gold written blind by a model and checked by a second pass.",
+    "Coverage counts delivered source of gold entities; it is not task success. A packet that refuses (needs_split) counts as zero coverage in the unconditional means and is reported separately.",
+    "Characters, not tokens: no tokenizer identity was supplied, so no token saving is claimed."
+  ]
+}

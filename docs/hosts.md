@@ -222,10 +222,19 @@ declared through `[[mcp.servers]]` in the kernel. Codebase Map, peer-review and
 moe declare stdio servers launched with `uv run --no-config --no-project --script`,
 so the project under work cannot choose a server's package index or interpreter;
 users need that executable and each server's documented requirements. Codebase Map's project-bound local
-service exposes snapshots, verified source queries, run controls and persistent
+service exposes 19 tools: snapshots, verified source queries, edit impact and
+stale-caller classification, bounded context packets, run controls and persistent
 events; its [MCP contract](../plugins/codebase-map/skills/map-method/references/mcp.md)
 keeps worker execution and native UI in the host. Existing shell analysis entries
 remain usable without connecting the server.
+
+To use the server by hand on a host that does not start it, run the declared command
+with `--project <project root>` as one stdio server named `codebase-map`, keep both
+`--no-config` and `--no-project`, and check that `codebase_map_scope` or
+`codebase_map_status` returns the project root you expect before creating a run. The
+context tool needs a retrieval index built beforehand for the run's manifest; the
+[usage guide](plugins/codebase-map.md#using-the-context-path) lists the steps and the
+limits measured so far.
 
 Map 7.0.0 defaults to local SQLite snapshots and supports explicit JSON upstream.
 The LLM receives selected text packets, not database or base64 dumps. Each host

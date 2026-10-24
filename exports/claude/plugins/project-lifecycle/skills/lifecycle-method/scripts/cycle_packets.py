@@ -15,7 +15,9 @@ Documents (JSON objects):
              caps max_candidates, max_edges, max_rounds, max_seconds,
              max_input_tokens, max_output_tokens (contract:
              codebase-map/contracts/context.toml, daodan/context-request/v1).
-             The adapter sets task_id, candidate, base and both boundaries.
+             The adapter sets task_id, candidate, base and both boundaries. The
+             provider may run for max_seconds, at least 120 s, before it is
+             refused with status 1; a rerun repeats the call in the same attempt.
   recipient  id (text); available_tokens, reserve_tokens, max_chars,
              max_evaluations (integers). Optional: prefix, suffix, tokenizer_id, policy
              (ordered or marginal).
@@ -167,12 +169,12 @@ def _publish(path, value):
         temporary.unlink()
 
 
-def _invoke(config, owner, args):
+def _invoke(config, owner, args, timeout=120):
     command = config[owner]
     if not isinstance(command, list) or not command or any(not isinstance(v, str) or not v for v in command):
         raise ValueError('Provider commands must be explicit argument arrays')
     result = subprocess.run([*command, *args], cwd=config['project'], stdin=subprocess.DEVNULL,
-                            capture_output=True, timeout=120)
+                            capture_output=True, timeout=timeout)
     if result.returncode:
         raise ValueError(owner + ' rejected the operation: ' + result.stderr.decode('utf8', 'replace')[-2000:])
     try:
@@ -384,8 +386,8 @@ def _attempt(stage, config, request, authority, recipient, binding, prior, previ
         output = Path(request['candidate']['manifest']).parent / 'context' / directory.name
         result = _delivery(_invoke(config, 'provider', ['context', request['candidate']['manifest'],
             '--request', str(directory / 'request.json'), '--authority', str(directory / 'authority.json'),
-            '--recipient', str(directory / 'recipient.json'), '--indexes', str(directory / 'indexes.json'), '--out', str(output)]),
-            'provider', PROVIDER_KEYS)
+            '--recipient', str(directory / 'recipient.json'), '--indexes', str(directory / 'indexes.json'), '--out', str(output)],
+            timeout=max(120, request['budget']['max_seconds'])), 'provider', PROVIDER_KEYS)
         result = _claim(result_path, result)
     _delivery(result, 'provider', PROVIDER_KEYS)
     packet, slice_ = _provider_artifacts(result, request, project)

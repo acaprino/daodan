@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "39.0.2"
+    "version": "39.0.3"
   },
   "name": "daodan",
   "owner": {
@@ -58,7 +58,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "8.7.1"
+      "version": "8.7.2"
     },
     {
       "author": {
@@ -272,7 +272,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "2.2.2"
+      "version": "2.2.3"
     },
     {
       "author": {
