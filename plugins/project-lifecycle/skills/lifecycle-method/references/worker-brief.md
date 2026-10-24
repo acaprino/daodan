@@ -14,7 +14,7 @@ rejected alternatives: <RA-* ids and their text, when they touch this task>
 
 ## Files
 write_set: <exact paths; nothing else may change>
-read context: <symbol cards of the write_set and their one-hop callers and callees, with current signatures>
+read context: <verified `task-packet`: cards and sources of the write_set, one-hop callers and callees, current signatures>
 protected paths: <preexisting modified files, in IN_PLACE mode>
 
 ## Oracle

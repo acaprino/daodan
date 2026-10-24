@@ -114,6 +114,9 @@ dependent operation; preserve archives and run IDs.
    and CSS/markup pertinent to each claim. An outline is discovery metadata;
    retained file/class context is not proof that omitted bodies are irrelevant.
    Record files/ranges actually read separately from inventory and runtime evidence.
+   A supplied lifecycle receipt or context packet binds by digest: its fresh cards
+   and verified source blocks evidence implemented behavior; stale or unread cards
+   are leads; its gaps are documented limits.
 4. Profile the audience from supplied intent and observable project signals.
    Record inference/confidence rather than inventing rationale. Ask only for an
    unresolved choice that materially changes the deliverable and cannot be derived.

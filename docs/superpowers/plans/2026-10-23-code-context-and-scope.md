@@ -342,9 +342,10 @@ restano disgiunti dal write set. La CLI distingue l'invocazione incompleta o
 illeggibile (uscita 2, nessun traceback) dall'operazione rifiutata (uscita 1).
 Il brief `context-cycle.md` (22 parole) entra nei passi del ciclo senza aumentare
 i tetti esistenti: la skill lifecycle resta sotto il tetto di 630 parole (597
-sull'albero principale, 599 sul candidato). I 17 test del ciclo e i 5
-del budget passano su albero principale e candidato; la milestone si chiude con
-la revisione indipendente e i gate registrati nel run. Dettagli nel
+sull'albero principale, 599 sul candidato). I 36 test del ciclo, i 10 della
+proiezione I1 e i 5 del budget passano sul candidato. La revisione indipendente ha
+richiesto tre giri; l'ultimo non ha trovato difetti Critical, High o Medium e i
+cinque residui Low sono stati corretti con test, senza un quarto giro. Dettagli nel
 [report P8](../reports/2026-10-24-code-context-p8.md). P9-P10 restano da completare.
 
 ## P9: consumatori e chiusura
@@ -362,11 +363,27 @@ micro-task per plugin consumatore.
 **Interfaces:** ciascun consumatore riceve packet e digest, scopo, gap e obblighi;
 restituisce il proprio artefatto e le evidenze di verifica nel ledger esistente.
 
-- [ ] Testare che documentazione consumi card e sorgenti fresche; review riceva il contesto consentito dalla propria lente. Il premise auditor conserva la propria indipendenza e non riceve conclusioni/card vietate dal suo contratto.
-- [ ] Collegare testing attraverso lifecycle: requisiti e obblighi di validazione al proprietario dei test, che conferma gli oracoli. Il plugin testing resta leaf; nessuna dipendenza dura aggiunta soltanto per questo flusso.
-- [ ] Collegare finish e realign: gate sul candidato, report degli obblighi residui, mappa e documentazione aggiornate dopo integrazione. Nessun deploy o pubblicazione automatica dedotta dal grafo.
-- [ ] Eseguire i test pertinenti `test_review_knowledge_ports.py`, `test_review_pipeline_ports.py`, `test_codebase_map_composition.py`, `test_project_protocol.py` e nuovi casi consumatore; verificare i budget delle skill.
-- [ ] Aggiornare docs per ogni proprietario, gate comuni e commit P9. **Done:** una matrice documenta per ciascun comando input usato, output, freshness, recovery e limiti.
+- [x] Testare che documentazione consumi card e sorgenti fresche; review riceva il contesto consentito dalla propria lente. Il premise auditor conserva la propria indipendenza e non riceve conclusioni/card vietate dal suo contratto.
+- [x] Collegare testing attraverso lifecycle: requisiti e obblighi di validazione al proprietario dei test, che conferma gli oracoli. Il plugin testing resta leaf; nessuna dipendenza dura aggiunta soltanto per questo flusso.
+- [x] Collegare finish e realign: gate sul candidato, report degli obblighi residui, mappa e documentazione aggiornate dopo integrazione. Nessun deploy o pubblicazione automatica dedotta dal grafo.
+- [x] Eseguire i test pertinenti `test_review_knowledge_ports.py`, `test_review_pipeline_ports.py`, `test_codebase_map_composition.py`, `test_work_record.py` (già `test_project_protocol.py`) e nuovi casi consumatore; verificare i budget delle skill.
+- [x] Aggiornare docs per ogni proprietario, gate comuni e commit P9. **Done:** una matrice documenta per ciascun comando input usato, output, freshness, recovery e limiti.
+
+Checkpoint P9 (2026-10-24): i consumatori ricevono il contesto come lead con
+digest, mai come verdetto. `project-knowledge` lega il pacchetto al digest e usa
+come evidenza solo card fresche e blocchi sorgente verificati; card stantie o non
+lette restano lead e i gap sono limiti documentati. Il `premise-auditor` elenca il
+pacchetto di contesto, la proiezione della mappa, il receipt del ciclo e la card
+semantica tra gli input vietati; `candidate-grounding.md` dice che un pacchetto
+del ciclo guida e non sostituisce la lettura del sorgente. `verify.md` inoltra le
+`validation_obligations` a `testing:test-writer`, che conferma ciascun oracolo,
+e `finish.md` riporta gli obblighi residui dell'ultimo receipt; `realign.md` già
+aggiornava mappa e documentazione e invalidava i pacchetti, quindi non cambia.
+`worker-brief.md` porta il riferimento al pacchetto di task verificato. Nessun
+tetto di parole sale e nessuna dipendenza dura nasce da questo flusso. Nove test
+nuovi in `test_code_context_consumers.py` fissano questi contratti. La matrice
+"Context consumers" in `docs/plugins/codebase-map.md` documenta per comando input,
+output, freshness, recovery e limiti.
 
 ## P10: verifica complessiva e consegna
 

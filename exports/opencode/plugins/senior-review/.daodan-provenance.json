@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:46a7591042bfc2c5ac89502a2467a852f67f1b33f6861dd03947419f32049692",
+  "coreDigest": "sha256:1fc6aa67908d1d19721f8a55060b977ee8205fb6d4507cbaa8506edf64ca5123",
   "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "senior-review",
-  "version": "16.6.0"
+  "version": "16.6.1"
 }

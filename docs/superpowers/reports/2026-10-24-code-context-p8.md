@@ -66,7 +66,18 @@ della proiezione I1 che poteva escludere il sito di modifica proposto o consumar
 tutti gli archi su una sola coppia di file: tutti corretti alla radice e coperti da
 test che falliscono sul codice precedente. L'help documenta ora ogni documento
 d'ingresso e dice che la CLI non conta i token del destinatario (verifica con
-`verify_cycle(..., token_counter=...)` dal dispatcher). I conteggi e gli eventuali skip appartengono
+`verify_cycle(..., token_counter=...)` dal dispatcher). Il terzo giro non ha
+trovato difetti Critical, High o Medium e ha confermato chiusi R1, N1, N3, N4,
+N5, N7 e N8. Restavano cinque residui Low: N2 e N6 ancora parziali, il receipt che
+portava l'`origin_revision`, un `_claim` che catturava ogni `ValueError` e
+`NaN` o `Infinity` in un documento d'ingresso che uscivano con 1 invece di 2.
+Sono stati corretti dopo la revisione: la collisione ha una classe propria, il
+tetto dei tentativi vale per chiamata e parte dalla generazione più recente, il
+receipt non porta più la revisione del ledger, le costanti non JSON danno uscita 2
+e l'help nomina i sei tetti di budget, il contratto `context.toml` e la `policy`
+del destinatario. Quattro test nuovi li coprono; questa correzione non ha avuto un
+quarto giro di revisione e il suo unico controllo indipendente sono quei test.
+I conteggi e gli eventuali skip appartengono
 alle ricevute delle verifiche, senza sostituire la copertura delle applicazioni.
 
 I quattro riferimenti lifecycle diminuiscono di parole; nessun tetto aumenta.

@@ -26,6 +26,7 @@ You have three modes. The prompt that spawns you names which one. They have diff
 - legacy `.codebase-xray/` in any form, including relocated runs or summaries
 - `.team-review/02-interconnect.md`
 - any summary, excerpt or paraphrase of a Codebase Map conclusion
+- any context packet, map slice, lifecycle receipt or semantic card of the same code
 
 If your prompt contains one of these, stop and report the contamination instead of proceeding. Your output is worthless if it is a restatement of the thing it is supposed to be independent of. The knowledge leads file is allowed because it contains pointers to where knowledge lives, never conclusions about how the code behaves.
 

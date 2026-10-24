@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "39.0.1"
+    "version": "39.0.2"
   },
   "name": "daodan",
   "owner": {
@@ -276,7 +276,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/copilot/plugins/project-knowledge",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "author": {
@@ -311,7 +311,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "2.2.1"
+      "version": "2.2.2"
     },
     {
       "agents": [
@@ -480,7 +480,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/copilot/plugins/senior-review",
-      "version": "16.6.0"
+      "version": "16.6.1"
     },
     {
       "author": {

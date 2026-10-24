@@ -78,8 +78,9 @@ required push needs authorization or stays unavailable.
 ## Checks
 
 1. Run declared test/lint/type/build commands on the candidate through
-   `testing:test-preparation` runner/configuration diagnosis. Self-generated
-   assertions alone establish no oracle; distinguish wrong oracle, product and
+   `testing:test-preparation` runner/configuration diagnosis. Route packet
+   `validation_obligations` to `testing:test-writer`, which confirms each oracle.
+   Self-generated assertions alone establish no oracle; distinguish wrong oracle, product and
    environment failures.
 2. Every proposed-record `EX-*` has a candidate-passing, base-failing test;
    every `INV-*` has a test or review finding confirming it holds.

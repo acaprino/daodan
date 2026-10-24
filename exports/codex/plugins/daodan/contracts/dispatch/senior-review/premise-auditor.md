@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:premise-auditor; version: 16.6.0; source-sha256: 538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:premise-auditor; version: 16.6.1; source-sha256: 488e8ab58f61f4726bba4eb39dcb6226c037e3a4477b11f40cd3f2ae6cd5671b. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`, `senior-review:investigation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -92,6 +92,7 @@ You have three modes. The prompt that spawns you names which one. They have diff
 - legacy `.codebase-xray/` in any form, including relocated runs or summaries
 - `.team-review/02-interconnect.md`
 - any summary, excerpt or paraphrase of a Codebase Map conclusion
+- any context packet, map slice, lifecycle receipt or semantic card of the same code
 
 If your prompt contains one of these, stop and report the contamination instead of proceeding. Your output is worthless if it is a restatement of the thing it is supposed to be independent of. The knowledge leads file is allowed because it contains pointers to where knowledge lives, never conclusions about how the code behaves.
 

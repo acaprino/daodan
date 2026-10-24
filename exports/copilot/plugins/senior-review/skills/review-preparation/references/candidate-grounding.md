@@ -126,13 +126,14 @@ Before dispatch, for every kind:
    Refresh stale paths incrementally or disclose gaps to every reviewer.
    Carry snapshot, symbol and freshness locators: `symbols-at` for hunks,
    `edit-impact` for symbols, `stale-callers` for base/candidate deltas.
-   Never cite a stale claim about a changed file.
+   Cite no stale claim about changed files.
    `edit-impact/v2` identifies targets by `symbol_id`; its
    `recent_changes[].change_kind` is history, never the current delta. Use
    `stale-callers.changed` only against independently retained `base` and
    `candidate` snapshot locators. Match target body/interface/effects hashes to
-   that delta's `new` hashes. Missing or foreign bindings remain gaps. Snapshot
-   locators identify producer evidence; they do not authenticate packet bytes.
+   that delta's `new` hashes. Missing or foreign bindings remain gaps. Locators
+   identify producer evidence, never authenticate packet bytes; a lifecycle packet
+   leads and replaces no source reading.
 2. **Live source.** Read every scoped path/symbol from disk. Missing references
    in plans/specifications/documents produce `tool-reported` findings naming
    the failed resolution.
@@ -155,9 +156,8 @@ the candidate; use a disposable workspace for candidates outside the working tre
 
 Record `tool`, `version`, `command`, exit status, output path and exercised
 candidate snapshot. Missing tools are gaps with install commands. Retain graph
-gaps, unavailable edges and budget omissions. Attach the pack to every brief:
-reviewers report what tools cannot see, without repeating their lines or
-settled checks. Pack findings are `tool-reported`.
+gaps, unavailable edges and budget omissions. Attach the pack to briefs:
+reviewers report what tools cannot see, not repeating settled checks. Pack findings are `tool-reported`.
 
 ## 5. Shape and roster
 

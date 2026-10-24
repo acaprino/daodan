@@ -559,6 +559,37 @@ existing card-generation cost is unknown unless its owning run recorded it.
 Unread or stale areas return to `map-method`'s existing deepening procedure,
 which reuses fresh cards and records observed LLM cost separately.
 
+### Code context: scope, packets and consumers
+
+The context path is machine work end to end. Each stage reads the previous
+stage's verified artifact and makes no LLM call; a coordinator spends model
+tokens only on the packet it sends and on cards it asks an analyst to write.
+Cost of those cards is recorded by the run that spent it, and is `unavailable`
+when the host exposes no usage.
+
+| Stage | Component | Artifact | Reference |
+|---|---|---|---|
+| Locate | `retrieval.py` (FTS5, exact anchors); optional `embedding_worker.py`, opt-in | `retrieval.sqlite`, bound to the snapshot | `references/embeddings.md` |
+| Scope | `scope_planner.py` | `daodan/scope-plan/v1`: analysis, edit candidates, potential impact, validation obligations, deferred, unresolved, outside boundary | `references/scope.md` |
+| Packet | `context_packet.py`; `snapshot.py context`; MCP `codebase_map_context` | `daodan/context-packet/v1` and `daodan/map-slice/v1` (I1), with a resumable cursor | `references/context.md` |
+| Lifecycle | `cycle_packets.py` | `daodan/cycle-context/v1` receipt bound to one record revision | `lifecycle-method/references/context-cycle.md` |
+
+A packet is evidence for an attempt. It authorizes no write, completes no task
+and passes no validation. Every consumer below keeps its own method, authorizations
+and delivery accounting; the receipt supplies inputs and open obligations only.
+
+### Context consumers
+
+| Command | Input used | Output | Freshness | Recovery | Limits |
+|---|---|---|---|---|---|
+| `/daodan:new-feature`, `/daodan:fix-bug`, `/daodan:refactor-code` | Receipts of `preflight`, one `task-packet` per task and `post-task` at each wave barrier | Receipt, packet, I1 slice and residual obligations in the run | Bound to the record revision and candidate snapshot; any change makes the receipt stale before dispatch | Re-prepare the stage: journaled publication replays identical bytes and refuses different ones; refresh the map incrementally first | Static evidence, no write authority; the CLI counts characters, so the dispatcher verifies model capacity |
+| `/daodan:continue-task` | The stored receipt of the first unsealed wave | The same receipts, re-verified | Re-verified at `waves.md` step 2 before the next dispatch | A stale receipt is prepared again from the ledger; open obligations carry over | Nothing is trusted across sessions without re-verification |
+| `/daodan:finish-task` | The last receipt's residual obligations, then the realigned map | Obligations in the final report; packets invalidated by the merged head | Map updated incrementally at `merged_sha` | A step that cannot run stays open with its reason | Deploy and publication are never inferred from the graph |
+| `/daodan:write-docs` | A supplied receipt or packet, bound by digest | Documents citing implemented behavior | Fresh cards and verified source blocks only; stale or unread cards are leads | Rewrite cards only when deepening an area (`/daodan:map-code`) | Gaps become documented limits; static, no runtime coverage |
+| `/daodan:write-tests` | Inside a lifecycle task, `validation_obligations` of the packet; standalone, none | Tests whose oracles `testing:test-writer` confirms | The task packet's | Standalone use reads source directly | Obligations are routed, never counted as passed validation; testing stays a leaf |
+| `/daodan:review-changes`, `/daodan:review-branch` | Map locators and, as a lead, a lifecycle packet; never for independent derivation | Findings from the reviewer set the roster computes | Locators carry snapshot and symbol freshness; a stale claim about a changed file is not cited | Refresh stale paths or disclose the gap to every reviewer | A packet replaces no source reading; the premise auditor's derivation is blind to packets, slices, receipts and cards |
+| `/daodan:map-code` | Reading requests of the semantic map (unread, stale or incomplete cards) | Cards and a regenerated `semantic-map.md` | Card digests compared with the snapshot (lexical) | Fresh complete cards are reused, never rewritten | Card-writing cost is recorded by the run that spent it; static, no runtime coverage |
+
 ### Source-bound references and callsites
 
 `ParseResult.semantic` is optional additive metadata, extracted from the existing
