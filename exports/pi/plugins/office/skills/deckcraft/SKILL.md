@@ -105,6 +105,12 @@ geometry, font choices and native editability to actual supported commands.
 For a narrow edit/export, preserve the existing design and apply only the relevant
 compatibility and preservation checks.
 
+For direct new-deck construction or substantial redesign, consume the
+`office:design` record (direction, chosen palette by role, pairing, argument
+mode, reading map and type roles) from the existing design specification. It
+does not replace the presentation coordinator's specialist or saved-render
+review duties.
+
 ## Discover and establish scope
 
 ```text
@@ -147,7 +153,18 @@ then apply it to a new path:
 ```text
 python "<plugin-root>/skills/deckcraft/scripts/deckcraft_bridge.py" apply --input SOURCE.pptx --commands edits.json --output CANDIDATE.pptx
 python "<plugin-root>/skills/deckcraft/scripts/pptx_inspect.py" compare SOURCE.pptx CANDIDATE.pptx
+python "<plugin-root>/skills/deckcraft/scripts/pptx_inspect.py" coverage SOURCE.pptx CANDIDATE.pptx --cuts cuts.json
 ```
+
+`compare` matches slides by position, so it suits scoped edits. After a restyle,
+restructure or shortening, use `coverage`: it checks, independently of slide
+position, that every source paragraph, table cell, chart text and speaker note
+reached the candidate, except the approved cuts (`cuts.json`, a JSON list of
+`{"text": ..., "reason": ...}` or `{"slide": N, "reason": ...}`). `complete` is
+true only when no item is unexpectedly missing; missing items carry their closest
+candidate text and a similarity ratio. Parts listed under `skipped` (SmartArt,
+`chartEx` charts) are not covered and need inspection on the renders. It is
+structural text evidence, not a visual or fidelity verdict.
 
 The helper refuses input overwrite, existing output and file/app commands inside
 edit plans. It transports arguments without shell interpolation. It is not a

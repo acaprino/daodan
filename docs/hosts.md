@@ -164,11 +164,11 @@ same adapter mapping as the other plugins:
 
 | Host | PowerPoint (PPTX) | Excel (XLSX) | Word (DOCX) |
 |---|---|---|---|
-| Claude | `/office:create-presentation` | `/office:workbook` | `/office:document` |
-| Copilot | `create-presentation-coordinator` agent with `create-presentation.prompt.md` | `workbook.prompt.md` | `document.prompt.md` |
-| Codex | `create-presentation-workflow` | `workbook-workflow` | `document-workflow` |
-| Pi | `/office-create-presentation` | `/office-workbook` | `/office-document` |
-| OpenCode V2 | `/office:create-presentation` | `/office:workbook` | `/office:document` |
+| Claude | `/office:presentation` | `/office:workbook` | `/office:document` |
+| Copilot | `presentation-coordinator` agent with `presentation.prompt.md` | `workbook.prompt.md` | `document-coordinator` agent with `document.prompt.md` |
+| Codex | `presentation-workflow` | `workbook-workflow` | `document-workflow` |
+| Pi | `/office-presentation` | `/office-workbook` | `/office-document` |
+| OpenCode V2 | `/office:presentation` | `/office:workbook` | `/office:document` |
 
 SlidePoise is an external runtime with its own Python and Node dependencies. Image
 generation, inspection, fonts and a compatible presentation renderer must be
@@ -179,9 +179,8 @@ the inspected version, prerequisites and installation procedure.
 
 DeckCraft is a separate external executable for targeted edits, previews and PDF
 export; see its [runtime reference](../plugins/office/skills/deckcraft/references/runtime.md).
-The presentation entry declares isolated designer/reviewer roles and supports
-Frontend Design, Impeccable and Taste as optional providers for scoped visual guidance.
-The base workflow keeps its design and independent review obligations without them. Actual
+The presentation entry declares isolated designer/reviewer roles and consults no
+external design provider. Actual
 image generation must use the exposed harness tool in a context that can call it.
 Role dispatch, image access and a visual reader need separate runtime checks.
 Every selected creative provider receives the fixed-canvas and native-object

@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "office"
-version = "1.5.0"
-description = "Design editable presentations with art-direction specialists, a built-in slide design library, SlidePoise and DeckCraft, preview and export PPTX, and work with native Excel workbooks and Word documents. Includes harness image generation, runtime discovery and preservation evidence."
+version = "2.0.0"
+description = "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification."
 license = "MIT"
 
 [capabilities]
@@ -10,10 +10,10 @@ optional = []
 
 [dependencies]
 required = []
-optional = ["impeccable@impeccable", "taste-skill@taste-skill"]
+optional = []
 
 [components]
-skills = ["presentation-design", "slidepoise", "deckcraft", "xlsx", "docx"]
-roles = ["presentation-designer", "presentation-reviewer"]
-workflows = ["create-presentation", "workbook", "document"]
+skills = ["intake", "design", "presentation-design", "slidepoise", "deckcraft", "wordcraft", "xlsx", "docx"]
+roles = ["presentation-designer", "presentation-reviewer", "document-designer"]
+workflows = ["presentation", "document", "workbook"]
 policies = []

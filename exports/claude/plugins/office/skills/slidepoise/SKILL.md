@@ -98,6 +98,11 @@ fixed canvas, font choices and native-object specification into the upstream
 planning context and compiled image request. Check reference designs can be
 reconstructed with the required editability before extending them across the deck.
 
+For new-deck design or substantial redesign, consume the `office:design` record
+(direction, chosen palette by role, pairing, argument mode, reading map and type
+roles) from the accepted design report. When the coordinator already supplied
+these decisions, reuse them without starting a second design workflow.
+
 Infer audience, purpose, language, presentation length, delivery context, source
 material and brand from the request. Ask only for material missing decisions.
 Develop a clear narrative: what the audience should understand or decide, what

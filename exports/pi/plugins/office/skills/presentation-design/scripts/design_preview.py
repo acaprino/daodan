@@ -21,7 +21,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REFERENCES = HERE.parent / "references"
 LAYOUT_PATTERNS = REFERENCES / "layout-patterns.md"
-VISUAL_DIRECTIONS = REFERENCES / "visual-directions.md"
+VISUAL_DIRECTIONS = HERE.parent.parent / "design" / "references" / "directions.md"
 
 MIN_BODY_PT = 13
 MAX_SLIDES = 60
@@ -264,13 +264,17 @@ def parse_patterns(path: Path) -> dict[str, dict]:
         if entry:
             details = " ".join(entry.group(2).split())
         slots = re.findall(r"`([^`]+)`", details)
+        # The pattern's own range ("3 to 6 periods", "2, 3 or 4 cards", "4 to 7 rows
+        # maximum") is the capacity; the wireframe draws one variant of it.
+        ranges = re.findall(r"\b(\d+)(?:,\s*\d+)*\s+(?:to|or)\s+(\d+)\s+(?!%)[a-z]", details)
+        capacity = max((int(high) for _, high in ranges), default=None)
         patterns[match.group(2).strip().lower()] = {
             "number": number,
             "name": match.group(2).strip(),
             "job": match.group(3).strip(),
             "details": details,
             "slots": slots,
-            "capacity": None,
+            "capacity": capacity,
         }
     return patterns
 
@@ -284,13 +288,15 @@ def resolve_pattern(plan: dict, patterns: dict[str, dict]) -> dict:
     entry = patterns.get(plan)
     number = entry["number"] if entry else None
     name = entry["name"] if entry else plan
-    capacity = _repeatable_capacity(geometry[1])
+    drawn = _repeatable_capacity(geometry[1])
+    capacity = entry["capacity"] if entry and entry["capacity"] else drawn
     return {
         "key": plan,
         "number": number,
         "name": name,
         "job": entry["job"] if entry else "",
-        "capacity": capacity,
+        "capacity": max(capacity, drawn),
+        "drawn": drawn,
         "slots": entry["slots"] if entry else [],
         "kind": geometry[0]["kind"],
         "boxes": geometry[1],
@@ -355,8 +361,10 @@ def check_slide(index: int, plan: dict, pattern: dict) -> list[str]:
     kicker = str(plan.get("kicker") or "")
     content = plan.get("content")
     density = plan.get("density")
-    if pattern["kind"] not in ("cover", "divider") and not headline:
-        notes.append("no action headline: state the slide's takeaway in one line")
+    mode = str(plan.get("mode") or "").lower()
+    if pattern["kind"] not in ("cover", "divider") and not headline and mode != "showcase":
+        notes.append("no action headline or label: state the slide's takeaway in one line, "
+                     "or declare the deck's showcase mode")
     if len(headline) > MAX_HEADLINE_CHARS:
         notes.append(f"headline is {len(headline)} characters: likely three lines at headline scale")
     if len(title) > MAX_TITLE_CHARS:
@@ -562,6 +570,10 @@ def main_parser() -> argparse.ArgumentParser:
     parser.add_argument("--plan", type=Path, help="plan JSON file, or - for stdin")
     parser.add_argument("--out", type=Path, help="HTML output path; omit for a check-only run")
     parser.add_argument("--view", action="store_true", help="text summary of the plan without writing HTML")
+    parser.add_argument(
+        "--direction",
+        help="override the plan's library direction, to preview a candidate without editing the plan",
+    )
     return parser
 
 
@@ -580,6 +592,8 @@ def run(arguments: list[str]) -> int:
             print("nothing was read or written", file=sys.stderr)
             return 2
     plan, problems = parse_plan(text)
+    if not problems and args.direction:
+        plan["direction"] = {**(plan.get("direction") or {}), "library": args.direction}
     library = load_library()
     if not problems:
         document, problems = build_document(plan, library)

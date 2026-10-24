@@ -14,10 +14,14 @@ tool supplied by the `${companion}` package, each in its own context. Role deliv
 `inline-prompt`: paste that role's Markdown body into the dispatch prompt verbatim, because the
 worker must receive the whole role rather than a summary of it.
 
-Pi's core ships no subagent tool. If none is available in this session, the declared isolation
+Pi's core ships no subagent tool. Apply the availability check when the selected task
+requires a dispatched worker. If the method explicitly permits a worker-free path
+(for example, read-only inspection or a narrow edit), record why no worker is needed
+and continue that path without this companion. Do not waive a required worker.
+If a worker is needed and no subagent tool is available, the declared isolation
 above decides what happens, and the two cases are not interchangeable:
 
-- **`required`**: stop, and tell the user to run `pi install npm:${companion}`. Running the phases
+- **`required`**: stop the dependent dispatch, and tell the user to run `pi install npm:${companion}`. Running the phases
   serially in this one context is the loss of isolation rather than a lesser form of it, so a
   report produced that way would claim a contract it did not meet.
 - **`shared`**: run the phases in order in this context, and say in the report that no worker was

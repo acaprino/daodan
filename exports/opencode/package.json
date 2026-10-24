@@ -1096,9 +1096,21 @@
             ]
           },
           {
-            "description": "Independently inspect presentation renders, source fidelity, native editability evidence and preservation deltas. Return a candidate-bound review without editing the deck.",
+            "description": "Independently inspect presentation renders, source fidelity, native editability evidence and preservation deltas. Return a review bound to the exact candidate, or to the unchanged source deck on a read-only review, without editing it.",
             "file": "agents/presentation-reviewer.md",
             "id": "office:presentation-reviewer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Design editable Word documents from a supplied brief and shared theme. Return page layouts, reusable template instructions, native style mappings and image requests without modifying the document.",
+            "file": "agents/document-designer.md",
+            "id": "office:document-designer",
             "permissions": [
               {
                 "action": "external_directory",
@@ -1110,23 +1122,35 @@
         ],
         "commands": [
           {
-            "description": "Create, redesign or edit editable PowerPoint with creative specialists, SlidePoise generation and DeckCraft editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck, consulting deck or changes to an existing presentation.",
-            "file": "commands/create-presentation.md",
-            "name": "office:create-presentation"
+            "description": "Create, derive, revise, review or export an editable PowerPoint presentation with creative specialists, SlidePoise generation and DeckCraft editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck or consulting deck, or a change, review or export of an existing presentation.",
+            "file": "commands/presentation.md",
+            "name": "office:presentation"
           },
           {
-            "description": "Create, inspect, analyze or edit a native Excel workbook while preserving its formulas, formatting, tables, charts and other required features. TRIGGER WHEN: the user requests XLSX work, spreadsheet analysis, a model, a tracker, a dashboard or a controlled revision to an existing workbook.",
-            "file": "commands/workbook.md",
-            "name": "office:workbook"
-          },
-          {
-            "description": "Create, read or edit native Word documents with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter, template or controlled document revision.",
+            "description": "Create, derive, revise, review or export a native Word document with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter or template, or a change, review or export of an existing document.",
             "file": "commands/document.md",
             "name": "office:document"
+          },
+          {
+            "description": "Create, derive, revise or analyze a native Excel workbook while preserving its formulas, formatting, tables, charts and other required features. TRIGGER WHEN: the user requests XLSX work, spreadsheet analysis, a model, a tracker or a dashboard, or a change or review of an existing workbook.",
+            "file": "commands/workbook.md",
+            "name": "office:workbook"
           }
         ],
         "root": "plugins/office",
         "skills": [
+          {
+            "description": "Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes. TRIGGER WHEN: an Office presentation, document or workbook task begins. DO NOT TRIGGER WHEN: a format method is already executing a resolved route.",
+            "file": "skills/intake/SKILL.md",
+            "id": "office:intake",
+            "name": "intake"
+          },
+          {
+            "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the users colour source and chosen from candidates in the browser; the argument mode, editorial hierarchy, typography, and font fetching, installation and embedding. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
+            "file": "skills/design/SKILL.md",
+            "id": "office:design",
+            "name": "design"
+          },
           {
             "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
             "file": "skills/presentation-design/SKILL.md",
@@ -1146,13 +1170,19 @@
             "name": "deckcraft"
           },
           {
-            "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:slidepoise).",
+            "description": "Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed.",
+            "file": "skills/wordcraft/SKILL.md",
+            "id": "office:wordcraft",
+            "name": "wordcraft"
+          },
+          {
+            "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:presentation).",
             "file": "skills/xlsx/SKILL.md",
             "id": "office:xlsx",
             "name": "xlsx"
           },
           {
-            "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:slidepoise).",
+            "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:presentation).",
             "file": "skills/docx/SKILL.md",
             "id": "office:docx",
             "name": "docx"
@@ -2020,5 +2050,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "2.7.0"
+  "version": "3.0.0"
 }

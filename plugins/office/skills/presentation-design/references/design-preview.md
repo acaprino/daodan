@@ -33,15 +33,25 @@ Write one JSON file in the presentation workspace:
 }
 ```
 
-- `direction`: `library` names a direction from `visual-directions.md`
-  (`A` to `Q`); `palette` overrides any of `background`, `ink`, `surface`,
-  `accent` with `#RRGGBB` values; `name` labels a custom or brand direction.
+- `direction`: `library` names a direction from `office:design`'s
+  `references/directions.md` (`A` to `T`); `palette` carries the chosen
+  palette's `background`, `ink`, `surface` and `accent` as `#RRGGBB` values;
+  `name` labels the palette (its variant or the brand).
 - `slides[]`: `pattern` must match a pattern name from `layout-patterns.md`
   (case-insensitive). `title`, `kicker`, `headline`, `source_note` and `content`
-  are optional, except that any non-cover, non-divider pattern needs a `headline`.
+  are optional, except that any non-cover, non-divider pattern needs a `headline`
+  unless the slide carries `"mode": "showcase"`, where the visual may stand alone.
 - `content` lists are used for density checks; give them the real planned counts
   so the preview can flag a slide that exceeds its pattern's capacity.
 - One direction per deck; one pattern per slide. Vary the pattern across slides.
+
+Always put the chosen palette's actual colors in `direction.palette`: its
+background, ink, surface and accent. Set `direction.name` to the palette's
+name. Keep `library` for the composition direction. The explicit palette
+overrides the direction's default seeds, so the preview and both format design
+reports use the same colours.
+This wireframe helper does not preview the selected fonts; verify them in the
+saved native candidate. Do not infer that a palette change also updated fonts.
 
 ## Render and present
 
@@ -63,7 +73,9 @@ normal browser or file-opening interface and keep its own scope line visible:
 `preview only`.
 
 `--view` prints a text summary with the per-pattern capacity ratio; a run without
-`--out` performs the same validation without writing a file. Exit codes: `0`
+`--out` performs the same validation without writing a file. `--direction L`
+overrides the plan's direction label for that run, so several candidate
+directions can be previewed from one plan without editing it. Exit codes: `0`
 written or checked, `1` plan problems (nothing written), `2` invocation or path
 error.
 

@@ -66,7 +66,7 @@ include preservation checks for content and features the task needs to retain.
 Presentations combine creative designer/reviewer roles, SlidePoise generation,
 DeckCraft editing and preview, and the active harness's image-generation tool.
 
-On Claude Code or OpenCode V2, use `/office:create-presentation`,
+On Claude Code or OpenCode V2, use `/office:presentation`,
 `/office:workbook` or `/office:document`. The [host guide](docs/hosts.md#office-entry-points)
 lists the corresponding Codex skills, Copilot prompts and Pi commands.
 

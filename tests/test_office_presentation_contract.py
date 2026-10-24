@@ -4,7 +4,6 @@ These tests verify generated instructions and capability gates, not installed
 host execution or PowerPoint fidelity. Runtime tests belong to each engine.
 """
 
-import copy
 import json
 import os
 import re
@@ -23,7 +22,6 @@ for import_root in (REPO_ROOT, REPO_ROOT / "tests"):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
-from scripts import lint_dependency_graph as dependency_graph
 from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support
 from scripts.daodan.catalogs import render_catalog
 from scripts.daodan.load import load_plugin
@@ -35,18 +33,15 @@ from host_binding_assertions import canonical_markdown, loaded_instruction_text,
 OFFICE = REPO_ROOT / "plugins/office"
 ADAPTERS = REPO_ROOT / "adapters"
 ROLES = ("presentation-designer", "presentation-reviewer")
-PROVIDERS = {
-    "impeccable@impeccable",
-    "taste-skill@taste-skill",
-}
+ALL_ROLES = (*ROLES, "document-designer")
 COMPATIBILITY_REFERENCE = Path("skills/presentation-design/references/pptx-compatibility.md")
 DESIGN_LIBRARY_REFERENCE = Path("skills/presentation-design/references/design-library.md")
 HARNESS_PATHS = {
-    "claude": "commands/create-presentation.md",
-    "copilot": "agents/create-presentation-coordinator.agent.md",
-    "codex": "skills/create-presentation-workflow/SKILL.md",
-    "pi": "prompts/office-create-presentation.md",
-    "opencode": "commands/create-presentation.md",
+    "claude": "commands/presentation.md",
+    "copilot": "agents/presentation-coordinator.agent.md",
+    "codex": "skills/presentation-workflow/SKILL.md",
+    "pi": "prompts/office-presentation.md",
+    "opencode": "commands/presentation.md",
 }
 ROLE_PATHS = {
     "claude": "agents/{role}.md",
@@ -80,7 +75,7 @@ class PresentationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plugin = load_plugin(OFFICE)
-        cls.workflow = next(item for item in cls.plugin.workflows if item.name == "create-presentation")
+        cls.workflow = next(item for item in cls.plugin.workflows if item.name == "presentation")
         cls.presentation_plugin = replace(cls.plugin, workflows=(cls.workflow,))
         cls.temporary = tempfile.TemporaryDirectory(dir=_temp_dir())
         cls.packages = {}
@@ -101,31 +96,26 @@ class PresentationContractTests(unittest.TestCase):
 
     def test_creative_roles_are_distinct_from_methods_and_both_engines_remain(self):
         components = self.plugin.components
-        self.assertEqual(set(components.roles), set(ROLES))
+        self.assertEqual(set(components.roles), set(ALL_ROLES))
         self.assertTrue({"presentation-design", "slidepoise", "deckcraft"} <= set(components.skills))
         self.assertFalse(set(components.skills) & set(components.roles))
         self.assertFalse(set(components.workflows) & set(components.roles))
         self.assertFalse(set(components.workflows) & set(components.skills))
         self.assertFalse(self.plugin.mcp_servers, "External DeckCraft is not a bundled server")
 
-    def test_creative_provider_loads_are_declared_and_missing_declarations_fail(self):
-        self.assertEqual(PROVIDERS, set(self.plugin.optional_dependencies))
-        self.assertFalse(PROVIDERS & set(self.plugin.required_dependencies))
-        plugins = dependency_graph.load_plugins()
-        references = [
-            item for item in dependency_graph.extract_references(plugins)
-            if item.owner == "office"
-        ]
-        for provider in PROVIDERS:
-            namespace = provider.split("@", 1)[0]
-            with self.subTest(provider=provider):
-                loads = [item for item in references if item.namespace == namespace and item.kind == "skill-load"]
-                self.assertTrue(loads, f"No executable skill load found for {namespace}")
-                self.assertEqual(dependency_graph.check_runtime_refs(plugins, loads), [])
-                missing = copy.deepcopy(plugins)
-                missing["office"]["optionalDependencies"].remove(provider)
-                failures = dependency_graph.check_runtime_refs(missing, loads)
-                self.assertTrue(any(f"'{namespace}' is not in" in failure for failure in failures))
+    def test_office_consults_no_external_design_provider(self):
+        self.assertEqual(self.plugin.optional_dependencies, ())
+        self.assertFalse(any(name.split("@", 1)[0] in {"impeccable", "taste-skill"}
+                             for name in self.plugin.required_dependencies))
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                self.assertFalse((package / "skills/presentation-design/references/creative-providers.md").exists())
+                method = _normalized(_read(package / "skills/presentation-design/SKILL.md"))
+                self.assertIn("consult no external design provider", method)
+                for role in ROLES:
+                    body = _normalized(_read(package / ROLE_PATHS[host].format(role=role)))
+                    self.assertIn("consult no external design provider", body)
+                    self.assertNotRegex(body, r"`(?:impeccable|taste-skill):")
 
     def test_isolated_method_dispatch_is_serial_and_has_only_owned_roles(self):
         self.assertTrue(self.workflow.dispatch.isolated)
@@ -137,7 +127,7 @@ class PresentationContractTests(unittest.TestCase):
             with self.subTest(host=host):
                 support = resolve_support(self.presentation_plugin, adapter)
                 self.assertIn(support.state, {"native", "adapted"})
-                self.assertEqual(support.workflow_strategies, (("create-presentation", "serial-isolated"),))
+                self.assertEqual(support.workflow_strategies, (("presentation", "serial-isolated"),))
                 harness = self.harness(host)
                 self.assertIn("serial-isolated", harness)
                 self.assertIn("**required**", harness)
@@ -152,7 +142,7 @@ class PresentationContractTests(unittest.TestCase):
                 ))
                 unavailable = resolve_support(self.presentation_plugin, shared_only)
                 self.assertEqual(unavailable.state, "unsupported")
-                self.assertEqual(unavailable.workflow_strategies, (("create-presentation", "none"),))
+                self.assertEqual(unavailable.workflow_strategies, (("presentation", "none"),))
 
     def test_required_dispatch_tool_failure_is_not_hidden_by_an_available_strategy(self):
         for host, adapter in self.adapters.items():
@@ -206,7 +196,7 @@ class PresentationContractTests(unittest.TestCase):
                     entry = catalog["daodan"]["plugins"]["office"]
                     agents = {item["id"] for item in entry["agents"]}
                     skills = {item["id"] for item in entry["skills"]}
-                    self.assertEqual(agents, {f"office:{role}" for role in ROLES})
+                    self.assertEqual(agents, {f"office:{role}" for role in ALL_ROLES})
                     self.assertFalse(agents & skills)
                     for agent in entry["agents"]:
                         self.assertFalse(any(rule.get("effect") == "deny" for rule in agent["permissions"]))
@@ -221,13 +211,12 @@ class PresentationContractTests(unittest.TestCase):
     def test_nested_presentation_contracts_survive_every_host_verbatim(self):
         for host, package in self.packages.items():
             for reference in (
-                "creative-providers.md",
                 "design-library.md",
                 "design-preview.md",
                 "image-tools.md",
                 "layout-patterns.md",
+                "ppt-visual.md",
                 "pptx-compatibility.md",
-                "visual-directions.md",
             ):
                 with self.subTest(host=host, reference=reference):
                     relative = Path("skills/presentation-design/references") / reference
@@ -237,11 +226,28 @@ class PresentationContractTests(unittest.TestCase):
                     method = _read(package / "skills/presentation-design/SKILL.md")
                     self.assertIn(f"references/{reference}", method)
 
-    def test_pptx_constraints_reach_the_workflow_workers_providers_and_both_engines(self):
+    def test_ppt_visual_composition_is_consumed_and_retains_its_license_on_every_host(self):
+        relative = Path("skills/presentation-design/references/ppt-visual.md")
+        license_relative = relative.with_name("LICENSE-ppt-visual-MIT.txt")
+        source = _read(OFFICE / relative)
+        license_text = _read(OFFICE / license_relative)
+        self.assertIn("claude-office-skills/skills", source)
+        self.assertRegex(source, r"\b[0-9a-f]{40}\b")
+        self.assertIn(license_relative.name, source)
+        self.assertIn("Copyright (c) 2026 Claude Office Skills Contributors", license_text)
+        self.assertIn("Permission is hereby granted, free of charge", license_text)
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                designer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-designer")))
+                self.assertIn("references/ppt-visual.md", designer)
+                self.assertIn("wireframe", designer)
+                self.assertIn("native object placement", designer)
+                self.assertEqual((package / license_relative).read_bytes(), (OFFICE / license_relative).read_bytes())
+
+    def test_pptx_constraints_reach_the_workflow_workers_and_both_engines(self):
         """Shipping a reference is insufficient unless each independent entry reads it."""
         consumers = (
             "skills/presentation-design/SKILL.md",
-            "skills/presentation-design/references/creative-providers.md",
             "skills/slidepoise/SKILL.md",
             "skills/deckcraft/SKILL.md",
         )
@@ -258,7 +264,7 @@ class PresentationContractTests(unittest.TestCase):
     def test_pptx_feasibility_is_established_before_creative_direction(self):
         text = _normalized(_read(OFFICE / COMPATIBILITY_REFERENCE))
         for obligation in (
-            "Apply this contract before consulting creative providers, generating reference images",
+            "Apply this contract before design work, generating reference images",
             "fixed 16:9 canvas as the default",
             "Record the construction engine and version, intended viewing application",
             "Check the commands or reconstruction types needed for the proposed composition before accepting it",
@@ -295,7 +301,7 @@ class PresentationContractTests(unittest.TestCase):
             "Inspect generated references for reconstructability",
             "There is no general HTML/CSS-to-PPTX converter in this integration",
             "Generated or edited images must use the exposed harness image tool",
-            "A provider's image script, image-search utility or web workflow does not replace that obligation",
+            "An external image script, image-search utility or web workflow does not replace that obligation",
         ):
             with self.subTest(obligation=obligation):
                 self.assertIn(obligation, text)
@@ -314,17 +320,6 @@ class PresentationContractTests(unittest.TestCase):
             with self.subTest(obligation=obligation):
                 self.assertIn(obligation, text)
 
-    def test_taste_is_an_optional_scoped_consultation_for_both_workers_on_every_host(self):
-        for host, package in self.packages.items():
-            for role in ROLES:
-                with self.subTest(host=host, role=role):
-                    body = _normalized(_read(package / ROLE_PATHS[host].format(role=role)))
-                    self.assertIn(
-                        "When selected and available, load the `taste-skill:design-taste-frontend` skill",
-                        body,
-                    )
-                    self.assertIn("pptx-compatibility.md", body)
-
     def test_image_contract_requires_real_tool_schema_artifacts_and_no_automatic_external_fallback(self):
         text = _normalized(_read(OFFICE / "skills/presentation-design/references/image-tools.md"))
         for obligation in (
@@ -341,10 +336,10 @@ class PresentationContractTests(unittest.TestCase):
 
     def test_design_library_routes_to_directions_and_patterns_with_density_caps(self):
         index = _normalized(_read(OFFICE / "skills/presentation-design/references/design-library.md"))
-        directions = _normalized(_read(OFFICE / "skills/presentation-design/references/visual-directions.md"))
+        directions = _normalized(_read(OFFICE / "skills/design/references/directions.md"))
         patterns = _normalized(_read(OFFICE / "skills/presentation-design/references/layout-patterns.md"))
         for obligation in (
-            "at most 4 cards or columns per slide",
+            "at most 4 cards or text columns per slide",
             "at most 7 nodes in a process or architecture",
             "never below `13 pt`",
             "one visual direction",
@@ -352,7 +347,7 @@ class PresentationContractTests(unittest.TestCase):
         ):
             with self.subTest(obligation=obligation):
                 self.assertIn(obligation, index)
-        self.assertIn("visual-directions.md", index)
+        self.assertIn("references/directions.md", index)
         self.assertIn("layout-patterns.md", index)
         for direction in ("A Executive Boardroom", "H Brand-Led Custom", "P Compliance Formal"):
             with self.subTest(direction=direction):
@@ -371,30 +366,50 @@ class PresentationContractTests(unittest.TestCase):
                 self.assertIn(pattern, patterns)
         self.assertIn("A pattern is a construction plan, not a picture", patterns)
 
-    def test_creative_consultation_cannot_claim_the_full_ui_workflow_or_bootstrap_an_app(self):
-        text = _normalized(_read(OFFICE / "skills/presentation-design/references/creative-providers.md"))
-        self.assertIn("design-library.md", text)
-        self.assertIn("do not invoke application bootstrap, context CLI", text)
-        self.assertIn("does not claim any provider implements a PPTX engine", text)
-        self.assertIn("direction-selection, asset-search, scene or browser-inspection scripts", text)
-        self.assertIn("Use Office's harness image contract for generated or edited imagery", text)
-        self.assertIn("Do not turn provider output into HTML/CSS and assume a faithful conversion to editable PPTX", text)
-        self.assertIn("When the optional provider is unavailable, skip its contribution", text)
-        self.assertIn("If the user explicitly requires a named provider", text)
-        self.assertIn("keep that requested contribution unfulfilled", text)
+    def test_review_severity_and_bounded_repair_loop_survive_every_host(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                reviewer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-reviewer")))
+                for obligation in (
+                    "**Blocking**",
+                    "**Advisory**",
+                    "source text is lost outside the approved cuts",
+                    "report it once as a deck-level defect",
+                    "advisory defects are listed, never blocking on their own",
+                ):
+                    self.assertIn(obligation, reviewer)
+                method = _normalized(_read(package / "skills/presentation-design/SKILL.md"))
+                self.assertIn("resolve every blocking finding", method)
+                self.assertIn("Fix a deck-level defect at its source", method)
+                self.assertIn("Run at most three review rounds", method)
 
-    def test_optional_creative_skills_do_not_remove_required_review_on_any_host(self):
+    def test_text_coverage_guards_derived_and_shortened_decks_on_every_host(self):
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 method = _normalized(_read(package / "skills/presentation-design/SKILL.md"))
-                self.assertIn("With none installed", method)
-                self.assertIn("Optional provider absence does not waive design or independent review", method)
-                designer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-designer")))
-                self.assertIn("When selected and available, load", designer)
-                self.assertIn("do not skip this design delivery", designer)
+                self.assertIn("run `pptx_inspect.py coverage`", method)
+                self.assertIn("never cut content the user did not approve", method)
+                deckcraft = _normalized(_read(package / "skills/deckcraft/SKILL.md"))
+                self.assertIn("pptx_inspect.py\" coverage SOURCE.pptx CANDIDATE.pptx --cuts cuts.json", deckcraft)
                 reviewer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-reviewer")))
-                self.assertIn("When selected and available, load", reviewer)
-                self.assertIn("Independent review remains required", reviewer)
+                self.assertIn("every `missing` item is lost source text", reviewer)
+        intake = _normalized(_read(OFFICE / "skills/intake/SKILL.md"))
+        self.assertIn("record the approved cuts", intake)
+
+    def test_argument_mode_is_chosen_recorded_and_reviewed(self):
+        library = _normalized(_read(OFFICE / "skills/presentation-design/references/design-library.md"))
+        for mode in ("Pyramid", "Narrative", "Instructional", "Showcase", "Briefing"):
+            with self.subTest(mode=mode):
+                self.assertIn(f"| {mode} |", library)
+        self.assertIn("Headline set by the argument mode", library)
+        self.assertIn("one argument mode", library)
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                method = _normalized(_read(package / "skills/presentation-design/SKILL.md"))
+                self.assertIn("argument mode", method)
+                for role in ROLES:
+                    body = _normalized(_read(package / ROLE_PATHS[host].format(role=role)))
+                    self.assertIn("argument mode", body)
 
     def test_single_writer_and_independent_candidate_review_survive_all_host_bodies(self):
         for host, package in self.packages.items():

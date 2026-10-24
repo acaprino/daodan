@@ -3,7 +3,7 @@ name: docx
 description: >
   Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features.
   TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates.
-  DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:slidepoise).
+  DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:presentation).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -93,21 +93,27 @@ content and apply templates using native Word structures. A PDF, screenshot or
 Markdown export can accompany the document but does not satisfy a DOCX request.
 
 Infer audience, language, document type, required sections and visual direction
-from the request and supplied template. Ask only when a missing decision changes
-the result materially. Keep figures, citations and accepted wording faithful to
+from the request and supplied template. Add the remaining document decisions
+(document type, template or brand, font pairing, length and page layout) to the single
+`office:intake` round. Ask only when a missing decision changes the result
+materially. Keep figures, citations and accepted wording faithful to
 their sources; distinguish assumptions from established facts. Preserve the source
 file and save edits to a separate output path. Never execute embedded objects,
 macros or external links while inspecting a document.
 
 ## Choose the available engine
 
-Discover available tools and installed runtimes. Prefer a host's document or
-artifact engine when its actual API supports the required DOCX operations. Read
-its current instructions; this method assumes no vendor-specific runtime exists
-on every host. A host tool that exports a DOCX has not thereby demonstrated that
-it can round-trip every feature of an existing Word document.
+For physical DOCX creation, editing, rendering and PDF export, load
+`office:wordcraft` and discover its actual installed CLI or exposed MCP tools.
+After the design report is verified, the document coordinator executes that
+production skill to create, save, reopen, inspect and render the real file.
+Read its `references/runtime.md`; this method does not assume installation on
+every host. Missing WordCraft blocks dependent production while source/design
+work continues. A different writing engine requires an explicit user choice and
+demonstrated support for the requested operation; do not silently substitute it.
+A tool that exports DOCX has not demonstrated that it can round-trip every feature.
 
-An explicitly available `python-docx` can create and edit supported paragraphs,
+When explicitly selected, an available `python-docx` can create and edit supported paragraphs,
 styles, lists, tables, sections, headers, footers and inline images. Confirm its
 installed version and supported operations before use. It is not a Word layout
 engine and does not fully author or update tracked revisions, comment anchors,
@@ -151,6 +157,43 @@ supported run-aware or native range editing, preserving boundaries and relations
 Do not strip tracked changes, accept revisions, delete comments or rebuild advanced
 content merely to make an editing library handle it.
 
+## Coordinate document design
+
+On the substantial intake route (a new or derived document, a template, restyling,
+restructuring or shortening), the coordinator loads `office:design`: it owns the
+direction, the palette built from the user's colour source and chosen from
+candidates, the font pairing with its installation and embedding, the argument
+mode, and the editorial and typographic method. Record its decisions in the
+existing brief. Preserve supplied brands and template styles. For a DOCX/PPTX
+bundle both format designers consume the same record.
+Read `references/document-design.md` for concrete page patterns, reusable template
+instructions and the document design report handoff.
+
+Dispatch `office:document-designer` in an isolated context through the registered
+`office:document` entry's generated bindings. If loaded directly, resolve that
+entry before dispatch; continue the same task. A role name alone cannot supply an
+inline worker body. Supply the brief, source inventory, brand/template assets,
+accepted shared theme, engine capability limits, existing renders and an absolute
+assigned design report path. Default models inherit the session. Unavailable
+isolation blocks that design delivery; continue independent source preparation.
+
+The designer writes only its assigned report and returns page-type wireframes,
+page geometry, native style/section mapping, content flow and growth rules,
+table/figure/caption treatment, template reuse instructions and image requests.
+The coordinator remains the sole document writer and owns image requests. It
+calls the exposed harness image tool; if its context lacks access, use only the
+explicit parent-harness handoff in the shared image contract when available.
+Verify that the report exists, covers the requested page types and supplies
+supported native instructions before dependent construction. Missing, empty or
+partial reports are incomplete deliveries: inspect or resume the assignment,
+resolve the gap or record a concrete blocker. A worker stop alone is not delivery.
+
+The read-only route and narrow edits do not require design dispatch, restyling or a
+theme-selection gate; preserve the accepted layout and record the scoped choice.
+For template work, supply a reusable editable DOCX exemplar and replacement
+guidance; claim native DOTX or template features only when actually supported
+and verified. The design report is not proof of saved DOCX pagination or fidelity.
+
 ## Build and revise the document
 
 Read `references/document-quality.md` for layout and review guidance. Apply a
@@ -170,6 +213,18 @@ breaks. Insert images as native image objects with stable proportions, captions
 and useful alternative text. Keep text selectable. Use native references, bookmarks
 and fields when the selected engine supports them; do not present static typed
 numbers as automatically maintained cross-references or a table of contents.
+
+For generated or edited imagery, read
+`<plugin-root>/skills/presentation-design/references/image-tools.md` and
+use the image tool actually exposed by the active harness. The document-producing
+agent owns the request and records prompt/reference provenance, crop and placement;
+only a context with the actual tool performs the call. If this coordinator lacks
+it, request the existing parent-harness handoff described in that contract when
+supported, then verify the returned asset before insertion. If no such handoff
+exists, record the missing capability and block dependent imagery;
+do not start the presentation coordinator or another image service. Supplied
+images need no generation call. A missing image tool blocks dependent generation,
+while authorized text and layout work continues.
 
 When fields, a TOC or pagination must be current, update them through an available
 compatible Word or LibreOffice engine whose support covers this document, then
@@ -192,8 +247,10 @@ awkwardly, blank pages, image quality, page numbers and header/footer collisions
 Correct routine defects within the brief, save and review the affected pages again.
 Verify key claims and figures independently of the document's own text.
 
-Deliver the editable `.docx`, with a useful preview when available, and a concise
-account of changes. Name the editing and rendering engines and any remaining
+When the document uses fonts outside Microsoft Office, embed them in the delivered
+copy with `office:design`'s `font_embed.py` and record its
+inspection result. Deliver the editable `.docx`, with a useful preview when
+available, and a concise account of changes. Name the editing and rendering engines and any remaining
 preservation or field-update limit. If rendering was unavailable, label page layout
 unverified and distinguish completed structural checks. Never call a document
 visually verified from package inspection alone.

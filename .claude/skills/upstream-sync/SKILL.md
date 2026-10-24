@@ -26,7 +26,7 @@ Nothing listed under "Deliberately not vendored" in `CLAUDE.md` belongs in the t
 
 When the user asks for "upstream updates" (or similar), this is the default workflow. Do not blindly overwrite local files - most syncs need targeted merging because local has legitimate customizations.
 
-1. **Check all copied-source sync targets in parallel**. For each copied-source file in the sync table below, diff the upstream against the local version. Exclude inspiration-only provenance rows from vendored pull, merge and sync operations; their original local plugins remain eligible for `custom-plugin-refresh`. Spawn Explore agents when there are many files to parallelize the diffing. Focus the reports on: which files differ, what changed, and whether the drift is intentional or worth pulling.
+1. **Check the applicable copied-source sync targets in parallel**. For each copied-source file in the sync table below, diff the upstream against the local version. Office design snapshots are on demand: include them only when the user requests Office upstream review or names the relevant source, not in a generic batch by default. Exclude inspiration-only provenance rows from vendored pull, merge and sync operations; their original local plugins remain eligible for `custom-plugin-refresh`. Spawn Explore agents when there are many files to parallelize the diffing. Focus the reports on: which files differ, what changed, and whether the drift is intentional or worth pulling.
 
 2. **Classify each file** before touching it:
    - **Clear win** - new upstream file missing locally, or a bug/fact fix with no local conflict. Pull directly.
@@ -60,6 +60,9 @@ The two `codebase-map` rows are inspiration-only provenance, not copied-source s
 | Plugin | Upstream source | Files to sync |
 |--------|----------------|---------------|
 | `digital-marketing` (domain-hunter) | `ReScienceLab/opc-skills` - `skills/domain-hunter/` | `plugins/digital-marketing/skills/domain-hunter/SKILL.md`, `plugins/digital-marketing/skills/domain-hunter/references/registrars.md`, `plugins/digital-marketing/skills/domain-hunter/references/spaceship-api.md`, `plugins/digital-marketing/skills/domain-hunter/examples/auto-video-editing-domain.md` |
+| `office` (editorial and typography) | `marcmarti9/agentit`, `skills/editorial-design/SKILL.md` and `skills/typography-and-layout/SKILL.md` | `plugins/office/skills/design/references/editorial-design.md` and `references/typography.md`; source pin, modifications and retained Apache/MIT notices in `design/references/agentit-upstream.md` |
+| `office` (Theme Factory, retired) | `anthropics/skills`, `skills/theme-factory/` | No shipped copy since the design consolidation: four preset palettes continue as directions Q to T of `plugins/office/skills/design/references/directions.md`; pin, retirement note and Apache notice in `design/references/theme-factory-upstream.md` and `LICENSE-theme-factory-APACHE-2.0.txt`. No sync obligation. |
+| `office` (PPT Visual composition snapshot) | `claude-office-skills/skills`, `ppt-visual/SKILL.md` | `plugins/office/skills/presentation-design/references/ppt-visual.md` and `LICENSE-ppt-visual-MIT.txt`; manual on-demand review only, preserve existing pattern mapping and shared theme ownership |
 
 ## How to sync a plugin
 
@@ -85,6 +88,9 @@ publication steps above.
 **Non-obvious per-plugin sync notes** (read alongside the sync table):
 
 - **`domain-hunter`**: upstream Step 3 uses dedicated Twitter/Reddit Python scripts. Replace with `WebSearch` queries targeting `site:x.com` / `site:reddit.com`.
+- **Office editorial/typography**: copied-source adaptations from Agentit, not an import of its harness. Compare original source at the recorded pin before merging. Preserve native DOCX styles and flow, fixed-canvas editable PPTX, installed-font checks, actual saved-file renders, existing Office production ownership and harness image tools. Retain Apache terms and both MIT adaptation notices; inspect upstream lineage changes before advancing the pin. Do not restore unrelated Agentit skill names, extra agents or a second reporting pipeline.
+- **Office Theme Factory**: retired as a skill. Do not restore the preset files, the showcase or a palette preset selection; palettes are built per file by `office:design`'s `palette.py`. Only the four seed palettes and their Apache notice remain.
+- **Office design snapshots**: editorial/typography, Theme Factory and PPT Visual have no periodic sync obligation and are excluded from generic batch checks. Review manually when explicitly requested or when a concrete defect needs upstream evidence. PPT Visual contributes adapted wireframes inside the existing presentation method, not a new skill/engine or separate palette. Word's `document-design.md` is original guidance informed by `tivojn/Office`; its provenance is not a copied-source target. Preserve the two format designers, shared Theme Factory brief, native-object constraints and harness image ownership.
 
 ## Historical notes for the retired superpowers port
 

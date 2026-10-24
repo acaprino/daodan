@@ -83,6 +83,57 @@ def typed(package, main_type=MAIN_TYPE):
     return {"[Content_Types].xml": '<Types xmlns="' + CT + '">' + declarations + '</Types>', **package}
 
 
+C = "http://schemas.openxmlformats.org/drawingml/2006/chart"
+MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+SLIDE_NUMBER = '<p:sp><p:txBody><a:p><a:fld id="{0}" type="slidenum"><a:t>N</a:t></a:fld></a:p></p:txBody></p:sp>'
+
+
+def shape(*texts):
+    return ('<p:sp><p:txBody>' + ''.join('<a:p><a:r><a:t>' + text + '</a:t></a:r></a:p>' for text in texts)
+            + '</p:txBody></p:sp>')
+
+
+def chart_part(title, series, categories, axis_title="Quarter"):
+    def rich(text):
+        return '<c:tx><c:rich><a:bodyPr/><a:p><a:r><a:t>' + text + '</a:t></a:r></a:p></c:rich></c:tx>'
+
+    def cache(values, tag="strCache"):
+        return ('<c:' + tag + '><c:ptCount val="' + str(len(values)) + '"/>' + ''.join(
+            '<c:pt idx="' + str(index) + '"><c:v>' + value + '</c:v></c:pt>' for index, value in enumerate(values))
+            + '</c:' + tag + '>')
+
+    body = ''.join('<c:ser><c:idx val="' + str(index) + '"/><c:tx><c:strRef><c:f>Sheet1!$B$1</c:f>'
+                   + cache([name]) + '</c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$2</c:f>'
+                   + cache(categories) + '</c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2</c:f>'
+                   + cache(["12.5"] * len(categories), "numCache") + '</c:numRef></c:val></c:ser>'
+                   for index, name in enumerate(series))
+    return ('<c:chartSpace xmlns:c="' + C + '" xmlns:a="' + A + '"><c:chart><c:title>' + rich(title)
+            + '</c:title><c:plotArea><c:barChart>' + body + '</c:barChart><c:catAx><c:title>'
+            + rich(axis_title) + '</c:title></c:catAx></c:plotArea></c:chart></c:chartSpace>')
+
+
+def deck(*bodies, notes=None, charts=None):
+    """A deck whose slide N carries bodies[N-1], plus optional notes texts and chart parts by slide N."""
+    content = parts(tuple("slide" + str(number) + ".xml" for number in range(1, len(bodies) + 1)))
+    relations = {}
+    for number, texts in (notes or {}).items():
+        relations.setdefault(number, []).append(("notes", "notesSlide", "../notesSlides/notes" + str(number) + ".xml", None))
+        content["ppt/notesSlides/notes" + str(number) + ".xml"] = (
+            '<p:notes xmlns:p="' + P + '" xmlns:a="' + A + '"><p:cSld><p:spTree>' + shape(*texts)
+            + SLIDE_NUMBER.replace(">N<", ">" + str(number) + "<") + '</p:spTree></p:cSld></p:notes>')
+    for number, chart in (charts or {}).items():
+        relations.setdefault(number, []).append(("chart", "chart", "../charts/chart" + str(number) + ".xml", None))
+        content["ppt/charts/chart" + str(number) + ".xml"] = chart
+    for number, body in enumerate(bodies, 1):
+        if number in (charts or {}):
+            body += ('<p:graphicFrame><a:graphic><a:graphicData uri="' + C + '"><c:chart xmlns:c="' + C
+                     + '" r:id="chart"/></a:graphicData></a:graphic></p:graphicFrame>')
+        content["ppt/slides/slide" + str(number) + ".xml"] = slide("", body)
+    for number, items in relations.items():
+        content["ppt/slides/_rels/slide" + str(number) + ".xml.rels"] = rels(items)
+    return content
+
+
 class BridgeTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="deckcraft transport ")
@@ -425,6 +476,207 @@ class PresentationInspectionTests(unittest.TestCase):
             code = pptx.main(["inspect", str(source)])
         self.assertEqual(1, code)
         self.assertFalse(json.loads(stream.getvalue())["valid"])
+
+
+class PresentationCoverageTests(unittest.TestCase):
+    setUp = PresentationInspectionTests.setUp
+    write = PresentationInspectionTests.write
+
+    def coverage(self, source, candidate, cuts=None):
+        cuts_path = None
+        if cuts is not None:
+            cuts_path = self.root / "cuts.json"
+            cuts_path.write_bytes((cuts if isinstance(cuts, str) else json.dumps(cuts)).encode("utf-8"))
+        return pptx.check_coverage(self.write(source, "source.pptx"), self.write(candidate, "candidate.pptx"), cuts_path)
+
+    def item(self, result, text):
+        return next(item for item in result["items"] if item["text"] == text)
+
+    def counts(self, result, *keys):
+        return {key: result["summary"][key] for key in keys}
+
+    def test_identical_decks_are_complete_for_every_item_kind(self):
+        table = ('<p:graphicFrame><a:graphic><a:graphicData><a:tbl><a:tr><a:tc><a:txBody><a:p><a:r><a:t>Region'
+                 '</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>North</a:t></a:r></a:p><a:p>'
+                 '<a:r><a:t>America</a:t></a:r></a:p></a:txBody></a:tc></a:tr></a:tbl></a:graphicData></a:graphic>'
+                 '</p:graphicFrame>')
+        group = '<p:grpSp>' + shape("Grouped caption") + '</p:grpSp>'
+        alternate = ('<mc:AlternateContent xmlns:mc="' + MC + '"><mc:Choice Requires="p14">' + shape("Rich caption")
+                     + '</mc:Choice><mc:Fallback>' + shape("Rich caption") + '</mc:Fallback></mc:AlternateContent>')
+        content = deck(shape("Revenue grew", "Margin held") + table + group + alternate + SLIDE_NUMBER,
+                       shape("Next steps"), notes={1: ("Mention the pilot",)},
+                       charts={2: chart_part("Quarterly revenue", ["North", "South"], ["Q1", "Q2"])})
+        source = self.write(content, "source.pptx")
+        original = source.read_bytes()
+        result = pptx.check_coverage(source, source)
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertTrue(result["complete"])
+        self.assertEqual([
+            (1, "paragraph", "Revenue grew"), (1, "paragraph", "Margin held"), (1, "table-cell", "Region"),
+            (1, "table-cell", "North America"), (1, "paragraph", "Grouped caption"),
+            (1, "paragraph", "Rich caption"), (1, "notes", "Mention the pilot"), (2, "paragraph", "Next steps"),
+            (2, "chart-text", "Quarterly revenue"), (2, "chart-text", "North"), (2, "chart-text", "Q1"),
+            (2, "chart-text", "Q2"), (2, "chart-text", "South"), (2, "chart-text", "Quarter"),
+        ], [(item["slide"], item["kind"], item["text"]) for item in result["items"]])
+        self.assertEqual({"source_items": 14, "present": 14, "cut": 0, "cut_but_present": 0,
+                          "unexpected_missing": 0, "added": 0, "skipped_parts": 0}, result["summary"])
+        self.assertIn("not a visual or fidelity verdict", result["notice"])
+        self.assertEqual(original, source.read_bytes())
+
+    def test_text_moved_to_another_slide_is_present_and_slide_numbers_are_not_items(self):
+        numbered = [shape(text) + SLIDE_NUMBER.replace(">N<", ">" + str(number) + "<")
+                    for number, text in enumerate(("Alpha", "Beta", "Gamma"), 1)]
+        candidate = deck(shape("Gamma", "Beta") + SLIDE_NUMBER.replace(">N<", ">1<"),
+                         shape("Alpha") + SLIDE_NUMBER.replace(">N<", ">2<"))
+        result = self.coverage(deck(*numbered), candidate)
+        self.assertTrue(result["complete"], result["items"])
+        self.assertEqual(["Alpha", "Beta", "Gamma"], [item["text"] for item in result["items"]])
+        self.assertEqual("present", self.item(result, "Alpha")["status"])
+
+    def test_paragraph_merged_into_a_longer_one_is_present_and_not_added(self):
+        result = self.coverage(deck(shape("Revenue grew", "in every region")),
+                               deck(shape("Revenue grew in every region.")))
+        self.assertTrue(result["complete"])
+        self.assertEqual({"present": 2, "added": 0}, self.counts(result, "present", "added"))
+
+    def test_normalization_is_nfkc_and_whitespace_without_case_folding(self):
+        result = self.coverage(deck(shape("Net  income rose", "ﬁscal year", "Profit")),
+                               deck(shape("Net income rose", "fiscal year", "profit")))
+        self.assertEqual("present", self.item(result, "Net income rose")["status"])
+        self.assertEqual("present", self.item(result, "fiscal year")["status"])
+        self.assertEqual("missing", self.item(result, "Profit")["status"])
+
+    def test_dropped_paragraph_is_missing_with_closest_match_that_is_not_present(self):
+        result = self.coverage(deck(shape("Margin improved by four points", "Costs fell")),
+                               deck(shape("Margin improved by 4 points", "Costs fell")))
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertFalse(result["complete"])
+        item = self.item(result, "Margin improved by four points")
+        self.assertEqual("missing", item["status"])
+        self.assertEqual("Margin improved by 4 points", item["closest"])
+        self.assertGreater(item["similarity"], 0.8)
+        self.assertLess(item["similarity"], 1)
+        self.assertEqual({"present": 1, "unexpected_missing": 1, "added": 1},
+                         self.counts(result, "present", "unexpected_missing", "added"))
+
+    def test_cuts_by_text_and_by_slide_are_reported_as_cut(self):
+        source = deck(shape("Keep this", "Drop this line"), shape("Appendix detail", "More appendix"))
+        candidate = deck(shape("Keep this"))
+        self.assertFalse(self.coverage(source, candidate)["complete"])
+        result = self.coverage(source, candidate, [{"text": "Drop  this line", "reason": "Redundant"},
+                                                   {"slide": 2, "reason": "Appendix removed"}])
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertTrue(result["complete"])
+        self.assertEqual({"present": 1, "cut": 3, "unexpected_missing": 0},
+                         self.counts(result, "present", "cut", "unexpected_missing"))
+        self.assertEqual([0], self.item(result, "Drop this line")["cuts"])
+        self.assertEqual("cut", self.item(result, "More appendix")["status"])
+        self.assertEqual([("applied", 1), ("applied", 2)],
+                         [(cut["status"], cut["covered_items"]) for cut in result["cuts"]])
+        self.assertEqual("Appendix removed", result["cuts"][1]["reason"])
+
+    def test_cut_whose_text_is_still_present_is_reported(self):
+        source = deck(shape("Keep this", "Old claim"), shape("Closing"))
+        candidate = deck(shape("Keep this", "Old claim", "Closing"))
+        result = self.coverage(source, candidate, [{"text": "Old claim", "reason": "Unsupported"},
+                                                   {"slide": 2, "reason": "Merged away"},
+                                                   {"text": "Never in source", "reason": "Typo"}])
+        self.assertTrue(result["complete"])
+        self.assertEqual("cut-but-present", self.item(result, "Old claim")["status"])
+        self.assertEqual("cut-but-present", self.item(result, "Closing")["status"])
+        self.assertEqual(["cut-but-present", "cut-but-present", "unmatched"],
+                         [cut["status"] for cut in result["cuts"]])
+        self.assertEqual({"present": 1, "cut_but_present": 2, "cut": 0},
+                         self.counts(result, "present", "cut_but_present", "cut"))
+
+    def test_chart_title_and_series_name_are_tracked(self):
+        source = deck(shape("Revenue"), charts={1: chart_part("Quarterly revenue", ["North", "South"], ["Q1", "Q2"])})
+        candidate = deck(shape("Revenue"), charts={1: chart_part("Revenue by quarter", ["North", "East"], ["Q1", "Q2"])})
+        result = self.coverage(source, candidate)
+        self.assertFalse(result["complete"])
+        self.assertEqual({("chart-text", "Quarterly revenue"), ("chart-text", "South")},
+                         {(item["kind"], item["text"]) for item in result["items"] if item["status"] == "missing"})
+        self.assertEqual({"Revenue by quarter", "East"}, {item["text"] for item in result["added"]})
+        self.assertFalse(any(item["text"] in {"12.5", "Sheet1!$B$1"} for item in result["items"]))
+
+    def test_speaker_notes_are_tracked_against_candidate_notes_only(self):
+        source = deck(shape("Agenda"), notes={1: ("Mention the pilot", "Thank the team")})
+        candidate = deck(shape("Agenda", "Mention the pilot"), notes={1: ("Thank the team",)})
+        result = self.coverage(source, candidate)
+        item = self.item(result, "Mention the pilot")
+        self.assertEqual(("notes", "missing", "Thank the team"), (item["kind"], item["status"], item["closest"]))
+        self.assertEqual("present", self.item(result, "Thank the team")["status"])
+        self.assertEqual([{"slide": 1, "kind": "paragraph", "text": "Mention the pilot"}], result["added"])
+
+    def test_added_candidate_text_is_counted_and_listed(self):
+        result = self.coverage(deck(shape("Revenue grew")),
+                               deck(shape("Revenue grew", "Invented claim"), shape("Revenue grew.")))
+        self.assertTrue(result["complete"])
+        self.assertEqual(1, result["summary"]["added"])
+        self.assertEqual([{"slide": 1, "kind": "paragraph", "text": "Invented claim"}], result["added"])
+
+    def test_unread_chart_parts_are_reported_as_skipped(self):
+        content = deck(shape("Revenue"))
+        content["ppt/slides/_rels/slide1.xml.rels"] = rels([("cx", "chartEx", "../charts/chartEx1.xml", None)])
+        content["ppt/charts/chartEx1.xml"] = '<cx:chartSpace xmlns:cx="urn:chartex"/>'
+        result = self.coverage(content, content)
+        self.assertTrue(result["complete"])
+        self.assertEqual(["source", "candidate"], [entry["deck"] for entry in result["skipped"]])
+        self.assertIn("chartEx", result["skipped"][0]["reason"])
+
+    def test_malformed_cuts_file_is_rejected_with_a_clear_error(self):
+        source, candidate = deck(shape("Keep"), shape("Drop")), deck(shape("Keep"))
+        cases = [
+            ("{not json", "Invalid cuts file"),
+            ({"text": "Drop", "reason": "x"}, "expected a JSON list"),
+            (["Drop"], "cuts[0]: expected an object"),
+            ([{"text": "Drop"}], "reason must be a non-empty string"),
+            ([{"text": "Drop", "slide": 2, "reason": "x"}], "exactly one of text or slide"),
+            ([{"text": " ", "reason": "x"}], "text must be a non-empty string"),
+            ([{"slide": 3, "reason": "x"}], "from 1 to 2"),
+            ([{"slide": True, "reason": "x"}], "slide must be"),
+            ([{"slide": "2", "reason": "x"}], "slide must be"),
+            ([{"text": "Drop", "reason": "x", "why": "?"}], "unknown fields: why"),
+        ]
+        for cuts, message in cases:
+            with self.subTest(cuts=cuts):
+                result = self.coverage(source, candidate, cuts)
+                self.assertFalse(result["valid"])
+                self.assertFalse(result["complete"])
+                self.assertEqual([], result["cuts"])
+                self.assertTrue(any(error.startswith("Invalid cuts file") and message in error
+                                    for error in result["errors"]), result["errors"])
+        stream = io.StringIO()
+        with contextlib.redirect_stdout(stream):
+            code = pptx.main(["coverage", str(self.root / "source.pptx"), str(self.root / "candidate.pptx"),
+                              "--cuts", str(self.root / "missing.json")])
+        self.assertEqual(1, code)
+        self.assertFalse(json.loads(stream.getvalue())["valid"])
+
+    def test_invalid_deck_is_never_complete(self):
+        broken = self.root / "broken.pptx"
+        broken.write_bytes(b"not a ZIP")
+        result = pptx.check_coverage(broken, self.write(deck(shape("Keep"))))
+        self.assertFalse(result["valid"])
+        self.assertFalse(result["complete"])
+        self.assertTrue(result["errors"][0].startswith("source: "))
+
+    def test_cli_exits_zero_on_valid_evidence_and_relies_on_complete(self):
+        source = self.write(deck(shape("Keep", "Drop")), "source.pptx")
+        candidate = self.write(deck(shape("Keep")), "candidate.pptx")
+        cuts = self.root / "cuts.json"
+        cuts.write_bytes(json.dumps([{"text": "Drop", "reason": "Approved"}]).encode("utf-8"))
+        for options, complete in (([], False), (["--cuts", str(cuts)], True)):
+            with self.subTest(options=options):
+                stream = io.StringIO()
+                with contextlib.redirect_stdout(stream):
+                    code = pptx.main(["coverage", str(source), str(candidate), *options])
+                self.assertEqual(0, code)
+                self.assertEqual(complete, json.loads(stream.getvalue())["complete"])
+        stream = io.StringIO()
+        with contextlib.redirect_stdout(stream), self.assertRaises(SystemExit):
+            pptx.main(["coverage", "--help"])
+        self.assertIn("not a visual or fidelity verdict", " ".join(stream.getvalue().split()))
 
 
 if __name__ == "__main__":

@@ -1,13 +1,13 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f170c30bc57ac71aaf6b7532d63ace2f61a6751c18ab4b7e5e301c6ea0af8e8e",
+  "coreDigest": "sha256:0cfdb95a47df4e89d0f6783ea45e3771977b395f1864ece3183760dae50aa7e6",
   "harnessStrategies": {
-    "create-presentation": "serial-isolated",
-    "document": "parallel-subagents",
+    "document": "serial-isolated",
+    "presentation": "serial-isolated",
     "workbook": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "office",
-  "version": "1.5.0"
+  "version": "2.0.0"
 }

@@ -20,8 +20,8 @@ REPO_ROOT = next(
 PRESENTATION = REPO_ROOT / "plugins/office/skills/presentation-design"
 SCRIPT = PRESENTATION / "scripts/design_preview.py"
 LAYOUT_PATTERNS = PRESENTATION / "references/layout-patterns.md"
-VISUAL_DIRECTIONS = PRESENTATION / "references/visual-directions.md"
-DIRECTIONS_WITH_PALETTE = 16
+VISUAL_DIRECTIONS = PRESENTATION.parent / "design/references/directions.md"
+DIRECTIONS_WITH_PALETTE = 20
 PATTERNS_IN_LIBRARY = 18
 
 
@@ -82,9 +82,11 @@ class LibraryParsingTests(unittest.TestCase):
                 self.assertTrue(entry["job"])
                 self.assertTrue(entry["details"])
                 self.assertTrue(entry["slots"])
-                capacity = self.preview.resolve_pattern(key, patterns)["capacity"]
+                resolved = self.preview.resolve_pattern(key, patterns)
+                capacity = resolved["capacity"]
                 self.assertGreaterEqual(capacity, 0)
-                self.assertLessEqual(capacity, 6, "Wireframe capacity must respect the density cap")
+                self.assertLessEqual(capacity, 7, "Capacity follows the pattern's documented range")
+                self.assertLessEqual(resolved["drawn"], capacity, "The wireframe never draws more than the pattern allows")
                 if capacity == 0:
                     self.assertIn(key, {"cover", "section divider", "chart and insight",
                                         "case study", "quote and testimonial"},
@@ -166,13 +168,20 @@ class PlanValidationTests(unittest.TestCase):
 
     def test_capacity_matches_the_wireframe_and_a_within_capacity_plan_renders(self):
         entry = self.preview.resolve_pattern("executive summary", self.library[0])
-        self.assertEqual(entry["capacity"], 3)
+        self.assertEqual(entry["capacity"], 4)
+        self.assertEqual(entry["drawn"], 3)
         document, problems = self.build(_plan(slides=[
-            {"pattern": "executive summary", "headline": "Four cards do not fit",
-             "content": {"cards": ["A", "B", "C", "D"]}},
+            {"pattern": "executive summary", "headline": "Five cards do not fit",
+             "content": {"cards": ["A", "B", "C", "D", "E"]}},
         ]))
         self.assertEqual(document, "")
-        self.assertTrue(any("4 items exceed the pattern's 3" in item for item in problems))
+        self.assertTrue(any("5 items exceed the pattern's 4" in item for item in problems))
+        document, problems = self.build(_plan(slides=[
+            {"pattern": "executive summary", "headline": "Four cards are allowed",
+             "content": {"cards": ["A", "B", "C", "D"]}},
+        ]))
+        self.assertEqual(problems, [])
+        self.assertIn("Four cards are allowed", document)
         document, problems = self.build(_plan(slides=[
             {"pattern": "executive summary", "headline": "Three cards fit",
              "content": {"cards": ["A", "B", "C"]}},
@@ -193,6 +202,13 @@ class PlanValidationTests(unittest.TestCase):
         self.assertTrue(any("no action headline" in item for item in problems))
         self.assertTrue(any("title is 100 characters" in item for item in problems))
         self.assertTrue(any("headline is 120 characters" in item for item in problems))
+
+    def test_showcase_mode_lets_the_visual_carry_the_slide(self):
+        document, problems = self.build(_plan(slides=[
+            {"pattern": "key metric spotlight", "mode": "showcase", "content": {"metrics": ["x"]}},
+        ]))
+        self.assertEqual(problems, [])
+        self.assertTrue(document)
 
     def test_cover_and_divider_do_not_require_an_action_headline(self):
         slides = [
@@ -225,6 +241,7 @@ class CommandLineTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.directory = Path(self.temp.name)
+        self.preview = _load_module()
 
     def run_script(self, *arguments):
         return subprocess.run(
@@ -282,8 +299,29 @@ class CommandLineTests(unittest.TestCase):
         before = set(self.directory.iterdir())
         result = self.run_script("--plan", str(plan), "--view")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("executive summary: One decision per slide | 3/3 Executive summary capacity", result.stdout)
+        self.assertIn("executive summary: One decision per slide | 3/4 Executive summary capacity", result.stdout)
         self.assertEqual(set(self.directory.iterdir()), before)
+
+    def test_direction_override_replaces_the_plan_direction_without_editing_it(self):
+        plan = self.directory / "plan.json"
+        plan.write_text(json.dumps(_plan()), encoding="utf-8")
+        out = self.directory / "candidate.html"
+        result = self.run_script("--plan", str(plan), "--direction", "P", "--out", str(out))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        document = out.read_text(encoding="utf-8")
+        directions = self.preview.parse_directions(VISUAL_DIRECTIONS)
+        self.assertIn(f"--accent: {directions['P']['accent']}", document)
+        self.assertIn("Compliance Formal", document)
+        self.assertEqual(json.loads(plan.read_text(encoding="utf-8"))["direction"], {"library": "A"})
+
+    def test_unknown_direction_override_is_refused_before_writing(self):
+        plan = self.directory / "plan.json"
+        plan.write_text(json.dumps(_plan()), encoding="utf-8")
+        out = self.directory / "candidate.html"
+        result = self.run_script("--plan", str(plan), "--direction", "Z", "--out", str(out))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("unknown library direction: Z", result.stderr)
+        self.assertFalse(out.exists())
 
 
 if __name__ == "__main__":

@@ -78,33 +78,40 @@ Compiled binding and static checks do not prove an installed host executed a run
 # Presentation designer
 
 Read the assigned brief, outline, sources, existing renders and brand assets.
-Load `office:presentation-design` for its provider and image handoff contracts;
+Load `office:presentation-design` for its design and image handoff contracts;
 execute only this assignment, not the coordinator's dispatch procedure.
-Read that skill's `references/pptx-compatibility.md`, `references/design-library.md`
-and `references/design-preview.md` before provider consultation, and take the
-assigned direction from
-`references/visual-directions.md` and each slide's pattern from
+Load `office:design` and read its `references/editorial-design.md` and
+`references/typography.md` to plan the
+reading sequence and native type roles in the assigned design report.
+Consume the supplied
+theme specification. Do not independently replace it or import another preset's
+palette. Do not add another brief, worker or production workflow.
+Read presentation-design's `references/pptx-compatibility.md`, `references/design-library.md`
+and `references/design-preview.md` before design work, and take the
+assigned argument mode from `references/design-library.md` (it sets headline
+style and slide sequence), the assigned direction from
+`office:design`'s `references/directions.md` and each slide's pattern from
 `references/layout-patterns.md`.
+Read its `references/ppt-visual.md` for the adapted composition wireframes and
+construction handoff. Return a small wireframe with real content labels for each
+slide, concrete native object placement and template replacement/growth rules
+when reuse is requested. These extend the existing design report and patterns.
 Use the supplied compatibility brief and slide design library to constrain every
 design choice. Return
 the specified slide objects, geometry, typography, native/image representations,
 editable data and support evidence in the existing design report. Flag unsupported
 effects or unresolved fonts before the coordinator generates reference imagery.
-When selected and available, load the `impeccable:impeccable` skill for transferable visual guidance.
-When selected and available, load the `taste-skill:design-taste-frontend` skill for scoped art-direction references.
-Select at most two providers under that Office skill's `references/creative-providers.md`;
-never two providers with the same role. Apply the scoped consultation there. Read
-relevant references on demand. Record actual consulted provider identities.
-Skip unavailable optional contributions and continue Office's presentation
-criteria (`references/design-library.md`) and the selected engine's guidance; do not skip this design delivery.
-Report any explicitly required but unavailable provider as an unfulfilled request.
+Office's design library, the shared theme and the editorial and typography guides
+are the complete design method; consult no external design provider.
 
 Produce one direction: visual character, typography, palette, spacing, imagery
 and native-object requirements justified by audience and use. Supply each slide's
 communication job, headline, evidence, composition and source notes. Include
 reusable page types with representative content for a template request.
 
-Return image requests with prompt intent, references and slide associations for
+Choose supplied/reused, searched or harness-generated/edited visual assets per
+the brief and shared theme. Return asset requests with the source route, prompt
+intent when relevant, references and slide associations for
 the coordinator's exposed harness tool. Preserve accepted wording, figures and
 brand assets. Report missing decisions and capabilities. Apply visual guidance
 to slides without bootstrapping a website or changing product documentation.

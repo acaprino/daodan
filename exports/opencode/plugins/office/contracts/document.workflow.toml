@@ -4,7 +4,12 @@ entrypoint = "document.md"
 [[phases]]
 id = "run"
 isolation = "shared"
+concurrency = "forbidden"
 produces = ["artifact:document-result", "artifact:document-review"]
+
+[dispatch]
+roles = ["office/document-designer"]
+isolated = true
 
 [contract]
 inputs = ["document-task", "source-material"]

@@ -3,7 +3,7 @@ name: xlsx
 description: >
   Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting.
   TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models.
-  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:slidepoise).
+  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:presentation).
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -92,8 +92,10 @@ repair models, build trackers or reports, and make scoped edits to existing file
 Keep source data and derived results traceable. A screenshot, CSV or JSON export
 does not satisfy a requested native workbook.
 
-Infer a reasonable layout from the task and supplied data. Ask only when a missing
-business definition changes the result materially. Confirm the meaning of units,
+Infer a reasonable layout from the task and supplied data. Add the remaining
+workbook decisions (business definitions, model structure and outputs) to the
+single `office:intake` round. Ask only when a missing business definition
+changes the result materially. Confirm the meaning of units,
 dates, denominators, missing data and assumptions before treating them as facts.
 Preserve the original file and write the candidate to a separate output path.
 Never execute embedded macros or fetch external workbook links during inspection.

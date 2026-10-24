@@ -3,12 +3,11 @@
     "claude-plugins-official",
     "daodan",
     "impeccable",
-    "taste-skill",
     "ui-ux-pro-max-skill"
   ],
   "metadata": {
     "description": "Shinatama: companion AI domain specialists, research, deliberation, office workflows and framework toolkits across five coding-agent hosts.",
-    "version": "2.7.0"
+    "version": "3.0.0"
   },
   "name": "shinatama",
   "owner": {
@@ -296,6 +295,7 @@
     },
     {
       "agents": [
+        "./agents/document-designer.md",
         "./agents/presentation-designer.md",
         "./agents/presentation-reviewer.md"
       ],
@@ -303,27 +303,26 @@
         "name": "Alfio Caprino"
       },
       "commands": [
-        "./commands/create-presentation.md",
         "./commands/document.md",
+        "./commands/presentation.md",
         "./commands/workbook.md"
       ],
       "dependencies": [],
-      "description": "Design editable presentations with art-direction specialists, a built-in slide design library, SlidePoise and DeckCraft, preview and export PPTX, and work with native Excel workbooks and Word documents. Includes harness image generation, runtime discovery and preservation evidence.",
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification.",
       "license": "MIT",
       "name": "office",
-      "optionalDependencies": [
-        "impeccable@impeccable",
-        "taste-skill@taste-skill"
-      ],
       "skills": [
         "./skills/deckcraft",
+        "./skills/design",
         "./skills/docx",
+        "./skills/intake",
         "./skills/presentation-design",
         "./skills/slidepoise",
+        "./skills/wordcraft",
         "./skills/xlsx"
       ],
       "source": "./exports/claude/plugins/office",
-      "version": "1.5.0"
+      "version": "2.0.0"
     },
     {
       "agents": [

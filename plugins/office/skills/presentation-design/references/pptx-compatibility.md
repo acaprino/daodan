@@ -1,10 +1,9 @@
 # Design for editable PowerPoint
 
-Apply this contract before consulting creative providers, generating reference
-images or constructing slide objects. It governs Office's presentation output,
-including the guidance taken from Frontend Design, Impeccable, Taste or another
-explicitly selected provider. Providers supply visual judgment; Office owns the
-slide specification and verifies it against the chosen construction engine.
+Apply this contract before design work, generating reference images or
+constructing slide objects. It governs Office's presentation output, including
+web-inspired layout ideas. Office owns the slide specification and verifies it
+against the chosen construction engine.
 
 ## Establish the target before design
 
@@ -17,9 +16,11 @@ slide specification and verifies it against the chosen construction engine.
   verified in the installed engine from assumptions. Check the commands or
   reconstruction types needed for the proposed composition before accepting it.
 - Resolve font families and weights available to construction and target
-  rendering. Preserve a supplied template's typography. Record any substitution
-  and recheck line breaks; do not promise font embedding or a font available on
-  another computer without evidence.
+  rendering. Preserve a supplied template's typography. Install the direction's
+  pairing and embed it in the delivered file through `office:design`.
+  Record any substitution and recheck line breaks; claim embedding only from the
+  `font_embed.py inspect` result, and never promise how another computer renders
+  a font that is not embedded.
 - Prefer well-supported native text, basic shapes, connectors, tables and charts.
   A specialized effect, chart type, master feature, SVG or media feature needs
   evidence in the selected engine and target renderer. An exported PPTX alone is
@@ -78,7 +79,7 @@ reconstructability before extending the direction across the deck. Correct an
 incompatible reference rather than accepting a design the engine cannot build.
 
 Generated or edited images must use the exposed harness image tool under
-`image-tools.md`. A provider's image script, image-search utility or web workflow
+`image-tools.md`. An external image script, image-search utility or web workflow
 does not replace that obligation. Preserve source wording, figures, logos and
 approved assets when reconstruction corrects mistakes in a generated reference.
 
