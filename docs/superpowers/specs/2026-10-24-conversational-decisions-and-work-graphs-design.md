@@ -610,9 +610,18 @@ ammesso, secondo le sezioni 5 e 6.
 ai meccanismi verificati degli host: avvio e osservazione dei worker, isolamento,
 selezione del modello e dell'effort, arresto, comunicazione e lettura dei consumi.
 Le capacità mancanti sono dichiarate prima del dispatch coinvolto. Il motore
-mantiene stato e decisioni; l'adapter applica le operazioni dell'host. La forma
-di distribuzione del runtime resta da progettare: questa decisione non promette
-un servizio autonomo né lavoro in background dopo la chiusura della chat.
+mantiene stato e decisioni; l'adapter applica le operazioni dell'host.
+
+**L'executor è la sessione coordinatrice che segue il registro**, per decisione
+dell'utente dello stesso giorno: legge dal registro la frontiera dei nodi pronti,
+avvia gli agenti con il meccanismo nativo dell'host, e ammette le consegne e i
+file di controllo e di coordinamento che gli agenti scrivono. L'esecuzione è un
+normale processo di lavoro agentico: non la governa un consumo di token e non
+richiede un servizio autonomo o un processo in background dopo la chiusura della
+chat. L'executor è parte fondamentale del motore e si costruisce insieme a
+composizione e validazione, non dopo. Gli agenti comunicano attraverso quei file
+e il registro, che conserva tentativi, handle e consegne; una sessione successiva
+riprende dallo stesso registro (handover, sopra).
 
 Il **model-router è un sottosistema interno** del controller. Riusa classificazione,
 cataloghi, prezzi e selezione dell'attuale `model-routing`, anziché richiedere al
@@ -714,8 +723,8 @@ Questi scenari definiscono il lavoro futuro; non sono risultati già ottenuti.
   dell'adozione. Il formato YAML obbligatorio non è più una questione aperta.
 - Nome e binding dell'ingresso pubblico di composizione (`compose-process`
   proposto), da registrare e verificare sugli host insieme al richiamo interno.
-- Distribuzione del runtime e prove delle capacità degli host; un servizio
-  autonomo non è stato selezionato dalla conversazione.
+- Prove delle capacità degli host per l'executor: dispatch, isolamento,
+  selezione del modello, arresto e lettura dei consumi su ciascuno dei cinque.
 - Conferma per singolo binding oppure futura delega esplicita a una politica
   di routing; fino a tale decisione resta il gate corrente.
 - Repository e nomi: proposta `acaprino/deadly-brain`, pubblico, licenza MIT,

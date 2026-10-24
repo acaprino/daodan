@@ -3,6 +3,14 @@
 Data: 20 ottobre 2026. Revisione dopo team review.
 Stato: **proposta emendata, non implementata né promossa**.
 
+Aggiornamento del 24 ottobre 2026: proprietà del grafo, registro runtime, executor
+e router dei modelli passano a `work-controller` come motore generalista, in un
+repository proprio (Deadly Brain) da cui dipendono Daodan, Shinatama e altri
+progetti. Il runtime riceve definizioni YAML di job, grafi e loop, e l'executor
+è la sessione coordinatrice che segue il registro. Il contratto di destinazione è
+la [sezione 13 della specifica sui chiarimenti](2026-10-24-conversational-decisions-and-work-graphs-design.md#13-deadly-brain-il-motore-condiviso);
+dove questo documento lo contraddice, prevale quella.
+
 Direzione iniziale aggiornata da
 [ADR-0001](../../adr/ADR-0001-work-graph-step0-llm.md): lo Step 0 usa un prompt LLM
 per proporre il grafo, seguito dalla validazione meccanica. L'esecuzione interamente

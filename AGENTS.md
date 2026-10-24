@@ -44,13 +44,31 @@ default. Handover supplies evidence without granting edits or automatically
 starting maintenance.
 It prepares inputs and composes canonical specialist methods rather than duplicating detection
 prompts. work-controller is the shared leaf for run records, snapshots, delivery
-accounting, candidate gates, recovery and the questions a run waits on. project-knowledge owns instructions,
-guides, documentation and README. senior-review owns universal correctness and
+accounting, candidate gates, recovery and the questions a run waits on: `ask`
+records a question before it is asked, `answer` records the user's own words,
+and a task that consumes the answer waits while independent work goes on.
+project-knowledge owns instructions, guides, documentation and README. senior-review owns universal correctness and
 application subtraction, selecting React, TypeScript and platform specialists
 through the same methods and delivery ledger. skill-catalog selects available
 knowledge for any evidenced stack, with per-run fingerprints and delivery accounting.
 testing owns universal test governance;
 Python contributes pytest-patterns, without a second test writer.
+
+By decision of 2026-10-24, work-controller is the general-purpose process engine
+and it leaves Daodan for its own repository, Deadly Brain. Daodan, Shinatama and
+other projects depend on it; it depends on none of them. It composes a process
+from context, an interview or a consumer's archetype into YAML, validates it
+(registered components, neutral capabilities, acyclic dependencies through
+`graphlib`, inputs with a producer) and executes it with its own model router.
+The executor is the coordinator session following the record: it takes the ready
+frontier, dispatches agents through the host's mechanism, and admits the
+deliveries and coordination files they write. It is ordinary agentic work, not a
+separate service. Archetypes and domain rules (branches, worktrees, decision
+records, commits) stay with their consumers. The target contract is section 13 of
+`docs/superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md`
+and ADR-0002. Until the migration, the engine ships here as `work-controller` and
+`model-routing`, both without dependencies; do not give either a dependency on a
+consumer.
 
 Run state belongs in .daodan/runs/<id>/ of the repository's main checkout, found
 through the Git common directory, so a worktree's records survive its removal and
