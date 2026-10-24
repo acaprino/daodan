@@ -31,9 +31,9 @@ Classify each plugin into one of four classes. The class determines refresh cade
 | Class | What it tracks | Typical cadence | Examples |
 |---|---|---|---|
 | **Very fast** | Versions bump every few months; breaking changes are common; ecosystem reshuffles | Every 3 months | rag-development (embedding models, rerankers, vector DBs), digital-marketing/ga4-implementation (Consent Mode, GA4 events), react-development (React 19, Vercel guidance) |
-| **Fast** | Framework releases 2-3x per year; APIs evolve | Every 6 months | libgdx-development, opentelemetry, tauri-development, stripe (API additions, webhook event types), grabber-development (anti-bot vendor moves), browser-extensions, pwa-expert (browser version churn, WebKit feature rollout, framework PWA library churn), text-humanizer (Wikipedia's signs page and the upstream humanizer both change monthly) |
+| **Fast** | Framework releases 2-3x per year; APIs evolve | Every 6 months | libgdx-development, opentelemetry, tauri-development, stripe (API additions, webhook event types), grabber-development (anti-bot vendor moves), browser-extensions, pwa-expert (browser version churn, WebKit feature rollout, framework PWA library churn), text-humanizer (Wikipedia's signs page and the upstream humanizer both change monthly), business (its `privacy-doc-generator` quotes app store rules and EDPB guidance; see its refresh note below) |
 | **Moderate** | Major releases ~yearly; breaking changes rare | Every 12 months | trading-broker-integration, csp (OR-Tools), python-development, typescript-development, messaging (RabbitMQ majors), obsidian-development, abstraction-architect (theory is stable; URL list in further-reading.md decays on a yearly cadence) |
-| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, project-protocol, senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, business, clean-code, codebase-map, platform-engineering, testing methodology, xterm, app-analyzer |
+| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, project-protocol, senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, clean-code, codebase-map, platform-engineering, testing methodology, xterm, app-analyzer |
 
 If unsure, default to "Fast" (6 months). Reclassify after the first refresh based on how much actually changed.
 
@@ -115,6 +115,24 @@ git log --since="6 months ago" --name-only --pretty=format: -- plugins/ \
 ```
 
 Refresh the "Very fast" and "Fast" classes first if any are on the work queue; defer "Moderate" and "Slow" classes unless something specific prompted the review.
+
+## Per-plugin refresh notes
+
+### business: `privacy-doc-generator`
+
+The role runs its own research at generation time (Phase 0 regulatory delta, Recency Validation, vendor pages fetched in Codebase Evidence), so a fact the user's run re-fetches does not need a refresh. The refresh covers what runtime research never touches: the hard-coded lists and the document identifiers the body cites. Cadence: store block every 3 months, normative block every 6, in `plugins/business/roles/privacy-doc-generator.md`.
+
+**What to check, by speed of change:**
+
+1. **Store rules** (sections "App Store Privacy Disclosures Structure", "App checks", "App distribution"). Compare the data type lists, purpose lists, URL requirements, account deletion rules and deadlines, App Tracking Transparency wording and the list of SDKs that need an Apple privacy manifest against the primary pages: Play Console Help articles 10787469 (Data safety), 10144311 (User Data policy), 13327111 (account deletion), the Google Play SDK Index, Apple App Store Review Guidelines 5.1.1 and 5.1.2, Apple "App privacy details", the privacy manifest documentation and `developer.apple.com/support/third-party-SDK-requirements/`. An article number that stopped resolving is a finding: replace it, never leave it.
+2. **EDPB and Garante guidance** (section "KEY NORMATIVE SOURCES"). For each guideline cited, confirm the current version number and adoption date on edpb.europa.eu; look for new guidelines on consent, dark patterns, transfers, DPIA, legitimate interest and Art. 5(3) ePrivacy. On garanteprivacy.it check the cookie guidance, the DPIA list and the yearly provvedimenti the body names. Cross-check with ico.org.uk and cnil.fr only to notice what the EDPB has not yet written.
+3. **Transfers**: validity of the EU-US Data Privacy Framework (Decision 2023/1795), new adequacy decisions, SCC revisions (Decision 2021/914), CJEU rulings on curia.europa.eu.
+4. **Non-EU modules**: CPRA regulations, LGPD and FADP amendments, new US state laws the module does not yet cover.
+5. **Sector facts**: telemedicine, TULPS art. 109, e-commerce D.Lgs. 70/2003, Directive 2019/770, the ePrivacy Regulation if it is ever adopted, the Italian Codice Privacy on normattiva.it.
+
+**Sources, in order of authority:** legal texts (EUR-Lex, normattiva.it, fedlex.admin.ch), authorities (edpb.europa.eu, garanteprivacy.it, then ico.org.uk and cnil.fr), the court (curia.europa.eu), store primary pages, the SDK vendor's own privacy page. Never a third-party aggregator, a law firm summary or an SDK list kept by someone else.
+
+**Procedure:** run the update protocol above with `research:deep-researcher` scoped to the five themes, then edit only the lists and identifiers that moved, record each new fact with its source and date in the body's bracketed citation style, keep `docs/plugins/business.md` aligned and bump `business` by a minor version when a list changes, a patch version when only an identifier or date does.
 
 ## When an external owner overlaps with a custom plugin
 
