@@ -249,30 +249,25 @@ Run before the questionnaire when the user points at a repository or the working
 
 ## DPIA Trigger Check
 
-Evaluate against Art. 35 GDPR criteria + Garante's DPIA-required list:
-- Large-scale processing of special categories
-- Systematic monitoring of public areas
-- Innovative technologies + vulnerable data subjects
-- Scoring/profiling with legal effects
-- Cross-dataset combination at scale
+Evaluate against the criteria of Art. 35 GDPR, the EDPB's DPIA guidelines (WP248 rev.01) and the selected authorities' DPIA-required lists (Garante docweb 9058979 for Italy), all fetched at generation time: the criteria come from the fetched texts, never from memory, and each market's list is checked on its own.
 
 If triggered: generate "DPIA REQUIRED" warning + semi-guided DPIA outline (scope, necessity, risks, mitigations)
 
 ## Transfer Risk Assessment
 
-If data leaves EEA:
-- Identify transfer mechanism (SCC 2021/914, adequacy decision, BCRs)
-- If USA + certified provider: note DPF (Decision 2023/1795) with limitations
-- If non-adequate country + SCC: generate supplementary measures checklist (EDPB 01/2020)
-- Flag "NON SPECIFICATO" for unverified provider certifications
+If data leaves the selected market's territory, settle at generation time, from the primary sources:
+- Which transfer instruments the market's law offers (for the EEA: adequacy decisions, SCC, BCR, derogations) and which the recipient's country qualifies for today; adequacy decisions and the EU-US framework are checked for current validity, never assumed
+- Whether the destination imposes localization or export approval duties of its own (Step 1 table)
+- When the instrument requires supplementary measures (EDPB Recommendations 01/2020 as the starting point), derive the checklist from the fetched text
+- Each provider's certification status is verified on the certifier's register, or flagged "NON SPECIFICATO"
 
 ## Sector Overlays
 
-Activate additional requirements when sector detected:
-- **Healthcare/telemedicine:** Art. 9 special categories, Italian telemedicine guidelines, enhanced security
-- **Hospitality:** TULPS art. 109 obligations, public safety data flows
+When a sector is detected, add it to the research queue; the starting points below name where the sector's duties live for Italy, and each selected market gets its own search:
+- **Healthcare/telemedicine:** Art. 9 special categories, the national telemedicine guidelines, security measures
+- **Hospitality:** TULPS art. 109 and the public safety data flows it mandates
 - **E-commerce:** D.Lgs. 70/2003 information requirements
-- **Digital content:** Directive 2019/770 requirements
+- **Digital content:** Directive 2019/770 and its national transposition
 
 ---
 
@@ -291,14 +286,14 @@ Activate additional requirements when sector detected:
 
 ## Generation Rules
 
-**Clause selection:** deterministic, rule-based
-- If purpose = marketing AND channel = email: legal basis = consent (require revocation mechanism)
-- If tracker = marketing/analytics: require consent + pre-blocking + banner
-- If data = health: Art. 9 condition required + DPIA prompt + enhanced security measures
-- If basis = contract: do not use language suggesting optionality
-- If basis = consent: require proof mechanism, revocation path, no bundling
+**Clause selection:** every clause follows from a ROPA fact and a fetched source, cited together; a legal basis is never assigned from memory. Patterns the research must settle before the clause is written, with the starting point for each:
+- Marketing by email or other direct channels: which basis the selected markets allow (consent, soft opt-in for existing customers) and what revocation they require [Art. 13 Dir. 2002/58/EC; Codice Privacy art. 130; the market's law]
+- Trackers and SDKs: when consent is required, what prior blocking and banner the authority demands [Art. 5(3) Dir. 2002/58/EC; the authority's cookie guidance]
+- Health and other special categories: which condition applies, whether a DPIA follows, which security measures [Art. 9; Art. 35; the authority's lists]
+- Contract as basis: the wording must not suggest optionality, and the necessity test is verified [Art. 6(1)(b); EDPB Guidelines 2/2019]
+- Consent as basis: proof, revocation path and the ban on bundling, as the current consent guidance states them [Art. 7; EDPB Guidelines 05/2020]
 
-**Structure per document type:**
+**Structure per document type:** the outlines below are starting points; the mandatory content of each section comes from the fetched text of the cited articles for every selected market, and a market whose law requires a section the outline lacks gets it added.
 
 ### Privacy Policy Structure
 1. Controller identity and contact
@@ -363,7 +358,7 @@ Derive both answer sets from the ROPA and the SDK inventory, never from a separa
 - [ ] DPIA: flagged if criteria met, not suppressed
 - [ ] Transfers: mechanism specified for every extra-EEA transfer
 - [ ] Roles: processors identified, Art. 28 contract referenced
-- [ ] Art. 13-14 completeness: all required information fields present
+- [ ] Art. 13-14 completeness: every information field the fetched article text requires, plus the fields each other selected market requires
 - [ ] No pre-ticked consent checkboxes or equivalent dark patterns
 
 **App checks** (when the product ships through Google Play or the App Store):
@@ -438,6 +433,8 @@ Status: DRAFT -- requires legal review before publication
 
 # KEY NORMATIVE SOURCES
 
+Pointers that direct the research, never its result. Each entry names where a current text lives; its version, date and status are confirmed at generation time before it is cited, and a pointer that no longer resolves is reported, never silently replaced.
+
 EU/Italy core:
 - GDPR (Reg. EU 2016/679) -- full text on EUR-Lex
 - ePrivacy Directive 2002/58/CE art. 5(3)
@@ -453,16 +450,13 @@ EU/Italy core:
 - EU-US DPF adequacy Decision 2023/1795
 - CJEU Planet49 (active consent for cookies)
 
-Sector-specific:
+Sector-specific (Italy; other markets are searched):
 - Italian telemedicine guidelines (Ministero della Salute)
 - TULPS art. 109 (hospitality)
 - D.Lgs. 70/2003 (e-commerce)
 - Directive 2019/770 (digital content)
 
-Extra-EU (modular):
-- CCPA/CPRA Civ. Code 1798.100+ (California)
-- LGPD (Brazil)
-- FADP (Switzerland)
+Other markets: the Step 1 table names each law, authority and primary source.
 
 App distribution (contractual store rules, not law: cite them apart from normative sources and refetch them at generation time):
 - Google Play Developer Program Policy, User Data (privacy policy, prominent disclosure and consent)
