@@ -51,7 +51,7 @@ Use the task's existing authorization; ask only for a material unresolved choice
 | **Capability** | Which requirement is missing, and which canonical owner supplies it? |
 | **Integration** | Delegation or distinct original local inspiration? Avoid competing owners. |
 | **Availability** | Required provider identity, active-host installation/recovery and executable method contract |
-| **Provenance** | Preserve attribution and licensing; record the ideas adopted without starting a new vendor or sync row |
+| **Provenance** | Preserve attribution and licensing; record the ideas adopted without starting a new vendor. Original inspiration adds only the watch row of step 7 |
 
 ## 3. License compliance gate
 
@@ -96,8 +96,14 @@ Give original local content and delegated methods an evidenced consumer:
 
 ## 7. Preserve provenance and existing tracking
 
-Do not add a sync-table row or a fetch loop for delegation or original inspiration.
-Record the canonical provider and the ideas adopted. Existing tracked copies,
+Delegation adds no sync-table row and no fetch loop: the provider's updates reach
+users through its own installation. Original inspiration adds exactly two records:
+an inspiration-only row in the `upstream-sync` table naming the upstream path, its
+license and the upstream commit whose ideas were read, and a paragraph with link and
+license under the README's "Upstream projects and inspiration". That row is a watch,
+never a sync target: `custom-plugin-refresh` reads the upstream diff since the
+recorded commit, adopts ideas by rewriting them and advances the commit. Nothing is
+pulled, merged or copied. Record the canonical provider and the ideas adopted. Existing tracked copies,
 licenses, merged sections and retirement records remain intact until a separately
 authorized disposition. Areas under "Deliberately not vendored" in `CLAUDE.md`
 remain delegated to their upstream owners.

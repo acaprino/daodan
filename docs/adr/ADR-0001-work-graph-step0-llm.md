@@ -99,6 +99,20 @@ continues to own specialist content: the prompt selects and groups references;
 it does not freely rewrite the specialist methods. Mandatory checks cannot be
 dropped to reduce tokens, and incompatible or independent reviews stay separate.
 
+### Conversational clarification
+
+When an essential human decision is missing after consulting applicable evidence
+and existing decisions, the coordinator opens a proportionate clarification:
+a direct question, a targeted interview or an exploratory decision map. The
+[conversational specification](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md)
+defines the boundary, pending consumers, response validity and plan revision.
+Operational prototypes retain their methods and completion gates. The decision
+map is Daodan's own method, written from Wayfinder's ideas without copying its
+text, because upstream Wayfinder is user-invoked only; its provenance and an
+upstream watch are recorded. Human answers and
+grants remain distinct from model-generated orchestration decisions, including
+in the future local CPU path. This integration remains proposed.
+
 ### Cost control
 
 Reuse the existing plan and canonical specialist bodies. Supply only relevant

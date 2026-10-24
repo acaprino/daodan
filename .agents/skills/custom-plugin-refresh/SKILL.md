@@ -15,7 +15,7 @@ description: >
 
 # Custom plugin maintenance
 
-A "custom plugin" has hand-authored or research-grounded content without a copied upstream source to re-pull. Copied-source targets in the `upstream-sync` table use that skill for upstream comparison. Inspiration-only rows retain provenance without excluding the original local plugin from this refresh method: both `codebase-map` rows are inspiration-only, so refresh its local content here. Preserve existing copied-source tracking and history; neither route authorizes new vendoring.
+A "custom plugin" has hand-authored or research-grounded content without a copied upstream source to re-pull. Copied-source targets in the `upstream-sync` table use that skill for upstream comparison. Inspiration-only rows retain provenance without excluding the original local plugin from this refresh method: both `codebase-map` rows are inspiration-only, so refresh its local content here. An inspiration row that records an upstream commit is a watch: at each refresh, read the upstream diff of the named path since that commit (`gh api repos/<owner>/<repo>/compare/<sha>...HEAD`), decide which ideas to adopt, rewrite them in local words, then advance the recorded commit. Never paste upstream text. Preserve existing copied-source tracking and history; neither route authorizes new vendoring.
 
 Custom plugins decay differently than vendored ones. There is no upstream commit to diff against. Versions, framework recommendations, breaking-change notes, and "current as of 2026" claims become stale silently. The maintenance protocol below is the antidote.
 
@@ -123,8 +123,9 @@ Refresh the "Very fast" and "Fast" classes first if any are on the work queue; d
 ## When an external owner overlaps with a custom plugin
 
 Evaluate declared delegation or original local inspiration through
-`external-repo-intake`. Standing policy forbids new vendored copies: do not add a
-sync-table row or copy upstream text during refresh. Check the provider's actual
+`external-repo-intake`. Standing policy forbids new vendored copies: never copy
+upstream text during refresh. A new inspiration adds only the watch row and README
+paragraph of `external-repo-intake` step 7. Check the provider's actual
 availability, canonical contract and execution on the active host. Preserve
 existing licenses, attribution, tracked rows and retirement history; changing
 their disposition requires a separate scoped authorization.

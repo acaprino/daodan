@@ -10,6 +10,11 @@ offline è la destinazione successiva. Il record precisa costo, routing per inca
 e limiti di questa scelta rispetto alla strategia iniziale di S1/S2; resta da
 implementare e verificare.
 
+La [specifica sui chiarimenti e le mappe decisionali](2026-10-24-conversational-decisions-and-work-graphs-design.md)
+definisce il passaggio a domanda diretta, intervista o mappa decisionale quando manca una
+decisione umana essenziale, con attesa dei consumatori dipendenti e ripresa o
+revisione del piano. Anche questa integrazione resta proposta.
+
 ## 1. Obiettivo, autorità e compatibilità
 
 Comporre ed eseguire lavoro di editing, planning, analysis e review tramite
