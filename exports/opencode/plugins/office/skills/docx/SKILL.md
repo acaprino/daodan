@@ -174,11 +174,15 @@ content merely to make an editing library handle it.
 On the substantial intake route (a new or derived document, a template, restyling,
 restructuring or shortening), the coordinator loads `office:design`: it owns the
 direction, the palette built from the user's colour source and chosen from
-candidates, the font pairing with its installation and embedding, the argument
-mode, and the editorial and typographic method. Record its decisions in the
-existing brief. Preserve supplied brands and template styles. For a DOCX/PPTX
+candidates, the font pairing with its installation and embedding, and the
+editorial and typographic method. Choose the document type from
+`references/document-types.md` at intake (reader, purpose, section sequence,
+opening, heading voice, length band) and record it with those decisions in the
+existing brief; a document derived from an existing one keeps the source's type
+unless the brief changes its purpose. Preserve supplied brands and template styles. For a DOCX/PPTX
 bundle both format designers consume the same record.
-Read `references/document-design.md` for concrete page patterns, reusable template
+Read `references/document-types.md` for the type's sequence and
+`references/document-design.md` for concrete page patterns, reusable template
 instructions and the document design report handoff.
 
 Dispatch `office:document-designer` in an isolated context through the registered

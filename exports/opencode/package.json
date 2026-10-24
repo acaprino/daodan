@@ -1158,7 +1158,7 @@
             "name": "intake"
           },
           {
-            "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the users colour source and chosen from candidates in the browser; the argument mode, editorial hierarchy, typography, and font fetching, installation and embedding. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
+            "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the users colour source and chosen from candidates in the browser; editorial hierarchy, typography, and font fetching, installation and embedding. How a file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
             "file": "skills/design/SKILL.md",
             "id": "office:design",
             "name": "design"
@@ -2062,5 +2062,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "3.3.0"
+  "version": "3.4.0"
 }

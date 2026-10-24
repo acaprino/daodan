@@ -102,7 +102,7 @@ Never overwrite a supplied file. Write every result to a separate candidate path
 
 | Route | Typical requests | What follows |
 |---|---|---|
-| Substantial | New file, file derived from an existing one, template, restyle, restructure, rewrite, shorten or lengthen | `office:design` decisions (direction, palette from the user's colour source, pairing, argument mode), the format's designer where it declares one, production and rendered review |
+| Substantial | New file, file derived from an existing one, template, restyle, restructure, rewrite, shorten or lengthen | `office:design` decisions (direction, palette from the user's colour source, pairing), the format's structure choice (argument mode for a deck from `office:pptx`, document type for a document from `office:docx`), the format's designer where it declares one, production and rendered review |
 | Narrow | A local wording, figure, formatting or added-element change inside the accepted design | Preserve the existing design; no design decisions or designer dispatch |
 | Read-only | Read, analyze, review, preview or export | No write to the source; deliver findings or the requested export |
 
@@ -116,8 +116,10 @@ authorizes no edit.
 Inspect supplied files before asking about them. Infer what the request and the
 files already settle, then ask the remaining decisions that change the result in
 one round, together with the format method's questions. On the substantial
-route that round includes the design decisions of `office:design`: the argument
-mode, the direction (or the supplied brand or template), and the colour source
+route that round includes the format's structure choice (a deck's argument mode
+from `office:pptx`, a document's type from `office:docx`'s
+`references/document-types.md`) and the design decisions of `office:design`:
+the direction (or the supplied brand or template), and the colour source
 for the palette: an image, a website, the project's stylesheets or design
 tokens, an existing PPTX or DOCX, a description in words, or none. Palette
 candidates are shown and chosen after this round, not asked here. State the

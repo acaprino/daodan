@@ -3,9 +3,9 @@ name: design
 description: >
   Shared visual design method for Office documents and presentations: one
   direction for composition, rhythm and type; an ad hoc palette built from the
-  user's colour source and chosen from candidates in the browser; the argument
-  mode, editorial hierarchy, typography, and font fetching, installation and
-  embedding. TRIGGER WHEN: an Office intake resolved the substantial route for a
+  user's colour source and chosen from candidates in the browser; editorial
+  hierarchy, typography, and font fetching, installation and embedding. How a
+  file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a
   Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or
   read-only, or the deliverable is a website, a workbook or a standalone image.
 license: Apache-2.0
@@ -86,24 +86,23 @@ another variant, and say so. Record the chosen palette's hex values by role in
 the brief; construction and review verify against them. Do not retouch a chosen
 colour by hand without re-running `palette.py check` on the result.
 
-## Choose the argument mode
+## Structure belongs to the format
 
-The mode decides how the file argues; the direction decides how it looks. Choose
-it from the audience and purpose settled at intake and record it with the
-direction. A file derived from an existing one keeps the source's mode unless
-the brief changes its purpose.
-
-| Mode | Use when | Slide headline | Word equivalent | Sequence |
-|---|---|---|---|---|
-| Pyramid | A recommendation or decision for executives, a board or a client | Action headline: the takeaway as a full sentence | Decision memo: answer, then arguments as numbered headings | Answer first, then supporting arguments, then evidence |
-| Narrative | Persuading or rallying: pitch, vision, change programme | Story beat: a claim that moves the story on | Proposal: situation, complication, resolution, ask | Situation, complication, resolution, ending on the ask |
-| Instructional | Training, onboarding, a procedure | Numbered task or step label | Handbook: goal, numbered steps, check | Goal, steps in order, check or recap |
-| Showcase | Portfolio, product, launch, image-led files | Short label, or none when the visual carries the slide | Dossier: plates with captions, little running text | One focal item per page, alternating hero and detail |
-| Briefing | Status reports, updates, files read without a presenter | Topic label plus a one-line status | Briefing: fixed sections in a stable order | Fixed sections in a stable order, same slots in every edition |
+This skill decides how a file looks, never how it argues. A deck chooses one of
+the five argument modes of `office:pptx` (`references/design-library.md`:
+pyramid, narrative, instructional, showcase, briefing), because a deck is
+spoken over and its headlines carry the argument. A document chooses one of the
+document types of `office:docx` (`references/document-types.md`: decision memo,
+briefing note, proposal, report, white paper, procedure, handbook, tutorial,
+policy, minutes, letter, image-led dossier), because a document is read alone
+and its section sequence is the argument. The two catalogs are not mapped onto
+each other: a deck and a document made from the same brief share direction,
+palette and pairing, and each takes its structure from its own catalog.
 
 ## Procedure on the substantial route
 
-1. Take audience, purpose, argument mode, direction or brand, colour source,
+1. Take audience, purpose, the format's structure choice (argument mode for a
+   deck, document type for a document), direction or brand, colour source,
    carry-over and approved cuts from the intake record. Ask nothing that intake
    already settled.
 2. Build the palette candidates from the colour source, show the comparison and
@@ -118,8 +117,9 @@ the brief changes its purpose.
    `office:docx`'s `document-design.md` for the page.
 5. Install the pairing's faces before construction (below) and record which
    faces were installed, which fell back and why.
-6. Hand the format method the record: direction, mode, palette by role, pairing
-   and font status, reading map, type roles and open decisions. The format
+6. Hand the format method the record: direction, palette by role, pairing and
+   font status, reading map, type roles and open decisions; the format keeps its
+   own structure choice beside it. The format
    designer role turns it into slide-object or page specifications.
 7. After the final save, embed the fonts and record the inspection result.
 

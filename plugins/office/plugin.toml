@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "office"
-version = "2.3.0"
+version = "2.4.0"
 description = "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification."
 license = "MIT"
 

@@ -14,7 +14,11 @@ Read the assigned brief, source inventory, brand/template assets, shared theme,
 engine capabilities and any existing page renders. Load `office:docx` for its
 preservation and production boundaries; execute only this design assignment,
 not the coordinator's dispatch procedure. Read that skill's
-`references/document-design.md` for page patterns and the construction handoff.
+`references/document-types.md` for the chosen type's sequence, opening and
+heading voice, and `references/document-design.md` for page patterns and the
+construction handoff. Record the type, the reader, the sequence as it will
+appear, the opening pattern, the heading voice and the length band in the
+design report.
 
 Load `office:design` for the direction, palette and pairing contract. Consume the supplied
 theme specification, including an accepted brand or template represented there.

@@ -144,8 +144,9 @@ content, preserve required features and verify the saved result. Keep layout
 review and actual field updates distinct from package checks.
 
 On the substantial route, load `office:design`: build and choose the palette
-from the user's colour source, record direction, argument mode and pairing, and
-install the pairing's fonts; preserve supplied brands and templates. Follow `office:docx`
+from the user's colour source, record direction and pairing, and install the
+pairing's fonts; preserve supplied brands and templates. Record the document
+type chosen at intake from `office:docx`'s `references/document-types.md`. Follow `office:docx`
 to dispatch the isolated `office:document-designer` with its real generated role
 binding. Require concrete page layouts and template instructions, verify the
 assigned design report, then load `office:wordcraft` to build, save, reopen and

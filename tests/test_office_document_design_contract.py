@@ -9,6 +9,7 @@ import json
 import os
 import sys
 import tempfile
+import re
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -354,6 +355,47 @@ class DocumentReviewContractTests(unittest.TestCase):
                 self.assertIn("the document under review is the unchanged source", body)
                 workflow = _normalized(self.entry(host))
                 self.assertIn("rendered unchanged source for a read-only review", workflow)
+
+
+class DocumentTypeContractTests(unittest.TestCase):
+    """Word structure comes from its own type catalog, never from the deck's argument modes."""
+    setUpClass = DocumentDesignContractTests.__dict__["setUpClass"]
+    tearDownClass = DocumentDesignContractTests.__dict__["tearDownClass"]
+    entry = DocumentDesignContractTests.entry
+
+    TYPES = ("Decision memo", "Briefing note", "Proposal", "Report", "White paper", "Procedure (SOP)",
+             "Handbook", "Tutorial or guide", "Policy", "Minutes", "Letter", "Image-led dossier")
+
+    def test_twelve_document_types_each_fix_sequence_opening_and_heading_voice(self):
+        catalog = _read(OFFICE / "skills/docx/references/document-types.md")
+        rows = re.findall(r"^\| \*\*(.+?)\*\* \|", catalog, re.M)
+        self.assertEqual(tuple(rows), self.TYPES)
+        header = re.search(r"^\| Type \| (.+) \|$", catalog, re.M).group(1)
+        self.assertEqual(header, "Reader and purpose | Sequence | Opening | Headings | Usual length")
+        self.assertIn("are not\nmapped onto documents", catalog)
+        self.assertIn("pyramid principle", catalog)
+        for stale in ("Word equivalent", "Showcase"):
+            self.assertNotIn(stale, catalog)
+
+    def test_shared_design_skill_owns_look_and_each_format_owns_structure(self):
+        design = _read(OFFICE / "skills/design/SKILL.md")
+        self.assertIn("## Structure belongs to the format", design)
+        self.assertNotIn("Word equivalent", design)
+        self.assertNotIn("| Pyramid |", design)
+        library = _read(OFFICE / "skills/pptx/references/design-library.md")
+        self.assertIn("## Choose the argument mode", library)
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                self.assertTrue((package / "skills/docx/references/document-types.md").is_file())
+                intake = _read(package / "skills/intake/SKILL.md")
+                self.assertIn("document type for a document from `office:docx`", intake)
+                for relative in (ROLE_PATHS[host], ROLE_PATHS[host].replace("document-designer", "document-reviewer"),
+                                 "skills/docx/SKILL.md", "skills/docx/references/document-design.md"):
+                    body = _normalized(_read(package / relative))
+                    self.assertIn("document-types.md", body)
+                    self.assertNotIn("argument mode", body)
+                reviewer = _normalized(_read(package / ROLE_PATHS[host].replace("document-designer", "document-reviewer")))
+                self.assertIn("the document type's opening is not delivered", reviewer)
 
 
 if __name__ == "__main__":

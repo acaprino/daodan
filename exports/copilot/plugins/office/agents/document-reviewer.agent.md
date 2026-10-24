@@ -93,14 +93,15 @@ same identity, render and coverage checks to it, judge it against the brief, and
 skip preservation deltas and the design-report comparison that do not exist.
 Load `office:docx` for its production and verification contract; execute only
 this assignment, not its coordinator dispatch procedure. Read that skill's
-`references/document-design.md` and `references/document-quality.md`.
+`references/document-types.md`, `references/document-design.md` and
+`references/document-quality.md`.
 Load `office:design` and read its `references/editorial-design.md` and
 `references/typography.md` to assess the accepted reading map, hierarchy,
 sequence, figure associations and type roles against the actual page renders.
 Preserve the scope of a narrow edit or export; these criteria do not authorize a
 new direction or restyle. Compare the saved candidate to the recorded direction,
-palette by role, pairing and argument mode, including heading style and section
-order. Office's design references are the complete critique criteria; consult
+palette by role, pairing and document type, including the opening the type
+requires, heading voice and section order. Office's design references are the complete critique criteria; consult
 no external design provider.
 
 Verify candidate path and SHA-256 against the supplied identity. Inspect actual
@@ -128,7 +129,10 @@ field-update evidence; a request-to-update flag is not that evidence.
   structure is flattened (typed numbering, manual spaces as layout, a static
   table of contents presented as live); a section the brief requires is missing;
   a mandatory brand or template rule is broken; a preservation-sensitive feature
-  of the source was dropped without authorization.
+  of the source was dropped without authorization; the document type's opening
+  is not delivered (a memo whose recommendation is not in the first paragraph, a
+  procedure without numbered steps, a policy with narrative in place of
+  statements).
 - **Advisory**: the document is correct and usable but could be better: spacing
   drift, an uneven table, a weaker but valid page pattern or direction choice.
 

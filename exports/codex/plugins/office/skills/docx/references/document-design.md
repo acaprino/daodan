@@ -79,25 +79,27 @@ Use this reference for a new document or substantial restyling. The
 engine selection, native construction, preservation and verification. A narrow
 edit or read-only task does not start this design phase.
 
-Carry the `office:design` record (direction, chosen palette by role, pairing,
-argument mode) into the document design report. A supplied brand/template is
+Carry the `office:design` record (direction, chosen palette by role, pairing)
+and the document type chosen from `document-types.md` into the document design
+report. A supplied brand/template is
 direction `H`, not a reason to choose a competing palette. Use the same palette
 roles and font families when the task also produces a deck.
 Document-specific point sizes, line lengths and page flow remain format choices.
 
-## Choose the reading architecture
+## Compose for the chosen type
 
-These are composition recipes, not binary templates. Select by content and
-combine only the page types the brief needs. Name the recipe and any variation
-in the existing brief; retain the supplied template when editing.
+`document-types.md` fixes the type's section sequence, opening and heading
+voice. This reference adds the composition that carries it. Select by content
+and combine only the page types the brief needs; name the composition and any
+variation in the existing brief; retain the supplied template when editing.
 
-| Recipe | Sequence and visual treatment | Native construction |
+| Type group | Composition | Native construction |
 |---|---|---|
-| Decision memo | Decision at the top; compact context, evidence, alternatives and next action | One main column, native headings and lists; a short conclusion panel if useful |
-| Evidence report | Short opening, findings, supporting figures, limitations and references | Consistent body-page styles; optional contents for a long report; captioned figures and repeatable data tables |
-| Project proposal | Reader's need, approach, deliverables, schedule, commercial terms and decision | Distinct section openings, editable schedule/pricing tables and a clear final action |
-| Reference handbook | Orientation, stable numbered topics, examples and troubleshooting | Heading hierarchy, navigation fields when supported, native code/example styles and explicit notes |
-| Periodical briefing | Lead story, supporting items, selected quotation and related material | Optional section columns with a defined gutter; reading order remains explicit |
+| Decision memo, briefing note, letter, minutes | Direct entry, one main column, the decision or issue above the fold; compact context and a closing action | Native headings and lists; a short conclusion panel if useful; an action table for minutes |
+| Report, white paper | Standing opening, findings or claims in order of importance with their figures, limitations and references | Consistent body-page styles; contents for a long document; captioned figures and repeatable data tables |
+| Proposal | Reader-facing section openings, deliverables and schedule as tables, terms and acceptance as the closing page | Distinct section openings, editable schedule/pricing tables and a clear final action |
+| Procedure, policy, handbook | Orientation first; stable numbered units, each self-contained; examples, exceptions and troubleshooting where the type calls for them | Heading hierarchy, numbered units, navigation fields when supported, native code or example styles and explicit notes |
+| Tutorial or guide | Goal first; steps with the visible result after each; the finished result | Numbered steps with figure or callout slots; native code styles |
 | Image-led dossier | Short introduction, captioned evidence plates, interpretation and index | Proportional native image objects, selectable captions and controlled page/section breaks |
 
 Adjust tone without replacing the shared theme. An analytical treatment puts the
