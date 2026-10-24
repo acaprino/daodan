@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "38.10.0"
+    "version": "38.10.1"
   },
   "name": "daodan",
   "owner": {
@@ -31,7 +31,7 @@
         "./skills/abstraction-architect"
       ],
       "source": "./exports/claude/plugins/abstraction-architect",
-      "version": "5.2.0"
+      "version": "5.2.1"
     },
     {
       "agents": [
@@ -487,7 +487,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/claude/plugins/senior-review",
-      "version": "16.5.0"
+      "version": "16.5.1"
     },
     {
       "author": {

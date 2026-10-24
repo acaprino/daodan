@@ -470,7 +470,8 @@ class ReportRenderingHostContracts(unittest.TestCase):
                 packages[plugin.name] = target
                 cls.packages[(host, plugin.name)] = target
             cls.catalogs[host] = json.loads(render_catalog(
-                host, cls.plugins, "1.0.0", packages, layout=adapter.layout))
+                host, cls.plugins, "1.0.0", packages, layout=adapter.layout,
+                plugin_registry=registry))
 
     def package(self, host, plugin):
         return self.packages[(host, plugin)]

@@ -1,5 +1,5 @@
 ---
-description: 'Composed review of react-development:react-effects-auditor, react-development:react-render-cost-auditor, react-development:react-bundle-auditor, react-development:react-dataflow-auditor. TRIGGER WHEN: any member applies: reviewing React effect dependencies, current callbacks, repeated actions and deterministic subscription cleanup.; reviewing React subscriptions, component identity, hydration and avoidable render or main-thread work with causal evidence.; reviewing eager dependency reachability, code splitting, resource hints and optional feature delivery against the actual build.; reviewing request dependency graphs, server/client transfer, request isolation and cache freshness in React applications.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
+description: 'Composed review of react-development:react-effects-auditor, react-development:react-render-cost-auditor, react-development:react-bundle-auditor, react-development:react-dataflow-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 mode: subagent
 permissions:
   - action: "*"

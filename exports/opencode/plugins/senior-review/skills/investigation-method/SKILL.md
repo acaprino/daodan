@@ -88,9 +88,9 @@ test.
 
 From the environment where it failed (the run's `environment`), collect the
 exact message, stack trace, logs and durations, the triggering input or steps,
-and the last known good commit, release or date. Read those logs before any
-hypothesis: unreachable logs stay an open fact, never replaced by a local
-rerun. A round duration on every attempt (30.0x s) points to a configured
+and the last known good commit, release or date. Read those logs first when
+available; without them, a local rerun counts only if it shows the same
+symptom. A round duration on every attempt (30.0x s) points to a configured
 timeout; record where it is set. Ask for what is missing one question at a
 time, or record it in the run's `questions` and close the turn. Mark each fact
 `observed` (the user, a log, a run) or `derived`.

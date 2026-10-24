@@ -1,6 +1,6 @@
 ---
 name: accessibility-auditor
-description: 'Composed review of senior-review:accessible-navigation-auditor, senior-review:accessible-perception-auditor. TRIGGER WHEN: any member applies: controls, forms, menus, dialogs, focus or navigation are in scope.; labels, validation, async status, media, themes, layout or critical-entry styles are in scope.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
+description: 'Composed review of senior-review:accessible-navigation-auditor, senior-review:accessible-perception-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 tools: ['search', 'edit', 'runCommands']
 ---
 

@@ -3,7 +3,7 @@ name: cleanup-auditor
 model: inherit
 color: blue
 description: >
-  Composed review of senior-review:application-reachability-auditor, senior-review:dependency-usage-auditor, senior-review:artifact-lifecycle-auditor, senior-review:asset-delivery-auditor, senior-review:secret-exposure-auditor. TRIGGER WHEN: any member applies: unused code, exports, barrels, assets or retired entry points are under audit.; workspace manifests, runtime/build dependencies or unused packages are under audit.; stale references, rebrand residue, old plans, backups or migration leftovers are under audit.; bundles, eager imports, glob loading, images, fonts or critical request chains are in scope.; reviewing credentials, key management, encryption, sensitive comparisons, source/configuration, bundles, logs, errors and build artifacts.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.
+  Composed review of senior-review:application-reachability-auditor, senior-review:dependency-usage-auditor, senior-review:artifact-lifecycle-auditor, senior-review:asset-delivery-auditor, senior-review:secret-exposure-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.
 tools: Read, Write, Glob, Grep, Bash
 ---
 

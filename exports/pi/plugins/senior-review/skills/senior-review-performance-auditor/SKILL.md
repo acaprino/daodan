@@ -1,6 +1,6 @@
 ---
 name: senior-review-performance-auditor
-description: 'Composed review of senior-review:sql-efficiency-auditor, senior-review:algorithmic-cost-auditor, senior-review:asset-delivery-auditor, senior-review:capacity-quota-auditor, senior-review:runtime-cost-auditor, senior-review:resource-lifecycle-auditor. TRIGGER WHEN: any member applies: queries, ORM collections, joins, indexes or storage pagination are in scope.; loops, parsing, copies, recursion, rendering or hot-path scheduling are in scope.; bundles, eager imports, glob loading, images, fonts or critical request chains are in scope.; queues, workers, quotas, authentication-attempt limits, replicas, fan-out, cache expiry or concurrency limits are in scope.; provider calls/tokens, compute, egress, storage, logs or budget controls are in scope.; target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, tasks, threads, timers or native/GPU resources.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
+description: 'Composed review of senior-review:sql-efficiency-auditor, senior-review:algorithmic-cost-auditor, senior-review:asset-delivery-auditor, senior-review:capacity-quota-auditor, senior-review:runtime-cost-auditor, senior-review:resource-lifecycle-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 disable-model-invocation: true
 ---
 

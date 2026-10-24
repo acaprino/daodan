@@ -249,7 +249,8 @@ def _opencode_entry(
 
 
 def _opencode_manifest(
-    document, plugins: Sequence[PluginSpec], packages, layout: Mapping[str, str] | None
+    document, plugins: Sequence[PluginSpec], packages, layout: Mapping[str, str] | None,
+    plugin_registry: Mapping[str, PluginSpec] | None = None,
 ) -> bytes:
     """OpenCode's catalog, which is the plugin package's own npm manifest.
 
@@ -276,7 +277,7 @@ def _opencode_manifest(
             "plugins": {
                 plugin.name: _opencode_entry(
                     plugin, (packages or {}).get(plugin.name), layout,
-                    {item.name: item for item in ordered},
+                    plugin_registry or {item.name: item for item in ordered},
                 )
                 for plugin in ordered
             },
@@ -294,11 +295,13 @@ def render_catalog(
     layout: Mapping[str, str] | None = None,
     name: str = CATALOG_NAME,
     description: str = CATALOG_DESCRIPTION,
+    plugin_registry: Mapping[str, PluginSpec] | None = None,
 ) -> bytes:
     """Serialize one host catalog deterministically.
 
     Every host gets the same neutral document, which is what the identity gate
-    compares. Only the serialization differs.
+    compares. Only the serialization differs. `plugin_registry` resolves composed
+    roles whose members belong to plugins outside a partial catalog.
     """
     document = catalog_document(
         host, plugins, version, packages, name=name, description=description
@@ -306,7 +309,7 @@ def render_catalog(
     if host == "pi":
         return _pi_manifest(document)
     if host == "opencode":
-        return _opencode_manifest(document, plugins, packages, layout)
+        return _opencode_manifest(document, plugins, packages, layout, plugin_registry)
     return (json.dumps(document, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 

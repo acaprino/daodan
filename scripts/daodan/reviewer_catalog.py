@@ -220,6 +220,8 @@ def reviewer_catalog(registry, host: str, roles_layout: str | None, *, adapter=N
                 meta, _ = _parse_role((override.root / override.replacement).read_text(encoding="utf-8"))
         description = meta.get("description", "")
         trigger_when, do_not_trigger_when = _triggers(description)
+        if resolved["composed"]:
+            trigger_when = resolved["trigger_when"]
         entry: dict[str, object] = {
             "id": f"{provider_name}:{role}",
             "kind": "role",

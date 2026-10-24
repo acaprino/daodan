@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:distributed-flow-auditor; version: 16.5.0; source-sha256: 72fb034e11ad4312c8f365924d21bcd51d85664db16913df25f64791ec332542. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:distributed-flow-auditor; version: 16.5.1; source-sha256: 53495c351b146ff4a8b0b25db0aeab436f468257488aff4cbd494135ac307f23. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`, `senior-review:investigation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

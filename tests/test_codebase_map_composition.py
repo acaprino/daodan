@@ -114,15 +114,19 @@ class CodebaseMapCompositionTests(unittest.TestCase):
         self.assertIn("Gaps", diff)
 
     def test_auditor_uses_bound_context_and_reports_every_out_of_diff_change(self):
-        text = self.body("abstraction-architect/roles/abstraction-architect-agent.md")
-        self.assertIn(".codebase-map/runs/<run-id>/", text)
-        self.assertIn("snapshot.py resolve", text)
-        self.assertIn("map_outside_diff_changed_files", text)
-        self.assertIn("every path", text)
-        self.assertIn("never launches", text)
-        self.assertIn("never read the mirror's phase files", text)
-        self.assertIn("only its `state.json -> run_id`", text)
-        self.assertIn("only from the same bound run", text)
+        plugin = self.registry["abstraction-architect"]
+        members = dict(plugin.reviewer_compositions)["abstraction-architect-agent"]
+        for member in members:
+            with self.subTest(member=member):
+                text = self.body(f"abstraction-architect/roles/{member.split(':')[1]}.md")
+                self.assertIn(".codebase-map/runs/<run-id>/", text)
+                self.assertIn("snapshot.py resolve", text)
+                self.assertIn("map_outside_diff_changed_files", text)
+                self.assertIn("every path", text)
+                self.assertIn("never launches", text)
+                self.assertIn("never read the mirror's phase files", text)
+                self.assertIn("only its `state.json -> run_id`", text)
+                self.assertIn("only from the same bound run", text)
         census = self.body("abstraction-architect/skills/abstraction-architect/references/concept-census.md")
         self.assertNotIn("Read `.codebase-map/`", census)
         self.assertIn("bound run", census)

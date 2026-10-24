@@ -26,6 +26,7 @@ from scripts.daodan.catalogs import render_catalog  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.model import INLINE_WORKER_REFERENCE  # noqa: E402
 from scripts.daodan.render import render_plugin  # noqa: E402
+from scripts.daodan.role_bodies import resolve_role, role_text  # noqa: E402
 
 ADAPTERS = REPO_ROOT / "adapters"
 LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle"
@@ -167,7 +168,8 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
                     self.assertIn(owner, self.plugin.required_dependencies)
                     self.assertIn(owner, self.registry)
                     self.assertIn(role, self.registry[owner].components.roles)
-                    self.assertTrue((self.registry[owner].root / f"roles/{role}.md").is_file())
+                    # A composition has no body file; it must resolve to its members' bodies.
+                    resolve_role(self.registry, owner, role)
 
     def test_worker_bindings_reach_installed_bodies_or_native_agent_allowlists(self):
         for host in HOSTS:
@@ -180,9 +182,7 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
                         self.assertIn(identity, entry)
                         if host in {"codex", "pi"}:
                             path = self.packages[host][self.plugin.name] / f"contracts/dispatch/{owner}/{role}.md"
-                            source = (self.registry[owner].root / f"roles/{role}.md").read_text(
-                                encoding="utf-8"
-                            )
+                            source = role_text(resolve_role(self.registry, owner, role))
                             digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
                             text = path.read_text(encoding="utf-8")
                             self.assertIn(f"Owner: {identity}", text)

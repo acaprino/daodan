@@ -3,7 +3,7 @@ name: operability-auditor
 model: inherit
 color: blue
 description: >
-  Composed review of senior-review:observability-auditor, senior-review:service-health-auditor, senior-review:release-compatibility-auditor, senior-review:environment-binding-auditor, senior-review:feature-flag-auditor, senior-review:recovery-auditor. TRIGGER WHEN: any member applies: error handling, telemetry, correlation, metrics, exporters or alerts are in scope.; probes, watchdogs, degraded operation or health-based routing are in scope.; rolling deployment, schema/backfill, artifact promotion, drain or versioned formats are in scope.; deployment variables, configuration layers, artifact promotion, endpoints or mesh routing are in scope.; feature defaults, providers, cohorts, interacting flags or deactivation are in scope.; backups, restore/runbooks, failover, failure domains or recovery objectives are in scope.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.
+  Composed review of senior-review:observability-auditor, senior-review:service-health-auditor, senior-review:release-compatibility-auditor, senior-review:environment-binding-auditor, senior-review:feature-flag-auditor, senior-review:recovery-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.
 tools: Read, Write, Glob, Grep, Bash
 ---
 

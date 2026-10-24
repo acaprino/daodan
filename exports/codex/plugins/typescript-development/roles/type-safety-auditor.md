@@ -1,6 +1,6 @@
 ---
 name: type-safety-auditor
-description: 'Composed review of typescript-development:type-soundness-auditor, typescript-development:typed-boundary-auditor. TRIGGER WHEN: any member applies: reviewing unsafe type escapes, assertions, generic contracts, exhaustiveness and effective compiler checks.; reviewing HTTP, queue, storage and environment values before untrusted runtime data is treated as a TypeScript type.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
+description: 'Composed review of typescript-development:type-soundness-auditor, typescript-development:typed-boundary-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

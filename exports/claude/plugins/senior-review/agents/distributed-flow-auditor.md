@@ -3,7 +3,7 @@ name: distributed-flow-auditor
 model: inherit
 color: blue
 description: >
-  Composed review of senior-review:message-delivery-auditor, senior-review:remote-effect-auditor, senior-review:service-resilience-auditor, senior-review:session-delegation-auditor, senior-review:environment-binding-auditor. TRIGGER WHEN: any member applies: reviewing publishers/consumers, AMQP topology, confirms, acknowledgements, replay, prefetch, DLQ/redrive and partition offsets.; reviewing external mutations, payments, outbox/inbox, sagas, idempotency, leases/fencing, leadership and distributed commit.; reviewing HTTP/gRPC/service calls, remote timeouts/cancellation, mesh/client retries, circuit breakers, bulkheads and half-open connections.; reviewing login, token issuance/verification, password storage, refresh/logout/revocation, signed URLs and service identity.; deployment variables, configuration layers, artifact promotion, endpoints or mesh routing are in scope.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.
+  Composed review of senior-review:message-delivery-auditor, senior-review:remote-effect-auditor, senior-review:service-resilience-auditor, senior-review:session-delegation-auditor, senior-review:environment-binding-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.
 tools: Read, Write, Glob, Grep, Bash
 ---
 

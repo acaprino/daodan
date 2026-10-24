@@ -1,6 +1,6 @@
 ---
 name: accessibility-auditor
-description: 'Composed review of senior-review:accessible-navigation-auditor, senior-review:accessible-perception-auditor. TRIGGER WHEN: any member applies: controls, forms, menus, dialogs, focus or navigation are in scope.; labels, validation, async status, media, themes, layout or critical-entry styles are in scope.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
+description: 'Composed review of senior-review:accessible-navigation-auditor, senior-review:accessible-perception-auditor. TRIGGER WHEN: a review coordinator dispatches this composition. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

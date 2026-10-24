@@ -58,13 +58,16 @@ def resolve_role(registry: dict, owner: str, role: str) -> dict:
     visit(owner, role, ())
     composed = role in dict(registry[owner].reviewer_compositions)
     if composed:
-        descriptions = [p["metadata"].get("description", p["id"]) for p in parts]
-        activation = [when for description in descriptions if (when := _triggers(description)[0])]
+        activation = [when for p in parts
+                      if (when := _triggers(p["metadata"].get("description", ""))[0])]
         tools = [p["metadata"].get("tools") for p in parts]
+        # Member triggers feed the reviewer catalog only; in the host description they
+        # broke Pi's 1024-character ceiling and loaded every member's text each session.
         metadata = {"name": role, "model": "inherit", "color": "blue",
-                    "description": "Composed review of " + ", ".join(p["id"] for p in parts)
-                    + ". TRIGGER WHEN: any member applies: " + "; ".join(activation)
-                    + ". DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap."}
+                    "description": "Composed review of "
+                    + ", ".join(dict(registry[owner].reviewer_compositions)[role])
+                    + ". TRIGGER WHEN: a review coordinator dispatches this composition."
+                    + " DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap."}
         # Absence of a restriction means unrestricted, not an empty permission set.
         if all(t is not None for t in tools):
             metadata["tools"] = ", ".join(dict.fromkeys(t.strip().strip("\"'") for row in tools
@@ -75,7 +78,8 @@ def resolve_role(registry: dict, owner: str, role: str) -> dict:
     else:
         metadata = parts[0]["metadata"]
     return {"metadata": metadata, "parts": parts, "members": [p["id"] for p in parts],
-            "source_hashes": hashes, "composed": composed}
+            "source_hashes": hashes, "composed": composed,
+            "trigger_when": "any member applies: " + "; ".join(activation) + "." if composed else None}
 
 
 def role_text(resolved: dict) -> str:
