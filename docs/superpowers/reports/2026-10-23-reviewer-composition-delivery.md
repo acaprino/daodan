@@ -1,9 +1,14 @@
-# Specialist reviewers and composition: delivery evidence
+# Specialist reviewers and composition: focused delivery
 
 Implementation follows the [approved plan](../plans/2026-10-23-specialist-reviewers-and-composition.md)
 and [control migration matrix](2026-10-23-reviewer-specialist-migration.md).
-This report distinguishes authored components, mechanical checks and independent
-behavioral qualification. It does not certify unfinished stages.
+The delivery contains 64 focused/process reviewers (56 new and eight retained),
+13 broad preset identities assembled from their canonical leaves, and the
+candidate-bound ad hoc composer. The generated presets are activated in the
+source kernels, and the final build and parity checks pass for all five hosts.
+
+The latest user instruction narrows verification to the necessary final checks
+and four preset/ad hoc trials. Extended experiments are deferred, not passed.
 
 ## Candidate and recovery
 
@@ -16,14 +21,17 @@ mixed prior and concurrent changes are preserved.
 ## Specialist authoring and registration
 
 The existing seven provider manifests and reviewer catalog register 56 new leaf
-roles. Eight existing focused/process roles retain their identities; the two
-method bindings remain distinct. No parallel runtime registry was introduced.
+roles. Eight existing focused/process roles retain their identities. The two
+method bindings, `python-method` and `dependencies-method`, remain distinct from
+those 64 reviewers. No parallel runtime registry was introduced.
 
-T2/T3: 16 new leaves and five retained roles, with 21 source-based fixture packs
+Initial T2/T3 authoring: 16 new leaves and five retained roles, with 21 source-based fixture packs
 containing 98 defect/correct scenario pairs. T4/T5: 18 new leaves and the retained
 UI race role, with 40 scenario pairs across 19 case specifications. The source
 syntax checks establish fixture parseability only. T6 provider authoring and
-independent qualification are recorded separately in the run.
+independent qualification are recorded separately in the run. The subsequent
+human-added `schema-coherence-auditor` brings the current total to 64 reviewers;
+its independent bounded qualification covers five mechanisms and a correct case.
 
 The lifecycle interview and worker brief establish the authoritative producer/
 consumer contract before parallel work, including derived types/mocks and actual
@@ -32,14 +40,16 @@ reference was unavailable during authoring; no external comparison is claimed.
 
 ## Checks and qualification
 
-- All five host packages built; build parity and bundled-path checks passed on
-  the first authored candidate. Subsequent source changes require regeneration
-  and final parity checks.
+- All five host packages built from the current human-edited reviewer source.
+  The final prospective source also builds all five hosts with all 13 preset
+  declarations and their handwritten broad bodies retired. The exact 19-file
+  migration is applied globally; final five-host build and parity checks pass.
 - Catalog registration checks cover every new leaf on all five hosts. The
   prerequisite regression failed before the fix and passed afterward; the full
   catalog/input-delivery module then passed 10 tests.
 - Existing instruction budgets passed without increasing their caps.
-- Fresh-context qualification is in progress. Each trial binds its exact body,
+- Fresh-context qualification accepted 54 of 64 focused/process reviewers on
+  bounded source fixtures with defect and correct variants. Each trial binds its exact body,
   common, required references, target hashes, scope and report path. The reviewer
   receives one variant and no oracle, counterpart, prior report or peer result;
   an independent scorer checks every causal mechanism and anti-finding.
@@ -48,9 +58,29 @@ reference was unavailable during authoring; no external comparison is claimed.
   for the opposite variant. Filesystem isolation is prompt-level; physical access
   to unrelated checkout paths is not claimed to be mechanically prevented.
 
-The first accessible-navigation defect trial found all six expected mechanisms
-with no false positives, complete source coverage and no runtime claim. This
-result alone does not qualify its correct countercase or other specialists.
+Ten reviewers remain unqualified and deferred: `premise-auditor`;
+`test-suite-structure-auditor`, `test-reliability-auditor`,
+`journey-protection-auditor`; `react-bundle-auditor`, `react-dataflow-auditor`;
+`type-soundness-auditor`, `typed-boundary-auditor`; `concept-ownership-auditor`
+and `abstraction-fit-auditor`. Both method bindings also remain unqualified.
+Registration and shared bodies do not supply the missing behavioral evidence.
+
+Four final trials use the same UI source per variant with the actual generated
+native preset or the ad hoc composition, in separate native Codex contexts.
+Both canonical UI specialists already have accepted bounded qualification.
+
+| Final trial | Job | Result |
+|---|---|---|
+| Native preset, defect | `review-71f705036d9e74b9` | 13/13 barriers found; both members complete |
+| Native preset, correct | `review-cbf736957fa0e949` | Zero findings; navigation complete, perception incomplete |
+| Ad hoc, defect | `review-a6e525d0fc44dec0` | Same 13/13 barriers; both members complete, zero false positives |
+| Ad hoc, correct | `review-9472388ef73407f7` | Zero findings; navigation complete, perception incomplete |
+
+These trials check static UI mechanisms and countercases. They do not establish
+every preset, every context or improvement over the previous broad reviewers.
+Both correct trials lack supported viewport/zoom geometry evidence required
+by perception. Their incomplete results preserve that gap rather than declaring
+the whole UI clean; zero findings alone does not satisfy completion.
 Exact model/effort, host version and model token costs unavailable from the native
 tool interface remain unmeasured. Word counts and fixture counts are not evidence
 of token savings or effectiveness.
@@ -64,6 +94,11 @@ there is no second prompt registry. It rejects unknown or duplicate direct membe
 cycles, undeclared providers, incompatible models and process-role absorption.
 First occurrence deduplicates leaves reached through different nested presets.
 Each member retains its provider references and operation restrictions.
+
+The 13 preserved broad identities cover security, data integrity, distributed
+flow, performance, operability, accessibility, cleanup, general code review,
+testing, React, TypeScript, platform engineering and abstraction. Their checks
+come from canonical leaves rather than a second handwritten review prompt.
 
 The preparation helper composes candidate-bound obligations into jobs using
 verified provider versions, installed bodies, scopes, knowledge fingerprints and
@@ -124,14 +159,14 @@ light keeps its own input/roster method and loads only composition here. Expande
 testing members reuse the existing scoped test preparation and settled D1/D9
 evidence, without a second reviewer or repeated checks. Independent source review
 found no remaining issue in that correction; eight dispatch contracts and five
-instruction-budget tests pass. Final regenerated packages still require checking.
+instruction-budget tests pass. Final global regenerated packages still require checking.
 
 The existing context-budget gate rejected five enlarged coordinator units.
 Independent comparison found no concrete obligation lost in their compression:
 2,955 to 2,137 whitespace-separated body words, with skill metadata preserved.
 Their unit caps were lowered, never raised, and all five budget tests pass.
-This measures those source bodies only, not tokens or total run cost. Regeneration
-and affected checks remain required on the final migrated candidate.
+This measures those source bodies only, not tokens or total run cost. Final
+regeneration, affected checks and the unchanged budget caps pass.
 
 The independent integration review found a missing-catalog defect: a selected
 identity could remain only as a gap and disappear from executable obligations.
@@ -149,8 +184,8 @@ alone cannot establish an independently specified wire format. A purported clean
 case containing a real defect is corrected and rerun, never counted as an FP.
 
 The initial monolithic regression run exhausted memory. Its partial log is retained
-and is not a passing suite. Existing modules are being verified in fresh serial
-processes; tests requiring Windows links use the actual capability, with failures,
+and is not a passing suite. Existing modules were verified in fresh serial
+processes; tests requiring Windows links used the actual capability, with failures,
 skips and elevated reruns recorded separately. Rendering and unit tests do not
 prove installed-host execution. Unexposed model, effort, token and tool metrics
 remain unknown; shorter bodies alone establish no whole-run saving.
@@ -165,12 +200,39 @@ described above. Original failures and targeted reruns remain separate. Later
 source/export changes require the affected checks again; this matrix alone is
 not final source parity or behavioral qualification.
 
-## Remaining acceptance gates
+## Final candidate verification
 
-Finish specialist defect/countercase and required failure-input qualification.
-Validate the complete proposed final source, with all thirteen thematic declarations
-and retired broad bodies, in a run-owned prospective tree. Execute comparative
-discovery against that exact candidate before transferring accepted bytes globally.
-Final source/export parity, regressions, independent review and the available live
-path evidence remain required. No comparative result or broad-body retirement is
-claimed by this intermediate report.
+The exact prospective delta was transferred after all 19 before hashes matched:
+six existing manifests now declare the 13 compositions, and their handwritten
+broad bodies are retired. Recovery bytes remain in the run; concurrent source
+changes were preserved. The actual rendered UI body matches the focused trials.
+All five final catalogs contain 64 canonical focused/process roles, 13 generated
+presets and two distinct methods; actual bodies and current provider/source hashes
+pass the integrity check.
+
+Final verification passes: five-host build and parity; 141 tests across six
+affected composition, roster, dispatch, protocol, host-binding and instruction-budget
+modules; dependency, bundled-path, registration, host-vocabulary and fact-anchor
+linters; public reference and native instruction parity. The earlier 97-module
+matrix is prior regression evidence, not a repeated full final suite.
+
+The affected host-binding fixtures were updated to use real leaf overrides and
+retain existing preset declarations; byte-identity, permission and rejected-override
+assertions remain. A missing skill-load marker in lifecycle instructions was
+made explicit without increasing its word budget. Original failed checks and
+corrected reruns remain separate. No review body was changed for these fixes.
+
+Independent focused scoring found the same 13 mechanisms and zero false positives
+in both defect modes. Both correct deliveries keep their native failed perception
+status for missing geometry input. All 60 post-delivery binding checks pass.
+Canonical evidence lives under `.daodan/runs/specialists-composition-20261023/`:
+`focused-final-checks.json`, `final-catalog-integrity.json`, `migration-applied.json`,
+and `comparison/focused-final/scorecards.md` with its independent results/integrity.
+The broad campaign's two qualification gates remain open; this delivery does not
+turn their deferred obligations into a passed full campaign.
+
+The remaining ten reviewer qualifications, two method qualifications and extended
+baseline comparisons are deferred under the user's latest instruction. Native
+Codex source trials, five-host compilation and installed-host execution are
+separate evidence: no installed named-agent, live browser or all-host runtime
+qualification is claimed. No total token or whole-run saving is established.

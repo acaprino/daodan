@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "38.9.0"
+    "version": "38.10.0"
   },
   "name": "daodan",
   "owner": {
@@ -31,7 +31,7 @@
         "./skills/abstraction-architect"
       ],
       "source": "./exports/copilot/plugins/abstraction-architect",
-      "version": "5.1.0"
+      "version": "5.2.0"
     },
     {
       "agents": [
@@ -227,7 +227,7 @@
         "./skills/platform-engineering"
       ],
       "source": "./exports/copilot/plugins/platform-engineering",
-      "version": "2.2.0"
+      "version": "2.3.0"
     },
     {
       "agents": [
@@ -296,7 +296,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "2.1.4"
+      "version": "2.1.5"
     },
     {
       "agents": [
@@ -366,7 +366,7 @@
         "./skills/react-best-practices"
       ],
       "source": "./exports/copilot/plugins/react-development",
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "agents": [
@@ -482,7 +482,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/copilot/plugins/senior-review",
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "author": {
@@ -528,7 +528,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/copilot/plugins/testing",
-      "version": "4.2.0"
+      "version": "4.3.0"
     },
     {
       "agents": [
@@ -571,7 +571,7 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/copilot/plugins/typescript-development",
-      "version": "3.2.0"
+      "version": "3.3.0"
     }
   ]
 }

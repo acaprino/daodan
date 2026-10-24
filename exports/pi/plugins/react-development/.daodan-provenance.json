@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:05519319d27805f3c18210eef892912d9bae2f04f032a5a4613b1357a51bf1b1",
+  "coreDigest": "sha256:3809d4ec107487746ef54985c1e1fe2f3cc86ea21ca50cf5e81f8b7e24b56eb9",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],
   "plugin": "react-development",
-  "version": "2.1.0"
+  "version": "2.2.0"
 }

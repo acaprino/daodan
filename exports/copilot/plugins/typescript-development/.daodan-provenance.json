@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:d7e0970866f85832bfb26e0ea1a300b644989200c4509530e3fe7b0559479ffd",
+  "coreDigest": "sha256:ecaa4feb0f84da8c5807a80e25f8dffb659c7ba701a0f0f7bed109bc3a80ab70",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "typescript-development",
-  "version": "3.2.0"
+  "version": "3.3.0"
 }

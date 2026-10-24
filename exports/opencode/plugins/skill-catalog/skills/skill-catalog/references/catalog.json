@@ -21,7 +21,7 @@
         "abstraction",
         "architecture"
       ],
-      "version": "5.1.0"
+      "version": "5.2.0"
     },
     {
       "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /daodan:refactor-code for readability or lifecycle readability phases.",
@@ -190,7 +190,7 @@
         "integration",
         "platform"
       ],
-      "version": "2.2.0"
+      "version": "2.3.0"
     },
     {
       "description": "Create, resolve, validate and promote canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, or a merged change promotes a Proposed record. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
@@ -271,7 +271,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.1.4"
+      "version": "2.1.5"
     },
     {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: the user wants to brainstorm or explore an idea before building, initialize or set up a project, diagnose project health or technical debt, build a feature, fix a bug, refactor code, check task status, continue an open task, finish and merge a task, sync upstream, or run a daodan lifecycle command. DO NOT TRIGGER WHEN: the user requests code explanation without investigation or changes, wants an isolated specialist audit (use senior-review, codebase-map or testing directly), or only needs a problem investigated without fixing it (use senior-review:investigation-method).",
@@ -286,7 +286,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.1.4"
+      "version": "2.1.5"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use lifecycle-method).",
@@ -301,7 +301,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.1.4"
+      "version": "2.1.5"
     },
     {
       "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, recording, resuming or closing a project intervention.",
@@ -577,7 +577,7 @@
       ],
       "provider": "react-development",
       "topics": [],
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "description": "Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: running the tidy method (references/tidy.md) behind /daodan:tidy-repo or a lifecycle plan's workspace operations, or the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review), or test consolidation (use testing:test-remediation-method).",
@@ -630,7 +630,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -652,7 +652,7 @@
       "topics": [
         "defects"
       ],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection. TRIGGER WHEN: the user reports an error, regression or strange behavior whose cause is unknown and wants it investigated, a coordinator investigates a problem, or a bug fix starts without a known cause. DO NOT TRIGGER WHEN: assessing a change or artifact for defects (use review-method), or the root cause is already established with evidence.",
@@ -667,7 +667,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating code-review, team-review or pr-review results.",
@@ -682,7 +682,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "Unified review engine: the light review and the branch review (variants team-review and pr-review, and code-review), including signal-selected stack specialists. TRIGGER WHEN: the user asks to review current changes, a commit, a file, a plan, a specification, a document, a branch or a pull request for defects, or /daodan:review-changes, /daodan:review-branch or a lifecycle review phase runs a review. DO NOT TRIGGER WHEN: establishing the root cause of a reported failure without reviewing an artifact (use investigation-method), or removing dead code (use application-cleanup-method).",
@@ -697,7 +697,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt. Load before dispatching reviewers in senior-review or project-lifecycle.",
@@ -712,7 +712,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation. TRIGGER WHEN: running team-review (/daodan:review-branch) or code-review quality gates, or consolidating findings from parallel reviewers.",
@@ -727,7 +727,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.4.0"
+      "version": "16.5.0"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",
@@ -765,7 +765,7 @@
         "testing",
         "tests"
       ],
-      "version": "4.2.0"
+      "version": "4.3.0"
     },
     {
       "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence. Load before dispatching testing:test-suite-auditor.",
@@ -780,7 +780,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.3.0"
     },
     {
       "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when auditing a suite, quarantining tests or consolidating a module's tests (consolidation through /daodan:tidy-repo).",
@@ -795,7 +795,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.3.0"
     },
     {
       "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
@@ -832,7 +832,7 @@
       "operations": [],
       "provider": "typescript-development",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.3.0"
     },
     {
       "description": "Advanced TypeScript 5.x patterns, strict tsconfig/Vite/Vitest setup, type-level programming and Zod runtime schemas. TRIGGER WHEN: migrating JS to TS, bootstrapping a TS project, writing generics, conditional/mapped/branded types, discriminated unions, Zod schemas, or typing React/NestJS. DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:react-best-practices), or dead code (use knip).",
@@ -855,7 +855,7 @@
       ],
       "provider": "typescript-development",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.3.0"
     },
     {
       "description": "20 rules across 7 categories, each with detection and fix guidance. TRIGGER WHEN: reviewing or hardening TypeScript against type-system erosion: `any` leakage, unsound casts, missing boundary validation, assertion abuse, tsconfig strictness, exhaustiveness and generics soundness. DO NOT TRIGGER WHEN: style and naming review (use typescript-write), or dead-code detection (use knip).",
@@ -879,7 +879,7 @@
       ],
       "provider": "typescript-development",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.3.0"
     },
     {
       "description": "Apply house coding standards to everyday application work. TRIGGER WHEN: writing or reviewing TypeScript/JavaScript code, including types, generics, async patterns, module boundaries, and style conventions. DO NOT TRIGGER WHEN: React performance (use react-development), or advanced type-system depth (use mastering-typescript).",
@@ -901,7 +901,7 @@
       ],
       "provider": "typescript-development",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.3.0"
     }
   ],
   "installation_evidence": false,

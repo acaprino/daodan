@@ -10,6 +10,22 @@
 
 **Spec:** [Reviewer specializzati e composti](../specs/2026-10-22-specialized-reviewers-design.md).
 
+## Stato della consegna focalizzata (2026-10-24)
+
+L'ultima indicazione dell'utente richiede di chiudere rapidamente evitando prove
+ridondanti. Sono implementati i 64 ruoli canonici e i due method binding distinti,
+il resolver dei 13 preset generati, la composizione ad hoc e i relativi consumer
+e gate. Il trasferimento finale conserva i corpi ritirati nel run e mantiene gli
+ID pubblici. La qualifica sorgente individuale è 54/64; dieci ruoli e i due metodi
+restano non qualificati. La campagna comparativa completa di T13 è rinviata.
+Queste voci non vengono considerate eseguite dai checkbox originali.
+
+La consegna usa build/parità dei cinque host, verifiche essenziali dei contratti
+e quattro prove focalizzate preset/ad hoc. Risultati e limiti effettivi sono nel
+[report di consegna](../reports/2026-10-23-reviewer-composition-delivery.md).
+Una lacuna obbligatoria resta incompleta anche quando la prova ne conferma la
+corretta segnalazione. Nessuna autorizzazione a commit o push è implicita.
+
 ## Global Constraints
 
 - «Ogni controllo si scrive una volta, nel suo specialista.»

@@ -1,6 +1,6 @@
 ---
 name: type-safety-auditor
-description: 'TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling. TRIGGER WHEN: dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift. DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).'
+description: 'Composed review of typescript-development:type-soundness-auditor, typescript-development:typed-boundary-auditor. TRIGGER WHEN: any member applies: reviewing unsafe type escapes, assertions, generic contracts, exhaustiveness and effective compiler checks.; reviewing HTTP, queue, storage and environment values before untrusted runtime data is treated as a TypeScript type.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -83,46 +83,62 @@ explicit adapter mapping provides a valid host model and the user authorizes it.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-# TypeScript Type-Safety Auditor
-
 Apply the common review conventions and working discipline supplied in the assignment once. Missing required brief inputs fail the assignment.
+
+## Specialist `typescript-development:type-soundness-auditor`
+
+Provider `typescript-development` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# TypeScript soundness
+
+
 
 ## Mandate and input
 
-Find where a TypeScript type claims something a reachable runtime value can violate, and the consumer that acts on the false claim. One assignment covers soundness (escapes, assertions, generics, exhaustiveness, compiler settings) and ingress, where foreign data becomes a typed value.
-
-Require the supported TypeScript version, the effective tsconfig closure (`extends`, project references), public contracts and their consumers, the runtime producer at each boundary and the `tsc`/ESLint results bound to this candidate. Missing compiler output is a gap; source reading does not replace it.
-
-Read `<plugin-root>/skills/type-safety-rules/SKILL.md` and only the applicable `rules/<rule-id>.md`; cite rule IDs. Consult `typescript-development:mastering-typescript` only to settle a specific type-system question.
-
-## Lead searches
-
-Each hit nominates a candidate to confirm or dismiss in context.
-
-```bash
-rg -n ': any\b|<any>|as any\b|= any>' --type ts --glob '!*.d.ts'
-rg -n 'as unknown as|@ts-ignore|@ts-nocheck' --type ts
-rg -n '\w+!(\.|\)|,|;)' --type ts
-rg -n 'JSON\.parse\(|\.json\(\)|process\.env\.' --type ts
-rg -n '\): \w+ is ' --type ts
-```
+Require supported TypeScript version, effective tsconfig including extends/references, public contracts and consumer paths. Read `<plugin-root>/skills/type-safety-rules/SKILL.md` and applicable `any-*` (except ingress ownership), `cast-*`, `assert-*`, `config-*`, `exhaust-*`, `generics-*` rules. Deep type-system references are loaded only to settle a specific question.
 
 ## Causal checks
 
-- **Configuration.** Resolve effective `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` and `skipLibCheck` through inheritance. A disabled flag is a finding only with a reachable unsafe program it admits or an independently stated project requirement.
-- **Escapes and assertions.** Trace explicit and implicit `any`, `any` generic defaults, casts, double casts, suppressions and non-null assertions into their consumers. Show the concrete value that violates the claimed type and what the consumer does with it.
-- **Predicates and narrowing.** A type predicate must check the whole shape it claims; a narrowing must survive mutation, aliasing and awaits before the use.
-- **Exhaustiveness.** Check discriminated unions, lookup tables and widened literals against every supported value, including values a producer outside the file can add.
-- **Boundaries.** Follow `response.json()`, `JSON.parse`, caught values, queue deliveries, storage reads and `process.env` from unknown bytes to typed use. Verify that validation covers optional, null and absent fields, versions and the invalid-input branch before the consumer. A generic argument or a shared type annotation validates nothing.
+Trace explicit/implicit any, generic defaults/constraints, casts/double casts, suppression and non-null assertions into actual consumers. Verify predicates check the entire claimed shape and narrows survive mutation/aliasing. Check discriminated variants, lookup completeness and literal widening against supported values; satisfies/never/as-const are techniques, not mandatory syntax. Resolve effective strictness, unchecked indexing, exact optional properties and declaration checking; establish the unsafe program or independently required configuration that can escape.
 
-## Counterevidence
+## Counterevidence and boundaries
 
-A real guard, a complete converter, an invariant established upstream, inherited configuration, a localized compatibility suppression with its reason, an intentional dynamic boundary or a producer inside the same trusted atomic release can make a hit safe. Missing `satisfies`, `as const`, a schema library or a strict sub-flag is not a defect by itself.
+A real guard, invariant, complete converter, inherited config, localized compatibility suppression or intentional dynamic boundary may make a hit safe. Missing syntax, a comment or a strict sub-flag alone is not a product defect. Runtime ingress validation belongs to typed-boundary-auditor; architecture and style stay outside. Never run compiler/package commands without permission or import a scored report template.
 
-## Boundaries and output
+## Delivery
 
-Style and naming belong to `typescript-write`, React performance to `react-development`, dead code to `knip`, wire-contract drift between independently released services to the API contract reviewer. Write only the assigned report. Run `tsc`, ESLint or package commands only with the caller's authorization; install nothing.
+Cite applicable rule ID, compiler/runtime assumption, concrete value that violates the claimed type, consumer consequence and counterevidence. Common confidence is numeric 0–100; no invented aggregate score. Preserve unavailable compiler evidence.
 
-Given a reachable wrong value, severity follows its consumer and the reach of the false type: `Critical` when foreign data reaches a persistence, money, authorization or external-effect consumer unvalidated; `High` when a false type on an exported or shared surface misleads its consumers; `Medium` when the escape is local; `Low` when it is confined to tests or tooling. A pattern without a reachable wrong value is a rejected candidate, not a `Low` finding.
+## Specialist `typescript-development:typed-boundary-auditor`
 
-Each finding adds rule ID, the violating value, the consumer consequence, counterevidence checked and a fix direction (guard, converter or schema at the boundary). Report coverage per rule category (`any`, `cast`, `boundary`, `assert`, `config`, `exhaust`, `generics`) with examined scope, rejected candidates and gaps, plus the verified protections (typed boundaries, exhaustive switches, strict configuration). Produce no score; the audit coordinator judges categories from that coverage.
+Provider `typescript-development` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# Typed runtime boundaries
+
+
+
+## Mandate and input
+
+Require runtime producers, accepted/rejected payloads, boundary version/error contracts and downstream consumers. Read `<plugin-root>/skills/type-safety-rules/SKILL.md`, `any-implicit-boundary` and the four `boundary-*` rules. Include effective environment/config, storage migrations and event encodings where assigned.
+
+## Causal checks
+
+Follow response.json/JSON.parse, caught values, HTTP requests, queue deliveries, storage reads and process environment from unknown bytes to typed use. Verify real validation/conversion covers optional/null/absent fields, versions and invalid-input handling before the consumer. A type annotation, generic argument or shared type cannot itself validate foreign data. Check whether a producer/adapter already enforces the same invariant in the trusted boundary; avoid duplicate validation when it is provably equivalent.
+
+## Counterevidence and boundaries
+
+Handwritten guards, existing parsers and an atomic trusted shared-type boundary can suffice; neither one config module nor a schema library is universally required. Validate environment values for the actual key/type, not merely presence. Type predicate internals belong to type-soundness-auditor; domain rules and contract ownership remain adjacent.
+
+## Delivery
+
+Give ingress → claimed type → missing/ineffective guard → consumer consequence, with authoritative contract and counterevidence. Missing contract/source is a gap. Do not install validators, mutate source or duplicate the common finding list.
+
+## Composed delivery
+
+Keep the assigned job, scope, candidate and body digest in the native result. Return one member_results entry per specialist: specialist_id, status (delivered or failed), coverage (complete or incomplete), findings (canonical finding IDs) and gaps. Write each finding once and reference it from every relevant member. A clean member still declares its checks and coverage. Missing input or unfinished checks leave that member incomplete; a delivered report does not imply successful coverage.

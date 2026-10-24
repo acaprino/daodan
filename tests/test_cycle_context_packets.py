@@ -265,6 +265,15 @@ class CycleContextTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertNotIn(b'Traceback', result.stderr)
 
+    def test_adapter_cli_reports_unreadable_inputs_as_an_invocation_error(self):
+        path = self.root / 'config.json'
+        path.write_bytes(json.dumps(self.config).encode())
+        result = subprocess.run([sys.executable, '-B', str(CYCLE), 'task-packet', '--config', str(path),
+            '--task-id', 'T1', '--request', str(self.root / 'absent.json'),
+            '--recipient', str(self.root / 'absent-recipient.json')], capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn(b'Traceback', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

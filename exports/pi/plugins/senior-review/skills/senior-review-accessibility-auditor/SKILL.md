@@ -1,6 +1,6 @@
 ---
 name: senior-review-accessibility-auditor
-description: 'Reviews whether supported users can perceive, navigate and complete critical UI journeys, including assistive interaction and static layout rules that block entry. TRIGGER WHEN: target contains interactive UI, forms, navigation, dialogs, visual feedback, accessibility requirements or styles affecting critical user paths. DO NOT TRIGGER WHEN: target has no user-facing surface; async ordering alone belongs to UI race, and unsupported runtime mechanisms belong to platform.'
+description: 'Composed review of senior-review:accessible-navigation-auditor, senior-review:accessible-perception-auditor. TRIGGER WHEN: any member applies: controls, forms, menus, dialogs, focus or navigation are in scope.; labels, validation, async status, media, themes, layout or critical-entry styles are in scope.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 disable-model-invocation: true
 ---
 
@@ -81,96 +81,83 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-# Accessibility Auditor
+Apply the common review conventions and working discipline supplied in the assignment once. Missing required brief inputs fail the assignment.
 
-Prove a user-visible barrier in a supported journey. A missing attribute, CSS
-pattern or automated warning is a lead until the effective behavior is established.
+## Specialist `senior-review:accessible-navigation-auditor`
 
-## Shared review method
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
 
-Before analysis, read
-`<plugin-root>/skills/review-quality-gates/references/reviewer-common.md`.
-It owns scope, snapshot, evidence, independence, knowledge usage and delivery.
-Use its compact report; add the affected journey and interaction mode to findings.
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-## Establish the journey
 
-- Identify the assigned UI surface, critical outcomes, supported viewports and
-  interaction modes from requirements, components, routes and effective styles.
-- Trace entry paths such as consent, sign-in, onboarding and blocking dialogs
-  through success, validation failure, cancellation and recovery.
-- Read rendered markup or component output, handlers, reusable primitives and
-  styles together. A wrapper may supply semantics or focus behavior.
-- Use a supplied accessibility target and version when judging conformance.
-  Without one, report evidenced barriers and unknown requirements separately.
-- Reuse supplied browser or assistive-technology evidence only for its recorded
-  candidate, environment and journey. Static reading proves neither execution
-  nor comprehensive accessibility conformance.
+# Accessible Navigation Auditor
 
-## Semantics and navigation
 
-- Check native control semantics, accessible names, roles, state and value.
-  Trace custom control behavior rather than requiring redundant ARIA on native elements.
-- Check heading/landmark and reading order where they determine navigation;
-  distinguish decorative structure from an inaccessible required destination.
-- Follow keyboard reachability, activation, sequential focus and visible focus
-  through menus, composites, dialogs and nested interactive controls.
-- Check focus on opening, closing, route changes, validation errors and removal
-  of the active element; verify escape and return paths without trapping the user.
-- Check disabled, hidden, inert and offscreen elements against the actual active
-  state. An intentional modal focus boundary is not a keyboard trap by itself.
-- For pointer gestures, dragging and hover-only controls, identify an equivalent
-  supported way to perform the operation; assess target sizing from the declared
-  requirements and effective geometry, not a universal invented threshold.
 
-## Forms, feedback and perception
+## Mandate and activation
 
-- Follow labels, instructions, required fields, validation messages and error
-  recovery. A visible error must be associated with the affected operation and
-  reachable or announced where the journey requires it.
-- Check asynchronous status, progress and result announcements without forcing
-  focus jumps or repeated announcements; inspect the actual update semantics.
-- Check meaningful text alternatives, link purpose, captions or equivalent media
-  access where that content conveys information required for the task.
-- Inspect effective foreground/background combinations, transparency, gradients,
-  themes and state styles. Unknown computed colors remain a measurement gap.
-- Check information conveyed solely through color, motion, sound or position;
-  inspect available equivalent cues before asserting a barrier.
-- Trace zoom, text resizing, reflow, orientation and user preferences such as
-  reduced motion or forced colors for the declared target. Locate clipped content,
-  unusable controls or loss of necessary information, not cosmetic differences.
+Prove an interaction barrier for the supported user and journey.
 
-## Critical layout and entry blockers
+## Required input
 
-- Follow the effective cascade for the blocking component and its ancestors:
-  global/root selectors, inherited properties, cascade layers, specificity,
-  source order, media/container queries, utility expansion and inline styles.
-- Check positioning, containing blocks, dimensions, overflow, stacking contexts,
-  pointer events and scroll locking against the element that must be reached.
-- Confirm selector matching and active conditions before claiming one rule
-  overrides another. Inspect utility definitions or generated CSS when needed;
-  a class name alone does not establish the applied declaration.
-- Trace overlays and fixed/sticky controls at supported viewport and zoom states.
-  Identify the concrete rule chain that hides, covers or prevents activation of
-  consent, login, navigation, dismissal or another required control.
-- A stylesheet present in inventory is not evidence that its relevant rules were
-  reviewed. Record missing effective styles or runtime geometry as coverage gaps.
+Read critical entry/success/validation/cancel/recovery paths, rendered markup, handlers, shared primitives, effective focus styles, supported viewports and interaction modes. Apply a supplied accessibility target/version; otherwise separate evidenced barriers from unknown conformance.
 
-## Evidence and counterevidence
+## Causal checks
 
-For each finding, retain the required outcome, affected user/interaction mode,
-reachable state, markup/handler/style locations and causal barrier. Include the
-effective rule chain for layout findings and supplied runtime evidence when used.
-Check native behavior, shared component guarantees, fallback controls and an
-equivalent route before retaining the finding. Distinguish proved source defects
-from behaviors needing browser or assistive-technology confirmation.
+- Trace native/custom semantics, accessible name, role, state and value through wrappers. Do not demand redundant ARIA from native controls.
+- Follow reading order, headings and landmarks when they govern a required destination.
+- Trace keyboard reachability, activation, sequential and visible focus through menus, composites, dialogs and nested controls.
+- Check focus on open/close, route changes, validation errors and removal of the active node; verify escape and return paths. Match disabled, hidden, inert and offscreen states to the actual interaction.
+- Follow pointer-only gesture, dragging and hover operations to a supported equivalent. Judge target geometry only against the declared requirement; unknown measurements stay gaps.
 
-## Boundaries
+## Counterevidence
 
-- Keep static usability barriers here even when no asynchronous race exists.
-- Route order-dependent stale UI or double actions to the UI race owner;
-  retain only a distinct accessibility consequence supported by its own evidence.
-- Route unsupported browser/native mechanisms to the platform reviewer and
-  quantitative rendering or loading cost to the performance owner.
-- Inspect existing tests as evidence; test adequacy belongs to the testing owner.
-  Do not run browsers, assistive tools or application code without caller authority.
+Native behavior, shared primitives, intentional modal boundaries and equivalent controls may satisfy the journey. A modal boundary with an escape and focus-return path is not inherently a trap.
+
+## Boundaries and output
+
+Perceptual feedback and static CSS/overlay obstruction belong to accessible perception; asynchronous focus theft belongs to UI race; unsupported runtime mechanisms belong to platform.
+
+Add the required outcome, affected interaction mode, reachable state and markup/handler/focus evidence. Source reading is not browser/assistive-tool execution or whole-system conformance.
+
+## Specialist `senior-review:accessible-perception-auditor`
+
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# Accessible Perception Auditor
+
+
+
+## Mandate and activation
+
+Trace information loss or a static presentation barrier to a required user action.
+
+## Required input
+
+Read rendered output, handlers, shared primitives and effective styles for supported themes/viewports/modes. Use declared accessibility target/version and supplied candidate-bound browser evidence; missing geometry or styles remain gaps.
+
+## Causal checks
+
+- Follow field labels, instructions, required status, validation errors and recovery into associated or announced feedback. Check async progress/results and repeated announcements without forcing focus jumps.
+- Verify meaningful text alternatives, link purpose, captions or equivalent access for required media. Check equivalent cues where color, movement, sound or position conveys information.
+- Resolve foreground/background, transparency, gradients, themes and state styles before evaluating contrast. Unknown computed colors require measurement, not an invented ratio.
+- Trace zoom, text resizing, reflow, orientation, reduced motion and forced colors for the supported target; identify clipped information or unusable controls.
+- Follow the blocking component and ancestors through selector matching, root/global rules, inheritance, cascade layers, specificity, source order, media/container queries, utility expansion and inline styles.
+- Verify containing blocks, positioning, dimensions, overflow, stacking, pointer events, scroll locks and fixed/sticky overlays that hide, cover or prevent activating consent, login, navigation or dismissal. Class names and stylesheet inventory alone do not prove applied declarations.
+
+## Counterevidence
+
+Check actual selector conditions, native semantics, shared primitives, alternative cues/controls and reachable scrolling. Cosmetic differences or a style pattern without a supported blocked action are not defects.
+
+## Boundaries and output
+
+Keyboard/focus navigation belongs to accessible navigation; order-dependent geometry or late events to UI race; rendering cost and runtime support retain their owners.
+
+Include user/outcome, reachable state and exact markup/handler/rule chain. Distinguish source-proved obstruction from geometry or assistive behavior awaiting exercise.
+
+## Composed delivery
+
+Keep the assigned job, scope, candidate and body digest in the native result. Return one member_results entry per specialist: specialist_id, status (delivered or failed), coverage (complete or incomplete), findings (canonical finding IDs) and gaps. Write each finding once and reference it from every relevant member. A clean member still declares its checks and coverage. Missing input or unfinished checks leave that member incomplete; a delivered report does not imply successful coverage.

@@ -78,13 +78,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Project lifecycle
 
-Load `project-protocol:project-protocol` for records, snapshots, verification and
+Load the `project-protocol:project-protocol` skill for records, snapshots, verification and
 recovery. Coordinate authorized outcomes and dispatch within scope; reuse detection
 owners.
 
 ## Load map
 
-Read each step's named units at its start.
+Read each step's units at its start.
 
 | Operation or step | Read |
 |---|---|
@@ -120,7 +120,7 @@ in-scope edits, `commit` for commits, neither a push or a permanent deletion.
 
 ## Canonical methods
 
-Load needed owners by name, never by path.
+Load owners by name, never by path.
 
 | Need | Load or dispatch |
 |---|---|

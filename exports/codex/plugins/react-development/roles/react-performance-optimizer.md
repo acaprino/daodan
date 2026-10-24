@@ -1,6 +1,6 @@
 ---
 name: react-performance-optimizer
-description: 'Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat. TRIGGER WHEN: dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).'
+description: 'Composed review of react-development:react-effects-auditor, react-development:react-render-cost-auditor, react-development:react-bundle-auditor, react-development:react-dataflow-auditor. TRIGGER WHEN: any member applies: reviewing React effect dependencies, current callbacks, repeated actions and deterministic subscription cleanup.; reviewing React subscriptions, component identity, hydration and avoidable render or main-thread work with causal evidence.; reviewing eager dependency reachability, code splitting, resource hints and optional feature delivery against the actual build.; reviewing request dependency graphs, server/client transfer, request isolation and cache freshness in React applications.. DO NOT TRIGGER WHEN: no member applies; missing required input remains a coverage gap.'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -83,34 +83,124 @@ explicit adapter mapping provides a valid host model and the user authorizes it.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-# React Performance Optimizer
-
 Apply the common review conventions and working discipline supplied in the assignment once. Missing required brief inputs fail the assignment.
+
+## Specialist `react-development:react-effects-auditor`
+
+Provider `react-development` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# React effect synchronization
+
+
 
 ## Mandate and input
 
-Find React-caused work, staleness or leaks whose consequence violates a stated requirement, a supplied budget or observable behavior. One assignment covers four mechanisms: effect synchronization, request and server/client dataflow, render and subscription cost, module and resource delivery.
-
-Require the installed React, compiler, store, framework and bundler versions, the component and store topology, rendered data cardinality, interaction or loading requirements, and any profile, chunk report or budget bound to this candidate. Unknown versions, cardinality or budgets stay explicit gaps; never substitute a universal target.
-
-Read only the applicable rules under `<plugin-root>/skills/react-best-practices/rules/` (`advanced-*`, `async-*`, `bundle-*`, `client-*`, `js-*`, `rendering-*`, `rerender-*`, `server-*`) and the matching section of `<plugin-root>/skills/react-best-practices/references/react19-stores-and-effects.md`. Rules and templates are leads and fix shapes; the common evidence rules decide applicability and severity.
+Require installed React/hooks version, reactive values, component lifetime and external subscription contracts. Read relevant rules under `<plugin-root>/skills/react-best-practices/rules/`: `advanced-*`, `client-event-listeners`, `js-tosorted-immutable`, `rerender-dependencies`, `rerender-derived-state-no-effect`, `rerender-functional-setstate`, `rerender-move-effect-to-event`. Use the effect/teardown sections of `references/react19-stores-and-effects.md` in that skill when needed; examples are leads, not automatic defects.
 
 ## Causal checks
 
-- **Effects.** Trace effect and callback dependencies and the state they write to prove self-sustaining re-entry, or a stale closure that changes behavior. Follow timers, listeners, sockets, channels, fetch/IPC completion and manual store subscriptions through dependency replacement and unmount; verify that the cleanup or stale-result suppression prevents the consequence (not every API accepts an AbortController). Effect Events read the latest committed values in supported versions; they are not a way to hide dependencies.
-- **Dataflow.** Build the real dependency graph of route, component and nested fetches; separate required sequencing from independent awaits. Check per-request deduplication, cross-request caches, keys and invalidation; request state must not leak through module globals. Freshness comes from the contract: `staleTime` and refocus have no universally correct value, and `gcTime` governs inactive retention, not freshness. Check server/client serialization and redundant payloads against what the framework transfers.
-- **Render and subscriptions.** Follow whole-store versus leaf subscriptions, fresh selector results and equality checks to the notifications and renders they cause. The compiler memoizes component work; it does not stabilize an external store snapshot, so a selector returning a new object on each read still notifies. Check component and key identity, list virtualization with stable item IDs, hydration differences and repeated computation derived from call frequency and input size.
-- **Delivery.** Trace initial versus conditional imports, barrel and namespace reexports, package `exports`/`sideEffects` and dynamic chunks to what the effective build ships or loads. A lazy boundary still needs loading and error behavior.
-- For every candidate, state the triggering frequency or cardinality and the affected interaction, state or payload. Keep a derivation from source distinct from a supplied measurement.
+- Trace effect/callback dependencies and state writes to prove self-sustaining re-entry or stale closures. Distinguish synchronization from user actions and derived render values; inspect remount and development replay against the intended lifetime.
+- Follow timers, events, sockets, channels, fetch/IPC completion and manual store subscriptions through dependency replacement and unmount. Verify unsubscribe, cancellation or stale-result suppression actually prevents the required consequence; not every API accepts AbortController.
+- Preserve reactive dependencies. Effect Events read latest committed values in supported versions, but are not general stable callbacks or a way to hide dependencies. Ref-based or resubscription designs can be valid.
+- Check shared listeners, functional updates and state/props mutation, including sort, against ownership and observable behavior.
 
-## Counterevidence
+## Counterevidence and boundaries
 
-Stable selectors or equality functions, effective teardown, intentional fresh queries, tree shaking and externalization, bounded cheap work, legitimate remount initialization and required first-render work can refute a candidate. A missing memo, virtualizer, compiler flag, library or React 19 API is not a defect by itself. Record the verified protections that refuted candidates; the coordinator reports them.
+A mount state update does not alone prove a loop; stable snapshots, teardown, invalidation and legitimate remount initialization can refute it. Do not demand a ref guard, Effect Event or one library. General races, persistent state and static CSS belong to adjacent owners; React-caused effect lifecycle remains here.
 
-## Boundaries and output
+## Delivery
 
-General query and algorithm cost belong to the general performance reviewer; timing races between async data, render and focus to the UI race reviewer; static CSS and layout to accessibility; native desktop backends to platform. Authorization inside server actions is a lead for the authorization owner; the React cause stays here. Write only the assigned report. Run builds, bundle analyzers or profilers only with the caller's authorization; a supplied report proves only its own candidate.
+Identify reactive trigger → closure/dependency/lifetime → observable consequence, effective cleanup and counterevidence. Keep static reasoning separate from React/runtime traces; suggest minimal existing mechanism.
 
-Native severity: `CRITICAL` when the evidenced consequence breaks a required interaction, loops without bound or leaks on every mount; `IMPORTANT` when it exceeds a stated budget or requirement; `IMPROVEMENT` when the benefit is evidenced but nothing required is violated.
+## Specialist `react-development:react-render-cost-auditor`
 
-Each finding adds its mechanism, trigger and frequency, affected state or interaction, counterevidence checked, a fix direction from the reference and how to verify it (Profiler trace, test, emitted chunk). Report coverage per mechanism, rejected candidates and unexamined scope.
+Provider `react-development` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# React rendering and work cost
+
+
+
+## Mandate and input
+
+Require component/store topology, React/compiler/store versions, rendered data cardinality, interaction requirements and supplied profiling or budgets. Under `<plugin-root>/skills/react-best-practices/rules/`, inspect applicable `js-*` except `js-tosorted-immutable`, `rendering-*` except `rendering-resource-hints`, and render-focused `rerender-*` (effect dependencies/actions/derived-effect/functional-update belong to react-effects-auditor). Include `client-passive-event-listeners`; use selector templates in that skill’s `references/react19-stores-and-effects.md` on demand.
+
+## Causal checks
+
+- Follow whole-store versus leaf/derived subscriptions, fresh selector results, equality checks and memoized selector lifetime. Compiler optimization does not prove external snapshot stability; establish actual notifications and renders.
+- Check component/key identity, inline definitions, list virtualization/item IDs, state initializers, callback/default-prop identity, split computations, transient refs and urgent versus deferrable updates. Preserve required state and interaction responsiveness.
+- Check server/client hydration, conditional zero rendering, visibility/state retention, SVG/layout work and script order. React-owned read/write alternation is in scope; static layout policy is adjacent.
+- Derive repeated work from calls and input size: storage/property/function caching, scans/indexes, set/map lookups, regex creation, allocation, early exit and min/max sorting. Assess cache invalidation, memory and supported APIs before proposing changes. Read/write batching, idle scheduling and passive listeners must preserve input behavior.
+
+## Counterevidence and boundaries
+
+No technique, memo, virtualizer, numeric row threshold, compiler flag or 200KB/16ms target is universally required. Stable object selectors, bounded cheap work, necessary preventDefault, manual loading and intentional hydration differences can be valid. Require an evidenced consequence or agreed budget; historical percentage claims are not measurements.
+
+## Delivery
+
+Report changed identity/subscription/work, triggering frequency/cardinality, affected state or interaction and causal estimate versus supplied measurement. Keep performance, functional loss and absent runtime evidence distinct.
+
+## Specialist `react-development:react-bundle-auditor`
+
+Provider `react-development` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# React module and resource delivery
+
+
+
+## Mandate and input
+
+Require entry/route graph, bundler version/configuration, package exports/sideEffects, feature lifetime and supplied chunk/artifact evidence. Read applicable `bundle-*` and `rendering-resource-hints` rules under `<plugin-root>/skills/react-best-practices/rules/`; use the bundling section in that skill’s `references/react19-stores-and-effects.md` when needed.
+
+## Causal checks
+
+Trace initial versus conditional imports, namespace/barrel reexports, static analyzability, server tracing, dynamic chunks and third-party initialization to what actually ships or loads. Check legitimate package exports before deep imports. Assess lazy loading, preload on intent, route/manual chunk interactions and React DOM resource hints against startup needs, required monitoring and request duplication. A lazy boundary still needs loading/error behavior and permitted SSR semantics.
+
+## Counterevidence and boundaries
+
+Tree shaking, externalization, build transforms and required first-render work can refute an eager-cost claim. Library names, import style and a reference’s historical byte/time estimates are leads only. Do not install analyzers or build without explicit permission; supplied reports prove only their own candidate. Route data-cache freshness and gcTime to react-dataflow-auditor, virtualization to react-render-cost-auditor.
+
+## Delivery
+
+Report entry → dependency → emitted/requested resource, required versus avoidable work, package/version and actual measurement or bounded derivation. Preserve output coverage and unavailable artifact/runtime evidence.
+
+## Specialist `react-development:react-dataflow-auditor`
+
+Provider `react-development` owns these instructions and unqualified skills. Resolve `<plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# React request and server/client dataflow
+
+
+
+## Mandate and input
+
+Require framework/server runtime versions, request/tenant identity, data dependencies, client/server boundaries and freshness/lifetime requirements. Under `<plugin-root>/skills/react-best-practices/rules/`, read applicable `async-*`, `server-*`, `client-localstorage-schema` and `client-swr-dedup`. Authentication in `server-auth-actions` is routed to authorization review; do not omit the lead. Use Suspense/Query guidance in that skill’s `references/react19-stores-and-effects.md` as versioned examples.
+
+## Causal checks
+
+- Build the real dependency graph for route/component/nested fetches. Distinguish necessary sequencing from independent work and branch-unused awaits; use existing promises before adding a dependency. Check Suspense streaming, pending/error paths and post-response work against lifetime guarantees.
+- Trace per-request deduplication, cross-request caches, keys, invalidation, storage schema and cache eviction. Request state must not bleed through module globals. Real-time versus CRUD freshness comes from the contract, not a universal staleTime/refocus value; gcTime controls inactive retention rather than freshness.
+- Check static I/O versus request-bound inputs, server/client prop serialization, redundant payloads and required optimistic/recovery behavior. Framework serializer support and deployment boundaries determine what can cross; TypeScript shape alone does not.
+
+## Counterevidence and boundaries
+
+An awaited prerequisite, necessary field, intentional fresh query or guarded client storage can be valid. Parallelization must preserve authorization, failures, cancellation and resource limits. Do not claim throughput from source or require SWR/LRU/better-all. Route domain-cache invariants and actual authorization defects to their owners; retain React dataflow causes here.
+
+## Delivery
+
+State request/scope lifetime, dependency or cache relation, reachable ordering and consequence, effective guard and missing runtime evidence. Separate latency derivation from measured latency and shared-state leakage from generic performance advice.
+
+## Composed delivery
+
+Keep the assigned job, scope, candidate and body digest in the native result. Return one member_results entry per specialist: specialist_id, status (delivered or failed), coverage (complete or incomplete), findings (canonical finding IDs) and gaps. Write each finding once and reference it from every relevant member. A clean member still declares its checks and coverage. Missing input or unfinished checks leave that member incomplete; a delivered report does not imply successful coverage.

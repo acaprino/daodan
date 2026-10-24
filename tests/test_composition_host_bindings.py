@@ -39,23 +39,23 @@ class EffectiveReviewerBindingTests(unittest.TestCase):
         return spec
 
     def test_local_role_override_fingerprint_matches_the_published_file(self):
-        override = self.override("senior-review", "security-auditor")
+        override = self.override("senior-review", "premise-auditor")
         output = self.root / "senior"
         render_plugin(self.registry["senior-review"], self.adapter, output, [override], ROOT / "adapters", self.registry)
         entries = json.loads((output / "skills/review-preparation/references/reviewer-catalog.json").read_text(encoding="utf-8"))["entries"]
-        entry = next(e for e in entries if e["id"] == "senior-review:security-auditor")
+        entry = next(e for e in entries if e["id"] == "senior-review:premise-auditor")
         actual = "sha256:" + hashlib.sha256((output / entry["host_binding"]["file"]).read_bytes()).hexdigest()
         self.assertEqual(actual, entry["host_binding"]["sha256"])
 
     def test_foreign_role_override_fingerprint_follows_the_provider(self):
-        override = self.override("react-development", "react-effects-auditor")
-        provider_output = self.root / "react"
-        render_plugin(self.registry["react-development"], self.adapter, provider_output, [override], ROOT / "adapters", self.registry)
+        override = self.override("python-development", "python-semantics-auditor")
+        provider_output = self.root / "python"
+        render_plugin(self.registry["python-development"], self.adapter, provider_output, [override], ROOT / "adapters", self.registry)
         output = self.root / "senior"
         render_plugin(self.registry["senior-review"], self.adapter, output, adapters_root=ROOT / "adapters",
-                      plugin_registry=self.registry, role_overrides={"react-development": [override]})
+                      plugin_registry=self.registry, role_overrides={"python-development": [override]})
         entries = json.loads((output / "skills/review-preparation/references/reviewer-catalog.json").read_text(encoding="utf-8"))["entries"]
-        entry = next(e for e in entries if e["id"] == "react-development:react-effects-auditor")
+        entry = next(e for e in entries if e["id"] == "python-development:python-semantics-auditor")
         actual = "sha256:" + hashlib.sha256((provider_output / entry["host_binding"]["file"]).read_bytes()).hexdigest()
         self.assertEqual(actual, entry["host_binding"]["sha256"])
 
@@ -63,7 +63,7 @@ class EffectiveReviewerBindingTests(unittest.TestCase):
         override = self.override("react-development", "react-effects-auditor")
         plugin = self.registry["react-development"]
         plugin = replace(plugin, components=replace(plugin.components, roles=(*plugin.components.roles, "combined")),
-                         reviewer_compositions=(("combined", ("react-development:react-effects-auditor",)),))
+                         reviewer_compositions=(*plugin.reviewer_compositions, ("combined", ("react-development:react-effects-auditor",)),))
         registry = {**self.registry, plugin.name: plugin}
         live = self.root / "live"
         live.mkdir()
@@ -76,7 +76,7 @@ class EffectiveReviewerBindingTests(unittest.TestCase):
         from scripts.daodan.catalogs import render_catalog
         plugin = self.registry["react-development"]
         plugin = replace(plugin, components=replace(plugin.components, roles=(*plugin.components.roles, "combined")),
-                         reviewer_compositions=(("combined", ("react-development:react-effects-auditor", "react-development:react-render-cost-auditor")),))
+                         reviewer_compositions=(*plugin.reviewer_compositions, ("combined", ("react-development:react-effects-auditor", "react-development:react-render-cost-auditor")),))
         registry = {**self.registry, plugin.name: plugin}
         adapter = load_adapter(ROOT / "adapters", "opencode")
         output = self.root / "opencode"

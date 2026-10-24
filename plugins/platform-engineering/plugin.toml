@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "platform-engineering"
-version = "2.2.0"
+version = "2.3.0"
 description = "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; its audit method runs under /daodan:check-health and its reviewer inside senior-review's reviews"
 license = "MIT"
 
@@ -16,3 +16,12 @@ skills = ["platform-engineering"]
 roles = ["platform-reviewer", "browser-compatibility-auditor", "offline-lifecycle-auditor", "native-lifecycle-auditor", "desktop-bridge-auditor", "app-distribution-auditor"]
 workflows = []
 policies = []
+
+[reviewers.compositions.platform-reviewer]
+members = [
+  "platform-engineering:browser-compatibility-auditor",
+  "platform-engineering:offline-lifecycle-auditor",
+  "platform-engineering:native-lifecycle-auditor",
+  "platform-engineering:desktop-bridge-auditor",
+  "platform-engineering:app-distribution-auditor",
+]

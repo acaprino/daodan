@@ -58,7 +58,8 @@ Probed on 2026-10-24:
   carry `parent_id`, `agent`, `model`, `cost` and `tokens_*`; a worker is a child
   session.
 - Pi 1.2.0: session jsonl, assistant `usage` with `input`, `output`, `cacheRead`,
-  `cacheWrite`, `reasoning` and a host-computed `cost`.
+  `cacheWrite`, `reasoning` and a host-computed `cost`, 0 for a gateway model with
+  51531 tokens in the sample.
 - Copilot: no CLI installed on the probe machine; no usage source verified.
 
 The question this record answers: how does a run learn, per worker and per phase,
@@ -85,14 +86,30 @@ cache_write_1h, output, reasoning, host_cost, source_key`, where `input` is unca
 input only. Rows are deduplicated by a per-host key (Claude Code `message.id` plus
 `requestId`; Codex `response_id`; OpenCode message id; Pi message id).
 
+The helper has one reader per host, because runtime code ships under a skill and
+`adapters/` act only at compile time. The compiled host binding passes the host to
+the helper, which never guesses it from the logs it finds. Each reader maps its
+host's cache semantics to the row. Claude Code, OpenCode and Pi log input without
+cache (verified on local samples: OpenCode and Pi totals equal input plus output
+plus cache). Codex logs `cached_input_tokens` inside `input_tokens`, so uncached
+input is the difference. Only Claude Code splits cache writes into 5 minutes and
+1 hour; the other readers put every write in `cache_write_5m`.
+
 Attribution: a delivery records the host's handle for its worker when dispatched
 (Claude Code `toolUseId`, OpenCode child session id, Codex thread id); the helper
 assigns that worker's rows to the delivery and to the delivery's phase. The
 coordinator's own rows go to the phase whose recorded time window contains them.
 
-Cost: each row is priced from the model catalog's `cost_usd_per_million`, labeled
-with the catalog revision; a host-reported cost is kept beside the estimate and is
-the figure shown when present. A model with neither is `unpriced`.
+Cost: Daodan computes every figure itself, as a comparison measure at list price
+and not a bill: its purpose is to compare runs, roles and tiers on cost
+efficiency. Each row is priced from the model catalog's four
+`cost_usd_per_million` rates (input, output, cache_read, cache_write), labeled
+with the catalog revision. The catalog's `cache_write` is the 5-minute rate.
+A 1-hour write on an Anthropic model is priced at twice the input rate, the
+multiplier the official pricing page publishes for every Claude model; providers
+that log one write bucket use `cache_write`. A host-reported cost is
+stored only as a comparison field. A model absent from the catalog is `unpriced`,
+whatever the host reported.
 
 Harvest runs at every wave boundary and at every phase close, because hosts purge
 transcripts. Hosts in scope: Claude Code, Codex, OpenCode and Pi. Copilot records
@@ -111,8 +128,9 @@ worker.
 - **EX-003** (boundary, cached subset): Input: Codex `token_usage_record` with `input_tokens: 175458`, `cached_input_tokens: 23808` -> Expected: row `input: 151650`, `cache_read: 23808`.
 - **EX-004** (rejection, no source): Input: a run on Copilot -> Expected: `usage.status: unavailable` with the reason; the budget check reports `unmeasured`, never 0 USD; the run's own completion rules are unchanged.
 - **EX-005** (budget): Input: `budget.max_usd: 5.00`, harvest at a wave boundary shows 3.80 USD, then 5.10 USD at the next -> Expected: a warning recorded at 76%; at 102% the next wave does not start until a `spend` grant with a new ceiling is recorded.
-- **EX-006** (unpriced): Input: a model absent from the catalog on a host that logs no cost -> Expected: `usd: null`, `priced: false`; the run total is marked `partial`.
+- **EX-006** (unpriced): Input: a Pi row for `tritech-auto` through `tri-llm-gateway`, 51531 tokens, host `cost.total: 0`, model absent from the catalog -> Expected: `usd: null`, `priced: false`, `host_cost: 0` kept as a comparison field; the run total is marked `partial`.
 - **EX-007** (purged source): Input: a worker transcript deleted by the host before harvest -> Expected: that delivery's usage is `missing` with the reason; rows harvested earlier remain.
+- **EX-008** (1-hour cache write): Input: a Claude Code row on `claude-opus-5-5` with `ephemeral_1h_input_tokens: 488681` and catalog input 4 -> Expected: that bucket priced at 8 USD per million, 3.91 USD; the measured session of 2026-10-24 (89 responses) is priced at 10.12 USD, the figure the official rates give.
 
 ## Rejected Alternatives
 
@@ -123,6 +141,9 @@ worker.
 - **RA-005**: outcomes or usage reported by the model itself (ruflo's `hooks_model-outcome`); rejected because a model's account of its own success is not evidence. Outcomes come from deliveries and gates.
 - **RA-006**: billing APIs or a host's `/cost` output; rejected because they need network and credentials and do not attribute to workers.
 - **RA-007**: treating an unpriced model or an unreadable source as 0; rejected because it turns a gap into a false saving.
+- **RA-008**: ignoring cache tokens; rejected because cache reads and writes were 82% of the cost of the measured session of 2026-10-24 at official rates (1.81 USD counted against 10.12), and a run that reuses its cache well would look almost free.
+- **RA-009**: pricing every cache write at the catalog's single `cache_write` rate; rejected because it priced the measured session at 8.65 USD against 10.12 (15% low), while the exact 1-hour rate needs no catalog field.
+- **RA-010**: reporting the host's cost; rejected because a gateway logged 0 USD for 51531 tokens, so a host figure is not evidence of a price.
 
 ## Enforceable Invariants
 
@@ -130,7 +151,7 @@ worker.
 - **INV-002**: an unsupported, unreadable or purged source is recorded as `unavailable` or `missing` with its reason, never as zero tokens or zero cost.
 - **INV-003**: harvest is idempotent: the same logs produce a byte-identical `usage` section, and each source row is counted once by its host key.
 - **INV-004**: every host is normalized to the same row shape, with `input` meaning uncached input and cache reads and writes in their own buckets.
-- **INV-005**: every USD figure names its price source and revision; host-reported cost is kept beside the estimate.
+- **INV-005**: every USD figure is computed from the catalog and names its revision; a host-reported cost is a comparison field and never the reported figure.
 - **INV-006**: after a budget is reached no wave starts without a recorded `spend` grant.
 - **INV-007**: usage is evidence, not authority: it never changes a delivery status, a gate or a completion decision.
 
@@ -139,7 +160,7 @@ worker.
 - `contracts/work.toml` gains the `usage` loop section, the optional `budget.max_usd` and `budget.max_tokens`, a worker handle on deliveries and the grant kind `spend`.
 - A new helper under `skills/project-protocol/scripts/` reads the four hosts; `run_state.py` validates the section.
 - `project-lifecycle` waves gain the harvest and budget check at each boundary; finish reports totals per phase and per worker.
-- The catalog's prices become load-bearing. They are marked indicative today, and on 2026-10-24 two sources disagreed for Claude Opus 5 and 5.5; the price source must be verified before this record is accepted.
+- The catalog's prices become load-bearing. They are marked indicative today. Checked on 2026-10-24 against the official Claude pricing page: the catalog matches it for Fable 5.1, Opus 5.5, Opus 5 and Haiku 5.5, and its `cache_write` is the 5-minute rate; for Sonnet 5.5 it lists cache read at 0.2 where the page says 0.10, a defect for the catalog's owner. Pi's own cost for one Opus 5.5 response (0.5006312 USD) reproduces exactly at the official rates with its single write bucket priced at the 1-hour rate.
 - ADR-0002 moves this section with the run record to `deadly-brain:work-record`.
 - The parked draft `docs/superpowers/specs/2026-10-24-derived-routing-signals-draft.md` gets its calibration data from this ledger joined to verified outcomes.
 - Open before acceptance: Pi worker attribution through `pi-subagents`, how the coordinator learns its own host session id on each host, and a Copilot source.

@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: platform-engineering:browser-compatibility-auditor; version: 2.2.0; source-sha256: b68a52603cb6793d6d27c6db886859142a15a8950751e070ffedd9a6e5fe9c94. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: platform-engineering:browser-compatibility-auditor; version: 2.3.0; source-sha256: b68a52603cb6793d6d27c6db886859142a15a8950751e070ffedd9a6e5fe9c94. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `platform-engineering`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<platform-engineering-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `platform-engineering`. The owning plugin's declared logical skill identities are `platform-engineering:platform-engineering`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

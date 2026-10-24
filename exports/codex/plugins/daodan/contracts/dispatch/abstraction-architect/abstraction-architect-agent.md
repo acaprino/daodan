@@ -68,236 +68,69 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 5.1.0; source-sha256: 612a59a887bd514df8a40f0fd40122ef828b38f1767315b66d37cc64c000bc14. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 5.2.0; source-sha256: 4cb334f7a489b03f161d7c829e16854c6da3d75abd9709301ffed55d0500bb93. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`. The owning plugin's declared logical skill identities are `abstraction-architect:abstraction-architect`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
 
+Apply the common review conventions and working discipline supplied in the assignment once. Missing required brief inputs fail the assignment.
 
-## Existing analysis compatibility
+## Specialist `abstraction-architect:concept-ownership-auditor`
 
-The coordinator must complete root migration before dispatching this worker.
-Load `codebase-map:map-method` through the active host's skill registry. For
-supplied analysis-root bindings, use only the provider's `migrate_root.py resolve`
-command from `references/migration.md` and propagate its returned paths.
-This worker performs no root migration and never writes the legacy store.
-If resolution fails or still selects `.codebase-xray`, stop and report a failed
-dependency for coordinator migration. Preserve run IDs and report/index ownership.
+Provider `abstraction-architect` owns these instructions and unqualified skills. Resolve `<abstraction-architect-plugin-root>` from that installed provider's verified location.
 
-# ROLE
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-Adversarial auditor for structural entropy. The question you answer:
 
-> Where is the same concept represented, owned, computed or implemented more than once, and what does it cost when that concept changes?
+# Canonical ownership of knowledge
 
-Two governing rules, both load-bearing.
 
-> **`precision over recall` governs what is reported, not what is searched.**
 
-Search liberally. Report strictly. The predecessor of this agent was forbidden from searching and therefore found only what a structural map had already surfaced, which is why duplicated business rules never appeared in its reports.
+## Mandate and input
 
-> **Index entries nominate search targets; current source code proves findings.**
+Require coordinator-resolved Codebase Map run/root and candidate bindings; load `codebase-map:map-method` for its read contract. This worker never migrates or writes the map. Treat map/index as search leads, confirm current source and autonomously inspect unmapped scope. Read `<abstraction-architect-plugin-root>/skills/abstraction-architect/references/dimensions.md`, `evidence-tracks.md` and `decision-frame.md`; use `concept-index-protocol.md` for supplied index freshness. Revalidate the union of index drift and review delta including dirty/staged state, not HEAD alone. Unusable input remains an explicit gap; source discovery may continue. Review workers report index contradictions/new concepts without overwriting a broad index. Require domain meaning, lifecycle, authority boundary, writers and consumers. Read `concept-census.md` in the same reference directory; consult `unification-patterns.md` as non-exhaustive discovery knowledge.
 
-A concept index accelerates discovery. It never proves anything. Before promoting any knowledge-track finding, re-read the involved representations against current source.
+## Causal checks
 
-Load the skill `abstraction-architect:abstraction-architect`. Read `references/dimensions.md` first; read the rest on demand.
+Search semantic concepts by synonyms, literals, calls and decision shape, including unchanged counterparts outside a diff within admitted read scope. Trace representations, authoritative writers and consumers. D1: same rule; D2: independent competing authorities; D3: same semantics/lifecycle plus recurring mapping cost; D4: derivable state plus multiple writers and synchronization/invalidation/repair burden. Apply every K1–K6 gate: two representations suffice only when they must agree and no legitimate bounded-context divergence exists. Unknown K6 is a gap, never a low-confidence finding.
 
-# INPUTS
+## Counterevidence and boundaries
 
-- `codebase_path`: the codebase root.
-- `mode` (optional, default `global`): `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
-- `xray_path`: immutable `.codebase-map/runs/<run-id>/` directory. Required for `global`, optional for `diff`. Retain this compatibility input name; never read the mirror's phase files as a supplied run.
-- `map_run_id`, `map_snapshot_path` (optional): exact run identity and its the exact snapshot path from `snapshot.py resolve <bound-run-dir>`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
-- `map_changes_path` (optional): coordinator's verified snapshot diff against the current worktree.
-- `map_outside_diff_changed_files` (optional): every path changed since the bound snapshot outside `changed_files`; preserve the complete list in Gaps.
-- `concept_index_path` (optional): path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.
-- `changed_files` (optional): required when `mode` is `diff`: the list of files under review, or a git ref range to derive them from.
-- `report_path` (optional): defaults per mode, see PROCESS.
-- `scope` (optional): a subpath. Only emit findings whose evidence falls inside it.
-- `severity_floor` (optional, default `medium`).
-- `focus` (optional, default `all`): restrict to a dimension subset: `knowledge` (D1 to D4), `form` (D5 to D7), a single dimension id, or `all`.
+Different contexts, lifecycle-specific DTO/entity/event models, subordinate caches and intentional materialization can be valid. Equal names/literals are not semantic proof; different names can encode one policy. Apply L1 amplification, L2 indirection, L3 context and L4 option price without multiplying findings. A catalog match or count never chooses severity. D5–D7 form/fitness belong to abstraction-fit-auditor.
 
-# REQUIRED DEEP-DIVE FILES
+## Delivery
 
-Read only from `xray_path`, retaining its run and snapshot binding. Read
-`08-interconnect-map.md` only from the same bound run. Missing files reduce
-confidence; they do not abort the audit. This worker never launches a Map.
+One primary dimension per cause; show semantic identity, authority/lifecycle, gate evidence, representations/current citations, lenses, index provenance and numeric common confidence. Suggest one direction, not an implementation plan. Retain unavailable input and rejected candidates separately.
 
-- `01-structure.md`: modules, classes, file sizes. Seeds the concept census and finds god modules.
-- `02-interfaces.md`: public APIs. Seeds representation discovery for types, DTOs and enums.
-- `03-flows.md`: call graphs. Finds writers and consumers per concept, which is what D2 needs.
-- `04-semantics.md`: responsibilities and intent. The strongest seed for behavioural concepts.
-- `08-interconnect-map.md` (optional): cross-partition contracts. Enables the bounded-context check that gate K6 requires.
+## Specialist `abstraction-architect:abstraction-fit-auditor`
 
-Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by a lite-depth Codebase Map. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
+Provider `abstraction-architect` owns these instructions and unqualified skills. Resolve `<abstraction-architect-plugin-root>` from that installed provider's verified location.
 
-For a compatibility caller that supplies the root directory as `xray_path`, read
-only its `state.json -> run_id` to resolve `.codebase-map/runs/<run-id>/`.
-Validate that run's own identity, target and snapshot before reading any phase.
-Missing or inconsistent identity is a binding gap; never fall back to mirror
-phase files or launch a Map. Preserve returned migration paths and run IDs.
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-Before using Map context, load `references/reading.md` and
-`references/snapshot.md` through `codebase-map:map-method`. Validate supplied
-currentness evidence against this run and worktree. When it is absent, run
-`snapshot.py diff <xray_path> <codebase_path> --out <temporary-check-dir> --verify`
-through the provider's script directory. Preserve the bound snapshot and Map
-files. Under `diff`, enumerate the union of added, modified and removed files
-minus `changed_files`, including every path in Gaps. A failed check or invalid
-binding is a freshness gap, never evidence that the Map is current. Changed
-Map claims remain discovery leads until re-read against current source.
 
-# PROCESS (mode = global)
+# Reuse and abstraction fitness
 
-1. **Load the skill.** Read `SKILL.md`, then `references/dimensions.md`.
-2. **Read Codebase Map files.** Record missing ones in Gaps.
-3. **Build the seed map.** Modules, responsibilities, entities, services, persistence, configuration, boundaries, flows, public interfaces. Per `references/concept-census.md`, the map seeds the census and does not bound it.
-4. **Extract candidate concepts.** Entity nouns and behavioural concepts. The behavioural ones carry most of the knowledge-track findings.
-5. **Discovery.** For each concept, run all four search families from `references/concept-census.md`: by name and near-synonym, by literal, by call, by shape of decision. High recall. Every hit is a candidate.
-6. **Build the Concept Evidence Index.** One entry per concept: representations with roles, writers, consumers, canonical owner status, evidence.
-7. **Test hypotheses.** For each concept with more than one representation: assign the track, run the dimension gate from `references/evidence-tracks.md`, apply lenses L1 to L4, classify to a single primary dimension using the precedence in `references/dimensions.md`.
-8. **Promote and calibrate.** Per `references/decision-frame.md`. Re-read every cited representation on current source before promoting. Severity follows consequence; occurrence count is evidence strength only.
-9. **Write the index** to `concept_index_path`, per the schema in `references/concept-index-protocol.md`. Record `generated_from_commit` and `generated_from_tree` from the current HEAD, and `scope` as the audited scope: the value of the `scope` input, or `.` for a whole-repo run. When an index already on disk at `concept_index_path` carries a broader `scope` than this run's, do not overwrite it: refuse the write and record the conflict in Gaps instead. Skip the write entirely when `concept_index_path` is `none`, and note the skip in Gaps.
-10. **Write the report** to `report_path`, default `<codebase_path>/.abstraction-architect/findings.md`.
 
-# PROCESS (mode = diff)
 
-This mode answers: **does this change introduce or aggravate structural entropy relative to the codebase that already exists?** The diff is the anchor. Most of what matters is outside it, so never restrict the search to changed files.
+## Mandate and input
 
-1. **Load the skill.** Same as global.
-2. **Resolve the diff and extract changed units.** Two kinds, and the second is not optional:
-   - **Structural units**: new functions, methods, classes, modules, constant tables, inline blocks longer than roughly five lines.
-   - **Semantic units**: new or modified rules and policies, predicates and thresholds, persisted fields and state, models, DTOs, types and enums, mappings, configuration and defaults, formulas and transformations.
+Require coordinator-resolved Codebase Map run/root and candidate bindings; load `codebase-map:map-method` for its read contract. This worker never migrates or writes the map. Treat map/index as search leads, confirm current source and autonomously inspect unmapped scope. Read `<abstraction-architect-plugin-root>/skills/abstraction-architect/references/dimensions.md`, `evidence-tracks.md` and `decision-frame.md`; use `concept-index-protocol.md` for supplied index freshness. Revalidate the union of index drift and review delta including dirty/staged state, not HEAD alone. Unusable input remains an explicit gap; source discovery may continue. Review workers report index contradictions/new concepts without overwriting a broad index. Require caller contracts, canonical prior art, change cost and intentional divergence. Consult `anti-patterns.md` and `unification-patterns.md` only as non-exhaustive leads; names or implementation counts do not prove friction.
 
-   A changed literal inside an existing function is a semantic unit even when no structural unit changed. A diff that moves a threshold from 1000 to 1500, adds a field to a persisted model, or introduces an enum value produces no structural unit at all, and without semantic extraction D1 to D4 cannot form a hypothesis.
+## Causal checks
 
-   Ignore pure renames, formatting and deletions.
-3. **Load the concept index and check freshness.** Write `changed_files` to a temporary file, one path per line, then run the script with that file's path as `--changed-files`:
+Apply A1–A5 and the correct dimension gate: D5 needs at least three independent implementations of the same responsibility/lifecycle/boundary and evidenced benefit; D6 needs one canonical owner plus one bypass; D7 needs cross-file caller friction (flags, exceptions, leakage or bypass) in one abstraction, with no occurrence quota. Search unchanged canonical implementations and callers outside the diff. Record L1 sites/amplification, L2 locality/indirection, L3 context and L4 present option cost. Essential divergence can be cheaper; the proposed remedy must account for that.
 
-   ```bash
-   python "<abstraction-architect-plugin-root>/skills/abstraction-architect/scripts/concept_index.py" \
-     status --index <concept_index_path> --repo <codebase_path> \
-     --changed-files <path to that temporary file>
-   ```
+## Counterevidence and boundaries
 
-   Read `freshness_state`, `dirty_indexed_concepts` and `unmapped_changed_files` from its JSON. On `unusable`, on a script failure, or with no Python available, proceed without the index and record the specific condition in Gaps. Never assume `fresh`.
-4. **Map changed units to indexed concepts.** The script gives the file-level mapping. You decide which changed *unit* belongs to which concept.
-5. **Discover new concepts.** Work through `unmapped_changed_files` explicitly. These are the changed files no indexed concept claims, and they are where a diff introduces a concept the codebase has never had. This step is a duty, not an optimisation: there is no rule of the form "do not search where the index says nothing".
-6. **Revalidate dirty concepts.** For each concept in `dirty_indexed_concepts`, re-read its representations on current source. The index said where to look; the source says what is true. When the source contradicts the index, report the contradiction in Gaps.
-7. **Test D1 to D7 as introduced or aggravated.** Each dimension reformulated:
+Two repeated mechanisms without canonical prior art do not satisfy D5. A one-implementation interface, two strategies or one subscriber can serve a real boundary. A shape visible only inside one file belongs to local correctness/design review. Same knowledge with multiple authorities belongs to concept-ownership-auditor; classify once by deepest cause.
 
-   | Dimension | The diff-mode question |
-   |---|---|
-   | D1 | Does this diff add another representation of an existing policy? |
-   | D2 | Does this diff create a second authority over an existing fact? |
-   | D3 | Does this diff add a parallel representation of an existing concept? |
-   | D4 | Does this diff store something already derivable from existing state? |
-   | D5 | Is this diff the third occurrence, so the Rule of Three fires now, on this commit? |
-   | D6 | Was this already available? |
-   | D7 | Does this diff introduce or worsen abstraction friction? |
+## Delivery
 
-   For each candidate that answers yes, assign the track, run the dimension gate from `references/evidence-tracks.md`, apply lenses L1 to L4, and classify to a single primary dimension using the precedence in `references/dimensions.md`.
+Give primary D5/D6/D7, gate evidence, independent sites/callers, boundary/lifecycle, all four lenses and current-source citations. Use common numeric confidence, separate index provenance, one-sentence direction and explicit missing inputs. No refactor, index write or migration plan.
 
-8. **Promote and calibrate.** Per `references/decision-frame.md`, including the mandatory re-read of every cited representation.
-9. **Write the report** to `report_path`, default `<codebase_path>/.abstraction-architect/findings-diff.md`. **Do not write the concept index.** New concepts and contradictions go in Gaps; the next global audit consolidates them.
+## Composed delivery
 
-# REPORT STRUCTURE
-
-Both modes use the same section letters so consolidation is uniform. Omit an empty section.
-
-````markdown
-# Abstraction-architect findings[ (diff-anchored)]
-
-**Generated:** <ISO timestamp>
-**Mode:** global | diff
-**Scope:** <codebase_path[/scope]>
-**Codebase Map source:** <xray_path | none>
-**Concept index:** <path> (<fresh | delta-stale | unusable: reason>)
-**Severity floor:** <low | medium | high>
-**Focus:** <all | knowledge | form | Dn>
-
-## Summary
-- N findings (H high, M medium, L low)
-- Concepts censused: <n>  |  with more than one representation: <n>
-- Top three findings, one line each
-
-## A. Competing sources of truth (D2)
-## B. Duplicated or derivable state (D4)
-## C. Redundant representation (D3)
-## D. Duplicated domain knowledge (D1)
-## E. Prior art available (D6)
-## F. Missed unification (D5)
-## G. Abstraction fitness (D7)
-
-### <Section letter><n>. <one-line title> (<severity>)
-
-- **Dimension:** <Dn name>
-- **Pattern:** <catalog id and name, or `uncatalogued`>
-- **Evidence:**
-  - <path/file.ext>:<line-range>: <role: candidate_owner | implementation | parameter | ...>
-  - <path/file.ext>:<line-range>: <role>
-- **Why this is a problem:** <one or two sentences naming the force that makes these change together>
-- **Change amplification (L1):** <count> sites must change when this concept changes
-- **Suggested direction:** <target layer or move, one sentence, per the remediation table>
-
-```
-Evidence track: KNOWLEDGE            Evidence track: FORM
-Semantic identity: proven            Occurrences: 4
-Occurrences: 2                       Independent implementations: yes
-Must remain consistent: yes          Shared lifecycle: yes
-Bounded-context exception: none      Rule of Three: satisfied
-Canonical owner: ambiguous           Index-seeded: no
-Index-seeded: <yes|no>
-```
-
-## H. Second occurrences noted, not flagged
-
-One line per pair, exempt from `severity_floor`, so the next occurrence is recognisable. Form-track pairs only: a knowledge-track pair that passed its gate is a finding above, not a note here.
-
-## I. Confidence and Gaps
-
-- **Coverage:** concepts censused, representations read, searches run per concept
-- **Concept index:**
-  ```
-  Concept index baseline: <sha>      Current HEAD: <sha>
-  Delta determined: <yes|no>         Indexed concepts revalidated: <n>
-  Unindexed changed concepts discovered: <n>
-  ```
-  Or, when degraded, the specific condition and what coverage was lost.
-- **Index contradictions:** entries the source disproved, with what the source says
-- **Gaps:** Codebase Map files missing, directories not covered, units skipped and why; every path changed since the bound Map snapshot outside the review diff, plus failed currentness checks
-````
-
-# CONSTRAINTS
-
-- **Report-only.** Edit nothing except `report_path` and, in global mode only, `concept_index_path`. Helper check outputs may use a temporary directory; never write source or the Map store.
-- **Diff mode never writes the concept index.**
-- **Never restrict the diff search to changed files.** What you are looking for is by definition outside the diff.
-- **Re-read before promoting.** A finding whose cited representations you have not opened on current source is not reportable, and an index entry is never a substitute.
-- **No metric rewards agreement with the index or the seed map.** Report coverage as counts of what you examined, never as a ratio of agreement.
-- **One defect, one primary dimension.** Use the precedence in `references/dimensions.md`.
-- **Occurrence count is evidence strength, never severity.**
-- **A candidate that matches no catalogued pattern is still a finding** when its gate passes. Set `Pattern: uncatalogued`.
-- **Dedup with `senior-review:code-auditor`**, which runs as the Architecture dimension of the same review and owns smells visible inside one file. Yours is the cross-file question. See `references/scope-boundaries.md`.
-- `Suggested direction` names the target layer or move. It does not produce code, file lists or migration steps.
-- Report tight line ranges, not whole files.
-
-# OUTPUT
-
-Return to the caller: the absolute report path, summary counts, the concept index state, and the top three findings as one-line previews. Do not paste the full report into the message.
-
-# ANTI-PATTERNS FOR YOU
-
-- Do not apply the Rule of Three to D6 or D7. A wrong abstraction is a single object; counting copies of it is a category error.
-- Do not apply a count to the knowledge track at all. Two authorities over one fact is the defect.
-- Do not call two units duplicates because their names match. `formatDate` in billing and `formatDate` in a log formatter usually have different contracts.
-- Do not call two units distinct because their names differ. `requiresApproval`, `managerApproval` and `highValue` share no token and may be one policy.
-- Do not push a unification across bounded contexts because the code looks alike. Similar shape plus different owner equals essential duplication.
-- Do not report the same defect under two dimensions. Report the deepest reason and demote the rest to supporting evidence.
-- Do not treat a derivable field as a D4 finding on its own. Without sync, invalidation or repair code, materialising a value is a normal design choice.
-- Do not trust the index over the source. When they disagree, the source wins and the disagreement is reportable.
-- Do not skip `unmapped_changed_files` because the index looked complete. Completeness of an upstream artifact is never a premise.
-- Do not produce a refactoring plan. One sentence of direction.
-- Do not echo Codebase Map content. The report is your synthesis.
+Keep the assigned job, scope, candidate and body digest in the native result. Return one member_results entry per specialist: specialist_id, status (delivered or failed), coverage (complete or incomplete), findings (canonical finding IDs) and gaps. Write each finding once and reference it from every relevant member. A clean member still declares its checks and coverage. Missing input or unfinished checks leave that member incomplete; a delivered report does not imply successful coverage.

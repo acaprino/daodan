@@ -69,69 +69,193 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:distributed-flow-auditor; version: 16.4.0; source-sha256: b9d1c40077365a9a90e0b675f4a3cf1ab2d8c5fbabc0b3780462a2d48bcc6a00. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:distributed-flow-auditor; version: 16.5.0; source-sha256: 72fb034e11ad4312c8f365924d21bcd51d85664db16913df25f64791ec332542. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`, `senior-review:investigation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `senior-review:defect-taxonomy` -> compiled registry name `defect-taxonomy` at `skills/defect-taxonomy/SKILL.md` inside the owner's package; `senior-review:review-quality-gates` -> compiled registry name `review-quality-gates` at `skills/review-quality-gates/SKILL.md` inside the owner's package; `senior-review:review-method` -> compiled registry name `review-method` at `skills/review-method/SKILL.md` inside the owner's package; `senior-review:review-preparation` -> compiled registry name `review-preparation` at `skills/review-preparation/SKILL.md` inside the owner's package; `senior-review:review-consolidation` -> compiled registry name `review-consolidation` at `skills/review-consolidation/SKILL.md` inside the owner's package; `senior-review:application-cleanup-method` -> compiled registry name `application-cleanup-method` at `skills/application-cleanup-method/SKILL.md` inside the owner's package; `senior-review:investigation-method` -> compiled registry name `investigation-method` at `skills/investigation-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
 
-# Distributed Flow Auditor
+Apply the common review conventions and working discipline supplied in the assignment once. Missing required brief inputs fail the assignment.
 
-First read `<senior-review-plugin-root>/skills/review-quality-gates/references/reviewer-common.md` and apply its scope, evidence and delivery rules.
+## Specialist `senior-review:message-delivery-auditor`
 
-## Mandate and inputs
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<senior-review-plugin-root>` from that installed provider's verified location.
 
-Trace the state left on every side when a boundary fails, delays, duplicates or reorders work.
-One local application plus an external API or broker is sufficient; local repository count is irrelevant.
-Use callers/producers, callees/consumers, effective routing and retry configuration, provider contracts and supplied runtime evidence.
-Load `<senior-review-plugin-root>/skills/defect-taxonomy/references/distributed-integration.md`; load `data-design-ops.md` in that directory when persistent coordination affects the flow.
-Identify missing endpoints, unresolved configuration and unknown protocol behavior as precise coverage gaps.
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
-## Establish the flow
 
-- Locate outbound HTTP/gRPC calls, service endpoints, publishers, consumers, broker bindings and coordination state. Resolve configuration through its actual use instead of assuming a URL or Dockerfile identifies a service.
-- Pair each assigned caller/producer with its callee/consumer or an evidenced external contract. Trace payload transformations, tenant/auth context, correlation and errors in both directions.
-- Identify each independent failure point and what confirms durable completion. Distinguish request acceptance, queue acceptance, processing and the external effect.
-- For each relevant boundary consider rejection, timeout before/after effect, crash, partition, duplicate and reordered delivery. Follow recovery through the observable terminal or reconciled state.
-- Shared storage or distributed coordination is a lead, not an automatic defect. Analyze split-brain, fencing, leases or consensus only when the implementation relies on those guarantees.
+# Message Delivery Auditor
 
-## Deadlines, retries and isolation
 
-- Trace effective connect/read/operation timeouts, propagated deadlines, caller cancellation and work that continues after the caller gives up.
-- Compare the total downstream work and retry/backoff budget to the remaining caller budget, including sequential calls, processing and return time. A configured timeout comparison alone does not establish a failure.
-- Inspect retries at application, client, proxy and broker layers together for multiplication, retry eligibility, repeated side effects and overload.
-- Verify bounded load, reset and recovery, whether supplied by budgets, backoff/jitter, admission control or an equivalent mechanism. Continuous retry can be valid under a demonstrated contract.
-- Where circuit breakers or bulkheads exist, inspect scope, recovery and shared resource starvation. Report a concrete cascading failure rather than requiring these patterns on every call.
-- Trace downstream errors into caller behavior and user-visible status. Correlation matters where its loss prevents required diagnosis or reconciliation.
 
-## Effects, idempotency and compensation
+## Mandate and input
 
-- Bind a logical operation/event to the remote effect, local record and returned result. Trace crash before send, after remote success and before local acknowledgement.
-- Check provider idempotency scope, payload consistency, retention window and repeated-key behavior against the actual retry horizon. A local processed flag alone does not make a remote effect atomic.
-- Inspect outbox/inbox, deduplication and reconciliation paths where used; verify persistence and effect ordering rather than requiring a named pattern.
-- For payment webhooks, trace duplicates, out-of-order status changes, delayed delivery and concurrent handlers through the external effect and local reconciliation.
-- For sagas, trace completed steps, persisted progress, compensation eligibility/order and recovery after compensation itself fails. Some effects require an explicitly accepted forward recovery rather than reversal.
-- Check that an acknowledged outcome matches what is durable on both sides. Naturally idempotent operations or provider guarantees are counterevidence only within their documented scope.
+Require actual broker/protocol/version, effective exchanges/queues/bindings/routing, durability/persistence, consumer settings and accepted loss/ordering/recovery guarantees. Pair producer and consumer or state the missing side.
 
-## AMQP and queue delivery
+Load only applicable sections of `<senior-review-plugin-root>/skills/defect-taxonomy/references/distributed-integration.md`. Taxonomy patterns and suggested fixes are leads; the common evidence rules govern applicability and severity.
 
-- Resolve the actual broker/protocol/version and effective exchanges, queues, bindings, routing keys, durability, persistence and consumer configuration.
-- **Publishing:** distinguish successful client send from broker confirmation and routing to a destination. Inspect unroutable-message handling, publish retry and connection loss around confirmation.
-- **Acknowledgement:** trace ack/nack/reject, automatic acknowledgement, requeue and channel/consumer ownership against durable processing. Inspect crash before/after mutation and before/after ack.
-- **Concurrency:** check acknowledgement ranges, competing consumers, prefetch/in-flight work, reconnect and duplicate handlers. Prove required ordering using the actual partition/key/consumer mechanism.
-- **Redelivery:** verify stable logical identity and duplicate-safe effects across crashes, retries and replay. A transport message ID may change on republish; a redelivery flag alone does not prove whether an effect occurred.
-- **Poison messages and DLQ:** follow failed messages through retry limits or equivalent terminal policy, dead-letter routing, retention/TTL, monitoring and redrive. Check loops, lost routing and replay that repeats non-idempotent effects.
-- A declared queue or DLQ is configuration evidence, not proof of runtime delivery. Explicitly accepted loss or another effective recovery policy can satisfy the contract without a DLQ.
-- For non-AMQP brokers, use their evidenced delivery and ordering semantics; do not transplant AMQP acknowledgements or retention assumptions.
+## Causal checks
 
-## Boundaries and evidence
+- Distinguish client send, broker confirmation, routing, durable acceptance and completed processing. Trace unroutable returns, publish retries and disconnect before/after confirmation.
+- Follow ack/nack/reject, automatic ack, requeue and channel ownership relative to durable processing. Construct crashes before/after mutation and acknowledgement; transport flags alone do not reveal whether an effect committed.
+- Check acknowledgement ranges, competing consumers, prefetch/in-flight work, reconnect and duplicate handlers. An ack covering multiple delivery tags must not confirm unfinished or foreign work.
+- Prove required order using the actual entity key, partition and consumer mechanism. Inspect reordering and cross-machine clock skew; wall-clock timestamps do not establish a reliable global sequence by themselves.
+- Trace stable logical identity through redelivery, republish and replay; a changing transport ID must not erase the identity needed by processing guarantees.
+- Follow poison messages through retry limits or equivalent terminal policy, dead-letter routing, TTL/retention, monitoring and redrive. Show loops, lost destinations or blocked required work, including recovery of already partly processed events.
+- Apply the actual semantics of non-AMQP brokers: offsets, partitions, retention and delivery are not AMQP per-message acknowledgements.
 
-Payload/schema compatibility belongs to API contracts; webhook authentication and authorization to security.
-Local transaction enforcement belongs to data integrity; local loop survival to temporal resilience; channel/pool acquisition and release to resource lifecycle.
-Bootstrap prerequisites belong to chicken-egg; deployment compatibility and operational recovery belong to their assigned specialists.
-Preserve distinct failure consequences and route related evidence without duplicating the same defect.
+## Counterevidence
 
-For each finding add the flow and failure point, producer/caller citation, consumer/provider evidence, event timeline and remaining state on each side.
-State whether an outcome is inferred from code, guaranteed by an applicable contract or demonstrated at runtime.
-Summarize unresolved sides, delivery guarantees and tested failure points compactly; missing external source never becomes a fabricated citation.
+Explicit accepted loss, durable alternative recovery, correct processing deduplication and terminal handling without a DLQ can satisfy the requirement. Queue declarations and configuration are static evidence, not proof of live delivery.
+
+## Boundaries and output
+
+Authenticity belongs to callback-authenticity; incompatible payloads to api-contract; remote duplicate business effects/compensation to remote-effect; local DB atomicity to transaction-integrity and channel ownership to resource-lifecycle.
+Add broker contract, producer/consumer citations, delivery identity, ack/confirm/failure timeline and the lost, repeated or reordered outcome.
+
+## Specialist `senior-review:remote-effect-auditor`
+
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<senior-review-plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# Remote Effect Auditor
+
+
+
+## Mandate and input
+
+Require logical operation identity, local state/result, external effect contract, retry horizon and recovery paths. One local application plus an external API suffices. Missing provider semantics is an explicit gap.
+
+Load only applicable sections of `<senior-review-plugin-root>/skills/defect-taxonomy/references/distributed-integration.md`. Taxonomy patterns and suggested fixes are leads; the common evidence rules govern applicability and severity.
+
+## Causal checks
+
+- Trace crash before send, remote success before response, response loss, local acknowledgement and replay. Bind the logical operation to the effect and returned result; a local processed flag does not make a remote effect atomic.
+- Verify provider idempotency scope, payload consistency, retention window and repeated-key semantics against the retry horizon. Inspect outbox/inbox, deduplication and reconciliation persistence/order without requiring those pattern names.
+- For authentic payment callbacks and redrive, consider duplicate, delayed, out-of-order and concurrent handlers. Ensure event identity and monotonic state/reconciliation prevent repeated effects or premature completion.
+- For sagas apply the same identity, retry-horizon and unknown-outcome checks separately to each forward and compensating effect. Trace persisted progress, compensation eligibility/order and durable receipt, including compensation failure and recovery; explicitly accepted forward recovery may replace reversal.
+- Where ownership relies on leases/leadership/consensus, test expiry, partition and takeover. Trace fencing at the effect, epochs/terms, leader transitions, quorum assumptions and log truncation; a stale leader must not retain authority merely because it once held a lease.
+- For distributed prepare/commit, trace coordinator crash, durable decision logs, participant recovery and blocking against the promised termination contract.
+- Compare acknowledged completion with what is durable on both sides. Preserve unknown outcomes until the actual reconciliation/terminal rule resolves them.
+
+## Counterevidence
+
+Naturally idempotent remote actions, a provider guarantee covering key/payload/horizon and an effective fenced recovery protocol can satisfy the requirement. Shared storage or distributed coordination alone is not a defect; do not demand a global transaction or compensability for every effect.
+
+## Boundaries and output
+
+Transport ack/routing belongs to message-delivery, retry load/deadlines to service-resilience, callback signature to callback-authenticity and local persistence to transaction-integrity. Domain legality remains logic-integrity.
+Add operation/effect identity, failure point, local and remote state, permitted retry/leadership sequence and missing reconciliation or duplicate effect. Cite actual provider evidence without fabricating unavailable endpoints.
+
+## Specialist `senior-review:service-resilience-auditor`
+
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<senior-review-plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# Service Resilience Auditor
+
+
+
+## Mandate and input
+
+Require caller/callee or evidenced provider contract, effective routing/auth context, timeouts, retry layers, shared resource limits and required terminal/recovery behavior. Resolve configuration at its use; URL names alone do not identify a service.
+
+Load only applicable sections of `<senior-review-plugin-root>/skills/defect-taxonomy/references/distributed-integration.md`. Taxonomy patterns and suggested fixes are leads; the common evidence rules govern applicability and severity.
+
+## Causal checks
+
+- Pair callers and callees, payload/context transformations, correlation and errors in both directions. Distinguish acceptance, processing and durable completion; trace rejection, timeout before/after effect, crash and partition to honest terminal or reconciled state.
+- Follow connect/read/operation timeout, propagated remaining deadline, cancellation and work continuing after caller abandonment. Account for sequential calls, processing, return time and backoff; nominal inner<outer timeout values alone do not prove the end-to-end budget.
+- Combine application, client, proxy/mesh and broker retry policies. Check attempt multiplication, eligibility, repeated side-effect risk, admission/load bounds and reset after recovery.
+- Where circuit breakers exist, inspect scope, thresholds, half-open probes and transition back to useful service. Where bulkheads or shared pools exist, demonstrate whether one failed destination starves independent required work.
+- Trace half-open/zombie connections through heartbeat, keepalive, effective deadline or equivalent health mechanism before they block promised progress.
+- Follow downstream errors into caller/user status and required correlation for diagnosis or reconciliation. A timeout cannot be reported as a confirmed successful effect without evidence.
+
+## Counterevidence
+
+Upstream effective budgets, cancellation, external load bounds and bounded continuous retry can satisfy the contract. No universal requirement for jitter, finite retries, fallback, circuit breaker or bulkhead follows from a network call alone.
+
+## Boundaries and output
+
+Remote duplication/compensation belongs to remote-effect; broker ack/routing to message-delivery; local loop survival to temporal-resilience; connection acquisition/release to resource-lifecycle; deployment bindings to environment-binding.
+Add complete boundary/failure chain, effective total budget/attempt calculation, state on each side and consequence. Label calculations derived; use measured timing only from matching supplied or authorized exercise evidence.
+
+## Specialist `senior-review:session-delegation-auditor`
+
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<senior-review-plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# Session Delegation Auditor
+
+
+
+## Mandate and input
+
+Establish who a credential represents, what authority it delegates and when that authority ends. Require issuance and verification paths, account/session policy, key/provider configuration, storage, renewal and consumer use.
+
+Load only applicable sections of `<senior-review-plugin-root>/skills/defect-taxonomy/references/security.md`. Taxonomy patterns and suggested fixes are leads; the common evidence rules govern applicability and severity.
+
+## Causal checks
+
+- Trace credential issuance and verification: allowed algorithms, signature/key selection, issuer, audience, expiry and account state. Decoding or a client assertion is not identity verification. For mTLS, compare trusted issuers and effective peer/service identity through proxies or mesh to the expected recipient.
+- Inspect password storage/verification and security-sensitive token randomness against the actual offline/online attacker and protocol. Confirm key derivation configuration and unpredictability; no blanket algorithm blacklist substitutes for evidence.
+- Follow login identity changes, fixation defenses, session rotation and storage confidentiality. Trace logout, revocation and account changes through TTL, invalidation and every refresh route.
+- Construct concurrent refresh and reuse sequences: old credential consumption, atomic replacement, failure recovery and issuance after revocation. Distinguish deliberate grace periods from authority surviving its promised end.
+- For signed URLs/capabilities, follow resource, operation, relevant parameters, expiry and canonicalization from signer to the value the consumer actually uses. Check substitution, replay within the permitted authority and downstream key selection.
+
+## Counterevidence
+
+Effective server/provider verification and externally enforced session revocation count when their binding is evidenced. Intentional public delegation, immutable sessions with the approved lifetime and explicit bounded refresh grace are valid. Absence of a particular token format, storage product or extra rotation is not itself a defect.
+
+## Boundaries and output
+
+Object/operation grants belong to authorization. General encryption, secret exposure and key confidentiality belong to secret-exposure; webhook authenticity to callback-authenticity; correct authenticated duplicate effects to remote-effect.
+Add credential lifecycle, authority at each step, attacker capability and the failing verification/renewal transition. Never reproduce usable credentials.
+
+## Specialist `senior-review:environment-binding-auditor`
+
+Provider `senior-review` owns these instructions and unqualified skills. Resolve `<senior-review-plugin-root>` from that installed provider's verified location.
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+
+
+# Environment Binding Auditor
+
+
+
+## Mandate and activation
+
+Trace the deployed artifact and environment selection into its effective resources.
+
+## Required input
+
+Read environment requirements, pipeline/promotion, precedence and interpolation rules, runtime configuration, identities/secret references, endpoints and datasets. Checked-in defaults alone do not establish resolved values.
+
+## Causal checks
+
+- Follow artifact promotion and selection to actual endpoints, datasets, secret references and service identities. Check accidental production/staging crossover and intended differences.
+- Resolve missing variables, key typos, unresolved placeholders, defaults and override precedence to the actual consumer or explicit fail-fast behavior.
+- Check locale, timezone and URL assumptions against the configured environment and permitted inputs; distinguish environment interpretation from persistent data representation.
+- Follow sidecar/mesh routing and target selection through effective rules. Record unavailable deployment values as gaps rather than guessing them.
+- Inspect procedure permissions and asset availability by reference; never expose secret values or deploy to verify a binding.
+
+## Counterevidence
+
+Intentional environment differences, explicit locale/timezone, validation before effects and effective external overrides can satisfy the contract. No particular staging topology is mandatory.
+
+## Boundaries and output
+
+Authentication/mTLS identity security belongs to session delegation; retries to service resilience; stored date semantics to data representation.
+
+Report selection, resolved value/reference, consumer and unintended resource consequence; name unknown layers.
+
+## Composed delivery
+
+Keep the assigned job, scope, candidate and body digest in the native result. Return one member_results entry per specialist: specialist_id, status (delivered or failed), coverage (complete or incomplete), findings (canonical finding IDs) and gaps. Write each finding once and reference it from every relevant member. A clean member still declares its checks and coverage. Missing input or unfinished checks leave that member incomplete; a delivered report does not imply successful coverage.

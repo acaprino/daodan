@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "senior-review"
-version = "16.4.0"
+version = "16.5.0"
 description = "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting."
 license = "MIT"
 
@@ -19,3 +19,86 @@ policies = []
 
 [contracts]
 exports = ["contracts/review-brief.toml", "contracts/reviewer-binding.toml", "contracts/reviewer-selection.toml", "contracts/evidenced-finding.toml", "contracts/reviewer-result.toml", "contracts/delivery-ledger.toml", "contracts/final-report.toml"]
+
+[reviewers.compositions.security-auditor]
+members = [
+  "senior-review:authorization-auditor",
+  "senior-review:session-delegation-auditor",
+  "senior-review:secret-exposure-auditor",
+  "senior-review:input-validation-auditor",
+  "senior-review:untrusted-resource-auditor",
+  "senior-review:browser-security-auditor",
+  "senior-review:callback-authenticity-auditor",
+  "senior-review:ai-boundary-auditor",
+  "senior-review:audit-trail-auditor",
+  "senior-review:capacity-quota-auditor",
+]
+
+[reviewers.compositions.data-integrity-auditor]
+members = [
+  "senior-review:transaction-integrity-auditor",
+  "senior-review:schema-coherence-auditor",
+  "senior-review:cache-consistency-auditor",
+  "senior-review:data-representation-auditor",
+  "senior-review:data-retention-auditor",
+]
+
+[reviewers.compositions.distributed-flow-auditor]
+members = [
+  "senior-review:message-delivery-auditor",
+  "senior-review:remote-effect-auditor",
+  "senior-review:service-resilience-auditor",
+  "senior-review:session-delegation-auditor",
+  "senior-review:environment-binding-auditor",
+]
+
+[reviewers.compositions.performance-auditor]
+members = [
+  "senior-review:sql-efficiency-auditor",
+  "senior-review:algorithmic-cost-auditor",
+  "senior-review:asset-delivery-auditor",
+  "senior-review:capacity-quota-auditor",
+  "senior-review:runtime-cost-auditor",
+  "senior-review:resource-lifecycle-auditor",
+]
+
+[reviewers.compositions.operability-auditor]
+members = [
+  "senior-review:observability-auditor",
+  "senior-review:service-health-auditor",
+  "senior-review:release-compatibility-auditor",
+  "senior-review:environment-binding-auditor",
+  "senior-review:feature-flag-auditor",
+  "senior-review:recovery-auditor",
+]
+
+[reviewers.compositions.accessibility-auditor]
+members = [
+  "senior-review:accessible-navigation-auditor",
+  "senior-review:accessible-perception-auditor",
+]
+
+[reviewers.compositions.cleanup-auditor]
+members = [
+  "senior-review:application-reachability-auditor",
+  "senior-review:dependency-usage-auditor",
+  "senior-review:artifact-lifecycle-auditor",
+  "senior-review:asset-delivery-auditor",
+  "senior-review:secret-exposure-auditor",
+]
+
+[reviewers.compositions.code-auditor]
+members = [
+  "senior-review:local-correctness-auditor",
+  "senior-review:local-concurrency-auditor",
+  "senior-review:input-validation-auditor",
+  "senior-review:resource-lifecycle-auditor",
+  "senior-review:algorithmic-cost-auditor",
+  "senior-review:security-auditor",
+  "senior-review:data-integrity-auditor",
+  "senior-review:chicken-egg-detector",
+  "senior-review:temporal-resilience-auditor",
+  "senior-review:distributed-flow-auditor",
+  "senior-review:api-contract-auditor",
+  "testing:test-reliability-auditor",
+]
