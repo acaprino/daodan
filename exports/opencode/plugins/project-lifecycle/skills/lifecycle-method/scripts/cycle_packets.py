@@ -2,6 +2,8 @@
 
 This adapter prepares evidence. The coordinator owns refresh, dispatch, run
 updates, authorizations and completion. No cross-plugin imports or LLM calls.
+Exit status is 2 for an incomplete or unreadable invocation and 1 for a refused
+lifecycle operation.
 """
 from __future__ import annotations
 
@@ -331,6 +333,12 @@ def verify_cycle(config, receipt_path, *, token_counter=None, tokenizer_id=None)
         task_complete=False, validation_complete=False, write_authorized=False)
 
 
+REQUIRED_OPTIONS = {'preflight': ('request', 'recipient'),
+                    'task-packet': ('task-id', 'request', 'recipient'),
+                    'post-task': ('task-id', 'request', 'recipient', 'previous'),
+                    'verify': ('receipt',)}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('operation', choices=(*STAGES, 'verify'))
@@ -341,13 +349,23 @@ def main():
     parser.add_argument('--previous')
     parser.add_argument('--receipt')
     args = parser.parse_args()
-    load = lambda path: json.loads(Path(path).read_bytes())
-    config = load(args.config)
+    missing = [name for name in REQUIRED_OPTIONS[args.operation]
+               if getattr(args, name.replace('-', '_')) is None]
+    if missing:
+        parser.error('missing required arguments: ' + ', '.join('--' + name for name in missing))
+
+    def load(option):
+        try:
+            return json.loads(Path(getattr(args, option.replace('-', '_'))).read_bytes())
+        except (OSError, ValueError, UnicodeError) as error:
+            parser.exit(2, 'cannot read --' + option + ': ' + str(error) + '\n')
+
+    config = load('config')
     try:
         if args.operation == 'verify':
             result = verify_cycle(config, args.receipt)
         else:
-            result = prepare_cycle(args.operation, config, load(args.request), load(args.recipient),
+            result = prepare_cycle(args.operation, config, load('request'), load('recipient'),
                                    task_id=args.task_id, previous=args.previous)
     except (ValueError, OSError, subprocess.TimeoutExpired) as error:
         parser.exit(1, str(error) + '\n')
