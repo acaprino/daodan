@@ -1,0 +1,203 @@
+{
+ "schema": "daodan/price-rules/v1",
+ "revision": 2,
+ "purpose": "What an official pricing page states and models.dev does not carry. usage_pricing.py applies a rule only to rows priced at the rule's provider endpoint. Every rule names its source, the date it was read and the sentence it rests on; a rule nobody can source is not added. Verified on 2026-10-24 for anthropic, openai, xai, moonshotai, deepseek, google, alibaba, zai, mistral, minimax and xiaomi.",
+ "kinds": {
+  "rate": "rate of `bucket` = `usd_per_million`: the official price where models.dev publishes a wrong one, kept until models.dev is corrected; `models` names the models",
+  "bucket_rate": "rate of `bucket` = rate of `of` (after the context tier is chosen) times `multiplier`",
+  "multiplier": "every rate in `buckets` (default all) times `multiplier`, when every `when` condition holds: a row attribute value, `utc_days` (lowercase day names), `utc_hours` [start, end) in UTC, `since` or `until` (ISO dates, inclusive and exclusive)",
+  "per_request": "`usd_per_request` for each counted request of kind `request`"
+ },
+ "buckets": {
+  "cache_write_5m": "the provider's default cache write: Anthropic 5 minutes, OpenAI 30 minutes, Kimi 5 minutes, Alibaba explicit creation",
+  "cache_write_1h": "the provider's long cache write: Anthropic 1 hour, OpenAI 12 hours, Kimi 1 hour. Only Claude Code's log splits writes by TTL today"
+ },
+ "rules": [
+  {
+   "id": "anthropic.cache-write-1h",
+   "provider": "anthropic",
+   "kind": "bucket_rate",
+   "bucket": "cache_write_1h",
+   "of": "input",
+   "multiplier": 2.0,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing#prompt-caching",
+   "verified": "2026-10-24",
+   "quote": "1-hour cache write | 2x base input price"
+  },
+  {
+   "id": "anthropic.inference-geo-us",
+   "provider": "anthropic",
+   "kind": "multiplier",
+   "models": ["claude-opus-4-6*", "claude-opus-4-7*", "claude-opus-4-8*", "claude-opus-5", "claude-opus-5-5", "claude-sonnet-4-6*", "claude-sonnet-5", "claude-sonnet-5-5", "claude-haiku-5-5", "claude-fable-5", "claude-fable-5-1", "claude-mythos-5", "claude-mythos-5-1"],
+   "when": {"inference_geo": "us"},
+   "multiplier": 1.1,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing#data-residency-pricing",
+   "verified": "2026-10-24",
+   "quote": "For Claude 4.6 and later models, specifying US-only inference through the inference_geo parameter incurs a 1.1x multiplier on all token pricing categories, including input tokens, output tokens, cache writes, and cache reads"
+  },
+  {
+   "id": "anthropic.fast-mode",
+   "provider": "anthropic",
+   "kind": "multiplier",
+   "models": ["claude-opus-5-5", "claude-opus-5", "claude-opus-4-8*"],
+   "when": {"speed": "fast"},
+   "multiplier": 2.0,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing#fast-mode-pricing",
+   "verified": "2026-10-24",
+   "quote": "Claude Opus 5.5 | $8 USD / MTok | $40 USD / MTok; Claude Opus 5 / Claude Opus 4.8 | $10 USD / MTok | $50 USD / MTok. Prompt caching multipliers apply on top of fast mode pricing."
+  },
+  {
+   "id": "anthropic.web-search",
+   "provider": "anthropic",
+   "kind": "per_request",
+   "request": "web_search",
+   "usd_per_request": 0.01,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing#web-search-tool",
+   "verified": "2026-10-24",
+   "quote": "Web search is available on the Claude API for $10 USD per 1,000 searches, plus standard token costs for search-generated content."
+  },
+  {
+   "id": "openai.cache-write-12h",
+   "provider": "openai",
+   "kind": "bucket_rate",
+   "bucket": "cache_write_1h",
+   "of": "input",
+   "multiplier": 2.5,
+   "models": ["gpt-6*", "gpt-5.6*"],
+   "source": "https://developers.openai.com/api/docs/guides/prompt-caching.md",
+   "verified": "2026-10-24",
+   "quote": "For GPT-5.6 and later, cache writes cost 1.25x the standard, uncached input-token rate for the default 30-minute lifetime. In the Responses API, you can choose a 12-hour minimum lifetime at a write rate of 2.5x ordinary input."
+  },
+  {
+   "id": "openai.fast",
+   "provider": "openai",
+   "kind": "multiplier",
+   "when": {"service_tier": "fast"},
+   "multiplier": 2.0,
+   "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol.md",
+   "verified": "2026-10-24",
+   "quote": "Fast mode prices are 2x Standard. Batch and Flex prices are 50% lower than Standard. Ultrafast mode prices are 6x Standard. [...] Cached input discounts still apply to Fast mode requests. [...] When this happens, the response contains service_tier: \"default\"."
+  },
+  {
+   "id": "openai.priority-legacy-name",
+   "provider": "openai",
+   "kind": "multiplier",
+   "when": {"service_tier": "priority"},
+   "multiplier": 2.0,
+   "source": "https://developers.openai.com/api/docs/guides/priority-processing.md",
+   "verified": "2026-10-24",
+   "quote": "Priority processing was renamed Fast mode on July 30, 2026. [...] For GPT-5.6 and earlier models, the response returns priority whether the request specifies priority or fast."
+  },
+  {
+   "id": "openai.ultrafast",
+   "provider": "openai",
+   "kind": "multiplier",
+   "models": ["gpt-6-astra", "gpt-6.1-sol"],
+   "when": {"service_tier": "ultrafast"},
+   "multiplier": 6.0,
+   "source": "https://developers.openai.com/api/docs/pricing.md",
+   "verified": "2026-10-24",
+   "quote": "Ultrafast mode prices are 6x Standard. gpt-6-astra $60/$300/$6/$75/$150, long $120/$450/$12/$150/$300; gpt-6.1-sol $12/$60/$0.60/$15/$30, long $24/$90/$1.20/$30/$60"
+  },
+  {
+   "id": "xai.priority",
+   "provider": "xai",
+   "kind": "multiplier",
+   "when": {"service_tier": "priority"},
+   "multiplier": 2.0,
+   "source": "https://docs.x.ai/developers/pricing",
+   "verified": "2026-10-24",
+   "quote": "Priority requests are billed at a 2x premium over standard rates. The 2x multiplier applies to all token types: input, output, cached, and reasoning. Prompt caching discounts are applied before the multiplier. You are only billed at the priority rate when the response confirms \"service_tier\": \"priority\"."
+  },
+  {
+   "id": "moonshotai.cache-write-1h",
+   "provider": "moonshotai",
+   "kind": "bucket_rate",
+   "bucket": "cache_write_1h",
+   "of": "input",
+   "multiplier": 2.0,
+   "models": ["kimi-k3*"],
+   "source": "https://platform.kimi.ai/docs/guide/context-caching.md",
+   "verified": "2026-10-24",
+   "quote": "Cache Write (5m) | $3.00 | Charged once when the prefix is first written; valid for 5 minutes. Cache Write (1h) | $6.00. kimi-k3.1-pro and kimi-k3 support Cache Write; kimi-k2.7, kimi-k2.7-highspeed, and kimi-k2.6 do not."
+  },
+  {
+   "id": "deepseek.peak-early",
+   "provider": "deepseek",
+   "kind": "multiplier",
+   "when": {"utc_days": ["monday", "tuesday", "wednesday", "thursday", "friday"], "utc_hours": [1, 4]},
+   "multiplier": 2.0,
+   "source": "https://api-docs.deepseek.com/quick_start/pricing",
+   "verified": "2026-10-24",
+   "quote": "Off-peak rates are half of the peak rates. Peak hours are 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday, excluding Chinese public holidays. All other hours are off-peak, including weekends and Chinese public holidays in full.",
+   "note": "models.dev carries the off-peak rates. Chinese public holidays are not modelled: a peak-hour row on such a day is overpriced 2x."
+  },
+  {
+   "id": "deepseek.peak-late",
+   "provider": "deepseek",
+   "kind": "multiplier",
+   "when": {"utc_days": ["monday", "tuesday", "wednesday", "thursday", "friday"], "utc_hours": [6, 10]},
+   "multiplier": 2.0,
+   "source": "https://api-docs.deepseek.com/quick_start/pricing",
+   "verified": "2026-10-24",
+   "quote": "Peak hours are 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday"
+  },
+  {
+   "id": "google.argon-2026-12",
+   "provider": "google",
+   "kind": "multiplier",
+   "models": ["gemini-4-argon*"],
+   "when": {"since": "2026-12-01"},
+   "multiplier": 2.0,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "verified": "2026-10-24",
+   "quote": "gemini-4-argon $2.00 / $10.00 / $0.10 through November 30, 2026; $4.00 starting December 1, 2026; output $20.00, caching $0.20"
+  },
+  {
+   "id": "google.flash-2027-01",
+   "provider": "google",
+   "kind": "multiplier",
+   "models": ["gemini-3.8-flash*", "gemini-3.6-flash*"],
+   "when": {"since": "2027-01-01"},
+   "multiplier": 2.0,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "verified": "2026-10-24",
+   "quote": "gemini-3.8-flash $0.75 / $3.75 / $0.075 through December 31, 2026; $1.50 starting January 1, 2027; $7.50 / $0.15"
+  },
+  {
+   "id": "google.priority",
+   "provider": "google",
+   "kind": "multiplier",
+   "buckets": ["input", "cache_read", "cache_write_5m", "cache_write_1h", "output", "reasoning"],
+   "when": {"service_tier": "priority"},
+   "multiplier": 1.8,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "verified": "2026-10-24",
+   "quote": "Priority is 1.8x Standard on input/output/caching (3.1 Pro $3.60/$7.20, $21.60/$32.40, $0.36/$0.72)"
+  },
+  {
+   "id": "minimax.priority",
+   "provider": "minimax",
+   "kind": "multiplier",
+   "when": {"service_tier": "priority"},
+   "multiplier": 1.5,
+   "source": "https://platform.minimax.io/docs/pricing/overview",
+   "verified": "2026-10-24",
+   "quote": "Set service_tier to priority to enable it. Pricing is 1.5x standard."
+  }
+ ],
+ "not_modelled": [
+  {"provider": "anthropic", "what": "Batch API 50% discount", "why": "no harness log marks a batch request"},
+  {"provider": "anthropic", "what": "regional and multi-region endpoints on Bedrock and Google Cloud, 10% premium", "why": "the log does not name the endpoint type; pass --endpoint and price that endpoint"},
+  {"provider": "openai", "what": "Batch and Flex at 50%; data-residency and FedRAMP endpoints +10%; GPT-5.6 Sol promotion ending no earlier than 2026-11-21", "why": "no harness log marks the tier or the endpoint; the post-promotion price is not published"},
+  {"provider": "openai", "what": "12-hour cache writes in Codex rollouts", "why": "Codex logs one cache_write_input_tokens with no TTL split, so the reader books every write in cache_write_5m at the 30-minute rate"},
+  {"provider": "xai", "what": "Batch 20% (grok-build-0.1 excluded); US regional endpoint 1.1x; whether exactly 200,000 prompt tokens is long context", "why": "no log marks a batch; the endpoint is not in the log, pass --endpoint; xAI's two pages disagree (\"reaches\" vs \"exceed\")"},
+  {"provider": "moonshotai", "what": "Batch at 60% for kimi-k2.7-code and kimi-k2.6", "why": "no harness log marks a batch request"},
+  {"provider": "deepseek", "what": "Chinese public holidays as off-peak", "why": "a holiday calendar is not a fact a pricing page states"},
+  {"provider": "google", "what": "Batch and Flex 50%; explicit-cache storage per hour; audio-specific caching rates; Gemini 4 re-billing up to 2,050 tokens at the input rate on small additions", "why": "no log marks the tier; storage is billed by time, never in token usage; audio and re-billing are not visible in token counts"},
+  {"provider": "alibaba", "what": "explicit cache hit at 10% versus implicit at 20%; Batch 50% (disables cache discounts); per-region and per-scope price tables; night and daytime discounts outside Singapore; qwen3.7-plus limited-time 20% off; qwen3.8 cache prices", "why": "a logged cached token does not say which cache mode produced it, so models.dev's single cache_read (20% where both modes exist) is kept and an explicit hit is overpriced 2x; the rest is not in any log, and the qwen3.8 rates say \"see the Model Studio console\""},
+  {"provider": "zai", "what": "cached input storage, currently \"Limited-time Free\"", "why": "future rate not published. models.dev `zhipuai` is the bigmodel.cn China platform at different prices: price api.z.ai traffic at `zai`"},
+  {"provider": "mistral", "what": "Batch 50%; the official ids mistral-medium-3-5 and mistral-large-4-0", "why": "no log marks a batch; the ids are an alias gap of the catalog, not a price rule"},
+  {"provider": "xiaomi", "what": "Batch 50% (ultraspeed excluded); domestic CNY prices; cache write after the free period", "why": "no log marks a batch; CNY is another endpoint; the future write rate is not published"}
+ ]
+}

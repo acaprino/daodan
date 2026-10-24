@@ -316,7 +316,7 @@
       "operations": [],
       "provider": "project-protocol",
       "topics": [],
-      "version": "1.11.0"
+      "version": "1.12.0"
     },
     {
       "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",

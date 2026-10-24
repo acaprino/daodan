@@ -3,6 +3,9 @@
 The coordinator executes this sequence. The classifier reports task signals;
 `task_router.py` alone selects the model. A skill is not a model-call executor.
 All input, prompt, reply and proposal files belong inside the owned run directory.
+To refresh the model catalog, its prices or the price rules, read
+`model-catalog-refresh.md` in this directory. To price a host's logged usage, run
+`scripts/usage_pricing.py`; its docstring is the contract.
 
 ## Preflight inventory
 

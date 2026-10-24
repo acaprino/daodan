@@ -144,7 +144,7 @@ criteria distinct.
 
 ## Run-state interface
 
-For model inventory, routing or dispatch/resume,
+For models, routing, pricing or dispatch/resume,
 read `references/task-routing.md`.
 
 Use `python "<plugin-root>/skills/project-protocol/scripts/run_state.py"`:
