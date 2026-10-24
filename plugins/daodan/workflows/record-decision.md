@@ -10,7 +10,7 @@ argument-hint: "<decision>"
 
 $ARGUMENTS
 
-Load the skills `project-knowledge:adr-method` and `project-protocol:project-protocol`.
+Load the skills `project-knowledge:adr-method` and `work-controller:work-record`.
 Open a run with operation `change` and the decision above as its objective; run
 `validate`, then `resolve` on the scope the decision governs. Conduct the grounded
 interview, one question per turn anchored to a file and line, until scope, examples,

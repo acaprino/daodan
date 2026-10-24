@@ -11,7 +11,7 @@ argument-hint: "[what to write]"
 $ARGUMENTS
 
 Route the request above, then load the method it needs together with
-`project-protocol:project-protocol`:
+`work-controller:work-record`:
 
 | Request | Method |
 |---|---|

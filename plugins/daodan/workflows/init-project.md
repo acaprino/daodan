@@ -11,7 +11,7 @@ argument-hint: "[what to build, on an empty folder]"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Open a run with operation `assess` and follow the
+`work-controller:work-record`. Open a run with operation `assess` and follow the
 lifecycle method's `references/init.md`: an empty folder is scaffolded first from what
 the user wants to build; an existing project gets its lite map, record index,
 environment, loop block and test baseline. A part that exists and validates is kept. End

@@ -144,7 +144,7 @@ requires a fresh prepared entry, never mutation of the immutable old entry.
 
 Each job carries its role, canonical `specialist_ids`, scope, input mode,
 candidate, knowledge and source fingerprints, body digest and output path.
-Dispatch `project-protocol:isolated-worker` through the consuming workflow's
+Dispatch `work-controller:isolated-worker` through the consuming workflow's
 declared isolated inline binding with the complete actual worker role and exact
 job body supplied once through the active host mechanism, plus the native variant's
 prepared inputs. Supply body-free job metadata for accounting; do not make a worker
@@ -173,7 +173,7 @@ completed checks; silence, an empty file or a worker stopping is not delivery.
 Failed mandatory coverage prevents completion even when all workers have stopped.
 
 The coordinator checks expected jobs and member outcomes, then the native
-blind/critic/verification requirements through project-protocol. Lens results
+blind/critic/verification requirements through work-controller. Lens results
 have separate files, candidate bindings and evidence. Required checks survive
 fast/no-context options. Consolidation retains finding provenance and every
 coverage limitation; the existing final writer alone publishes the report.

@@ -101,7 +101,7 @@ project's README or replace a specialist's method with that document.
 
 ## Resolve the request
 
-Load project-protocol:project-protocol. Resolve the arguments and the user's
+Load work-controller:work-record. Resolve the arguments and the user's
 existing instructions into these settings:
 
 | Setting | Default | Meaning |
@@ -141,7 +141,7 @@ prior read-only authority grant no mutation acceptance to this campaign.
 
 ## Campaign state and transitions
 
-Maintain is a campaign entry, not an additional operation in the project-protocol
+Maintain is a campaign entry, not an additional operation in the work-controller
 helper. Never initialize operation maintain or run all stages inside one repair
 record. Use the supported operations assess, change, repair, verify and consolidate
 for their own stage objectives. The baseline team review retains senior-review's

@@ -105,7 +105,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:partition-behavior-worker`, `codebase-map:partition-quality-worker`, `codebase-map:partition-structure-worker`, `codebase-map:partition-synthesizer`, `codebase-map:semantic-interconnect-mapper`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:partition-behavior-worker`, `codebase-map:partition-quality-worker`, `codebase-map:partition-structure-worker`, `codebase-map:partition-synthesizer`, `codebase-map:semantic-interconnect-mapper`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -123,8 +123,8 @@ Role body bindings (load the complete body only for the selected worker):
 - `codebase-map:partition-structure-worker`: read `contracts/dispatch/codebase-map/partition-structure-worker.md` inside this package and pass its complete role body verbatim.
 - `codebase-map:partition-synthesizer`: read `contracts/dispatch/codebase-map/partition-synthesizer.md` inside this package and pass its complete role body verbatim.
 - `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
-- `project-protocol:isolated-worker`: read `contracts/dispatch/project-protocol/isolated-worker.md` inside this package and pass its complete role body verbatim.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: read `contracts/dispatch/work-controller/isolated-worker.md` inside this package and pass its complete role body verbatim.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record-schema references ship under `contracts/map-code.workflow.toml`.
 

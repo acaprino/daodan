@@ -17,7 +17,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle/skills/lifecycle-method"
-PROTOCOL = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md"
+PROTOCOL = REPO_ROOT / "plugins/work-controller/skills/work-record/SKILL.md"
 AUTHORING = PROTOCOL.parent / "references/component-authoring.md"
 ADR = REPO_ROOT / "plugins/project-knowledge/skills/adr-method"
 REVIEW = REPO_ROOT / "plugins/senior-review/skills"

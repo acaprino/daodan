@@ -27,7 +27,7 @@ limits, see [Hosts, exports and runtime requirements](hosts.md).
 The original universal migration preserved plugin names and Claude component
 names. Marketplace 29.0.0 later renamed five components, listed below. Marketplace
 30.0.0 retires `project-setup`, `codebase-mapper` and `docs` in favor of
-`project-knowledge`, and adds `project-lifecycle`, `project-protocol` and
+`project-knowledge`, and adds `project-lifecycle`, `work-controller` and
 `review-plus`. Marketplace 31 retires that review bundle and folds its specialist
 dimensions into senior-review. Install the active owners and update invocations using the
 [lifecycle migration table](migration-to-coherent-harness.md); the retired IDs

@@ -11,7 +11,7 @@ color: green
 
 ## Execution preflight
 
-Load the `project-protocol:project-protocol` skill before mutation. Preserve the caller's
+Load the `work-controller:work-record` skill before mutation. Preserve the caller's
 existing edits, explicit scope and baseline; bind verification to the candidate
 snapshot and recover only owned changes on failure. Commit only when authorized.
 Load the `testing:test-hygiene` skill; delegate test authoring to `testing:test-writer` with

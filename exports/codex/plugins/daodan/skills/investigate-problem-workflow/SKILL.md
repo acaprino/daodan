@@ -105,7 +105,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-protocol:isolated-worker`, `senior-review:chicken-egg-detector`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-writer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `senior-review:chicken-egg-detector`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-writer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -118,7 +118,6 @@ Dispatch plan:
 Role body bindings (load the complete body only for the selected worker):
 
 - `codebase-map:map-analyst`: read `contracts/dispatch/codebase-map/map-analyst.md` inside this package and pass its complete role body verbatim.
-- `project-protocol:isolated-worker`: read `contracts/dispatch/project-protocol/isolated-worker.md` inside this package and pass its complete role body verbatim.
 - `senior-review:chicken-egg-detector`: read `contracts/dispatch/senior-review/chicken-egg-detector.md` inside this package and pass its complete role body verbatim.
 - `senior-review:code-auditor`: read `contracts/dispatch/senior-review/code-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:data-integrity-auditor`: read `contracts/dispatch/senior-review/data-integrity-auditor.md` inside this package and pass its complete role body verbatim.
@@ -128,7 +127,8 @@ Role body bindings (load the complete body only for the selected worker):
 - `senior-review:temporal-resilience-auditor`: read `contracts/dispatch/senior-review/temporal-resilience-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:ui-race-auditor`: read `contracts/dispatch/senior-review/ui-race-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-writer`: read `contracts/dispatch/testing/test-writer.md` inside this package and pass its complete role body verbatim.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: read `contracts/dispatch/work-controller/isolated-worker.md` inside this package and pass its complete role body verbatim.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record-schema references ship under `contracts/investigate-problem.workflow.toml`.
 
@@ -140,7 +140,7 @@ The phase graph and record-schema references ship under `contracts/investigate-p
 
 Read the argument as a path, a commit, a pull request or a branch when one exists,
 otherwise as text, and say how you read it before starting. Load the skills
-`senior-review:investigation-method` and `project-protocol:project-protocol` and
+`senior-review:investigation-method` and `work-controller:work-record` and
 investigate the problem above. Nothing in the product changes; the reproduction test is
 the one project file it writes, uncommitted. When the user wants it fixed, continue as
 `/daodan:fix-bug` with the reproduction test as its oracle.

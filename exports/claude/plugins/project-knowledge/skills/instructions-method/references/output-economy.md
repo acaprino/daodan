@@ -72,7 +72,7 @@ local guidance remains valid. Add only obligations supported by the project's
 workflow and available tooling; a pointer does not prove automatic loading.
 
 For projects authoring skills, agents, tools or other agent components, apply
-the Authoring components section of the loaded `project-protocol:project-protocol`
+the Authoring components section of the loaded `work-controller:work-record`
 skill. The instruction plan names how produced components and their workers
 receive applicable rules, with domain-appropriate verification for any language,
 framework or activity. Verify that consumption path rather than assuming the

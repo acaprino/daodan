@@ -83,7 +83,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Execution preflight
 
-Load the `project-protocol:project-protocol` skill before mutation for working
+Load the `work-controller:work-record` skill before mutation for working
 discipline, scoped recovery and candidate verification.
 Load the `testing:test-hygiene` skill for protection and placement; route needed
 test authoring to `testing:test-writer` through the caller's dispatch contract.

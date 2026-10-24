@@ -27,7 +27,7 @@ Riferimenti di disegno:
   Grafo del Codice / Workflow, §3.6 Choicer, §7.5 e §8 valutazione e adozione;
 - `2026-10-20-system1-work-graph-composition-review.md`: review storica e
   registro di risoluzione degli emendamenti;
-- `plugins/project-protocol/contracts/work.toml` e relativo `run_state.py`:
+- `plugins/work-controller/contracts/work.toml` e relativo `run_state.py`:
   contratti implementati da estendere, non già conformi a questo disegno;
 - `evals/senior-review/choicer-eval/GUTSY_RESULTS.md`: osservazioni e limiti.
 
@@ -103,7 +103,7 @@ l'endpoint passa alla versione `v2`, il nodo di integrazione già startato con
 | `codebase-map` | Evidenze statiche, freschezza, limiti e proiezioni del codice |
 | `project-lifecycle` | Intento, piano semantico, archetipi, compositore e task-packet tramite `cycle_packets.py` |
 | `senior-review` | Policy, roster, pacchetti di review, panel e verdetti |
-| `project-protocol` | Schema del grafo, registro runtime, budget, transazioni e validazione delle consegne |
+| `work-controller` | Schema del grafo, registro runtime, budget, transazioni e validazione delle consegne |
 | `skill-catalog` | Binding e provenienza della conoscenza assegnata ai worker |
 | Adapter dell'host | Dispatch, processi, modelli/effort, permessi e stop supportati |
 | Umano | Requisiti e autorizzazioni non deducibili dalle evidenze |
@@ -385,7 +385,7 @@ con hardware/runtime; nessun confronto diretto tra secondi/query e secondi/caso.
 
 ## 4. Catalogo degli operatori e gate
 
-Il catalogo appartiene a project-protocol; i metodi specialistici conservano
+Il catalogo appartiene a work-controller; i metodi specialistici conservano
 ownership. I gate sono tipizzati: `command`, `artifact`, `review`, `authorization`.
 Un verdetto LLM è evidenza semantica, non un test deterministico.
 

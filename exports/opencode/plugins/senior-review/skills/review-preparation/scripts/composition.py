@@ -129,7 +129,7 @@ def compose_jobs(roster: dict, catalog: dict, bindings: dict) -> list[dict]:
                            "source_bindings": {m: {k: v for k, v in bindings["roles"][m].items() if k != "text"}
                                                for m in members}}
             job_id = "review-" + _digest(_canonical(fingerprint))[7:23]
-            jobs.append({"id": job_id, "role": "project-protocol:isolated-worker", **fingerprint,
+            jobs.append({"id": job_id, "role": "work-controller:isolated-worker", **fingerprint,
                          "output_path": bindings["scopes"][scope_id]["output_dir"].rstrip("/\\") + f"/{job_id}.md",
                          "body": body})
     problems = validate_composition(roster, jobs, catalog)
@@ -163,7 +163,7 @@ def validate_composition(roster: dict, jobs: list[dict], catalog: dict) -> list[
                 any(not isinstance(member, str) or not member for member in job["specialist_ids"])):
             errors.append("job members must be an array of specialist identities")
             continue
-        if job["role"] != "project-protocol:isolated-worker" and (job["role"] not in entries or
+        if job["role"] != "work-controller:isolated-worker" and (job["role"] not in entries or
                 sorted(entries[job["role"]].get("members", [job["role"]])) != sorted(job["specialist_ids"])):
             errors.append("job role does not bind its members")
         if job["input_mode"] != "discovery" and len(job["specialist_ids"]) != 1:

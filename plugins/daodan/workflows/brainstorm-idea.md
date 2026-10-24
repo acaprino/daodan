@@ -11,7 +11,7 @@ argument-hint: "<idea>"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol` and follow the lifecycle method's
+`work-controller:work-record` and follow the lifecycle method's
 `references/brainstorm.md` with the idea above. When the user chooses to build it,
 continue as `/daodan:new-feature` with the brief the brainstorm wrote, so the interview
 starts from it.

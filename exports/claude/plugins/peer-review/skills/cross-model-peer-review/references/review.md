@@ -850,7 +850,7 @@ In artifact mode:
    - **Leave it** - "Nothing is modified. The list stays in <run directory>/04-verdict.md."
 
    The answer is read as intent, the same way as at the Phase 1b consent gate. Record
-   it in the caller's run (`project-protocol:project-protocol`).
+   it in the caller's run (`work-controller:work-record`).
 
 - **Not authorized**: stop. Nothing is modified.
 - **Authorized**: for each Accepted changes entry, apply the described edit to the

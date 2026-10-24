@@ -84,7 +84,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # README method
 
-Load `project-protocol:project-protocol` and the project-knowledge method for
+Load `work-controller:work-record` and the project-knowledge method for
 run ownership, input preparation and authorized application. Receive the scope,
 snapshot, existing README, reader, mode, output path and authorizations.
 

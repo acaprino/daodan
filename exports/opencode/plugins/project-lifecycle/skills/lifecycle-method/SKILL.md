@@ -79,7 +79,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Project lifecycle
 
-Load the `project-protocol:project-protocol` skill for records, snapshots, verification and
+Load the `work-controller:work-record` skill for records, snapshots, verification and
 recovery. Coordinate authorized outcomes and dispatch within scope; reuse detection
 owners.
 

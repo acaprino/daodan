@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-HELPER = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/scripts/review_roster.py"
+HELPER = REPO_ROOT / "plugins/senior-review/skills/review-preparation/scripts/review_roster.py"
 sys.path.insert(0, str(HELPER.parent))
 import review_roster  # noqa: E402
 
@@ -230,7 +230,7 @@ class RosterComputationTests(unittest.TestCase):
         roster = review_roster.compute("branch", PROBE_DIFF, None, None, False)
         self.assertEqual(roster["tier"], "small")
         self.assertEqual(roster["roster"][:2], ["senior-review:code-auditor", "testing:test-suite-auditor"])
-        self.assertIn("project-protocol:isolated-worker#python", roster["roster"])
+        self.assertIn("work-controller:isolated-worker#python", roster["roster"])
         self.assertNotIn("senior-review:security-auditor", roster["roster"])
         self.assertFalse(roster["blind_derivation"])
         self.assertFalse(roster["critic"])
@@ -284,7 +284,7 @@ class RosterComputationTests(unittest.TestCase):
                 self.assertIn(reason, roster["reasons"])
                 self.assertIn("senior-review:security-auditor", roster["roster"])
                 self.assertTrue(roster["blind_derivation"] and roster["critic"])
-        self.assertIn("project-protocol:isolated-worker#dependencies",
+        self.assertIn("work-controller:isolated-worker#dependencies",
                       review_roster.compute("branch", MANIFEST_DIFF, None, None, False)["roster"])
 
     def test_several_modules_or_many_callers_raise_to_medium(self):
@@ -600,7 +600,7 @@ class RosterCheckTests(unittest.TestCase):
 
     def test_a_dispatch_outside_the_roster_is_refused(self):
         roster = review_roster.compute("branch", PROBE_DIFF, None, None, False)
-        ok = {"roles": roster["roster"][:2] + ["project-protocol:isolated-worker"], "blind_derivation": False, "critic": False}
+        ok = {"roles": roster["roster"][:2] + ["work-controller:isolated-worker"], "blind_derivation": False, "critic": False}
         self.assertEqual(review_roster.check(roster, ok), [])
         wide = {"roles": roster["roster"] + ["senior-review:security-auditor"], "blind_derivation": True, "critic": True}
         problems = review_roster.check(roster, wide)

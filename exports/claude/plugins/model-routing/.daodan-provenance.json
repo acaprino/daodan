@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:533e2cb33cb01a31bde67d31ed56295143310d9cf291972a0d2b8945f45ccf89",
+  "harnessStrategies": {},
+  "host": "claude",
+  "overrides": [],
+  "plugin": "model-routing",
+  "version": "1.0.0"
+}

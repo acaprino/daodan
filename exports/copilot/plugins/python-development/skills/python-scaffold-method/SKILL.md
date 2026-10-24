@@ -96,7 +96,7 @@ A coordinator that already holds a run loads this method: `/daodan:init-project`
   A folder that already holds a project is out of scope: adding to an existing project belongs to `python-engineer`.
 - **Project name**: required. Read it from the text, otherwise use the folder name. If neither gives one, ask for it together with the type question of Step 1.
 - **Project type**: a method decision read from TARGET (Step 1): a type the text names (`fastapi`, `django`, `library`, `cli`, `generic`) or one inferred from the description. No default: if the type is unclear, ask (Step 1).
-- **Writing files**: an authorization asked at Step 2. The confirmed plan is that authorization: ask once with the host's question tool and record the answer in the run (`project-protocol:project-protocol`). Nothing is created before it.
+- **Writing files**: an authorization asked at Step 2. The confirmed plan is that authorization: ask once with the host's question tool and record the answer in the run (`work-controller:work-record`). Nothing is created before it.
 
 ## CRITICAL RULES
 

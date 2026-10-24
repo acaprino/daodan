@@ -11,7 +11,7 @@ optional bound scope/baseline/candidate. Output: snapshot, brief, context,
 selection, run and evidence. Light loads only `references/composition.md` here;
 its own method prepares inputs.
 
-Load `project-protocol:project-protocol` for preflight and confined run records. Read-only reviews may use a dirty workspace: capture its complete snapshot and
+Load `work-controller:work-record` for preflight and confined run records. Read-only reviews may use a dirty workspace: capture its complete snapshot and
 preserve edits. Review grants no mutation.
 
 The coordinator alone may perform the project-bound Codebase Map preflight
@@ -20,7 +20,7 @@ relocation metadata. This bounded exception authorizes no application changes,
 analysis run, worker migration or generic filesystem move.
 
 A caller-bound candidate is authoritative. Validate its project/worktree, run,
-scope and current snapshot through project-protocol before deriving review inputs.
+scope and current snapshot through work-controller before deriving review inputs.
 Use its captured baseline and exact candidate content, including scoped untracked
 files and their full contents. Exclude the run's output root. Never replace that
 target with a branch comparison or the previous commit. Missing baseline content

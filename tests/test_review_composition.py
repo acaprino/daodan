@@ -9,7 +9,7 @@ from pathlib import Path
 
 from scripts.daodan.load import load_plugin
 from scripts.daodan.model import ModelError
-from test_project_protocol import ProtocolCase
+from test_work_record import ProtocolCase
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -165,7 +165,7 @@ class RuntimeCompositionTests(unittest.TestCase):
     def test_incomplete_catalog_projection_cannot_hide_roster_obligations(self):
         import runpy
         from scripts.daodan.composition import compose_jobs
-        compute = runpy.run_path(str(ROOT / "plugins/project-protocol/skills/project-protocol/scripts/review_roster.py"))["compute"]
+        compute = runpy.run_path(str(ROOT / "plugins/senior-review/skills/review-preparation/scripts/review_roster.py"))["compute"]
         for entries in ([], self.catalog["entries"]):
             for kind, path in (("changeset", "src/leaf.c"), ("changeset", "src/leaf.py"),
                                ("changeset", "src/leaf.ts"), ("doc", "docs/claim.md")):
@@ -286,7 +286,7 @@ class RuntimeCompositionTests(unittest.TestCase):
 
     def test_light_floor_keeps_a_signalled_resource_obligation_in_one_discovery(self):
         import runpy
-        roster_module = runpy.run_path(str(ROOT / "plugins/project-protocol/skills/project-protocol/scripts/review_roster.py"))
+        roster_module = runpy.run_path(str(ROOT / "plugins/senior-review/skills/review-preparation/scripts/review_roster.py"))
         catalog = {"entries": [
             {"id": "senior-review:code-auditor", "members": ["senior-review:local-correctness-auditor", "senior-review:local-concurrency-auditor"]},
             *({"id": f"senior-review:{role}"} for role in ("local-correctness-auditor", "local-concurrency-auditor", "resource-lifecycle-auditor"))]}
@@ -303,20 +303,20 @@ class MemberDeliveryTests(ProtocolCase):
         super().setUp()
         self.review = {"id": "R1", "stage": "branch", "schema": "daodan/review-roster/v1",
             "shape": "branch", "kind": "changeset", "tier": "small",
-            "roster": ["alpha:wide"], "support": ["project-protocol:isolated-worker"],
+            "roster": ["alpha:wide"], "support": ["work-controller:isolated-worker"],
             "reasons": ["required"], "verification": "high-and-above",
             "required_specialists": [{"specialist_id": "alpha:a", "scope_id": "one", "evidence": ["contract"]},
                                      {"specialist_id": "alpha:b", "scope_id": "one", "evidence": ["contract"]}],
             "grounding": {"candidate": {"digest": "current"}},
-            "jobs": [{"id": "J1", "role": "project-protocol:isolated-worker", "specialist_ids": ["alpha:a", "alpha:b"],
+            "jobs": [{"id": "J1", "role": "work-controller:isolated-worker", "specialist_ids": ["alpha:a", "alpha:b"],
                       "scope_id": "one", "input_mode": "discovery", "body_sha256": "sha256:body",
                       "candidate": {"digest": "current"}, "output_path": "audit.md"}]}
         self.payload["reviews"] = [self.review]
-        self.payload["deliveries"] = {"J1": {"status": "pending", "review": "R1", "role": "project-protocol:isolated-worker", "job_id": "J1"}}
+        self.payload["deliveries"] = {"J1": {"status": "pending", "review": "R1", "role": "work-controller:isolated-worker", "job_id": "J1"}}
 
     def completion(self):
         return {"status": "complete", "phases": {"audit": {"status": "complete"}},
-            "deliveries": {"J1": {"status": "delivered", "review": "R1", "role": "project-protocol:isolated-worker",
+            "deliveries": {"J1": {"status": "delivered", "review": "R1", "role": "work-controller:isolated-worker",
             "job_id": "J1", "output": self.report(), "scope_id": "one", "body_sha256": "sha256:body",
             "candidate": {"digest": "current"}, "specialist_ids": ["alpha:a", "alpha:b"],
             "findings": [],
@@ -329,7 +329,7 @@ class MemberDeliveryTests(ProtocolCase):
 
     def check_delivery(self, kind, *, lens=None, output=None):
         mode = "blind" if kind == "blind-derivation" else "critic" if kind == "critic" else "full-context" if lens == 0 else "verification"
-        role = "senior-review:premise-auditor" if kind == "blind-derivation" or lens == 0 else "project-protocol:isolated-worker"
+        role = "senior-review:premise-auditor" if kind == "blind-derivation" or lens == 0 else "work-controller:isolated-worker"
         check = {"kind": kind, "input_mode": mode, "independent": True,
                  "evidence": ["assigned source checked"]}
         if lens is not None:
@@ -348,6 +348,77 @@ class MemberDeliveryTests(ProtocolCase):
         for lens in (1, 2, 3):
             payload["deliveries"][f"lens-{lens}"] = self.check_delivery("verification", lens=lens)
         return payload
+
+    def legacy_completion(self):
+        legacy_role = "project-protocol:isolated-worker"
+        self.review.update(critic=True, support=[legacy_role])
+        self.review["jobs"][0]["role"] = legacy_role
+        self.payload["deliveries"]["J1"]["role"] = legacy_role
+        self.init()
+        payload = self.finding_completion()
+        payload["deliveries"]["critic"] = self.check_delivery("critic")
+        for delivery in payload["deliveries"].values():
+            delivery["role"] = legacy_role
+        return payload
+
+    def test_legacy_completed_checks_preserve_recorded_roles_and_hashes(self):
+        payload = self.legacy_completion()
+        original_review, original_deliveries = copy.deepcopy((self.review, payload["deliveries"]))
+        rules = self.runtime["contract"]()["loop"]["reviews"]
+        self.runtime["validate_reviews"]([self.review], rules, payload["deliveries"], complete=True)
+        self.assertEqual(self.review, original_review)
+        self.assertEqual(payload["deliveries"], original_deliveries)
+
+    def test_legacy_in_progress_review_completes_without_rebinding_evidence(self):
+        payload = self.legacy_completion()
+        historical = self.update({**payload, "status": "in_progress"})
+        completed = self.update({"status": "complete"})
+        self.assertEqual(completed["status"], "complete")
+        for field in ("reviews", "deliveries"):
+            self.assertEqual(completed[field], historical[field])
+
+    def test_legacy_completed_record_can_show_resume_and_validate_without_writes(self):
+        payload = self.legacy_completion()
+        historical = self.update({**payload, "status": "in_progress"})
+        historical["status"] = "complete"
+        path = self.project / ".daodan/runs/test-run/work.json"
+        path.write_text(json.dumps(historical), encoding="utf-8")
+        original = path.read_bytes()
+        for command in ("show", "resume", "validate"):
+            with self.subTest(command=command):
+                resume = {"authorizations": self.payload["authorizations"]} if command == "resume" else None
+                self.invoke(command, resume, extra=("--current",) if command == "validate" else ())
+                self.assertEqual(path.read_bytes(), original)
+
+    def test_historical_alias_does_not_accept_wrong_or_unbound_check_roles(self):
+        self.init()
+        rules = self.runtime["contract"]()["loop"]["reviews"]
+        for role, bound in (("project-protocol:isolated-worker", False), ("alpha:other-worker", True)):
+            with self.subTest(role=role, bound=bound):
+                review = copy.deepcopy(self.review)
+                review["critic"] = True
+                if bound:
+                    review["support"].append(role)
+                deliveries = self.completion()["deliveries"]
+                deliveries["critic"] = self.check_delivery("critic")
+                deliveries["critic"]["role"] = role
+                with self.assertRaises(self.runtime["ProtocolError"]):
+                    self.runtime["validate_reviews"]([review], rules, deliveries, complete=True)
+
+    def test_historical_alias_cannot_replace_the_premise_auditor(self):
+        payload = self.legacy_completion()
+        rules = self.runtime["contract"]()["loop"]["reviews"]
+        for kind, lens in (("blind-derivation", None), ("verification", 0)):
+            with self.subTest(kind=kind, lens=lens):
+                review = copy.deepcopy(self.review)
+                review["blind_derivation"] = kind == "blind-derivation"
+                deliveries = copy.deepcopy(payload["deliveries"])
+                deliveries["premise"] = self.check_delivery(kind, lens=lens)
+                deliveries["premise"]["role"] = "project-protocol:isolated-worker"
+                if lens == 0:
+                    deliveries["J1"]["findings"][0]["premise_provenance"] = "shared-context"
+                with self.assertRaisesRegex(self.runtime["ProtocolError"], "incomplete"):
+                    self.runtime["validate_reviews"]([review], rules, deliveries, complete=True)
 
     def test_explicit_empty_plan_is_preparation_not_completed_coverage(self):
         review = copy.deepcopy(self.review)
@@ -510,7 +581,7 @@ class MemberDeliveryTests(ProtocolCase):
             "premise": "the direct caller reaches the wrong object", "premise_provenance": "independent",
             "introduced_by_candidate": True}]
         delivery["member_results"][0]["findings"] = ["F1"]
-        payload["deliveries"]["aux"] = {"review": "R1", "role": "project-protocol:isolated-worker",
+        payload["deliveries"]["aux"] = {"review": "R1", "role": "work-controller:isolated-worker",
             "status": "delivered", "output": self.report("aux.md")}
         self.assertIn("lens", self.update(payload, ok=False).stderr)
 
@@ -520,7 +591,7 @@ class MemberDeliveryTests(ProtocolCase):
         self.init()
         payload = self.completion()
         for kind, role in (("blind-derivation", "senior-review:premise-auditor"),
-                           ("critic", "project-protocol:isolated-worker")):
+                           ("critic", "work-controller:isolated-worker")):
             payload["deliveries"][kind] = {"review": "R1", "role": role, "status": "delivered",
                 "output": self.report(kind + ".md"), "candidate": {"digest": "current"},
                 "coverage": "complete", "gaps": [],

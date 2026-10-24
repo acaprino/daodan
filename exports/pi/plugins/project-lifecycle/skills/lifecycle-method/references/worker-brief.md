@@ -73,7 +73,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 The writer receives only this brief. Fill every field from the run record;
 missing fields block dispatch. Include the working discipline and isolated
-worker contract required by `project-protocol:project-protocol`.
+worker contract required by `work-controller:work-record`.
 
 ```
 ## Task

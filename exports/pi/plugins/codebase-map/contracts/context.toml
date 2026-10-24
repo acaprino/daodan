@@ -1,7 +1,7 @@
 schema = "daodan/record-set/v1"
 name = "context"
 owner = "codebase-map"
-purpose = "Versioned evidence payloads; operational state remains in project-protocol work records."
+purpose = "Versioned evidence payloads; operational state remains in work-controller work records."
 
 [[records]]
 record_schema = "daodan/context-request/v1"

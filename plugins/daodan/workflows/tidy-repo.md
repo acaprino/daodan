@@ -10,7 +10,7 @@ argument-hint: "[area]"
 
 $ARGUMENTS
 
-Load `project-protocol:project-protocol` and preview, on the area above or the whole
+Load `work-controller:work-record` and preview, on the area above or the whole
 project, each owner's detection:
 
 | What | Method |

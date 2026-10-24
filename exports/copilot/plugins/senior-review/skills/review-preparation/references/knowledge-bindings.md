@@ -99,7 +99,7 @@ one lens. Preparation preserves `dimension_workers`; an unassigned dimension is
 failed coverage and cannot be hidden by another assigned dimension.
 Use the full existing role brief. Where no selected lens owns a relevant domain
 question, add one task-specific lens through the already declared
-`project-protocol:isolated-worker`, with its scope, budget and assigned report path.
+`work-controller:isolated-worker`, with its scope, budget and assigned report path.
 That worker applies selected knowledge; it never substitutes for a failed mandatory
 canonical specialist or dispatches a new undeclared role. Respect explicit reviewer
 selection and budgets; declare excluded coverage rather than silently expanding it.

@@ -7,7 +7,7 @@ description: >
 
 # Clean Code
 
-Load the `project-protocol:project-protocol` skill for execution preflight, baseline,
+Load the `work-controller:work-record` skill for execution preflight, baseline,
 candidate gate and recovery. Capture the owned files' exact pre-edit contents,
 including preexisting edits and untracked files. Use path-scoped restoration on
 failure; hard reset needs an exclusively owned clean isolated workspace and

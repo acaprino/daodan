@@ -2,7 +2,7 @@
 name: tidy-repo-coordinator
 description: 'Clean the repository: workspace garbage and git leftovers, dead application code, redundant tests, concluded run output. Preview first, then one authorization. TRIGGER WHEN: the user asks to clean up, tidy, remove dead code, junk files or redundant tests. DO NOT TRIGGER WHEN: the code itself is to be restructured (use refactor-code).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
-agents: ['project-protocol:isolated-worker', 'repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor']
+agents: ['repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `[area]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `senior-review:cleanup-auditor`, `testing:test-suite-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `repo-hygiene:workspace-auditor`, `senior-review:cleanup-auditor`, `testing:test-suite-auditor`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -123,11 +123,11 @@ Dispatch plan:
 
 Role bindings:
 
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
 - `repo-hygiene:workspace-auditor`: dispatch the installed `repo-hygiene:workspace-auditor` agent by its qualified identity.
 - `senior-review:cleanup-auditor`: dispatch the installed `senior-review:cleanup-auditor` agent by its qualified identity.
 - `testing:test-suite-auditor`: dispatch the installed `testing:test-suite-auditor` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record schemas ship with this package in
 `contracts/tidy-repo.workflow.toml`.
@@ -138,7 +138,7 @@ The phase graph and record schemas ship with this package in
 
 <arguments>
 
-Load `project-protocol:project-protocol` and preview, on the area above or the whole
+Load `work-controller:work-record` and preview, on the area above or the whole
 project, each owner's detection:
 
 | What | Method |

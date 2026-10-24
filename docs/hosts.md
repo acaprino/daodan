@@ -115,7 +115,7 @@ Consult each [plugin page](plugins/) for direct requirements and the
 [dependency catalog](catalog.md#mandatory-dependency-edges) for transitive
 installation cost. Installing the core
 lifecycle is a larger choice than installing a leaf tool such as repo-hygiene or
-project-protocol.
+work-controller.
 
 senior-review has one review engine across code, team and PR entries. Its React,
 TypeScript and platform providers are mandatory installation dependencies; target
@@ -174,7 +174,7 @@ version and canonical source digest. It is not registered as a skill or agent.
 Helper paths and unqualified skill loads belong to the original provider, whose
 root is resolved from its installed skill, never from the generated resource.
 
-`inline_workers = true` permits only project-protocol's `isolated-worker` for a
+`inline_workers = true` permits only work-controller's `isolated-worker` for a
 method-owned task with explicit scope, permission, budget and report path. It does
 not grant access to every role in the registry.
 

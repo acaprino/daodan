@@ -130,7 +130,7 @@ The phase graph, the isolation and join policies and the record schemas are in
 $ARGUMENTS
 
 Load the skills `project-lifecycle:handover-method` and
-`project-protocol:project-protocol` and prepare the consultant dossier of the project or
+`work-controller:work-record` and prepare the consultant dossier of the project or
 area named above, or of this project. Depth is standard and no local check runs unless
 the user asks for one. Every write stays in the run; maintenance is never started from
 here, the dossier names the next step for the user.

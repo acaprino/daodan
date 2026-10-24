@@ -2,7 +2,7 @@
 name: brainstorm-idea-coordinator
 description: 'Explore an idea with the user, grounded in the code and the decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
-agents: ['codebase-map:map-analyst', 'project-protocol:isolated-worker']
+agents: ['codebase-map:map-analyst', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `<idea>`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -124,8 +124,8 @@ Dispatch plan:
 Role bindings:
 
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record schemas ship with this package in
 `contracts/brainstorm-idea.workflow.toml`.
@@ -137,7 +137,7 @@ The phase graph and record schemas ship with this package in
 <arguments>
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol` and follow the lifecycle method's
+`work-controller:work-record` and follow the lifecycle method's
 `references/brainstorm.md` with the idea above. When the user chooses to build it,
 continue as `/daodan:new-feature` with the brief the brainstorm wrote, so the interview
 starts from it.

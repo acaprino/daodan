@@ -159,7 +159,7 @@ def assert_delegated_writer(case, role):
 
 class HarnessDomainOwnershipTests(unittest.TestCase):
     def test_weakened_simplicity_rules_cannot_satisfy_working_discipline(self):
-        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        protocol = (ROOT / "plugins/work-controller/skills/work-record/SKILL.md").read_text(encoding="utf-8")
         # Mutate operative obligations independently; retaining the other terms
         # must not excuse a reversed preference, lost safeguard or weaker gate.
         mutations = (
@@ -188,7 +188,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                     assert_working_discipline(self, mutation)
 
     def test_unrelated_mentions_cannot_replace_simplicity_obligations(self):
-        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        protocol = (ROOT / "plugins/work-controller/skills/work-record/SKILL.md").read_text(encoding="utf-8")
         obligation = "Preserve boundary validation, data-loss prevention, security and accessibility."
         self.assertIn(obligation, working_paragraphs(self, protocol)["simplicity"])
         mutation = protocol.replace(obligation, "", 1) + "\n## Historical note\n\n" + obligation + "\n"
@@ -197,7 +197,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
             assert_working_discipline(self, mutation)
 
     def test_shared_execution_rules_reach_authoritative_and_downstream_instructions(self):
-        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        protocol = (ROOT / "plugins/work-controller/skills/work-record/SKILL.md").read_text(encoding="utf-8")
         expected = assert_working_discipline(self, protocol)
         assert_discipline_authority(self, protocol)
         copies = (
@@ -213,20 +213,20 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         working = (ROOT / copies[2]).read_text(encoding="utf-8")
         self.assertRegex(working, r"(?i)preserve equivalent project-specific guidance")
         self.assertNotIn("Delete code when it stops paying rent", working)
-        self.assertIn("project-protocol", manifest("project-knowledge")["dependencies"]["required"])
-        self.assertEqual(manifest("project-protocol")["dependencies"]["required"], [])
+        self.assertIn("work-controller", manifest("project-knowledge")["dependencies"]["required"])
+        self.assertEqual(manifest("work-controller")["dependencies"]["required"], [])
 
     def test_protocol_briefs_carry_execution_inputs_without_cross_reading_reviews(self):
-        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        protocol = (ROOT / "plugins/work-controller/skills/work-record/SKILL.md").read_text(encoding="utf-8")
         brief = markdown_section(self, protocol, "Isolated worker briefs")
-        worker = (ROOT / "plugins/project-protocol/roles/isolated-worker.md").read_text(encoding="utf-8")
+        worker = (ROOT / "plugins/work-controller/roles/isolated-worker.md").read_text(encoding="utf-8")
         worker_contract = markdown_section(self, worker, "Contract")
 
         for text in (brief, worker_contract):
             assert_brief_inputs(self, text)
         assert_review_input_boundary(self, brief)
         assert_review_input_boundary(self, worker_contract, worker=True)
-        self.assertIn("project-protocol:project-protocol", worker_contract)
+        self.assertIn("work-controller:work-record", worker_contract)
         self.assertIn("coordinator-declared inputs", worker_contract)
 
     def test_delegated_test_writer_returns_evidence_and_reserves_human_wait_for_teaching(self):
@@ -241,11 +241,11 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
 
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
         self.assertEqual(set(HOSTS), {"claude", "copilot", "codex", "pi", "opencode"})
-        source_protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        source_protocol = (ROOT / "plugins/work-controller/skills/work-record/SKILL.md").read_text(encoding="utf-8")
         expected_rules = dict(re.findall(r"(?m)^Working (assumptions|simplicity|scope|verification|redesign): ([^\n]+)$", source_protocol))
         brief = re.search(r"(?ms)^## Isolated worker briefs\n(.*?)(?=^## |\Z)", source_protocol)
         expected_brief = " ".join(brief.group(1).split()) if brief else ""
-        source_worker = (ROOT / "plugins/project-protocol/roles/isolated-worker.md").read_text(encoding="utf-8")
+        source_worker = (ROOT / "plugins/work-controller/roles/isolated-worker.md").read_text(encoding="utf-8")
         expected_worker = markdown_section(self, source_worker, "Contract")
         source_writer = (ROOT / "plugins/testing/roles/test-writer.md").read_text(encoding="utf-8")
         writer = re.search(r"(?ms)^## Delegated execution\n(.*?)(?=^## |\Z)", source_writer)
@@ -254,11 +254,11 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
                 roots = {}
-                for plugin in ("project-protocol", "project-knowledge", "testing", ENTRY):
+                for plugin in ("work-controller", "project-knowledge", "testing", ENTRY):
                     roots[plugin] = Path(temporary) / host / plugin
                     render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), roots[plugin],
                                   adapters_root=ROOT / "adapters", plugin_registry=registry)
-                protocol = without_host_binding(self, (roots["project-protocol"] / "skills/project-protocol/SKILL.md").read_text(encoding="utf-8"), host)
+                protocol = without_host_binding(self, (roots["work-controller"] / "skills/work-record/SKILL.md").read_text(encoding="utf-8"), host)
                 with self.subTest(host=host, component="protocol"):
                     self.assertEqual(assert_working_discipline(self, protocol), expected_rules)
                     assert_discipline_authority(self, protocol)
@@ -281,7 +281,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         path = roots["project-knowledge"] / f"skills/instructions-method/references/{reference}.md"
                         self.assertEqual(assert_working_discipline(self, path.read_text(encoding="utf-8")), expected_rules)
                 for plugin, role, title, expected in (
-                        ("project-protocol", "isolated-worker", "Contract", expected_worker),
+                        ("work-controller", "isolated-worker", "Contract", expected_worker),
                         ("testing", "test-writer", "Delegated execution", expected_writer)):
                     with self.subTest(host=host, component=role):
                         text = without_host_binding(self, (roots[plugin] / role_path(host, plugin, role)).read_text(encoding="utf-8"), host)
@@ -296,7 +296,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                     # Since 38.0.0 the lifecycle and review entries are daodan's,
                     # so the inline role bodies ship in its package.
                     resources = (
-                        (ENTRY, "project-protocol", "isolated-worker", "Contract", expected_worker),
+                        (ENTRY, "work-controller", "isolated-worker", "Contract", expected_worker),
                         (ENTRY, "testing", "test-writer", "Delegated execution", expected_writer),
                     )
                     for consumer, owner, role, title, expected in resources:
@@ -332,13 +332,13 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                             owner, role = binding.split("/")
                             identity = role if owner == plugin else f"{owner}:{role}"
                             self.assertIn(f"`{identity}`", body)
-                        self.assertIn("project-protocol:isolated-worker", body)
+                        self.assertIn("work-controller:isolated-worker", body)
                         self.assertIn("senior-review:review-method", body)
                         # Rejection examples live in the separately verified
                         # binding; the actual method and harness stay neutral.
                         self.assertNotIn("subagent_type", body)
                     if host in {"codex", "pi"}:
-                        for binding in BRANCH_ROLES | {"project-protocol/isolated-worker"}:
+                        for binding in BRANCH_ROLES | {"work-controller/isolated-worker"}:
                             owner, role = binding.split("/")
                             if owner == plugin:
                                 continue
@@ -487,7 +487,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
     def test_composed_inventory_binds_methods_without_copying_their_schedule(self):
         from scripts.daodan.reviewer_catalog import REVIEWER_ROLES
         self.assertFalse(manifest("senior-review")["components"].get("workflows"))
-        self.assertIn("project-protocol", manifest("senior-review")["dependencies"]["required"])
+        self.assertIn("work-controller", manifest("senior-review")["dependencies"]["required"])
         for entry, roles in REVIEW_ENTRIES.items():
             with self.subTest(entry=entry):
                 sidecar = tomllib.loads((ROOT / "plugins" / ENTRY / "workflows" / f"{entry}.toml").read_text(encoding="utf-8"))
@@ -498,7 +498,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                 self.assertEqual(set(dispatch["roles"]), expected)
                 self.assertTrue(dispatch["isolated"])
                 self.assertIs(dispatch["inline_workers"], True)
-                for provider in ("project-protocol", "senior-review"):
+                for provider in ("work-controller", "senior-review"):
                     self.assertIn(provider, manifest(ENTRY)["dependencies"]["required"])
                 # Bind method workers without a duplicated outer phase graph.
                 self.assertEqual([p["id"] for p in sidecar["phases"]], ["prepare", "execute"])
@@ -560,9 +560,9 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
     def test_mutation_owners_have_the_operational_protocol(self):
         for owner, method in (("senior-review", "application-cleanup-method"), ("testing", "test-remediation-method"), ("clean-code", "readability-method"), ("python-development", "python-refactor-method")):
             with self.subTest(owner=owner):
-                self.assertIn("project-protocol", manifest(owner)["dependencies"]["required"])
+                self.assertIn("work-controller", manifest(owner)["dependencies"]["required"])
                 body = (ROOT / "plugins" / owner / "skills" / method / "SKILL.md").read_text(encoding="utf-8")
-                self.assertIn("project-protocol:project-protocol", body)
+                self.assertIn("work-controller:work-record", body)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:501d525b6518c45fa62982610e223ee3e4cd5e3b8ec279e87d9ff00d867b4e69",
+  "harnessStrategies": {},
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "work-controller",
+  "version": "1.0.0"
+}

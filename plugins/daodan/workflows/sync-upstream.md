@@ -8,6 +8,6 @@ description: >
 # Sync with upstream
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Open a run with operation `consolidate` and follow
+`work-controller:work-record`. Open a run with operation `consolidate` and follow
 the lifecycle method's `references/sync.md`. A diverged branch or an uncommitted edit in
 the incoming paths stops with the options; the choice is the user's.

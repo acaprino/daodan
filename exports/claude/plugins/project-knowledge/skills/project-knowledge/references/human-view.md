@@ -116,7 +116,7 @@ record interactions as unexercised when no authorized browser check ran. Do not
 claim token savings without workflow measurements.
 
 Record successful HTML delivery as a derived view in the owner's outputs and
-link it beside the native report before project-protocol validation and closure.
+link it beside the native report before work-controller validation and closure.
 Preserve the owning method's delivery and verification gates. Diagnose rendering
 failure through the provider and retain the native source. If an explicitly
 requested HTML view remains missing or failed, keep that deliverable and the run

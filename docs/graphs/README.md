@@ -173,12 +173,12 @@ executor.
 Three supporting contracts are already shipped and feed those interfaces:
 
 1. `daodan/review-roster/v1` from
-   [`review_roster.py`](../../plugins/project-protocol/skills/project-protocol/scripts/review_roster.py),
+   [`review_roster.py`](../../plugins/senior-review/skills/review-preparation/scripts/review_roster.py),
    the floor an I3 answer can never lower.
 2. `daodan/tier-router-proposal/v1` from `tier_router.py discover`, the screened tier
    proposal that becomes a binding only when a human confirms it.
 3. `daodan/model-fact-registry/v1` from
-   [`registry_fetch.py`](../../plugins/project-protocol/skills/project-protocol/scripts/registry_fetch.py),
+   [`registry_fetch.py`](../../plugins/model-routing/skills/model-routing/scripts/registry_fetch.py),
    a harvested fallback for facts a harness leaves absent, never a correction.
 
 ## Prototypes and harnesses
@@ -206,9 +206,9 @@ and their own documents own their numbers.
 
 1. [`docs/plugins/codebase-map.md`](../plugins/codebase-map.md): the code graph
    producer, its snapshot, cards, cascade scan and perimeter rules.
-2. [`docs/plugins/project-protocol.md`](../plugins/project-protocol.md): the owner of
+2. [`docs/plugins/work-controller.md`](../plugins/work-controller.md): the owner of
    `tier_router.py`, `review_roster.py`, `registry_fetch.py` and `run_state.py`.
-3. [`tier_router.py`](../../plugins/project-protocol/skills/project-protocol/scripts/tier_router.py):
+3. [`tier_router.py`](../../plugins/model-routing/skills/model-routing/scripts/tier_router.py):
    `discover` screens what a harness actually offers, `prepare-choice` freezes one
    snodo's request and prompt, `resolve` validates an answer and binds the host
    triple `(model_param, effort_applied, packet_policy)`.

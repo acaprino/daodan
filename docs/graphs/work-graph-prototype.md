@@ -58,7 +58,7 @@ nothing in `plugins/` depends on it.
 | Schema | `work-graph-experiment/v1` (its own; not `daodan/work/v2`) |
 | Interfaces | I1 map slice, I2 approved spec, I3 selection, I4 routing: validators plus deterministic mocks |
 | VCS state | Working tree only. `git ls-files` returns 0 tracked files, so a fresh clone does not contain it |
-| Future owner | `project-lifecycle` for the writer, `project-protocol` for records and gates |
+| Future owner | `project-lifecycle` for the writer, `work-controller` for records and gates |
 | Specification | [`2026-10-20-system1-work-graph-composition-design.md`](../superpowers/specs/2026-10-20-system1-work-graph-composition-design.md) |
 
 ### Scope and boundary
@@ -152,12 +152,12 @@ Explicitly missing:
    lists AC01 to AC25, §12 fixes the delivery order (offline, then shadow, then
    active per snodo).
 2. Real implementations of I3 and I4 now exist outside this prototype, in
-   [`tier_router.py`](../../plugins/project-protocol/skills/project-protocol/scripts/tier_router.py)
-   (`prepare-choice` and `resolve`, project-protocol 1.7.0). The prototype's
+   [`tier_router.py`](../../plugins/model-routing/skills/model-routing/scripts/tier_router.py)
+   (`prepare-choice` and `resolve`, work-controller 1.7.0). The prototype's
    `routing.py` and `writer.py` still carry their own copy of the same policy
    constants and rules; see the open point below.
 3. The roster floor the writer applies is produced in real life by
-   [`review_roster.py`](../../plugins/project-protocol/skills/project-protocol/scripts/review_roster.py)
+   [`review_roster.py`](../../plugins/senior-review/skills/review-preparation/scripts/review_roster.py)
    (`daodan/review-roster/v1`), which `policy.py` only stands in for.
 4. Sibling prototypes are listed in the [graph documentation index](README.md).
 

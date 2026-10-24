@@ -132,7 +132,7 @@ a finding as preexisting. Keep these inputs with the assigned finding and output
 
 Dispatch one isolated worker per lens per finding through the consuming workflow's host harness:
 - **Lens 0:** `senior-review:premise-auditor` in Mode 2.
-- **Lenses 1-3:** `project-protocol:isolated-worker` with the lens-specific briefs below.
+- **Lenses 1-3:** `work-controller:isolated-worker` with the lens-specific briefs below.
 
 ### Lens 0 Prompt (Premise Challenge)
 
@@ -260,7 +260,7 @@ Respond with EXACTLY:
 
 ## 3. Completeness Critic Prompt
 
-Dispatch one isolated `project-protocol:isolated-worker` with:
+Dispatch one isolated `work-controller:isolated-worker` with:
 
 ```
 You are the completeness critic for a multi-dimensional code review. Your job is NOT

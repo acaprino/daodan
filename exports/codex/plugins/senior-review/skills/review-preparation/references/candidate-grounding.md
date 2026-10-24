@@ -1,3 +1,5 @@
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -166,10 +168,10 @@ The caller supplies shape; the helper computes rigor.
 Before any dispatch:
 
 ```text
-python "${PROTOCOL_ROOT}/skills/project-protocol/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
+python "<plugin-root>/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
-`PROTOCOL_ROOT` names the installed provider. Complete the roster through
+Complete the roster through
 `references/composition.md` before appending the validated review to `reviews`;
 bind deliveries to its `id`. The protocol refuses roles outside `roster` and
 `support`. Changed public interfaces, sensitive paths, manifests/contracts or

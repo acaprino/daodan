@@ -11,7 +11,7 @@
     {"id": "exact-08", "kind": "exact", "query": "card_store.validate_card unknown card field", "expected": ["plugins/codebase-map/skills/map-method/scripts/card_store.py::validate_card"]},
     {"id": "exact-09", "kind": "exact", "query": "parse_unified_diff rename from rename to", "expected": ["plugins/codebase-map/skills/map-method/scripts/snapshot.py::parse_unified_diff"], "dependencies": ["plugins/codebase-map/skills/map-method/scripts/snapshot.py::_diff_path", "plugins/codebase-map/skills/map-method/scripts/snapshot.py::_coalesce_lines"]},
     {"id": "exact-10", "kind": "exact", "query": "write_snapshot parser_fingerprint reusable", "expected": ["plugins/codebase-map/skills/map-method/scripts/snapshot.py::write_snapshot", "plugins/codebase-map/skills/map-method/scripts/snapshot.py::parser_fingerprint"]},
-    {"id": "exact-11", "kind": "exact", "query": "impact_signals max_callers interface_changed effects_changed", "expected": ["plugins/project-protocol/skills/project-protocol/scripts/review_roster.py::impact_signals"]},
+    {"id": "exact-11", "kind": "exact", "query": "impact_signals max_callers interface_changed effects_changed", "expected": ["plugins/senior-review/skills/review-preparation/scripts/review_roster.py::impact_signals"]},
     {"id": "exact-12", "kind": "exact", "query": "skill catalog fingerprint metadata_for select", "expected": ["plugins/skill-catalog/skills/skill-catalog/scripts/catalog.py::fingerprint", "plugins/skill-catalog/skills/skill-catalog/scripts/catalog.py::select"]},
 
     {"id": "traceback-01", "kind": "traceback", "query": "ValueError: edit impact requires a SQLite snapshot build_edit_impact", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::build_edit_impact"]},
@@ -25,7 +25,7 @@
     {"id": "nl-en-04", "kind": "nl-en", "query": "decide whether a stored symbol card is fresh or stale after an interface change", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_Cards._judge"]},
     {"id": "nl-en-05", "kind": "nl-en", "query": "find strongly connected components and order them so callees come before callers", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_scc_components", "plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_component_order"]},
     {"id": "nl-en-06", "kind": "nl-en", "query": "compute a conservative backward slice from return statements following definitions of used names", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_python_slice"]},
-    {"id": "nl-en-07", "kind": "nl-en", "query": "read the callers and callees from a code graph packet to choose the size of a review", "expected": ["plugins/project-protocol/skills/project-protocol/scripts/review_roster.py::impact_signals"]},
+    {"id": "nl-en-07", "kind": "nl-en", "query": "read the callers and callees from a code graph packet to choose the size of a review", "expected": ["plugins/senior-review/skills/review-preparation/scripts/review_roster.py::impact_signals"]},
     {"id": "nl-en-08", "kind": "nl-en", "query": "render a markdown report as a styled standalone html page", "expected": ["plugins/report-rendering/skills/report-renderer/scripts/render_report.py::render_report"]},
 
     {"id": "nl-it-01", "kind": "nl-it", "query": "confronta due istantanee e classifica i chiamanti colpiti da cambi di firma rispetto ai soli cambi di corpo", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::build_stale_callers"]},
@@ -33,7 +33,7 @@
     {"id": "nl-it-03", "kind": "nl-it", "query": "stabilisci se una card di un simbolo è ancora fresca dopo una modifica della firma", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_Cards._judge"]},
     {"id": "nl-it-04", "kind": "nl-it", "query": "costruisci la firma completa con parametri annotazioni valori predefiniti e tipo di ritorno", "expected": ["plugins/codebase-map/skills/map-method/scripts/snapshot.py::signature_record", "plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_interface_digest"]},
     {"id": "nl-it-05", "kind": "nl-it", "query": "prepara un pacchetto limitato con sorgente verificata vicini a uno e due salti e test collegati prima di modificare", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::build_edit_impact"]},
-    {"id": "nl-it-06", "kind": "nl-it", "query": "leggi chiamanti e chiamati dal pacchetto della mappa per decidere quanto deve essere grande la revisione", "expected": ["plugins/project-protocol/skills/project-protocol/scripts/review_roster.py::impact_signals"]},
+    {"id": "nl-it-06", "kind": "nl-it", "query": "leggi chiamanti e chiamati dal pacchetto della mappa per decidere quanto deve essere grande la revisione", "expected": ["plugins/senior-review/skills/review-preparation/scripts/review_roster.py::impact_signals"]},
 
     {"id": "code-01", "kind": "code", "query": "def build_stale_callers(base, candidate, *, limit=100)", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::build_stale_callers"]},
     {"id": "code-02", "kind": "code", "query": "def _python_slice(store, row): backward def-use return statements", "expected": ["plugins/codebase-map/skills/map-method/scripts/semantic_store.py::_python_slice"]},

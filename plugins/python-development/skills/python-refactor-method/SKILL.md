@@ -61,7 +61,7 @@ Transform complex Python into clear, maintainable code while preserving correctn
 
 ## Operational preflight and recovery
 
-Load the `project-protocol:project-protocol` skill before execution. Reuse an authorized
+Load the `work-controller:work-record` skill before execution. Reuse an authorized
 plan only for its current scope/snapshot. Record existing tracked/untracked edits,
 owned files, baseline and required commands/configurations; capture `pre_phase_sha`
 and pre-edit contents immediately before each phase. A remote gate must match

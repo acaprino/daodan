@@ -162,7 +162,7 @@ Process accepted categories in fixed order, lowest ambiguity first: `orphan`, `s
 2. First batch only: add the runner's CI exclusion from this skill's `references/quarantine-layout.md` and create its native README ledger, preserving existing runner exclusions.
 3. `git mv` each file to its mirrored quarantine path; append one ledger row per file (original path, date, category, cause, reason, evidence, owner, return condition, preserved protection and candidate gate identity).
 4. Record the candidate snapshot and run its required checks. Preserve every approved behavior, distinct failure mode and bugfix regression. Neither pass counts nor line coverage establish equivalence; report unresolved or unexercised protection explicitly. Under `--no-run`, await authorized same-snapshot remote evidence instead of using collection or old CI as a pass.
-5. Gate failed: use `project-protocol:project-protocol` recovery for the captured `pre_phase_sha` or exact owned pre-edit snapshot. Restore only owned changes and verified newly created artifacts; verify restoration and halt. No broad cleanup of the quarantine directory, and no deletion of artifacts created by another run.
+5. Gate failed: use `work-controller:work-record` recovery for the captured `pre_phase_sha` or exact owned pre-edit snapshot. Restore only owned changes and verified newly created artifacts; verify restoration and halt. No broad cleanup of the quarantine directory, and no deletion of artifacts created by another run.
 6. Gate passed: commit the exact accepted batch only when authorized, with the candidate gate identity in its ledger.
 
 ### 5d: Refresh the audit

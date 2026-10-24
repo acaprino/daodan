@@ -129,7 +129,7 @@ single-writer rule for the final report, and a **dispatch plan**. The templates 
 as a broken install.
 
 `[dispatch].isolated` and `inline_workers` also feed coordination selection, independently of
-phase isolation. `inline_workers` exposes only `project-protocol/isolated-worker` for a full
+phase isolation. `inline_workers` exposes only `work-controller/isolated-worker` for a full
 method-owned task, scope, authorization, budget and report path; it never exposes the entire
 role registry. Extra named workers use `plugin/role` references and must have a direct required
 provider dependency. The registry validates the provider and role before rendering.
@@ -247,7 +247,7 @@ Which strategy each host selected is recorded per package in `.daodan-provenance
 
 `[contracts].exports` declares a kernel's public `contracts/` files. Local
 `[contract].schemas` still refers to a workflow's own plugin. A shared reference such as
-`project-protocol/contracts/work.toml` belongs in `[contract].shared_schemas`; its provider must
+`work-controller/contracts/work.toml` belongs in `[contract].shared_schemas`; its provider must
 be a direct required dependency and the target must be explicitly exported. The provider package
 carries the canonical file. Consumers' shipped `contracts/<workflow>.workflow.toml` sidecars
 retain the qualified reference; the compiler does not create another hand-authored schema copy.

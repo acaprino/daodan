@@ -11,7 +11,7 @@ argument-hint: "[area]"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:maintainer-method` and
-`project-protocol:project-protocol` and coordinate the campaign on the area named above
+`work-controller:work-record` and coordinate the campaign on the area named above
 or the whole project: separate lifecycle runs and explicit stage handoffs, guided
 checkpoints, deep depth. Every stage is a preview until the user authorizes its edits at
 the step that needs them. Report complete only from validated stage results and a final

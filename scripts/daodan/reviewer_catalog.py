@@ -125,7 +125,7 @@ METHOD_BINDINGS: tuple[dict[str, object], ...] = (
     {
         "id": "senior-review:python-method",
         "dimension": "python",
-        "role": "project-protocol:isolated-worker",
+        "role": "work-controller:isolated-worker",
         "skills": [
             "python-development:python-refactor-method",
             "python-development:python-dead-code",
@@ -138,7 +138,7 @@ METHOD_BINDINGS: tuple[dict[str, object], ...] = (
     {
         "id": "senior-review:dependencies-method",
         "dimension": "dependencies",
-        "role": "project-protocol:isolated-worker",
+        "role": "work-controller:isolated-worker",
         "skills": ["dependency-audit:dependency-audit"],
         "mode": "audit-only",
         "trigger_when": "candidate changes a manifest or lockfile",
@@ -272,7 +272,7 @@ def reviewer_catalog(registry, host: str, roles_layout: str | None, *, adapter=N
             "provider": provider.name,
             "provider_version": provider.version,
             "operation_scope": _inline_role_scope(
-                resolve_role(registry, "project-protocol", "isolated-worker")["metadata"]).strip(),
+                resolve_role(registry, "work-controller", "isolated-worker")["metadata"]).strip(),
             "source_hashes": hashes,
             "host_binding": {"host": host, "id": binding["id"],
                              "file": f"skills/review-preparation/references/method-bindings/{binding['dimension']}.md",

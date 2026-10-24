@@ -88,7 +88,7 @@ leaves the run incomplete.
 For each selected deduplicated finding, dispatch isolated lenses through the
 consuming workflow's host harness: Lens 0 uses declared
 `senior-review:premise-auditor`; lenses 1-3 use declared
-`project-protocol:isolated-worker`. Briefs carry owned scope, authorization, budget,
+`work-controller:isolated-worker`. Briefs carry owned scope, authorization, budget,
 inputs and report path. Ledger delivered/failed outcomes. Lenses receive no peer
 findings before independent delivery. Inherit session model; overrides require
 explicit user request and supported host binding, never invented aliases.
@@ -130,7 +130,7 @@ explicit user request and supported host binding, never invented aliases.
 ## Completeness Critic
 
 When required or included optionally in preparation, one isolated
-`project-protocol:isolated-worker` runs after verification through the same host
+`work-controller:isolated-worker` runs after verification through the same host
 binding. Prompt: `references/panel-and-critic-prompts.md`, Section 3.
 Emit `## Coverage Gaps` for:
 1. Warranted dimensions not run.

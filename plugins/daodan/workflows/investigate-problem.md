@@ -12,7 +12,7 @@ $ARGUMENTS
 
 Read the argument as a path, a commit, a pull request or a branch when one exists,
 otherwise as text, and say how you read it before starting. Load the skills
-`senior-review:investigation-method` and `project-protocol:project-protocol` and
+`senior-review:investigation-method` and `work-controller:work-record` and
 investigate the problem above. Nothing in the product changes; the reproduction test is
 the one project file it writes, uncommitted. When the user wants it fixed, continue as
 `/daodan:fix-bug` with the reproduction test as its oracle.

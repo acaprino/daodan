@@ -161,7 +161,7 @@ The gates are default-on for code/team review, with a finding-count cost guard
 guard is a finding-count proxy, not an enforced token budget. Workers read only
 coordinator-declared inputs: independent reviewers do not read peer results before
 delivery, while downstream verifiers and critics receive the findings assigned to
-them. Generic isolated tasks bind to `project-protocol:isolated-worker`; named
+them. Generic isolated tasks bind to `work-controller:isolated-worker`; named
 specialists retain their owner-qualified role. A sidecar's dispatch table declares
 the roles its loaded methods can use independently of phase scheduling.
 
@@ -231,7 +231,7 @@ adapter bindings when changing:
 
 - `plugins/codebase-map/` — partition worker and synthesizer agents that participate in the team entry of `codebase-map:map-method`.
 - `plugins/senior-review/` — every reviewer agent that participates in the branch review's Phase 2.
-- `plugins/project-lifecycle/` and `plugins/project-protocol/`: specialist dispatch, generic isolated tasks, delivery accounting and candidate gates.
+- `plugins/project-lifecycle/` and `plugins/work-controller/`: specialist dispatch, generic isolated tasks, delivery accounting and candidate gates.
 - `plugins/project-knowledge/`: assigned writers in the file/audience guide plan.
 - `plugins/research/` — `/research:team-research` is the lead; `deep-researcher` investigates one sub-question per parallel wave; `quick-searcher` handles single-fact lookups and verifier duty.
 - Any new pipeline command that spawns multiple agents.

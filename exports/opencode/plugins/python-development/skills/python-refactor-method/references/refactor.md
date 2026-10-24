@@ -87,7 +87,7 @@ Not for renaming or simplifying for readability only (`clean-code:readability-me
   In the commands below, `TARGET` stands for the resolved path or paths, each quoted.
 - **RUN_DIR**: the caller's run directory. The session state and every phase output file go there, never in the project.
 - **Strict mode**: a method decision. Default: off. On when the caller's request asks for caution (strict, careful or step-by-step execution). It changes the recommendation at the phase checkpoint only.
-- **Executing the plan**: an authorization asked at the phase checkpoint, once, with the host's question tool, and recorded in the run (`project-protocol:project-protocol`). Committing needs its own authorization (Phase 3).
+- **Executing the plan**: an authorization asked at the phase checkpoint, once, with the host's question tool, and recorded in the run (`work-controller:work-record`). Committing needs its own authorization (Phase 3).
 
 ## CRITICAL RULES
 
@@ -101,7 +101,7 @@ Not for renaming or simplifying for readability only (`clean-code:readability-me
 ## Operational preflight
 
 Apply this skill's `SKILL.md` (`python-development:python-refactor-method`) with this
-reference, and load `project-protocol:project-protocol` before mutation. Existing plan authorization
+reference, and load `work-controller:work-record` before mutation. Existing plan authorization
 can satisfy the approval checkpoint; do not ask again for the same accepted scope.
 All checkpoints and native reports are bound to the same current snapshot.
 Required unavailable local checks need an authorized same-snapshot remote gate.

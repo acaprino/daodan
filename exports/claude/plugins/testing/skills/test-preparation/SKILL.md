@@ -78,7 +78,7 @@ run permission. Output: runner/configuration diagnosis, native metrics with sour
 and snapshot, test inventory, baseline evidence, source intent and missing inputs.
 
 Load the `testing:test-hygiene` skill for its runner playbook and prevention rules. Load
-`project-protocol:project-protocol` for execution preflight, exact snapshot and
+`work-controller:work-record` for execution preflight, exact snapshot and
 confined output. Read `references/<mode>.md` inside this skill. Reuse these steps
 without adding another detection prompt. Caller-provided measurements must carry
 source, time and snapshot; stale metrics are diagnostic evidence only.

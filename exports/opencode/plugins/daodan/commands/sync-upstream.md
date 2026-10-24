@@ -114,7 +114,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `text-humanizer:text-humanizer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `text-humanizer:text-humanizer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -138,9 +138,9 @@ Role bindings:
 - `project-knowledge:ops-writer`: dispatch the installed `project-knowledge:ops-writer` agent by its qualified identity.
 - `project-knowledge:overview-writer`: dispatch the installed `project-knowledge:overview-writer` agent by its qualified identity.
 - `project-knowledge:tech-writer`: dispatch the installed `project-knowledge:tech-writer` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
 - `text-humanizer:text-humanizer`: dispatch the installed `text-humanizer:text-humanizer` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and the record schemas are in `contracts/sync-upstream.workflow.toml`.
 
@@ -149,6 +149,6 @@ The phase graph and the record schemas are in `contracts/sync-upstream.workflow.
 # Sync with upstream
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Open a run with operation `consolidate` and follow
+`work-controller:work-record`. Open a run with operation `consolidate` and follow
 the lifecycle method's `references/sync.md`. A diverged branch or an uncommitted edit in
 the incoming paths stops with the options; the choice is the user's.

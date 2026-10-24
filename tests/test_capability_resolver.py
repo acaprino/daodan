@@ -13,7 +13,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO / "plugins" / "project-protocol" / "skills" / "project-protocol" / "scripts"
+SCRIPTS = REPO / "plugins" / "model-routing" / "skills" / "model-routing" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import capability_resolver as cr  # noqa: E402

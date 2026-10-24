@@ -9,7 +9,7 @@ description: >
 # Investigation
 
 From an observed defect to the code and change that cause it; never an edit
-to product code. Load `project-protocol:project-protocol`: a run with
+to product code. Load `work-controller:work-record`: a run with
 operation `investigate` that writes only under itself, plus the reproduction
 test.
 

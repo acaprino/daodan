@@ -16,8 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest import mock
 
-SCRIPTS = (Path(__file__).resolve().parents[1] / "plugins" / "project-protocol"
-           / "skills" / "project-protocol" / "scripts")
+SCRIPTS = (Path(__file__).resolve().parents[1] / "plugins" / "model-routing"
+           / "skills" / "model-routing" / "scripts")
 sys.path.insert(0, str(SCRIPTS))
 
 import benchmark_snapshot as benchmark  # noqa: E402

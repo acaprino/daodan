@@ -20,7 +20,7 @@ Concurrency = Literal["preferred", "required", "forbidden"]
 ISOLATIONS: tuple[str, ...] = ("shared", "required")
 JOIN_POLICIES: tuple[str, ...] = ("all-delivered", "best-effort")
 CONCURRENCIES: tuple[str, ...] = ("preferred", "required", "forbidden")
-INLINE_WORKER_REFERENCE = "project-protocol/isolated-worker"
+INLINE_WORKER_REFERENCE = "work-controller/isolated-worker"
 
 
 @dataclass(frozen=True)

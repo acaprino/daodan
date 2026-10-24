@@ -11,7 +11,7 @@ argument-hint: "<what to build>"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Run operation `change` for the request above
+`work-controller:work-record`. Run operation `change` for the request above
 through the phases of the lifecycle method's `references/change.md`, initializing the
 project first when it is not in the cycle. A request that turns out to be a defect or a
 pure restructuring follows `references/repair.md` or `references/refactor.md` instead,

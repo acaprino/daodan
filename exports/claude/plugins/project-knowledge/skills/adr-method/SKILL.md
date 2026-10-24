@@ -75,7 +75,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Architecture decision records
 
-Load the skill `project-protocol:project-protocol` for run ownership and authorization.
+Load the skill `work-controller:work-record` for run ownership and authorization.
 The helper is `python "${CLAUDE_PLUGIN_ROOT}/skills/adr-method/scripts/adr_tool.py"`;
 it writes records and the index atomically and refuses an inconsistent state
 first. The record format is `references/adr-template.md`.

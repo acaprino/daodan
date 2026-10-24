@@ -98,7 +98,7 @@ never reaches for it.
   Restrict them only when TARGET names phases.
 - **Apply authorization.** Never assumed. The preview always runs first; applying is
   one question asked after the report (Step 4), with or without one commit per phase.
-- **The run.** The coordinator's run (`project-protocol:project-protocol`). Its run
+- **The run.** The coordinator's run (`work-controller:work-record`). Its run
   directory holds the tidy report and the recorded authorization. The quarantine keeps
   its project path, `.repo-hygiene/quarantine/`, because the catalog's application
   safety table names it.
@@ -157,7 +157,7 @@ Ask only when the report holds a finding that some phase would apply; a report w
 findings are all `KEEP`, `REVIEW`, `REPORT-ONLY` or `git-state` needs no question.
 Reuse an apply authorization the run already records. Otherwise ask once, through the
 host's question tool, with the report's counts per phase, and record the answer in the
-run (`project-protocol:project-protocol`). When the session has no question tool, write
+run (`work-controller:work-record`). When the session has no question tool, write
 the question to the run's `questions` section, end the turn after the report, and
 resume on the same run with the answer.
 

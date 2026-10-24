@@ -12,7 +12,7 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
-from test_project_protocol import ProtocolCase
+from test_work_record import ProtocolCase
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -74,7 +74,7 @@ class ReviewerCatalogTests(unittest.TestCase):
         entries = {entry["id"]: entry for entry in self.catalog["entries"]}
         for binding in ("senior-review:python-method", "senior-review:dependencies-method"):
             self.assertEqual(entries[binding]["kind"], "method-binding")
-            self.assertEqual(entries[binding]["role"], "project-protocol:isolated-worker")
+            self.assertEqual(entries[binding]["role"], "work-controller:isolated-worker")
         self.assertNotIn("python-development:python-engineer",
                          {entry["id"] for entry in self.catalog["entries"] if entry["kind"] == "role"})
 

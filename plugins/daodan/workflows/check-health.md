@@ -11,7 +11,7 @@ argument-hint: "[area]"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Run operation `assess`, the diagnosis of the
+`work-controller:work-record`. Run operation `assess`, the diagnosis of the
 lifecycle method's `references/assess.md`, with focus `all` on the area named above or
 the whole project: knowledge, structure, tests, artifacts and every stack the snapshot
 shows. It is read-only. The result is the plan of actions with owner, scope, evidence,

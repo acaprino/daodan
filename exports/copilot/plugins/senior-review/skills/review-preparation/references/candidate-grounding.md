@@ -1,3 +1,5 @@
+> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -171,10 +173,10 @@ The caller supplies shape; the helper computes rigor.
 Before any dispatch:
 
 ```text
-python "${PROTOCOL_ROOT}/skills/project-protocol/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
+python "${PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
-`PROTOCOL_ROOT` names the installed provider. Complete the roster through
+Complete the roster through
 `references/composition.md` before appending the validated review to `reviews`;
 bind deliveries to its `id`. The protocol refuses roles outside `roster` and
 `support`. Changed public interfaces, sensitive paths, manifests/contracts or

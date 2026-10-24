@@ -114,7 +114,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `peer-review:brief-builder`, `peer-review:packet-builder`, `peer-review:respondent`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `peer-review:brief-builder`, `peer-review:packet-builder`, `peer-review:respondent`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -129,8 +129,8 @@ Role bindings:
 - `peer-review:brief-builder`: dispatch the installed `peer-review:brief-builder` agent by its qualified identity.
 - `peer-review:packet-builder`: dispatch the installed `peer-review:packet-builder` agent by its qualified identity.
 - `peer-review:respondent`: dispatch the installed `peer-review:respondent` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and the record schemas are in `contracts/get-second-opinion.workflow.toml`.
 

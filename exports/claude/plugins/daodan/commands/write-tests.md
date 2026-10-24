@@ -97,7 +97,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `project-protocol:isolated-worker`, `testing:test-writer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `testing:test-writer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -109,9 +109,9 @@ Dispatch plan:
 
 Role bindings:
 
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
 - `testing:test-writer`: dispatch the installed `testing:test-writer` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph, the isolation and join policies and the record schemas are in
 `contracts/write-tests.workflow.toml`, which ships with this package.
@@ -124,7 +124,7 @@ $ARGUMENTS
 
 Read the argument as a path, a commit, a pull request or a branch when one exists,
 otherwise as text, and say how you read it before starting. Load the skills
-`testing:test-preparation` and `project-protocol:project-protocol`, prepare the runner
+`testing:test-preparation` and `work-controller:work-record`, prepare the runner
 and the layout for the target above, and dispatch `testing:test-writer` in an isolated
 context with that preparation. Run the new tests with the project's runner and report
 them with their output. Committing them is an authorization asked when needed.

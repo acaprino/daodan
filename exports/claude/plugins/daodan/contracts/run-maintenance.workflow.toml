@@ -136,4 +136,4 @@ outcomes = [
 ]
 artifacts = ["campaign-request", "campaign-brief", "stage-results", "campaign-report"]
 schemas = []
-shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]
+shared_schemas = ["work-controller/contracts/work.toml", "work-controller/contracts/project-result.toml"]

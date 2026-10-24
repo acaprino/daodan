@@ -97,7 +97,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-knowledge:instructions-auditor`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -111,8 +111,8 @@ Role bindings:
 
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph, the isolation and join policies and the record schemas are in
 `contracts/init-project.workflow.toml`, which ships with this package.
@@ -124,7 +124,7 @@ The phase graph, the isolation and join policies and the record schemas are in
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Open a run with operation `assess` and follow the
+`work-controller:work-record`. Open a run with operation `assess` and follow the
 lifecycle method's `references/init.md`: an empty folder is scaffolded first from what
 the user wants to build; an existing project gets its lite map, record index,
 environment, loop block and test baseline. A part that exists and validates is kept. End

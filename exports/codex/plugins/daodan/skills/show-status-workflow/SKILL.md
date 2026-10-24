@@ -78,5 +78,5 @@ Compiled binding and static checks do not prove an installed host executed a run
 # Show the status
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol` and follow the lifecycle method's
+`work-controller:work-record` and follow the lifecycle method's
 `references/status.md`. It reads only: no run is opened and nothing is written.

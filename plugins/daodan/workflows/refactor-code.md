@@ -11,7 +11,7 @@ argument-hint: "<what to restructure>"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Run operation `change` for the request above as the
+`work-controller:work-record`. Run operation `change` for the request above as the
 lifecycle method's `references/refactor.md` directs: characterization tests before any
 refactoring wave, structural oracles, behavior unchanged at every step. Stop only for
 the user's answers, the plan approval and the merge authorization; ask each with the

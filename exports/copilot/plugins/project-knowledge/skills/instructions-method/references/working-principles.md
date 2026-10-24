@@ -83,7 +83,7 @@ working guidance. Preserve equivalent project-specific guidance when maintaining
 an existing file. Missing headings or different wording alone are not defects.
 
 The original local execution wording below is owned by
-`project-protocol:project-protocol` (already required). Equivalent guidance
+`work-controller:work-record` (already required). Equivalent guidance
 in existing target projects remains valid.
 
 ```markdown

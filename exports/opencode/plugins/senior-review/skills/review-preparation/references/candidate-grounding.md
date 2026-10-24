@@ -1,3 +1,5 @@
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
+
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -167,10 +169,10 @@ The caller supplies shape; the helper computes rigor.
 Before any dispatch:
 
 ```text
-python "${PROTOCOL_ROOT}/skills/project-protocol/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
+python "<plugin-root>/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
-`PROTOCOL_ROOT` names the installed provider. Complete the roster through
+Complete the roster through
 `references/composition.md` before appending the validated review to `reviews`;
 bind deliveries to its `id`. The protocol refuses roles outside `roster` and
 `support`. Changed public interfaces, sensitive paths, manifests/contracts or

@@ -209,7 +209,7 @@
           }
         ],
         "dependencies": [
-          "project-protocol"
+          "work-controller"
         ],
         "root": "plugins/clean-code",
         "skills": [
@@ -652,7 +652,7 @@
           "platform-engineering",
           "project-knowledge",
           "project-lifecycle",
-          "project-protocol",
+          "work-controller",
           "python-development",
           "react-development",
           "repo-hygiene",
@@ -694,6 +694,17 @@
             "file": "skills/kotlin-specialist/SKILL.md",
             "id": "kotlin-development:kotlin-specialist",
             "name": "kotlin-specialist"
+          }
+        ]
+      },
+      "model-routing": {
+        "root": "plugins/model-routing",
+        "skills": [
+          {
+            "description": "Select the model and effort for each LLM job through task_router.py, and refresh the model catalog and prices. TRIGGER WHEN: a coordinator routes an LLM job, or the catalog or prices need a refresh.",
+            "file": "skills/model-routing/SKILL.md",
+            "id": "model-routing:model-routing",
+            "name": "model-routing"
           }
         ]
       },
@@ -1555,7 +1566,7 @@
           }
         ],
         "dependencies": [
-          "project-protocol",
+          "work-controller",
           "codebase-map",
           "text-humanizer",
           "senior-review",
@@ -1591,7 +1602,8 @@
       },
       "project-lifecycle": {
         "dependencies": [
-          "project-protocol",
+          "model-routing",
+          "work-controller",
           "project-knowledge",
           "senior-review",
           "testing",
@@ -1628,66 +1640,6 @@
             "file": "skills/handover-method/SKILL.md",
             "id": "project-lifecycle:handover-method",
             "name": "handover-method"
-          }
-        ]
-      },
-      "project-protocol": {
-        "agents": [
-          {
-            "description": "Isolated task worker for a coordinator-owned method. Executes the supplied concrete task within its owned scope and returns an actual evidence report.",
-            "file": "agents/isolated-worker.md",
-            "id": "project-protocol:isolated-worker",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "shell",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          }
-        ],
-        "root": "plugins/project-protocol",
-        "skills": [
-          {
-            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, recording, resuming or closing a project intervention.",
-            "file": "skills/project-protocol/SKILL.md",
-            "id": "project-protocol:project-protocol",
-            "name": "project-protocol"
           }
         ]
       },
@@ -1827,7 +1779,7 @@
         ],
         "dependencies": [
           "testing",
-          "project-protocol"
+          "work-controller"
         ],
         "root": "plugins/python-development",
         "skills": [
@@ -4576,7 +4528,7 @@
           "codebase-map",
           "abstraction-architect",
           "testing",
-          "project-protocol",
+          "work-controller",
           "react-development",
           "typescript-development",
           "platform-engineering",
@@ -5069,7 +5021,7 @@
           }
         ],
         "dependencies": [
-          "project-protocol",
+          "work-controller",
           "report-rendering"
         ],
         "root": "plugins/testing",
@@ -5326,7 +5278,7 @@
           }
         ],
         "dependencies": [
-          "project-protocol",
+          "work-controller",
           "testing"
         ],
         "root": "plugins/typescript-development",
@@ -5356,6 +5308,66 @@
             "name": "typescript-write"
           }
         ]
+      },
+      "work-controller": {
+        "agents": [
+          {
+            "description": "Isolated task worker for a coordinator-owned method. Executes the supplied concrete task within its owned scope and returns an actual evidence report.",
+            "file": "agents/isolated-worker.md",
+            "id": "work-controller:isolated-worker",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "root": "plugins/work-controller",
+        "skills": [
+          {
+            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, recording, resuming or closing a project intervention.",
+            "file": "skills/work-record/SKILL.md",
+            "id": "work-controller:work-record",
+            "name": "work-record"
+          }
+        ]
       }
     },
     "schema": 1
@@ -5369,5 +5381,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "38.11.0"
+  "version": "39.0.0"
 }

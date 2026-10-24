@@ -11,7 +11,7 @@ argument-hint: "[answers]"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol` and follow the lifecycle method's
+`work-controller:work-record` and follow the lifecycle method's
 `references/continue.md`. The text above, when given, answers the pending questions in
 order. Stop only for the user's answers, the plan approval and the merge authorization;
 ask each with the host's question tool, or record it in the run and close the turn

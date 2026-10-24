@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "python-development"
-version = "4.1.0"
+version = "4.2.0"
 description = "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and a consolidated quality audit method run by /daodan:check-health"
 license = "MIT"
 
@@ -9,7 +9,7 @@ required = ["repository.read", "shell.execute", "repository.write", "contexts.is
 optional = ["execution.parallel"]
 
 [dependencies]
-required = ["testing", "project-protocol"]
+required = ["testing", "work-controller"]
 
 [components]
 skills = ["async-python-patterns", "pydantic-v2", "python-comments", "python-dead-code", "python-packaging", "python-performance-optimization", "python-refactor-method", "pytest-patterns", "uv-package-manager", "python-audit-method", "python-scaffold-method"]

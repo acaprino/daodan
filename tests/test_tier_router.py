@@ -28,7 +28,7 @@ from pathlib import Path
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-HELPER = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/scripts/tier_router.py"
+HELPER = REPO_ROOT / "plugins/model-routing/skills/model-routing/scripts/tier_router.py"
 sys.path.insert(0, str(HELPER.parent))
 import tier_router  # noqa: E402
 

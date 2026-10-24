@@ -82,9 +82,9 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertTrue(dispatch.inline_workers)
                 self.assertTrue(dispatch.isolated)
         for owner in ("daodan", "senior-review"):
-            self.assertIn("project-protocol", self.registry[owner].required_dependencies)
+            self.assertIn("work-controller", self.registry[owner].required_dependencies)
         self.assertIn(
-            "isolated-worker", self.registry["project-protocol"].components.roles
+            "isolated-worker", self.registry["work-controller"].components.roles
         )
         for relative in (
             "review-method/SKILL.md",

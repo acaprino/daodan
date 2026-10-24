@@ -4,12 +4,12 @@ title: "Measure each run's tokens and cost from local host logs"
 status: Proposed
 scope:
   paths:
-    - plugins/project-protocol/contracts/work.toml
-    - plugins/project-protocol/skills/project-protocol/scripts/**
+    - plugins/work-controller/contracts/work.toml
+    - plugins/work-controller/skills/work-record/scripts/**
     - plugins/project-lifecycle/skills/lifecycle-method/references/waves.md
     - plugins/project-lifecycle/skills/lifecycle-method/references/finish.md
   modules:
-    - project-protocol
+    - work-controller
     - project-lifecycle
   domains:
     - run-state
@@ -31,11 +31,11 @@ superseded_by: null
 
 Daodan's stated aim is to save tokens and to get the most out of an economical
 model, and nothing in the harness measures either. The run record requires a
-`budget` (`plugins/project-protocol/contracts/work.toml:4`, enforced at
-`skills/project-protocol/scripts/run_state.py:1109`) whose only known content is
+`budget` (`plugins/work-controller/contracts/work.toml:4`, enforced at
+`skills/work-record/scripts/run_state.py:1109`) whose only known content is
 `{"max_workers": N}`. Deliveries carry a status and an `output`
 (`contracts/work.toml:27-33`) and no usage. The protocol says the helper does not
-enforce worker token limits (`skills/project-protocol/SKILL.md:186`). The router
+enforce worker token limits (`skills/work-record/SKILL.md:186`). The router
 prices models only a priori, from `cost_usd_per_million_tokens` in the model
 catalog (`tier_router.py:389`, `tier_router.py:827`). The one measured figure the
 project has, 30.90 USD for the closed-loop probe of 2026-10-19, was read by hand.
@@ -74,7 +74,7 @@ what it spent, and what happens when it spends more than its budget?
 - Standard library only, no network, no credentials, every host.
 - A gap must stay visible: an unreadable source is not a zero.
 - The run record owns run facts; ADR-0002 moves that owner to
-  `deadly-brain:work-record` and routing to `model-routing`, so the ledger follows
+  `work-controller:work-record` and routing to `model-routing`, so the ledger follows
   the run record and the prices follow the catalog.
 
 ## Decision
@@ -179,10 +179,10 @@ worker.
 ## Consequences
 
 - `contracts/work.toml` gains the `usage` loop section, the optional `budget.max_usd` and `budget.max_tokens`, a worker handle on deliveries and the grant kind `spend`.
-- A new helper under `skills/project-protocol/scripts/` reads the four hosts; `run_state.py` validates the section.
+- A new helper under `skills/work-record/scripts/` reads the four hosts; `run_state.py` validates the section.
 - `project-lifecycle` waves gain the harvest and budget check at each boundary; finish reports totals per phase and per worker.
 - The catalog's prices become load-bearing. They are marked indicative today. Checked on 2026-10-24 against the official Claude pricing page: the catalog matches it for Fable 5.1, Opus 5.5, Opus 5 and Haiku 5.5, and its `cache_write` is the 5-minute rate; for Sonnet 5.5 it lists cache read at 0.2, the price of its selected `opencode` endpoint, where the page and models.dev's Anthropic endpoint say 0.10. Pi's own cost for one Opus 5.5 response (0.5006312 USD) reproduces exactly at the official rates with its single write bucket priced at the 1-hour rate.
-- ADR-0002 moves this section with the run record to `deadly-brain:work-record`.
+- ADR-0002 moves this section with the run record to `work-controller:work-record`.
 - The parked draft `docs/superpowers/specs/2026-10-24-derived-routing-signals-draft.md` gets its calibration data from this ledger joined to verified outcomes.
 - Open before acceptance: Pi worker attribution through `pi-subagents`, how the coordinator learns its own host session id on each host, and a Copilot source.
 - Pricing ships as `scripts/usage_pricing.py` (one reader per host, the pricer, a `summary` and a `rows` command), `scripts/build_model_prices.py`, `scripts/price_crosscheck.py` and `references/price-rules.json`, refreshed with the catalog through `references/model-catalog-refresh.md`; they move with the catalog to `model-routing` after ADR-0002. Measured on the local logs of 2026-10-24: every priced OpenCode group reproduces the host's logged cost exactly, and every Pi group does where the harness prices did not change since.

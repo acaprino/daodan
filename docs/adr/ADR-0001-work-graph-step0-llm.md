@@ -5,7 +5,7 @@ status: Proposed
 scope:
   paths:
     - plugins/project-lifecycle/skills/lifecycle-method/**
-    - plugins/project-protocol/skills/project-protocol/references/task-routing.md
+    - plugins/model-routing/skills/model-routing/references/task-routing.md
     - plugins/senior-review/skills/review-preparation/**
     - evals/project-lifecycle/work-graph/**
   modules:
@@ -73,7 +73,7 @@ cycles are rejected; repair loops are explicit, bounded control transitions with
 new attempts or revisions, preserving the DAG of dependencies for each attempt.
 
 The graph proposer is an LLM job, so the coordinator routes it through the current
-[per-request routing method](../../plugins/project-protocol/skills/project-protocol/references/task-routing.md).
+[per-request routing method](../../plugins/model-routing/skills/model-routing/references/task-routing.md).
 Each subsequent LLM job receives its own assignment. Mechanical checks need no
 model. The proposer cannot choose model identities, waive required gates or turn
 its output into permission to dispatch. Existing routing confirmation and host

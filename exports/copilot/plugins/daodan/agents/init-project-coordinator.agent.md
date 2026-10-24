@@ -2,7 +2,7 @@
 name: init-project-coordinator
 description: 'Bring a project into the Daodan cycle: map, decision record index, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
-agents: ['codebase-map:map-analyst', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker']
+agents: ['codebase-map:map-analyst', 'project-knowledge:instructions-auditor', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `[what to build, on an empty folder]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-knowledge:instructions-auditor`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -125,8 +125,8 @@ Role bindings:
 
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record schemas ship with this package in
 `contracts/init-project.workflow.toml`.
@@ -138,7 +138,7 @@ The phase graph and record schemas ship with this package in
 <arguments>
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Open a run with operation `assess` and follow the
+`work-controller:work-record`. Open a run with operation `assess` and follow the
 lifecycle method's `references/init.md`: an empty folder is scaffolded first from what
 the user wants to build; an existing project gets its lite map, record index,
 environment, loop block and test baseline. A part that exists and validates is kept. End

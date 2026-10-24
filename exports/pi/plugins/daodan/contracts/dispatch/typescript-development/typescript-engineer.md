@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: typescript-development:typescript-engineer; version: 3.3.0; source-sha256: 6431f0d4046a298efbfcf877d54181a750a8ab3818b34155af610bce5282cfa7. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: typescript-development:typescript-engineer; version: 3.4.0; source-sha256: 70f14ec4532f58e376430fe8bfd8b230576c1e127a4834550c1240960230f16b. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `typescript-development`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<typescript-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `typescript-development`. The owning plugin's declared logical skill identities are `typescript-development:knip`, `typescript-development:mastering-typescript`, `typescript-development:type-safety-rules`, `typescript-development:typescript-write`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `typescript-development:knip` -> compiled registry name `knip` at `skills/knip/SKILL.md` inside the owner's package; `typescript-development:mastering-typescript` -> compiled registry name `mastering-typescript` at `skills/mastering-typescript/SKILL.md` inside the owner's package; `typescript-development:type-safety-rules` -> compiled registry name `type-safety-rules` at `skills/type-safety-rules/SKILL.md` inside the owner's package; `typescript-development:typescript-write` -> compiled registry name `typescript-write` at `skills/typescript-write/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -78,7 +78,7 @@ Declared role operation allowlist: read files; create or overwrite files; edit e
 
 ## Execution preflight
 
-Load the `project-protocol:project-protocol` skill before mutation for working
+Load the `work-controller:work-record` skill before mutation for working
 discipline, scoped recovery and candidate verification.
 Load the `testing:test-hygiene` skill for protection and placement; route needed
 test authoring to `testing:test-writer` through the caller's dispatch contract.

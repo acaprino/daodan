@@ -6,9 +6,12 @@ import hashlib
 import io
 import json
 import unittest
+import sys
+from pathlib import Path
 from unittest.mock import patch
 
 from test_task_router import RouterCase, SIGNALS_DEEP, SIGNALS_SIMPLE, tr
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "plugins/work-controller/skills/work-record/scripts"))
 import run_state
 
 

@@ -31,7 +31,7 @@ from scripts.daodan.role_bodies import resolve_role, role_text  # noqa: E402
 ADAPTERS = REPO_ROOT / "adapters"
 LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle"
 ENTRY = REPO_ROOT / "plugins/daodan"
-PROTOCOL = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/scripts/run_state.py"
+PROTOCOL = REPO_ROOT / "plugins/work-controller/skills/work-record/scripts/run_state.py"
 ENTRIES = {
     "claude": "commands/{name}.md",
     "copilot": "prompts/{name}.prompt.md",
@@ -230,8 +230,8 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             with self.subTest(workflow=name):
                 self.assertFalse(any(phase.invoke for phase in workflow.phases))
                 self.assertTrue({
-                    "project-protocol/contracts/work.toml",
-                    "project-protocol/contracts/project-result.toml",
+                    "work-controller/contracts/work.toml",
+                    "work-controller/contracts/project-result.toml",
                 }.issubset(workflow.contract.shared_schemas))
 
 

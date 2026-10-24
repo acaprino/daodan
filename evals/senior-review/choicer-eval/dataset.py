@@ -537,7 +537,7 @@ def materialize_cases(repo: Path | str, jupiter_root: Path | str) -> dict:
         },
         {
             "kind": "proposed_router_not_in_working_tree",
-            "observed": not (repo / "plugins/project-protocol/skills/project-protocol/scripts/tier_router.py").exists(),
+            "observed": not (repo / "plugins/model-routing/skills/model-routing/scripts/tier_router.py").exists(),
             "detail": "The spec prompt is the baseline definition; do not describe it as a verified live implementation.",
         },
     ])

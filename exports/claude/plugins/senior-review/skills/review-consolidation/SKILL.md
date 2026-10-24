@@ -89,7 +89,7 @@ required coverage prevents completion; never merge failure into success.
 A single final writer emits the report.
 
 Account separately for blind derivation, critic and eligible verification lenses
-under project-protocol; discovery cannot satisfy a check through its job ID, file
+under work-controller; discovery cannot satisfy a check through its job ID, file
 or context. Historical records retain their original contract.
 
 Load `skill-catalog:skill-catalog`; run `validate-usage` against prepared
@@ -106,7 +106,7 @@ and reporting. PR description follows the same delivery/provenance/panel gates.
 Shared premises are echoes, not independent corroboration. Deduplication preserves
 independent evidence and distinct failure modes.
 
-Load `project-protocol:project-protocol` to validate the snapshot and publish the
+Load `work-controller:work-record` to validate the snapshot and publish the
 envelope. Explicitly degraded coverage cannot claim missing reviewers ran or
 static analysis exercised runtime; mandatory missing coverage keeps completion open.
 

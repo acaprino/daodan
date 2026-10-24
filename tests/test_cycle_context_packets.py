@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-PROTOCOL = ROOT / 'plugins/project-protocol/skills/project-protocol/scripts/run_state.py'
+PROTOCOL = ROOT / 'plugins/work-controller/skills/work-record/scripts/run_state.py'
 PROVIDER = ROOT / 'plugins/codebase-map/skills/map-method/scripts/snapshot.py'
 CYCLE = ROOT / 'plugins/project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py'
 sys.path.insert(0, str(PROVIDER.parent))

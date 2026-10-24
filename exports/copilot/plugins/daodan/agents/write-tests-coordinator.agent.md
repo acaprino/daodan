@@ -2,7 +2,7 @@
 name: write-tests-coordinator
 description: 'Write tests for the code you name: behavior-driven, in the projects framework and layout, extending existing files rather than creating parallel ones. TRIGGER WHEN: the user asks for tests, more coverage or a test for a specific behavior. DO NOT TRIGGER WHEN: a defect is to be fixed with its test (use fix-bug) or the suite is to be audited (use check-health).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
-agents: ['project-protocol:isolated-worker', 'testing:test-writer']
+agents: ['testing:test-writer', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `<code or behavior to test>`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `project-protocol:isolated-worker`, `testing:test-writer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `testing:test-writer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -123,9 +123,9 @@ Dispatch plan:
 
 Role bindings:
 
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
 - `testing:test-writer`: dispatch the installed `testing:test-writer` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record schemas ship with this package in
 `contracts/write-tests.workflow.toml`.
@@ -138,7 +138,7 @@ The phase graph and record schemas ship with this package in
 
 Read the argument as a path, a commit, a pull request or a branch when one exists,
 otherwise as text, and say how you read it before starting. Load the skills
-`testing:test-preparation` and `project-protocol:project-protocol`, prepare the runner
+`testing:test-preparation` and `work-controller:work-record`, prepare the runner
 and the layout for the target above, and dispatch `testing:test-writer` in an isolated
 context with that preparation. Run the new tests with the project's runner and report
 them with their output. Committing them is an authorization asked when needed.

@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
-SCRIPTS = REPO / "plugins" / "project-protocol" / "skills" / "project-protocol" / "scripts"
+SCRIPTS = REPO / "plugins" / "model-routing" / "skills" / "model-routing" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import registry_fetch  # noqa: E402

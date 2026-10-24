@@ -97,7 +97,7 @@ Shared obligations below; load step-specific procedures only when needed.
 | code-review `fix`/`commit` remediation | `references/code-review-fix-loop.md` |
 
 Lens 0 uses declared `senior-review:premise-auditor`. Lenses 1-3, critic and
-inline briefs use declared `project-protocol:isolated-worker` through the
+inline briefs use declared `work-controller:isolated-worker` through the
 consuming workflow's host harness, inheriting the session model.
 
 ## Shared-Context Provenance Rule

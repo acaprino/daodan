@@ -78,7 +78,7 @@ output root, explicit accepted scope, authorizations and required gate configura
 Output: native audit or remediation ledger plus project-result envelope. Audit is
 report-only; quarantine/consolidation apply only explicitly accepted actions.
 
-Load the `testing:test-hygiene` skill and `project-protocol:project-protocol`. Reuse a prepared
+Load the `testing:test-hygiene` skill and `work-controller:work-record`. Reuse a prepared
 bundle only for the same target and snapshot; otherwise load `testing:test-preparation`.
 Before mutation check ownership, preserved starting edits, authorization, baseline,
 required local/remote lanes and recovery point. Capture `pre_phase_sha` immediately

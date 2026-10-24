@@ -71,16 +71,15 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Phase 1: preflight and workspace
 
-Probe before asking; record facts in `workspace` and `preflight`.
-Do not edit project files.
+Probe first; record `workspace` and `preflight`. Do not edit project files.
 
 ## Probes
 
 | Probe | Command | Records |
 |---|---|---|
-| Providers | the host's plugin inventory | every plugin the `daodan` entry requires, transitively, active; a missing one stops here with the host's enable or install command |
-| Environment | `.venv`, `uv`, `npm`, the loop block's commands | `environment`: the interpreter and runners every command uses; installing outside the project needs explicit authorization |
-| Models | `project-protocol:project-protocol`, `references/task-routing.md` | `environment.models`: inventory, host support, confirmed per-request assignments |
+| Providers | host plugin inventory | every transitive `daodan` provider active; otherwise stop with the host's enable or install command |
+| Environment | `.venv`, `uv`, `npm`, loop commands | `environment`: interpreter and runners; installation outside the project requires authorization |
+| Models | load skill `model-routing:model-routing`, `references/task-routing.md` | `environment.models`: inventory, host support, confirmed per-request assignments |
 | Repository and head | `git rev-parse --show-toplevel`, `git rev-parse HEAD` | `base_sha` candidate |
 | Working tree | `git status --porcelain=v2 --branch` | staged, unstaged and untracked paths; conflict markers (`u` rows); current branch |
 | Interrupted operation | presence of `MERGE_HEAD`, `rebase-merge` or `rebase-apply` under the git directory | blocks the phase |
@@ -89,12 +88,20 @@ Do not edit project files.
 | Test baseline | the project's declared test command on the scope's tests | `GREEN`; `KNOWN_RED` with the failure fingerprint the user accepted; `UNKNOWN_RED` |
 | Migrations | the project's migration status command when one is declared | `ALIGNED`, `PENDING`, `DIVERGED`, `UNKNOWN` or `NOT_APPLICABLE` |
 
-Hash sorted failing test identifiers: an unchanged fingerprint identifies the
-known failure; a changed one is unknown.
+Hash sorted failing test identifiers: unchanged means known; changed means unknown.
+
+## Model binding persistence
+
+Store the confirmed routing artifact in
+`environment.models.assignments[request_sha256]` using loaded
+`work-controller:work-record`: `run_state.py update --project ROOT --run-id ID
+--expected-revision N --payload PATCH.json`. Preserve interpreter, commands and
+existing assignments. Revision conflict: reread and merge. Resume: pass persisted
+assignments to routing for request, confirmation, inventory and capability checks.
 
 ## Workspace mode
 
-Present probes on one screen; ask once with a recommended default:
+Present probes; ask once with a recommended default:
 
 | Mode | Recommend when | Consequence |
 |---|---|---|
@@ -102,10 +109,8 @@ Present probes on one screen; ask once with a recommended default:
 | `BRANCH` | a clean tree and a task the user wants on its own branch | branch `task/<run>-<slug>` in the checkout; waves run sequentially |
 | `IN_PLACE` | a small task on the current branch | waves run sequentially; every preexisting modified file is recorded as protected and never restored by a rollback |
 
-A worktree needs environment bindings: for each file or service the tests
-need and the worktree lacks (an env file, a schema, a fixture directory),
-record `path`, `kind` and `secret`. A secret binding is a reference, never a
-copied value.
+For test files or services missing from the worktree (env, schema, fixtures),
+record `path`, `kind` and `secret`. Reference secrets; never copy their values.
 
 ## Special situations
 
@@ -118,5 +123,4 @@ copied value.
 | Dirty tree and `IN_PLACE` | Record protected paths; a task whose `write_set` intersects them stops with `NEEDS_REPLAN`. |
 | Stale map on the scope | Run the incremental update now; the interview reads a fresh map or names the stale paths as unknown. |
 
-Close by writing `workspace`, `preflight` and `environment` to the run and
-restating mode, base commit and baseline in one line.
+Write `workspace`, `preflight` and `environment`; state mode, base commit and baseline.

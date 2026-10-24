@@ -117,7 +117,7 @@ dependent operation; preserve archives and run IDs.
 | React rendering | `react-development:react-performance-optimizer` |
 | TypeScript/type contracts | `typescript-development:type-safety-auditor` |
 | Browser, mobile and desktop compatibility | `platform-engineering:platform-reviewer` |
-| Python / dependencies | Catalog method bindings through `project-protocol:isolated-worker`; see preparation's stack bindings |
+| Python / dependencies | Catalog method bindings through `work-controller:isolated-worker`; see preparation's stack bindings |
 
 ### Reviewer prompt template (context-aware)
 

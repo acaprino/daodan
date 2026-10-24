@@ -64,7 +64,7 @@ routing, task cycle or marketplace dependency.
 | Prompt under test | `REVIEWER_CHOICER` of §3.6, now frozen in `tier_router.py` as the `llm-tier1` backend |
 | VCS state | Working tree only. `git ls-files` returns 0 tracked files, so a fresh clone does not contain it |
 | Machine-local weight | A provisioned `uv` environment under `.cache/uv/environments-v2/` and the `runs/` evidence trees; raw results are not committed |
-| Consumer | `senior-review` owns the review lenses; `project-protocol` owns the routing contract |
+| Consumer | `senior-review` owns the review lenses; `work-controller` owns the routing contract |
 
 ### Scope and boundary
 
@@ -159,7 +159,7 @@ the result; the local classifier remains offline and unpromoted.
    is the promotion path (offline evaluation, shadow mode on the Decision Log,
    promotion criteria).
 2. Shipped implementation: the prompts are frozen verbatim in
-   [`tier_router.py`](../../plugins/project-protocol/skills/project-protocol/scripts/tier_router.py)
+   [`tier_router.py`](../../plugins/model-routing/skills/model-routing/scripts/tier_router.py)
    as the `llm-tier1` backend of `prepare-choice` and `resolve`. A local classifier
    would become a second `implementation` of the same `daodan/selection/v1` and
    `daodan/routing/v1` envelopes, which is why the contract and not the prompt is the

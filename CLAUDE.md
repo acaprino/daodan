@@ -11,7 +11,7 @@ senior-review, abstraction-architect, project-knowledge and project-lifecycle
 require it and build their understanding on its evidence rather than
 rediscovering the project. The map supplies evidence and leads, never verdicts:
 correctness, documentation, tests and cleanup stay with their owners, who confirm
-a lead by reading source. Leaf and specialist plugins such as project-protocol,
+a lead by reading source. Leaf and specialist plugins such as work-controller,
 skill-catalog, repo-hygiene, testing, clean-code and the language plugins do not
 depend on it.
 
@@ -43,7 +43,7 @@ another model on request; moe gives a second opinion on request; neither runs by
 default. Handover supplies evidence without granting edits or automatically
 starting maintenance.
 It prepares inputs and composes canonical specialist methods rather than duplicating detection
-prompts. project-protocol is the shared leaf for run records, snapshots, delivery
+prompts. work-controller is the shared leaf for run records, snapshots, delivery
 accounting, candidate gates and recovery. project-knowledge owns instructions,
 guides, documentation and README. senior-review owns universal correctness and
 application subtraction, selecting React, TypeScript and platform specialists
@@ -99,7 +99,7 @@ readability and every required check.
 Apply this discipline and economy when authoring skills, agents, tools, workflows,
 templates and specialist guidance for any language, framework or activity. Carry
 applicable obligations into the produced components through the
-[component-authoring method](plugins/project-protocol/skills/project-protocol/SKILL.md#authoring-components).
+[component-authoring method](plugins/work-controller/skills/work-record/SKILL.md#authoring-components).
 
 Keep always-loaded instructions focused on durable obligations. Link detailed
 procedures and templates, then load the references required by the active step.
@@ -130,7 +130,7 @@ Markdown. Domain owners retain their reports, scoring and verdicts. See
 
 `AGENTS.md` and the four repository workflow skills under `.agents/skills/` are native Codex adaptations of this file and `.claude/skills/`. Generate them with `python scripts/sync_codex_instructions.py`; `--check` is the parity gate. Edit the Claude-side canonical copies, then run the synchronizer. The transformation is deliberately limited to instruction paths, cache paths, install commands and the host-relative downstream description.
 
-A kernel can export canonical contract files through `[contracts].exports`. Workflow `contract.shared_schemas` names a required provider and its exported `contracts/` path; schemas stay in one source location and are rendered by the compiler. Cross-plugin phase roles use `plugin/role` and are validated against the kernel registry. A composed method's additional workers are declared in `[dispatch].roles` rather than fabricated scheduling phases. `isolated` declares context requirements; `inline_workers` explicitly permits task-specific work through project-protocol's isolated-worker. Dispatch references require declared providers and actual roles. Inline adapters receive generated unregistered dispatch bodies from the canonical owner; named-agent adapters use owner-qualified IDs. `invoke` is rejected until an executor is implemented and proved.
+A kernel can export canonical contract files through `[contracts].exports`. Workflow `contract.shared_schemas` names a required provider and its exported `contracts/` path; schemas stay in one source location and are rendered by the compiler. Cross-plugin phase roles use `plugin/role` and are validated against the kernel registry. A composed method's additional workers are declared in `[dispatch].roles` rather than fabricated scheduling phases. `isolated` declares context requirements; `inline_workers` explicitly permits task-specific work through work-controller's isolated-worker. Dispatch references require declared providers and actual roles. Inline adapters receive generated unregistered dispatch bodies from the canonical owner; named-agent adapters use owner-qualified IDs. `invoke` is rejected until an executor is implemented and proved.
 
 The compiler is `scripts/daodan/`: `model.py` and `load.py` (strict TOML loading), `validate.py` and `trust.py` (semantic and secret validation), `adapter.py` (capability parity and strategy selection), `overrides.py` (the fingerprint gate), `render.py`, `templates.py`, `provenance.py`, `catalogs.py` and `report.py`. Standard library only, no third-party dependency anywhere in the toolchain.
 
@@ -455,17 +455,18 @@ specialist edges optional.
 
 | Owner | Direct required local dependencies |
 |---|---|
-| project-protocol | none |
+| work-controller | none |
+| model-routing | none |
 | skill-catalog | none |
 | codebase-map | none |
 | repo-hygiene | none |
 | abstraction-architect | codebase-map |
-| testing | project-protocol |
-| senior-review | project-protocol, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog |
-| project-knowledge | project-protocol, codebase-map, senior-review, text-humanizer |
-| project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, moe |
-| clean-code | project-protocol |
-| python-development | testing, project-protocol |
+| testing | work-controller |
+| senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog |
+| project-knowledge | work-controller, codebase-map, senior-review, text-humanizer |
+| project-lifecycle | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, moe |
+| clean-code | work-controller |
+| python-development | testing, work-controller |
 | dependency-audit | none |
 | peer-review | none |
 | moe | peer-review |

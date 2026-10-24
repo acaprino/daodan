@@ -2,7 +2,7 @@
 name: map-code-coordinator
 description: 'Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
-agents: ['codebase-map:map-analyst', 'codebase-map:partition-behavior-worker', 'codebase-map:partition-quality-worker', 'codebase-map:partition-structure-worker', 'codebase-map:partition-synthesizer', 'codebase-map:semantic-interconnect-mapper', 'project-protocol:isolated-worker']
+agents: ['codebase-map:map-analyst', 'codebase-map:partition-behavior-worker', 'codebase-map:partition-quality-worker', 'codebase-map:partition-structure-worker', 'codebase-map:partition-synthesizer', 'codebase-map:semantic-interconnect-mapper', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `[area]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:partition-behavior-worker`, `codebase-map:partition-quality-worker`, `codebase-map:partition-structure-worker`, `codebase-map:partition-synthesizer`, `codebase-map:semantic-interconnect-mapper`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:partition-behavior-worker`, `codebase-map:partition-quality-worker`, `codebase-map:partition-structure-worker`, `codebase-map:partition-synthesizer`, `codebase-map:semantic-interconnect-mapper`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -129,8 +129,8 @@ Role bindings:
 - `codebase-map:partition-structure-worker`: dispatch the installed `codebase-map:partition-structure-worker` agent by its qualified identity.
 - `codebase-map:partition-synthesizer`: dispatch the installed `codebase-map:partition-synthesizer` agent by its qualified identity.
 - `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record schemas ship with this package in
 `contracts/map-code.workflow.toml`.

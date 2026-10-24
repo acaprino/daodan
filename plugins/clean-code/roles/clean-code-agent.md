@@ -16,7 +16,7 @@ It never loads that method, repeats its preparation or approval, or dispatches a
 
 The brief supplies the owned files, the approved changes, the baseline validation commands
 and their results, any `--force` authorization and the report path. Load
-`project-protocol:project-protocol` to capture the owned files' exact pre-edit contents,
+`work-controller:work-record` to capture the owned files' exact pre-edit contents,
 including preexisting edits, before the first edit, and to restore them on failure.
 
 If the brief lacks the owned files, the approved changes or the baseline, make no edit.
@@ -112,7 +112,7 @@ What to keep:
 
 ## Phase 5: Validate
 
-After transforming each file, run these checks in order. If a required check fails, use `project-protocol:project-protocol` to restore only your exact saved pre-edit content. Preserve prior edits; a foreign-writer hash change is a conflict, never permission to overwrite. Report the failed candidate and verified recovery.
+After transforming each file, run these checks in order. If a required check fails, use `work-controller:work-record` to restore only your exact saved pre-edit content. Preserve prior edits; a foreign-writer hash change is a conflict, never permission to overwrite. Report the failed candidate and verified recovery.
 
 ### 5a. Type checker
 

@@ -127,7 +127,7 @@ and guides that match the code, a workspace without residue apart from this
 campaign's own evidence. Each claim rests on a check executed on the final
 candidate.
 The campaign ends in one of two states, and the final report opens by naming it:
-- Complete: every lifecycle run of the campaign is complete as project-protocol
+- Complete: every lifecycle run of the campaign is complete as work-controller
   defines it for its own recorded candidate, and the final verify run validates
   against the current project. The protocol's own validation confirms it, not this
   conversation.
@@ -213,7 +213,7 @@ Scope
   arbitrary repository deletion.
 
 Runs and recovery
-- Bind every lifecycle stage to a project-protocol run under .daodan/runs/<id>/ with
+- Bind every lifecycle stage to a work-controller run under .daodan/runs/<id>/ with
   the exact project or worktree, authorized scope, baseline and candidate snapshots.
   Record plan dependencies, action owners, expected deliveries and required gates
   before execution.
@@ -582,7 +582,7 @@ STAGE 6: CLOSE
   fresh-session steps; (7) what I can decide next, then the resume line.
 
 FINAL BINDING AND HANDOFF
-- Validate each completed lifecycle stage's result through project-protocol's
+- Validate each completed lifecycle stage's result through work-controller's
   run_state.py validate --result for its recorded candidate. Earlier stages are
   historical evidence: do not require their old snapshots to match later edits.
 - Validate the final verify run with --current and its exact result before claiming

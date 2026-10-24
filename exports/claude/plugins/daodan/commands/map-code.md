@@ -97,7 +97,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:partition-behavior-worker`, `codebase-map:partition-quality-worker`, `codebase-map:partition-structure-worker`, `codebase-map:partition-synthesizer`, `codebase-map:semantic-interconnect-mapper`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:partition-behavior-worker`, `codebase-map:partition-quality-worker`, `codebase-map:partition-structure-worker`, `codebase-map:partition-synthesizer`, `codebase-map:semantic-interconnect-mapper`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -115,8 +115,8 @@ Role bindings:
 - `codebase-map:partition-structure-worker`: dispatch the installed `codebase-map:partition-structure-worker` agent by its qualified identity.
 - `codebase-map:partition-synthesizer`: dispatch the installed `codebase-map:partition-synthesizer` agent by its qualified identity.
 - `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph, the isolation and join policies and the record schemas are in
 `contracts/map-code.workflow.toml`, which ships with this package.

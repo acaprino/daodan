@@ -100,7 +100,7 @@ Keep one review preparation and final report owner; required workers retain isol
 
 The workflow sidecar declares `dispatch.roles` and isolated inline workers.
 Inline lens, critic, history, hygiene and minimal-fix briefs use
-`project-protocol:isolated-worker` through that host binding, never an invented
+`work-controller:isolated-worker` through that host binding, never an invented
 generic role. Bind scope, authorization, budget, report path and delivered/failed
 outcome for every brief.
 
@@ -134,6 +134,6 @@ Read-only review preserves application files and preexisting edits. The
 coordinator alone may perform the project-bound Codebase Map preflight: move an
 idle legacy archive intact and write only bound relocation metadata. It
 authorizes no application changes, analysis run, worker migration or generic filesystem move.
-Before accepted fixes load `project-protocol:project-protocol` for preflight,
+Before accepted fixes load `work-controller:work-record` for preflight,
 authorizations, baseline, candidate gate and owned recovery. Commit/publication
 require separate authorization; review grants neither.

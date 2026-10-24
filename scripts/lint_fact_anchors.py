@@ -60,22 +60,22 @@ _COUNT = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelv
 
 ANCHORS = {
     "working-principle-material-assumptions": (
-        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        "plugins/work-controller/skills/work-record/SKILL.md",
         r"(?m)^Working assumptions: ([^\n]+)$",
         "Material assumptions and essential decisions must agree across independently loaded instructions",
     ),
     "working-principle-sufficient-simplicity": (
-        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        "plugins/work-controller/skills/work-record/SKILL.md",
         r"(?m)^Working simplicity: ([^\n]+)$",
         "Sufficient design and existing ownership must agree across independently loaded instructions",
     ),
     "working-principle-authorized-scope": (
-        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        "plugins/work-controller/skills/work-record/SKILL.md",
         r"(?m)^Working scope: ([^\n]+)$",
         "Owned edits and authorized removal must agree across independently loaded instructions",
     ),
     "working-principle-observable-verification": (
-        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        "plugins/work-controller/skills/work-record/SKILL.md",
         r"(?m)^Working verification: ([^\n]+)$",
         "Observable criteria and required completion gates must agree across independently loaded instructions",
     ),
@@ -114,7 +114,7 @@ ANCHORS = {
 # These independent instruction surfaces must each carry the compact rules.
 # Rendered host copies are checked by the host contract suite.
 _WORKING_PRINCIPLE_COPIES = (
-    "plugins/project-protocol/skills/project-protocol/SKILL.md",
+    "plugins/work-controller/skills/work-record/SKILL.md",
     "CLAUDE.md",
     "AGENTS.md",
     "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",

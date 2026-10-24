@@ -9,7 +9,7 @@ import sys
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(REPO / "plugins/project-protocol/skills/project-protocol/scripts"))
+sys.path.insert(0, str(REPO / "plugins/senior-review/skills/review-preparation/scripts"))
 sys.path.insert(0, str(REPO / "plugins/codebase-map/skills/map-method/scripts"))
 
 import review_roster  # noqa: E402

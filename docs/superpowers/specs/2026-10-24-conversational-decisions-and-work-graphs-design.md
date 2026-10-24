@@ -7,8 +7,8 @@ e il [disegno dei grafi di lavoro](2026-10-20-system1-work-graph-composition-des
 Definisce quando Daodan deve coinvolgere l'utente, come scegliere la forma della
 conversazione e come riprendere il lavoro. Non introduce un nuovo motore di grafi.
 
-[ADR-0002](../../adr/ADR-0002-deadly-brain.md), proposto, sposta nel plugin
-`deadly-brain` le responsabilità che qui sono attribuite a `project-protocol`,
+[ADR-0002](../../adr/ADR-0002-work-controller.md), proposto, sposta nel plugin
+`work-controller` le responsabilità che qui sono attribuite a `work-controller`,
 insieme a chiarimenti, intervista generica, mappa e composizione dei grafi.
 
 **Il bisogno di una decisione umana attiva un chiarimento proporzionato:** una
@@ -48,12 +48,12 @@ il ritorno di evidenza alla conversazione non crea prerequisiti circolari tra ta
 | Mappa decisionale | Guidare l'intero effort: destinazione, decisioni, domande, indagini, ticket di esecuzione e aspetti ancora indefiniti. | Quando la destinazione è raggiunta: nessun ticket aperto e ogni ticket di esecuzione chiuso dai gate del suo run. La chiusura di un ticket non sostituisce quei gate. |
 | Piano e grafo operativo | Comporre i metodi conosciuti in attività con input, dipendenze, consegne e gate. | Tutte le consegne e verifiche obbligatorie del perimetro autorizzato sono soddisfatte. |
 | Requisiti, specifiche e ADR | Conservare gli esiti sostanziali nel documento del rispettivo proprietario. | Secondo il ciclo del documento; un ADR resta `Proposed` fino alla sua integrazione. |
-| Registro del run | Registrare domande pendenti, autorizzazioni, revisioni, consegne e controlli. | Secondo i gate di `project-protocol`; un riepilogo conversazionale non li sostituisce. |
+| Registro del run | Registrare domande pendenti, autorizzazioni, revisioni, consegne e controlli. | Secondo i gate di `work-controller`; un riepilogo conversazionale non li sostituisce. |
 
 Il metodo proprietario dell'attività decide quali input servono. `project-lifecycle`
 coordina il piano e l'intervista del task cycle; gli altri metodi richiamano lo
 stesso contratto di chiarimento senza duplicare un proprio framework di intervista.
-`project-protocol` possiede persistenza, ripresa e contabilizzazione. `senior-review`
+`work-controller` possiede persistenza, ripresa e contabilizzazione. `senior-review`
 possiede obblighi, roster e composizione della review. Il catalogo verifica le
 identità dei metodi disponibili; l'adapter dell'host lega strumenti e capacità.
 
@@ -149,7 +149,7 @@ sé; un suo esito entra in Daodan come evidenza, non come mappa di Daodan.
 
 La domanda deve essere persistente e identificabile anche dopo un'interruzione.
 Questa tabella definisce informazioni logiche richieste, **non un nuovo schema
-JSON di produzione**. L'implementazione estenderà il contratto di `project-protocol`
+JSON di produzione**. L'implementazione estenderà il contratto di `work-controller`
 e userà riferimenti agli artefatti esistenti dove bastano.
 
 | Informazione | Scopo |
@@ -268,7 +268,7 @@ riferimenti stabili e scritture soggette alle autorizzazioni del run.
   aciclici e la decisione precedente resta consultabile.
 - Blocchi della mappa e dipendenze del grafo di lavoro usano la stessa validazione
   aciclica; la libreria che la realizza è oggetto dell'ADR sul motore dei grafi.
-- Mappa e ticket vivono nella home del progetto risolta da `project-protocol`
+- Mappa e ticket vivono nella home del progetto risolta da `work-controller`
   (il `.daodan/` del checkout principale), condivisa tra worktree; scrittura e
   lettura sono legate insieme. La mappa funziona offline.
 - Le domande dei ticket seguono la forma della sezione 4.
@@ -386,9 +386,9 @@ promette una riduzione dei token senza confronti misurati su lavoro equivalente.
 
 Contratti e metodi del repository:
 
-- [Registro canonico del lavoro](../../../plugins/project-protocol/contracts/work.toml) e [helper di stato](../../../plugins/project-protocol/skills/project-protocol/scripts/run_state.py).
+- [Registro canonico del lavoro](../../../plugins/work-controller/contracts/work.toml) e [helper di stato](../../../plugins/work-controller/skills/work-record/scripts/run_state.py).
 - [Intervista del task cycle](../../../plugins/project-lifecycle/skills/lifecycle-method/references/interview.md).
-- [Routing per incarico](../../../plugins/project-protocol/skills/project-protocol/references/task-routing.md).
+- [Routing per incarico](../../../plugins/model-routing/skills/model-routing/references/task-routing.md).
 - [Composizione della review](../../../plugins/senior-review/skills/review-preparation/references/composition.md) e [assemblaggio canonico](../../../scripts/daodan/composition.py).
 - [Navigatore dei grafi](../../graphs/README.md).
 

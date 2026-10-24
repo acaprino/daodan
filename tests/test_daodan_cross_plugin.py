@@ -286,17 +286,17 @@ class CrossPluginContractsTests(unittest.TestCase):
         workflow = dataclasses.replace(self.consumer.workflows[0], dispatch=DispatchSpec(inline_workers=True))
         consumer = dataclasses.replace(self.consumer, workflows=(workflow,))
         self.assertIn("undeclared-dependency", self.codes(consumer))
-        protocol_root = REPO_ROOT / "plugins/project-protocol"
+        protocol_root = REPO_ROOT / "plugins/work-controller"
         if not protocol_root.is_dir():
-            protocol_root = self.temp / "project-protocol"
+            protocol_root = self.temp / "work-controller"
             (protocol_root / "roles").mkdir(parents=True)
-            (protocol_root / "skills/project-protocol").mkdir(parents=True)
+            (protocol_root / "skills/work-record").mkdir(parents=True)
             (protocol_root / "plugin.toml").write_text(
-                'schema = "daodan/v1"\nname = "project-protocol"\nversion = "1.0.0"\n'
+                'schema = "daodan/v1"\nname = "work-controller"\nversion = "1.0.0"\n'
                 'description = "Protocol fixture"\nlicense = "MIT"\n'
                 '[capabilities]\nrequired = ["repository.read"]\noptional = []\n'
                 '[dependencies]\nrequired = []\n'
-                '[components]\nskills = ["project-protocol"]\nroles = ["isolated-worker"]\n'
+                '[components]\nskills = ["work-record"]\nroles = ["isolated-worker"]\n'
                 'workflows = []\npolicies = []\n',
                 encoding="utf-8",
             )
@@ -304,19 +304,19 @@ class CrossPluginContractsTests(unittest.TestCase):
                 "---\nname: isolated-worker\ndescription: Isolated worker fixture\n---\nExecute task.\n",
                 encoding="utf-8",
             )
-            (protocol_root / "skills/project-protocol/SKILL.md").write_text(
-                "---\nname: project-protocol\ndescription: Protocol fixture\n---\nProtocol.\n",
+            (protocol_root / "skills/work-record/SKILL.md").write_text(
+                "---\nname: work-record\ndescription: Protocol fixture\n---\nProtocol.\n",
                 encoding="utf-8",
             )
         protocol = load_plugin(protocol_root)
-        consumer = dataclasses.replace(consumer, required_dependencies=("provider", "project-protocol"))
-        registry = {**self.registry, "consumer": consumer, "project-protocol": protocol}
+        consumer = dataclasses.replace(consumer, required_dependencies=("provider", "work-controller"))
+        registry = {**self.registry, "consumer": consumer, "work-controller": protocol}
         self.assertEqual(validate_plugins(list(registry.values()), CAPABILITY_REGISTRY), [])
         for host in HOSTS:
             target = self.temp / "inline" / host
             render_plugin(consumer, load_adapter(ADAPTERS, host), target, adapters_root=ADAPTERS, plugin_registry=registry)
             text = "\n".join(path.read_text() for path in target.rglob("*.md"))
-            self.assertIn("project-protocol:isolated-worker", text)
+            self.assertIn("work-controller:isolated-worker", text)
             self.assertIn("full task", text)
 
 

@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-SCRIPT = REPO / "plugins/project-protocol/skills/project-protocol/scripts/task_router.py"
+SCRIPT = REPO / "plugins/model-routing/skills/model-routing/scripts/task_router.py"
 sys.path.insert(0, str(SCRIPT.parent))
 
 import task_router as tr  # noqa: E402

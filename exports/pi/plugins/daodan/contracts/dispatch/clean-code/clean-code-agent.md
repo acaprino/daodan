@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: clean-code:clean-code-agent; version: 3.0.0; source-sha256: c34e4c7ef90edd098c533ee242563350c1196ae50b72043ee000de9e0dd89ff7. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: clean-code:clean-code-agent; version: 3.1.0; source-sha256: e83a4b886faf489fbc50d0631d06ae6f92ebf7ce3b3b61dee2156260db7d7fee. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `clean-code`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<clean-code-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `clean-code`. The owning plugin's declared logical skill identities are `clean-code:readability-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `clean-code:readability-method` -> compiled registry name `readability-method` at `skills/readability-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -83,7 +83,7 @@ It never loads that method, repeats its preparation or approval, or dispatches a
 
 The brief supplies the owned files, the approved changes, the baseline validation commands
 and their results, any `--force` authorization and the report path. Load
-`project-protocol:project-protocol` to capture the owned files' exact pre-edit contents,
+`work-controller:work-record` to capture the owned files' exact pre-edit contents,
 including preexisting edits, before the first edit, and to restore them on failure.
 
 If the brief lacks the owned files, the approved changes or the baseline, make no edit.
@@ -179,7 +179,7 @@ What to keep:
 
 ## Phase 5: Validate
 
-After transforming each file, run these checks in order. If a required check fails, use `project-protocol:project-protocol` to restore only your exact saved pre-edit content. Preserve prior edits; a foreign-writer hash change is a conflict, never permission to overwrite. Report the failed candidate and verified recovery.
+After transforming each file, run these checks in order. If a required check fails, use `work-controller:work-record` to restore only your exact saved pre-edit content. Preserve prior edits; a foreign-writer hash change is a conflict, never permission to overwrite. Report the failed candidate and verified recovery.
 
 ### 5a. Type checker
 

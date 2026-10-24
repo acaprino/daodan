@@ -81,7 +81,7 @@ After presenting the review (Step 5/6), offer an interactive fix cycle. Skip thi
 Targeted fixes (7b) are minimal changes. Bulk application subtraction (7c) loads
 the named cleanup method with its own preconditions. Test-file consolidation is
 owned by `testing:test-remediation-method`, mode `consolidate`; semantic refactors return to the development
-plan. Load the `project-protocol:project-protocol` skill before mutation and preserve the
+plan. Load the `work-controller:work-record` skill before mutation and preserve the
 caller's workspace, authorizations and pre-phase recovery point.
 
 ### 7a. Severity Acceptance
@@ -107,7 +107,7 @@ For the selected severities, spawn one or more fix subagents:
 ```
 Isolated worker brief:
   - description: "Fix [N] review findings"
-  - role: "project-protocol:isolated-worker"
+  - role: "work-controller:isolated-worker"
   - prompt: |
     Fix the following code review findings. For each finding, apply the
     minimal correct fix. Run tests after fixing to verify no regressions.

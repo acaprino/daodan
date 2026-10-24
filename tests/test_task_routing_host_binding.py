@@ -11,17 +11,18 @@ class RoutingHostTests(unittest.TestCase):
     def test_every_host_ships_the_routing_method_and_its_fallback(self):
         for host in operational.HOSTS:
             with self.subTest(host=host):
-                package = self.render_in_memory("project-protocol", host)
-                skill = package["skills/project-protocol/SKILL.md"]
+                package = self.render_in_memory("model-routing", host)
+                skill = package["skills/model-routing/SKILL.md"]
                 self.assertIn("references/task-routing.md", skill)
-                method = package["skills/project-protocol/references/task-routing.md"]
+                method = package["skills/model-routing/references/task-routing.md"]
                 for obligation in ("plan --request", "assign --plan", "--no-reply",
                                    "binding_proposal", "assignments[request_sha256]",
-                                   "run_state.py", "--expected-revision",
+                                   "binding artifact", "caller-supplied",
                                    "model_override_supported", "effort_override_supported"):
                     self.assertIn(obligation, method)
                 self.assertIn("human confirmation", method)
                 self.assertIn("before each dispatch", method)
+                self.assertNotIn("run_state.py", method)
                 if host != "claude":
                     self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", method)
                 self.assertIn("scripts/task_router.py", "\n".join(package))
@@ -34,6 +35,9 @@ class RoutingHostTests(unittest.TestCase):
                 self.assertIn("task-routing.md", preflight)
                 self.assertIn("environment.models", preflight)
                 self.assertIn("confirmed", preflight)
+                self.assertIn("environment.models.assignments", preflight)
+                self.assertIn("run_state.py update", preflight)
+                self.assertIn("--expected-revision", preflight)
 
 
 if __name__ == "__main__":

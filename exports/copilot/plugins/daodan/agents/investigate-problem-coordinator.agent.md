@@ -2,7 +2,7 @@
 name: investigate-problem-coordinator
 description: 'Investigate an error, a bug or a strange behavior without fixing it: facts, perimeter from the map, hypotheses verified one by one in isolation, a reproduction test, bisection. Ends with the demonstrated cause or the remaining hypotheses and what would decide them. TRIGGER WHEN: the user reports an error, a failure, a regression or behavior they cannot explain, and the cause is not known. DO NOT TRIGGER WHEN: the cause is known and a fix is wanted (use fix-bug).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
-agents: ['codebase-map:map-analyst', 'project-protocol:isolated-worker', 'senior-review:chicken-egg-detector', 'senior-review:code-auditor', 'senior-review:data-integrity-auditor', 'senior-review:distributed-flow-auditor', 'senior-review:logic-integrity-auditor', 'senior-review:resource-lifecycle-auditor', 'senior-review:temporal-resilience-auditor', 'senior-review:ui-race-auditor', 'testing:test-writer']
+agents: ['codebase-map:map-analyst', 'senior-review:chicken-egg-detector', 'senior-review:code-auditor', 'senior-review:data-integrity-auditor', 'senior-review:distributed-flow-auditor', 'senior-review:logic-integrity-auditor', 'senior-review:resource-lifecycle-auditor', 'senior-review:temporal-resilience-auditor', 'senior-review:ui-race-auditor', 'testing:test-writer', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `<error, symptom or failing command>`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-protocol:isolated-worker`, `senior-review:chicken-egg-detector`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-writer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `senior-review:chicken-egg-detector`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-writer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -124,7 +124,6 @@ Dispatch plan:
 Role bindings:
 
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
-- `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
 - `senior-review:chicken-egg-detector`: dispatch the installed `senior-review:chicken-egg-detector` agent by its qualified identity.
 - `senior-review:code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
 - `senior-review:data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
@@ -134,7 +133,8 @@ Role bindings:
 - `senior-review:temporal-resilience-auditor`: dispatch the installed `senior-review:temporal-resilience-auditor` agent by its qualified identity.
 - `senior-review:ui-race-auditor`: dispatch the installed `senior-review:ui-race-auditor` agent by its qualified identity.
 - `testing:test-writer`: dispatch the installed `testing:test-writer` agent by its qualified identity.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record schemas ship with this package in
 `contracts/investigate-problem.workflow.toml`.
@@ -147,7 +147,7 @@ The phase graph and record schemas ship with this package in
 
 Read the argument as a path, a commit, a pull request or a branch when one exists,
 otherwise as text, and say how you read it before starting. Load the skills
-`senior-review:investigation-method` and `project-protocol:project-protocol` and
+`senior-review:investigation-method` and `work-controller:work-record` and
 investigate the problem above. Nothing in the product changes; the reproduction test is
 the one project file it writes, uncommitted. When the user wants it fixed, continue as
 `/daodan:fix-bug` with the reproduction test as its oracle.

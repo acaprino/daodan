@@ -92,7 +92,7 @@ A coordinator that already holds a run loads this method: `/daodan:check-health`
 - **Strictness**: a method decision. Default: off, and the audit completes with its report whatever it finds. On when the caller's request asks for a release gate (release review, release readiness, a strict audit). See Exit Codes.
 - **Type checking**: a method decision. Default: run Phase 2. Leave it out only when the caller's request excludes type checking; the Summary then reads `Types: not run (excluded by the request)`.
 - **Coverage**: a method decision. Default: run Phase 5. Leave it out when the project has no pytest suite (no `test_*.py` or `*_test.py` files and no pytest configuration) or when the caller's request excludes coverage; the Summary then reads `Coverage: not run (<reason>)`.
-- **Applying fixes**: an authorization asked when needed (rule 3), once, with the host's question tool, and recorded in the run (`project-protocol:project-protocol`). Without it the audit is a preview: the report lists the auto-fixable items and nothing is edited.
+- **Applying fixes**: an authorization asked when needed (rule 3), once, with the host's question tool, and recorded in the run (`work-controller:work-record`). Without it the audit is a preview: the report lists the auto-fixable items and nothing is edited.
 
 ## CRITICAL RULES
 

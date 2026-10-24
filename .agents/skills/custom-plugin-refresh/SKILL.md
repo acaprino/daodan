@@ -33,7 +33,7 @@ Classify each plugin into one of four classes. The class determines refresh cade
 | **Very fast** | Versions bump every few months; breaking changes are common; ecosystem reshuffles | Every 3 months | rag-development (embedding models, rerankers, vector DBs), digital-marketing/ga4-implementation (Consent Mode, GA4 events), react-development (React 19, Vercel guidance) |
 | **Fast** | Framework releases 2-3x per year; APIs evolve | Every 6 months | libgdx-development, opentelemetry, tauri-development, stripe (API additions, webhook event types), grabber-development (anti-bot vendor moves), browser-extensions, pwa-expert (browser version churn, WebKit feature rollout, framework PWA library churn), text-humanizer (Wikipedia's signs page and the upstream humanizer both change monthly), business (its `privacy-doc-generator` quotes app store rules and EDPB guidance; the refresh note lives in Shinatama's copy of this skill, beside the plugin) |
 | **Moderate** | Major releases ~yearly; breaking changes rare | Every 12 months | trading-broker-integration, csp (OR-Tools), python-development, typescript-development, messaging (RabbitMQ majors), obsidian-development, abstraction-architect (theory is stable; URL list in further-reading.md decays on a yearly cadence) |
-| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, project-protocol, senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, clean-code, codebase-map, platform-engineering, testing methodology, xterm, app-analyzer |
+| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, work-controller, senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, clean-code, codebase-map, platform-engineering, testing methodology, xterm, app-analyzer |
 
 If unsure, default to "Fast" (6 months). Reclassify after the first refresh based on how much actually changed.
 
@@ -67,7 +67,7 @@ The agent and SKILL.md are the highest-value targets per minute of refresh effor
 Steps to refresh a custom plugin. Same protocol regardless of risk class; only the cadence differs.
 
 When revising or adding components or helpers, follow the
-[component-authoring method](../../../plugins/project-protocol/skills/project-protocol/SKILL.md#authoring-components)
+[component-authoring method](../../../plugins/work-controller/skills/work-record/SKILL.md#authoring-components)
 so applicable discipline and economy reach their consumers in any domain.
 
 1. **Re-research the domain** with `research:deep-researcher`. Prioritize primary and recency sources in `Source families` at minimum. Prompt template (the spawn-block fields the agent's INPUT section expects, filled):

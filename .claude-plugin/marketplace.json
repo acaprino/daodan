@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "38.11.0"
+    "version": "39.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -41,7 +41,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "project-protocol"
+        "work-controller"
       ],
       "description": "Rewrites source code to be more readable and human-friendly without changing behavior - improves naming, removes AI boilerplate, simplifies structure, and adds clarity comments",
       "license": "MIT",
@@ -50,7 +50,7 @@
         "./skills/readability-method"
       ],
       "source": "./exports/claude/plugins/clean-code",
-      "version": "3.0.0"
+      "version": "3.1.0"
     },
     {
       "agents": [
@@ -75,7 +75,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/claude/plugins/codebase-map",
-      "version": "8.6.6"
+      "version": "8.7.0"
     },
     {
       "author": {
@@ -117,7 +117,7 @@
         "platform-engineering",
         "project-knowledge",
         "project-lifecycle",
-        "project-protocol",
+        "work-controller",
         "python-development",
         "react-development",
         "repo-hygiene",
@@ -131,7 +131,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "1.3.0"
+      "version": "1.4.0"
     },
     {
       "author": {
@@ -179,6 +179,20 @@
       "author": {
         "name": "Alfio Caprino"
       },
+      "dependencies": [],
+      "description": "Per-request model routing: host inventory, classifier signals, deterministic model and effort selection, confirmation binding, model catalog and prices.",
+      "license": "MIT",
+      "name": "model-routing",
+      "skills": [
+        "./skills/model-routing"
+      ],
+      "source": "./exports/claude/plugins/model-routing",
+      "version": "1.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
       "dependencies": [
         "peer-review"
       ],
@@ -210,7 +224,7 @@
         "./skills/cross-model-peer-review"
       ],
       "source": "./exports/claude/plugins/peer-review",
-      "version": "3.0.0"
+      "version": "3.1.0"
     },
     {
       "agents": [
@@ -251,7 +265,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "project-protocol",
+        "work-controller",
         "codebase-map",
         "text-humanizer",
         "senior-review",
@@ -267,14 +281,15 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/claude/plugins/project-knowledge",
-      "version": "2.0.2"
+      "version": "2.1.0"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "project-protocol",
+        "model-routing",
+        "work-controller",
         "project-knowledge",
         "senior-review",
         "testing",
@@ -301,24 +316,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/claude/plugins/project-lifecycle",
-      "version": "2.1.5"
-    },
-    {
-      "agents": [
-        "./agents/isolated-worker.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [],
-      "description": "Shared working discipline and isolated-worker briefs, canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work.",
-      "license": "MIT",
-      "name": "project-protocol",
-      "skills": [
-        "./skills/project-protocol"
-      ],
-      "source": "./exports/claude/plugins/project-protocol",
-      "version": "1.12.0"
+      "version": "2.2.0"
     },
     {
       "agents": [
@@ -331,7 +329,7 @@
       },
       "dependencies": [
         "testing",
-        "project-protocol"
+        "work-controller"
       ],
       "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and a consolidated quality audit method run by /daodan:check-health",
       "license": "MIT",
@@ -350,7 +348,7 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/claude/plugins/python-development",
-      "version": "4.1.0"
+      "version": "4.2.0"
     },
     {
       "agents": [
@@ -388,7 +386,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/claude/plugins/repo-hygiene",
-      "version": "2.0.1"
+      "version": "2.1.0"
     },
     {
       "author": {
@@ -465,7 +463,7 @@
         "codebase-map",
         "abstraction-architect",
         "testing",
-        "project-protocol",
+        "work-controller",
         "react-development",
         "typescript-development",
         "platform-engineering",
@@ -487,7 +485,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/claude/plugins/senior-review",
-      "version": "16.5.1"
+      "version": "16.6.0"
     },
     {
       "author": {
@@ -521,7 +519,7 @@
       "dependencies": [
         "mattpocock-skills@mattpocock",
         "developer-essentials@claude-code-workflows",
-        "project-protocol",
+        "work-controller",
         "report-rendering"
       ],
       "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
@@ -533,7 +531,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "4.3.0"
+      "version": "4.4.0"
     },
     {
       "agents": [
@@ -563,7 +561,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "project-protocol",
+        "work-controller",
         "testing"
       ],
       "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and an audit method with tsc/ESLint ground truth run by /daodan:check-health",
@@ -576,7 +574,24 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/claude/plugins/typescript-development",
-      "version": "3.3.0"
+      "version": "3.4.0"
+    },
+    {
+      "agents": [
+        "./agents/isolated-worker.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker.",
+      "license": "MIT",
+      "name": "work-controller",
+      "skills": [
+        "./skills/work-record"
+      ],
+      "source": "./exports/claude/plugins/work-controller",
+      "version": "1.0.0"
     }
   ]
 }

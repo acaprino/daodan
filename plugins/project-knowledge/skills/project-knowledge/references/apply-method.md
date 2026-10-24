@@ -6,7 +6,7 @@ the task or run. An ambiguous domain intention remains open; correction of a
 verified stale path within an authorized maintenance task needs no repeated vote.
 
 Before editing, verify the candidate files still match the audited snapshot and
-record preexisting changes. Use the project-protocol baseline and candidate gate
+record preexisting changes. Use the work-controller baseline and candidate gate
 procedure. Never restore an entire file from HEAD over someone else's edits.
 
 For merge or retirement, read all source material and record where each durable

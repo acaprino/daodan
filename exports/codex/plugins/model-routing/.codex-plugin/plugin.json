@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Alfio Caprino"
+  },
+  "description": "Per-request model routing: host inventory, classifier signals, deterministic model and effort selection, confirmation binding, model catalog and prices.",
+  "license": "MIT",
+  "name": "model-routing",
+  "version": "1.0.0"
+}

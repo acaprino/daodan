@@ -10,7 +10,7 @@ color: green
 
 ## Canonical authoring preflight
 
-Load the `project-protocol:project-protocol` skill before writing: preserve the initial
+Load the `work-controller:work-record` skill before writing: preserve the initial
 workspace snapshot, existing edits, explicit scope and required candidate gates.
 Load the `testing:test-hygiene` skill for placement and prevention. Diagnose existing red
 tests through `testing:test-remediation-method` before changing their assertions.

@@ -8,7 +8,7 @@ description: >
 
 ## Common contract
 
-Load `project-protocol:project-protocol` for operational records and gates.
+Load `work-controller:work-record` for operational records and gates.
 Receive or initialize an owned run before dispatch. A caller's existing run is
 reused; do not create a competing run or choose an unrelated latest report.
 Inputs: project/worktree identity, target scope, snapshot, task intent, existing
@@ -57,4 +57,4 @@ migrated information, unresolved intent, stale inputs, checks run and checks not
 available. A missing reviewer or changed snapshot blocks successful completion.
 For requested HTML or useful comparison/navigation, the coordinator reads
 `references/human-view.md` before closing the run.
-Validate and close the operational result with the project-protocol method.
+Validate and close the operational result with the work-controller method.

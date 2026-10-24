@@ -103,9 +103,9 @@ shared_schemas = ["protocol/contracts/result.toml"]
         self.assertEqual(graph.check_deps_are_used(plugins, refs), [])
 
     def test_method_dispatch_and_inline_worker_are_declared_runtime_use(self):
-        self.kernel("coordinator", dependencies=["reviewer", "project-protocol"])
+        self.kernel("coordinator", dependencies=["reviewer", "work-controller"])
         self.kernel("reviewer", roles=["audit"])
-        self.kernel("project-protocol", roles=["isolated-worker"])
+        self.kernel("work-controller", roles=["isolated-worker"])
         self.sidecar("coordinator", '''[dispatch]
 roles = ["reviewer/audit", "coordinator/local"]
 isolated = true
@@ -113,7 +113,7 @@ inline_workers = true
 ''')
         plugins, refs = self.references()
         self.assertEqual([(ref.namespace, ref.target) for ref in refs],
-                         [("reviewer", "audit"), ("project-protocol", "isolated-worker")])
+                         [("reviewer", "audit"), ("work-controller", "isolated-worker")])
         self.assertEqual(graph.check_runtime_refs(plugins, refs), [])
         self.assertEqual(graph.check_deps_are_used(plugins, refs), [])
 

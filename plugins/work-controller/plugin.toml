@@ -1,0 +1,21 @@
+schema = "daodan/v1"
+name = "work-controller"
+version = "1.0.0"
+description = "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute"]
+optional = ["network.fetch"]
+
+[dependencies]
+required = []
+
+[components]
+skills = ["work-record"]
+roles = ["isolated-worker"]
+workflows = []
+policies = []
+
+[contracts]
+exports = ["contracts/work.toml", "contracts/project-result.toml"]

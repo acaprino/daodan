@@ -11,7 +11,7 @@ argument-hint: "<the defect>"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`project-protocol:project-protocol`. Run operation `repair` for the defect above as the
+`work-controller:work-record`. Run operation `repair` for the defect above as the
 lifecycle method's `references/repair.md` directs: without a demonstrated cause,
 `senior-review:investigation-method` runs first and its reproduction test becomes the
 oracle. Stop only for the user's answers, the plan approval and the merge authorization;

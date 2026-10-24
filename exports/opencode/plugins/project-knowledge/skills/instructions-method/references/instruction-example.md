@@ -78,7 +78,7 @@ Its filename suits the illustrated host only when discovery/configuration confir
 it; ordinary Markdown links below do not establish automatic imports or loading.
 
 The original local execution wording below is owned by
-`project-protocol:project-protocol` (already required). Equivalent guidance
+`work-controller:work-record` (already required). Equivalent guidance
 in existing target projects remains valid.
 
 ## Key Characteristics

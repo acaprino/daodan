@@ -437,7 +437,7 @@ echo "=== REGRESSION CHECK COMPLETE ==="
 
 ### How to recover the failed phase
 
-Load the `project-protocol:project-protocol` skill for its canonical recovery procedure.
+Load the `work-controller:work-record` skill for its canonical recovery procedure.
 Restore only the owned phase edits from saved pre-edit contents. Preserve all
 preexisting changes, foreign files and earlier successful phases. Use the captured
 `pre_phase_sha` only in an exclusively owned clean isolated worktree without foreign

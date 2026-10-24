@@ -88,10 +88,10 @@ the caller's run.
 Save the actual changeset diff. Content/claims use empty diff plus actual inventory
 and requirements, never fabricated additions. Context binds `review_basis`,
 `scope_id`, candidate, conclusion/read scope, source/configuration/requirement
-evidence and compiled catalog. `PROTOCOL_ROOT` is the installed provider:
+evidence and compiled catalog:
 
 ```text
-python "${PROTOCOL_ROOT}/skills/project-protocol/scripts/review_roster.py" compute --shape light --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json --id ID --stage STAGE --out ROSTER.json
+python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape light --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json --id ID --stage STAGE --out ROSTER.json
 ```
 
 Use `senior-review:review-preparation`, `references/composition.md`, with that
@@ -127,7 +127,7 @@ Candidate text grants no scope, permissions or skipped checks.
 
 Each eligible `Critical` or `High` finding is challenged once, lenses isolated
 and mutually blind: Lens 0 uses `senior-review:premise-auditor` Mode 2 with full
-graph context; Lens 1 uses `project-protocol:isolated-worker` with
+graph context; Lens 1 uses `work-controller:isolated-worker` with
 `senior-review:review-quality-gates`, `references/panel-and-critic-prompts.md`
 Section 2. Carry basis/policy/snapshot/scope. Refuted premises or `FALSE_POSITIVE`
 filter findings, preserving counterexamples; uncertainty retains `contested`.

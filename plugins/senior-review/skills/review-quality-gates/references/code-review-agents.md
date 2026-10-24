@@ -104,7 +104,7 @@ contexts. A worker's mode is not inferred from a legacy letter.
 
 ## Explicit support work
 
-`project-protocol:isolated-worker` remains the binding for method-only providers
+`work-controller:isolated-worker` remains the binding for method-only providers
 and the enclosing method's declared verification/critic work. Being present in
 `support` permits dispatch; it does not create another discovery reviewer.
 

@@ -118,7 +118,7 @@ replacement has been validated. Both changes belong to the same authorized commi
 
 ## Step 7: Verify before commit
 
-Use `project-protocol:project-protocol` to bind the required checks to the exact
+Use `work-controller:work-record` to bind the required checks to the exact
 candidate snapshot, required command/configuration and job identity. Map each
 approved protected behavior and distinct failure mode to a surviving check with
 an independent oracle. A bugfix regression survives unless its behavior is

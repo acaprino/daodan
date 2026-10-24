@@ -19,7 +19,7 @@ WORKING_ANCHORS = (
     "working-principle-authorized-scope",
     "working-principle-observable-verification",
 )
-WORKING_OWNER = "plugins/project-protocol/skills/project-protocol/SKILL.md"
+WORKING_OWNER = "plugins/work-controller/skills/work-record/SKILL.md"
 WORKING_COPIES = (
     WORKING_OWNER,
     "CLAUDE.md",

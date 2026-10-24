@@ -234,7 +234,7 @@ def _sidecar_references(path):
             refs.append(reference)
     if dispatch.get("inline_workers") is True:
         line_no = next(iter(_field_lines(lines, "inline_workers")), 1)
-        reference = _role_reference(owner, path, line_no, "project-protocol/isolated-worker", lines)
+        reference = _role_reference(owner, path, line_no, "work-controller/isolated-worker", lines)
         if reference:
             refs.append(reference)
     for phase in data.get("phases", []):

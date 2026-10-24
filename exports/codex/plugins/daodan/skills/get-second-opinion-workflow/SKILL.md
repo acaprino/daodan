@@ -105,7 +105,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `peer-review:brief-builder`, `peer-review:packet-builder`, `peer-review:respondent`, `project-protocol:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `peer-review:brief-builder`, `peer-review:packet-builder`, `peer-review:respondent`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -120,8 +120,8 @@ Role body bindings (load the complete body only for the selected worker):
 - `peer-review:brief-builder`: read `contracts/dispatch/peer-review/brief-builder.md` inside this package and pass its complete role body verbatim.
 - `peer-review:packet-builder`: read `contracts/dispatch/peer-review/packet-builder.md` inside this package and pass its complete role body verbatim.
 - `peer-review:respondent`: read `contracts/dispatch/peer-review/respondent.md` inside this package and pass its complete role body verbatim.
-- `project-protocol:isolated-worker`: read `contracts/dispatch/project-protocol/isolated-worker.md` inside this package and pass its complete role body verbatim.
-- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
+- `work-controller:isolated-worker`: read `contracts/dispatch/work-controller/isolated-worker.md` inside this package and pass its complete role body verbatim.
+- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record-schema references ship under `contracts/get-second-opinion.workflow.toml`.
 

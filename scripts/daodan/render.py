@@ -1117,7 +1117,7 @@ def _dispatch_bindings(
         _write_markdown(staging / relative, resource, adapter, operational_binding=operational_binding)
         bindings.append(f"- `{identity}`: read `{relative.as_posix()}` inside this package and pass its complete role body verbatim.")
     if workflow.dispatch.inline_workers:
-        bindings.append("- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, "
+        bindings.append("- Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, "
                         "owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.")
     return ids, "\n".join(bindings)
 

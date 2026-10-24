@@ -84,7 +84,7 @@ dependent operation; preserve archives and run IDs.
 # Consultant handover
 
 Own orientation and its evidence, not remediation. Produce a usable dossier for an
-incoming consultant inside an identified project run. Use project-protocol for
+incoming consultant inside an identified project run. Use work-controller for
 identity, snapshots, delivery accounting and completion; use project-knowledge for
 context preparation, reader/file ownership, onboarding and factual review. Do not
 repeat their discovery prompts or introduce a second documentation owner.
@@ -123,7 +123,7 @@ needed credential as unavailable without exposing its contents.
 
 ## Prepare the owned run
 
-Load project-protocol:project-protocol and project-knowledge:project-knowledge.
+Load work-controller:work-record and project-knowledge:project-knowledge.
 Read the latter's references/preparation.md and references/guide-method.md from its
 installed skill. Apply their source/intent distinctions, audience/file plan and
 writer/reviewer ownership to this report-writing task. Do not execute the guide

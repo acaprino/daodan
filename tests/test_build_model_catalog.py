@@ -17,8 +17,8 @@ from types import SimpleNamespace
 from unittest import mock
 from datetime import datetime, timezone
 
-SCRIPTS = (Path(__file__).resolve().parents[1] / "plugins" / "project-protocol"
-           / "skills" / "project-protocol" / "scripts")
+SCRIPTS = (Path(__file__).resolve().parents[1] / "plugins" / "model-routing"
+           / "skills" / "model-routing" / "scripts")
 sys.path.insert(0, str(SCRIPTS))
 
 import build_model_catalog as catalog  # noqa: E402

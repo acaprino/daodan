@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:cb6d3293ebd876fa3076ca2d0b09e41ed7050731640530c0bb59d229d5fc9edf",
+  "coreDigest": "sha256:14e43cea76bf1c4a596aefe907cd3c094789e1e27bff8c6d202c67b3b43834dd",
   "harnessStrategies": {},
   "host": "codex",
   "overrides": [],
   "plugin": "codebase-map",
-  "version": "8.6.6"
+  "version": "8.7.0"
 }

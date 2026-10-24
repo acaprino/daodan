@@ -26,7 +26,7 @@ provides this workflow guidance; [verification-loop guidance](https://claude.com
 explains how repeatable checks can become reusable procedures.
 
 Daodan supplies the local ownership and verification contract: [project-lifecycle](../plugins/project-lifecycle.md)
-coordinates the outcome, [project-protocol](../plugins/project-protocol.md) binds
+coordinates the outcome, [work-controller](../plugins/work-controller.md) binds
 records and checks to snapshots, and [senior-review](../plugins/senior-review.md)
 owns correctness review. The canonical [maintainer method](../../plugins/project-lifecycle/skills/maintainer-method/SKILL.md) owns the campaign stages. Its initial full-depth X-ray, new or updated from
 an earlier run when the X-ray's own change set recommends it, and its severe-defect

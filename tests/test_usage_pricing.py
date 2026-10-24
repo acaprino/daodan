@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-SKILL = REPO / "plugins/project-protocol/skills/project-protocol"
+SKILL = REPO / "plugins/model-routing/skills/model-routing"
 SCRIPT = SKILL / "scripts/usage_pricing.py"
 sys.path.insert(0, str(SCRIPT.parent))
 

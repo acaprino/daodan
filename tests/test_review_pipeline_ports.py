@@ -86,7 +86,7 @@ EXPECTED_SET = ("The validated jobs and their member/scope obligations are the e
 CONSOLIDATED = "Write `.team-review/99-consolidated.md`."
 VERIFIES_CONSOLIDATED = "select consolidated findings with confidence `>= 50%`"
 FRESH_LENSES = ("dispatch lenses 1 and 2 independently through the declared "
-                "`project-protocol:isolated-worker` binding")
+                "`work-controller:isolated-worker` binding")
 FINAL_REPORT = "Save this complete native final report"
 SINGLE_WRITER = "A single final writer emits the report."
 REPORT_OWNER = "Keep one review preparation and final report owner"
@@ -220,7 +220,7 @@ class ReviewPipelinePortTests(unittest.TestCase):
             for owner, role in re.findall(r"`([a-z-]+):([a-z-]+)`", text):
                 if owner in registry and role in registry[owner].components.roles:
                     named.add(f"{owner}/{role}")
-        named.discard("project-protocol/isolated-worker")
+        named.discard("work-controller/isolated-worker")
         self.assertGreaterEqual(len(named), 18, sorted(named))
         self.assertEqual(sorted(named - set(workflow.dispatch.roles)), [])
 
@@ -328,7 +328,7 @@ class ReviewPipelinePortTests(unittest.TestCase):
                 "codebase-map",
                 "abstraction-architect",
                 "testing",
-                "project-protocol",
+                "work-controller",
                 "react-development",
                 "platform-engineering",
                 "typescript-development",

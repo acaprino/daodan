@@ -38,7 +38,7 @@ Start with [project-lifecycle](plugins/project-lifecycle.md):
 | verify | Check the actual candidate and its consequences |
 | consolidate | Preserve experiment outcomes and manage owned residual output |
 
-Shared records and recovery belong to [project-protocol](plugins/project-protocol.md).
+Shared records and recovery belong to [work-controller](plugins/work-controller.md).
 Instructions, guides and README belong to [project-knowledge](plugins/project-knowledge.md).
 [senior-review](plugins/senior-review.md) provides one correctness review, selecting
 React, TypeScript and platform dimensions when the target warrants them.
