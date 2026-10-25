@@ -49,7 +49,7 @@ C5 protects `.daodan/` and `.codebase-map/` by name, plus any directory containi
 a `.daodan-root` sentinel and its ancestors. It never proposes removing these
 roots and does not interpret protocol states. Classifying run evidence, resume
 data and concluded output belongs to [project-lifecycle](project-lifecycle.md)'s retention
-method (`references/retention.md` of `project-lifecycle:lifecycle-method`).
+method (`references/retention.md` of `project-delivery:delivery-method`).
 
 **Two profiles, one set of definitions.** The full profile runs over the working tree.
 The lite profile runs over the files a diff adds, and is what the inline hygiene pass

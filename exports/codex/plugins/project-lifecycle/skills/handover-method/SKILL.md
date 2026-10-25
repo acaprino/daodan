@@ -3,10 +3,8 @@ name: handover-method
 description: >
   Coordinate an evidence-based consultant intake dossier.
   TRIGGER WHEN: the user asks to be onboarded, walked through an unfamiliar codebase, given a project takeover or intake dossier, or runs /daodan:onboard-project.
-  DO NOT TRIGGER WHEN: being new to a project is only background for a code change (use lifecycle-method), correcting and rationalizing the project (use maintainer-method), or writing durable repository documentation (use project-knowledge:project-knowledge).
+  DO NOT TRIGGER WHEN: being new to a project is only background for a code change (use project-delivery:delivery-method), correcting and rationalizing the project (use maintainer-method), or writing durable repository documentation (use project-knowledge:project-knowledge).
 ---
-
-> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
@@ -128,7 +126,7 @@ needed credential as unavailable without exposing its contents.
 
 ## Prepare the owned run
 
-Load work-controller:work-record and project-knowledge:project-knowledge.
+Load skill `work-controller:work-record` and skill `project-knowledge:project-knowledge`.
 Read the latter's references/preparation.md and references/guide-method.md from its
 installed skill. Apply their source/intent distinctions, audience/file plan and
 writer/reviewer ownership to this report-writing task. Do not execute the guide
@@ -264,7 +262,7 @@ A discovered product defect is an evidenced risk, not a reason to silently repai
 it or to treat its successfully delivered report as a worker failure.
 
 For requested HTML or a dossier that benefits from navigation, the coordinator
-reads `<plugin-root>/skills/lifecycle-method/references/human-view.md`
+must load skill `report-rendering:report-renderer`, then read `references/project-run-view.md`
 and renders the reviewed handover.md before run closure. The writer's native
 delivery and read-only project boundary remain authoritative.
 

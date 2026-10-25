@@ -145,7 +145,7 @@ update --project ROOT --run-id ID --expected-revision N --payload PATCH.json
 ask --project ROOT --run-id ID --payload QUESTION.json
 answer --project ROOT --run-id ID --payload ANSWER.json
 resume --project ROOT --run-id ID --payload CONTEXT.json
-show --project ROOT --run-id ID
+show --project ROOT --run-id ID [--historical]
 snapshot --project ROOT --run-id ID
 validate --project ROOT --run-id ID [--current] [--result RESULT.json]
 agenda --project ROOT [--branch NAME]
@@ -163,13 +163,11 @@ authorization asked later is a grant with its kind, scope and the user's answer
 as `source` (`kind: user`, `reference`). Questions change only through `ask`
 and `answer`; read `references/questions.md` before asking.
 
-A task is written only by the session that holds it; `--take-over` passes it to
-this session after the user confirms the other one is closed. `resume` checks
-the current authorizations, scope and candidate, records this session as the
-holder, and returns the record with pending phases, deliveries and questions,
-the tasks still `waiting` and those to `replan`. A branch holds one open loop
-task; a completed run releases its agenda row. New input or a broader scope is
-a new run; record an interruption's reason and phase at once.
+Only the holder writes a task; `--take-over` follows confirmation that the other
+session closed. `resume` checks authorizations, scope and candidate, records the
+holder and returns pending work and replans. A branch holds one open loop task.
+New input or scope means a new run; record interruptions at once. `show --historical`
+reads old records; never resumes them.
 
 A gate carries its status, the candidate `digest` and `head` that `snapshot`
 prints, and evidence naming the command, or the remote job with its revision
@@ -183,11 +181,13 @@ revision, snapshot, ledger and gates.
 ## Loop sections
 
 A lifecycle run may carry `workspace`, `preflight`, `adr`, `waves`, `rulings`,
-`reviews`, `questions` and `environment`; each is validated when present, and a
-refusal names its rule. A wave task that needs an answer lists `question:<id>`
+`reviews`, `questions`, `environment` and `integration`, each validated when present. A wave task that needs an answer lists `question:<id>`
 in `consumes` and waits for it. A review's roster is appended as senior-review's
 `review_roster.py compute` wrote it, before dispatch; `--deeper` appends one a
-tier up, and nothing lowers one.
+tier up, and nothing lowers one. Running tasks need a delivered adversarial
+PASS plan review on the exact plan digest and current bytes. Commits bind parent,
+owned diff and wave trailer; completion binds sealed waves, branch review,
+reviewed ancestry, merge and realignment. Resume reconciles commit-record crashes.
 
 ## State and completion
 
@@ -210,10 +210,12 @@ snapshot, preexisting edits and untracked files, and resolve build and test
 gates from the project's instructions. A failing, unavailable or forbidden
 baseline without a correlated remote alternative leaves the phase open.
 
-Immediately before a phase, record `pre_phase_sha` and the file state needed to
-recover its owned edits. Apply, capture the candidate, run the declared gates,
-commit only when authorized, and record the commit with the candidate it
-verifies. On failure before commit, restore only the phase's owned edits and
+Before a phase, record `pre_phase_sha` and recovery bytes. Snapshot the applied
+candidate; run gates and review before commit. Committed tasks need `candidate`,
+passing `verification_receipt`, PASS `pre_commit_review`, `commit_sha` and light
+changeset review binding. The helper rejects stale bindings
+and checks HEAD and bytes. Commit when authorized. On failure, restore owned
+edits and
 keep the preceding phase and every foreign file; never derive a rollback target
 from `HEAD~1`. Reset to `pre_phase_sha` only in an exclusively owned worktree
 with a proven clean baseline and no foreign change; otherwise restore by path

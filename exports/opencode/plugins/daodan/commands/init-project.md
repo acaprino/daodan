@@ -139,10 +139,10 @@ The phase graph and the record schemas are in `contracts/init-project.workflow.t
 
 $ARGUMENTS
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record`.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Open a run with operation `assess` and follow the
 lifecycle method's `references/init.md`: an empty folder is scaffolded first from what
 the user wants to build; an existing project gets the first-use choices, the map at the chosen depth,

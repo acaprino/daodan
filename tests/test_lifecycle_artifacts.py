@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "plugins/project-lifecycle/skills/lifecycle-method/scripts/artifacts.py"
+SCRIPT = ROOT / "plugins/project-delivery/skills/delivery-method/scripts/artifacts.py"
 spec = importlib.util.spec_from_file_location("lifecycle_artifacts", SCRIPT)
 artifacts = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(artifacts)
@@ -106,6 +106,22 @@ class ArtifactRetention(unittest.TestCase):
         with self.assertRaises(artifacts.RetentionError):
             self.plan()
         self.assertTrue(self.data.exists())
+
+    def test_retention_accepts_main_checkout_records_after_worktree_removal(self):
+        import shutil
+        main = Path(self.temp.name) / "main"
+        output = main / ".daodan"
+        shutil.copytree(self.output, output)
+        (main / ".git").mkdir()
+        record_path = output / "runs/sample/work.json"
+        record = json.loads(record_path.read_text())
+        record["project"] = {"root": str((Path(self.temp.name) / "removed-worktree").resolve()),
+                             "git_dir": str((main / ".git").resolve())}
+        record["output_root"] = str(output.resolve())
+        record_path.write_text(json.dumps(record))
+        run = output / "runs/sample"
+        plan = artifacts.make_plan(run, run / "artifacts.json", run / "summary.json")
+        self.assertEqual(plan["run_id"], "sample")
 
     def test_missing_sentinel_blocks_retention(self):
         (self.output / ".daodan-root").unlink()

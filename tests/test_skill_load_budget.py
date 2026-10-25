@@ -16,11 +16,14 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle/skills/lifecycle-method"
+LIFECYCLE = REPO_ROOT / "plugins/project-delivery/skills/delivery-method"
+ASSESS = REPO_ROOT / "plugins/project-lifecycle/skills/assess-method"
 PROTOCOL = REPO_ROOT / "plugins/work-controller/skills/work-record/SKILL.md"
 AUTHORING = PROTOCOL.parent / "references/component-authoring.md"
 QUESTIONS = PROTOCOL.parent / "references/questions.md"
-ADR = REPO_ROOT / "plugins/project-knowledge/skills/adr-method"
+ADR = REPO_ROOT / "plugins/project-delivery/skills/adr-method"
+FRD = REPO_ROOT / "plugins/project-delivery/skills/frd-method"
+BOOTSTRAP = REPO_ROOT / "plugins/project-delivery/skills/project-bootstrap/SKILL.md"
 REVIEW = REPO_ROOT / "plugins/senior-review/skills"
 
 UNIT_CAPS = {
@@ -42,7 +45,14 @@ UNIT_CAPS = {
     LIFECYCLE / "references/continue.md": 188,
     LIFECYCLE / "references/status.md": 150,
     LIFECYCLE / "references/repair.md": 335,
-    LIFECYCLE / "references/assess.md": 740,
+    LIFECYCLE / "references/investigate.md": 180,
+    LIFECYCLE / "references/document.md": 240,
+    FRD / "SKILL.md": 500,
+    FRD / "references/frd-schema.md": 900,
+    BOOTSTRAP: 400,
+    ASSESS / "SKILL.md": 230,
+    ASSESS / "references/assess.md": 740,
+    ASSESS / "references/native-reports.md": 230,
     PROTOCOL: 1_325,
     QUESTIONS: 95,
     AUTHORING: 208,
@@ -88,6 +98,9 @@ STEPS = {
                                      LIFECYCLE / "references/waves.md", LIFECYCLE / "references/worker-brief.md"),
     "continue": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/continue.md"),
     "status": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/status.md"),
+    "investigation handoff": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/investigate.md"),
+    "documentation": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/document.md"),
+    "knowledge bootstrap": (PROTOCOL, BOOTSTRAP, FRD / "SKILL.md", FRD / "references/frd-schema.md", ADR / "SKILL.md"),
     "review preparation, before the variant": (
         REVIEW / "review-method/SKILL.md", REVIEW / "review-preparation/SKILL.md",
         REVIEW / "review-preparation/references/candidate-grounding.md",
@@ -122,6 +135,9 @@ STEP_CAPS = {
     "refactor: plan and execution": 3_018,
     "continue": 2_160,
     "status": 2_118,
+    "investigation handoff": 2_200,
+    "documentation": 2_250,
+    "knowledge bootstrap": 3_300,
     "review preparation, before the variant": 3_410,
     # Before the split, this step loaded the whole quality-gates skill (1,800 words)
     # and the unlightened team preparation (3,562): 9,647 words.
@@ -189,7 +205,7 @@ class SkillLoadBudgetTests(unittest.TestCase):
             self.assertIn(field, brief)
         for code in ("- OK,", "- NEEDS_REPLAN,", "- ORACLE_INVALID,"):
             self.assertIn(code, brief)
-        for method in ("review-quality-gates", "lifecycle-method", "review-method"):
+        for method in ("review-quality-gates", "delivery-method", "review-method"):
             self.assertNotIn(method, brief, "a worker never loads a coordinator method")
 
 

@@ -60,7 +60,7 @@ _COUNT = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelv
 
 ANCHORS = {
     "adr-versions-per-decision": (
-        "plugins/project-knowledge/skills/adr-method/references/adr-template.md",
+        "plugins/project-delivery/skills/adr-method/references/adr-template.md",
         r"(?m)^Versions: ([^\n]+)$",
         "The version rule of decision records must agree across the template, the method and the guide",
     ),
@@ -126,7 +126,7 @@ _WORKING_PRINCIPLE_COPIES = (
     "plugins/project-knowledge/skills/instructions-method/references/instruction-example.md",
 )
 REQUIRED_COPIES = {
-    "adr-versions-per-decision": ("plugins/project-knowledge/skills/adr-method/SKILL.md", "docs/decision-records.md"),
+    "adr-versions-per-decision": ("plugins/project-delivery/skills/adr-method/SKILL.md", "docs/decision-records.md"),
     "working-principle-material-assumptions": _WORKING_PRINCIPLE_COPIES,
     "working-principle-sufficient-simplicity": _WORKING_PRINCIPLE_COPIES,
     "working-principle-authorized-scope": _WORKING_PRINCIPLE_COPIES,

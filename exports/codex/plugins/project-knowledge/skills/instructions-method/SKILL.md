@@ -152,7 +152,7 @@ authoritative instruction file, between `<!-- LOOP-HARNESS:BEGIN -->` and
 `<!-- LOOP-HARNESS:END -->`. The block holds only what every task needs at
 its start: the verified test, lint, type and build commands with their
 prerequisites; on a project that keeps decision records, the active ones per
-domain, by identity and title, resolved through `project-knowledge:adr-method`; the
+domain, by identity and title, supplied by the caller as resolved active decision inputs; the
 workspace convention (worktree root, branch naming); and the sentence that the
 loop's run records live under `.daodan/runs/`. Reasons stay in the records,
 procedures stay in the loaded methods, and run state never enters the block.

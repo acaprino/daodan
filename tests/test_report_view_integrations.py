@@ -35,11 +35,20 @@ CONSUMERS = {
             "skills/readme-craft/SKILL.md",
         ),
     },
+    "project-delivery": {
+        "view_owner": "report-rendering",
+        "view": "skills/report-renderer/references/project-run-view.md",
+        "reference": "references/project-run-view.md",
+        "profile": "report",
+        "hooks": ("skills/delivery-method/SKILL.md",),
+    },
     "project-lifecycle": {
-        "view": "skills/lifecycle-method/references/human-view.md",
+        "view_owner": "report-rendering",
+        "view": "skills/report-renderer/references/project-run-view.md",
+        "reference": "references/project-run-view.md",
         "profile": "report",
         "hooks": (
-            "skills/lifecycle-method/SKILL.md",
+            "skills/assess-method/SKILL.md",
             "skills/maintainer-method/references/campaign.md",
             "skills/handover-method/SKILL.md",
         ),
@@ -85,26 +94,28 @@ class ReportViewIntegrationTests(unittest.TestCase):
         registry = {path.parent.name: load_plugin(path.parent)
                     for path in (REPO_ROOT / "plugins").glob("*/plugin.toml")}
         cls.plugins = [registry[name] for name in CONSUMERS]
+        rendered = [*cls.plugins, registry["report-rendering"]]
         cls.packages, cls.catalogs = {}, {}
         adapters = REPO_ROOT / "adapters"
         for host in HOSTS:
             adapter = load_adapter(adapters, host)
             packages = {}
-            for plugin in cls.plugins:
+            for plugin in rendered:
                 package = Path(cls.temp.name) / host / plugin.name
                 render_plugin(plugin, adapter, package, adapters_root=adapters,
                               plugin_registry=registry)
                 packages[plugin.name] = package
                 cls.packages[(host, plugin.name)] = package
             cls.catalogs[host] = json.loads(render_catalog(
-                host, cls.plugins, "1.0.0", packages, layout=adapter.layout))
+                host, rendered, "1.0.0", packages, layout=adapter.layout))
 
     def body(self, host, consumer, resource):
         path = self.packages[(host, consumer)] / resource
         return without_host_binding(self, path.read_text(encoding="utf-8"), host)
 
     def view(self, host, consumer):
-        return self.body(host, consumer, CONSUMERS[consumer]["view"])
+        contract = CONSUMERS[consumer]
+        return self.body(host, contract.get("view_owner", consumer), contract["view"])
 
     def test_each_consumer_requires_the_registered_provider_on_every_host(self):
         for host in HOSTS:
@@ -142,7 +153,7 @@ class ReportViewIntegrationTests(unittest.TestCase):
                     for hook in contract["hooks"]:
                         with self.subTest(hook=hook):
                             text = normalized(self.body(host, consumer, hook))
-                            self.assertIn("references/human-view.md", text)
+                            self.assertIn(contract.get("reference", "references/human-view.md"), text)
                             self.assertIn("coordinator", text)
                             self.assertRegex(text, r"(?i)before[^.]*clos")
 

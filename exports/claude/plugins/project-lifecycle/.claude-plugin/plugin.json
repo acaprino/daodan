@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Complete AI development lifecycle: consultant handover, a guided Senior Maintainer campaign, coherence assessment, evidenced repair, implementation, verification and consolidation. Uses canonical specialist methods, exact run identities and honest coverage.",
+  "description": "Project assessment, consultant handover and guided Senior Maintainer campaigns. Composes ADR-driven delivery through project-delivery while preserving native audits, exact run identities and honest coverage.",
   "license": "MIT",
   "name": "project-lifecycle",
-  "version": "2.6.0"
+  "version": "3.0.0"
 }

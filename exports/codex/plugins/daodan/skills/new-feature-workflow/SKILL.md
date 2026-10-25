@@ -227,10 +227,10 @@ The phase graph and record-schema references ship under `contracts/new-feature.w
 
 <arguments>
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record`.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Run operation `change` for the request above
 through the phases of the lifecycle method's `references/change.md`, initializing the
 project first when it is not in the cycle. A request that turns out to be a defect or a

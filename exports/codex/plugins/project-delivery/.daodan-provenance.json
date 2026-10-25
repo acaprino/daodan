@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:4da900c0451b89c38bc12e254b31c779c6af35d867688b35a5da60bcce6813e8",
+  "harnessStrategies": {},
+  "host": "codex",
+  "overrides": [],
+  "plugin": "project-delivery",
+  "version": "1.0.0"
+}

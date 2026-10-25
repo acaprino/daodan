@@ -80,9 +80,9 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 $ARGUMENTS
 
-Load the skills `project-knowledge:adr-method` and `work-controller:work-record`.
+Load the skills `project-delivery:adr-method` and `work-controller:work-record`.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. This command
 implies yes to decision records, so it asks only about the analysis. On a project
 without `docs/adr/README.md`, run `init-index` and say that the project now keeps

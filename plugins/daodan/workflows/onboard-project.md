@@ -14,6 +14,6 @@ Load the skills `project-lifecycle:handover-method` and
 `work-controller:work-record` and prepare the consultant dossier of the project or
 area named above, or of this project. Depth is standard and no local check runs unless
 the user asks for one. Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Every write stays in the run; maintenance is never started from
 here, the dossier names the next step for the user.

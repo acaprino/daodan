@@ -35,7 +35,7 @@ ADAPTERS = REPO_ROOT / "adapters"
 MAP = REPO_ROOT / "plugins/codebase-map"
 REVIEW = REPO_ROOT / "plugins/senior-review"
 ENTRY = REPO_ROOT / "plugins/daodan"
-LOOP = tuple(REPO_ROOT / "plugins" / name for name in ("peer-review", "moe", "project-lifecycle"))
+LOOP = tuple(REPO_ROOT / "plugins" / name for name in ("peer-review", "moe", "project-delivery", "project-lifecycle"))
 FIXTURE = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
@@ -426,7 +426,7 @@ class HostRenderingTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_opencode_command_bodies_use_no_shell_template_syntax(self):
-        for plugin in ("daodan", "codebase-map", "senior-review", "peer-review", "moe", "project-lifecycle"):
+        for plugin in ("daodan", "codebase-map", "senior-review", "peer-review", "moe", "project-delivery", "project-lifecycle"):
             for path in self.package("opencode", plugin).glob("commands/*.md"):
                 self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
 

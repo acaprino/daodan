@@ -122,11 +122,11 @@ The phase graph, the isolation and join policies and the record schemas are in
 
 $ARGUMENTS
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record` and follow the lifecycle method's
 `references/brainstorm.md` with the idea above.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. When the user chooses to build it,
 continue as `/daodan:new-feature` with the brief the brainstorm wrote, so the interview
 starts from it.

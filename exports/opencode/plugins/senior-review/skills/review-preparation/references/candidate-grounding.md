@@ -134,8 +134,9 @@ Before dispatch, for every kind:
    in plans/specifications/documents produce `tool-reported` findings naming
    the failed resolution.
 3. **Ownership/decisions.** Bind `.abstraction-architect/concept-index.json`
-   when present and, when `docs/adr/README.md` exists, active records through
-   `project-knowledge:adr-method` (`resolve --paths <changed files>`). Cite and re-derive these leads before findings rely on them.
+   when present. The caller supplies resolved records (identity, version, title,
+   scope, digest); re-derive before use. With `docs/adr/README.md`, missing
+   input is a gap, never empty.
 4. **Premises.** Keep premise derivation blind to maps; supply locators without conclusions.
 
 ## 4. Evidence pack

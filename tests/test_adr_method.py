@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = REPO_ROOT / "plugins/project-knowledge/skills/adr-method/scripts/adr_tool.py"
+SCRIPT = REPO_ROOT / "plugins/project-delivery/skills/adr-method/scripts/adr_tool.py"
 
 BODY = """## Context and Problem Statement
 

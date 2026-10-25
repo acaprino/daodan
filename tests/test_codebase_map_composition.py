@@ -71,8 +71,8 @@ class CodebaseMapCompositionTests(unittest.TestCase):
             "senior-review/skills/review-method/SKILL.md",
             "senior-review/skills/review-preparation/SKILL.md",
             "senior-review/skills/review-preparation/references/team-review.md",
-            "project-lifecycle/skills/lifecycle-method/SKILL.md",
-            "project-lifecycle/skills/lifecycle-method/references/assess.md",
+            "project-lifecycle/skills/assess-method/SKILL.md",
+            "project-lifecycle/skills/assess-method/references/assess.md",
         ):
             with self.subTest(relative=relative):
                 text = self.body(relative)

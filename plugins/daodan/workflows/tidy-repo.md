@@ -18,10 +18,10 @@ project, each owner's detection:
 | filesystem garbage, tracked build output, git leftovers | `repo-hygiene:repo-hygiene`, its `references/tidy.md` |
 | dead code, orphan assets, unused dependencies | `senior-review:application-cleanup-method` |
 | redundant or obsolete tests | `testing:test-remediation-method`, mode `consolidate` |
-| output of concluded Daodan runs | `project-lifecycle:lifecycle-method`, its `references/retention.md` |
+| output of concluded Daodan runs | `project-delivery:delivery-method`, its `references/retention.md` |
 
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first.
 Show one preview, then ask once which groups to apply and whether to commit. Untracked
 removals are quarantined, never deleted; permanent deletion is a separate authorization.

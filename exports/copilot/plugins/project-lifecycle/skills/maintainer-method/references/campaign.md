@@ -1,5 +1,3 @@
-> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
-
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -103,10 +101,10 @@ Each stage belongs to the workflow that owns that job:
 1. Analyze: senior-review team-review, then project-lifecycle assess. No project
    edit.
 2. Decide: the findings and the roadmap, at a checkpoint.
-3. Correct: project-lifecycle change, for the evidenced product defects.
-4. Rationalize: project-lifecycle repair, on the assessment plan.
-5. Verify: project-lifecycle verify, on the exact final candidate.
-6. Close: project-lifecycle consolidate, then the final report.
+3. Correct: project-delivery change, for the evidenced product defects.
+4. Rationalize: project-delivery repair, on the assessment plan.
+5. Verify: project-delivery verify, on the exact final candidate.
+6. Close: project-delivery consolidate, then the final report.
 The campaign coordinates these owners sequentially. It is not another lifecycle
 operation and does not create an operation=maintain record. There is one active
 lifecycle operation at a time. Each stage opens its own run on the candidate the
@@ -116,9 +114,9 @@ never start another command.
 
 The `/daodan:run-maintenance` harness binds the workers required by these canonical methods. Before
 each stage, name its owning entry and load its installed method: senior-review's
-review-method with variant team-review for the baseline review, and lifecycle-method
-with the matching operation reference for assess, change, repair, verify and
-consolidate. Perform that operation with its own inputs, run, expected deliveries
+review-method with variant team-review for the baseline review,
+project-lifecycle:assess-method for assessment, and project-delivery:delivery-method
+for change, repair, verify and consolidate. Perform that operation with its own inputs, run, expected deliveries
 and gates. Do not copy its detector prompts or outer scheduling graph. The campaign
 entry's worker inventory permits selected methods, not a simultaneous dispatch of
 all workers. Keep the independent review and its delivery barriers intact.
@@ -296,7 +294,7 @@ Reviews
   candidate, including uncommitted and untracked inputs. Applicable React,
   TypeScript and platform specialists join the same isolated review, delivery
   ledger, verification panel and report.
-- During that preparation, use skill-catalog's canonical selection against the
+- During that preparation, load skill `skill-catalog:skill-catalog` for selection against the
   actual available host/project skills. Derive knowledge scopes from affected
   package and behavior boundaries, exact paths and evidence of languages,
   frameworks and domain concerns, including embedded queries where relevant. An
@@ -486,7 +484,7 @@ question.
   its parent.
 
 STAGE 3: CORRECT
-- Run project-lifecycle change for the product defects the review evidenced, the
+- Run project-delivery change for the product defects the review evidenced, the
   severe ones and broken entry paths before any optional cleanup.
 - Open that run with a corrections-only objective and scope: the defects approved
   at checkpoint 2, and the focus and depth those corrections need. The rest of this
@@ -496,7 +494,7 @@ STAGE 3: CORRECT
   mode, authored through testing's canonical test-writer.
 
 STAGE 4: RATIONALIZE
-Run project-lifecycle repair on the assessment plan, by its exact run and plan ID,
+Run project-delivery repair on the assessment plan, by its exact run and plan ID,
 in a new run on the corrected candidate. Each action runs through its canonical
 owner. An action is stale when Stage 3 changed one of its target paths or one of the
 paths its evidence cites: reassess it through its auditor, never apply it stale,
@@ -564,18 +562,18 @@ STAGE 5: VERIFY
 - When I accepted the closing review at checkpoint 2, run it first, in a fresh
   session. Otherwise name every corrected finding whose lens the verify review
   lacks.
-- Run project-lifecycle verify in a new run on the exact final candidate. Review
+- Run project-delivery verify in a new run on the exact final candidate. Review
   the full scoped candidate, including uncommitted and untracked inputs. Reuse a
   delivery only when it is bound to this snapshot.
 - Resolve evidenced correctness defects and unmet requirements in a new
-  project-lifecycle change run, then refresh the candidate binding and affected
+  project-delivery change run, then refresh the candidate binding and affected
   verification in a new verify run. A severe one is a stop condition first.
 - Exercise affected product paths when the required environment is available.
 - Recheck affected guides, README and instruction consumers through
   project-knowledge.
 
 STAGE 6: CLOSE
-- Run project-lifecycle consolidate once, over the earlier lifecycle runs of this
+- Run project-delivery consolidate once, over the earlier lifecycle runs of this
   campaign. Its helper works on one run's owned output at a time, and the review's
   and the Codebase Map's own output stays outside it. Consolidate verified conclusions,
   conditions and evidence before disposing of any owned experimental output.
@@ -608,7 +606,7 @@ FINAL BINDING AND HANDOFF
   the campaign request and chain alongside its native reports. The campaign report
   is an index of validated stage results, not another project-result envelope and
   not a claim that a compiler executes workflows.
-- For requested HTML or useful navigation/comparison, the coordinator reads
-  `${PLUGIN_ROOT}/skills/lifecycle-method/references/human-view.md` and
+- For requested HTML or useful navigation/comparison, the coordinator loads
+  load skill `report-rendering:report-renderer`, read `references/project-run-view.md` and
   renders campaign-final.md before closing that active run. Earlier stage records
   remain historical evidence, including in a stopped or dry-run campaign.

@@ -34,7 +34,7 @@ schema = "daodan/project-result/v1"
 required = ["schema", "run_id", "work_revision", "scope", "snapshot", "deliveries", "checks", "outputs", "limitations", "complete"]
 
 [loop]
-sections = ["workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment"]
+sections = ["workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment", "integration"]
 
 [loop.workspace]
 required = ["mode", "branch", "base_sha"]
@@ -55,6 +55,9 @@ task_required = ["id", "status", "write_set", "oracle", "verification"]
 max_write_files = 4
 max_write_files_with_exception = 6
 sealed_requires_task_state = "committed"
+
+[loop.integration]
+required = ["merged_sha", "realigned", "candidate_review"]
 
 [loop.rulings]
 required = ["id", "task", "sha", "decision", "reason", "cost_if_wrong", "evidence"]

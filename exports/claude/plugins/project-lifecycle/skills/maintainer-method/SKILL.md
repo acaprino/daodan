@@ -3,7 +3,7 @@ name: maintainer-method
 description: >
   Coordinate the complete Senior Maintainer rationalization campaign.
   TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance.
-  DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use lifecycle-method).
+  DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use project-delivery:delivery-method).
 ---
 
 <daodan_host_binding host="claude">
@@ -91,7 +91,7 @@ project's README or replace a specialist's method with that document.
 
 ## Resolve the request
 
-Load work-controller:work-record. Resolve the arguments and the user's
+Load skill `work-controller:work-record`. Resolve the arguments and the user's
 existing instructions into these settings:
 
 | Setting | Default | Meaning |
@@ -172,12 +172,12 @@ in the campaign or replace a missing role with another worker.
 
 | Stage | Method to perform in the coordinator context |
 |---|---|
-| Baseline correctness and static context | senior-review:review-method, variant team-review; its method owns the codebase-map analyze step |
-| Coherence and roadmap | project-lifecycle:lifecycle-method, operation assess |
-| Evidenced product corrections | project-lifecycle:lifecycle-method, operation change |
-| Approved rationalization | project-lifecycle:lifecycle-method, operation repair |
-| Exact final candidate | project-lifecycle:lifecycle-method, operation verify |
-| Conclusions and retained evidence | project-lifecycle:lifecycle-method, operation consolidate |
+| Baseline correctness and static context | Load skill `senior-review:review-method`, variant team-review; its method owns the codebase-map analyze step |
+| Coherence and roadmap | Load skill `project-lifecycle:assess-method` |
+| Evidenced product corrections | Load skill `project-delivery:delivery-method`, operation change |
+| Approved rationalization | Load skill `project-delivery:delivery-method`, operation repair |
+| Exact final candidate | Load skill `project-delivery:delivery-method`, operation verify |
+| Conclusions and retained evidence | Load skill `project-delivery:delivery-method`, operation consolidate |
 
 The lifecycle method's operation references and canonical domain methods retain
 all their gates. Perform one lifecycle operation, close or interrupt it, then
@@ -186,7 +186,7 @@ inside a lifecycle operation. When entering a
 native owner entry requires a user transition, record it and provide the exact
 entry/resume request. Do not claim the compiler's TOML invoke can execute it.
 
-Use clean-code:readability-method with clean-code:clean-code-agent only for an
+Load skill `clean-code:readability-method` with clean-code:clean-code-agent only for an
 approved readability batch at a method boundary and with behavior preserved.
 If the active owner's inventory cannot dispatch it, finish that operation first
 and offer the standalone clean-code pass as the campaign reference specifies.

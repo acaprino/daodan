@@ -28,18 +28,19 @@ used by composed methods. Domain specialists can also be used independently.
 ## Installation and selection
 
 The three marketplace hosts register the repository root and install a selected
-plugin. `project-lifecycle` is the coordinated development entry; replace it with
-another plugin ID for an independent tool.
+plugin. `project-delivery` is the coordinated development entry; replace it with
+`project-lifecycle` for assessment and maintenance, or another plugin ID for an
+independent tool.
 
 ```bash
 claude plugin marketplace add acaprino/daodan
-claude plugin install project-lifecycle@daodan
+claude plugin install project-delivery@daodan
 
 copilot plugin marketplace add acaprino/daodan
-copilot plugin install project-lifecycle@daodan
+copilot plugin install project-delivery@daodan
 
 codex plugin marketplace add acaprino/daodan
-codex plugin add project-lifecycle@daodan
+codex plugin add project-delivery@daodan
 ```
 
 The generated marketplace catalogs contain required dependency declarations and
@@ -91,7 +92,7 @@ configuration:
 {
   "package": "github:acaprino/daodan#v<metadata.version>::path:exports/opencode",
   "options": {
-    "plugins": ["project-lifecycle"]
+    "plugins": ["project-delivery"]
   }
 }
 ```
@@ -270,6 +271,27 @@ change the public upstream compatibility contract.
 The Copilot, Codex and Pi bindings remain registration instructions, not a claim
 that an installed plugin automatically starts its server. The OpenCode binding
 is adapted because registration comes from the loader.
+
+### Standalone Codebase Map consumption
+
+Install `codebase-map@daodan` instead of `daodan@daodan` on a marketplace host,
+or select `codebase-map` in the Pi or OpenCode package options. Its mandatory
+dependency closure, including `report-rendering`, still applies; the `daodan`
+entry plugin and its workflows are not required for read-only consumption.
+
+The host must expose `codebase-map:map-method`. Its discovery description covers
+ordinary project work, but does not prove unconditional automatic invocation on
+every host or request. Register and connect MCP for the `codebase_map_*` tools.
+Without MCP, an LLM can inspect `.codebase-map/runs.json`, published state, run
+Markdown and artifacts through ordinary file and search tools.
+
+Loading the skill starts no analysis. Create the first map through an explicitly
+requested analyze entry, or `/daodan:map-code` when the entry plugin is installed.
+Standalone consumption never bootstraps, updates, deepens, migrates or publishes
+one implicitly. Analyze and composed workflows share the same navigation unit;
+current source remains authoritative, read-only consumers fall back with a
+declared evidence gap, and producer recovery and artifact-only input boundaries
+remain with their owning methods.
 
 Building Daodan needs Python 3.11 or later and uses the standard library. The
 Codebase Map helper suite declares a harder floor of 3.12, because the Python

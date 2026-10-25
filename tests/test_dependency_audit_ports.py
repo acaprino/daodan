@@ -153,7 +153,7 @@ class DependencyAuditPortTests(unittest.TestCase):
         """
         kernel = normalized(ENTRY / f"workflows/{ENTRY_WORKFLOW}.md")
         kernel_body = kernel[kernel.index("\n---\n", 4) + 5:].lstrip("\n")
-        self.assertIn("project-lifecycle:lifecycle-method", kernel_body)
+        self.assertIn("project-lifecycle:assess-method", kernel_body)
         self.assertIn("`references/assess.md`", kernel_body)
         for host, entrypoint in WORKFLOW_ENTRYPOINT.items():
             with self.subTest(host=host):
@@ -174,7 +174,7 @@ class DependencyAuditPortTests(unittest.TestCase):
                 ).replace("$ARGUMENTS", layout["arguments_reference"])
                 self.assertEqual(method, canonical_markdown(expected))
                 assess = normalized(self.rendered[(host, "project-lifecycle")]
-                                    / "skills/lifecycle-method/references/assess.md")
+                                    / "skills/assess-method/references/assess.md")
                 self.assertIn("`dependency-audit:dependency-audit` when manifests exist", assess)
         self.assertIn("project-lifecycle", load_plugin(ENTRY).required_dependencies)
         self.assertIn("dependency-audit", load_plugin(REPO_ROOT / "plugins/project-lifecycle").required_dependencies)

@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGINS = ROOT / "plugins"
-LIFECYCLE = PLUGINS / "project-lifecycle/skills/lifecycle-method/references"
+LIFECYCLE = PLUGINS / "project-delivery/skills/delivery-method/references"
 PAGE = ROOT / "docs/plugins/codebase-map.md"
 COLUMNS = ("Command", "Input used", "Output", "Freshness", "Recovery", "Limits")
 COMMANDS = {"new-feature", "fix-bug", "refactor-code", "continue-task", "finish-task",

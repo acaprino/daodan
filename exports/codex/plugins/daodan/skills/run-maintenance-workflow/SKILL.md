@@ -232,7 +232,7 @@ Load the skills `project-lifecycle:maintainer-method` and
 `work-controller:work-record` and coordinate the campaign on the area named above
 or the whole project: separate lifecycle runs and explicit stage handoffs, guided
 checkpoints, deep depth. Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Every stage is a preview until the user authorizes its edits at
 the step that needs them. Report complete only from validated stage results and a final
 verification against the current project.

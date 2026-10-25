@@ -7,7 +7,7 @@ the Daodan task cycle reads it at every step where they matter.
 
 This guide explains what a record contains, how it moves from proposal to
 acceptance, and where the cycle uses it. The method behind it is
-`project-knowledge:adr-method`; its helper, `adr_tool.py`, writes the records
+`project-delivery:adr-method`; its helper, `adr_tool.py`, writes the records
 and checks them.
 
 ## A project's choice

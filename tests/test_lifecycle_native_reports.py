@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("native_reports", ROOT / "plugins/project-lifecycle/skills/lifecycle-method/scripts/native_reports.py")
+spec = importlib.util.spec_from_file_location("native_reports", ROOT / "plugins/project-lifecycle/skills/assess-method/scripts/native_reports.py")
 native = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(native)
 

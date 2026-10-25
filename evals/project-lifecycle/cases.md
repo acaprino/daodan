@@ -63,7 +63,7 @@ checks, with operational state outside durable instructions.
 
 ## unified-stack-review
 
-Prompt: verify a dirty React/TypeScript desktop candidate through project-lifecycle,
+Prompt: verify a dirty React/TypeScript desktop candidate through adr-project,
 then review the same target through each senior-review variant. Provide unrelated
 React dependencies at the monorepo root and a separate Python-only package. Fail
 the selected type-safety worker. Repeat team review with --no-context, --fast, an

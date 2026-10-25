@@ -68,6 +68,7 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
         # their methods stay in project-lifecycle.
         cls.plugin = cls.registry["daodan"]
         cls.lifecycle = cls.registry["project-lifecycle"]
+        cls.adr_project = cls.registry["project-delivery"]
         cls.workflows = {workflow.name: workflow for workflow in cls.plugin.workflows}
         cls.commands = ("run-maintenance", "onboard-project")
         # Fail here when an entry is absent, rather than silently testing a subset.
@@ -76,7 +77,7 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
         }
         owners = {reference.partition("/")[0] for roles in cls.references.values()
                   for reference in roles if reference.partition("/")[0] in cls.registry}
-        cls.rendered_plugins = [cls.registry[name] for name in sorted(owners | {cls.plugin.name, cls.lifecycle.name})]
+        cls.rendered_plugins = [cls.registry[name] for name in sorted(owners | {cls.plugin.name, cls.lifecycle.name, cls.adr_project.name})]
         cls.packages = {}
         cls.catalogs = {}
         for host in HOSTS:
@@ -100,9 +101,10 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
 
     def test_both_entries_and_their_canonical_methods_are_registered(self):
         self.assertTrue(set(self.commands).issubset(self.plugin.components.workflows))
-        self.assertTrue({"maintainer-method", "handover-method"}.issubset(
+        self.assertTrue({"assess-method", "maintainer-method", "handover-method"}.issubset(
             self.lifecycle.components.skills
         ))
+        self.assertTrue({"delivery-method", "adr-method"}.issubset(self.adr_project.components.skills))
         methods = {"run-maintenance": "maintainer-method", "onboard-project": "handover-method"}
         for host in HOSTS:
             for name, skill in methods.items():

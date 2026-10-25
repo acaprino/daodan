@@ -7,10 +7,10 @@ description: >
 
 # Sync with upstream
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record`.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Open a run with operation `consolidate` and follow
 the lifecycle method's `references/sync.md`. A diverged branch or an uncommitted edit in
 the incoming paths stops with the options; the choice is the user's.

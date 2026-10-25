@@ -125,8 +125,11 @@ $ARGUMENTS
 
 Load `work-controller:work-record`. Before anything is written, run
 `run_state.py first-use --project ROOT`; on `first_use: true`, load
-`project-lifecycle:lifecycle-method` and follow its `references/first-use.md`
+`project-delivery:delivery-method` and follow its `references/first-use.md`
 first.
+
+When `docs/adr/README.md` exists, load `project-delivery:adr-method`, resolve the
+changed paths and supply the active records to review preparation.
 
 Load the skill `senior-review:review-method` with shape `light` and follow its
 `references/light.md` on the target above. The roster is the helper's; when it advises a

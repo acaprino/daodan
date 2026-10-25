@@ -104,6 +104,7 @@
       },
       "dependencies": [
         "abstraction-architect",
+        "project-delivery",
         "clean-code",
         "codebase-map",
         "dependency-audit",
@@ -128,7 +129,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/copilot/plugins/daodan",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "author": {
@@ -244,6 +245,39 @@
       "version": "2.3.0"
     },
     {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "model-routing",
+        "work-controller",
+        "project-knowledge",
+        "senior-review",
+        "testing",
+        "abstraction-architect",
+        "codebase-map",
+        "repo-hygiene",
+        "clean-code",
+        "typescript-development",
+        "python-development",
+        "skill-catalog",
+        "peer-review",
+        "moe",
+        "report-rendering"
+      ],
+      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Deadly Brain job execution, verified commits, reconciliation and authorized merge.",
+      "license": "MIT",
+      "name": "project-delivery",
+      "skills": [
+        "./skills/adr-method",
+        "./skills/delivery-method",
+        "./skills/frd-method",
+        "./skills/project-bootstrap"
+      ],
+      "source": "./exports/copilot/plugins/project-delivery",
+      "version": "1.0.0"
+    },
+    {
       "agents": [
         "./agents/codebase-explorer.agent.md",
         "./agents/doc-humanizer.agent.md",
@@ -270,20 +304,19 @@
       "license": "MIT",
       "name": "project-knowledge",
       "skills": [
-        "./skills/adr-method",
         "./skills/instructions-method",
         "./skills/project-knowledge",
         "./skills/readme-craft"
       ],
       "source": "./exports/copilot/plugins/project-knowledge",
-      "version": "2.3.1"
+      "version": "3.0.0"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "model-routing",
+        "project-delivery",
         "work-controller",
         "project-knowledge",
         "senior-review",
@@ -299,19 +332,18 @@
         "dependency-audit",
         "skill-catalog",
         "peer-review",
-        "moe",
         "report-rendering"
       ],
-      "description": "Complete AI development lifecycle: consultant handover, a guided Senior Maintainer campaign, coherence assessment, evidenced repair, implementation, verification and consolidation. Uses canonical specialist methods, exact run identities and honest coverage.",
+      "description": "Project assessment, consultant handover and guided Senior Maintainer campaigns. Composes ADR-driven delivery through project-delivery while preserving native audits, exact run identities and honest coverage.",
       "license": "MIT",
       "name": "project-lifecycle",
       "skills": [
+        "./skills/assess-method",
         "./skills/handover-method",
-        "./skills/lifecycle-method",
         "./skills/maintainer-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "2.6.0"
+      "version": "3.0.0"
     },
     {
       "agents": [
@@ -395,7 +427,7 @@
         "./skills/report-renderer"
       ],
       "source": "./exports/copilot/plugins/report-rendering",
-      "version": "1.0.2"
+      "version": "1.1.0"
     },
     {
       "agents": [
@@ -480,7 +512,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/copilot/plugins/senior-review",
-      "version": "16.6.4"
+      "version": "16.7.0"
     },
     {
       "author": {
@@ -569,7 +601,7 @@
         "./skills/work-record"
       ],
       "source": "./exports/copilot/plugins/work-controller",
-      "version": "2.2.0"
+      "version": "3.0.0"
     }
   ]
 }

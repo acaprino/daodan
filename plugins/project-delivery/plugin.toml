@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "project-delivery"
+version = "1.0.0"
+description = "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Deadly Brain job execution, verified commits, reconciliation and authorized merge."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute", "contexts.isolate", "roles.dispatch"]
+optional = ["execution.parallel"]
+
+[dependencies]
+required = ["model-routing", "work-controller", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-map", "repo-hygiene", "clean-code", "typescript-development", "python-development", "skill-catalog", "peer-review", "moe", "report-rendering"]
+
+[components]
+skills = ["delivery-method", "adr-method", "frd-method", "project-bootstrap"]
+roles = []
+workflows = []
+policies = ["run-write-confinement"]

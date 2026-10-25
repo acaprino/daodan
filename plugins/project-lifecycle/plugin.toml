@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "project-lifecycle"
-version = "2.6.0"
-description = "Complete AI development lifecycle: consultant handover, a guided Senior Maintainer campaign, coherence assessment, evidenced repair, implementation, verification and consolidation. Uses canonical specialist methods, exact run identities and honest coverage."
+version = "3.0.0"
+description = "Project assessment, consultant handover and guided Senior Maintainer campaigns. Composes ADR-driven delivery through project-delivery while preserving native audits, exact run identities and honest coverage."
 license = "MIT"
 
 [capabilities]
@@ -9,10 +9,10 @@ required = ["repository.read", "repository.write", "shell.execute", "contexts.is
 optional = ["execution.parallel"]
 
 [dependencies]
-required = ["model-routing", "work-controller", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-map", "repo-hygiene", "clean-code", "react-development", "typescript-development", "platform-engineering", "python-development", "dependency-audit", "skill-catalog", "peer-review", "moe", "report-rendering"]
+required = ["project-delivery", "work-controller", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-map", "repo-hygiene", "clean-code", "react-development", "typescript-development", "platform-engineering", "python-development", "dependency-audit", "skill-catalog", "peer-review", "report-rendering"]
 
 [components]
-skills = ["lifecycle-method", "maintainer-method", "handover-method"]
+skills = ["assess-method", "maintainer-method", "handover-method"]
 roles = []
 workflows = []
 policies = ["run-write-confinement"]

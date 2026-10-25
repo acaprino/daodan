@@ -404,7 +404,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
     def test_wrappers_keep_the_writes_a_worker_is_assigned_on_every_host(self):
         """A wrapper must not forbid the edits a mutating worker was authorized to make.
 
-        project-lifecycle dispatches testing:test-writer and the inline isolated-worker,
+        project-delivery dispatches testing:test-writer and the inline isolated-worker,
         both of which write files. The wrappers used to allow workers only intermediate
         reports, which contradicted those roles on all five hosts. Since 38.0.0 the
         lifecycle change and repair wrappers are daodan new-feature and fix-bug.
@@ -533,7 +533,9 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         core = manifest("senior-review")
         extras = {"react-development", "typescript-development", "platform-engineering"}
         self.assertTrue(extras.issubset(core["dependencies"]["required"]))
-        self.assertTrue(extras.issubset(manifest("project-lifecycle")["dependencies"]["required"]))
+        self.assertFalse({"react-development", "platform-engineering"} & set(manifest("project-delivery")["dependencies"]["required"]))
+        self.assertNotIn("project-delivery", manifest("project-knowledge")["dependencies"]["required"])
+        self.assertNotIn("project-delivery", manifest("senior-review")["dependencies"]["required"])
         self.assertFalse((ROOT / "plugins/review-plus").exists())
         for host in HOSTS:
             with self.subTest(host=host):

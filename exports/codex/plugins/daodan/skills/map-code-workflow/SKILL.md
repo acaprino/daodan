@@ -137,7 +137,7 @@ The phase graph and record-schema references ship under `contracts/map-code.work
 Load the skill `codebase-map:map-method`, and `work-controller:work-record` for
 the first-use probe.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. As
 this command is an analysis, the first use asks the depth and not whether to analyze.
 Without a complete analysis of the project, or

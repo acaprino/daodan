@@ -219,10 +219,10 @@ The phase graph, the isolation and join policies and the record schemas are in
 
 $ARGUMENTS
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record`.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Run operation `repair` for the defect above as the
 lifecycle method's `references/repair.md` directs: without a demonstrated cause,
 `senior-review:investigation-method` runs first and its reproduction test becomes the

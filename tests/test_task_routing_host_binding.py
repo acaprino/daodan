@@ -30,8 +30,8 @@ class RoutingHostTests(unittest.TestCase):
     def test_preflight_reaches_the_owner_method_on_every_host(self):
         for host in operational.HOSTS:
             with self.subTest(host=host):
-                package = self.render_in_memory("project-lifecycle", host)
-                preflight = package["skills/lifecycle-method/references/preflight.md"]
+                package = self.render_in_memory("project-delivery", host)
+                preflight = package["skills/delivery-method/references/preflight.md"]
                 self.assertIn("task-routing.md", preflight)
                 self.assertIn("environment.models", preflight)
                 self.assertIn("confirmed", preflight)

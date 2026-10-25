@@ -141,8 +141,9 @@ The phase graph and record-schema references ship under `contracts/write-docs.wo
 
 <arguments>
 
-Route the request above, then load the method it needs together with
-`work-controller:work-record`:
+Load `project-delivery:delivery-method` and follow `references/document.md` to
+coordinate evidence, scope, review and delivery. Route the request above to the
+specialist method it needs together with `work-controller:work-record`:
 
 | Request | Method |
 |---|---|
@@ -151,7 +152,11 @@ Route the request above, then load the method it needs together with
 | the README | `project-knowledge:readme-craft` |
 | instructions, CLAUDE.md, AGENTS.md | `project-knowledge:instructions-method` |
 
+When instructions must list active records, load `project-delivery:adr-method`,
+resolve them for the relevant domains and supply their identities, versions,
+titles, scopes and digests to `project-knowledge:instructions-method`.
+
 Before anything is written, run `run_state.py first-use --project ROOT`; on
-`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first.
 Audit first; writing into the repository is an authorization asked when needed.

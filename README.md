@@ -23,6 +23,25 @@ owner confirms a lead by reading source before acting on it. The map stays
 static: runtime behavior counts only when the project's own tests or the user
 supply it.
 
+## Use the map with or without commands
+
+An existing map is a reusable navigation layer, not only the output of
+`/daodan:map-code`. During ordinary project questions, debugging, feature work,
+refactoring, reviews and documentation, an LLM can load `codebase-map:map-method`
+without the `daodan` entry plugin. It finds completed runs, locates symbols and
+documentation through outlines, graphs, cards and artifacts, and inspects edit
+impact before broad source exploration. Analyze and composed workflows use the
+same navigation contract.
+
+Consumption is read-only: it never implicitly creates, updates, deepens, migrates
+or publishes an analysis. Verify material behavior against current source. If no
+usable map exists or the relevant evidence is stale, disclose the gap and continue
+with ordinary repository exploration. Loading the skill starts no analysis; the
+first map requires an explicitly requested analysis, or `/daodan:map-code` when
+the entry plugin is installed. Host activation and MCP registration are covered
+in the [host reference](docs/hosts.md#standalone-codebase-map-consumption), and
+the detailed contract in [shared and standalone model consumption](docs/plugins/codebase-map.md#shared-and-standalone-model-consumption).
+
 Its job is to keep behavior, code, tests, instructions, documentation and artifacts
 in agreement. It helps recover fragmented projects and avoid adding another layer
 of duplication, dead code, misleading tests or forgotten experimental output.
@@ -97,7 +116,7 @@ with a line naming the task and wave. It stops only for your answers, the plan
 approval and the merge authorization. How many reviewers each review gets is
 computed by a script from the diff and the map, never chosen by the model. The
 cycle is described phase by phase in
-[project-lifecycle](docs/plugins/project-lifecycle.md#the-task-cycle).
+[project-delivery](docs/plugins/project-delivery.md#the-task-cycle).
 
 Run records live in `.daodan/runs/<id>/` of the main checkout, with an agenda of
 open tasks beside them. A task belongs to its branch and resumes from any session;
@@ -124,7 +143,7 @@ one of them is disabled. External dependencies must also be available on the hos
 one of them is `text-humanizer@shinatama`, so register `acaprino/shinatama` as a
 marketplace too (see the [host reference](docs/hosts.md)).
 
-The lifecycle owns its task cycle and declares no upstream development method:
+The project-delivery plugin owns its task cycle and declares no upstream development method:
 its interview, plan and execution are shaped by the Codebase Map, the decision
 records under `docs/adr/` when the project keeps them, and the protocol's wave rules. Testing uses
 mattpocock-skills@mattpocock and developer-essentials@claude-code-workflows.
@@ -164,7 +183,8 @@ commands, paths, installation requirements and runtime limits on each host.
 |---|---|
 | [daodan](docs/plugins/daodan.md) | The commands: one per intention, each an entry into its owner's method |
 | [codebase-map](docs/plugins/codebase-map.md) | The core: the static Meta-Code map of structure, behavior and interconnections that the other owners read |
-| [project-lifecycle](docs/plugins/project-lifecycle.md) | Complete project work and coordination |
+| [project-delivery](docs/plugins/project-delivery.md) | Analysis, ADR/FRD, specifications, adversarial plans, Deadly Brain execution, verified commits and merge |
+| [project-lifecycle](docs/plugins/project-lifecycle.md) | Assessment, handover and Senior Maintainer coordination |
 | [work-controller](docs/plugins/work-controller.md) | Run identity, snapshots, state, verification and recovery |
 | [project-knowledge](docs/plugins/project-knowledge.md) | Durable instructions, guides, documentation and README |
 | [senior-review](docs/plugins/senior-review.md) | Unified correctness review, automatic stack specialists and application subtraction |
@@ -173,9 +193,9 @@ commands, paths, installation requirements and runtime limits on each host.
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
 
-Knowledge writes instructions, guides, the README and decision records. It
-distinguishes approved intent from observed implementation and updates existing
-documents first.
+Knowledge writes instructions, guides and the README. Project Delivery owns decision
+and requirement records plus delivery coordination. Each distinguishes approved intent from
+observed implementation and updates existing documents first.
 Operational state never belongs in AGENTS.md or CLAUDE.md.
 
 A failed test can expose a product bug, wrong oracle, environment problem or

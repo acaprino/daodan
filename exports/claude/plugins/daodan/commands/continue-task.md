@@ -219,7 +219,7 @@ The phase graph, the isolation and join policies and the record schemas are in
 
 $ARGUMENTS
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record` and follow the lifecycle method's
 `references/continue.md`. The text above, when given, answers the pending questions in
 order. Stop only for the user's answers, the plan approval and the merge authorization;

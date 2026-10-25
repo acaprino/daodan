@@ -1,5 +1,6 @@
 """Behavioral tests of persisted work, rather than prompt wording."""
 
+import copy
 import json
 import contextlib
 import hashlib
@@ -451,7 +452,17 @@ class LoopRecordTests(ProtocolCase):
                 "verification": {"command": "pytest -q"}, **extra}
 
     def wave(self, identity, *tasks, **extra):
-        return {"id": identity, "status": "pending", "tasks": list(tasks), **extra}
+        wave = {"id": identity, "status": "pending", "tasks": list(tasks), **extra}
+        if any(task.get("status") in {"running", "green", "committed"} for task in tasks) and tasks[0].get("candidate"):
+            candidate = tasks[0]["candidate"]
+            if "plan_candidate" not in extra:
+                wave["plan_candidate"] = candidate
+            if "plan_review" not in extra:
+                wave["plan_review"] = {"id": "R0", "verdict": "PASS",
+                                       "snapshot": candidate["digest"], "head": candidate["head"]}
+        if isinstance(wave.get("plan_review"), dict) and wave.get("plan_candidate"):
+            wave["plan_review"].setdefault("plan_sha256", self.runtime["plan_fingerprint"](wave))
+        return wave
 
     def check_draft(self, draft, ok=True):
         """Record a draft in a run of its own: the write validates it, and a refusal writes nothing."""
@@ -512,12 +523,356 @@ class LoopRecordTests(ProtocolCase):
         self.check_draft({"adr": {"active": ["ADR-0006 v2"], "proposed": "ADR-0007"}})
         self.assertIn("ADR identifiers", self.check_draft({"adr": {"active": ["ADR-0006 v0"]}}, ok=False).stderr)
 
-    def test_sealed_wave_requires_committed_tasks(self):
+    def review(self, candidate, identity="R1", stage="pre-commit-a"):
+        job = {"id": f"{identity}-job", "role": "senior-review:code-auditor",
+               "specialist_ids": ["general"], "scope_id": "candidate", "input_mode": "discovery",
+               "body_sha256": "b" * 64, "candidate": candidate, "output_path": f"{identity}-report.md"}
+        return {"id": identity, "stage": stage, "schema": "daodan/review-roster/v1",
+                "shape": "light", "kind": "changeset", "tier": "light",
+                "roster": ["senior-review:code-auditor"], "reasons": ["step gate"],
+                "verification": "critical-high", "grounding": {"candidate": candidate},
+                "required_specialists": [{"specialist_id": "general", "scope_id": "candidate",
+                                          "evidence": ["app.py"]}], "jobs": [job]}
+
+    def review_delivery(self, review, run_id, write=True):
+        directory = self.project / ".daodan/runs" / run_id
+        job = review["jobs"][0]
+        if write:
+            (directory / job["output_path"]).write_text("PASS: no blocking findings.\n", encoding="utf-8")
+        return {f"{review['id']}-delivery": {
+            "status": "delivered", "role": job["role"], "review": review["id"], "job_id": job["id"],
+            "output": job["output_path"], "scope_id": job["scope_id"], "body_sha256": job["body_sha256"],
+            "candidate": job["candidate"], "specialist_ids": job["specialist_ids"],
+            "member_results": [{"specialist_id": "general", "status": "delivered", "coverage": "complete",
+                                "findings": [], "gaps": []}], "findings": []}}
+
+    def use_review(self, candidate):
+        plan = self.review(candidate, "R0", "plan")
+        plan["kind"] = "plan"
+        review = self.review(candidate)
+        self.payload["reviews"] = [plan, review]
+        for item in (plan, review):
+            delivery = self.review_delivery(item, "test-run", write=False)
+            for entry in delivery.values():
+                entry["status"] = "pending"
+            self.payload.setdefault("deliveries", {}).update(delivery)
+        self._deliver_on_init = [plan, review]
+        self._plan = plan
+
+    def init(self, extra=()):
+        if hasattr(self, "_plan"):
+            for wave in self.payload.get("waves", []):
+                wave["plan_candidate"] = self._plan["grounding"]["candidate"]
+                wave["plan_review"] = {"id": "R0", "verdict": "PASS",
+                                       "snapshot": self._plan["grounding"]["candidate"]["digest"],
+                                       "head": self._plan["grounding"]["candidate"]["head"]}
+                fingerprint = self.runtime["plan_fingerprint"](wave)
+                wave["plan_review"]["plan_sha256"] = fingerprint
+                self._plan["grounding"]["plan_sha256"] = fingerprint
+            del self._plan
+        record = super().init(extra)
+        for review in getattr(self, "_deliver_on_init", []):
+            delivery = self.review_delivery(review, "test-run")
+            record = self.invoke("update", {"deliveries": delivery},
+                                 ["--expected-revision", str(record["revision"])])
+        self._deliver_on_init = []
+        return record
+
+    def committed_task(self, candidate, commit_sha="c" * 40):
+        task = self.task("a", "app.py")
+        task.update({"status": "committed", "candidate": candidate, "commit_sha": commit_sha,
+                     "verification_receipt": {"status": "passed", "snapshot": candidate["digest"],
+                                              "head": candidate["head"], "command": "pytest -q"},
+                     "pre_commit_review": {"id": "R1", "verdict": "PASS",
+                                           "snapshot": candidate["digest"], "head": candidate["head"]}})
+        return task
+
+    def sealed_wave(self, candidate):
+        task = self.committed_task(candidate)
+        wave = self.wave("w1", task, status="sealed", candidate=candidate,
+                         plan_candidate=candidate,
+                         plan_review={"id": "R0", "verdict": "PASS",
+                                      "snapshot": candidate["digest"], "head": candidate["head"]},
+                         wave_review={"id": "R2", "verdict": "PASS",
+                                      "snapshot": candidate["digest"], "head": candidate["head"]})
+        plan = self.review(candidate, "R0", "plan")
+        plan["kind"] = "plan"
+        plan["grounding"]["plan_sha256"] = self.runtime["plan_fingerprint"](wave)
+        reviews = [plan, self.review(candidate), self.review(candidate, "R2", "wave-w1")]
+        return wave, reviews
+
+    def test_sealed_wave_requires_committed_tasks_and_their_precommit_evidence(self):
         pending = self.wave("w1", self.task("a", "src/a.py"), status="sealed")
         self.assertIn("cannot be sealed", self.check_draft({"waves": [pending]}, ok=False).stderr)
-        committed = self.task("a", "src/a.py")
-        committed["status"] = "committed"
-        self.check_draft({"waves": [self.wave("w1", committed, status="sealed")]})
+        bare = self.task("a", "app.py", status="committed")
+        self.assertIn("candidate", self.check_draft({"waves": [self.wave("w1", bare, status="sealed")]}, ok=False).stderr)
+        candidate = {"digest": "0" * 64, "head": "base"}
+        wave, reviews = self.sealed_wave(candidate)
+        record = self.check_draft({"reviews": reviews,
+                                   "waves": [self.wave("w1", self.task("a", "app.py"))]})
+        deliveries = {}
+        for review in reviews:
+            deliveries.update(self.review_delivery(review, record["run_id"]))
+        updated = self.runtime["merge"](record, {"deliveries": deliveries, "waves": [wave]})
+        self.runtime["validate_record"](updated, self.project, Path(record["output_root"]))
+        refusal = self.invoke("init", {**self.payload, "reviews": reviews, "deliveries": deliveries,
+                                       "waves": [wave]}, ["--run-id", "presealed"], ok=False)
+        self.assertIn("only pending work", refusal.stderr)
+        unreviewed, _ = self.sealed_wave(candidate)
+        del unreviewed["wave_review"]
+        invalid = self.runtime["merge"](updated, {"waves": [unreviewed]})
+        with self.assertRaisesRegex(self.runtime["ProtocolError"], "wave review"):
+            self.runtime["validate_record"](invalid, self.project, Path(record["output_root"]))
+
+    def test_commit_requires_verification_and_pass_review_on_the_same_candidate(self):
+        candidate = {"digest": "0" * 64, "head": "base"}
+        task = self.committed_task(candidate)
+        task["verification_receipt"]["status"] = "failed"
+        self.assertIn("passing verification", self.check_draft(
+            {"reviews": [self.review(candidate)], "waves": [self.wave("w1", task)]}, ok=False).stderr)
+        task = self.committed_task(candidate)
+        task["pre_commit_review"]["verdict"] = "BLOCK"
+        self.assertIn("pre-commit review", self.check_draft(
+            {"reviews": [self.review(candidate)], "waves": [self.wave("w1", task)]}, ok=False).stderr)
+        task = self.committed_task(candidate)
+        task["pre_commit_review"]["snapshot"] = "1" * 64
+        self.assertIn("pre-commit review", self.check_draft(
+            {"reviews": [self.review(candidate)], "waves": [self.wave("w1", task)]}, ok=False).stderr)
+        task = self.committed_task(candidate)
+        task["verification_receipt"]["command"] = "echo ok"
+        self.assertIn("passing verification", self.check_draft(
+            {"reviews": [self.review(candidate)], "waves": [self.wave("w1", task)]}, ok=False).stderr)
+
+    def test_declared_pass_without_a_delivered_review_cannot_commit(self):
+        candidate = {"digest": "0" * 64, "head": "base"}
+        refusal = self.check_draft({"reviews": [self.review(candidate)],
+                                    "waves": [self.wave("w1", self.committed_task(candidate))]}, ok=False)
+        self.assertIn("not delivered", refusal.stderr)
+
+    def test_commit_transition_binds_current_head_and_reviewed_bytes(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        current = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": current["snapshot"]["digest"], "head": current["head"]}
+        pending = self.task("a", "app.py")
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", pending)]
+        self.init()
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Reviewed step", "-m", "Daodan-Task: test-run wave 1/1")
+        committed = self.committed_task(candidate, self.git("rev-parse", "HEAD"))
+        updated = self.invoke("update", {"waves": [self.wave("w1", committed)]}, ["--expected-revision", "2"])
+        self.assertEqual(updated["waves"][0]["tasks"][0]["status"], "committed")
+        blocked = {"id": "R0", "verdict": "BLOCK", "snapshot": candidate["digest"], "head": candidate["head"]}
+        unreviewed = self.wave("w1", committed, plan_review=blocked)
+        refusal = self.invoke("update", {"waves": [unreviewed]},
+                              ["--expected-revision", "3"], ok=False)
+        self.assertIn("adversarial PASS plan review", refusal.stderr)
+        head = self.git("rev-parse", "HEAD")
+        wave_candidate = {"digest": candidate["digest"], "head": head}
+        wave_review = self.review(wave_candidate, "R2", "wave-w1")
+        reviews = [*updated["reviews"], wave_review]
+        deliveries = self.review_delivery(wave_review, "test-run")
+        sealed = self.wave("w1", committed, status="sealed", candidate=wave_candidate,
+                           wave_review={"id": "R2", "verdict": "PASS",
+                                        "snapshot": wave_candidate["digest"], "head": head})
+        sealed_record = self.invoke("update", {"reviews": reviews, "deliveries": deliveries,
+                                               "waves": [sealed]}, ["--expected-revision", "3"])
+        self.assertEqual(sealed_record["waves"][0]["status"], "sealed")
+        broken = dict(sealed)
+        added = self.committed_task(wave_candidate, head)
+        added["id"] = "b"
+        added["write_set"] = ["other.py"]
+        added_review = self.review(wave_candidate, "R4", "pre-commit-b")
+        added["pre_commit_review"]["id"] = "R4"
+        broken["tasks"] = [committed, added]
+        fingerprint = self.runtime["plan_fingerprint"](broken)
+        new_plan = self.review(broken["plan_candidate"], "R5", "plan")
+        new_plan["kind"] = "plan"
+        new_plan["grounding"]["plan_sha256"] = fingerprint
+        broken["plan_review"].update(id="R5", plan_sha256=fingerprint)
+        deliveries = {**self.review_delivery(added_review, "test-run"),
+                      **self.review_delivery(new_plan, "test-run")}
+        refusal = self.invoke("update", {"waves": [broken], "reviews": [*reviews, added_review, new_plan],
+                                         "deliveries": deliveries},
+                              ["--expected-revision", "4"], ok=False)
+        self.assertIn("sealed membership", refusal.stderr)
+        candidate_review = self.review(wave_candidate, "R3", "candidate")
+        candidate_review["shape"] = "branch"
+        integration = {"merged_sha": head, "realigned": True,
+                       "candidate_review": {"id": "R3", "verdict": "PASS",
+                                            "snapshot": wave_candidate["digest"], "head": head}}
+        completion = {"status": "complete", "integration": integration,
+                      "phases": {"audit": {"status": "complete"}},
+                      "reviews": [*reviews, candidate_review],
+                      "deliveries": {**self.review_delivery(candidate_review, "test-run"),
+                                     "audit": {"status": "delivered", "output": self.report()}}}
+        self.assertIn("merged_sha", self.invoke("update", {"status": "complete"},
+                                                ["--expected-revision", "4"], ok=False).stderr)
+        reviewed_head = head
+        self.git("checkout", "--orphan", "independent")
+        (self.project / "app.py").unlink(missing_ok=True)
+        (self.project / "unrelated.py").write_text("print('independent')\n", encoding="utf-8")
+        self.git("add", "unrelated.py")
+        self.git("commit", "-m", "Independent root")
+        completion["integration"]["merged_sha"] = self.git("rev-parse", "HEAD")
+        refusal = self.invoke("update", completion, ["--expected-revision", "4"], ok=False)
+        self.assertIn("does not descend", refusal.stderr)
+        self.git("merge", "--allow-unrelated-histories", "--no-ff", reviewed_head, "-m", "Merge reviewed candidate")
+        completion["integration"]["merged_sha"] = self.git("rev-parse", "HEAD")
+        completed = self.invoke("update", completion, ["--expected-revision", "4"])
+        self.assertEqual(completed["status"], "complete")
+
+    def test_delivery_completion_rejects_an_unsealed_wave(self):
+        record = self.check_draft({"waves": [self.wave("w1", self.task("a", "app.py"))]})
+        record["status"] = "complete"
+        with self.assertRaisesRegex(self.runtime["ProtocolError"], "unsealed wave"):
+            self.runtime["validate_delivery_completion"](record, self.runtime["contract"]()["loop"]["reviews"])
+
+    def test_plan_edit_or_source_change_blocks_dispatch(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", self.task("a", "app.py"))]
+        record = self.init()
+        planned = record["waves"][0]
+        changed = copy.deepcopy(planned)
+        changed["tasks"][0]["write_set"] = ["other.py"]
+        changed["tasks"][0]["status"] = "running"
+        refusal = self.invoke("update", {"waves": [changed]}, ["--expected-revision", "2"], ok=False)
+        self.assertIn("plan changed", refusal.stderr)
+        running = copy.deepcopy(planned)
+        running["tasks"][0]["status"] = "running"
+        (self.project / "app.py").write_text("print('after plan')\n", encoding="utf-8")
+        refusal = self.invoke("update", {"waves": [running]}, ["--expected-revision", "2"], ok=False)
+        self.assertIn("bytes changed", refusal.stderr)
+
+    def test_committed_evidence_cannot_be_rewritten_without_reopening(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", self.task("a", "app.py"))]
+        self.init()
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Reviewed step", "-m", "Daodan-Task: test-run wave 1/1")
+        committed = self.committed_task(candidate, self.git("rev-parse", "HEAD"))
+        record = self.invoke("update", {"waves": [self.wave("w1", committed)]}, ["--expected-revision", "2"])
+        altered = {**committed, "commit_sha": "0" * 40, "write_set": ["other.py"]}
+        altered_wave = self.wave("w1", altered)
+        new_plan = self.review(altered_wave["plan_candidate"], "R5", "plan")
+        new_plan["kind"] = "plan"
+        new_plan["grounding"]["plan_sha256"] = altered_wave["plan_review"]["plan_sha256"]
+        altered_wave["plan_review"]["id"] = "R5"
+        refusal = self.invoke("update", {"waves": [altered_wave], "reviews": [*record["reviews"], new_plan],
+                                         "deliveries": self.review_delivery(new_plan, "test-run")},
+                              ["--expected-revision", "3"], ok=False)
+        self.assertIn("immutable", refusal.stderr)
+        self.assertEqual(self.invoke("show")["waves"][0]["tasks"][0], committed)
+
+    def test_edit_after_review_blocks_the_commit_transition(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", self.task("a", "app.py"))]
+        self.init()
+        (self.project / "app.py").write_text("print('changed after review')\n", encoding="utf-8")
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Different step", "-m", "Daodan-Task: test-run wave 1/1")
+        committed = self.committed_task(candidate, self.git("rev-parse", "HEAD"))
+        refusal = self.invoke("update", {"waves": [self.wave("w1", committed)]},
+                              ["--expected-revision", "2"], ok=False)
+        self.assertIn("stale", refusal.stderr)
+        self.assertEqual(self.invoke("show")["waves"][0]["tasks"][0]["status"], "pending")
+
+    def test_commit_parent_must_be_the_reviewed_head(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", self.task("a", "app.py"))]
+        self.init()
+        (self.project / "app.py").write_text("print('intermediate')\n", encoding="utf-8")
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Intermediate")
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Wrong parent", "-m", "Daodan-Task: test-run wave 1/1")
+        committed = self.committed_task(candidate, self.git("rev-parse", "HEAD"))
+        refusal = self.invoke("update", {"waves": [self.wave("w1", committed)]},
+                              ["--expected-revision", "2"], ok=False)
+        self.assertIn("parent differs", refusal.stderr)
+
+    def test_commit_cannot_include_paths_outside_the_task_write_set(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", self.task("a", "app.py"))]
+        self.init()
+        (self.project / "other.py").write_text("print('foreign')\n", encoding="utf-8")
+        self.git("add", "app.py", "other.py")
+        self.git("commit", "-m", "Too broad", "-m", "Daodan-Task: test-run wave 1/1")
+        committed = self.committed_task(candidate, self.git("rev-parse", "HEAD"))
+        refusal = self.invoke("update", {"waves": [self.wave("w1", committed)]},
+                              ["--expected-revision", "2"], ok=False)
+        self.assertIn("outside its write_set", refusal.stderr)
+
+    def test_commit_trailer_must_name_the_actual_wave(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        self.payload["waves"] = [self.wave("w1", self.task("a", "app.py"))]
+        self.init()
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Wrong wave", "-m", "Daodan-Task: test-run wave 999/999")
+        committed = self.committed_task(candidate, self.git("rev-parse", "HEAD"))
+        refusal = self.invoke("update", {"waves": [self.wave("w1", committed)]},
+                              ["--expected-revision", "2"], ok=False)
+        self.assertIn("correct run and wave trailer", refusal.stderr)
+
+    def test_resume_reconciles_a_commit_created_before_the_crash(self):
+        self.make_repo()
+        (self.project / "app.py").write_text("print('reviewed')\n", encoding="utf-8")
+        reviewed = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": reviewed["snapshot"]["digest"], "head": reviewed["head"]}
+        self.use_review(candidate)
+        green = self.committed_task(candidate)
+        green["status"] = "pending"
+        del green["commit_sha"]
+        self.payload["waves"] = [self.wave("w1", green)]
+        self.init()
+        self.git("add", "app.py")
+        self.git("commit", "-m", "Crash after commit", "-m", "Daodan-Task: test-run wave 1/1")
+        resumed = self.invoke("resume", {"authorizations": self.payload["authorizations"]})
+        task = resumed["waves"][0]["tasks"][0]
+        self.assertEqual(task["status"], "committed")
+        self.assertEqual(task["commit_sha"], self.git("rev-parse", "HEAD"))
+        self.assertEqual(self.git("rev-list", "--count", "HEAD"), "2")
+
+    def test_legacy_records_are_readable_but_not_resumable_without_current_gates(self):
+        record = self.init()
+        legacy = {**record, "status": "complete", "phases": {"audit": {"status": "complete"}},
+                  "deliveries": {"audit": {"status": "delivered", "output": self.report()}},
+                  "waves": [{"id": "w1", "status": "sealed",
+                             "tasks": [{"id": "a", "status": "committed", "write_set": ["app.py"],
+                                        "oracle": {"command": "pytest", "expected_failure": "x"},
+                                        "verification": {"command": "pytest"}}]}]}
+        (self.project / ".daodan/runs/test-run/work.json").write_text(json.dumps(legacy), encoding="utf-8")
+        self.invoke("show", ok=False)
+        historical = self.invoke("show", extra=["--historical"])
+        self.assertTrue(historical["historical"])
+        self.assertEqual(historical["waves"][0]["status"], "sealed")
+        self.invoke("resume", {"authorizations": self.payload["authorizations"]}, ok=False)
 
     def test_rulings_are_append_only_inside_a_run(self):
         ruling = {"id": "RUL-001", "task": "a", "sha": "abc", "decision": "keep sync API",
@@ -696,11 +1051,24 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("does not ask Q9", self.invoke("update", {"waves": [self.wave("w1", unknown)]},
                                                      ["--expected-revision", "2"], ok=False).stderr)
         running = {**waiting, "status": "running"}
+        current = self.runtime["project_binding"](self.project, self.payload["scope"], self.project / ".daodan")
+        candidate = {"digest": current["snapshot"]["digest"], "head": None}
+        plan = self.review(candidate, "R0", "plan")
+        plan["kind"] = "plan"
+        planned = self.wave("w1", waiting, plan_candidate=candidate,
+                            plan_review={"id": "R0", "verdict": "PASS",
+                                         "snapshot": candidate["digest"], "head": None})
+        fingerprint = self.runtime["plan_fingerprint"](planned)
+        planned["plan_review"]["plan_sha256"] = fingerprint
+        plan["grounding"]["plan_sha256"] = fingerprint
+        self.invoke("update", {"waves": [planned], "reviews": [plan],
+                               "deliveries": self.review_delivery(plan, "test-run")}, ["--expected-revision", "2"])
+        running_planned = {**planned, "tasks": [running]}
         self.assertIn("consumes question:Q1, which is not answered",
-                      self.invoke("update", {"waves": [self.wave("w1", running)]},
-                                  ["--expected-revision", "2"], ok=False).stderr)
+                      self.invoke("update", {"waves": [running_planned]},
+                                  ["--expected-revision", "3"], ok=False).stderr)
         self.answer("Q1", "yes")
-        self.invoke("update", {"waves": [self.wave("w1", running)]}, ["--expected-revision", "3"])
+        self.invoke("update", {"waves": [running_planned]}, ["--expected-revision", "4"])
 
     def test_completion_requires_every_question_closed(self):
         self.init()

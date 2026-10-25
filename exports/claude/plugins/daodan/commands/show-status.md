@@ -74,7 +74,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Show the status
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record` and follow the lifecycle method's
 `references/status.md`. When `run_state.py first-use` returns `first_use: true`,
 say that Daodan has not been used on this project, name `/daodan:init-project`

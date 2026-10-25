@@ -355,10 +355,69 @@ def validate_task(task, rules):
     return paths
 
 
-def validate_waves(section, rules, workspace):
+PLAN_TASK_FIELDS = ("id", "write_set", "oracle", "verification", "resource_locks", "produces", "consumes")
+
+
+def plan_fingerprint(wave):
+    definition = {"id": wave["id"], "parallel": wave.get("parallel", False),
+                  "tasks": [{key: task.get(key) for key in PLAN_TASK_FIELDS if key in task}
+                            for task in wave["tasks"]]}
+    return hashlib.sha256(json.dumps(definition, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def validate_candidate_receipt(receipt, label):
+    if not isinstance(receipt, dict):
+        raise ProtocolError(f"{label} must be an object")
+    digest = receipt.get("digest")
+    head = receipt.get("head")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise ProtocolError(f"{label}.digest must be a SHA256 digest")
+    if head is not None and (not isinstance(head, str) or not head.strip()):
+        raise ProtocolError(f"{label}.head must be null or a revision")
+
+
+def validate_pass_review(review, candidate, receipt, review_rules, deliveries,
+                         expected_shape="light", expected_stage=None, expected_kind="changeset"):
+    if (not isinstance(receipt, dict) or receipt.get("verdict") != "PASS"
+            or receipt.get("snapshot") != candidate["digest"]
+            or receipt.get("head") != candidate["head"]
+            or not isinstance(receipt.get("id"), str) or not receipt["id"]):
+        raise ProtocolError("A PASS review receipt must name its exact candidate")
+    if (review is None or review.get("shape") != expected_shape or review.get("kind") != expected_kind
+            or (expected_stage is not None and review.get("stage") != expected_stage)
+            or review.get("grounding", {}).get("candidate") != candidate):
+        raise ProtocolError("The pre-commit review must be a light changeset review bound to its candidate")
+    bound = {key: delivery for key, delivery in deliveries.items()
+             if isinstance(delivery, dict) and delivery.get("review") == receipt["id"]}
+    validate_reviews([review], review_rules, bound, complete=True)
+
+
+def validate_task_commit(task, reviews, review_rules, deliveries):
+    identity = task["id"]
+    candidate = task.get("candidate")
+    validate_candidate_receipt(candidate, f"Task {identity} candidate")
+    digest, head = candidate["digest"], candidate["head"]
+    verification = task.get("verification_receipt")
+    if (not isinstance(verification, dict) or verification.get("status") != "passed"
+            or verification.get("snapshot") != digest or verification.get("head") != head
+            or verification.get("command") != task["verification"]["command"]):
+        raise ProtocolError(f"Task {identity} needs passing verification on its exact pre-commit candidate")
+    receipt = task.get("pre_commit_review")
+    review = reviews.get(receipt.get("id")) if isinstance(receipt, dict) else None
+    try:
+        validate_pass_review(review, candidate, receipt, review_rules, deliveries)
+    except ProtocolError as error:
+        raise ProtocolError(f"Task {identity} pre-commit review is not delivered and passing: {error}") from error
+    commit_sha = task.get("commit_sha")
+    if not isinstance(commit_sha, str) or not commit_sha.strip():
+        raise ProtocolError(f"Task {identity} committed status requires commit_sha")
+
+
+def validate_waves(section, rules, workspace, reviews, review_rules, deliveries):
     if not isinstance(section, list):
         raise ProtocolError("waves must be an array")
     seen_waves, seen_tasks = set(), set()
+    review_by_id = {review.get("id"): review for review in reviews if isinstance(review, dict)}
     for wave in section:
         if not isinstance(wave, dict) or not isinstance(wave.get("id"), str) or not wave["id"]:
             raise ProtocolError("Each wave needs an id")
@@ -381,6 +440,23 @@ def validate_waves(section, rules, workspace):
                 raise ProtocolError(f"Task id repeated: {task.get('id')}")
             seen_tasks.add(task.get("id"))
             details.append((task, validate_task(task, rules)))
+            if task["status"] == "committed":
+                validate_task_commit(task, review_by_id, review_rules, deliveries)
+        if any(task.get("status") in {"running", "green", "committed"} for task in tasks):
+            plan_candidate = wave.get("plan_candidate")
+            validate_candidate_receipt(plan_candidate, f"Wave {wave['id']} plan candidate")
+            receipt = wave.get("plan_review")
+            fingerprint = plan_fingerprint(wave)
+            if (not isinstance(receipt, dict) or receipt.get("plan_sha256") != fingerprint):
+                raise ProtocolError(f"Wave {wave['id']} plan changed after its adversarial review")
+            review = review_by_id.get(receipt.get("id")) if isinstance(receipt, dict) else None
+            if review is not None and review.get("grounding", {}).get("plan_sha256") != fingerprint:
+                raise ProtocolError(f"Wave {wave['id']} review covered a different plan digest")
+            try:
+                validate_pass_review(review, plan_candidate, receipt, review_rules, deliveries,
+                                     expected_stage="plan", expected_kind="plan")
+            except ProtocolError as error:
+                raise ProtocolError(f"Wave {wave['id']} cannot execute without a delivered adversarial PASS plan review: {error}") from error
         for (first, first_paths), (second, second_paths) in combinations(details, 2):
             shared = first_paths & second_paths
             if shared:
@@ -394,6 +470,35 @@ def validate_waves(section, rules, workspace):
                     raise ProtocolError(f"Task {consumer['id']} consumes what {producer['id']} produces inside wave {wave['id']}: {', '.join(sorted(crossing))}")
         if wave["status"] == "sealed" and any(task["status"] != rules["sealed_requires_task_state"] for task in tasks):
             raise ProtocolError(f"Wave {wave['id']} cannot be sealed while a task is not committed")
+        if wave["status"] == "sealed":
+            candidate = wave.get("candidate")
+            validate_candidate_receipt(candidate, f"Wave {wave['id']} candidate")
+            receipt = wave.get("wave_review")
+            review = review_by_id.get(receipt.get("id")) if isinstance(receipt, dict) else None
+            try:
+                validate_pass_review(review, candidate, receipt, review_rules, deliveries)
+            except ProtocolError as error:
+                raise ProtocolError(f"Wave {wave['id']} cannot seal without its delivered PASS wave review: {error}") from error
+
+
+def validate_delivery_completion(record, review_rules):
+    if record.get("status") != "complete" or not record.get("waves"):
+        return
+    if any(wave.get("status") != "sealed" for wave in record["waves"]):
+        raise ProtocolError("A delivery run cannot complete with an unsealed wave")
+    integration = record.get("integration")
+    if (not isinstance(integration, dict) or not isinstance(integration.get("merged_sha"), str)
+            or not integration["merged_sha"].strip() or integration.get("realigned") is not True):
+        raise ProtocolError("A delivery run requires merged_sha and completed realignment before completion")
+    receipt = integration.get("candidate_review")
+    reviews = {review.get("id"): review for review in record.get("reviews", [])}
+    review = reviews.get(receipt.get("id")) if isinstance(receipt, dict) else None
+    candidate = ({"digest": receipt["snapshot"], "head": receipt["head"]}
+                 if isinstance(receipt, dict) and "snapshot" in receipt and "head" in receipt else None)
+    if candidate is None:
+        raise ProtocolError("A delivery run requires a branch candidate review before completion")
+    validate_pass_review(review, candidate, receipt, review_rules, record.get("deliveries", {}),
+                         expected_shape="branch", expected_stage="candidate")
 
 
 def validate_rulings(section, rules):
@@ -829,11 +934,13 @@ def validate_loop(record):
     if "adr" in present:
         validate_adr(present["adr"], rules["adr"])
     if "waves" in present:
-        validate_waves(present["waves"], rules["waves"], present.get("workspace"))
+        validate_waves(present["waves"], rules["waves"], present.get("workspace"),
+                       record.get("reviews", []), rules["reviews"], record.get("deliveries", {}))
     if "rulings" in present:
         validate_rulings(present["rulings"], rules["rulings"])
     validate_reviews(record.get("reviews", []), rules["reviews"], record.get("deliveries", {}),
                      complete=record.get("status") == "complete")
+    validate_delivery_completion(record, rules["reviews"])
     if "questions" in present:
         validate_questions(present["questions"], rules["questions"])
     if "waves" in present:
@@ -850,7 +957,7 @@ def validate_loop_transitions(old, new):
             raise ProtocolError(f"{section.capitalize()} are append-only; {entry} cannot be altered or removed")
 
 
-def validate_record(record, project=None, root=None):
+def validate_record(record, project=None, root=None, historical=False):
     rules = contract()
     missing = sorted(set(rules["required"]) - set(record))
     if missing:
@@ -903,8 +1010,9 @@ def validate_record(record, project=None, root=None):
                         raise ProtocolError("An independent check requires its own output report")
                     delivery_reports.append((report, "check" in item))
     validate_grants(record)
-    validate_loop(record)
-    if project is not None:
+    if not historical:
+        validate_loop(record)
+    if project is not None and not historical:
         if record["project"].get("root") != str(project):
             raise ProtocolError("Project identity does not match this invocation")
         if record.get("output_root") != str(root):
@@ -934,7 +1042,73 @@ def validate_record(record, project=None, root=None):
     return record
 
 
-def validate_transitions(old, new):
+def validate_task_commit_current(project, task, current, run_id, wave_number):
+    identity = task["id"]
+    commit_sha = task.get("commit_sha")
+    if (task["candidate"]["digest"] != current["snapshot"]["digest"]
+            or commit_sha != current.get("head")):
+        raise ProtocolError(f"Task {identity} commit evidence is stale or does not name the current commit")
+    lineage = git_value(project, "rev-list", "--parents", "-n", "1", commit_sha)
+    parts = lineage.split() if lineage else []
+    expected = 1 if task["candidate"]["head"] is None else 2
+    if len(parts) != expected or (expected == 2 and parts[1] != task["candidate"]["head"]):
+        raise ProtocolError(f"Task {identity} commit parent differs from its reviewed HEAD")
+    message = git_value(project, "log", "-1", "--format=%B", commit_sha) or ""
+    trailers = re.findall(r"(?m)^Daodan-Task: \S+ wave ([1-9][0-9]*)/([1-9][0-9]*)\s*$", message)
+    if not any(f"Daodan-Task: {run_id} wave {number}/{total}" in message
+               and int(number) == wave_number and int(total) >= wave_number for number, total in trailers):
+        raise ProtocolError(f"Task {identity} commit lacks the correct run and wave trailer")
+    changed = git_value(project, "diff-tree", "--root", "--no-commit-id", "--name-only", "-r", commit_sha, "--")
+    prefix = git_value(project, "rev-parse", "--show-prefix") or ""
+    paths = set()
+    for name in changed.splitlines() if changed is not None else []:
+        if prefix and not name.startswith(prefix):
+            raise ProtocolError(f"Task {identity} commit contains a path outside its project")
+        paths.add(name[len(prefix):] if prefix else name)
+    owned = set(task["write_set"])
+    if not paths or not paths.issubset(owned):
+        raise ProtocolError(f"Task {identity} commit contains paths outside its write_set")
+
+
+def validate_commit_transitions(old, new, project):
+    previous = {task.get("id"): task for wave in old.get("waves", []) for task in wave.get("tasks", [])}
+    for wave in new.get("waves", []):
+        for task in wave.get("tasks", []):
+            before = previous.get(task.get("id"), {})
+            if before.get("status") == "committed" and task.get("status") == "committed" and task != before:
+                raise ProtocolError(f"Task {task['id']} committed evidence is immutable; reopen it with fresh evidence")
+    committed = [task for wave in new.get("waves", []) for task in wave.get("tasks", [])
+                 if task.get("status") == "committed" and previous.get(task.get("id"), {}).get("status") != "committed"]
+    previous_waves = {wave.get("id"): wave for wave in old.get("waves", [])}
+    for identity, before in previous_waves.items():
+        if before.get("status") != "sealed":
+            continue
+        after = next((wave for wave in new.get("waves", []) if wave.get("id") == identity), None)
+        if after is None or after != before:
+            raise ProtocolError(f"Wave {identity} sealed membership and evidence are immutable; reopen with a fresh review")
+    sealed = [wave for wave in new.get("waves", []) if wave.get("status") == "sealed"
+              and previous_waves.get(wave.get("id"), {}).get("status") != "sealed"]
+    started = [(wave, task) for wave in new.get("waves", []) for task in wave.get("tasks", [])
+               if task.get("status") == "running" and previous.get(task.get("id"), {}).get("status") == "pending"]
+    if not committed and not sealed and not started:
+        return
+    if project is None:
+        raise ProtocolError("Committed task transitions require project binding")
+    current = project_binding(project, new["scope"], Path(new["output_root"]))
+    for wave, task in started:
+        if wave["plan_candidate"]["digest"] != current["snapshot"]["digest"]:
+            raise ProtocolError(f"Task {task['id']} cannot start on bytes changed after the plan review")
+    for task in committed:
+        wave_number = next(index for index, entry in enumerate(new["waves"], 1)
+                           if any(item is task for item in entry["tasks"]))
+        validate_task_commit_current(project, task, current, new["run_id"], wave_number)
+    for wave in sealed:
+        receipt = wave["wave_review"]
+        if receipt["snapshot"] != current["snapshot"]["digest"] or receipt["head"] != current.get("head"):
+            raise ProtocolError(f"Wave {wave['id']} seal review is stale or does not name the current candidate")
+
+
+def validate_transitions(old, new, project=None):
     rules = contract()
     if new["status"] == "complete":
         waiting = [q["id"] for q in new.get("questions", []) if is_open(q)]
@@ -945,6 +1119,15 @@ def validate_transitions(old, new):
     if new.get("grants", [])[:len(old.get("grants", []))] != old.get("grants", []):
         raise ProtocolError("Grants are append-only; an authorization cannot be altered or withdrawn")
     validate_loop_transitions(old, new)
+    validate_commit_transitions(old, new, project)
+    if new.get("status") == "complete" and new.get("waves"):
+        current = project_binding(project, new["scope"], Path(new["output_root"]))
+        integration = new["integration"]
+        if integration["merged_sha"] != current.get("head"):
+            raise ProtocolError("Completion merge SHA does not name current HEAD")
+        reviewed_head = integration["candidate_review"]["head"]
+        if git_value(project, "merge-base", "--is-ancestor", reviewed_head, integration["merged_sha"]) is None:
+            raise ProtocolError("Completion merge does not descend from the reviewed candidate")
     for key in ("phases", "deliveries"):
         for identity, before in old[key].items():
             after = new[key].get(identity)
@@ -1088,6 +1271,29 @@ def unblocked(record, qid):
             if qid in {q["id"] for q in consumed} and all(is_settled(q) for q in consumed)]
 
 
+def reconcile_interrupted_commit(before, project, root):
+    current = project_binding(project, before["scope"], root)
+    for wave_number, wave in enumerate(before.get("waves", []), 1):
+        for task in wave.get("tasks", []):
+            if (task.get("status") == "committed" or "commit_sha" in task
+                    or not isinstance(task.get("candidate"), dict)
+                    or not isinstance(task.get("pre_commit_review"), dict)):
+                continue
+            candidate = copy.deepcopy(task)
+            candidate["status"] = "committed"
+            candidate["commit_sha"] = current.get("head")
+            try:
+                validate_task_commit_current(project, candidate, current, before["run_id"], wave_number)
+            except ProtocolError:
+                continue
+            updated = copy.deepcopy(before)
+            target = next(item for entry in updated["waves"] for item in entry["tasks"]
+                          if item["id"] == task["id"])
+            target.update(status="committed", commit_sha=current["head"])
+            return updated
+    return None
+
+
 def commit_change(project, root, path, session, take_over, change):
     """Apply change(before) under the writer lock and return the record; None writes nothing.
 
@@ -1105,7 +1311,7 @@ def commit_change(project, root, path, session, take_over, change):
         updated["updated_at"] = timestamp()
         updated["candidate"] = project_binding(project, before["scope"], root)
         validate_record(updated, project, root)
-        validate_transitions(before, updated)
+        validate_transitions(before, updated, project)
         agenda = plan_agenda(root, project, updated, session, take_over)
         atomic_write(path, updated, root)
         atomic_write(root / "agenda.json", agenda, root)
@@ -1241,6 +1447,7 @@ def main(argv=None):
     parser.add_argument("--expected-revision", type=int)
     parser.add_argument("--result", type=Path)
     parser.add_argument("--current", action="store_true")
+    parser.add_argument("--historical", action="store_true", help="show a legacy record without enforcing current execution gates")
     args = parser.parse_args(argv)
     try:
         if args.take_over and not args.session:
@@ -1252,6 +1459,8 @@ def main(argv=None):
             return 0
         project, root = roots(args.project)
         payload = read_json(args.payload) if args.payload else {}
+        if args.historical and args.command != "show":
+            raise ProtocolError("--historical is available only for show")
         if args.command == "agenda":
             path = root / "agenda.json"
             agenda = read_json(path) if path.is_file() else {"schema": AGENDA_SCHEMA, "tasks": {}}
@@ -1273,7 +1482,17 @@ def main(argv=None):
                       "updated_at": timestamp()}
             for key, default in (("phases", {}), ("plan", []), ("deliveries", {}), ("required_gates", []), ("gates", {})):
                 record.setdefault(key, default)
+            if "integration" in payload or any(
+                    wave.get("status") == "sealed" and "plan_review" in wave
+                    for wave in payload.get("waves", [])) or any(
+                    task.get("status") in {"running", "green"}
+                    for wave in payload.get("waves", []) for task in wave.get("tasks", [])):
+                raise ProtocolError("Init accepts only pending work; resume or explicitly adopt executed work")
             validate_record(record, project, root)
+            if "integration" in payload or any(
+                    wave.get("status") == "sealed" or task.get("status") in {"running", "green", "committed"}
+                    for wave in payload.get("waves", []) for task in wave.get("tasks", [])):
+                raise ProtocolError("Init accepts only pending work; resume or explicitly adopt executed work")
             root.mkdir(parents=True, exist_ok=True)
             (root / ".daodan-root").touch(exist_ok=True)
             with writer_lock(root / ".write-lock", root):
@@ -1287,11 +1506,11 @@ def main(argv=None):
         else:
             directory, path = run_paths(project, root, args.run_id)
             no_links(path, root)
-            record = validate_record(read_json(path), project, root)
+            record = validate_record(read_json(path), project, root, historical=args.historical)
             if record["run_id"] != args.run_id:
                 raise ProtocolError("Record does not match the exact run ID")
             if args.command == "show":
-                output = record
+                output = {**record, "historical": True} if args.historical else record
             elif args.command == "snapshot":
                 binding = project_binding(project, record["scope"], root)
                 output = {"digest": binding["snapshot"]["digest"], "head": binding["head"],
@@ -1309,7 +1528,10 @@ def main(argv=None):
                 if "scope" in payload and payload["scope"] != record["scope"]:
                     raise ProtocolError("Resume scope changed; reassess in a new run")
                 if project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
-                    raise ProtocolError("Resume candidate snapshot or workspace identity changed")
+                    record = commit_change(project, root, path, args.session, args.take_over,
+                                           lambda before: reconcile_interrupted_commit(before, project, root))
+                    if project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
+                        raise ProtocolError("Resume candidate snapshot or workspace changed; no matching interrupted commit was found")
                 with writer_lock(root / ".write-lock", root):
                     record = validate_record(read_json(path), project, root)
                     atomic_write(root / "agenda.json", plan_agenda(root, project, record, args.session,

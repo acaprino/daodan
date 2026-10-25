@@ -46,7 +46,7 @@ class MethodDispatchContractsTests(unittest.TestCase):
         entry = self.workflow("daodan", "check-health")
         self.assertTrue(entry.dispatch.isolated)
         assess = (self.registry["project-lifecycle"].root
-                  / "skills/lifecycle-method/references/assess.md").read_text(encoding="utf-8")
+                  / "skills/assess-method/references/assess.md").read_text(encoding="utf-8")
         for plugin, skill, role, output in (
             ("react-development", "react-best-practices", "react-performance-optimizer", "react-review"),
             ("typescript-development", "type-safety-rules", "type-safety-auditor", "ts-review"),
@@ -143,7 +143,7 @@ class MethodDispatchContractsTests(unittest.TestCase):
             "react-development": "skills/react-best-practices/references/audit.md",
             "typescript-development": "skills/type-safety-rules/references/audit.md",
             "clean-code": "skills/readability-method/SKILL.md",
-            "project-lifecycle": "skills/lifecycle-method/references/refactor.md",
+            "project-delivery": "skills/delivery-method/references/refactor.md",
         }
         entry = self.registry["daodan"]
         for workflow in entry.workflows:
@@ -188,7 +188,7 @@ class MethodDispatchContractsTests(unittest.TestCase):
 
     def test_changed_graphs_keep_their_provider_edges_and_exported_contracts(self):
         for name in ("daodan", "react-development", "typescript-development", "clean-code", "senior-review",
-                     "peer-review", "moe", "project-lifecycle", "project-knowledge"):
+                     "peer-review", "moe", "project-delivery", "project-lifecycle", "project-knowledge"):
             with self.subTest(plugin=name):
                 plugin = self.registry[name]
                 self.assertEqual(validate_workflow_graph(plugin), [])

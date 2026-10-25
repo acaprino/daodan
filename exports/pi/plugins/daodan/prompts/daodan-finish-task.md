@@ -233,7 +233,7 @@ The phase graph and record-schema references are in `contracts/finish-task.workf
 
 # Finish the task
 
-Load the skills `project-lifecycle:lifecycle-method` and
+Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record` and follow the lifecycle method's
 `references/finish.md` for the current branch's task. The merge happens only with the
 user's authorization, asked once with base, commits and verdict in view. Pushing is a
