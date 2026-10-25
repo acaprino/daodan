@@ -80,10 +80,12 @@ Compiled binding and static checks do not prove an installed host executed a run
 Coordinators: before lookup, run `python "${PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0.
 Workers only resolve bindings; legacy bindings require migration.
 
-## Views
+## Producer views
 
 Generate `semantic-map.md` with `semantic_map.py MANIFEST --path AREA`; unread/stale
 cards use `deepen.md`. Bounded, resumable LLM input: `context.md`. Preserve provenance.
+
+## Task views
 
 | Task | Start | Also |
 |------|------------|------------|
@@ -97,3 +99,9 @@ cards use `deepen.md`. Bounded, resumable LLM input: `context.md`. Preserve prov
 
 Phase 0's `knowledge/` holds unverified leads; Phase 1d joins
 `knowledge/documentation-leads.md` with independent discovery.
+
+## Method loads
+
+| Resource | Sections | When |
+|---|---|---|
+| `references/standalone.md` | all | always |

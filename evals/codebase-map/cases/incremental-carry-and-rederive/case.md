@@ -81,7 +81,8 @@ At the checkpoint, read which option is the incremental one and note its number,
 | 10 | MUST | Session 2's `changes.md` carries all four sections, `## Claims confirmed`, `## Claims revised`, `## Claims retired`, `## Claims added`, and every claim that cited `deprecated_helper.py` or `deprecated_helper.py::old_helper`, in whichever phase file it appeared, is listed under `## Claims retired`, none under confirmed or revised |
 | 11 | MUST | By the time Session 2 publishes, `01-structure.md` and `02-interfaces.md` each document `validator.py::validate_schema` |
 | 12 | MUST | After Session 2 publishes, `.codebase-map/snapshot/`, `.codebase-map/changes.json` and `.codebase-map/changes.md` do not exist at the mirror root; those three live only under `.codebase-map/runs/second/` |
-| 13 | SHOULD | Session 2's checkpoint showed real figures (files modified/added/removed, symbols changed/added/removed, affected claims) matching `changes.json`'s `totals`, not placeholder text |
+| 13 | MUST | In Sessions 1 and 2, the analyst loads the shared map-consumption unit and task views; in Session 2 it uses existing parent evidence for navigation where pertinent without weakening the authorized update and re-derivation gates |
+| 14 | SHOULD | Session 2's checkpoint showed real figures (files modified/added/removed, symbols changed/added/removed, affected claims) matching `changes.json`'s `totals`, not placeholder text |
 
 ## Scoring notes
 

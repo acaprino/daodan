@@ -99,6 +99,8 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 | Resource | Sections | When |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phase-0.md` | all | phase-0 |

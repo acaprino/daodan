@@ -212,6 +212,51 @@ class CodebaseMapExportTests(unittest.TestCase):
             method = self.component(host, "codebase-map", "skills", "map-method").parent
             self.assertTrue((method / "scripts/migrate_root.py").is_file())
 
+    def test_standalone_map_consumption_ships_on_all_hosts(self):
+        description = read(self.canonical.root / "skills/map-method/SKILL.md").split("---", 2)[1]
+        self.assertIn("standalone navigation of existing map evidence", description)
+        self.assertIn("project questions, unfamiliar code, debugging, feature work", description)
+        self.assertIn("Loading the skill starts no analysis or refresh", description)
+        for host in HOSTS:
+            with self.subTest(host=host):
+                method = read(self.component(host, "codebase-map", "skills", "map-method"))
+                self.assertIn("Every map consumer, including analyze and composed workflows", method)
+                self.assertIn("`references/reading.md` section `Task views`", method)
+                self.assertIn("sections `CRITICAL PRINCIPLE: EVIDENCE-ANCHORED OUTPUT` and `Forbidden Files`", method)
+                standalone = self.assert_shared_resource(host, "standalone.md")
+                reading = self.assert_shared_resource(host, "reading.md")
+                evidence = self.assert_shared_resource(host, "evidence.md")
+                self.assertIn("| `references/standalone.md` | all | always |", reading)
+                analyst = read(self.component(host, "codebase-map", "roles", "map-analyst"))
+                self.assertIn("references/standalone.md", analyst)
+                self.assertIn("references/reading.md` | section: Task views", analyst)
+                for role in ROLES[:3]:
+                    role_unit = self.assert_shared_resource(host, f"role-{role}.md")
+                    self.assertIn("references/standalone.md", role_unit)
+                    self.assertIn("references/reading.md` | section: Task views", role_unit)
+                synthesizer = self.assert_shared_resource(host, "role-partition-synthesizer.md")
+                self.assertNotIn("references/standalone.md", synthesizer)
+                self.assertNotIn("references/reading.md` | section: Task views", synthesizer)
+                task_views = reading.split("## Task views", 1)[1].split("## Method loads", 1)[0]
+                standalone_evidence = evidence.split("## Script Commands", 1)[0]
+                self.assertNotIn("deepen.md", task_views)
+                self.assertNotIn("semantic_map.py", task_views)
+                self.assertNotIn("snapshot.py write", standalone_evidence)
+                self.assertNotIn("--reuse", standalone_evidence)
+                prose = " ".join(standalone.split())
+                self.assertIn("inside analyze or other composed workflows", prose)
+                self.assertIn("This unit grants no root migration, run creation, snapshot refresh", prose)
+                self.assertIn("codebase_map_outline", prose)
+                self.assertIn("codebase_map_edit_impact", prose)
+                self.assertIn("verify material behavior and business rules against current source", prose)
+                self.assertIn("continues with ordinary repository exploration", prose)
+                self.assertIn("never starting analysis, update or deepening implicitly", prose)
+                self.assertIn("composed producer instead follows its authorized refresh", prose)
+                self.assertIn("artifact-only consumers stay within their declared inputs", prose)
+                self.assertNotIn("codebase_map_create_run", standalone)
+                self.assertNotIn("entry-analyze.md", standalone)
+                self.assertNotIn("migrate_root.py", standalone)
+
     def test_abstraction_worker_only_resolves_after_coordinator_migration_on_all_hosts(self):
         for host in HOSTS:
             with self.subTest(host=host):

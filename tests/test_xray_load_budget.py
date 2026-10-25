@@ -20,13 +20,14 @@ PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
 METHOD = PLUGIN / "skills" / "map-method"
 
 UNIT_BUDGETS = {
-    "SKILL.md": 834,
+    "SKILL.md": 927,
     "references/run.md": 811,
     "references/snapshot.md": 938,
     "references/update.md": 597,
     "references/deepen.md": 380,
     "references/evidence.md": 2_436,
-    "references/reading.md": 132,
+    "references/reading.md": 142,
+    "references/standalone.md": 280,
     "references/phase-0.md": 355,
     "references/phases-1-2.md": 801,
     "references/phases-3-4.md": 1_348,
@@ -57,22 +58,23 @@ COORDINATORS = {
 }
 
 BUDGETS = {
-    "coordinator:classic": 3_840,
-    "roles/map-analyst.md": 8_840,
-    "coordinator:team": 7_430,
-    "roles/partition-structure-worker.md": 4_280,
-    "roles/partition-behavior-worker.md": 4_440,
-    "roles/partition-quality-worker.md": 5_218,
-    "roles/partition-synthesizer.md": 3_887,
-    "roles/semantic-interconnect-mapper.md": 5_483,
-    "consumer": 3_508,
+    "coordinator:classic": 3_918,
+    "roles/map-analyst.md": 9_128,
+    "coordinator:team": 7_522,
+    "roles/partition-structure-worker.md": 4_691,
+    "roles/partition-behavior-worker.md": 4_846,
+    "roles/partition-quality-worker.md": 5_635,
+    "roles/partition-synthesizer.md": 3_977,
+    "roles/semantic-interconnect-mapper.md": 5_795,
+    "consumer": 3_742,
+    "standalone-consumer": 1_717,
 }
 
 # Separate optional baseline at 89a47aebbc99e5f92ffb96a7a0c52c425a61bb39.
 # Step 1 did not measure these existing on-demand references. Their caps stay put.
 # Methodology includes its already-declared bound-analysis reading dependency.
 OPTIONAL_ALLOWANCES = {
-    "methodology": 1_919 + 164,
+    "methodology": 1_919 + 164 + 290,
     "patterns": 1_628,
     "comments": 1_869,
     # New legacy-root branch is measured separately; original core caps stay fixed.
@@ -87,10 +89,10 @@ READ_CONDITIONS = {
 }
 
 ROLE_RESOURCES = {
-    "roles/partition-structure-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-1-2.md", "references/run.md"},
-    "roles/partition-behavior-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-3-4.md"},
-    "roles/partition-quality-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-5-6.md"},
-    "roles/semantic-interconnect-mapper.md": {"SKILL.md", "references/evidence.md", "references/reading.md"},
+    "roles/partition-structure-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-1-2.md", "references/run.md", "references/standalone.md", "references/reading.md"},
+    "roles/partition-behavior-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-3-4.md", "references/standalone.md", "references/reading.md"},
+    "roles/partition-quality-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-5-6.md", "references/standalone.md", "references/reading.md"},
+    "roles/semantic-interconnect-mapper.md": {"SKILL.md", "references/evidence.md", "references/reading.md", "references/standalone.md"},
 }
 
 
@@ -233,7 +235,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
         components = tomllib.loads((PLUGIN / "plugin.toml").read_text(encoding="utf-8"))["components"]
         readers = {f"{kind}/{name}.md" for kind in ("roles", "workflows")
                    for name in components[kind]}
-        self.assertEqual(set(BUDGETS) - {"consumer"} - set(COORDINATORS), readers,
+        self.assertEqual(set(BUDGETS) - {"consumer", "standalone-consumer"} - set(COORDINATORS), readers,
                          "A registered reader must not silently escape load measurement")
 
     def test_lite_phase_six_does_not_load_analyst_comment_procedures(self) -> None:
@@ -256,7 +258,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
             frozenset({0, 1, 2, 3, 4}): {"references/phase-0.md", "references/phases-1-2.md", "references/phases-3-4.md"},
             frozenset({7}): {"references/phase-7.md"},
         }
-        common = {"SKILL.md", "references/evidence.md", "references/snapshot.md"}
+        common = {"SKILL.md", "references/evidence.md", "references/snapshot.md", "references/standalone.md", "references/reading.md"}
         for phases, resources in cases.items():
             with self.subTest(phases=sorted(phases)):
                 words, files = load(body, phases=phases)
@@ -266,7 +268,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
     def test_analyst_cards_mode_reads_only_the_deepening_section(self) -> None:
         body = (PLUGIN / "roles/map-analyst.md").read_text(encoding="utf-8")
         words, files = load(body, mode="cards")
-        self.assertEqual(files, {"SKILL.md", "references/evidence.md", "references/snapshot.md", "references/deepen.md"})
+        self.assertEqual(files, {"SKILL.md", "references/evidence.md", "references/snapshot.md", "references/deepen.md", "references/standalone.md", "references/reading.md"})
         self.assertLessEqual(words + len(body.split()), BUDGETS["roles/map-analyst.md"])
 
     def test_classic_coordinator_closure_excludes_analysis_units(self) -> None:
@@ -347,7 +349,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
 
     def test_role_optional_closures_do_not_admit_unrelated_units(self) -> None:
         resources = {
-            "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md"},
+            "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md", "references/standalone.md"},
             "patterns": {"references/SEMANTIC_PATTERNS.md"},
             "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
             "migration": {"references/migration.md"},
@@ -468,7 +470,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
 
     def test_reader_loads_stay_within_budget(self) -> None:
         for rel, budget in BUDGETS.items():
-            if rel == "consumer":
+            if rel in ("consumer", "standalone-consumer"):
                 continue
             body = COORDINATORS[rel] if rel in COORDINATORS else (PLUGIN / rel).read_text(encoding="utf-8")
             self.assertTrue(_rows(body), f"{rel} has no explicit runtime read contract")
@@ -484,6 +486,22 @@ class XrayLoadBudgetTests(unittest.TestCase):
         # The consumer map: router, then reading.md, plus evidence.md to read source.
         total = sum(_words(METHOD / f) for f in ("SKILL.md", "references/reading.md", "references/evidence.md"))
         self.assertLessEqual(total, BUDGETS["consumer"])
+
+    def test_standalone_consumer_stays_within_budget(self) -> None:
+        body = """## Method loads
+
+| Resource | Sections | When |
+|---|---|---|
+| `references/standalone.md` | all | always |
+| `references/reading.md` | section: Task views | always |
+| `references/evidence.md` | section: CRITICAL PRINCIPLE: EVIDENCE-ANCHORED OUTPUT | always |
+| `references/evidence.md` | section: Forbidden Files | always |
+"""
+        words, files = load(body)
+        self.assertEqual(files, {
+            "references/standalone.md", "references/reading.md", "references/evidence.md",
+        })
+        self.assertLessEqual(_words(METHOD / "SKILL.md") + words, BUDGETS["standalone-consumer"])
 
     def test_consumer_optional_worst_cases_stay_within_separate_allowance(self) -> None:
         body = """## Method loads
@@ -507,7 +525,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
         baseline, files = load(body)
         self.assertEqual(files, {"SKILL.md"}, "Optional references entered the default load")
         resources = {
-            "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md"},
+            "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md", "references/standalone.md"},
             "patterns": {"references/SEMANTIC_PATTERNS.md"},
             "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
             "migration": {"references/migration.md"},

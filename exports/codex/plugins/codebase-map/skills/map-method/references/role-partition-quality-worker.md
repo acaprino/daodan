@@ -128,6 +128,8 @@ Read Phase 6 at full depth, including updates; comments and documentation verifi
 | Resource | Sections | When |
 |---|---|---|
 | `<plugin-root>/skills/map-method/SKILL.md` | all | always |
+| `<plugin-root>/skills/map-method/references/standalone.md` | all | always |
+| `<plugin-root>/skills/map-method/references/reading.md` | section: Task views | always |
 | `<plugin-root>/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `<plugin-root>/skills/map-method/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify; section: Partition worker; section: Team extensions | always |
 | `<plugin-root>/skills/map-method/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | not-lite |

@@ -127,6 +127,8 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 | Resource | Sections | When |
 |---|---|---|
 | `<plugin-root>/skills/map-method/SKILL.md` | all | always |
+| `<plugin-root>/skills/map-method/references/standalone.md` | all | always |
+| `<plugin-root>/skills/map-method/references/reading.md` | section: Task views | always |
 | `<plugin-root>/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
 | `<plugin-root>/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `<plugin-root>/skills/map-method/references/phase-0.md` | all | phase-0 |

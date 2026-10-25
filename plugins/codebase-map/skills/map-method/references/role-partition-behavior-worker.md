@@ -57,6 +57,8 @@ Read named core sections by locating headings or fenced skeletons before bounded
 | Resource | Sections | When |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | before: Team mode; section: Partition worker | always |
 

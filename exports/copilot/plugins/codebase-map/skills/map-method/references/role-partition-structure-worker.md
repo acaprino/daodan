@@ -139,6 +139,8 @@ Read named core sections by locating headings or fenced skeletons before bounded
 | Resource | Sections | When |
 |---|---|---|
 | `${PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
+| `${PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
+| `${PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
 | `${PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `${PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | before: Team mode; section: Partition worker; section: Team extensions | always |
 | `${PLUGIN_ROOT}/skills/map-method/references/run.md` | section: Perimeter | always |

@@ -1,9 +1,9 @@
 ---
 name: map-method
 description: >
-  Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS.
-  TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation.
-  DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /daodan:write-docs), a public-facing README, or a review verdict (senior-review consumes this output instead).
+  Static codebase mapping and standalone navigation of existing map evidence: structure, purpose, integrations, symbols, documentation and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS.
+  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation; consult available map evidence before broad source exploration. Loading the skill starts no analysis or refresh. Verify material claims against current source and use ordinary repository search when no usable map exists.
+  DO NOT TRIGGER WHEN: the task does not involve project code or its documentation.
 ---
 
 # Codebase Map Analysis Skill
@@ -42,6 +42,7 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | `references/deepen.md` | cards an area lacks | area deepening; analyst in `cards` mode |
 | `references/evidence.md` | evidence-anchored output, forbidden files, script commands, source reading, file classification; maintained-document verification is separate | every phase worker and every consumer that reads source |
 | `references/reading.md` | how to read a finished analysis | every consumer of a bound analysis |
+| `references/standalone.md` | shared read-only map discovery, navigation, impact and fallback | every map consumer, including analysis and composed workflows |
 | `references/phase-0.md` | Phase 0, project knowledge discovery | analyst and team entry |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
 | `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |
@@ -50,6 +51,7 @@ Loading `codebase-map:map-method` starts no analysis or run.
 
 ## Consumer map
 
+- Every map consumer, including analyze and composed workflows: `references/standalone.md` and `references/reading.md` section `Task views`. Ordinary standalone source reads add `references/evidence.md` sections `CRITICAL PRINCIPLE: EVIDENCE-ANCHORED OUTPUT` and `Forbidden Files`; composed consumers keep their own authorized evidence and producer procedures.
 - Forbidden files: `references/evidence.md`.
 - Consuming a bound analysis: `references/reading.md`, plus `references/evidence.md` before Maintained documentation for source. For durable-document verification, read its Maintained documentation section. Snapshot verification/refresh uses `references/snapshot.md` before Prerequisites.
 - Run analyses through `references/entry-analyze.md`; composed callers declare isolated `codebase-map/map-analyst`.

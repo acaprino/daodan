@@ -7,8 +7,8 @@ The Daodan is the symbiote that augments its host. This repository is the Daodan
 codebase-map is the core of the harness. Its static analysis records a project as
 Meta-Code: file and symbol inventory, body, interface and effects digests,
 interconnections and persistent semantic cards with surgical freshness.
-senior-review, abstraction-architect, project-knowledge and project-lifecycle
-require it and build their understanding on its evidence rather than
+senior-review, abstraction-architect, project-knowledge, project-delivery and
+project-lifecycle require it and build their understanding on its evidence rather than
 rediscovering the project. The map supplies evidence and leads, never verdicts:
 correctness, documentation, tests and cleanup stay with their owners, who confirm
 a lead by reading source. Leaf and specialist plugins such as work-controller,
@@ -23,11 +23,10 @@ entry into its owner's method; every other plugin keeps skills, roles and
 contracts and has no command. A specialist method a command used to carry lives
 in its owner's skill, where the entry loads it by name.
 
-project-lifecycle owns the methods behind the work commands: initialization,
-assess, the task cycle (change, repair, refactor), continue, status, finish, sync,
-realignment and retention. Its handover method prepares a consultant dossier inside
-an assess run; maintainer-method coordinates the Senior Maintainer campaign with
-separate stage runs and explicit handoffs. Since the closed-loop redesign of
+project-delivery owns ADR, FRD, evidence bootstrap and the methods behind the delivery commands: initialization,
+the task cycle (change, repair, refactor), continue, status, finish, sync,
+realignment and retention. project-lifecycle owns assessment, consultant handover
+and the Senior Maintainer campaign, composing project-delivery for execution stages. Since the closed-loop redesign of
 2026-10-18 (see `docs/superpowers/specs/2026-10-18-closed-loop-harness-design.md`),
 change is the task cycle: a probed preflight with the workspace mode chosen by the
 user (worktree, branch or in place), an interview grounded in the map and in the
@@ -35,8 +34,9 @@ active decision records, the task's intent (a `Proposed` record under `docs/adr/
 promoted when the user approves it, on a project that keeps decision records, which a project chooses at its first use, or
 the run's intent file otherwise), waves of micro-tasks
 checked mechanically by the protocol helper and written by the stack's specialist,
-a light review of the intent, of the plan and of each wave and a branch review of
-the whole candidate through senior-review, then integration that verifies the
+an adversarial review of the intent, of the exact plan, of each task before its
+atomic commit and of each wave, plus a branch review of the whole candidate
+through senior-review, then integration that verifies the
 record when there is one and realigns map, documentation and the instruction loop block. The size of
 every review is computed by `review_roster.py` from measured signals, never chosen
 by the model. Initialization brings a project into that cycle; realignment alone
@@ -362,7 +362,7 @@ generated reference is stale. `docs/hosts.md` explains installation, selection,
 entry-point mapping, environments, MCP, dispatch and enforcement limits. These
 references document compiled support; they do not establish live host behavior.
 
-`docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-map`). `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-map/` does the same for the Codebase Map pipeline (marketplace 26.4.0): eleven behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned and the perimeter's exclusions named), the first nine written after the 2026-09-03 review; `evals/codebase-map/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
+`docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-map`). `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/project-delivery/` covers pre-commit evidence, interrupted commits and independent delivery. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-map/` does the same for the Codebase Map pipeline (marketplace 26.4.0): twelve behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned and the perimeter's exclusions named, standalone map consumption without Daodan commands with source verification and explicit fallback), the first nine written after the 2026-09-03 review; `evals/codebase-map/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
 
 The review entries, `/daodan:review-changes` and `/daodan:review-branch`, are thin pointers to the canonical review-method, review-preparation and review-consolidation skills; the light review is its own unit and reads none of the variant references. Agent prompts, fix-loop and native output references remain under review-quality-gates. application-cleanup-method is the named Step 7c method, reached from `/daodan:tidy-repo`, and carries severity acceptance, exclusive-workspace/clean-tree prerequisites and snapshot-bound gates. A `fix` authorization edits and verifies without committing; a `commit` authorization additionally commits and is required for bulk application subtraction.
 
@@ -481,7 +481,8 @@ specialist edges optional.
 | testing | work-controller |
 | senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog |
 | project-knowledge | work-controller, codebase-map, senior-review, report-rendering; text-humanizer@shinatama |
-| project-lifecycle | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, moe |
+| project-delivery | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
+| project-lifecycle | project-delivery, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, report-rendering |
 | clean-code | work-controller |
 | python-development | testing, work-controller |
 | dependency-audit | none |
@@ -552,7 +553,7 @@ the host's native configuration. Preserve concrete install instructions in the
 consumer. Grabber's separately scoped Patchright technique remains local.
 
 testing delegates TDD to mattpocock-skills@mattpocock and browser E2E mechanics to
-developer-essentials@claude-code-workflows. project-lifecycle owns its task cycle
+developer-essentials@claude-code-workflows. project-delivery owns its task cycle
 and declares no upstream development method since 2026-10-18: its interview, plan
 and execution are shaped by the map, the decision records and the protocol's wave
 rules, which the delegated planning skills did not have, so running both would

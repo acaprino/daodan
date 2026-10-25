@@ -25,6 +25,7 @@ UNITS = (
     "deepen",
     "evidence",
     "reading",
+    "standalone",
     "phase-0",
     "phases-1-2",
     "phases-3-4",

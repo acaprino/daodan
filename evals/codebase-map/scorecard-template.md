@@ -1,8 +1,8 @@
 # Scorecard: <case>
 
 - **Date:**
-- **Component run:** `/daodan:map-code` (analyze entry) | `/daodan:map-code` (team entry) | `semantic-interconnect-mapper`
-- **Host / model / session:**
+- **Component run:** `/daodan:map-code` (analyze entry) | `/daodan:map-code` (team entry) | `semantic-interconnect-mapper` | standalone model consumption
+- **Host / model:**
 - **Plugin version under test:**
 - **Target materialized:** (scratch path, fixture used, any deliberate edits)
 
@@ -13,11 +13,12 @@
 
 Evidence is a quote from the transcript or a file in the run directory, not a summary. An assertion scored `pass` with no evidence is unscored.
 
-## Cost
+## Sessions and cost
 
-- Wall-clock:
-- Files read by hand (transcript count) versus script invocations:
-- Workers dispatched (team mode):
+| Phase or variant | Session | Run identity | Wall-clock | Files read versus script invocations | Map queries | Fallback searches | Workers dispatched |
+|---|---|---|---|---|---|---|---|
+| Setup | | | | | | | |
+| Test | | | | | | | |
 
 ## Observations
 

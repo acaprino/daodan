@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 8.8.0; source-sha256: 7e4f551303453cc8fa7e2e9e86e474a8bb00124d3db720e74d843171b135b8e2. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 8.9.0; source-sha256: f15e4b31069875fa6c8678e54c466ef3a9ff923c368260a297c739163960e235. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-map`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-map-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-map`. The owning plugin's declared logical skill identities are `codebase-map:map-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -99,6 +99,8 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 | Resource | Sections | When |
 |---|---|---|
 | `<codebase-map-plugin-root>/skills/map-method/SKILL.md` | all | always |
+| `<codebase-map-plugin-root>/skills/map-method/references/standalone.md` | all | always |
+| `<codebase-map-plugin-root>/skills/map-method/references/reading.md` | section: Task views | always |
 | `<codebase-map-plugin-root>/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
 | `<codebase-map-plugin-root>/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `<codebase-map-plugin-root>/skills/map-method/references/phase-0.md` | all | phase-0 |
