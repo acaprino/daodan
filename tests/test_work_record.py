@@ -162,30 +162,32 @@ class ProjectProtocolTests(ProtocolCase):
         self.invoke("update", {"run_id": "different"}, ("--expected-revision", "0"), ok=False)
         self.invoke("update", {"scope": {"paths": []}}, ("--expected-revision", "0"), ok=False)
 
-    def test_exact_run_id_and_root_confinement_are_checked_before_writes(self):
-        self.invoke("init", self.payload, ("--out", str(self.temp / "outside")), ok=False)
-        self.assertFalse((self.temp / "outside").exists())
+    def test_exact_run_id_is_checked_before_writes(self):
         self.invoke("init", self.payload, ("--run-id", "../escape"), ok=False)
         self.assertFalse((self.project / "escape").exists())
 
-    def test_custom_root_must_be_dedicated_and_inside_project(self):
-        self.invoke("init", self.payload, ("--out", str(self.project)), ok=False)
-        self.init(("--out", "reports/lifecycle"))
-        self.assertTrue((self.project / "reports/lifecycle/.daodan-root").is_file())
+    def test_the_record_home_must_be_dedicated(self):
+        home = self.project / ".daodan"
+        home.mkdir()
+        (home / "notes.txt").write_text("someone else's\n", encoding="utf-8")
+        self.assertIn("dedicated", self.invoke("init", self.payload, ok=False).stderr)
+        (home / "notes.txt").unlink()
+        self.init()
+        self.assertTrue((home / ".daodan-root").is_file())
 
     def test_duplicate_run_cannot_replace_existing_record(self):
         first = self.init()
         self.invoke("init", self.payload, ok=False)
         self.assertEqual(self.invoke("show"), first)
 
-    def test_output_root_symlink_is_rejected(self):
+    def test_a_linked_record_home_is_rejected(self):
         outside = self.temp / "outside"
         outside.mkdir()
         try:
-            (self.project / "linked").symlink_to(outside, target_is_directory=True)
+            (self.project / ".daodan").symlink_to(outside, target_is_directory=True)
         except OSError as error:
             self.skipTest(f"symlink unavailable: {error}")
-        self.invoke("init", self.payload, ("--out", "linked"), ok=False)
+        self.invoke("init", self.payload, ok=False)
         self.assertEqual(list(outside.iterdir()), [])
 
     @unittest.skipUnless(os.name == "nt", "Windows junctions are unavailable on this platform")
@@ -424,7 +426,8 @@ class ProjectProtocolTests(ProtocolCase):
         self.init()
         foreign = self.temp / "foreign.txt"
         foreign.write_text("must survive")
-        lock = self.project / ".daodan/runs/test-run/.write-lock"
+        lock = self.project / ".daodan/.write-lock"
+        lock.unlink()
         try:
             os.link(foreign, lock)
         except OSError as error:
@@ -445,65 +448,67 @@ class LoopRecordTests(ProtocolCase):
     def wave(self, identity, *tasks, **extra):
         return {"id": identity, "status": "pending", "tasks": list(tasks), **extra}
 
-    def plan_check(self, payload, ok=True):
-        return self.invoke("plan-check", payload, ok=ok)
+    def check_draft(self, draft, ok=True):
+        """Record a draft in a run of its own: the write validates it, and a refusal writes nothing."""
+        self.drafts = getattr(self, "drafts", 0) + 1
+        return self.invoke("init", {**self.payload, **draft}, ["--run-id", f"draft-{self.drafts}"], ok=ok)
 
-    def test_plan_check_accepts_a_disjoint_bounded_wave(self):
-        result = self.plan_check({"waves": [self.wave("w1", self.task("a", "src/a.py", "tests/test_a.py"),
+    def test_a_disjoint_bounded_wave_is_accepted(self):
+        record = self.check_draft({"waves": [self.wave("w1", self.task("a", "src/a.py", "tests/test_a.py"),
                                                        self.task("b", "src/b.py", "tests/test_b.py"))]})
-        self.assertEqual((result["valid"], result["waves"], result["tasks"]), (True, 1, 2))
+        self.assertEqual([len(wave["tasks"]) for wave in record["waves"]], [2])
 
     def test_micro_task_budget_is_mechanical(self):
         five = self.task("a", *(f"src/{index}.py" for index in range(5)))
-        refusal = self.plan_check({"waves": [self.wave("w1", five)]}, ok=False)
+        refusal = self.check_draft({"waves": [self.wave("w1", five)]}, ok=False)
         self.assertIn("budget is 4", refusal.stderr)
         five["granularity_exception"] = {"reason": "generated client and its four bindings change together"}
-        self.assertTrue(self.plan_check({"waves": [self.wave("w1", five)]})["valid"])
+        self.check_draft({"waves": [self.wave("w1", five)]})
         seven = self.task("a", *(f"src/{index}.py" for index in range(7)), granularity_exception={"reason": "x"})
-        self.assertIn("budget is 6", self.plan_check({"waves": [self.wave("w1", seven)]}, ok=False).stderr)
+        self.assertIn("budget is 6", self.check_draft({"waves": [self.wave("w1", seven)]}, ok=False).stderr)
         no_oracle = self.task("a", "src/a.py")
         no_oracle["oracle"] = {"command": "pytest"}
-        self.assertIn("failure it must produce", self.plan_check({"waves": [self.wave("w1", no_oracle)]}, ok=False).stderr)
+        self.assertIn("failure it must produce", self.check_draft({"waves": [self.wave("w1", no_oracle)]}, ok=False).stderr)
 
     def test_tasks_in_one_wave_share_neither_files_nor_locks_nor_contracts(self):
         shared = self.wave("w1", self.task("a", "src/common.py"), self.task("b", "src/common.py"))
-        self.assertIn("share write_set files", self.plan_check({"waves": [shared]}, ok=False).stderr)
+        self.assertIn("share write_set files", self.check_draft({"waves": [shared]}, ok=False).stderr)
         locked = self.wave("w1", self.task("a", "src/a.py", resource_locks=["db:migrations"]),
                            self.task("b", "src/b.py", resource_locks=["db:migrations"]))
-        self.assertIn("share resource locks", self.plan_check({"waves": [locked]}, ok=False).stderr)
+        self.assertIn("share resource locks", self.check_draft({"waves": [locked]}, ok=False).stderr)
         chained = self.wave("w1", self.task("a", "src/a.py", produces=["OrderDraft"]),
                             self.task("b", "src/b.py", consumes=["OrderDraft"]))
-        self.assertIn("consumes what a produces", self.plan_check({"waves": [chained]}, ok=False).stderr)
+        self.assertIn("consumes what a produces", self.check_draft({"waves": [chained]}, ok=False).stderr)
         split = [self.wave("w1", self.task("a", "src/a.py", produces=["OrderDraft"])),
                  self.wave("w2", self.task("b", "src/b.py", consumes=["OrderDraft"]))]
-        self.assertTrue(self.plan_check({"waves": split})["valid"])
+        self.check_draft({"waves": split})
 
     def test_parallel_waves_need_a_worktree(self):
         waves = [self.wave("w1", self.task("a", "src/a.py"), self.task("b", "src/b.py"), parallel=True)]
-        self.assertIn("needs a WORKTREE", self.plan_check({"waves": waves}, ok=False).stderr)
+        self.assertIn("needs a WORKTREE", self.check_draft({"waves": waves}, ok=False).stderr)
         in_place = {"mode": "IN_PLACE", "branch": "master", "base_sha": "abc"}
-        self.assertIn("needs a WORKTREE", self.plan_check({"workspace": in_place, "waves": waves}, ok=False).stderr)
+        self.assertIn("needs a WORKTREE", self.check_draft({"workspace": in_place, "waves": waves}, ok=False).stderr)
         worktree = {"mode": "WORKTREE", "branch": "task/a", "base_sha": "abc", "worktree_path": ".worktrees/a"}
-        self.assertTrue(self.plan_check({"workspace": worktree, "waves": waves})["valid"])
-        self.assertIn("worktree_path", self.plan_check({"workspace": {"mode": "WORKTREE", "branch": "t", "base_sha": "a"}}, ok=False).stderr)
+        self.check_draft({"workspace": worktree, "waves": waves})
+        self.assertIn("worktree_path", self.check_draft({"workspace": {"mode": "WORKTREE", "branch": "t", "base_sha": "a"}}, ok=False).stderr)
 
     def test_secret_bindings_never_carry_a_value_and_red_baselines_carry_a_fingerprint(self):
         workspace = {"mode": "BRANCH", "branch": "task/a", "base_sha": "abc",
                      "environment_bindings": [{"path": ".env.local", "kind": "env-file", "secret": True, "value": "x"}]}
-        self.assertIn("never records its value", self.plan_check({"workspace": workspace}, ok=False).stderr)
+        self.assertIn("never records its value", self.check_draft({"workspace": workspace}, ok=False).stderr)
         del workspace["environment_bindings"][0]["value"]
-        self.assertTrue(self.plan_check({"workspace": workspace})["valid"])
-        self.assertIn("fingerprint", self.plan_check({"preflight": {"baseline": "KNOWN_RED"}}, ok=False).stderr)
-        self.assertTrue(self.plan_check({"preflight": {"baseline": "KNOWN_RED", "failing_fingerprint": "sha256:0"}})["valid"])
-        self.assertIn("ADR identifiers", self.plan_check({"adr": {"active": ["adr-1"]}}, ok=False).stderr)
-        self.assertTrue(self.plan_check({"adr": {"active": ["ADR-0014"], "proposed": "ADR-0015"}})["valid"])
+        self.check_draft({"workspace": workspace})
+        self.assertIn("fingerprint", self.check_draft({"preflight": {"baseline": "KNOWN_RED"}}, ok=False).stderr)
+        self.check_draft({"preflight": {"baseline": "KNOWN_RED", "failing_fingerprint": "sha256:0"}})
+        self.assertIn("ADR identifiers", self.check_draft({"adr": {"active": ["adr-1"]}}, ok=False).stderr)
+        self.check_draft({"adr": {"active": ["ADR-0014"], "proposed": "ADR-0015"}})
 
     def test_sealed_wave_requires_committed_tasks(self):
         pending = self.wave("w1", self.task("a", "src/a.py"), status="sealed")
-        self.assertIn("cannot be sealed", self.plan_check({"waves": [pending]}, ok=False).stderr)
+        self.assertIn("cannot be sealed", self.check_draft({"waves": [pending]}, ok=False).stderr)
         committed = self.task("a", "src/a.py")
         committed["status"] = "committed"
-        self.assertTrue(self.plan_check({"waves": [self.wave("w1", committed, status="sealed")]})["valid"])
+        self.check_draft({"waves": [self.wave("w1", committed, status="sealed")]})
 
     def test_rulings_are_append_only_inside_a_run(self):
         ruling = {"id": "RUL-001", "task": "a", "sha": "abc", "decision": "keep sync API",
@@ -519,7 +524,7 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("append-only", refusal.stderr)
         dropped = self.invoke("update", {"rulings": [second]}, ["--expected-revision", "1"], ok=False)
         self.assertIn("append-only", dropped.stderr)
-        self.assertIn("cites evidence", self.plan_check({"rulings": [{**ruling, "evidence": []}]}, ok=False).stderr)
+        self.assertIn("cites evidence", self.check_draft({"rulings": [{**ruling, "evidence": []}]}, ok=False).stderr)
 
     def test_an_authorization_asked_later_is_an_append_only_grant(self):
         record = self.init()
@@ -563,10 +568,10 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("append-only", self.invoke("update", rewritten, ["--expected-revision", "1"], ok=False).stderr)
         deeper = {**light, "id": "R2", "shape": "branch", "tier": "small", "stage": "candidate"}
         self.assertEqual(len(self.invoke("update", {"reviews": [light, deeper]}, ["--expected-revision", "1"])["reviews"]), 2)
-        self.assertIn("tier must be one of", self.plan_check({"reviews": [{**light, "tier": "enormous"}]}, ok=False).stderr)
-        self.assertIn("kind must be one of", self.plan_check({"reviews": [{**light, "kind": "poem"}]}, ok=False).stderr)
+        self.assertIn("tier must be one of", self.check_draft({"reviews": [{**light, "tier": "enormous"}]}, ok=False).stderr)
+        self.assertIn("kind must be one of", self.check_draft({"reviews": [{**light, "kind": "poem"}]}, ok=False).stderr)
         self.assertIn("roster must be a nonempty list",
-                      self.plan_check({"reviews": [{**light, "roster": []}]}, ok=False).stderr)
+                      self.check_draft({"reviews": [{**light, "roster": []}]}, ok=False).stderr)
 
     def git(self, *arguments):
         return subprocess.run(["git", "-C", str(self.project), *arguments], capture_output=True,
@@ -580,25 +585,32 @@ class LoopRecordTests(ProtocolCase):
     def test_the_agenda_binds_a_task_to_its_branch_and_session(self):
         self.make_repo()
         self.payload["workspace"] = {"mode": "BRANCH", "branch": "task/one", "base_sha": self.git("rev-parse", "HEAD")}
-        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
         self.invoke("init", self.payload, ["--session", "s1"])
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}, extra=["--session", "s1"])
         agenda = self.invoke("agenda", extra=["--branch", "task/one"])
         row = agenda["tasks"][0]
         self.assertEqual((row["run_id"], row["branch"], row["holder"]["session"], row["questions"], row["loop"]),
                          ("test-run", "task/one", "s1", 1, True))
         self.assertTrue((self.project / ".daodan/agenda.json").is_file())
-        held = self.invoke("update", {"phases": {"audit": {"status": "in_progress"}}},
-                           ["--expected-revision", "0", "--session", "s2"], ok=False)
+        patch = {"phases": {"audit": {"status": "in_progress"}}}
+        held = self.invoke("update", patch, ["--expected-revision", "1", "--session", "s2"], ok=False)
         self.assertIn("held by session s1", held.stderr)
-        taken = self.invoke("update", {"phases": {"audit": {"status": "in_progress"}}},
-                            ["--expected-revision", "0", "--session", "s2", "--take-over"])
-        self.assertEqual(taken["revision"], 1)
+        unnamed = self.invoke("update", patch, ["--expected-revision", "1"], ok=False)
+        self.assertIn("held by session s1", unnamed.stderr)
+        taken = self.invoke("update", patch, ["--expected-revision", "1", "--session", "s2", "--take-over"])
+        self.assertEqual(taken["revision"], 2)
         row = self.invoke("agenda")["tasks"][0]
         self.assertEqual((row["holder"]["session"], row["phase"]), ("s2", "audit"))
-        answered = self.invoke("update", {"questions": [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?", "answer": "yes"}]},
-                               ["--expected-revision", "1", "--session", "s2"])
+        nameless = self.invoke("update", patch, ["--expected-revision", "2", "--take-over"], ok=False)
+        self.assertIn("--take-over needs --session", nameless.stderr)
+        self.invoke("answer", {"question": "Q1", "text": "yes", "source": "chat"}, ["--session", "s2"])
         self.assertEqual(self.invoke("agenda")["tasks"][0]["questions"], 0)
-        self.assertEqual(answered["questions"][0]["answer"], "yes")
+        self.assertEqual(self.invoke("show")["questions"][0]["answer"], "yes")
+        done = {"status": "complete", "phases": {"audit": {"status": "complete"}},
+                "deliveries": {"audit": {"status": "delivered", "output": self.report()}}}
+        self.assertIn("held by session s2",
+                      self.invoke("update", done, ["--expected-revision", "3", "--session", "s1"], ok=False).stderr)
+        self.assertEqual(self.invoke("update", done, ["--expected-revision", "3", "--session", "s2"])["status"], "complete")
 
     def test_a_branch_holds_one_open_loop_task_and_a_completed_run_releases_it(self):
         self.make_repo()
@@ -642,14 +654,11 @@ class LoopRecordTests(ProtocolCase):
         self.git("worktree", "remove", "--force", str(worktree))
         self.assertTrue((self.project / ".daodan/runs/wt-run/work.json").is_file())
 
-    def test_environment_and_questions_are_validated(self):
+    def test_environment_is_validated(self):
         good = {"interpreter": ".venv/Scripts/python.exe", "commands": {"test": "pytest -q", "lint": "ruff check ."}}
-        self.assertTrue(self.plan_check({"environment": good})["valid"])
-        self.assertIn("is not one of", self.plan_check({"environment": {**good, "commands": {"deploy": "x"}}}, ok=False).stderr)
-        self.assertIn("environment.interpreter is required", self.plan_check({"environment": {"commands": {}}}, ok=False).stderr)
-        self.assertIn("repeated", self.plan_check({"questions": [{"id": "Q1", "phase": "p", "text": "a"},
-                                                                  {"id": "Q1", "phase": "p", "text": "b"}]}, ok=False).stderr)
-        self.assertIn("empty answer", self.plan_check({"questions": [{"id": "Q1", "phase": "p", "text": "a", "answer": " "}]}, ok=False).stderr)
+        self.check_draft({"environment": good})
+        self.assertIn("is not one of", self.check_draft({"environment": {**good, "commands": {"deploy": "x"}}}, ok=False).stderr)
+        self.assertIn("environment.interpreter is required", self.check_draft({"environment": {"commands": {}}}, ok=False).stderr)
 
     def test_loop_sections_are_validated_inside_the_record_too(self):
         self.payload["waves"] = [self.wave("w1", self.task("a", "src/common.py"), self.task("b", "src/common.py"))]
@@ -657,73 +666,55 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("share write_set files", refusal.stderr)
 
 
-    def test_question_sources_are_validated(self):
-        base = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
-        self.assertTrue(self.plan_check({"questions": [{**base, "answer": "yes", "source": "chat"}]})["valid"])
-        self.assertIn("is not one of", self.plan_check({"questions": [{**base, "answer": "yes", "source": "email"}]}, ok=False).stderr)
-        self.assertIn("withdrawn only beside an answer", self.plan_check({"questions": [{**base, "withdrawn": True}]}, ok=False).stderr)
+    def test_questions_change_only_through_ask_and_answer(self):
+        question = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
+        refused = self.invoke("init", {**self.payload, "questions": [question]}, ok=False)
+        self.assertIn("only through ask and answer", refused.stderr)
+        self.init()
+        patched = self.invoke("update", {"questions": [question]}, ["--expected-revision", "0"], ok=False)
+        self.assertIn("only through ask and answer", patched.stderr)
+        self.ask(question)
+        self.assertIn("is not one of", self.answer("Q1", "yes", source="email", ok=False).stderr)
+        self.assertIn("empty answer", self.answer("Q1", " ", ok=False).stderr)
+        self.assertEqual(self.answer("Q1", "yes", source="chat")["open"], 0)
 
     def test_a_task_waits_for_the_questions_it_consumes(self):
-        question = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
+        self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
         waiting = self.task("a", "src/a.py", consumes=["question:Q1"])
-        self.assertTrue(self.plan_check({"questions": [question], "waves": [self.wave("w1", waiting)]})["valid"])
+        self.invoke("update", {"waves": [self.wave("w1", waiting)]}, ["--expected-revision", "1"])
         unknown = self.task("a", "src/a.py", consumes=["question:Q9"])
-        self.assertIn("does not ask Q9", self.plan_check({"questions": [question], "waves": [self.wave("w1", unknown)]}, ok=False).stderr)
+        self.assertIn("does not ask Q9", self.invoke("update", {"waves": [self.wave("w1", unknown)]},
+                                                     ["--expected-revision", "2"], ok=False).stderr)
         running = {**waiting, "status": "running"}
         self.assertIn("consumes question:Q1, which is not answered",
-                      self.plan_check({"questions": [question], "waves": [self.wave("w1", running)]}, ok=False).stderr)
-        answered = {**question, "answer": "yes", "source": "chat"}
-        self.assertTrue(self.plan_check({"questions": [answered], "waves": [self.wave("w1", running)]})["valid"])
-
-    def test_plan_check_resolves_questions_from_the_run(self):
-        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
-        self.init()
-        waiting = self.task("a", "src/a.py", consumes=["question:Q1"])
-        self.assertTrue(self.plan_check({"waves": [self.wave("w1", waiting)]})["valid"])
-
-    def test_questions_are_append_only(self):
-        q1 = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
-        self.payload["questions"] = [q1]
-        self.init()
-        self.assertIn("append-only", self.invoke("update", {"questions": []}, ["--expected-revision", "0"], ok=False).stderr)
-        self.assertIn("append-only", self.invoke("update", {"questions": [{**q1, "text": "Drop it?"}]},
-                                                 ["--expected-revision", "0"], ok=False).stderr)
-        self.invoke("update", {"questions": [{**q1, "answer": "yes"}]}, ["--expected-revision", "0"])
-        self.assertIn("append-only", self.invoke("update", {"questions": [{**q1, "answer": "no"}]},
-                                                 ["--expected-revision", "1"], ok=False).stderr)
+                      self.invoke("update", {"waves": [self.wave("w1", running)]},
+                                  ["--expected-revision", "2"], ok=False).stderr)
+        self.answer("Q1", "yes")
+        self.invoke("update", {"waves": [self.wave("w1", running)]}, ["--expected-revision", "3"])
 
     def test_completion_requires_every_question_closed(self):
-        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
         self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
         done = {"status": "complete", "phases": {"audit": {"status": "complete"}},
                 "deliveries": {"audit": {"status": "delivered", "output": self.report()}}}
-        refused = self.invoke("update", done, ["--expected-revision", "0"], ok=False)
+        refused = self.invoke("update", done, ["--expected-revision", "1"], ok=False)
         self.assertIn("every question answered or withdrawn: Q1", refused.stderr)
-        self.invoke("update", {"questions": [{**self.payload["questions"][0], "answer": "yes"}]}, ["--expected-revision", "0"])
-        self.assertEqual(self.invoke("update", done, ["--expected-revision", "1"])["status"], "complete")
+        self.answer("Q1", "yes")
+        self.assertEqual(self.invoke("update", done, ["--expected-revision", "2"])["status"], "complete")
 
-    def test_new_question_fields_are_checked_on_write_not_on_read(self):
-        self.payload["questions"] = [{"id": "Q1", "phase": "audit", "text": "Keep the sync API?"}]
+    def test_stored_questions_load_as_written(self):
         self.init()
         path = self.project / ".daodan/runs/test-run/work.json"
         record = json.loads(path.read_text(encoding="utf-8"))
-        record["questions"][0].update(answer="yes", source="email")
+        record["questions"] = [
+            {"id": "Q1", "phase": "audit", "text": "undecided: keep the sync API", "answer": "yes", "source": "email"},
+            {"id": "Q2", "phase": "audit", "text": "undecided: drop the export"}]
         path.write_text(json.dumps(record), encoding="utf-8")
         self.assertEqual(self.invoke("show")["questions"][0]["source"], "email")
-        self.invoke("update", {"phases": {"audit": {"status": "in_progress"}}}, ["--expected-revision", "0"])
-        bad = {"id": "Q2", "phase": "audit", "text": "Drop it?", "answer": "no", "source": "email"}
-        refused = self.invoke("update", {"questions": record["questions"] + [bad]}, ["--expected-revision", "1"], ok=False)
-        self.assertIn("is not one of", refused.stderr)
-        self.payload["questions"] = [bad]
-        self.assertIn("is not one of", self.invoke("init", self.payload, ["--run-id", "other-run"], ok=False).stderr)
-
-    def test_legacy_question_records_still_load(self):
-        self.payload["questions"] = [{"id": "Q1", "phase": "audit", "text": "undecided: keep the sync API"}]
-        self.init()
         self.invoke("update", {"phases": {"audit": {"status": "complete"}}}, ["--expected-revision", "0"])
-        self.assertEqual(self.invoke("show")["questions"][0]["id"], "Q1")
         resumed = self.invoke("resume", {"authorizations": self.payload["authorizations"]})
-        self.assertEqual([q["id"] for q in resumed["pending_questions"]], ["Q1"])
+        self.assertEqual([q["id"] for q in resumed["pending_questions"]], ["Q2"])
 
     def ask(self, question, ok=True, extra=()):
         return self.invoke("ask", question, extra, ok=ok)
@@ -751,17 +742,18 @@ class LoopRecordTests(ProtocolCase):
         self.assertEqual((again["question"], again["revision"], again["open"]), ("Q9", 4, 2))
 
     def test_answer_unblocks_only_tasks_whose_questions_are_all_answered(self):
-        self.payload["waves"] = [self.wave("w1", self.task("a", "src/a.py", consumes=["question:Q1"]),
-                                          self.task("b", "src/b.py", consumes=["question:Q1", "question:Q2"]),
-                                          self.task("c", "src/c.py"))]
-        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"},
-                                     {"id": "Q2", "phase": "interview", "text": "Which clients migrate first?"}]
         self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
+        self.ask({"id": "Q2", "phase": "interview", "text": "Which clients migrate first?"})
+        wave = self.wave("w1", self.task("a", "src/a.py", consumes=["question:Q1"]),
+                         self.task("b", "src/b.py", consumes=["question:Q1", "question:Q2"]),
+                         self.task("c", "src/c.py"))
+        self.invoke("update", {"waves": [wave]}, ["--expected-revision", "2"])
         self.assertEqual(self.answer("Q1", "yes")["unblocked"], ["a"])
         resumed = self.invoke("resume", {"authorizations": self.payload["authorizations"]})
         self.assertEqual(resumed["waiting"], {"b": ["Q2"]})
         self.assertEqual(self.answer("Q2", "web first", source="chat"),
-                         {"question": "Q2", "revision": 2, "open": 0, "unblocked": ["b"]})
+                         {"question": "Q2", "revision": 5, "open": 0, "unblocked": ["b"]})
 
     def test_a_repeated_answer_changes_nothing_and_a_different_one_is_refused(self):
         self.init()
@@ -774,9 +766,10 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("does not ask Q9", self.answer("Q9", "yes", ok=False).stderr)
 
     def test_a_withdrawn_question_closes_without_unblocking(self):
-        self.payload["waves"] = [self.wave("w1", self.task("a", "src/a.py", consumes=["question:Q1"]))]
-        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
         self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
+        self.invoke("update", {"waves": [self.wave("w1", self.task("a", "src/a.py", consumes=["question:Q1"]))]},
+                    ["--expected-revision", "1"])
         withdrawn = self.answer("Q1", "drop the export goal", source="chat", withdraw=True)
         self.assertEqual((withdrawn["unblocked"], withdrawn["replan"], withdrawn["open"]), ([], ["a"], 0))
         self.assertEqual(self.invoke("resume", {"authorizations": self.payload["authorizations"]})["replan"], ["a"])
@@ -806,7 +799,7 @@ class LoopRecordTests(ProtocolCase):
 
 
 class FirstUseTests(ProtocolCase):
-    """ADR-0005: the read-only first-use probe and the first_use and intent sections."""
+    """ADR-0005: the read-only first-use probe."""
 
     def probe(self, project=None):
         stdout = io.StringIO()
@@ -815,25 +808,17 @@ class FirstUseTests(ProtocolCase):
             self.assertEqual(self.runtime["main"](args), 0)
         return json.loads(stdout.getvalue())
 
-    def intent(self, text="EX-001: input -> expected\n", name="intent.md"):
-        path = self.project / ".daodan/runs/test-run" / name
-        path.write_text(text, encoding="utf-8")
-        return {"path": name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
-
     def test_probe_of_a_fresh_project_reports_first_use_and_writes_nothing(self):
         self.git("init", "-q")
         before = sorted(p.name for p in self.project.iterdir())
-        result = self.probe()
-        self.assertEqual((result["first_use"], result["records"], result["found"]), (True, False, []))
-        self.assertEqual(Path(result["home"]), self.project.resolve())
+        self.assertEqual(self.probe(), {"first_use": True, "records": False})
         self.assertEqual(sorted(p.name for p in self.project.iterdir()), before)
         self.assertFalse((self.project / ".daodan").exists())
 
     def test_a_map_directory_ends_first_use(self):
         self.git("init", "-q")
         (self.project / ".codebase-map").mkdir()
-        result = self.probe()
-        self.assertEqual((result["first_use"], result["found"]), (False, [".codebase-map"]))
+        self.assertEqual(self.probe(), {"first_use": False, "records": False})
 
     def test_an_adr_index_enables_records(self):
         self.git("init", "-q")
@@ -848,72 +833,7 @@ class FirstUseTests(ProtocolCase):
         self.git("worktree", "add", "-q", "-b", "task/wt", str(worktree))
         self.assertTrue(self.probe(worktree)["first_use"])
         (self.project / ".daodan").mkdir()
-        result = self.probe(worktree)
-        self.assertEqual(Path(result["home"]), self.project.resolve())
-        self.assertEqual((result["first_use"], result["found"]), (False, [".daodan"]))
-
-    def test_first_use_answers_are_validated(self):
-        self.payload["first_use"] = {"records": False, "analysis": "deep"}
-        self.assertIn("first_use.analysis must be one of", self.invoke("init", self.payload, ok=False).stderr)
-        self.payload["first_use"] = {"records": "no", "analysis": "lite"}
-        self.assertIn("first_use.records must be a boolean", self.invoke("init", self.payload, ok=False).stderr)
-        self.payload["first_use"] = {"records": False, "analysis": "full"}
-        self.assertEqual(self.init()["first_use"], {"records": False, "analysis": "full"})
-
-    def test_first_use_is_answered_once(self):
-        self.init()
-        answers = {"records": True, "analysis": "lite"}
-        self.assertEqual(self.invoke("update", {"first_use": answers}, ["--expected-revision", "0"])["first_use"], answers)
-        changed = self.invoke("update", {"first_use": {"analysis": "full"}}, ["--expected-revision", "1"], ok=False)
-        self.assertIn("answered once", changed.stderr)
-        self.invoke("update", {"first_use": None}, ["--expected-revision", "1"], ok=False)
-        self.assertEqual(self.invoke("show")["first_use"], answers)
-        with self.assertRaisesRegex(self.runtime["ProtocolError"], "answered once"):
-            self.runtime["validate_loop_transitions"]({"first_use": answers}, {})
-
-    def test_intent_is_pinned_to_a_file_of_its_run(self):
-        self.init()
-        intent = self.intent()
-        self.assertEqual(self.invoke("update", {"intent": intent}, ["--expected-revision", "0"])["intent"], intent)
-        self.assertTrue(self.invoke("validate")["valid"])
-        stale = {**intent, "sha256": "0" * 64}
-        self.assertIn("stale", self.invoke("update", {"intent": stale}, ["--expected-revision", "1"], ok=False).stderr)
-        revised = self.intent("EX-001: revised\n", "intent-2.md")
-        self.assertEqual(self.invoke("update", {"intent": revised}, ["--expected-revision", "1"])["intent"], revised)
-        (self.project / ".daodan/runs/test-run/intent-2.md").write_text("edited in place\n", encoding="utf-8")
-        self.assertIn("stale", self.invoke("validate", extra=["--current"], ok=False).stderr)
-
-    def test_an_intent_edited_in_place_never_locks_its_run(self):
-        self.init()
-        self.invoke("update", {"intent": self.intent()}, ["--expected-revision", "0"])
-        (self.project / ".daodan/runs/test-run/intent.md").write_text("edited in place\n", encoding="utf-8")
-        self.assertTrue(self.invoke("validate")["valid"])
-        self.assertEqual(self.invoke("show")["revision"], 1)
-        revised = self.intent("EX-001: revised\n", "intent-2.md")
-        self.assertEqual(self.invoke("update", {"intent": revised}, ["--expected-revision", "1"])["intent"], revised)
-        self.assertTrue(self.invoke("validate", extra=["--current"])["valid"])
-
-    def test_intent_path_cannot_escape_its_run(self):
-        self.init()
-        outside = self.project / ".daodan/runs/other"
-        outside.mkdir()
-        (outside / "intent.md").write_bytes(b"x\n")
-        digest = hashlib.sha256(b"x\n").hexdigest()
-        for path in ("../other/intent.md", str(outside / "intent.md")):
-            refusal = self.invoke("update", {"intent": {"path": path, "sha256": digest}},
-                                  ["--expected-revision", "0"], ok=False)
-            self.assertIn("inside its run", refusal.stderr)
-
-    def test_intent_and_a_proposed_record_never_own_one_task(self):
-        self.payload["adr"] = {"active": [], "proposed": "ADR-0001"}
-        self.init()
-        intent = self.intent()
-        refusal = self.invoke("update", {"intent": intent}, ["--expected-revision", "0"], ok=False)
-        self.assertIn("one owner", refusal.stderr)
-        withdrawn = self.invoke("update", {"adr": {"proposed": None}, "intent": intent}, ["--expected-revision", "0"])
-        self.assertEqual(withdrawn["intent"], intent)
-        refusal = self.invoke("update", {"adr": {"proposed": "ADR-0002"}}, ["--expected-revision", "1"], ok=False)
-        self.assertIn("one owner", refusal.stderr)
+        self.assertFalse(self.probe(worktree)["first_use"])
 
 
 if __name__ == "__main__":

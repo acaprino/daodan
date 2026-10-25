@@ -102,7 +102,7 @@ repeat their discovery prompts or introduce a second documentation owner.
 ## Inputs and boundary
 
 Inputs: project/worktree, target, audience and task intent; optional depth,
-checks, run ID and internal output root. Default target is the whole project,
+checks and run ID. Default target is the whole project,
 audience is an incoming consultant, depth is standard and checks is none.
 Resolve named modules/features to project-relative paths. Ask only about an
 ambiguity that materially changes the intake. Read the applicable project
@@ -149,14 +149,13 @@ it neither changes the protocol schema nor substitutes for work.json.
 Before any project snapshot, discover forbidden paths by names only and record
 their concrete project-relative exclusions. The protocol helper hashes files in
 directory scopes; omitting those exclusions would read forbidden content. Exclude
-every tool report root: the selected output root, .daodan/, .codebase-map/, .codebase-xray/,
+every tool report root: .daodan/, .codebase-map/, .codebase-xray/,
 .team-review/, .repo-hygiene/ and other discovered tool output. Also identify
 dependency/build/cache output that is outside the requested project source and
 declare its exclusions. Never silently apply an undeclared perimeter. A supplied
 report is explicit evidence, not a source file added to the project snapshot.
 Record preexisting edits, untracked inputs,
 scope/exclusions, unavailable access, the reader/file plan and expected cost.
-Use the protocol's project-contained root and sentinel procedure for --out.
 
 Record phases, selected worker deliveries and mandatory gates before dispatch.
 Each report has one owner and a destination under this run. Always select
@@ -169,8 +168,7 @@ is not a failed delivery. Do not fabricate inline roles.
 existing run, read request.json, confirm its entrypoint and settings, and resume
 through the protocol with the same scope, snapshot and current authorizations.
 An absent/mismatched entry note or changed inputs requires a new run rather than
-rebinding a completed dossier or taking over another intervention. Carry --out
-consistently. Preserve interruptions and the exact pending phase.
+rebinding a completed dossier or taking over another intervention. Preserve interruptions and the exact pending phase.
 
 ## Discover and check
 

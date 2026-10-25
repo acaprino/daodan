@@ -89,10 +89,10 @@ def main():
             'verification': {'command': 'python oracle.py'}}]}])
     init = work / 'init.json'
     init.write_text(json.dumps(payload), encoding='utf8')
-    common = ['--project', project, '--out', records, '--run-id', 'pathrun', '--session', 'pathrun-coordinator']
+    common = ['--project', project, '--run-id', 'pathrun', '--session', 'pathrun-coordinator']
     need(*run([python, '-B', PROTOCOL, 'init', *common, '--payload', init]), 'protocol init', log)
 
-    config = dict(project=str(project), records_root=str(records), run_id='pathrun', manifest=str(m0),
+    config = dict(project=str(project), run_id='pathrun', manifest=str(m0),
                   protocol=[python, '-B', str(PROTOCOL)], provider=[python, '-B', str(SCRIPTS / 'snapshot.py')],
                   indexes={'retrieval': str(m0.with_name('retrieval.sqlite'))})
     request = dict(schema='daodan/context-request/v1', task_id='ignored-caller-id', intent='bug', query=REQUEST,

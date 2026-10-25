@@ -343,8 +343,8 @@ paths, links and unsafe output identities mechanically. That enforcement covers 
 performed through those helpers, not arbitrary writes by other agent tools, semantic truth of a
 report, or the provenance of human permission.
 
-Project run output defaults to `.daodan/runs/<id>/`. A dedicated alternative root is allowed
-only inside the identified project, is not the project root, and carries `.daodan-root`.
+Project run output lives in `.daodan/runs/<id>/` of the main checkout, a dedicated home
+carrying `.daodan-root`; there is no alternative root.
 Tri-Tech Code is an external OpenCode consumer, not a sixth adapter. Private app storage outside
 the project is unsupported until a separate permission binding is proved: generated OpenCode
 role allowances cover the installed package, not an arbitrary app data directory.

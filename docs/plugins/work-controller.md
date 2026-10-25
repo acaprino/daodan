@@ -1,49 +1,53 @@
 # Work controller
 
-A dependency-free leaf owns operational work and project-result contracts,
-run identities, exact file snapshots, state transitions, delivery accounting,
-candidate gates and recovery obligations. It does not define domain findings or
-execute automatic Git rollback. Its isolated-worker role provides the neutral
-task, owned-scope and report contract for explicitly declared generic workers.
+A dependency-free leaf owns the work contract (`contracts/work.toml`, which also
+holds the project-result envelope), run identities, exact file snapshots, state
+transitions, delivery accounting, candidate gates, questions to the user and
+recovery obligations. It does not define domain findings or run Git rollback.
+Its isolated-worker role is the neutral task, owned-scope and report contract
+for explicitly declared generic workers; the coordinator's brief carries the
+working discipline.
 
-Canonical schemas live in contracts/ and are explicitly exported by plugin.toml.
-Consumers declare shared_schemas rather than copying required fields into their
-own kernels. The seven senior-review schemas remain review-domain payloads.
+Consumers declare `work-controller/contracts/work.toml` in `shared_schemas`
+rather than copying its fields. The senior-review schemas remain review-domain
+payloads.
 
-Load `work-controller:work-record`. Its Python 3.11+ stdlib `run_state.py`
-helper exposes init, show, update, validate, resume and snapshot. `validate --current`
-checks a record against the current project inputs; plain validation checks a
-historical record. `validate --current --result <result.json>` also checks the
-result envelope against that exact persisted revision and candidate. Payloads
-are JSON; updates require an expected revision and use locking plus atomic
-replacement. Roots are confined to a
-dedicated directory in the project, with .daodan-root sentinel and exact run ID.
+Load `work-controller:work-record`. Its stdlib `run_state.py` keeps every record
+and the agenda in `.daodan/` of the main checkout, behind one write lock and
+atomic replacement. Writes name the session, and a task is written only by the
+session holding it. `update` needs the expected revision and refuses a stale
+one; a refused write changes nothing, so a draft plan is checked by writing it.
+`snapshot` prints the current candidate digest and head for a gate;
+`validate --current` rejects changed inputs, and `--result` checks the result
+envelope against the exact revision and candidate.
 
-Declare expected deliveries and required gates. Mandatory checks can only be added,
-not removed. A delivered worker must identify an existing run-owned report.
-Completion requires every delivery, current candidate-bound successful
-gates, closed phases and no interruption. Result validation correlates the envelope
-with the persisted record; it does not prove the payload's semantic truth.
+Declare expected deliveries and required gates. Gates, grants, rulings and
+reviews are append-only. A delivered worker identifies an existing run-owned
+report. Completion requires every delivery, current candidate-bound successful
+gates, closed phases, no interruption and no open question. Result validation
+correlates the envelope with the record; it does not prove the payload's
+semantic truth.
 
-Baseline, pre-phase snapshot/SHA and exclusive workspace ownership precede mutation.
-Recovery preserves prior successful phases and preexisting/foreign files.
-Remote checks identify the exact candidate revision and job attempt, and require
-the candidate inputs to match that committed revision. Published
-changes need authorized revert instead of history rewrite.
+Baseline, pre-phase snapshot/SHA and exclusive workspace ownership precede
+mutation. Recovery preserves prior successful phases and foreign files. Remote
+checks name the exact candidate revision and job attempt and require the inputs
+to match that commit. Published changes need an authorized revert.
 
-Questions to the user live in the run's `questions` section. `ask` records one
-before it is asked and returns the open question of the same phase when another
-worker raises the same decision; whether an earlier answer still applies is the
-coordinator's judgment; `answer` records the user's own words and their source,
-and refuses to change an answer, because a changed answer is a new question.
-Both print only the question they touched. A wave task that needs an answer
-lists `question:<id>` in its `consumes` and cannot run until that question is
-answered; `answer` names the tasks it unblocks and `resume` the tasks still
-waiting. A withdrawn question closes without unblocking anyone, and a run cannot
-complete while a question is open. The shape of a question, in
-`references/questions.md`, is shared by every method that asks. Decision maps,
-tickets and the revision of work already done after a changed decision are not
-part of this contract yet.
+Questions change only through `ask` and `answer`. `ask` records a question before
+it is asked and returns the open question of the same phase that already asks it;
+whether an earlier answer still applies is the coordinator's judgment. `answer`
+records the user's own words and their source and never changes an answer,
+because a changed answer is a new question. Both print only the question they
+touched. A wave task that needs an answer lists `question:<id>` in its `consumes`
+and waits; `answer` names the tasks it unblocks and `resume` the tasks still
+waiting. A withdrawn question closes without unblocking anyone. The shape of a
+question, in `references/questions.md`, is shared by every method that asks.
+Decision maps, tickets and the revision of work already done after a changed
+decision are not part of this contract yet.
+
+Version 2.0.0 removed `plan-check` (write the draft; a refused write changes
+nothing) and the custom `--out` root. A run that 1.x recorded under a custom root
+stays on disk as plain files and is finished with work-controller 1.x.
 
 Helpers mechanically confine their own writes. Other agent tools remain subject
 to prompt obligations until an installed runtime enforcement mechanism is proved.
@@ -54,7 +58,7 @@ to prompt obligations until an installed runtime enforcement mechanism is proved
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `1.2.0`. **Source:** [plugin.toml](<../../plugins/work-controller/plugin.toml>).
+**Version:** `2.0.0`. **Source:** [plugin.toml](<../../plugins/work-controller/plugin.toml>).
 
 ### Required dependencies
 
@@ -106,6 +110,5 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 ### Additional shipped contracts and mechanisms
 
 - Exported shared contract: [contracts/work.toml](<../../plugins/work-controller/contracts/work.toml>).
-- Exported shared contract: [contracts/project-result.toml](<../../plugins/work-controller/contracts/project-result.toml>).
 
 <!-- daodan:reference:end -->

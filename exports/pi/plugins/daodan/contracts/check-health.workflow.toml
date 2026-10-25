@@ -111,4 +111,4 @@ inputs = [
 outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
 artifacts = ["result"]
 schemas = []
-shared_schemas = ["work-controller/contracts/work.toml", "work-controller/contracts/project-result.toml"]
+shared_schemas = ["work-controller/contracts/work.toml"]

@@ -110,7 +110,6 @@ existing instructions into these settings:
 | pace | guided | guided or autonomous; never a specialist workflow flag |
 | resume | none | Exact stage run IDs supplied through repeated --resume RUN_ID |
 | handover | none | Exact assess run supplied through --from-handover RUN_ID |
-| output root | protocol default | Project-contained alternative selected with --out |
 
 Explicit current user authorization wins over defaults. Keep conflicting mode
 flags as a clarification, never silently choose the broader grant. Read project

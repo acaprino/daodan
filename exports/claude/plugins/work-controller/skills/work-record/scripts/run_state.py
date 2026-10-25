@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from contextlib import contextmanager
 import copy
+import errno
 import platform
 from datetime import datetime, timezone
 import hashlib
@@ -16,6 +17,7 @@ import re
 import stat
 import subprocess
 import sys
+import time
 import tomllib
 import uuid
 
@@ -23,6 +25,7 @@ SCHEMA = "daodan/work/v1"
 QUESTION_PREFIX = "question:"
 RUN_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,95}$")
 CONTRACT = Path(__file__).resolve().parents[3] / "contracts/work.toml"
+LOCK_WAIT = 30
 IMMUTABLE = frozenset({"schema", "revision", "run_id", "project", "scope", "authorizations",
                        "operation", "objective", "output_root", "created_at", "candidate"})
 
@@ -102,25 +105,20 @@ def first_use_probe(project):
     home = checkout_home(project)
     found = sorted(name for name in STATE_DIRECTORIES if (home / name).is_dir() or (project / name).is_dir())
     records = any((base / "docs/adr/README.md").is_file() for base in (home, project))
-    return {"first_use": not found, "records": records,
-            "home": str(home), "found": found}
+    return {"first_use": not found, "records": records}
 
 
-def roots(project, output):
+def roots(project):
+    """The project and its one record home, `.daodan/` of the main checkout."""
     project = Path(project).resolve()
     if not project.is_dir():
         raise ProtocolError("Project root must be a directory")
-    home = project if output else checkout_home(project)
-    selected = Path(output) if output else Path(".daodan")
-    if ".." in selected.parts:
-        raise ProtocolError("Output root contains traversal")
-    raw = selected if selected.is_absolute() else home / selected
+    home = checkout_home(project)
+    raw = home / ".daodan"
     no_links(raw, home)
     root = raw.resolve()
-    if root == home or not root.is_relative_to(home):
-        raise ProtocolError("Output root must be strictly inside the project")
     if root.exists() and not (root / ".daodan-root").is_file() and any(root.iterdir()):
-        raise ProtocolError("Output root must be dedicated and carry .daodan-root")
+        raise ProtocolError(".daodan must be dedicated and carry .daodan-root")
     no_links(root / ".daodan-root", home)
     return project, root
 
@@ -319,45 +317,6 @@ def validate_adr(section, rules):
         raise ProtocolError("adr.proposed must be an ADR identifier or null")
 
 
-def validate_first_use(section, rules):
-    if not isinstance(section, dict) or set(rules["required"]) - set(section):
-        raise ProtocolError("first_use must be an object with " + ", ".join(rules["required"]))
-    if not isinstance(section["records"], bool):
-        raise ProtocolError("first_use.records must be a boolean")
-    if section["analysis"] not in rules["analysis"]:
-        raise ProtocolError("first_use.analysis must be one of " + ", ".join(rules["analysis"]))
-
-
-def validate_intent(section, rules, directory, adr, digests):
-    """The task's intent file, pinned by digest inside the run's own directory.
-
-    The file is compared with its digest only when `digests` is set: when an
-    update records a new intent and when the current candidate is validated.
-    Reading a stored record never fails on it, so a run whose intent file was
-    edited in place can still record the revised file.
-    """
-    if not isinstance(section, dict) or set(rules["required"]) - set(section):
-        raise ProtocolError("intent must be an object with " + ", ".join(rules["required"]))
-    if isinstance(adr, dict) and adr.get("proposed") is not None:
-        raise ProtocolError("A task's intent has one owner, the decision record or the run's intent, never both")
-    if directory is None:
-        raise ProtocolError("intent is checked only inside a stored run")
-    try:
-        path = directory / report_path(section["path"])
-    except ProtocolError as error:
-        raise ProtocolError(f"intent.path must name a file inside its run: {section['path']}") from error
-    no_links(path, directory)
-    digest = section["sha256"]
-    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
-        raise ProtocolError("intent.sha256 must be a SHA256 digest")
-    if not digests:
-        return
-    if not path.is_file():
-        raise ProtocolError(f"Intent file is missing: {section['path']}")
-    if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-        raise ProtocolError("intent.sha256 is stale; write a revised intent to a new file and record its digest")
-
-
 def validate_task(task, rules):
     if not isinstance(task, dict):
         raise ProtocolError("A wave task must be an object")
@@ -465,19 +424,6 @@ def validate_questions(section, rules):
         seen.add(question["id"])
         if "answer" in question and (not isinstance(question["answer"], str) or not question["answer"].strip()):
             raise ProtocolError(f"Question {question['id']} has an empty answer; omit the field until it is answered")
-
-
-def validate_written_questions(questions, before=()):
-    """Check the fields of each question this write adds or changes, never a stored one."""
-    rules = contract()["loop"]["questions"]
-    stored = list(before)
-    for index, question in enumerate(questions or []):
-        if index < len(stored) and stored[index] == question:
-            continue
-        if "source" in question and question["source"] not in rules["sources"]:
-            raise ProtocolError(f"Question {question['id']} source is not one of {', '.join(rules['sources'])}")
-        if "withdrawn" in question and (question["withdrawn"] is not True or "answer" not in question):
-            raise ProtocolError(f"Question {question['id']} is withdrawn only beside an answer")
 
 
 def consumed_questions(task):
@@ -871,15 +817,9 @@ def validate_grants(record):
             raise ProtocolError(f"Grant {grant['id']} names the user's answer as its source")
 
 
-def validate_loop(record, directory=None, digests=False):
-    """Validate the optional loop sections a lifecycle run carries.
-
-    `directory` is the run's own directory, which only a stored record has;
-    `intent` needs it to check its file, and `digests` to compare the file's bytes.
-    """
-    rules = contract().get("loop")
-    if rules is None:
-        return
+def validate_loop(record):
+    """Validate the optional loop sections a lifecycle run carries."""
+    rules = contract()["loop"]
     present = {name: record[name] for name in rules["sections"] if name in record}
     if "workspace" in present:
         validate_workspace(present["workspace"], rules["workspace"])
@@ -887,10 +827,6 @@ def validate_loop(record, directory=None, digests=False):
         validate_preflight(present["preflight"], rules["preflight"])
     if "adr" in present:
         validate_adr(present["adr"], rules["adr"])
-    if "first_use" in present:
-        validate_first_use(present["first_use"], rules["first_use"])
-    if "intent" in present:
-        validate_intent(present["intent"], rules["intent"], directory, present.get("adr"), digests)
     if "waves" in present:
         validate_waves(present["waves"], rules["waves"], present.get("workspace"))
     if "rulings" in present:
@@ -906,24 +842,14 @@ def validate_loop(record, directory=None, digests=False):
 
 
 def validate_loop_transitions(old, new):
-    rules = contract().get("loop")
-    if rules is None:
-        return
+    rules = contract()["loop"]
     for section, entry in (("rulings", "a recorded decision"), ("reviews", "a computed roster")):
         before = old.get(section, [])
         if rules[section].get("append_only") and new.get(section, [])[:len(before)] != before:
             raise ProtocolError(f"{section.capitalize()} are append-only; {entry} cannot be altered or removed")
-    before, after = old.get("questions", []), new.get("questions", [])
-    if len(after) < len(before) or any(
-            any(b.get(key) != a.get(key) for key in b) or ("answer" in b and a != b)
-            for b, a in zip(before, after)):
-        raise ProtocolError("Questions are append-only; a question or its answer cannot be altered or removed")
-    validate_written_questions(after, before)
-    if "first_use" in old and new.get("first_use") != old["first_use"]:
-        raise ProtocolError("first_use is answered once; an update cannot change or remove it")
 
 
-def validate_record(record, project=None, root=None, current=False, digests=False):
+def validate_record(record, project=None, root=None):
     rules = contract()
     missing = sorted(set(rules["required"]) - set(record))
     if missing:
@@ -976,7 +902,7 @@ def validate_record(record, project=None, root=None, current=False, digests=Fals
                         raise ProtocolError("An independent check requires its own output report")
                     delivery_reports.append((report, "check" in item))
     validate_grants(record)
-    validate_loop(record, None if root is None else root / "runs" / record["run_id"], digests)
+    validate_loop(record)
     if project is not None:
         if record["project"].get("root") != str(project):
             raise ProtocolError("Project identity does not match this invocation")
@@ -1004,16 +930,12 @@ def validate_record(record, project=None, root=None, current=False, digests=Fals
                         or not evidence.get("attempt") or not evidence.get("source_revision")
                         or evidence["source_revision"] != candidate["head"]):
                     raise ProtocolError(f"Remote gate lacks candidate revision and job attempt: {name}")
-        if current and project is not None and project_binding(project, record["scope"], root) != candidate:
-            raise ProtocolError("Current candidate snapshot differs from the completed record")
     return record
 
 
 def validate_transitions(old, new):
     rules = contract()
-    if old["status"] == "complete" and new["status"] != "complete":
-        raise ProtocolError("A complete run cannot be reopened")
-    if old["status"] != "complete" and new["status"] == "complete":
+    if new["status"] == "complete":
         waiting = [q["id"] for q in new.get("questions", []) if is_open(q)]
         if waiting:
             raise ProtocolError(f"Completion requires every question answered or withdrawn: {', '.join(waiting)}")
@@ -1035,13 +957,11 @@ def validate_transitions(old, new):
 
 def validate_result(result, work):
     """Validate the envelope and its references without interpreting domain payloads."""
-    path = CONTRACT.with_name("project-result.toml")
-    with path.open("rb") as handle:
-        rules = tomllib.load(handle)
+    rules = contract()["result"]
     missing = sorted(set(rules["required"]) - set(result))
     if missing:
         raise ProtocolError("Missing result fields: " + ", ".join(missing))
-    if result["schema"] != rules["record_schema"]:
+    if result["schema"] != rules["schema"]:
         raise ProtocolError("Unknown project-result schema")
     if result["run_id"] != work["run_id"] or result["work_revision"] != work["revision"]:
         raise ProtocolError("Result does not identify this exact work revision")
@@ -1124,6 +1044,9 @@ def answer_question(record, reply):
     qid, withdraw = reply.get("question"), reply.get("withdraw", False)
     if not isinstance(withdraw, bool):
         raise ProtocolError("withdraw must be a boolean")
+    sources = contract()["loop"]["questions"]["sources"]
+    if reply.get("source") not in sources:
+        raise ProtocolError(f"answer source is not one of {', '.join(sources)}")
     target = next((q for q in record.get("questions") or [] if q.get("id") == qid), None)
     if target is None:
         raise ProtocolError(f"The record does not ask {qid}")
@@ -1164,13 +1087,13 @@ def unblocked(record, qid):
             if qid in {q["id"] for q in consumed} and all(is_settled(q) for q in consumed)]
 
 
-def commit_change(project, root, directory, path, session, take_over, change):
+def commit_change(project, root, path, session, take_over, change):
     """Apply change(before) under the writer lock and return the record; None writes nothing.
 
     Update, ask and answer share this path: revision, candidate binding,
     validation, transitions and the agenda row are the same for every write.
     """
-    with writer_lock(directory, root):
+    with writer_lock(root / ".write-lock", root), writer_lock(path.with_name(".write-lock"), root):
         before = validate_record(read_json(path), project, root)
         updated = change(before)
         if updated is None:
@@ -1180,13 +1103,11 @@ def commit_change(project, root, directory, path, session, take_over, change):
         updated["revision"] += 1
         updated["updated_at"] = timestamp()
         updated["candidate"] = project_binding(project, before["scope"], root)
-        validate_record(updated, project, root, current=True,
-                        digests=updated.get("intent") != before.get("intent")
-                        or updated["status"] == "complete")
+        validate_record(updated, project, root)
         validate_transitions(before, updated)
         agenda = plan_agenda(root, project, updated, session, take_over)
         atomic_write(path, updated, root)
-        write_agenda(root, agenda)
+        atomic_write(root / "agenda.json", agenda, root)
         return updated
 
 
@@ -1218,9 +1139,9 @@ def agenda_row(record, project, holder):
 def plan_agenda(root, project, record, session, take_over):
     """Return the agenda with this run's row refreshed, refusing a held or shared task.
 
-    The lock is the row: a task held by another session is refused until the user
-    confirms that session is closed (`--take-over`). A branch belongs to one open
-    loop task at a time. A completed run releases its row.
+    The lock is the row: a task is written only by the session that holds it,
+    until the user confirms that session is closed (`--take-over`). A branch
+    belongs to one open loop task at a time. A completed run releases its row.
     """
     path = root / "agenda.json"
     agenda = read_json(path) if path.is_file() else {"schema": AGENDA_SCHEMA, "tasks": {}}
@@ -1229,15 +1150,15 @@ def plan_agenda(root, project, record, session, take_over):
     tasks = agenda["tasks"]
     previous = tasks.get(record["run_id"], {})
     holder = previous.get("holder")
+    if holder and holder.get("session") != session and not take_over:
+        raise ProtocolError(
+            f"Task {record['run_id']} is held by session {holder['session']} on {holder.get('host')} "
+            f"since {holder.get('since')}; write as that session, or pass --take-over once the user "
+            "confirms it is closed")
     if record["status"] == "complete":
         holder = None
-    elif session:
-        if holder and holder.get("session") != session and not take_over:
-            raise ProtocolError(
-                f"Task {record['run_id']} is held by session {holder['session']} on {holder.get('host')} "
-                f"since {holder.get('since')}; pass --take-over once the user confirms that session is closed")
-        if not holder or holder.get("session") != session:
-            holder = {"session": session, "host": platform.node(), "since": timestamp()}
+    elif session and (not holder or holder.get("session") != session):
+        holder = {"session": session, "host": platform.node(), "since": timestamp()}
     row = agenda_row(record, project, holder)
     if row["loop"] and row["status"] != "complete" and row["branch"]:
         for other_id, other in tasks.items():
@@ -1248,46 +1169,48 @@ def plan_agenda(root, project, record, session, take_over):
     return agenda
 
 
-def write_agenda(root, agenda):
-    path = root / "agenda.json"
-    temporary = path.with_suffix(".json.tmp")
-    temporary.write_text(json.dumps(agenda, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    os.replace(temporary, path)
-
-
 @contextmanager
-def writer_lock(directory, boundary):
-    path = directory / ".write-lock"
-    no_links(path, boundary)
+def writer_lock(path, root):
+    """One writer at a time on `path`, a lock file inside the project's record home."""
+    no_links(path, root)
     if path.exists() and path.stat().st_nlink > 1:
-        raise ProtocolError("Run lock has external hardlinks; refuse to write")
+        raise ProtocolError("Writer lock has external hardlinks; refuse to write")
     handle = path.open("a+b")
     locked = False
     try:
         if handle.seek(0, os.SEEK_END) == 0:
             handle.write(b"\0")
             handle.flush()
-        handle.seek(0)
-        if os.name == "nt":
-            import msvcrt
-            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        locked = True
-        yield
-    except OSError as error:
-        raise ProtocolError("Run writer is busy or unavailable; retry with the current revision") from error
-    finally:
-        if locked:
+        deadline = time.monotonic() + LOCK_WAIT
+        while not locked:
             handle.seek(0)
-            if os.name == "nt":
-                import msvcrt
-                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-            else:
-                import fcntl
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-        handle.close()
+            try:
+                if os.name == "nt":
+                    import msvcrt
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                locked = True
+            except OSError as error:
+                if error.errno not in (errno.EACCES, errno.EAGAIN, errno.EDEADLK):
+                    raise ProtocolError(f"Cannot lock the project's records: {error}") from error
+                if time.monotonic() > deadline:
+                    raise ProtocolError("Another writer holds the project's records; retry") from error
+                time.sleep(0.05)
+        yield
+    finally:
+        try:
+            if locked:
+                handle.seek(0)
+                if os.name == "nt":
+                    import msvcrt
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            handle.close()
 
 
 def atomic_write(path, record, boundary):
@@ -1307,42 +1230,28 @@ def atomic_write(path, record, boundary):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check", "agenda", "ask", "answer", "first-use"))
+    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "agenda", "ask", "answer", "first-use"))
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--run-id")
     parser.add_argument("--session", help="identity of the session doing the work; recorded as the task's holder")
     parser.add_argument("--take-over", action="store_true", help="take a task held by another session, after the user confirmed it is closed")
     parser.add_argument("--branch", help="agenda: only the task bound to this branch")
-    parser.add_argument("--out")
     parser.add_argument("--payload", type=Path)
     parser.add_argument("--expected-revision", type=int)
     parser.add_argument("--result", type=Path)
     parser.add_argument("--current", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.take_over and not args.session:
+            raise ProtocolError("--take-over needs --session, the session taking the task")
         if args.command == "first-use":
-            # Read-only and run before the first write: it resolves no output
-            # root, so a root's dedication check never refuses the probe.
+            # Read-only and run before the first write: it resolves no record
+            # home, so the home's dedication check never refuses the probe.
             print(json.dumps(first_use_probe(args.project), indent=2, sort_keys=True))
             return 0
-        project, root = roots(args.project, args.out)
+        project, root = roots(args.project)
         payload = read_json(args.payload) if args.payload else {}
-        if args.command == "plan-check":
-            # A draft plan is checked against the loop rules before it is written
-            # into a run, so a planner receives the exact refusal, not a failed update.
-            draft = {key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment", "deliveries") if key in payload}
-            if "questions" not in draft and args.run_id:
-                # The questions a draft's tasks consume are the run's, when it exists.
-                path = run_paths(project, root, args.run_id)[1]
-                if path.is_file():
-                    draft["questions"] = read_json(path).get("questions", [])
-            validate_loop(draft)
-            validate_written_questions(payload.get("questions"))
-            waves = payload.get("waves", [])
-            output = {"valid": True, "waves": len(waves), "tasks": sum(len(w.get("tasks", [])) for w in waves)}
-        elif args.command == "snapshot":
-            output = project_binding(project, payload.get("scope", {}), root)
-        elif args.command == "agenda":
+        if args.command == "agenda":
             path = root / "agenda.json"
             agenda = read_json(path) if path.is_file() else {"schema": AGENDA_SCHEMA, "tasks": {}}
             rows = [row for row in agenda.get("tasks", {}).values() if not args.branch or row.get("branch") == args.branch]
@@ -1352,6 +1261,8 @@ def main(argv=None):
             for required in ("operation", "objective", "scope", "authorizations", "budget"):
                 if required not in payload:
                     raise ProtocolError(f"Init requires {required}")
+            if "questions" in payload:
+                raise ProtocolError("Questions change only through ask and answer")
             identity = args.run_id or f"{args.command}-{uuid.uuid4().hex}"
             directory, path = run_paths(project, root, identity)
             binding = project_binding(project, payload["scope"], root)
@@ -1361,16 +1272,16 @@ def main(argv=None):
                       "updated_at": timestamp()}
             for key, default in (("phases", {}), ("plan", []), ("deliveries", {}), ("required_gates", []), ("gates", {})):
                 record.setdefault(key, default)
-            validate_record(record, project, root, digests=True)
-            validate_written_questions(record.get("questions"))
-            if directory.exists():
-                raise ProtocolError("Run already exists; choose another exact ID or resume")
+            validate_record(record, project, root)
             root.mkdir(parents=True, exist_ok=True)
             (root / ".daodan-root").touch(exist_ok=True)
-            agenda = plan_agenda(root, project, record, args.session, args.take_over)
-            directory.mkdir(parents=True, exist_ok=False)
-            atomic_write(path, record, root)
-            write_agenda(root, agenda)
+            with writer_lock(root / ".write-lock", root):
+                if directory.exists():
+                    raise ProtocolError("Run already exists; choose another exact ID or resume")
+                agenda = plan_agenda(root, project, record, args.session, args.take_over)
+                directory.mkdir(parents=True, exist_ok=False)
+                atomic_write(path, record, root)
+                atomic_write(root / "agenda.json", agenda, root)
             output = record
         else:
             directory, path = run_paths(project, root, args.run_id)
@@ -1380,11 +1291,13 @@ def main(argv=None):
                 raise ProtocolError("Record does not match the exact run ID")
             if args.command == "show":
                 output = record
+            elif args.command == "snapshot":
+                binding = project_binding(project, record["scope"], root)
+                output = {"digest": binding["snapshot"]["digest"], "head": binding["head"],
+                          "head_matches_snapshot": binding["head_matches_snapshot"]}
             elif args.command == "validate":
                 if args.current and project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
                     raise ProtocolError("Current candidate snapshot or workspace identity changed")
-                if args.current:
-                    validate_loop(record, directory, digests=True)
                 if args.result:
                     no_links(args.result.absolute(), directory)
                     validate_result(read_json(args.result), record)
@@ -1396,7 +1309,10 @@ def main(argv=None):
                     raise ProtocolError("Resume scope changed; reassess in a new run")
                 if project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
                     raise ProtocolError("Resume candidate snapshot or workspace identity changed")
-                write_agenda(root, plan_agenda(root, project, record, args.session, args.take_over))
+                with writer_lock(root / ".write-lock", root):
+                    record = validate_record(read_json(path), project, root)
+                    atomic_write(root / "agenda.json", plan_agenda(root, project, record, args.session,
+                                                                   args.take_over), root)
                 output = {**record,
                           "pending_phases": [k for k, p in record["phases"].items() if p["status"] not in {"complete", "skipped"}],
                           "pending_deliveries": [k for k, d in record["deliveries"].items() if d["status"] != "delivered"],
@@ -1409,7 +1325,7 @@ def main(argv=None):
                     updated, found["id"] = ask_question(before, payload)
                     found["new"] = updated is not None
                     return updated
-                final = commit_change(project, root, directory, path, args.session, args.take_over, change)
+                final = commit_change(project, root, path, args.session, args.take_over, change)
                 question = next(q for q in final["questions"] if q.get("id") == found["id"])
                 output = {"question": found["id"], "revision": final["revision"],
                           "open": sum(1 for q in final["questions"] if is_open(q))}
@@ -1426,7 +1342,7 @@ def main(argv=None):
                     updated = answer_question(before, payload)
                     wrote["yes"] = updated is not None
                     return updated
-                final = commit_change(project, root, directory, path, args.session, args.take_over, change)
+                final = commit_change(project, root, path, args.session, args.take_over, change)
                 qid = payload["question"]
                 output = {"question": qid, "revision": final["revision"],
                           "open": sum(1 for q in final["questions"] if is_open(q)), "unblocked": unblocked(final, qid)}
@@ -1439,12 +1355,14 @@ def main(argv=None):
                     raise ProtocolError("Update requires --expected-revision")
                 if set(payload) & IMMUTABLE:
                     raise ProtocolError("Patch cannot replace identity, scope, authorization or baseline")
+                if "questions" in payload:
+                    raise ProtocolError("Questions change only through ask and answer")
 
                 def change(before):
                     if before["revision"] != args.expected_revision:
                         raise ProtocolError("Record revision changed; read the current record")
                     return merge(before, payload)
-                output = commit_change(project, root, directory, path, args.session, args.take_over, change)
+                output = commit_change(project, root, path, args.session, args.take_over, change)
         print(json.dumps(output, indent=2, sort_keys=True))
         return 0
     except (ProtocolError, OSError, KeyError, TypeError) as error:

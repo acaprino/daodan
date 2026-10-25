@@ -77,8 +77,7 @@ through the Git common directory, so a worktree's records survive its removal an
 every session reads one agenda (.daodan/agenda.json, one row per task with its
 branch and holder); outside Git the project is its own home. Each record carries an
 identified project/worktree, scope, snapshot, authorization, plan, deliveries and
-checks. Dedicated alternative roots remain inside the project and carry a
-.daodan-root sentinel. Tri-Tech Code is an
+checks. The home carries a .daodan-root sentinel. Tri-Tech Code is an
 external OpenCode consumer; private app storage needs a separately proved permission
 binding. Helper writes are mechanically confined; other agent tool confinement
 remains prompt-level until a runtime host probe demonstrates enforcement.

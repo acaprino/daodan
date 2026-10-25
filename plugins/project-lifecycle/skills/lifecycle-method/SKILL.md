@@ -40,8 +40,7 @@ Read each step's units at its start.
 
 Inputs: operation, project root, objective and its source; optional target,
 run identity and prior evidence. Initialize
-through the protocol helper; loop sections arrive with their phases, and a
-draft plan passes `plan-check` before entering it. Resume the branch's task from the agenda with current
+through the protocol helper; loop sections arrive with their phases. Resume the branch's task from the agenda with current
 authorizations and this session's id. Preview is the default; an
 authorization is asked when a step needs it and recorded in the run: `fix` for
 in-scope edits, `commit` for commits, neither a push or a permanent deletion.

@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "39.2.1"
+    "version": "39.3.0"
   },
   "name": "daodan",
   "owner": {
@@ -114,7 +114,7 @@
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "1.6.1"
+      "version": "1.7.0"
     },
     {
       "author": {
@@ -272,7 +272,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "2.4.1"
+      "version": "2.5.0"
     },
     {
       "author": {
@@ -374,7 +374,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "16.6.2"
+      "version": "16.6.3"
     },
     {
       "author": {
@@ -457,7 +457,7 @@
         "./skills/work-record"
       ],
       "source": "./exports/codex/plugins/work-controller",
-      "version": "1.2.0"
+      "version": "2.0.0"
     }
   ]
 }

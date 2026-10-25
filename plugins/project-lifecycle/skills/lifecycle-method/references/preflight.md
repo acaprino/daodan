@@ -24,7 +24,7 @@ Hash sorted failing test identifiers: unchanged means known; changed means unkno
 Store the confirmed routing artifact in
 `environment.models.assignments[request_sha256]` using loaded
 `work-controller:work-record`: `run_state.py update --project ROOT --run-id ID
---expected-revision N --payload PATCH.json`. Preserve interpreter, commands and
+--session ID --expected-revision N --payload PATCH.json`. Preserve interpreter, commands and
 existing assignments. Revision conflict: reread and merge. Resume: pass persisted
 assignments to routing for request, confirmation, inventory and capability checks.
 

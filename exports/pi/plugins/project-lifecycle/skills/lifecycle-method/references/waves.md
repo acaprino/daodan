@@ -81,16 +81,16 @@ needs, which holds it until answered), the `EX-*` it makes pass and the
 `INV-*` it enforces. Use provider I1 per `references/context-cycle.md`; approved
 contracts determine precedence. Build missing oracle fixtures first.
 
-Run the protocol helper's `plan-check` on the draft. It refuses more than
-four files in a `write_set` without a reasoned exception, two tasks of one
-wave that share a file, a lock or a produced-consumed contract, a parallel
-wave outside a `WORKTREE` workspace, and a missing oracle. Correct the plan
-until it passes, then write it into the run's `waves` section.
+Write the draft into the run's `waves` section. The helper refuses more
+than four files in a `write_set` without a reasoned exception, two tasks of
+one wave that share a file, a lock or a produced-consumed contract, a parallel
+wave outside a `WORKTREE` workspace, and a missing oracle; a refused write
+changes nothing. Correct the plan until the write passes.
 
 ## Review of the plan (stage B)
 
 Run `senior-review:review-method` with shape `light`, kind `plan` and stage
-`plan`: `plan-check` has settled the structure, and the premise auditor checks
+`plan`: the helper has settled the structure, and the premise auditor checks
 every cited path, symbol and caller and that each oracle can fail for its
 stated reason. Three planner-and-review rounds at most, then the user. Present the
 approved plan with its expected cost and stop for approval, unless the

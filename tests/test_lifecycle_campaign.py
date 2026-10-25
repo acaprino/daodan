@@ -229,10 +229,7 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             workflow = self.workflows[name]
             with self.subTest(workflow=name):
                 self.assertFalse(any(phase.invoke for phase in workflow.phases))
-                self.assertTrue({
-                    "work-controller/contracts/work.toml",
-                    "work-controller/contracts/project-result.toml",
-                }.issubset(workflow.contract.shared_schemas))
+                self.assertIn("work-controller/contracts/work.toml", workflow.contract.shared_schemas)
 
 
 class CampaignRunBoundaryTests(unittest.TestCase):

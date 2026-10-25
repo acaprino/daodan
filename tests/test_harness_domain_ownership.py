@@ -226,7 +226,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
             assert_brief_inputs(self, text)
         assert_review_input_boundary(self, brief)
         assert_review_input_boundary(self, worker_contract, worker=True)
-        self.assertIn("work-controller:work-record", worker_contract)
+        self.assertIn("working discipline the brief supplies", worker_contract)
         self.assertIn("coordinator-declared inputs", worker_contract)
 
     def test_delegated_test_writer_returns_evidence_and_reserves_human_wait_for_teaching(self):

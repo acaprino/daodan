@@ -125,7 +125,6 @@ shared_schemas = [
   "skill-catalog/contracts/knowledge-assignment.toml",
   "skill-catalog/contracts/knowledge-usage.toml",
   "work-controller/contracts/work.toml",
-  "work-controller/contracts/project-result.toml",
   "senior-review/contracts/review-brief.toml",
   "senior-review/contracts/reviewer-binding.toml",
   "senior-review/contracts/reviewer-selection.toml",

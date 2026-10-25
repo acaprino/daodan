@@ -4,7 +4,7 @@ This adapter prepares evidence. The coordinator owns refresh, dispatch, run
 updates, authorizations and completion. No cross-plugin imports or LLM calls.
 
 Documents (JSON objects):
-  config     project, records_root, run_id, manifest (text); protocol, provider
+  config     project, run_id, manifest (text); protocol, provider
              (argument arrays). Optional: source_root, base_manifest (text),
              indexes (name to path). base_manifest binds an existing map revision
              for the first stage and is refused when it conflicts with the
@@ -44,7 +44,7 @@ import tempfile
 SCHEMA = 'daodan/cycle-context/v1'
 STAGES = ('preflight', 'task-packet', 'post-task')
 ATTEMPTS = 8
-CONFIG = ({'project': 'text', 'records_root': 'text', 'run_id': 'text', 'manifest': 'text',
+CONFIG = ({'project': 'text', 'run_id': 'text', 'manifest': 'text',
            'protocol': 'strs', 'provider': 'strs'},
           {'source_root': 'text', 'base_manifest': 'text', 'indexes': 'paths'})
 REQUEST = ({'schema': 'text', 'intent': 'text', 'query': 'string', 'policy_version': 'text',
@@ -185,8 +185,7 @@ def _invoke(config, owner, args, timeout=120):
 
 def _record(config):
     project = _path(config['project'])
-    records = _path(config['records_root'])
-    common = ['--project', str(project), '--out', str(records), '--run-id', config['run_id']]
+    common = ['--project', str(project), '--run-id', config['run_id']]
     record = _delivery(_invoke(config, 'protocol', ['show', *common]), 'protocol', RECORD_KEYS)
     candidate = record['candidate']
     if (not isinstance(candidate, dict) or not isinstance(candidate.get('root'), str)
@@ -197,8 +196,9 @@ def _record(config):
     check = _delivery(_invoke(config, 'protocol', ['validate', *common, '--current']), 'protocol', ('valid', 'revision'))
     if (not check.get('valid') or check.get('revision') != record['revision']
             or record['run_id'] != config['run_id'] or record['status'] != 'in_progress'
-            or _path(record['candidate']['root']) != project or _path(record['output_root']) != records):
+            or _path(record['candidate']['root']) != project):
         raise ValueError('Lifecycle record changed or belongs to another project')
+    records = _path(record['output_root'])
     home = _path(records / 'runs' / record['run_id'], records / 'runs')
     return record, project, home
 

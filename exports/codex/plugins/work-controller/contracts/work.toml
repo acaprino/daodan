@@ -1,20 +1,10 @@
-schema = "daodan/record/v1"
-name = "work"
-record_schema = "daodan/work/v1"
+# The work record's contract; skills/work-record/SKILL.md explains it.
 required = ["schema", "revision", "run_id", "operation", "objective", "project", "scope", "authorizations", "budget", "phases", "plan", "deliveries", "required_gates", "gates", "status", "interruption"]
 
-[fields.revision]
-type = "integer"
-minimum = 0
-
 [fields.status]
-type = "enum"
 values = ["in_progress", "complete"]
 
-# What a run is for. A refactor is a `change` that follows the refactor unit;
-# an initialization is an `assess` that writes outside its run.
 [fields.operation]
-type = "enum"
 values = ["assess", "repair", "change", "verify", "consolidate", "review", "investigate", "brainstorm"]
 
 [states.phases]
@@ -25,7 +15,6 @@ complete = ["complete"]
 skipped = ["skipped"]
 
 [states.deliveries]
-delivered_requires = ["output"]
 values = ["pending", "running", "delivered", "failed"]
 pending = ["pending", "running", "delivered", "failed"]
 running = ["running", "delivered", "failed"]
@@ -38,29 +27,21 @@ values = ["pending", "passed", "failed", "unavailable"]
 [completion]
 phases = ["complete", "skipped"]
 deliveries = ["delivered"]
-gates = ["passed"]
-requires_current_snapshot = true
-requires_gate_evidence = true
-remote_requires_committed_candidate = true
 
-# Authorizations asked after init, at the step that needs them: the user's answer
-# is the source of each. Append-only, like required gates: a grant is never
-# altered, narrowed or removed, and `authorizations` keeps what init recorded.
 [grants]
 required = ["id", "kind", "scope", "source", "granted_at"]
 kinds = ["fix", "commit", "merge", "push", "purge", "send", "publish", "install"]
-append_only = true
 
-# Optional sections a lifecycle run may carry. Absent sections are not validated;
-# a present section must satisfy its rules. The required fields above are untouched.
+[result]
+schema = "daodan/project-result/v1"
+required = ["schema", "run_id", "work_revision", "scope", "snapshot", "deliveries", "checks", "outputs", "limitations", "complete"]
+
 [loop]
-sections = ["workspace", "preflight", "adr", "first_use", "intent", "waves", "rulings", "reviews", "questions", "environment"]
+sections = ["workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment"]
 
 [loop.workspace]
 required = ["mode", "branch", "base_sha"]
 modes = ["WORKTREE", "BRANCH", "IN_PLACE"]
-# Environment bindings name what a worktree needs (an env file, a schema, fixtures)
-# and never carry a secret value: a binding marked secret has no value field.
 binding_required = ["path", "kind", "secret"]
 
 [loop.preflight]
@@ -68,31 +49,14 @@ baseline = ["GREEN", "KNOWN_RED", "UNKNOWN_RED"]
 migrations = ["ALIGNED", "PENDING", "DIVERGED", "UNKNOWN", "NOT_APPLICABLE"]
 
 [loop.adr]
-statuses = ["Proposed", "Accepted", "Superseded"]
 id_pattern = "^ADR-[0-9]{4}$"
-
-# The first-use answers, asked once before a project's first Daodan write
-# (ADR-0005): whether it keeps decision records and how deep to analyze it now.
-# Set once: an update never changes or removes them.
-[loop.first_use]
-required = ["records", "analysis"]
-analysis = ["none", "lite", "full"]
-
-# The task's intent file when the project keeps no decision records (ADR-0005):
-# a path inside the run and its SHA-256. One owner per task, so a run with an
-# intent proposes no record. A revised intent is a new file, never an edit.
-[loop.intent]
-required = ["path", "sha256"]
 
 [loop.waves]
 states = ["pending", "in_progress", "verified", "sealed", "rolled_back"]
 task_states = ["pending", "running", "green", "committed", "needs_replan", "oracle_invalid", "failed"]
 task_required = ["id", "status", "write_set", "oracle", "verification"]
-# Micro-task granularity budget: a worker edits few files, proves a failing oracle
-# first and verifies with a command. Six files need a recorded granularity_exception.
 max_write_files = 4
 max_write_files_with_exception = 6
-# A sealed wave is one whose every task committed and whose delta review passed.
 sealed_requires_task_state = "committed"
 
 [loop.rulings]
@@ -100,10 +64,6 @@ required = ["id", "task", "sha", "decision", "reason", "cost_if_wrong", "evidenc
 append_only = true
 
 [loop.reviews]
-# One entry per review of the task (record, plan, each wave, the candidate), as
-# senior-review's review_roster.py computed it, appended before dispatch and never rewritten. A
-# delivery naming a review must dispatch a role of that roster or its support:
-# the model never widens its own review. `--deeper` computes a new entry.
 schema = "daodan/review-roster/v1"
 shapes = ["light", "branch"]
 kinds = ["changeset", "plan", "spec", "doc"]
@@ -111,33 +71,17 @@ tiers = ["light", "small", "medium", "large"]
 required = ["id", "stage", "schema", "shape", "kind", "tier", "roster", "reasons", "verification"]
 job_required = ["id", "role", "specialist_ids", "scope_id", "input_mode", "body_sha256", "candidate", "output_path"]
 verification_levels = ["critical-high", "high-and-above", "all-above-floor"]
-# Independent check deliveries use check.kind (blind-derivation, verification,
-# critic), input_mode, independent=true and evidence. Verification also binds
-# targets [{job_id, finding_id}], lens and verdict; a premise veto cites its
-# counterexample. Every check has a separate delivery and output report; it
-# cannot consume a discovery job identity or reuse another delivery's output.
-# Historical records omit both composition fields. New records carry both;
-# empty preparation plans remain in progress and cannot satisfy completion.
-# All scoped obligations and per-member outcomes are checked before completion.
 append_only = true
 
 [loop.questions]
-# Questions to the user. `ask` records one before it is asked; only the user's
-# own words answer it, through `answer`, and nothing is inferred. A task that
-# consumes question:<id> waits until it is answered; a withdrawn question
-# closes without unblocking anyone.
 required = ["id", "phase", "text"]
 sources = ["question-tool", "chat", "continue"]
-consumer_prefix = "question:"
 
 [loop.environment]
-# The project's own interpreter and runners, found by the preflight and used by
-# every later command. Installing outside the project is a separate authorization.
 required = ["interpreter"]
 commands = ["test", "lint", "types", "build", "migrations"]
 
 [loop.environment.models]
-# Optional per-request bindings. Legacy `tiers` remains a separate consumer's data.
 schema = "daodan/task-binding/v1"
 tiers = ["tier1", "tier2", "tier3"]
 required = ["schema", "request_sha256", "models_sha256", "catalog_sha256", "tier", "model_id", "model_param", "effort", "confirmation"]

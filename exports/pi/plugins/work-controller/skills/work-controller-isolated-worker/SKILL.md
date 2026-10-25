@@ -84,7 +84,7 @@ Declared role operation allowlist: read files; search file contents; discover fi
 ## Contract
 
 - Receive the task objective, approved requirement source, observable delivery criteria and applicable instruction rules, alongside the full task, input snapshot, owned files, authorizations, budget and expected report path.
-- Load `work-controller:work-record` for working discipline, delivery, verification and recovery rules.
+- Apply the working discipline the brief supplies; the coordinator owns the run record, its gates and recovery.
 - Missing ownership, required input or permission: report failure and the exact missing requirement.
 - Missing human decision: stop the part that needs it and report the question, its evidence and the tasks it holds; never ask the user.
 - Follow the coordinator's loaded domain method. Do not invent a specialist role or a new audit taxonomy.

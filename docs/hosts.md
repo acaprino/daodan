@@ -197,7 +197,7 @@ Neither condition permits a shorter report pretending the worker ran.
 
 Kernels export public schemas with `[contracts].exports`. A consumer's
 `[contract].shared_schemas` references the required provider and exported
-`contracts/` path. Project-protocol owns work and project-result contracts;
+`contracts/` path. work-controller owns the work contract and its project-result envelope;
 senior-review retains its native finding and delivery contracts.
 
 Provider packages contain the canonical schema files. Consumer sidecars ship as
@@ -265,10 +265,9 @@ fallback remains available. No Node build is required for the generated packages
 
 ## Write boundaries and Tri-Tech Code
 
-Run records and outputs belong in `.daodan/runs/<id>/` inside an identified
-project/worktree. An alternative output root must be dedicated, remain inside that
-project, not equal the project root, and carry a `.daodan-root` sentinel. Codebase Map's
-separate stable contract stays `.codebase-map/`.
+Run records and outputs belong in `.daodan/runs/<id>/` of the main checkout, the
+project's one record home, which is dedicated and carries a `.daodan-root` sentinel.
+Codebase Map's separate stable contract stays `.codebase-map/`.
 
 Run-state and artifact helpers mechanically check their paths, link identities,
 owned output scope and record transitions. Those checks apply to helper actions.
@@ -282,7 +281,7 @@ OpenCode worker permissions are generated from declared role tools and include a
 reading bundled references outside the project; it grants no arbitrary private
 app output directory. Tri-Tech Code is an external OpenCode consumer, not a sixth
 Daodan adapter. Out-of-project private storage needs a separately proved permission
-binding and is outside the implemented `--out` contract.
+binding and is outside the implemented record-home contract.
 
 JSON validation and helper checks cannot establish the truth of reported evidence
 or that a human actually granted a permission. Runtime authorization and semantic

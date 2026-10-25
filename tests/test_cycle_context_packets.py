@@ -35,7 +35,7 @@ class CycleContextTests(unittest.TestCase):
         (self.root / 'README.md').write_bytes(b'Explain the calculation.\n')
         (self.root / 'secret.py').write_bytes(b'PRIVATE = "never pass this source"\n')
         self.manifest = self.map_snapshot('initial')
-        self.config = dict(project=str(self.root), records_root=str(self.root / '.daodan'),
+        self.config = dict(project=str(self.root),
             run_id='workflow-fixture', protocol=[sys.executable, '-B', str(PROTOCOL)],
             provider=[sys.executable, '-B', str(PROVIDER)], manifest=str(self.manifest), indexes={})
         payload = dict(operation='change', objective='Repair the calculation',
@@ -66,7 +66,7 @@ class CycleContextTests(unittest.TestCase):
 
     def protocol(self, action, payload=None):
         args = [sys.executable, '-B', str(PROTOCOL), action, '--project', str(self.root),
-                '--out', str(self.root / '.daodan'), '--run-id', 'workflow-fixture', '--session', 'fixture']
+                '--run-id', 'workflow-fixture', '--session', 'fixture']
         if payload is not None:
             path = self.root / 'protocol-input.json'
             path.write_bytes(json.dumps(payload).encode())
@@ -229,7 +229,7 @@ class CycleContextTests(unittest.TestCase):
         subprocess.run(['git', 'init', '-q', str(outer)], capture_output=True, check=True)
         self.root = nested
         self.manifest = self.map_snapshot('nested')
-        self.config.update(project=str(nested), records_root=str(nested / '.daodan'),
+        self.config.update(project=str(nested),
                            manifest=str(self.manifest), source_root=str(outer))
         payload = {k: old[k] for k in ['operation', 'objective', 'scope', 'authorizations', 'budget', 'waves', 'required_gates']}
         payload['waves'][0]['tasks'][0]['requirements'][0]['support'][0]['entity_id'] = 'package/service.py::calculate'
@@ -405,7 +405,7 @@ class CycleContextTests(unittest.TestCase):
 
     def test_help_documents_every_input_the_cli_reads(self):
         text = subprocess.run([sys.executable, '-B', str(CYCLE), '--help'], capture_output=True).stdout.decode()
-        for fragment in ('records_root', 'base_manifest', 'indexes', 'mandatory_requirements', 'policy_version',
+        for fragment in ('base_manifest', 'indexes', 'mandatory_requirements', 'policy_version',
                          'max_evaluations', 'tokenizer_id', 'needs_recipient_check', 'status 2',
                          'max_input_tokens', 'max_output_tokens', 'context.toml', 'ordered or marginal'):
             self.assertIn(fragment, text)

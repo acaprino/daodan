@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: work-controller:isolated-worker; version: 1.2.0; source-sha256: 76053afc2d4e26b9b29f2c9b4ff6a18a0047fa27925c43c4d844f49dbeaf2543. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: work-controller:isolated-worker; version: 2.0.0; source-sha256: 61c5176d4aa51af07eac9092732d145494bb33cd2d5e06d974048cae58ed1af4. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `work-controller`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<work-controller-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `work-controller`. The owning plugin's declared logical skill identities are `work-controller:work-record`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `work-controller:work-record` -> compiled registry name `work-record` at `skills/work-record/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -81,7 +81,7 @@ Declared role operation allowlist: read files; search file contents; discover fi
 ## Contract
 
 - Receive the task objective, approved requirement source, observable delivery criteria and applicable instruction rules, alongside the full task, input snapshot, owned files, authorizations, budget and expected report path.
-- Load `work-controller:work-record` for working discipline, delivery, verification and recovery rules.
+- Apply the working discipline the brief supplies; the coordinator owns the run record, its gates and recovery.
 - Missing ownership, required input or permission: report failure and the exact missing requirement.
 - Missing human decision: stop the part that needs it and report the question, its evidence and the tasks it holds; never ask the user.
 - Follow the coordinator's loaded domain method. Do not invent a specialist role or a new audit taxonomy.
