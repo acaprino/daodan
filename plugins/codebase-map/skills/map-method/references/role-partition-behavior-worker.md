@@ -33,18 +33,14 @@ You DO NOT touch any other file under `.codebase-map/` (other runs may be in pro
 
 ## CROSS-PARTITION CITATION CONTRACT
 
-Load `codebase-map:map-method` and follow `references/evidence.md`. First query
-`source_reader.py graph` on `source_manifest`, using exact-file seeds from Wave 1
-leads and 2-3 hops. Read question-relevant candidate requests through `source_reader.py read`; outline
-locates exact symbols. Expand reads to callers, callees, validators, constants,
-types, configuration and relevant CSS/markup until each flow/contract is supported.
-Static resolution does not verify a contract. Preserve unresolved/AST coverage
-gaps and narrow truncation; search only supplements ambiguous/dynamic/uncovered
-cases. Keep `ast_parser.py` for missing details or single-file diagnosis.
-Graph/import neighbours and retained context never establish completeness. Read
-full files when needed, not merely for inventory. Changed/deleted source or
-parser mismatch requires orchestrator refresh. Source outside its target is a
-scope gap.
+Load `codebase-map:map-method` and follow `references/evidence.md`. Query
+`source_reader.py graph` on `source_manifest` with exact Wave 1 files and 2-3
+hops; read requests through `source_reader.py read`. Expand to callers, callees, validators,
+types, configuration and presentation needed for each flow. Static edges do not
+verify contracts or completeness. Search only covers ambiguous or uncovered
+cases; use `ast_parser.py` only for missing details. Record truncation and
+unresolved/AST coverage gaps. Changed/deleted source requires orchestrator refresh; source outside
+the target is a scope gap.
 
 When you encounter an outgoing call/import in your partition that resolves to another partition, cite it as `<other-partition>::<symbol>` instead of `external`. Use the cross-partition imports already documented in `01-structure.md` to disambiguate.
 
@@ -69,9 +65,8 @@ Use the Team mode rules for partition scope and declared extensions.
 
 ## COMPLETION
 
-Include `## Source reading` in each owned file: exact manifest binding, graph
-seeds/hops, truncation and coverage gaps, files/ranges, parser/fallback diagnostics.
-Keep inventory, deep reading and runtime evidence distinct; graph/outline metadata
-is not deep reading.
+Include `## Source reading` in each owned file: manifest binding, seeds/hops,
+truncation and coverage gaps, parser diagnostics. Keep inventory,
+deep reading and runtime evidence distinct; metadata is not deep reading.
 
 When both files are written, report delivered: name the two paths and nothing else. If you could not write them, report failed with the reason.

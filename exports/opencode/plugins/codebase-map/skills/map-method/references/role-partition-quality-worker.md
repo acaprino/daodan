@@ -110,19 +110,18 @@ You DO NOT touch any other file under `.codebase-map/` (other runs may be in pro
 ## TOOL USAGE
 
 Use the scripts in `<plugin-root>/skills/map-method/scripts/`:
-- Load `codebase-map:map-method`; follow Method loads and evidence.md for commands and source reading. Start from `source_manifest` and Wave 1 leads. Do not reparse or deeply read the entire partition for inventory alone
+- Load `codebase-map:map-method`; follow its evidence procedure from `source_manifest` and Wave 1 leads, without reparsing the partition for inventory alone
 - `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, for the usability-blocking check: a global rule meets its victim wherever the victim's stylesheet or markup lives. It lists every rule whose selector reaches the document root or its untargeted children and sets a layout property, with the rules and Tailwind utilities it can override, screen-level ones first. Keep the candidates and conflicts with at least one side in this partition, and record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`. Leads, never verdicts
 - `analyze_file.py --snapshot "$source_manifest" --find-usages --symbol <name>` to trace requested usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
 
-Do NOT use raw bash to do these jobs.
-If source content or parser identity changed, report the required refresh to the
-orchestrator; workers do not rewrite the shared manifest. File/class context and
-import neighbours do not establish semantic completeness. A required source
-outside the manifest target is an explicit scope gap.
+Never use raw bash for these jobs. Changed source or parser identity requires
+orchestrator refresh, not a manifest rewrite. File/class context and import
+neighbours do not establish semantic completeness. Source outside the manifest
+target is a scope gap.
 
 ## Method loads
 
-Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
+Locate headings or skeletons before bounded reads. Add the router's conditional nested reads on demand; other references are pointers.
 
 Read Phase 6 at full depth, including updates; comments and documentation verification require Phase 6.
 
@@ -144,6 +143,6 @@ Use the Team mode rules for partition scope and declared extensions. Skip Phase 
 
 ## COMPLETION
 
-Use the canonical Source reading section from evidence.md in each owned file.
+Use evidence.md's Source reading section in owned files.
 
 When your owned files are written, report delivered: name their paths and nothing else. If you could not write them, report failed with the reason.

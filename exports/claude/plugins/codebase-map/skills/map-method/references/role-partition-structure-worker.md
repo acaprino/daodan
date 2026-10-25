@@ -105,22 +105,17 @@ Inside `partition_path`, never analyze what Git ignores, any directory whose nam
 
 ## TOOL USAGE
 
-Load `codebase-map:map-method` and follow `references/evidence.md`. First query
-`source_reader.py graph` on `source_manifest`, seeding exact inventoried files
-below `partition_path`, never directories. Keep the whole-run manifest for
-inbound/cross-partition edges. Read question-relevant candidate requests through `source_reader.py read`.
-Use manifest metadata/outline for exact definitions: literal patterns or exact paths select a
-partition; `--path` selects one file. Narrow truncated queries.
+Load `codebase-map:map-method` and follow `references/evidence.md`. Query
+`source_reader.py graph` on `source_manifest` with exact inventoried files below
+`partition_path`, retaining whole-run cross-partition edges. Read requests through
+`source_reader.py read`; outlines locate definitions. Narrow truncated queries.
 
-Read source to establish entry points, exports and interface claims. Expand to
-registration, constants, types, configuration and callers/callees as needed.
-Graph resolution is not contract verification; record unresolved/AST coverage
-gaps. Search supplements ambiguous/dynamic/uncovered cases, never replaces the
-graph query. Reserve `ast_parser.py` for missing signatures/export annotations
-or single-file diagnosis; never reparse recorded structure. `classifier.py`
-supplies additional triage metrics. File-level formats use whole-file fallback.
-Source/parser mismatch requires orchestrator refresh; never rewrite the shared
-manifest. Graph/outline metadata is not deep reading.
+Read source for entry points, exports and interface claims, expanding to needed
+registration, types, configuration and callers. Graph resolution does not verify
+contracts; record unresolved/AST coverage gaps. Search supplements uncovered cases, while
+`ast_parser.py` handles only missing details and `classifier.py` triage. Never
+reparse recorded structure. Source/parser mismatch requires orchestrator refresh;
+metadata is not deep reading.
 
 ## Method loads
 
