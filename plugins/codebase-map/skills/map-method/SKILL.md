@@ -1,9 +1,9 @@
 ---
 name: map-method
 description: >
-  Static codebase mapping and standalone navigation of existing map evidence: structure, purpose, integrations, symbols, documentation and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS.
-  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation; consult available map evidence before broad source exploration. Loading the skill starts no analysis or refresh. Verify material claims against current source and use ordinary repository search when no usable map exists.
-  DO NOT TRIGGER WHEN: the task does not involve project code or its documentation.
+  Static mapping and standalone navigation of existing map evidence.
+  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps.
+  DO NOT TRIGGER WHEN: no project code or documentation.
 ---
 
 # Codebase Map Analysis Skill
@@ -73,19 +73,20 @@ Conditional reads: methodology, patterns, comments; migration for legacy roots, 
 
 ## Resources
 
-Scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/` (Python >= 3.10; multi-language targets).
+Python >= 3.10 scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`.
+Language Support above applies throughout.
 
 - `ast_parser.py`: structural extraction dispatcher.
-- `analyze_file.py`: per-file classification/structure/usages; workflow calls reuse `--snapshot`.
-- `classifier.py`: language-aware criticality classification.
-- `usage_finder.py`: cross-file symbol usages across supported extensions.
-- `comment_rewriter.py`: multi-language comment analysis engine.
-- `rewrite_comments.py`: comment quality CLI: scan/analyze/rewrite/report.
+- `analyze_file.py`: classification, structure, usages; workflows reuse `--snapshot`.
+- `classifier.py`: language-aware criticality metrics.
+- `usage_finder.py`: cross-file symbol usages.
+- `comment_rewriter.py`: comment analysis engine.
+- `rewrite_comments.py`: comment scan/analyze/rewrite/report CLI.
 - `doc_review.py`: documentation maintenance (Phase 6).
-- `migrate_root.py`: project-bound legacy migration and historical path resolution.
-- `snapshot.py`: scope, SQLite snapshots (JSON explicit), run resolution and incremental changes.
-- `source_reader.py`: manifest graphs, outlines and validated source blocks.
-- `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
-- `cascade_scan.py`: global stylesheet layout risks, cascade override candidates and screen rules (Phase 5).
-- `languages/`: per-language adapters using the Language Support methods.
-- `requirements.txt`: optional tree-sitter and tree-sitter-language-pack dependencies.
+- `migrate_root.py`: project-bound legacy migration; historical paths.
+- `snapshot.py`: scope, snapshots, runs, incremental changes; SQLite, explicit JSON.
+- `source_reader.py`: manifest graphs, outlines, validated source blocks.
+- `tree_scope.py`: Git, dot-directory and dependency/build perimeter.
+- `cascade_scan.py`: global layout risks, cascade overrides, screen rules (Phase 5).
+- `languages/`: language adapters.
+- `requirements.txt`: optional tree-sitter and tree-sitter-language-pack.
