@@ -48,6 +48,15 @@ dependencies. Register or provision the required foreign marketplaces as part of
 installation. The declarations do not prove upstream availability or installation
 in a particular user profile.
 
+`daodan` and `project-knowledge` require `text-humanizer@shinatama`, so installing
+either also needs the Shinatama marketplace registered:
+
+```bash
+claude plugin marketplace add acaprino/shinatama
+copilot plugin marketplace add acaprino/shinatama
+codex plugin marketplace add acaprino/shinatama
+```
+
 Pi installs the repository package from a released tag. Replace
 `<metadata.version>` with a published release version.
 
@@ -96,6 +105,14 @@ Pi and OpenCode package all local kernels but do not install plugins from foreig
 marketplaces. Qualified dependencies such as `mattpocock-skills@mattpocock`
 still have to be supplied in a form the host can load. Packaging the entire local
 marketplace is not proof that every workflow's external inputs are available.
+For `text-humanizer@shinatama`, install the Shinatama package from one of its
+released tags and keep `text-humanizer` in its selection (Pi package filters, or
+`options.plugins` of its OpenCode loader):
+
+```bash
+pi install git:github.com/acaprino/shinatama@v<shinatama-version>
+opencode plugin add 'github:acaprino/shinatama#v<shinatama-version>::path:exports/opencode'
+```
 
 ## Required dependency behavior
 

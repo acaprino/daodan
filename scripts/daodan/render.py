@@ -1049,35 +1049,51 @@ def _dispatch_bindings(
     verbatim in an isolated prompt, so the compiler ships only the referenced
     roles under contracts/dispatch. Those files carry owner and source digest
     and never register as skills or agents. Named-agent adapters copy no body.
+    A provider of another marketplace ships its own body, so an inline host
+    reads it from that installed package and nothing of it is copied here.
     """
     references = workflow.worker_references(plugin.components.roles)
     providers = dict(registry or {})
     providers[plugin.name] = plugin
+    foreign = plugin.foreign_providers
     ids: dict[str, str] = {}
     bindings: list[str] = []
     for reference in sorted(references):
         owner, separator, role = reference.partition("/")
         if not separator:
             owner, role = plugin.name, reference
-        if owner != plugin.name and owner not in plugin.required_dependencies:
+        qualified = foreign.get(owner)
+        if owner != plugin.name and owner not in plugin.required_dependencies and qualified is None:
             raise RenderError(f"{plugin.name}: undeclared role provider {owner}")
-        provider = providers.get(owner)
-        if provider is None:
-            # Compatibility for callers rendering a single real kernel. The
-            # production build supplies the complete registry explicitly.
-            from .load import load_plugin
-            source_root = plugin.root.parent / owner
-            _source(source_root, plugin.root.parent)
-            if not (source_root / "plugin.toml").is_file():
-                raise RenderError(f"{plugin.name}: unknown role provider {owner}")
-            provider = load_plugin(source_root)
-            providers[owner] = provider
-        if role not in provider.components.roles:
-            raise RenderError(f"{plugin.name}: unknown role {owner}/{role}")
+        if qualified is None:
+            provider = providers.get(owner)
+            if provider is None:
+                # Compatibility for callers rendering a single real kernel. The
+                # production build supplies the complete registry explicitly.
+                from .load import load_plugin
+                source_root = plugin.root.parent / owner
+                _source(source_root, plugin.root.parent)
+                if not (source_root / "plugin.toml").is_file():
+                    raise RenderError(f"{plugin.name}: unknown role provider {owner}")
+                provider = load_plugin(source_root)
+                providers[owner] = provider
+            if role not in provider.components.roles:
+                raise RenderError(f"{plugin.name}: unknown role {owner}/{role}")
         identity = f"{owner}:{role}" if owner != plugin.name else role
         ids[reference] = identity
         if strategy.role_delivery != "inline-prompt":
             bindings.append(f"- `{identity}`: dispatch the installed `{owner}:{role}` agent by its qualified identity.")
+            continue
+        if qualified is not None:
+            relative = render_path(adapter.layout["roles"], {"plugin": owner, "role": role})
+            root = adapter.layout.get("plugin_root_reference", DEFAULT_PLUGIN_ROOT_REFERENCE)
+            bindings.append(
+                f"- `{identity}`: `{qualified}` belongs to another marketplace, so this package ships no copy "
+                f"of its body. Resolve that plugin's installed root from its verified provider path in the active "
+                f"inventory, read `{relative.as_posix()}` there and pass its complete role body verbatim, giving the "
+                f"absolute path of that root for every `{root}` in the body. If `{qualified}` is not installed, "
+                f"stop this phase and recover it as a required foreign provider through this host's binding."
+            )
             continue
         if owner == plugin.name:
             relative = render_path(adapter.layout["roles"], {**_package_context(provider, adapter.host), "role": role})

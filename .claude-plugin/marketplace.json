@@ -1,11 +1,12 @@
 {
   "allowCrossMarketplaceDependenciesOn": [
     "claude-code-workflows",
-    "mattpocock"
+    "mattpocock",
+    "shinatama"
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "39.5.0"
+    "version": "40.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -50,7 +51,7 @@
         "./skills/readability-method"
       ],
       "source": "./exports/claude/plugins/clean-code",
-      "version": "3.1.0"
+      "version": "3.1.1"
     },
     {
       "agents": [
@@ -88,7 +89,6 @@
         "./commands/finish-task.md",
         "./commands/fix-bug.md",
         "./commands/get-second-opinion.md",
-        "./commands/humanize-text.md",
         "./commands/init-project.md",
         "./commands/investigate-problem.md",
         "./commands/map-code.md",
@@ -124,14 +124,14 @@
         "senior-review",
         "skill-catalog",
         "testing",
-        "text-humanizer",
+        "text-humanizer@shinatama",
         "typescript-development"
       ],
       "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "1.8.0"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -267,7 +267,7 @@
       "dependencies": [
         "work-controller",
         "codebase-map",
-        "text-humanizer",
+        "text-humanizer@shinatama",
         "senior-review",
         "report-rendering"
       ],
@@ -281,7 +281,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/claude/plugins/project-knowledge",
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "author": {
@@ -532,23 +532,6 @@
       ],
       "source": "./exports/claude/plugins/testing",
       "version": "4.4.0"
-    },
-    {
-      "agents": [
-        "./agents/text-humanizer.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [],
-      "description": "Prose humanization toolkit: the text-humanizer editor agent improves prose in any language without inventing content (25 local patterns, including replies that re-explain known context), register-aware (docs, business, personal) with a natural Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by project-knowledge and project-lifecycle, and by digital-marketing and business in Shinatama. Clean-code routes prose requests here without a required dependency. Extracted from digital-marketing in marketplace 13.3.0.",
-      "license": "MIT",
-      "name": "text-humanizer",
-      "skills": [
-        "./skills/anti-ai-writing-patterns"
-      ],
-      "source": "./exports/claude/plugins/text-humanizer",
-      "version": "2.1.1"
     },
     {
       "agents": [

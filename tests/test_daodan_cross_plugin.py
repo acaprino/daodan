@@ -319,6 +319,44 @@ class CrossPluginContractsTests(unittest.TestCase):
             self.assertIn("work-controller:isolated-worker", text)
             self.assertIn("full task", text)
 
+    def foreign_consumer(self, dependencies=("provider", "voice@othermarket")):
+        workflow = dataclasses.replace(self.consumer.workflows[0], dispatch=DispatchSpec(("voice/voice-editor",), True))
+        return dataclasses.replace(self.consumer, required_dependencies=dependencies, workflows=(workflow,))
+
+    def test_role_of_another_marketplace_is_declared_by_its_qualified_dependency(self):
+        self.assertEqual(self.codes(self.foreign_consumer()), set())
+        self.assertIn("undeclared-dependency", self.codes(self.foreign_consumer(("provider",))))
+        local = self.foreign_consumer(("provider", "voice@othermarket", "provider@othermarket"))
+        self.assertIn("qualified-local-dependency", self.codes(local))
+
+    def test_role_of_another_marketplace_binds_its_installed_package_on_every_host(self):
+        consumer = self.foreign_consumer()
+        installed = {
+            "codex": ("roles/voice-editor.md", "skills/review-workflow/SKILL.md", "codex plugin add <provider>@<marketplace>"),
+            "pi": ("skills/voice-voice-editor/SKILL.md", "prompts/consumer-review.md", "Provision qualified\nforeign providers"),
+        }
+        for host in HOSTS:
+            with self.subTest(host=host):
+                target = self.temp / "foreign" / host
+                render_plugin(consumer, load_adapter(ADAPTERS, host), target, adapters_root=ADAPTERS,
+                              plugin_registry={**self.registry, "consumer": consumer})
+                text = "\n".join(path.read_text(encoding="utf-8") for path in target.rglob("*.md"))
+                self.assertFalse((target / "contracts/dispatch/voice").exists())
+                if host in installed:
+                    role_path, entry, recovery = installed[host]
+                    text = (target / entry).read_text(encoding="utf-8")
+                    self.assertIn("`voice:voice-editor`: `voice@othermarket` belongs to another marketplace", text)
+                    self.assertIn(f"read `{role_path}` there and pass its complete role body verbatim", text)
+                    self.assertIn("If `voice@othermarket` is not installed, stop this phase and recover it", text)
+                    self.assertIn(recovery, text)
+                    self.assertTrue((target / "contracts/dispatch/provider/inspector.md").is_file())
+                else:
+                    self.assertIn("`voice:voice-editor`: dispatch the installed `voice:voice-editor` agent "
+                                  "by its qualified identity.", text)
+                    self.assertNotIn("belongs to another marketplace", text)
+                if host == "copilot":
+                    self.assertIn("'voice:voice-editor'", text)
+
 
 if __name__ == "__main__":
     unittest.main()

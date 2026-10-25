@@ -1,6 +1,6 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows and web research live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength; Shinatama stays a recommended companion and never a declared dependency. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows and web research live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength. A Daodan plugin that loads or dispatches a Shinatama component declares it as `name@shinatama`, like any cross-marketplace dependency; the rest of Shinatama stays a recommended companion. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
 
@@ -149,7 +149,7 @@ Markdown. Domain owners retain their reports, scoring and verdicts. See
 
 `AGENTS.md` and the four repository workflow skills under `.agents/skills/` are native Codex adaptations of this file and `.claude/skills/`. Generate them with `python scripts/sync_codex_instructions.py`; `--check` is the parity gate. Edit the Claude-side canonical copies, then run the synchronizer. The transformation is deliberately limited to instruction paths, cache paths, install commands and the host-relative downstream description.
 
-A kernel can export canonical contract files through `[contracts].exports`. Workflow `contract.shared_schemas` names a required provider and its exported `contracts/` path; schemas stay in one source location and are rendered by the compiler. Cross-plugin phase roles use `plugin/role` and are validated against the kernel registry. A composed method's additional workers are declared in `[dispatch].roles` rather than fabricated scheduling phases. `isolated` declares context requirements; `inline_workers` explicitly permits task-specific work through work-controller's isolated-worker. Dispatch references require declared providers and actual roles. Inline adapters receive generated unregistered dispatch bodies from the canonical owner; named-agent adapters use owner-qualified IDs. `invoke` is rejected until an executor is implemented and proved.
+A kernel can export canonical contract files through `[contracts].exports`. Workflow `contract.shared_schemas` names a required provider and its exported `contracts/` path; schemas stay in one source location and are rendered by the compiler. Cross-plugin phase roles use `plugin/role` and are validated against the kernel registry. A role of another marketplace's plugin is declared by its qualified dependency: named-agent hosts dispatch its qualified identity and inline hosts read its body from the installed provider. A composed method's additional workers are declared in `[dispatch].roles` rather than fabricated scheduling phases. `isolated` declares context requirements; `inline_workers` explicitly permits task-specific work through work-controller's isolated-worker. Dispatch references require declared providers and actual roles. Inline adapters receive generated unregistered dispatch bodies from the canonical owner; named-agent adapters use owner-qualified IDs. `invoke` is rejected until an executor is implemented and proved.
 
 The compiler is `scripts/daodan/`: `model.py` and `load.py` (strict TOML loading), `validate.py` and `trust.py` (semantic and secret validation), `adapter.py` (capability parity and strategy selection), `overrides.py` (the fingerprint gate), `render.py`, `templates.py`, `provenance.py`, `catalogs.py` and `report.py`. Standard library only, no third-party dependency anywhere in the toolchain.
 
@@ -437,9 +437,7 @@ source-repository mapping. This delegation does not assert equivalent coverage o
 the retired `memory-forensics` or `anti-reversing-techniques` skills. Preserve the
 original retirement history without restoring a local copy or a sync-table row.
 
-As of marketplace 8.2.0, superpowers is a declared hard dependency of `ai-tooling` (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`; cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2). Any place that points at the superpowers planning skills says so unconditionally: load the skills, and if they are unavailable stop the dependent phase and recover superpowers through the active host provisioning mechanism; the Claude command `claude plugin install superpowers@claude-plugins-official` applies only on Claude Code. This supersedes the earlier rule that kept superpowers references conditional; do not reintroduce conditional phrasing.
-
-The scoped exception that used to sit here is closed. From 2026-07-30 until the universal cutover, `exports/vscode/` vendored 14 superpowers skills and the 6 agents that served them, because there was no Copilot install path for superpowers and the extension shipped them or nothing did. The extension is gone, so the copy is gone with it, and the delegation is now unconditional again on every host: `ai-tooling` hard-depends on `superpowers@claude-plugins-official`, and nothing anywhere may re-import those skills. Superpowers publishes its own marketplace (`obra/superpowers-marketplace`), which is the install path to point users at.
+`ai-tooling`, its hard dependency `superpowers@claude-plugins-official` and the rules that govern them live in Shinatama; the table rows above stay as history. Nothing here may re-import the superpowers skills, including the 14 skills and 6 agents that `exports/vscode/` vendored until the universal cutover removed the extension. A cross-marketplace dependency always uses the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2.
 
 The universal cutover also retired the whole hand-mirroring apparatus it depended on: the per-bundle catalog, the extension manifest generator, the export structural checker, the mirror workflow and the release workflow. Do not rebuild any of them. A host that needs a different shape gets an adapter; a host that needs different meaning gets a fingerprinted override; nothing gets a second hand-maintained copy of a plugin.
 
@@ -482,14 +480,14 @@ specialist edges optional.
 | abstraction-architect | codebase-map |
 | testing | work-controller |
 | senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog |
-| project-knowledge | work-controller, codebase-map, senior-review, text-humanizer |
+| project-knowledge | work-controller, codebase-map, senior-review, report-rendering; text-humanizer@shinatama |
 | project-lifecycle | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, moe |
 | clean-code | work-controller |
 | python-development | testing, work-controller |
 | dependency-audit | none |
 | peer-review | none |
 | moe | peer-review |
-| daodan | every other plugin of the marketplace, directly or through its providers: what a command loads or dispatches, and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe) |
+| daodan | every other plugin of the marketplace, directly or through its providers: what a command loads or dispatches, and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe); text-humanizer@shinatama, whose role its entries dispatch |
 
 
 Resolved knowledge is a distinct per-run input contract. The required skill-catalog
@@ -511,7 +509,8 @@ kotlin-development disabled ran on a generic worker without Kotlin knowledge.
 Required, it is installed with `daodan` and the preflight's provider probe stops
 on it when disabled. The dependency linter accepts such an edge when the consumer
 also requires skill-catalog, the channel that reads it. Shinatama's knowledge
-stays a companion, never a dependency.
+stays a companion the catalog reads; a Shinatama component a Daodan plugin loads
+or dispatches is a declared `name@shinatama` dependency.
 
 The manifests are the control plane; this table records the architectural boundary.
 The dependency linter fails unresolved, undeclared and unused runtime edges.

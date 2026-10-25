@@ -97,9 +97,10 @@ class OperationalBindingTests(unittest.TestCase):
         return captured
 
     def test_single_isolated_phase_role_receives_harness_on_every_host(self):
-        # Since 38.0.0 the single isolated phase role is daodan humanize-text's
-        # `review` phase, a role of another plugin; review-react was retired.
-        paths = entry_paths("humanize-text")
+        # The single isolated phase role is daodan onboard-project's `explore`
+        # phase, a role of another plugin; review-react was retired and
+        # humanize-text moved to Shinatama.
+        paths = entry_paths("onboard-project")
         for host in HOSTS:
             with self.subTest(host=host):
                 rendered = self.render_in_memory(ENTRY, host)
@@ -111,26 +112,26 @@ class OperationalBindingTests(unittest.TestCase):
                 self.assertIn("ledger schema", text)
                 self.assertIn("never converted into a successful delivery", text)
                 self.assertIn("**required**", text)
-                self.assertIn("one `text-humanizer:text-humanizer` in an isolated context", text)
-                self.assertIn("artifact:humanize-text-report", text)
+                self.assertIn("one `project-knowledge:codebase-explorer` in an isolated context", text)
+                self.assertIn("artifact:context-brief", text)
                 self.assertIn("delivered", text)
                 self.assertIn("failed", text)
                 if host in ("claude", "copilot", "opencode"):
-                    self.assertIn("dispatch the installed `text-humanizer:text-humanizer` agent "
+                    self.assertIn("dispatch the installed `project-knowledge:codebase-explorer` agent "
                                   "by its qualified identity", text)
                 else:
-                    self.assertIn("read `contracts/dispatch/text-humanizer/text-humanizer.md` inside "
+                    self.assertIn("read `contracts/dispatch/project-knowledge/codebase-explorer.md` inside "
                                   "this package and pass its complete role body verbatim", text)
-                    self.assertIn("contracts/dispatch/text-humanizer/text-humanizer.md", rendered)
+                    self.assertIn("contracts/dispatch/project-knowledge/codebase-explorer.md", rendered)
 
     def test_copilot_dispatched_prompt_hands_off_once_to_the_coordinator(self):
         # Since 38.0.0 the three dispatch shapes are daodan entries: a single
-        # isolated phase role (humanize-text), the map that replaced team-analyze
+        # isolated phase role (onboard-project), the map that replaced team-analyze
         # (map-code) and the method-bound review that replaced code-review
         # (review-changes).
         plugin = ENTRY
         rendered = self.render_in_memory(plugin, "copilot")
-        for workflow in ("humanize-text", "map-code", "review-changes"):
+        for workflow in ("onboard-project", "map-code", "review-changes"):
             with self.subTest(workflow=workflow):
                 prompt = rendered[f"prompts/{workflow}.prompt.md"]
                 coordinator = rendered[f"agents/{workflow}-coordinator.agent.md"]
@@ -205,10 +206,10 @@ class OperationalBindingTests(unittest.TestCase):
             _inline_role_scope({"tools": "Read, InventedTool"})
 
     def test_single_phase_role_is_validated_against_owner_registry(self):
-        # Since 38.0.0 the single phase role is daodan humanize-text's.
+        # The single phase role is daodan onboard-project's `explore` phase.
         def undeclared(plugin):
-            workflow = next(w for w in plugin.workflows if w.name == "humanize-text")
-            phases = tuple(replace(p, role="missing-provider/worker") if p.role else p
+            workflow = next(w for w in plugin.workflows if w.name == "onboard-project")
+            phases = tuple(replace(p, role="missing-provider/worker") if p.id == "explore" else p
                            for p in workflow.phases)
             self.assertNotEqual(phases, workflow.phases)
             return replace(plugin, workflows=(replace(workflow, phases=phases),))

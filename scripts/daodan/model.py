@@ -123,6 +123,11 @@ class PluginSpec:
     contract_exports: tuple[Path, ...] = ()
     reviewer_compositions: tuple[tuple[str, tuple[str, ...]], ...] = ()
 
+    @property
+    def foreign_providers(self) -> dict[str, str]:
+        """Base name to `name@marketplace` for each required provider of another marketplace."""
+        return {item.partition("@")[0]: item for item in self.required_dependencies if "@" in item}
+
 
 class ModelError(ValueError):
     def __init__(self, path: Path, message: str) -> None:

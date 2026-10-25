@@ -69,7 +69,6 @@ works alone and is also a step of the task cycle.
 | | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
 | | `/daodan:record-decision` | A decision record outside a task; turns records on for a project without them |
 | | `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
-| | `/daodan:humanize-text` | Make a text read naturally |
 
 When unsure which work command fits, use `new-feature`: the interview corrects
 the course. On the other hosts the names follow the host: `/daodan-new-feature`
@@ -121,7 +120,9 @@ codex plugin marketplace add acaprino/daodan
 
 Install `daodan@daodan`: it brings every plugin of this marketplace as a mandatory
 local dependency, language and stack knowledge included, and stops a command when
-one of them is disabled. External dependencies must also be available on the host.
+one of them is disabled. External dependencies must also be available on the host;
+one of them is `text-humanizer@shinatama`, so register `acaprino/shinatama` as a
+marketplace too (see the [host reference](docs/hosts.md)).
 
 The lifecycle owns its task cycle and declares no upstream development method:
 its interview, plan and execution are shaped by the Codebase Map, the decision
@@ -171,7 +172,6 @@ commands, paths, installation requirements and runtime limits on each host.
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
-| [text-humanizer](docs/plugins/text-humanizer.md) | Voice and clarity of written content |
 
 Knowledge writes instructions, guides, the README and decision records. It
 distinguishes approved intent from observed implementation and updates existing
@@ -198,11 +198,13 @@ It does not grant arbitrary repository deletion.
 | Cross-model deliberation | [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md) |
 
 Domain verticals, office workflows (`office`), research (`research`),
-web scraping (`grabber-development`),
+web scraping (`grabber-development`), prose humanization (`text-humanizer`),
 marketing, business and specialized framework toolkits live in the companion
 [**Shinatama**](https://github.com/acaprino/shinatama) marketplace (`acaprino/shinatama`).
 When installed on the same host, their `SKILL.toml` knowledge sidecars are
-automatically discovered by `skill-catalog`.
+automatically discovered by `skill-catalog`. `daodan` and `project-knowledge`
+require `text-humanizer@shinatama`, whose editor gives documentation its voice
+pass and whose `/text-humanizer:humanize-text` makes any text read naturally.
 
 Reverse engineering of shipped applications and binaries is delegated to
 [REA (Reverse Engineer Anything)](https://github.com/morluto/rea). Its upstream
@@ -246,12 +248,6 @@ Before Coding, Simplicity First, Surgical Changes and Goal-Driven Execution.
 [Project knowledge](docs/plugins/project-knowledge.md) adapts them for project
 instruction creation and maintenance, preserving equivalent project guidance and
 adding local rules for verification and shared ownership.
-
-[blader/humanizer](https://github.com/blader/humanizer), by Siqi Chen (MIT), is an
-upstream source for [text-humanizer](docs/plugins/text-humanizer.md). Daodan's
-existing derivative keeps local pattern numbering, fact-preservation safeguards,
-registers, an Italian language profile and its own file-editing contract. Upstream
-changes are reconciled selectively rather than replacing those local rules.
 
 ## Contributing
 

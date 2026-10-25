@@ -3,6 +3,7 @@ name: run-maintenance-workflow
 description: 'Run the complete guided maintenance campaign: orientation, stage-by-stage repair of knowledge, structure, tests and artifacts, each stage approved before the next, final verification. TRIGGER WHEN: the user wants a whole project brought back into good shape over several stages. DO NOT TRIGGER WHEN: one diagnosis is enough (use check-health) or one change is wanted (use new-feature, fix-bug or refactor-code).'
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 > Arguments: `[area]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
 
 <daodan_host_binding host="codex">
@@ -211,7 +212,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `testing:test-suite-auditor`: read `contracts/dispatch/testing/test-suite-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-suite-structure-auditor`: read `contracts/dispatch/testing/test-suite-structure-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-writer`: read `contracts/dispatch/testing/test-writer.md` inside this package and pass its complete role body verbatim.
-- `text-humanizer:text-humanizer`: read `contracts/dispatch/text-humanizer/text-humanizer.md` inside this package and pass its complete role body verbatim.
+- `text-humanizer:text-humanizer`: `text-humanizer@shinatama` belongs to another marketplace, so this package ships no copy of its body. Resolve that plugin's installed root from its verified provider path in the active inventory, read `roles/text-humanizer.md` there and pass its complete role body verbatim, giving the absolute path of that root for every `<plugin-root>` in the body. If `text-humanizer@shinatama` is not installed, stop this phase and recover it as a required foreign provider through this host's binding.
 - `typescript-development:type-safety-auditor`: read `contracts/dispatch/typescript-development/type-safety-auditor.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:type-soundness-auditor`: read `contracts/dispatch/typescript-development/type-soundness-auditor.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:typed-boundary-auditor`: read `contracts/dispatch/typescript-development/typed-boundary-auditor.md` inside this package and pass its complete role body verbatim.

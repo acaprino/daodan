@@ -1,8 +1,9 @@
 ---
 name: write-docs-workflow
-description: 'Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).'
+description: 'Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use /text-humanizer:humanize-text).'
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 > Arguments: `[what to write]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
 
 <daodan_host_binding host="codex">
@@ -128,7 +129,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `project-knowledge:ops-writer`: read `contracts/dispatch/project-knowledge/ops-writer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:overview-writer`: read `contracts/dispatch/project-knowledge/overview-writer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:tech-writer`: read `contracts/dispatch/project-knowledge/tech-writer.md` inside this package and pass its complete role body verbatim.
-- `text-humanizer:text-humanizer`: read `contracts/dispatch/text-humanizer/text-humanizer.md` inside this package and pass its complete role body verbatim.
+- `text-humanizer:text-humanizer`: `text-humanizer@shinatama` belongs to another marketplace, so this package ships no copy of its body. Resolve that plugin's installed root from its verified provider path in the active inventory, read `roles/text-humanizer.md` there and pass its complete role body verbatim, giving the absolute path of that root for every `<plugin-root>` in the body. If `text-humanizer@shinatama` is not installed, stop this phase and recover it as a required foreign provider through this host's binding.
 - `work-controller:isolated-worker`: read `contracts/dispatch/work-controller/isolated-worker.md` inside this package and pass its complete role body verbatim.
 - Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 

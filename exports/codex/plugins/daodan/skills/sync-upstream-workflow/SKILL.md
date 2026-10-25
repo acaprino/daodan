@@ -3,6 +3,8 @@ name: sync-upstream-workflow
 description: 'Bring other peoples work into this copy: fetch, report what arrived and whether it touches an open task, fast-forward only, then realign map, records and documentation. TRIGGER WHEN: the user wants to pull, update from upstream, or see what others changed. DO NOT TRIGGER WHEN: the user wants their own work merged (use finish-task).'
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -127,7 +129,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `project-knowledge:ops-writer`: read `contracts/dispatch/project-knowledge/ops-writer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:overview-writer`: read `contracts/dispatch/project-knowledge/overview-writer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:tech-writer`: read `contracts/dispatch/project-knowledge/tech-writer.md` inside this package and pass its complete role body verbatim.
-- `text-humanizer:text-humanizer`: read `contracts/dispatch/text-humanizer/text-humanizer.md` inside this package and pass its complete role body verbatim.
+- `text-humanizer:text-humanizer`: `text-humanizer@shinatama` belongs to another marketplace, so this package ships no copy of its body. Resolve that plugin's installed root from its verified provider path in the active inventory, read `roles/text-humanizer.md` there and pass its complete role body verbatim, giving the absolute path of that root for every `<plugin-root>` in the body. If `text-humanizer@shinatama` is not installed, stop this phase and recover it as a required foreign provider through this host's binding.
 - `work-controller:isolated-worker`: read `contracts/dispatch/work-controller/isolated-worker.md` inside this package and pass its complete role body verbatim.
 - Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 

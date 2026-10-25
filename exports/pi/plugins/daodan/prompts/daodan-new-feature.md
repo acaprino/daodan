@@ -2,6 +2,8 @@
 description: 'Add new behavior through the task cycle: an interview grounded in your code, its intent kept in a proposed decision record when the project uses them, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).'
 ---
 
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -217,7 +219,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `testing:test-suite-auditor`: read `contracts/dispatch/testing/test-suite-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-suite-structure-auditor`: read `contracts/dispatch/testing/test-suite-structure-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-writer`: read `contracts/dispatch/testing/test-writer.md` inside this package and pass its complete role body verbatim.
-- `text-humanizer:text-humanizer`: read `contracts/dispatch/text-humanizer/text-humanizer.md` inside this package and pass its complete role body verbatim.
+- `text-humanizer:text-humanizer`: `text-humanizer@shinatama` belongs to another marketplace, so this package ships no copy of its body. Resolve that plugin's installed root from its verified provider path in the active inventory, read `skills/text-humanizer-text-humanizer/SKILL.md` there and pass its complete role body verbatim, giving the absolute path of that root for every `<plugin-root>` in the body. If `text-humanizer@shinatama` is not installed, stop this phase and recover it as a required foreign provider through this host's binding.
 - `typescript-development:type-safety-auditor`: read `contracts/dispatch/typescript-development/type-safety-auditor.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:type-soundness-auditor`: read `contracts/dispatch/typescript-development/type-soundness-auditor.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:typed-boundary-auditor`: read `contracts/dispatch/typescript-development/typed-boundary-auditor.md` inside this package and pass its complete role body verbatim.

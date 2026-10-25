@@ -36,7 +36,7 @@
       "operations": [],
       "provider": "clean-code",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.1.1"
     },
     {
       "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /daodan:write-docs), a public-facing README, or a review verdict (senior-review consumes this output instead).",
@@ -220,7 +220,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file. TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.",
@@ -235,7 +235,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -250,7 +250,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
@@ -271,7 +271,7 @@
       "topics": [
         "readme"
       ],
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: the user asks to be onboarded, walked through an unfamiliar codebase, given a project takeover or intake dossier, or runs /daodan:onboard-project. DO NOT TRIGGER WHEN: being new to a project is only background for a code change (use lifecycle-method), correcting and rationalizing the project (use maintainer-method), or writing durable repository documentation (use project-knowledge:project-knowledge).",
@@ -796,28 +796,6 @@
       "provider": "testing",
       "topics": [],
       "version": "4.4.0"
-    },
-    {
-      "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
-      "dimensions": [
-        "correctness"
-      ],
-      "file": "skills/anti-ai-writing-patterns/SKILL.md",
-      "frameworks": [],
-      "id": "text-humanizer:anti-ai-writing-patterns",
-      "kind": "knowledge",
-      "languages": [],
-      "metadata_sha256": "e99eb3a2f44c34f9f33f013f735328403f7efbefbee733b1bd0682a4f2bebeae",
-      "name": "anti-ai-writing-patterns",
-      "operations": [
-        "document"
-      ],
-      "provider": "text-humanizer",
-      "topics": [
-        "humanize",
-        "prose"
-      ],
-      "version": "2.1.1"
     },
     {
       "description": "Run Knip to find unused files, dependencies, exports and types in TypeScript and JavaScript projects. TRIGGER WHEN: cleaning up TypeScript/JavaScript dead code, finding unused npm dependencies or exports, or configuring knip.json/knip.ts. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",

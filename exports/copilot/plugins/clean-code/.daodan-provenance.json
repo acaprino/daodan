@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:dafc9f12a85f58929627a4cdb151b3c93c3e2242a7c28512bb77c2d0647e1a71",
+  "coreDigest": "sha256:bcd2f8fa3107f11e9d25869f0557ef4d5168a94c86b6db4cac76ab3efcdac8fa",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "clean-code",
-  "version": "3.1.0"
+  "version": "3.1.1"
 }

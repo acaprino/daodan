@@ -273,11 +273,17 @@ def validate_dependencies(
     """Static fan-out roles must resolve inside this plugin or a required dependency.
 
     There is no optional local dependency by policy, so a role that resolves
-    nowhere is a broken package rather than a degraded one.
+    nowhere is a broken package rather than a degraded one. A role owned by a
+    qualified `name@marketplace` dependency is declared by its base name and
+    checked by its own marketplace, since its kernel is not in this registry.
     """
     issues: list[ValidationIssue] = []
     roles = set(plugin.components.roles)
     dependencies = set(plugin.required_dependencies)
+    foreign = plugin.foreign_providers
+    for name, qualified in foreign.items():
+        if registry is not None and name in registry:
+            issues.append(ValidationIssue("qualified-local-dependency", plugin.root / "plugin.toml", qualified))
     for workflow in plugin.workflows:
         references = [f"role:{role}" for role in workflow.dispatch.roles]
         if workflow.dispatch.inline_workers:
@@ -302,11 +308,11 @@ def validate_dependencies(
                 continue
             owner, separator, role = name.partition("/")
             if separator:
-                if owner != plugin.name and owner not in dependencies:
+                if owner != plugin.name and owner not in dependencies and owner not in foreign:
                     issues.append(
                         ValidationIssue("undeclared-dependency", workflow.entrypoint, reference)
                     )
-                elif registry is not None:
+                elif registry is not None and owner not in foreign:
                     provider = registry.get(owner)
                     if provider is None:
                         issues.append(ValidationIssue("unknown-role-provider", workflow.entrypoint, reference))

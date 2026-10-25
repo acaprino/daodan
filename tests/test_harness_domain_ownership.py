@@ -389,6 +389,12 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                                 self.assertIn(f"`{identity}`", dispatch_rule)
                                 if host in {"codex", "pi"} and owner != plugin:
                                     resource = root / "contracts/dispatch" / owner / f"{role}.md"
+                                    if owner not in registry:
+                                        # A role of another marketplace ships no copy here.
+                                        qualified = registry[plugin].foreign_providers[owner]
+                                        self.assertIn(f"`{identity}`: `{qualified}` belongs to another marketplace", body)
+                                        self.assertFalse(resource.exists())
+                                        continue
                                     text = without_host_binding(self, resource.read_text(encoding="utf-8"), host)
                                     self.assertIn(f"Owner: {owner}:{role}", text)
                                     self.assertIn(f"<{owner}-plugin-root>", text)

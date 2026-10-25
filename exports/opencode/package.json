@@ -161,7 +161,7 @@
       "clean-code": {
         "agents": [
           {
-            "description": "Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).",
+            "description": "Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use /text-humanizer:humanize-text).",
             "file": "agents/clean-code-agent.md",
             "id": "clean-code:clean-code-agent",
             "permissions": [
@@ -620,7 +620,7 @@
             "name": "daodan:map-code"
           },
           {
-            "description": "Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).",
+            "description": "Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use /text-humanizer:humanize-text).",
             "file": "commands/write-docs.md",
             "name": "daodan:write-docs"
           },
@@ -633,11 +633,6 @@
             "description": "Clean the repository: workspace garbage and git leftovers, dead application code, redundant tests, concluded run output. Preview first, then one authorization. TRIGGER WHEN: the user asks to clean up, tidy, remove dead code, junk files or redundant tests. DO NOT TRIGGER WHEN: the code itself is to be restructured (use refactor-code).",
             "file": "commands/tidy-repo.md",
             "name": "daodan:tidy-repo"
-          },
-          {
-            "description": "Make a text read naturally, removing the patterns of machine writing, without inventing content. TRIGGER WHEN: the user asks to humanize, rewrite naturally or de-AI a text or a file. DO NOT TRIGGER WHEN: code is to be refactored (use refactor-code) or documentation written (use write-docs).",
-            "file": "commands/humanize-text.md",
-            "name": "daodan:humanize-text"
           }
         ],
         "dependencies": [
@@ -659,7 +654,6 @@
           "senior-review",
           "skill-catalog",
           "testing",
-          "text-humanizer",
           "typescript-development"
         ],
         "root": "plugins/daodan"
@@ -1568,7 +1562,6 @@
         "dependencies": [
           "work-controller",
           "codebase-map",
-          "text-humanizer",
           "senior-review",
           "report-rendering"
         ],
@@ -5046,51 +5039,6 @@
           }
         ]
       },
-      "text-humanizer": {
-        "agents": [
-          {
-            "description": "Editor for any language: uses 25 local writing patterns to improve prose, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).",
-            "file": "agents/text-humanizer.md",
-            "id": "text-humanizer:text-humanizer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          }
-        ],
-        "root": "plugins/text-humanizer",
-        "skills": [
-          {
-            "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
-            "file": "skills/anti-ai-writing-patterns/SKILL.md",
-            "id": "text-humanizer:anti-ai-writing-patterns",
-            "name": "anti-ai-writing-patterns"
-          }
-        ]
-      },
       "typescript-development": {
         "agents": [
           {
@@ -5381,5 +5329,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "39.5.0"
+  "version": "40.0.0"
 }

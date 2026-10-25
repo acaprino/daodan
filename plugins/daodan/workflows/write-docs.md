@@ -2,7 +2,7 @@
 description: >
   Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions.
   TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md).
-  DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).
+  DO NOT TRIGGER WHEN: the text only needs to sound natural (use /text-humanizer:humanize-text).
 argument-hint: "[what to write]"
 ---
 
