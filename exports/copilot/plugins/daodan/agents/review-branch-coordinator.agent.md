@@ -217,8 +217,7 @@ The phase graph and record schemas ship with this package in
 Load `work-controller:work-record`. Before anything is written, run
 `run_state.py first-use --project ROOT`; on `first_use: true`, load
 `project-lifecycle:lifecycle-method` and follow its `references/first-use.md`
-first. What the user's first-use answers create comes before this command and
-is not its write.
+first.
 
 Load the skill `senior-review:review-method` with shape `branch` and run variant
 `team-review` on the branch above against its base, or on the current branch; a pull

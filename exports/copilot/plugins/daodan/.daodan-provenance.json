@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:b3287e13c412eff9aaa2e03734886e1b0be5ff81fbfcbc89587ac832fb2e4a67",
+  "coreDigest": "sha256:75bde2286aff270c8112d0b8718696636fb9fcbf8839177878e7236b22dc2940",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
@@ -28,5 +28,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "daodan",
-  "version": "1.6.0"
+  "version": "1.6.1"
 }

@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "39.2.0"
+    "version": "39.2.1"
   },
   "name": "daodan",
   "owner": {
@@ -128,7 +128,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/copilot/plugins/daodan",
-      "version": "1.6.0"
+      "version": "1.6.1"
     },
     {
       "author": {
@@ -311,7 +311,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "2.4.0"
+      "version": "2.4.1"
     },
     {
       "agents": [

@@ -111,8 +111,8 @@ Undecided questions stay open in the record for plan review to raise again.
 Fill the helper's `template` with answered examples (`EX-*`), rejected
 alternatives (`RA-*`) and invariants (`INV-*`). Run `propose` with title, slug,
 run identity, `base_sha`, scope lists and any `--supersedes`; its id is
-`adr.proposed` until integration. Without records, it is the run's `intent.md`,
-bound as `intent`, revised as new files.
+`adr.proposed` until integration. Without records, it is `intent.md` in
+the run.
 
 ## Record review (stage A)
 

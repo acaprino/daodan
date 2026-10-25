@@ -133,8 +133,7 @@ The phase graph and record-schema references ship under `contracts/review-change
 Load `work-controller:work-record`. Before anything is written, run
 `run_state.py first-use --project ROOT`; on `first_use: true`, load
 `project-lifecycle:lifecycle-method` and follow its `references/first-use.md`
-first. What the user's first-use answers create comes before this command and
-is not its write.
+first.
 
 Load the skill `senior-review:review-method` with shape `light` and follow its
 `references/light.md` on the target above. The roster is the helper's; when it advises a

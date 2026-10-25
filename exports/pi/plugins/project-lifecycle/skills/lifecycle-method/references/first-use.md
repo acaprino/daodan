@@ -73,7 +73,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 A project's first Daodan use asks two choices once, before the command writes
 anything else: whether the project keeps decision records, and whether to
-analyze it now. The decision is ADR-0005.
+analyze it now (ADR-0005). What the answers create is the user's choice, outside
+the command's own write limits.
 
 1. **Probe.** `run_state.py first-use --project ROOT` through
    `work-controller:work-record` reads only. `first_use: false` ends this
@@ -92,16 +93,11 @@ analyze it now. The decision is ADR-0005.
    questions, close the turn listing them, and continue at step 3 on resume.
 3. **Records.** Yes: load `project-knowledge:adr-method`, run `init-index`,
    and commit `docs/adr/README.md` alone on the current branch, so a task
-   worktree branches with it; outside Git there is nothing to commit. No:
-   nothing under `docs/adr/`.
+   worktree branches with it. No: nothing under `docs/adr/`.
 4. **Analysis.** Lite or deep: the map as `references/init.md` step 1 runs it,
    at depth `lite` or `full`. No: no `.codebase-map/`; a later step that needs
    the map builds it at lite depth on its scope, without asking.
-5. **Keep the answers** in the command's run as `first_use: {records,
-   analysis}` (`analysis` is `none`, `lite` or `full`), at init or on resume;
-   a yes is also a `commit` grant scoped to `docs/adr/README.md`, the answer
-   as its source. Once `.daodan/` or `.codebase-map/` exists the probe returns
-   `first_use: false`, so nobody asks again.
 
-A project without records never hears of them. `/daodan:record-decision`
-turns them on later by creating the index.
+Once `.daodan/` or `.codebase-map/` exists the probe returns `first_use: false`,
+so nobody asks again. A project without records never hears of them;
+`/daodan:record-decision` turns them on later by creating the index.

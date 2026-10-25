@@ -124,8 +124,7 @@ Assertions: both questions are asked once, in one message, before any write;
 `map-code` asks only the depth; the analysis runs at `full`, `lite` or not at
 all as answered, and a declined analysis is built later at lite depth on the
 task's scope without a new question; yes creates `docs/adr/README.md` and
-commits it alone; no creates nothing under `docs/adr/`; the answers sit in the
-run as `first_use`; no later command asks again; the pre-existing project is
+commits it alone; no creates nothing under `docs/adr/`; no later command asks again; the pre-existing project is
 never asked; `show-status` asks nothing, writes nothing and says Daodan was not
 used; `record-decision` creates the index, says records are now on, and later
 tasks resolve and propose.
@@ -137,8 +136,6 @@ cycle to finish, then a defect fix whose cause changes no contract.
 
 Assertions: no `resolve`, `propose` or `promote` runs and no question, brief or
 report mentions decision records; the interview's examples, rejected
-alternatives and invariants are the run's `intent.md`, bound as `intent` with
-its digest; the plan, each brief, each wave review and verification cite those
-items by id; a reopened point writes a new intent file instead of editing the
-first; finish promotes nothing and the loop block lists no records; the fix
+alternatives and invariants are the run's `intent.md`; the plan, each brief, each wave review and verification cite those
+items by id; finish promotes nothing and the loop block lists no records; the fix
 keeps its examples in the plan.

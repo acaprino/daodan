@@ -89,12 +89,10 @@ the choice made and kept, and what does the first use do?
   project will use decision records, and whether to analyze it now, with three
   answers: no, lite, or deep (the map's `full` depth, every phase). Yes to
   records runs `init-index` and commits the new index alone on the current
-  branch, so a task worktree branches with it; the answer is that commit's
-  grant. No creates nothing under `docs/adr/`. The chosen
+  branch, so a task worktree branches with it. No creates nothing under `docs/adr/`. The chosen
   analysis then runs at that depth. No analysis writes no `.codebase-map/`; a
   later command that needs the map builds it when it needs it, at lite depth on
-  its scope, as it does today, without asking again. The questions and their
-  answers are kept in that command's run, when it keeps one. Because the first use leaves
+  its scope, as it does today, without asking again. Because the first use leaves
   `.daodan/` or `.codebase-map/` behind, the question is never asked again.
   `/daodan:init-project` performs the step, and so does every command that
   initializes a project before its own work. `/daodan:map-code` as the first
@@ -113,9 +111,8 @@ the choice made and kept, and what does the first use do?
   initialization on such a project updates the existing map as today.
 - **The interview's intent.** Scope, examples (`EX-*`), rejected alternatives
   (`RA-*`) and invariants (`INV-*`) are fixed by the interview in every case.
-  With records disabled, the run keeps them in its own `intent.md`, bound by
-  the `intent` section with its digest, and the plan, worker briefs, wave
-  reviews and verification cite them from there; a revision is a new file;
+  With records disabled, the run keeps them in its own `intent.md`, and the plan, worker briefs, wave
+  reviews and verification cite them from there;
   finish promotes nothing. A fix or refactor that needs no record keeps them
   in its plan, on any project. With records enabled, the record holds them and the
   run references it by identity and version, never by copy. Each task's intent
@@ -125,14 +122,14 @@ the choice made and kept, and what does the first use do?
 
 ## Verified Interview Examples
 
-- **EX-001** (nominal case): Input: a project with no `.daodan/`, `.codebase-map/` or `docs/adr/`; the user runs `/daodan:new-feature`; at the first-use questions the user answers no to records and deep to the analysis -> Expected: the analysis runs at `full` depth, nothing is created under `docs/adr/`, the run records the question and the answer, the interview's `EX-*`, `RA-*` and `INV-*` go into the run's `intent` section, the plan and verification cite them from the run, and finish promotes nothing.
+- **EX-001** (nominal case): Input: a project with no `.daodan/`, `.codebase-map/` or `docs/adr/`; the user runs `/daodan:new-feature`; at the first-use questions the user answers no to records and deep to the analysis -> Expected: the analysis runs at `full` depth, nothing is created under `docs/adr/`, the interview's `EX-*`, `RA-*` and `INV-*` go into the run's `intent.md`, the plan and verification cite them from the run, and finish promotes nothing.
 - **EX-002** (nominal case): Input: the same project; the user answers yes to records and lite to the analysis -> Expected: the analysis runs at `lite` depth, `init-index` creates `docs/adr/README.md` and commits it alone, and the interview ends with `propose` as today.
 - **EX-003** (boundary case): Input: a project initialized before this decision, with `.daodan/` and no `docs/adr/` -> Expected: no question; the cycle runs with records disabled and never mentions them.
 - **EX-004** (boundary case): Input: on a never-used project the first command is `/daodan:map-code`; the user answers no to records and lite to the depth; later the user runs `/daodan:new-feature` -> Expected: `map-code` asks the records question and the depth, never whether to analyze, before writing `.codebase-map/`; `new-feature` does not ask again and runs without records.
 - **EX-005** (nominal case): Input: a disabled project; the user runs `/daodan:record-decision` -> Expected: the index and the record are created, the output states that the project now uses decision records, and later tasks `resolve` and `propose` as on any enabled project.
 - **EX-006** (boundary case): Input: `/daodan:show-status` on a never-used project -> Expected: no question and no write; the status reports that Daodan has not been used on this project.
-- **EX-007** (rejection case): Input: on a disabled project a review or a worker brief would load active records -> Expected: `resolve` does not run, the inputs come from the run's `intent` section, and nothing fails or warns because `docs/adr/` is absent.
-- **EX-008** (boundary case): Input: a never-used project; `/daodan:new-feature`; the user answers no to the analysis -> Expected: no `.codebase-map/` is written at the first-use step; the run under `.daodan/` keeps both answers; the change preflight then builds the map at lite depth on the task's scope without asking again, and the next command asks nothing.
+- **EX-007** (rejection case): Input: on a disabled project a review or a worker brief would load active records -> Expected: `resolve` does not run, the inputs come from the run's `intent.md`, and nothing fails or warns because `docs/adr/` is absent.
+- **EX-008** (boundary case): Input: a never-used project; `/daodan:new-feature`; the user answers no to the analysis -> Expected: no `.codebase-map/` is written at the first-use step; the change preflight then builds the map at lite depth on the task's scope without asking again, and the next command asks nothing.
 
 ## Rejected Alternatives
 
@@ -148,7 +145,7 @@ the choice made and kept, and what does the first use do?
 
 - **INV-001**: decision records are enabled for a project if and only if `docs/adr/README.md` exists in its main checkout or in the checkout the command runs in; no other flag, setting or plugin state decides it.
 - **INV-002**: with records disabled, no command except `/daodan:record-decision` writes under `docs/adr/`, runs `resolve`, `propose` or `promote`, or mentions records to the user or a worker.
-- **INV-003**: the first-use questions are asked at most once per project, before any write other than a run that holds only those questions on a host without a question tool, and are recorded with their answers in that run; a command that writes neither `.daodan/` nor `.codebase-map/` never asks.
+- **INV-003**: the first-use questions are asked at most once per project, before any write other than a run that holds only those questions on a host without a question tool; a command that writes neither `.daodan/` nor `.codebase-map/` never asks.
 - **INV-004**: the first use analyzes only as the user answered: not at all, at `lite` depth or at `full` depth; the answer is recorded in the run and a depth the user already named is not asked again.
 - **INV-005**: a task's examples, rejected alternatives and invariants have exactly one owner: the record when the task proposes one, the run's `intent.md` or its plan otherwise; plan, briefs, reviews and verification cite that owner.
 - **INV-006**: no command deletes `docs/adr/` or a record to change the switch.
@@ -163,11 +160,8 @@ the choice made and kept, and what does the first use do?
   is missing; `change.md` stops requiring a record index; `interview.md` writes
   `intent.md` when records are off; the preflight builds a missing map on the
   task's scope.
-- `work-controller`: the work contract and `run_state.py` gain the read-only
-  `first-use` probe and the `first_use` and `intent` loop sections; `intent`
-  binds `intent.md` by path and digest, compared when an update records a new
-  intent, at completion and under `validate --current`, never when a stored
-  record is read; it refuses a run that also proposes a record.
+- `work-controller`: `run_state.py` gains the read-only `first-use` probe;
+  the run keeps no copy of the answers and no digest of `intent.md`.
 - `daodan`: every entry that may write Daodan state starts with the first-use
   probe; `record-decision` turns records on; `show-status` reports a never-used
   project; descriptions name the optional record.
@@ -187,8 +181,7 @@ the choice made and kept, and what does the first use do?
 
 ## Confirmation
 
-- Run-contract tests cover the `intent` section and the single-owner rule
-  (INV-005).
+- Run-contract tests cover the read-only probe.
 - The lifecycle evals `first-use-choices` and `records-off-cycle` cover
   EX-001 to EX-008: the questions asked once, the three analysis answers, a
   disabled project that never mentions records, and `record-decision` as the
