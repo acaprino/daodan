@@ -75,7 +75,7 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             name: workflow_roles(cls.plugin, cls.workflows[name]) for name in cls.commands
         }
         owners = {reference.partition("/")[0] for roles in cls.references.values()
-                  for reference in roles}
+                  for reference in roles if reference.partition("/")[0] in cls.registry}
         cls.rendered_plugins = [cls.registry[name] for name in sorted(owners | {cls.plugin.name, cls.lifecycle.name})]
         cls.packages = {}
         cls.catalogs = {}
@@ -165,6 +165,9 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             for reference in references:
                 with self.subTest(workflow=name, role=reference):
                     owner, _, role = reference.partition("/")
+                    if owner not in self.registry:
+                        self.assertIn(owner, self.plugin.foreign_providers)
+                        continue
                     self.assertIn(owner, self.plugin.required_dependencies)
                     self.assertIn(owner, self.registry)
                     self.assertIn(role, self.registry[owner].components.roles)
@@ -180,8 +183,12 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
                         owner, _, role = reference.partition("/")
                         identity = f"{owner}:{role}"
                         self.assertIn(identity, entry)
+                        if owner not in self.registry:
+                            if host in {"codex", "pi"}:
+                                self.assertIn(f"`{identity}`: `{self.plugin.foreign_providers[owner]}` belongs to another marketplace", entry)
+                            continue
                         if host in {"codex", "pi"}:
-                            path = self.packages[host][self.plugin.name] / f"contracts/dispatch/{owner}/{role}.md"
+                            path =self.packages[host][self.plugin.name] / f"contracts/dispatch/{owner}/{role}.md"
                             source = role_text(resolve_role(self.registry, owner, role))
                             digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
                             text = path.read_text(encoding="utf-8")
@@ -201,6 +208,8 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
                     self.assertEqual(commands[f"daodan:{name}"], f"commands/{name}.md")
                 for reference in set.union(*self.references.values()):
                     owner, _, role = reference.partition("/")
+                    if owner not in self.registry:
+                        continue
                     self.assertIn(f"{owner}:{role}", {item["id"] for item in listing[owner]["agents"]})
                 continue
             if host == "pi":
@@ -221,6 +230,8 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             if host in {"claude", "copilot"}:
                 for reference in set.union(*self.references.values()):
                     owner, _, role = reference.partition("/")
+                    if owner not in self.registry:
+                        continue
                     suffix = ".agent.md" if host == "copilot" else ".md"
                     self.assertIn(f"./agents/{role}{suffix}", listing[owner]["agents"])
 
