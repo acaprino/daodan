@@ -1,0 +1,736 @@
+{
+  "schema": "daodan/pathrun/v1",
+  "request": "Response.set_cookie lets a semicolon in the path or domain argument add extra cookie attributes such as Secure or HttpOnly to the header",
+  "target": "starlette/responses.py::Response.set_cookie",
+  "preflight": {
+    "path": "<work>/pathrun-r6\\project\\.daodan\\runs\\pathrun\\context\\preflight-334c897ae6af2ce6f37e97901f9053643d5da5265336bf1a969d2cc8d06e0f55\\receipt.json",
+    "sha256": "e728c694f7431bf0edf4a9c727eb5370a297f82f6762a93a1b6ff712132eb44c",
+    "status": "incomplete"
+  },
+  "task_packet": {
+    "path": "<work>/pathrun-r6\\project\\.daodan\\runs\\pathrun\\context\\task-packet-50e1e0093b1516a684bb2d6a0ca839088f7673f685d0138aec82b225371cf6fb\\receipt.json",
+    "sha256": "f17e31846845ece39ea5c327b4447a18c96c61982e8667ceabe4848395e1203f",
+    "status": "ready",
+    "delivered_source_files": [
+      "starlette/datastructures.py",
+      "starlette/middleware/sessions.py",
+      "starlette/requests.py",
+      "starlette/responses.py"
+    ],
+    "target_in_packet": true
+  },
+  "resume_returns_same_receipt": true,
+  "verify_task_packet": {
+    "dispatch_allowed": false,
+    "input_tokens": null,
+    "preparation_ready": true,
+    "recipient_check_required": true,
+    "residual_obligations": [
+      {
+        "id": "task:T1:verification",
+        "kind": "gate",
+        "status": "open",
+        "verification": {
+          "command": "python oracle.py"
+        }
+      },
+      {
+        "id": "R1",
+        "kind": "requirement",
+        "status": "open",
+        "support": [
+          {
+            "entity_id": "starlette/responses.py::Response.set_cookie",
+            "predicate": "current_source"
+          }
+        ],
+        "support_status": "missing",
+        "text": "set_cookie refuses a path or domain containing a semicolon and still emits valid cookies"
+      },
+      {
+        "id": "record:oracle",
+        "kind": "gate",
+        "status": "open"
+      }
+    ],
+    "status": "needs_recipient_check",
+    "task_complete": false,
+    "validation_complete": false,
+    "write_authorized": false
+  },
+  "oracle": {
+    "before_edit_exit": 1,
+    "after_edit_exit": 0,
+    "before": "accepted {'path': '/x; Secure'}\r\n",
+    "after": "oracle ok\r\n"
+  },
+  "post_task": {
+    "path": "<work>/pathrun-r6\\project\\.daodan\\runs\\pathrun\\context\\post-task-987ef24d71cf29f76c160ed15edcdb265c3954395e07cea18e0a728a96d94daa\\receipt.json",
+    "sha256": "0a31edb8ffadda795e0827193fca186ccf6d602c8d36e8361e329b5d7ed77035",
+    "status": "ready",
+    "residual_obligations": [
+      {
+        "id": "173f09783c85b6f9c90618a53319b988cc8a071aed4459023a4eb7805b98c01a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "d91b570626762b73bf4213f54977b71667a7441991ca71ab67f520b4ce712c68",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "8d31e3babbe05e8e67a4a2b387aa4c79440975749e1cf6d3f2d24a261c31ac0c",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "7102c6a96475795a5ff211614a6044293eff8beb903f1395c7e8b5a4de150b88",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b97c4332c83a5e57735db3c1f120e05f13f902afd81fab0d581a66edb3d57bda",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "a9894566d97e72b40e5c6aa70267ab479172b3634fc1a0d89fa4c03c8be91c6a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "70100b3f407f17dcc23887d67291b202ff4df2b1c7e3bda6153499e847163718",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "708edf71dbbf5ba6311fa98197e6536cc84eb65b3adec80ca3da65ebac24727d",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "9f263c7c1913dea41f3885b56ffc7371bc947de9829438354ad41a1fcd321206",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b57891fbf3c59b23d2b7418476b7f55e2c958a3ea5b3222861369c4513424e84",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "40ec4b538e4360dae4c82f50562bff8a0e4dadf79317b6e793fc2ed392642bbe",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "674cfd0fdc1959fa1aae8c68d368282643f02d77f1c4b25cdc5c2ef888fdfcc2",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "8e6344d62bd758ee1bbb8df1d274774996cddb191190acc1dd9d40e9aa1b6581",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "ca98f4231a16ff4810b57b28ba7bcfa7aed9bd387f5fdb5d6d54d0f905a02525",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "bc973273a0af58bfe38190697cadea1f50da286934f7fda5517ecf865dd97528",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "2a2bcd03b9bf799f13ef332195214225ec31958bcc09c321f7e93f23963c498c",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "73dbe84fc692395320057727faac2fa65268e02a74946b2a475970ceb5ceef73",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b8b62b14edc0ea49c034bf7a32c070ecd062b21dd13b9c7fa3e1f4aa18f8e751",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "44196a035e24ee0e2a37dfd07f868f2b2b93d36518cc98edca35fb8c3da0c694",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "0d6d2514fed16bef9beb66a9dcd17c1ace15be5b9200c9f782c17824558d1944",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "task:T1:verification",
+        "kind": "gate",
+        "status": "open"
+      },
+      {
+        "id": "7e6b624677d516ed7f3f1274aa1c0bfd7e3caa22821189123633957e91386e46",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "95926f70ee4f4ce6df9a27832cacdafc0909d92c1f5d17ce8c7054acb2a6729e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "902acdd7318fbf06739df313b2406bdd7c1552d962cdac8d91b550e372bc5e42",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b4b31717695563be13486d579eff798c703b2def1a03eb388b1e4ec2f873d742",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "2182ad24a6f977087a8ec03d8f98fadc38e5a1e1ff99977df5220f54918eda5e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "9ab1cc9115f230ae5630763110d5477876d90550059c6c5aab16dcee83454f43",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "e58be4578c5c676db20a151fa19522ef4385243684cdf32931c28ead071c4da8",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "7212775aba427abdbd99b007d2f9cfd233777c17361298a2916a37a58430283f",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "8fec6f6c6f3d373b5561e327aaac094686ced12324e0ab995d5e559d474dd79e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "989ad7bf6cb4227bf1fc8292399f4d573befa07e66e86b190487d5ce270e2251",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "d5a0b9c287074f45bb91dc3056a272d66d6892e9b1ce6e7600c0463e8cdacb98",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "4bcf1f806a8966cbe4708c186654599fec58c21a7225f2cf938109d794ea42e8",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "7287a012c413ba8d667bcb662f68b2f4eaf761e57c09181d84742aeafbdf902f",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "ce2af64da9afbc909fa924ee6eda0afe2bcd24b6f0e7faf9fcfaf89bb12c15c9",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "ae187aeabca7ed259c69be00a63a5ff40ddbb931a47182191d20e8967d2407a6",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "23706f00884b003724f884596df0f1f41f35d6a59114a170500f73f376790731",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "5b689d7d105556cd63b2da117dd5eff32871b86d92abb68c03ccfa9f2c55075e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "1adecbe395e109398adf882bc9fb9b741e671e6c16b611ac522dec80992fd13e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "86e0c4c292fd12834bdca64b2044d925e45ee94ce2f6946f16e9faf8e6bb8a0a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b7e0737bb67511550081e5533e836a2246a5684375b9067b2a7c05a9774e20ad",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b4d2f9875c5e9b7f9fb509040f2cff55a91d8a6029f3fda464eab9ff6b66c7f5",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "96652c2018ce182497f66daef7eb5f97267cc92ad424e4a122ee6ee557e67241",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "686ca5686632f73efcd878ba25f082bbb639bedc54b2527780a00ed8b9cbbb6a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "1ff42532aaf11e1020fd4f90a59e558a8871aebdc2b5b06755c67dce6e9a385b",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "cf0ba36869c762328173fe09339fb94eeea2f88f9053dc3835a1b332eb28ac21",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "fd35488a66d62c7168e35a359167c47ed391e007ef99598e547657a164936141",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "29ebc6f957a4a495c54ab09ee1ecafa506df95a342a64bc32718c9b2fba599cc",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "cbebfd9fd381f8a940f4e97c8b460404d402c181b7f3d73b2827eeb9f7b20c4c",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "f28f2868c906243db4ca0e81184278a0d8733ef032c4d41c67771c7060e6b92d",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "79efbb1541682d13a40e46e09520ba495842358c80f51cc8aa84ac7d867bcf11",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "f235eb233959d4d22cfc51bc2b6033c6456b9bd0eb7b1f24a23aa88ed3a7f0ee",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "2fcc069c4ca5ee2c5d71bae5c9519f96e4f2c9a8339d87747443ea548734286e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "fe2dd569a276159fac2bd5a1fe8f313fa6a818fdb659a63487d9afdb6f758659",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "f7c55c33a865839249ab5d4f51b6bad91400317839e99ba0b1b93b1dcc6c6217",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "fe254dd3dd135285f907543d9836ce76876309d6f13204faa64ef45f7f49a069",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "3b5fcbbbe3bb760603f009f8c04add919b7c0b8144d080d15236ca9939d9e8dc",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "3de5b329fdbdf03f8919ae8b58c3c29cd8237069a15c83757a3f5486c9078fb1",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "27395d27d27f110df81c493f8b1521615c59f65530cbac27cf69b3f79095b501",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "09e5ddec79df4d614e908f1f2d42a8681e4779a232b36dca008b7362fb3baddd",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "a12af47055e212836ebc9c532b9428a4a324f20c624d9e2518e9ea6b0176f5bf",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "f4443a621fb61d98c086c711746058ed43f384101b8db7d4fd3372717521bcbd",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "63193f78f7bb32e97c9462153be07da8127da08cd07eade1c047d849dd7e69d5",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "R1",
+        "kind": "requirement",
+        "status": "open"
+      },
+      {
+        "id": "1b912f27ab9c82f01a0d889838dd654a4ef7bc6987cf45a7d416b450dd7016d3",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "152863da5c55a7c5df51f933efd18e8392fd987bc7e135fdb5a9ab9f7ae9d97d",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "08b90930d041d352f138cb0e07b114a55e13584d7e5d0155861ad15cf5b174e3",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "74498c5ab0e652258369628e1b3caac135a74adc569925417861714cdc13ea60",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "1499f5dd1d60f30848b2a4705d1ca2cf4bac40817aa23fb4acde62de7597972d",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "a92d3707eabe87abe5e7be90cabbb93f0bbd439f5147e35833fd8c1b4104eabd",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "bc4ede4de7dbe4b95f94e55f1d6b5ed5a3b5b7a0daa522d882a6008dc4dcf51b",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "1877881662656f654d098b286adb2626a8a7d87ec2d5d41c6b0b0b9363f1c9a3",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "235d2a50b70a2a21ae23792ca6c42d6af01d4fd7a91daf790ec81c2cc134decd",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "41bff8d65be8a30b6e8d6d80e0f0e561519db30f4ab7807c2bccaf54dd9cf497",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "00c0c10794a3acbb9c39c9f8ae9121cf01fae1f29be6e978dfd3a9eb1fab8b13",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "d53f77e391752fb4ae11cc8037a39f9c0ddfd37047373bf71ee32dadb0772f92",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "cfd453b3c96a6d6d213377d7f11169315ea65f44bc11130249456be3fe45b00e",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "32e96a2dbfc7bbd625c9e87cf4def4d1e0d8c111b012a833387b5186296dcd5f",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "3e7640bb0838f4ccc667f09bc7a63b96e750f78612240b0904b476e04f772583",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "bf0677f258cb6eefbdf3bb19263c0e51e570342fb23c9c7ebb22d0956cf94cfe",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "048f0d54db772210c3c909ae91cb93bcc6b23e20da7c85469377673b5f214469",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "record:oracle",
+        "kind": "gate",
+        "status": "open"
+      },
+      {
+        "id": "69a29f608049fc42ef4fd75fa26938c8751ac121b31820d145bdd7eab1ed6eae",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "ceaa797f8c9aae07759a54aab849343a44b83fb7e74bd76574a7d90bc254d936",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "cd6ae68ba643ed76676b470bc01462d9a267cf343978f9e5a1347b02a87a0cee",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "6bf40b4a4eec94e3ba12916975bdc34184cbcd3c3a349c8d3d998b7f419a193f",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "bf4263264b08d8145e677489db0520a02279f2c111c9d5802e7ba7c9b30d50b6",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "79e4ad376a02c321568c9d1f779f96f1a6e95330a5e783e184ca3a247dff707c",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "fe4a9c82e351b8559a1548efc39dffbe9aa69179a56f0b3094045e8987e191cc",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "70bb4d2af71afa8fff8210cc2e9b0ac07f54c263e4c23b668ce96b2b2a10ca62",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "f2ada6486be23873bd31f21e37b3bcd49d6cf391320206727dc6c169e2d7daea",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "61c6cac4fe8c57d16a04f9b0475455613d6de4bc1c5c4a6be34ab00435a31bfc",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "434cc1b1289d035838f87069f7167e55661a47d70d9b9ebd34083413aaf989b7",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "0a8f41e51e0608d29af0f44586064c6d0994b30664cbe58ae024c8472c7833de",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "a31e3612f525b3346f447a6fbfd2e1f9bee06bcc47a02ef4aa98d95abdcfcb00",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "cd945f90095fed5fdbfc5e0dc77df0774d84d03aafb937a1a124b6e334061555",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "6a50ad30dbbc561db3af1805eccee175fe902a84fa808f255652fbf6fefb5394",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "f1b88edbef746148ec1613148451b8fdb52ad1a063d45e6de736be3da87cbe9a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "3a22702bace05a0a1645bfa286443383e7f470b349eec41944df8a7a7de201a8",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "fd3637cba93057acdfc409ac5d450a2288a3c4bdb330d57fba73d2602c74ec4f",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "0be8e7f48e2fb347dea409724e1d75122986d0805437ef2217d10ef4e91c469a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "61e26555272e1c20f7171f8661bc043d87d1d616b2e2109245319677ae8a6cae",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "b8b2c7164872e65e8583f9e362025b798d2f6b6ec432d1d5c834b97a8fb9b817",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "a4072814ddf6eedcb783a0ad125e9f154407fc4525ed4b6dd43d1311cad9d988",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "841f67a172b53b68747aca2fb073deaa66bda1280d8ce5689c6b13d3a3483dd2",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "96d1991942c69b585081e343270029a11bc92ddaec799e0621ccaaf2d23b7d2a",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "5d6524f2f051b8d2baf978dee7aa895852319fde0344df481fe19b593318a42b",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "370d394507f06b4da94f1fda676347f7228d3ee5d4d575c0948bb29d4d899f62",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "323de7daad27924fc804d21e8af713e2f9e1cd2bc96495cca9de95fbfcbfc621",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "18e54eb7188b1b408f09e392e7b87e5623d529574d4f8ca849f5249645d9b3ac",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "a577077f685033b32f875ed85aa023423a0f932d914562064e0c4405961ff773",
+        "kind": "impact",
+        "status": "open"
+      },
+      {
+        "id": "72367fabf9227ed1784ab6590aa79b05e8dd162561fb1efe174c6b13833e19c2",
+        "kind": "impact",
+        "status": "open"
+      }
+    ],
+    "write_authorized": false,
+    "task_complete": false
+  },
+  "old_receipt_refused_after_refresh_exit": 1,
+  "semantic_map": {
+    "cards": {
+      "fresh": 0,
+      "orphan": 0,
+      "stale_body": 0,
+      "stale_callee": 0,
+      "stale_interface": 0,
+      "unread": 40
+    },
+    "inventory_files": 36,
+    "runtime_files": 0,
+    "selected_files": 1,
+    "symbols": 40
+  },
+  "steps": [
+    {
+      "step": "retrieval index",
+      "seconds": 4.48
+    },
+    {
+      "step": "jedi edges",
+      "seconds": 63.59,
+      "exit": 0,
+      "stdout": "e-edges.sqlite\",\r\n  \"engine\": \"jedi@0.20.1\",\r\n  \"inference_elapsed_ms\": 57477.2,\r\n  \"latency_mean_ms\": 56.0,\r\n  \"latency_p95_ms\": 142.3,\r\n  \"no_edges_reason\": null,\r\n  \"population\": 1157,\r\n  \"population_language\": \"python\",\r\n  \"position_unverified\": 0,\r\n  \"probe_init_elapsed_ms\": 1201.1,\r\n  \"project_root\": \"<work>/pathrun-r6/project\",\r\n  \"selected\": 1157,\r\n  \"source_verification\": {\r\n    \"after_inference\": 36,\r\n    \"before_inference\": 36\r\n  },\r\n  \"stride\": 1,\r\n  \"total_elapsed_ms\": 59761.1\r\n}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "protocol init",
+      "seconds": 0.44,
+      "exit": 0,
+      "stdout": "  \"id\": \"R1\",\r\n              \"support\": [\r\n                {\r\n                  \"entity_id\": \"starlette/responses.py::Response.set_cookie\",\r\n                  \"predicate\": \"current_source\"\r\n                }\r\n              ],\r\n              \"text\": \"set_cookie refuses a path or domain containing a semicolon and still emits valid cookies\"\r\n            }\r\n          ],\r\n          \"status\": \"pending\",\r\n          \"verification\": {\r\n            \"command\": \"python oracle.py\"\r\n          },\r\n          \"write_set\": [\r\n            \"starlette/responses.py\"\r\n          ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "cycle preflight",
+      "seconds": 11.13,
+      "exit": 0,
+      "stdout": "{\"path\": \"<work>/pathrun-r6\\\\project\\\\.daodan\\\\runs\\\\pathrun\\\\context\\\\preflight-334c897ae6af2ce6f37e97901f9053643d5da5265336bf1a969d2cc8d06e0f55\\\\receipt.json\", \"sha256\": \"e728c694f7431bf0edf4a9c727eb5370a297f82f6762a93a1b6ff712132eb44c\", \"status\": \"incomplete\"}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "cycle task-packet",
+      "seconds": 15.06,
+      "exit": 0,
+      "stdout": "{\"path\": \"<work>/pathrun-r6\\\\project\\\\.daodan\\\\runs\\\\pathrun\\\\context\\\\task-packet-50e1e0093b1516a684bb2d6a0ca839088f7673f685d0138aec82b225371cf6fb\\\\receipt.json\", \"sha256\": \"f17e31846845ece39ea5c327b4447a18c96c61982e8667ceabe4848395e1203f\", \"status\": \"ready\"}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "cycle task-packet",
+      "seconds": 2.04,
+      "exit": 0,
+      "stdout": "{\"path\": \"<work>/pathrun-r6\\\\project\\\\.daodan\\\\runs\\\\pathrun\\\\context\\\\task-packet-50e1e0093b1516a684bb2d6a0ca839088f7673f685d0138aec82b225371cf6fb\\\\receipt.json\", \"sha256\": \"f17e31846845ece39ea5c327b4447a18c96c61982e8667ceabe4848395e1203f\", \"status\": \"ready\"}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "cycle verify",
+      "seconds": 1.52,
+      "exit": 0,
+      "stdout": "al_obligations\": [{\"id\": \"task:T1:verification\", \"kind\": \"gate\", \"status\": \"open\", \"verification\": {\"command\": \"python oracle.py\"}}, {\"id\": \"R1\", \"kind\": \"requirement\", \"status\": \"open\", \"support\": [{\"entity_id\": \"starlette/responses.py::Response.set_cookie\", \"predicate\": \"current_source\"}], \"support_status\": \"missing\", \"text\": \"set_cookie refuses a path or domain containing a semicolon and still emits valid cookies\"}, {\"id\": \"record:oracle\", \"kind\": \"gate\", \"status\": \"open\"}], \"status\": \"needs_recipient_check\", \"task_complete\": false, \"validation_complete\": false, \"write_authorized\": false}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "protocol barrier",
+      "seconds": 0.42,
+      "exit": 0,
+      "stdout": "  \"id\": \"R1\",\r\n              \"support\": [\r\n                {\r\n                  \"entity_id\": \"starlette/responses.py::Response.set_cookie\",\r\n                  \"predicate\": \"current_source\"\r\n                }\r\n              ],\r\n              \"text\": \"set_cookie refuses a path or domain containing a semicolon and still emits valid cookies\"\r\n            }\r\n          ],\r\n          \"status\": \"pending\",\r\n          \"verification\": {\r\n            \"command\": \"python oracle.py\"\r\n          },\r\n          \"write_set\": [\r\n            \"starlette/responses.py\"\r\n          ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "retrieval index m1",
+      "seconds": 5.47
+    },
+    {
+      "step": "jedi edges m1",
+      "seconds": 63.49,
+      "exit": 0,
+      "stdout": "e-edges.sqlite\",\r\n  \"engine\": \"jedi@0.20.1\",\r\n  \"inference_elapsed_ms\": 56708.5,\r\n  \"latency_mean_ms\": 55.2,\r\n  \"latency_p95_ms\": 125.1,\r\n  \"no_edges_reason\": null,\r\n  \"population\": 1157,\r\n  \"population_language\": \"python\",\r\n  \"position_unverified\": 0,\r\n  \"probe_init_elapsed_ms\": 1125.6,\r\n  \"project_root\": \"<work>/pathrun-r6/project\",\r\n  \"selected\": 1157,\r\n  \"source_verification\": {\r\n    \"after_inference\": 36,\r\n    \"before_inference\": 36\r\n  },\r\n  \"stride\": 1,\r\n  \"total_elapsed_ms\": 58897.1\r\n}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "cycle post-task",
+      "seconds": 11.35,
+      "exit": 0,
+      "stdout": "{\"path\": \"<work>/pathrun-r6\\\\project\\\\.daodan\\\\runs\\\\pathrun\\\\context\\\\post-task-987ef24d71cf29f76c160ed15edcdb265c3954395e07cea18e0a728a96d94daa\\\\receipt.json\", \"sha256\": \"0a31edb8ffadda795e0827193fca186ccf6d602c8d36e8361e329b5d7ed77035\", \"status\": \"ready\"}\r\n",
+      "stderr": ""
+    },
+    {
+      "step": "semantic map",
+      "seconds": 1.01,
+      "exit": 0,
+      "stdout": "0,\r\n      \"stale_callee\": 0,\r\n      \"stale_interface\": 0,\r\n      \"unread\": 40\r\n    },\r\n    \"inventory_files\": 36,\r\n    \"runtime_files\": 0,\r\n    \"selected_files\": 1,\r\n    \"symbols\": 40\r\n  },\r\n  \"llm_calls\": 0,\r\n  \"output\": \"<work>/pathrun-r6\\\\project\\\\.codebase-map\\\\m1\\\\semantic-map.md\",\r\n  \"provenance\": \"<work>/pathrun-r6\\\\project\\\\.codebase-map\\\\m1\\\\semantic-map.json\"\r\n}\r\n\r\n",
+      "stderr": ""
+    }
+  ],
+  "limits": [
+    "The edit is made by the script; no LLM worker was dispatched.",
+    "The coordinator is a script, not an installed host workflow.",
+    "The oracle is a behaviour check (a semicolon in path or domain refused with any exception, a valid cookie emitted), not the library test suite."
+  ]
+}

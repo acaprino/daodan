@@ -440,8 +440,10 @@ class ScopePlannerTests(unittest.TestCase):
         self.assertEqual(plan['status'], 'needs_localization')
 
     def test_uncertain_structure_cannot_bypass_canonical_full_file_fallback(self):
+        # A parse failure leaves no exact structure, so the reader must fall back to
+        # the whole file (nesting alone no longer does).
         (self.root / 'pkg/core.py').write_text(
-            'def helper(value):\n    def nested():\n        return value\n    return nested()\n'
+            'def helper(value):\n    def nested(:\n        return value\n    return nested()\n'
             '\ndef unrelated():\n    return 99\n', encoding='utf8')
         request = self.request(None, base=None)
         packet = self.packet()

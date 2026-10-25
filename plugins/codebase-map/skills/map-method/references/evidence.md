@@ -174,14 +174,18 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
 `--symbol` and `--lines` are repeatable. Use qualified names exactly as returned
 by the outline, including `Class.method`. A requests file is a JSON list, or an
 object with `requests`, containing `path`, `symbols`, `ranges` (`start`/`end`)
-and optional `full_file` entries.
+and optional `full_file` and `context` entries.
 
 Selections retain shared file/class text outside complete function/method
 intervals and Java/JavaScript/TypeScript/Rust callable boundary lines, preserving
 imports, types, constants, static fields, decorators and shared-line declarations.
+`context: false` on every request for a file emits only the selection (reason
+`selection`), for context-packet leads, never mandatory evidence. A selected
+nested callable is emitted with its enclosing callables.
 The reader reports whole-file fallback for legacy/unreliable spans: inferred,
-merged, parser-error, single-line, overlapping, class-boundary, long-line,
-minified or shared-line definitions, even with exact end lines. Retained context
+merged, parser-error, single-line, partially overlapping, class-boundary,
+long-line, minified or shared-line definitions, even with exact end lines;
+strict nesting is not an overlap. Retained context
 proves neither omitted bodies irrelevant nor semantic dependencies complete.
 Block selection limits model input; every requested file is still read and
 hash-checked in full. It promises no measured model-time saving.

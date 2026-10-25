@@ -1,0 +1,475 @@
+{
+  "schema": "daodan/context-claims/v1",
+  "project": "starlette 1.9.0",
+  "authorship": "Written by Claude Opus 5.5 (claude-opus-5-5) as a subagent of the context-redesign run, reading the frozen corpus source directly; every span was re-read and every entity_id checked against the holdout manifest symbol table as the innermost entity containing the span; date 2026-10-25.",
+  "scoring": "A claim is supported when every group in all has at least one alternative span whose lines are all delivered.",
+  "scenarios": [
+    {
+      "id": "q05",
+      "query": "A client sends a partial-download request naming hundreds of separate byte segments, and my server ignores it and answers with the entire file and a normal 200 status. Where is the cutoff, and what makes it fall back to sending everything?",
+      "claims": [
+        {
+          "id": "q05.c1",
+          "text": "FileResponse limits multi-range requests through the class attribute max_ranges, which is set to 100.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 303,
+                  "end": 303,
+                  "entity_id": "starlette/responses.py::FileResponse"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q05.c2",
+          "text": "FileResponse._parse_range_header counts the comma-separated segments of the Range value (commas plus one) and returns an empty list, raising nothing, when that count exceeds max_ranges; the check runs before any segment is parsed, validated or merged.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 514,
+                  "end": 517,
+                  "entity_id": "starlette/responses.py::FileResponse._parse_range_header"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q05.c3",
+          "text": "FileResponse.__call__ answers MalformedRangeHeader with a 400 and RangeNotSatisfiable with a 416, but treats the empty list returned for too many segments like an absent Range header and selects _handle_simple.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 378,
+                  "end": 386,
+                  "entity_id": "starlette/responses.py::FileResponse.__call__"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q05.c4",
+          "text": "The range branch is entered only when the response status_code is 200, and _handle_simple sends that status_code with the original headers and streams the whole file, so the client gets a full 200 instead of a 206 with Content-Range.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 370,
+                  "end": 374,
+                  "entity_id": "starlette/responses.py::FileResponse.__call__"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 426,
+                  "end": 437,
+                  "entity_id": "starlette/responses.py::FileResponse._handle_simple"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected_gaps": []
+    },
+    {
+      "id": "q11",
+      "query": "I attach several jobs to a response to run after it goes out. In what order do they execute, do they start only after the answer has been handed to the server, and how are plain blocking functions handled so they do not freeze the event loop?",
+      "claims": [
+        {
+          "id": "q11.c1",
+          "text": "Response.__call__ sends the http.response.start and http.response.body messages first and awaits the attached background task only after both send calls have returned.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 171,
+                  "end": 175,
+                  "entity_id": "starlette/responses.py::Response.__call__"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q11.c2",
+          "text": "BackgroundTasks.add_task wraps each function and its arguments in a BackgroundTask and appends it to the tasks list, so the list keeps insertion order.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/background.py",
+                  "start": 30,
+                  "end": 32,
+                  "entity_id": "starlette/background.py::BackgroundTasks.add_task"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q11.c3",
+          "text": "BackgroundTasks.__call__ awaits the tasks one at a time in list order, so each task starts only after the previous one has finished.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/background.py",
+                  "start": 34,
+                  "end": 36,
+                  "entity_id": "starlette/background.py::BackgroundTasks.__call__"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q11.c4",
+          "text": "BackgroundTask records at construction whether the function is async and, when called, awaits a coroutine function directly but runs a plain function through run_in_threadpool.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/background.py",
+                  "start": 17,
+                  "end": 17,
+                  "entity_id": "starlette/background.py::BackgroundTask.__init__"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/background.py",
+                  "start": 20,
+                  "end": 23,
+                  "entity_id": "starlette/background.py::BackgroundTask.__call__"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q11.c5",
+          "text": "run_in_threadpool binds the arguments with functools.partial and hands the call to anyio.to_thread.run_sync, which runs it in a worker thread instead of on the event loop.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/concurrency.py",
+                  "start": 32,
+                  "end": 34,
+                  "entity_id": "starlette/concurrency.py::run_in_threadpool"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected_gaps": [
+        "anyio.to_thread.run_sync runs the function in AnyIO's worker thread pool, bounded by its default capacity limiter, and the awaiting coroutine yields to the event loop until the thread returns (third-party AnyIO).",
+        "Whether the response bytes have reached the client when the server's send() returns for the final body message is decided by the ASGI server; Starlette only guarantees that the messages were handed to send() (ASGI server)."
+      ]
+    },
+    {
+      "id": "q12",
+      "query": "In che punto si decide l'ordine con cui i livelli intermedi avvolgono le rotte (e perché il gestore degli errori 500 è sempre il più esterno mentre quello delle eccezioni gestite è il più interno)? E come finisce davanti agli altri un livello aggiunto con una chiamata successiva?",
+      "claims": [
+        {
+          "id": "q12.c1",
+          "text": "Starlette.build_middleware_stack gives the handler registered for 500 or Exception to ServerErrorMiddleware, placed first in the layer list, then adds the optional RequestBodyLimitMiddleware and the user middleware, and puts ExceptionMiddleware, which receives every other handler, last.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/applications.py",
+                  "start": 68,
+                  "end": 78,
+                  "entity_id": "starlette/applications.py::Starlette.build_middleware_stack"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q12.c2",
+          "text": "build_middleware_stack wraps the router by iterating the list in reverse, so the first entry, ServerErrorMiddleware, becomes the outermost layer and the last entry, ExceptionMiddleware, sits directly around the router.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/applications.py",
+                  "start": 80,
+                  "end": 83,
+                  "entity_id": "starlette/applications.py::Starlette.build_middleware_stack"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q12.c3",
+          "text": "The Starlette constructor documents the reason for the two fixed positions: ServerErrorMiddleware is outermost to handle uncaught errors anywhere in the stack, and ExceptionMiddleware is innermost to deal with handled exceptions raised in routing or endpoints.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/applications.py",
+                  "start": 38,
+                  "end": 43,
+                  "entity_id": "starlette/applications.py::Starlette.__init__"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q12.c4",
+          "text": "Starlette.add_middleware inserts the new Middleware at index 0 of user_middleware, so a layer added by a later call precedes the earlier ones in the list and therefore wraps them.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/applications.py",
+                  "start": 107,
+                  "end": 107,
+                  "entity_id": "starlette/applications.py::Starlette.add_middleware"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q12.c5",
+          "text": "The stack is built once, lazily, on the first Starlette.__call__, and add_middleware raises RuntimeError once middleware_stack exists, so the order is fixed when the first request arrives.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/applications.py",
+                  "start": 94,
+                  "end": 95,
+                  "entity_id": "starlette/applications.py::Starlette.__call__"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/applications.py",
+                  "start": 105,
+                  "end": 106,
+                  "entity_id": "starlette/applications.py::Starlette.add_middleware"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected_gaps": []
+    },
+    {
+      "id": "q14",
+      "query": "In produzione compare `RuntimeError: Caught handled exception, but response already started.` Da quale funzione viene sollevato, e che cosa deve essere successo prima perché scatti?",
+      "claims": [
+        {
+          "id": "q14.c1",
+          "text": "The RuntimeError is raised in wrapped_app, the ASGI callable returned by wrap_app_handling_exceptions, after it has caught an exception for which a handler exists while response_started is already true; it is chained from the original exception.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/_exception_handler.py",
+                  "start": 52,
+                  "end": 56,
+                  "entity_id": "starlette/_exception_handler.py::wrap_app_handling_exceptions.wrapped_app"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q14.c2",
+          "text": "wrapped_app calls the wrapped app with its own sender, which sets response_started to True as soon as an http.response.start message passes through it, so the response must already have begun before the exception was raised.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/_exception_handler.py",
+                  "start": 37,
+                  "end": 38,
+                  "entity_id": "starlette/_exception_handler.py::wrap_app_handling_exceptions.wrapped_app.sender"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/_exception_handler.py",
+                  "start": 42,
+                  "end": 42,
+                  "entity_id": "starlette/_exception_handler.py::wrap_app_handling_exceptions.wrapped_app"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q14.c3",
+          "text": "The handler is looked up first in status_handlers by status code for an HTTPException, then in exception_handlers along the exception's class MRO; with no handler the original exception is re-raised and this RuntimeError does not occur.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/_exception_handler.py",
+                  "start": 44,
+                  "end": 53,
+                  "entity_id": "starlette/_exception_handler.py::wrap_app_handling_exceptions.wrapped_app"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/_exception_handler.py",
+                  "start": 17,
+                  "end": 19,
+                  "entity_id": "starlette/_exception_handler.py::_lookup_exception_handler"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q14.c4",
+          "text": "The handler maps come from the starlette.exception_handlers scope key, which ExceptionMiddleware sets, and ExceptionMiddleware always registers handlers for HTTPException and WebSocketException, so an HTTPException raised after the start triggers the error even without a user handler.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/_exception_handler.py",
+                  "start": 26,
+                  "end": 27,
+                  "entity_id": "starlette/_exception_handler.py::wrap_app_handling_exceptions"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/middleware/exceptions.py",
+                  "start": 28,
+                  "end": 31,
+                  "entity_id": "starlette/middleware/exceptions.py::ExceptionMiddleware.__init__"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/middleware/exceptions.py",
+                  "start": 52,
+                  "end": 55,
+                  "entity_id": "starlette/middleware/exceptions.py::ExceptionMiddleware.__call__"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q14.c5",
+          "text": "Sending the endpoint's response happens inside wrap_app_handling_exceptions, both in request_response and around the inner app in ExceptionMiddleware.__call__, so an exception raised while a response is being sent after its start message, for example by a streaming body, reaches this check.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/routing.py",
+                  "start": 61,
+                  "end": 65,
+                  "entity_id": "starlette/routing.py::request_response.app"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/middleware/exceptions.py",
+                  "start": 63,
+                  "end": 63,
+                  "entity_id": "starlette/middleware/exceptions.py::ExceptionMiddleware.__call__"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected_gaps": []
+    },
+    {
+      "id": "cookie",
+      "query": "Why is a cookie with an invalid name (containing whitespace or a control character, for example 'bad name') rejected by Response.set_cookie, and where does the rejection happen?",
+      "claims": [
+        {
+          "id": "cookie.c1",
+          "text": "Response.set_cookie begins by creating a standard library http.cookies.SimpleCookie and assigning the value under the caller's key with cookie[key] = value, performing no validation of the key of its own beforehand.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 104,
+                  "end": 106,
+                  "entity_id": "starlette/responses.py::Response.set_cookie"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cookie.c2",
+          "text": "The rejection is raised by that assignment, so the rest of set_cookie, including the final append of the Set-Cookie header to raw_headers, never runs and the response is left without the cookie.",
+          "all": [
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 106,
+                  "end": 106,
+                  "entity_id": "starlette/responses.py::Response.set_cookie"
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "path": "starlette/responses.py",
+                  "start": 134,
+                  "end": 135,
+                  "entity_id": "starlette/responses.py::Response.set_cookie"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected_gaps": [
+        "http.cookies.BaseCookie.__setitem__ passes the key to Morsel.set, which raises http.cookies.CookieError ('Illegal key ...') when the key contains a character outside the legal cookie-name set, such as a space or a control character (standard library).",
+        "Morsel.set also rejects reserved attribute names such as expires or path used as keys, and recent Python versions also reject control characters in values, so the exact rule depends on the running Python version (standard library)."
+      ]
+    }
+  ]
+}

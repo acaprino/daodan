@@ -234,7 +234,14 @@ def _gap(plan, kind, reason, **details):
         plan["unresolved"].append(value)
 
 
-def _candidate(plan, entity, reason, provenance, *, priority=4, rank=0):
+def _diff_detail(intent):
+    """A changed symbol is mandatory source only for intents that act on the change."""
+    return "source" if intent in {"change", "test", "finish"} else "lead"
+
+
+def _candidate(plan, entity, reason, provenance, *, priority=4, rank=0, detail="lead"):
+    """Register analysis evidence. Only anchors and requirement targets demand source;
+    every other origin is a lead. Detail merges monotonically: source never reverts."""
     record = plan["entities"].get(entity)
     if record is None:
         _gap(plan, "missing_entity", "entity absent from the candidate", entity_id=entity)
@@ -246,7 +253,9 @@ def _candidate(plan, entity, reason, provenance, *, priority=4, rank=0):
         return False
     priority = min([priority, rank], plan["priorities"].get(entity, [priority, rank]))
     plan["priorities"][entity] = priority
-    row = _add(plan, "analysis", entity, reason, provenance, anchor=record["anchor"], required_detail="source")
+    row = _add(plan, "analysis", entity, reason, provenance, anchor=record["anchor"], required_detail=detail)
+    if detail == "source":
+        row["required_detail"] = "source"
     row["priority"] = priority
     if entity not in plan["visited"] and entity not in plan["frontier"]:
         if plan["active"] is None or plan["active"]["entity_id"] != entity:
@@ -266,7 +275,7 @@ def _anchors(plan, store, anchors, reason):
             _gap(plan, "ambiguous_anchor", "anchor requires localization", anchor=anchor)
         for record in found:
             accepted = _candidate(plan, record["entity_id"], reason, {"kind": "anchor", "anchor": anchor},
-                                  priority=0 if reason == "explicit requirement target" else 1)
+                                  priority=0 if reason == "explicit requirement target" else 1, detail="source")
             if accepted and not ambiguous:
                 plan["localized"] = True
 
@@ -280,7 +289,8 @@ def _comparison(plan, stores, paths):
         candidate_engine_store=paths.get("engine"))
     plan["comparison"] = comparison
     for changed in comparison["changed"]:
-        accepted = _candidate(plan, changed["symbol_id"], "snapshot diff", changed, priority=1)
+        accepted = _candidate(plan, changed["symbol_id"], "snapshot diff", changed, priority=1,
+                              detail=_diff_detail(plan["intent"]))
         if accepted and plan["intent"] in {"change", "finish"}:
             plan["localized"] = True
     for name in ("edit_impact", "validation_impact", "do_not_touch"):
@@ -485,7 +495,13 @@ def prepare_scope(request: dict, *, authority: dict, indexes: dict | None = None
                     raise ValueError("retrieval index belongs to a different candidate")
                 plan["retrieval"] = {k: v for k, v in result.items() if k != "results"}
                 for rank, row in enumerate(result["results"]):
-                    _candidate(plan, row["entity_id"], "retrieval lead", row, priority=3, rank=rank)
+                    # An exact or traceback match localizes like an anchor; text and dense
+                    # similarity only suggest where to look.
+                    if {"exact", "traceback"} & set(row.get("provenance", [])):
+                        _candidate(plan, row["entity_id"], "exact retrieval match", row, priority=1, rank=rank,
+                                   detail="source")
+                    else:
+                        _candidate(plan, row["entity_id"], "retrieval lead", row, priority=3, rank=rank)
                 plan["localized"] |= bool(result["exact"])
                 for reason in result["gaps"]:
                     _gap(plan, "retrieval", reason)

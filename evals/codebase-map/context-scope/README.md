@@ -48,6 +48,10 @@ not measure task success, correctness of the delivered code or LLM token savings
   the evaluation environment for the project (its parser fingerprint must match the
   prepared manifest) and pass `--encoder-python` for an interpreter that has numpy,
   onnxruntime and tokenizers.
+- **Dispatchable coverage and claims.** `evaluate.py` records each packet's `status_reason` and the
+  delivered line runs; `scope+packet:ready` credits only a `ready` packet. `claims.py` scores the
+  claim-level gold (`gold/claims.json`, written from the source and checked span by span) against
+  those runs.
 - **Static hosts** (`static_hosts.py`) compares the code context surface of the five
   exported packages with the kernel and checks the four exported schemas.
 
@@ -62,6 +66,7 @@ python harness/impact.py   --project P --workdir NEW --environment <venv> --out 
 python harness/pathrun.py  --source <starlette dir> --work NEW --environment <venv> --out results/pathrun-result.json
 python harness/embedding_arm.py --project P --out results/embedding-arm.json --cold-index --encoder-python <python with numpy, onnxruntime, tokenizers>
 python harness/embedding_arm.py --project P --out part-K.json --reuse-index --packets 24000 --shard K/4 --encoder-python <same>
+python harness/claims.py   results/evaluate-result.json gold/claims.json results/claims-result.json
 python harness/static_hosts.py <repository root> results/static-hosts.json
 ```
 

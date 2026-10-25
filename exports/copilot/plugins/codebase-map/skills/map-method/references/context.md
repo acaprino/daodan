@@ -96,9 +96,11 @@ links; artifact names are content addressed and published exclusively.
 
 `RECIPIENT.json` declares `id`, `available_tokens` (space remaining after existing
 instructions and conversation), `reserve_tokens`, `max_chars`, `max_evaluations`
-(1–10000), optional `prefix`, `suffix`, `tokenizer_id` and `policy`
-(`ordered`, default, or experimental `marginal`). Include every additional dispatch
-wrapper in prefix/suffix. Maximum projection: 200 entities and 1000 variants.
+(1–10000), optional `prefix`, `suffix`, `tokenizer_id`, `policy`
+(`ordered`, default, or experimental `marginal`) and `compare` (true runs both
+policies for evaluation; otherwise only the chosen one runs). Include every
+additional dispatch wrapper in prefix/suffix. Projection: core entities first,
+then at most 60 leads, 200 entities in all; whole bundles up to 1000 variants.
 
 Python callers use `build_packet(plan, request, authority=..., recipient=...,
 indexes=..., cursor=..., token_counter=...)`. The explicit counter must match
@@ -121,9 +123,20 @@ read-only. It returns compact paths, digests, counts, gaps and cost.
 
 ## Selection and evidence
 
-Mandatory current source and exact anchors precede peripheral material. Each body
-requires its verified signature and `source_reader` context blocks, including
-canonical full-file fallback. Serialization merges physical source lines by
+The mandatory core is the current source of every row the plan marks
+`required_detail: source` (requirement targets and anchors, see the scope
+reference) plus the request's support predicates. Leads are optional bundles in
+the plan's order: they fill the budget and never block a packet. Sources and
+impact are materialized only for projected bundles; impact evidence only for
+core entities of `bug`, `change`, `test` and `finish`. A limit drops a whole
+bundle, never a prerequisite of a kept body. A core body requires its verified
+signature; a lead is its body alone, with location and body hash, read as its
+selection without file context (a file-level lead as the module's declarations,
+never the whole file). Every body
+requires its `source_reader` context blocks, including canonical full-file
+fallback. That fallback covers uncertain spans, parse failures and declarations
+sharing a physical line; a callable nested in another is not one of them and reads
+with the callables that enclose it. Serialization merges physical source lines by
 snapshot/file/interval. Identical text in different entities keeps both identities.
 Body, fresh card and signature have distinct capabilities; semantic similarity
 never satisfies current-source support. A card/body replacement must preserve all
@@ -146,7 +159,20 @@ heuristic with no optimality, infeasibility or `1-1/e` guarantee.
 
 Every omitted variant has a reason on disk. If the mandatory core, including all
 metadata and recipient wrapper, does not fit or bounded search cannot find it,
-status is `needs_split`, never `ready`. `incomplete` records missing localization.
+status is `needs_split`, never `ready`, and `status_reason` says why:
+`missing_support` (only the unsupported predicates are listed), `core_too_large`,
+`core_conflict`, `projection_limit` or `work_limit`. `incomplete` names
+`not_localized` (leads only) or `empty_core` (localized without any mandatory
+predicate), so a packet without evidence is never `ready`. The input is one JSON
+header line (the resolver profile, index stamps and candidate as digests, long
+gap lists as a count and their first items, obligations without provenance with
+impact obligations grouped as entity lists, core signatures) followed by raw,
+unescaped source sections. Each section opens with the header's
+`source_marker`, its number, first and last line, raw hash prefix, the bodies it
+holds and its path, and closes with the marker and `end`; `parse_input` reads it
+back. The receipt on
+disk keeps every field: the profile, numbered lines, parser profiles, notes and
+the complete omission lists.
 Ready means evidence for an attempt; task, validation and write authorization stay
 false. An empty packet/frontier never closes a process gate.
 

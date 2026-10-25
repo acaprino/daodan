@@ -1,0 +1,228 @@
+{
+  "schema": "daodan/context-claims-score/v1",
+  "anchor_mode": "none",
+  "scored": [
+    "q05",
+    "q11",
+    "q12",
+    "q14"
+  ],
+  "not_scored": [
+    "cookie"
+  ],
+  "budgets": {
+    "6000": {
+      "text": {
+        "supported": 2,
+        "claims": 19,
+        "share": 0.1,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 2,
+            "claims": 5
+          }
+        }
+      },
+      "scope+packet": {
+        "supported": 4,
+        "claims": 19,
+        "share": 0.2,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 2,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 2,
+            "claims": 5
+          }
+        }
+      },
+      "scope+packet:ready": {
+        "supported": 0,
+        "claims": 19,
+        "share": 0.0,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 0,
+            "claims": 5
+          }
+        }
+      }
+    },
+    "12000": {
+      "text": {
+        "supported": 4,
+        "claims": 19,
+        "share": 0.2,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 2,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 2,
+            "claims": 5
+          }
+        }
+      },
+      "scope+packet": {
+        "supported": 2,
+        "claims": 19,
+        "share": 0.1,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 2,
+            "claims": 5
+          }
+        }
+      },
+      "scope+packet:ready": {
+        "supported": 0,
+        "claims": 19,
+        "share": 0.0,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 0,
+            "claims": 5
+          }
+        }
+      }
+    },
+    "24000": {
+      "text": {
+        "supported": 4,
+        "claims": 19,
+        "share": 0.2,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 2,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 2,
+            "claims": 5
+          }
+        }
+      },
+      "scope+packet": {
+        "supported": 4,
+        "claims": 19,
+        "share": 0.2,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 2,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 2,
+            "claims": 5
+          }
+        }
+      },
+      "scope+packet:ready": {
+        "supported": 0,
+        "claims": 19,
+        "share": 0.0,
+        "scenarios": {
+          "q05": {
+            "supported": 0,
+            "claims": 4
+          },
+          "q11": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q12": {
+            "supported": 0,
+            "claims": 5
+          },
+          "q14": {
+            "supported": 0,
+            "claims": 5
+          }
+        }
+      }
+    }
+  }
+}

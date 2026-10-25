@@ -18,7 +18,8 @@ requirements = "Unique IDs; support is a list of predicates. current_source requ
 [[records]]
 record_schema = "daodan/scope-plan/v1"
 required = ["schema", "task_id", "input_digest", "base", "candidate", "resolver_profile", "indices", "policy_version", "analysis", "edit_candidates", "potential_impact", "validation_obligations", "deferred", "unresolved", "outside_boundary", "coverage", "status", "frontier", "active", "visited", "usage", "actions", "cursor"]
-entity_evidence = ["entity_id", "reason", "provenance", "status"]
+entity_evidence = ["entity_id", "reason", "provenance", "status", "required_detail"]
+required_detail = "source for requirement targets and anchors (exact anchors, exact or traceback retrieval matches, diffs, proposed sites, localization evidence) and for changed symbols under change, test and finish; lead for impact, retrieval leads, external leads and neighbors. Detail merges monotonically: a lead never weakens an anchor."
 edit_candidates = "Proposed intervention sites do not grant write authority."
 validation_obligations = "Requirements and gates survive every budget projection."
 statuses = ["incomplete", "needs_localization", "needs_split", "ready_for_attempt"]
@@ -39,10 +40,11 @@ statuses = ["ready", "needs_split", "incomplete"]
 cursor_binding = ["request", "authority", "snapshot", "resolver", "indices_and_missing_inputs", "cards", "policy", "recipient", "scope_plan", "delivered_blocks"]
 blocks = "Source, signatures, callsites, fresh cards and documentation references retain source anchors."
 completion = "A packet is evidence; only the owning process gates can conclude work."
-recipient = "id, available_tokens, reserve_tokens, max_chars, max_evaluations; optional prefix/suffix, tokenizer_id and ordered/marginal policy. Explicit Python token_counter counts the complete input; CLI/MCP report characters_only with dispatch_verified false. No character-to-token conversion."
-input = "The exact recipient input string includes wrappers, bindings, provenance, obligations, gaps and selected blocks. Operational receipt and residuals stay on disk."
-packing = "prerequisite-pack-v1; hard support, exclusive representations, cyclic prerequisite closure, physical source deduplication, ordered/marginal comparison, bounded core search and single-bundle comparison. No optimality or infeasibility guarantee."
-limits = "At most 200 projected entities, 1000 variants and 10000 closure/serialization evaluations. Unsupported mandatory support and oversized core yield needs_split with preserved obligations."
+recipient = "id, available_tokens, reserve_tokens, max_chars, max_evaluations; optional prefix/suffix, tokenizer_id, ordered/marginal policy and compare (true runs both policies for evaluation). Explicit Python token_counter counts the complete input; CLI/MCP report characters_only with dispatch_verified false. No character-to-token conversion."
+input = "The exact recipient input string: wrappers around one JSON header line and raw source sections. The header carries bindings and the resolver profile, index stamps and candidate as digests, coverage, long gap lists as a count with their first items, obligations without provenance (impact obligations grouped by status and reason as entity lists; an impact ID is the digest of kind and entity) and core signatures. Each unescaped source section opens with the header source_marker, its number, first and last line, raw hash prefix, the bodies it holds and its path, and closes with the marker and end; parse_input reads it back. The receipt on disk keeps every field, numbered lines and the complete omission lists. Operational receipt and residuals stay on disk."
+packing = "prerequisite-pack-v2; mandatory core from rows with required_detail source plus request support predicates, optional lead bundles, exclusive representations, cyclic prerequisite closure, physical source deduplication, the recipient policy only unless compare is requested, bounded core search and single-bundle comparison. No optimality or infeasibility guarantee."
+limits = "Core entities first, then at most 60 leads, 200 projected entities; whole bundles up to 1000 variants, never a prerequisite of a kept body; impact evidence only for core entities of bug, change, test and finish; 10000 closure/serialization evaluations. needs_split names status_reason missing_support (only unsupported predicates listed), core_too_large, core_conflict, projection_limit or work_limit; incomplete names not_localized or empty_core. Obligations are preserved in every status."
+status_reason = ["missing_support", "core_too_large", "core_conflict", "projection_limit", "work_limit", "not_localized", "empty_core"]
 publication = "Exclusive content-addressed packet and checkpoint JSON under the candidate manifest directory. Cursors bind delivered representations and tokenized input separately from billed usage."
 
 [[records]]
@@ -53,6 +55,6 @@ snapshot_required = ["run_id", "digest", "freshness"]
 edge_required = ["from", "to", "kind", "evidence"]
 compatibility = "I1 projection; gaps and snapshot freshness remain explicit."
 request_binding = "SHA-256 of JSON with sorted keys, compact separators, ASCII escapes and no non-finite values; no trailing newline."
-projection = "Public context CLI/MCP returns map_slice_path and map_slice_sha256. File components have disjoint paths. At most 200 localized entities and 1000 confirmed calls; omissions, unsupported edge kinds and unresolved frontier remain gaps. No task precedence is inferred."
+projection = "Public context CLI/MCP returns map_slice_path and map_slice_sha256. File components have disjoint paths; each lists proposed sites and core entities in entities and leads in leads, and sites and core survive the cap first. At most 200 localized entities and 1000 confirmed calls; omissions, unsupported edge kinds and unresolved frontier remain gaps. No task precedence is inferred."
 freshness = "Source and all derivative bindings are reverified for the exact read boundary. Snapshot identity includes manifest path, artifact digest and logical digest. Consumers reverify before dependent dispatch."
 authority = "edit_candidates are proposals, disjoint from outside_boundary. Validation obligations remain open; task_complete, validation_complete and write_authorized stay false."

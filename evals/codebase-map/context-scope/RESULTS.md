@@ -6,6 +6,63 @@ characters of source), 24 frozen queries, `tuning: false`. Scripts: kernel of ma
 share of each gold entity's lines delivered; it is not task success, and sizes are
 characters, not tokens.
 
+## Redesign, phases 1 and 2 (2026-10-25)
+
+Contract: [context packet redesign](../../../docs/superpowers/specs/2026-10-25-context-packet-redesign.md).
+Same 24 queries, used now as a paired before/after regression (the gold was consumed while
+the defects were diagnosed; the second holdout is frozen for phase 4). The source reader
+changed, so the corpus was re-prepared into a fresh manifest with identical source and query
+hashes. Results: `evaluate-redesign-natural.json`, `evaluate-redesign-anchor-top1.json`,
+`claims-redesign-*.json`, `pathrun-redesign-result.json`.
+
+Mean share of gold entities delivered whole. "Dispatchable" counts a packet only when it is
+`ready`; refusals, errors and `incomplete` packets count as zero on all 24 queries.
+
+| Budget (chars) | text | before: packet | packet, natural query | packet with one accepted anchor, dispatchable |
+|---:|---:|---:|---:|---:|
+| 6 000 | 0.312 | 0.000 | 0.208 (0.188 at the checkpoint) | 0.125, 4 ready (0.167, 6 ready) |
+| 12 000 | 0.469 | 0.000 | 0.375 (0.333) | 0.333, 24 ready (0.292) |
+| 24 000 | 0.521 | 0.000 | 0.458 (0.438) | 0.438, 24 ready (0.417) |
+
+The checkpoint is commit "Separate the mandatory context core from retrieval leads"; the
+final column values add the one permitted format change: raw, unescaped source sections after
+a JSON header instead of source inside a JSON string. It raised five cells and lowered the
+anchored 6 000 cell, where per-section headers made four core packets too large instead of
+six.
+
+- Natural queries stay `incomplete` (`not_localized`) and deliver leads, as the contract
+  says; one query with an exact traceback is `ready`. At 24 000 characters English queries
+  match text (0.583 and 0.583), Italian ones trail (0.333 against 0.458).
+- The anchor is the first lexical hit, often wrong, so dispatchable coverage measures packing
+  around an anchor, not localization.
+- Raw source is 57%, 74% and 83% of the input at the three budgets (48%, 66% and 75% at the
+  checkpoint); the rest is the JSON header of about 2 000 characters and section lines. Text retrieval spends every character on
+  raw source and carries no paths, line numbers, hashes or obligations.
+- Claims (`gold/claims.json`, 19 claims over q05, q11, q12, q14): text supports 2, 4 and 4;
+  the packet 4, 2 and 4 on natural queries and 2, 2 and 2 with the anchor. Neither finds the
+  evidence for q05 or q11: that is a retrieval limit, not a packing one.
+- False `ready`: none by contract and tests (a `ready` packet always holds its mandatory
+  core); a `ready` packet built on a wrong anchor still supports few claims.
+- Time per query: 8 to 10 seconds (planning about 3.5, packet 4 to 6), against about 95
+  seconds per packet before.
+- Real path with the corrected oracle (a semicolon in `path` or `domain` injected cookie
+  attributes): preflight `incomplete` with leads, task packet `ready` with the target,
+  post-task `ready` listing all 112 obligations, oracle failing before the edit and passing
+  after, identical resume, old receipt refused after the refresh.
+
+**Gate after phase 2: not met.** At no budget does the packet deliver as much as text
+retrieval (6 to 10 points short on natural queries), and it supports no more claims. As
+agreed before the measurement, the redesign stops here: phases 3 (sidecars) and 4 (second
+holdout) are not started, the click holdout stays unread, and the verified improvement is
+kept. Packets now deliver, refuse with a reason, keep every obligation and take seconds;
+they do not yet save characters against plain text.
+
+Where the characters went, found and fixed in phase 2: the projection gap listed every
+omitted entity (about 7 100 characters), each lead carried its full entity record, every
+line carried its number, every lead carried its file context, a nested function made the
+reader return the whole file (10 of 34 files), and a post-task packet carried 110 impact
+obligations with full provenance (154 000 characters, now 23 900).
+
 ## Registered protocol: natural-language request, equal budget
 
 Mean share of gold entities delivered whole (partial coverage was identical, because the

@@ -72,7 +72,7 @@ class PrerequisitePackingTests(unittest.TestCase):
                 variant('support', text='s' * 80, features={'support': 0})]
         # Core card plus b/support exceeds 250 characters. Replacing the card
         # with body/support makes b fit; a permanent rejection loses b.
-        result = self.pack(rows, ['core'], max_chars=250)
+        result = self.pack(rows, ['core'], max_chars=250, compare=True)
         self.assertEqual(set(result['selected']), {'support', 'body', 'b'})
         self.assertEqual(result['comparison']['ordered']['utility'], 28)
 
@@ -119,7 +119,7 @@ class PrerequisitePackingTests(unittest.TestCase):
         self.assertTrue(result['work_limited'])
 
     def test_comparison_cannot_spend_the_requested_policy_work_share(self):
-        result = self.pack([variant(str(i)) for i in range(5)], max_evaluations=30)
+        result = self.pack([variant(str(i)) for i in range(5)], max_evaluations=30, compare=True)
         self.assertTrue(result['comparison']['ordered']['selected'])
         self.assertTrue(result['comparison']['marginal']['selected'])
         self.assertTrue(result['selected'])
@@ -160,10 +160,12 @@ class ProjectPacketTests(unittest.TestCase):
     def test_current_source_includes_context_and_deduplicates_overlap(self):
         result = self.packet()
         self.assertEqual(result['status'], 'ready')
-        payload = json.loads(result['input'].removeprefix('Use evidence only.\n').removesuffix('\nReply.'))
-        source = [b for b in payload['blocks'] if b['kind'] == 'source']
-        self.assertEqual(len(source), 1)
-        lines = [line for b in source for block in b['blocks'] for line in block['source'].split('\n') if line]
+        payload = packets.parse_input(result['input'].removeprefix('Use evidence only.\n').removesuffix('\nReply.'))
+        source = payload['sources']
+        self.assertEqual({s['path'] for s in source}, {'core.py'})
+        # The recipient input carries raw source sections numbered by their first line.
+        lines = [f"{block['start'] + offset}: {text}" for block in source
+                 for offset, text in enumerate(block['text'].split('\n')[:-1])]
         self.assertEqual(len(lines), len(set(line.split(':', 1)[0] for line in lines)))
         self.assertIn('1: OFFSET = 1', lines)
         self.assertIn('4:     return value + OFFSET', lines)
@@ -257,16 +259,18 @@ class ProjectPacketTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'cursor_stale'):
             self.packet(cursor=first['cursor'])
 
-    def test_full_file_fallback_is_not_trimmed_to_nested_method(self):
+    def test_nested_method_keeps_its_closure_and_module_context(self):
         (self.root / 'core.py').write_bytes(b'class Outer:\n    def helper(self, value):\n        def nested():\n            return value\n        return nested()\n\nSECRET_CONTEXT = 4\n')
         snapshot.write_snapshot(self.root, self.manifest)
-        self.request['anchors'] = [{'entity_id': 'core.py::Outer.helper'}]
+        self.request['anchors'] = [{'entity_id': 'core.py::Outer.helper.nested'}]
         self.request['proposed_edits'] = []
         self.request['mandatory_requirements'] = []
         self.plan = scope.prepare_scope(self.request, authority=self.authority)
         result = self.packet()
         source = next(b for b in result['blocks'] if b['kind'] == 'source')
-        self.assertIn('full-file-fallback', source['reasons'])
+        self.assertEqual(source['reasons'], ['context-and-selection'])
+        self.assertIn('def helper(self, value):', result['input'])
+        self.assertIn('return nested()', result['input'])
         self.assertIn('SECRET_CONTEXT = 4', result['input'])
 
     def test_cli_uses_shared_packet_contract_and_compact_stdout(self):

@@ -179,7 +179,11 @@ window. P7 owns packet costs including wrappers and tokenizer results.
 
 The frontier orders mandatory source targets, exact/diff/proposed sites, canonical
 impact, retrieval leads and indirect neighbors. Retrieval keeps its producer's
-relevance rank; remaining ties use entity identity.
+relevance rank; remaining ties use entity identity. Each analysis row carries
+`required_detail`: `source` for requirement targets and anchors (exact anchors,
+exact or traceback retrieval matches, diffs, proposed sites, localization
+evidence) and for changed symbols under `change`, `test` and `finish`; `lead`
+for every other origin. Detail only strengthens; a lead never weakens an anchor.
 Deduplication keeps the strongest priority. Outside-read targets cannot establish
 localization or a ready attempt. It stores a partially expanded neighbor list and
 offset, visited identities, all discovered obligations, usage observations and

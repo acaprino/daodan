@@ -223,8 +223,15 @@ def _shared_lines(symbols: dict, lines: list[str], language: str | None) -> bool
         return True
     callables = sorted(_interval(spec.get("start"), spec.get("end"), len(lines))
                        for spec in symbols.values() if spec.get("kind") in ("function", "method"))
-    if any(left[1] >= right[0] for left, right in zip(callables, callables[1:])):
-        return True
+    # A callable nested inside another owns its lines; only a partial overlap or two
+    # callables starting on one line share a physical line.
+    open_spans = []
+    for start, end in callables:
+        while open_spans and open_spans[-1][1] < start:
+            open_spans.pop()
+        if open_spans and not (open_spans[-1][0] < start and end <= open_spans[-1][1]):
+            return True
+        open_spans.append((start, end))
     if language in _BRACED_LANGUAGES:
         if any(start == end for start, end in callables):
             return True
@@ -256,7 +263,7 @@ def read_packet(manifest: dict, requests: list[dict]) -> dict:
 
     planned = {}
     for request in requests:
-        if not isinstance(request, dict) or set(request) - {"path", "symbols", "ranges", "full_file"}:
+        if not isinstance(request, dict) or set(request) - {"path", "symbols", "ranges", "full_file", "context"}:
             raise ValueError("invalid read request")
         rel = _relative(request.get("path"))
         if rel not in files:
@@ -272,6 +279,8 @@ def read_packet(manifest: dict, requests: list[dict]) -> dict:
             raise ValueError("symbols must be a list of qualified symbol names")
         if not isinstance(ranges, list) or type(request.get("full_file", False)) is not bool:
             raise ValueError("ranges must be a list and full_file must be a boolean")
+        if type(request.get("context", True)) is not bool:
+            raise ValueError("context must be a boolean")
         for name in names:
             if name not in entry.get("symbols", {}):
                 raise ValueError(f"unknown symbol: {rel}:{name}")
@@ -285,11 +294,15 @@ def read_packet(manifest: dict, requests: list[dict]) -> dict:
             profile = entry.get("parser_profile")
             if profile is not None and profile != snapshot.parser_profile(path, entry.get("language")):
                 raise ValueError(f"parser backend changed for {rel}; refresh the manifest")
-            planned[rel] = {"path": path, "entry": entry, "names": set(), "ranges": [], "full": False}
+            planned[rel] = {"path": path, "entry": entry, "names": set(), "ranges": [], "full": False,
+                            "context": False}
         plan = planned[rel]
         plan["names"].update(names)
         plan["ranges"].extend(selected_ranges)
         plan["full"] |= request.get("full_file", False)
+        # File context (imports, constants, class fields) is included unless every
+        # request for the file asks for the selection alone.
+        plan["context"] |= request.get("context", True)
 
     packet = _reference(manifest, files)
     packet["files"] = []
@@ -331,10 +344,15 @@ def read_packet(manifest: dict, requests: list[dict]) -> dict:
         else:
             for name, spec in symbols.items():
                 _interval(spec.get("start"), spec.get("end"), total)
-            intervals = _context(symbols, total, entry.get("language")) + plan["ranges"]
+            intervals = (_context(symbols, total, entry.get("language")) if plan["context"] else []) + plan["ranges"]
             intervals.extend((symbols[name]["start"], symbols[name]["end"]) for name in plan["names"])
+            # A nested callable reads with every callable that encloses it: its
+            # closure and decorators live there.
+            intervals.extend((spec["start"], spec["end"]) for name in plan["names"]
+                             for spec in symbols.values() if spec.get("kind") in ("function", "method")
+                             and spec["start"] < symbols[name]["start"] and symbols[name]["end"] <= spec["end"])
             intervals = _merge(intervals)
-            reason = "context-and-selection"
+            reason = "context-and-selection" if plan["context"] else "selection"
         blocks = []
         for start, end in intervals:
             selected = lines[start - 1:end]

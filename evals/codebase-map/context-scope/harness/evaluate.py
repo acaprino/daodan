@@ -115,6 +115,17 @@ def packet_lines(packet):
     return delivered
 
 
+def spans(lines):
+    """Delivered line numbers as inclusive [start, end] runs, for claim scoring."""
+    runs = []
+    for number in sorted(lines):
+        if runs and number == runs[-1][1] + 1:
+            runs[-1][1] = number
+        else:
+            runs.append([number, number])
+    return runs
+
+
 def coverage(delivered, gold, table):
     full, partial = 0, 0.0
     for identity in gold:
@@ -202,19 +213,31 @@ def evaluate(project, output, limit=None, shard=None, anchor='none'):
                 arms['text+graph'] = dict(coverage(delivered, gold, table), chars=used, seconds=graph_seconds)
                 if plan is None:
                     arms['scope+packet'] = {'error': plan_error}
+                    arms['scope+packet:ready'] = {'error': plan_error}
                     continue
                 recipient = {'id': 'eval-recipient', 'available_tokens': budget, 'reserve_tokens': 0,
                              'max_chars': budget, 'max_evaluations': 2000}
                 started = time.perf_counter()
                 try:
                     packet = packets.build_packet(plan, request, authority=authority, recipient=recipient, indexes=indexes)
-                    arms['scope+packet'] = dict(
-                        coverage(packet_lines(packet), gold, table),
+                    present = coverage(packet_lines(packet), gold, table)
+                    packet_seconds = time.perf_counter() - started
+                    # Present source counts whatever the packet holds; dispatchable coverage
+                    # counts only a ready packet, every refusal or incomplete packet as zero.
+                    arms['scope+packet'] = dict(present,
                         chars=len(packet['input']) if packet['input'] else 0,
-                        seconds=plan_seconds + (time.perf_counter() - started), status=packet['status'],
-                        blocks=packet['counts']['blocks'], scope_status=plan['status'], localized=plan['localized'])
+                        seconds=plan_seconds + packet_seconds, plan_seconds=plan_seconds, packet_seconds=packet_seconds,
+                        status=packet['status'], status_reason=packet.get('status_reason'),
+                        blocks=packet['counts']['blocks'], scope_status=plan['status'], localized=plan['localized'],
+                        lines={path: spans(lines) for path, lines in packet_lines(packet).items()})
+                    ready = packet['status'] == 'ready'
+                    arms['scope+packet:ready'] = dict(full=present['full'] if ready else 0.0,
+                        partial=present['partial'] if ready else 0.0, chars=arms['scope+packet']['chars'],
+                        seconds=arms['scope+packet']['seconds'], status=packet['status'])
                 except ValueError as error:
                     arms['scope+packet'] = {'error': str(error)[:300]}
+                    arms['scope+packet:ready'] = {'error': str(error)[:300]}
+                arms['text']['lines'] = {path: spans(lines) for path, lines in fill(ranked, table, corpus, budget)[0].items()}
             rows.append(row)
     write(output, result(rows, frozen, project_chars, anchor))
     print(json.dumps({'output': str(output), 'queries': len(rows), 'anchor': anchor}))
@@ -224,7 +247,7 @@ def summarize(rows):
     summary = {}
     for budget in BUDGETS:
         summary[str(budget)] = {}
-        for arm in ('text', 'text+graph', 'scope+packet'):
+        for arm in ('text', 'text+graph', 'scope+packet', 'scope+packet:ready'):
             for language in ('all', 'en', 'it'):
                 picked = [r['arms'][str(budget)][arm] for r in rows if (language == 'all' or r['language'] == language)
                           and 'error' not in r['arms'][str(budget)][arm]]
@@ -237,9 +260,15 @@ def summarize(rows):
         statuses = {}
         for r in rows:
             arm = r['arms'][str(budget)]['scope+packet']
-            statuses[arm.get('status', 'error')] = statuses.get(arm.get('status', 'error'), 0) + 1
+            key = arm.get('status', 'error') + ('/' + arm['status_reason'] if arm.get('status_reason') else '')
+            statuses[key] = statuses.get(key, 0) + 1
         summary[str(budget)]['scope+packet_statuses'] = statuses
         delivered = [r['arms'][str(budget)]['scope+packet'] for r in rows if r['arms'][str(budget)]['scope+packet'].get('chars')]
+        ready = [r['arms'][str(budget)]['scope+packet'] for r in rows if r['arms'][str(budget)]['scope+packet'].get('status') == 'ready']
+        summary[str(budget)]['scope+packet_when_ready'] = {
+            'queries': len(ready),
+            'full_gold': statistics.mean(c['full'] for c in ready) if ready else None,
+            'partial_gold': statistics.mean(c['partial'] for c in ready) if ready else None}
         summary[str(budget)]['scope+packet_when_delivered'] = {
             'queries': len(delivered),
             'full_gold': statistics.mean(c['full'] for c in delivered) if delivered else None,

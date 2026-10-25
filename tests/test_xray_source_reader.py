@@ -221,6 +221,46 @@ class SourceReaderTests(unittest.TestCase):
         self.assertEqual(set(emitted), {1, 2, 3, 4, 5})
         self.assertEqual(emitted[1], "function left() { return 1; } function right() { return 2; }")
 
+    def test_nested_python_callable_reads_with_its_enclosers_not_the_whole_file(self):
+        # Nesting is not a shared physical line: the closure reads with the function
+        # that encloses it, module context stays, and unrelated bodies stay unread.
+        source = ("import marker\n"
+                  "LIMIT = 3\n"
+                  "\n"
+                  "def outer(value):\n"
+                  "    def inner():\n"
+                  "        return value + LIMIT\n"
+                  "    return inner()\n"
+                  "\n"
+                  "def unrelated():\n"
+                  "    return 'UNRELATED_BODY_MARKER'\n")
+        write(self.src, "nested.py", source)
+        manifest = snapshot.build_manifest(self.src)
+        key = next(key for key in manifest["files"] if key.endswith("nested.py"))
+        self.assertIn("outer.inner", manifest["files"][key]["symbols"])
+
+        packet = source_reader.read_packet(manifest, [{"path": key, "symbols": ["outer.inner"]}])
+
+        emitted = numbered_lines(packet)
+        self.assertEqual({b["reason"] for f in packet["files"] for b in f["blocks"]}, {"context-and-selection"})
+        self.assertEqual(emitted[1], "import marker")
+        self.assertEqual(emitted[2], "LIMIT = 3")
+        self.assertEqual(emitted[4], "def outer(value):")
+        self.assertEqual(emitted[6], "        return value + LIMIT")
+        self.assertEqual(emitted[7], "    return inner()")
+        self.assertNotIn(10, emitted)
+
+    def test_selection_only_request_omits_file_context(self):
+        packet = self.request(symbols=["Consumer.selected"], context=False)
+
+        emitted = numbered_lines(packet)
+        self.assertEqual({b["reason"] for f in packet["files"] for b in f["blocks"]}, {"selection"})
+        self.assertEqual(emitted[13], "    def selected(")
+        self.assertEqual(emitted[17], "        return count * RATE")
+        self.assertNotIn(1, emitted)
+        self.assertNotIn(2, emitted)
+        self.assertNotIn(20, emitted)
+
     def test_long_minified_exact_source_does_not_drop_shared_global_declaration(self):
         first_line = 'const PAYLOAD = "' + "x" * 11_000 + '"; function sibling() { return 1; }'
         source = first_line + "\nfunction selected() {\n  return PAYLOAD;\n}\n"

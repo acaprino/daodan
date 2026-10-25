@@ -155,16 +155,17 @@ manifest, rebuild its index and edges: the old ones are refused with
 }
 ```
 
-Reading the result: `status` is `ready`, `incomplete` or `needs_split`, with the
-packet path, digests, counts, gaps and cost. Retrieval hits are leads and localize
-nothing. A request with only a `query` usually stays `incomplete`, and a wide
-unlocalized plan makes its mandatory source larger than the recipient, so the
-packet returns `needs_split` with no input rather than dropping mandatory source.
-Supply an accepted target (`anchors`, `diff`, `proposed_edits`) or split the task,
-then call again. Pass the returned `cursor` only to continue the remaining
+Reading the result: `status` is `ready`, `incomplete` or `needs_split`, with
+`status_reason`, the packet path, digests, counts, gaps and cost. Retrieval hits
+are leads: they fill the budget and never block the packet. A request with only a
+`query` stays `incomplete` (`not_localized`) and delivers leads; supply an
+accepted target (`anchors`, `diff`, `proposed_edits`) or a requirement for a
+`ready` packet. `needs_split` names why (`core_too_large`, `missing_support` and
+the others in `references/context.md`); split the task or raise the recipient
+limit, then call again. Pass the returned `cursor` only to continue the remaining
 evidence of the same request. Costs are characters, never tokens, unless the
-dispatch owner counts them. Building a packet for a 669-entity Python package took
-about 100 seconds, so allow the host call that long.
+dispatch owner counts them. Planning and packing a 669-entity Python package
+took about 8 seconds.
 
 ## Host execution and phase hooks
 

@@ -25,9 +25,11 @@ def project_slice(plan, request, *, authority, indexes=None):
         if digest != plan['input_digest']:
             raise ValueError('cursor_stale: map-slice inputs changed')
         sites = {row['entity_id'] for row in plan['edit_candidates']}
-        # A proposed intervention site is the decision-relevant localization: it survives the cap first.
+        core = {row['entity_id'] for row in plan['analysis'] if row.get('required_detail') == 'source'}
+        # Proposed intervention sites, then the mandatory core, survive the cap before leads.
         selected = sorted({row['entity_id'] for row in plan['analysis']},
-                          key=lambda entity: (entity not in sites, plan['priorities'].get(entity, [9, 0]), entity))
+                          key=lambda entity: (entity not in sites, entity not in core,
+                                              plan['priorities'].get(entity, [9, 0]), entity))
         projected = selected[:PROJECTION_LIMIT]
         by_file = {}
         for identity in projected:
@@ -36,7 +38,9 @@ def project_slice(plan, request, *, authority, indexes=None):
             if not scope._inside(path, bound['read_boundary']):
                 raise ValueError('map-slice component outside the read boundary')
             by_file.setdefault(path, []).append(identity)
-        components = [dict(id='file:' + path, paths=[path], entities=identities)
+        components = [dict(id='file:' + path, paths=[path],
+                           entities=[i for i in identities if i in core or i in sites],
+                           leads=[i for i in identities if i not in core and i not in sites])
                       for path, identities in sorted(by_file.items())]
         view = edge_view.load_edge_view(stores['candidate'], engine_store=paths['engine'])
         calls = []

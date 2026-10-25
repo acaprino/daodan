@@ -26,19 +26,28 @@ sys.path.insert(0, str(SCRIPTS))
 import retrieval
 import snapshot
 
-REQUEST = 'Response.set_cookie accepts a cookie name that contains spaces or control characters and sends it unchanged to the browser'
+REQUEST = 'Response.set_cookie lets a semicolon in the path or domain argument add extra cookie attributes such as Secure or HttpOnly to the header'
 TARGET = 'starlette/responses.py::Response.set_cookie'
+# Probed on Starlette 1.9.0 with Python 3.13.14 before choosing the scenario: http.cookies
+# already refuses an illegal name and a control character in the value or path, so those were
+# no defect. A semicolon in path or domain is copied into the header and injects attributes:
+# the oracle fails before the edit. Any exception type counts as a refusal, and a valid cookie
+# must still produce its Set-Cookie header.
 ORACLE = (
     "import sys; sys.path.insert(0, sys.argv[1])\n"
+    "from http.cookies import CookieError\n"
     "from starlette.responses import Response\n"
-    "r = Response()\n"
-    "r.set_cookie('good', 'v')\n"
-    "for bad in ('bad name', 'bad\\tname', 'bad\\nname'):\n"
+    "valid = Response()\n"
+    "valid.set_cookie('session', 'v1', path='/app', domain='example.com')\n"
+    "headers = [v.decode('latin-1') for k, v in valid.raw_headers if k == b'set-cookie']\n"
+    "if not any(h.startswith('session=v1') and 'Path=/app' in h for h in headers):\n"
+    "    raise SystemExit('valid cookie not emitted: ' + repr(headers))\n"
+    "for options in ({'path': '/x; Secure'}, {'domain': 'example.com; HttpOnly'}):\n"
     "    try:\n"
-    "        r.set_cookie(bad, 'v')\n"
-    "    except ValueError:\n"
+    "        Response().set_cookie('session', 'v1', **options)\n"
+    "    except (ValueError, CookieError):\n"
     "        continue\n"
-    "    raise SystemExit('accepted ' + repr(bad))\n"
+    "    raise SystemExit('accepted ' + repr(options))\n"
     "print('oracle ok')\n")
 
 
@@ -79,11 +88,11 @@ def main():
     log.append({'step': 'retrieval index', 'seconds': round(time.perf_counter() - started, 2)})
     need(*run([python, '-B', SCRIPTS / 'resolve_edges.py', m0, '--environment', args.environment, '--compact']), 'jedi edges', log)
 
-    payload = dict(operation='change', objective='Reject unsafe cookie names in set_cookie',
+    payload = dict(operation='change', objective='Refuse cookie attribute injection through path or domain in set_cookie',
         scope={'paths': ['starlette']}, authorizations={'fix': True}, budget={}, required_gates=['oracle'],
         waves=[{'id': 'wave-one', 'parallel': False, 'status': 'pending', 'tasks': [{
             'id': 'T1', 'status': 'pending', 'write_set': ['starlette/responses.py'],
-            'requirements': [{'id': 'R1', 'text': 'set_cookie rejects names with whitespace or control characters',
+            'requirements': [{'id': 'R1', 'text': 'set_cookie refuses a path or domain containing a semicolon and still emits valid cookies',
                 'support': [{'predicate': 'current_source', 'entity_id': TARGET}]}],
             'oracle': {'command': 'python oracle.py', 'expected_failure': 'accepted'},
             'verification': {'command': 'python oracle.py'}}]}])
@@ -125,8 +134,8 @@ def main():
     marker = '    def set_cookie('
     start = text.index(marker)
     signature_end = text.index(':\n', start) + 2
-    guard = ("        if not key or any(ch.isspace() or ord(ch) < 32 or ord(ch) == 127 for ch in key):\n"
-             "            raise ValueError('Cookie names must not contain whitespace or control characters')\n")
+    guard = ("        if ';' in (path or '') or ';' in (domain or ''):\n"
+             "            raise ValueError('Cookie path and domain must not contain a semicolon')\n")
     target.write_text(text[:signature_end] + guard + text[signature_end:], encoding='utf8', newline='\n')
     after, _ = run([python, work / 'oracle.py', project], env={**os.environ, 'PYTHONPATH': str(args.environment / 'Lib/site-packages')})
 
@@ -160,7 +169,7 @@ def main():
         'semantic_map': json.loads(map_view.stdout)['coverage'], 'steps': log,
         'limits': ['The edit is made by the script; no LLM worker was dispatched.',
                    'The coordinator is a script, not an installed host workflow.',
-                   'The oracle is a two-line behaviour check, not the library test suite.']}
+                   'The oracle is a behaviour check (a semicolon in path or domain refused with any exception, a valid cookie emitted), not the library test suite.']}
     args.out.write_text(json.dumps(report, indent=2), encoding='utf8')
     print(json.dumps({k: report[k] for k in ('resume_returns_same_receipt', 'oracle', 'old_receipt_refused_after_refresh_exit')}, indent=1))
     print(json.dumps(report['task_packet'], indent=1)[:600])
