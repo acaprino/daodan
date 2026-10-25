@@ -6,7 +6,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "41.1.1"
+    "version": "41.2.2"
   },
   "name": "daodan",
   "owner": {
@@ -59,7 +59,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "8.9.1"
+      "version": "8.9.2"
     },
     {
       "author": {
@@ -74,6 +74,7 @@
         "docker",
         "kotlin-development",
         "moe",
+        "office",
         "peer-review",
         "platform-engineering",
         "project-knowledge",
@@ -88,34 +89,41 @@
         "text-humanizer@shinatama",
         "typescript-development"
       ],
-      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
       "license": "MIT",
       "name": "daodan",
       "skills": [
         "./skills/brainstorm-idea-workflow",
         "./skills/check-health-workflow",
         "./skills/continue-task-workflow",
+        "./skills/document-workflow",
         "./skills/finish-task-workflow",
         "./skills/fix-bug-workflow",
+        "./skills/fix-workflow",
         "./skills/get-second-opinion-workflow",
         "./skills/init-project-workflow",
         "./skills/investigate-problem-workflow",
         "./skills/map-code-workflow",
         "./skills/new-feature-workflow",
         "./skills/onboard-project-workflow",
+        "./skills/presentation-workflow",
         "./skills/record-decision-workflow",
         "./skills/refactor-code-workflow",
         "./skills/review-branch-workflow",
         "./skills/review-changes-workflow",
         "./skills/run-maintenance-workflow",
         "./skills/show-status-workflow",
+        "./skills/start-workflow",
         "./skills/sync-upstream-workflow",
+        "./skills/theme-workflow",
         "./skills/tidy-repo-workflow",
+        "./skills/verify-workflow",
+        "./skills/workbook-workflow",
         "./skills/write-docs-workflow",
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "author": {
@@ -188,6 +196,30 @@
       ],
       "source": "./exports/codex/plugins/moe",
       "version": "2.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "work-controller"
+      ],
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
+      "license": "MIT",
+      "name": "office",
+      "skills": [
+        "./skills/deckcraft",
+        "./skills/design",
+        "./skills/docx",
+        "./skills/gridcraft",
+        "./skills/intake",
+        "./skills/integrity",
+        "./skills/pptx",
+        "./skills/wordcraft",
+        "./skills/xlsx"
+      ],
+      "source": "./exports/codex/plugins/office",
+      "version": "3.1.0"
     },
     {
       "author": {

@@ -6,7 +6,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "41.1.1"
+    "version": "41.2.2"
   },
   "name": "daodan",
   "owner": {
@@ -75,13 +75,14 @@
         "./skills/map-method"
       ],
       "source": "./exports/copilot/plugins/codebase-map",
-      "version": "8.9.1"
+      "version": "8.9.2"
     },
     {
       "agents": [
         "./agents/brainstorm-idea-coordinator.agent.md",
         "./agents/check-health-coordinator.agent.md",
         "./agents/continue-task-coordinator.agent.md",
+        "./agents/document-coordinator.agent.md",
         "./agents/finish-task-coordinator.agent.md",
         "./agents/fix-bug-coordinator.agent.md",
         "./agents/get-second-opinion-coordinator.agent.md",
@@ -90,10 +91,12 @@
         "./agents/map-code-coordinator.agent.md",
         "./agents/new-feature-coordinator.agent.md",
         "./agents/onboard-project-coordinator.agent.md",
+        "./agents/presentation-coordinator.agent.md",
         "./agents/refactor-code-coordinator.agent.md",
         "./agents/review-branch-coordinator.agent.md",
         "./agents/review-changes-coordinator.agent.md",
         "./agents/run-maintenance-coordinator.agent.md",
+        "./agents/start-coordinator.agent.md",
         "./agents/sync-upstream-coordinator.agent.md",
         "./agents/tidy-repo-coordinator.agent.md",
         "./agents/write-docs-coordinator.agent.md",
@@ -111,6 +114,7 @@
         "docker",
         "kotlin-development",
         "moe",
+        "office",
         "peer-review",
         "platform-engineering",
         "project-knowledge",
@@ -125,11 +129,11 @@
         "text-humanizer@shinatama",
         "typescript-development"
       ],
-      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/copilot/plugins/daodan",
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "author": {
@@ -202,6 +206,37 @@
       ],
       "source": "./exports/copilot/plugins/moe",
       "version": "2.0.0"
+    },
+    {
+      "agents": [
+        "./agents/content-strategist.agent.md",
+        "./agents/document-designer.agent.md",
+        "./agents/document-reviewer.agent.md",
+        "./agents/presentation-designer.agent.md",
+        "./agents/presentation-reviewer.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "work-controller"
+      ],
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
+      "license": "MIT",
+      "name": "office",
+      "skills": [
+        "./skills/deckcraft",
+        "./skills/design",
+        "./skills/docx",
+        "./skills/gridcraft",
+        "./skills/intake",
+        "./skills/integrity",
+        "./skills/pptx",
+        "./skills/wordcraft",
+        "./skills/xlsx"
+      ],
+      "source": "./exports/copilot/plugins/office",
+      "version": "3.1.0"
     },
     {
       "agents": [

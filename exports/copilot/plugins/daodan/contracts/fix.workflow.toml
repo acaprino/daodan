@@ -1,0 +1,13 @@
+name = "fix"
+entrypoint = "fix.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:fixed-candidate", "artifact:integrity-report"]
+
+[contract]
+inputs = ["office-file"]
+outcomes = ["integrity-repaired"]
+artifacts = ["fixed-candidate", "integrity-report"]
+schemas = []

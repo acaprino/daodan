@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:503c71d18ff39a2c213ad77a7827881924ca040132a11f8620b1f13798906a3d",
+  "coreDigest": "sha256:a9603d1aeca0ccfcd31c8f6ef43f3ffaf9c09a3782d8c63e315f1bd794f8cb1b",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "codebase-map",
-  "version": "8.9.1"
+  "version": "8.9.2"
 }

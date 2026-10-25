@@ -1,11 +1,13 @@
 schema = "daodan/v1"
 name = "daodan"
-version = "2.1.0"
-description = "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle."
+version = "2.2.0"
+description = "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods."
 license = "MIT"
 
 [capabilities]
-required = ["repository.read", "repository.write", "shell.execute", "contexts.isolate", "roles.dispatch"]
+# `network.fetch` is required because this plugin also carries the Office
+# entries: their methods fetch a colour source, fonts and imagery.
+required = ["repository.read", "repository.write", "shell.execute", "network.fetch", "contexts.isolate", "roles.dispatch"]
 optional = ["execution.parallel"]
 
 [dependencies]
@@ -18,6 +20,7 @@ required = [
   "docker",
   "kotlin-development",
   "moe",
+  "office",
   "peer-review",
   "platform-engineering",
   "project-knowledge",
@@ -58,5 +61,12 @@ workflows = [
   "write-docs",
   "record-decision",
   "tidy-repo",
+  "start",
+  "presentation",
+  "document",
+  "workbook",
+  "verify",
+  "fix",
+  "theme",
 ]
 policies = []

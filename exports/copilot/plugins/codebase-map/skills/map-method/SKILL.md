@@ -1,9 +1,9 @@
 ---
 name: map-method
 description: >
-  Static codebase mapping and standalone navigation of existing map evidence: structure, purpose, integrations, symbols, documentation and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS.
-  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation; consult available map evidence before broad source exploration. Loading the skill starts no analysis or refresh. Verify material claims against current source and use ordinary repository search when no usable map exists.
-  DO NOT TRIGGER WHEN: the task does not involve project code or its documentation.
+  Static mapping and standalone navigation of existing map evidence.
+  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps.
+  DO NOT TRIGGER WHEN: no project code or documentation.
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
@@ -151,7 +151,8 @@ Conditional reads: methodology, patterns, comments; migration for legacy roots, 
 
 ## Resources
 
-Scripts: `${PLUGIN_ROOT}/skills/map-method/scripts/` (Python >= 3.10; multi-language targets).
+Python >= 3.10 scripts: `${PLUGIN_ROOT}/skills/map-method/scripts/`.
+Language Support above applies throughout.
 
 - `ast_parser.py`: structural extraction dispatcher.
 - `analyze_file.py`: classification/structure/usages; workflows reuse `--snapshot`.

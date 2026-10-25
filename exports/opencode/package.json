@@ -520,7 +520,7 @@
         "root": "plugins/codebase-map",
         "skills": [
           {
-            "description": "Static codebase mapping and standalone navigation of existing map evidence: structure, purpose, integrations, symbols, documentation and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation; consult available map evidence before broad source exploration. Loading the skill starts no analysis or refresh. Verify material claims against current source and use ordinary repository search when no usable map exists. DO NOT TRIGGER WHEN: the task does not involve project code or its documentation.",
+            "description": "Static mapping and standalone navigation of existing map evidence. TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps. DO NOT TRIGGER WHEN: no project code or documentation.",
             "file": "skills/map-method/SKILL.md",
             "id": "codebase-map:map-method",
             "name": "map-method"
@@ -633,6 +633,41 @@
             "description": "Clean the repository: workspace garbage and git leftovers, dead application code, redundant tests, concluded run output. Preview first, then one authorization. TRIGGER WHEN: the user asks to clean up, tidy, remove dead code, junk files or redundant tests. DO NOT TRIGGER WHEN: the code itself is to be restructured (use refactor-code).",
             "file": "commands/tidy-repo.md",
             "name": "daodan:tidy-repo"
+          },
+          {
+            "description": "One entry for any Office request: read the inputs, work out what the user wants (a theme, a new deck, document or workbook, an edit, expansion, revision or restyle of an existing file, a check or a repair), map the decisions, ask once and run the right workflows in order. TRIGGER WHEN: an Office request does not name one format workflow, combines several deliverables, or starts from files, websites or notes whose use is not yet clear.",
+            "file": "commands/start.md",
+            "name": "daodan:start"
+          },
+          {
+            "description": "Create, derive, revise, review or export an editable PowerPoint presentation with creative specialists, DeckCraft construction and editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck or consulting deck, or a change, review or export of an existing presentation.",
+            "file": "commands/presentation.md",
+            "name": "daodan:presentation"
+          },
+          {
+            "description": "Create, derive, revise, review or export a native Word document with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter or template, or a change, review or export of an existing document.",
+            "file": "commands/document.md",
+            "name": "daodan:document"
+          },
+          {
+            "description": "Create, derive, revise or analyze a native Excel workbook while preserving its formulas, formatting, tables, charts and other required features. TRIGGER WHEN: the user requests XLSX work, spreadsheet analysis, a model, a tracker or a dashboard, or a change or review of an existing workbook.",
+            "file": "commands/workbook.md",
+            "name": "daodan:workbook"
+          },
+          {
+            "description": "Check a Word, PowerPoint or Excel file for integrity defects without changing it: broken links and references, formula errors, inconsistent formulas, missing alternative text, empty placeholders and more. TRIGGER WHEN: the user asks to verify, check, validate or audit an existing DOCX, PPTX or XLSX.",
+            "file": "commands/verify.md",
+            "name": "daodan:verify"
+          },
+          {
+            "description": "Repair integrity defects in a Word, PowerPoint or Excel file on a new copy, then verify that every repaired finding is gone and nothing new appeared. TRIGGER WHEN: the user asks to fix, repair or clean up defects in an existing DOCX, PPTX or XLSX, or to apply the findings of verify.",
+            "file": "commands/fix.md",
+            "name": "daodan:fix"
+          },
+          {
+            "description": "Create a reusable PowerPoint or Word theme and template from any colour source (logo, website, stylesheets, an existing file, a description or nothing), or inherit one from a supplied file. TRIGGER WHEN: the user asks for a theme, a template, a slide master, a brand kit or a house style for decks or documents.",
+            "file": "commands/theme.md",
+            "name": "daodan:theme"
           }
         ],
         "dependencies": [
@@ -644,6 +679,7 @@
           "docker",
           "kotlin-development",
           "moe",
+          "office",
           "peer-review",
           "platform-engineering",
           "project-knowledge",
@@ -727,6 +763,130 @@
             "file": "skills/multi-model-deliberation/SKILL.md",
             "id": "moe:multi-model-deliberation",
             "name": "multi-model-deliberation"
+          }
+        ]
+      },
+      "office": {
+        "agents": [
+          {
+            "description": "Plan what a presentation says from its sources: digest documents, research, notes and an existing deck into a claim ledger, set the slide budget, build the storyline and route each slide to a layout pattern. Return a content report and a plan JSON without designing or editing the deck.",
+            "file": "agents/content-strategist.md",
+            "id": "office:content-strategist",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Develop presentation art direction and slide composition from a supplied brief, sources and brand assets. Return design instructions and image requests without modifying the presentation.",
+            "file": "agents/presentation-designer.md",
+            "id": "office:presentation-designer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Independently inspect presentation renders, source fidelity, native editability evidence and preservation deltas. Return a review bound to the exact candidate, or to the unchanged source deck on a read-only review, without editing it.",
+            "file": "agents/presentation-reviewer.md",
+            "id": "office:presentation-reviewer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Design editable Word documents from a supplied brief and shared theme. Return page layouts, reusable template instructions, native style mappings and image requests without modifying the document.",
+            "file": "agents/document-designer.md",
+            "id": "office:document-designer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Independently inspect Word document renders, source fidelity, native structure evidence and preservation deltas. Return a review bound to the exact candidate, or to the unchanged source document on a read-only review, without editing it.",
+            "file": "agents/document-reviewer.md",
+            "id": "office:document-reviewer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "dependencies": [
+          "work-controller"
+        ],
+        "root": "plugins/office",
+        "skills": [
+          {
+            "description": "Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes; route a request that names no format to the right workflows. TRIGGER WHEN: an Office presentation, document or workbook task begins, or an Office request must be routed. DO NOT TRIGGER WHEN: a format method is already executing a resolved route.",
+            "file": "skills/intake/SKILL.md",
+            "id": "office:intake",
+            "name": "intake"
+          },
+          {
+            "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the users colour source and chosen from candidates in the browser; editorial hierarchy, typography, and font fetching, installation and embedding. How a file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
+            "file": "skills/design/SKILL.md",
+            "id": "office:design",
+            "name": "design"
+          },
+          {
+            "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
+            "file": "skills/pptx/SKILL.md",
+            "id": "office:pptx",
+            "name": "pptx"
+          },
+          {
+            "description": "Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: only a spreadsheet or document is requested.",
+            "file": "skills/deckcraft/SKILL.md",
+            "id": "office:deckcraft",
+            "name": "deckcraft"
+          },
+          {
+            "description": "Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed.",
+            "file": "skills/wordcraft/SKILL.md",
+            "id": "office:wordcraft",
+            "name": "wordcraft"
+          },
+          {
+            "description": "Create, edit, inspect, calculate and check real Excel workbooks through the external GridCraft CLI or exposed MCP interface. TRIGGER WHEN: producing or editing XLSX for office:xlsx, recalculating formulas or checking workbook fidelity with GridCraft. DO NOT TRIGGER WHEN: only read-only package inspection is needed (use office:xlsxs inspector).",
+            "file": "skills/gridcraft/SKILL.md",
+            "id": "office:gridcraft",
+            "name": "gridcraft"
+          },
+          {
+            "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use /daodan:presentation).",
+            "file": "skills/xlsx/SKILL.md",
+            "id": "office:xlsx",
+            "name": "xlsx"
+          },
+          {
+            "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use /daodan:presentation).",
+            "file": "skills/docx/SKILL.md",
+            "id": "office:docx",
+            "name": "docx"
+          },
+          {
+            "description": "Verify the integrity of a Word, PowerPoint or Excel file with static rules, then repair what can be repaired on a separate candidate. TRIGGER WHEN: checking a DOCX, PPTX or XLSX for broken links, formula errors, missing alternative text, inconsistent formulas, empty placeholders or other defects, or fixing them. DO NOT TRIGGER WHEN: creating a new document, deck or workbook (use the office document, presentation or workbook workflows).",
+            "file": "skills/integrity/SKILL.md",
+            "id": "office:integrity",
+            "name": "integrity"
           }
         ]
       },
@@ -5369,5 +5529,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "41.1.1"
+  "version": "41.2.2"
 }
