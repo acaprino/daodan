@@ -56,3 +56,4 @@ package-lock.json
 /.tritech/codebase-map/
 /.tritech/daodan/
 /.tritech/team-review/
+.jcode/

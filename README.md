@@ -1,5 +1,9 @@
 # Shinatama
 
+<p align="center">
+  <img src="docs/assets/branding/shinatama-logo-oni.png" alt="Shinatama from Oni beside the Shinatama wordmark" width="800">
+</p>
+
 Shinatama is the companion marketplace to [Daodan](https://github.com/acaprino/daodan).
 While Daodan holds the core software engineering harness (`codebase-map`,
 `project-lifecycle`, `senior-review`, `testing`, `project-knowledge` and core
