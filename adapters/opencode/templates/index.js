@@ -277,7 +277,20 @@ export function createLoader(directory) {
   };
 }
 
+/** The plugin's id is the package name, so two marketplaces built by this
+ * compiler (daodan, shinatama, mukade) can be installed side by side. */
+export function packageId(directory) {
+  try {
+    const name = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"))?.name;
+    return typeof name === "string" && name ? name : "daodan";
+  } catch {
+    return "daodan";
+  }
+}
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+
 export default {
-  id: "daodan",
-  setup: createLoader(path.dirname(fileURLToPath(import.meta.url))),
+  id: packageId(here),
+  setup: createLoader(here),
 };
