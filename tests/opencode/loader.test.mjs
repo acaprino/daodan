@@ -10,6 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import loader, {
+  packageId,
   createLoader,
   expandTemplate,
   resolveSelection,
@@ -118,9 +119,15 @@ const ids = (calls) => ({
   commands: calls.commands.map((c) => c.name).sort(),
 });
 
-test("the default export is a V2 plugin definition", () => {
-  assert.equal(loader.id, "daodan");
+test("the default export is a V2 plugin definition whose id is its package name", () => {
   assert.equal(typeof loader.setup, "function");
+  // The template directory has no package.json, so the id falls back to daodan.
+  assert.equal(loader.id, "daodan");
+  assert.equal(packageId(FIXTURE), "daodan");
+  assert.equal(packageId(path.join(FIXTURE, "missing")), "daodan");
+  const other = fs.mkdtempSync(path.join(os.tmpdir(), "mukade-id-"));
+  fs.writeFileSync(path.join(other, "package.json"), JSON.stringify({ name: "mukade", daodan: { plugins: {} } }));
+  assert.equal(packageId(other), "mukade", "two marketplaces built by this compiler never share one id");
 });
 
 test("no options loads everything", async () => {
