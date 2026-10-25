@@ -1,0 +1,18 @@
+name = "start"
+entrypoint = "start.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+concurrency = "forbidden"
+produces = ["artifact:route-map", "artifact:office-result"]
+
+[dispatch]
+roles = ["office/content-strategist", "office/presentation-designer", "office/presentation-reviewer", "office/document-designer", "office/document-reviewer"]
+isolated = true
+
+[contract]
+inputs = ["office-request", "source-material"]
+outcomes = ["office-request-completed"]
+artifacts = ["route-map", "office-result"]
+schemas = []
