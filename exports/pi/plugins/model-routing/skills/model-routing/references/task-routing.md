@@ -84,7 +84,9 @@ To refresh the model catalog, its prices or the price rules, read
 
 1. Identify the active host and its actual model inventory through registered
    tools or its configuration. Save only model identities, prices, limits,
-   modalities, tool support and available variants as `MODELS.json`. Never copy
+   available variants and every capability the host declares (the features and
+   input/output modalities named in `scripts/model_capabilities.py`) as
+   `MODELS.json`. Never copy
    credentials or the whole provider configuration. Use the native `provider`
    model map, a `providers` tool projection or a flat `models` list accepted by
    `task_router.py`. The annotated `screened` output of `tier_router.py discover`
@@ -139,6 +141,12 @@ python -B "<plugin-root>/skills/model-routing/scripts/task_router.py" assign --p
 ```
 
 For that failure branch, replace `--reply REPLY.txt` with `--no-reply`.
+Add `--require CAPABILITY` once for each capability the node's inputs need and
+no classification can infer: `input.video` for an attached video,
+`structured_output` for a schema-bound reply. A name outside the vocabulary
+fails the run. The host's inventory decides each gate; an unreported capability
+is flagged, and the catalog's differing view of the chosen model is reported
+in `chosen_capability_disagreements`.
 Missing or invalid classification escalates to tier3. Only the module applies
 weights, risk floors, the governing board, capability gates and selection rules.
 `best-undefined`, `no-candidate` and a nonzero exit cannot authorize a dispatch;
@@ -181,9 +189,10 @@ Immediately before each dispatch, read the request as UTF-8 text with universal
 newlines, encode that text as UTF-8 and take its SHA256, matching `plan`.
 Look up only its caller-supplied `assignments[request_sha256]`. Verify human confirmation,
 `confirmation.host` against the current host, current host support, selected
-identity/variant availability and the current inventory and
-catalog file digests against the binding. A different request, changed inventory
-or changed catalog requires fresh `plan` and `assign`; do not reuse another
+identity/variant availability, the current inventory and catalog file digests
+and the node's required capabilities against the binding. A different request,
+changed inventory, changed catalog or changed requirements requires fresh `plan`
+and `assign`; do not reuse another
 intent's assignment or an older catalog's order. A changed selection needs its
 own confirmation. Dispatch with that exact binding through the supported host
 mechanism; otherwise follow the unbound branch above.

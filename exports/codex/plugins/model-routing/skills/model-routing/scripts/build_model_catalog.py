@@ -59,6 +59,9 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from model_capabilities import normalize  # noqa: E402  one reader of capabilities
+
 SCHEMA = "daodan/model-catalog/v1"
 MODELS_DEV_URL = "https://models.dev/api.json"
 
@@ -217,11 +220,6 @@ def split_version(model_id, family):
     if m:
         return base[: m.start()].rstrip("-._ ") or base, m.group(1)
     return base, None
-
-
-def modalities(entry):
-    mod = entry.get("modalities") or {}
-    return {"input": mod.get("input") or [], "output": mod.get("output") or []}
 
 
 def effort_levels(entry):
@@ -514,14 +512,7 @@ def build(models_dev, benchmark, harness, args):
             "cost_is_indicative": True,
             "window": limit,
             "capabilities": {
-                "input": modalities(e)["input"],
-                "output": modalities(e)["output"],
-                "features": {"tool_call": bool(e.get("tool_call")),
-                             "reasoning": bool(e.get("reasoning")),
-                             "attachment": bool(e.get("attachment")),
-                             "structured_output": e.get("structured_output"),
-                             "temperature": e.get("temperature") is not None,
-                             "interleaved": e.get("interleaved")},
+                **normalize(e),
                 "reasoning_options": e.get("reasoning_options"),
                 "effort_levels": effort_levels(e),
             },

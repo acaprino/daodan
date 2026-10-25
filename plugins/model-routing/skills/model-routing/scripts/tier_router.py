@@ -109,6 +109,9 @@ import sys
 from pathlib import Path
 from string import Template
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from model_capabilities import normalize  # noqa: E402  one reader of capabilities
+
 SCHEMA = "daodan/tier-router-proposal/v1"
 
 HOSTS = ("opencode", "claude", "pi", "codex", "copilot")
@@ -353,8 +356,7 @@ class Model:
         self.name = name
         self.host = host
         self.status = "unknown"
-        self.capabilities = {}
-        self.modalities = {}
+        self.capabilities = normalize({})
         self.context = _window_record(None, "unknown (field absent)", "unknown")
         self.output_limit = _window_record(None, "unknown (field absent)", "unknown")
         self.variants = {"available": [], "shape": "absent", "evidence": "no variant data"}
@@ -382,7 +384,6 @@ class Model:
             "host": self.host,
             "status": self.status,
             "capabilities": self.capabilities,
-            "modalities": self.modalities,
             "context_window": self.context,
             "output_limit": self.output_limit,
             "variants": self.variants,
@@ -439,10 +440,7 @@ def drive_opencode(args, notes):
                     continue
                 full = f"{pid}/{mid}"
                 m = models.setdefault(full, Model(full, entry.get("name") or mid, "opencode"))
-                m.capabilities = {"tool_call": entry.get("tool_call"),
-                                  "reasoning": entry.get("reasoning"),
-                                  "attachment": entry.get("attachment")}
-                m.modalities = entry.get("modalities") or {}
+                m.capabilities = normalize(entry)
                 limit = entry.get("limit") or {}
                 m.context = _window_record(
                     limit.get("context"), "opencode config limit.context",
@@ -538,8 +536,7 @@ def drive_pi(args, notes):
             mid = entry.get("id") or entry.get("name")
             full = f"{pid}/{mid}"
             m = models.setdefault(full, Model(full, entry.get("name") or mid, "pi"))
-            m.capabilities = {"reasoning": entry.get("reasoning"), "tool_call": None}
-            m.modalities = {"input": entry.get("input")}
+            m.capabilities = normalize(entry)
             level_map = entry.get("thinkingLevelMap")
             if isinstance(level_map, dict):
                 avail = sorted(k for k, v in level_map.items() if v is not None)
@@ -661,7 +658,9 @@ def drive_codex(args, notes):
     if mid:
         m = Model(str(mid), str(mid), "codex")
         m.status = "active"
-        m.capabilities = {"reasoning": bool(facts["inherited"].get("model_reasoning_effort"))}
+        # A configured effort evidences reasoning; its absence evidences nothing.
+        m.capabilities = normalize(
+            {"reasoning": True if facts["inherited"].get("model_reasoning_effort") else None})
         if facts["override_supported"]:
             m.binding = {"model_param": str(mid),
                          "effort_applied": facts["inherited"].get("model_reasoning_effort"),
@@ -910,7 +909,7 @@ def screen(models, args, workload, facts, notes):
         else:
             m.gates.append(_gate("status_active", "fail", f"status={m.status}"))
 
-        tool_call = m.capabilities.get("tool_call")
+        tool_call = m.capabilities["features"]["tool_call"]
         if tool_call is True:
             m.gates.append(_gate("tool_call", "pass", "tool_call=true"))
         elif tool_call is False:

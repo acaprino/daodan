@@ -158,12 +158,15 @@ class TestSourceShapeTraps(RegistryFetchCase):
             _row("a/reasoning-param", params=["include_reasoning"]),
             _row("a/reasoning-flag", params=["max_tokens"], reasoning=True),
         ])
-        caps = {m["id"]: m["capabilities"] for m in reg["models"]}
-        self.assertTrue(caps["a/with-tools"]["tools"])
-        self.assertTrue(caps["a/with-tools"]["structured_outputs"])
-        self.assertFalse(caps["a/no-tools"]["tools"])
+        caps = {m["id"]: m["capabilities"]["features"] for m in reg["models"]}
+        self.assertTrue(caps["a/with-tools"]["tool_call"])
+        self.assertTrue(caps["a/with-tools"]["structured_output"])
+        self.assertFalse(caps["a/no-tools"]["tool_call"])
         self.assertTrue(caps["a/reasoning-param"]["reasoning"])
         self.assertTrue(caps["a/reasoning-flag"]["reasoning"])
+        # No parameter declares attachment support, so the registry cannot know it.
+        self.assertIsNone(caps["a/no-tools"]["attachment"])
+        self.assertEqual(reg["models"][0]["capabilities"]["input"], ["text"])
 
     def test_the_artifact_carries_its_own_provenance_and_attribution(self):
         reg, summary = self.reduce([_row("a/b")])

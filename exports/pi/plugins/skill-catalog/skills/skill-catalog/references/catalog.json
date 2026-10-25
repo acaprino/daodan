@@ -137,7 +137,7 @@
       "operations": [],
       "provider": "model-routing",
       "topics": [],
-      "version": "1.0.0"
+      "version": "2.0.0"
     },
     {
       "description": "Coordinates bounded independent proposals and reciprocal critique. TRIGGER WHEN: /daodan:get-second-opinion receives a question rather than a file, or explicitly requesting Ultra Nerd, moe, or a multi-model expert debate for a difficult problem. DO NOT TRIGGER WHEN: challenging an existing plan only (use peer-review:cross-model-peer-review).",

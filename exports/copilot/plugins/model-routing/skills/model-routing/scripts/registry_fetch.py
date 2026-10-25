@@ -59,6 +59,9 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from model_capabilities import normalize  # noqa: E402  one reader of capabilities
+
 SCHEMA = "daodan/model-fact-registry/v1"
 
 # Allowlisted sources. A caller may select one by key; it may never pass a URL. Letting a
@@ -175,13 +178,16 @@ def reduce_records(records, source_key):
                 "pricing.overrides present: the flat input rate is not the effective "
                 "price at every context size" if pricing.get("overrides") else None),
             "modality": arch.get("modality"),
-            "input_modalities": arch.get("input_modalities") or [],
-            "output_modalities": arch.get("output_modalities") or [],
-            "capabilities": {"tools": "tools" in params,
-                             "reasoning": bool(raw.get("reasoning"))
-                                          or "reasoning" in params
-                                          or "include_reasoning" in params,
-                             "structured_outputs": "response_format" in params},
+            # `supported_parameters` lists every parameter the endpoint accepts, so a
+            # feature it omits is declared absent. Attachment has no parameter: unknown.
+            "capabilities": normalize({
+                "tool_call": "tools" in params,
+                "reasoning": bool(raw.get("reasoning")) or "reasoning" in params
+                             or "include_reasoning" in params,
+                "structured_output": "response_format" in params,
+                "temperature": "temperature" in params,
+                "modalities": {"input": arch.get("input_modalities"),
+                               "output": arch.get("output_modalities")}}),
             "supported_parameters": sorted(params),
             "knowledge_cutoff": raw.get("knowledge_cutoff"),
             "created": raw.get("created"),
@@ -250,7 +256,8 @@ def build(args):
             "with_priced_input": sum(1 for m in models
                                      if m["cost_usd_per_million_tokens"]["input"] is not None),
             "with_context_window": sum(1 for m in models if m["context_window"]),
-            "with_tools": sum(1 for m in models if m["capabilities"]["tools"]),
+            "with_tools": sum(1 for m in models
+                              if m["capabilities"]["features"]["tool_call"]),
         },
         "semantics": {
             "prices": "USD per 1M tokens, converted from the source's per-token strings",

@@ -183,7 +183,8 @@ class TestOpenCodeScreening(TierRouterCase):
         mid = self.screened(payload, "work-mid")
         self.assertEqual(mid["cost_usd_per_million_tokens"]["input"], 2.0)
         self.assertEqual(mid["context_window"]["value"], 1_048_576)
-        self.assertIs(mid["capabilities"]["tool_call"], True)
+        self.assertIs(mid["capabilities"]["features"]["tool_call"], True)
+        self.assertEqual(mid["capabilities"]["input"], ["text", "image"])
         self.assertIn("opencode config", mid["cost_evidence"])
         self.assertIn("opencode config", mid["context_window"]["evidence"])
 

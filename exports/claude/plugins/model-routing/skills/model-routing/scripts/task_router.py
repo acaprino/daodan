@@ -55,7 +55,9 @@ The intent the classifier emits is not decoration, and it is why the catalog car
   the run records which of the two applied.
 - **Which capabilities are mandatory.** A tool-requiring task cannot land on a model with
   ``tool_call`` false; a vision task cannot land on a text-only model. A capability the
-  harness never reported is flagged, never treated as absent.
+  harness never reported is flagged, never treated as absent. What the request carries is
+  a fact, not a judgement, so the caller names it (``--require input.video``) over the
+  whole vocabulary of ``model_capabilities.py``, and the classifier never guesses it.
 - **How much context is enough.** ``long_context`` multiplies the tier's floor.
 
 A board that publishes a rank without an ELO (the Arena ``agent`` board scores dimensions,
@@ -97,6 +99,10 @@ import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from model_capabilities import (VOCABULARY, disagreements, has,  # noqa: E402
+                                normalize, unknown_requirements)
 
 SCHEMA = "daodan/task-routing/v1"
 
@@ -318,34 +324,18 @@ def _record(full_id, short_id, e, status=None):
                               and limit.get("context") > 0 else None,
             "output_limit": limit.get("output") if isinstance(limit.get("output"), int)
                             and limit.get("output") > 0 else None,
-            "tool_call": e.get("tool_call"), "reasoning": e.get("reasoning"),
             "variants": avail,
-            "modalities": e.get("modalities") or {}}
+            "capabilities": normalize(e)}
 
 
 def _has_capability(model, requirement):
-    """True, False, or None when the harness never reported it.
-
-    None is a gap in the harvest, never evidence of absence: treating it as False would
-    let an unharvested modality silently delete every candidate.
-    """
-    mods = model.get("modalities") or {}
-    mods_in = {str(x).lower() for x in mods.get("input") or []}
-    mods_out = {str(x).lower() for x in mods.get("output") or []}
-    if requirement == "tool_call":
-        value = model.get("tool_call")
-        return None if value is None else bool(value)
-    if requirement == "input.image":
-        return ("image" in mods_in) if mods_in else None
-    if requirement == "input.pdf":
-        return ("pdf" in mods_in or "file" in mods_in) if mods_in else None
-    if requirement == "output.non_text":
-        return (bool(mods_out - {"text"})) if mods_out else None
-    return None
+    """True, False, or None when the harness never reported it (see model_capabilities)."""
+    view = model.get("capabilities")
+    return has(view if view is not None else normalize(model), requirement)
 
 
-def active_capability_gates(signals):
-    """The gates this classification turns on, named from MANDATORY_CAPABILITIES."""
+def active_capability_gates(signals, caller=()):
+    """The gates this request turns on: MANDATORY_CAPABILITIES keys, plus `caller`."""
     s = signals or {}
     active = []
     if s.get("tool_use_required"):
@@ -353,24 +343,35 @@ def active_capability_gates(signals):
     work_type_gate = f"work_type:{s.get('work_type')}"
     if work_type_gate in MANDATORY_CAPABILITIES:
         active.append(work_type_gate)
+    if caller:
+        active.append("caller")
     return active
 
 
-def capability_gates(model, signals):
-    """Capabilities the classification makes mandatory: (failed, unknown) gate lists.
+def required_capabilities(signals, caller=()):
+    """Every capability this request makes mandatory, with the gates that require it."""
+    required = {}
+    for gate in active_capability_gates(signals, caller):
+        for requirement in (caller if gate == "caller" else MANDATORY_CAPABILITIES[gate]):
+            required.setdefault(requirement, []).append(gate)
+    return dict(sorted(required.items()))
+
+
+def capability_gates(model, signals, caller=()):
+    """Capabilities the request makes mandatory: (failed, unknown) gate lists.
 
     A model that fails a gate is rejected, not merely deprioritised; a model whose
     capability is unknown is kept and flagged. `signals is None` (unclassified) turns no
-    gate on: an unclassified task has no intent to enforce.
+    classification gate on: an unclassified task has no intent to enforce. A capability
+    the caller requires gates whether or not the task was classified.
     """
     failed, unknown = [], []
-    for gate in active_capability_gates(signals):
-        for requirement in MANDATORY_CAPABILITIES[gate]:
-            value = _has_capability(model, requirement)
-            if value is False:
-                failed.append(f"capability:{requirement}")
-            elif value is None:
-                unknown.append(f"capability:{requirement}")
+    for requirement in required_capabilities(signals, caller):
+        value = _has_capability(model, requirement)
+        if value is False:
+            failed.append(f"capability:{requirement}")
+        elif value is None:
+            unknown.append(f"capability:{requirement}")
     return failed, sorted(set(unknown))
 
 
@@ -381,8 +382,6 @@ def eligible(model, gates):
         failed.append("status:deprecated")
     if gates.get("require_priced") and not model.get("cost"):
         failed.append("priced")
-    if gates.get("require_tool_call") and model.get("tool_call") is False:
-        failed.append("tool_call")
     need = gates.get("min_context")
     if need and model.get("context_window") is not None and model["context_window"] < need:
         failed.append("context_window")
@@ -400,8 +399,7 @@ def pick_classifier(models, workload, prompt_tokens, min_context):
     """
     cands = []
     for m in models:
-        ok, failed = eligible(m, {"require_priced": True, "require_tool_call": False,
-                                  "min_context": min_context})
+        ok, failed = eligible(m, {"require_priced": True, "min_context": min_context})
         if not ok:
             continue
         priced = cost_per_call(m, workload)
@@ -728,6 +726,8 @@ def catalog_tiers(catalog):
                  "benchmark": (m.get("tier_evidence") or {}).get("benchmark"),
                  "aptitudes": m.get("aptitudes") or {},
                  "evidence_method": (m.get("tier_evidence") or {}).get("method"),
+                 "capabilities": (normalize(m["capabilities"])
+                                  if isinstance(m.get("capabilities"), dict) else None),
                  "declared_order": i}
         if owner not in owners or _stronger(entry, owners[owner]):
             owners[owner] = entry
@@ -960,6 +960,7 @@ def plan(args):
                                           "unplaceable"]},
                    "work_type_boards": WORK_TYPE_BOARD,
                    "capability_gates": MANDATORY_CAPABILITIES,
+                   "capability_vocabulary": list(VOCABULARY),
                    "long_context_multiplier": LONG_CONTEXT_MULTIPLIER,
                    "default_board_priority": DEFAULT_BOARD_PRIORITY,
                    "work_type_boards_source": "the catalog's own work_type_boards wins at "
@@ -981,6 +982,13 @@ def assign(args):
     if raw is None:
         return 2, {"schema": SCHEMA, "status": "failed", "reason": err}
     models = normalize_models(raw)
+    caller_required = sorted(set(args.require or [])
+                             | ({"tool_call"} if args.require_tool_call else set()))
+    unnamed = unknown_requirements(caller_required)
+    if unnamed:
+        return 2, {"schema": SCHEMA, "status": "failed",
+                   "reason": f"--require names no capability of the vocabulary: {unnamed}",
+                   "vocabulary": list(VOCABULARY)}
     catalog = None
     catalog_digest = None
     catalog_index = {}
@@ -1039,16 +1047,13 @@ def assign(args):
         min_context = args.min_context
     if signals and signals.get("long_context"):
         min_context *= LONG_CONTEXT_MULTIPLIER
-    require_tool_call = bool(args.require_tool_call) or bool(
-        signals and signals.get("tool_use_required"))
+    required = required_capabilities(signals, caller_required)
 
     workload = dict(DEFAULT_WORKLOAD)
     cands, rejected = [], []
     for m in models:
-        ok, failed = eligible(m, {"require_priced": True,
-                                  "require_tool_call": require_tool_call,
-                                  "min_context": min_context})
-        cap_failed, cap_unknown = capability_gates(m, signals)
+        ok, failed = eligible(m, {"require_priced": True, "min_context": min_context})
+        cap_failed, cap_unknown = capability_gates(m, signals, caller_required)
         failed = sorted(set(failed + cap_failed))
         cat = catalog_entry(catalog_index, m)
         if failed:
@@ -1172,6 +1177,10 @@ def assign(args):
                                         governing_board) if chosen else None
     chosen_aptitude = (chosen_catalog.get("aptitudes") or {}).get(work_type) if (
         chosen and work_type) else None
+    chosen_capabilities = (chosen or {}).get("capabilities")
+    chosen_catalog_capabilities = chosen_catalog.get("capabilities")
+    chosen_disagreements = (disagreements(chosen_capabilities, chosen_catalog_capabilities)
+                            if chosen_capabilities and chosen_catalog_capabilities else [])
 
     confirmation_required = True
     confirmation_reasons = []
@@ -1260,16 +1269,28 @@ def assign(args):
                       "chosen_aptitude": chosen_aptitude,
                       "chosen_unknown_capabilities": (chosen or {}).get(
                           "unknown_capabilities"),
+                      "chosen_capabilities": chosen_capabilities,
+                      "chosen_catalog_capabilities": chosen_catalog_capabilities,
+                      "chosen_capability_disagreements": chosen_disagreements,
+                      "capability_disagreement_rule": (
+                          "the host decides what reaches the model, so its inventory gates; "
+                          "the catalog records what the vendor accepts. A disagreement is "
+                          "reported, never resolved here"),
                       "chosen_cost_per_call_usd": (chosen or {}).get("cost_per_call_usd"),
                       "model_param": model_param, "effort": variant,
                       "effort_resolution": why, "fallbacks": fallbacks},
-        "gates": {"min_context_tokens": min_context, "require_tool_call": require_tool_call,
+        "gates": {"min_context_tokens": min_context,
+                  "require_tool_call": "tool_call" in required,
                   "require_priced": True,
-                  "capability_gates": active_capability_gates(signals),
-                  "capability_gate_rule": "a gate the classification turns on rejects a "
-                                          "model that lacks the capability; an unreported "
-                                          "capability is flagged, never treated as absent"},
+                  "capability_gates": active_capability_gates(signals, caller_required),
+                  "required_capabilities": required,
+                  "capability_vocabulary": list(VOCABULARY),
+                  "capability_gate_rule": "a gate the classification or the caller turns on "
+                                          "rejects a model that lacks the capability; an "
+                                          "unreported capability is flagged, never treated "
+                                          "as absent"},
         "rejected": rejected,
+        "inventory_capabilities": {m["id"]: m["capabilities"] for m in models},
         "unknown_capabilities": [{"id": c["id"], "capabilities": c["unknown_capabilities"]}
                                  for c in cands if c["unknown_capabilities"]],
         "catalog_fallbacks": {
@@ -1314,6 +1335,7 @@ def assign(args):
         "catalog_sha256": catalog_digest,
         "catalog_revision": (catalog or {}).get("revision"),
         "tier": tier, "work_type": work_type, "governing_board": governing_board,
+        "required_capabilities": list(required),
         "model_id": chosen["id"], "model_param": model_param, "effort": variant,
     } if chosen else None)
     _atomic_write(args.out, payload)
@@ -1347,11 +1369,24 @@ def main(argv=None):
                           'catalog does not cover, e.g. {"new-model-x": 3}. Operator '
                           'declaration outranks family inference.')
     asg.add_argument("--min-context", type=int)
-    asg.add_argument("--require-tool-call", action="store_true")
+    asg.add_argument("--require", action="append", metavar="CAPABILITY",
+                     help="a capability the request needs, from the vocabulary of "
+                          "model_capabilities.py (tool_call, input.video, "
+                          "structured_output, ...); repeatable")
+    asg.add_argument("--require-tool-call", action="store_true",
+                     help="the same as --require tool_call")
     asg.add_argument("--out", required=True)
 
     args = p.parse_args(argv)
-    return plan(args) if args.command == "plan" else assign(args)
+    result = plan(args) if args.command == "plan" else assign(args)
+    if isinstance(result, tuple):
+        # A failure returns its report rather than writing it. Writing it to --out also
+        # replaces an earlier run's proposal, which must not outlive a failed rerun.
+        code, payload = result
+        _atomic_write(args.out, payload)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return code
+    return result
 
 
 if __name__ == "__main__":

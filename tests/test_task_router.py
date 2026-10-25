@@ -569,6 +569,84 @@ class TestIntentGates(RouterCase):
         self.assertEqual(doc["selection"]["chosen"], "gw/image-maker")
         self.assertEqual(doc["selection"]["governing_board"], None)
 
+    def assign_require(self, signals, *capabilities):
+        plan_path, _ = self.plan()
+        reply = self.tmp / "require-reply.json"
+        reply.write_text(json.dumps(signals), encoding="utf-8")
+        out = self.tmp / "require-assign.json"
+        flags = [arg for capability in capabilities for arg in ("--require", capability)]
+        code, doc = self.cli("assign", "--plan", str(plan_path), "--reply", str(reply),
+                             "--models", str(self.gate_models), "--catalog",
+                             str(self.gate_catalog), "--out", str(out), *flags)
+        return code, doc, out
+
+    def test_the_caller_requires_any_capability_of_the_vocabulary(self):
+        # A video attachment is a fact the caller holds and no work type implies: a model
+        # the host declares without video must not receive one, whatever the intent.
+        _, doc, _ = self.assign_require(dict(SIGNALS_SIMPLE, tool_use_required=False),
+                                        "input.video")
+        rejected = {r["id"]: r["failed_gates"] for r in doc["rejected"]}
+        self.assertIn("capability:input.video", rejected["gw/vision-capable"])
+        self.assertIn("capability:input.video", rejected["gw/image-maker"])
+        self.assertEqual(doc["gates"]["required_capabilities"], {"input.video": ["caller"]})
+        self.assertEqual(doc["gates"]["capability_gates"], ["caller"])
+        self.assertEqual(doc["unknown_capabilities"],
+                         [{"id": "gw/no-modalities",
+                           "capabilities": ["capability:input.video"]}])
+
+    def test_a_requirement_names_the_gates_that_imposed_it_and_reaches_the_binding(self):
+        # The caller's requirements are not part of the request digest, so the binding
+        # carries them: a resume with different requirements must not reuse it.
+        code, doc, _ = self.assign_require(SIGNALS_DEEP, "tool_call", "input.image")
+        self.assertEqual(code, 0, doc)
+        self.assertEqual(doc["gates"]["required_capabilities"],
+                         {"input.image": ["caller"],
+                          "tool_call": ["tool_use_required", "caller"]})
+        self.assertTrue(doc["gates"]["require_tool_call"])
+        self.assertEqual(doc["binding_proposal"]["required_capabilities"],
+                         ["input.image", "tool_call"])
+
+    def test_a_capability_outside_the_vocabulary_fails_and_replaces_a_stale_proposal(self):
+        _, first, out = self.assign_require(SIGNALS_SIMPLE)
+        self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["schema"],
+                         first["schema"])
+        code, doc, out = self.assign_require(SIGNALS_SIMPLE, "input.vidoe")
+        self.assertEqual(code, 2)
+        self.assertEqual(doc["status"], "failed")
+        self.assertIn("input.vidoe", doc["reason"])
+        self.assertIn("input.video", doc["vocabulary"])
+        self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["status"], "failed")
+
+    def test_every_capability_the_host_declares_is_exposed(self):
+        _, doc = self.assign_gate(dict(SIGNALS_SIMPLE, tool_use_required=False))
+        inventory = doc["inventory_capabilities"]
+        self.assertEqual(len(inventory), len(self.GATE_MODELS["provider"]["gw"]["models"]))
+        vision = inventory["gw/vision-capable"]
+        self.assertEqual(vision["input"], ["text", "image", "pdf"])
+        self.assertIs(vision["features"]["tool_call"], True)
+        self.assertIsNone(vision["features"]["structured_output"])
+        self.assertIsNone(inventory["gw/no-modalities"]["input"])
+        self.assertEqual(set(doc["gates"]["capability_vocabulary"]),
+                         set(tr.VOCABULARY))
+
+    def test_a_host_that_withholds_what_the_vendor_accepts_is_reported(self):
+        # The motivating case: a gateway that does not declare video for a model whose
+        # vendor accepts it. The host gates; the disagreement is reported, not resolved.
+        catalog = json.loads(json.dumps(self.GATE_CATALOG))
+        for entry in catalog["models"]:
+            if entry["id"] == "gw/image-maker":
+                entry["capabilities"] = {"input": ["text", "video"], "output": ["image"],
+                                         "features": {"tool_call": False}}
+        self.gate_catalog.write_text(json.dumps(catalog), encoding="utf-8")
+        _, doc = self.assign_gate(dict(SIGNALS_SIMPLE, work_type="media_generation",
+                                       tool_use_required=False))
+        self.assertEqual(doc["selection"]["chosen"], "gw/image-maker")
+        self.assertEqual(doc["selection"]["chosen_capabilities"]["input"], ["text"])
+        self.assertEqual(doc["selection"]["chosen_catalog_capabilities"]["input"],
+                         ["text", "video"])
+        self.assertEqual(doc["selection"]["chosen_capability_disagreements"],
+                         [{"capability": "input.video", "host": False, "catalog": True}])
+
     def test_an_unreported_capability_is_flagged_never_treated_as_absent(self):
         failed, unknown = tr.capability_gates(
             {"tool_call": None, "modalities": {}},

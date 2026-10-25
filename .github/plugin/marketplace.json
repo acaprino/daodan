@@ -6,7 +6,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "40.1.0"
+    "version": "40.2.0"
   },
   "name": "daodan",
   "owner": {
@@ -184,7 +184,7 @@
         "./skills/model-routing"
       ],
       "source": "./exports/copilot/plugins/model-routing",
-      "version": "1.0.0"
+      "version": "2.0.0"
     },
     {
       "author": {

@@ -100,7 +100,7 @@ they are large, and the Arena ELO data carries no redistribution term.
 |---|---|---|
 | Identity, creator, family, version, release date, status | models.dev | primary |
 | Context and output limits | models.dev | primary |
-| Capabilities: modalities, tool call, reasoning and effort options, structured output, open weights, knowledge cutoff | models.dev | primary; declared by providers, measured by nobody |
+| Capabilities: input and output modalities, tool call, reasoning and effort options, attachment, structured output, temperature, interleaved reasoning, open weights, knowledge cutoff | models.dev, read through `scripts/model_capabilities.py` | primary; declared by providers, measured by nobody |
 | Endpoint prices, with context tiers, reasoning and audio rates | models.dev | primary |
 | What a pricing page states and models.dev lacks: 1-hour cache write, region or speed multipliers, time windows, per-request tool fees | official pricing pages, into `price-rules.json` | settles every disagreement |
 | Second and third reading of prices | LiteLLM, OpenRouter | cross-check only, never a price source |
