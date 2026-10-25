@@ -943,8 +943,10 @@ class LoopRecordTests(ProtocolCase):
 
     def make_repo(self):
         self.git("init", "-q", "-b", "main")
-        self.git("-c", "user.email=t@example.com", "-c", "user.name=t", "add", "app.py")
-        self.git("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m", "base")
+        self.git("config", "user.email", "t@example.com")
+        self.git("config", "user.name", "t")
+        self.git("add", "app.py")
+        self.git("commit", "-q", "-m", "base")
 
     def test_the_agenda_binds_a_task_to_its_branch_and_session(self):
         self.make_repo()
