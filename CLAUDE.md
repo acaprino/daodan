@@ -1,6 +1,6 @@
 # Shinatama
 
-Shinatama is the synthetic companion in Oni that supplies external intelligence, domain guidance and operational support alongside the Daodan symbiote. This repository is the companion marketplace to [`acaprino/daodan`](https://github.com/acaprino/daodan): it holds 23 independent domain verticals, research, office workflows and framework toolkits, while `acaprino/daodan` holds the core software engineering harness (`codebase-map`, `project-lifecycle`, `senior-review`, `testing`, `project-knowledge`, the cross-model deliberation of `peer-review` and `moe`, and core language/stack providers). `peer-review` and `moe` moved back to Daodan on 2026-10-19 because its task cycle consumes them. It ships to five hosts from one source. Remote: `acaprino/shinatama` on GitHub.
+Shinatama is the synthetic companion in Oni that supplies external intelligence, domain guidance and operational support alongside the Daodan symbiote. This repository is the companion marketplace to [`acaprino/daodan`](https://github.com/acaprino/daodan): it holds 24 independent domain verticals, research, office workflows and framework toolkits, while `acaprino/daodan` holds the core software engineering harness (`codebase-map`, `project-lifecycle`, `senior-review`, `testing`, `project-knowledge`, the cross-model deliberation of `peer-review` and `moe`, and core language/stack providers). `peer-review` and `moe` moved back to Daodan on 2026-10-19 because its task cycle consumes them. `text-humanizer` moved here from Daodan on 2026-10-25 as a generic plugin with its own `/text-humanizer:humanize-text` workflow; it stays dependency-free, and Daodan's `project-knowledge` requires it as `text-humanizer@shinatama`. It ships to five hosts from one source. Remote: `acaprino/shinatama` on GitHub.
 
 ## Development harness
 
@@ -408,8 +408,6 @@ decision, and do not make required specialist edges optional.
 | abstraction-architect | codebase-map |
 | testing | project-protocol |
 | senior-review | project-protocol, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, skill-catalog |
-| project-knowledge | project-protocol, codebase-map, senior-review, text-humanizer |
-| project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, text-humanizer, react-development, typescript-development, platform-engineering |
 | clean-code | project-protocol |
 | python-development | testing, project-protocol |
 

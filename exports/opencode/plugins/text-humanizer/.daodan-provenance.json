@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:a2cda47bbe98523af109a09cf64b328c790f292bb8f0fc5fbf6965323fb6490b",
+  "harnessStrategies": {
+    "humanize-text": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "text-humanizer",
+  "version": "2.2.0"
+}

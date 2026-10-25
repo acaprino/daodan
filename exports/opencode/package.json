@@ -346,6 +346,7 @@
           }
         ],
         "dependencies": [
+          "text-humanizer",
           "research"
         ],
         "root": "plugins/business",
@@ -497,6 +498,9 @@
             "file": "commands/seo-audit.md",
             "name": "digital-marketing:seo-audit"
           }
+        ],
+        "dependencies": [
+          "text-humanizer"
         ],
         "root": "plugins/digital-marketing",
         "skills": [
@@ -1871,6 +1875,58 @@
           }
         ]
       },
+      "text-humanizer": {
+        "agents": [
+          {
+            "description": "Editor for any language: uses 25 local writing patterns to improve prose, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/text-humanizer:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).",
+            "file": "agents/text-humanizer.md",
+            "id": "text-humanizer:text-humanizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Make a text read naturally, removing the patterns of machine writing, without inventing content. TRIGGER WHEN: the user asks to humanize, rewrite naturally or de-AI a text or a file. DO NOT TRIGGER WHEN: code is to be refactored (use /daodan:refactor-code) or documentation written (use /daodan:write-docs).",
+            "file": "commands/humanize-text.md",
+            "name": "text-humanizer:humanize-text"
+          }
+        ],
+        "root": "plugins/text-humanizer",
+        "skills": [
+          {
+            "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
+            "file": "skills/anti-ai-writing-patterns/SKILL.md",
+            "id": "text-humanizer:anti-ai-writing-patterns",
+            "name": "anti-ai-writing-patterns"
+          }
+        ]
+      },
       "trading-broker-integration": {
         "agents": [
           {
@@ -2062,5 +2118,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "3.4.1"
+  "version": "3.5.0"
 }

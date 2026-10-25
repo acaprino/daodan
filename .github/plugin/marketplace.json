@@ -7,7 +7,7 @@
   ],
   "metadata": {
     "description": "Shinatama: companion AI domain specialists, research, deliberation, office workflows and framework toolkits across five coding-agent hosts.",
-    "version": "3.4.1"
+    "version": "3.5.0"
   },
   "name": "shinatama",
   "owner": {
@@ -84,7 +84,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "text-humanizer@daodan",
+        "text-humanizer",
         "research"
       ],
       "description": "Legal advisory, compliance document generation, and SaaS business planning - Privacy Policies, Cookie Policies, DPAs, GDPR/ePrivacy/CCPA compliance, contract review, GTM strategy, market sizing, pricing, and positioning",
@@ -94,7 +94,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/copilot/plugins/business",
-      "version": "1.15.0"
+      "version": "1.15.1"
     },
     {
       "agents": [
@@ -123,7 +123,7 @@
       },
       "dependencies": [
         "playwright@claude-plugins-official",
-        "text-humanizer@daodan",
+        "text-humanizer",
         "report-rendering@daodan"
       ],
       "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot): technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /digital-marketing:ga4-audit Playwright-powered verification, and /digital-marketing:llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
@@ -136,7 +136,7 @@
         "./skills/review-reply-method"
       ],
       "source": "./exports/copilot/plugins/digital-marketing",
-      "version": "3.2.3"
+      "version": "3.2.4"
     },
     {
       "author": {
@@ -426,6 +426,24 @@
       ],
       "source": "./exports/copilot/plugins/tauri-development",
       "version": "2.8.3"
+    },
+    {
+      "agents": [
+        "./agents/humanize-text-coordinator.agent.md",
+        "./agents/text-humanizer.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Prose humanization toolkit: the text-humanizer editor agent improves prose in any language without inventing content (25 local patterns, including replies that re-explain known context), register-aware (docs, business, personal) with a natural Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /text-humanizer:humanize-text, with optional 5-dimension quality scoring. Self-contained generic leaf plugin with zero dependencies, consumed by digital-marketing and business and by coordinators in other marketplaces. Extracted from digital-marketing in marketplace 13.3.0.",
+      "license": "MIT",
+      "name": "text-humanizer",
+      "skills": [
+        "./skills/anti-ai-writing-patterns"
+      ],
+      "source": "./exports/copilot/plugins/text-humanizer",
+      "version": "2.2.0"
     },
     {
       "agents": [
