@@ -1,0 +1,18 @@
+name = "document"
+entrypoint = "document.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+concurrency = "forbidden"
+produces = ["artifact:document-result", "artifact:document-review"]
+
+[dispatch]
+roles = ["office/document-designer", "office/document-reviewer"]
+isolated = true
+
+[contract]
+inputs = ["document-task", "source-material"]
+outcomes = ["document-task-completed"]
+artifacts = ["document-result", "document-review"]
+schemas = []

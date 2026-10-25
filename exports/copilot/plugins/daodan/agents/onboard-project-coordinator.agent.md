@@ -1,7 +1,7 @@
 ---
 name: onboard-project-coordinator
 description: 'Explain an unfamiliar project to whoever takes it over: purpose, modules, critical flows, setup and tests, evidenced risks, active decisions, real unknowns and a first scoped work plan. Changes nothing in the project. TRIGGER WHEN: the user is new to a project, takes one over, or asks to be walked through it. DO NOT TRIGGER WHEN: the user wants a durable guide written into the repository (use write-docs).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
 agents: ['codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:guide-reviewer', 'project-knowledge:onboarding-writer']
 ---
 

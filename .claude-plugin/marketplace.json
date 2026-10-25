@@ -6,7 +6,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "41.1.0"
+    "version": "41.2.1"
   },
   "name": "daodan",
   "owner": {
@@ -76,7 +76,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/claude/plugins/codebase-map",
-      "version": "8.9.0"
+      "version": "8.9.1"
     },
     {
       "author": {
@@ -86,22 +86,29 @@
         "./commands/brainstorm-idea.md",
         "./commands/check-health.md",
         "./commands/continue-task.md",
+        "./commands/document.md",
         "./commands/finish-task.md",
         "./commands/fix-bug.md",
+        "./commands/fix.md",
         "./commands/get-second-opinion.md",
         "./commands/init-project.md",
         "./commands/investigate-problem.md",
         "./commands/map-code.md",
         "./commands/new-feature.md",
         "./commands/onboard-project.md",
+        "./commands/presentation.md",
         "./commands/record-decision.md",
         "./commands/refactor-code.md",
         "./commands/review-branch.md",
         "./commands/review-changes.md",
         "./commands/run-maintenance.md",
         "./commands/show-status.md",
+        "./commands/start.md",
         "./commands/sync-upstream.md",
+        "./commands/theme.md",
         "./commands/tidy-repo.md",
+        "./commands/verify.md",
+        "./commands/workbook.md",
         "./commands/write-docs.md",
         "./commands/write-tests.md"
       ],
@@ -114,6 +121,7 @@
         "docker",
         "kotlin-development",
         "moe",
+        "office",
         "peer-review",
         "platform-engineering",
         "project-knowledge",
@@ -128,11 +136,11 @@
         "text-humanizer@shinatama",
         "typescript-development"
       ],
-      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "author": {
@@ -206,6 +214,37 @@
       ],
       "source": "./exports/claude/plugins/moe",
       "version": "2.0.0"
+    },
+    {
+      "agents": [
+        "./agents/content-strategist.md",
+        "./agents/document-designer.md",
+        "./agents/document-reviewer.md",
+        "./agents/presentation-designer.md",
+        "./agents/presentation-reviewer.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "work-controller"
+      ],
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
+      "license": "MIT",
+      "name": "office",
+      "skills": [
+        "./skills/deckcraft",
+        "./skills/design",
+        "./skills/docx",
+        "./skills/gridcraft",
+        "./skills/intake",
+        "./skills/integrity",
+        "./skills/pptx",
+        "./skills/wordcraft",
+        "./skills/xlsx"
+      ],
+      "source": "./exports/claude/plugins/office",
+      "version": "3.1.0"
     },
     {
       "agents": [

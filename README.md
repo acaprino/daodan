@@ -51,12 +51,14 @@ OpenCode V2. Useful language, framework and domain specialists remain independen
 
 Daodan is complete on its own and reaches full strength alongside
 [Shinatama](https://github.com/acaprino/shinatama), its companion marketplace of
-domain verticals, office workflows and web research.
+domain verticals and web research. Editable Word, PowerPoint and Excel workflows
+belong to Daodan's [Office plugin](docs/plugins/office.md).
 Install both on the same host: `skill-catalog` discovers Shinatama's knowledge
 sidecars automatically and selects the ones each run's evidenced stack and domain
 call for, so a review, a handover or a maintenance campaign brings that domain
-knowledge to the map. Shinatama is a recommended companion, not a dependency: no
-Daodan plugin declares it, and every Daodan workflow runs without it.
+knowledge to the map. The rest of Shinatama is a recommended companion;
+components invoked by a Daodan plugin are declared required dependencies,
+including `text-humanizer@shinatama` for documentation editing.
 
 ## One command per intention
 
@@ -88,11 +90,26 @@ works alone and is also a step of the task cycle.
 | | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
 | | `/daodan:record-decision` | A decision record outside a task; turns records on for a project without them |
 | | `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
+| Office | `/daodan:start` | Route files, notes or a mixed Office request to the right methods |
+| | `/daodan:presentation` | Create, revise or review an editable PowerPoint deck |
+| | `/daodan:document` | Create, revise or review an editable Word document |
+| | `/daodan:workbook` | Create, edit or analyze an Excel workbook |
+| | `/daodan:verify` | Inspect a Word, PowerPoint or Excel file for integrity defects |
+| | `/daodan:fix` | Repair Office integrity defects in a separate candidate |
+| | `/daodan:theme` | Create or inherit reusable PowerPoint and Word themes and templates |
 
 When unsure which work command fits, use `new-feature`: the interview corrects
 the course. On the other hosts the names follow the host: `/daodan-new-feature`
 on Pi, the `new-feature-workflow` skill on Codex, the `new-feature` prompt on
 Copilot; OpenCode V2 uses the Claude Code form.
+
+Office keeps its methods, helpers and specialist roles in `office`; all seven
+entries live in `daodan`. Its shared intake routes the requested operation, its
+design method connects editable Word documents and PowerPoint decks, and its
+format methods preserve supplied files and verify saved candidates. Native
+construction and rendering use separately available DeckCraft, WordCraft and
+GridCraft runtimes; installing the plugin does not install those engines. See
+[Office](docs/plugins/office.md) for the format and runtime contracts.
 
 ## Work task by task
 
@@ -192,6 +209,7 @@ commands, paths, installation requirements and runtime limits on each host.
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
+| [office](docs/plugins/office.md) | Editable Word, PowerPoint and Excel methods, shared design, specialist roles and static integrity checks |
 
 Knowledge writes instructions, guides and the README. Project Delivery owns decision
 and requirement records plus delivery coordination. Each distinguishes approved intent from
@@ -217,7 +235,7 @@ It does not grant arbitrary repository deletion.
 | Shared capabilities | [skill-catalog](docs/plugins/skill-catalog.md), [report-rendering](docs/plugins/report-rendering.md) |
 | Cross-model deliberation | [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md) |
 
-Domain verticals, office workflows (`office`), research (`research`),
+Domain verticals, research (`research`),
 web scraping (`grabber-development`), prose humanization (`text-humanizer`),
 marketing, business and specialized framework toolkits live in the companion
 [**Shinatama**](https://github.com/acaprino/shinatama) marketplace (`acaprino/shinatama`).

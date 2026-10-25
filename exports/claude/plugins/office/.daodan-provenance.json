@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:8d5705bca401e527ea51ea9b8353a5c1cbed9413ba5f8ab8d669b21ff9e23e55",
+  "harnessStrategies": {},
+  "host": "claude",
+  "overrides": [],
+  "plugin": "office",
+  "version": "3.1.0"
+}

@@ -1,6 +1,6 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows and web research live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength. A Daodan plugin that loads or dispatches a Shinatama component declares it as `name@shinatama`, like any cross-marketplace dependency; the rest of Shinatama stays a recommended companion. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language, stack and Office specialists. Domain verticals and web research live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength. A Daodan plugin that loads or dispatches a Shinatama component declares it as `name@shinatama`, like any cross-marketplace dependency; the rest of Shinatama stays a recommended companion. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
 
@@ -22,6 +22,13 @@ when a step needs them, once, and recorded in the run. Each command is a thin
 entry into its owner's method; every other plugin keeps skills, roles and
 contracts and has no command. A specialist method a command used to carry lives
 in its owner's skill, where the entry loads it by name.
+
+`office` owns the editable Word, PowerPoint and Excel methods, shared intake and
+design, format helpers and specialist roles. Its entries (`start`, `presentation`,
+`document`, `workbook`, `verify`, `fix`, `theme`) belong to `daodan`, which declares
+the local Office dependency and the capabilities those methods require. Native
+construction and rendering use separately available DeckCraft, WordCraft and
+GridCraft runtimes; Office does not ship their engines or MCP servers.
 
 project-delivery owns ADR, FRD, evidence bootstrap and the methods behind the delivery commands: initialization,
 the task cycle (change, repair, refactor), continue, status, finish, sync,
@@ -484,6 +491,7 @@ specialist edges optional.
 | project-delivery | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
 | project-lifecycle | project-delivery, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, report-rendering |
 | clean-code | work-controller |
+| office | work-controller |
 | python-development | testing, work-controller |
 | dependency-audit | none |
 | peer-review | none |

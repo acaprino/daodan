@@ -1,7 +1,7 @@
 ---
 name: write-tests-coordinator
 description: 'Write tests for the code you name: behavior-driven, in the projects framework and layout, extending existing files rather than creating parallel ones. TRIGGER WHEN: the user asks for tests, more coverage or a test for a specific behavior. DO NOT TRIGGER WHEN: a defect is to be fixed with its test (use fix-bug) or the suite is to be audited (use check-health).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
 agents: ['testing:test-writer', 'work-controller:isolated-worker']
 ---
 
