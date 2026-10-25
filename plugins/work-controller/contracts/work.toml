@@ -4,9 +4,6 @@ required = ["schema", "revision", "run_id", "operation", "objective", "project",
 [fields.status]
 values = ["in_progress", "complete"]
 
-[fields.operation]
-values = ["assess", "repair", "change", "verify", "consolidate", "review", "investigate", "brainstorm"]
-
 [states.phases]
 values = ["pending", "in_progress", "complete", "skipped"]
 pending = ["pending", "in_progress", "complete", "skipped"]

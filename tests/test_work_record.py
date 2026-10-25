@@ -157,6 +157,11 @@ class ProjectProtocolTests(ProtocolCase):
         result = self.invoke("update", patch, ("--expected-revision", "0"))
         self.assertEqual(result["status"], "complete")
 
+    def test_a_consumer_names_its_own_operation(self):
+        self.payload["operation"] = "restyle"
+        self.assertEqual(self.init()["operation"], "restyle")
+        self.assertEqual(self.invoke("agenda")["tasks"][0]["operation"], "restyle")
+
     def test_identity_cannot_be_rebound_by_patch(self):
         self.init()
         self.invoke("update", {"run_id": "different"}, ("--expected-revision", "0"), ok=False)

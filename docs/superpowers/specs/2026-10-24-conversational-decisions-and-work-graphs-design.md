@@ -680,11 +680,10 @@ un limite obbligatorio non può essere dichiarato rispettato senza evidenza.
 - I consumatori dichiarano `work-controller@deadly-brain`, che comprende il
   model-router. Daodan perde gli attuali due plugin: versione maggiore del suo
   marketplace, con una migrazione esplicita delle dipendenze e degli archivi.
-- Il registro del run deve accettare le operazioni di consumatori diversi. Oggi
-  l'enum `operation` di `work.toml` elenca solo quelle di Daodan (`assess`,
-  `repair`, `change`, `verify`, `consolidate`, `review`, `investigate`,
-  `brainstorm`) e rifiuta, per esempio, le operazioni Office (Create, Derive,
-  Expand, Revise, Restyle, Edit). Va ridisegnato con la migrazione.
+- Il registro del run accetta le operazioni di consumatori diversi: dalla
+  versione 2.1.0 di `work-controller` il consumatore sceglie il nome
+  dell'operazione (lettere minuscole, cifre e trattini) e il motore ne controlla
+  solo la forma, per decisione dell'utente del 25 ottobre 2026.
 
 ### Criteri di accettazione del motore
 

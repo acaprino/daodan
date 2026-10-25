@@ -281,13 +281,13 @@ class CampaignRunBoundaryTests(unittest.TestCase):
         self.assertEqual(closed["operation"], "assess")
         self.assertEqual(self.source.read_text(encoding="utf-8"), "initial candidate\n")
         self.assertFalse((self.project / "docs").exists())
-        for operation in ("handover", "maintain"):
+        for operation in ("Handover", "maintain stage", ""):
             with self.subTest(operation=operation):
-                error = self.call("init", operation, {
-                    "operation": operation, "objective": "Do not invent a protocol operation",
+                error = self.call("init", "malformed", {
+                    "operation": operation, "objective": "A consumer names its operation",
                     "scope": {"paths": ["app.py"]}, "authorizations": {}, "budget": {},
                 }, success=False)
-                self.assertIn("Unknown lifecycle operation", error)
+                self.assertIn("operation must be a lowercase name", error)
 
     def test_historical_stages_survive_new_candidates_but_final_verify_requires_current_gates(self):
         prior = self.init("assess", "analysis")

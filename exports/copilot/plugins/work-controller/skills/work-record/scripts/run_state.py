@@ -24,6 +24,7 @@ import uuid
 SCHEMA = "daodan/work/v1"
 QUESTION_PREFIX = "question:"
 RUN_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,95}$")
+OPERATION = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 CONTRACT = Path(__file__).resolve().parents[3] / "contracts/work.toml"
 LOCK_WAIT = 30
 IMMUTABLE = frozenset({"schema", "revision", "run_id", "project", "scope", "authorizations",
@@ -869,8 +870,8 @@ def validate_record(record, project=None, root=None):
         raise ProtocolError("Required gates must be distinct nonempty identifiers")
     if not isinstance(record["objective"], str) or not record["objective"].strip():
         raise ProtocolError("An objective is required")
-    if record["operation"] not in rules["fields"]["operation"]["values"]:
-        raise ProtocolError("Unknown lifecycle operation")
+    if not isinstance(record["operation"], str) or not OPERATION.fullmatch(record["operation"]):
+        raise ProtocolError("operation must be a lowercase name of letters, digits and hyphens")
     if record["status"] not in rules["fields"]["status"]["values"]:
         raise ProtocolError("Invalid run status")
     delivery_reports = []
