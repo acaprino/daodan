@@ -26,8 +26,10 @@ Exit code 0 means no error finding, 1 an error finding or an unreadable package,
 (`pass`, `warnings` or `fail`), counts per severity, findings per rule and the
 checks it did not perform. Findings beyond `--max-per-rule` are counted, not listed.
 
-Static rules do not see layout or calculation. Cover the `not_checked` items with
-the format's engine when it is available: render pages or slides and inspect them
+When OfficeCLI is installed the checker also runs its schema validation and
+issue scan and says so in `checkers`; otherwise schema validity stays in
+`not_checked`. Static rules do not see layout or calculation. Cover the
+`not_checked` items with the format's engine when it is available: render pages or slides and inspect them
 for overflow and overlap, and run `office:gridcraft`'s `check` for recalculation.
 Report any uncovered item as unverified. A `pass` is never a visual or calculation verdict.
 

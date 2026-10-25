@@ -24,6 +24,8 @@ validated against the OOXML schema.
 | `package.invalid` | error | none | Unreadable, unsafe or structurally broken package (inspector errors) |
 | `package.external-link` | warning | review | Content that depends on a target outside the file (hyperlinks excluded) |
 | `package.macros` | info | none | Macros present; never run |
+| `package.schema` | error | review | OpenXML schema validation failed (OfficeCLI `validate`, when installed; `.docx`, `.pptx`, `.xlsx` and macro variants only) |
+| `package.schema-unavailable` | info | none | OfficeCLI was found but its validation did not run (unsupported type or tool error); the schema check stays unverified |
 
 ## Word
 
@@ -58,12 +60,26 @@ validated against the OOXML schema.
 | `xlsx.literal-error` | warning | review | Error value typed as a constant |
 | `xlsx.hardcoded-constant` | info | review | Number other than 0 or 1 next to an arithmetic operator inside a formula |
 
+## OfficeCLI as an independent checker
+
+When [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) is installed (found as
+`officecli` on `PATH`, through `OFFICECLI`, or given with `--officecli PATH`),
+the verifier also runs its OpenXML schema validation and its issue scan, and
+reports the issues as `officecli.<code>` findings (`review`). The report's
+`checkers.officecli` names the binary used and `not_checked` drops "OOXML
+schema validity" only when the validation actually ran. `--no-officecli` keeps
+the run static. OfficeCLI reads `.docx`, `.pptx`, `.xlsx` and their macro
+variants, not templates; on a `.potx`, `.dotx` or `.xltx` the schema check
+stays unverified. Measured on 2026-10-25: it failed a deck of its own making on
+`sldIdLst` order and passed DeckCraft's, so it is independent of the writer.
+
 ## Outside these rules
 
 Text overflow, overlapping objects, pagination, font substitution, formula
-correctness, circular references and schema validity need an engine, a renderer
-or a validator. The report names them under `not_checked`; the workflow covers them
-with the engine and the format's reviewer, or reports them as unverified.
+correctness and circular references need an engine or a renderer; schema
+validity needs OfficeCLI. The report names them under `not_checked`; the
+workflow covers them with the engine and the format's reviewer, or reports
+them as unverified.
 
 ## Provenance
 

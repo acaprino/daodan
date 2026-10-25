@@ -46,7 +46,7 @@ Read the inventory's slide order, content, notes, relationships, parts and featu
 lists. Use the runtime's document/slide inspection to resolve actual object IDs.
 Do not infer IDs from a thumbnail or reuse them after an unrelated document load.
 
-The inspector accepts ordinary PPTX, not macro-enabled or template variants. It
+The inspector accepts ordinary PPTX and `.potx` templates, not macro-enabled variants. It
 checks bounded ZIP/XML and relationships; it does not render, evaluate chart
 semantics or establish full OOXML conformance. Never treat `valid: true` as a
 fidelity verdict. Inspect errors and deltas, including changed parts and binaries.

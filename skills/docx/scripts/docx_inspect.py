@@ -32,6 +32,7 @@ MATH_NAMESPACES = {
 }
 MAIN_TYPES = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml",
     "application/vnd.ms-word.document.macroEnabled.main+xml",
 }
 STORY_ROOTS = {"document", "hdr", "ftr", "footnotes", "endnotes", "comments", "glossaryDocument"}

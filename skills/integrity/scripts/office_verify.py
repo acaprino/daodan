@@ -11,7 +11,10 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import re
+import shutil
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -33,7 +36,7 @@ pptx = _load("office_verify_pptx", "deckcraft/scripts/pptx_inspect.py")
 package = xlsx
 
 SCHEMA = "mukade/office-verify/v1"
-FORMATS = {".docx": "docx", ".docm": "docx", ".pptx": "pptx",
+FORMATS = {".docx": "docx", ".docm": "docx", ".dotx": "docx", ".pptx": "pptx", ".potx": "pptx",
            ".xlsx": "xlsx", ".xlsm": "xlsx", ".xltx": "xlsx", ".xltm": "xlsx"}
 SEVERITIES = ("error", "warning", "info")
 NOT_CHECKED = {
@@ -362,7 +365,74 @@ def xlsx_ref(column, row):
 VERIFIERS = {"docx": verify_docx, "pptx": verify_pptx, "xlsx": verify_xlsx}
 
 
-def verify(path, max_per_rule=50):
+# OfficeCLI as an independent checker: schema validation and its issue scan. It
+# reads only .docx, .xlsx and .pptx (plus macro variants), never templates.
+SCHEMA_CHECK = "OOXML schema validity"
+OFFICECLI_TYPES = {".docx", ".docm", ".xlsx", ".xlsm", ".pptx", ".pptm"}
+OFFICECLI_TIMEOUT = 120
+
+
+def find_officecli(explicit=None):
+    """The OfficeCLI executable from the argument, OFFICECLI, or PATH; None when absent or disabled."""
+    if explicit is False:
+        return None
+    for candidate in (explicit, os.environ.get("OFFICECLI")):
+        if candidate and Path(candidate).is_file():
+            return str(Path(candidate))
+    return shutil.which("officecli")
+
+
+def _run_officecli(binary, arguments):
+    completed = subprocess.run([binary, *arguments, "--json"], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=OFFICECLI_TIMEOUT)
+    output = completed.stdout.strip() or completed.stderr.strip()
+    try:
+        return json.loads(output)
+    except json.JSONDecodeError:
+        return {"success": False, "error": {"error": output[:500] or "no output"}}
+
+
+def officecli_findings(binary, path):
+    """Schema validation and issue scan as findings, plus whether the schema check ran."""
+    findings, checked = [], False
+    if path.suffix.lower() not in OFFICECLI_TYPES:
+        return findings, checked
+    try:
+        validation = _run_officecli(binary, ["validate", str(path)])
+    except (OSError, subprocess.SubprocessError) as exc:
+        findings.append(finding("package.schema-unavailable", "info", "officecli",
+                                "OfficeCLI validation did not run: " + str(exc), "none"))
+        return findings, checked
+    if validation.get("success"):
+        checked = True
+    elif "error" in validation and not validation.get("warnings"):
+        error = validation["error"]
+        message = error.get("error") if isinstance(error, dict) else str(error)
+        findings.append(finding("package.schema-unavailable", "info", "officecli",
+                                "OfficeCLI validation did not run: " + str(message), "none"))
+    else:
+        checked = True
+        messages = [item.get("message", "") for item in validation.get("warnings", [])]
+        detail = "; ".join(item for item in messages if item.startswith("[") or item.startswith("Path") or item.startswith("Part"))
+        findings.append(finding("package.schema", "error", "package",
+                                "OpenXML schema validation failed: " + (detail or "; ".join(messages)), "review"))
+    try:
+        issues = _run_officecli(binary, ["view", str(path), "issues"])
+    except (OSError, subprocess.SubprocessError):
+        return findings, checked
+    data = issues.get("data") if isinstance(issues.get("data"), dict) else {}
+    for issue in data.get("issues", []) or []:
+        if not isinstance(issue, dict):
+            continue
+        severity = "warning" if str(issue.get("severity", "")).lower() in ("", "warning", "warn", "error") else "info"
+        location = str(issue.get("path") or issue.get("location") or issue.get("element") or "document")
+        message = str(issue.get("message") or issue.get("description") or issue)
+        findings.append(finding("officecli." + str(issue.get("code") or issue.get("type") or "issue"), severity,
+                                location, message, "review"))
+    return findings, checked
+
+
+def verify(path, max_per_rule=50, officecli=None):
     path = Path(path)
     kind = FORMATS.get(path.suffix.lower())
     if kind is None:
@@ -370,6 +440,15 @@ def verify(path, max_per_rule=50):
     if not path.is_file():
         raise ValueError("File not found: " + str(path))
     inspection, findings = VERIFIERS[kind](path)
+    not_checked = list(NOT_CHECKED[kind])
+    checkers = {"officecli": None}
+    binary = find_officecli(officecli)
+    if binary and inspection["valid"]:
+        extra, schema_checked = officecli_findings(binary, path)
+        findings.extend(extra)
+        checkers["officecli"] = binary
+        if schema_checked:
+            not_checked.remove(SCHEMA_CHECK)
     order = {severity: index for index, severity in enumerate(SEVERITIES)}
     findings.sort(key=lambda item: (order[item["severity"]], item["rule"], item["location"]))
     counts = Counter(item["severity"] for item in findings)
@@ -387,18 +466,23 @@ def verify(path, max_per_rule=50):
         "package_valid": inspection["valid"], "verdict": verdict,
         "counts": {severity: counts[severity] for severity in SEVERITIES},
         "rules": dict(sorted(Counter(item["rule"] for item in findings).items())),
-        "findings": listed, "omitted": omitted, "not_checked": NOT_CHECKED[kind],
-        "notice": "Static rules only. A pass is not evidence of layout, recalculation or schema validity.",
+        "findings": listed, "omitted": omitted, "not_checked": not_checked, "checkers": checkers,
+        "notice": "Static rules" + (" and OfficeCLI schema validation" if checkers["officecli"] else "")
+                  + ". A pass is not evidence of layout or recalculation"
+                  + ("" if checkers["officecli"] else " or schema validity") + ".",
     }
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Report integrity findings for an Office file without changing it.")
-    parser.add_argument("input", help="DOCX, DOCM, PPTX, XLSX, XLSM, XLTX or XLTM file")
+    parser.add_argument("input", help="DOCX, DOCM, DOTX, PPTX, POTX, XLSX, XLSM, XLTX or XLTM file")
     parser.add_argument("--max-per-rule", type=int, default=50, help="findings listed per rule; counts stay complete")
+    parser.add_argument("--officecli", help="OfficeCLI executable; default OFFICECLI or 'officecli' on PATH")
+    parser.add_argument("--no-officecli", action="store_true", help="static rules only, even when OfficeCLI is installed")
     args = parser.parse_args(argv)
     try:
-        report = verify(args.input, max(args.max_per_rule, 1))
+        report = verify(args.input, max(args.max_per_rule, 1),
+                        officecli=False if args.no_officecli else args.officecli)
     except ValueError as exc:
         print(json.dumps({"schema": SCHEMA, "error": str(exc)}, indent=2))
         return 2
