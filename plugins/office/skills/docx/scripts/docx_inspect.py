@@ -284,12 +284,15 @@ def coverage_items(inspection, roots, label):
             for cell in descendants(table, "tc"):
                 for paragraph in descendants(cell, "p"):
                     in_table.add(id(paragraph))
-                text = _text_without_deletions(cell)
+        for element in root.iter():
+            if word(element, "tc"):
+                text = _text_without_deletions(element)
                 if text:
                     items.append({"part": story["part"], "group": group, "kind": "cell", "section": section, "text": text})
-        for paragraph in descendants(root, "p"):
-            if id(paragraph) in in_table:
                 continue
+            if not word(element, "p") or id(element) in in_table:
+                continue
+            paragraph = element
             text = _text_without_deletions(paragraph)
             if not text:
                 continue

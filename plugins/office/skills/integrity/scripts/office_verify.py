@@ -301,7 +301,7 @@ def verify_xlsx(path):
     if not result["valid"]:
         return result, findings
     for name in result["defined_names"]:
-        if "#REF!" in name["text"]:
+        if "#REF!" in code(name["text"]):
             findings.append(finding("xlsx.broken-name", "error", "name " + name["attributes"].get("name", "?"),
                                     "Defined name refers to a deleted range (#REF!).", "review"))
     calc = result["calculation_properties"]
@@ -313,7 +313,7 @@ def verify_xlsx(path):
         if sheet.get("formula_cache_missing_count"):
             findings.append(finding("xlsx.not-calculated", "warning", title,
                                     f"{sheet['formula_cache_missing_count']} formulas have no stored result.", "safe"))
-        for item in sheet["cached_errors"]:
+        for item in sheet.get("cached_errors", []):
             if item["formula"]:
                 findings.append(finding("xlsx.cached-error", "error", f"{title}!{item['cell']}",
                                         f"Formula result is the error {item['value']}.", "review"))
@@ -332,7 +332,7 @@ def verify_xlsx(path):
                 forms[(column, row)] = shared.get(attributes.get("si"))
                 continue
             forms[(column, row)] = relative_form(text, column, row)
-            if "#REF!" in text:
+            if "#REF!" in code(text):
                 findings.append(finding("xlsx.ref-error-in-formula", "error", f"{title}!{ref}",
                                         "Formula refers to a deleted range (#REF!).", "review"))
             constants = sorted(set(hardcoded(text)))

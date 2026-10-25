@@ -1,6 +1,6 @@
 # Routing from one entry
 
-`office:start` takes any Office request and works out which workflows to run,
+`/daodan:start` takes any Office request and works out which workflows to run,
 with which operation, before anything is built. The conversation itself (how a
 question is shaped, how a decision is recorded, when a decision map is opened)
 belongs to `work-controller:work-record` and its question rules; this reference

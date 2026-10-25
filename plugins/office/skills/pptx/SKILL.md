@@ -27,8 +27,8 @@ session selections. For DOCX/PPTX bundles both format designers consume the
 same record. A narrow edit or export does not re-enter design.
 Read `references/image-tools.md` before image work.
 
-Coordinated execution uses the registered `office:presentation` workflow
-entry, or `office:start`, which declares the same roles, and its generated
+Coordinated execution uses the registered `/daodan:presentation` workflow
+entry, or `/daodan:start`, which declares the same roles, and its generated
 dispatch bindings. If this skill was loaded directly,
 resolve that entry on the active host before dispatch; continue the same task,
 not a nested workflow. A role name alone cannot supply an inline worker body.
@@ -48,8 +48,8 @@ the deck argues, from `references/design-library.md`), the planning decisions of
 length or slides to add, density), art direction (a library direction or their
 brand), the colour source for the palette, style constraints and the slide types
 they expect. Suggest
-concrete options from `office:design`'s `references/directions.md` and
-`references/layout-patterns.md` rather than an open question. The palette
+concrete options from `office:design`'s `references/directions.md` and this
+skill's `references/layout-patterns.md` rather than an open question. The palette
 candidates are shown and chosen after that round, as `office:design` describes.
 
 ## Run only the steps the operation needs
@@ -138,6 +138,12 @@ cannot build with the required editability before propagating it across the deck
 DeckCraft applies scoped edits to a separate candidate after preservation checks.
 Keep source and earlier candidates intact.
 
+When the deck uses fonts outside Microsoft Office, embed them in a separate
+candidate with `office:design`'s `font_embed.py` and record its inspection result.
+Complete embedding before preservation checks, rendering and independent review;
+they must bind to the exact copy delivered. On the read-only route keep the
+unchanged source and report its existing font evidence without embedding.
+
 When the substantial route starts from an existing deck (derived, restyled,
 restructured or shortened), write the approved cuts recorded at intake to a cuts
 file and run `pptx_inspect.py coverage` from `office:deckcraft` on the source and
@@ -177,9 +183,7 @@ quality; rendered images cannot establish native editability. Claims about
 Microsoft PowerPoint fidelity require actual PowerPoint rendering evidence under
 `references/pptx-compatibility.md`; previews from another engine remain separate.
 
-When the deck uses fonts outside Microsoft Office, embed them in the delivered
-copy with `office:design`'s `font_embed.py` and record its
-inspection result. Deliver the deck and useful previews with remaining limits. Do not claim a
+Deliver the deck and useful previews with remaining limits. Do not claim a
 visually reviewed result when actual candidate renders or visual access were
 unavailable. Continue independent work when a required capability blocks a step.
 On the read-only route, the unchanged source PPTX is the presentation artifact;

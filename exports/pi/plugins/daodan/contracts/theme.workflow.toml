@@ -1,0 +1,13 @@
+name = "theme"
+entrypoint = "theme.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:theme-template", "artifact:theme-record"]
+
+[contract]
+inputs = ["colour-source"]
+outcomes = ["theme-created"]
+artifacts = ["theme-template", "theme-record"]
+schemas = []

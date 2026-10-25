@@ -24,7 +24,7 @@ and `references/design-preview.md` before design work, and take the
 assigned argument mode from `references/design-library.md` (it sets headline
 style and slide sequence), the assigned direction from
 `office:design`'s `references/directions.md` and each slide's pattern from
-`references/layout-patterns.md`.
+`office:pptx`'s `references/layout-patterns.md`.
 Use the region sketches and the sketch-to-specification handoff of
 `references/layout-patterns.md`. Return a small wireframe with real content
 labels for each slide, concrete native object placement under the slide-object

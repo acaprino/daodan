@@ -15,7 +15,7 @@ Resolve the task before choosing a format method, engine or worker. This
 interview serves every Office format; each format method adds only the questions
 that belong to its own format. When the request names no single format workflow,
 combines deliverables or starts from inputs whose use is unclear, route it first
-with `references/routing.md`; `office:start` is the entry that does so.
+with `references/routing.md`; `/daodan:start` is the entry that does so.
 
 ## Resolve the starting point
 
@@ -60,8 +60,8 @@ authorizes no edit.
 
 Inspect supplied files before asking about them. Infer what the request and the
 files already settle, then ask the remaining decisions that change the result in
-one round, together with the format method's questions. Shape and record each
-question as `work-controller:work-record` prescribes (one decision per question,
+one round, together with the format method's questions. Load the skill `work-controller:work-record`
+and shape and record each question as it prescribes (one decision per question,
 the facts it needs anchored, two to four options with the recommended one first,
 recorded with `ask` before it is put and with `answer` in the user's own words);
 Office adds no second question format. Ask only the decisions

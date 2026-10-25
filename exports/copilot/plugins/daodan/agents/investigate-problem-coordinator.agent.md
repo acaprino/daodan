@@ -1,7 +1,7 @@
 ---
 name: investigate-problem-coordinator
 description: 'Investigate an error, a bug or a strange behavior without fixing it: facts, perimeter from the map, hypotheses verified one by one in isolation, a reproduction test, bisection. Ends with the demonstrated cause or the remaining hypotheses and what would decide them. TRIGGER WHEN: the user reports an error, a failure, a regression or behavior they cannot explain, and the cause is not known. DO NOT TRIGGER WHEN: the cause is known and a fix is wanted (use fix-bug).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
 agents: ['codebase-map:map-analyst', 'senior-review:chicken-egg-detector', 'senior-review:code-auditor', 'senior-review:data-integrity-auditor', 'senior-review:distributed-flow-auditor', 'senior-review:logic-integrity-auditor', 'senior-review:resource-lifecycle-auditor', 'senior-review:temporal-resilience-auditor', 'senior-review:ui-race-auditor', 'testing:test-writer', 'work-controller:isolated-worker']
 ---
 

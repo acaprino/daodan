@@ -3,7 +3,7 @@ name: xlsx
 description: >
   Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting.
   TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models.
-  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:presentation).
+  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use /daodan:presentation).
 ---
 
 # Native spreadsheets

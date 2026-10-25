@@ -633,6 +633,11 @@ def run(arguments: list[str]) -> int:
         print("no preview written", file=sys.stderr)
         return 2
     try:
+        if (str(args.plan) != "-" and (
+                args.out.resolve() == args.plan.resolve()
+                or args.out.exists() and args.out.samefile(args.plan))):
+            print("plan: output must be different from the input plan; no preview written", file=sys.stderr)
+            return 2
         args.out.write_text(document, encoding="utf-8")
     except OSError as error:
         print(f"plan: failed to write {args.out}: {error}", file=sys.stderr)
