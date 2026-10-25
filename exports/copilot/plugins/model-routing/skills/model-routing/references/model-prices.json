@@ -1,5 +1,5 @@
 {
- "catalog_revision": 3,
+ "catalog_revision": 4,
  "kept_providers": [
   "amazon-bedrock",
   "azure",
@@ -113,6 +113,18 @@
      "aion-labs/aion-rp-llama-3.1-8b": {
       "input": 0.8,
       "output": 1.6
+     }
+    }
+   }
+  },
+  "aleph-alpha/kolibri-1": {
+   "creator": "aleph-alpha",
+   "endpoints": {
+    "cortecs": {
+     "kolibri-1": {
+      "cache_read": 0.084,
+      "input": 0.167,
+      "output": 0.613
      }
     }
    }
@@ -700,6 +712,19 @@
     }
    }
   },
+  "anthropic/claude-3-7-sonnet-20250219": {
+   "creator": "anthropic",
+   "endpoints": {
+    "helicone": {
+     "claude-3.7-sonnet": {
+      "cache_read": 0.3,
+      "cache_write": 3.75,
+      "input": 3,
+      "output": 15
+     }
+    }
+   }
+  },
   "anthropic/claude-3-haiku-20240307": {
    "creator": "anthropic",
    "endpoints": {
@@ -1247,6 +1272,19 @@
     }
    }
   },
+  "anthropic/claude-opus-4-0": {
+   "creator": "anthropic",
+   "endpoints": {
+    "helicone": {
+     "claude-opus-4": {
+      "cache_read": 1.5,
+      "cache_write": 18.75,
+      "input": 15,
+      "output": 75
+     }
+    }
+   }
+  },
   "anthropic/claude-opus-4-1": {
    "creator": "anthropic",
    "endpoints": {
@@ -1307,27 +1345,6 @@
     },
     "google-vertex-anthropic": {
      "claude-opus-4-1@20250805": {
-      "cache_read": 1.5,
-      "cache_write": 18.75,
-      "input": 15,
-      "output": 75
-     }
-    }
-   }
-  },
-  "anthropic/claude-opus-4-20250514": {
-   "creator": "anthropic",
-   "endpoints": {
-    "google-vertex": {
-     "claude-opus-4@20250514": {
-      "cache_read": 1.5,
-      "cache_write": 18.75,
-      "input": 15,
-      "output": 75
-     }
-    },
-    "google-vertex-anthropic": {
-     "claude-opus-4@20250514": {
       "cache_read": 1.5,
       "cache_write": 18.75,
       "input": 15,
@@ -1988,53 +2005,6 @@
         }
        }
       ]
-     }
-    }
-   }
-  },
-  "anthropic/claude-sonnet-4-20250514": {
-   "creator": "anthropic",
-   "endpoints": {
-    "amazon-bedrock": {
-     "apac.anthropic.claude-sonnet-4-20250514-v1:0": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-     },
-     "eu.anthropic.claude-sonnet-4-20250514-v1:0": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-     },
-     "global.anthropic.claude-sonnet-4-20250514-v1:0": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-     },
-     "us.anthropic.claude-sonnet-4-20250514-v1:0": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-     }
-    },
-    "google-vertex": {
-     "claude-sonnet-4@20250514": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-     }
-    },
-    "google-vertex-anthropic": {
-     "claude-sonnet-4@20250514": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
      }
     }
    }
@@ -2982,6 +2952,12 @@
   "deepseek/deepseek-v3.1": {
    "creator": "deepseek",
    "endpoints": {
+    "abacus": {
+     "deepseek/deepseek-v3.1": {
+      "input": 0.55,
+      "output": 1.66
+     }
+    },
     "amazon-bedrock": {
      "deepseek.v3-v1:0": {
       "input": 0.58,
@@ -3031,6 +3007,14 @@
       "output": 0.51
      }
     },
+    "crossmodel": {
+     "deepseek/deepseek-v4-flash": {
+      "cache_read": 0.006,
+      "cache_write": 0.3,
+      "input": 0.3,
+      "output": 1.2
+     }
+    },
     "openrouter": {
      "deepseek/deepseek-v4-flash": {
       "cache_read": 0.0182,
@@ -3073,9 +3057,9 @@
       "output": 0.13332
      },
      "~deepseek/deepseek-v4-flash-latest": {
-      "cache_read": 0.028,
+      "cache_read": 0.027,
       "input": 0.0422,
-      "output": 0.1694
+      "output": 0.1763
      }
     }
    }
@@ -3117,9 +3101,9 @@
     },
     "openrouter": {
      "deepseek/deepseek-v4-pro": {
-      "cache_read": 0.03322,
-      "input": 0.398634,
-      "output": 0.797268
+      "cache_read": 0.0174,
+      "input": 0.2088,
+      "output": 0.4176
      }
     }
    }
@@ -3301,6 +3285,18 @@
         }
        }
       ]
+     }
+    }
+   }
+  },
+  "google/diffusiongemma-26b-a4b-it": {
+   "creator": "google",
+   "endpoints": {
+    "nano-gpt": {
+     "google/diffusiongemma": {
+      "cache_read": 0.025,
+      "input": 0.05,
+      "output": 0.15
      }
     }
    }
@@ -4163,6 +4159,18 @@
     }
    }
   },
+  "google/gemma-4-12b-it": {
+   "creator": "google",
+   "endpoints": {
+    "nano-gpt": {
+     "gemma-4-12b-it": {
+      "cache_read": 0.025,
+      "input": 0.05,
+      "output": 0.25
+     }
+    }
+   }
+  },
   "google/gemma-4-26b-a4b-it": {
    "creator": "google",
    "endpoints": {
@@ -4202,6 +4210,12 @@
   "google/gemma-4-31b-it": {
    "creator": "google",
    "endpoints": {
+    "abacus": {
+     "google/gemma-4-31b-it": {
+      "input": 0.14,
+      "output": 0.4
+     }
+    },
     "amazon-bedrock": {
      "google.gemma-4-31b": {
       "input": 0.14,
@@ -4227,6 +4241,17 @@
      "google.gemma-4-e2b": {
       "input": 0.04,
       "output": 0.08
+     }
+    }
+   }
+  },
+  "google/gemma-4-E4B-it": {
+   "creator": "google",
+   "endpoints": {
+    "deepinfra": {
+     "google/gemma-4-E4B-it": {
+      "input": 0.02,
+      "output": 0.1
      }
     }
    }
@@ -4944,8 +4969,8 @@
     "openrouter": {
      "minimax/minimax-m2.5": {
       "cache_read": 0.03,
-      "input": 0.27,
-      "output": 0.95
+      "input": 0.3,
+      "output": 1.2
      }
     }
    }
@@ -5318,6 +5343,19 @@
     }
    }
   },
+  "mistral/mistral-large-2411": {
+   "creator": "mistral",
+   "endpoints": {
+    "io-net": {
+     "mistralai/Mistral-Large-Instruct-2411": {
+      "cache_read": 1,
+      "cache_write": 4,
+      "input": 2,
+      "output": 6
+     }
+    }
+   }
+  },
   "mistral/mistral-large-2512": {
    "creator": "mistral",
    "endpoints": {
@@ -5486,6 +5524,13 @@
   "mistral/mistral-nemo": {
    "creator": "mistral",
    "endpoints": {
+    "aimlapi": {
+     "mistralai/mistral-nemo": {
+      "cache_read": 0.1587,
+      "input": 0.1587,
+      "output": 0.17986
+     }
+    },
     "openrouter": {
      "mistralai/mistral-nemo": {
       "input": 0.029,
@@ -5655,6 +5700,17 @@
       "output": 6
      },
      "us.mistral.pixtral-large-2502-v1:0": {
+      "input": 2,
+      "output": 6
+     }
+    }
+   }
+  },
+  "mistral/pixtral-large-latest": {
+   "creator": "mistral",
+   "endpoints": {
+    "merge-gateway": {
+     "mistral/pixtral-large-latest": {
       "input": 2,
       "output": 6
      }
@@ -5846,9 +5902,9 @@
       "output": 3.41
      },
      "~moonshotai/kimi-latest": {
-      "cache_read": 0.19,
-      "input": 0.19,
-      "output": 8.94
+      "cache_read": 0.17,
+      "input": 0.18,
+      "output": 16
      }
     }
    }
@@ -5945,6 +6001,32 @@
     }
    }
   },
+  "moonshotai/kimi-k3.1-pro": {
+   "creator": "moonshotai",
+   "endpoints": {
+    "moonshotai": {
+     "kimi-k3.1-pro": {
+      "cache_read": 0.2,
+      "cache_write": 2,
+      "input": 2,
+      "output": 10
+     },
+     "kimi-k3.1-pro-highspeed": {
+      "cache_read": 0.2,
+      "cache_write": 4,
+      "input": 4,
+      "output": 20
+     }
+    },
+    "openrouter": {
+     "moonshotai/kimi-k3.1-pro": {
+      "cache_read": 0.2,
+      "input": 2,
+      "output": 10
+     }
+    }
+   }
+  },
   "morph/morph-v3-fast": {
    "creator": "morph",
    "endpoints": {
@@ -5987,25 +6069,6 @@
       "cache_read": 0.2,
       "input": 0.5,
       "output": 2
-     }
-    }
-   }
-  },
-  "muse-wonder": {
-   "creator": null,
-   "endpoints": {
-    "kilo": {
-     "meta/muse-wonder": {
-      "cache_read": 0.2,
-      "input": 4,
-      "output": 20
-     }
-    },
-    "openrouter": {
-     "meta/muse-wonder": {
-      "cache_read": 0.2,
-      "input": 4,
-      "output": 20
      }
     }
    }
@@ -6100,6 +6163,13 @@
   "nvidia/nemotron-3-ultra-550b-a55b": {
    "creator": "nvidia",
    "endpoints": {
+    "baseten": {
+     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {
+      "cache_read": 0.12,
+      "input": 0.6,
+      "output": 2.4
+     }
+    },
     "nvidia": {
      "nvidia/nemotron-3-ultra-550b-a55b": {
       "input": 0,
@@ -8974,57 +9044,6 @@
     }
    }
   },
-  "openai/text-embedding-3-large": {
-   "creator": "openai",
-   "endpoints": {
-    "azure": {
-     "text-embedding-3-large": {
-      "input": 0.13,
-      "output": 0
-     }
-    },
-    "openai": {
-     "text-embedding-3-large": {
-      "input": 0.13,
-      "output": 0
-     }
-    }
-   }
-  },
-  "openai/text-embedding-3-small": {
-   "creator": "openai",
-   "endpoints": {
-    "azure": {
-     "text-embedding-3-small": {
-      "input": 0.02,
-      "output": 0
-     }
-    },
-    "openai": {
-     "text-embedding-3-small": {
-      "input": 0.02,
-      "output": 0
-     }
-    }
-   }
-  },
-  "openai/text-embedding-ada-002": {
-   "creator": "openai",
-   "endpoints": {
-    "azure": {
-     "text-embedding-ada-002": {
-      "input": 0.1,
-      "output": 0
-     }
-    },
-    "openai": {
-     "text-embedding-ada-002": {
-      "input": 0.1,
-      "output": 0
-     }
-    }
-   }
-  },
   "paddlepaddle/paddleocr-vl": {
    "creator": "paddlepaddle",
    "endpoints": {
@@ -9047,6 +9066,23 @@
     },
     "openrouter": {
      "perceptron/perceptron-mk1": {
+      "input": 0.15,
+      "output": 1.5
+     }
+    }
+   }
+  },
+  "perceptron/perceptron-mk1.5": {
+   "creator": "perceptron",
+   "endpoints": {
+    "aimlapi": {
+     "perceptron/perceptron-mk1.5": {
+      "input": 0.1587,
+      "output": 1.587
+     }
+    },
+    "openrouter": {
+     "perceptron/perceptron-mk1.5": {
       "input": 0.15,
       "output": 1.5
      }
@@ -9126,6 +9162,17 @@
   "poolside/laguna-s-2.1": {
    "creator": "poolside",
    "endpoints": {
+    "kilo": {
+     "poolside/laguna-s-2.1": {
+      "cache_read": 0.01,
+      "input": 0.1,
+      "output": 0.2
+     },
+     "poolside/laguna-s-2.1:free": {
+      "input": 0,
+      "output": 0
+     }
+    },
     "opencode": {
      "laguna-s-2.1-free": {
       "cache_read": 0,
@@ -9641,9 +9688,9 @@
     },
     "openrouter": {
      "tencent/hy3": {
-      "cache_read": 0.033,
-      "input": 0.132,
-      "output": 0.528
+      "cache_read": 0.020625,
+      "input": 0.0825,
+      "output": 0.33
      }
     }
    }
@@ -9651,6 +9698,13 @@
   "tencent/hy3-preview": {
    "creator": "tencent",
    "endpoints": {
+    "aihubmix": {
+     "hy3-preview": {
+      "cache_read": 0.051,
+      "input": 0.17,
+      "output": 0.566661
+     }
+    },
     "opencode": {
      "hy3-preview-free": {
       "cache_read": 0,
@@ -9680,9 +9734,9 @@
     },
     "openrouter": {
      "tencent/hy4-preview": {
-      "cache_read": 0.042,
-      "input": 0.834,
-      "output": 2.501
+      "cache_read": 0.0378,
+      "input": 0.7506,
+      "output": 2.2509
      }
     }
    }
@@ -10589,6 +10643,13 @@
   "xiaomi/mimo-v2-flash": {
    "creator": "xiaomi",
    "endpoints": {
+    "jiekou": {
+     "xiaomimimo/mimo-v2-flash": {
+      "cache_read": 0.02,
+      "input": 0.1,
+      "output": 0.3
+     }
+    },
     "opencode": {
      "mimo-v2-flash-free": {
       "cache_read": 0,
@@ -10601,6 +10662,13 @@
   "xiaomi/mimo-v2-pro": {
    "creator": "xiaomi",
    "endpoints": {
+    "abacus": {
+     "mimo-v2-pro": {
+      "cache_read": 0.2,
+      "input": 1,
+      "output": 3
+     }
+    },
     "opencode": {
      "mimo-v2-pro-free": {
       "cache_read": 0,
@@ -11009,9 +11077,9 @@
       "output": 1.4
      },
      "~z-ai/glm-latest": {
-      "cache_read": 0.075,
-      "input": 0.075,
-      "output": 4.295
+      "cache_read": 0.0703,
+      "input": 0.0703,
+      "output": 4.3843
      }
     },
     "zhipuai": {
@@ -11051,21 +11119,9 @@
       "output": 1.25
      },
      "~z-ai/glm-flash-latest": {
-      "cache_read": 0.0175,
-      "input": 0.0175,
-      "output": 0.1425
-     }
-    },
-    "privatemode-ai": {
-     "glm-5.3-flash": {
-      "cache_read": 0.0578,
-      "input": 0.2311,
-      "output": 0.7511
-     },
-     "glm-flash-latest": {
-      "cache_read": 0.0578,
-      "input": 0.2311,
-      "output": 0.7511
+      "cache_read": 0.03,
+      "input": 0.0513,
+      "output": 0.0701
      }
     },
     "zhipuai": {
@@ -11117,9 +11173,9 @@
    }
   }
  },
- "models_dev_raw_sha256": "4773c7c9cbd6b4be15c5519cf4f1aa6bde2958a18ef39971689122cc45c2d6f1",
+ "models_dev_raw_sha256": "5ecb11a065a7772c9b3730ade26a879ec3e3656e57d66355171d1f9b24508c7e",
  "retrieved_at": null,
- "revision": 1,
+ "revision": 4,
  "schema": "daodan/model-prices/v1",
  "units": "USD per million tokens, as models.dev publishes them; tiers apply when a request's prompt exceeds their size"
 }

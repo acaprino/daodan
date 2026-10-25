@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:1975bdb0df5be3d19361b4ce5b3a62d1cbddbbc58facd5fe48220ffdbe48029d",
+  "coreDigest": "sha256:c8bedb645f06e965df19e017fa271cf76c907d6d32a32ab88522e57a190ef7ba",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],
   "plugin": "model-routing",
-  "version": "2.0.0"
+  "version": "2.0.1"
 }
