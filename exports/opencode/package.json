@@ -590,7 +590,7 @@
             "name": "daodan:show-status"
           },
           {
-            "description": "Close the current branchs task: complete review of the branch, merge with your authorization, decision record promoted when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).",
+            "description": "Close the current branchs task: complete review of the branch, merge with your authorization, decision record verified when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).",
             "file": "commands/finish-task.md",
             "name": "daodan:finish-task"
           },
@@ -625,7 +625,7 @@
             "name": "daodan:write-docs"
           },
           {
-            "description": "Record an architecture decision outside a task: a grounded interview, then a Proposed record under docs/adr/ and its index. On a project without decision records, this turns them on. TRIGGER WHEN: the user wants to write down, propose or document a technical decision. DO NOT TRIGGER WHEN: the decision belongs to a task being built (new-feature records it).",
+            "description": "Record an architecture decision outside a task: a grounded interview, a Proposed record under docs/adr/ and its index, then your approval, which accepts it without waiting for code. On a project without decision records, this turns them on. TRIGGER WHEN: the user wants to write down, propose, revise or document a technical decision. DO NOT TRIGGER WHEN: the decision belongs to a task being built (new-feature records it).",
             "file": "commands/record-decision.md",
             "name": "daodan:record-decision"
           },
@@ -1593,7 +1593,7 @@
             "name": "readme-craft"
           },
           {
-            "description": "Create, resolve, validate and promote canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, or a merged change promotes a Proposed record. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
+            "description": "Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
             "file": "skills/adr-method/SKILL.md",
             "id": "project-knowledge:adr-method",
             "name": "adr-method"
@@ -5381,5 +5381,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "39.4.0"
+  "version": "39.5.0"
 }

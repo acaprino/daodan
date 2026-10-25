@@ -72,7 +72,7 @@ machine or another.
 
 1. **Find it.** `run_state.py agenda --branch <current branch>`. No row on
    this branch: the commits carrying `Daodan-Task:` trailers and the
-   `Proposed` record on the branch say what was done; offer to open a run
+   branch's record say what was done; offer to open a run
    that adopts them, with the record as its objective. Several rows cannot
    occur: a branch holds one open task.
 2. **Take it.** `resume` with this session's id and current authorizations.

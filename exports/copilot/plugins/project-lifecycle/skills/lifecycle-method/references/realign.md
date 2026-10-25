@@ -79,12 +79,12 @@ When commits land on the base branch, through a finish or a sync, the
 knowledge that describes the project follows them, in this order. Run alone
 after a merge made outside the cycle, it realigns the current head.
 
-1. **Records.** Load `project-knowledge:adr-method`. A finish runs `promote`
-   for its run's proposed record with `merged_sha`, and the helper marks the
-   superseded records in the same transaction. A sync promotes the proposed
-   record of every agenda task whose branch the incoming range merged, and
-   lists to the user the active records whose cited symbols the range
-   changed. A range without records says so.
+1. **Records.** Load `project-knowledge:adr-method`; nothing is promoted
+   here. A finish runs `verify` with `merged_sha` on each `Accepted` record
+   stage D confirmed the code conforms to; its own record still `Proposed` is
+   reported as unapproved. Then `validate --sha HEAD_SHA` lists the `drifted`
+   records, reported to the user with their files. A range without records
+   says so.
 2. **Map.** Load `codebase-map:map-method`; incrementally update the bound run
    at the new head, carrying unaffected claims. Invalidate affected packets;
    retain obligations per `references/context-cycle.md`. Refresh the changed

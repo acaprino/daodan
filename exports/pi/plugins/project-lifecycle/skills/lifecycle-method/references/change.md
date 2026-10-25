@@ -79,14 +79,14 @@ unit is the overview, and each phase has its own unit.
 |---|---|---|
 | 1. Preflight and workspace | Git state probed, baseline classified, map fresh, workspace mode chosen with the user | `references/preflight.md` |
 | 2. Interview | Scope, examples, rejected alternatives and invariants fixed from real code | `references/interview.md` |
-| 3. Record | A `Proposed` decision record written and reviewed as a `spec` | `references/interview.md` |
+| 3. Record | A decision record written, reviewed as a `spec` and, on a project with records, approved | `references/interview.md` |
 | 4. Plan | Waves of micro-tasks compiled, checked by the helper, reviewed as a `plan` | `references/waves.md` |
 | 5. Execution | Each wave written by the stack's specialist, verified, reviewed with shape `light`, sealed | `references/waves.md`, `references/worker-brief.md` |
 | 6. Candidate | The whole candidate reviewed with shape `branch`; blocking findings repaired in a bounded wave | `references/verify.md` |
-| 7. Integration | Merge, record promotion, map and knowledge realigned, workspace closed | `references/finish.md`, `references/realign.md` |
+| 7. Integration | Merge, record verified, map and knowledge realigned, workspace closed | `references/finish.md`, `references/realign.md` |
 
 When the user wants only the plan, the cycle stops after phase 4 with the
-record `Proposed` and the plan approved; `/daodan:continue-task` resumes it
+plan approved; `/daodan:continue-task` resumes it
 from its first unsealed wave. A bugfix with a reproduction test follows `references/repair.md`, which
 shortens phases 2 to 4 and keeps the rest.
 

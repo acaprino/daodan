@@ -31,12 +31,12 @@ separate stage runs and explicit handoffs. Since the closed-loop redesign of
 2026-10-18 (see `docs/superpowers/specs/2026-10-18-closed-loop-harness-design.md`),
 change is the task cycle: a probed preflight with the workspace mode chosen by the
 user (worktree, branch or in place), an interview grounded in the map and in the
-active decision records, the task's intent (a `Proposed` record under `docs/adr/` on a
-project that keeps decision records, which a project chooses at its first use, or
+active decision records, the task's intent (a `Proposed` record under `docs/adr/`,
+promoted when the user approves it, on a project that keeps decision records, which a project chooses at its first use, or
 the run's intent file otherwise), waves of micro-tasks
 checked mechanically by the protocol helper and written by the stack's specialist,
 a light review of the intent, of the plan and of each wave and a branch review of
-the whole candidate through senior-review, then integration that promotes the
+the whole candidate through senior-review, then integration that verifies the
 record when there is one and realigns map, documentation and the instruction loop block. The size of
 every review is computed by `review_roster.py` from measured signals, never chosen
 by the model. Initialization brings a project into that cycle; realignment alone

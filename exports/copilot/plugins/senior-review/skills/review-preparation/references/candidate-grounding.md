@@ -139,7 +139,7 @@ Before dispatch, for every kind:
    the failed resolution.
 3. **Ownership/decisions.** Bind `.abstraction-architect/concept-index.json`
    when present and, when `docs/adr/README.md` exists, active records through
-   `project-knowledge:adr-method` (`resolve`). Cite and re-derive these leads before findings rely on them.
+   `project-knowledge:adr-method` (`resolve --paths <changed files>`). Cite and re-derive these leads before findings rely on them.
 4. **Premises.** Keep premise derivation blind to maps; supply locators without conclusions.
 
 ## 4. Evidence pack

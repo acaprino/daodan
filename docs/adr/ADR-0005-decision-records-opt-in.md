@@ -1,7 +1,9 @@
 ---
 adr_id: ADR-0005
+version: 1
 title: "Make decision records opt-in, chosen once at a project's first Daodan use"
 status: Proposed
+author: Alfio Caprino
 scope:
   paths:
     - plugins/project-lifecycle/skills/lifecycle-method/**
@@ -25,15 +27,25 @@ scope:
     - decision-records
     - initialization
 governs_symbols:
+depends_on:
 created_from_task: session-674d0b20-adr-opt-in
+proposed_on: 2026-10-24
 proposed_at_sha: 09156a0c15abaa7407daf2f37ca29c836546a3c3
+accepted_on: null
 accepted_at_sha: null
 last_verified_sha: null
+retired_on: null
+retired_reason: null
 supersedes:
 superseded_by: null
+changes:
 ---
 
 # ADR-0005: Make decision records opt-in, chosen once at a project's first Daodan use
+
+<!-- adr-header:start -->
+Version 1 · Proposed 2026-10-24 by Alfio Caprino
+<!-- adr-header:end -->
 
 ## Context and Problem Statement
 

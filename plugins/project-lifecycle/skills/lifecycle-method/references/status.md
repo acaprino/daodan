@@ -12,8 +12,8 @@ no run.
    only when the user asked for it.
 3. **Map.** The bound run, its head against `HEAD`, and the stale paths from
    `snapshot.py diff --verify`.
-4. **Records.** `adr_tool.py validate` through `project-knowledge:adr-method`:
-   active, proposed and superseded counts, and any record whose cited symbols
-   changed since it was accepted.
+4. **Records.** `adr_tool.py validate --sha HEAD_SHA` through
+   `project-knowledge:adr-method`: the count in each state, and each `drifted`
+   record with its changed files, or never verified.
 
 One screen, newest task first, then the next step for each task.

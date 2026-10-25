@@ -1,7 +1,7 @@
 # Finish a task (phase 7)
 
 Closes the current branch's task: the whole candidate reviewed, merged with
-the user's authorization, the record promoted, the knowledge realigned, the
+the user's authorization, the record verified, the knowledge realigned, the
 workspace closed and the agenda row released.
 
 1. **The task.** Resolve the branch's task from the agenda

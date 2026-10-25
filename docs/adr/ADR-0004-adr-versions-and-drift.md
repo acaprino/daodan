@@ -1,7 +1,9 @@
 ---
 adr_id: ADR-0004
+version: 1
 title: Version decision records in place and check what a change invalidates
-status: Proposed
+status: Accepted
+author: Alfio Caprino
 scope:
   paths:
     - plugins/project-knowledge/skills/adr-method/**
@@ -22,15 +24,25 @@ scope:
   domains:
     - decision-records
 governs_symbols:
+depends_on:
 created_from_task: session-674d0b20-ruflo-adr
+proposed_on: 2026-10-24
 proposed_at_sha: e95dba3e721029552983b011cfab35668f5ed64f
-accepted_at_sha: null
+accepted_on: 2026-10-25
+accepted_at_sha: 2d4a9f445979bdf16524d9affbed38b941b42f75
 last_verified_sha: null
+retired_on: null
+retired_reason: null
 supersedes:
 superseded_by: null
+changes:
 ---
 
 # ADR-0004: Version decision records in place and check what a change invalidates
+
+<!-- adr-header:start -->
+Version 1 · Accepted 2026-10-25 at 2d4a9f4 · proposed 2026-10-24 by Alfio Caprino
+<!-- adr-header:end -->
 
 ## Context and Problem Statement
 

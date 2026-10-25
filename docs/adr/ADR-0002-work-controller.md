@@ -1,7 +1,9 @@
 ---
 adr_id: ADR-0002
+version: 1
 title: Make Work Controller the general-purpose orchestrator in Deadly Brain
 status: Proposed
+author: Alfio Caprino
 scope:
   paths:
     - plugins/project-protocol
@@ -23,15 +25,25 @@ scope:
     - runtime-input
     - usage-ledger
 governs_symbols:
+depends_on:
 created_from_task: conversation-2026-10-24
+proposed_on: 2026-10-24
 proposed_at_sha: cab382f49e939e0c47cee969f8f046db4e69f30d
+accepted_on: null
 accepted_at_sha: null
 last_verified_sha: null
+retired_on: null
+retired_reason: null
 supersedes:
 superseded_by: null
+changes:
 ---
 
 # ADR-0002: Make Work Controller the general-purpose orchestrator in Deadly Brain
+
+<!-- adr-header:start -->
+Version 1 · Proposed 2026-10-24 by Alfio Caprino
+<!-- adr-header:end -->
 
 ## Context and Problem Statement
 

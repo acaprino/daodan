@@ -21,8 +21,8 @@ A shared type suffices within an atomic boundary; schema validity proves no doma
 
 ## One question per turn
 
-Ask as the work record's question rule says, one per turn, anchored to a
-file/line and concrete current/proposed inputs and outputs. Close design branches.
+Ask as the work record's question rule says, anchored to a file/line and
+concrete current/proposed inputs and outputs. Close design branches.
 
 Stop when these are fixed:
 
@@ -31,26 +31,27 @@ Stop when these are fixed:
   input and expected output;
 - every alternative the user rejected, with its reason;
 - code and test invariants;
-- active records respected or superseded, and their replacements;
+- active records respected, revised or superseded;
 - authorization: edit, commit, both or plan only.
 
-Undecided questions stay open in the record for plan review to raise again.
+Undecided questions stay open in the record for plan review.
 
 ## The record
 
 Fill the helper's `template` with answered examples (`EX-*`), rejected
-alternatives (`RA-*`) and invariants (`INV-*`). Run `propose` with title, slug,
-run identity, `base_sha`, scope lists and any `--supersedes`; its id is
-`adr.proposed` until integration. Without records, it is `intent.md` in
-the run.
+alternatives (`RA-*`) and invariants (`INV-*`). Run `propose` at `base_sha`,
+`--revise` to change an active decision; its id is `adr.proposed`. Without
+records, it is the run's `intent.md`.
 
-## Record review (stage A)
+## Review (stage A) and approval
 
 Run `senior-review:review-method` on the record: shape `light`, kind `spec`, stage `record`.
-The premise auditor checks every code claim and missing boundary or rejection
-examples. False claims or blocking findings reopen that interview point.
+False claims or blocking findings reopen that interview point.
 
-Only on request, challenge the record through `peer-review:cross-model-peer-review`,
-dispatching `peer-review:packet-builder` and `peer-review:respondent`; return
-standoffs to the user. For a requested second opinion, load
-`moe:multi-model-deliberation` on the record.
+On request only, challenge the record through `peer-review:cross-model-peer-review`,
+dispatching `peer-review:packet-builder` and `peer-review:respondent`, standoffs
+to the user, or load `moe:multi-model-deliberation` for a second opinion.
+
+With records, show the record and its `digest` and ask the user to approve it;
+on approval, `promote` it at `HEAD`, recording each `dependents_to_review` with
+`ask`. Unapproved, it stays `Proposed`.

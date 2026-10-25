@@ -1,9 +1,10 @@
 # Architecture decision records
 
-One record per decision, named ADR-NNNN-<slug>.md. A record is Proposed when the
-interview produces it, Accepted when the change that implements it is merged, and
-Superseded when a later Accepted record names it. Read the active table before
-touching the paths, modules or domains it governs.
+One record per version of a decision: ADR-NNNN-<slug>.md, then ADR-NNNN-vN-<slug>.md.
+A record is Proposed when the interview produces it, Accepted when the user
+approves its text, Superseded when a later version or another Accepted record
+replaces it, and Abandoned when it is retired unapproved. Read the active table
+before touching the paths, modules or domains it governs.
 
 <!-- adr-index:start -->
 
@@ -14,7 +15,7 @@ run `index`; do not edit this block by hand.
 
 | ADR | Title | Governs | Symbols | Accepted at |
 |---|---|---|---:|---|
-| none | | | | |
+| [ADR-0004](<ADR-0004-adr-versions-and-drift.md>) | Version decision records in place and check what a change invalidates | `plugins/project-knowledge/skills/adr-method/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/status.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/realign.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/verify.md`, `plugins/senior-review/skills/review-preparation/**`, `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/SKILL.md`, `plugins/work-controller/skills/work-record/scripts/run_state.py`, `plugins/daodan/workflows/record-decision.*`, `docs/adr/**`, `docs/decision-records.md`, `adr-method`, `decision-records` | 0 | `2d4a9f445979bdf16524d9affbed38b941b42f75` |
 
 ## Proposed
 
@@ -23,7 +24,6 @@ run `index`; do not edit this block by hand.
 | [ADR-0001](<ADR-0001-work-graph-step0-llm.md>) | Use an LLM prompt for Step 0 work-graph proposals | `plugins/project-lifecycle/skills/lifecycle-method/**`, `plugins/model-routing/skills/model-routing/references/task-routing.md`, `plugins/senior-review/skills/review-preparation/**`, `evals/project-lifecycle/work-graph/**`, `work-graph-composition`, `model-routing`, `reviewer-composition`, `offline-execution` | `work-graph-step0-llm-20261023` |
 | [ADR-0002](<ADR-0002-work-controller.md>) | Make Work Controller the general-purpose orchestrator in Deadly Brain | `plugins/project-protocol`, `plugins/work-controller`, `plugins/model-routing`, `plugins/senior-review/skills`, `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md`, `project-protocol`, `work-controller`, `model-routing`, `run-state`, `clarification`, `decision-map`, `work-graph`, `model-routing`, `orchestration`, `runtime-input`, `usage-ledger` | `conversation-2026-10-24` |
 | [ADR-0003](<ADR-0003-usage-ledger.md>) | Measure each run's tokens and cost from local host logs | `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/scripts/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/waves.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `work-controller`, `project-lifecycle`, `run-state`, `usage-ledger`, `budget`, `model-routing` | `conversation-2026-10-24` |
-| [ADR-0004](<ADR-0004-adr-versions-and-drift.md>) | Version decision records in place and check what a change invalidates | `plugins/project-knowledge/skills/adr-method/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/status.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/realign.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/verify.md`, `plugins/senior-review/skills/review-preparation/**`, `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/SKILL.md`, `plugins/work-controller/skills/work-record/scripts/run_state.py`, `plugins/daodan/workflows/record-decision.*`, `docs/adr/**`, `docs/decision-records.md`, `adr-method`, `decision-records` | `session-674d0b20-ruflo-adr` |
 | [ADR-0005](<ADR-0005-decision-records-opt-in.md>) | Make decision records opt-in, chosen once at a project's first Daodan use | `plugins/project-lifecycle/skills/lifecycle-method/**`, `plugins/project-lifecycle/skills/handover-method/SKILL.md`, `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/**`, `plugins/daodan/workflows/**`, `plugins/project-knowledge/skills/instructions-method/SKILL.md`, `plugins/senior-review/skills/review-preparation/references/candidate-grounding.md`, `tests/test_work_record.py`, `tests/test_skill_load_budget.py`, `evals/project-lifecycle/**`, `docs/decision-records.md`, `CLAUDE.md`, `README.md`, `lifecycle-method`, `adr-method`, `work-record`, `decision-records`, `initialization` | `session-674d0b20-adr-opt-in` |
 
 ## Superseded
@@ -31,5 +31,11 @@ run `index`; do not edit this block by hand.
 | ADR | Title | Superseded by |
 |---|---|---|
 | none | | |
+
+## Abandoned
+
+| ADR | Title | Retired on | Reason |
+|---|---|---|---|
+| none | | | |
 
 <!-- adr-index:end -->

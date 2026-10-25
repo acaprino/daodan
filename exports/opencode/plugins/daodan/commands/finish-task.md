@@ -1,5 +1,5 @@
 ---
-description: 'Close the current branchs task: complete review of the branch, merge with your authorization, decision record promoted when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).'
+description: 'Close the current branchs task: complete review of the branch, merge with your authorization, decision record verified when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).'
 ---
 
 <daodan_host_binding host="opencode">

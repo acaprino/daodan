@@ -1,7 +1,9 @@
 ---
 adr_id: ADR-0001
+version: 1
 title: Use an LLM prompt for Step 0 work-graph proposals
 status: Proposed
+author: Alfio Caprino
 scope:
   paths:
     - plugins/project-lifecycle/skills/lifecycle-method/**
@@ -15,15 +17,25 @@ scope:
     - reviewer-composition
     - offline-execution
 governs_symbols:
+depends_on:
 created_from_task: work-graph-step0-llm-20261023
+proposed_on: 2026-10-23
 proposed_at_sha: 2dce83a354653f276e608cfb4817c915e69a6112
+accepted_on: null
 accepted_at_sha: null
 last_verified_sha: null
+retired_on: null
+retired_reason: null
 supersedes:
 superseded_by: null
+changes:
 ---
 
 # ADR-0001: Use an LLM prompt for Step 0 work-graph proposals
+
+<!-- adr-header:start -->
+Version 1 · Proposed 2026-10-23 by Alfio Caprino
+<!-- adr-header:end -->
 
 ## Context and Problem Statement
 

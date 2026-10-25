@@ -54,7 +54,7 @@ Load owners by name, never by path.
 | Need | Load or dispatch |
 |---|---|
 | Static context, impact packets, exact run binding | `codebase-map:map-method`; dispatch `codebase-map:map-analyst` in an isolated context for an analysis |
-| Decisions governing a scope, a proposed record, promotion at merge | `project-knowledge:adr-method` |
+| Decisions governing a scope; proposing, approving and verifying a record | `project-knowledge:adr-method` |
 | Review at any stage and of any kind, shape `light` or `branch` | `senior-review:review-method`; shape `branch` through `senior-review:review-preparation` |
 | Application subtraction | `senior-review:application-cleanup-method` |
 | Suite preparation and remediation | `testing:test-preparation`, `testing:test-remediation-method` |

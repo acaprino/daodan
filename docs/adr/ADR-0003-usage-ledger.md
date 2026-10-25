@@ -1,7 +1,9 @@
 ---
 adr_id: ADR-0003
+version: 1
 title: "Measure each run's tokens and cost from local host logs"
 status: Proposed
+author: Alfio Caprino
 scope:
   paths:
     - plugins/work-controller/contracts/work.toml
@@ -17,15 +19,25 @@ scope:
     - budget
     - model-routing
 governs_symbols:
+depends_on:
 created_from_task: conversation-2026-10-24
+proposed_on: 2026-10-24
 proposed_at_sha: bed96a170503e2d2e76bd7682e152e01a8e649a9
+accepted_on: null
 accepted_at_sha: null
 last_verified_sha: null
+retired_on: null
+retired_reason: null
 supersedes:
 superseded_by: null
+changes:
 ---
 
 # ADR-0003: Measure each run's tokens and cost from local host logs
+
+<!-- adr-header:start -->
+Version 1 · Proposed 2026-10-24 by Alfio Caprino
+<!-- adr-header:end -->
 
 ## Context and Problem Statement
 

@@ -508,6 +508,10 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("ADR identifiers", self.check_draft({"adr": {"active": ["adr-1"]}}, ok=False).stderr)
         self.check_draft({"adr": {"active": ["ADR-0014"], "proposed": "ADR-0015"}})
 
+    def test_an_adr_citation_may_pin_a_version(self):
+        self.check_draft({"adr": {"active": ["ADR-0006 v2"], "proposed": "ADR-0007"}})
+        self.assertIn("ADR identifiers", self.check_draft({"adr": {"active": ["ADR-0006 v0"]}}, ok=False).stderr)
+
     def test_sealed_wave_requires_committed_tasks(self):
         pending = self.wave("w1", self.task("a", "src/a.py"), status="sealed")
         self.assertIn("cannot be sealed", self.check_draft({"waves": [pending]}, ok=False).stderr)

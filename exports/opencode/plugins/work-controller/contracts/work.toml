@@ -46,7 +46,7 @@ baseline = ["GREEN", "KNOWN_RED", "UNKNOWN_RED"]
 migrations = ["ALIGNED", "PENDING", "DIVERGED", "UNKNOWN", "NOT_APPLICABLE"]
 
 [loop.adr]
-id_pattern = "^ADR-[0-9]{4}$"
+id_pattern = "^ADR-[0-9]{4}( v[1-9][0-9]*)?$"
 
 [loop.waves]
 states = ["pending", "in_progress", "verified", "sealed", "rolled_back"]

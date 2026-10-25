@@ -60,7 +60,7 @@ works alone and is also a step of the task cycle.
 | | `/daodan:refactor-code` | Restructure with behavior unchanged, readability included |
 | | `/daodan:continue-task` | Resume the branch's task from any session; your text answers pending questions |
 | | `/daodan:show-status` | Open tasks, who holds them, pending questions, map and records |
-| | `/daodan:finish-task` | Branch review, merge with your authorization, record promoted when there is one, knowledge realigned |
+| | `/daodan:finish-task` | Branch review, merge with your authorization, record verified when there is one, knowledge realigned |
 | | `/daodan:sync-upstream` | Bring in others' commits: fetch, report, fast-forward only, realign |
 | Review | `/daodan:review-changes` | Light review of your changes, a commit, a file or a document |
 | | `/daodan:review-branch` | Complete review of a branch or a pull request |
