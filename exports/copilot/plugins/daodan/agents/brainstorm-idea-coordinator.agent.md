@@ -1,7 +1,7 @@
 ---
 name: brainstorm-idea-coordinator
 description: 'Explore an idea with the user, grounded in the code and, when the project keeps them, its decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).'
-tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['codebase-map:map-analyst', 'work-controller:isolated-worker']
 ---
 

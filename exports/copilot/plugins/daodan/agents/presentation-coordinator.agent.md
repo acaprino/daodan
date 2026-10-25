@@ -1,7 +1,7 @@
 ---
 name: presentation-coordinator
 description: 'Create, derive, revise, review or export an editable PowerPoint presentation with creative specialists, DeckCraft construction and editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck or consulting deck, or a change, review or export of an existing presentation.'
-tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['office:content-strategist', 'office:presentation-designer', 'office:presentation-reviewer']
 ---
 

@@ -111,6 +111,13 @@ current authorizations and this session. Preview is the default; `fix` and
 `commit` grants are recorded separately, never push or permanent deletion.
 Without `docs/adr/README.md`, the run's `intent.md` replaces records.
 
+New execution runs set `process_required: true`. Load
+`work-controller:work-record` and its `references/process-runtime.md` to admit
+the approved YAML and bind its process and worker outputs before dispatch.
+Resume legacy unbound runs through their recorded method without rewriting
+history. Graph execution, the native delivery ledger and domain reviews must
+all succeed; keep Git commits in the reviewed domain workflow.
+
 ## Canonical methods
 
 Load owners by name, never by path.

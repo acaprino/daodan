@@ -9,6 +9,7 @@ description: >
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+> This plugin declares an MCP server, `work-controller`, started with `uv run --no-config --no-project --script <plugin-root>/skills/work-record/scripts/controller.py mcp`. This host does not start a plugin-declared MCP server on its own. Before calling this server's tools, register that command under that name in the host's MCP configuration and verify the connection.
 
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
@@ -92,6 +93,12 @@ concrete task and report contract. Only a grant authorizes work. Domain owners
 keep findings, severity and dispositions; a result references the original
 report, its hash, author, input snapshot and interpreting adapter.
 
+The complete local process runtime is bundled in this plugin. Before composing,
+executing or resuming a graph, or opening its console or MCP interface, read
+`references/process-runtime.md`. The launcher is
+`<plugin-root>/skills/work-record/scripts/controller.py`; no standalone
+repository or separately installed process-controller package is required.
+
 State lives in `.daodan/` of the main checkout (the project root outside Git),
 so worktree records survive removal and every session shares one agenda. The
 coordinator owns `work.json`, `result.json` and its scratch files in the run
@@ -150,6 +157,7 @@ snapshot --project ROOT --run-id ID
 validate --project ROOT --run-id ID [--current] [--result RESULT.json]
 agenda --project ROOT [--branch NAME]
 first-use --project ROOT
+bind-process --project ROOT --run-id ID --expected-revision N --payload BINDING.json
 ```
 
 Init requires `operation`, `objective`, `scope` (`paths`, optional `focus` and
@@ -177,6 +185,15 @@ true: a job for HEAD cannot verify uncommitted, ignored or transformed inputs,
 so run the check locally or record it unavailable. `validate --current` rejects
 changed inputs or workspace; `--result` checks the envelope against this
 revision, snapshot, ledger and gates.
+
+New process-backed consumers set `process_required: true` at init. Before
+dispatch, admit the YAML graph and use `bind-process` to attach its immutable
+identity and native delivery mapping. The bridge verifies delivered report
+bytes against admitted process artifacts and requires process success in
+addition to every existing domain gate. It grants no execution or commit
+authority. Existing JSON records remain readable and resumable without an
+invented graph or rewritten history. The exact binding and recovery procedure
+is in `references/process-runtime.md`.
 
 ## Loop sections
 

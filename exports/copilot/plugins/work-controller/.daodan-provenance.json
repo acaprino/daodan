@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:2bb9d028f719743282a48a5b0f69345037690d6569649f698da2a1b18d61e483",
+  "coreDigest": "sha256:45ef1f441bd0c55f5971c7689bc196beedf905b005c75dc16e9b00012d963ded",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "work-controller",
-  "version": "3.0.0"
+  "version": "3.1.0"
 }

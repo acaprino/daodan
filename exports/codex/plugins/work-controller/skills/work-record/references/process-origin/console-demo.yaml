@@ -1,0 +1,37 @@
+schema: process-controller/process/v1
+kind: graph
+id: console-demo
+objective: Demonstrate durable progress, artifact handoff and bounded output
+jobs:
+  - id: prepare
+    type: command
+    summary: Create the first artifact and emit a short output log
+    command:
+      argv:
+        - python
+        - -c
+        - "from pathlib import Path; p = Path('artifacts'); p.mkdir(exist_ok=True); Path('artifacts/report.md').write_text('Demo report', encoding='utf-8'); print('prepared report.md')"
+    produces:
+      - name: report
+        type: markdown
+        path: artifacts/report.md
+    write_set:
+      - artifacts/report.md
+    max_attempts: 1
+    timeout_seconds: 30
+  - id: review
+    type: agent
+    summary: Review the prepared report through the host agent
+    needs: [prepare]
+    consumes: [report]
+    produces:
+      - name: review
+        type: markdown
+        path: artifacts/review.md
+    write_set:
+      - artifacts/review.md
+    max_attempts: 2
+    timeout_seconds: 300
+budget:
+  max_attempts: 4
+  max_seconds: 600

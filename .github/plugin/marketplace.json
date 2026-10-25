@@ -6,7 +6,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "41.2.2"
+    "version": "41.2.3"
   },
   "name": "daodan",
   "owner": {
@@ -189,7 +189,7 @@
         "./skills/model-routing"
       ],
       "source": "./exports/copilot/plugins/model-routing",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -300,7 +300,7 @@
         "moe",
         "report-rendering"
       ],
-      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Deadly Brain job execution, verified commits, reconciliation and authorized merge.",
+      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Work Controller job execution, verified commits, reconciliation and authorized merge.",
       "license": "MIT",
       "name": "project-delivery",
       "skills": [
@@ -310,7 +310,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/copilot/plugins/project-delivery",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "agents": [
@@ -629,14 +629,14 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker.",
+      "description": "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP.",
       "license": "MIT",
       "name": "work-controller",
       "skills": [
         "./skills/work-record"
       ],
       "source": "./exports/copilot/plugins/work-controller",
-      "version": "3.0.0"
+      "version": "3.1.0"
     }
   ]
 }

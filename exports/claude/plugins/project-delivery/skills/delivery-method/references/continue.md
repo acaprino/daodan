@@ -81,3 +81,9 @@ Resume a branch task across sessions and machines.
 4. **Go on.** Restart at the agenda phase's first open step: unsealed wave,
    undelivered review or unauthorized merge. Verify and review a changed
    candidate's delta before the next wave.
+
+When the record has a `process` binding, validate its immutable identity and
+resume that same process through `work-controller:work-record`'s
+`references/process-runtime.md`. Reconcile unknown attempts and recorded host
+handles before redispatch. A legacy record without a binding stays on its
+recorded path; never invent a completed graph for old work.

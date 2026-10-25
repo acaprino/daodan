@@ -86,10 +86,10 @@ what it spent, and what happens when it spends more than its budget?
 - Standard library only, no network, no credentials, every host.
 - A gap must stay visible: an unreadable source is not a zero.
 - The run record owns run facts. ADR-0002 assigns that owner to
-  `work-controller:work-record`; its updated target includes the model-router
-  inside the generalist controller. The ledger follows the run record and the
-  prices follow the router's catalog. The separate `model-routing` package is
-  the current implementation boundary pending that migration.
+  `work-controller:work-record`. The ledger follows the run record and the
+  prices follow the `model-routing@daodan` catalog. The reintegration direction
+  of 2026-10-25 keeps that local provider rather than absorbing or duplicating it
+  inside the generalist controller.
 
 ## Decision
 
@@ -160,8 +160,11 @@ on calls already in flight.
 
 The user's later clarification of 2026-10-24 makes YAML the mandatory runtime
 input for jobs, graphs and bounded loops, and gives `work-controller` ownership
-of composition or integrity-only checking, orchestration and execution with an
-internal model-router. The [process specification, section 13](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md#13-deadly-brain-il-motore-condiviso)
+of composition or integrity-only checking, orchestration and execution. The
+2026-10-25 reintegration direction keeps the engine in `work-controller@daodan`
+and model selection and pricing in the existing `model-routing@daodan` provider;
+the former external repository and internal-router packaging are superseded.
+The [process specification, section 13](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md#13-deadly-brain-il-motore-condiviso)
 owns that interface; this record continues to own usage normalization, pricing
 and ledger rules. YAML process definitions and runtime usage records are
 separate artifacts. Integrity-only validation starts no jobs and produces no

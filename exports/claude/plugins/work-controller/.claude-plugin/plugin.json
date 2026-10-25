@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker.",
+  "description": "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP.",
   "license": "MIT",
   "name": "work-controller",
-  "version": "3.0.0"
+  "version": "3.1.0"
 }

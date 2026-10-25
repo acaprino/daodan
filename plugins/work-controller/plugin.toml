@@ -1,11 +1,11 @@
 schema = "daodan/v1"
 name = "work-controller"
-version = "3.0.0"
-description = "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker."
+version = "3.1.0"
+description = "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP."
 license = "MIT"
 
 [capabilities]
-required = ["repository.read", "repository.write", "shell.execute"]
+required = ["repository.read", "repository.write", "shell.execute", "mcp.servers"]
 optional = ["network.fetch"]
 
 [dependencies]
@@ -19,3 +19,8 @@ policies = []
 
 [contracts]
 exports = ["contracts/work.toml"]
+
+[[mcp.servers]]
+name = "work-controller"
+command = "uv"
+args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/work-record/scripts/controller.py", "mcp"]

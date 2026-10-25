@@ -1,7 +1,7 @@
 ---
 name: start-coordinator
 description: 'One entry for any Office request: read the inputs, work out what the user wants (a theme, a new deck, document or workbook, an edit, expansion, revision or restyle of an existing file, a check or a repair), map the decisions, ask once and run the right workflows in order. TRIGGER WHEN: an Office request does not name one format workflow, combines several deliverables, or starts from files, websites or notes whose use is not yet clear.'
-tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['office:content-strategist', 'office:document-designer', 'office:document-reviewer', 'office:presentation-designer', 'office:presentation-reviewer']
 ---
 

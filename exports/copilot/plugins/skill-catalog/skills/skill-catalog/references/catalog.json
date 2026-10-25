@@ -137,7 +137,7 @@
       "operations": [],
       "provider": "model-routing",
       "topics": [],
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "description": "Coordinates bounded independent proposals and reciprocal critique. TRIGGER WHEN: /daodan:get-second-opinion receives a question rather than a file, or explicitly requesting Ultra Nerd, moe, or a multi-model expert debate for a difficult problem. DO NOT TRIGGER WHEN: challenging an existing plan only (use peer-review:cross-model-peer-review).",
@@ -355,7 +355,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to investigate or debug a problem, build or refactor code, produce complete project documentation, define specifications or implementation plans, resume work, or finish and merge a delivery. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
@@ -370,7 +370,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "description": "Extract, validate, reconcile, approve, version and verify evidence-bound functional requirements documents in docs/frd/. TRIGGER WHEN: the user asks for an evidence-bound FRD, requirements and domain references must be extracted from project sources, a fresh extraction must be reconciled with manual review, or an FRD needs approval, revision or verification. DO NOT TRIGGER WHEN: recording an architecture or technical decision (use project-delivery:adr-method), writing general project documentation without evidence spans, or treating current implementation as an automatically approved requirement.",
@@ -385,7 +385,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "description": "Draft missing ADR and FRD from verified project evidence without turning legacy behavior or stale documentation into approved requirements. TRIGGER WHEN: a project has no ADR or FRD, existing project knowledge must be bootstrapped from code, documentation or Codebase Map, or /daodan:init-project needs initial requirement records. DO NOT TRIGGER WHEN: recording one already understood decision (use adr-method), editing an existing FRD (use frd-method), or running the implementation cycle (use delivery-method).",
@@ -404,7 +404,7 @@
         "documentation",
         "requirements"
       ],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file. TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.",
@@ -1078,7 +1078,7 @@
       "operations": [],
       "provider": "work-controller",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.1.0"
     }
   ],
   "installation_evidence": false,

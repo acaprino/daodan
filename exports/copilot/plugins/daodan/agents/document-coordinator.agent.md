@@ -1,7 +1,7 @@
 ---
 name: document-coordinator
 description: 'Create, derive, revise, review or export a native Word document with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter or template, or a change, review or export of an existing document.'
-tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['office:document-designer', 'office:document-reviewer']
 ---
 

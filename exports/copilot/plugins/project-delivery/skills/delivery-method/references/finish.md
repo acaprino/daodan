@@ -101,3 +101,8 @@ workspace closed and the agenda row released.
    the worktree, releasing the agenda while its binding exists. Then remove the
    worktree and branch; records remain in the main checkout. Pushing needs
    separate authorization. `references/retention.md` disposes of output on request.
+
+A process-backed record also requires its bound graph to reach
+`VERIFIED_SUCCESS`, with admitted worker artifact bytes matching the native
+reports. Include the unchanged `process` binding in the result envelope.
+Graph success does not waive any stage D, candidate, delivery or merge gate.

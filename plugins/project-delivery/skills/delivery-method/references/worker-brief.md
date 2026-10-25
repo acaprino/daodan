@@ -7,6 +7,7 @@ worker contract required by `work-controller:work-record`.
 ```
 ## Task
 id: <task id>            wave: <wave id>            run: <run id>
+process: <bound process ID and attempt ID when present; legacy unbound otherwise>
 objective: <one sentence, from the record>
 examples to make pass: <EX-* ids and their text>
 invariants to keep: <INV-* ids and text; authoritative boundary contract/version, wire/errors, derived types/mocks and serialization check agreed before parallel producer/consumer work>

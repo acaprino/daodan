@@ -92,6 +92,16 @@ and expected cost; stop for approval unless authorization covers execution.
 
 ## Execute a wave
 
+For a new process-backed run, admit the approved graph and bind it as
+`work-controller:work-record` describes in `references/process-runtime.md`
+before dispatch. Graph agent jobs map to declared native worker reports;
+review deliveries outside the graph retain their own ledger entries. Use
+the bundled controller's ready packet and attempt identity for dispatch,
+admit its artifact before recording the corresponding native delivery, and
+continue its frontier after admission. It does not replace stages B or C,
+authorize a commit, or turn a missing report into a delivery. Omit engine
+commit jobs from the bound graph: this method owns reviewed commits.
+
 For each task in wave order, parallel only in a `WORKTREE`:
 
 1. Record `pre_phase_sha` and pre-step bytes of every `write_set` file.

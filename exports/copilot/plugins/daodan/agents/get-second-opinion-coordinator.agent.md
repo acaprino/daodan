@@ -1,7 +1,7 @@
 ---
 name: get-second-opinion-coordinator
 description: 'Have another model challenge a file (a plan, a decision record, a document, code), or have several models deliberate on a question. Asks for consent before any content leaves the machine. TRIGGER WHEN: the user asks for a second opinion, another models view, or a challenge of a plan or decision. DO NOT TRIGGER WHEN: a normal review is wanted (use review-changes or review-branch).'
-tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['peer-review:brief-builder', 'peer-review:packet-builder', 'peer-review:respondent', 'work-controller:isolated-worker']
 ---
 

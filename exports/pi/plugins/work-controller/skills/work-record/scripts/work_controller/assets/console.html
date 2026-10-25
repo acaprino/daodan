@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23182944'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='sans-serif' font-size='26' font-weight='700' fill='%23b7d1ff'%3EWC%3C/text%3E%3C/svg%3E">
+  <title>Work Controller · Run console</title>
+  <link rel="stylesheet" href="/console.css">
+  <script src="/console.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to run details</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Console navigation">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">WC</span>
+        <div>
+          <p class="brand-name">Work Controller</p>
+          <p class="brand-subtitle">Operations console</p>
+        </div>
+      </div>
+      <p class="read-only-badge"><span class="badge-dot" aria-hidden="true"></span>Local · read-only</p>
+
+      <div class="sidebar-section">
+        <div class="section-label-row">
+          <label class="field-label" for="run-select">Run</label>
+          <span id="run-count" class="count-label">0</span>
+        </div>
+        <select id="run-select" disabled>
+          <option>Loading runs…</option>
+        </select>
+      </div>
+
+      <button id="refresh-button" class="button button-secondary button-full" type="button">
+        Refresh data
+      </button>
+
+      <div class="sidebar-section map-picker">
+        <div class="section-label-row">
+          <label class="field-label" for="map-select">Decision map</label>
+          <span id="map-count" class="count-label">0</span>
+        </div>
+        <select id="map-select" disabled>
+          <option>Loading maps…</option>
+        </select>
+      </div>
+
+      <nav class="section-nav" aria-label="Detail sections">
+        <a href="#run-progress">Progress</a>
+        <a href="#jobs-section">Jobs</a>
+        <a href="#attempts-section">Attempts &amp; logs</a>
+        <a href="#artifacts-section">Artifacts</a>
+        <a href="#events-section">Events</a>
+        <a href="#map-section">Tickets</a>
+      </nav>
+
+      <p class="sidebar-note">Bounded metadata only. Artifact bodies and process YAML are never rendered here.</p>
+    </aside>
+
+    <main id="main-content" class="main-content" tabindex="-1">
+      <header class="topbar">
+        <div class="title-block">
+          <p class="eyebrow">Run inspector</p>
+          <h1 id="run-title">Console overview</h1>
+          <p id="run-meta" class="subtle-text">Select a run to inspect its current state.</p>
+        </div>
+        <div class="connection-controls">
+          <div id="connection-status" class="connection-status is-idle" role="status" aria-live="polite">
+            <span class="connection-dot" aria-hidden="true"></span>
+            <span id="connection-label">Updates idle</span>
+          </div>
+          <button id="pause-button" class="button button-secondary" type="button" aria-pressed="false" disabled>
+            Pause updates
+          </button>
+        </div>
+      </header>
+
+      <div id="error-banner" class="alert" role="alert" hidden></div>
+
+      <div id="no-run" class="empty-panel">
+        <p class="empty-panel-title">Loading run inventory</p>
+        <p>Reading the bounded local overview…</p>
+      </div>
+
+      <div id="run-content" hidden>
+        <section id="run-progress" class="panel progress-panel" aria-labelledby="progress-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Current state</p>
+              <h2 id="progress-heading">Run progress</h2>
+            </div>
+            <span id="run-status"></span>
+          </div>
+          <div class="progress-row">
+            <progress id="job-progress" max="1" value="0" aria-label="Succeeded jobs"></progress>
+            <strong id="progress-text">0 / 0 succeeded</strong>
+          </div>
+          <div class="stat-grid" aria-label="Job totals">
+            <div class="stat-card"><span>Total jobs</span><strong id="stat-total">0</strong></div>
+            <div class="stat-card"><span>Succeeded</span><strong id="stat-succeeded">0</strong></div>
+            <div class="stat-card"><span>Active</span><strong id="stat-active">0</strong></div>
+            <div class="stat-card"><span>Needs attention</span><strong id="stat-attention">0</strong></div>
+          </div>
+          <div class="frontier-block">
+            <h3>Open frontier</h3>
+            <div id="frontier-list" class="chip-list"></div>
+            <p id="frontier-empty" class="subtle-text">No currently runnable jobs.</p>
+          </div>
+        </section>
+
+        <section id="jobs-section" class="panel" aria-labelledby="jobs-heading">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="eyebrow">Graph execution</p>
+              <h2 id="jobs-heading">Jobs</h2>
+            </div>
+            <span class="panel-hint">Status and attempt budget</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Jobs in the selected run</caption>
+              <thead><tr><th scope="col">Job</th><th scope="col">Type</th><th scope="col">Summary</th><th scope="col">Status</th><th scope="col">Attempts</th></tr></thead>
+              <tbody id="jobs-body"></tbody>
+            </table>
+          </div>
+          <p id="jobs-empty" class="empty-state" hidden>No jobs are recorded for this run.</p>
+        </section>
+
+        <section id="attempts-section" class="panel" aria-labelledby="attempts-heading">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="eyebrow">Execution history</p>
+              <h2 id="attempts-heading">Attempts</h2>
+            </div>
+            <span class="panel-hint">Latest 100</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Attempts in the selected run</caption>
+              <thead><tr><th scope="col">Attempt</th><th scope="col">Status</th><th scope="col">Holder</th><th scope="col">Started</th><th scope="col">Ended</th><th scope="col">Detail</th></tr></thead>
+              <tbody id="attempts-body"></tbody>
+            </table>
+          </div>
+          <p id="attempts-empty" class="empty-state" hidden>No attempts have been reserved.</p>
+
+          <div class="log-viewer" aria-labelledby="logs-heading">
+            <div class="log-heading">
+              <div>
+                <h3 id="logs-heading">Command output</h3>
+                <p class="subtle-text">Read-only tail, capped at 64 KiB per stream.</p>
+              </div>
+              <button id="log-refresh" class="button button-secondary" type="button" disabled>Refresh log</button>
+            </div>
+            <div class="log-controls">
+              <div class="field-group">
+                <label class="field-label" for="attempt-select">Command attempt</label>
+                <select id="attempt-select" disabled><option>No command attempts</option></select>
+              </div>
+              <div class="field-group stream-field">
+                <label class="field-label" for="stream-select">Stream</label>
+                <select id="stream-select" disabled>
+                  <option value="stdout">stdout</option>
+                  <option value="stderr">stderr</option>
+                </select>
+              </div>
+            </div>
+            <p id="log-meta" class="log-meta">Select a command attempt to read its output.</p>
+            <pre class="log-output" aria-describedby="log-meta"><code id="log-text"></code></pre>
+          </div>
+        </section>
+
+        <section id="artifacts-section" class="panel" aria-labelledby="artifacts-heading">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="eyebrow">Content-addressed outputs</p>
+              <h2 id="artifacts-heading">Artifacts</h2>
+            </div>
+            <span class="panel-hint">Latest admitted versions · metadata only</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Latest artifact metadata</caption>
+              <thead><tr><th scope="col">Name</th><th scope="col">Version</th><th scope="col">Type</th><th scope="col">Digest</th><th scope="col">Size</th><th scope="col">Producer</th><th scope="col">Status</th></tr></thead>
+              <tbody id="artifacts-body"></tbody>
+            </table>
+          </div>
+          <p id="artifacts-empty" class="empty-state" hidden>No artifacts have been admitted.</p>
+        </section>
+
+        <section id="events-section" class="panel" aria-labelledby="events-heading">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="eyebrow">Append-only journal</p>
+              <h2 id="events-heading">Recent events</h2>
+            </div>
+            <span class="panel-hint">Latest 20 · streamed incrementally</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Recent run events</caption>
+              <thead><tr><th scope="col">Seq</th><th scope="col">Time</th><th scope="col">Event</th><th scope="col">References</th><th scope="col">Metadata</th></tr></thead>
+              <tbody id="events-body"></tbody>
+            </table>
+          </div>
+          <p id="events-empty" class="empty-state" hidden>No events are available.</p>
+        </section>
+      </div>
+
+      <section id="map-section" class="panel" aria-labelledby="map-heading">
+        <div class="panel-heading compact-heading">
+          <div>
+            <p class="eyebrow">Decision map</p>
+            <h2 id="map-heading">Tickets</h2>
+          </div>
+          <span id="map-status"></span>
+        </div>
+        <p id="map-meta" class="subtle-text">Select a decision map to inspect its ticket frontier.</p>
+        <div id="map-content" hidden>
+          <div class="map-summary">
+            <div><span class="field-label">Destination</span><p id="map-destination"></p></div>
+            <div><span class="field-label">Next open ticket</span><p id="map-next">None</p></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Tickets in the selected decision map</caption>
+              <thead><tr><th scope="col">Ticket</th><th scope="col">Kind</th><th scope="col">Summary</th><th scope="col">Status</th><th scope="col">Holder</th><th scope="col">Blocked by</th><th scope="col">Run</th></tr></thead>
+              <tbody id="tickets-body"></tbody>
+            </table>
+          </div>
+          <p id="tickets-empty" class="empty-state" hidden>No tickets are recorded for this map.</p>
+        </div>
+        <p id="no-map" class="empty-state">Loading decision maps…</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

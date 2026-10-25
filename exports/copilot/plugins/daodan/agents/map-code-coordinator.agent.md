@@ -1,7 +1,7 @@
 ---
 name: map-code-coordinator
 description: 'Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, or the depth chosen at the projects first use, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).'
-tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['codebase-map:map-analyst', 'codebase-map:partition-behavior-worker', 'codebase-map:partition-quality-worker', 'codebase-map:partition-structure-worker', 'codebase-map:partition-synthesizer', 'codebase-map:semantic-interconnect-mapper', 'work-controller:isolated-worker']
 ---
 

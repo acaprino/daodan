@@ -33,6 +33,15 @@ kinds = ["fix", "commit", "merge", "push", "purge", "send", "publish", "install"
 schema = "daodan/project-result/v1"
 required = ["schema", "run_id", "work_revision", "scope", "snapshot", "deliveries", "checks", "outputs", "limitations", "complete"]
 
+[process]
+schema = "daodan/process-binding/v1"
+required = ["schema", "run_id", "definition_digest", "deliveries"]
+delivery_required = ["job", "artifact"]
+home = "processes"
+immutable = true
+completion_requires = "VERIFIED_SUCCESS"
+existing_records_require_binding = false
+
 [loop]
 sections = ["workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment", "integration"]
 
