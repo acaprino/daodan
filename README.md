@@ -266,6 +266,16 @@ SQLite; `--format json` explicitly selects upstream compatibility. Source tools
 send selected text with counts and truncation, while reports remain Markdown.
 See [snapshot formats and source reading](docs/plugins/codebase-map.md#reading-source-from-a-snapshot)
 and the [release verification record](docs/superpowers/reports/2026-10-16-codebase-map-binary-storage.md).
+
+Codebase Map also supports optional [local Code Mode](plugins/codebase-map/skills/map-method/references/mcp.md#local-code-mode-opt-in).
+Start its existing MCP server with `--code-mode` to expose `search` and `execute`:
+the model discovers operation schemas and writes JavaScript that composes the
+existing Python tools, filters intermediate values and returns selected JSON.
+Reads are permitted by default; each mutation needs an explicit startup grant.
+This mode uses a separately installed, maintained Deno 2.4+ runtime. Standard
+startup retains the 19 native tools and requires no Deno. Call receipts and bounds
+make execution observable; byte counts do not establish token savings.
+
 A generated package test is distinct from an installed-host
 execution probe. External private app storage is not a supported run root until
 its permission binding is demonstrated.
@@ -274,6 +284,13 @@ Tri-Tech Code can consume these OpenCode packages and run contracts as an extern
 application. The marketplace stays public and neutral.
 
 ## Upstream projects and inspiration
+
+[Cloudflare Code Mode](https://blog.cloudflare.com/code-mode-mcp/) and the
+MIT-licensed [Code Mode package in cloudflare/agents](https://github.com/cloudflare/agents/tree/321814b6c13f72cff82161e7eb20312574ac9b7a/packages/codemode)
+inspired progressive tool discovery and executable composition. Daodan implements
+that pattern with original local code over Codebase Map's existing operations,
+without copying the Cloudflare SDK. The upstream commit is recorded as an
+inspiration watch, not a source to vendor or synchronize.
 
 [agent-html-kit](https://github.com/leex279/agent-html-kit) inspired the separation
 of agent-authored content from reusable HTML presentation. Daodan's
