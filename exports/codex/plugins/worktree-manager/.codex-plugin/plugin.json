@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Alfio Caprino"
+  },
+  "description": "Manage task workspaces through the external Worktrunk CLI: main-checkout paths, persistent descriptions and tags, complete Git inventory, safe reuse and verified upstream compatibility. Delivery retains review, merge authorization and completion.",
+  "license": "MIT",
+  "name": "worktree-manager",
+  "version": "1.0.0"
+}

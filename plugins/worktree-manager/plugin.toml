@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "worktree-manager"
+version = "1.0.0"
+description = "Manage task workspaces through the external Worktrunk CLI: main-checkout paths, persistent descriptions and tags, complete Git inventory, safe reuse and verified upstream compatibility. Delivery retains review, merge authorization and completion."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute"]
+optional = ["network.fetch"]
+
+[dependencies]
+required = ["work-controller"]
+
+[components]
+skills = ["worktree-method"]
+roles = []
+workflows = []
+policies = []

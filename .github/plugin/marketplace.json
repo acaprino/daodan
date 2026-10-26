@@ -96,6 +96,7 @@
         "project-knowledge",
         "project-lifecycle",
         "work-controller",
+        "worktree-manager",
         "python-development",
         "react-development",
         "repo-hygiene",
@@ -109,7 +110,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/copilot/plugins/daodan",
-      "version": "2.4.1",
+      "version": "2.4.2",
       "agents": [
         "./agents/brainstorm-idea-coordinator.agent.md",
         "./agents/check-health-coordinator.agent.md",
@@ -132,6 +133,7 @@
         "./agents/start-coordinator.agent.md",
         "./agents/sync-upstream-coordinator.agent.md",
         "./agents/tidy-repo-coordinator.agent.md",
+        "./agents/worktrees-coordinator.agent.md",
         "./agents/write-docs-coordinator.agent.md",
         "./agents/write-tests-coordinator.agent.md"
       ]
@@ -287,6 +289,7 @@
       "dependencies": [
         "model-routing",
         "work-controller",
+        "worktree-manager",
         "project-knowledge",
         "senior-review",
         "testing",
@@ -305,7 +308,7 @@
       "license": "MIT",
       "name": "project-delivery",
       "source": "./exports/copilot/plugins/project-delivery",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "skills": [
         "./skills/adr-method",
         "./skills/delivery-method",
@@ -631,7 +634,7 @@
       "license": "MIT",
       "name": "work-controller",
       "source": "./exports/copilot/plugins/work-controller",
-      "version": "3.1.1",
+      "version": "3.1.2",
       "agents": [
         "./agents/isolated-worker.agent.md"
       ],
@@ -1114,6 +1117,19 @@
       "source": "./exports/copilot/plugins/xterm",
       "skills": [
         "./skills/xtermjs-skill"
+      ]
+    },
+    {
+      "name": "worktree-manager",
+      "description": "Manage task workspaces through the external Worktrunk CLI: main-checkout paths, persistent descriptions and tags, complete Git inventory, safe reuse and verified upstream compatibility. Delivery retains review, merge authorization and completion.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "dependencies": [
+        "work-controller"
+      ],
+      "source": "./exports/copilot/plugins/worktree-manager",
+      "skills": [
+        "./skills/worktree-method"
       ]
     }
   ]

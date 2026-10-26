@@ -74,30 +74,29 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Finish a task (phase 7)
 
-Review, authorize merge, verify the record, realign knowledge, close the workspace
-and release its agenda row.
+Load `worktree-manager:worktree-method` and read its `references/lifecycle.md`.
+That method owns preparation and cleanup; existing reviews and protocol gates
+remain mandatory.
 
-1. **Task.** Resolve the branch task through `run_state.py agenda --branch`
-   with this session's id. Take over only after user confirmation the holder
-   closed. Without a task, finish plainly without a record. Require every wave
-   `sealed`; otherwise return to `references/waves.md`. Ask open questions first.
-2. **Stage D.** Run `references/verify.md` on the whole candidate. A blocking
-   result after remediation waves stops with findings/options. Report the last
-   receipt's residual obligations.
-3. **Merge.** Confirm stage D against the current project with `validate --current`;
-   changed candidates return to stage D. Ask merge authorization, showing base,
-   commits and verdict. Merge the task branch into base with a merge commit;
-   fast-forward only on user request. Merge a moved base into the task first;
-   stage D reviews the delta. Without authorization, record the command and stop.
-   Record `integration.merged_sha` and branch review receipt in
-   `integration.candidate_review`.
-4. **Realign.** Follow `references/realign.md` with `merged_sha`.
-5. **Close.** Record `merged_sha`, then complete the run, releasing its agenda
-   while the worktree binding exists. Remove worktree/branch afterward; records
-   remain in the main checkout. Push requires separate authorization.
-   Use `references/retention.md` for requested output disposition.
-
-Process-backed records additionally require bound-graph `VERIFIED_SUCCESS` and
-admitted artifact bytes matching native reports. Include the unchanged `process`
-binding in the result envelope. Graph success waives no stage D, candidate,
-delivery or merge gate.
+1. **Task.** Resolve the agenda's branch task and holder. Take over only after
+   confirmation that the other session closed. A branch without a task finishes
+   without inventing one. Require sealed waves and answered questions.
+2. **Candidate.** Record the method choice with **Squash** preselected and
+   **Preserve full history** offered. Preselection is not consent. Prepare the
+   selected candidate separately, retaining original commits and receipts.
+   Complete transformations before stage D in `references/verify.md`.
+   Report the last receipt's residual obligations. Blocking findings stop integration.
+3. **Integrate.** Run `validate --current`; recheck source/target identities. Changes require
+   preparation and review again. Use authorization covering the exact candidate,
+   method and destination; otherwise ask. Integrate without unreviewed changes
+   and record `integration.merged_sha` and `integration.candidate_review`.
+4. **Realign.** Follow the worktree method's original-checkout binding procedure,
+   then `references/realign.md`. Additional tracked changes need reviewed,
+   authorized integration and fresh gates; never relabel earlier evidence.
+5. **Close.** Recheck any bound specification approval/bytes. Require HEAD to equal the integrated SHA, passed
+   gates and completed realignment. A bound process also requires
+   `VERIFIED_SUCCESS` with matching artifacts; keep its unchanged `process` binding
+   in `result.json`. Complete before removing
+   the bound checkout. Perform authorized cleanup separately; failure preserves
+   recovery and never repeats integration. Push requires its own authorization;
+   `references/retention.md` governs requested output disposition.

@@ -83,8 +83,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Project delivery
 
-Load `work-controller:work-record`; follow its grants, snapshots, delivery and
-recovery contracts. Own design-to-delivery; compose methods, never competing workflows.
+Load `work-controller:work-record` for grants/snapshots/delivery/recovery.
+Own design-to-delivery; compose methods, never competing workflows.
 
 ## Load map
 
@@ -109,21 +109,19 @@ Load by step:
 
 ## Run record
 
-Initialize operation, root, objective, source and scope.
+Initialize operation/root/objective/source/scope.
 Resume with current grants and session; preview is default. Specifications live
 in `docs/specs/`; `intent.md` binds approval. ADRs retain separate technical decisions.
 
 New execution runs set `process_required: true`; follow work-record's
 `references/process-runtime.md` to admit approved YAML and bind workers before
-dispatch. Preserve legacy unbound runs. Process, delivery and domain gates all
-apply; commits stay in the reviewed domain workflow.
+dispatch. Preserve legacy unbound runs. Require process/delivery/domain gates;
+commit through the reviewed workflow.
 
 ## Canonical methods
 
-Load owners by name:
-
 - Maps: `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst`.
-  Own analyze preflight, checkpoints, delivery and publication; loading is not dispatch.
+  Own analyze preflight/checkpoints/delivery/publication; loading is not dispatch.
 - Load skills: `project-delivery:adr-method`.
 - Load skills: `senior-review:investigation-method`.
 - Load skills: `senior-review:review-method`; branches: `senior-review:review-preparation`.
@@ -133,9 +131,14 @@ Load owners by name:
 - Load skills: `abstraction-architect:abstraction-architect` and its auditor.
 - Load skills: `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft`.
 - Load skills: `repo-hygiene:repo-hygiene`.
+- Task workspaces/catalog: load skill `worktree-manager:worktree-method`.
 - Requested challenge: `peer-review:cross-model-peer-review`; dispatch `peer-review:packet-builder`,
   `peer-review:respondent`. Requested opinion: `moe:multi-model-deliberation`.
 - Load skills: `report-rendering:report-renderer`, then `references/project-run-view.md`.
+
+The worktree method owns workspace creation/resumption and catalog annotations;
+Work Controller owns agenda/grants. Status and brainstorming create no worktree.
+Missing Worktrunk blocks dependent operations with its recovery path.
 
 ## Delivery and closure
 

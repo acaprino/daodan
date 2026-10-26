@@ -139,7 +139,7 @@ def git_value(project, *args):
     return result.stdout.strip() if result.returncode == 0 else None
 
 
-def head_matches_inputs(project, head, paths, entries, excluded_path):
+def head_matches_inputs(project, head, paths, entries, excluded_path, equivalent=None):
     """Compare actual scoped bytes with HEAD blobs, independently of index flags."""
     tree = git_value(project, "ls-tree", "-r", "-z", "--full-name", head, "--", *paths)
     prefix = git_value(project, "rev-parse", "--show-prefix")
@@ -183,8 +183,10 @@ def head_matches_inputs(project, head, paths, entries, excluded_path):
                 remaining -= len(chunk)
             if process.stdout.read(1) != b"\n":
                 return False
-            if inputs[name]["sha256"] != digest.hexdigest() or inputs[name]["bytes"] != size:
-                return False
+            blob_digest = digest.hexdigest()
+            if inputs[name]["sha256"] != blob_digest or inputs[name]["bytes"] != size:
+                if equivalent is None or not equivalent(name, inputs[name], blob, blob_digest, size):
+                    return False
         return True
     finally:
         process.stdin.close()
@@ -1127,6 +1129,122 @@ def validate_commit_transitions(old, new, project):
             raise ProtocolError(f"Wave {wave['id']} seal review is stale or does not name the current candidate")
 
 
+def squash_inputs_match_commit(project, current, scope, output_root):
+    """Match raw blobs first; prove only Git's built-in CRLF equivalence otherwise."""
+    if current.get("head_matches_snapshot") is True:
+        return True
+    if scope is None or output_root is None:
+        return False
+    autocrlf = (git_value(project, "config", "--type=bool", "--get", "core.autocrlf")
+                or git_value(project, "config", "--get", "core.autocrlf"))
+    attributes = ("text", "crlf", "eol", "filter", "working-tree-encoding", "ident")
+
+    def equivalent(relative, entry, blob, blob_digest, blob_size):
+        # These inspection commands never clean/smudge content or run filters.
+        # Pin conversion attributes to the committed tree and require the live
+        # attributes to agree, even when an attributes file is outside scope.
+        values = None
+        for source in (("--source", current["head"]), ()):
+            result = git_value(project, "check-attr", "-z", *source, *attributes, "--", relative)
+            fields = result.split("\0") if result is not None else []
+            if (len(fields) != len(attributes) * 3 + 1
+                    or any(fields[index] != relative for index in range(0, len(fields) - 1, 3))):
+                return False
+            found = {fields[index + 1]: fields[index + 2]
+                     for index in range(0, len(fields) - 1, 3)}
+            if values is not None and found != values:
+                return False
+            values = found
+        if any(values.get(name) not in {"unspecified", "unset"}
+               for name in ("filter", "working-tree-encoding", "ident")):
+            return False
+        # Git resolves legacy crlf only when text has no recognized setting.
+        text_mode = values["text"]
+        if text_mode not in {"set", "unset", "auto", "input"}:
+            text_mode = values["crlf"]
+        if text_mode == "unset":
+            return False
+        forced = text_mode in {"set", "input"} or (
+            text_mode != "auto" and values["eol"] in {"lf", "crlf"})
+        automatic = text_mode == "auto" or (not forced and autocrlf in {"true", "input"})
+        if not forced and not automatic:
+            return False
+        eol = git_value(project, "ls-files", "--stage", "--eol", "-z", "--", f":(literal){relative}")
+        if eol is None or not eol.endswith("\0") or eol.count("\0") != 1:
+            return False
+        fields = eol[:-1].split("\t", 2)
+        if len(fields) != 3 or fields[2] != relative:
+            return False
+        staged, stats = fields[0].split(), fields[1].split()
+        if len(staged) != 3 or staged[1:] != [blob, "0"] or len(stats) < 2:
+            return False
+        # Git's own statistics cover lone CR, NUL, the control-byte threshold
+        # and terminal EOF. Auto conversion also preserves CRLF in the index.
+        if automatic and (stats[1] not in {"w/lf", "w/crlf", "w/mixed", "w/none"}
+                          or stats[0] in {"i/crlf", "i/mixed"}):
+            return False
+        path = project / relative
+        no_links(path, project)
+        raw_digest, lf_digest = hashlib.sha256(), hashlib.sha256()
+        raw_size = lf_size = 0
+        pending = b""
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(64 * 1024), b""):
+                raw_digest.update(chunk)
+                raw_size += len(chunk)
+                data = pending + chunk
+                pending = b"\r" if data.endswith(b"\r") else b""
+                if pending:
+                    data = data[:-1]
+                data = data.replace(b"\r\n", b"\n")
+                lf_digest.update(data)
+                lf_size += len(data)
+        lf_digest.update(pending)
+        lf_size += len(pending)
+        return (raw_digest.hexdigest() == entry["sha256"] and raw_size == entry["bytes"]
+                and lf_digest.hexdigest() == blob_digest and lf_size == blob_size)
+
+    exclusions = [project / item for item in scope.get("excluded", [])]
+
+    def excluded_path(path):
+        return (path == output_root or path.is_relative_to(output_root)
+                or any(path == item or path.is_relative_to(item) for item in exclusions)
+                or ".git" in path.relative_to(project).parts)
+
+    return head_matches_inputs(project, current["head"], scope["paths"], current["snapshot"]["files"],
+                               excluded_path, equivalent)
+
+
+def validate_integrated_commit(project, integration, current, scope=None, output_root=None):
+    """Bind integration to Git ancestry or a pinned, content-identical squash."""
+    merged = integration["merged_sha"]
+    if merged != current.get("head"):
+        raise ProtocolError("Completion merge SHA does not name current HEAD")
+    receipt = integration["candidate_review"]
+    reviewed = receipt["head"]
+    if integration.get("strategy") != "squash":
+        if git_value(project, "merge-base", "--is-ancestor", reviewed, merged) is None:
+            raise ProtocolError("Completion merge does not descend from the reviewed candidate")
+        return
+
+    target = integration.get("target_sha")
+    for value in (target, reviewed, merged):
+        if not isinstance(value, str) or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", value):
+            raise ProtocolError("Squash integration requires full target, reviewed and merged commit IDs")
+        if git_value(project, "rev-parse", "--verify", f"{value}^{{commit}}") != value:
+            raise ProtocolError("Squash integration references an unavailable commit")
+    if git_value(project, "merge-base", "--is-ancestor", target, reviewed) is None:
+        raise ProtocolError("Reviewed squash candidate does not include the pinned target")
+    if git_value(project, "show", "-s", "--format=%P", merged) != target:
+        raise ProtocolError("Squash integration must have exactly the pinned target as its parent")
+    reviewed_tree = git_value(project, "rev-parse", f"{reviewed}^{{tree}}")
+    if not reviewed_tree or git_value(project, "rev-parse", f"{merged}^{{tree}}") != reviewed_tree:
+        raise ProtocolError("Squash integration tree differs from the reviewed candidate")
+    if (current["snapshot"]["digest"] != receipt.get("snapshot")
+            or not squash_inputs_match_commit(project, current, scope, output_root)):
+        raise ProtocolError("Squash review snapshot must match the clean integrated content")
+
+
 def validate_transitions(old, new, project=None):
     rules = contract()
     if "process" in old and new.get("process") != old["process"]:
@@ -1150,12 +1268,8 @@ def validate_transitions(old, new, project=None):
     validate_commit_transitions(old, new, project)
     if new.get("status") == "complete" and new.get("waves"):
         current = project_binding(project, new["scope"], Path(new["output_root"]))
-        integration = new["integration"]
-        if integration["merged_sha"] != current.get("head"):
-            raise ProtocolError("Completion merge SHA does not name current HEAD")
-        reviewed_head = integration["candidate_review"]["head"]
-        if git_value(project, "merge-base", "--is-ancestor", reviewed_head, integration["merged_sha"]) is None:
-            raise ProtocolError("Completion merge does not descend from the reviewed candidate")
+        validate_integrated_commit(project, new["integration"], current,
+                                   new["scope"], Path(new["output_root"]))
     for key in ("phases", "deliveries"):
         for identity, before in old[key].items():
             after = new[key].get(identity)
@@ -1324,6 +1438,40 @@ def reconcile_interrupted_commit(before, project, root):
     return None
 
 
+def reconcile_interrupted_integration(before, project, root):
+    """Recover the recorded integration handoff without changing any receipt."""
+    integration = before.get("integration")
+    receipt = integration.get("candidate_review") if isinstance(integration, dict) else None
+    if not isinstance(receipt, dict):
+        return None
+    previous = before.get("candidate", before["project"])
+    current = project_binding(project, before["scope"], root)
+    if (any(current.get(key) != before["project"].get(key) or current.get(key) != previous.get(key)
+            for key in ("root", "worktree", "git_dir"))
+            or current["snapshot"] != previous["snapshot"]
+            or previous.get("head") != receipt.get("head")
+            or previous["snapshot"]["digest"] != receipt.get("snapshot")
+            or current.get("head") != integration.get("merged_sha")
+            or git_value(project, "symbolic-ref", "-q", "HEAD") is not None):
+        return None
+    branch = before.get("workspace", {}).get("branch")
+    if not branch or git_value(project, "rev-parse", "--verify", f"refs/heads/{branch}") != previous["head"]:
+        return None
+    review = next((item for item in before.get("reviews", []) if item.get("id") == receipt.get("id")), None)
+    candidate = {"head": previous["head"], "digest": previous["snapshot"]["digest"]}
+    try:
+        validate_pass_review(review, candidate, receipt, contract()["loop"]["reviews"],
+                             before.get("deliveries", {}), expected_shape="branch", expected_stage="candidate")
+        validate_integrated_commit(project, integration, current, before["scope"], root)
+        if not squash_inputs_match_commit(project, current, before["scope"], root):
+            return None
+    except ProtocolError:
+        return None
+    # commit_change refreshes only the candidate/revision and holder. Questions,
+    # grants, gates, sealed waves, review inputs and interruption stay intact.
+    return copy.deepcopy(before)
+
+
 def commit_change(project, root, path, session, take_over, change):
     """Apply change(before) under the writer lock and return the record; None writes nothing.
 
@@ -1473,6 +1621,7 @@ def main(argv=None):
     parser.add_argument("--session", help="identity of the session doing the work; recorded as the task's holder")
     parser.add_argument("--take-over", action="store_true", help="take a task held by another session, after the user confirmed it is closed")
     parser.add_argument("--branch", help="agenda: only the task bound to this branch")
+    parser.add_argument("--worktree", type=Path, help="agenda: tasks bound to this exact checkout path")
     parser.add_argument("--payload", type=Path)
     parser.add_argument("--expected-revision", type=int)
     parser.add_argument("--result", type=Path)
@@ -1494,7 +1643,10 @@ def main(argv=None):
         if args.command == "agenda":
             path = root / "agenda.json"
             agenda = read_json(path) if path.is_file() else {"schema": AGENDA_SCHEMA, "tasks": {}}
-            rows = [row for row in agenda.get("tasks", {}).values() if not args.branch or row.get("branch") == args.branch]
+            rows = [row for row in agenda.get("tasks", {}).values()
+                    if (not args.branch or row.get("branch") == args.branch)
+                    and (not args.run_id or row.get("run_id") == args.run_id)
+                    and (not args.worktree or row.get("worktree") == str(args.worktree.resolve()))]
             rows.sort(key=lambda row: row.get("updated_at") or "", reverse=True)
             output = {"schema": AGENDA_SCHEMA, "root": str(root), "tasks": rows}
         elif args.command == "init":
@@ -1559,9 +1711,10 @@ def main(argv=None):
                     raise ProtocolError("Resume scope changed; reassess in a new run")
                 if project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
                     record = commit_change(project, root, path, args.session, args.take_over,
-                                           lambda before: reconcile_interrupted_commit(before, project, root))
+                                           lambda before: reconcile_interrupted_commit(before, project, root)
+                                           or reconcile_interrupted_integration(before, project, root))
                     if project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
-                        raise ProtocolError("Resume candidate snapshot or workspace changed; no matching interrupted commit was found")
+                        raise ProtocolError("Resume candidate snapshot or workspace changed; no matching interrupted commit or integration was found")
                 with writer_lock(root / ".write-lock", root):
                     record = validate_record(read_json(path), project, root)
                     atomic_write(root / "agenda.json", plan_agenda(root, project, record, args.session,

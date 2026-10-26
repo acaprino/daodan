@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:1819fbcb14d8d3013d69275cd0deabbae606f7c497bbf1be4ae4bea757d71feb",
+  "coreDigest": "sha256:32a42eb8bd2efe3c2e56369a84fe7c1ec9a1c045605a2bf67cb02f1c238a279a",
   "harnessStrategies": {
     "brainstorm-idea": "native-team",
     "check-health": "native-team",
@@ -29,11 +29,12 @@
     "tidy-repo": "native-team",
     "verify": "native-team",
     "workbook": "native-team",
+    "worktrees": "native-team",
     "write-docs": "native-team",
     "write-tests": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.4.1"
+  "version": "2.4.2"
 }

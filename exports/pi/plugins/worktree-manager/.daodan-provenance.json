@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:1aed8e5c059ce717a6473ae5759c58643df18aa30382d70a7b29627473a79e95",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "worktree-manager",
+  "version": "1.0.0"
+}

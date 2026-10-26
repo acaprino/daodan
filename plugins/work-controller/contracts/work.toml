@@ -67,6 +67,9 @@ sealed_requires_task_state = "committed"
 
 [loop.integration]
 required = ["merged_sha", "realigned", "candidate_review"]
+# Squash is the only explicit alternative to reviewed-head ancestry. Completion
+# reads commit parents and trees from Git and matches the clean review snapshot.
+squash_required = ["strategy", "target_sha"]
 
 [loop.rulings]
 required = ["id", "task", "sha", "decision", "reason", "cost_if_wrong", "evidence"]

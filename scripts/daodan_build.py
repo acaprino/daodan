@@ -211,11 +211,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
                 continue
 
             live = root / adapter.layout["root"] / "plugins" / plugin.name
-            if check:
-                if _package_drifted(plugin, adapter, live, overrides, root, plugin_registry, host_overrides[host]):
-                    drift.append(live)
-            else:
-                prepared.append((plugin, adapter, live, overrides))
+            prepared.append((plugin, adapter, live, overrides))
 
     if len(catalogs) == len(HOSTS):
         assert_cross_host_identity(catalogs)
@@ -223,6 +219,9 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
     if issues:
         return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support))
 
+    # Both modes derive catalogs from the same complete rendered candidate.
+    # A live package can legitimately lack a newly declared component under
+    # --check; reading its metadata would turn ordinary drift into a traceback.
     # Render every host before changing any live package or retiring any output.
     with tempfile.TemporaryDirectory(prefix="daodan-build-") as holder:
         staging = Path(holder)
@@ -232,6 +231,8 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
                 target = staging / adapter.host / plugin.name
                 render_plugin(plugin, adapter, target, overrides, root / "adapters", plugin_registry, host_overrides[adapter.host])
                 staged_packages[(adapter.host, plugin.name)] = target
+                if check and (not live.is_dir() or tree_digest(target) != tree_digest(live)):
+                    drift.append(live)
         except RenderError as error:
             return BuildReport(issues=(ValidationIssue("render-error", root, str(error)),),
                                support=tuple(support))
@@ -240,8 +241,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
         warnings = []
         for host in hosts:
             adapter = load_adapter(root / "adapters", host)
-            packages = {plugin.name: staged_packages.get((host, plugin.name),
-                        root / adapter.layout["root"] / "plugins" / plugin.name) for plugin in plugins}
+            packages = {plugin.name: staged_packages[(host, plugin.name)] for plugin in plugins}
             catalog_path = root / adapter.layout["marketplace"]
             removed = {path.name for path in retired if path.parent == root / adapter.layout["root"] / "plugins"}
             rendered = _render_host_catalog(root, adapter, host, plugins, version, catalog_path,
@@ -460,21 +460,6 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
     return render_catalog(
         host, plugins, version, packages, layout=adapter.layout, name=name, description=description
     )
-
-
-def _package_drifted(plugin, adapter, live: Path, overrides, root: Path, plugin_registry=None, role_overrides=None) -> bool:
-    if not live.is_dir():
-        return True
-    holder = Path(tempfile.mkdtemp())
-    try:
-        staging = holder / live.name
-        try:
-            render_plugin(plugin, adapter, staging, overrides, root / "adapters", plugin_registry, role_overrides)
-        except RenderError:
-            return True
-        return tree_digest(staging) != tree_digest(live)
-    finally:
-        shutil.rmtree(holder, ignore_errors=True)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

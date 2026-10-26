@@ -79,21 +79,31 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Continue a task
 
-Load `references/specification.md`; verify any recorded specification binding
-before resuming. Changed bytes reopen approval and plans; legacy runs keep their method.
+Load `references/specification.md`; verify recorded specification bytes/approval
+before resuming. Changed bytes reopen approval/plans.
 
-1. **Find it.** `run_state.py agenda --branch <current branch>`. Without a row,
-   use `Daodan-Task:` trailers and the branch record to propose adoption.
-2. **Take it.** `resume` with this session and current authorizations. After a
-   commit crash, resume reconciles only matching parent, bytes, owned paths and
-   run trailer; otherwise it refuses changes. Refuse another session's task
-   unless the user confirms it closed, then take over.
-3. **Answer.** Record command text against pending questions, source `continue`,
-   first. Ask remaining questions one per turn.
-4. **Go on.** Restart at the agenda phase's first open step: unsealed wave,
-   undelivered review or unauthorized merge. Verify and review a changed
-   candidate's delta before the next wave.
+Load `worktree-manager:worktree-method`; reconcile run/Git-identity/catalog/holder
+at original project path.
 
-Validate and resume an existing `process` through `work-controller:work-record`'s
-`references/process-runtime.md`; reconcile unknown attempts and host handles
-before redispatch. Never fabricate a graph for legacy unbound work.
+1. **Find.** `run_state.py agenda --project <root> --branch <branch>`.
+   Detached: replace `--branch` with `--worktree <original-checkout>`; include known
+   `--run-id <task>`. Match run/project/holder; inspect original
+   agenda before `Daodan-Task:` trailer/branch-record adoption.
+   One open task/branch.
+2. **Take.** `resume` with session/current authorizations. Commit recovery requires
+   matching parent/bytes/owned-paths/trailer. Integration recovery requires
+   delivered branch review, unchanged raw snapshot/identity, exact verified
+   detached result, preserved source branch. Refresh candidate; preserve
+   receipts/gates; verify stale final gates. Refuse other changes. Take over only
+   after user confirms previous session closed.
+3. **Answer.** Record command text against pending questions first, source
+   `continue`; ask remaining questions one/turn.
+4. **Continue.** Restart first open wave/review/merge; verify and review
+   changed bytes before next wave.
+
+Retry failed setup/cleanup, never verified integration. Completed records
+immutable; cleanup receipts stay outside.
+
+For `process`, follow `work-controller:work-record`'s `references/process-runtime.md`:
+validate identity and reconcile attempts/host handles before redispatch.
+Legacy records retain method.

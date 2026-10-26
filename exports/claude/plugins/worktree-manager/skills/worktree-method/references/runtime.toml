@@ -1,0 +1,5 @@
+# Original adapter defaults. User preferences and project hooks are not setup.
+[list]
+json-schema = 2
+full = false
+summary = false
