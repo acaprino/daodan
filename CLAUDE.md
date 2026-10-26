@@ -1,4 +1,4 @@
-# Shinatama
+# Daodan
 
 Shinatama is the synthetic companion in Oni that supplies external intelligence, domain guidance and operational support alongside the Daodan symbiote. This repository is the companion marketplace to [`acaprino/daodan`](https://github.com/acaprino/daodan): it holds 24 independent domain verticals, research, office workflows and framework toolkits, while `acaprino/daodan` holds the core software engineering harness (`codebase-map`, `project-lifecycle`, `senior-review`, `testing`, `project-knowledge`, the cross-model deliberation of `peer-review` and `moe`, and core language/stack providers). `peer-review` and `moe` moved back to Daodan on 2026-10-19 because its task cycle consumes them. `text-humanizer` moved here from Daodan on 2026-10-25 as a generic plugin with its own `/text-humanizer:humanize-text` workflow; it stays dependency-free, and Daodan's `project-knowledge` requires it as `text-humanizer@shinatama`. It ships to five hosts from one source. Remote: `acaprino/shinatama` on GitHub.
 
@@ -255,15 +255,15 @@ GitHub does not start a workflow from a push made with `GITHUB_TOKEN`, so the bo
 Registering the repository root as a marketplace is the whole distribution story, on the three hosts that have marketplaces:
 
 ```bash
-claude plugin marketplace add acaprino/shinatama
-copilot plugin marketplace add acaprino/shinatama
-codex plugin marketplace add acaprino/shinatama
+claude plugin marketplace add acaprino/daodan
+copilot plugin marketplace add acaprino/daodan
+codex plugin marketplace add acaprino/daodan
 ```
 
 **Pi is the exception, and it is not a gap in the port.** Pi has no marketplace at all: `pi install` accepts npm, git or a local path, and nothing else. So the unit is the repository, pinned to a released tag, and the whole marketplace arrives at once:
 
 ```bash
-pi install git:github.com/acaprino/shinatama@v<metadata.version>
+pi install git:github.com/acaprino/daodan@v<metadata.version>
 ```
 
 Three consequences bind anything done here later. **Selection is a settings concern on that host**, through the object form of `packages`, never a narrower install; a user picks plugins by filtering globs, and the choice survives updates. **Distribution is git only, deliberately**, because the tag already exists and the generated manifest is byte-identical to what an npm publication would carry, so adding npm later is additive and adding a release asset is not: Pi cannot install an archive, so an asset could only ever be unpacked by hand into `~/.pi/agent/skills/` as loose files with no ref, no `pi update` and no filtering. **Two companion packages carry mechanisms Pi's core omits on purpose**, `pi-subagents` for an isolated worker context and `pi-mcp-adapter` for MCP, both named in the bindings' `package` field so a harness template renders the install line from the adapter rather than from its own prose.
@@ -271,7 +271,7 @@ Three consequences bind anything done here later. **Selection is a settings conc
 **OpenCode V2 is the second exception.** It has no marketplace either, and a package reaches it only as a plugin, installed by npm spec. The spec points at `exports/opencode/` inside the tagged repository through npm's `::path:` selector, which is what keeps the root `package.json` Pi's:
 
 ```bash
-opencode plugin add 'github:acaprino/shinatama#v<metadata.version>::path:exports/opencode'
+opencode plugin add 'github:acaprino/daodan#v<metadata.version>::path:exports/opencode'
 ```
 
 OpenCode Desktop needs nothing of its own: it bundles the V2 CLI and runs it as a background service, and that service is what loads config and plugins, so one install serves both. Three consequences bind anything done here later. **The target is V2 only, by decision**: V1 has a different plugin API, agent schema, permission model and MCP shape, and a dual package would carry two implementations of every registration path for a line the vendor is replacing. **Selection is a loader option**, `{"package": "<spec>", "options": {"plugins": [...], "exclude": [...]}}`, and the dependency policy outranks it: a selection always brings its transitive closure of local dependencies, an exclusion never removes a plugin a selected one depends on, and both overrides are logged. **The loader is data-driven and never generated per plugin**: everything plugin-specific is computed in Python and written to the manifest, so the toolchain stays stdlib Python and the drift gate covers the loader like any other output. Its isolation is native, unlike Pi's: roles register as agents with `mode: subagent` and run through the built-in `subagent` tool, so the harness has no missing-tool branch, and a role's permission list ends with an `external_directory` allowance scoped to the installed package, because the package lives in OpenCode's cache, outside every project.

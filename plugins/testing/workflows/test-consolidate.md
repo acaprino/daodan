@@ -1,0 +1,17 @@
+---
+description: >
+  Consolidates accepted overlapping protection by layer owner, preserving justified scope splits and verifying replacement protection before retiring approved originals in the same candidate and authorized commit.
+  TRIGGER WHEN: consolidating, deduping or rewriting the tests of a module, or processing quarantined tests for code being touched.
+  DO NOT TRIGGER WHEN: whole-suite health is measured or quarantined (use /testing:test-audit), or tests written for untested code (use the test-writer agent).
+argument-hint: "<module-path> [--runner <cmd>] [--coverage-cmd <cmd>] [--dry-run]"
+---
+
+# /testing:test-consolidate
+
+Load the `testing:test-preparation` skill with mode `consolidate`, target, original flags and
+explicit output root. Load the `testing:test-remediation-method` skill with the prepared
+bundle and mode `consolidate`. Respect its cause classification, inventory acceptance,
+snapshot-bound gate and owned recovery. Under audit `--fix`, only accepted temporary
+quarantine is applied; without it report only. Under `--dry-run`, inventory only.
+
+$ARGUMENTS

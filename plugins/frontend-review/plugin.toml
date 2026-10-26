@@ -9,7 +9,7 @@ required = ["repository.read", "repository.write"]
 optional = []
 
 [dependencies]
-required = ["impeccable@impeccable", "ui-ux-pro-max@ui-ux-pro-max-skill", "frontend-design@claude-plugins-official", "react-development@daodan", "typescript-development@daodan", "pwa-expert", "platform-engineering@daodan"]
+required = ["impeccable@impeccable", "ui-ux-pro-max@ui-ux-pro-max-skill", "frontend-design@claude-plugins-official", "react-development", "typescript-development", "pwa-expert", "platform-engineering"]
 
 [components]
 skills = []

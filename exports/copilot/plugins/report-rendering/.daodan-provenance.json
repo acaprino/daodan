@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:39c6ad5fb350f329a90b510b9b54009539969089d42ace2ea222e76f56032c95",
+  "harnessStrategies": {},
+  "host": "copilot",
+  "overrides": [],
+  "plugin": "report-rendering",
+  "version": "1.0.2"
+}

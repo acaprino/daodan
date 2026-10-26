@@ -1,19 +1,17 @@
 """Exercise policy drift detection with independent copies and mutations."""
 from pathlib import Path
 import re
-import sys
 import unittest
 from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
 from scripts import lint_fact_anchors as linter
+
+
+ROOT = Path(__file__).resolve().parents[1]
 POLICY_ANCHORS = (
-    "constraint-saturation-threshold",
-    "web-api-global-rate",
-    "broker-archetype-count",
+    "test-layer-ownership",
+    "test-assertion-protection",
+    "test-retirement-protection",
 )
 WORKING_ANCHORS = (
     "working-principle-material-assumptions",
@@ -21,10 +19,13 @@ WORKING_ANCHORS = (
     "working-principle-authorized-scope",
     "working-principle-observable-verification",
 )
-WORKING_OWNER = "CLAUDE.md"
+WORKING_OWNER = "plugins/project-protocol/skills/project-protocol/SKILL.md"
 WORKING_COPIES = (
     WORKING_OWNER,
+    "CLAUDE.md",
     "AGENTS.md",
+    "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+    "plugins/project-knowledge/skills/instructions-method/references/instruction-example.md",
 )
 
 
@@ -54,7 +55,7 @@ class TestPolicyAnchorTests(unittest.TestCase):
 
                 conflicts, orphans, _, checked, scanned = self.check_working_fixture(anchor_id, texts)
 
-                self.assertEqual((conflicts, orphans, checked, scanned), ([], [], 1, len(WORKING_COPIES)))
+                self.assertEqual((conflicts, orphans, checked, scanned), ([], [], 1, 5))
 
     def test_changed_working_copy_reports_the_protocol_and_mutated_source(self):
         for anchor_id in WORKING_ANCHORS:
@@ -67,7 +68,7 @@ class TestPolicyAnchorTests(unittest.TestCase):
 
                     conflicts, orphans, _, checked, scanned = self.check_working_fixture(anchor_id, texts)
 
-                    self.assertEqual((len(conflicts), orphans, checked, scanned), (1, [], 1, len(WORKING_COPIES)))
+                    self.assertEqual((len(conflicts), orphans, checked, scanned), (1, [], 1, 5))
                     self.assertEqual(conflicts[0][0], anchor_id)
                     reported = {path for paths in conflicts[0][3].values() for path in paths}
                     self.assertIn(WORKING_OWNER, reported)
@@ -92,7 +93,7 @@ class TestPolicyAnchorTests(unittest.TestCase):
                         self.assertTrue(missing, "Deleting an independently loaded rule must fail the linter")
                         self.assertTrue(any(copy in row[3] or (copy == WORKING_OWNER and row[1] == copy)
                                             for row in missing), "The failure must identify the missing source copy")
-                        self.assertEqual(scanned, len(WORKING_COPIES) - 1 if absent_file else len(WORKING_COPIES))
+                        self.assertEqual(scanned, 4 if absent_file else 5)
 
     def test_working_rule_cosmetic_case_and_whitespace_remain_equivalent(self):
         for anchor_id in WORKING_ANCHORS:
@@ -126,31 +127,15 @@ class TestPolicyAnchorTests(unittest.TestCase):
                 match = re.search(pattern, source)
                 self.assertIsNotNone(match, "anchored owner must still state its policy")
                 statement = match.group(0)
-                mutated = (
-                    statement[: match.start(1) - match.start()]
-                    + "999"
-                    + statement[match.end(1) - match.start() :]
-                )
+                mutated = statement[:match.start(1) - match.start()] + "Unapproved policy"
                 result, owner, echo = self.check_fixture(anchor_id, statement, mutated)
                 conflicts, orphans, _, checked, scanned = result
                 self.assertEqual((len(conflicts), len(orphans), checked, scanned), (1, 0, 1, 2))
                 reported = {path for paths in conflicts[0][3].values() for path in paths}
                 self.assertEqual(reported, {owner.as_posix(), echo.as_posix()})
 
-    def test_cosmetic_whitespace_does_not_change_a_policy(self):
-        anchor_id = "working-principle-material-assumptions"
-        owner_path, pattern, _ = linter.ANCHORS[anchor_id]
-        source = (ROOT / owner_path).read_text(encoding="utf-8")
-        statement = re.search(pattern, source).group(0)
-        prefix, value = statement.split(": ", 1)
-        echo = prefix + ": " + value.upper().replace(" ", "  ")
-        texts = {Path(copy): statement for copy in WORKING_COPIES}
-        texts[Path("instructions/nested/AGENTS.md")] = echo
-        conflicts, orphans, _, checked, _ = self.check_working_fixture(anchor_id, texts)
-        self.assertEqual((conflicts, orphans, checked), ([], [], 1))
-
     def test_silent_owner_cannot_be_replaced_by_an_instruction_echo(self):
-        anchor_id = "constraint-saturation-threshold"
+        anchor_id = "test-retirement-protection"
         owner_path, pattern, _ = linter.ANCHORS[anchor_id]
         source = (ROOT / owner_path).read_text(encoding="utf-8")
         statement = re.search(pattern, source).group(0)
@@ -158,6 +143,17 @@ class TestPolicyAnchorTests(unittest.TestCase):
         conflicts, orphans, _, checked, _ = result
         self.assertEqual((len(conflicts), len(orphans), checked), (0, 1, 0))
         self.assertIn(echo.as_posix(), orphans[0][3])
+
+    def test_cosmetic_whitespace_does_not_change_a_policy(self):
+        anchor_id = "test-assertion-protection"
+        owner_path, pattern, _ = linter.ANCHORS[anchor_id]
+        source = (ROOT / owner_path).read_text(encoding="utf-8")
+        statement = re.search(pattern, source).group(0)
+        prefix, value = statement.split(": ", 1)
+        echo = prefix + ": " + value.upper().replace(" ", "  ")
+        result, _, _ = self.check_fixture(anchor_id, statement, echo)
+        conflicts, orphans, _, checked, _ = result
+        self.assertEqual((conflicts, orphans, checked), ([], [], 1))
 
 
 if __name__ == "__main__":

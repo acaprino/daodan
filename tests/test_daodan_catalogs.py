@@ -240,8 +240,8 @@ class OpenCodeManifestTests(unittest.TestCase):
                 self.assertIn(dependency, plugins, name)
 
     def test_agents_carry_their_permission_list(self):
-        entry = live_opencode_manifest()["daodan"]["plugins"]["research"]
-        agent = next(a for a in entry["agents"] if a["id"] == "research:quick-searcher")
+        entry = live_opencode_manifest()["daodan"]["plugins"]["senior-review"]
+        agent = next(a for a in entry["agents"] if a["id"] == "senior-review:code-auditor")
         self.assertEqual(agent["permissions"][0], {"action": "*", "resource": "*", "effect": "deny"})
         self.assertEqual(agent["permissions"][-1]["resource"], "<package-root>/**")
 

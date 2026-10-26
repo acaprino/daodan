@@ -20,7 +20,7 @@ Nothing mechanical would have caught it, because every copy was internally
 plausible and no two were compared.
 
 This linter compares them. Each anchor names a fact, the file that owns it, and a
-regex whose first group captures the value. Every file in the repository is scanned
+regex whose first group captures the value. Every tracked or nonignored new repository source is scanned
 for that regex; if two files report different values, the anchor fails and both are
 named. It also checks explicitly required independent copies: a missing statement
 is a coverage failure. Value comparison remains narrow, comparing statements of
@@ -41,7 +41,9 @@ Adding an anchor is cheap and is the right response to correcting a fact twice.
 Pick a phrasing stable enough to survive an edit, capture the value in group 1, and
 prefer a number or a short verbatim quote over a sentence.
 """
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -58,24 +60,44 @@ _COUNT = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelv
 
 ANCHORS = {
     "working-principle-material-assumptions": (
-        "CLAUDE.md",
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
         r"(?m)^Working assumptions: ([^\n]+)$",
         "Material assumptions and essential decisions must agree across independently loaded instructions",
     ),
     "working-principle-sufficient-simplicity": (
-        "CLAUDE.md",
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
         r"(?m)^Working simplicity: ([^\n]+)$",
         "Sufficient design and existing ownership must agree across independently loaded instructions",
     ),
     "working-principle-authorized-scope": (
-        "CLAUDE.md",
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
         r"(?m)^Working scope: ([^\n]+)$",
         "Owned edits and authorized removal must agree across independently loaded instructions",
     ),
     "working-principle-observable-verification": (
-        "CLAUDE.md",
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
         r"(?m)^Working verification: ([^\n]+)$",
         "Observable criteria and required completion gates must agree across independently loaded instructions",
+    ),
+    "test-assertion-protection": (
+        "plugins/testing/skills/test-hygiene/SKILL.md",
+        r"(?m)^Assertion protection: ([^\n]+)$",
+        "Independent oracle corrections and active product protection must agree across instruction copies",
+    ),
+    "test-retirement-protection": (
+        "plugins/testing/skills/test-hygiene/SKILL.md",
+        r"(?m)^Test retirement: ([^\n]+)$",
+        "Retirement needs retired behavior or verified equivalent replacement in the same candidate",
+    ),
+    "test-layer-ownership": (
+        "plugins/testing/skills/test-hygiene/SKILL.md",
+        r"(?m)^Test ownership: ([^\n]+)$",
+        "Unit and flow ownership must agree in canonical testing and independently loaded instruction blocks",
+    ),
+    "working-principle-shared-concept-owner": (
+        "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+        r"### 5\. Centralize Shared Logic\n([^\n]+)",
+        "Shared concept ownership rule: instruction examples and the canonical working block must agree",
     ),
     "constraint-saturation-threshold": (
         "plugins/ai-tooling/roles/prompt-engineer.md",
@@ -176,13 +198,26 @@ ANCHORS = {
         r"ladder has \*\*(\w+) ranks\*\*",
         "the evidence ladder's rank count, stated in the generic plugin and in the ibkr skill",
     ),
+    "xray-incident-apply-share": (
+        "docs/plugins/codebase-map.md",
+        r"(\d+)% of the applied rules used `@apply`",
+        "share of the incident tree's applied rules written with Tailwind @apply, which justifies the expansion in the stylesheet adapter; corrected once from a figure that measured something else",
+    ),
+    "xray-snapshot-path": (
+        "plugins/codebase-map/skills/map-method/references/snapshot.md",
+        r"snapshot/([\w.-]+\.json)",
+        "Codebase Map snapshot manifest path, stated in the skill and the plugin doc",
+    ),
 }
 
 # These independent instruction surfaces must each carry the compact rules.
 # Rendered host copies are checked by the host contract suite.
 _WORKING_PRINCIPLE_COPIES = (
+    "plugins/project-protocol/skills/project-protocol/SKILL.md",
     "CLAUDE.md",
     "AGENTS.md",
+    "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+    "plugins/project-knowledge/skills/instructions-method/references/instruction-example.md",
 )
 REQUIRED_COPIES = {
     "working-principle-material-assumptions": _WORKING_PRINCIPLE_COPIES,
@@ -234,8 +269,18 @@ failures = []
 
 
 def scan_files():
-    """Every text file that could state an anchored fact."""
-    for path in sorted(Path(".").rglob("*")):
+    """Scan current repository sources, never private caches or historical run data.
+
+    Git includes tracked files even when an ignore rule matches them, and new
+    untracked sources remain visible. Required copies are still checked below;
+    a missing required source fails rather than silently reducing coverage.
+    """
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    paths = {Path(os.fsdecode(value)) for value in result.stdout.split(b"\0") if value}
+    for path in sorted(paths):
         if not path.is_file() or path.suffix not in SCANNED_SUFFIXES:
             continue
         parts = set(path.parts)

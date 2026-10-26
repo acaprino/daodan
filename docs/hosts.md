@@ -279,6 +279,13 @@ events; its [MCP contract](../plugins/codebase-map/skills/map-method/references/
 keeps worker execution and native UI in the host. Existing shell analysis entries
 remain usable without connecting the server.
 
+Map 7.0.0 defaults to local SQLite snapshots and supports explicit JSON upstream.
+The LLM receives selected text packets, not database or base64 dumps. Each host
+still owns tool execution, isolation and native progress/UI. An embedding
+application must import and qualify the release before its local format binding
+is considered integrated; Tri-Tech Code's SQLite-only source changes do not
+change the public upstream compatibility contract.
+
 | Host | Generated MCP mechanism |
 |---|---|
 | Claude | Plugin-root `.mcp.json` and a catalog `mcpServers` pointer |

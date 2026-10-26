@@ -1,0 +1,164 @@
+"""Cross-host package parity for the first real compiled plugin.
+
+`dependency-audit` is the simple canary: one skill, one workflow, one context.
+It proves the compiler produces one installable package per host with the same
+identity and the same observable contract before anything harder is attempted.
+"""
+
+import json
+import sys
+import unittest
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
+from scripts.daodan.load import load_plugin  # noqa: E402
+from host_binding_assertions import canonical_markdown, without_host_binding
+
+PLUGIN = "dependency-audit"
+KERNEL = REPO_ROOT / "plugins" / PLUGIN
+
+#: Pi and OpenCode are absent on purpose: neither has a per-plugin manifest, so the identity it
+#: can be held to is the one its package records in `.daodan-provenance.json`.
+MANIFEST = {
+    "claude": ".claude-plugin/plugin.json",
+    "copilot": "plugin.json",
+    "codex": ".codex-plugin/plugin.json",
+}
+
+WORKFLOW_ENTRYPOINT = {
+    "claude": "commands/deps-audit.md",
+    "copilot": "prompts/deps-audit.prompt.md",
+    "codex": "skills/deps-audit-workflow/SKILL.md",
+    "pi": "prompts/dependency-audit-deps-audit.md",
+    "opencode": "commands/deps-audit.md",
+}
+
+PROVENANCE = ".daodan-provenance.json"
+
+#: What each host's workflow frontmatter opens with. Pi and OpenCode carry no
+#: `name`: on Pi the command is the filename, on OpenCode the loader names it.
+FRONTMATTER_PREFIX = {
+    "copilot": "---\nname: deps-audit\n",
+    "codex": "---\nname: deps-audit-workflow\n",
+    "pi": "---\ndescription:",
+    "opencode": "---\ndescription:",
+}
+
+SKILL_RESOURCES = (
+    "skills/dependency-audit/SKILL.md",
+    "skills/dependency-audit/references/ecosystems.md",
+    "skills/dependency-audit/references/license-analysis.md",
+    "skills/dependency-audit/references/supply-chain.md",
+)
+
+CONTRACT_OUTCOMES = (
+    "dependencies-discovered",
+    "direct-and-transitive-classified",
+    "licenses-analyzed",
+    "supply-chain-findings-evidenced",
+)
+
+
+def normalized(path: Path) -> str:
+    """Compare content, not line endings: generated text is always LF."""
+    return path.read_text(encoding="utf-8").replace(chr(13) + chr(10), chr(10))
+
+
+def package(host: str) -> Path:
+    return REPO_ROOT / "exports" / host / "plugins" / PLUGIN
+
+
+class DependencyAuditPortTests(unittest.TestCase):
+    def test_every_host_reports_the_same_identity(self):
+        kernel = load_plugin(KERNEL)
+        for host in HOSTS:
+            with self.subTest(host=host):
+                manifest = MANIFEST.get(host)
+                if manifest is None:
+                    recorded = json.loads(
+                        (package(host) / PROVENANCE).read_text(encoding="utf-8")
+                    )
+                    self.assertEqual(recorded["plugin"], kernel.name)
+                    self.assertEqual(recorded["version"], kernel.version)
+                    continue
+                declared = json.loads(
+                    (package(host) / manifest).read_text(encoding="utf-8")
+                )
+                self.assertEqual(declared["name"], kernel.name)
+                self.assertEqual(declared["version"], kernel.version)
+
+    def test_every_host_preserves_skill_resources_under_its_exact_execution_binding(self):
+        for host in HOSTS:
+            for resource in SKILL_RESOURCES:
+                with self.subTest(host=host, resource=resource):
+                    exported = package(host) / resource
+                    self.assertTrue(exported.is_file(), f"missing: {exported}")
+                    rendered = normalized(exported)
+                    self.assertEqual(rendered, canonical_markdown(rendered), "Generated EOF must be canonical")
+                    self.assertEqual(
+                        without_host_binding(self, rendered, host),
+                        canonical_markdown(normalized(KERNEL / resource)),
+                    )
+
+    def test_every_host_exposes_one_invocable_audit_workflow(self):
+        """The kernel body reaches every host whole; only the frontmatter is the host's.
+
+        Each host gets its exact verified execution binding. Claude keeps the
+        source fields and body; Codex and Copilot get host
+        frontmatter (`name`, `description`, and on Copilot `argument-hint`)
+        above the same body, with the compiler's generated-file comment in
+        between, so the comparison strips both frontmatters and asks for the
+        body itself.
+        """
+        kernel = normalized(KERNEL / "workflows/deps-audit.md")
+        kernel_body = kernel[kernel.index("\n---\n", 4) + 5 :].strip()
+        for host, entrypoint in WORKFLOW_ENTRYPOINT.items():
+            with self.subTest(host=host):
+                target = package(host) / entrypoint
+                self.assertTrue(target.is_file(), f"missing: {target}")
+                exported = normalized(target)
+                self.assertEqual(exported, canonical_markdown(exported), "Generated EOF must be canonical")
+                rendered = without_host_binding(self, exported, host)
+                if host == "claude":
+                    self.assertEqual(rendered, canonical_markdown(kernel))
+                    continue
+                # The two Claude placeholders are the one rewrite a body gets on
+                # another host; the adapter layout says what they become there.
+                layout = load_adapter(REPO_ROOT / "adapters", host).layout
+                expected = kernel_body.replace(
+                    "${CLAUDE_PLUGIN_ROOT}", layout["plugin_root_reference"]
+                ).replace("$ARGUMENTS", layout["arguments_reference"])
+                self.assertTrue(
+                    rendered.startswith(FRONTMATTER_PREFIX[host]), rendered[:60]
+                )
+                body = rendered[rendered.index("\n---\n", 4) + 5:].lstrip("\n")
+                notes = ""
+                arguments_note = layout.get("arguments_note")
+                if arguments_note:
+                    hint = kernel.partition("argument-hint:")[2].partition("\n")[0].strip().strip('"')
+                    notes = f"> Arguments: `{hint}`. {arguments_note}\n\n"
+                generated = f"<!-- Generated by the Daodan compiler for {host}. Edit the kernel, never this file. -->"
+                self.assertEqual(body, notes + generated + "\n\n" + expected + "\n")
+
+    def test_the_kernel_declares_the_audit_contract(self):
+        workflow = load_plugin(KERNEL).workflows[0]
+        self.assertEqual(workflow.name, "deps-audit")
+        for outcome in CONTRACT_OUTCOMES:
+            self.assertIn(outcome, workflow.contract.outcomes)
+        self.assertEqual(workflow.contract.artifacts, ("dependency-audit-report",))
+
+    def test_the_kernel_needs_no_semantic_override(self):
+        for host in MANIFEST:
+            with self.subTest(host=host):
+                provenance = json.loads(
+                    (package(host) / ".daodan-provenance.json").read_text(encoding="utf-8")
+                )
+                self.assertEqual(provenance["overrides"], [])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,9 +1,9 @@
 {
-  "description": "Shinatama: companion AI domain specialists, research, deliberation, office workflows and framework toolkits across five coding-agent hosts.",
+  "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
   "keywords": [
     "pi-package"
   ],
-  "name": "shinatama",
+  "name": "daodan",
   "pi": {
     "prompts": [
       "./exports/pi/plugins/*/prompts"

@@ -1,0 +1,19 @@
+schema = "daodan/record/v1"
+name = "knowledge-input"
+required = ["id", "provider", "version", "root", "file", "kind", "metadata_sha256", "bindings", "status"]
+
+[fields.kind]
+type = "enum"
+values = ["knowledge"]
+
+[fields.status]
+type = "enum"
+values = ["prepared", "failed"]
+
+[fields.bindings]
+type = "array"
+items = "contract:knowledge-assignment"
+
+[fields.sha256]
+type = "string"
+required_when = "status=prepared"

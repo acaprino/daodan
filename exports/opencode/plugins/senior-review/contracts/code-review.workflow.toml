@@ -1,0 +1,33 @@
+name = "code-review"
+entrypoint = "code-review.md"
+
+[dispatch]
+roles = [
+  "senior-review/code-auditor",
+  "senior-review/security-auditor",
+  "senior-review/ui-race-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/premise-auditor",
+  "testing/test-suite-auditor",
+  "abstraction-architect/abstraction-architect-agent",
+  "react-development/react-performance-optimizer",
+  "typescript-development/type-safety-auditor",
+  "platform-engineering/platform-reviewer",
+]
+isolated = true
+inline_workers = true
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:code-review-report"]
+
+[contract]
+inputs = ["repository"]
+outcomes = ["code-review-completed"]
+artifacts = ["code-review-report"]
+schemas = []
+
+shared_schemas = ["skill-catalog/contracts/knowledge-selection.toml", "skill-catalog/contracts/knowledge-input.toml", "skill-catalog/contracts/knowledge-assignment.toml", "skill-catalog/contracts/knowledge-usage.toml", "project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

@@ -1,0 +1,21 @@
+schema = "daodan/record/v1"
+name = "project-result"
+record_schema = "daodan/project-result/v1"
+required = ["schema", "run_id", "work_revision", "scope", "snapshot", "deliveries", "checks", "outputs", "limitations", "complete"]
+
+[fields.complete]
+type = "boolean"
+
+[fields.deliveries]
+type = "object"
+
+[fields.checks]
+type = "object"
+
+[fields.outputs]
+type = "array"
+items = "object"
+
+[fields.limitations]
+type = "array"
+items = "string"

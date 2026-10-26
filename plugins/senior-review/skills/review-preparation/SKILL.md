@@ -1,0 +1,60 @@
+---
+name: review-preparation
+description: >
+  Prepare the existing code, team or PR review inputs without writing another detection prompt. Load before dispatching reviewers in senior-review or project-lifecycle.
+---
+
+# Review preparation
+
+Input: `variant=code-review|team-review|pr-review`, target, original entry flags,
+output root; optionally the caller's resolved scope, baseline and candidate
+bindings. Output: resolved target and snapshot,
+native review brief, context files, reviewer selection, run identity and evidence discovery.
+
+Load the `project-protocol:project-protocol` skill for execution preflight and confined run
+records. A read-only review may use a dirty workspace: record its complete snapshot
+and preserve existing edits. Do not create a mutation authorization by reviewing.
+
+The coordinator alone may perform the project-bound Codebase Map preflight
+before dispatch: move an idle legacy archive intact and write only bound
+relocation metadata. This bounded exception authorizes no application changes,
+analysis run, worker migration or generic filesystem move.
+
+A caller-bound candidate is authoritative. Validate its project/worktree, run,
+scope and current snapshot through project-protocol before deriving review inputs.
+Use its captured baseline and exact candidate content, including scoped untracked
+files and their full contents. Exclude the run's output root. Never replace that
+target with a branch comparison or the previous commit. Missing baseline content
+is a declared comparison gap, not permission to invent a before-state; preserve
+the actual candidate and leave any gate needing that comparison unavailable.
+
+Read `references/<variant>.md` inside this skill and execute its preparation stages
+once. Existing reviewer inputs remain unchanged. For team review Phase 1a, the
+coordinator executes the canonical `codebase-map:analyze` entry's preflight,
+answerable checkpoints, delivery check and publication decision, dispatching
+`codebase-map:map-analyst` in one isolated context through the consuming
+workflow's declared host harness. Loading either body alone executes nothing;
+the analyst is a role, while analyze remains the entry. This step introduces no
+second review preparation or final report owner. Required workers retain
+isolated contexts. Resolve the exact run in runs.json and never
+substitute a mirror for a missing run.
+
+Native report locations in the reference are relative to the explicit review
+output root. When lifecycle supplies a run root, put scratch/context there instead
+of creating a second root run. Record the same project snapshot and run identity.
+Return missing input/worker evidence as degraded coverage; do not invent findings.
+
+Read `references/stack-dimensions.md` to include React, TypeScript and platform
+bindings in the same reviewer selection. For team review this is part of Phase 0b,
+before presenting the plan; for code and PR review it follows scope resolution.
+Preparation selects reviewers without dispatching them. Record the activation
+evidence or skip reason for each dimension, then pass the complete selection to
+review-method. A prepared bundle cannot imply that any selected reviewer ran.
+
+Load the `skill-catalog:skill-catalog` skill. Read `references/knowledge-bindings.md`
+inside this skill after resolving scope and the native reviewer selection. Prepare
+one `knowledge_selection` against the same candidate snapshot and actual available
+skill inventory. Add scope/lens assignments and content fingerprints to this brief;
+knowledge selection is open to every classified available stack, not a fixed
+language list. Return inventory/classification/match gaps and failed selected loads
+explicitly. Reuse the exact prepared record until any of its bindings changes.

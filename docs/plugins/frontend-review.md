@@ -117,10 +117,10 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 
 | Requirement | Plugins |
 |---|---|
-| Direct local | [pwa-expert](<pwa-expert.md>) |
-| Direct external | `frontend-design@claude-plugins-official`, `impeccable@impeccable`, `platform-engineering@daodan`, `react-development@daodan`, `typescript-development@daodan`, `ui-ux-pro-max@ui-ux-pro-max-skill` |
-| Local closure (2) | [frontend-review](<frontend-review.md>), [pwa-expert](<pwa-expert.md>) |
-| External closure (7) | `frontend-design@claude-plugins-official`, `impeccable@impeccable`, `platform-engineering@daodan`, `playwright@claude-plugins-official`, `react-development@daodan`, `typescript-development@daodan`, `ui-ux-pro-max@ui-ux-pro-max-skill` |
+| Direct local | [platform-engineering](<platform-engineering.md>), [pwa-expert](<pwa-expert.md>), [react-development](<react-development.md>), [typescript-development](<typescript-development.md>) |
+| Direct external | `frontend-design@claude-plugins-official`, `impeccable@impeccable`, `ui-ux-pro-max@ui-ux-pro-max-skill` |
+| Local closure (5) | [frontend-review](<frontend-review.md>), [platform-engineering](<platform-engineering.md>), [pwa-expert](<pwa-expert.md>), [react-development](<react-development.md>), [typescript-development](<typescript-development.md>) |
+| External closure (4) | `frontend-design@claude-plugins-official`, `impeccable@impeccable`, `playwright@claude-plugins-official`, `ui-ux-pro-max@ui-ux-pro-max-skill` |
 
 External bundles are separate upstream installations, not copied local skills.
 See [host setup](<../hosts.md>) for selection and availability requirements.

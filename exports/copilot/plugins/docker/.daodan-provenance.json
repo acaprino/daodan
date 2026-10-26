@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:95fb5dd4e0e230bc4c7b23004e489d2384deb5924b567fa911c9ceee21a05462",
+  "harnessStrategies": {},
+  "host": "copilot",
+  "overrides": [],
+  "plugin": "docker",
+  "version": "1.4.3"
+}

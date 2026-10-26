@@ -1,0 +1,583 @@
+> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+> Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+## Execution requirements
+
+This workflow fans out over partitions. Dispatch, scheduling and result collection belong to the host
+harness, which is generated from `contracts/team-analyze.workflow.toml`. What this workflow requires of
+any harness is fixed:
+
+- every partition worker runs in its own context and owns exactly one partition directory
+- Wave 2 starts only after every Wave 1 worker has been recorded delivered or failed
+- synthesis runs only after every partition has been accounted for
+- nothing writes outside the roots named by the `write-confinement` policy
+
+If the host cannot run workers in isolated contexts, stop and say so. Do not fall back to a single
+shared context: a partition analysis that read another partition's output is not the artifact this
+workflow claims to produce.
+
+# Team Codebase Map Analysis
+
+Orchestrate a partitioned multi-agent codebase analysis plus global interconnect map.
+
+
+## Method loads
+
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
+
+| Resource | Sections | When |
+|---|---|---|
+| `${PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
+| `${PLUGIN_ROOT}/skills/map-method/references/run.md` | all | always |
+| `${PLUGIN_ROOT}/skills/map-method/references/snapshot.md` | all | always |
+| `${PLUGIN_ROOT}/skills/map-method/references/phase-0.md` | all | always |
+
+## CRITICAL RULES
+
+1. **Execute phases in order.** No skipping unless `--skip-synthesis` or `--skip-interconnect` is set.
+2. **Spawn agents with file ownership.** Every spawn prompt enumerates the owned output files.
+3. **Run isolation.** All output goes to `$RUN_DIR` until the publish step. Concurrent runs never share files.
+4. **Wait for the global Wave 1 barrier** before spawning Wave 2 workers.
+5. **Never enter plan mode.** Execute immediately.
+6. **Resume-safe.** Re-spawn only missing workers on resume.
+7. **Honor existing authorization.** Invoking this workflow authorizes the requested analysis and its reports. Show the concrete scope, then proceed when it is settled. Ask only for a material unresolved choice or when the user explicitly requested approval before dispatch; missing `--yes` is not a reason to stop.
+
+## Pre-flight Checks
+
+1. Confirm the harness can dispatch isolated workers; stop if it cannot
+2. Parse `<arguments>`:
+   - `<target>`: directory to analyze (default: cwd)
+   - `--critical`: prioritize auth/payment/persistence in Phase 3-4
+   - `--comments`: activate comment audit in Phase 6
+   - `--depth=lite|full`: lite skips Phases 3, 4, and 6 (behavior workers not spawned; quality workers write only 05-risks.md; synthesizer skips 03/04/06)
+   - `--partition <path>`: manual partition (repeatable; overrides auto-detect)
+   - `--partition-name <name>`: symbolic name for the N-th manual partition (1-indexed; optional)
+   - `--skip-interconnect`: skip Phase 3
+   - `--skip-synthesis`: skip Phase 2 AND Phase 3
+   - `--run-name <name>`: explicit run identity for concurrent or repeated analyses
+   - `--yes`: select the recommended eligible scope without another confirmation; ordinary language can authorize the same choice
+   - `--update`: require an update base; error out if no usable parent team run exists (execution mode is still resolved at the checkpoint)
+   - `--no-update`: skip parent detection and run every partition fresh
+   - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `/codebase-map:analyze`)
+3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-map:map-method` skill's `references/run.md`):
+   - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
+   - Set `RUN_DIR = .codebase-map/runs/<run-id>`
+   - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-map/runs/legacy-<date>/` first
+   - Register through `snapshot.py register $RUN_DIR` after initializing state below; never write `runs.json` directly
+4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and its snapshot resolves through `snapshot.py resolve <parent-run-dir>`. With a candidate, run the change set once over the whole target:
+
+   ```bash
+   python "${PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" diff \
+     .codebase-map/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
+   ```
+
+   Hold `changes.json` for the partition checkpoint. With `--update` and no candidate, stop and say which condition failed (no completed run for this target, a completed run that is not team mode, or a parent with no manifest), and that a full run is the way to create one. Never fabricate a parent. With a candidate present, `--update` requires that base but does not choose the execution mode: resolve that choice at the checkpoint using the user's request, earlier answers or `--yes`; ask only if it remains unsettled.
+
+## Phase 0: Run Setup + Partition Detection
+
+### Worker dispatch
+
+There is no explicit team-creation step. The host harness dispatches each worker as the phases below require, and the harness is what records every worker as `delivered` or `failed`. The run identity lives in `{run-id}` and the run directory, never in anything the harness names.
+
+### Initialize state
+
+Create `$RUN_DIR/` and `$RUN_DIR/state.json`:
+
+```json
+{
+  "run_id": "<run-id>",
+  "target": "$ARGUMENTS_TARGET",
+  "mode": "team",
+  "status": "in_progress",
+  "flags": {
+    "critical": false,
+    "comments": false,
+    "depth": "full"
+  },
+  "parent_run": null,
+  "base_snapshot_created_at": null,
+  "git": null,
+  "incremental": null,
+  "partitions": [],
+  "phases": {
+    "phase_0_detection": "pending",
+    "phase_1_partition_workers": "pending",
+    "phase_2_synthesis": "pending",
+    "phase_3_interconnect": "pending"
+  },
+  "agents_spawned": [],
+  "files_created": [],
+  "started_at": "<ISO_TIMESTAMP>",
+  "completed_at": null
+}
+```
+
+Pre-flight point 4 already ran the change set before this file is written. On an incremental run, `parent_run` (the parent's run-id), `base_snapshot_created_at` (the parent manifest's `created_at`) and `incremental` (holding `{affected_files, files_in_snapshot}` from the change set's `totals`) are written here with their real values, not left for later. `git` cannot follow that rule: the snapshot that supplies it is not written until after the checkpoint is accepted, so it starts `null` here and is copied in right after that write. A full run leaves `parent_run` and `incremental` as `null` and still records `git` and the snapshot: every run is a possible parent.
+
+Invoke `snapshot.py register $RUN_DIR` after initializing state; repeat after
+lineage changes so the registry records `parent_run` (`null` for a full run).
+
+### Project Knowledge Discovery (Codebase Map Phase 0)
+
+Runs once for the whole run, inline in the orchestrating context, before partition detection. This is the same Phase 0 as `/codebase-map:analyze`, and it is global: it does not run per partition, and no partition worker owns any of its output. Read `CLAUDE.md`, `AGENTS.md`, and any equivalent project instruction file at the repository root and in the target's ancestors. Locate the canonical indexes the project actually uses, at minimum `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, all inside the perimeter: an index under a dot directory, or one Git ignores, is not a lead. For each concept, symbol and subsystem the run will cover across all partitions, search the located documents for an entry and record the concept, the document, and the anchor or heading that matched. Every row is a lead with status `documented` or `unverified`; nothing here is `verified`, because this phase reads no code.
+
+**Output file:** `$RUN_DIR/knowledge/navigation.md`
+**Output file:** `$RUN_DIR/knowledge/documentation-leads.md`
+
+See the `codebase-map:map-method` skill's `references/phase-0.md` for the full output templates.
+
+### Run partition detection algorithm
+
+If `--partition` was provided one or more times, skip auto-detect: use the manual list directly. Apply `--partition-name` mappings if provided; otherwise derive names from path basename.
+
+Otherwise, run the detection chain (first rule that matches wins):
+
+1. **Explicit workspace manifests** (in order):
+   - `pnpm-workspace.yaml` -> `packages` field paths
+   - `package.json` with `workspaces` field
+   - `lerna.json` `packages`
+   - `nx.json` + `apps/` + `libs/`
+   - `turbo.json` + `apps/` + `packages/`
+   - `Cargo.toml` `[workspace] members`
+   - `pyproject.toml` `[tool.uv.workspace] members` or equivalent
+2. **Convention-based monorepo:**
+   - `apps/`, `packages/`, or `services/` at root with >1 subdirectory
+   - `src/` with sub-dirs each having their own `package.json` / `pyproject.toml`
+3. **Layer split:**
+   - `src/{backend,frontend}`, `src/{api,web}`, `src/{server,client}`, or root-level `backend/` + `frontend/`
+4. **Language split:**
+   - Use `${PLUGIN_ROOT}/skills/map-method/scripts/classifier.py` to count files per language
+   - If ≥2 languages with ≥20 files each: partition per language (`*.py` -> "python", `*.ts/*.tsx` -> "typescript")
+   - Stylesheets (`css` in the classifier's counts) never form a language partition and never count toward the two languages: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side
+5. **Fallback:** single partition wrapping the entire target, name = `root`
+
+**Always outside every partition:** whatever the perimeter leaves out (see `## Perimeter` in the `codebase-map:map-method` skill's `references/run.md`): what Git ignores, every directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). A partition path the user names is analyzed as given.
+
+**Partition naming rules:**
+1. From workspace path -> basename
+2. On collision -> slug-ified path
+3. From language fallback -> language name
+4. From single-partition fallback -> `root`
+
+Normalize names: lowercase, separators -> hyphen, strip accents, allowed chars `[a-z0-9-]`.
+
+For each partition, take `file_count` from `snapshot.py scope <partition path>`, which applies the perimeter, and compute `loc_estimate` over the same files (`wc -l` or `cloc` if available). Run `snapshot.py scope <target>` once for the whole target as well: its `scope` block supplies the `Not analyzed` line of the preview.
+
+### Partition-level update
+
+The unit of an update here is the partition, deliberately coarser than the claim-level update of `/codebase-map:analyze`. A partition either changed or it did not, and a touched partition is worth re-analyzing whole: threading a change set through every worker would put it into every spawn prompt for a saving the partition split already provides most of.
+
+Available only when pre-flight point 4 found a candidate parent and its change set does not recommend `full`; the checkpoint below resolves whether to use it, never forcing an update over a requested full run.
+
+1. **The partition set must match.** The names this detection produced must be the same set as the parent's `state.json -> partitions`. Any difference means a full run, with the difference named at the checkpoint. A partition that appeared, vanished or was renamed changes what every other partition's boundaries mean.
+2. **Assign the affected files.** For each partition, its affected files are the `affected_files` of the change set that fall under its path. Record `partitions[i].update` as `"copied"` when that list is empty and `"re-analyzed"` (with the affected-file count) otherwise, before either branch below runs: the completion summary in Phase 4 and the `## Partitions` table both read this field, and neither can be reconstructed later, since `partitions[i].status` ends at `"done"` for both outcomes.
+3. **A partition with no affected file is copied**, whole, from `.codebase-map/runs/<parent-id>/partitions/<name>/` into `$RUN_DIR/partitions/<name>/`, once the checkpoint's update option is accepted. Mark its `partitions[i].status` as `"done"` directly. Phase 1's Wave 1 loop and its post-barrier status update both exclude a partition already `"done"`, so no worker is ever dispatched for it in either wave, and Wave 2's `structure_done` gate excludes it too since its status never changes from `"done"`.
+4. **A partition with at least one affected file is re-analyzed**, both waves, exactly as in a fresh run. Its workers receive their normal prompts and never see the change set.
+5. **Synthesis and the interconnect map always run**, over the mix of copied and fresh partition output. Both are cross-partition by construction, so neither can be carried.
+6. **`changes.md` holds the change set's three mechanical sections plus a `## Partitions` table** naming each partition as copied or re-analyzed, read from `partitions[i].update`.
+
+### Scope preview and unresolved choices
+
+This checkpoint is always a concrete scope preview. It waits only for an unresolved decision. Finish knowledge discovery and partition detection before deciding whether to ask; never stop merely to announce that this workflow contains a checkpoint.
+
+When a partition-level update applies, present each partition as `unchanged (copied)` or `re-analyzed ([N] affected files)`, with the parent run-id and change set totals above the table. Recommend the update unless the user requested a full run. When the change set recommends `full`, or the partition set does not match the parent's, present the reasons (from `changes.json`'s `reasons`, plus "the partition set changed since the parent run" when applicable) and recommend a full run. Never offer an ineligible update.
+
+Populate the preview with observed values, including the actual worker count after depth flags, skipped phases and copied partitions are applied:
+
+```
+Codebase Map team-mode scope:
+Target: <target>
+Run: <run-id>  (concurrent active runs: <count or "none">)
+
+Detected partitioning strategy: <strategy name>
+
+Partitions (<N>):
+  P1: <path>          (<language>, <file-count> files, ~<loc>k LOC)
+  ...
+
+Not analyzed: <N> dot directories (<names>), <N> paths Git ignores (ignore rules: <applied | unavailable>)
+
+Mode: <full or partition-level update, depth and active flags>
+Spawn plan: <structure count> structure + <behavior count> behavior + <quality count> quality
+            + <synthesizer count> synthesizer + <mapper count> interconnect-mapper = <total> agents.
+```
+
+**Proceed when the scope is settled.** A fresh analysis of the requested target, including the default cwd, needs no additional acceptance of routine detected partitions. The same applies to an explicitly requested full run (`--no-update`), an eligible update already chosen in conversation, and a recommendation authorized by `--yes` or ordinary language such as "proceed with your recommendation". Honor partition lists already supplied by the user. State the chosen scope and continue to snapshot creation and worker dispatch in the same turn. Do not demand a flag, an option letter, or a repeated confirmation.
+
+**Ask when a material choice remains.** Examples: whether to update or run fresh when neither has been chosen, conflicting inclusion/exclusion instructions, or an explicit request to approve the partition plan before dispatch. Show the completed preview first and ask one concrete question naming the decision and the eligible alternatives. For a requested partition approval, ask "Shall I start with these partitions, or would you like to change them?" Accept ordinary replies such as "yes, proceed", "exclude web", or "merge api and workers"; update the plan accordingly. A later explicit request to wait takes precedence over an earlier `--yes` or authorization.
+
+Use the host's user-input tool when available and permitted in the current mode. If no suitable tool is available, end the turn with the actual question in plain text so the user can reply in chat. Do not switch into plan mode to obtain a tool. Never end with only a statement that confirmation is required or that `--yes` was omitted. Keep the decision pending until the user answers; an unavailable tool or elapsed time is not an answer.
+
+If the user cancels, set state to `cancelled`, invoke `snapshot.py unregister $RUN_DIR`, and exit. If the user modifies or supplies partitions, finalize that list before proceeding. Recompute update eligibility and the preview when the partition set changes.
+
+Finalize `partitions` array in `state.json` with `{name, path, language_primary, file_count, loc_estimate, status: "pending"}` for each. Mark `phase_0_detection: "complete"`.
+
+Parse `--format sqlite|json`: new runs default to SQLite; JSON is explicit.
+Set `snapshot_format` and `source_manifest` to the chosen canonical binding;
+record `state.json -> snapshot` as specified in `references/snapshot.md`.
+Keep storage separate from flags; resume preserves the recorded selection.
+
+Immediately after the scope is settled, either by existing authorization or by an answer, write this run's snapshot over the whole target, before any worker is dispatched:
+
+```bash
+python "${PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write \
+  <target> --format "$snapshot_format" --out "$source_manifest"
+```
+
+It is global, like Phase 0: no partition owns it, and no worker writes to it. Invoke `snapshot.py resolve $RUN_DIR`, retain its path and copy its metadata's `git` field into state. Storage is separate from lineage: `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created. When the accepted option is a partition-level update, apply `### Partition-level update` now, before Phase 1 begins.
+
+When a same-target candidate parent exists, add
+`--reuse "$parent_manifest"` after resolving the parent to the write,
+including when full analysis was selected. Bytes and parser identity are checked
+before retaining structure; the inventory is still scanned and hashed.
+Do not skip this current write after a verified diff because the recommendation
+is `none` or every partition's normalized claims can be copied. Diff normalizes
+line endings; a reader of current blocks needs exact byte identity even for
+LF/CRLF-only differences. Parent analysis/provenance and its manifest remain
+intact. Returning supported parent analysis without any source-reading phase
+does not oblige a new full analysis; a later block reader still obtains its own
+current snapshot before reading.
+
+Before dispatch, invoke `prepare $RUN_DIR` from `references/snapshot.md` with
+the accepted team mode/flags. Keep its produced/inherited/skipped declarations,
+including depth skips, synthesis/interconnect skips and requested comment health.
+`08-interconnect-map.md` remains the team-only artifact when selected. Do not
+change declarations to turn a failed worker or missing map into a skipped phase.
+
+Every source reader receives `source_manifest` from `snapshot.py resolve $RUN_DIR`.
+This alias names the declared snapshot; it is never a second index. Pass that exact current path to both worker waves and the mapper.
+Before structure/call/flow mapping, workers query `source_reader.py graph` with
+exact-file seeds, never partition directories, and read question-relevant candidate requests with
+`source_reader.py read`. Outline supplies exact recorded definitions. Preserve
+graph binding/query, unresolved coverage, truncation and parser/fallback diagnostics.
+Extra parsing supplies only required missing details or single-file diagnosis.
+Selection follows flows, gates, invariants, configuration and effective styles,
+including implicit and cross-partition relationships beyond import edges.
+Keep the whole-target cascade scan and mandatory entry-gating paths. A stale
+manifest is refreshed by the orchestrator before source reading continues.
+
+## Phase 1: Partition Workers (2 waves)
+
+### Wave 1: Structure workers (parallel)
+
+For each partition `P_i` in `state.json` whose `status` is not already `"done"`:
+
+1. Create directory `$RUN_DIR/partitions/<P_i.name>/`
+2. Dispatch one `partition-structure-worker` (how the role reaches the worker is the harness's business):
+   - Worker title: `"P<i>.A — Structure+Interfaces for partition <P_i.name>"`
+   - Worker prompt:
+
+```
+You are partition-structure-worker on partition "<P_i.name>".
+
+Identity: P<i>.A
+Run directory: <RUN_DIR>
+Current source manifest: <resolved source_manifest> (read-only)
+Owned files:
+  - <RUN_DIR>/partitions/<P_i.name>/01-structure.md
+  - <RUN_DIR>/partitions/<P_i.name>/02-interfaces.md
+DO NOT touch any other file under .codebase-map/.
+
+Target path for this partition: <P_i.path>
+Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
+
+Sibling partitions (for cross-partition citation lookup if needed):
+  <list each P_j.name -> P_j.path>
+
+Required reads before writing:
+  - <resolved source_manifest>: inventory/import metadata for <P_i.path>
+  - Follow the assigned role's Method loads; never load every method unit.
+First query source_reader.py graph on the current source manifest, with exact
+inventoried file seeds below the partition, never a directory. Read question-relevant candidate requests
+through source_reader.py read; use outline for exact definitions. Expand evidence
+as needed, without reparsing or reading every file for inventory. Record graph
+seeds/hops, binding, coverage/truncation, parser fallback and actual files/ranges
+in each output's ## Source reading. Resolution alone never verifies a contract.
+
+Completion: when both owned files are written, report delivered and name them. If you could not write them, report failed and say why.
+```
+
+3. Record the dispatch in `agents_spawned[]` with `{name: "P<i>.A", role: "partition-structure-worker", partition: "<P_i.name>", status: "dispatched"}`.
+
+After dispatching every `P_i.A`: hold the Wave 1 barrier. Every `P_i.A` worker must be recorded `delivered` or `failed` before anything else starts. A partition already `"done"` (copied at the partition-level update) has no `P_i.A` to wait for: the barrier skips it and its status stays `"done"`.
+
+For each partition whose `status` is not already `"done"`: if `P_i.A` failed, mark `partitions[i].status = "failed"`. If completed, mark `partitions[i].status = "structure_done"`.
+
+Mark `phase_1_partition_workers: "wave1_done"`.
+
+### Wave 2: Behavior + Quality workers (parallel)
+
+Skip behavior workers (B) if `--depth=lite`.
+
+For each partition `P_i` where `partitions[i].status == "structure_done"`:
+
+1. If `--depth != lite`: dispatch one `partition-behavior-worker`:
+   - Worker title: `"P<i>.B — Flows+Semantics for partition <P_i.name>"`
+   - Worker prompt:
+
+```
+You are partition-behavior-worker on partition "<P_i.name>".
+
+Identity: P<i>.B
+Run directory: <RUN_DIR>
+Current source manifest: <resolved source_manifest> (read-only)
+Owned files:
+  - <RUN_DIR>/partitions/<P_i.name>/03-flows.md
+  - <RUN_DIR>/partitions/<P_i.name>/04-semantics.md
+DO NOT touch any other file under .codebase-map/.
+
+Target path for this partition: <P_i.path>
+Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
+
+Sibling partitions: <list>
+
+Required reads before writing:
+  - Follow the assigned role's Method loads; never load every method unit.
+  - <resolved source_manifest>: current source index
+  - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
+  - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)
+
+First query source_reader.py graph on the current source manifest, seeding exact
+files from Wave 1 leads with 2-3 hops. Read question-relevant candidate requests through read; use
+outline for exact symbols. Expand to callers/callees, gates, invariants,
+configuration and relevant CSS/markup beyond graph/import edges. Preserve
+whole-target cascade scans and mandatory entry-gating paths. Record graph
+binding/query, gaps/truncation, parser fallback and actual files/ranges in
+## Source reading. Metadata is not deep reading or contract verification.
+
+Cross-partition citations: when you find an outgoing call/import that leaves
+your partition, cite it as <other-partition>::<symbol>.
+
+Completion: report delivered when both owned files are written, failed (with the reason) otherwise.
+```
+
+2. Dispatch one `partition-quality-worker`:
+   - Worker title: `"P<i>.C — Risks+Docs for partition <P_i.name>"`
+   - Worker prompt: same template as B, but for the `partition-quality-worker` role. Owned files: `05-risks.md` and `06-documentation.md` at full depth; `05-risks.md` only under `--depth=lite` (the worker skips Phase 6 in lite mode).
+
+Record both dispatches in `agents_spawned[]`.
+
+Hold the Wave 2 barrier. For each partition, when both `P_i.B` and `P_i.C` are recorded `delivered` (only `P_i.C` in lite mode):
+- Mark `partitions[i].status = "done"`
+
+When all partitions reach `done` or `failed`: mark `phase_1_partition_workers: "complete"` (or `"failed"` if EVERY partition is failed).
+
+## Phase 2: Synthesis
+
+Skip if `--skip-synthesis`.
+
+Dispatch one `partition-synthesizer`:
+- Worker prompt:
+
+```
+You are partition-synthesizer.
+
+Identity: SYNTH
+Run directory: <RUN_DIR>
+Owned files: <RUN_DIR>/01-structure.md through <RUN_DIR>/07-final-report.md (skip 03, 04, 06 if depth=lite).
+DO NOT touch <RUN_DIR>/08-interconnect-map.md, any partition file, or anything at the .codebase-map/ root.
+
+Active flags: <flags from state.json>
+
+Partitions to consolidate:
+  <for each partition: {name, path, status, language_primary}>
+
+For any partition with status=failed, add a "⚠ Missing partitions" callout in every consolidated file. The 07-final-report.md opens with a "Partial Completeness Warning" section.
+
+Read <RUN_DIR>/partitions/*/ and apply the consolidation rules in your agent definition.
+Union the workers' ## Source reading sections to report actual deep-read files
+and ranges, deduplicated by path. Keep graph/outline/inventory metadata separate;
+preserve graph queries, coverage/truncation and parser/fallback diagnostics/gaps.
+Do not re-read source for synthesis.
+Distinguish source examined in this run from reading carried with unchanged
+parent partitions. Preserve that parent provenance without counting it as a
+current source read.
+
+Completion: report delivered when every owned file is written, failed (with the reason) otherwise.
+```
+
+Wait for delivery. On delivery: mark `phase_2_synthesis: "complete"`. On failure: mark `phase_2_synthesis: "failed"` and `phase_3_interconnect: "skipped_due_to_phase_2_failure"`, then jump to Phase 4.
+
+## Phase 3: Interconnect Map
+
+Skip if `--skip-interconnect` or `--skip-synthesis` or Phase 2 failed.
+
+Dispatch one `semantic-interconnect-mapper`:
+- Worker prompt:
+
+```
+Build the interconnect map for this codebase using the team Codebase Map consolidated output as primary context.
+
+Primary context source: `<RUN_DIR>/01-07.md` (consolidated from partition outputs by the synthesizer).
+Current source manifest: `<resolved source_manifest>` (read-only).
+Scope: the cross-partition surface only. Read `<RUN_DIR>/02-interfaces.md ## Cross-Partition Exports`,
+`<RUN_DIR>/03-flows.md ## Cross-Partition Flows`, `<RUN_DIR>/04-semantics.md ## Hidden Contracts (cross-partition)`
+and `<RUN_DIR>/05-risks.md ## Cross-Partition Risk Attribution` (whichever exist at this depth), then the
+source files those sections cite. First query source_reader.py graph from that
+manifest with exact-file seeds and 2-3 hops; read question-relevant candidate requests with read and
+use outline for exact definitions. Expand evidence for callers/callees, gates, invariants,
+configuration and styles beyond import edges. Partition-internal contracts are already in the partition outputs;
+do not re-derive them here.
+Output path: `<RUN_DIR>/08-interconnect-map.md`
+
+Produce the full structured map following your agent definition: Call Graph limited to the symbols that cross a partition boundary (2-3 hops out from each crossing, cross-partition edges marked), Contracts (formal / structural / implicit), Invariants, Domain Rules, Assumptions (verified / documented / unverified / disputed), Integration Hot-Spots, Change Impact Radius, Reviewer Hints.
+
+Every claim must cite file:line. Call rows retain graph identities, callsite and
+declaration evidence, resolution/reason and a separate evidence status. Record
+graph query/binding, unresolved coverage, truncation and parser fallback; usage
+search only supplements ambiguous/dynamic/uncovered cases. No recommendations,
+no fixes. Empty sections are acceptable. Scale with cross-partition edges.
+```
+
+Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On failure:
+mark `phase_3_interconnect: "failed"` and continue to Phase 4's delivery gate;
+an undeclared skip or failed map never permits publication.
+
+## Phase 4: Publish, Completion & Next Steps Menu
+
+After successful synthesis, only the coordinator loads
+`${PLUGIN_ROOT}/skills/map-method/references/human-view.md` for requested
+or useful HTML. Workers never load presentation instructions. Keep requested view
+failures open; `--skip-synthesis` creates no report to render.
+
+1. Account for every dispatched worker as delivered or failed; no worker may
+   still be writing during publication. The harness owns worker cleanup.
+2. Invoke `check $RUN_DIR --json` from `references/snapshot.md`. Verify all
+   declared artifacts and coverage. Missing/empty produced artifacts, stale
+   markers, invalid inherited provenance or unexpected files keep the run open.
+   Recover through the existing resume stages or report the concrete blocker;
+   do not mark a failed delivery complete.
+3. **Publish** only when `complete` and `may_publish` are true and every requested
+   view is delivered: invoke `publish $RUN_DIR` from the snapshot unit. It replaces
+   the whole mirror, including declared team `08`, and updates the registry with
+   rollback protection. `--skip-synthesis` results stay in the run without
+   publication; record partial status, invoke `snapshot.py unregister $RUN_DIR`,
+   and leave the mirror/latest pointer intact.
+4. Present summary:
+
+```
+Codebase Map (team mode) complete for: <target>
+Run: <run-id> (<published to .codebase-map/ root | partial, run only>)
+Parent: <parent-id or "none (full run)">
+
+Partitions: <N> (<list of names + status>)
+
+Output Files:
+  Knowledge discovery:      .codebase-map/runs/<run-id>/knowledge/navigation.md, documentation-leads.md (Phase 0)
+  Per-partition reports:    .codebase-map/runs/<run-id>/partitions/*/01..06.md
+  Consolidated reports:     .codebase-map/runs/<run-id>/01-structure.md .. 07-final-report.md
+  Interconnect map:         .codebase-map/runs/<run-id>/08-interconnect-map.md (if Phase 3 ran)
+  Root mirror:              .codebase-map/01..08.md (for downstream consumers)
+
+Summary:
+  - Files in inventory: <count>  |  Read in depth: <count>  |  Exercised at runtime: none
+  - Anti-patterns:   <count>  |  Red flags: <count>  |  Tech debt: <count>
+  - Documentation gaps: <count>
+  - Cross-partition flows: <count>
+```
+
+On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.codebase-map/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
+
+5. Present independent next-step suggestions, with the exact run directory and
+source snapshot attached. Project instructions use /project-knowledge:instructions
+with --create or --fix as authorized; guides use /project-knowledge:guide.
+Development fixes and review are separate scoped tasks. Do not apply quick fixes
+or write durable project documents inside this confined analysis run.
+
+## Resume Logic
+
+On pre-flight detection of an active run in `runs.json` with `mode == "team"` whose `$RUN_DIR/state.json` says `status == "in_progress"`, offer to resume it:
+
+- If `phases.phase_0_detection != "complete"`: remove the run and restart from zero
+- If `phases.phase_1_partition_workers == "pending"`: re-run Phase 1 Wave 1
+- If `phases.phase_1_partition_workers == "wave1_done"`: skip Wave 1, re-run Wave 2 for every partition with `status == "structure_done"` (no `B` and `C` outputs yet)
+- If `phases.phase_1_partition_workers == "complete"` and `phase_2_synthesis != "complete"`: re-run Phase 2
+- If `phases.phase_2_synthesis == "complete"` and `phase_3_interconnect != "complete"`: re-run Phase 3
+- If `phases.phase_3_interconnect == "complete"`: run the Phase 4 publish step and present the menu directly
+
+Resuming dispatches fresh workers as needed. Worker contexts are not restored across sessions, and the run directory carries the run identity.
+
+## Quick Examples
+
+- `/codebase-map:team-analyze .` — auto-detect, full depth; a fresh run proceeds after the scope preview
+- `/codebase-map:team-analyze . --depth=lite` — lite mode (2N+2 agents)
+- `/codebase-map:team-analyze . --critical` — prioritize security paths in Phase 3-4
+- `/codebase-map:team-analyze . --partition packages/api --partition packages/web --yes` — manual partitions, auto-accept
+- `/codebase-map:team-analyze . --skip-interconnect` — stop at Phase 2
+- `/codebase-map:team-analyze . --skip-synthesis` — only per-partition reports (no consolidation, no publish)
+- `/codebase-map:team-analyze apps/backend --run-name backend` — named run, safe alongside other active runs

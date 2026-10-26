@@ -1,0 +1,13 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:c1377ea4a9c41133a383b93774315d4b56ed7d1a1efb0414f4d1e4c401439b28",
+  "harnessStrategies": {
+    "python-audit": "parallel-subagents",
+    "python-refactor": "parallel-subagents",
+    "python-scaffold": "parallel-subagents"
+  },
+  "host": "codex",
+  "overrides": [],
+  "plugin": "python-development",
+  "version": "3.0.3"
+}

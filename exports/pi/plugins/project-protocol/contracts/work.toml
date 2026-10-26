@@ -1,0 +1,38 @@
+schema = "daodan/record/v1"
+name = "work"
+record_schema = "daodan/work/v1"
+required = ["schema", "revision", "run_id", "operation", "objective", "project", "scope", "authorizations", "budget", "phases", "plan", "deliveries", "required_gates", "gates", "status", "interruption"]
+
+[fields.revision]
+type = "integer"
+minimum = 0
+
+[fields.status]
+type = "enum"
+values = ["in_progress", "complete"]
+
+[states.phases]
+values = ["pending", "in_progress", "complete", "skipped"]
+pending = ["pending", "in_progress", "complete", "skipped"]
+in_progress = ["in_progress", "complete", "skipped"]
+complete = ["complete"]
+skipped = ["skipped"]
+
+[states.deliveries]
+delivered_requires = ["output"]
+values = ["pending", "running", "delivered", "failed"]
+pending = ["pending", "running", "delivered", "failed"]
+running = ["running", "delivered", "failed"]
+delivered = ["delivered"]
+failed = ["failed", "running", "delivered"]
+
+[states.gates]
+values = ["pending", "passed", "failed", "unavailable"]
+
+[completion]
+phases = ["complete", "skipped"]
+deliveries = ["delivered"]
+gates = ["passed"]
+requires_current_snapshot = true
+requires_gate_evidence = true
+remote_requires_committed_candidate = true

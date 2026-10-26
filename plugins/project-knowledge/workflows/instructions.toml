@@ -1,0 +1,19 @@
+name = "instructions"
+entrypoint = "instructions.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:instructions-report"]
+
+[dispatch]
+roles = ["project-knowledge/instructions-auditor"]
+isolated = true
+inline_workers = false
+
+[contract]
+inputs = ["repository", "scope", "authorizations"]
+outcomes = ["instructions-delivered", "instructions-failed"]
+artifacts = ["instructions-report"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

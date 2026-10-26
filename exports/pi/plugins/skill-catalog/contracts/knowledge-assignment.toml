@@ -1,0 +1,10 @@
+schema = "daodan/record/v1"
+name = "knowledge-assignment"
+required = ["scope_id", "paths", "dimensions", "workers", "dimension_workers", "activation_evidence"]
+
+[fields.dimension_workers]
+type = "object"
+
+[fields.workers]
+type = "array"
+items = "string"

@@ -1,0 +1,612 @@
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+<!-- Source: SpillwaveSolutions/mastering-typescript-skill - mastering-typescript/references/enterprise-patterns.md -->
+# Enterprise Patterns Reference
+
+> **Load when:** User asks about error handling, validation, project architecture, migration strategies, or large-scale TypeScript patterns.
+
+Proven patterns for building maintainable TypeScript applications.
+
+## Contents
+
+- [Error Handling](#error-handling)
+- [Validation Patterns](#validation-patterns)
+- [Project Organization](#project-organization)
+- [Migration Strategies](#migration-strategies)
+- [Security Patterns](#security-patterns)
+
+---
+
+## Error Handling
+
+### Result Type Pattern
+
+Instead of throwing exceptions, return typed results:
+
+```typescript
+// Define Result type
+type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+// Helper functions
+function ok<T>(data: T): Result<T, never> {
+  return { success: true, data };
+}
+
+function err<E>(error: E): Result<never, E> {
+  return { success: false, error };
+}
+
+// Usage
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+function parseEmail(input: string): Result<string, ValidationError> {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(input)) {
+    return err({ field: "email", message: "Invalid email format" });
+  }
+
+  return ok(input.toLowerCase());
+}
+
+// Consuming Result
+const result = parseEmail(userInput);
+
+if (result.success) {
+  console.log(`Valid email: ${result.data}`);
+} else {
+  console.error(`Error in ${result.error.field}: ${result.error.message}`);
+}
+```
+
+### Typed Error Classes
+
+```typescript
+// Base application error
+abstract class AppError extends Error {
+  abstract readonly code: string;
+  abstract readonly statusCode: number;
+
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// Specific error types
+class NotFoundError extends AppError {
+  readonly code = "NOT_FOUND";
+  readonly statusCode = 404;
+
+  constructor(resource: string, id: string) {
+    super(`${resource} with id ${id} not found`);
+  }
+}
+
+class ValidationError extends AppError {
+  readonly code = "VALIDATION_ERROR";
+  readonly statusCode = 400;
+
+  constructor(
+    message: string,
+    public readonly fields: Record<string, string[]>
+  ) {
+    super(message);
+  }
+}
+
+class UnauthorizedError extends AppError {
+  readonly code = "UNAUTHORIZED";
+  readonly statusCode = 401;
+
+  constructor(message = "Authentication required") {
+    super(message);
+  }
+}
+
+// Type guard for app errors
+function isAppError(error: unknown): error is AppError {
+  return error instanceof AppError;
+}
+
+// Error handler
+function handleError(error: unknown): { status: number; body: object } {
+  if (isAppError(error)) {
+    return {
+      status: error.statusCode,
+      body: {
+        code: error.code,
+        message: error.message,
+        ...(error instanceof ValidationError && { fields: error.fields })
+      }
+    };
+  }
+
+  console.error("Unexpected error:", error);
+  return {
+    status: 500,
+    body: { code: "INTERNAL_ERROR", message: "Internal server error" }
+  };
+}
+```
+
+---
+
+## Validation Patterns
+
+### Zod Schema Validation
+
+```typescript
+import { z } from 'zod';
+
+// Define schemas
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+  age: z.number().int().min(0).max(150).optional(),
+  role: z.enum(["user", "admin", "moderator"]),
+  metadata: z.record(z.string()).optional()
+});
+
+// Infer TypeScript type
+type User = z.infer<typeof UserSchema>;
+
+// Create DTO schemas
+const CreateUserSchema = UserSchema.omit({ id: true });
+type CreateUserDto = z.infer<typeof CreateUserSchema>;
+
+const UpdateUserSchema = UserSchema.partial().omit({ id: true });
+type UpdateUserDto = z.infer<typeof UpdateUserSchema>;
+
+// Validation functions
+function validateCreateUser(data: unknown): Result<CreateUserDto, z.ZodError> {
+  const result = CreateUserSchema.safeParse(data);
+
+  if (result.success) {
+    return ok(result.data);
+  }
+
+  return err(result.error);
+}
+
+// Transform Zod errors to user-friendly format
+function formatZodError(error: z.ZodError): Record<string, string[]> {
+  const formatted: Record<string, string[]> = {};
+
+  for (const issue of error.issues) {
+    const path = issue.path.join(".");
+    if (!formatted[path]) {
+      formatted[path] = [];
+    }
+    formatted[path].push(issue.message);
+  }
+
+  return formatted;
+}
+```
+
+### Branded Types for Validation
+
+```typescript
+// Branded/Nominal types
+declare const EmailBrand: unique symbol;
+type Email = string & { readonly [EmailBrand]: true };
+
+declare const UserIdBrand: unique symbol;
+type UserId = string & { readonly [UserIdBrand]: true };
+
+// Validation functions that return branded types
+function validateEmail(input: string): Email {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(input)) {
+    throw new ValidationError("Invalid email", { email: ["Invalid format"] });
+  }
+  return input as Email;
+}
+
+function validateUserId(input: string): UserId {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(input)) {
+    throw new ValidationError("Invalid user ID", { id: ["Must be UUID"] });
+  }
+  return input as UserId;
+}
+
+// Usage: Functions require validated types
+function sendEmail(to: Email, subject: string): void {
+  // to is guaranteed to be valid email
+}
+
+function getUser(id: UserId): Promise<User> {
+  // id is guaranteed to be valid UUID
+}
+
+// Compiler enforces validation
+sendEmail("invalid", "Hello");           // Error: string not assignable to Email
+sendEmail(validateEmail("a@b.com"), "Hello"); // OK
+```
+
+---
+
+## Project Organization
+
+### Feature-Based Structure
+
+```
+src/
+├── features/
+│   ├── users/
+│   │   ├── index.ts           # Public exports (barrel)
+│   │   ├── user.types.ts      # Types and interfaces
+│   │   ├── user.schema.ts     # Zod schemas
+│   │   ├── user.service.ts    # Business logic
+│   │   ├── user.repository.ts # Data access
+│   │   ├── user.controller.ts # HTTP handlers
+│   │   └── __tests__/
+│   │       ├── user.service.test.ts
+│   │       └── user.controller.test.ts
+│   ├── auth/
+│   │   ├── index.ts
+│   │   ├── auth.types.ts
+│   │   └── ...
+│   └── posts/
+│       └── ...
+├── shared/
+│   ├── types/
+│   │   ├── result.ts
+│   │   └── pagination.ts
+│   ├── utils/
+│   │   ├── validation.ts
+│   │   └── date.ts
+│   └── errors/
+│       └── app-error.ts
+├── infrastructure/
+│   ├── database/
+│   │   └── client.ts
+│   ├── cache/
+│   │   └── redis.ts
+│   └── logging/
+│       └── logger.ts
+└── config/
+    ├── index.ts
+    └── env.ts
+```
+
+### Barrel Exports
+
+```typescript
+// features/users/index.ts
+export type { User, CreateUserDto, UpdateUserDto } from './user.types';
+export { UserSchema, CreateUserSchema } from './user.schema';
+export { UserService } from './user.service';
+export { UserController } from './user.controller';
+
+// Don't export repository (internal detail)
+// Don't export internal helper functions
+
+// Usage in other modules
+import { User, UserService } from '@/features/users';
+```
+
+### Path Aliases
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@features/*": ["src/features/*"],
+      "@shared/*": ["src/shared/*"],
+      "@config/*": ["src/config/*"]
+    }
+  }
+}
+```
+
+---
+
+## Migration Strategies
+
+### Incremental Migration from JavaScript
+
+**Phase 1: Enable TypeScript alongside JavaScript**
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "./dist",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": ["src/**/*"]
+}
+```
+
+**Phase 2: Rename files gradually**
+
+```bash
+# Convert one file at a time
+mv src/utils/helpers.js src/utils/helpers.ts
+
+# Add minimal type annotations
+# Fix any type errors
+# Run tests to verify
+```
+
+**Phase 3: Enable stricter checks incrementally**
+
+```json
+// Progression of strict options
+{
+  "compilerOptions": {
+    // Step 1: Basic strictness
+    "noImplicitAny": true,
+
+    // Step 2: Null safety
+    "strictNullChecks": true,
+
+    // Step 3: Full strict mode
+    "strict": true,
+
+    // Step 4: Extra safety (optional)
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
+```
+
+### JSDoc for Gradual Typing
+
+```javascript
+// Before full migration, use JSDoc
+/**
+ * @typedef {Object} User
+ * @property {string} id
+ * @property {string} name
+ * @property {string} email
+ */
+
+/**
+ * Find user by ID
+ * @param {string} id - User ID
+ * @returns {Promise<User | null>}
+ */
+async function findUser(id) {
+  // implementation
+}
+
+/**
+ * @template T
+ * @param {T[]} items
+ * @returns {T | undefined}
+ */
+function first(items) {
+  return items[0];
+}
+```
+
+### CommonJS to ESM Migration
+
+```json
+// package.json
+{
+  "type": "module"
+}
+```
+
+```typescript
+// Before (CommonJS)
+const express = require('express');
+const { UserService } = require('./user.service');
+module.exports = { router };
+
+// After (ESM)
+import express from 'express';
+import { UserService } from './user.service.js'; // Note .js extension
+export { router };
+```
+
+---
+
+## Security Patterns
+
+### Input Sanitization
+
+```typescript
+import { z } from 'zod';
+import DOMPurify from 'isomorphic-dompurify';
+
+// Sanitized string schema
+const SanitizedString = z.string().transform((val) => {
+  return DOMPurify.sanitize(val.trim());
+});
+
+// HTML content schema (for rich text)
+const HtmlContentSchema = z.string().transform((val) => {
+  return DOMPurify.sanitize(val, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
+    ALLOWED_ATTR: ['href', 'target']
+  });
+});
+
+// SQL-safe identifier
+const SafeIdentifierSchema = z.string().regex(
+  /^[a-zA-Z_][a-zA-Z0-9_]*$/,
+  "Invalid identifier"
+);
+```
+
+### Type-Safe Environment Variables
+
+```typescript
+import { z } from 'zod';
+
+const EnvSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  PORT: z.coerce.number().default(3000),
+  DATABASE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(32),
+  REDIS_URL: z.string().url().optional()
+});
+
+// Validate on startup
+function loadEnv() {
+  const result = EnvSchema.safeParse(process.env);
+
+  if (!result.success) {
+    console.error('Invalid environment variables:');
+    console.error(result.error.format());
+    process.exit(1);
+  }
+
+  return result.data;
+}
+
+export const env = loadEnv();
+
+// Usage: fully typed
+env.PORT;        // number
+env.NODE_ENV;    // "development" | "production" | "test"
+env.REDIS_URL;   // string | undefined
+```
+
+### Secure API Response Types
+
+```typescript
+// Never expose internal fields
+interface InternalUser {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  internalNotes: string;
+}
+
+// Public API response (Pick only safe fields)
+type PublicUser = Pick<InternalUser, 'id' | 'name' | 'email'>;
+
+// Or explicitly define
+interface UserResponse {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Transform function
+function toPublicUser(user: InternalUser): UserResponse {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email
+  };
+}
+```
+
+### Rate Limiting Types
+
+```typescript
+interface RateLimitConfig {
+  windowMs: number;
+  maxRequests: number;
+}
+
+interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetAt: Date;
+}
+
+const rateLimits: Record<string, RateLimitConfig> = {
+  api: { windowMs: 60000, maxRequests: 100 },
+  auth: { windowMs: 300000, maxRequests: 5 },
+  upload: { windowMs: 3600000, maxRequests: 10 }
+} as const satisfies Record<string, RateLimitConfig>;
+```

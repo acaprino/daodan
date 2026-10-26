@@ -1,0 +1,25 @@
+name = "audit"
+entrypoint = "audit.md"
+
+[[phases]]
+id = "scope"
+isolation = "shared"
+produces = ["artifact:scope"]
+
+[[phases]]
+id = "review"
+needs = ["scope"]
+role = "abstraction-architect-agent"
+isolation = "required"
+consumes = ["artifact:scope"]
+produces = ["artifact:audit-report"]
+
+[dispatch]
+roles = ["codebase-map/map-analyst"]
+isolated = true
+
+[contract]
+inputs = ["repository"]
+outcomes = ["audit-completed"]
+artifacts = ["audit-report"]
+schemas = []

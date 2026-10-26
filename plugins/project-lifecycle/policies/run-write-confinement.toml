@@ -1,0 +1,17 @@
+schema = "daodan/policy/v1"
+name = "run-write-confinement"
+description = "Coordinator state and reports remain inside the identified project run. Application changes follow the explicit plan's owned paths."
+
+[roots]
+runs = ".daodan"
+
+[confinement]
+run_directory = ".daodan/runs/${run}"
+scope = "coordinator-records-and-reports"
+forbid_run_artifacts_outside_roots = true
+application_writes = "Only explicit owned paths in the authorized work plan"
+
+[enforcement]
+level = "prompt"
+mechanical_wired = false
+
