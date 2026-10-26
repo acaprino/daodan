@@ -6,8 +6,7 @@
 
 Daodan is a development harness for projects built with AI. It augments your coding
 agent with a coherent way to understand a project, make changes, verify their
-consequences and preserve what was learned, alongside domain verticals, office
-workflows, web research and specialized framework toolkits.
+consequences and preserve what was learned.
 
 Understanding comes first, and it comes from the Codebase Map. `codebase-map`
 analyzes the source statically and records the project as Meta-Code: an inventory
@@ -48,16 +47,23 @@ in agreement. It helps recover fragmented projects and avoid adding another laye
 of duplication, dead code, misleading tests or forgotten experimental output.
 
 One hand-authored source ships to Claude Code, GitHub Copilot, Codex, Pi and
-OpenCode V2. Useful language, framework and domain specialists remain independent;
-`skill-catalog` discovers every installed plugin's knowledge sidecars automatically
-and selects the ones each run's evidenced stack and domain call for.
+OpenCode V2. Useful language, framework and domain specialists remain independent.
+
+Daodan is one marketplace: the development harness, the language and stack
+specialists, the Office methods, the domain verticals and web research all live
+here. The 24 plugins extracted to `acaprino/shinatama` in marketplace 36.0.0
+returned, so `skill-catalog` discovers every installed plugin's knowledge
+sidecars and selects the ones each run's evidenced stack and domain call for. The
+`daodan` commands are the primary entry points; a domain vertical's own command
+is the direct route once the request is already specific to that domain.
 
 ## One command per intention
 
-Every command lives in the `daodan` plugin and takes no parameters: the only
+The core harness commands live in the `daodan` plugin and take no parameters: the only
 argument is what you want, in your words, or a path, commit, branch or pull
 request. Authorizations are asked when a step needs them, once. Each command
-works alone and is also a step of the task cycle.
+works alone and is also a step of the task cycle. Domain verticals keep their own
+namespaces (`/office:*` is folded into `daodan` because its entries are general).
 
 | Group | Command | Use it for |
 |---|---|---|
@@ -82,12 +88,26 @@ works alone and is also a step of the task cycle.
 | | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
 | | `/daodan:record-decision` | A decision record outside a task; turns records on for a project without them |
 | | `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
-| | `/daodan:humanize-text` | Make a text read naturally without inventing content |
+| Office | `/daodan:start` | Route files, notes or a mixed Office request to the right methods |
+| | `/daodan:presentation` | Create, revise or review an editable PowerPoint deck |
+| | `/daodan:document` | Create, revise or review an editable Word document |
+| | `/daodan:workbook` | Create, edit or analyze an Excel workbook |
+| | `/daodan:verify` | Inspect a Word, PowerPoint or Excel file for integrity defects |
+| | `/daodan:fix` | Repair Office integrity defects in a separate candidate |
+| | `/daodan:theme` | Create or inherit reusable PowerPoint and Word themes and templates |
 
 When unsure which work command fits, use `new-feature`: the interview corrects
 the course. On the other hosts the names follow the host: `/daodan-new-feature`
 on Pi, the `new-feature-workflow` skill on Codex, the `new-feature` prompt on
 Copilot; OpenCode V2 uses the Claude Code form.
+
+Office keeps its methods, helpers and specialist roles in `office`; all seven
+entries live in `daodan`. Its shared intake routes the requested operation, its
+design method connects editable Word documents and PowerPoint decks, and its
+format methods preserve supplied files and verify saved candidates. Native
+construction and rendering use separately available DeckCraft, WordCraft and
+GridCraft runtimes; installing the plugin does not install those engines. See
+[Office](docs/plugins/office.md) for the format and runtime contracts.
 
 ## Work task by task
 
@@ -132,11 +152,10 @@ copilot plugin marketplace add acaprino/daodan
 codex plugin marketplace add acaprino/daodan
 ```
 
-Install `daodan@daodan`: it brings the core development harness and language/stack
-providers as mandatory local dependencies, and stops a command when one of them is
-disabled. Domain verticals (`office`, `research`, `digital-marketing`, `trading-broker-integration`
-and the others in the catalog) can be installed alongside it from the same
-marketplace. External dependencies must also be available on the host (see the
+Install `daodan@daodan`: it brings every plugin of this marketplace as a mandatory
+local dependency, language and stack knowledge, Office methods and domain
+verticals included, and stops a command when one of them is disabled. External
+dependencies must also be available on the host (see the
 [host reference](docs/hosts.md)).
 
 The project-delivery plugin owns its task cycle and declares no upstream development method:
@@ -179,16 +198,16 @@ commands, paths, installation requirements and runtime limits on each host.
 |---|---|
 | [daodan](docs/plugins/daodan.md) | The commands: one per intention, each an entry into its owner's method |
 | [codebase-map](docs/plugins/codebase-map.md) | The core: the static Meta-Code map of structure, behavior and interconnections that the other owners read |
-| [project-delivery](docs/plugins/project-delivery.md) | Analysis, ADR/FRD, specifications, adversarial plans, Deadly Brain execution, verified commits and merge |
+| [project-delivery](docs/plugins/project-delivery.md) | Analysis, ADR/FRD, specifications, adversarial plans, Work Controller execution, verified commits and merge |
 | [project-lifecycle](docs/plugins/project-lifecycle.md) | Assessment, handover and Senior Maintainer coordination |
-| [work-controller](docs/plugins/work-controller.md) | Run identity, snapshots, state, verification and recovery |
+| [work-controller](docs/plugins/work-controller.md) | Durable YAML graph execution, artifacts, decision tickets, console and MCP, run records and recovery |
 | [project-knowledge](docs/plugins/project-knowledge.md) | Durable instructions, guides, documentation and README |
 | [senior-review](docs/plugins/senior-review.md) | Unified correctness review, automatic stack specialists and application subtraction |
 | [testing](docs/plugins/testing.md) | Meaningful test authoring, suite diagnosis and protection-preserving remediation |
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
-| [text-humanizer](docs/plugins/text-humanizer.md) | Natural prose without invented content |
+| [office](docs/plugins/office.md) | Editable Word, PowerPoint and Excel methods, shared design, specialist roles and static integrity checks |
 
 Knowledge writes instructions, guides and the README. Project Delivery owns decision
 and requirement records plus delivery coordination. Each distinguishes approved intent from
@@ -209,11 +228,22 @@ It does not grant arbitrary repository deletion.
 | Area | Independent plugins |
 |---|---|
 | Languages | [python-development](docs/plugins/python-development.md), [typescript-development](docs/plugins/typescript-development.md), [kotlin-development](docs/plugins/kotlin-development.md) |
-| UI, web and desktop frameworks | [react-development](docs/plugins/react-development.md), [platform-engineering](docs/plugins/platform-engineering.md), [frontend-review](docs/plugins/frontend-review.md), [pwa-expert](docs/plugins/pwa-expert.md), [browser-extensions](docs/plugins/browser-extensions.md), [tauri-development](docs/plugins/tauri-development.md), [xterm](docs/plugins/xterm.md), [obsidian-development](docs/plugins/obsidian-development.md), [libgdx-development](docs/plugins/libgdx-development.md) |
-| AI, research and deliberation | [ai-tooling](docs/plugins/ai-tooling.md), [rag-development](docs/plugins/rag-development.md), [research](docs/plugins/research.md), [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md), [model-routing](docs/plugins/model-routing.md) |
+| UI and stack | [react-development](docs/plugins/react-development.md), [platform-engineering](docs/plugins/platform-engineering.md) |
+| Infrastructure and dependencies | [docker](docs/plugins/docker.md), [dependency-audit](docs/plugins/dependency-audit.md) |
+| Shared capabilities | [skill-catalog](docs/plugins/skill-catalog.md), [report-rendering](docs/plugins/report-rendering.md) |
+| Cross-model deliberation | [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md) |
+| AI and research | [ai-tooling](docs/plugins/ai-tooling.md), [rag-development](docs/plugins/rag-development.md), [research](docs/plugins/research.md), [model-routing](docs/plugins/model-routing.md) |
 | Office, business and marketing | [office](docs/plugins/office.md), [business](docs/plugins/business.md), [digital-marketing](docs/plugins/digital-marketing.md), [stripe](docs/plugins/stripe.md) |
-| Domain and infrastructure verticals | [trading-broker-integration](docs/plugins/trading-broker-integration.md), [grabber-development](docs/plugins/grabber-development.md), [app-analyzer](docs/plugins/app-analyzer.md), [csp](docs/plugins/csp.md), [messaging](docs/plugins/messaging.md), [opentelemetry](docs/plugins/opentelemetry.md), [docker](docs/plugins/docker.md), [dependency-audit](docs/plugins/dependency-audit.md) |
-| Shared capabilities and utilities | [skill-catalog](docs/plugins/skill-catalog.md), [report-rendering](docs/plugins/report-rendering.md), [learning](docs/plugins/learning.md), [system-utils](docs/plugins/system-utils.md), [marketplace-ops](docs/plugins/marketplace-ops.md) |
+| Writing | [text-humanizer](docs/plugins/text-humanizer.md) |
+| Web, desktop and framework toolkits | [frontend-review](docs/plugins/frontend-review.md), [pwa-expert](docs/plugins/pwa-expert.md), [browser-extensions](docs/plugins/browser-extensions.md), [tauri-development](docs/plugins/tauri-development.md), [xterm](docs/plugins/xterm.md), [obsidian-development](docs/plugins/obsidian-development.md), [libgdx-development](docs/plugins/libgdx-development.md) |
+| Domain verticals | [trading-broker-integration](docs/plugins/trading-broker-integration.md), [grabber-development](docs/plugins/grabber-development.md), [app-analyzer](docs/plugins/app-analyzer.md), [csp](docs/plugins/csp.md), [messaging](docs/plugins/messaging.md), [opentelemetry](docs/plugins/opentelemetry.md) |
+| Supporting utilities | [learning](docs/plugins/learning.md), [system-utils](docs/plugins/system-utils.md), [marketplace-ops](docs/plugins/marketplace-ops.md) |
+
+Domain verticals and research are local plugins of this marketplace, so their
+`SKILL.toml` knowledge sidecars are discovered by `skill-catalog` with everything
+else. `daodan` and `project-knowledge` require `text-humanizer`, whose editor
+gives documentation its voice pass and whose `/daodan:humanize-text` makes any
+text read naturally.
 
 Reverse engineering of shipped applications and binaries is delegated to
 [REA (Reverse Engineer Anything)](https://github.com/morluto/rea). Its upstream
@@ -222,31 +252,6 @@ Follow [REA setup](https://github.com/morluto/rea/blob/main/docs/installation.md
 to install the matching instructions and tools for your agent. Native analysis
 also requires a supported analysis engine. Source-repository mapping remains
 with Codebase Map.
-
-## Presentations, spreadsheets and documents
-
-The [Office plugin](docs/plugins/office.md) creates and revises editable `.pptx`,
-works with native `.xlsx` cells, formulas, tables and charts, and reads, creates
-or edits `.docx` paragraphs, styles, tables and sections. Existing-file edits
-include preservation checks for content and features the task needs to retain.
-Presentations combine creative designer/reviewer roles, SlidePoise generation,
-DeckCraft editing and preview, and the active harness's image-generation tool.
-
-On Claude Code or OpenCode V2, use `/office:presentation`,
-`/office:workbook` or `/office:document`. The [host guide](docs/hosts.md#office-entry-points)
-lists the corresponding Codex skills, Copilot prompts and Pi commands. A normal
-request can describe the outcome, source files, language and template:
-
-```text
-Create an editable Italian PowerPoint from this workbook and Word report.
-Preserve the source figures, use our brand assets and include a reviewed preview.
-```
-
-SlidePoise needs its separate runtime, image-generation tools and a compatible
-presentation renderer. Excel and Word use an available engine that supports the
-requested file features. The plugin's read-only inspectors provide structure and
-preservation evidence; actual recalculation, field updates and visual page review
-need the corresponding engines. See [Office setup and examples](docs/plugins/office.md#setup-and-first-use).
 
 ## What is verified
 
@@ -319,7 +324,16 @@ and [implementation plan](docs/superpowers/plans/2026-10-07-daodan-coherent-harn
 record this migration. [Behavioral evals](evals/) complement deterministic compiler
 and helper tests.
 
-MIT licensed. The Daodan is the symbiote that augments its host.
+## License
+
+Daodan's original source code, plugin kernels, skills, roles, workflows, adapters,
+compiler, generated host packages and documentation are released under the
+[MIT License](LICENSE). Every plugin manifest declares `license = "MIT"`.
+
+Third-party and upstream-derived materials retain their original licenses and
+attribution notices. External dependencies are not relicensed by Daodan.
+
+The Daodan is the symbiote that augments its host.
 
 
 ## Scope-aware knowledge selection

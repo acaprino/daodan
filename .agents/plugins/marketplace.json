@@ -129,7 +129,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "8.9.0"
+      "version": "8.10.1"
     },
     {
       "author": {
@@ -155,6 +155,7 @@
         "docker",
         "kotlin-development",
         "moe",
+        "office",
         "peer-review",
         "platform-engineering",
         "project-knowledge",
@@ -169,15 +170,17 @@
         "text-humanizer",
         "typescript-development"
       ],
-      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, humanize, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
       "license": "MIT",
       "name": "daodan",
       "skills": [
         "./skills/brainstorm-idea-workflow",
         "./skills/check-health-workflow",
         "./skills/continue-task-workflow",
+        "./skills/document-workflow",
         "./skills/finish-task-workflow",
         "./skills/fix-bug-workflow",
+        "./skills/fix-workflow",
         "./skills/get-second-opinion-workflow",
         "./skills/humanize-text-workflow",
         "./skills/init-project-workflow",
@@ -185,19 +188,24 @@
         "./skills/map-code-workflow",
         "./skills/new-feature-workflow",
         "./skills/onboard-project-workflow",
+        "./skills/presentation-workflow",
         "./skills/record-decision-workflow",
         "./skills/refactor-code-workflow",
         "./skills/review-branch-workflow",
         "./skills/review-changes-workflow",
         "./skills/run-maintenance-workflow",
         "./skills/show-status-workflow",
+        "./skills/start-workflow",
         "./skills/sync-upstream-workflow",
+        "./skills/theme-workflow",
         "./skills/tidy-repo-workflow",
+        "./skills/verify-workflow",
+        "./skills/workbook-workflow",
         "./skills/write-docs-workflow",
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "2.2.0"
+      "version": "2.3.0"
     },
     {
       "author": {
@@ -385,7 +393,7 @@
         "./skills/model-routing"
       ],
       "source": "./exports/codex/plugins/model-routing",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -423,25 +431,25 @@
       "author": {
         "name": "Alfio Caprino"
       },
-      "dependencies": [],
-      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification.",
+      "dependencies": [
+        "work-controller"
+      ],
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
       "license": "MIT",
       "name": "office",
       "skills": [
         "./skills/deckcraft",
         "./skills/design",
-        "./skills/document-workflow",
         "./skills/docx",
+        "./skills/gridcraft",
         "./skills/intake",
+        "./skills/integrity",
         "./skills/pptx",
-        "./skills/presentation-workflow",
-        "./skills/slidepoise",
         "./skills/wordcraft",
-        "./skills/workbook-workflow",
         "./skills/xlsx"
       ],
       "source": "./exports/codex/plugins/office",
-      "version": "2.4.0"
+      "version": "3.1.0"
     },
     {
       "author": {
@@ -507,7 +515,7 @@
         "moe",
         "report-rendering"
       ],
-      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Deadly Brain job execution, verified commits, reconciliation and authorized merge.",
+      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Work Controller job execution, verified commits, reconciliation and authorized merge.",
       "license": "MIT",
       "name": "project-delivery",
       "skills": [
@@ -517,7 +525,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/codex/plugins/project-delivery",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "author": {
@@ -863,14 +871,14 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Run records, agenda, gates, grants and recovery for coordinated work: the work record and the isolated worker.",
+      "description": "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP.",
       "license": "MIT",
       "name": "work-controller",
       "skills": [
         "./skills/work-record"
       ],
       "source": "./exports/codex/plugins/work-controller",
-      "version": "3.0.1"
+      "version": "3.1.0"
     },
     {
       "author": {

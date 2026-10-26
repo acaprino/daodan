@@ -109,9 +109,8 @@ native and traceable to their sources; a generated visual is not proof of them.
 
 ## Generate or edit through the harness
 
-For SlidePoise, use its compiled generation request. Preserve the prompt and
-reference order when mapping to the tool's real schema. A designer returns image
-intent, composition constraints and reference paths; it does not invent tool
+Preserve the prompt and reference order when mapping a request to the tool's
+real schema. A designer returns image intent, composition constraints and reference paths; it does not invent tool
 arguments or claim generation. Inspect references before editing and follow the
 tool's actual reference-input rules.
 
@@ -131,10 +130,15 @@ Retain request identity, references, actual tool, returned local artifact or
 supported resource identity, document block or slide association and inspection outcome. Use native
 returned media and supported file handoff; do not guess a download endpoint or
 claim an image is saved when only a preview exists. Verify the engine can consume
-the artifact before reconstruction or insertion.
+the artifact before insertion.
+
+Icons are searched or supplied assets: take them from an open-licensed icon set,
+record the set, version and license, and keep one set and stroke weight across the
+deck. Insert them in a raster or metafile format the engine draws (PNG or EMF for
+DeckCraft at its reference version, which does not render SVG), at the size they
+appear. A native preset shape can replace an icon when it carries the same meaning.
 
 Generated page or slide compositions remain design references until implemented
-through the selected native production path (WordCraft, DeckCraft or SlidePoise
-reconstruction). Requested editable text, charts and tables must be native
+through the selected native production path (WordCraft or DeckCraft). Requested editable text, charts and tables must be native
 objects; do not substitute a whole-slide image for an editable presentation or a
 whole-page image for an editable document.

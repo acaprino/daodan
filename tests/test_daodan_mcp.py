@@ -38,6 +38,18 @@ SERVERS = {
     "codebase-map": ("skills/map-method/scripts", "mcp_server.py", ("mcp_service.py",)),
     "peer-review": ("skills/cross-model-peer-review/scripts", "server.py", ()),
     "moe": ("skills/multi-model-deliberation/scripts", "server.py", ()),
+    "work-controller": ("skills/work-record/scripts", "controller.py", (
+        "work_controller/__init__.py", "work_controller/__main__.py",
+        "work_controller/artifacts.py", "work_controller/cli.py",
+        "work_controller/compose.py", "work_controller/definition.py",
+        "work_controller/engine.py", "work_controller/errors.py",
+        "work_controller/git_support.py", "work_controller/mcp.py",
+        "work_controller/store.py", "work_controller/supervision.py",
+        "work_controller/util.py", "work_controller/views.py", "work_controller/web.py",
+        "work_controller/assets/console.html", "work_controller/assets/console.css",
+        "work_controller/assets/console.js", "work_controller/LICENSE", "run_state.py",
+        "process_binding.py",
+    )),
 }
 # Each server starts inside the user's project. Without these flags `uv` reads that
 # project's uv.toml, pyproject.toml and .python-version, so the project would choose
@@ -48,6 +60,11 @@ ISOLATED_RUN = ("run", "--no-config", "--no-project", "--script")
 def server_path(name: str) -> str:
     scripts, server, _ = SERVERS[name]
     return f"{scripts}/{server}"
+
+
+def server_args(name: str, root: str = "${CLAUDE_PLUGIN_ROOT}") -> tuple[str, ...]:
+    suffix = ("mcp",) if name == "work-controller" else ()
+    return ISOLATED_RUN + (f"{root}/{server_path(name)}",) + suffix
 
 
 class McpRenderingTests(unittest.TestCase):
@@ -168,7 +185,7 @@ class KernelMcpRenderingTests(unittest.TestCase):
                 self.assertIn("mcp.servers", plugin.capabilities.required)
                 self.assertEqual(
                     [(server.name, server.command, server.args) for server in plugin.mcp_servers],
-                    [(name, "uv", ISOLATED_RUN + ("${CLAUDE_PLUGIN_ROOT}/" + server_path(name),))],
+                    [(name, "uv", server_args(name))],
                 )
 
     def test_server_modules_and_local_helpers_ship_unchanged_on_every_host(self):
@@ -176,7 +193,9 @@ class KernelMcpRenderingTests(unittest.TestCase):
             root = REPO_ROOT / "plugins" / name
             for required in (server, *companions):
                 self.assertTrue((root / scripts / required).is_file(), f"{name}: {required}")
-            for source in sorted((root / scripts).rglob("*.py")):
+            sources = set((root / scripts).rglob("*.py"))
+            sources.update(root / scripts / required for required in (server, *companions))
+            for source in sorted(sources):
                 relative = source.relative_to(root)
                 for host in HOSTS:
                     with self.subTest(plugin=name, host=host, helper=relative.as_posix()):
@@ -190,12 +209,12 @@ class KernelMcpRenderingTests(unittest.TestCase):
                 manifest = json.loads((self.packages[("claude", name)] / ".mcp.json").read_text(encoding="utf-8"))
                 self.assertEqual(manifest, {"mcpServers": {name: {
                     "command": "uv",
-                    "args": [*ISOLATED_RUN, "${CLAUDE_PLUGIN_ROOT}/" + server_path(name)],
+                    "args": list(server_args(name)),
                 }}})
                 self.assertEqual(self.catalog("claude", name)["plugins"][0]["mcpServers"], "./.mcp.json")
                 self.assertEqual(self.catalog("opencode", name)["daodan"]["plugins"][name]["mcp"], [{
                     "name": name,
-                    "command": ["uv", *ISOLATED_RUN, "<plugin-root>/" + server_path(name)],
+                    "command": ["uv", *server_args(name, "<plugin-root>")],
                 }])
                 for host in ("claude", "opencode"):
                     for workflow in plugin.components.workflows:
@@ -209,7 +228,6 @@ class KernelMcpRenderingTests(unittest.TestCase):
             "pi": "prompts/{plugin}-{workflow}.md",
         }
         roots = {"codex": "<plugin-root>", "copilot": "${PLUGIN_ROOT}", "pi": "<plugin-root>"}
-        launch = " ".join(("uv", *ISOLATED_RUN))
         for name, plugin in self.plugins.items():
             for host, entry in entries.items():
                 package = self.packages[(host, name)]
@@ -228,7 +246,7 @@ class KernelMcpRenderingTests(unittest.TestCase):
                         text = path.read_text(encoding="utf-8")
                         self.assertIn(f"`{name}`", text)
                         self.assertIn("register that command", text)
-                        self.assertIn(f"{launch} {roots[host]}/{server_path(name)}", text)
+                        self.assertIn(" ".join(("uv", *server_args(name, roots[host]))), text)
                         self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
                         if host == "pi":
                             self.assertIn("pi-mcp-adapter", text)

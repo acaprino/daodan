@@ -3,7 +3,7 @@
 Measures whether an optional type-checker or language-server engine recovers the
 call references the Codebase Map's lexical resolver leaves unresolved, at what
 cost and with what precision, per language. It is a measurement harness like
-`../retrieval-benchmark/`, not an agent-scored case, and it reads a snapshot's
+`../context-scope/`, not an agent-scored case, and it reads a snapshot's
 `manifest.sqlite` rather than running the map.
 
 The decision this supports is recorded in §3.2.2 of

@@ -97,7 +97,7 @@ Load `office:design` and read its `references/editorial-design.md` and
 accepted reading hierarchy, sequence, figure associations and type roles against
 the actual candidate renders. Preserve the scope of a narrow edit or export;
 these criteria do not authorize a new theme or redesign.
-Read that skill's `references/pptx-compatibility.md`, `references/design-library.md`
+Read `office:pptx`'s `references/pptx-compatibility.md`, `references/design-library.md`
 and `references/layout-patterns.md`, and `office:design`'s `references/directions.md`.
 Compare the saved candidate
 to the accepted slide-object specification and the recorded argument mode,

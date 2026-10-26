@@ -123,6 +123,10 @@ Write one JSON file in the presentation workspace:
 - `content` lists are used for density checks; give them the real planned counts
   so the preview can flag a slide that exceeds its pattern's capacity.
 - One direction per deck; one pattern per slide. Vary the pattern across slides.
+- A plan from `content-planning.md` also carries `id`, `job`, `claims` (claim
+  IDs) and, for an existing deck, `status`: `kept`, `updated`, `moved`, `new` or
+  `merged` (cut slides are not in the plan). The sequence table shows status and
+  claims; an unknown status is a plan problem.
 
 Always put the chosen palette's actual colors in `direction.palette`: its
 background, ink, surface and accent. Set `direction.name` to the palette's
@@ -169,7 +173,8 @@ and rerun.
 - It does not prove rendering, fonts, native object behavior, or fidelity in
   Microsoft PowerPoint. Those require the saved candidate and the rendered review
   under `pptx-compatibility.md`.
-- A style proof is a different artifact: one representative slide generated
-  through the harness image tool and reconstructed, with the user's explicit
-  budget decision and chosen number of candidate directions. Record the prompt,
-  the direction and the number of generations in the completion evidence.
+- A style proof is a different artifact: one representative slide built
+  natively with the construction engine and rendered, once per candidate
+  direction the user chose. Generated imagery inside it follows `image-tools.md`
+  and needs the user's explicit budget decision. Record the direction, the slide
+  and any generations in the completion evidence.

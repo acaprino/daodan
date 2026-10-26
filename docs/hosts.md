@@ -129,7 +129,8 @@ signals decide which workers run. The lifecycle's candidate reviews use that sam
 engine and expose those provider bindings on every host. Core harness commands live in
 the `daodan` entry plugin; core specialist methods remain in their domain plugins,
 where those entries load them by name. Independent domain verticals keep their own
-workflow namespaces, such as `/office:presentation` and `/research:team-research`.
+workflow namespaces, such as `/research:team-research` and
+`/trading-broker-integration:ibkr-audit`.
 The `daodan` entries are the primary surface: start there for project work, and
 call a vertical's own command directly when the request is already specific to
 that domain.
@@ -167,16 +168,17 @@ The [Office plugin](plugins/office.md) provides editable PowerPoint presentation
 through SlidePoise with creative specialists, DeckCraft editing and preview,
 native Excel workbooks and native Word documents. Install `office@daodan` from
 `acaprino/daodan`, or select Office in its Pi/OpenCode package, following the
-[Office installation guide](plugins/office.md#install-office). Its three workflow entries follow the
-same adapter mapping as the other plugins:
+[Office installation guide](plugins/office.md#install-office). Its
+presentation, workbook, document, start, verify, fix and theme entries live in
+the `daodan` plugin and follow the same adapter mapping as its other entries:
 
 | Host | PowerPoint (PPTX) | Excel (XLSX) | Word (DOCX) |
 |---|---|---|---|
-| Claude | `/office:presentation` | `/office:workbook` | `/office:document` |
+| Claude | `/daodan:presentation` | `/daodan:workbook` | `/daodan:document` |
 | Copilot | `presentation-coordinator` agent with `presentation.prompt.md` | `workbook.prompt.md` | `document-coordinator` agent with `document.prompt.md` |
 | Codex | `presentation-workflow` | `workbook-workflow` | `document-workflow` |
-| Pi | `/office-presentation` | `/office-workbook` | `/office-document` |
-| OpenCode V2 | `/office:presentation` | `/office:workbook` | `/office:document` |
+| Pi | `/daodan-presentation` | `/daodan-workbook` | `/daodan-document` |
+| OpenCode V2 | `/daodan:presentation` | `/daodan:workbook` | `/daodan:document` |
 
 SlidePoise is an external runtime with its own Python and Node dependencies. Image
 generation, inspection, fonts and a compatible presentation renderer must be

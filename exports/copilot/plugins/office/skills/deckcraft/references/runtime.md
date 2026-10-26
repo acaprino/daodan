@@ -125,8 +125,7 @@ human-readable, not a JSON document. Preserve stderr warnings as evidence.
 A new CLI session starts with a title slide. For explicitly requested native
 construction, start the plan with `file.new` and parameters
 `{"blank":true,"size":[960,540]}`, then `slide.new` with `{"layout":"blank"}`.
-The bridge permits this first command only when no input is supplied. SlidePoise
-remains the coordinated method for a new creative presentation.
+The bridge permits this first command only when no input is supplied.
 
 `render --all` includes hidden slides and writes numbered PNGs. PDF export
 excludes hidden slides by default; use verified `includeHidden` parameters when
@@ -141,6 +140,34 @@ damaged media. The independent inspector and actual renders remain necessary.
 Chart data replacement can remove an embedded workbook and lose a secondary axis;
 an unchanged chart has a different preservation path. Do not generalize a simple
 fixture's success to arbitrary imported decks, animations or complex templates.
+
+## Rendering limits at the reference version
+
+Renders and PDF export come from DeckCraft's own renderer. Upstream lists these
+gaps in [docs/gaps.md](https://github.com/storytold/deckcraft/blob/v0.10.0/docs/gaps.md):
+
+- Only Regular, Bold and Italic faces are drawn
+  ([#69](https://github.com/storytold/deckcraft/issues/69)). Light, Medium and
+  Semibold (weights 300, 500, 600) render as a substitute. Prefer 400 and 700 in
+  a DeckCraft deck, or record that its renders cannot verify the other weights.
+- SVG pictures are not rendered or inserted; an SVG icon shows only its raster
+  fallback. Insert PNG, JPEG or EMF.
+- A MicroType Express embedded font subset is not drawn; raw TrueType/OpenType
+  and Embedded OpenType faces are.
+- PDF export rasterizes slide artwork; text stays searchable.
+
+## Templates
+
+A `.potx` opens as a presentation. At the reference version a save to `.potx`
+writes the presentation content type, so PowerPoint does not treat the result as
+a template: deliver an editable exemplar `.pptx` as `office:pptx` describes rather
+than claiming a `.potx`. To start from a supplied template, open it and save a new
+`.pptx` candidate; never overwrite the template. Upstream issues open at the
+reference date: a master header change does not reach existing slides and new
+slides miss it ([#1111](https://github.com/storytold/deckcraft/issues/1111)), and
+authoring a complete template from commands is incomplete
+([#300](https://github.com/storytold/deckcraft/issues/300)). Verify master and
+layout inheritance on actual renders.
 
 ## Optional native MCP interface
 

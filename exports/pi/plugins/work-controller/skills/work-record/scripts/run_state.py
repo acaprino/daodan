@@ -9,6 +9,7 @@ import errno
 import platform
 from datetime import datetime, timezone
 import hashlib
+import importlib.util
 import json
 import os
 from itertools import combinations
@@ -981,6 +982,8 @@ def validate_record(record, project=None, root=None, historical=False):
         raise ProtocolError("operation must be a lowercase name of letters, digits and hyphens")
     if record["status"] not in rules["fields"]["status"]["values"]:
         raise ProtocolError("Invalid run status")
+    if "process_required" in record and not isinstance(record["process_required"], bool):
+        raise ProtocolError("process_required must be a boolean")
     delivery_reports = []
     for container, state_kind in (("phases", "phases"), ("deliveries", "deliveries"), ("gates", "gates")):
         for identity, item in record[container].items():
@@ -1017,7 +1020,11 @@ def validate_record(record, project=None, root=None, historical=False):
             raise ProtocolError("Project identity does not match this invocation")
         if record.get("output_root") != str(root):
             raise ProtocolError("Output root does not match the recorded identity")
+    if not historical and "process" in record:
+        validate_process_binding(record, project, root)
     if record["status"] == "complete":
+        if record.get("process_required") and "process" not in record:
+            raise ProtocolError("Completion requires the admitted process binding")
         if record["interruption"] is not None:
             raise ProtocolError("An interrupted run cannot be complete")
         if any(p["status"] not in rules["completion"]["phases"] for p in record["phases"].values()):
@@ -1040,6 +1047,18 @@ def validate_record(record, project=None, root=None, historical=False):
                         or evidence["source_revision"] != candidate["head"]):
                     raise ProtocolError(f"Remote gate lacks candidate revision and job attempt: {name}")
     return record
+
+
+def validate_process_binding(record, project, root):
+    """Load the bundled bridge only for records that opt into process execution."""
+    location = Path(__file__).with_name("process_binding.py")
+    spec = importlib.util.spec_from_file_location("daodan_process_binding", location)
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    try:
+        helper.validate(record, project, root, no_links, report_path)
+    except Exception as error:
+        raise ProtocolError(f"Invalid process binding: {error}") from error
 
 
 def validate_task_commit_current(project, task, current, run_id, wave_number):
@@ -1110,6 +1129,15 @@ def validate_commit_transitions(old, new, project):
 
 def validate_transitions(old, new, project=None):
     rules = contract()
+    if "process" in old and new.get("process") != old["process"]:
+        raise ProtocolError("Process binding is immutable; a changed graph needs a new work record")
+    if old.get("process_required") and new.get("process_required") is not True:
+        raise ProtocolError("The required process binding cannot be disabled")
+    if new.get("process_required") and "process" not in new and any(
+        task.get("status") == "running"
+        for wave in new.get("waves", []) for task in wave.get("tasks", [])
+    ):
+        raise ProtocolError("A process-required task cannot dispatch before its process is bound")
     if new["status"] == "complete":
         waiting = [q["id"] for q in new.get("questions", []) if is_open(q)]
         if waiting:
@@ -1142,6 +1170,8 @@ def validate_transitions(old, new, project=None):
 def validate_result(result, work):
     """Validate the envelope and its references without interpreting domain payloads."""
     rules = contract()["result"]
+    if "process" in work and result.get("process") != work["process"]:
+        raise ProtocolError("Result must reference its bound process and definition")
     missing = sorted(set(rules["required"]) - set(result))
     if missing:
         raise ProtocolError("Missing result fields: " + ", ".join(missing))
@@ -1437,7 +1467,7 @@ def atomic_write(path, record, boundary):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "agenda", "ask", "answer", "first-use"))
+    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "agenda", "ask", "answer", "first-use", "bind-process"))
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--run-id")
     parser.add_argument("--session", help="identity of the session doing the work; recorded as the task's holder")
@@ -1541,6 +1571,21 @@ def main(argv=None):
                           "pending_deliveries": [k for k, d in record["deliveries"].items() if d["status"] != "delivered"],
                           "pending_questions": [q for q in record.get("questions", []) if not q.get("answer")],
                           "waiting": waiting(record), "replan": stranded(record)}
+            elif args.command == "bind-process":
+                if args.expected_revision is None:
+                    raise ProtocolError("Binding a process requires --expected-revision")
+
+                def change(before):
+                    if before["revision"] != args.expected_revision:
+                        raise ProtocolError("Record revision changed; read the current record")
+                    if "process" in before:
+                        if before["process"] != payload:
+                            raise ProtocolError("Work record already binds a different process")
+                        return None
+                    return {**before, "process": copy.deepcopy(payload), "process_required": True}
+
+                final = commit_change(project, root, path, args.session, args.take_over, change)
+                output = {"run_id": final["run_id"], "revision": final["revision"], "process": final["process"]}
             elif args.command == "ask":
                 found = {}
 

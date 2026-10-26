@@ -1,11 +1,13 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:9834cc0a25c7b65c4d27eece19db7ffa6fa177d253a47c6720b05244d37ba1e2",
+  "coreDigest": "sha256:f8ff49148a264c44dbe138fe69e61a60d84fb84101ef3a3ebd8bf4c67520d54e",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
     "continue-task": "parallel-subagents",
+    "document": "serial-isolated",
     "finish-task": "parallel-subagents",
+    "fix": "parallel-subagents",
     "fix-bug": "parallel-subagents",
     "get-second-opinion": "parallel-subagents",
     "humanize-text": "parallel-subagents",
@@ -14,19 +16,24 @@
     "map-code": "parallel-subagents",
     "new-feature": "parallel-subagents",
     "onboard-project": "parallel-subagents",
+    "presentation": "serial-isolated",
     "record-decision": "parallel-subagents",
     "refactor-code": "parallel-subagents",
     "review-branch": "parallel-subagents",
     "review-changes": "parallel-subagents",
     "run-maintenance": "parallel-subagents",
     "show-status": "parallel-subagents",
+    "start": "serial-isolated",
     "sync-upstream": "parallel-subagents",
+    "theme": "parallel-subagents",
     "tidy-repo": "parallel-subagents",
+    "verify": "parallel-subagents",
+    "workbook": "parallel-subagents",
     "write-docs": "parallel-subagents",
     "write-tests": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.2.0"
+  "version": "2.3.0"
 }

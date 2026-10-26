@@ -5,8 +5,8 @@ fasi 1 e 2 eseguite, più l'unico tentativo consentito sul formato dell'input; m
 [RESULTS](../../../evals/codebase-map/context-scope/RESULTS.md). Il punto di decisione dopo la
 fase 2 non è superato (a 24 000 caratteri 46% dei corpi contro 52% della ricerca testuale, e
 nessuna affermazione in più): la riprogettazione si ferma qui, le fasi 3 e 4 non partono e il
-secondo holdout resta intatto. Origine: [report di consegna P0-P10](../reports/2026-10-23-code-context-delivery.md),
-difetti 1 e 2. Specifica di partenza: [contesto del codice e perimetro](2026-10-23-code-context-and-scope-design.md),
+secondo holdout resta intatto. Origine: report di consegna P0-P10 (rimosso il 2026-10-26),
+difetti 1 e 2. Specifica di partenza: contesto del codice e perimetro (rimosso il 2026-10-26),
 che alle righe 113-119 distingueva già i riferimenti esatti, obbligatori, dai risultati di
 ricerca, destinati all'esplorazione: questa riprogettazione riallinea il codice a quella
 distinzione e chiude i difetti che la misura ha mostrato.

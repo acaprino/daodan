@@ -164,7 +164,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/claude/plugins/codebase-map",
-      "version": "8.9.0"
+      "version": "8.10.1"
     },
     {
       "agents": [
@@ -188,8 +188,10 @@
         "./commands/brainstorm-idea.md",
         "./commands/check-health.md",
         "./commands/continue-task.md",
+        "./commands/document.md",
         "./commands/finish-task.md",
         "./commands/fix-bug.md",
+        "./commands/fix.md",
         "./commands/get-second-opinion.md",
         "./commands/humanize-text.md",
         "./commands/init-project.md",
@@ -197,14 +199,19 @@
         "./commands/map-code.md",
         "./commands/new-feature.md",
         "./commands/onboard-project.md",
+        "./commands/presentation.md",
         "./commands/record-decision.md",
         "./commands/refactor-code.md",
         "./commands/review-branch.md",
         "./commands/review-changes.md",
         "./commands/run-maintenance.md",
         "./commands/show-status.md",
+        "./commands/start.md",
         "./commands/sync-upstream.md",
+        "./commands/theme.md",
         "./commands/tidy-repo.md",
+        "./commands/verify.md",
+        "./commands/workbook.md",
         "./commands/write-docs.md",
         "./commands/write-tests.md"
       ],
@@ -217,6 +224,7 @@
         "docker",
         "kotlin-development",
         "moe",
+        "office",
         "peer-review",
         "platform-engineering",
         "project-knowledge",
@@ -231,11 +239,11 @@
         "text-humanizer",
         "typescript-development"
       ],
-      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, humanize, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.2.0"
+      "version": "2.3.0"
     },
     {
       "author": {
@@ -454,7 +462,7 @@
         "./skills/model-routing"
       ],
       "source": "./exports/claude/plugins/model-routing",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -491,6 +499,7 @@
     },
     {
       "agents": [
+        "./agents/content-strategist.md",
         "./agents/document-designer.md",
         "./agents/document-reviewer.md",
         "./agents/presentation-designer.md",
@@ -499,27 +508,25 @@
       "author": {
         "name": "Alfio Caprino"
       },
-      "commands": [
-        "./commands/document.md",
-        "./commands/presentation.md",
-        "./commands/workbook.md"
+      "dependencies": [
+        "work-controller"
       ],
-      "dependencies": [],
-      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification.",
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
       "license": "MIT",
       "name": "office",
       "skills": [
         "./skills/deckcraft",
         "./skills/design",
         "./skills/docx",
+        "./skills/gridcraft",
         "./skills/intake",
+        "./skills/integrity",
         "./skills/pptx",
-        "./skills/slidepoise",
         "./skills/wordcraft",
         "./skills/xlsx"
       ],
       "source": "./exports/claude/plugins/office",
-      "version": "2.4.0"
+      "version": "3.1.0"
     },
     {
       "agents": [
@@ -604,7 +611,7 @@
         "moe",
         "report-rendering"
       ],
-      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Deadly Brain job execution, verified commits, reconciliation and authorized merge.",
+      "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Work Controller job execution, verified commits, reconciliation and authorized merge.",
       "license": "MIT",
       "name": "project-delivery",
       "skills": [
@@ -614,7 +621,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/claude/plugins/project-delivery",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "agents": [
@@ -1099,14 +1106,15 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Run records, agenda, gates, grants and recovery for coordinated work: the work record and the isolated worker.",
+      "description": "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP.",
       "license": "MIT",
+      "mcpServers": "./.mcp.json",
       "name": "work-controller",
       "skills": [
         "./skills/work-record"
       ],
       "source": "./exports/claude/plugins/work-controller",
-      "version": "3.0.1"
+      "version": "3.1.0"
     },
     {
       "author": {

@@ -24,6 +24,7 @@ from scripts.daodan.catalogs import render_catalog
 from scripts.daodan.load import load_plugin
 from scripts.daodan.render import render_plugin
 from host_binding_assertions import canonical_markdown, loaded_instruction_text, without_host_binding
+import office_entries
 
 
 OFFICE = REPO_ROOT / "plugins/office"
@@ -50,7 +51,7 @@ DOCUMENT_PATHS = {
     "claude": "commands/document.md",
     "copilot": "agents/document-coordinator.agent.md",
     "codex": "skills/document-workflow/SKILL.md",
-    "pi": "prompts/office-document.md",
+    "pi": "prompts/daodan-document.md",
     "opencode": "commands/document.md",
 }
 
@@ -66,6 +67,7 @@ class EditorialDesignContractTests(unittest.TestCase):
         cls.temporary = tempfile.TemporaryDirectory(dir=str(REPO_ROOT) if os.name == "nt" else None)
         cls.packages = {}
         cls.adapters = {}
+        cls.entries = office_entries.render_entries(cls.temporary.name, ("document",))
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
             package = Path(cls.temporary.name) / host / "office"
@@ -85,7 +87,7 @@ class EditorialDesignContractTests(unittest.TestCase):
         self.assertTrue(set(LOCAL_SKILLS) <= set(self.plugin.components.skills))
         self.assertFalse(set(LOCAL_SKILLS) & set(self.plugin.components.roles))
         self.assertFalse(set(LOCAL_SKILLS) & set(self.plugin.components.workflows))
-        dependencies = (*self.plugin.required_dependencies, *self.plugin.optional_dependencies)
+        dependencies = (*self.plugin.required_dependencies, *getattr(self.plugin, "optional_dependencies", ()))
         self.assertFalse(any("agentit" in dependency.casefold() for dependency in dependencies))
         self.assertEqual(self.plugin.license, "MIT")
         self.assertFalse(self.plugin.mcp_servers)
@@ -139,7 +141,7 @@ class EditorialDesignContractTests(unittest.TestCase):
                 with self.subTest(host=host, method=relative):
                     self.assert_skill_loads(_read(package / relative))
             with self.subTest(host=host, method="document entry"):
-                entry = loaded_instruction_text(self, package / DOCUMENT_PATHS[host], host)
+                entry = loaded_instruction_text(self, self.entries[host] / DOCUMENT_PATHS[host], host)
                 self.assertIn("`office:docx`", entry)
                 self.assertIn("`office:design`", entry)
 
@@ -226,7 +228,7 @@ class EditorialDesignContractTests(unittest.TestCase):
                     self.assertIn(phrase, skill)
                 self.assertNotIn("office:theme-factory", skill)
                 for relative in ("skills/docx/SKILL.md", "skills/pptx/SKILL.md",
-                                 "skills/slidepoise/SKILL.md", "skills/deckcraft/SKILL.md", "skills/wordcraft/SKILL.md"):
+                                 "skills/deckcraft/SKILL.md", "skills/wordcraft/SKILL.md"):
                     text = _read(package / relative)
                     self.assertIn("`office:design`", text)
                     for stale in ("office:theme-factory", "office:editorial-design", "office:typography-and-layout"):

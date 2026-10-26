@@ -13,10 +13,10 @@ della prima prova dal vivo
 
 Stato: decisioni di disegno delle sezioni 1-7 **chiuse il 20 ottobre 2026**,
 con i chiarimenti di integrazione del grafo riportati qui sotto.
-Il [disegno del contesto e del perimetro del 23 ottobre](2026-10-23-code-context-and-scope-design.md)
+Il disegno del contesto e del perimetro del 23 ottobre (rimosso il 2026-10-26)
 specifica l'integrazione Python/Jedi nei consumatori, le viste Markdown,
 la ricerca locale con embedding e l'algoritmo di selezione del contesto.
-Il relativo [piano riprendibile](../plans/2026-10-23-code-context-and-scope.md)
+Il relativo piano riprendibile (rimosso il 2026-10-26)
 separa consegne, verifiche, documentazione e commit; non dichiara già implementate
 queste estensioni. Per il DAG di lavoro conserva la regola I1/I2 della successiva
 specifica di composizione: gli archi del codice non diventano automaticamente

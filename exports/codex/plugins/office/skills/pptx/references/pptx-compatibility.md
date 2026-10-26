@@ -87,14 +87,16 @@ against the chosen construction engine.
   responsive page and assume it will convert to a fixed slide.
 - Record the construction engine and version, intended viewing application,
   available preview renderer and required editability. Distinguish capabilities
-  verified in the installed engine from assumptions. Check the commands or
-  reconstruction types needed for the proposed composition before accepting it.
+  verified in the installed engine from assumptions. Check the commands needed
+  for the proposed composition before accepting it.
 - Resolve font families and weights available to construction and target
   rendering. Preserve a supplied template's typography. Install the direction's
   pairing and embed it in the delivered file through `office:design`.
   Record any substitution and recheck line breaks; claim embedding only from the
   `font_embed.py inspect` result, and never promise how another computer renders
-  a font that is not embedded.
+  a font that is not embedded. Check the weights against the renderer: a weight
+  the preview renderer cannot draw shows as a substitute in previews and in any
+  PDF it exports, so a review of those renders cannot judge that weight.
 - Prefer well-supported native text, basic shapes, connectors, tables and charts.
   A specialized effect, chart type, master feature, SVG or media feature needs
   evidence in the selected engine and target renderer. An exported PPTX alone is
@@ -144,24 +146,21 @@ construction route remains. Continue independent work while that decision is ope
 
 ## Carry constraints through image generation and construction
 
-Pass the accepted slide specification and supported-feature limits into
-SlidePoise's planning context and compiled image request. Keep its upstream
-semantic-map, measurement and construction contracts authoritative; do not invent
-fields or replace its compiler. Reference imagery must respect the fixed canvas,
-text regions, margins and native-object plan. Inspect generated references for
-reconstructability before extending the direction across the deck. Correct an
-incompatible reference rather than accepting a design the engine cannot build.
+Reference imagery must respect the fixed canvas, text regions, margins and
+native-object plan of the accepted slide specification. Inspect a generated
+reference for buildability with DeckCraft's discovered commands before extending
+the direction across the deck. Correct an incompatible reference rather than
+accepting a design the engine cannot build.
 
 Generated or edited images must use the exposed harness image tool under
 `image-tools.md`. An external image script, image-search utility or web workflow
 does not replace that obligation. Preserve source wording, figures, logos and
-approved assets when reconstruction corrects mistakes in a generated reference.
+approved assets when construction corrects mistakes in a generated reference.
 
 When DeckCraft constructs or edits objects, map the same specification to its
 actual discovered commands. Preserve source objects and allowed-change limits.
-There is no general HTML/CSS-to-PPTX converter in this integration. Do not
-round-trip a finished SlidePoise deck through DeckCraft merely to claim
-compatibility; each save needs the preservation checks required by that engine.
+There is no general HTML/CSS-to-PPTX converter in this integration. Each save
+needs the preservation checks required by that engine.
 
 ## Verify appearance and editability separately
 

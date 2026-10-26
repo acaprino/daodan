@@ -1,6 +1,6 @@
 # Chiarimenti, mappe decisionali e grafi di lavoro
 
-Data: 24 ottobre 2026. Stato: **specifica proposta; passo 1 implementato (sezione 11), il resto da implementare e verificare in Deadly Brain (sezione 13)**.
+Data: 24 ottobre 2026; direzione di reintegrazione del 25 ottobre 2026. Stato: **specifica proposta; il motore appartiene a `work-controller@daodan`; capacità progettate, trasferimento del codice e verifiche di esecuzione restano fatti distinti (sezione 13)**.
 
 Questa specifica estende [ADR-0001](../../adr/ADR-0001-work-graph-step0-llm.md)
 e il [disegno dei grafi di lavoro](2026-10-20-system1-work-graph-composition-design.md).
@@ -10,12 +10,14 @@ del futuro motore condiviso di processi.
 
 [ADR-0002](../../adr/ADR-0002-work-controller.md), proposto, assegna a
 `work-controller` il motore generalista: composizione o sola verifica dei grafi,
-orchestrazione ed esecuzione, con model-router interno e contabilizzazione dei
-costi. Per decisione successiva dello stesso giorno, il motore esce da Daodan in
-un repository proprio, Deadly Brain, da cui dipendono Daodan, Shinatama e altri
-progetti (sezione 13). Il runtime riceve obbligatoriamente definizioni YAML di
-job, grafi e loop; anche l'intervista produce quel formato. Dove questo documento
-dice `work-controller`, indica il motore, ovunque sia pubblicato.
+orchestrazione ed esecuzione, con binding dei modelli e contabilizzazione dei
+costi. La direzione del 24 ottobre verso un repository proprio, Deadly Brain,
+è sostituita dalla richiesta del 25 ottobre: tutto il motore appartiene solo a
+`work-controller@daodan`. Shinatama, Mukade e altri progetti consumano quel
+provider senza introdurre dipendenze inverse. `model-routing@daodan` conserva
+selezione dei modelli e prezzi. Il contratto progettato riceve definizioni YAML
+di job, grafi e loop; anche l'intervista produce quel formato. La presenza del
+runtime per grafi non prova che ogni costrutto progettato sia implementato.
 
 **Il bisogno di una decisione umana attiva un chiarimento proporzionato:** una
 domanda diretta, un'intervista mirata oppure una mappa decisionale. I prototipi dei
@@ -65,7 +67,8 @@ Il metodo proprietario dell'attività decide quali input servono. `project-lifec
 fornisce il contesto e i vincoli del task cycle all'intervista generica del motore;
 gli altri metodi richiamano lo stesso contratto di chiarimento senza duplicare un
 proprio framework di intervista. `work-controller` possiede composizione,
-validazione, orchestrazione, esecuzione, routing interno e contabilizzazione.
+validazione, orchestrazione, esecuzione e legame con la contabilizzazione.
+`model-routing@daodan` conserva selezione dei modelli e prezzi.
 `senior-review`
 possiede obblighi, roster e composizione della review. Il catalogo verifica le
 identità dei metodi disponibili; l'adapter dell'host lega strumenti e capacità.
@@ -395,8 +398,8 @@ aperte. Restano da implementare i legami di validità, la revisione del lavoro g
 fatto dopo una decisione cambiata e la mappa decisionale. L'assemblaggio canonico dei reviewer è invece presente; va distinto
 dalla proposta semantica a prompt e dalle capacità del futuro runtime dei grafi.
 
-Dal passo 3 in poi il lavoro si svolge in Deadly Brain, dopo la toolchain
-comune che ne è il prerequisito (sezione 13).
+Il lavoro sul motore appartiene a `work-controller@daodan`; la reintegrazione
+non richiede uno split della toolchain né un repository aggiuntivo (sezione 13).
 
 La prima adozione non richiede un planner offline completo. La specifica non
 promette una riduzione dei token senza confronti misurati su lavoro equivalente.
@@ -423,26 +426,47 @@ dipendenza:
 
 ## 13. Deadly Brain: il motore condiviso
 
-Decisione dell'utente del 24 ottobre 2026, successiva ad ADR-0002. Orchestrazione,
-routing e composizione dei grafi escono da Daodan e vanno in un repository proprio,
-**Deadly Brain** (nome dal mondo di Oni, come Daodan, Shinatama e Mukade). Daodan,
-Shinatama, Mukade e altri progetti dipendono da Deadly Brain; il motore non
-dipende da questi consumatori. La decisione sostituisce RA-001 di ADR-0002, che respingeva
-un terzo repository, e fissa il verso delle dipendenze: nessun marketplace dipende
-da Daodan per avere il motore.
+Il titolo conserva il nome storico per mantenere validi i riferimenti a questa
+sezione. La decisione del 24 ottobre 2026 spostava il motore in un repository
+proprio, **Deadly Brain**. La richiesta del 25 ottobre la sostituisce:
+**il motore completo ha come unico proprietario `work-controller@daodan`**.
+Shinatama, Mukade e altri progetti possono dipendere da quel provider; il motore
+non dipende dai loro plugin. La collocazione in Daodan non crea un ciclo tra
+marketplace. Nessun repository o pacchetto esterno fornisce una seconda copia
+canonica del motore. La dismissione del repository separato richiede la verifica
+del trasferimento e una propria autorizzazione circoscritta.
 
 Identità, nelle parole dell'utente: ispirata a Wayfinder, con una forte componente
 a grafo, anche deterministica. La precisazione successiva dello stesso giorno
-fissa `work-controller` come creatore ed esecutore generalista di processi, con
-orchestrazione e model-router propri. Questo è il perimetro da implementare;
-la presenza di helper, skill o prototipi non ne prova l'esecuzione.
+fissa `work-controller` come creatore ed esecutore generalista di processi.
+`model-routing@daodan` conserva il routing e i prezzi; la reintegrazione non
+duplica quel proprietario. La presenza di helper, skill, codice trasferito o
+prototipi non prova l'esecuzione di tutto il perimetro progettato.
 
-| Contenuto | Oggi | In Deadly Brain |
+| Contenuto | Proprietario canonico | Confine |
 |---|---|---|
-| Registro del run, agenda, gate, worker isolato, domande (`ask`, `answer`) | `work-controller@daodan` | parte di `work-controller@deadly-brain` |
-| Routing dei modelli e prezzi | plugin separato `model-routing@daodan` | model-router interno di `work-controller` |
-| Intervista generica, mappa decisionale e composizione dei grafi | integrazione da completare | parte del motore |
-| Checkpoint, memoria, handover, comunicazione ed esecuzione dei grafi | runtime generalista da implementare | parte del motore |
+| Registro del run, agenda, gate, worker isolato, domande (`ask`, `answer`) | `work-controller@daodan` | identità ed evidenze `daodan/work/v1` conservate |
+| Routing dei modelli e prezzi | `model-routing@daodan` | binding concreti del coordinatore, nessuna copia del router |
+| Runtime dei grafi, artefatti, ticket, console e MCP | `work-controller@daodan` | moduli e risorse sotto la skill `work-record` |
+| Discovery, modelli osservati, memoria semantica, loop e handover sugli host | requisiti dei rispettivi contratti | prove separate dall'inclusione del codice |
+
+Il codice esistente trasferito gestisce ammissione immutabile di grafi YAML,
+esecuzione sequenziale, tentativi e journal SQLite, artefatti per impronta,
+ticket decisionali, ripresa conservativa e viste condivise per console locale e
+MCP di sola lettura. I moduli Python sono in
+`plugins/work-controller/skills/work-record/scripts/work_controller/`; il launcher
+è `skills/work-record/scripts/controller.py`. Lo store predefinito è
+`.daodan/processes` del checkout principale. Un legame esplicito tra processo e
+registro mantiene autorevoli autorizzazioni, consegne, domande e gate del task;
+il successo del grafo non li sostituisce. Gli schemi legacy e le impronte delle
+definizioni ammesse non vengono riscritti. La lettura di archivi legacy richiede
+una home esplicita invece di scegliere silenziosamente tra radici concorrenti.
+
+Le capacità aggiuntive descritte qui sono requisiti, non risultati del
+trasferimento: discovery di componenti registrati, dispatch e arresto su host
+installati, osservazione dei modelli, memoria semantica, loop limitati,
+esecuzione parallela e replan selettivo richiedono implementazione ed evidenza
+proprie. La licenza e la provenienza del motore restano conservate.
 
 Gli archetipi restano ai consumatori: il task cycle di Daodan, le operazioni Office
 di Mukade, i flussi di Shinatama. Il nucleo gestisce dipendenze, decisioni,
@@ -604,7 +628,7 @@ messaggi non sostituiscono risposte umane, autorizzazioni o gate. Una domanda
 umana sospende i dipendenti e lascia proseguire soltanto il lavoro indipendente
 ammesso, secondo le sezioni 5 e 6.
 
-### Esecuzione e model-router interno
+### Esecuzione e binding del model-router
 
 `work-controller` possiede l'esecuzione reale. Gli adapter collegano il runtime
 ai meccanismi verificati degli host: avvio e osservazione dei worker, isolamento,
@@ -623,11 +647,11 @@ composizione e validazione, non dopo. Gli agenti comunicano attraverso quei file
 e il registro, che conserva tentativi, handle e consegne; una sessione successiva
 riprende dallo stesso registro (handover, sopra).
 
-Il **model-router è un sottosistema interno** del controller. Riusa classificazione,
-cataloghi, prezzi e selezione dell'attuale `model-routing`, anziché richiedere al
-consumatore di coordinare un secondo plugin. La migrazione stabilirà i percorsi e
-il trattamento delle identità già installate; la separazione corrente rimane un
-fatto dell'implementazione, non la destinazione del nuovo motore.
+Il **model-router mantiene il proprietario `model-routing@daodan`**. Il
+coordinatore ne riusa classificazione, cataloghi, prezzi e selezione per ottenere
+binding concreti, senza copiare quei dati e quella politica nel motore.
+L'assorbimento del router previsto nella direzione esterna del 24 ottobre non
+fa parte della reintegrazione; identità e contratti del provider restano validi.
 
 Ogni job LLM, inclusi compositore, classificatore e verifiche semantiche, riceve
 il proprio binding di modello ed effort secondo le regole applicabili del router.
@@ -666,20 +690,20 @@ effettivamente provate. Il controllo non promette un tetto monetario esatto sull
 chiamate già in corso. Misure incomplete lasciano il budget non verificato;
 un limite obbligatorio non può essere dichiarato rispettato senza evidenza.
 
-### Prerequisiti e costi
+### Distribuzione e costi
 
-- **Toolchain comune prima dello split.** Compilatore e adapter (`scripts/daodan/`,
-  `adapters/`) vanno in un repository di toolchain, `daodan-common`, installato in
-  CI e fissato a una versione per marketplace, come deciso nella sessione Mukade
-  dello stesso giorno. Le copie in Daodan, Shinatama e Mukade già divergono;
-  Deadly Brain non ne aggiunge un'altra.
-- Un marketplace in più da registrare su Claude, Copilot e Codex.
-- Su Pi e OpenCode il pacchetto di Deadly Brain si installa a parte, perché questi
-  host non installano plugin di marketplace esterni
-  ([host](../../hosts.md)). Va provato su host installati prima della migrazione.
-- I consumatori dichiarano `work-controller@deadly-brain`, che comprende il
-  model-router. Daodan perde gli attuali due plugin: versione maggiore del suo
-  marketplace, con una migrazione esplicita delle dipendenze e degli archivi.
+- Il compilatore e gli adapter di Daodan distribuiscono il runtime insieme al
+  plugin. L'estrazione di `daodan-common`, un marketplace aggiuntivo e un pacchetto
+  Deadly Brain separato erano costi della direzione esterna del 24 ottobre,
+  sostituita dalla reintegrazione; non sono prerequisiti del motore in Daodan.
+- I consumatori dichiarano `work-controller@daodan`. I pacchetti dei cinque host
+  devono includere moduli, asset, launcher e contratto; registrazione e prove su
+  host installati restano evidenze separate ([host](../../hosts.md)).
+- `model-routing@daodan` mantiene identità e politica. Non viene rimosso né
+  ricopiato dentro il motore per questa reintegrazione.
+- La home `.daodan` del checkout principale mantiene registri e agenda. Lo store
+  del processo usa `.daodan/processes`; nessuna migrazione riscrive in modo
+  implicito archivi, definizioni ammesse o autorizzazioni pregresse.
 - Il registro del run accetta le operazioni di consumatori diversi: dalla
   versione 2.1.0 di `work-controller` il consumatore sceglie il nome
   dell'operazione (lettere minuscole, cifre e trattini) e il motore ne controlla
@@ -726,5 +750,7 @@ Questi scenari definiscono il lavoro futuro; non sono risultati già ottenuti.
   selezione del modello, arresto e lettura dei consumi su ciascuno dei cinque.
 - Conferma per singolo binding oppure futura delega esplicita a una politica
   di routing; fino a tale decisione resta il gate corrente.
-- Repository e nomi: proposta `acaprino/deadly-brain`, pubblico, licenza MIT,
-  ingresso `work-controller` e model-router interno.
+- Repository e proprietario sono fissati dalla reintegrazione del 25 ottobre:
+  `work-controller@daodan`, con licenza e provenienza conservate. La rimozione
+  della cartella locale o del repository remoto separato è un'operazione
+  distinta, subordinata a trasferimento verificato e autorizzazione specifica.

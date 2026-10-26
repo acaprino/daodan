@@ -28,19 +28,22 @@ from scripts.daodan.load import load_plugin
 from scripts.daodan.render import render_plugin
 from scripts.daodan.validate import validate_dependencies
 from host_binding_assertions import canonical_markdown, loaded_instruction_text, without_host_binding
+import office_entries
 
 
 OFFICE = REPO_ROOT / "plugins/office"
 ADAPTERS = REPO_ROOT / "adapters"
 ROLES = ("presentation-designer", "presentation-reviewer")
-ALL_ROLES = (*ROLES, "document-designer", "document-reviewer")
+PLANNER = "content-strategist"
+DISPATCHED = (PLANNER, *ROLES)
+ALL_ROLES = (*DISPATCHED, "document-designer", "document-reviewer")
 COMPATIBILITY_REFERENCE = Path("skills/pptx/references/pptx-compatibility.md")
 DESIGN_LIBRARY_REFERENCE = Path("skills/pptx/references/design-library.md")
 HARNESS_PATHS = {
     "claude": "commands/presentation.md",
     "copilot": "agents/presentation-coordinator.agent.md",
     "codex": "skills/presentation-workflow/SKILL.md",
-    "pi": "prompts/office-presentation.md",
+    "pi": "prompts/daodan-presentation.md",
     "opencode": "commands/presentation.md",
 }
 ROLE_PATHS = {
@@ -75,11 +78,14 @@ class PresentationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plugin = load_plugin(OFFICE)
-        cls.workflow = next(item for item in cls.plugin.workflows if item.name == "presentation")
-        cls.presentation_plugin = replace(cls.plugin, workflows=(cls.workflow,))
+        # The presentation entry is a `daodan` workflow: its harness is read from
+        # the entry plugin, the methods, roles and catalogs from office.
+        cls.presentation_plugin = office_entries.entry_plugin(("presentation",))
+        cls.workflow = next(item for item in cls.presentation_plugin.workflows if item.name == "presentation")
         cls.temporary = tempfile.TemporaryDirectory(dir=_temp_dir())
         cls.packages = {}
         cls.adapters = {}
+        cls.entries = office_entries.render_entries(cls.temporary.name, ("presentation",))
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
             package = Path(cls.temporary.name) / host / "office"
@@ -92,19 +98,24 @@ class PresentationContractTests(unittest.TestCase):
         cls.temporary.cleanup()
 
     def harness(self, host):
-        return loaded_instruction_text(self, self.packages[host] / HARNESS_PATHS[host], host)
+        return loaded_instruction_text(self, self.entries[host] / HARNESS_PATHS[host], host)
 
-    def test_creative_roles_are_distinct_from_methods_and_both_engines_remain(self):
+    def test_creative_roles_are_distinct_from_methods_and_deckcraft_is_the_only_engine(self):
         components = self.plugin.components
         self.assertEqual(set(components.roles), set(ALL_ROLES))
-        self.assertTrue({"pptx", "slidepoise", "deckcraft"} <= set(components.skills))
+        self.assertTrue({"pptx", "deckcraft"} <= set(components.skills))
+        self.assertNotIn("slidepoise", components.skills)
         self.assertFalse(set(components.skills) & set(components.roles))
-        self.assertFalse(set(components.workflows) & set(components.roles))
-        self.assertFalse(set(components.workflows) & set(components.skills))
+        # Office ships no command of its own: the entries are `daodan` workflows.
+        self.assertEqual(set(components.workflows), set())
+        self.assertTrue(
+            {"presentation", "document", "workbook", "verify", "fix", "theme", "start"}
+            <= set(load_plugin(office_entries.DAODAN).components.workflows)
+        )
         self.assertFalse(self.plugin.mcp_servers, "External DeckCraft is not a bundled server")
 
     def test_office_consults_no_external_design_provider(self):
-        self.assertEqual(self.plugin.optional_dependencies, ())
+        self.assertEqual(getattr(self.plugin, "optional_dependencies", ()), ())
         self.assertFalse(any(name.split("@", 1)[0] in {"impeccable", "taste-skill"}
                              for name in self.plugin.required_dependencies))
         for host, package in self.packages.items():
@@ -120,7 +131,7 @@ class PresentationContractTests(unittest.TestCase):
     def test_isolated_method_dispatch_is_serial_and_has_only_owned_roles(self):
         self.assertTrue(self.workflow.dispatch.isolated)
         self.assertFalse(self.workflow.dispatch.inline_workers)
-        self.assertEqual(set(self.workflow.dispatch.roles), {f"office/{role}" for role in ROLES})
+        self.assertEqual(set(self.workflow.dispatch.roles), {f"office/{role}" for role in DISPATCHED})
         self.assertTrue({"contexts.isolate", "roles.dispatch"} <= set(self.plugin.capabilities.required))
         self.assertTrue(all(phase.invoke is None for phase in self.workflow.phases))
         for host, adapter in self.adapters.items():
@@ -131,7 +142,7 @@ class PresentationContractTests(unittest.TestCase):
                 harness = self.harness(host)
                 self.assertIn("serial-isolated", harness)
                 self.assertIn("**required**", harness)
-                for role in ROLES:
+                for role in DISPATCHED:
                     self.assertIn(role, harness)
 
     def test_no_host_can_replace_required_isolation_with_shared_context(self):
@@ -154,17 +165,20 @@ class PresentationContractTests(unittest.TestCase):
                 self.assertIn("roles.dispatch", unavailable.missing_capabilities)
 
     def test_method_dispatch_cannot_ship_without_its_declared_capability(self):
-        weakened = replace(self.plugin, capabilities=replace(
-            self.plugin.capabilities,
-            required=tuple(item for item in self.plugin.capabilities.required if item != "roles.dispatch"),
+        # The dispatch lives in the `daodan` entry; weakening its capabilities
+        # must still be caught with office present in the registry.
+        weakened = replace(self.presentation_plugin, capabilities=replace(
+            self.presentation_plugin.capabilities,
+            required=tuple(item for item in self.presentation_plugin.capabilities.required
+                           if item != "roles.dispatch"),
         ))
-        issues = validate_dependencies(weakened, {"office": weakened})
+        issues = validate_dependencies(weakened, {"daodan": weakened, "office": self.plugin})
         self.assertIn("dispatch-without-capability", {issue.code for issue in issues})
 
     def test_host_role_bindings_resolve_real_owned_files_and_keep_model_inheritance(self):
         for host, package in self.packages.items():
             harness = self.harness(host)
-            for role in ROLES:
+            for role in DISPATCHED:
                 with self.subTest(host=host, role=role):
                     path = package / ROLE_PATHS[host].format(role=role)
                     self.assertTrue(path.is_file())
@@ -174,8 +188,10 @@ class PresentationContractTests(unittest.TestCase):
                     self.assertIn("model: inherit", source_meta)
                     self.assertNotRegex(source_meta, r"(?m)^tools:")
                     if host in {"codex", "pi"}:
-                        self.assertIn(path.relative_to(package).as_posix(), harness)
-                        self.assertIn("complete body verbatim", harness)
+                        # Codex and Pi hold each role body in the entry package,
+                        # under the owner-qualified dispatch contract path.
+                        self.assertIn(f"contracts/dispatch/office/{role}.md", harness)
+                        self.assertIn("complete role body verbatim", harness)
                     else:
                         self.assertIn(f"office:{role}", harness)
                     if host == "codex":
@@ -202,7 +218,7 @@ class PresentationContractTests(unittest.TestCase):
                         self.assertFalse(any(rule.get("effect") == "deny" for rule in agent["permissions"]))
                 else:
                     entry = catalog["plugins"][0]
-                    for role in ROLES:
+                    for role in DISPATCHED:
                         self.assertIn("./" + ROLE_PATHS[host].format(role=role), entry["agents"])
                     self.assertIn("./skills/pptx", entry["skills"])
                     self.assertFalse(any("presentation-designer" in path or "presentation-reviewer" in path
@@ -224,6 +240,22 @@ class PresentationContractTests(unittest.TestCase):
                     self.assertEqual(canonical_markdown(rendered), canonical_markdown(source))
                     method = _read(package / "skills/pptx/SKILL.md")
                     self.assertIn(f"references/{reference}", method)
+
+    def test_presentation_entry_resolves_patterns_from_the_owning_skill_on_every_host(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                entry = _normalized(self.harness(host))
+                self.assertIn("slide patterns from `office:pptx`'s `references/layout-patterns.md`", entry)
+                self.assertTrue((package / "skills/pptx/references/layout-patterns.md").is_file())
+
+    def test_embedding_precedes_candidate_rendering_and_review_on_every_host(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                method = _read(package / "skills/pptx/SKILL.md")
+                self.assertLess(method.rindex("font_embed.py"),
+                                method.index("Dispatch `office:presentation-reviewer`"))
+                self.assertIn("exact copy delivered", method)
+                self.assertIn("without embedding", method)
 
     def test_ppt_visual_sketches_live_in_the_patterns_with_one_slide_schema(self):
         relative = Path("skills/pptx/references/layout-patterns.md")
@@ -256,11 +288,10 @@ class PresentationContractTests(unittest.TestCase):
                 self.assertIn("references/directions.md", reviewer)
                 self.assertEqual((package / license_relative).read_bytes(), (OFFICE / license_relative).read_bytes())
 
-    def test_pptx_constraints_reach_the_workflow_workers_and_both_engines(self):
+    def test_pptx_constraints_reach_the_workflow_workers_and_the_engine(self):
         """Shipping a reference is insufficient unless each independent entry reads it."""
         consumers = (
             "skills/pptx/SKILL.md",
-            "skills/slidepoise/SKILL.md",
             "skills/deckcraft/SKILL.md",
         )
         for host, package in self.packages.items():
@@ -279,7 +310,8 @@ class PresentationContractTests(unittest.TestCase):
             "Apply this contract before design work, generating reference images",
             "fixed 16:9 canvas as the default",
             "Record the construction engine and version, intended viewing application",
-            "Check the commands or reconstruction types needed for the proposed composition before accepting it",
+            "Check the commands needed for the proposed composition before accepting it",
+            "a review of those renders cannot judge that weight",
             "Resolve font families and weights available to construction and target rendering",
             "Record any substitution and recheck line breaks",
             "Unsupported elements must be redesigned within the brief or reported before construction",
@@ -310,7 +342,7 @@ class PresentationContractTests(unittest.TestCase):
             "Express their useful visual intent through fixed geometry and static compositions",
             "Treat animation as a separate, explicitly requested feature with verified support",
             "Use gradients, shadows, transparency and clipping only where the chosen engine and target renderer preserve them",
-            "Inspect generated references for reconstructability",
+            "Inspect a generated reference for buildability with DeckCraft's discovered commands",
             "There is no general HTML/CSS-to-PPTX converter in this integration",
             "Generated or edited images must use the exposed harness image tool",
             "An external image script, image-search utility or web workflow does not replace that obligation",
@@ -439,22 +471,37 @@ class PresentationContractTests(unittest.TestCase):
                 self.assertIn("Do not generate images, edit the deck, dispatch agents", designer)
                 self.assertIn("not the coordinator's dispatch procedure", designer)
 
-    def test_both_engine_skills_keep_their_helpers_and_never_start_a_second_coordinator(self):
+    def test_engine_skill_keeps_its_helpers_and_never_starts_a_second_coordinator(self):
         for host, package in self.packages.items():
             with self.subTest(host=host):
-                slidepoise = _normalized(_read(package / "skills/slidepoise/SKILL.md"))
                 deckcraft = _normalized(_read(package / "skills/deckcraft/SKILL.md"))
-                self.assertIn("do not start a second coordinator", slidepoise)
                 self.assertIn("without starting another coordinator", deckcraft)
-                self.assertIn("not replace that creative reconstruction workflow", deckcraft)
-                self.assertIn("do not round-trip every SlidePoise result", _normalized(self.harness(host)))
+                self.assertIn("the only presentation construction engine", deckcraft)
+                self.assertFalse((package / "skills/slidepoise").exists())
+                for relative in ("skills/pptx/SKILL.md", "skills/deckcraft/SKILL.md",
+                                 "skills/pptx/references/pptx-compatibility.md",
+                                 "skills/pptx/references/image-tools.md"):
+                    self.assertNotIn("slidepoise", _read(package / relative).lower(), relative)
+                self.assertNotIn("slidepoise", self.harness(host).lower())
                 for relative in (
-                    "skills/slidepoise/scripts/slidepoise_bridge.py",
                     "skills/deckcraft/scripts/deckcraft_bridge.py",
                     "skills/deckcraft/scripts/pptx_inspect.py",
                     "skills/xlsx/scripts/xlsx_inspect.py",
                 ):
                     self.assertTrue((package / relative).is_file(), relative)
+
+    def test_no_reconstruction_step_survives_and_deckcraft_render_limits_are_stated(self):
+        references = OFFICE / "skills/pptx/references"
+        for path in sorted(references.glob("*.md")):
+            with self.subTest(reference=path.name):
+                self.assertNotRegex(path.read_text(encoding="utf-8"), r"(?i)reconstruct")
+        runtime = _normalized(_read(OFFICE / "skills/deckcraft/references/runtime.md"))
+        for limit in ("Only Regular, Bold and Italic faces are drawn", "SVG pictures are not rendered",
+                      "MicroType Express", "PDF export rasterizes slide artwork"):
+            self.assertIn(limit, runtime)
+        icons = _normalized(_read(references / "image-tools.md"))
+        self.assertIn("open-licensed icon set", icons)
+        self.assertIn("does not render SVG", icons)
 
     def test_copilot_image_access_is_not_invented_by_the_coordinator_allowlist(self):
         header = _frontmatter(self.harness("copilot"))

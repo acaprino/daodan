@@ -60,14 +60,16 @@ The work graph is a simulated prototype. The reference sections retain the four
 boundary interfaces, real and mocked implementations, and open integration points,
 including the duplicated routing policy.
 
-The [code context implementation plan](superpowers/plans/2026-10-23-code-context-and-scope.md)
-connects semantic Markdown, Jedi graph evidence and local retrieval through a
-progressive scope-selection algorithm. It records planned checkpoints, checks,
-documentation updates and intermediate commits; implementation status remains
-separate from the design. The [delivery report](superpowers/reports/2026-10-23-code-context-delivery.md)
-states what the holdout measured, what the host exports were checked for and
-which limits remain; the harness and frozen gold live in
+The [context packet redesign](superpowers/specs/2026-10-25-context-packet-redesign.md)
+records how code context is being rebuilt around search, and the
+[embedding benchmark](plugins/codebase-map-research.md#embedding-benchmark) why the local embedder is
+EmbeddingGemma 2. The harness and frozen gold live in
 [`evals/codebase-map/context-scope/`](../evals/codebase-map/context-scope/README.md).
+For prompt and agent design, see [Progetta prompt e agenti affidabili](references/prompt-agent-research.md),
+the research page on verifiable instructions, evidence boundaries, independent
+verification and end-to-end evaluation. Vendor documentation and the
+code-retrieval literature behind that embedder are collected in the
+[EmbeddingGemma reference](references/embeddinggemma-papers.md).
 
 ## Installation and migration
 

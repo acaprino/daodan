@@ -236,6 +236,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--open", action="store_true", help="open the page in the default browser")
     args = parser.parse_args(argv)
     try:
+        if (args.out.resolve() == args.candidates.resolve()
+                or args.out.exists() and args.out.samefile(args.candidates)):
+            raise ValueError("output must be different from the input candidates")
         document = json.loads(args.candidates.read_text(encoding="utf-8"))
         html = render(document, args.title)
         args.out.parent.mkdir(parents=True, exist_ok=True)

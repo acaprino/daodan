@@ -44,12 +44,12 @@ Project Delivery coordinates analysis, debugging, fixes, features and complete p
 1. Specifications come from a Wayfinder-style interview grounded in actual code and existing documents.
 2. Codebase Map maximizes discovery and impact analysis but remains static evidence, never a correctness oracle.
 3. Implementation plans contain bit-sized jobs with explicit oracles and pass adversarial review before execution.
-4. Deadly Brain, currently provided by work-controller and model-routing, owns graph and job execution, resume, cross-session handoff and confirmed per-job model routing.
+4. Work Controller in Daodan owns graph and job execution and conservative resume; the local model-routing provider owns confirmed model selection and pricing. Installed-host dispatch, cross-session handoff and observed per-job models require their own execution evidence.
 5. ADR and FRD require versioned, verifiable artifacts; current behavior and stale documentation never become approved requirements automatically.
 
 ## Decision
 
-Project Delivery owns delivery-method, adr-method, frd-method and project-bootstrap. delivery-method coordinates investigation, specification, planning, adversarial plan review, execution, verified commits, reconciliation, final review and merge. It delegates execution to work-controller/Deadly Brain and specialist work to their owners rather than vendoring Superpowers or creating another scheduler.
+Project Delivery owns delivery-method, adr-method, frd-method and project-bootstrap. delivery-method coordinates investigation, specification, planning, adversarial plan review, execution, verified commits, reconciliation, final review and merge. It delegates execution to work-controller@daodan and specialist work to their owners rather than vendoring Superpowers or creating another scheduler. A process binding preserves the work record's grants, deliveries and current-candidate gates; an engine success cannot satisfy those domain checks by itself.
 
 FRD records requirements plus people, organizations, locations, relationships and source spans. Spans use Unicode [start,end) offsets, document digest and excerpt. Manual corrections use optimistic digests and persist across re-extraction. Bootstrap proposes missing ADR and FRD from code, documentation and Codebase Map, verifies claims against source and declares runtime gaps. Generated records remain Proposed until approved.
 

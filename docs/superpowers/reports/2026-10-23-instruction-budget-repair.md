@@ -71,4 +71,4 @@ Evidence is retained under
 the delivery, independent reviews, source fingerprints and final gate results.
 The parent `code-context-scope-20261023` record closes P2, P3 and P4 after binding
 those checks to the repair commit. P5 through P10 remain open in the
-[implementation plan](../plans/2026-10-23-code-context-and-scope.md).
+implementation plan (removed on 2026-10-26).

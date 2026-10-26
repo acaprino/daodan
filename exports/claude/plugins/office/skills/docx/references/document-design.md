@@ -171,7 +171,7 @@ Return these decisions in one assigned document design report:
 | Flow | Keep-with-next, widow/orphan behavior, paragraph spacing, intentional page/section breaks and rules for content growth |
 | Tables and figures | Widths, headers, alignment, captions/sources, native representation, image proportions/crop and reading order |
 | Furniture | Headers, footers, first-page variants, page-number fields and navigation/reference update needs |
-| Template reuse | Editable exemplar blocks, replacement instructions and supported growth; DOTX status only if demonstrated |
+| Template reuse | The base `.dotx` from `office:design`'s `template_kit.py`, editable exemplar blocks, replacement instructions and supported growth |
 | Build and review | Selected engine capabilities, image requests, preservation constraints, representative page checks and unresolved decisions |
 
 Point sizes and widths must be concrete for the selected content and engine, not

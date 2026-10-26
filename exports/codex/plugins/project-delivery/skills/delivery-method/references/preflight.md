@@ -95,7 +95,10 @@ Hash failing test identifiers: unchanged means known; changed unknown.
 
 ## Model binding persistence
 
-Deadly Brain routes models per job; never hardcode models or host aliases here.
+Load the local `model-routing:model-routing` owner for per-job model bindings;
+pass confirmed assignments to the Work Controller coordinator. The bundled
+engine does not make model calls or discover a host's model identity. Never
+hardcode models or host aliases here.
 
 Store the confirmed routing artifact in
 `environment.models.assignments[request_sha256]` using loaded

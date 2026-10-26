@@ -115,8 +115,8 @@ Common slots for every content pattern: `kicker` (optional), `headline`,
 
 Each entry names its composition, main slots, the variation axis that keeps decks
 from looking mechanical, and its specific requirement. Where a region sketch is
-given, its brackets show regions in reading order, not raster images or an
-automatic reconstruction promise; map real content labels onto them.
+given, its brackets show regions in reading order, not raster images or
+finished geometry; map real content labels onto them.
 
 1. **Cover** — composition: title block anchored to the left third with one
    accent band or image occupying the right; slots: `deck title`, `subtitle`,
@@ -227,8 +227,8 @@ region then becomes a slide-object entry under the single specification in
 `pptx-compatibility.md`; this catalog adds no second schema. For a reusable
 template, supply representative editable cover, content, evidence and closing
 layouts plus replacement instructions; it is a design specification until the
-producer builds the exemplar, and never a POTX or master-layout claim without
-verified support.
+producer builds the exemplar on the base `.potx` from `office:design`'s
+`template_kit.py`, whose report names which layout serves which pattern.
 
 ## Provenance
 

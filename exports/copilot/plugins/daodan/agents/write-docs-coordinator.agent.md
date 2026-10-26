@@ -1,7 +1,7 @@
 ---
 name: write-docs-coordinator
 description: 'Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'text-humanizer:text-humanizer', 'work-controller:isolated-worker']
 ---
 

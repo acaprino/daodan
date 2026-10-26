@@ -23,6 +23,7 @@ from scripts.daodan.adapter import HOSTS, load_adapter
 from scripts.daodan.load import load_plugin
 from scripts.daodan.render import render_plugin
 from host_binding_assertions import loaded_instruction_text
+import office_entries
 
 
 OFFICE = REPO_ROOT / "plugins/office"
@@ -45,24 +46,13 @@ def _temp_dir():
     return str(REPO_ROOT) if os.name == "nt" else None
 
 
-def _entry_path(package, host, workflow):
-    if host == "copilot":
-        coordinator = package / f"agents/{workflow}-coordinator.agent.md"
-        return coordinator if coordinator.is_file() else package / f"prompts/{workflow}.prompt.md"
-    return package / {
-        "claude": f"commands/{workflow}.md",
-        "codex": f"skills/{workflow}-workflow/SKILL.md",
-        "pi": f"prompts/office-{workflow}.md",
-        "opencode": f"commands/{workflow}.md",
-    }[host]
-
-
 class OfficeIntakeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plugin = load_plugin(OFFICE)
         cls.temporary = tempfile.TemporaryDirectory(dir=_temp_dir())
         cls.packages = {}
+        cls.entries = office_entries.render_entries(cls.temporary.name, WORKFLOWS)
         for host in HOSTS:
             package = Path(cls.temporary.name) / host / "office"
             render_plugin(cls.plugin, load_adapter(ADAPTERS, host), package, adapters_root=ADAPTERS)
@@ -73,14 +63,22 @@ class OfficeIntakeTests(unittest.TestCase):
         cls.temporary.cleanup()
 
     def test_entries_are_named_by_format(self):
-        self.assertEqual(set(self.plugin.components.workflows), set(WORKFLOWS))
+        # verify and fix act on an existing file; theme creates a template, not a file from a brief;
+        # start routes a request to the others. The seven entries are `daodan`
+        # workflows: office keeps the methods, the roles and the contracts.
+        daodan = load_plugin(office_entries.DAODAN)
+        self.assertEqual(
+            sorted(set(office_entries.ENTRY_NAMES) - set(daodan.components.workflows)), []
+        )
+        self.assertEqual(set(self.plugin.components.workflows), set())
         self.assertIn("intake", self.plugin.components.skills)
 
     def test_every_entry_starts_with_the_shared_intake_on_every_host(self):
-        for host, package in self.packages.items():
+        for host, entries in self.entries.items():
             for workflow in WORKFLOWS:
                 with self.subTest(host=host, workflow=workflow):
-                    text = _normalized(loaded_instruction_text(self, _entry_path(package, host, workflow), host))
+                    path = office_entries.entry_path(entries, host, workflow)
+                    text = _normalized(loaded_instruction_text(self, path, host))
                     self.assertIn("Load `office:intake` first", text)
                     self.assertIn("read-only route never writes", text)
 

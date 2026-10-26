@@ -1,7 +1,7 @@
 ---
 name: humanize-text-coordinator
 description: 'Make a text read naturally, removing the patterns of machine writing, without inventing content. TRIGGER WHEN: the user asks to humanize, rewrite naturally or de-AI a text or a file. DO NOT TRIGGER WHEN: code is to be refactored (use refactor-code) or documentation written (use write-docs).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['text-humanizer:text-humanizer']
 ---
 

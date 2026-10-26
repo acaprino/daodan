@@ -198,7 +198,7 @@ it, but the shipped recall is inferred from `salvage_eval.py`, not re-scored.
   [`languages/python.py`](../../plugins/codebase-map/skills/map-method/scripts/languages/python.py);
   the shipped parsers also carry the CI unit suite
   [`tests/test_xray_scripts.py`](../../tests/test_xray_scripts.py).
-- Sibling harness: [retrieval-benchmark](code-graph-retrieval-benchmark.md);
+- Related comparison: [embedding benchmark](../plugins/codebase-map-research.md#embedding-benchmark);
   consumer plugin [`codebase-map`](../plugins/codebase-map.md), skill
   `codebase-map:map-method` (names per [docs/catalog.md](../catalog.md)).
 

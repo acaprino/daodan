@@ -1,9 +1,9 @@
 ---
 name: map-method
 description: >
-  Static codebase mapping and standalone navigation of existing map evidence: structure, purpose, integrations, symbols, documentation and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS.
-  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation; consult available map evidence before broad source exploration. Loading the skill starts no analysis or refresh. Verify material claims against current source and use ordinary repository search when no usable map exists.
-  DO NOT TRIGGER WHEN: the task does not involve project code or its documentation.
+  Static mapping and standalone navigation of existing map evidence.
+  TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps.
+  DO NOT TRIGGER WHEN: no project code or documentation.
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
@@ -97,7 +97,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 | PL/SQL (Oracle) | `.pks`, `.pkb`, `.plsql`, `.pls`, `.pck`, `.prc`, `.fnc`, `.trg` | regex (packages, package bodies, type bodies, cursors, exceptions, %TYPE/%ROWTYPE references) | `--`, `/* */` |
 | Rust | `.rs` | tree-sitter (preferred) or regex; structs, enums, traits, impls (with `Trait for Type` naming), mods, unions, type aliases | `//`, `/* */`, rustdoc `///` / `//!` / `/** */` / `/*! */` |
 | Go | `.go` | tree-sitter (preferred) or regex; functions, methods, types | `//`, `/* */` |
-| CSS, SCSS, LESS | `.css`, `.scss`, `.less` | stdlib tokenizer, never tree-sitter: one symbol per applied rule, named by its flattened selector inside its enclosing at-rules; top-level at-rules and Sass or LESS variables; mixins and Sass functions; `@import` / `@use` / `@forward`; Tailwind `@apply` layout utilities read as the declarations they inline | `/* */`, and `//` outside plain CSS |
+| CSS, SCSS, LESS | `.css`, `.scss`, `.less` | stdlib tokenizer, never tree-sitter; one symbol per applied rule (flattened selector within enclosing at-rules); top-level at-rules, Sass/LESS variables, mixins, Sass functions; `@import`/`@use`/`@forward`; Tailwind `@apply` layout utilities expanded as declarations | `/* */`, and `//` outside plain CSS |
 
 `.sql` is disambiguated against PL/SQL by Oracle-specific content markers (`languages/__init__.py`); `plpgsql` stays SQL.
 
@@ -113,14 +113,14 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | Unit | Holds | Loaded by |
 |---|---|---|
 | `references/migration.md` | legacy root migration and bound-path resolution | legacy archives, redirects, bindings or blocked preflight |
-| `references/run.md` | concurrent runs model, perimeter, classic or team | whoever owns the run |
-| `references/snapshot.md` | snapshot write, scope count, diff, carry, check commands and owner prerequisites | whoever owns the run's snapshot |
+| `references/run.md` | classic/team runs, concurrency and perimeter | whoever owns the run |
+| `references/snapshot.md` | snapshot ownership, scope, write, diff, carry and check commands | whoever owns the run's snapshot |
 | `references/update.md` | incremental re-derivation | analyst on accepted updates |
 | `references/deepen.md` | cards an area lacks | area deepening; analyst in `cards` mode |
-| `references/evidence.md` | evidence-anchored output, forbidden files, script commands, source reading, file classification; maintained-document verification is separate | every phase worker and every consumer that reads source |
-| `references/reading.md` | how to read a finished analysis | every consumer of a bound analysis |
+| `references/evidence.md` | evidence, forbidden files, commands, source reading, classification; maintained-document verification separately | every phase worker and every consumer that reads source |
+| `references/reading.md` | analysis reading | every consumer of a bound analysis |
 | `references/standalone.md` | shared read-only map discovery, navigation, impact and fallback | every map consumer, including analysis and composed workflows |
-| `references/phase-0.md` | Phase 0, project knowledge discovery | analyst and team entry |
+| `references/phase-0.md` | Phase 0 knowledge discovery | analyst and team entry |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
 | `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |
 | `references/phases-5-6.md` | Phase 5 patterns and risks, Phase 6 documentation health | phase 5 and 6 workers |
@@ -150,19 +150,20 @@ Conditional reads: methodology, patterns, comments; migration for legacy roots, 
 
 ## Resources
 
-Scripts: `<plugin-root>/skills/map-method/scripts/` (Python >= 3.10; multi-language targets).
+Python >= 3.10 scripts: `<plugin-root>/skills/map-method/scripts/`.
+Language Support above applies throughout.
 
 - `ast_parser.py`: structural extraction dispatcher.
-- `analyze_file.py`: per-file classification/structure/usages; workflow calls reuse `--snapshot`.
-- `classifier.py`: language-aware criticality classification.
-- `usage_finder.py`: cross-file symbol usages across supported extensions.
-- `comment_rewriter.py`: multi-language comment analysis engine.
+- `analyze_file.py`: classification/structure/usages; workflows reuse `--snapshot`.
+- `classifier.py`: language-aware criticality.
+- `usage_finder.py`: cross-file symbol usages.
+- `comment_rewriter.py`: multi-language comment analysis.
 - `rewrite_comments.py`: comment quality CLI: scan/analyze/rewrite/report.
 - `doc_review.py`: documentation maintenance (Phase 6).
-- `migrate_root.py`: project-bound legacy migration and historical path resolution.
-- `snapshot.py`: scope, SQLite snapshots (JSON explicit), run resolution and incremental changes.
+- `migrate_root.py`: project-bound legacy migration; historical-path resolution.
+- `snapshot.py`: scope, SQLite snapshots (explicit JSON), run resolution, incremental changes.
 - `source_reader.py`: manifest graphs, outlines and validated source blocks.
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
-- `cascade_scan.py`: global stylesheet layout risks, cascade override candidates and screen rules (Phase 5).
-- `languages/`: per-language adapters using the Language Support methods.
+- `cascade_scan.py`: global stylesheet layout risks, cascade overrides and screen rules (Phase 5).
+- `languages/`: per-language adapters listed above.
 - `requirements.txt`: optional tree-sitter and tree-sitter-language-pack dependencies.

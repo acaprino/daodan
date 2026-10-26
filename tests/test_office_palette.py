@@ -164,6 +164,49 @@ class SeedSourceTests(unittest.TestCase):
         with self.assertRaises(palette.PaletteError):
             palette._get("file:///etc/passwd", 10)
 
+    def test_supplied_word_and_powerpoint_templates_supply_colours_without_changes(self):
+        drawing = "http://schemas.openxmlformats.org/drawingml/2006/main"
+        formats = {
+            ".potx": ("ppt", "presentation", "application/vnd.openxmlformats-officedocument.presentationml.template.main+xml"),
+            ".potm": ("ppt", "presentation", "application/vnd.ms-powerpoint.template.macroEnabled.main+xml"),
+            ".dotx": ("word", "document", "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml"),
+            ".dotm": ("word", "document", "application/vnd.ms-word.template.macroEnabledTemplate.main+xml"),
+        }
+        for suffix, (folder, main, content_type) in formats.items():
+            with self.subTest(suffix=suffix):
+                template = self.root / ("brand" + suffix)
+                with zipfile.ZipFile(template, "w") as archive:
+                    archive.writestr("[Content_Types].xml",
+                                     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                                     f'<Override PartName="/{folder}/{main}.xml" ContentType="{content_type}"/></Types>')
+                    archive.writestr(f"{folder}/{main}.xml", "<document/>")
+                    archive.writestr(f"{folder}/theme/theme1.xml",
+                                     f'<a:theme xmlns:a="{drawing}"><a:themeElements><a:clrScheme name="brand">'
+                                     '<a:accent1><a:srgbClr val="1D4ED8"/></a:accent1>'
+                                     '</a:clrScheme></a:themeElements></a:theme>')
+                    if suffix.endswith("m"):
+                        archive.writestr(f"{folder}/vbaProject.bin", b"preserved without execution")
+                original = template.read_bytes()
+                result = palette.seeds_from_file(template, 4)
+                self.assertEqual(result["theme_scheme"]["accent1"], "#1D4ED8")
+                self.assertEqual(result["seeds"][0]["hex"], "#1D4ED8")
+                self.assertEqual(template.read_bytes(), original)
+
+    def test_office_colour_extraction_rejects_oversized_package_parts(self):
+        deck = self.root / "oversized.pptx"
+        with zipfile.ZipFile(deck, "w", zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr("ppt/slides/slide1.xml", b"x" * 128)
+        with mock.patch.object(palette.package, "MAX_PART_BYTES", 64):
+            with self.assertRaisesRegex(palette.PaletteError, "byte limit"):
+                palette.seeds_from_file(deck, 4)
+
+    def test_office_theme_rejects_dtd_before_parsing(self):
+        deck = self.root / "entities.pptx"
+        with zipfile.ZipFile(deck, "w") as archive:
+            archive.writestr("ppt/theme/theme1.xml", '<!DOCTYPE x [<!ENTITY y "test">]><x>&y;</x>')
+        with self.assertRaisesRegex(palette.PaletteError, "DTD or entity"):
+            palette.seeds_from_file(deck, 4)
+
     def test_image_seeds_need_pillow_and_read_dominant_colours(self):
         try:
             from PIL import Image
@@ -214,6 +257,43 @@ class PreviewTests(unittest.TestCase):
                 self.assertTrue((root / "out" / "p.html").is_file())
                 (root / "e.json").write_text(json.dumps({"candidates": []}), encoding="utf-8")
                 self.assertEqual(preview.main([str(root / "e.json"), "--out", str(root / "x.html")]), 1)
+
+    def test_cli_preserves_input_when_output_is_the_same_path(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "candidates.json"
+            original = json.dumps({"candidates": [palette.build_palette("faithful", ["#1D4ED8"])]}).encode()
+            source.write_bytes(original)
+            with mock.patch("sys.stdout"):
+                self.assertEqual(preview.main([str(source), "--out", str(source)]), 1)
+            self.assertEqual(source.read_bytes(), original)
+
+    def test_cli_preserves_input_when_output_is_a_hard_link(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, alias = root / "candidates.json", root / "alias.html"
+            original = json.dumps({"candidates": [palette.build_palette("faithful", ["#1D4ED8"])]}).encode()
+            source.write_bytes(original)
+            try:
+                alias.hardlink_to(source)
+            except OSError as error:
+                self.skipTest(f"hard links are unavailable: {error}")
+            with mock.patch("sys.stdout"):
+                self.assertEqual(preview.main([str(source), "--out", str(alias)]), 1)
+            self.assertEqual(source.read_bytes(), original)
+            self.assertEqual(alias.read_bytes(), original)
+
+    def test_cli_can_regenerate_a_distinct_existing_preview(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, output = root / "candidates.json", root / "preview.html"
+            original = json.dumps({"candidates": [palette.build_palette("faithful", ["#1D4ED8"])]}).encode()
+            source.write_bytes(original)
+            output.write_bytes(b"previous preview")
+            with mock.patch("sys.stdout"):
+                self.assertEqual(preview.main([str(source), "--out", str(output)]), 0)
+            self.assertIn("<!doctype html>", output.read_text(encoding="utf-8").lower())
+            self.assertEqual(source.read_bytes(), original)
 
 
 class PaletteContractTests(unittest.TestCase):

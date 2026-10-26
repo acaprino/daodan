@@ -344,6 +344,10 @@ def _repeatable_capacity(boxes: dict) -> int:
     return max(numbers) if numbers else len(matched)
 
 
+# Statuses of a slide planned from an existing deck (references/content-planning.md).
+SLIDE_STATUSES = ("kept", "updated", "moved", "new", "merged")
+
+
 def count_plan_items(plan: dict) -> int | None:
     content = plan.get("content") or {}
     for key in ("sections", "stages", "rows", "periods", "options", "criteria", "steps",
@@ -379,6 +383,9 @@ def check_slide(index: int, plan: dict, pattern: dict) -> list[str]:
                 notes.append(f"declared density {density} pt is below the {MIN_BODY_PT} pt floor")
         except (TypeError, ValueError):
             notes.append(f"declared density is not a number: {density}")
+    status = plan.get("status")
+    if status is not None and status not in SLIDE_STATUSES:
+        notes.append(f"status '{status}' is not one of {', '.join(SLIDE_STATUSES)}")
     planned = count_plan_items(plan)
     capacity = pattern_capacity(pattern)
     if planned is not None and capacity is not None and planned > capacity:
@@ -420,7 +427,9 @@ def build_document(plan: dict, library: dict) -> tuple[str, list[str]]:
     summary_rows = "\n".join(
         f"<tr><td>{item['index']}</td><td>{escape(item['pattern']['name'])}</td>"
         f"<td>{escape(str(item['plan'].get('headline') or item['plan'].get('title') or ''))}</td>"
-        f"<td>{escape(item['pattern']['job'])}</td></tr>"
+        f"<td>{escape(item['pattern']['job'])}</td>"
+        f"<td>{escape(str(item['plan'].get('status') or ''))}</td>"
+        f"<td>{escape(', '.join(str(claim) for claim in item['plan'].get('claims') or []))}</td></tr>"
         for item in resolved
     )
     document = f"""<!DOCTYPE html>
@@ -483,7 +492,7 @@ footer {{ max-width: 1180px; margin: 0 auto; color: #4b5563; font-size: 12px; }}
 {body}
 <h1 style="max-width:1180px;margin:34px auto 12px;font-size:18px">Slide sequence</h1>
 <table class="summary">
-<thead><tr><th>#</th><th>Pattern</th><th>Headline or title</th><th>Job</th></tr></thead>
+<thead><tr><th>#</th><th>Pattern</th><th>Headline or title</th><th>Job</th><th>Status</th><th>Claims</th></tr></thead>
 <tbody>
 {summary_rows}
 </tbody>
@@ -624,6 +633,11 @@ def run(arguments: list[str]) -> int:
         print("no preview written", file=sys.stderr)
         return 2
     try:
+        if (str(args.plan) != "-" and (
+                args.out.resolve() == args.plan.resolve()
+                or args.out.exists() and args.out.samefile(args.plan))):
+            print("plan: output must be different from the input plan; no preview written", file=sys.stderr)
+            return 2
         args.out.write_text(document, encoding="utf-8")
     except OSError as error:
         print(f"plan: failed to write {args.out}: {error}", file=sys.stderr)

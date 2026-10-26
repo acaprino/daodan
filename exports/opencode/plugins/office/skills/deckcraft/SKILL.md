@@ -5,8 +5,7 @@ description: >
   runtime, preserving sources and checking native-feature losses. TRIGGER WHEN:
   direct native PowerPoint construction, targeted PPTX changes, slide previews,
   printable PDF or DeckCraft.
-  DO NOT TRIGGER WHEN: a new creative deck uses SlidePoise reconstruction or only
-  a spreadsheet or document is requested.
+  DO NOT TRIGGER WHEN: only a spreadsheet or document is requested.
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
@@ -90,8 +89,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Use the external [DeckCraft](https://github.com/storytold/deckcraft) engine for
 direct native deck construction, targeted edits, native object operations,
-rendering and PDF export. It complements
-`office:slidepoise`; it does not replace that creative reconstruction workflow.
+rendering and PDF export. It is the only presentation construction engine.
 Read `references/runtime.md` before discovery or the first operation. Office
 ships transport and read-only inspection helpers, not the engine or an MCP server.
 
@@ -125,7 +123,7 @@ Read the inventory's slide order, content, notes, relationships, parts and featu
 lists. Use the runtime's document/slide inspection to resolve actual object IDs.
 Do not infer IDs from a thumbnail or reuse them after an unrelated document load.
 
-The inspector accepts ordinary PPTX, not macro-enabled or template variants. It
+The inspector accepts ordinary PPTX and `.potx` templates, not macro-enabled variants. It
 checks bounded ZIP/XML and relationships; it does not render, evaluate chart
 semantics or establish full OOXML conformance. Never treat `valid: true` as a
 fidelity verdict. Inspect errors and deltas, including changed parts and binaries.

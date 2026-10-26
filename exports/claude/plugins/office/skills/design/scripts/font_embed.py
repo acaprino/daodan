@@ -48,20 +48,38 @@ $target = $env:FONT_EMBED_OUTPUT
 $format = [int]$env:FONT_EMBED_FORMAT
 if ($env:FONT_EMBED_APP -eq 'PowerPoint') {
   $app = New-Object -ComObject PowerPoint.Application
-  $deck = $app.Presentations.Open($source, -1, 0, 0)
-  try { $deck.SaveAs($target, $format, -1) } finally { $deck.Close() }
-  if ($app.Presentations.Count -eq 0) { $app.Quit() }
+  $security = $app.AutomationSecurity
+  $deck = $null
+  try {
+    $app.AutomationSecurity = 3
+    $deck = $app.Presentations.Open($source, -1, 0, 0)
+    $deck.SaveAs($target, $format, -1)
+  } finally {
+    try { if ($null -ne $deck) { $deck.Close() } }
+    finally {
+      $app.AutomationSecurity = $security
+      if ($app.Presentations.Count -eq 0) { $app.Quit() }
+    }
+  }
 } else {
   $app = New-Object -ComObject Word.Application
-  $app.Visible = $false
-  $doc = $app.Documents.Open($source, $false, $true, $false)
+  $security = $app.AutomationSecurity
+  $doc = $null
   try {
+    $app.Visible = $false
+    $app.AutomationSecurity = 3
+    $doc = $app.Documents.Open($source, $false, $true, $false)
     $doc.EmbedTrueTypeFonts = $true
     $doc.SaveSubsetFonts = $false
     $doc.DoNotEmbedSystemFonts = $true
     $doc.SaveAs2($target, $format)
-  } finally { $doc.Close(0) }
-  if ($app.Documents.Count -eq 0) { $app.Quit() }
+  } finally {
+    try { if ($null -ne $doc) { $doc.Close(0) } }
+    finally {
+      $app.AutomationSecurity = $security
+      if ($app.Documents.Count -eq 0) { $app.Quit() }
+    }
+  }
 }
 """
 
@@ -132,7 +150,8 @@ def inspect_pptx(archive: zipfile.ZipFile) -> dict:
                 part = targets.get(item.get(f"{{{NS['r']}}}id"))
                 if part in archive.namelist():
                     styles.append(style)
-                    subset.append(_eot_subset(archive.read(part)[:16]))
+                    with archive.open(part) as stream:
+                        subset.append(_eot_subset(stream.read(16)))
             embedded[face] = {"styles": styles,
                               "subset": True if any(subset) else False if subset else None}
     return {"used": sorted(used), "embedded": embedded}

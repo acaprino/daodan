@@ -41,13 +41,6 @@ not measure task success, correctness of the delivered code or LLM token savings
   packet, resume, a real edit checked by a behavior oracle, protocol barrier,
   refreshed map in a new manifest, post-task receipt, semantic map, and a check that
   the old receipt is refused. A script plays the coordinator and the editor.
-- **Embedding arm** (`embedding_arm.py`) compares lexical, dense, fused and fused-plus-graph
-  orderings on the same queries with the shipped fusion policy, and can run the planner and
-  the packet builder with the dense result as lead source. The pinned model must already be
-  in the plugin's shared model directory; the harness never downloads it. Use the Python of
-  the evaluation environment for the project (its parser fingerprint must match the
-  prepared manifest) and pass `--encoder-python` for an interpreter that has numpy,
-  onnxruntime and tokenizers.
 - **Dispatchable coverage and claims.** `evaluate.py` records each packet's `status_reason` and the
   delivered line runs; `scope+packet:ready` credits only a `ready` packet. `claims.py` scores the
   claim-level gold (`gold/claims.json`, written from the source and checked span by span) against
@@ -64,8 +57,6 @@ python harness/evaluate.py evaluate --project P --shard K/N --out part-K.json   
 python harness/evaluate.py merge    --parts part-*.json --out results/evaluate-result.json
 python harness/impact.py   --project P --workdir NEW --environment <venv> --out results/impact-result.json
 python harness/pathrun.py  --source <starlette dir> --work NEW --environment <venv> --out results/pathrun-result.json
-python harness/embedding_arm.py --project P --out results/embedding-arm.json --cold-index --encoder-python <python with numpy, onnxruntime, tokenizers>
-python harness/embedding_arm.py --project P --out part-K.json --reuse-index --packets 24000 --shard K/4 --encoder-python <same>
 python harness/claims.py   results/evaluate-result.json gold/claims.json results/claims-result.json
 python harness/static_hosts.py <repository root> results/static-hosts.json
 ```

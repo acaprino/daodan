@@ -370,7 +370,19 @@ class WordCoverageTests(unittest.TestCase):
         self.assertTrue(result["complete"], result)
         self.assertEqual(result["summary"]["cut"], 4)
         self.assertEqual([cut["status"] for cut in result["cuts"]], ["applied", "applied"])
-        self.assertEqual(result["cuts"][0]["covered_items"], 3)
+        self.assertEqual(result["cuts"][0]["covered_items"], 7)
+        self.assertEqual(result["cuts"][0]["present_items"], 4)
+
+    def test_section_cut_applies_to_its_table_cells_only(self):
+        source = (heading("Remove me") + table("Approved table")
+                  + heading("Keep me") + table("Retained table"))
+        candidate = heading("Keep me") + table("Retained table")
+        result = self.coverage(source, candidate, [
+            {"section": "Remove me", "reason": "approved shorter version"}])
+        self.assertTrue(result["complete"], result)
+        cells = [item for item in result["items"] if item["kind"] == "cell"]
+        self.assertEqual([(item["section"], item["status"]) for item in cells],
+                         [("Remove me", "cut"), ("Keep me", "present")])
 
     def test_cut_but_present_and_unmatched_cuts_are_distinguished(self):
         result = self.coverage(self.SOURCE, self.SOURCE, [

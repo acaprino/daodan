@@ -3,7 +3,7 @@ name: xlsx
 description: >
   Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting.
   TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models.
-  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:presentation).
+  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use /daodan:presentation).
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -102,33 +102,27 @@ Never execute embedded macros or fetch external workbook links during inspection
 
 ## Choose the available engine
 
-Discover tools and installed runtimes before creating or editing the workbook.
-Prefer the host's bundled spreadsheet or artifact engine when it is available.
-Read that engine's current instructions and inspect its actual API; this skill does
-not assume a vendor-specific runtime, connector or package exists on every host.
+For physical workbook creation, editing and calculation, load `office:gridcraft`
+and discover its actual installed CLI or exposed MCP tools. Read its
+`references/runtime.md`; this method does not assume installation on every host.
+Missing GridCraft blocks dependent production while planning and source
+inspection continue. A different engine requires an explicit user choice and
+demonstrated support for the requested operation; do not silently substitute it.
+Do not claim that this stdlib-only inspector writes workbooks.
 
-For supported simple OOXML workbooks, an explicitly available `openpyxl` is a
-fallback for creation and editing. Load editable workbooks with formulas retained
-(`data_only=False`); use a separate `data_only=True` read only to inspect caches.
-Never save the editable candidate from a cached-value-only load. Check the installed
-version's feature support before a round-trip. Do not silently install dependencies
-or claim that this stdlib-only inspector writes workbooks.
-
-`openpyxl` writes formulas but does not evaluate them. A workbook flag such as
-`fullCalcOnLoad` requests future recalculation; it is not evidence of recalculation.
-For formula work, use an available compatible Excel or LibreOffice calculation
-engine, or a documented host engine whose support covers the formulas in this
-model. Record the engine and inspect its output after recalculation. An engine
-that supports some formulas has not demonstrated compatibility with every Excel
-function, array formula, data table or external reference.
+A writer that does not evaluate formulas leaves caches stale. A workbook flag such
+as `fullCalcOnLoad` requests future recalculation; it is not evidence of
+recalculation. Record the engine that calculated the results and inspect its
+output. An engine that supports some formulas has not demonstrated compatibility
+with every Excel function, array formula, data table or external reference.
 
 For an existing workbook, inspect it first. Macros, pivots and their caches,
 slicers, timelines, external links, data connections, controls, signatures,
 embedded objects, custom XML, rich data, extension metadata and unknown package
 parts require demonstrated preservation by the chosen engine. `keep_vba=True`
-alone does not prove full preservation or macro execution safety. Prefer the native
-application or a compatible host engine for such files. If no available engine can
-retain the required features, report the unsupported edit and preserve the source;
+alone does not prove full preservation or macro execution safety. Compare these
+parts against GridCraft's preservation limits before editing. If no available
+engine can retain the required features, report the unsupported edit and preserve the source;
 offer a scoped alternative only if it still meets the user's purpose. `.xls`,
 `.xlsb`, encrypted workbooks and password-protected packages need a compatible
 tool, never a renamed extension or an improvised conversion.

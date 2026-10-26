@@ -1,0 +1,13 @@
+name = "verify"
+entrypoint = "verify.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:integrity-report"]
+
+[contract]
+inputs = ["office-file"]
+outcomes = ["integrity-verified"]
+artifacts = ["integrity-report"]
+schemas = []

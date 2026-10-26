@@ -2,9 +2,8 @@
 # kernels under plugins/ plus the host adapters; everything under exports/ and
 # every root marketplace manifest are compiler output. These jobs are
 # the mechanical versions of the contracts documented in CLAUDE.md, plus unit
-# tests for the helper scripts that have branching logic. Every script is
-# stdlib-only Python and runs from the repository root, so failures reproduce
-# locally with the same commands.
+# tests for the helper scripts that have branching logic. The compiler remains
+# stdlib-only; the work-controller runtime uses the reviewed YAML parser below.
 name: consistency
 
 on:
@@ -44,6 +43,9 @@ jobs:
         run: |
           python scripts/sync_plugin_docs.py --check
           python scripts/sync_codex_instructions.py --check
+
+      - name: Install Work Controller runtime parser
+        run: python -m pip install 'PyYAML>=6.0.3,<7'
 
       - name: Unit and contract tests
         run: python -m unittest discover -s tests -v

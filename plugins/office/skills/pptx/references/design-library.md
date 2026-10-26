@@ -98,4 +98,3 @@ native editable content.
 Provenance: separating argument mode, identity, style and layout is informed by
 [PPT Master](https://github.com/hugohe3/ppt-master) (MIT). No code, prompts,
 template library or installation workflow from that project is bundled.
-SlidePoise retains its upstream profiles and composition method.

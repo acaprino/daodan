@@ -1,11 +1,13 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:9834cc0a25c7b65c4d27eece19db7ffa6fa177d253a47c6720b05244d37ba1e2",
+  "coreDigest": "sha256:f8ff49148a264c44dbe138fe69e61a60d84fb84101ef3a3ebd8bf4c67520d54e",
   "harnessStrategies": {
     "brainstorm-idea": "native-team",
     "check-health": "native-team",
     "continue-task": "native-team",
+    "document": "serial-isolated",
     "finish-task": "native-team",
+    "fix": "native-team",
     "fix-bug": "native-team",
     "get-second-opinion": "native-team",
     "humanize-text": "native-team",
@@ -14,19 +16,24 @@
     "map-code": "native-team",
     "new-feature": "native-team",
     "onboard-project": "native-team",
+    "presentation": "serial-isolated",
     "record-decision": "native-team",
     "refactor-code": "native-team",
     "review-branch": "native-team",
     "review-changes": "native-team",
     "run-maintenance": "native-team",
     "show-status": "native-team",
+    "start": "serial-isolated",
     "sync-upstream": "native-team",
+    "theme": "native-team",
     "tidy-repo": "native-team",
+    "verify": "native-team",
+    "workbook": "native-team",
     "write-docs": "native-team",
     "write-tests": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.2.0"
+  "version": "2.3.0"
 }

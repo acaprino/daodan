@@ -24,7 +24,10 @@ PRESENTATION_NS = {"http://schemas.openxmlformats.org/presentationml/2006/main",
                    "http://purl.oclc.org/ooxml/presentationml/main"}
 DRAWING_NS = {"http://schemas.openxmlformats.org/drawingml/2006/main",
              "http://purl.oclc.org/ooxml/drawingml/main"}
-MAIN_TYPE = "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"
+MAIN_TYPES = {
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml",
+    "application/vnd.openxmlformats-officedocument.presentationml.template.main+xml",
+}
 CHART_NS = {"http://schemas.openxmlformats.org/drawingml/2006/chart",
             "http://purl.oclc.org/ooxml/drawingml/chart"}
 MC_NS = {"http://schemas.openxmlformats.org/markup-compatibility/2006"}
@@ -82,8 +85,8 @@ def read_presentation(path):
             raise package.InspectionError("Expected one internal presentation officeDocument relationship")
         main = mains[0].get("part")
         root = roots.get(main)
-        if root is None or not matches(root, "presentation") or types.get(main) != MAIN_TYPE:
-            raise package.InspectionError("Expected a PPTX presentation root and content type; macro and template variants are not supported")
+        if root is None or not matches(root, "presentation") or types.get(main) not in MAIN_TYPES:
+            raise package.InspectionError("Expected a PPTX presentation or template root and content type; macro variants are not supported")
         slide_list = next((item for item in root if matches(item, "sldIdLst")), None)
         size = next((item for item in root if matches(item, "sldSz")), None)
         result["canvas"] = dict(size.attrib) if size is not None else None

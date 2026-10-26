@@ -1,7 +1,7 @@
 ---
 name: tidy-repo-coordinator
 description: 'Clean the repository: workspace garbage and git leftovers, dead application code, redundant tests, concluded run output. Preview first, then one authorization. TRIGGER WHEN: the user asks to clean up, tidy, remove dead code, junk files or redundant tests. DO NOT TRIGGER WHEN: the code itself is to be restructured (use refactor-code).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor', 'work-controller:isolated-worker']
 ---
 

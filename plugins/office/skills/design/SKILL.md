@@ -86,6 +86,31 @@ another variant, and say so. Record the chosen palette's hex values by role in
 the brief; construction and review verify against them. Do not retouch a chosen
 colour by hand without re-running `palette.py check` on the result.
 
+## Write the theme into a template
+
+The palette and pairing reach the file as a real theme, not only as values the
+engine applies object by object. Generate the base template from the chosen
+palette and pairing:
+
+```text
+python "${CLAUDE_PLUGIN_ROOT}/skills/design/scripts/template_kit.py" BASE.potx --palette candidates.json --variant faithful --pairing 2
+python "${CLAUDE_PLUGIN_ROOT}/skills/design/scripts/template_kit.py" BASE.dotx --palette candidates.json --variant faithful --pairing 2 --page a4
+```
+
+A `.potx` carries the theme (palette roles as theme colours, pairing as heading
+and body fonts), a slide master and nine layouts mapped to the patterns of
+`office:pptx`'s `layout-patterns.md`; a `.dotx` carries the theme and the
+paragraph, character and table styles, page geometry and a page-number footer.
+`.pptx` and `.docx` outputs are the same base as an ordinary file to build on;
+`--samples` adds one sample slide per layout or sample pages for rendering. Brand
+fonts replace the pairing with `--heading-font` and `--body-font`. The report
+lists layouts, theme colours, fonts and notes; it never overwrites a file.
+
+Inherit instead of generating when the user supplies a template or a file whose
+look must carry over (direction `H`): build on that file itself, so its masters,
+layouts, styles and theme survive, and use `palette.py from-file` only to record
+its colours. Render a sample built on any template before claiming its look.
+
 ## Structure belongs to the format
 
 This skill decides how a file looks, never how it argues. A deck chooses one of
@@ -100,6 +125,12 @@ each other: a deck and a document made from the same brief share direction,
 palette and pairing, and each takes its structure from its own catalog.
 
 ## Procedure on the substantial route
+
+Run it only when the operation recorded at intake gives the file a new look:
+create, restyle, or derive without carrying the look over. An expansion or
+revision inherits the file's direction, palette, pairing and template; record
+them with `palette.py from-file` and skip the palette choice, font fetch and
+template generation, and design new parts with what the file already uses.
 
 1. Take audience, purpose, the format's structure choice (argument mode for a
    deck, document type for a document), direction or brand, colour source,
@@ -116,7 +147,8 @@ palette and pairing, and each takes its structure from its own catalog.
    `office:pptx`'s `design-library.md` for the 16:9 canvas,
    `office:docx`'s `document-design.md` for the page.
 5. Install the pairing's faces before construction (below) and record which
-   faces were installed, which fell back and why.
+   faces were installed, which fell back and why. Generate the base template
+   from the chosen palette and pairing, or keep the supplied one (above).
 6. Hand the format method the record: direction, palette by role, pairing and
    font status, reading map, type roles and open decisions; the format keeps its
    own structure choice beside it. The format

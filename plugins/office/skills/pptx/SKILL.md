@@ -27,8 +27,9 @@ session selections. For DOCX/PPTX bundles both format designers consume the
 same record. A narrow edit or export does not re-enter design.
 Read `references/image-tools.md` before image work.
 
-Coordinated execution uses the registered `office:presentation` workflow
-entry and its generated dispatch bindings. If this skill was loaded directly,
+Coordinated execution uses the registered `/daodan:presentation` workflow
+entry, or `/daodan:start`, which declares the same roles, and its generated
+dispatch bindings. If this skill was loaded directly,
 resolve that entry on the active host before dispatch; continue the same task,
 not a nested workflow. A role name alone cannot supply an inline worker body.
 
@@ -39,34 +40,57 @@ wording, brand assets, delivery context, slide roles and editable objects. Resol
 material uncertainty; infer routine choices within the user's authorization.
 Preserve facts and citations. Do not manufacture evidence to fill a composition.
 
-`office:intake` owns the single round of questions and the route. Add the
-presentation decisions that shape the deck to that round: argument mode (how
-the deck argues, from `references/design-library.md`), art direction (a
-library direction or their brand), the colour source for the palette, style
-constraints, content and page count, and the slide types they expect. Suggest
-concrete options from `office:design`'s `references/directions.md` and
-`references/layout-patterns.md` rather than an open question. The palette
+`office:intake` owns the single round of questions, the operation and the route.
+Add to that round only the presentation decisions the operation leaves open
+(table below); an existing deck supplies the rest. For a new deck these are: argument mode (how
+the deck argues, from `references/design-library.md`), the planning decisions of
+`references/content-planning.md` (purpose and goal, audience, scope, delivery,
+length or slides to add, density), art direction (a library direction or their
+brand), the colour source for the palette, style constraints and the slide types
+they expect. Suggest
+concrete options from `office:design`'s `references/directions.md` and this
+skill's `references/layout-patterns.md` rather than an open question. The palette
 candidates are shown and chosen after that round, as `office:design` describes.
 
-For a deck with more than a few slides, or whenever direction is genuinely
-uncertain, prepare the plan and show a preview before construction: compile the
-plan JSON in `references/design-preview.md`, render it with
-`python "${CLAUDE_PLUGIN_ROOT}/skills/pptx/scripts/design_preview.py"`,
-and let the user confirm the slide sequence under the direction already chosen
-at intake. A separate style
+## Run only the steps the operation needs
+
+| Operation | Content plan | Theme | Slide design | Build | Review |
+|---|---|---|---|---|---|
+| Create | Full plan from every source | Choose the palette; generate the base `.potx` | Every slide | New deck on the base | Every slide |
+| Derive | Full plan; carried content enters the ledger | Inherited when the look is carried over, otherwise chosen as in Create | Every slide | New deck on the source or on the new base | Every slide; coverage of carried content |
+| Expand | Delta plan: new slides placed in the existing storyline; existing slides `kept` or `moved` | Inherited from the deck | New slides only, on the deck's existing layouts and patterns | Candidate built from the deck | New and moved slides, deck-level consistency, coverage of every existing slide |
+| Revise | Delta plan: `updated`, `moved`, `merged` and approved cuts | Inherited from the deck | Changed slides only | Candidate built from the deck | Changed slides; coverage except approved cuts |
+| Restyle | None: content, sequence and claims stay | New palette and direction; generate the base `.potx` | Every slide, keeping each slide's pattern and content | New deck on the new base with all content carried | Every slide; complete coverage |
+| Edit | None | Inherited | None | Scoped candidate | Changed slides and preservation |
+| Review or export | None | None | None | None | The unchanged source |
+
+A combined request runs the union of its rows: expand and restyle plans the delta
+and redesigns every slide on the new base. An operation that turns out to need a
+step outside its row (an edit that needs a new layout) goes back to intake.
+
+When the operation has a content plan, it comes first: dispatch
+`office:content-strategist` (below) and take its plan JSON. For a new or derived
+deck of more than a few slides, or whenever direction is genuinely uncertain,
+show that plan before construction under `references/design-preview.md`: render
+it with `python "${CLAUDE_PLUGIN_ROOT}/skills/pptx/scripts/design_preview.py"`,
+and let the user confirm the slide count, sequence and patterns under the
+direction already chosen at intake. For an expansion or revision show the delta
+(status and position of each new or changed slide) with the same preview. A separate style
 proof costs image generations and needs the user's explicit budget decision and
 their chosen number of candidate directions; a full autonomous request authorizes
 routine choices without a preview gate.
 
 | Intake route | Method | Specialist scope |
 |---|---|---|
-| Substantial: new or derived deck, template, redesign, restructure or shortening | `office:slidepoise` (visual-first reconstruction) or `office:deckcraft` (direct native construction when requested or when SlidePoise is unavailable) | Designer establishes direction and slide-object plan; reviewer inspects final renders |
+| Substantial: create, derive, expand, revise or restyle | `office:deckcraft` (native construction from the accepted slide-object specification) | The steps of the operation's row above: content strategist for the full or delta plan; designer for every or only the new and changed slides; reviewer on the final renders |
 | Narrow: targeted content or formatting edit | `office:deckcraft` | Preserve the direction and palette; no designer dispatch: a change that needs a new design decision goes back to the user and re-enters intake; reviewer checks changes and preservation |
 | Read-only: review, preview or printable PDF | `office:deckcraft` for renders and export, never writing to the source | No redesign; reviewer inspects the source renders and any export |
 
-For a reusable template, provide an editable exemplar deck, representative page
-types, reusable visual rules and a short reuse note. Do not label a PPTX exemplar
-as a PowerPoint `.potx` template or claim master-layout support without verification.
+For a reusable template, generate the base with `office:design`'s
+`template_kit.py` (slide master, theme and layouts in a `.potx`), add an editable
+exemplar deck built on it with representative page types, and a short reuse note.
+Claim only what the kit's report and an opened, rendered sample show; an engine's
+own save to `.potx` is not a template at DeckCraft's reference version.
 
 ## Delegate with bounded ownership
 
@@ -85,22 +109,40 @@ Default models inherit the session. Use the active host's actual isolated
 dispatch mechanism and generated role bindings, including when only one reviewer
 is required. Unavailable isolation blocks that delivery.
 
-Dispatch `office:presentation-designer` for creative work. Supply brief, outline,
-sources, brand assets, existing renders, compatibility brief, absolute report
-path. Require direction, the slide-object
+Dispatch `office:content-strategist` first when the operation has a content plan.
+Supply the brief with the operation, the planning decisions and the inherited
+ones, every source file, the existing deck when there is one, the approved cuts
+and absolute paths for the content report and the plan JSON. Require a full plan
+for create and derive, a delta plan for expand and revise. Verify both exist, the
+plan passes `design_preview.py` and every core claim of the ledger reaches a
+slide. Bring overflow, gaps, conflicts and proposed cuts to the user before
+design. Restyle, edit and export do not plan content.
+
+Dispatch `office:presentation-designer` for the slides the operation designs:
+every slide for create, derive and restyle; only new and changed slides for
+expand and revise, on the deck's existing layouts, patterns and theme. Supply
+brief, the approved plan as the outline, the slides in scope, sources, brand
+assets, existing renders, compatibility brief, absolute report path. The designer
+keeps the plan's slide order, claims and patterns and adds geometry; a pattern
+change needs a reason. Require direction, the slide-object
 specification from `references/pptx-compatibility.md`, image requests and unresolved
 decisions. Verify the report exists and its geometry, typography and native-object
 choices are supported before construction or image generation. For a narrow edit
 or export, record why a new design delivery is
 unnecessary; preserve the accepted direction.
 
-Load the selected engine skill and perform construction or editing in the
-coordinator. Give SlidePoise the accepted compatibility brief and design report
-as context for its planning and compiled generation request. Do not recreate its
-construction schemas locally. Reject references that cannot be reconstructed
-with the required editability before propagating their design across the deck.
+Load `office:deckcraft` and perform construction or editing in the coordinator.
+Map the accepted compatibility brief and slide-object specification to its
+discovered commands. Reject a design or reference image whose objects DeckCraft
+cannot build with the required editability before propagating it across the deck.
 DeckCraft applies scoped edits to a separate candidate after preservation checks.
 Keep source and earlier candidates intact.
+
+When the deck uses fonts outside Microsoft Office, embed them in a separate
+candidate with `office:design`'s `font_embed.py` and record its inspection result.
+Complete embedding before preservation checks, rendering and independent review;
+they must bind to the exact copy delivered. On the read-only route keep the
+unchanged source and report its existing font evidence without embedding.
 
 When the substantial route starts from an existing deck (derived, restyled,
 restructured or shortened), write the approved cuts recorded at intake to a cuts
@@ -141,9 +183,7 @@ quality; rendered images cannot establish native editability. Claims about
 Microsoft PowerPoint fidelity require actual PowerPoint rendering evidence under
 `references/pptx-compatibility.md`; previews from another engine remain separate.
 
-When the deck uses fonts outside Microsoft Office, embed them in the delivered
-copy with `office:design`'s `font_embed.py` and record its
-inspection result. Deliver the deck and useful previews with remaining limits. Do not claim a
+Deliver the deck and useful previews with remaining limits. Do not claim a
 visually reviewed result when actual candidate renders or visual access were
 unavailable. Continue independent work when a required capability blocks a step.
 On the read-only route, the unchanged source PPTX is the presentation artifact;

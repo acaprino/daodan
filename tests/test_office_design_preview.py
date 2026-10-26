@@ -293,6 +293,39 @@ class CommandLineTests(unittest.TestCase):
         self.assertIn("<!DOCTYPE html>", document)
         self.assertIn("One decision per slide", document)
 
+    def test_output_at_the_same_path_preserves_the_input_plan(self):
+        plan = self.directory / "plan.json"
+        original = json.dumps(_plan()).encode()
+        plan.write_bytes(original)
+        result = self.run_script("--plan", str(plan), "--out", str(plan))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("different from the input", result.stderr)
+        self.assertEqual(plan.read_bytes(), original)
+
+    def test_output_hard_link_preserves_the_input_plan(self):
+        plan, alias = self.directory / "plan.json", self.directory / "alias.html"
+        original = json.dumps(_plan()).encode()
+        plan.write_bytes(original)
+        try:
+            alias.hardlink_to(plan)
+        except OSError as error:
+            self.skipTest(f"hard links are unavailable: {error}")
+        result = self.run_script("--plan", str(plan), "--out", str(alias))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("different from the input", result.stderr)
+        self.assertEqual(plan.read_bytes(), original)
+        self.assertEqual(alias.read_bytes(), original)
+
+    def test_a_distinct_existing_preview_can_be_regenerated(self):
+        plan, output = self.directory / "plan.json", self.directory / "preview.html"
+        original = json.dumps(_plan()).encode()
+        plan.write_bytes(original)
+        output.write_bytes(b"previous preview")
+        result = self.run_script("--plan", str(plan), "--out", str(output))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("<!DOCTYPE html>", output.read_text(encoding="utf-8"))
+        self.assertEqual(plan.read_bytes(), original)
+
     def test_view_summary_reports_capacity_and_writes_nothing(self):
         plan = self.directory / "plan.json"
         plan.write_text(json.dumps(_plan()), encoding="utf-8")

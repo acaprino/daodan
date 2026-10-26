@@ -6,7 +6,7 @@ Subcommands:
   from-image IMAGE [--count N]       dominant colours of a logo or picture (needs Pillow)
   from-url URL                       colours a website declares in its CSS, theme-color and images
   from-css PATH...                   colours declared in local stylesheets, token files or design notes
-  from-file FILE.pptx|FILE.docx      theme scheme and colours used in an Office file
+  from-file OFFICE_FILE             theme scheme and colours used in a Word/PowerPoint file or template
   candidates --seed HEX [--seed HEX] [--count 5] [--name LABEL]
                                      five complete palettes built from one or two seeds
   check PALETTE.json                 contrast and distinctness report for a palette
@@ -23,6 +23,7 @@ Exit 0 on success, 1 when a source could not be read, 2 on invalid use.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import io
 import json
 import math
@@ -30,9 +31,12 @@ import re
 import sys
 import urllib.parse
 import urllib.request
-import zipfile
 from pathlib import Path
-from xml.etree import ElementTree
+
+_READER = Path(__file__).resolve().parents[2] / "xlsx/scripts/xlsx_inspect.py"
+_SPEC = importlib.util.spec_from_file_location("office_palette_package", _READER)
+package = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(package)
 
 SCHEMA = "daodan/palette/v1"
 TEXT_CONTRAST = 4.5
@@ -465,19 +469,19 @@ _W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
 def seeds_from_file(path: Path, count: int) -> dict:
     suffix = path.suffix.casefold()
-    if suffix not in (".pptx", ".pptm", ".docx", ".docm"):
-        raise PaletteError(f"unsupported file type {suffix!r}; expected .pptx or .docx")
+    if suffix not in (".pptx", ".pptm", ".potx", ".potm", ".docx", ".docm", ".dotx", ".dotm"):
+        raise PaletteError(f"unsupported file type {suffix!r}; expected a Word or PowerPoint file or template")
     try:
-        archive = zipfile.ZipFile(path)
-    except (zipfile.BadZipFile, OSError) as error:
+        parts = package.read_package(path)
+    except package.InspectionError as error:
         raise PaletteError(f"cannot read {path}: {error}") from error
     scheme: dict[str, str] = {}
     weighted: dict[str, float] = {}
-    with archive:
-        names = archive.namelist()
-        for name in names:
+    node_budget = [0]
+    try:
+        for name, data in parts.items():
             if re.fullmatch(r"(ppt|word)/theme/theme\d*\.xml", name) and not scheme:
-                root = ElementTree.fromstring(archive.read(name))
+                root = package.xml_part(name, data, node_budget)
                 for element in root.iter(f"{{{_A}}}clrScheme"):
                     for child in element:
                         value = child.find(f"{{{_A}}}srgbClr")
@@ -488,13 +492,15 @@ def seeds_from_file(path: Path, count: int) -> dict:
                             scheme[child.tag.split("}")[1]] = "#" + colour.upper()
                     break
             if re.fullmatch(r"ppt/slides/slide\d+\.xml|word/document\.xml", name):
-                text = archive.read(name).decode("utf-8", errors="replace")
+                text = data.decode("utf-8", errors="replace")
                 for match in re.finditer(r'<a:srgbClr val="([0-9A-Fa-f]{6})"', text):
                     value = "#" + match.group(1).upper()
                     weighted[value] = weighted.get(value, 0.0) + 1.0
                 for match in re.finditer(r'w:(?:color|fill)="([0-9A-Fa-f]{6})"', text):
                     value = "#" + match.group(1).upper()
                     weighted[value] = weighted.get(value, 0.0) + 1.0
+    except package.InspectionError as error:
+        raise PaletteError(f"cannot read {path}: {error}") from error
     for role, value in scheme.items():
         if role.startswith("accent"):
             weighted[value] = weighted.get(value, 0.0) + (12.0 if role == "accent1" else 4.0)
@@ -515,7 +521,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = commands.add_parser("from-css", help="colours in local stylesheets, token files or design notes")
     sub.add_argument("paths", nargs="+", type=Path)
     sub.add_argument("--count", type=int, default=4)
-    sub = commands.add_parser("from-file", help="theme scheme and used colours of a PPTX or DOCX")
+    sub = commands.add_parser("from-file", help="theme scheme and used colours of a Word/PowerPoint file or template")
     sub.add_argument("file", type=Path)
     sub.add_argument("--count", type=int, default=4)
     sub = commands.add_parser("candidates", help="build palette candidates from seeds")
@@ -543,7 +549,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             palette = json.loads(args.palette.read_text(encoding="utf-8"))
             result = {"path": str(args.palette), "check": check_palette(palette)}
-    except (OSError, PaletteError, ValueError, ElementTree.ParseError) as error:
+    except (OSError, PaletteError, ValueError) as error:
         print(json.dumps({"schema": SCHEMA, "command": args.command, "ok": False, "error": str(error)}, indent=2))
         return 1
     print(json.dumps({"schema": SCHEMA, "command": args.command, "ok": True, **result, "notice": NOTICE},

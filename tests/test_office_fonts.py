@@ -2,7 +2,10 @@
 
 import importlib.util
 import json
+import os
+import shutil
 import struct
+import subprocess
 import tempfile
 import unittest
 import zipfile
@@ -221,6 +224,32 @@ class EmbedTests(unittest.TestCase):
         self.assertEqual(report["embedded"]["Inter"], {"styles": ["regular", "bold"], "subset": False})
         self.assertEqual(report["not_embedded"], ["Cambria"])
 
+    def test_pptx_font_inspection_reads_only_the_embedding_header(self):
+        deck = self.root / "large-font.pptx"
+        font_part = "ppt/fonts/font1.fntdata"
+        _zip(deck, {
+            "ppt/presentation.xml": f'<p:presentation {P} {R}><p:embeddedFontLst><p:embeddedFont>'
+                                    '<p:font typeface="Inter"/><p:regular r:id="rId9"/></p:embeddedFont>'
+                                    '</p:embeddedFontLst></p:presentation>',
+            "ppt/_rels/presentation.xml.rels": f'<Relationships {RELS}><Relationship Id="rId9" '
+                                               'Target="fonts/font1.fntdata"/></Relationships>',
+            font_part: struct.pack("<IIII", 16, 0, 0x20002, 0x5) + b"x" * 1024,
+        })
+        reads = []
+        original = zipfile.ZipExtFile.read
+
+        def read(stream, size=-1):
+            if stream.name == font_part:
+                reads.append(size)
+                if size < 0 or size > 16:
+                    self.fail("font inspection attempted an unbounded payload read")
+            return original(stream, size)
+
+        with mock.patch.object(zipfile.ZipExtFile, "read", read):
+            report = embed.inspect(deck)
+        self.assertEqual(reads, [16])
+        self.assertTrue(report["embedded"]["Inter"]["subset"])
+
     def test_embed_never_overwrites_or_changes_format(self):
         source = self.root / "deck.pptx"
         source.write_bytes(b"x")
@@ -254,6 +283,86 @@ class EmbedTests(unittest.TestCase):
         self.assertEqual(environment["FONT_EMBED_OUTPUT"], str(target.resolve()))
         self.assertEqual((environment["FONT_EMBED_APP"], environment["FONT_EMBED_FORMAT"]), ("PowerPoint", "24"))
         self.assertEqual(report["engine"], "Microsoft PowerPoint (COM)")
+
+
+class AutomationSecurityTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("powershell") or shutil.which("pwsh"),
+                         "PowerShell is required to exercise the COM script with fake objects")
+    def test_macros_are_disabled_during_open_and_security_is_restored_after_failures(self):
+        # Execute the shipped script against fake COM objects. No Office process
+        # or document is opened, including for the failure cases.
+        harness = r"""
+$ErrorActionPreference = 'Stop'
+$script:events = @()
+$script:app = [pscustomobject]@{ AutomationSecurity = 2; Visible = $true }
+$script:collection = [pscustomobject]@{ Count = 0 }
+$script:document = [pscustomobject]@{
+  EmbedTrueTypeFonts = $false; SaveSubsetFonts = $true; DoNotEmbedSystemFonts = $false
+}
+$save = {
+  param($target, $format, $embed)
+  $script:events += "save:$($script:app.AutomationSecurity)"
+  if ($env:FONT_EMBED_TEST_FAILURE -eq 'save') { throw 'save failed' }
+}
+$script:document | Add-Member ScriptMethod SaveAs $save
+$script:document | Add-Member ScriptMethod SaveAs2 $save
+$script:document | Add-Member ScriptMethod Close {
+  param($save)
+  $script:events += "close:$($script:app.AutomationSecurity)"
+  if ($env:FONT_EMBED_TEST_FAILURE -eq 'close') { throw 'close failed' }
+  $script:collection.Count = 0
+}
+$script:collection | Add-Member ScriptMethod Open {
+  param($source, $first, $second, $third)
+  $script:events += "open:$($script:app.AutomationSecurity)"
+  if ($script:app.AutomationSecurity -ne 3) { throw 'macros enabled during open' }
+  if ($env:FONT_EMBED_TEST_FAILURE -eq 'open') { throw 'open failed' }
+  $script:collection.Count = 1
+  return $script:document
+}
+$script:app | Add-Member NoteProperty Presentations $script:collection
+$script:app | Add-Member NoteProperty Documents $script:collection
+$script:app | Add-Member ScriptMethod Quit {
+  $script:events += "quit:$($script:app.AutomationSecurity)"
+}
+function New-Object {
+  param($ComObject)
+  if ($ComObject -notin @('Word.Application', 'PowerPoint.Application')) {
+    throw "unexpected COM object: $ComObject"
+  }
+  return $script:app
+}
+$failure = $null
+try { & ([scriptblock]::Create($env:FONT_EMBED_TEST_SCRIPT)) }
+catch { $failure = $_.Exception.Message }
+@{ security = $script:app.AutomationSecurity; events = @($script:events);
+   failure = $failure } | ConvertTo-Json -Compress
+"""
+        binary = shutil.which("powershell") or shutil.which("pwsh")
+        for application in ("PowerPoint", "Word"):
+            for failure in ("", "open", "save", "close"):
+                with self.subTest(application=application, failure=failure or "none"):
+                    environment = dict(os.environ, FONT_EMBED_APP=application,
+                                       FONT_EMBED_INPUT="unused-source", FONT_EMBED_OUTPUT="unused-output",
+                                       FONT_EMBED_FORMAT="24" if application == "PowerPoint" else "16",
+                                       FONT_EMBED_TEST_SCRIPT=embed.POWERSHELL,
+                                       FONT_EMBED_TEST_FAILURE=failure)
+                    completed = subprocess.run(
+                        [binary, "-NoProfile", "-NonInteractive", "-Command", harness],
+                        env=environment, capture_output=True, text=True, timeout=30)
+                    self.assertEqual(completed.returncode, 0, completed.stderr)
+                    report = json.loads(completed.stdout)
+                    expected = ["open:3"]
+                    if failure != "open":
+                        expected += ["save:3", "close:3"]
+                    if failure != "close":
+                        expected += ["quit:2"]
+                    self.assertEqual(report["events"], expected)
+                    self.assertEqual(report["security"], 2)
+                    if failure:
+                        self.assertIn(failure + " failed", report["failure"])
+                    else:
+                        self.assertIsNone(report["failure"])
 
 
 HOSTS = ("claude", "codex", "copilot", "opencode", "pi")

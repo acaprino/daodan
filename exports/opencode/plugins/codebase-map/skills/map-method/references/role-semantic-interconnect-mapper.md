@@ -143,18 +143,12 @@ Read named core sections by locating headings or fenced skeletons before bounded
 
 ## SOURCE READING
 
-Follow the graph and source-reading commands in `references/evidence.md`.
-Graph discovery comes first; read question-relevant candidate requests with `source_reader.py read`
-before contract/invariant claims. Outline locates exact definitions.
-Expand validated reads to callers/callees, gates, constants, types, configuration,
-dynamic registration and relevant CSS/markup; graph/import edges do not establish
-completeness. Use full-file reading when needed; reserve `ast_parser.py` for
-missing details or single-file diagnosis. Missing/stale source or parser mismatch
-requires the caller's current owned snapshot; never cross its perimeter.
-
-Record graph query/binding, coverage gaps, truncation, parser/fallback diagnostics
-and actual files/ranges. Metadata is not deep reading. Inventory and retained
-context require neither reading every file nor assuming omitted bodies irrelevant.
+Follow `references/standalone.md` and `references/evidence.md`: graph discovery,
+then exact source reads before contract claims. Cover necessary callers, gates,
+types, configuration and presentation without treating edges as completeness or
+metadata as deep reading. Use the caller's current owned snapshot for missing,
+stale or mismatched evidence. Record bindings, actual ranges and every coverage,
+truncation and parser gap.
 
 ## ANALYSIS PHASES
 

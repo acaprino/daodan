@@ -1,6 +1,6 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists, domain verticals, office workflows and web research. The 24 domain, office, research and framework plugins extracted to `acaprino/shinatama` in marketplace 36.0.0 returned to this single marketplace, with `text-humanizer` back as a local dependency and `/daodan:humanize-text` restored to the `daodan` entry plugin while domain verticals keep their own workflow namespaces. `skill-catalog` discovers every plugin's knowledge sidecars and selects them per run. It ships to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists, Office methods, domain verticals and web research. The 24 domain, office, research and framework plugins extracted to `acaprino/shinatama` in marketplace 36.0.0 returned to this single marketplace, with `text-humanizer` back as a local dependency and `/daodan:humanize-text` restored to the `daodan` entry plugin while domain verticals keep their own workflow namespaces. `skill-catalog` discovers every plugin's knowledge sidecars and selects them per run. It ships to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
 
@@ -21,11 +21,18 @@ intention, no parameters, the only argument free text. Authorizations are asked
 when a step needs them, once, and recorded in the run. Each command is a thin
 entry into its owner's method; every core specialist plugin keeps skills, roles and
 contracts and has no command. A specialist method a command used to carry lives
-in its owner's skill, where the entry loads it by name. Independent domain verticals (`office`, `research`, `digital-marketing`, `trading-broker-integration`, `pwa-expert`, `browser-extensions`, `grabber-development`, `libgdx-development`, `marketplace-ops`, `opentelemetry`, `rag-development`, `stripe`, `system-utils`, `xterm`, `ai-tooling`, `frontend-review`, `learning`) keep their own workflow namespaces.
+in its owner's skill, where the entry loads it by name. Independent domain verticals (`research`, `digital-marketing`, `trading-broker-integration`, `pwa-expert`, `browser-extensions`, `grabber-development`, `libgdx-development`, `marketplace-ops`, `opentelemetry`, `rag-development`, `stripe`, `system-utils`, `xterm`, `ai-tooling`, `frontend-review`, `learning`) keep their own workflow namespaces.
 
 The `daodan` commands are the primary entry points: start there for project
 work, whatever the stack or domain, and call a vertical's own command directly
 only when the request is already specific to that domain.
+
+`office` owns the editable Word, PowerPoint and Excel methods, shared intake and
+design, format helpers and specialist roles. Its entries (`start`, `presentation`,
+`document`, `workbook`, `verify`, `fix`, `theme`) belong to `daodan`, which declares
+the local Office dependency and the capabilities those methods require. Native
+construction and rendering use separately available DeckCraft, WordCraft and
+GridCraft runtimes; Office does not ship their engines or MCP servers.
 
 project-delivery owns ADR, FRD, evidence bootstrap and the methods behind the delivery commands: initialization,
 the task cycle (change, repair, refactor), continue, status, finish, sync,
@@ -60,21 +67,25 @@ knowledge for any evidenced stack, with per-run fingerprints and delivery accoun
 testing owns universal test governance;
 Python contributes pytest-patterns, without a second test writer.
 
-By decision of 2026-10-24, work-controller is the general-purpose process engine
-and it leaves Daodan for its own repository, Deadly Brain. Daodan and
-other projects depend on it; it depends on none of them. It composes a process
-from context, an interview or a consumer's archetype into YAML, validates it
-(registered components, neutral capabilities, acyclic dependencies through
-`graphlib`, inputs with a producer) and executes it with its own model router.
-The executor is the coordinator session following the record: it takes the ready
-frontier, dispatches agents through the host's mechanism, and admits the
-deliveries and coordination files they write. It is ordinary agentic work, not a
-separate service. Archetypes and domain rules (branches, worktrees, decision
-records, commits) stay with their consumers. The target contract is section 13 of
+Work Controller's canonical owner is `work-controller@daodan`. Its process
+runtime, console assets and read-only MCP interface live under
+`plugins/work-controller/skills/work-record/`; no separate Deadly Brain
+repository or installation supplies the engine. Shinatama, Mukade and other
+consumers may require this provider; the engine depends on none of their plugins.
+`model-routing@daodan` retains model selection and pricing as its own local owner.
+The process runtime admits immutable YAML graphs, tracks attempts and artifacts
+in SQLite, and supplies bounded views, decision tickets and conservative resume.
+The coordinator takes the ready frontier and dispatches agent work through the
+host's actual mechanism. A handoff packet is not an installed-host adapter or
+proof that a requested model was applied. Archetypes and domain rules (branches,
+worktrees, decision records, commits) stay with their consumers. The broader
+capability contract is section 13 of
 `docs/superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md`
-and ADR-0002. Until the migration, the engine ships here as `work-controller` and
-`model-routing`, both without dependencies; do not give either a dependency on a
-consumer.
+and ADR-0002; transferring the existing engine does not establish every specified
+capability. Keep both local providers free of consumer dependencies. The process
+store lives in `.daodan/processes` of the main checkout. Existing `daodan/work/v1`
+records and their agenda retain their identities and authority: a bound process
+cannot bypass their grants, deliveries, questions or candidate-bound gates.
 
 Run state belongs in .daodan/runs/<id>/ of the repository's main checkout, found
 through the Git common directory, so a worktree's records survive its removal and
@@ -145,7 +156,7 @@ Markdown. Domain owners retain their reports, scoring and verdicts. See
 
 ## Project structure
 
-`plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow and every skill's `SKILL.md` of that plugin with a note giving the exact command to register: a consumer reaches a provider's tools through its skill. `codebase-map`, `peer-review` and `moe` declare their servers under their owning skills, launched with `uv run --no-config --no-project --script` so the project under work never chooses a server's package index or interpreter. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
+`plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow and every skill's `SKILL.md` of that plugin with a note giving the exact command to register: a consumer reaches a provider's tools through its skill. `codebase-map`, `peer-review`, `moe` and `work-controller` declare their servers under their owning skills, launched with `uv run --no-config --no-project --script` so the project under work never chooses a server's package index or interpreter. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
 
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 
@@ -292,7 +303,7 @@ There is no hand-mirroring step any more, and no per-host obligation to remember
 
 The build is `python scripts/daodan_build.py`. It loads every kernel, validates it, binds it to each adapter, renders every package into a temporary tree, and replaces the live output only after every validator passes. `--check` renders the same tree and reports drift instead of writing, and it is the gate CI runs. Exit codes: 0 clean, 1 drift or validation failure, 2 invocation error. Publication always builds every host; `--host` narrows the run and is accepted only under `--check`, because a marketplace where one host is a commit ahead of the others is the drift this compiler exists to prevent.
 
-`.github/workflows/consistency.yml` runs on push to `master` and on PRs. Its checks, all stdlib-only Python from the repository root:
+`.github/workflows/consistency.yml` runs on push to `master` and on PRs. Its checks run from the repository root. The compiler and tooling are stdlib-only; Work Controller behavioral tests use the runtime PyYAML dependency installed by CI:
 
 1. `python scripts/lint_dependency_graph.py` — the dependency-graph linter. Extracts runtime cross-plugin references (agent spawns, skill loads) from plugin bodies and enforces: every runtime reference is declared in `dependencies`; bare dependency names must exist in this marketplace (cross-marketplace deps use the qualified `name@marketplace` form); the forbidden edge `codebase-map → senior-review` never reappears; **no plugin in this marketplace appears in another's `optionalDependencies`**; and **no plugin body makes something conditional on a hard local dependency being installed, or names a fallback for one**. Those two passes are the two halves of the dependency policy below, over declarations and over prose. A further pass enforces that **no hard local dependency goes unused**, which is the only check that notices a dependency silently reintroduced by a concurrent writer.
 2. `python scripts/lint_bundled_paths.py` — the bundled-path linter. A body that says to read `plugins/<name>/skills/x/references/y.md` names a path that exists only in a checkout of this repo, so for an installed user that read silently fails. Self-references must use `${CLAUDE_PLUGIN_ROOT}/...` or a skill-relative `references/...` path inside that same skill, and no plugin may reach into another plugin's files by path. Its `GRANDFATHERED` map is empty: its first run found 40 such references across 26 files and they were fixed rather than baselined. Fix a reference, delete its entry; never add one to make a build pass. Its third pass, `shipped refs`, resolves every `${CLAUDE_PLUGIN_ROOT}/...` reference against the generated Claude package and fails the ones no package contains, because a well-formed path to a file the compiler never copies fails at runtime exactly as silently as a checkout path. Its motivating case was `ai-tooling`, whose reasoning-patterns reference sat at the kernel root, unshipped on every host, from the kernel neutralization until marketplace 27.1.0. Its `UNSHIPPED` baseline is empty too: its first run found 23 such references, `peer-review`'s protocol documents and MCP server and `research`'s two search scripts, all at kernel roots the compiler never copies, and marketplace 27.2.0 moved every one under its plugin's skill rather than baselining it. Move the file under a skill, fix the reference, never add an entry. Its fourth pass, `skill refs`, covers what the third cannot see: a role or workflow sits outside every skill, so a bare `references/<file>.md` in its body must name a file under a skill of its own plugin or of a local plugin it declares. Its motivating case was `app-analyzer`, whose role read `references/report-templates.md` from an `agents/` directory at the kernel root, unshipped on every host until marketplace 28.6.1.
@@ -366,7 +377,7 @@ generated reference is stale. `docs/hosts.md` explains installation, selection,
 entry-point mapping, environments, MCP, dispatch and enforcement limits. These
 references document compiled support; they do not establish live host behavior.
 
-`docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-map`). `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/project-delivery/` covers pre-commit evidence, interrupted commits and independent delivery. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-map/` does the same for the Codebase Map pipeline (marketplace 26.4.0): twelve behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned and the perimeter's exclusions named, standalone map consumption without Daodan commands with source verification and explicit fallback), the first nine written after the 2026-09-03 review; `evals/codebase-map/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
+`docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-map`), and [`prompt-agent-research.md`](docs/references/prompt-agent-research.md), the research basis for concise, verifiable prompt and agent design. `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/project-delivery/` covers pre-commit evidence, interrupted commits and independent delivery. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-map/` does the same for the Codebase Map pipeline (marketplace 26.4.0): twelve behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned and the perimeter's exclusions named, standalone map consumption without Daodan commands with source verification and explicit fallback), the first nine written after the 2026-09-03 review; `evals/codebase-map/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
 
 The review entries, `/daodan:review-changes` and `/daodan:review-branch`, are thin pointers to the canonical review-method, review-preparation and review-consolidation skills; the light review is its own unit and reads none of the variant references. Agent prompts, fix-loop and native output references remain under review-quality-gates. application-cleanup-method is the named Step 7c method, reached from `/daodan:tidy-repo`, and carries severity acceptance, exclusive-workspace/clean-tree prerequisites and snapshot-bound gates. A `fix` authorization edits and verifies without committing; a `commit` authorization additionally commits and is required for bulk application subtraction.
 
@@ -490,16 +501,16 @@ specialist edges optional.
 | project-delivery | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
 | project-lifecycle | project-delivery, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, report-rendering |
 | clean-code | work-controller |
+| office | work-controller |
 | text-humanizer | none |
 | python-development | testing, work-controller |
-| typescript-development | work-controller, testing |
 | dependency-audit | none |
 | peer-review | none |
 | moe | peer-review |
 | business | text-humanizer, research |
 | digital-marketing | text-humanizer, report-rendering |
 | frontend-review | react-development, typescript-development, pwa-expert, platform-engineering |
-| daodan | every core harness and language/stack plugin of the marketplace, directly or through its providers: what a command loads or dispatches (including text-humanizer), and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe) |
+| daodan | every other plugin of the marketplace, directly or through its providers: what a command loads or dispatches, and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe) |
 
 
 Resolved knowledge is a distinct per-run input contract. The required skill-catalog

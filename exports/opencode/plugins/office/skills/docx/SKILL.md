@@ -3,7 +3,7 @@ name: docx
 description: >
   Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features.
   TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates.
-  DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:presentation).
+  DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use /daodan:presentation).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
@@ -171,8 +171,12 @@ content merely to make an editing library handle it.
 
 ## Coordinate document design
 
-On the substantial intake route (a new or derived document, a template, restyling,
-restructuring or shortening), the coordinator loads `office:design`: it owns the
+On the substantial intake route, the operation recorded at intake decides the
+steps. Create, restyle, and derive without carrying the look over choose a look
+and design every page type. Expand and revise inherit the document's type, styles,
+theme and template, and design only the new or changed sections in the styles
+the document already uses; untouched sections are not redesigned. When the
+operation gives the document a new look, the coordinator loads `office:design`: it owns the
 direction, the palette built from the user's colour source and chosen from
 candidates, the font pairing with its installation and embedding, and the
 editorial and typographic method. Choose the document type from
@@ -186,7 +190,8 @@ Read `references/document-types.md` for the type's sequence and
 instructions and the document design report handoff.
 
 Dispatch `office:document-designer` in an isolated context through the registered
-`office:document` entry's generated bindings. If loaded directly, resolve that
+`/daodan:document` entry's generated bindings, or those of `/daodan:start`, which
+declares the same roles. If loaded directly, resolve that
 entry before dispatch; continue the same task. A role name alone cannot supply an
 inline worker body. Supply the brief, source inventory, brand/template assets,
 accepted shared theme, engine capability limits, existing renders and an absolute
@@ -206,9 +211,10 @@ resolve the gap or record a concrete blocker. A worker stop alone is not deliver
 
 The read-only route and narrow edits do not require design dispatch, restyling or a
 theme-selection gate; preserve the accepted layout and record the scoped choice.
-For template work, supply a reusable editable DOCX exemplar and replacement
-guidance; claim native DOTX or template features only when actually supported
-and verified. The design report is not proof of saved DOCX pagination or fidelity.
+For template work, generate the base `.dotx` with `office:design`'s
+`template_kit.py` (theme, styles, page geometry, footer), supply a reusable
+editable DOCX exemplar built on it and replacement guidance; claim template
+features only from the kit's report and an opened, rendered sample. The design report is not proof of saved DOCX pagination or fidelity.
 
 ## Build and revise the document
 
@@ -246,6 +252,12 @@ instead of claiming completion from field codes alone.
 
 ## Verify and deliver
 
+When the document uses fonts outside Microsoft Office, embed them in a separate
+candidate with `office:design`'s `font_embed.py` and record its inspection result.
+Complete embedding before the checks, renders and independent review below;
+they must bind to the exact copy delivered. On the read-only route keep the
+unchanged source and report its existing font evidence without embedding.
+
 Reopen the actual saved output with the chosen engine. Check required text, native
 styles, lists, tables, images, section settings, headers/footers and references.
 For existing-file edits, compare source and candidate; account for removed parts
@@ -267,7 +279,7 @@ Verify key claims and figures independently of the document's own text.
 ## Independent review
 
 Dispatch `office:document-reviewer` in an isolated context through the registered
-`office:document` entry's generated bindings after actual candidate rendering, or
+`/daodan:document` entry's (or `/daodan:start`'s) generated bindings after actual candidate rendering, or
 on the read-only route after rendering the unchanged source, which then stands in
 for the candidate. Supply the exact candidate path and SHA-256, render engine and
 version, page manifest, brief, design report, source and candidate inspections,
@@ -285,9 +297,7 @@ a new defect. Run at most three review rounds: if blocking findings remain after
 the third, stop and deliver the candidate with them listed as open, rather than
 oscillating between fixes. Do not apply a verdict to another file.
 
-When the document uses fonts outside Microsoft Office, embed them in the delivered
-copy with `office:design`'s `font_embed.py` and record its
-inspection result. Deliver the editable `.docx`, with a useful preview when
+Deliver the editable `.docx`, with a useful preview when
 available, and a concise account of changes with the reviewer's verdict and open
 findings. Name the editing and rendering engines and any remaining
 preservation or field-update limit. If rendering was unavailable, label page layout

@@ -1,7 +1,7 @@
 ---
 adr_id: ADR-0002
 version: 1
-title: Make Work Controller the general-purpose orchestrator in Deadly Brain
+title: Keep the complete Work Controller engine in Daodan
 status: Proposed
 author: Alfio Caprino
 scope:
@@ -39,7 +39,7 @@ superseded_by: null
 changes:
 ---
 
-# ADR-0002: Make Work Controller the general-purpose orchestrator in Deadly Brain
+# ADR-0002: Keep the complete Work Controller engine in Daodan
 
 <!-- adr-header:start -->
 Version 1 · Proposed 2026-10-24 by Alfio Caprino
@@ -76,12 +76,14 @@ under a name that means something, usable by Daodan and Shinatama at minimal cos
 
 The shipped first split (`09156a0c1`) gives run ownership to
 `work-controller@daodan`, routing to `model-routing@daodan` and the review roster
-to `senior-review`. These two installed plugins describe the transition, not the
-target architecture. The user's later decisions on 2026-10-24 move the shared
-engine into Deadly Brain, make Work Controller responsible for the complete
-process and require YAML as its runtime input. They supersede the earlier
-repository and separate-routing decisions below. The canonical target contract
-is [the conversational decisions specification, section 13](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md#13-deadly-brain-il-motore-condiviso).
+to `senior-review`. On 2026-10-24 the user chose an external Deadly Brain engine
+with an internal router and mandatory YAML input. On 2026-10-25 the user instead
+requested the complete engine only in Daodan, followed by retirement of the
+separate repository. That reintegration direction supersedes the external
+repository packaging; it does not authorize deletion before a verified transfer
+and a separate scoped retirement grant. Model routing retains its existing local
+owner rather than adding a second provider migration. The broader capability
+contract remains [the conversational decisions specification, section 13](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md#13-deadly-brain-il-motore-condiviso).
 
 ## Decision Drivers
 
@@ -92,21 +94,41 @@ is [the conversational decisions specification, section 13](../superpowers/specs
 - Usable alone, with the same runtime contract for a conversation, a template or
   an authored file.
 - Standard-library core, with the narrowly scoped YAML parsing exception required
-  by the runtime input decision. No parser is selected or adopted by this ADR.
+  by the runtime input decision. Reintegration retains the source engine's
+  restricted PyYAML loader; the compiler remains standard-library only.
 
 ## Decision
 
-Publish `work-controller@deadly-brain` as the general-purpose process composer,
-validator and orchestrator in the shared Deadly Brain repository. Daodan,
-Shinatama, Mukade and other projects consume it; the engine requires none of their
-plugins. A process may require registered components supplied by its consumer,
+Keep the complete process engine in `work-controller@daodan`, with no separate
+Deadly Brain repository dependency or engine installation. Shinatama, Mukade and
+other projects consume this provider; the engine requires none of their plugins.
+Repository ownership does not introduce an engine-to-consumer dependency.
+A process may require registered components supplied by its consumer,
 which its own contract declares and the controller verifies. Consumer archetypes
 and domain rules stay with their owners. Branches, worktrees, ADRs, commits,
 code-specific operation names and mandatory software review are not universal
 runtime assumptions.
 
 The controller retains `work-record`, the shared working discipline and
-`work-controller:isolated-worker` as their canonical owner.
+`work-controller:isolated-worker` as their canonical owner. Runtime modules and
+console assets live under `skills/work-record/scripts/work_controller/`; the
+skill-owned `controller.py` is the CLI and MCP launcher. These are shipped by the
+same five-host compiler as the rest of the plugin. Preserve the original license
+and provenance.
+
+### Implementation boundary
+
+The transferred engine supplies immutable YAML graph admission, sequential
+execution, SQLite attempts and journal, content-addressed artifacts, decision
+tickets, conservative resume, a loopback console and read-only MCP. It is not
+evidence that every capability below exists. Registered component discovery,
+installed-host dispatch and stop handles, observed per-job models, semantic
+memory, bounded loops, parallel execution and selective replan remain explicit
+capability requirements with separate verification.
+
+New definitions use `work-controller/process/v1`. The original
+`process-controller/process/v1` and `deadly-brain/process/v1` definitions remain
+accepted without rewriting their normalized identities or recorded digests.
 
 Work Controller owns:
 
@@ -137,16 +159,19 @@ Work Controller owns:
   limits and a stopping condition; iterations retain distinct attempts rather
   than introducing a cycle into the dependency graph. Internal records may
   remain JSON. YAML parsing is a narrow dependency exception, with safe data-only
-  loading and resource bounds; selecting and verifying a parser is separate work.
+  loading and resource bounds. The reintegrated runtime retains PyYAML through
+  its isolated launcher; its dependency evidence and verification limits are
+  recorded in the 2026-10-25 reintegration design.
 - **Orchestration and continuity.** Runs, agenda, grants, gates, deliveries,
   recovery, checkpoints and resume; clarification questions, the generic interview,
   decision maps and tickets; durable context and evidence memory, session handover
   and addressed communication between agents. Memory retains source, scope and
   revision. Handover preserves open questions, active attempts and host handles.
   Communication or a stopped turn never substitutes for a delivered result.
-- **Per-job model routing.** An internal model-router derived from the shipped
-  `model-routing` selects model and effort for every job that calls an LLM. It is
-  not a separately installed required plugin. Deterministic jobs need no model.
+- **Per-job model routing.** The existing `model-routing@daodan` owner supplies
+  model selection and pricing; reintegration does not duplicate its policy or
+  absorb that provider. Coordinators receive a concrete binding for every job
+  that calls an LLM. Deterministic jobs need no model.
   Selection respects task capability, context, complexity, risk, host availability
   and the declared quality/cost policy. A binding is revalidated before dispatch
   and resume; the model actually applied remains an execution fact to verify.
@@ -169,11 +194,12 @@ model proposal, with reuse only of an unchanged confirmed binding. This ADR does
 not grant blanket approval or introduce an automatic run-wide policy. Any future
 policy-based authorization needs an explicit contract and user authorization.
 
-State stays under `.daodan/`. The shipped ownership split preserves review scope,
-check selection, completion policy and historical record identities and evidence.
-It adds no independent reading-depth setting. The target retains those protections
-while migrating consumer references and generalizing the record; this ADR records
-no repository extraction, runtime migration or implementation of the target.
+State stays under `.daodan/` of the main checkout, with the process store in
+`.daodan/processes`. Existing `daodan/work/v1` records and the agenda preserve
+their identities and evidence. An explicit record/process binding preserves
+holder ownership, grants, questions, required deliveries and current-candidate
+gates. A graph's terminal success cannot bypass those domain checks. This ADR
+does not mark a transfer, runtime check or installed-host probe as verified.
 
 Economy rules: code does the work and the model reads the result; each command
 prints only what its step needs; the fewest skills, with short descriptions;
@@ -207,13 +233,11 @@ These are acceptance scenarios, not evidence that the target runtime exists.
 
 ## Rejected Alternatives
 
-- **RA-001** (former rejection, superseded): a third repository
-  `acaprino/work-controller` was rejected because it would add a compiler copy,
-  releases and an extra marketplace while standalone installation was possible
-  from Daodan. The user's later decision on 2026-10-24 explicitly replaces this
-  rejection with the shared Deadly Brain repository. A versioned common toolchain
-  is the prerequisite for extraction, rather than another copied compiler; see
-  the canonical specification's section 13.
+- **RA-001**: a third repository for the engine adds another release and
+  installation boundary while the plugin can be consumed from Daodan. The
+  original rejection was reversed by the external Deadly Brain direction on
+  2026-10-24, then restored by the complete reintegration request on 2026-10-25.
+  The historical external packaging does not govern this target.
 - **RA-002**: keep `project-protocol` and add `work-controller` above it. Four
   unrelated concerns stay under a name that says nothing, and Shinatama gains a
   dependency.
@@ -226,14 +250,15 @@ These are acceptance scenarios, not evidence that the target runtime exists.
 - **RA-005**: delegating the map to upstream Wayfinder. It is user-invoked only
   and keeps its state in the checkout's `.scratch/`.
 
-The separate installed `model-routing` plugin remains the shipped transitional
-split. The target replaces that packaging with Work Controller's internal router;
-it does not discard or reimplement the routing policy from scratch.
+The existing local `model-routing` provider remains the routing and pricing
+owner. Reintegrating the external engine does not discard, copy or reimplement
+that policy and does not require an external engine provider.
 
 ## Enforceable Invariants
 
 - **INV-001**: the engine has no dependency on Daodan, Shinatama, Mukade or other
-  consumer plugins. Routing is internal, not a required foreign plugin. The
+  consumer plugins and is owned only by `work-controller@daodan`. Routing retains
+  its local provider; no external engine provider is required. The
   standard-library core permits only the separately reviewed YAML parser
   exception; this invariant does not prohibit that runtime dependency.
 - **INV-002**: no Daodan plugin depends on a Shinatama plugin.
@@ -251,10 +276,11 @@ it does not discard or reimplement the routing policy from scratch.
 - The completed first split is retained as transition evidence. Its rename and
   routing/roster moves must not be mistaken for the target orchestrator being
   delivered. The review roster remains owned by `senior-review`.
-- Extract the versioned common compiler/adapter toolchain before moving the engine
-  to Deadly Brain. Consumers then declare `work-controller@deadly-brain` and
-  migrate contract providers; routing ships inside it. Daodan's removal of the
-  two transitional plugins is a breaking marketplace change.
+- Keep the engine in the existing plugin and compiler. Consumers require
+  `work-controller@daodan`; no marketplace extraction, third compiler copy or
+  external engine registration is needed. Model-routing keeps its identity.
+  Retiring the separate repository follows transfer verification and its own
+  scoped authorization; source transfer does not remove runtime archives.
 - Generalize run contracts and operation identity without embedding each
   consumer's lifecycle. Preserve record provenance, context, checkpoints, grants
   and evidence through migration. Admit YAML through one parser/validation path.
@@ -263,8 +289,8 @@ it does not discard or reimplement the routing policy from scratch.
   migrating them. Claims of isolation, model application or budget enforcement
   require runtime evidence separate from compiler checks.
 - Realign consumer dependency documentation, contracts and the affected
-  specifications with section 13. Parser choice, deployment packaging and any
-  change to routing authorization remain explicit follow-up decisions.
+  specifications with this ownership decision. Parser adoption, deployment
+  evidence and any change to routing authorization remain explicit checks.
 
 ## Confirmation
 

@@ -76,7 +76,7 @@ at the reader's pace, and its structure is the argument. Choose one type at
 intake from the reader and the purpose, record it in the brief with the
 direction and palette of `office:design`, and build and review against it. A
 document derived from an existing one keeps the source's type unless the brief
-changes its purpose. The `office:presentation` argument modes (pyramid,
+changes its purpose. The `/daodan:presentation` argument modes (pyramid,
 narrative, instructional, showcase, briefing) belong to decks and are not
 mapped onto documents.
 

@@ -98,26 +98,35 @@ query. An unavailable runtime or local artifact produces a failure, not a
 fabricated empty result. Windows CPU inference is exercised; Linux has upstream
 runtime support but requires its own live probe.
 
-Share weights across projects in `%LOCALAPPDATA%/Daodan/models/CodeRankEmbed/REVISION/`
-on Windows, or `$XDG_CACHE_HOME/daodan/models/CodeRankEmbed/REVISION/` on Linux
+Share weights across projects in `%LOCALAPPDATA%/Daodan/models/EmbeddingGemma2/REVISION/`
+on Windows, or `$XDG_CACHE_HOME/daodan/models/EmbeddingGemma2/REVISION/` on Linux
 (default `~/.cache`). Omitting `model_dir` selects that per-user revision folder.
 An explicit model folder remains supported. Only each project's derived vectors
-are project-specific. The graph is 138,619,279 bytes (132.2 MiB), plus tokenizer
-files. This avoids repeated disk copies/downloads; RAM loading happens once per
+are project-specific. The folder holds `tokenizer.json`, `onnx/model_q4.onnx` and
+its weights `onnx/model_q4.onnx_data` (174,028,800 bytes, 166 MiB), about 206 MB
+in all. This avoids repeated disk copies/downloads; RAM loading happens once per
 provider process, retained for its session. No global background daemon is installed.
 
-The supported artifact is the community INT8 conversion of CodeRankEmbed at
-revision `e74f446dc6e67e29fcee77213472c142f73a6bbb`. The helper verifies graph
-SHA-256 `4eae31d09b1843103a1ebd5e2b2e24b5a5cad441a33906b35b12b1e2ed91d1db`
+The supported artifact is the q4 text graph of `onnx-community/embeddinggemma-2-ONNX`
+(Apache-2.0, base `google/embeddinggemma-2`) at revision
+`daa72c51243991dfcaf9f9137d2c573d8f7790c0`. Copy those three files from that
+revision. The helper verifies graph SHA-256
+`f9eeba97acddf139b8ee2ddf04bc30dceafa88de93fadf74d7644e0d61a477a9`, weights
+SHA-256 `c3975f2d1ab7a1878ae31a7d7a9b7804a827aff3800b60dfceafce21cac3df49`
 and tokenizer SHA-256
-`91f1def9b9391fdabe028cd3f3fcc4efd34e5d1f08c3bf2de513ebb5911a1854`
-before native loading. It executes no custom model Python or custom operators.
-The model uses a 512-token input limit; this is an encoder limit, not an LLM
-context or billing measurement.
+`4d777ef5bdc1aa36227abdfb77c3e49e7b9c892d16e1b6bda41c393504828be4`
+before native loading, then loads the graph by path because its weights are an
+external file. It executes no custom model Python or custom operators. The
+graph's image, video and audio inputs receive empty arrays; its pooled
+`sentence_embedding` (768 dimensions) is the vector.
 
-Encoder version 2 runs one input per native inference. Dynamic INT8 scales
-depend on other inputs in a batch, so independent encoding is required for
-content-addressed reuse. The provider fingerprint invalidates version 1 vectors.
+Documents are prefixed `title: none | text: ` and queries
+`task: code retrieval | query: `, the model's retrieval prompts; both prefixes
+belong to the provider fingerprint. Inputs are cut at 2048 tokens; this is an
+encoder limit, not an LLM context or billing measurement. Each input runs in its
+own native inference, without padding, so a cached vector depends only on its
+text. On a four-thread CPU an entity takes about 1 to 2 seconds: index a
+project once, then refresh only changed entities.
 
 ## File request interface
 
@@ -132,7 +141,7 @@ illustrative; use the caller-bound run and an explicitly prepared model folder.
   "operation": "index",
   "manifest": "/project/.codebase-map/runs/run-id/snapshot/manifest.sqlite",
   "index": "/project/.codebase-map/runs/run-id/snapshot/embeddings.sqlite",
-  "model_dir": "/prepared-models/CodeRankEmbed"
+  "model_dir": "/prepared-models/EmbeddingGemma2"
 }
 ```
 
@@ -155,8 +164,8 @@ results stay on disk. A query never refreshes an index implicitly.
 
 `refresh_index(manifest, index, provider=...)` publishes a complete SQLite
 generation atomically. Cache identity includes the exact encoded text (path,
-name, signature and source), model, tokenizer, runtime, encoder and document
-versions. Rename/content changes invalidate affected inputs; deleted entities
+name, signature and source), model, weights, tokenizer, runtime, encoder,
+prefixes and document versions. Rename/content changes invalidate affected inputs; deleted entities
 and unused vectors disappear from the new generation. An interrupted refresh
 retains the previous generation. A stale generation cannot serve a current
 query. Locks prevent concurrent publishers; vector checksums, dimensions and
@@ -177,5 +186,4 @@ back to textual ranking with an explicit gap; malformed results are rejected.
 Verified exact anchors retain precedence. Remaining ranks use the benchmark's
 versioned policy `exact-rrf75-25-k60-v1`: dense weight 0.75, lexical weight 0.25,
 rank offset 60. No similarity threshold can close an impact or validation gap.
-The provider remains optional until independent quality and whole-flow cost
-measurements justify another decision.
+The provider stays opt-in: it costs indexing time, never tokens.

@@ -152,6 +152,13 @@ Inspect every saved artifact. PDF export or a field-update flag does not prove
 all fields or Microsoft Word layout features were faithfully evaluated. A
 successful exit can still leave missing content or ignored formatting fields.
 
+## Templates
+
+`.dotx` and `.dotm` read and write at the reference version; macros are kept and
+never run. `file.newFromTemplate` starts a document from a template and
+`file.saveTemplate` writes one; read their parameters with `commands --json`
+before use. Never overwrite the source template.
+
 ## Preservation and permission limits
 
 The local probe can differ from the reference release. For example, v0.8.0 uses

@@ -1,7 +1,7 @@
 ---
 name: sync-upstream-coordinator
 description: 'Bring other peoples work into this copy: fetch, report what arrived and whether it touches an open task, fast-forward only, then realign map, records and documentation. TRIGGER WHEN: the user wants to pull, update from upstream, or see what others changed. DO NOT TRIGGER WHEN: the user wants their own work merged (use finish-task).'
-tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
+tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['codebase-map:map-analyst', 'codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'text-humanizer:text-humanizer', 'work-controller:isolated-worker']
 ---
 

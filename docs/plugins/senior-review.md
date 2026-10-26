@@ -12,6 +12,15 @@ and `/daodan:review-branch`, including lifecycle reviews, enter the same canonic
 method. A caller-bound candidate retains its scope, baseline, snapshot and scoped
 untracked content; missing comparison evidence remains a declared gap.
 
+## Research basis for concise, effective agents
+
+[Progetta prompt e agenti affidabili](../references/prompt-agent-research.md)
+collects the scientific references for this plugin's prompt and agent design:
+atomic verifiable instructions, hierarchy and data boundaries, scoped evidence,
+independent verification and end-to-end non-inferiority testing. Papers are
+hypotheses to measure on this pipeline, not proof of the current architecture.
+The same page links the separate EmbeddingGemma and code-search research.
+
 ## Specialist responsibilities
 
 The source-derived inventory below links every registered role and its complete

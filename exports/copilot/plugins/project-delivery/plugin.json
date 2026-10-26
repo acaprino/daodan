@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Deadly Brain job execution, verified commits, reconciliation and authorized merge.",
+  "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Work Controller job execution, verified commits, reconciliation and authorized merge.",
   "license": "MIT",
   "name": "project-delivery",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

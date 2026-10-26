@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "work-controller": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-config",
+        "--no-project",
+        "--script",
+        "${CLAUDE_PLUGIN_ROOT}/skills/work-record/scripts/controller.py",
+        "mcp"
+      ]
+    }
+  }
+}

@@ -90,6 +90,7 @@ class CatalogTests(unittest.TestCase):
         catalog = build_fixture_catalogs()["pi"]
         self.assertNotIn("plugins", catalog)
         self.assertEqual(catalog["keywords"], ["pi-package"])
+        self.assertEqual(catalog["license"], "MIT")
         self.assertIs(catalog["private"], True)
         self.assertEqual(catalog["pi"]["skills"], ["./exports/pi/plugins/*/skills"])
         self.assertEqual(catalog["pi"]["prompts"], ["./exports/pi/plugins/*/prompts"])
@@ -273,7 +274,7 @@ class OpenCodeManifestTests(unittest.TestCase):
             for name, entry in live_opencode_manifest()["daodan"]["plugins"].items()
             if entry.get("mcp")
         }
-        self.assertEqual(set(servers), {"codebase-map", "peer-review", "moe"})
+        self.assertEqual(set(servers), {"codebase-map", "peer-review", "moe", "work-controller"})
         for name, mcp in servers.items():
             with self.subTest(plugin=name):
                 self.assertEqual(mcp[0]["name"], name)

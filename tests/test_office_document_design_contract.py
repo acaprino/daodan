@@ -25,6 +25,7 @@ from scripts.daodan.catalogs import render_catalog
 from scripts.daodan.load import load_plugin
 from scripts.daodan.render import render_plugin
 from host_binding_assertions import canonical_markdown, loaded_instruction_text, without_host_binding
+import office_entries
 
 
 OFFICE = REPO_ROOT / "plugins/office"
@@ -42,7 +43,7 @@ ENTRY_PATHS = {
     "claude": "commands/document.md",
     "copilot": "agents/document-coordinator.agent.md",
     "codex": "skills/document-workflow/SKILL.md",
-    "pi": "prompts/office-document.md",
+    "pi": "prompts/daodan-document.md",
     "opencode": "commands/document.md",
 }
 
@@ -65,11 +66,14 @@ class DocumentDesignContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plugin = load_plugin(OFFICE)
-        cls.workflow = next(item for item in cls.plugin.workflows if item.name == "document")
-        cls.document_plugin = replace(cls.plugin, workflows=(cls.workflow,))
+        # The document entry is a `daodan` workflow: the entry contract is read
+        # from the entry plugin, the methods and roles from the office package.
+        cls.document_plugin = office_entries.entry_plugin(("document",))
+        cls.workflow = next(item for item in cls.document_plugin.workflows if item.name == "document")
         cls.temporary = tempfile.TemporaryDirectory(dir=str(REPO_ROOT) if os.name == "nt" else None)
         cls.packages = {}
         cls.adapters = {}
+        cls.entries = office_entries.render_entries(cls.temporary.name, ("document",))
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
             package = Path(cls.temporary.name) / host / "office"
@@ -82,13 +86,13 @@ class DocumentDesignContractTests(unittest.TestCase):
         cls.temporary.cleanup()
 
     def entry(self, host):
-        return loaded_instruction_text(self, self.packages[host] / ENTRY_PATHS[host], host)
+        return loaded_instruction_text(self, self.entries[host] / ENTRY_PATHS[host], host)
 
     def test_word_and_powerpoint_design_have_distinct_owned_roles(self):
         components = self.plugin.components
         self.assertEqual(
             set(components.roles),
-            {ROLE, "document-reviewer", "presentation-designer", "presentation-reviewer"},
+            {ROLE, "document-reviewer", "content-strategist", "presentation-designer", "presentation-reviewer"},
         )
         self.assertNotIn(ROLE, components.skills)
         self.assertNotIn(ROLE, components.workflows)
@@ -155,8 +159,10 @@ class DocumentDesignContractTests(unittest.TestCase):
                     self.assertIn(f"`office:{skill}`", body)
                 self.assertIn("document-design.md", body)
                 if host in {"codex", "pi"}:
-                    self.assertIn(relative, self.entry(host))
-                    self.assertIn("complete body verbatim", self.entry(host))
+                    # Codex and Pi hold the role body inside the entry package,
+                    # under the owner-qualified dispatch contract path.
+                    self.assertIn(f"contracts/dispatch/office/{ROLE}.md", self.entry(host))
+                    self.assertIn("complete role body verbatim", self.entry(host))
                 else:
                     self.assertIn(f"office:{ROLE}", self.entry(host))
                 if host == "codex":
@@ -271,6 +277,15 @@ class DocumentDesignContractTests(unittest.TestCase):
                 self.assertRegex(method, r"(?i)(?:page|pagination)")
                 self.assertRegex(role, r"(?i)(?:does not|do not|not|unverified).*(?:proof|verif|render|fidelity)")
 
+    def test_embedding_precedes_final_document_verification_on_every_host(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                method = _read(package / "skills/docx/SKILL.md")
+                self.assertLess(method.rindex("font_embed.py"),
+                                method.index("Reopen the actual saved output"))
+                self.assertIn("exact copy delivered", method)
+                self.assertIn("without embedding", method)
+
     def test_document_production_consumes_wordcraft_and_keeps_native_file_verification(self):
         self.assertIn("wordcraft", self.plugin.components.skills)
         self.assertNotIn("wordcraft", self.plugin.components.roles)
@@ -329,7 +344,7 @@ class DocumentReviewContractTests(unittest.TestCase):
 
     def test_document_reviewer_is_declared_registered_and_dispatched_on_every_host(self):
         self.assertIn("document-reviewer", self.plugin.components.roles)
-        sidecar = _read(OFFICE / "workflows/document.toml")
+        sidecar = _read(office_entries.DAODAN / "workflows/document.toml")
         self.assertIn('"office/document-reviewer"', sidecar)
         for host, package in self.packages.items():
             with self.subTest(host=host):
