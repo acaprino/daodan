@@ -127,47 +127,14 @@ arms deliver whole bodies):
 4. Plain text at larger budgets, unrestricted (`text-high-budgets-exploratory.json`):
    0.521 at 24 000, 0.635 at 48 000, 0.698 at 96 000 and at 192 000.
 
-## Embedding arm (`embedding-arm.json`, `embedding-packets-24000.json`)
+## Embedding arm (removed)
 
-The owner authorized the model download on 2026-10-24, after the registered run. The pinned
-community INT8 ONNX export of CodeRankEmbed (138 619 279 bytes, digests checked against the
-constants in `embedding_worker.py`) was fetched once into the plugin's shared model
-directory. The fusion policy is the one the plugin ships (reciprocal rank fusion, 0.75 dense
-and 0.25 lexical, k 60); nothing was tuned on these queries. The lexical column reproduces
-the registered text arm exactly (0.312, 0.469, 0.521), which checks that both runs used the
-same index, queries and delivery rule.
-
-Mean share of gold entities delivered whole, same budgets and same whole-body delivery rule:
-
-| Budget (chars) | lexical | dense only | fused (shipped) | fused + Jedi graph |
-|---:|---:|---:|---:|---:|
-| 6 000 | 0.312 | 0.441 | 0.469 | 0.510 |
-| 12 000 | 0.469 | 0.580 | 0.545 | 0.545 |
-| 24 000 | 0.521 | 0.663 | **0.736** | 0.681 |
-
-- Paired per query, fused against lexical: 7 wins, 1 loss, 16 ties at 6 000; 7, 3 and 14 at
-  12 000; 9, 2 and 13 at 24 000. Mean differences +0.156, +0.076 and +0.215. Twenty-four
-  queries from one library give a direction, not a significance test.
-- By language at 24 000 (lexical / fused): English 0.58 / 0.82, Italian 0.46 / 0.65. By
-  type: exact-name 0.88 / 1.00, symptom 0.44 / 0.67, behavior 0.25 / 0.67, **decision 0.88 /
-  0.75**. Dense alone is worse than lexical on decision queries (0.50) and better on
-  behavior ones (0.64).
-- Recall over the 48 gold entities at 5, 10, 20 and 60 hits: lexical 0.188, 0.208, 0.312,
-  0.438; dense 0.292, 0.396, 0.458, 0.667; fused 0.312, 0.396, 0.500, 0.729. Gold entities
-  outside the first 60 hits: 56% lexical, 33% dense, 27% fused.
-- Cost, cold, on CPU (4 intra-op threads, one input per pass): index build 126.5 s for 669
-  entities, 2.95 MB on disk, encoder working set about 410 MB (sampled every 0.25 s, so an
-  approximation of the peak). Per query: lexical 1.25 s, dense 4.15 s (query encoding plus
-  pure Python scoring of 669 vectors), fused call 1.42 s on top.
-- **The composition does not improve.** With the dense result as lead source, the planner and
-  packet builder at 24 000 characters returned `needs_split` for 24 of 24 queries. The plan
-  stayed `incomplete` in all of them and was localized once; the mean analysis scope grew to
-  589 entities (512 to 669) from 386, because the dense ranking is complete and every lead
-  becomes a source-requiring row. Gold was inside the scope in every query only because the
-  scope covered nearly everything. Better retrieval does not help while leads are mandatory.
-- Limits: the export is a community conversion, not the vendor's artifact; one corpus; the
-  dense rank list was cut at 500 for the leads and at 60 for recall; nothing here measures
-  task success or tokens.
+The CodeRankEmbed arm, its harness and its result files were removed on 2026-10-26
+when EmbeddingGemma 2 replaced that model. The comparison of the two embedders is in
+[docs/graphs/embedding-benchmark.md](../../../docs/graphs/embedding-benchmark.md).
+One finding of the arm still holds for the planner and packet builder: with a dense
+ranking as lead source they returned `needs_split` for 24 of 24 queries at 24 000
+characters, because every lead became a source-requiring row.
 
 ## Impact scenarios (oracle: regular-expression call sites in the mutated copy)
 

@@ -36,10 +36,18 @@ RESULT_SCHEMA = 'daodan/embedding-result/v1'
 RESULT_FIELDS = frozenset({'schema', 'binding', 'document_digest', 'provider_digest', 'index',
                           'artifact_digest', 'query_digest', 'results', 'matched', 'returned', 'truncated'})
 DOCUMENT_SCHEMA = 'path-name-signature-source-v1'
-MODEL_REVISION = 'e74f446dc6e67e29fcee77213472c142f73a6bbb'
-MODEL_SHA256 = '4eae31d09b1843103a1ebd5e2b2e24b5a5cad441a33906b35b12b1e2ed91d1db'
-TOKENIZER_SHA256 = '91f1def9b9391fdabe028cd3f3fcc4efd34e5d1f08c3bf2de513ebb5911a1854'
-QUERY_PREFIX = 'Represent this query for searching relevant code: '
+MODEL_NAME = 'EmbeddingGemma2'
+MODEL_REVISION = 'daa72c51243991dfcaf9f9137d2c573d8f7790c0'
+GRAPH = 'onnx/model_q4.onnx'
+GRAPH_DATA = 'onnx/model_q4.onnx_data'
+MODEL_SHA256 = 'f9eeba97acddf139b8ee2ddf04bc30dceafa88de93fadf74d7644e0d61a477a9'
+MODEL_DATA_SHA256 = 'c3975f2d1ab7a1878ae31a7d7a9b7804a827aff3800b60dfceafce21cac3df49'
+MODEL_DATA_BYTES = 174028800
+TOKENIZER_SHA256 = '4d777ef5bdc1aa36227abdfb77c3e49e7b9c892d16e1b6bda41c393504828be4'
+DOCUMENT_PREFIX = 'title: none | text: '
+QUERY_PREFIX = 'task: code retrieval | query: '
+MAX_TOKENS = 2048
+DIMENSIONS = 768
 
 
 def default_model_dir():
@@ -49,7 +57,7 @@ def default_model_dir():
     base = Path(os.environ.get('LOCALAPPDATA' if windows else 'XDG_CACHE_HOME') or fallback)
     if not base.is_absolute():
         raise ValueError('shared model cache must be an absolute path')
-    return base / ('Daodan' if windows else 'daodan') / 'models/CodeRankEmbed' / MODEL_REVISION
+    return base / ('Daodan' if windows else 'daodan') / 'models' / MODEL_NAME / MODEL_REVISION
 
 
 class StaleEmbedding(ValueError):
@@ -100,6 +108,7 @@ def _profile(provider):
         if not isinstance(value, str) or len(value) != 64 or any(c not in '0123456789abcdef' for c in value):
             raise ValueError('invalid embedding provider digest')
     return {**profile, 'document_schema': DOCUMENT_SCHEMA,
+            'document_prefix': getattr(provider, 'document_prefix', ''),
             'query_prefix': getattr(provider, 'query_prefix', '')}
 
 
@@ -183,9 +192,10 @@ def refresh_index(manifest: Path, index: Path, *, provider) -> dict:
             # Bound encoder batches and discard partial work on failure. A prior
             # complete generation remains available throughout the operation.
             items = sorted(pending.items())
+            prefix = getattr(provider, 'document_prefix', '')
             for start in range(0, len(items), 16):
                 batch = items[start:start + 16]
-                encoded = provider.encode([text for _, text in batch])
+                encoded = provider.encode([prefix + text for _, text in batch])
                 if len(encoded) != len(batch):
                     raise ValueError('embedding encoder returned the wrong number of vectors')
                 for (digest, _), vector in zip(batch, encoded):
@@ -310,20 +320,30 @@ def validate_result(result, lexical_metadata, query, records):
     return rows
 
 
-class CodeRankProvider:
-    """Pinned, CPU-only ONNX conversion; local bytes only, no custom model code."""
+def _file_sha(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+class GemmaProvider:
+    """Pinned EmbeddingGemma 2 text graph (q4, CPU); local bytes only, no custom model code."""
+    document_prefix = DOCUMENT_PREFIX
     query_prefix = QUERY_PREFIX
 
     def __init__(self, model_dir=None):
         local = Path(model_dir) if model_dir is not None else default_model_dir()
-        graph, tokenizer_path = local / 'onnx/model.onnx', local / 'tokenizer.json'
-        if not graph.is_file() or not tokenizer_path.is_file():
+        graph, data, tokenizer_path = local / GRAPH, local / GRAPH_DATA, local / 'tokenizer.json'
+        if not graph.is_file() or not data.is_file() or not tokenizer_path.is_file():
             raise ValueError(f'local model is missing at {local}; explicitly prepare the pinned artifacts first')
-        if graph.stat().st_size != 138619279:
-            raise ValueError('local model digest/size differs from pinned CodeRank')
-        graph_bytes, tokenizer_bytes = graph.read_bytes(), tokenizer_path.read_bytes()
-        if _sha(graph_bytes) != MODEL_SHA256 or _sha(tokenizer_bytes) != TOKENIZER_SHA256:
-            raise ValueError('local model or tokenizer digest differs from pinned CodeRank')
+        if data.stat().st_size != MODEL_DATA_BYTES:
+            raise ValueError('local model digest/size differs from pinned EmbeddingGemma 2')
+        tokenizer_bytes = tokenizer_path.read_bytes()
+        if (_file_sha(graph) != MODEL_SHA256 or _file_sha(data) != MODEL_DATA_SHA256
+                or _sha(tokenizer_bytes) != TOKENIZER_SHA256):
+            raise ValueError('local model or tokenizer digest differs from pinned EmbeddingGemma 2')
         try:
             import numpy as np
             import onnxruntime as ort
@@ -332,15 +352,21 @@ class CodeRankProvider:
             raise ValueError('optional embedding runtime unavailable; use the isolated script runtime') from error
         self.np = np
         self.tokenizer = tokenizers.Tokenizer.from_str(tokenizer_bytes.decode('utf8'))
-        self.tokenizer.enable_truncation(max_length=512)
-        self.tokenizer.enable_padding(pad_id=0, pad_token='[PAD]')
+        self.tokenizer.no_padding()
+        self.tokenizer.enable_truncation(max_length=MAX_TOKENS)
         options = ort.SessionOptions()
         options.intra_op_num_threads = 4
         options.inter_op_num_threads = 1
-        self.session = ort.InferenceSession(graph_bytes, sess_options=options, providers=['CPUExecutionProvider'])
-        self.profile = {'provider': 'coderank-onnx-int8', 'model_revision': MODEL_REVISION,
-                        'model_sha256': MODEL_SHA256, 'tokenizer_sha256': TOKENIZER_SHA256,
-                        'encoder_version': 2, 'dimensions': 768, 'max_tokens': 512,
+        # The weights live in an external data file beside the graph, so the
+        # session loads by path; both files were verified just above.
+        self.session = ort.InferenceSession(str(graph), sess_options=options, providers=['CPUExecutionProvider'])
+        # The exported graph also takes image, video and audio features; text
+        # encoding passes them empty.
+        self.empty = np.zeros((0, 512), dtype=np.float32)
+        self.profile = {'provider': 'embeddinggemma2-onnx-q4', 'model_revision': MODEL_REVISION,
+                        'model_sha256': MODEL_SHA256, 'model_data_sha256': MODEL_DATA_SHA256,
+                        'tokenizer_sha256': TOKENIZER_SHA256,
+                        'encoder_version': 1, 'dimensions': DIMENSIONS, 'max_tokens': MAX_TOKENS,
                         'inference_batch': 1,
                         'runtime': {'python': platform.python_version(), 'platform': platform.system(),
                                     'numpy': np.__version__, 'onnxruntime': ort.__version__,
@@ -349,20 +375,13 @@ class CodeRankProvider:
     def encode(self, texts):
         np = self.np
         result = []
-        # Dynamic INT8 activation scales depend on other inputs in a batch.
-        # Encode each input alone so its cached vector depends only on its text.
+        # One input per inference: no padding, and each cached vector depends
+        # only on its own text.
         for text in texts:
-            encoded = self.tokenizer.encode_batch([text])
-            ids = np.asarray([item.ids for item in encoded], dtype=np.int64)
-            attention = np.asarray([item.attention_mask for item in encoded], dtype=np.int64)
-            feeds = {'input_ids': ids, 'attention_mask': attention, 'token_type_ids': np.zeros_like(ids)}
-            names = {item.name for item in self.session.get_inputs()}
-            outputs = self.session.run(None, {key: value for key, value in feeds.items() if key in names})
-            pooled = next((value for value in outputs if value.ndim == 2 and value.shape == (len(encoded), 768)), None)
-            if pooled is None:
-                hidden = next(value for value in outputs if value.ndim == 3)
-                mask = attention[..., None].astype(np.float32)
-                pooled = (hidden.astype(np.float32) * mask).sum(axis=1) / np.maximum(mask.sum(axis=1), 1)
+            ids = np.asarray([self.tokenizer.encode(text).ids], dtype=np.int64)
+            pooled = self.session.run(['sentence_embedding'], {
+                'input_ids': ids, 'attention_mask': np.ones_like(ids), 'image_features': self.empty,
+                'video_features': self.empty, 'audio_features': self.empty})[0]
             result.extend(pooled.astype(float).tolist())
         return result
 
@@ -372,7 +391,7 @@ def _encoding_server():
     try:
         initial = json.loads(sys.stdin.readline())
         directory = Path(initial['scratch']).resolve(strict=True)
-        provider = CodeRankProvider(initial['model_dir'])
+        provider = GemmaProvider(initial['model_dir'])
         print(json.dumps({'status': 'ready', 'profile': provider.profile}), flush=True)
         for line in sys.stdin:
             request = json.loads(line)
@@ -398,9 +417,10 @@ def _encoding_server():
 
 class ProcessProvider:
     """Keep native inference in an explicitly selected isolated Python process."""
+    document_prefix = DOCUMENT_PREFIX
     query_prefix = QUERY_PREFIX
 
-    def __init__(self, python, model_dir, scratch_dir, *, timeout=120):
+    def __init__(self, python, model_dir, scratch_dir, *, timeout=300):
         self.process = None
         self.timeout = timeout
         self.root = Path(scratch_dir).absolute()

@@ -243,16 +243,30 @@ class EmbeddingTests(unittest.TestCase):
         self.assertEqual(answer['results'], plain['results'])
         self.assertEqual(answer['capabilities']['embedding'], 'stale')
 
+    def fake_model(self, folder):
+        (folder / 'onnx').mkdir(parents=True)
+        (folder / worker.GRAPH).write_bytes(b'wrong graph')
+        (folder / worker.GRAPH_DATA).write_bytes(b'wrong weights')
+        (folder / 'tokenizer.json').write_text('{}', encoding='utf8')
+
     def test_offline_provider_requires_pinned_local_artifacts_before_importing_runtime(self):
         missing = self.root / 'missing-model'
         with self.assertRaisesRegex(ValueError, 'local model'):
-            worker.CodeRankProvider(missing)
-        missing.mkdir()
-        (missing / 'onnx').mkdir()
-        (missing / 'onnx/model.onnx').write_bytes(b'wrong graph')
-        (missing / 'tokenizer.json').write_text('{}', encoding='utf8')
+            worker.GemmaProvider(missing)
+        self.fake_model(missing)
         with self.assertRaisesRegex(ValueError, 'digest'):
-            worker.CodeRankProvider(missing)
+            worker.GemmaProvider(missing)
+
+    def test_documents_and_queries_carry_their_own_prefix_and_the_prefix_binds_the_cache(self):
+        self.provider.document_prefix, self.provider.query_prefix = 'doc: ', 'ask: '
+        self.refresh()
+        self.assertTrue(self.provider.encoded and all(t.startswith('doc: ') for t in self.provider.encoded))
+        self.provider.encoded.clear()
+        self.query('invoice')
+        self.assertEqual(self.provider.encoded, ['ask: invoice'])
+        self.provider.document_prefix = 'other: '
+        changed = self.refresh()
+        self.assertEqual((changed['encoded'], changed['reused']), (4, 0))
 
     def test_invalid_query_limits_do_not_run_encoder(self):
         self.refresh()
@@ -269,21 +283,9 @@ class EmbeddingTests(unittest.TestCase):
         request.write_text(json.dumps({'schema': 'daodan/embedding-request/v1', 'operation': 'index',
             'manifest': str(manifest), 'index': str(self.index), 'model_dir': 'missing'}), encoding='utf8')
         before = manifest.read_bytes()
-        with mock.patch.object(worker, 'CodeRankProvider', return_value=self.provider):
+        with mock.patch.object(worker, 'GemmaProvider', return_value=self.provider):
             self.assertEqual(worker.main(['--request', str(request), '--report-out', str(manifest)]), 1)
         self.assertEqual(manifest.read_bytes(), before)
-
-    def test_holdout_metadata_and_gold_are_outside_runtime_inventory(self):
-        script = SCRIPTS.parents[4] / 'evals/codebase-map/retrieval-benchmark/evaluate_p5.py'
-        spec = importlib.util.spec_from_file_location('p5_evaluator', script)
-        evaluator = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(evaluator)
-        project = self.root / 'holdout'
-        evaluator.prepare(project)
-        from snapshot_store import open_snapshot
-        with open_snapshot(project / '.codebase-map/manifest.sqlite') as store:
-            self.assertEqual(set(store.iter_paths()), {'billing.py', 'sessions.py', 'storage.py', 'settings.py',
-                                                       'queueing.py', 'cache.py', 'transport.py', 'paths.py'})
 
     def test_process_provider_reports_missing_model_and_cleans_owned_scratch(self):
         with self.assertRaisesRegex(ValueError, 'local model'):
@@ -294,14 +296,11 @@ class EmbeddingTests(unittest.TestCase):
     def test_omitted_model_path_reads_the_shared_system_cache(self):
         for system, vendor in [('Windows', 'Daodan'), ('Linux', 'daodan')]:
             with self.subTest(system=system):
-                cache = self.root / system / vendor / 'models/CodeRankEmbed' / worker.MODEL_REVISION
-                (cache / 'onnx').mkdir(parents=True)
-                (cache / 'onnx/model.onnx').write_bytes(b'incorrect cached artifact')
-                (cache / 'tokenizer.json').write_text('{}', encoding='utf8')
+                self.fake_model(self.root / system / vendor / 'models' / worker.MODEL_NAME / worker.MODEL_REVISION)
                 with mock.patch.object(worker.platform, 'system', return_value=system), mock.patch.dict(
                     os.environ, {'LOCALAPPDATA': str(self.root / system), 'XDG_CACHE_HOME': str(self.root / system)}):
                     with self.assertRaisesRegex(ValueError, 'digest'):
-                        worker.CodeRankProvider()
+                        worker.GemmaProvider()
 
     def test_cli_report_never_overwrites_another_existing_json_artifact(self):
         request = self.manifest.with_name('index-request.json')

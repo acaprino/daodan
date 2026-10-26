@@ -6,7 +6,7 @@ how far its accepted syntax depends on the interpreter running it, what it
 recovers from a file that is mid-edit and whether what it recovers is safe to put
 into the graph, how fast it is, and what it costs to install.
 
-It is a measurement harness like `../retrieval-benchmark/` and
+It is a measurement harness like `../context-scope/` and
 `../resolver-spike/`, not an agent-scored case. Results and the decision they
 support are in `RESULTS.md`.
 

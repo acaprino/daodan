@@ -23,7 +23,7 @@ the adapter's concrete, measured limits.
 | Asset | Shape | Scored by |
 |---|---|---|
 | `../cases/` | behavioral invariants over a full `/daodan:map-code` run | a reader holding the assertions and the transcript |
-| `../retrieval-benchmark/` | retrieval quality measurement | numbers, recorded in its `RESULTS.md` |
+| `../context-scope/` | code context and retrieval measurement | numbers, recorded in its `RESULTS.md` |
 | `../resolver-spike/` | call-resolution measurement against real project snapshots | numbers, recorded per run |
 | **`grammar-parity/`** | **parser-level invariants, no agent in the loop** | **`eval_grammars.py`, exit code** |
 | `../../../tests/test_xray_scripts.py` | the shipped parsers' own unit suite | CI, every push |

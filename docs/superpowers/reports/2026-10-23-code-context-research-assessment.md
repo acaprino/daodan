@@ -1,7 +1,7 @@
 # Valutazione della ricerca sul perimetro del codice
 
 Data: 23 ottobre 2026. Esito: utile per rendere operativi P6/P7 e rafforzare
-P3/P5/P10 del [piano](../plans/2026-10-23-code-context-and-scope.md).
+P3/P5/P10 del piano (rimosso il 2026-10-26).
 Sono aggiornamenti di disegno; nessun algoritmo di produzione è stato eseguito
 o consegnato attraverso questa valutazione.
 
@@ -76,5 +76,5 @@ La ricerca fornisce una base per costruire e confrontare un algoritmo, non
 una prova anticipata di risparmio o completezza. Il criterio di consegna resta:
 meno uso cumulativo del modello a qualità e obblighi preservati, misurato
 su task non usati per tarare la policy. Il
-[disegno aggiornato](../specs/2026-10-23-code-context-and-scope-design.md)
+disegno aggiornato (rimosso il 2026-10-26)
 contiene il pseudocodice e il piano contiene le regressioni corrispondenti.
