@@ -62,7 +62,7 @@ including the duplicated routing policy.
 
 The [context packet redesign](superpowers/specs/2026-10-25-context-packet-redesign.md)
 records how code context is being rebuilt around search, and the
-[embedding benchmark](graphs/embedding-benchmark.md) why the local embedder is
+[embedding benchmark](plugins/codebase-map-research.md#embedding-benchmark) why the local embedder is
 EmbeddingGemma 2. The harness and frozen gold live in
 [`evals/codebase-map/context-scope/`](../evals/codebase-map/context-scope/README.md).
 

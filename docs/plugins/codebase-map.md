@@ -556,10 +556,36 @@ usable; explicit anchors remain strict.
 
 This API performs local machine work with no LLM or network calls. Its freshness
 checks read the inventoried source files, so query latency includes that work.
-Embeddings remain unavailable until P5 supplies a bound provider result; passing
-an unsupported embedding result fails explicitly. Context selection and bounded
-packet assembly remain later steps. `contracts/context.toml` exports their four
+Dense ranking is opt-in: `embedding_worker.py` (EmbeddingGemma 2 q4, see
+`references/embeddings.md`) produces a result bound to the index, and `search`
+then ranks below the exact anchors by reciprocal rank, 0.75 dense and 0.25
+lexical with k 60 (`exact-rrf75-25-k60-v1`). A stale result is reported as a gap;
+an unsupported one fails explicitly. Context selection and packet assembly are
+the later stages described below. `contracts/context.toml` exports their four
 declarative payload contracts, including the existing I1 map-slice fields.
+
+### Research basis for code search
+
+The search-first redesign of the context path
+([specification](../superpowers/specs/2026-10-25-context-packet-redesign.md))
+searches the question, has the model-routing tier1 model rewrite it from names the
+search found, ranks whole entities with EmbeddingGemma 2 and FTS5, and fills the
+budget in rank order. The companion page
+[research and benchmarks behind code search](codebase-map-research.md) records
+what each source below measured and what carries over to one repository on a CPU,
+the [embedder benchmark](codebase-map-research.md#embedding-benchmark), and what
+the harness measured in response.
+
+- Query rewriting: Gao et al., [HyDE](https://arxiv.org/abs/2212.10496) (ACL 2023);
+  Li et al., [ReCo](https://arxiv.org/abs/2401.04514) (ACL 2024); Gurioli et al.,
+  [Rewriting strategies for code retrieval](https://arxiv.org/abs/2605.08299) (2026);
+  Song and Zheng, [Survey of query optimization in LLMs](https://arxiv.org/abs/2412.17558);
+  Rudenko, [LLM query expansion made our code search worse](https://madappgang.com/blog/llm-query-expansion-made-our-code-search-worse.-he/).
+- Repository structure: Ouyang et al., [RepoGraph](https://arxiv.org/abs/2410.14684)
+  (ICLR 2025); Liu et al., [Beyond Function-Level Search](https://aclanthology.org/2025.findings-emnlp.1147/)
+  (Findings of EMNLP 2025).
+- Evaluation: Li et al., [CoIR](https://arxiv.org/abs/2407.02883) (ACL 2025);
+  Gandhi et al., [Repository-level code search with neural retrieval methods](https://arxiv.org/abs/2502.07067) (2025).
 
 ### Generated semantic map (`semantic_map.py`)
 
@@ -664,7 +690,7 @@ Limits that shape use today:
 
 The [context-scope results](../../evals/codebase-map/context-scope/RESULTS.md)
 hold the measurements behind these limits, and the
-[embedding benchmark](../graphs/embedding-benchmark.md) the comparison of local embedders.
+[embedder benchmark](codebase-map-research.md#embedding-benchmark) the comparison of local embedders.
 
 ### Context consumers
 

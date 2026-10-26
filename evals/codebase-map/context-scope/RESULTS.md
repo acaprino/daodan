@@ -131,7 +131,7 @@ arms deliver whole bodies):
 
 The CodeRankEmbed arm, its harness and its result files were removed on 2026-10-26
 when EmbeddingGemma 2 replaced that model. The comparison of the two embedders is in
-[docs/graphs/embedding-benchmark.md](../../../docs/graphs/embedding-benchmark.md).
+[docs/plugins/codebase-map-research.md](../../../docs/plugins/codebase-map-research.md#embedding-benchmark).
 One finding of the arm still holds for the planner and packet builder: with a dense
 ranking as lead source they returned `needs_split` for 24 of 24 queries at 24 000
 characters, because every lead became a source-requiring row.

@@ -14,11 +14,6 @@
   },
   "plugins": [
     {
-      "agents": [
-        "./agents/abstraction-architect-agent.agent.md",
-        "./agents/abstraction-fit-auditor.agent.md",
-        "./agents/concept-ownership-auditor.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -28,16 +23,18 @@
       "description": "Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of senior-review's reviews; the whole-codebase audit runs under /daodan:check-health. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD).",
       "license": "MIT",
       "name": "abstraction-architect",
+      "source": "./exports/copilot/plugins/abstraction-architect",
+      "version": "5.2.1",
+      "agents": [
+        "./agents/abstraction-architect-agent.agent.md",
+        "./agents/abstraction-fit-auditor.agent.md",
+        "./agents/concept-ownership-auditor.agent.md"
+      ],
       "skills": [
         "./skills/abstraction-architect"
-      ],
-      "source": "./exports/copilot/plugins/abstraction-architect",
-      "version": "5.2.1"
+      ]
     },
     {
-      "agents": [
-        "./agents/clean-code-agent.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -47,21 +44,16 @@
       "description": "Rewrites source code to be more readable and human-friendly without changing behavior - improves naming, removes AI boilerplate, simplifies structure, and adds clarity comments",
       "license": "MIT",
       "name": "clean-code",
+      "source": "./exports/copilot/plugins/clean-code",
+      "version": "3.1.1",
+      "agents": [
+        "./agents/clean-code-agent.agent.md"
+      ],
       "skills": [
         "./skills/readability-method"
-      ],
-      "source": "./exports/copilot/plugins/clean-code",
-      "version": "3.1.1"
+      ]
     },
     {
-      "agents": [
-        "./agents/map-analyst.agent.md",
-        "./agents/partition-behavior-worker.agent.md",
-        "./agents/partition-quality-worker.agent.md",
-        "./agents/partition-structure-worker.agent.md",
-        "./agents/partition-synthesizer.agent.md",
-        "./agents/semantic-interconnect-mapper.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -71,13 +63,53 @@
       "description": "Multi-language systematic codebase mapping analysis (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS) - analyzes architecture, traces data flows, detects anti-patterns, and generates structured documentation for onboarding, architecture review, or code documentation. Root of the review and documentation dependency graph: it also owns the semantic interconnect mapper (contracts / invariants / domain rules / assumptions) that team-review and project-knowledge both consume. Concurrent-safe: every analysis is an isolated run under .codebase-map/runs/ published to a stable root mirror. The Next Steps menu wires the output into downstream documentation generators (CLAUDE.md, codebase map, interface docs) as a technical-reference backbone. Renamed from deep-dive-analysis in 2.0.0. Runs are incremental: each records a structural snapshot of the tree it analyzed, and a later run diffs it against the worktree, carries unaffected claims forward and re-derives only what changed.",
       "license": "MIT",
       "name": "codebase-map",
+      "source": "./exports/copilot/plugins/codebase-map",
+      "version": "8.10.0",
+      "agents": [
+        "./agents/map-analyst.agent.md",
+        "./agents/partition-behavior-worker.agent.md",
+        "./agents/partition-quality-worker.agent.md",
+        "./agents/partition-structure-worker.agent.md",
+        "./agents/partition-synthesizer.agent.md",
+        "./agents/semantic-interconnect-mapper.agent.md"
+      ],
       "skills": [
         "./skills/map-method"
-      ],
-      "source": "./exports/copilot/plugins/codebase-map",
-      "version": "8.10.0"
+      ]
     },
     {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "abstraction-architect",
+        "project-delivery",
+        "clean-code",
+        "codebase-map",
+        "dependency-audit",
+        "docker",
+        "kotlin-development",
+        "moe",
+        "office",
+        "peer-review",
+        "platform-engineering",
+        "drkerr",
+        "project-lifecycle",
+        "work-controller",
+        "python-development",
+        "react-development",
+        "repo-hygiene",
+        "drkerr",
+        "skill-catalog",
+        "testing",
+        "text-humanizer@shinatama",
+        "typescript-development"
+      ],
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
+      "license": "MIT",
+      "name": "daodan",
+      "source": "./exports/copilot/plugins/daodan",
+      "version": "2.2.0",
       "agents": [
         "./agents/brainstorm-idea-coordinator.agent.md",
         "./agents/check-health-coordinator.agent.md",
@@ -101,39 +133,7 @@
         "./agents/tidy-repo-coordinator.agent.md",
         "./agents/write-docs-coordinator.agent.md",
         "./agents/write-tests-coordinator.agent.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [
-        "abstraction-architect",
-        "project-delivery",
-        "clean-code",
-        "codebase-map",
-        "dependency-audit",
-        "docker",
-        "kotlin-development",
-        "moe",
-        "office",
-        "peer-review",
-        "platform-engineering",
-        "project-knowledge",
-        "project-lifecycle",
-        "work-controller",
-        "python-development",
-        "react-development",
-        "repo-hygiene",
-        "senior-review",
-        "skill-catalog",
-        "testing",
-        "text-humanizer@shinatama",
-        "typescript-development"
-      ],
-      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
-      "license": "MIT",
-      "name": "daodan",
-      "source": "./exports/copilot/plugins/daodan",
-      "version": "2.2.0"
+      ]
     },
     {
       "author": {
@@ -143,11 +143,11 @@
       "description": "Evidence-first dependency auditing: runs each ecosystem's real audit tooling for CVEs, outdated packages, license obligations and supply-chain signals, and reports only tool-verified facts under TOOL-REPORTED, INFERRED and UNKNOWN evidence tiers. Obligations-based license analysis instead of a compatibility matrix, and strictly non-destructive remediation.",
       "license": "MIT",
       "name": "dependency-audit",
+      "source": "./exports/copilot/plugins/dependency-audit",
+      "version": "2.0.0",
       "skills": [
         "./skills/dependency-audit"
-      ],
-      "source": "./exports/copilot/plugins/dependency-audit",
-      "version": "2.0.0"
+      ]
     },
     {
       "author": {
@@ -157,11 +157,11 @@
       "description": "Docker best practices - optimized multi-stage Dockerfiles, layer caching, security hardening, and minimal base image selection for any language or framework (Node, Python, Go, Rust, Java, Bun, Deno)",
       "license": "MIT",
       "name": "docker",
+      "source": "./exports/copilot/plugins/docker",
+      "version": "1.4.3",
       "skills": [
         "./skills/multi-stage-dockerfile"
-      ],
-      "source": "./exports/copilot/plugins/docker",
-      "version": "1.4.3"
+      ]
     },
     {
       "author": {
@@ -171,11 +171,11 @@
       "description": "Idiomatic Kotlin development toolkit - kotlin-specialist skill covering coroutines and structured concurrency, Flow / StateFlow / SharedFlow, Kotlin Multiplatform (KMP) with expect/actual, Jetpack Compose on Android, Ktor server (routing, JWT auth, Exposed, WebSockets), and type-safe DSL idioms (lambdas with receivers, delegated properties, inline reified, value classes). Vendored from Jeffallan/claude-skills (MIT).",
       "license": "MIT",
       "name": "kotlin-development",
+      "source": "./exports/copilot/plugins/kotlin-development",
+      "version": "1.1.3",
       "skills": [
         "./skills/kotlin-specialist"
-      ],
-      "source": "./exports/copilot/plugins/kotlin-development",
-      "version": "1.1.3"
+      ]
     },
     {
       "author": {
@@ -185,11 +185,11 @@
       "description": "Per-request model routing: host inventory, classifier signals, deterministic model and effort selection, confirmation binding, model catalog and prices.",
       "license": "MIT",
       "name": "model-routing",
+      "source": "./exports/copilot/plugins/model-routing",
+      "version": "2.0.1",
       "skills": [
         "./skills/model-routing"
-      ],
-      "source": "./exports/copilot/plugins/model-routing",
-      "version": "2.0.1"
+      ]
     },
     {
       "author": {
@@ -201,20 +201,13 @@
       "description": "Ultra Nerd: bounded multi-model problem solving with independent proposals, reciprocal challenges and evidence-backed synthesis. Explicit opt-in for difficult tasks with increased token consumption.",
       "license": "MIT",
       "name": "moe",
+      "source": "./exports/copilot/plugins/moe",
+      "version": "2.0.0",
       "skills": [
         "./skills/multi-model-deliberation"
-      ],
-      "source": "./exports/copilot/plugins/moe",
-      "version": "2.0.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/content-strategist.agent.md",
-        "./agents/document-designer.agent.md",
-        "./agents/document-reviewer.agent.md",
-        "./agents/presentation-designer.agent.md",
-        "./agents/presentation-reviewer.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -224,6 +217,15 @@
       "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
       "license": "MIT",
       "name": "office",
+      "source": "./exports/copilot/plugins/office",
+      "version": "3.1.0",
+      "agents": [
+        "./agents/content-strategist.agent.md",
+        "./agents/document-designer.agent.md",
+        "./agents/document-reviewer.agent.md",
+        "./agents/presentation-designer.agent.md",
+        "./agents/presentation-reviewer.agent.md"
+      ],
       "skills": [
         "./skills/deckcraft",
         "./skills/design",
@@ -234,16 +236,9 @@
         "./skills/pptx",
         "./skills/wordcraft",
         "./skills/xlsx"
-      ],
-      "source": "./exports/copilot/plugins/office",
-      "version": "3.1.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/brief-builder.agent.md",
-        "./agents/packet-builder.agent.md",
-        "./agents/respondent.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -251,13 +246,27 @@
       "description": "Cross-model peer review of plans, specs, and the decisions a session has just made: a harness-agnostic deliberation protocol (challenge packet with GIVEN-tagged context, challenger findings that each carry their own falsifier, evidence-backed responses at a stable locator, a verbatim ledger, a certification pass the challenger owns, and a verdict computed from the ledger) plus a transport-only MCP server for any OpenAI-compatible endpoint. Point it at a document, or run it with no path to materialize the session's context, settled decisions and open questions into a frozen brief and put that on trial. The challenger attacks the artifact, the local session refutes with evidence, and unresolved disagreements terminate as precise standoffs for the user to settle",
       "license": "MIT",
       "name": "peer-review",
+      "source": "./exports/copilot/plugins/peer-review",
+      "version": "3.1.0",
+      "agents": [
+        "./agents/brief-builder.agent.md",
+        "./agents/packet-builder.agent.md",
+        "./agents/respondent.agent.md"
+      ],
       "skills": [
         "./skills/cross-model-peer-review"
-      ],
-      "source": "./exports/copilot/plugins/peer-review",
-      "version": "3.1.0"
+      ]
     },
     {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; its audit method runs under /daodan:check-health and its reviewer inside senior-review's reviews",
+      "license": "MIT",
+      "name": "platform-engineering",
+      "source": "./exports/copilot/plugins/platform-engineering",
+      "version": "2.3.0",
       "agents": [
         "./agents/app-distribution-auditor.agent.md",
         "./agents/browser-compatibility-auditor.agent.md",
@@ -266,18 +275,9 @@
         "./agents/offline-lifecycle-auditor.agent.md",
         "./agents/platform-reviewer.agent.md"
       ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [],
-      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; its audit method runs under /daodan:check-health and its reviewer inside senior-review's reviews",
-      "license": "MIT",
-      "name": "platform-engineering",
       "skills": [
         "./skills/platform-engineering"
-      ],
-      "source": "./exports/copilot/plugins/platform-engineering",
-      "version": "2.3.0"
+      ]
     },
     {
       "author": {
@@ -286,8 +286,8 @@
       "dependencies": [
         "model-routing",
         "work-controller",
-        "project-knowledge",
-        "senior-review",
+        "drkerr",
+        "drkerr",
         "testing",
         "abstraction-architect",
         "codebase-map",
@@ -303,14 +303,14 @@
       "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Work Controller job execution, verified commits, reconciliation and authorized merge.",
       "license": "MIT",
       "name": "project-delivery",
+      "source": "./exports/copilot/plugins/project-delivery",
+      "version": "1.1.0",
       "skills": [
         "./skills/adr-method",
         "./skills/delivery-method",
         "./skills/frd-method",
         "./skills/project-bootstrap"
-      ],
-      "source": "./exports/copilot/plugins/project-delivery",
-      "version": "1.1.0"
+      ]
     },
     {
       "agents": [
@@ -332,18 +332,18 @@
         "work-controller",
         "codebase-map",
         "text-humanizer@shinatama",
-        "senior-review",
+        "drkerr",
         "report-rendering"
       ],
       "description": "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle.",
       "license": "MIT",
-      "name": "project-knowledge",
+      "name": "drkerr",
       "skills": [
         "./skills/instructions-method",
-        "./skills/project-knowledge",
+        "./skills/drkerr",
         "./skills/readme-craft"
       ],
-      "source": "./exports/copilot/plugins/project-knowledge",
+      "source": "./exports/copilot/plugins/drkerr",
       "version": "3.0.0"
     },
     {
@@ -353,8 +353,8 @@
       "dependencies": [
         "project-delivery",
         "work-controller",
-        "project-knowledge",
-        "senior-review",
+        "drkerr",
+        "drkerr",
         "testing",
         "abstraction-architect",
         "codebase-map",
@@ -372,20 +372,15 @@
       "description": "Project assessment, consultant handover and guided Senior Maintainer campaigns. Composes ADR-driven delivery through project-delivery while preserving native audits, exact run identities and honest coverage.",
       "license": "MIT",
       "name": "project-lifecycle",
+      "source": "./exports/copilot/plugins/project-lifecycle",
+      "version": "3.0.0",
       "skills": [
         "./skills/assess-method",
         "./skills/handover-method",
         "./skills/maintainer-method"
-      ],
-      "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "3.0.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/python-engineer.agent.md",
-        "./agents/python-refactor-agent.agent.md",
-        "./agents/python-semantics-auditor.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -396,6 +391,13 @@
       "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and a consolidated quality audit method run by /daodan:check-health",
       "license": "MIT",
       "name": "python-development",
+      "source": "./exports/copilot/plugins/python-development",
+      "version": "4.2.0",
+      "agents": [
+        "./agents/python-engineer.agent.md",
+        "./agents/python-refactor-agent.agent.md",
+        "./agents/python-semantics-auditor.agent.md"
+      ],
       "skills": [
         "./skills/async-python-patterns",
         "./skills/pydantic-v2",
@@ -408,18 +410,9 @@
         "./skills/python-refactor-method",
         "./skills/python-scaffold-method",
         "./skills/uv-package-manager"
-      ],
-      "source": "./exports/copilot/plugins/python-development",
-      "version": "4.2.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/react-bundle-auditor.agent.md",
-        "./agents/react-dataflow-auditor.agent.md",
-        "./agents/react-effects-auditor.agent.md",
-        "./agents/react-performance-optimizer.agent.md",
-        "./agents/react-render-cost-auditor.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -427,16 +420,20 @@
       "description": "React performance optimization, React 19 API adoption, state management audit, bundle analysis, re-render detection, and Vercel best practices checklist",
       "license": "MIT",
       "name": "react-development",
+      "source": "./exports/copilot/plugins/react-development",
+      "version": "2.2.0",
+      "agents": [
+        "./agents/react-bundle-auditor.agent.md",
+        "./agents/react-dataflow-auditor.agent.md",
+        "./agents/react-effects-auditor.agent.md",
+        "./agents/react-performance-optimizer.agent.md",
+        "./agents/react-render-cost-auditor.agent.md"
+      ],
       "skills": [
         "./skills/react-best-practices"
-      ],
-      "source": "./exports/copilot/plugins/react-development",
-      "version": "2.2.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/workspace-auditor.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -444,11 +441,14 @@
       "description": "Workspace tidying decided by the filesystem and git alone, with no source comprehension anywhere in it: filesystem garbage and shell-redirection artifacts, generated artifacts tracked in git (checked against publication conventions before anything is proposed for untracking), .gitignore completeness per ecosystem and archaeology over stale and overly-broad rules with git check-ignore provenance, scratch and pipeline-output directories, orphan doc-assets widened past literal Markdown links to configs, stylesheets and templates, and git auxiliary state. One check catalog with a full and a lite profile, so the diff-scoped pass inside a code review and the whole-tree pass share definitions and cannot drift. Its tidy method, run by /daodan:tidy-repo, previews first and applies only with an authorization asked after the preview, with or without commits; untracked removals are quarantined rather than deleted, git rm --cached is confirmed per item, and the git-state dimension is permanently detection-only because a dropped stash or a removed worktree leaves no diff for a per-phase commit to revert.",
       "license": "MIT",
       "name": "repo-hygiene",
+      "source": "./exports/copilot/plugins/repo-hygiene",
+      "version": "2.2.0",
+      "agents": [
+        "./agents/workspace-auditor.agent.md"
+      ],
       "skills": [
         "./skills/repo-hygiene"
-      ],
-      "source": "./exports/copilot/plugins/repo-hygiene",
-      "version": "2.2.0"
+      ]
     },
     {
       "author": {
@@ -458,11 +458,11 @@
       "description": "Render authoritative Markdown reports as local interactive HTML views with reusable presentation assets",
       "license": "MIT",
       "name": "report-rendering",
+      "source": "./exports/copilot/plugins/report-rendering",
+      "version": "1.1.0",
       "skills": [
         "./skills/report-renderer"
-      ],
-      "source": "./exports/copilot/plugins/report-rendering",
-      "version": "1.1.0"
+      ]
     },
     {
       "agents": [
@@ -536,7 +536,7 @@
       ],
       "description": "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
       "license": "MIT",
-      "name": "senior-review",
+      "name": "drkerr",
       "skills": [
         "./skills/application-cleanup-method",
         "./skills/defect-taxonomy",
@@ -546,7 +546,7 @@
         "./skills/review-preparation",
         "./skills/review-quality-gates"
       ],
-      "source": "./exports/copilot/plugins/senior-review",
+      "source": "./exports/copilot/plugins/drkerr",
       "version": "16.7.0"
     },
     {
@@ -557,24 +557,13 @@
       "description": "Shared metadata-only skill discovery and scope-aware knowledge selection for review, development, tests and documentation. Available host/project skills become fingerprinted per-run inputs; methods and workflows retain required providers and explicit execution.",
       "license": "MIT",
       "name": "skill-catalog",
+      "source": "./exports/copilot/plugins/skill-catalog",
+      "version": "1.0.14",
       "skills": [
         "./skills/skill-catalog"
-      ],
-      "source": "./exports/copilot/plugins/skill-catalog",
-      "version": "1.0.14"
+      ]
     },
     {
-      "agents": [
-        "./agents/ai-evaluation-auditor.agent.md",
-        "./agents/capacity-test-auditor.agent.md",
-        "./agents/contract-test-auditor.agent.md",
-        "./agents/journey-protection-auditor.agent.md",
-        "./agents/test-oracle-auditor.agent.md",
-        "./agents/test-reliability-auditor.agent.md",
-        "./agents/test-suite-auditor.agent.md",
-        "./agents/test-suite-structure-auditor.agent.md",
-        "./agents/test-writer.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -587,21 +576,26 @@
       "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
       "license": "MIT",
       "name": "testing",
+      "source": "./exports/copilot/plugins/testing",
+      "version": "4.4.0",
+      "agents": [
+        "./agents/ai-evaluation-auditor.agent.md",
+        "./agents/capacity-test-auditor.agent.md",
+        "./agents/contract-test-auditor.agent.md",
+        "./agents/journey-protection-auditor.agent.md",
+        "./agents/test-oracle-auditor.agent.md",
+        "./agents/test-reliability-auditor.agent.md",
+        "./agents/test-suite-auditor.agent.md",
+        "./agents/test-suite-structure-auditor.agent.md",
+        "./agents/test-writer.agent.md"
+      ],
       "skills": [
         "./skills/test-hygiene",
         "./skills/test-preparation",
         "./skills/test-remediation-method"
-      ],
-      "source": "./exports/copilot/plugins/testing",
-      "version": "4.4.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/type-safety-auditor.agent.md",
-        "./agents/type-soundness-auditor.agent.md",
-        "./agents/typed-boundary-auditor.agent.md",
-        "./agents/typescript-engineer.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -612,19 +606,22 @@
       "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and an audit method with tsc/ESLint ground truth run by /daodan:check-health",
       "license": "MIT",
       "name": "typescript-development",
+      "source": "./exports/copilot/plugins/typescript-development",
+      "version": "3.4.0",
+      "agents": [
+        "./agents/type-safety-auditor.agent.md",
+        "./agents/type-soundness-auditor.agent.md",
+        "./agents/typed-boundary-auditor.agent.md",
+        "./agents/typescript-engineer.agent.md"
+      ],
       "skills": [
         "./skills/knip",
         "./skills/mastering-typescript",
         "./skills/type-safety-rules",
         "./skills/typescript-write"
-      ],
-      "source": "./exports/copilot/plugins/typescript-development",
-      "version": "3.4.0"
+      ]
     },
     {
-      "agents": [
-        "./agents/isolated-worker.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -632,11 +629,127 @@
       "description": "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP.",
       "license": "MIT",
       "name": "work-controller",
+      "source": "./exports/copilot/plugins/work-controller",
+      "version": "3.1.0",
+      "agents": [
+        "./agents/isolated-worker.agent.md"
+      ],
       "skills": [
         "./skills/work-record"
+      ]
+    },
+    {
+      "name": "project-knowledge",
+      "description": "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle.",
+      "version": "3.0.0",
+      "license": "MIT",
+      "dependencies": [
+        "work-controller",
+        "codebase-map",
+        "text-humanizer@shinatama",
+        "senior-review",
+        "report-rendering"
       ],
-      "source": "./exports/copilot/plugins/work-controller",
-      "version": "3.1.0"
+      "source": "./exports/copilot/plugins/project-knowledge",
+      "agents": [
+        "./agents/codebase-explorer.agent.md",
+        "./agents/doc-humanizer.agent.md",
+        "./agents/documentation-engineer.agent.md",
+        "./agents/flow-writer.agent.md",
+        "./agents/guide-reviewer.agent.md",
+        "./agents/instructions-auditor.agent.md",
+        "./agents/onboarding-writer.agent.md",
+        "./agents/ops-writer.agent.md",
+        "./agents/overview-writer.agent.md",
+        "./agents/tech-writer.agent.md"
+      ],
+      "skills": [
+        "./skills/instructions-method",
+        "./skills/project-knowledge",
+        "./skills/readme-craft"
+      ]
+    },
+    {
+      "name": "senior-review",
+      "description": "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
+      "version": "16.7.0",
+      "license": "MIT",
+      "dependencies": [
+        "repo-hygiene",
+        "codebase-map",
+        "abstraction-architect",
+        "testing",
+        "work-controller",
+        "react-development",
+        "typescript-development",
+        "platform-engineering",
+        "python-development",
+        "dependency-audit",
+        "skill-catalog",
+        "report-rendering"
+      ],
+      "source": "./exports/copilot/plugins/senior-review",
+      "agents": [
+        "./agents/accessibility-auditor.agent.md",
+        "./agents/accessible-navigation-auditor.agent.md",
+        "./agents/accessible-perception-auditor.agent.md",
+        "./agents/ai-boundary-auditor.agent.md",
+        "./agents/algorithmic-cost-auditor.agent.md",
+        "./agents/api-contract-auditor.agent.md",
+        "./agents/application-reachability-auditor.agent.md",
+        "./agents/artifact-lifecycle-auditor.agent.md",
+        "./agents/asset-delivery-auditor.agent.md",
+        "./agents/audit-trail-auditor.agent.md",
+        "./agents/authorization-auditor.agent.md",
+        "./agents/browser-security-auditor.agent.md",
+        "./agents/cache-consistency-auditor.agent.md",
+        "./agents/callback-authenticity-auditor.agent.md",
+        "./agents/capacity-quota-auditor.agent.md",
+        "./agents/chicken-egg-detector.agent.md",
+        "./agents/cleanup-auditor.agent.md",
+        "./agents/code-auditor.agent.md",
+        "./agents/data-integrity-auditor.agent.md",
+        "./agents/data-representation-auditor.agent.md",
+        "./agents/data-retention-auditor.agent.md",
+        "./agents/dependency-usage-auditor.agent.md",
+        "./agents/distributed-flow-auditor.agent.md",
+        "./agents/environment-binding-auditor.agent.md",
+        "./agents/feature-flag-auditor.agent.md",
+        "./agents/input-validation-auditor.agent.md",
+        "./agents/local-concurrency-auditor.agent.md",
+        "./agents/local-correctness-auditor.agent.md",
+        "./agents/logic-integrity-auditor.agent.md",
+        "./agents/message-delivery-auditor.agent.md",
+        "./agents/observability-auditor.agent.md",
+        "./agents/operability-auditor.agent.md",
+        "./agents/performance-auditor.agent.md",
+        "./agents/premise-auditor.agent.md",
+        "./agents/recovery-auditor.agent.md",
+        "./agents/release-compatibility-auditor.agent.md",
+        "./agents/remote-effect-auditor.agent.md",
+        "./agents/resource-lifecycle-auditor.agent.md",
+        "./agents/runtime-cost-auditor.agent.md",
+        "./agents/schema-coherence-auditor.agent.md",
+        "./agents/secret-exposure-auditor.agent.md",
+        "./agents/security-auditor.agent.md",
+        "./agents/service-health-auditor.agent.md",
+        "./agents/service-resilience-auditor.agent.md",
+        "./agents/session-delegation-auditor.agent.md",
+        "./agents/sql-efficiency-auditor.agent.md",
+        "./agents/temporal-resilience-auditor.agent.md",
+        "./agents/transaction-integrity-auditor.agent.md",
+        "./agents/ui-race-auditor.agent.md",
+        "./agents/untrusted-resource-auditor.agent.md"
+      ],
+      "skills": [
+        "./skills/application-cleanup-method",
+        "./skills/defect-taxonomy",
+        "./skills/investigation-method",
+        "./skills/review-consolidation",
+        "./skills/review-method",
+        "./skills/review-preparation",
+        "./skills/review-quality-gates"
+      ]
     }
   ]
 }
