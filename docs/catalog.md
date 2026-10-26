@@ -17,7 +17,7 @@ are adapter requirements, separate from these kernel dependency counts.
 | Plugin | Version | Purpose | Skills | Roles | Workflows | Local closure | External closure |
 |---|---|---|---:|---:|---:|---:|---:|
 | [abstraction-architect](<plugins/abstraction-architect.md>) | `5.2.1` | Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of senior-review's reviews; the whole-codebase audit runs under /daodan:check-health. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD). | 1 | 3 | 0 | 3 | 0 |
-| [ai-tooling](<plugins/ai-tooling.md>) | `5.5.3` | AI development workflow: prompt engineering knowledge base and optimization, and Claude Agent SDK integration guide | 2 | 1 | 1 | 1 | 1 |
+| [ai-tooling](<plugins/ai-tooling.md>) | `5.6.0` | AI development workflow: prompt engineering knowledge base and optimization, and Claude Agent SDK integration guide | 2 | 1 | 1 | 1 | 0 |
 | [app-analyzer](<plugins/app-analyzer.md>) | `1.4.5` | Comprehensive app analysis for Android (ADB) and web (Playwright MCP) - navigation mapping, competitive analysis, design system extraction, UX flow analysis, and business model intelligence | 1 | 1 | 0 | 1 | 1 |
 | [browser-extensions](<plugins/browser-extensions.md>) | `2.0.3` | Expert Firefox extension (WebExtension) developer covering Manifest V2/V3, all 51 browser.* APIs, content scripts, background scripts, native messaging, cross-browser compatibility, AMO publishing, web-ext CLI tooling, project scaffolding, and live MDN documentation lookup; includes /browser-extensions:firefox-scaffold, /browser-extensions:firefox-lint, /browser-extensions:firefox-publish commands | 1 | 1 | 3 | 1 | 0 |
 | [business](<plugins/business.md>) | `1.15.1` | Legal advisory, compliance document generation, and SaaS business planning - Privacy Policies, Cookie Policies, DPAs, GDPR/ePrivacy/CCPA compliance, contract review, GTM strategy, market sizing, pricing, and positioning | 1 | 3 | 0 | 3 | 0 |
@@ -72,7 +72,7 @@ and collects every external requirement reached through those plugins.
 | Plugin | Direct local | Direct external | Transitive external closure |
 |---|---|---|---|
 | [abstraction-architect](<plugins/abstraction-architect.md>) | [codebase-map](<plugins/codebase-map.md>) | None | None |
-| [ai-tooling](<plugins/ai-tooling.md>) | None | `superpowers@claude-plugins-official` | `superpowers@claude-plugins-official` |
+| [ai-tooling](<plugins/ai-tooling.md>) | None | None | None |
 | [app-analyzer](<plugins/app-analyzer.md>) | None | `playwright@claude-plugins-official` | `playwright@claude-plugins-official` |
 | [browser-extensions](<plugins/browser-extensions.md>) | None | None | None |
 | [business](<plugins/business.md>) | [research](<plugins/research.md>), [text-humanizer](<plugins/text-humanizer.md>) | None | None |

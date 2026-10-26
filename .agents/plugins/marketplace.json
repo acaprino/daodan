@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.0.0"
+    "version": "42.0.1"
   },
   "name": "daodan",
   "owner": {
@@ -35,9 +35,7 @@
       "author": {
         "name": "Alfio Caprino"
       },
-      "dependencies": [
-        "superpowers@claude-plugins-official"
-      ],
+      "dependencies": [],
       "description": "AI development workflow: prompt engineering knowledge base and optimization, and Claude Agent SDK integration guide",
       "license": "MIT",
       "name": "ai-tooling",
@@ -47,7 +45,7 @@
         "./skills/prompt-optimize-workflow"
       ],
       "source": "./exports/codex/plugins/ai-tooling",
-      "version": "5.5.3"
+      "version": "5.6.0"
     },
     {
       "author": {

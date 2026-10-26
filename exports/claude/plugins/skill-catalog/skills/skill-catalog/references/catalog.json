@@ -36,7 +36,7 @@
       "operations": [],
       "provider": "ai-tooling",
       "topics": [],
-      "version": "5.5.3"
+      "version": "5.6.0"
     },
     {
       "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
@@ -61,7 +61,7 @@
         "llm",
         "prompts"
       ],
-      "version": "5.5.3"
+      "version": "5.6.0"
     },
     {
       "description": "Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).",

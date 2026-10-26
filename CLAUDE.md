@@ -452,9 +452,9 @@ source-repository mapping. This delegation does not assert equivalent coverage o
 the retired `memory-forensics` or `anti-reversing-techniques` skills. Preserve the
 original retirement history without restoring a local copy or a sync-table row.
 
-As of marketplace 8.2.0, superpowers is a declared hard dependency of `ai-tooling` (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`; cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2). Any place that points at the superpowers planning skills says so unconditionally: load the skills, and if they are unavailable stop the dependent phase and recover superpowers through the active host provisioning mechanism; the Claude command `/plugin install superpowers@claude-plugins-official` applies only on Claude Code. This supersedes the earlier rule that kept superpowers references conditional; do not reintroduce conditional phrasing.
+No plugin of this marketplace depends on superpowers, by decision of 2026-10-26. `ai-tooling` declared `superpowers@claude-plugins-official` as a hard dependency from marketplace 8.2.0 until that date, although no skill, role or workflow of that plugin loaded a superpowers component. Do not declare the dependency again, do not point a body at a superpowers skill, and do not re-import those skills. The `obra/superpowers` rows of the table above record where retired content went, not a delegation that is still declared. Cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2.
 
-The scoped exception that used to sit here is closed. From 2026-07-30 until the universal cutover, `exports/vscode/` vendored 14 superpowers skills and the 6 agents that served them, because there was no Copilot install path for superpowers and the extension shipped them or nothing did. The extension is gone, so the copy is gone with it, and the delegation is now unconditional again on every host: `ai-tooling` hard-depends on `superpowers@claude-plugins-official`, and nothing anywhere may re-import those skills. Superpowers publishes its own marketplace (`obra/superpowers-marketplace`), which is the install path to point users at.
+From 2026-07-30 until the universal cutover, `exports/vscode/` vendored 14 superpowers skills and the 6 agents that served them, because there was no Copilot install path for superpowers. The extension is gone, so the copy is gone with it.
 
 The universal cutover also retired the whole hand-mirroring apparatus it depended on: the per-bundle catalog, the extension manifest generator, the export structural checker, the mirror workflow and the release workflow. Do not rebuild any of them. A host that needs a different shape gets an adapter; a host that needs different meaning gets a fingerprinted override; nothing gets a second hand-maintained copy of a plugin.
 
@@ -576,8 +576,7 @@ the host's native configuration. Preserve concrete install instructions in the
 consumer. Grabber's separately scoped Patchright technique remains local.
 
 testing delegates TDD to mattpocock-skills@mattpocock and browser E2E mechanics to
-developer-essentials@claude-code-workflows. ai-tooling delegates development
-methods to superpowers@claude-plugins-official. project-delivery owns its task cycle
+developer-essentials@claude-code-workflows. project-delivery owns its task cycle
 and declares no upstream development method since 2026-10-18: its interview, plan
 and execution are shaped by the map, the decision records and the protocol's wave
 rules, which the delegated planning skills did not have, so running both would

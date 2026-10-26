@@ -755,11 +755,9 @@
     {
       "name": "ai-tooling",
       "description": "AI development workflow: prompt engineering knowledge base and optimization, and Claude Agent SDK integration guide",
-      "version": "5.5.3",
+      "version": "5.6.0",
       "license": "MIT",
-      "dependencies": [
-        "superpowers@claude-plugins-official"
-      ],
+      "dependencies": [],
       "source": "./exports/copilot/plugins/ai-tooling",
       "agents": [
         "./agents/prompt-engineer.agent.md",
