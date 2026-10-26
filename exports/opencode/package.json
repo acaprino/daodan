@@ -965,7 +965,7 @@
             "name": "daodan:run-maintenance"
           },
           {
-            "description": "Explore an idea with the user, grounded in the code and, when the project keeps them, its decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
+            "description": "Guide an idea into a project specification in docs/specs/: clarify intent, compare approaches, write the design and obtain approval before planning. Reuse supplied specifications and answers. Writes no code. TRIGGER WHEN: the user wants brainstorming, project design or specifications, or an idea needs clarification before building it; no explicit command is required. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
             "file": "commands/brainstorm-idea.md",
             "name": "daodan:brainstorm-idea"
           },
@@ -980,7 +980,7 @@
             "name": "daodan:get-second-opinion"
           },
           {
-            "description": "Add new behavior through the task cycle: an interview grounded in your code, its intent kept in a proposed decision record when the project uses them, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
+            "description": "Add new behavior through the task cycle: reuse or write a project specification in docs/specs/, obtain its approval, plan waves and execute through stack specialists with a light review before each commit. ADRs keep separate technical decisions. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
             "file": "commands/new-feature.md",
             "name": "daodan:new-feature"
           },
@@ -2439,7 +2439,7 @@
         "root": "plugins/project-delivery",
         "skills": [
           {
-            "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to investigate or debug a problem, build or refactor code, produce complete project documentation, define specifications or implementation plans, resume work, or finish and merge a delivery. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
+            "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
             "file": "skills/delivery-method/SKILL.md",
             "id": "project-delivery:delivery-method",
             "name": "delivery-method"
@@ -7532,5 +7532,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "42.0.0"
+  "version": "42.1.0"
 }

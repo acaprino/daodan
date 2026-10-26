@@ -109,7 +109,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/copilot/plugins/daodan",
-      "version": "2.3.0",
+      "version": "2.4.0",
       "agents": [
         "./agents/brainstorm-idea-coordinator.agent.md",
         "./agents/check-health-coordinator.agent.md",
@@ -305,7 +305,7 @@
       "license": "MIT",
       "name": "project-delivery",
       "source": "./exports/copilot/plugins/project-delivery",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "skills": [
         "./skills/adr-method",
         "./skills/delivery-method",
@@ -642,7 +642,7 @@
     {
       "name": "project-knowledge",
       "description": "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle.",
-      "version": "3.0.1",
+      "version": "3.1.0",
       "license": "MIT",
       "dependencies": [
         "work-controller",

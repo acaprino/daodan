@@ -1,7 +1,7 @@
 ---
 description: >
-  Explore an idea with the user, grounded in the code and, when the project keeps them, its decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it.
-  TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it.
+  Guide an idea into a project specification in docs/specs/: clarify intent, compare approaches, write the design and obtain approval before planning. Reuse supplied specifications and answers. Writes no code.
+  TRIGGER WHEN: the user wants brainstorming, project design or specifications, or an idea needs clarification before building it; no explicit command is required.
   DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).
 argument-hint: "<idea>"
 ---
@@ -11,10 +11,11 @@ argument-hint: "<idea>"
 $ARGUMENTS
 
 Load the skills `project-delivery:delivery-method` and
-`work-controller:work-record` and follow the lifecycle method's
+`work-controller:work-record` and follow the delivery method's
 `references/brainstorm.md` with the idea above.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
 `first_use: true`, load `project-delivery:delivery-method` and follow its
-`references/first-use.md` first. When the user chooses to build it,
-continue as `/daodan:new-feature` with the brief the brainstorm wrote, so the interview
-starts from it.
+`references/first-use.md` first. Carry the approved specification's path, digest,
+approval source and answered questions into the new-feature method when the user
+authorizes building. Continue that method here; do not restart the interview or
+invoke a competing brainstorming/planning workflow.

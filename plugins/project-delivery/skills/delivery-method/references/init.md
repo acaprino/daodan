@@ -1,17 +1,19 @@
 # Initialize a project
 
-Initialize new or existing projects. Idempotent: keep every valid existing part.
-Every work command runs it when no loop block exists.
+Initialize missing parts; preserve valid ones. Work commands initialize a missing loop block.
 
-## An empty folder
+## A project without an application scaffold
 
-Ask what to build: purpose, stack, kind (service, library, command-line tool,
-application). For Python, load the skill `python-development:python-scaffold-method`,
+Documents and run records are not application code.
+Reuse the approved specification and saved first-use choices; otherwise settle
+purpose, stack and kind before scaffolding. For Python, load `python-development:python-scaffold-method`,
 whose plan-and-confirm step is the authorization. For another stack, use its
 official initializer with the user's choices and show the command before
 running it. Then continue below.
 
 ## An existing project
+
+Apply deferred first-use choices once the repository and source exist.
 
 1. **Map.** Execute the analyze entry's preflight at the first use's depth, lite
    by default (none skips this step), dispatch

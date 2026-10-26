@@ -1,35 +1,27 @@
 # Brainstorm
 
-Explore an idea with the user before a task exists. It reads the project,
-writes no code, record or plan; its `brainstorm` run holds the conversation.
+Explore before implementation. Load `references/specification.md`.
+Record conversation and approvals; write no code or plan.
 
-## Ground first
+## Ground and discuss
 
-1. Load `codebase-map:map-method` and deepen the idea's area as its
-   `references/deepen.md` directs. Name the code the idea would touch and the
-   existing code that already does part of it, with the concept index of
-   `abstraction-architect` when present.
-2. Load `project-delivery:adr-method` and run `resolve` on that area: the
-   active records are constraints, and a record the idea contradicts is said
-   at once.
-3. Read what the project's instructions say about the area.
+Read supplied specifications and project instructions first. For existing code,
+load `codebase-map:map-method` and deepen the affected area through
+`references/deepen.md`; cite source and existing reusable behavior. With decision
+records, load `project-delivery:adr-method` and `resolve` that scope. Name conflicts.
+An empty project needs no scaffold or map to discuss its design; mark absent
+code evidence explicitly.
 
-## Talk
-
-Ask by the work record's question rule, one per turn, anchored to code
-("today `path:line` does X; should the idea change that?"): purpose, users,
-constraints, success, never what the code settles. Once the idea is clear,
-ask which of two or three alternatives to take, each costed in modules and
-files, records extended or superseded, tests, risks and waves; name one that
-gives a concept a second owner.
+Ask one essential question per turn through the work record: purpose, users,
+constraints and success. Reuse supplied answers. Compare two or three
+viable approaches with implementation/test costs and risks; recommend one.
+Once the user chooses, write and review the specification automatically under
+the shared contract. Do not silently promote assumptions to requirements.
 
 ## Close with the user's choice
 
-- **Do it.** Write the brief into the run (objective, chosen alternative,
-  examples, constraints, rejected alternatives with their reasons) for the
-  change cycle's interview to start from.
-- **Keep it.** With the user's agreement, write
-  `docs/ideas/<YYYY-MM-DD>-<slug>.md`: the idea, the code and records it
-  touches, the alternatives with their costs, and the open questions. It is
-  the only project file a brainstorm writes.
-- **Drop it.** Nothing is written outside the run.
+- **Build.** Obtain specification approval and carry its exact binding and
+  existing answers into the change cycle. Start only with execution authorization.
+- **Keep.** Keep the draft or approved specification without starting development.
+  An idea too early for a specification may stay in `docs/ideas/` with agreement.
+- **Drop.** Stop; preserve existing documents and record the disposition in the run.

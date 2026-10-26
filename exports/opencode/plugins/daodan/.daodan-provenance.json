@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f8ff49148a264c44dbe138fe69e61a60d84fb84101ef3a3ebd8bf4c67520d54e",
+  "coreDigest": "sha256:79783f2343b490f1804d9b899e09e3169fcfa745bf1ef66c1d9798ab31f78ee0",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
@@ -35,5 +35,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.3.0"
+  "version": "2.4.0"
 }

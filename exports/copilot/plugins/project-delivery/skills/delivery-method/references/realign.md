@@ -99,7 +99,7 @@ this order. Alone, realign the current head after an external merge.
    README cites them.
 4. **Instructions.** Run `project-knowledge:instructions-method` to
    regenerate the loop block from the run and records resolved in step 1:
-   commands, records, workspace convention. Nothing outside markers changes.
+   commands, records, workspace convention, specification destination and design routing. Nothing outside markers changes.
 5. **Head.** Record `last_synced` in the run and compare it with `HEAD`: a
    commit that landed meanwhile gets one more map update before the run
    closes. After all steps succeed, set `integration.realigned: true`.
