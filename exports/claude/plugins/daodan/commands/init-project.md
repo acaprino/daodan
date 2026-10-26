@@ -1,5 +1,5 @@
 ---
-description: Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).
+description: Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).
 ---
 
 <daodan_host_binding host="claude">
@@ -101,7 +101,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-knowledge:instructions-auditor`, `work-controller:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `project-knowledge:instructions-auditor`, `senior-review:premise-auditor`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -115,6 +115,7 @@ Role bindings:
 
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.
+- `senior-review:premise-auditor`: dispatch the installed `senior-review:premise-auditor` agent by its qualified identity.
 - `work-controller:isolated-worker`: dispatch the installed `work-controller:isolated-worker` agent by its qualified identity.
 - Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
@@ -132,7 +133,10 @@ Load the skills `project-delivery:delivery-method` and
 Before anything is written, run `run_state.py first-use --project ROOT`; on
 `first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first. Open a run with operation `assess` and follow the
-lifecycle method's `references/init.md`: an empty folder is scaffolded first from what
-the user wants to build; an existing project gets the first-use choices, the map at the chosen depth,
-the record index when chosen, environment, loop block and test baseline. A part that exists and validates is kept. End
-with what was created, what could not be verified, and the command for the first task.
+delivery method's `references/init.md`. For projects without application code,
+obtain or verify the approved specification before any scaffolder; existing valid
+approval and answered questions are reused. The shared initialization method owns
+this prerequisite for every caller. Return to initialization after approval;
+starting a feature requires its own authorization. Existing projects retain valid
+parts and get the chosen map, optional record index, environment, instruction loop
+block and baseline. Report created parts, unavailable checks and the first task.

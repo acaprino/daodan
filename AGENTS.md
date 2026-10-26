@@ -27,6 +27,12 @@ The `daodan` commands are the primary entry points: start there for project
 work, whatever the stack or domain, and call a vertical's own command directly
 only when the request is already specific to that domain.
 
+Design and brainstorming requests use the delivery method without requiring a
+command: clarify the approach, write the specification, obtain approval, then
+plan from the same document. New specifications use `docs/specs/` without a plugin
+brand in the path, unless the user explicitly selects another destination.
+Supplied historical specifications remain valid inputs; do not move them implicitly.
+
 `office` owns the editable Word, PowerPoint and Excel methods, shared intake and
 design, format helpers and specialist roles. Its entries (`start`, `presentation`,
 `document`, `workbook`, `verify`, `fix`, `theme`) belong to `daodan`, which declares
@@ -41,9 +47,9 @@ and the Senior Maintainer campaign, composing project-delivery for execution sta
 2026-10-18 (see `docs/superpowers/specs/2026-10-18-closed-loop-harness-design.md`),
 change is the task cycle: a probed preflight with the workspace mode chosen by the
 user (worktree, branch or in place), an interview grounded in the map and in the
-active decision records, the task's intent (a `Proposed` record under `docs/adr/`,
-promoted when the user approves it, on a project that keeps decision records, which a project chooses at its first use, or
-the run's intent file otherwise), waves of micro-tasks
+active decision records, a project specification under `docs/specs/` reviewed and
+approved before planning (the run's intent binds its path, digest and approval),
+separate technical decisions under `docs/adr/` on projects that keep them, and waves of micro-tasks
 checked mechanically by the protocol helper and written by the stack's specialist,
 an adversarial review of the intent, of the exact plan, of each task before its
 atomic commit and of each wave, plus a branch review of the whole candidate

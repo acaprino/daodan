@@ -74,15 +74,14 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Change
 
-A change is one task carried through seven phases, each closing before the
-next opens. The run record is the source of truth at every boundary; this
-unit is the overview, and each phase has its own unit.
+Seven phases close in order. The run record governs boundaries; each phase
+has its own unit.
 
 | Phase | Outcome | Unit |
 |---|---|---|
 | 1. Preflight and workspace | Git state probed, baseline classified, map fresh, workspace mode chosen with the user | `references/preflight.md` |
 | 2. Interview | Scope, examples, rejected alternatives and invariants fixed from real code | `references/interview.md` |
-| 3. Record | A decision record written, reviewed as a `spec` and, on a project with records, approved | `references/interview.md` |
+| 3. Specification | Project design reviewed and approved; separate technical decisions recorded when needed | `references/interview.md` |
 | 4. Plan | Waves of micro-tasks compiled, checked by the helper, reviewed as a `plan` | `references/waves.md` |
 | 5. Execution | Tasks specialist-written, verified and light-reviewed before atomic commit; waves reviewed and sealed | `references/waves.md`, `references/worker-brief.md` |
 | 6. Candidate | The whole candidate reviewed with shape `branch`; blocking findings repaired in a bounded wave | `references/verify.md` |
@@ -101,7 +100,7 @@ Rules that hold across phases:
   current code is never promoted into the requirement.
 - Preserve preexisting edits and other sessions' work. Recovery restores the
   owned pre-phase state, never `HEAD~1`.
-- A project without loop block is initialized first
-  through `references/init.md`.
+- Before scaffolding a project without application code, approve its specification through
+  `references/brainstorm.md`. Initialize a missing loop through `references/init.md`.
 - Severe evidenced defects and broken entry paths come before cosmetic work.
 - A plan or a diff without verification is not completed development.

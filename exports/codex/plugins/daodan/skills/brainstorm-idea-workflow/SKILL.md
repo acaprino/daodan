@@ -1,6 +1,6 @@
 ---
 name: brainstorm-idea-workflow
-description: 'Explore an idea with the user, grounded in the code and, when the project keeps them, its decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).'
+description: 'Guide an idea into a project specification in docs/specs/: clarify intent, compare approaches, write the design and obtain approval before planning. Reuse supplied specifications and answers. Writes no code. TRIGGER WHEN: the user wants brainstorming, project design or specifications, or an idea needs clarification before building it; no explicit command is required. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).'
 ---
 
 > Arguments: `<idea>`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -109,7 +109,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `work-controller:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `abstraction-architect:abstraction-fit-auditor`, `abstraction-architect:concept-ownership-auditor`, `clean-code:clean-code-agent`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `peer-review:brief-builder`, `peer-review:packet-builder`, `peer-review:respondent`, `platform-engineering:app-distribution-auditor`, `platform-engineering:browser-compatibility-auditor`, `platform-engineering:desktop-bridge-auditor`, `platform-engineering:native-lifecycle-auditor`, `platform-engineering:offline-lifecycle-auditor`, `platform-engineering:platform-reviewer`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `python-development:python-engineer`, `python-development:python-refactor-agent`, `python-development:python-semantics-auditor`, `react-development:react-bundle-auditor`, `react-development:react-dataflow-auditor`, `react-development:react-effects-auditor`, `react-development:react-performance-optimizer`, `react-development:react-render-cost-auditor`, `repo-hygiene:workspace-auditor`, `senior-review:accessibility-auditor`, `senior-review:accessible-navigation-auditor`, `senior-review:accessible-perception-auditor`, `senior-review:ai-boundary-auditor`, `senior-review:algorithmic-cost-auditor`, `senior-review:api-contract-auditor`, `senior-review:application-reachability-auditor`, `senior-review:artifact-lifecycle-auditor`, `senior-review:asset-delivery-auditor`, `senior-review:audit-trail-auditor`, `senior-review:authorization-auditor`, `senior-review:browser-security-auditor`, `senior-review:cache-consistency-auditor`, `senior-review:callback-authenticity-auditor`, `senior-review:capacity-quota-auditor`, `senior-review:chicken-egg-detector`, `senior-review:cleanup-auditor`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:data-representation-auditor`, `senior-review:data-retention-auditor`, `senior-review:dependency-usage-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:environment-binding-auditor`, `senior-review:feature-flag-auditor`, `senior-review:input-validation-auditor`, `senior-review:local-concurrency-auditor`, `senior-review:local-correctness-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:message-delivery-auditor`, `senior-review:observability-auditor`, `senior-review:operability-auditor`, `senior-review:performance-auditor`, `senior-review:premise-auditor`, `senior-review:recovery-auditor`, `senior-review:release-compatibility-auditor`, `senior-review:remote-effect-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:runtime-cost-auditor`, `senior-review:schema-coherence-auditor`, `senior-review:secret-exposure-auditor`, `senior-review:security-auditor`, `senior-review:service-health-auditor`, `senior-review:service-resilience-auditor`, `senior-review:session-delegation-auditor`, `senior-review:sql-efficiency-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:transaction-integrity-auditor`, `senior-review:ui-race-auditor`, `senior-review:untrusted-resource-auditor`, `testing:ai-evaluation-auditor`, `testing:capacity-test-auditor`, `testing:contract-test-auditor`, `testing:journey-protection-auditor`, `testing:test-oracle-auditor`, `testing:test-reliability-auditor`, `testing:test-suite-auditor`, `testing:test-suite-structure-auditor`, `testing:test-writer`, `text-humanizer:text-humanizer`, `typescript-development:type-safety-auditor`, `typescript-development:type-soundness-auditor`, `typescript-development:typed-boundary-auditor`, `typescript-development:typescript-engineer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -121,7 +121,104 @@ Dispatch plan:
 
 Role body bindings (load the complete body only for the selected worker):
 
+- `abstraction-architect:abstraction-architect-agent`: read `contracts/dispatch/abstraction-architect/abstraction-architect-agent.md` inside this package and pass its complete role body verbatim.
+- `abstraction-architect:abstraction-fit-auditor`: read `contracts/dispatch/abstraction-architect/abstraction-fit-auditor.md` inside this package and pass its complete role body verbatim.
+- `abstraction-architect:concept-ownership-auditor`: read `contracts/dispatch/abstraction-architect/concept-ownership-auditor.md` inside this package and pass its complete role body verbatim.
+- `clean-code:clean-code-agent`: read `contracts/dispatch/clean-code/clean-code-agent.md` inside this package and pass its complete role body verbatim.
 - `codebase-map:map-analyst`: read `contracts/dispatch/codebase-map/map-analyst.md` inside this package and pass its complete role body verbatim.
+- `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
+- `peer-review:brief-builder`: read `contracts/dispatch/peer-review/brief-builder.md` inside this package and pass its complete role body verbatim.
+- `peer-review:packet-builder`: read `contracts/dispatch/peer-review/packet-builder.md` inside this package and pass its complete role body verbatim.
+- `peer-review:respondent`: read `contracts/dispatch/peer-review/respondent.md` inside this package and pass its complete role body verbatim.
+- `platform-engineering:app-distribution-auditor`: read `contracts/dispatch/platform-engineering/app-distribution-auditor.md` inside this package and pass its complete role body verbatim.
+- `platform-engineering:browser-compatibility-auditor`: read `contracts/dispatch/platform-engineering/browser-compatibility-auditor.md` inside this package and pass its complete role body verbatim.
+- `platform-engineering:desktop-bridge-auditor`: read `contracts/dispatch/platform-engineering/desktop-bridge-auditor.md` inside this package and pass its complete role body verbatim.
+- `platform-engineering:native-lifecycle-auditor`: read `contracts/dispatch/platform-engineering/native-lifecycle-auditor.md` inside this package and pass its complete role body verbatim.
+- `platform-engineering:offline-lifecycle-auditor`: read `contracts/dispatch/platform-engineering/offline-lifecycle-auditor.md` inside this package and pass its complete role body verbatim.
+- `platform-engineering:platform-reviewer`: read `contracts/dispatch/platform-engineering/platform-reviewer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:codebase-explorer`: read `contracts/dispatch/project-knowledge/codebase-explorer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:doc-humanizer`: read `contracts/dispatch/project-knowledge/doc-humanizer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:documentation-engineer`: read `contracts/dispatch/project-knowledge/documentation-engineer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:flow-writer`: read `contracts/dispatch/project-knowledge/flow-writer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:guide-reviewer`: read `contracts/dispatch/project-knowledge/guide-reviewer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:instructions-auditor`: read `contracts/dispatch/project-knowledge/instructions-auditor.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:onboarding-writer`: read `contracts/dispatch/project-knowledge/onboarding-writer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:ops-writer`: read `contracts/dispatch/project-knowledge/ops-writer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:overview-writer`: read `contracts/dispatch/project-knowledge/overview-writer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:tech-writer`: read `contracts/dispatch/project-knowledge/tech-writer.md` inside this package and pass its complete role body verbatim.
+- `python-development:python-engineer`: read `contracts/dispatch/python-development/python-engineer.md` inside this package and pass its complete role body verbatim.
+- `python-development:python-refactor-agent`: read `contracts/dispatch/python-development/python-refactor-agent.md` inside this package and pass its complete role body verbatim.
+- `python-development:python-semantics-auditor`: read `contracts/dispatch/python-development/python-semantics-auditor.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-bundle-auditor`: read `contracts/dispatch/react-development/react-bundle-auditor.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-dataflow-auditor`: read `contracts/dispatch/react-development/react-dataflow-auditor.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-effects-auditor`: read `contracts/dispatch/react-development/react-effects-auditor.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-performance-optimizer`: read `contracts/dispatch/react-development/react-performance-optimizer.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-render-cost-auditor`: read `contracts/dispatch/react-development/react-render-cost-auditor.md` inside this package and pass its complete role body verbatim.
+- `repo-hygiene:workspace-auditor`: read `contracts/dispatch/repo-hygiene/workspace-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:accessibility-auditor`: read `contracts/dispatch/senior-review/accessibility-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:accessible-navigation-auditor`: read `contracts/dispatch/senior-review/accessible-navigation-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:accessible-perception-auditor`: read `contracts/dispatch/senior-review/accessible-perception-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:ai-boundary-auditor`: read `contracts/dispatch/senior-review/ai-boundary-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:algorithmic-cost-auditor`: read `contracts/dispatch/senior-review/algorithmic-cost-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:api-contract-auditor`: read `contracts/dispatch/senior-review/api-contract-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:application-reachability-auditor`: read `contracts/dispatch/senior-review/application-reachability-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:artifact-lifecycle-auditor`: read `contracts/dispatch/senior-review/artifact-lifecycle-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:asset-delivery-auditor`: read `contracts/dispatch/senior-review/asset-delivery-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:audit-trail-auditor`: read `contracts/dispatch/senior-review/audit-trail-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:authorization-auditor`: read `contracts/dispatch/senior-review/authorization-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:browser-security-auditor`: read `contracts/dispatch/senior-review/browser-security-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:cache-consistency-auditor`: read `contracts/dispatch/senior-review/cache-consistency-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:callback-authenticity-auditor`: read `contracts/dispatch/senior-review/callback-authenticity-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:capacity-quota-auditor`: read `contracts/dispatch/senior-review/capacity-quota-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:chicken-egg-detector`: read `contracts/dispatch/senior-review/chicken-egg-detector.md` inside this package and pass its complete role body verbatim.
+- `senior-review:cleanup-auditor`: read `contracts/dispatch/senior-review/cleanup-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:code-auditor`: read `contracts/dispatch/senior-review/code-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:data-integrity-auditor`: read `contracts/dispatch/senior-review/data-integrity-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:data-representation-auditor`: read `contracts/dispatch/senior-review/data-representation-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:data-retention-auditor`: read `contracts/dispatch/senior-review/data-retention-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:dependency-usage-auditor`: read `contracts/dispatch/senior-review/dependency-usage-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:distributed-flow-auditor`: read `contracts/dispatch/senior-review/distributed-flow-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:environment-binding-auditor`: read `contracts/dispatch/senior-review/environment-binding-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:feature-flag-auditor`: read `contracts/dispatch/senior-review/feature-flag-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:input-validation-auditor`: read `contracts/dispatch/senior-review/input-validation-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:local-concurrency-auditor`: read `contracts/dispatch/senior-review/local-concurrency-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:local-correctness-auditor`: read `contracts/dispatch/senior-review/local-correctness-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:logic-integrity-auditor`: read `contracts/dispatch/senior-review/logic-integrity-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:message-delivery-auditor`: read `contracts/dispatch/senior-review/message-delivery-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:observability-auditor`: read `contracts/dispatch/senior-review/observability-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:operability-auditor`: read `contracts/dispatch/senior-review/operability-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:performance-auditor`: read `contracts/dispatch/senior-review/performance-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:premise-auditor`: read `contracts/dispatch/senior-review/premise-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:recovery-auditor`: read `contracts/dispatch/senior-review/recovery-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:release-compatibility-auditor`: read `contracts/dispatch/senior-review/release-compatibility-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:remote-effect-auditor`: read `contracts/dispatch/senior-review/remote-effect-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:resource-lifecycle-auditor`: read `contracts/dispatch/senior-review/resource-lifecycle-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:runtime-cost-auditor`: read `contracts/dispatch/senior-review/runtime-cost-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:schema-coherence-auditor`: read `contracts/dispatch/senior-review/schema-coherence-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:secret-exposure-auditor`: read `contracts/dispatch/senior-review/secret-exposure-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:security-auditor`: read `contracts/dispatch/senior-review/security-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:service-health-auditor`: read `contracts/dispatch/senior-review/service-health-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:service-resilience-auditor`: read `contracts/dispatch/senior-review/service-resilience-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:session-delegation-auditor`: read `contracts/dispatch/senior-review/session-delegation-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:sql-efficiency-auditor`: read `contracts/dispatch/senior-review/sql-efficiency-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:temporal-resilience-auditor`: read `contracts/dispatch/senior-review/temporal-resilience-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:transaction-integrity-auditor`: read `contracts/dispatch/senior-review/transaction-integrity-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:ui-race-auditor`: read `contracts/dispatch/senior-review/ui-race-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:untrusted-resource-auditor`: read `contracts/dispatch/senior-review/untrusted-resource-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:ai-evaluation-auditor`: read `contracts/dispatch/testing/ai-evaluation-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:capacity-test-auditor`: read `contracts/dispatch/testing/capacity-test-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:contract-test-auditor`: read `contracts/dispatch/testing/contract-test-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:journey-protection-auditor`: read `contracts/dispatch/testing/journey-protection-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:test-oracle-auditor`: read `contracts/dispatch/testing/test-oracle-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:test-reliability-auditor`: read `contracts/dispatch/testing/test-reliability-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:test-suite-auditor`: read `contracts/dispatch/testing/test-suite-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:test-suite-structure-auditor`: read `contracts/dispatch/testing/test-suite-structure-auditor.md` inside this package and pass its complete role body verbatim.
+- `testing:test-writer`: read `contracts/dispatch/testing/test-writer.md` inside this package and pass its complete role body verbatim.
+- `text-humanizer:text-humanizer`: read `contracts/dispatch/text-humanizer/text-humanizer.md` inside this package and pass its complete role body verbatim.
+- `typescript-development:type-safety-auditor`: read `contracts/dispatch/typescript-development/type-safety-auditor.md` inside this package and pass its complete role body verbatim.
+- `typescript-development:type-soundness-auditor`: read `contracts/dispatch/typescript-development/type-soundness-auditor.md` inside this package and pass its complete role body verbatim.
+- `typescript-development:typed-boundary-auditor`: read `contracts/dispatch/typescript-development/typed-boundary-auditor.md` inside this package and pass its complete role body verbatim.
+- `typescript-development:typescript-engineer`: read `contracts/dispatch/typescript-development/typescript-engineer.md` inside this package and pass its complete role body verbatim.
 - `work-controller:isolated-worker`: read `contracts/dispatch/work-controller/isolated-worker.md` inside this package and pass its complete role body verbatim.
 - Method-owned inline workers use only `work-controller:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
@@ -134,10 +231,11 @@ The phase graph and record-schema references ship under `contracts/brainstorm-id
 <arguments>
 
 Load the skills `project-delivery:delivery-method` and
-`work-controller:work-record` and follow the lifecycle method's
+`work-controller:work-record` and follow the delivery method's
 `references/brainstorm.md` with the idea above.
 Before anything is written, run `run_state.py first-use --project ROOT`; on
 `first_use: true`, load `project-delivery:delivery-method` and follow its
-`references/first-use.md` first. When the user chooses to build it,
-continue as `/daodan:new-feature` with the brief the brainstorm wrote, so the interview
-starts from it.
+`references/first-use.md` first. Carry the approved specification's path, digest,
+approval source and answered questions into the new-feature method when the user
+authorizes building. Continue that method here; do not restart the interview or
+invoke a competing brainstorming/planning workflow.

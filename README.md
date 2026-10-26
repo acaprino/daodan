@@ -122,10 +122,11 @@ GridCraft runtimes; installing the plugin does not install those engines. See
 
 A work command asks whether to work in a worktree, a branch or in place, then
 interviews you with real examples from your code, one question at a time, until
-scope, examples, rejected alternatives and invariants are fixed. It writes them
-as a proposed decision record under `docs/adr/` when the project keeps decision
-records, a choice asked once at its first use, or into the task's run otherwise;
-then it plans waves of micro-tasks of at most
+scope, examples, rejected alternatives and invariants are fixed. It reuses or
+writes a project specification in `docs/specs/` and obtains approval of its exact
+text before planning. Separate technical decisions use `docs/adr/` when the
+project keeps those records; the run links the specification and its approval.
+Then it plans waves of micro-tasks of at most
 four files, has the stack's specialist write each one test first, and commits each
 with a line naming the task and wave. It stops only for your answers, the plan
 approval and the merge authorization. How many reviewers each review gets is
