@@ -3,7 +3,7 @@ name: clean-code-agent
 description: >
   Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview.
   TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief.
-  DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use /text-humanizer:humanize-text).
+  DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).
 tools: Read, Edit, Write, Glob, Grep, Bash
 model: inherit
 color: blue
@@ -162,6 +162,6 @@ Report suggestions as **recommendations**, not as changes made.
 ## Related tools: when to use what
 
 - **clean-code-agent** (this agent): the worker behind the readability pass of `/daodan:refactor-code`. Multi-language readability pass: renames variables, improves comments, simplifies structure.
-- **`/text-humanizer:humanize-text`** (text-humanizer plugin, Shinatama marketplace): Prose/text AI trace removal. Use for: "make this text sound human".
+- **text-humanizer** (text-humanizer plugin): Prose/text AI trace removal. Use for: "make this text sound human".
 
 Architectural changes return to the caller's development plan.

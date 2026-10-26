@@ -1,18 +1,19 @@
 schema = "daodan/v1"
 name = "office"
-version = "1.1.2"
-description = "Create professional editable PowerPoint presentations through SlidePoise, work with native Excel formulas, tables and charts, and create, read or edit Word documents with styles, tables and sections. Includes runtime discovery and document preservation evidence."
+version = "2.4.0"
+description = "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification."
 license = "MIT"
 
 [capabilities]
-required = ["repository.read", "repository.write", "shell.execute", "network.fetch"]
+required = ["repository.read", "repository.write", "shell.execute", "network.fetch", "contexts.isolate", "roles.dispatch"]
 optional = []
 
 [dependencies]
 required = []
+optional = []
 
 [components]
-skills = ["slidepoise", "xlsx", "docx"]
-roles = []
-workflows = ["create-presentation", "workbook", "document"]
+skills = ["intake", "design", "pptx", "slidepoise", "deckcraft", "wordcraft", "xlsx", "docx"]
+roles = ["presentation-designer", "presentation-reviewer", "document-designer", "document-reviewer"]
+workflows = ["presentation", "document", "workbook"]
 policies = []

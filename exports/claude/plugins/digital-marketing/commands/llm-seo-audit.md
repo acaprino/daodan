@@ -23,6 +23,10 @@ override. Load installed skills by qualified ID; named roles use their owning
 plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
 Required foreign providers use Claude's marketplace/install commands:
 claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A provider that is installed but disabled is enabled with
+claude plugin enable <provider>@<marketplace>; check `claude plugin list --json`
+before the first phase, and stop with that command when any plugin of this
+package's dependency closure, direct or transitive, is off.
 A declared package MCP server is configured through the generated MCP manifest;
 still check its tools are actually available in the active session.
 
@@ -36,9 +40,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -158,5 +166,5 @@ Run alongside traditional SEO tooling for a complete picture:
 - Deep knowledge base -> `digital-marketing:llm-seo-optimize` agent (the actual worker)
 - Structured data validation alongside broader checks -> `/digital-marketing:seo-audit`
 - Measurement setup -> `digital-marketing:ga4-implementation-expert` agent (AI-referrer tracking)
-- Humanizing AI-sounding copy to raise E-E-A-T -> `/text-humanizer:humanize-text` (text-humanizer plugin)
+- Humanizing AI-sounding copy to raise E-E-A-T -> `/daodan:humanize-text`
 - Playwright-based live verification -> the `playwright` plugin (Microsoft's Playwright MCP server)

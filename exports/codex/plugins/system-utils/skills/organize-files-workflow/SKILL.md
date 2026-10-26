@@ -1,6 +1,6 @@
 ---
 name: organize-files-workflow
-description: 'Propose a plan first, then move or delete only what the user confirms, batch by batch. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies. DO NOT TRIGGER WHEN: the task is about code refactoring (use /clean-code:clean-code or /python-development:python-refactor).'
+description: 'Propose a plan first, then move or delete only what the user confirms, batch by batch. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies. DO NOT TRIGGER WHEN: the task is about code refactoring (use /daodan:refactor-code).'
 ---
 
 > Arguments: `<path> [find duplicates | by type | by date]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -42,9 +42,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or

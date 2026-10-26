@@ -284,6 +284,22 @@ def validate_dependencies(
     for name, qualified in foreign.items():
         if registry is not None and name in registry:
             issues.append(ValidationIssue("qualified-local-dependency", plugin.root / "plugin.toml", qualified))
+    required_names = {item.partition("@")[0] for item in dependencies}
+    optional_names: set[str] = set()
+    for dependency in plugin.optional_dependencies:
+        owner, separator, marketplace = dependency.partition("@")
+        if not separator or not KEBAB.fullmatch(owner) or not KEBAB.fullmatch(marketplace):
+            issues.append(ValidationIssue("invalid-optional-dependency", plugin.root / "plugin.toml",
+                                          f"Optional dependencies require name@marketplace: {dependency}"))
+        elif owner == plugin.name or (registry is not None and owner in registry):
+            issues.append(ValidationIssue("optional-local-dependency", plugin.root / "plugin.toml",
+                                          f"Local providers must be required: {dependency}"))
+        if owner in required_names:
+            issues.append(ValidationIssue("conflicting-dependency", plugin.root / "plugin.toml",
+                                          f"Provider is both required and optional: {owner}"))
+        if owner in optional_names:
+            issues.append(ValidationIssue("duplicate-optional-dependency", plugin.root / "plugin.toml", owner))
+        optional_names.add(owner)
     for workflow in plugin.workflows:
         references = [f"role:{role}" for role in workflow.dispatch.roles]
         if workflow.dispatch.inline_workers:

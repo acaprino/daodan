@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:9e9b606b083281f86c035307bd6d96f72bfd3b0221d0d170799003a7cfad9edf",
+  "coreDigest": "sha256:e61478363bbea05465a2f40c193c605ddf9144a98cb437dccd9ea3b836d255a2",
   "harnessStrategies": {
     "organize-files": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "system-utils",
-  "version": "2.1.4"
+  "version": "2.1.5"
 }

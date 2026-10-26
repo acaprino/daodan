@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "work-controller"
-version = "3.0.0"
-description = "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker."
+version = "3.0.1"
+description = "Run records, agenda, gates, grants and recovery for coordinated work: the work record and the isolated worker."
 license = "MIT"
 
 [capabilities]

@@ -6,7 +6,8 @@
 
 Daodan is a development harness for projects built with AI. It augments your coding
 agent with a coherent way to understand a project, make changes, verify their
-consequences and preserve what was learned.
+consequences and preserve what was learned, alongside domain verticals, office
+workflows, web research and specialized framework toolkits.
 
 Understanding comes first, and it comes from the Codebase Map. `codebase-map`
 analyzes the source statically and records the project as Meta-Code: an inventory
@@ -47,16 +48,9 @@ in agreement. It helps recover fragmented projects and avoid adding another laye
 of duplication, dead code, misleading tests or forgotten experimental output.
 
 One hand-authored source ships to Claude Code, GitHub Copilot, Codex, Pi and
-OpenCode V2. Useful language, framework and domain specialists remain independent.
-
-Daodan is complete on its own and reaches full strength alongside
-[Shinatama](https://github.com/acaprino/shinatama), its companion marketplace of
-domain verticals, office workflows and web research.
-Install both on the same host: `skill-catalog` discovers Shinatama's knowledge
-sidecars automatically and selects the ones each run's evidenced stack and domain
-call for, so a review, a handover or a maintenance campaign brings that domain
-knowledge to the map. Shinatama is a recommended companion, not a dependency: no
-Daodan plugin declares it, and every Daodan workflow runs without it.
+OpenCode V2. Useful language, framework and domain specialists remain independent;
+`skill-catalog` discovers every installed plugin's knowledge sidecars automatically
+and selects the ones each run's evidenced stack and domain call for.
 
 ## One command per intention
 
@@ -88,6 +82,7 @@ works alone and is also a step of the task cycle.
 | | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
 | | `/daodan:record-decision` | A decision record outside a task; turns records on for a project without them |
 | | `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
+| | `/daodan:humanize-text` | Make a text read naturally without inventing content |
 
 When unsure which work command fits, use `new-feature`: the interview corrects
 the course. On the other hosts the names follow the host: `/daodan-new-feature`
@@ -137,11 +132,12 @@ copilot plugin marketplace add acaprino/daodan
 codex plugin marketplace add acaprino/daodan
 ```
 
-Install `daodan@daodan`: it brings every plugin of this marketplace as a mandatory
-local dependency, language and stack knowledge included, and stops a command when
-one of them is disabled. External dependencies must also be available on the host;
-one of them is `text-humanizer@shinatama`, so register `acaprino/shinatama` as a
-marketplace too (see the [host reference](docs/hosts.md)).
+Install `daodan@daodan`: it brings the core development harness and language/stack
+providers as mandatory local dependencies, and stops a command when one of them is
+disabled. Domain verticals (`office`, `research`, `digital-marketing`, `trading-broker-integration`
+and the others in the catalog) can be installed alongside it from the same
+marketplace. External dependencies must also be available on the host (see the
+[host reference](docs/hosts.md)).
 
 The project-delivery plugin owns its task cycle and declares no upstream development method:
 its interview, plan and execution are shaped by the Codebase Map, the decision
@@ -192,6 +188,7 @@ commands, paths, installation requirements and runtime limits on each host.
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
+| [text-humanizer](docs/plugins/text-humanizer.md) | Natural prose without invented content |
 
 Knowledge writes instructions, guides and the README. Project Delivery owns decision
 and requirement records plus delivery coordination. Each distinguishes approved intent from
@@ -212,19 +209,11 @@ It does not grant arbitrary repository deletion.
 | Area | Independent plugins |
 |---|---|
 | Languages | [python-development](docs/plugins/python-development.md), [typescript-development](docs/plugins/typescript-development.md), [kotlin-development](docs/plugins/kotlin-development.md) |
-| UI and stack | [react-development](docs/plugins/react-development.md), [platform-engineering](docs/plugins/platform-engineering.md) |
-| Infrastructure and dependencies | [docker](docs/plugins/docker.md), [dependency-audit](docs/plugins/dependency-audit.md) |
-| Shared capabilities | [skill-catalog](docs/plugins/skill-catalog.md), [report-rendering](docs/plugins/report-rendering.md) |
-| Cross-model deliberation | [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md) |
-
-Domain verticals, office workflows (`office`), research (`research`),
-web scraping (`grabber-development`), prose humanization (`text-humanizer`),
-marketing, business and specialized framework toolkits live in the companion
-[**Shinatama**](https://github.com/acaprino/shinatama) marketplace (`acaprino/shinatama`).
-When installed on the same host, their `SKILL.toml` knowledge sidecars are
-automatically discovered by `skill-catalog`. `daodan` and `project-knowledge`
-require `text-humanizer@shinatama`, whose editor gives documentation its voice
-pass and whose `/text-humanizer:humanize-text` makes any text read naturally.
+| UI, web and desktop frameworks | [react-development](docs/plugins/react-development.md), [platform-engineering](docs/plugins/platform-engineering.md), [frontend-review](docs/plugins/frontend-review.md), [pwa-expert](docs/plugins/pwa-expert.md), [browser-extensions](docs/plugins/browser-extensions.md), [tauri-development](docs/plugins/tauri-development.md), [xterm](docs/plugins/xterm.md), [obsidian-development](docs/plugins/obsidian-development.md), [libgdx-development](docs/plugins/libgdx-development.md) |
+| AI, research and deliberation | [ai-tooling](docs/plugins/ai-tooling.md), [rag-development](docs/plugins/rag-development.md), [research](docs/plugins/research.md), [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md), [model-routing](docs/plugins/model-routing.md) |
+| Office, business and marketing | [office](docs/plugins/office.md), [business](docs/plugins/business.md), [digital-marketing](docs/plugins/digital-marketing.md), [stripe](docs/plugins/stripe.md) |
+| Domain and infrastructure verticals | [trading-broker-integration](docs/plugins/trading-broker-integration.md), [grabber-development](docs/plugins/grabber-development.md), [app-analyzer](docs/plugins/app-analyzer.md), [csp](docs/plugins/csp.md), [messaging](docs/plugins/messaging.md), [opentelemetry](docs/plugins/opentelemetry.md), [docker](docs/plugins/docker.md), [dependency-audit](docs/plugins/dependency-audit.md) |
+| Shared capabilities and utilities | [skill-catalog](docs/plugins/skill-catalog.md), [report-rendering](docs/plugins/report-rendering.md), [learning](docs/plugins/learning.md), [system-utils](docs/plugins/system-utils.md), [marketplace-ops](docs/plugins/marketplace-ops.md) |
 
 Reverse engineering of shipped applications and binaries is delegated to
 [REA (Reverse Engineer Anything)](https://github.com/morluto/rea). Its upstream
@@ -240,8 +229,10 @@ The [Office plugin](docs/plugins/office.md) creates and revises editable `.pptx`
 works with native `.xlsx` cells, formulas, tables and charts, and reads, creates
 or edits `.docx` paragraphs, styles, tables and sections. Existing-file edits
 include preservation checks for content and features the task needs to retain.
+Presentations combine creative designer/reviewer roles, SlidePoise generation,
+DeckCraft editing and preview, and the active harness's image-generation tool.
 
-On Claude Code or OpenCode V2, use `/office:create-presentation`,
+On Claude Code or OpenCode V2, use `/office:presentation`,
 `/office:workbook` or `/office:document`. The [host guide](docs/hosts.md#office-entry-points)
 lists the corresponding Codex skills, Copilot prompts and Pi commands. A normal
 request can describe the outcome, source files, language and template:
@@ -291,6 +282,12 @@ Before Coding, Simplicity First, Surgical Changes and Goal-Driven Execution.
 [Project knowledge](docs/plugins/project-knowledge.md) adapts them for project
 instruction creation and maintenance, preserving equivalent project guidance and
 adding local rules for verification and shared ownership.
+
+[blader/humanizer](https://github.com/blader/humanizer), by Siqi Chen (MIT), is an
+upstream source for [text-humanizer](docs/plugins/text-humanizer.md). The local
+derivative keeps local pattern numbering, fact-preservation safeguards,
+registers, an Italian language profile and its own file-editing contract. Upstream
+changes are reconciled selectively rather than replacing those local rules.
 
 ## Contributing
 

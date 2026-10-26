@@ -227,16 +227,19 @@ class OpenCodeManifestTests(unittest.TestCase):
         plugins = live_opencode_manifest()["daodan"]["plugins"]
         entry = plugins["senior-review"]
         self.assertIn("senior-review:code-auditor", [a["id"] for a in entry["agents"]])
+        broker = plugins["trading-broker-integration"]
+        self.assertIn("trading-broker-integration:ibkr-architect", [a["id"] for a in broker["agents"]])
+        self.assertIn("trading-broker-integration:ibkr-audit", [c["name"] for c in broker["commands"]])
         self.assertIn(
-            "senior-review:review-quality-gates", [s["id"] for s in entry["skills"]]
+            "trading-broker-integration:broker-vocabulary", [s["id"] for s in broker["skills"]]
         )
-        # Every command is the entry plugin's since 38.0.0; a specialist registers none.
+        # Core harness commands live in the `daodan` entry plugin; core specialists register none.
         self.assertIn("daodan:review-branch", [c["name"] for c in plugins["daodan"]["commands"]])
         self.assertNotIn("commands", entry)
 
     def test_dependencies_are_local_only(self):
         plugins = live_opencode_manifest()["daodan"]["plugins"]
-        self.assertIn("codebase-map", plugins["senior-review"]["dependencies"])
+        self.assertIn("research", plugins["business"]["dependencies"])
         for name, entry in plugins.items():
             for dependency in entry.get("dependencies", []):
                 self.assertNotIn("@", dependency, name)

@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Create professional editable PowerPoint presentations through SlidePoise, work with native Excel formulas, tables and charts, and create, read or edit Word documents with styles, tables and sections. Includes runtime discovery and document preservation evidence.",
+  "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification.",
   "license": "MIT",
   "name": "office",
-  "version": "1.1.2"
+  "version": "2.4.0"
 }

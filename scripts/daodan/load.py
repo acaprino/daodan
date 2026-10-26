@@ -49,7 +49,7 @@ PLUGIN_REQUIRED_KEYS = ("schema", "name", "version", "description", "license")
 PLUGIN_REQUIRED_TABLES = ("capabilities", "dependencies", "components")
 
 CAPABILITY_KEYS = frozenset({"required", "optional"})
-DEPENDENCY_KEYS = frozenset({"required"})
+DEPENDENCY_KEYS = frozenset({"required", "optional"})
 COMPONENT_KEYS = frozenset({"skills", "roles", "workflows", "policies"})
 MCP_KEYS = frozenset({"servers"})
 MCP_SERVER_KEYS = frozenset({"name", "command", "args"})
@@ -265,6 +265,7 @@ def load_plugin(path: Path) -> PluginSpec:
     dependencies_table = table["dependencies"]
     _reject_unknown(manifest, dependencies_table, DEPENDENCY_KEYS, "dependencies")
     required_dependencies = _strings(manifest, dependencies_table, "required", "dependencies")
+    optional_dependencies = _strings(manifest, dependencies_table, "optional", "dependencies")
 
     components_table = table["components"]
     _reject_unknown(manifest, components_table, COMPONENT_KEYS, "components")
@@ -321,6 +322,7 @@ def load_plugin(path: Path) -> PluginSpec:
         license=_string(manifest, table, "license", "plugin"),
         capabilities=capabilities,
         required_dependencies=required_dependencies,
+        optional_dependencies=optional_dependencies,
         components=components,
         workflows=workflows,
         mcp_servers=load_mcp_servers(manifest, table),

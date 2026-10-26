@@ -310,5 +310,109 @@ class WordInspectionTests(unittest.TestCase):
         self.assertEqual(original, (before.read_bytes(), after.read_bytes()))
 
 
+def heading(text, level=1):
+    return '<w:p><w:pPr><w:pStyle w:val="Heading' + str(level) + '"/></w:pPr><w:r><w:t>' + text + "</w:t></w:r></w:p>"
+
+
+def table(*cells):
+    return "<w:tbl><w:tr>" + "".join("<w:tc><w:p><w:r><w:t>" + cell + "</w:t></w:r></w:p></w:tc>" for cell in cells) + "</w:tr></w:tbl>"
+
+
+class WordCoverageTests(unittest.TestCase):
+    """A restyled or shortened document keeps every source text item except the approved cuts."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.directory = Path(self.temp.name)
+
+    def write(self, parts, filename):
+        destination = self.directory / filename
+        with zipfile.ZipFile(destination, "w", zipfile.ZIP_DEFLATED) as archive:
+            for name, data in add_content_types(parts).items():
+                archive.writestr(name, data)
+        return destination
+
+    SOURCE = (heading("Summary") + paragraph("Revenue grew 12% in 2025.") + paragraph("Costs stayed flat.")
+              + heading("Appendix") + paragraph("Methodology notes.") + paragraph("Data sources.")
+              + table("Region", "2025") + table("EMEA", "14.6")
+              + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/></w:sectPr>')
+
+    def coverage(self, source_body, candidate_body, cuts=None):
+        source = self.write(package_parts(source_body), "source.docx")
+        candidate = self.write(package_parts(candidate_body), "candidate.docx")
+        cuts_path = None
+        if cuts is not None:
+            cuts_path = self.directory / "cuts.json"
+            cuts_path.write_text(json.dumps(cuts), encoding="utf-8")
+        return docx.check_coverage(source, candidate, cuts_path)
+
+    def test_reordered_restyled_text_is_present_and_a_dropped_paragraph_is_missing(self):
+        candidate = (heading("Appendix") + paragraph("Methodology notes.") + paragraph("Data sources.")
+                     + heading("Summary") + "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t xml:space=\"preserve\">Revenue  grew 12% in 2025.</w:t></w:r></w:p>"
+                     + table("Region", "2025") + table("EMEA", "14.6"))
+        result = self.coverage(self.SOURCE, candidate)
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertFalse(result["complete"])
+        self.assertEqual(result["summary"]["unexpected_missing"], 1)
+        missing = [item for item in result["items"] if item["status"] == "missing"]
+        self.assertEqual(missing[0]["text"], "Costs stayed flat.")
+        self.assertEqual(missing[0]["section"], "Summary")
+        self.assertIsNotNone(missing[0]["closest"])
+        self.assertEqual(result["summary"]["present"], result["summary"]["source_items"] - 1)
+        self.assertEqual([item["kind"] for item in result["items"]].count("cell"), 4)
+
+    def test_section_and_text_cuts_are_applied_and_reported(self):
+        candidate = heading("Summary") + paragraph("Revenue grew 12% in 2025.") + table("Region", "2025") + table("EMEA", "14.6")
+        cuts = [{"section": "Appendix", "reason": "appendix dropped for the short version"},
+                {"text": "Costs stayed flat.", "reason": "folded into the chart"}]
+        result = self.coverage(self.SOURCE, candidate, cuts)
+        self.assertTrue(result["complete"], result)
+        self.assertEqual(result["summary"]["cut"], 4)
+        self.assertEqual([cut["status"] for cut in result["cuts"]], ["applied", "applied"])
+        self.assertEqual(result["cuts"][0]["covered_items"], 3)
+
+    def test_cut_but_present_and_unmatched_cuts_are_distinguished(self):
+        result = self.coverage(self.SOURCE, self.SOURCE, [
+            {"text": "Costs stayed flat.", "reason": "to drop"}, {"text": "Never there", "reason": "typo"}])
+        self.assertEqual([cut["status"] for cut in result["cuts"]], ["cut-but-present", "unmatched"])
+        self.assertEqual(result["summary"]["cut_but_present"], 1)
+
+    def test_added_text_tracked_deletions_and_field_instructions_are_handled(self):
+        candidate = (self.SOURCE + paragraph("A brand-new closing paragraph.")
+                     + "<w:p><w:del><w:r><w:delText>deleted words</w:delText></w:r></w:del>"
+                     + "<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>PAGE</w:instrText></w:r><w:r><w:t>7</w:t></w:r></w:p>")
+        result = self.coverage(self.SOURCE, candidate)
+        self.assertTrue(result["complete"])
+        added = [item["text"] for item in result["added"]]
+        self.assertIn("A brand-new closing paragraph.", added)
+        self.assertNotIn("deleted words", " ".join(added))
+
+    def test_malformed_cuts_and_invalid_documents_make_the_report_invalid(self):
+        result = self.coverage(self.SOURCE, self.SOURCE, [{"text": "x"}])
+        self.assertFalse(result["valid"])
+        self.assertFalse(result["complete"])
+        self.assertTrue(any("Invalid cuts file" in error for error in result["errors"]))
+        result = self.coverage(self.SOURCE, self.SOURCE, {"not": "a list"})
+        self.assertFalse(result["valid"])
+        broken = self.directory / "broken.docx"
+        broken.write_bytes(b"not a zip")
+        result = docx.check_coverage(self.write(package_parts(self.SOURCE), "ok.docx"), broken)
+        self.assertFalse(result["valid"])
+        self.assertFalse(result["complete"])
+
+    def test_cli_coverage_exit_code_follows_validity_not_completeness(self):
+        source = self.write(package_parts(self.SOURCE), "s.docx")
+        candidate = self.write(package_parts(heading("Summary")), "c.docx")
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            code = docx.main(["coverage", str(source), str(candidate)])
+        result = json.loads(buffer.getvalue())
+        self.assertEqual(code, 0)
+        self.assertEqual(result["schema"], "daodan/docx-coverage/v1")
+        self.assertFalse(result["complete"])
+        self.assertIn("not a visual or fidelity verdict", result["notice"])
+
+
 if __name__ == "__main__":
     unittest.main()

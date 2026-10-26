@@ -3,8 +3,6 @@ name: finish-task-workflow
 description: 'Close the current branchs task: complete review of the branch, merge with your authorization, decision record verified when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).'
 ---
 
-> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
-
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -42,9 +40,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -210,7 +212,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `testing:test-suite-auditor`: read `contracts/dispatch/testing/test-suite-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-suite-structure-auditor`: read `contracts/dispatch/testing/test-suite-structure-auditor.md` inside this package and pass its complete role body verbatim.
 - `testing:test-writer`: read `contracts/dispatch/testing/test-writer.md` inside this package and pass its complete role body verbatim.
-- `text-humanizer:text-humanizer`: `text-humanizer@shinatama` belongs to another marketplace, so this package ships no copy of its body. Resolve that plugin's installed root from its verified provider path in the active inventory, read `roles/text-humanizer.md` there and pass its complete role body verbatim, giving the absolute path of that root for every `<plugin-root>` in the body. If `text-humanizer@shinatama` is not installed, stop this phase and recover it as a required foreign provider through this host's binding.
+- `text-humanizer:text-humanizer`: read `contracts/dispatch/text-humanizer/text-humanizer.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:type-safety-auditor`: read `contracts/dispatch/typescript-development/type-safety-auditor.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:type-soundness-auditor`: read `contracts/dispatch/typescript-development/type-soundness-auditor.md` inside this package and pass its complete role body verbatim.
 - `typescript-development:typed-boundary-auditor`: read `contracts/dispatch/typescript-development/typed-boundary-auditor.md` inside this package and pass its complete role body verbatim.

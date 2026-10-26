@@ -10,7 +10,7 @@
         "host": "copilot",
         "id": "senior-review:accessibility-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:03620f6aa2a00a3c902cc0f59a8a700cf7a6755a278c2e4a098a4eb92f2e7f3c"
+        "sha256": "sha256:cafcd7cae2ab8d1e3e9f33007c0bbebb8fade9dd6ea5a2d422686662ebe0d094"
       },
       "id": "senior-review:accessibility-auditor",
       "kind": "role",
@@ -40,7 +40,7 @@
         "host": "copilot",
         "id": "senior-review:api-contract-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:b0e073942fbd53151f70bceccdce11ad1e61b78c0169e2b68d1acc6b966facc8"
+        "sha256": "sha256:90603d227ed200a7e8e75f0f3a582ade844294f85a1b778a2e0938d647ffe4a3"
       },
       "id": "senior-review:api-contract-auditor",
       "kind": "role",
@@ -65,7 +65,7 @@
         "host": "copilot",
         "id": "senior-review:chicken-egg-detector",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:c3630c044f3b2f3029c145f674953a59afca65f338637b17911527f8ebe61761"
+        "sha256": "sha256:7d929142b4034e6c0bbee55bdc38e4d94206fef52365a64fbce8489d4239ee3e"
       },
       "id": "senior-review:chicken-egg-detector",
       "kind": "role",
@@ -90,7 +90,7 @@
         "host": "copilot",
         "id": "senior-review:cleanup-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:480af954754c19740f93dae6362f3ae7175e46210c0286f16489b1f52b65a926"
+        "sha256": "sha256:72dc0da2056b4eb4284a06f3e049b2c2c9d559f8f4663e72061c5118751f6c95"
       },
       "id": "senior-review:cleanup-auditor",
       "kind": "role",
@@ -126,7 +126,7 @@
         "host": "copilot",
         "id": "senior-review:code-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:13c05ea584d33f26f17522dfbc05e1122c7f92b0185f912368d9af3861452eac"
+        "sha256": "sha256:971f0eb27fea168d272fd692c869a0747f5d75cd29fcef10d5c3069aab2d4ffa"
       },
       "id": "senior-review:code-auditor",
       "kind": "role",
@@ -209,7 +209,7 @@
         "host": "copilot",
         "id": "senior-review:data-integrity-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:515432b9d3e51e3227ab7029d1e2f11424b94660a5371cefb4da7af0df04b879"
+        "sha256": "sha256:7611823229dbbe98d3d2cf4cfdabe865998d5184e137d93dc74e6f1d22851cb8"
       },
       "id": "senior-review:data-integrity-auditor",
       "kind": "role",
@@ -245,7 +245,7 @@
         "host": "copilot",
         "id": "senior-review:distributed-flow-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:c54d51334914becf4093447623980d609b0681ddc3c6c4bdbffcc51449bdc718"
+        "sha256": "sha256:aee6d67a303d1a44aea47dfc38ca015b450fb97950ccb12ebe70d7b911e7705d"
       },
       "id": "senior-review:distributed-flow-auditor",
       "kind": "role",
@@ -281,7 +281,7 @@
         "host": "copilot",
         "id": "senior-review:logic-integrity-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:d463f060372e31e5d9e12132f75a005400c53b6fd6aadee3e3f583edf126dc50"
+        "sha256": "sha256:5e36c53ea8514e2f344e252717a32de55e38af792e9f8a035c0655cb771f11b7"
       },
       "id": "senior-review:logic-integrity-auditor",
       "kind": "role",
@@ -308,7 +308,7 @@
         "host": "copilot",
         "id": "senior-review:operability-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:e1117f731819a52a1b5a8cdf5793b83b773f66b3c39bf9ad03f5ade5b61be17b"
+        "sha256": "sha256:c4fd4d46a29bb3cbf4be9f8a572e5fe84e534152aac6fdf5017785fc10b70cdb"
       },
       "id": "senior-review:operability-auditor",
       "kind": "role",
@@ -346,7 +346,7 @@
         "host": "copilot",
         "id": "senior-review:performance-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:57fe5b77d5d4b63535eb0e37f8f7a0c01c8c7b1b7bc6a979e10fdaf2af161bf4"
+        "sha256": "sha256:71490a24e71c8a5d0115f598629a683eb9d31a29226a3cde8694e394b8dc12a8"
       },
       "id": "senior-review:performance-auditor",
       "kind": "role",
@@ -384,7 +384,7 @@
         "host": "copilot",
         "id": "senior-review:premise-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:a25ffa992815ba4089eef84ab06fd50da223da4c415d4b298a524d38e15740b7"
+        "sha256": "sha256:405e71bf555e32bd9cc6a1382e2fdae4048b4fd4bd66b4da53b1edbb73621ac4"
       },
       "id": "senior-review:premise-auditor",
       "kind": "role",
@@ -411,7 +411,7 @@
         "host": "copilot",
         "id": "senior-review:resource-lifecycle-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:05efc3056c4fd30cdef32d9674980cefbb2a584cead2dcf195719a67aa0eabc1"
+        "sha256": "sha256:aca357c922975e07ec5babfb70de1965fb48b1cdb779d5099de83b9a4b37ea9f"
       },
       "id": "senior-review:resource-lifecycle-auditor",
       "kind": "role",
@@ -436,7 +436,7 @@
         "host": "copilot",
         "id": "senior-review:security-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:42949223da013b561547d98f193acbbfce11e321423bac8827eef8a16db93f2c"
+        "sha256": "sha256:b953d3cfc398e27e9eb994123cd868baeee757d0b69718f8997ba759b1443788"
       },
       "id": "senior-review:security-auditor",
       "kind": "role",
@@ -482,7 +482,7 @@
         "host": "copilot",
         "id": "senior-review:temporal-resilience-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:988380f45cd621ae06ab688a96c20a5b8dbc0ecfab132216102ecd4e64baa8b9"
+        "sha256": "sha256:074a397e2c2c69d4d482588773b5705bffc758296e56a22bfd952e20542e9681"
       },
       "id": "senior-review:temporal-resilience-auditor",
       "kind": "role",
@@ -507,7 +507,7 @@
         "host": "copilot",
         "id": "senior-review:ui-race-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:71f6775c8a0ef175b15047c3f2ebe1b31151dea6971c350f7a3c364d0d7dbc32"
+        "sha256": "sha256:1a3829afbd6dd2b16c9aa14596f2ffde4c1e432a50d7e71abdfa1fab4633e643"
       },
       "id": "senior-review:ui-race-auditor",
       "kind": "role",
@@ -532,7 +532,7 @@
         "host": "copilot",
         "id": "repo-hygiene:workspace-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:0cbea4328bcb802fdb9f92ea4bf0bb5974e54173018b0bc1b73cc1682980d74d"
+        "sha256": "sha256:3c081c29c37c1d0b83e6dca57296f46013c5545d273730cf2006f45030f5d9d0"
       },
       "id": "repo-hygiene:workspace-auditor",
       "kind": "role",
@@ -557,7 +557,7 @@
         "host": "copilot",
         "id": "testing:test-suite-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:abfb327d4bb2aa1352cd4c20d5508ea7cc2fd0e9b405af9223f3f684d8cacb28"
+        "sha256": "sha256:a73f6cd43c5aae8ef4998c12623170e6726e6fff0f9b70b48b52421e11190a6b"
       },
       "id": "testing:test-suite-auditor",
       "kind": "role",
@@ -599,7 +599,7 @@
         "host": "copilot",
         "id": "abstraction-architect:abstraction-architect-agent",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:509d26f03d0a8963d101cd6cc81f7d983896cb478e0a8a2c15db4770bca05881"
+        "sha256": "sha256:b7973585e4e6fdeee1e358729ea74ca425099fa34a90f3c02f599b3ebc130fd8"
       },
       "id": "abstraction-architect:abstraction-architect-agent",
       "kind": "role",
@@ -631,7 +631,7 @@
         "host": "copilot",
         "id": "react-development:react-performance-optimizer",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:1e6a3a0b0dacf2293db4a3567fdab2fc3f8f9ba9c7d4f21ebb346047db7d559c"
+        "sha256": "sha256:f8cee5d995308788cbbe7cef0bcc4981bb80fca9d6c2a093488fae183eaee36f"
       },
       "id": "react-development:react-performance-optimizer",
       "kind": "role",
@@ -665,7 +665,7 @@
         "host": "copilot",
         "id": "typescript-development:type-safety-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:7a6555e3fb3988b28911386a587c2911d9d32ff7e0ba3dbbcc6061b2437852e9"
+        "sha256": "sha256:180f3195563af3ac770d537661d45b33f883f1d19246ab10c0b20fe94af4e97e"
       },
       "id": "typescript-development:type-safety-auditor",
       "kind": "role",
@@ -695,7 +695,7 @@
         "host": "copilot",
         "id": "platform-engineering:platform-reviewer",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:8116ca2e5317e2d72c987d39e860413057d5caa5451ade6da9a4211d87d6f9ad"
+        "sha256": "sha256:6ce4106e68cc55a3319de4aaca388ef750116ee2d5e85bf67472ea4e04131598"
       },
       "id": "platform-engineering:platform-reviewer",
       "kind": "role",
@@ -731,7 +731,7 @@
         "host": "copilot",
         "id": "senior-review:authorization-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:eefad26e13a05c9ae99deed3c5e0d23b08d8439b38feb27e4be180aeef8e3986"
+        "sha256": "sha256:f0a1d0b3b20fcf1d375b6b2747592a6c30cb5133419d8eef53c7af93358240b8"
       },
       "id": "senior-review:authorization-auditor",
       "kind": "role",
@@ -756,7 +756,7 @@
         "host": "copilot",
         "id": "senior-review:session-delegation-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:b00d039eeac1397e775b8f402551ffa35c65278a2c730942386a1560206370be"
+        "sha256": "sha256:7f1bebc5051be298681e95edcf8cd5d0eadff6a0345db9d8a37df13e30a456f3"
       },
       "id": "senior-review:session-delegation-auditor",
       "kind": "role",
@@ -781,7 +781,7 @@
         "host": "copilot",
         "id": "senior-review:secret-exposure-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:e10b49262451bf91fafe545681a402a440d54d143a9221514ef678486207027b"
+        "sha256": "sha256:3bd0f8beb493fe31e903cd3adf11ccb4d8d0824515bbebfb1d03269fb5d57771"
       },
       "id": "senior-review:secret-exposure-auditor",
       "kind": "role",
@@ -806,7 +806,7 @@
         "host": "copilot",
         "id": "senior-review:input-validation-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:a8758ea4e513abab8301500214f02337d762977a743b499aa7e5d1a626e0a415"
+        "sha256": "sha256:31e61527987427d75cb6ce39f4f63883d2402727f8e088ffd99103bb32d32519"
       },
       "id": "senior-review:input-validation-auditor",
       "kind": "role",
@@ -831,7 +831,7 @@
         "host": "copilot",
         "id": "senior-review:untrusted-resource-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:588ac5eb010ca3bf4bc71c2e6631ec5223b489875bbdfa4f72c20bd5b52f22ee"
+        "sha256": "sha256:2f9f808459e8d1f899686f45d9834eafa86f185a696fa9199c2603ec52ca24cf"
       },
       "id": "senior-review:untrusted-resource-auditor",
       "kind": "role",
@@ -856,7 +856,7 @@
         "host": "copilot",
         "id": "senior-review:browser-security-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:26ac166394ee47110ed0a97bf21360b232ff07a6b5efbd076162c48cf9f1b1cf"
+        "sha256": "sha256:38635f7e8376339ca502d3fdba6fdab265f3bd74d1741162f2473815665f11d2"
       },
       "id": "senior-review:browser-security-auditor",
       "kind": "role",
@@ -881,7 +881,7 @@
         "host": "copilot",
         "id": "senior-review:callback-authenticity-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:296bec9f5fbe44d6c9827668f3632c2d5c053dcac893282ccfc60884aa74d56f"
+        "sha256": "sha256:1a7d6b2cae862ddb66a077922bef47159df126172aab07472b648fef055fbb2e"
       },
       "id": "senior-review:callback-authenticity-auditor",
       "kind": "role",
@@ -906,7 +906,7 @@
         "host": "copilot",
         "id": "senior-review:ai-boundary-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:7492457f75a43dfe95c4ade48eabc3e722a1329ebbade9e39abae903cdbfd1a8"
+        "sha256": "sha256:55feb8de0986efbf39a91d3d90f3be1a6639de1d58ed9d2a06b5d63e0ded7078"
       },
       "id": "senior-review:ai-boundary-auditor",
       "kind": "role",
@@ -931,7 +931,7 @@
         "host": "copilot",
         "id": "senior-review:audit-trail-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:e07af257e02900c6a07ba1774e45fa39fe62071c3f55d4def90ffcf3e883c736"
+        "sha256": "sha256:37d50ffef981a08cc45334293cf71c5755e94aec1617a56c9e2e280b06d65e95"
       },
       "id": "senior-review:audit-trail-auditor",
       "kind": "role",
@@ -956,7 +956,7 @@
         "host": "copilot",
         "id": "senior-review:transaction-integrity-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:ab10ea446c7db86519e52d3d2bfb0af176b642c11c1569d2023d6c2ba185ab3c"
+        "sha256": "sha256:5052bea82f2cd9d8e438470c8153215862a11ba20d5b5640bc284b8b9b01e618"
       },
       "id": "senior-review:transaction-integrity-auditor",
       "kind": "role",
@@ -981,7 +981,7 @@
         "host": "copilot",
         "id": "senior-review:schema-coherence-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:eeb211d25979ef81bf8841f4aa0055b3279b5258381e6fc397f4ab79d6b06d51"
+        "sha256": "sha256:0fa05d751478d0647d0a35e2e3d793c33e437f4d182af9fb0b5f9a747edd0ffe"
       },
       "id": "senior-review:schema-coherence-auditor",
       "kind": "role",
@@ -1006,7 +1006,7 @@
         "host": "copilot",
         "id": "senior-review:cache-consistency-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:e642863f7fbb34651f3e3d5e0ceb0a1b383b2098e36a14052bd865bbf16ade57"
+        "sha256": "sha256:5e25e249cb062dd6fad9ce4a1b018910433ce0f0231d459aaf9e3cb72e65bf47"
       },
       "id": "senior-review:cache-consistency-auditor",
       "kind": "role",
@@ -1031,7 +1031,7 @@
         "host": "copilot",
         "id": "senior-review:data-representation-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:c305b8483481b16302c1bbcb72a5ac4017cb37405b52489304048057dc5019b0"
+        "sha256": "sha256:e5c48c51eeb58de99577d42a859c343dae5d0c050baecc0b913815483108f660"
       },
       "id": "senior-review:data-representation-auditor",
       "kind": "role",
@@ -1056,7 +1056,7 @@
         "host": "copilot",
         "id": "senior-review:data-retention-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:c1a879ec6bff4f3d324fbc07c3807f02c60356a8e6e3756c0e01440285382324"
+        "sha256": "sha256:aafdb80fc0e876a21b1ea3f1009ae0e778dc103bde2b77b58807fd7b89c4a7a6"
       },
       "id": "senior-review:data-retention-auditor",
       "kind": "role",
@@ -1081,7 +1081,7 @@
         "host": "copilot",
         "id": "senior-review:message-delivery-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:8c7fa33b7a7cbce1e667295bbd09b689e48e59af4851ecf5d2f33d6850511939"
+        "sha256": "sha256:16086fb274453a23bbf4b2bc9b58769d3580fb471276309e95d2496310d6a91f"
       },
       "id": "senior-review:message-delivery-auditor",
       "kind": "role",
@@ -1106,7 +1106,7 @@
         "host": "copilot",
         "id": "senior-review:remote-effect-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:fec75e5b99bbd6c65fb0a0e55e04393ed02aefbde06b6c0398dd2282bba078bf"
+        "sha256": "sha256:6e1bce9aa17ef23c46070695d57772f0771c5e8f0b918dfb1e780748f96b9d0f"
       },
       "id": "senior-review:remote-effect-auditor",
       "kind": "role",
@@ -1131,7 +1131,7 @@
         "host": "copilot",
         "id": "senior-review:service-resilience-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:996c39757b76551cff77fd83c812035f98aa1ef8c19b90d4e1d8da79d1b23653"
+        "sha256": "sha256:356598a77859f339fa4ebd9ba37ca9a739524e55eb6bbf94ccbffad69d7ac937"
       },
       "id": "senior-review:service-resilience-auditor",
       "kind": "role",
@@ -1156,7 +1156,7 @@
         "host": "copilot",
         "id": "senior-review:sql-efficiency-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:40851084d5da58634263b0d62116bcdbd9009e14706ee7ae17e53841a96babb1"
+        "sha256": "sha256:b3241037203435900106db01a34304d443be01c76d01a1c3aaea9df0dea27963"
       },
       "id": "senior-review:sql-efficiency-auditor",
       "kind": "role",
@@ -1181,7 +1181,7 @@
         "host": "copilot",
         "id": "senior-review:algorithmic-cost-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:7a2c060b416c662699edc598834d91253028f0a37ec118739726ac97ca72c473"
+        "sha256": "sha256:d313c11c97a39b3004deb5afd1d3a9e7185d7382b3331a523787453782a601b6"
       },
       "id": "senior-review:algorithmic-cost-auditor",
       "kind": "role",
@@ -1206,7 +1206,7 @@
         "host": "copilot",
         "id": "senior-review:asset-delivery-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:f1a8406c4671ed7ffda67f326708a4b647e4e1943a90cf2a7b6bf055f48baaba"
+        "sha256": "sha256:b84dce7ba0c42304963d93b8b130a8333f23b68e1d13cc2739f4b944365de5d3"
       },
       "id": "senior-review:asset-delivery-auditor",
       "kind": "role",
@@ -1231,7 +1231,7 @@
         "host": "copilot",
         "id": "senior-review:capacity-quota-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:c8c0921c7051c7e2cd3b9882adb5082588ea0adce4cc32fd7c990105ad197094"
+        "sha256": "sha256:062165e044cf6b355b533b21be68e6689364585e64e5fdcc90aae2ece2a98f8d"
       },
       "id": "senior-review:capacity-quota-auditor",
       "kind": "role",
@@ -1256,7 +1256,7 @@
         "host": "copilot",
         "id": "senior-review:runtime-cost-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:6e9d889e3444798399d060a45096bc678a7f376777584b664ff02622a7abdf2a"
+        "sha256": "sha256:848c7f664960e99423ea5ec7e2ce433df96aafc64d34613fca473024cda33722"
       },
       "id": "senior-review:runtime-cost-auditor",
       "kind": "role",
@@ -1281,7 +1281,7 @@
         "host": "copilot",
         "id": "senior-review:observability-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:4bafa3248106ccf6d674ed6663be465f7b1d9a815994edfe2b5178b97838ca16"
+        "sha256": "sha256:1f10db3b0656da6957947d02cd78b832ecc4209d4cf13a726ba2652bb828886d"
       },
       "id": "senior-review:observability-auditor",
       "kind": "role",
@@ -1306,7 +1306,7 @@
         "host": "copilot",
         "id": "senior-review:service-health-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:79bd36dd5208e65bde6ea9b8f5606ef7b69451d683e283781fbd31e53c169b0b"
+        "sha256": "sha256:616e9a4e138d1277d561cd287f822fc0d860d6c41e7269f4b97e889da7e1ae4b"
       },
       "id": "senior-review:service-health-auditor",
       "kind": "role",
@@ -1331,7 +1331,7 @@
         "host": "copilot",
         "id": "senior-review:release-compatibility-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:a9c9f0b0233ae215350ada5fdfe758238e36a6ddcd898457fcb60ac6693f84a3"
+        "sha256": "sha256:b0ac7bb4ed2f5528591cbc87dcf5fc7c1680a07656fc67e279f1923e6c5c733b"
       },
       "id": "senior-review:release-compatibility-auditor",
       "kind": "role",
@@ -1356,7 +1356,7 @@
         "host": "copilot",
         "id": "senior-review:environment-binding-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:8246d4af17efb5b6a8faf6d618d0175b6de0273c489ada7684e5cc4f2c2f64c6"
+        "sha256": "sha256:159cc009a351e776c760438cdab9f40e0ea62f11dcd50471fd9d85cb7e5c8d92"
       },
       "id": "senior-review:environment-binding-auditor",
       "kind": "role",
@@ -1381,7 +1381,7 @@
         "host": "copilot",
         "id": "senior-review:feature-flag-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:edb7d4171122cd91e119627eedcf05dc8aa20bfc81161a41c979b59919ff6889"
+        "sha256": "sha256:3735a23cb1e28a15a4b4d5395bc8f0d4dd7bb6e9d58d8e145596669d2c4338dd"
       },
       "id": "senior-review:feature-flag-auditor",
       "kind": "role",
@@ -1406,7 +1406,7 @@
         "host": "copilot",
         "id": "senior-review:recovery-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:0defceea1d9cff20b4cd91de78f0b779510e37756405cc81e928c85824072de2"
+        "sha256": "sha256:f470a614a13cd75da212c4be80f9d6e282cc19d025370c864dd3206c26bf7e00"
       },
       "id": "senior-review:recovery-auditor",
       "kind": "role",
@@ -1431,7 +1431,7 @@
         "host": "copilot",
         "id": "senior-review:accessible-navigation-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:60a084ed0ccedc6b5ecf35ba4b09c234121df2c23bb934cfdb6199db4ac91121"
+        "sha256": "sha256:021f41e73393940ea8c1d958e599f5c09fcc4b99057290720ea2d20b2e55099c"
       },
       "id": "senior-review:accessible-navigation-auditor",
       "kind": "role",
@@ -1456,7 +1456,7 @@
         "host": "copilot",
         "id": "senior-review:accessible-perception-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:d39566464738d52380fba790ef0e258e085ff69e9456fb087bd82235dece22d4"
+        "sha256": "sha256:1246391672fa309a8456577eef0760959d5a1fdac2d34151c5506f7ad51dcbd2"
       },
       "id": "senior-review:accessible-perception-auditor",
       "kind": "role",
@@ -1481,7 +1481,7 @@
         "host": "copilot",
         "id": "senior-review:local-correctness-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:4006d8dfed8272cf9831b395c7146b5178eb0dae6c76743f52216000ad3dd683"
+        "sha256": "sha256:2652d049036174370f74e015c1e01393bb02673dbb935c1d80dcd2f6bc67acb0"
       },
       "id": "senior-review:local-correctness-auditor",
       "kind": "role",
@@ -1506,7 +1506,7 @@
         "host": "copilot",
         "id": "senior-review:local-concurrency-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:6e25ce340361fa55e567ca1afaa772ae4f3b84caf5f2000e62f0f68d75110bf7"
+        "sha256": "sha256:3acacd31b404e140ca6c29686b0592b8e43902f944bf023727fe36ec8cd8821d"
       },
       "id": "senior-review:local-concurrency-auditor",
       "kind": "role",
@@ -1531,7 +1531,7 @@
         "host": "copilot",
         "id": "senior-review:application-reachability-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:d59822a6a735d3dc75ef7731581ac011966dc1db89cfabc76be4947ed7c2045f"
+        "sha256": "sha256:3146e1224d13ec51e3895a6c27b76920ea74fdd3081dcb5eca6ea845dee778bc"
       },
       "id": "senior-review:application-reachability-auditor",
       "kind": "role",
@@ -1556,7 +1556,7 @@
         "host": "copilot",
         "id": "senior-review:dependency-usage-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:05b138253290098b4daafbe489724fa19be707bfe112f543cc7f997cf81724e7"
+        "sha256": "sha256:bbf1508917d933ef6f4c7876c65103a0b040103e65bc019b231b50ad30739012"
       },
       "id": "senior-review:dependency-usage-auditor",
       "kind": "role",
@@ -1581,7 +1581,7 @@
         "host": "copilot",
         "id": "senior-review:artifact-lifecycle-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:9ee214577ed77e9dc6fdb29bacd13f66369b75347dcfc100ad5fe79007269499"
+        "sha256": "sha256:17c4d1abeac837117c4e6b1300e92658a6b60f081e13c8e6d96be040cbfe644c"
       },
       "id": "senior-review:artifact-lifecycle-auditor",
       "kind": "role",
@@ -1606,7 +1606,7 @@
         "host": "copilot",
         "id": "testing:test-suite-structure-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:01564c158b8de02a6116059777c31e8e5d93468859a9aed1ab6fb99039acd9a9"
+        "sha256": "sha256:5e4a3f88ffbd21cbb17d9ed1bb697911d4267d0c5e4867e752a499fbb21c1b1e"
       },
       "id": "testing:test-suite-structure-auditor",
       "kind": "role",
@@ -1633,7 +1633,7 @@
         "host": "copilot",
         "id": "testing:test-oracle-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:17b5524ef8cbfc97f6ced016effc9110ead530b46f294475b950b65c2a605551"
+        "sha256": "sha256:f956272f8f977c1643372476e39d7bf622f1aa80c7599481a5a3c53c2f9e08de"
       },
       "id": "testing:test-oracle-auditor",
       "kind": "role",
@@ -1658,7 +1658,7 @@
         "host": "copilot",
         "id": "testing:test-reliability-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:63fe2e7fc483aee5efff1ae1014a396e418f0c9402e06e217ac42d4e501f052a"
+        "sha256": "sha256:b4a9d4d225c118d58c8e36dcdcd4e5a592ddf90b74e57b134687e0697c46b53c"
       },
       "id": "testing:test-reliability-auditor",
       "kind": "role",
@@ -1685,7 +1685,7 @@
         "host": "copilot",
         "id": "testing:journey-protection-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:137b278e52f6d0e9133928487f2ef2590e14d8b455268fa29fe6862f5e55e763"
+        "sha256": "sha256:5a9d3edb55b27ced38cdd3208d5b9cc5a6f27817fee9996d8d9b67788267901f"
       },
       "id": "testing:journey-protection-auditor",
       "kind": "role",
@@ -1710,7 +1710,7 @@
         "host": "copilot",
         "id": "testing:contract-test-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:fae4b016a1b2dd264ea9366af9c00af43f2e3f765cdfc57c6158c342f3066b14"
+        "sha256": "sha256:727758117130a290050e25e8bcf688f2a06d4402125b4968307dbecda4e872c0"
       },
       "id": "testing:contract-test-auditor",
       "kind": "role",
@@ -1735,7 +1735,7 @@
         "host": "copilot",
         "id": "testing:capacity-test-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:b5cc5dcc927d43f232ea5a42e5bebfd6ff5bac3ecd2369930e4abf3de200f1a1"
+        "sha256": "sha256:5daba6b353451d3e10a4595d311bf46f9f07a22fa172e457c2c37116d6163c5b"
       },
       "id": "testing:capacity-test-auditor",
       "kind": "role",
@@ -1760,7 +1760,7 @@
         "host": "copilot",
         "id": "testing:ai-evaluation-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:d22069863610d1ef59e8736b1136915069fdf7a7d30acdda17e975759834791c"
+        "sha256": "sha256:480298f563a85302caef802e421ae39de2ea0b04129a667a0d8d565b41ce54be"
       },
       "id": "testing:ai-evaluation-auditor",
       "kind": "role",
@@ -1785,7 +1785,7 @@
         "host": "copilot",
         "id": "react-development:react-effects-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:63fc0feea7e520c2eac5136a98f0d0b5a4ef0044b332a0784bd8829c121d9e80"
+        "sha256": "sha256:d764e537c30ac31cc4ed32b9bea800c5a7883333fa9b9df12108b59ee81f6be9"
       },
       "id": "react-development:react-effects-auditor",
       "kind": "role",
@@ -1810,7 +1810,7 @@
         "host": "copilot",
         "id": "react-development:react-render-cost-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:833e984deaa29ef995973f5f38082a57a0143c853db236fd80ff09146fd4db58"
+        "sha256": "sha256:d1b4ceea359940b7f76c61a7350278f6553332767161621767a28d67c11e54e3"
       },
       "id": "react-development:react-render-cost-auditor",
       "kind": "role",
@@ -1835,7 +1835,7 @@
         "host": "copilot",
         "id": "react-development:react-bundle-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:b98d3403a10f6ae57685490ce8e2d879ebc6e6a7c5a5a0e9cdbbdf6c72f8ef09"
+        "sha256": "sha256:be4a5893aba9bddd713631c9f54af188dcb952c5e77e398e8531c218176b8ea2"
       },
       "id": "react-development:react-bundle-auditor",
       "kind": "role",
@@ -1860,7 +1860,7 @@
         "host": "copilot",
         "id": "react-development:react-dataflow-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:9f2c8d165437b7b1cfca1ce57e281f7dd5ffefc2281d769da17bd1bbf4051437"
+        "sha256": "sha256:589c301961f26914049291439628225e4bf4452d427c9ff14d4b419a8299a966"
       },
       "id": "react-development:react-dataflow-auditor",
       "kind": "role",
@@ -1885,7 +1885,7 @@
         "host": "copilot",
         "id": "typescript-development:type-soundness-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:828a77d23926784e2b6a7f64592808e9fc4143dd5059f199e20172adebbc878e"
+        "sha256": "sha256:22ac27ccdb7a75fe1bcf4a30738de2adea621dd886a8b1be8659e7edab4d5926"
       },
       "id": "typescript-development:type-soundness-auditor",
       "kind": "role",
@@ -1910,7 +1910,7 @@
         "host": "copilot",
         "id": "typescript-development:typed-boundary-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:7de58c5adae2dff512e3ac4ec6e85367839f9a1a40d2d38839088b52ba7ccacd"
+        "sha256": "sha256:6ab1ff6497bc51750b3235ff1e4803bc5a772a2b2e3614444cfec698d598748d"
       },
       "id": "typescript-development:typed-boundary-auditor",
       "kind": "role",
@@ -1935,7 +1935,7 @@
         "host": "copilot",
         "id": "platform-engineering:browser-compatibility-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:f7a4b752c1e734c1d27fe6ce4fe2e3a8524afe0086f72435edffb3f286ff76c1"
+        "sha256": "sha256:807bc39833f4e50323ec3ec7fd551d47c4109f3cf0d6248860e605035d7efd61"
       },
       "id": "platform-engineering:browser-compatibility-auditor",
       "kind": "role",
@@ -1960,7 +1960,7 @@
         "host": "copilot",
         "id": "platform-engineering:offline-lifecycle-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:8bc80b5d6f67183d1ce8ed6dfca5796d711658474bb5799f0e6cfebe3e003eb4"
+        "sha256": "sha256:eba1bbc2a1a65a2af7b9aa0d9ee2d18486ab152461102b8cc740143f0bb42377"
       },
       "id": "platform-engineering:offline-lifecycle-auditor",
       "kind": "role",
@@ -1985,7 +1985,7 @@
         "host": "copilot",
         "id": "platform-engineering:native-lifecycle-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:26c0e3cd9bac25524ed0d2065af95a163090b6656a234d8e4feb4013cec27e2e"
+        "sha256": "sha256:0eabbc6d3180b90b149be17e539c81bfc9e530125485fa9e9e149ea1f518c2fd"
       },
       "id": "platform-engineering:native-lifecycle-auditor",
       "kind": "role",
@@ -2010,7 +2010,7 @@
         "host": "copilot",
         "id": "platform-engineering:desktop-bridge-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:6acba14b9e03fc23c9acdee3a6818ade23ce1412b5b46f14b526678f6cd27727"
+        "sha256": "sha256:637cfef0f8dcef6df66c459ed7a0345b5942e369f1702c2e0dbc1473d8f9fb13"
       },
       "id": "platform-engineering:desktop-bridge-auditor",
       "kind": "role",
@@ -2035,7 +2035,7 @@
         "host": "copilot",
         "id": "platform-engineering:app-distribution-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:3326a53eee0628bbf5c42279c80cef8646c11bf98e819404f6d1f49a3dcd0cc1"
+        "sha256": "sha256:47a895d328c9edebda6db85c90a17f5dd23cae2c721327754eab98109d78c7c8"
       },
       "id": "platform-engineering:app-distribution-auditor",
       "kind": "role",
@@ -2060,7 +2060,7 @@
         "host": "copilot",
         "id": "abstraction-architect:concept-ownership-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:50661e1a60e0f05a8d19ed9d8f29d61b5677e14770163caa2d115f7830454a56"
+        "sha256": "sha256:bfc6aa21ff22480421b58dcf2eb62f45cc79e785672ae22d0bc682eccba5d1d4"
       },
       "id": "abstraction-architect:concept-ownership-auditor",
       "kind": "role",
@@ -2087,7 +2087,7 @@
         "host": "copilot",
         "id": "abstraction-architect:abstraction-fit-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:7755104a37563e2786bf370a6719c2a2a467ca98bcb041697474013099eeb0c7"
+        "sha256": "sha256:2cee04cb822febd540489cf5415022c307dd246a623d282a4dc9079aa15fb3e1"
       },
       "id": "abstraction-architect:abstraction-fit-auditor",
       "kind": "role",
@@ -2114,7 +2114,7 @@
         "host": "copilot",
         "id": "python-development:python-semantics-auditor",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:67040c885f6eb473ae5d3ca71cc21979d4b807be2553e8dba3de320c5ad35c82"
+        "sha256": "sha256:0d3d7738f568706b2d7045a2d2c0f04812cde30c1c514b4180a1845337419107"
       },
       "id": "python-development:python-semantics-auditor",
       "kind": "role",
@@ -2137,7 +2137,7 @@
         "host": "copilot",
         "id": "senior-review:python-method",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:4d9cba8c59bc5916e7bd94ac25db62b89196d52773b24042749053800a552333"
+        "sha256": "sha256:9ecb5c885fb82d36aec6f5513ffc254fb952d507e272f8da752b769b8d542b1f"
       },
       "id": "senior-review:python-method",
       "kind": "method-binding",
@@ -2168,7 +2168,7 @@
         "host": "copilot",
         "id": "senior-review:dependencies-method",
         "root_reference": "${PLUGIN_ROOT}",
-        "sha256": "sha256:da90789d8722d82f7f175882e7c8532ae4b4037be4a70c432c8505eb4032036d"
+        "sha256": "sha256:3cb37218986f57589f18314134f69ac696a742d98342634ff0e251207b5f1600"
       },
       "id": "senior-review:dependencies-method",
       "kind": "method-binding",

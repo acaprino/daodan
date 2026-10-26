@@ -1,12 +1,14 @@
 {
   "allowCrossMarketplaceDependenciesOn": [
     "claude-code-workflows",
+    "claude-plugins-official",
+    "impeccable",
     "mattpocock",
-    "shinatama"
+    "ui-ux-pro-max-skill"
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "41.1.0"
+    "version": "42.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -36,6 +38,88 @@
     },
     {
       "agents": [
+        "./agents/prompt-engineer.agent.md",
+        "./agents/prompt-optimize-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "superpowers@claude-plugins-official"
+      ],
+      "description": "AI development workflow: prompt engineering knowledge base and optimization, and Claude Agent SDK integration guide",
+      "license": "MIT",
+      "name": "ai-tooling",
+      "skills": [
+        "./skills/agent-sdk-builder",
+        "./skills/prompt-engineering"
+      ],
+      "source": "./exports/copilot/plugins/ai-tooling",
+      "version": "5.5.3"
+    },
+    {
+      "agents": [
+        "./agents/app-analyzer.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "playwright@claude-plugins-official"
+      ],
+      "description": "Comprehensive app analysis for Android (ADB) and web (Playwright MCP) - navigation mapping, competitive analysis, design system extraction, UX flow analysis, and business model intelligence",
+      "license": "MIT",
+      "name": "app-analyzer",
+      "skills": [
+        "./skills/app-analysis"
+      ],
+      "source": "./exports/copilot/plugins/app-analyzer",
+      "version": "1.4.5"
+    },
+    {
+      "agents": [
+        "./agents/firefox-extension-dev-agent.agent.md",
+        "./agents/firefox-lint-coordinator.agent.md",
+        "./agents/firefox-publish-coordinator.agent.md",
+        "./agents/firefox-scaffold-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Expert Firefox extension (WebExtension) developer covering Manifest V2/V3, all 51 browser.* APIs, content scripts, background scripts, native messaging, cross-browser compatibility, AMO publishing, web-ext CLI tooling, project scaffolding, and live MDN documentation lookup; includes /browser-extensions:firefox-scaffold, /browser-extensions:firefox-lint, /browser-extensions:firefox-publish commands",
+      "license": "MIT",
+      "name": "browser-extensions",
+      "skills": [
+        "./skills/firefox-extension-dev"
+      ],
+      "source": "./exports/copilot/plugins/browser-extensions",
+      "version": "2.0.3"
+    },
+    {
+      "agents": [
+        "./agents/business-planner.agent.md",
+        "./agents/legal-advisor.agent.md",
+        "./agents/privacy-doc-generator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "text-humanizer",
+        "research"
+      ],
+      "description": "Legal advisory, compliance document generation, and SaaS business planning - Privacy Policies, Cookie Policies, DPAs, GDPR/ePrivacy/CCPA compliance, contract review, GTM strategy, market sizing, pricing, and positioning",
+      "license": "MIT",
+      "name": "business",
+      "skills": [
+        "./skills/saas-business-plan"
+      ],
+      "source": "./exports/copilot/plugins/business",
+      "version": "1.15.1"
+    },
+    {
+      "agents": [
         "./agents/clean-code-agent.agent.md"
       ],
       "author": {
@@ -51,7 +135,7 @@
         "./skills/readability-method"
       ],
       "source": "./exports/copilot/plugins/clean-code",
-      "version": "3.1.1"
+      "version": "3.1.2"
     },
     {
       "agents": [
@@ -79,12 +163,27 @@
     },
     {
       "agents": [
+        "./agents/or-tools-expert.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Constraint Satisfaction Problems and combinatorial optimization with Google OR-Tools CP-SAT solver",
+      "license": "MIT",
+      "name": "csp",
+      "source": "./exports/copilot/plugins/csp",
+      "version": "1.4.2"
+    },
+    {
+      "agents": [
         "./agents/brainstorm-idea-coordinator.agent.md",
         "./agents/check-health-coordinator.agent.md",
         "./agents/continue-task-coordinator.agent.md",
         "./agents/finish-task-coordinator.agent.md",
         "./agents/fix-bug-coordinator.agent.md",
         "./agents/get-second-opinion-coordinator.agent.md",
+        "./agents/humanize-text-coordinator.agent.md",
         "./agents/init-project-coordinator.agent.md",
         "./agents/investigate-problem-coordinator.agent.md",
         "./agents/map-code-coordinator.agent.md",
@@ -122,28 +221,14 @@
         "senior-review",
         "skill-catalog",
         "testing",
-        "text-humanizer@shinatama",
+        "text-humanizer",
         "typescript-development"
       ],
       "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/copilot/plugins/daodan",
-      "version": "2.1.0"
-    },
-    {
-      "agents": [
-        "./agents/or-tools-expert.agent.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [],
-      "description": "Constraint Satisfaction Problems and combinatorial optimization with Google OR-Tools CP-SAT solver",
-      "license": "MIT",
-      "name": "csp",
-      "source": "./exports/copilot/plugins/csp",
-      "version": "1.4.2"
+      "version": "2.2.0"
     },
     {
       "author": {
@@ -185,7 +270,7 @@
         "./skills/review-reply-method"
       ],
       "source": "./exports/copilot/plugins/digital-marketing",
-      "version": "3.2.1"
+      "version": "3.2.4"
     },
     {
       "author": {
@@ -218,7 +303,7 @@
       "license": "MIT",
       "name": "frontend-review",
       "source": "./exports/copilot/plugins/frontend-review",
-      "version": "2.1.4"
+      "version": "2.1.6"
     },
     {
       "agents": [
@@ -261,6 +346,80 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
+      "description": "Learning and knowledge management - mind map generation from any content, Obsidian MarkMind export, and interactive force-graph HTML visualization",
+      "license": "MIT",
+      "name": "learning",
+      "skills": [
+        "./skills/forcegraph-exporter",
+        "./skills/generate-mindmap",
+        "./skills/markmind-exporter"
+      ],
+      "source": "./exports/copilot/plugins/learning",
+      "version": "1.7.3"
+    },
+    {
+      "agents": [
+        "./agents/libgdx-architect.agent.md",
+        "./agents/libgdx-audit-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "libGDX cross-platform game development - project generation via gdx-liftoff, rendering pipeline (SpriteBatch, TextureAtlas, viewports), Scene2D + Ashley ECS architecture, Box2D physics, AssetManager lifecycle, Screen management, Tiled maps, and deployment to Desktop (LWJGL3), Android, iOS (RoboVM), and HTML5 (GWT/TeaVM); includes libGDX 1.14.0 migration notes and a /libgdx-audit command",
+      "license": "MIT",
+      "name": "libgdx-development",
+      "skills": [
+        "./skills/libgdx-development"
+      ],
+      "source": "./exports/copilot/plugins/libgdx-development",
+      "version": "1.1.3"
+    },
+    {
+      "agents": [
+        "./agents/marketplace-health-coordinator.agent.md",
+        "./agents/marketplace-manager.agent.md",
+        "./agents/marketplace-review-coordinator.agent.md",
+        "./agents/marketplace-scaffold-plugin-coordinator.agent.md",
+        "./agents/skills-validate-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Generic Claude Code plugin marketplace manager - auditing, validation, AI quality review, upstream sync, plugin scaffolding, and health monitoring. Works against any project with the standard .claude-plugin/marketplace.json + plugins/<name>/ layout; reads project-specific conventions (author, license, category taxonomy, upstream sources) from the target marketplace.json and CLAUDE.md",
+      "license": "MIT",
+      "name": "marketplace-ops",
+      "skills": [
+        "./skills/kernel-marketplace",
+        "./skills/marketplace-audit",
+        "./skills/skills-creator"
+      ],
+      "source": "./exports/copilot/plugins/marketplace-ops",
+      "version": "2.4.4"
+    },
+    {
+      "agents": [
+        "./agents/rabbitmq-expert.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "RabbitMQ and AMQP messaging - queue configuration, exchange routing, clustering, high availability, and event-driven architecture optimization (RabbitMQ 4.3 coverage: Khepri-only metadata store, quorum queue priorities and delayed retries, streams, MQTT 5, AMQP 1.0 SQL filters) plus a production knowledge base skill",
+      "license": "MIT",
+      "name": "messaging",
+      "skills": [
+        "./skills/rabbitmq-production"
+      ],
+      "source": "./exports/copilot/plugins/messaging",
+      "version": "2.1.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
       "description": "Per-request model routing: host inventory, classifier signals, deterministic model and effort selection, confirmation binding, model catalog and prices.",
       "license": "MIT",
       "name": "model-routing",
@@ -285,6 +444,69 @@
       ],
       "source": "./exports/copilot/plugins/moe",
       "version": "2.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Obsidian community plugin development with automated review compliance (community.obsidian.md), project scaffolding, and pre-submission checks",
+      "license": "MIT",
+      "name": "obsidian-development",
+      "skills": [
+        "./skills/obsidian-check",
+        "./skills/obsidian-plugin-development",
+        "./skills/obsidian-scaffold"
+      ],
+      "source": "./exports/copilot/plugins/obsidian-development",
+      "version": "1.5.3"
+    },
+    {
+      "agents": [
+        "./agents/document-coordinator.agent.md",
+        "./agents/document-designer.agent.md",
+        "./agents/document-reviewer.agent.md",
+        "./agents/presentation-coordinator.agent.md",
+        "./agents/presentation-designer.agent.md",
+        "./agents/presentation-reviewer.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through SlidePoise and DeckCraft, DOCX through WordCraft, and work with native Excel workbooks. Includes harness imagery and saved-file verification.",
+      "license": "MIT",
+      "name": "office",
+      "skills": [
+        "./skills/deckcraft",
+        "./skills/design",
+        "./skills/docx",
+        "./skills/intake",
+        "./skills/pptx",
+        "./skills/slidepoise",
+        "./skills/wordcraft",
+        "./skills/xlsx"
+      ],
+      "source": "./exports/copilot/plugins/office",
+      "version": "2.4.0"
+    },
+    {
+      "agents": [
+        "./agents/otel-architect.agent.md",
+        "./agents/otel-audit-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "OpenTelemetry Python instrumentation: distributed tracing, async context propagation, custom transport propagators, OTLP exporters, AWS ADOT/X-Ray, and production observability; includes /opentelemetry:otel-audit command",
+      "license": "MIT",
+      "name": "opentelemetry",
+      "skills": [
+        "./skills/opentelemetry"
+      ],
+      "source": "./exports/copilot/plugins/opentelemetry",
+      "version": "1.4.4"
     },
     {
       "agents": [
@@ -379,7 +601,7 @@
       "dependencies": [
         "work-controller",
         "codebase-map",
-        "text-humanizer@shinatama",
+        "text-humanizer",
         "senior-review",
         "report-rendering"
       ],
@@ -392,7 +614,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/copilot/plugins/project-knowledge",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -448,7 +670,7 @@
         "./skills/pwa-development"
       ],
       "source": "./exports/copilot/plugins/pwa-expert",
-      "version": "1.3.7"
+      "version": "1.3.8"
     },
     {
       "agents": [
@@ -481,6 +703,24 @@
       ],
       "source": "./exports/copilot/plugins/python-development",
       "version": "4.2.0"
+    },
+    {
+      "agents": [
+        "./agents/qdrant-expert.agent.md",
+        "./agents/rag-architect.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "RAG system design, implementation, and optimization - chunking strategies, embedding models (Voyage 4 family, OpenAI v3, Cohere embed-v4, Gemini, BGE-M3, NV-Embed-v2, Nomic MoE, Jina v3), vector databases (Qdrant 1.13-1.16), hybrid search, modern rerankers (Voyage rerank-2.5, Cohere Rerank 3.5, Jina Reranker v3, mxbai-rerank-v2), advanced patterns (HippoRAG, LightRAG, LongRAG, Agentic RAG, CRAG, Self-RAG, GraphRAG), evaluation (RAGAS/DeepEval/TruLens), and production deployment",
+      "license": "MIT",
+      "name": "rag-development",
+      "skills": [
+        "./skills/rag-development"
+      ],
+      "source": "./exports/copilot/plugins/rag-development",
+      "version": "1.6.2"
     },
     {
       "agents": [
@@ -533,6 +773,24 @@
       ],
       "source": "./exports/copilot/plugins/report-rendering",
       "version": "1.1.0"
+    },
+    {
+      "agents": [
+        "./agents/deep-researcher.agent.md",
+        "./agents/quick-searcher.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Deep web research (any topic) modelled on the commercial deep-research products: /research:team-research clarifies scope only when needed, shows a plan of sub-questions for approval, spawns one iterative deep-researcher per sub-question in parallel, verifies contradictions with quick-searcher, synthesizes a long-form cited report and writes it to disk; tiers quick/standard/deep scale effort; optional serper.dev backend via websearch.py when SERPER_API_KEY is set, native WebSearch otherwise. quick-searcher (sonnet) also answers single-fact lookups directly",
+      "license": "MIT",
+      "name": "research",
+      "skills": [
+        "./skills/web-search-techniques"
+      ],
+      "source": "./exports/copilot/plugins/research",
+      "version": "6.2.6"
     },
     {
       "agents": [
@@ -635,6 +893,59 @@
     },
     {
       "agents": [
+        "./agents/audit-webhooks-coordinator.agent.md",
+        "./agents/revenue-optimizer.agent.md",
+        "./agents/stripe-integrator.agent.md",
+        "./agents/stripe-webhooks-auditor.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Stripe payments, subscriptions, Connect marketplaces, and revenue optimization for SaaS monetization; includes a dedicated skill (link-first references + scripts) for API patterns, Next.js/TypeScript integration, Embedded Checkout, Billing Meters, Entitlements, webhook reliability and auditing, Stripe Agent Toolkit for LLM tool-calling, test-clock simulation, PCI DSS 4.0 compliance, and pricing design",
+      "license": "MIT",
+      "name": "stripe",
+      "skills": [
+        "./skills/stripe"
+      ],
+      "source": "./exports/copilot/plugins/stripe",
+      "version": "2.6.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "File organization and cleanup utilities - sort messy folders, find duplicates, and restructure directory hierarchies",
+      "license": "MIT",
+      "name": "system-utils",
+      "skills": [
+        "./skills/file-organizer"
+      ],
+      "source": "./exports/copilot/plugins/system-utils",
+      "version": "2.1.5"
+    },
+    {
+      "agents": [
+        "./agents/rust-engineer.agent.md",
+        "./agents/tauri-desktop.agent.md",
+        "./agents/tauri-mobile.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Tauri 2 desktop and mobile development - IPC optimization, Rust backend patterns, cross-platform builds, and React integration for high-performance apps",
+      "license": "MIT",
+      "name": "tauri-development",
+      "skills": [
+        "./skills/tauri"
+      ],
+      "source": "./exports/copilot/plugins/tauri-development",
+      "version": "2.8.3"
+    },
+    {
+      "agents": [
         "./agents/ai-evaluation-auditor.agent.md",
         "./agents/capacity-test-auditor.agent.md",
         "./agents/contract-test-auditor.agent.md",
@@ -664,6 +975,43 @@
       ],
       "source": "./exports/copilot/plugins/testing",
       "version": "4.4.0"
+    },
+    {
+      "agents": [
+        "./agents/text-humanizer.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Prose humanization toolkit: the text-humanizer editor agent improves prose in any language without inventing content (25 local patterns, including replies that re-explain known context), register-aware (docs, business, personal) with a natural Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by project-knowledge, project-lifecycle, digital-marketing and business. Clean-code routes prose requests here without a required dependency. Extracted from digital-marketing in marketplace 13.3.0.",
+      "license": "MIT",
+      "name": "text-humanizer",
+      "skills": [
+        "./skills/anti-ai-writing-patterns"
+      ],
+      "source": "./exports/copilot/plugins/text-humanizer",
+      "version": "2.2.1"
+    },
+    {
+      "agents": [
+        "./agents/ibkr-architect.agent.md",
+        "./agents/mt5-architect.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Broker integration for algorithmic trading in Python: Interactive Brokers via the TWS API and ib_async across equities, options, futures, FX, CFDs and crypto (per-class contracts and market rules, order types and TIF/fill-mode capability resolution, brackets in depth, a classified catalog of all 458 published TWS message codes, venue-behaviour verification tooling, reconnection resilience, deployment on Windows, Linux, macOS and Docker), MetaTrader 5 via the official synchronous API (polling-based event systems, order execution with fill modes, historical data, the aiomql async framework, a ZeroMQ bridge, Windows production deployment), and the vendor-neutral vocabulary shared between them: five access archetypes, the single-broker/multi-broker-platform axis, a reference order-lifecycle state machine, session and recovery patterns, and a six-rank evidence ladder with provenance tags for what a claim about a venue is worth",
+      "license": "MIT",
+      "name": "trading-broker-integration",
+      "skills": [
+        "./skills/broker-vocabulary",
+        "./skills/ibkr",
+        "./skills/mt5"
+      ],
+      "source": "./exports/copilot/plugins/trading-broker-integration",
+      "version": "2.1.6"
     },
     {
       "agents": [
@@ -699,14 +1047,28 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Run records, agenda, gates, grants and recovery for coordinated work, shared by Daodan and Shinatama: the work record and the isolated worker.",
+      "description": "Run records, agenda, gates, grants and recovery for coordinated work: the work record and the isolated worker.",
       "license": "MIT",
       "name": "work-controller",
       "skills": [
         "./skills/work-record"
       ],
       "source": "./exports/copilot/plugins/work-controller",
-      "version": "3.0.0"
+      "version": "3.0.1"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "xterm.js terminal emulator development - building, configuring, and integrating xterm.js in web and Electron apps with addon support and PTY wiring",
+      "license": "MIT",
+      "name": "xterm",
+      "skills": [
+        "./skills/xtermjs-skill"
+      ],
+      "source": "./exports/copilot/plugins/xterm",
+      "version": "1.2.3"
     }
   ]
 }

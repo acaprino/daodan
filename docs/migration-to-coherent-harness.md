@@ -25,7 +25,7 @@ correctness review under senior-review and retires the review-plus bundle.
 | review-plus:team-review | senior-review:team-review |
 | review-plus:pr-review | senior-review:pr-review |
 | review-plus:extended-review-method | senior-review:review-method |
-| text-humanizer@daodan, /daodan:humanize-text | text-humanizer@shinatama, /text-humanizer:humanize-text: run `claude plugin uninstall text-humanizer@daodan`, then `claude plugin marketplace add acaprino/shinatama` |
+| text-humanizer@shinatama, /text-humanizer:humanize-text | text-humanizer@daodan, /daodan:humanize-text: Shinatama plugins returned to `acaprino/daodan` |
 
 The codebase-mapper, project-setup and docs packages are removed. No permanent
 alias kernels preserve a second source of behavior. Historical design/research

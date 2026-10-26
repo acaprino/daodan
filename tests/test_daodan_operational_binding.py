@@ -52,9 +52,9 @@ def entry_paths(workflow):
 
 
 class OperationalBindingTests(unittest.TestCase):
-    def render_in_memory(self, name, host, mutate=None):
+    def render_in_memory(self, name, host, mutate=None, root=None):
         registry = plugin_registry()
-        plugin = registry[name]
+        plugin = load_plugin(root) if root else registry[name]
         if mutate:
             plugin = mutate(plugin)
         adapter = load_adapter(ADAPTERS, host)
@@ -129,10 +129,14 @@ class OperationalBindingTests(unittest.TestCase):
         # isolated phase role (onboard-project), the map that replaced team-analyze
         # (map-code) and the method-bound review that replaced code-review
         # (review-changes).
-        plugin = ENTRY
-        rendered = self.render_in_memory(plugin, "copilot")
-        for workflow in ("onboard-project", "map-code", "review-changes"):
-            with self.subTest(workflow=workflow):
+        for plugin, workflow in ((ENTRY, "onboard-project"),
+                                 (ENTRY, "map-code"),
+                                 (ENTRY, "review-changes"),
+                                 ("stripe", "audit-webhooks"),
+                                 ("digital-marketing", "content-strategy"),
+                                 ("libgdx-development", "libgdx-audit")):
+            with self.subTest(plugin=plugin, workflow=workflow):
+                rendered = self.render_in_memory(plugin, "copilot")
                 prompt = rendered[f"prompts/{workflow}.prompt.md"]
                 coordinator = rendered[f"agents/{workflow}-coordinator.agent.md"]
                 meta, _ = _frontmatter(prompt)
@@ -154,23 +158,31 @@ class OperationalBindingTests(unittest.TestCase):
                 self.assertIn("## Method", coordinator)
 
     def test_nonclaude_roles_inherit_model_and_keep_declared_operation_scope(self):
+        # One role whose source restriction includes writes, one that does not:
+        # the inline allowlist must follow the source, never add write access.
+        cases = (("senior-review", "api-contract-auditor", True),
+                 ("research", "quick-searcher", False))
         for host in ("copilot", "codex", "pi", "opencode"):
-            with self.subTest(host=host):
-                rendered = self.render_in_memory("research", host)
-                adapter = load_adapter(ADAPTERS, host)
-                from scripts.daodan.templates import render_path
-                relative = render_path(adapter.layout["roles"],
-                                       {"plugin": "research", "role": "quick-searcher"})
-                text = rendered[relative.as_posix()]
-                meta, _ = _frontmatter(text)
-                self.assertNotIn("model", meta)
-                self.assertIn("Inherit the active session's model and default variant", text)
-                self.assertIn("explicit adapter mapping", text)
-                if host in ("codex", "pi"):
-                    self.assertIn("Declared role operation allowlist", text)
-                    self.assertIn("execute shell commands", text)
-                    # The role writes its assigned report on inline hosts too.
-                    self.assertIn("create or overwrite files;", text)
+            for plugin, role, writes in cases:
+                with self.subTest(host=host, plugin=plugin, role=role):
+                    rendered = self.render_in_memory(plugin, host)
+                    adapter = load_adapter(ADAPTERS, host)
+                    from scripts.daodan.templates import render_path
+                    relative = render_path(adapter.layout["roles"],
+                                           {"plugin": plugin, "role": role})
+                    text = rendered[relative.as_posix()]
+                    meta, _ = _frontmatter(text)
+                    self.assertNotIn("model", meta)
+                    self.assertIn("Inherit the active session's model and default variant", text)
+                    self.assertIn("explicit adapter mapping", text)
+                    if host in ("codex", "pi"):
+                        self.assertIn("Declared role operation allowlist", text)
+                        self.assertIn("execute shell commands", text)
+                        if writes:
+                            # The role writes its assigned report on inline hosts too.
+                            self.assertIn("create or overwrite files;", text)
+                        else:
+                            self.assertNotIn("create or overwrite files;", text)
         for host in ("codex", "pi"):
             with self.subTest(host=host, resource=True):
                 # Since 38.0.0 senior-review registers no workflow, so the inline
@@ -308,6 +320,12 @@ class OperationalBindingTests(unittest.TestCase):
         meta, _ = _frontmatter(text)
         self.assertNotIn("tools", meta)
         self.assertNotIn("tools: ['search']", text)
+        for plugin, role in (("app-analyzer", "app-analyzer"),):
+            with self.subTest(plugin=plugin):
+                role_text = self.render_in_memory(plugin, "copilot")[f"agents/{role}.agent.md"]
+                role_meta, _ = _frontmatter(role_text)
+                self.assertNotIn("tools", role_meta)
+                self.assertNotIn("tools: ['search']", role_text)
         self.assertIsNone(_copilot_tools(None))
 
     def test_copilot_coordinator_allowlist_retains_declared_mcp_servers(self):
@@ -370,7 +388,11 @@ class OperationalBindingTests(unittest.TestCase):
         text = self.render_in_memory("research", "copilot")["agents/deep-researcher.agent.md"]
         meta, _ = _frontmatter(text)
         self.assertIn("'runCommands'", meta["tools"])
-        self.assertIn("'edit'", meta["tools"])
+        self.assertNotIn("'edit'", meta["tools"])
+        auditor = self.render_in_memory("senior-review", "copilot")["agents/code-auditor.agent.md"]
+        auditor_meta, _ = _frontmatter(auditor)
+        self.assertIn("'runCommands'", auditor_meta["tools"])
+        self.assertIn("'edit'", auditor_meta["tools"])
         # API review persists its assigned report, so it must retain write access.
         api = self.render_in_memory("senior-review", "copilot")["agents/api-contract-auditor.agent.md"]
         api_meta, _ = _frontmatter(api)

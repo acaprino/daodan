@@ -35,9 +35,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -68,7 +72,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: clean-code:clean-code-agent; version: 3.1.1; source-sha256: 613066323130ff32e1c030519c4ddfad9ae2e53adcd79b3782a78022d4df6dc8. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: clean-code:clean-code-agent; version: 3.1.2; source-sha256: e83a4b886faf489fbc50d0631d06ae6f92ebf7ce3b3b61dee2156260db7d7fee. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `clean-code`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<clean-code-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `clean-code`. The owning plugin's declared logical skill identities are `clean-code:readability-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -228,6 +232,6 @@ Report suggestions as **recommendations**, not as changes made.
 ## Related tools: when to use what
 
 - **clean-code-agent** (this agent): the worker behind the readability pass of `/daodan:refactor-code`. Multi-language readability pass: renames variables, improves comments, simplifies structure.
-- **`/text-humanizer:humanize-text`** (text-humanizer plugin, Shinatama marketplace): Prose/text AI trace removal. Use for: "make this text sound human".
+- **text-humanizer** (text-humanizer plugin): Prose/text AI trace removal. Use for: "make this text sound human".
 
 Architectural changes return to the caller's development plan.

@@ -49,15 +49,6 @@ dependencies. Register or provision the required foreign marketplaces as part of
 installation. The declarations do not prove upstream availability or installation
 in a particular user profile.
 
-`daodan` and `project-knowledge` require `text-humanizer@shinatama`, so installing
-either also needs the Shinatama marketplace registered:
-
-```bash
-claude plugin marketplace add acaprino/shinatama
-copilot plugin marketplace add acaprino/shinatama
-codex plugin marketplace add acaprino/shinatama
-```
-
 Pi installs the repository package from a released tag. Replace
 `<metadata.version>` with a published release version.
 
@@ -106,14 +97,6 @@ Pi and OpenCode package all local kernels but do not install plugins from foreig
 marketplaces. Qualified dependencies such as `mattpocock-skills@mattpocock`
 still have to be supplied in a form the host can load. Packaging the entire local
 marketplace is not proof that every workflow's external inputs are available.
-For `text-humanizer@shinatama`, install the Shinatama package from one of its
-released tags and keep `text-humanizer` in its selection (Pi package filters, or
-`options.plugins` of its OpenCode loader):
-
-```bash
-pi install git:github.com/acaprino/shinatama@v<shinatama-version>
-opencode plugin add 'github:acaprino/shinatama#v<shinatama-version>::path:exports/opencode'
-```
 
 ## Required dependency behavior
 
@@ -121,13 +104,18 @@ The canonical dependency declarations live in `plugins/<plugin>/plugin.toml`.
 Every local runtime provider is mandatory, including shared-contract providers and
 workers declared by a composed method. There are no optional local dependencies
 or installed-check fallbacks. External references use `plugin@marketplace`.
+External providers may instead be declared in `[dependencies].optional`; their
+absence must leave the base workflow usable. Local providers cannot use this field.
 
 The compiler validates provider references and the dependency linter checks
 runtime use, missing declarations and unused local edges. The three generated
-marketplace catalogs retain qualified required dependencies. OpenCode's loader
+marketplace catalogs retain qualified required dependencies and list optional
+external providers separately as `optionalDependencies`. OpenCode's loader
 manifest retains the local graph for selection; Pi's glob manifest carries no
 per-plugin graph. Neither host should silently continue a workflow with a missing
 required external skill or worker.
+Optional external selection is defined in the rendered method on all five hosts;
+Pi and OpenCode do not install these providers through their package manifests.
 
 Consult each [plugin page](plugins/) for direct requirements and the
 [dependency catalog](catalog.md#mandatory-dependency-edges) for transitive
@@ -138,9 +126,13 @@ work-controller.
 senior-review has one review engine across code, team and PR entries. Its React,
 TypeScript and platform providers are mandatory installation dependencies; target
 signals decide which workers run. The lifecycle's candidate reviews use that same
-engine and expose those provider bindings on every host. Every command lives in
-the `daodan` entry plugin; specialist methods remain in their domain plugins,
-where those entries load them by name.
+engine and expose those provider bindings on every host. Core harness commands live in
+the `daodan` entry plugin; core specialist methods remain in their domain plugins,
+where those entries load them by name. Independent domain verticals keep their own
+workflow namespaces, such as `/office:presentation` and `/research:team-research`.
+The `daodan` entries are the primary surface: start there for project work, and
+call a vertical's own command directly when the request is already specific to
+that domain.
 
 ## Component and entry mapping
 
@@ -157,12 +149,13 @@ it as a skill file.
 | Pi | root `package.json` | `prompts/<plugin>-<workflow>.md`, `/<plugin>-<workflow>` | `skills/<plugin>-<role>/SKILL.md`, hidden from automatic model invocation and passed inline | `skills/<skill>/SKILL.md` |
 | OpenCode V2 | `exports/opencode/package.json` | `commands/<workflow>.md`, registered as `/<plugin>:<workflow>` | `agents/<role>.md`, registered as `<plugin>:<role>` | `skills/<skill>/SKILL.md`, registered as `<plugin>:<skill>` |
 
-Every workflow belongs to the `daodan` entry plugin. For `check-health`, that
+Core harness workflows belong to the `daodan` entry plugin. For `check-health`, that
 means `/daodan:check-health` on Claude and OpenCode, `check-health-workflow` on
 Codex, and `/daodan-check-health` on Pi. Copilot exposes the `check-health`
 prompt and generated `check-health-coordinator` agent.
 The prompt loads the method; the coordinator agent carries the execution harness
 and worker allowlist. Select that coordinator for the isolated dispatch contract.
+Domain verticals instead register workflows in their own plugin namespace.
 
 Codex keeps its `-workflow` suffix for stable installed names. Names cannot repeat
 across component kinds within a kernel. The compiler does not turn generated
@@ -171,17 +164,19 @@ dispatch resources or contract files into extra user commands.
 ## Office entry points
 
 The [Office plugin](plugins/office.md) provides editable PowerPoint presentations
-through SlidePoise, native Excel workbooks and native Word documents. Install or
-select `office` using the host setup above. Its three workflow entries follow the
+through SlidePoise with creative specialists, DeckCraft editing and preview,
+native Excel workbooks and native Word documents. Install `office@daodan` from
+`acaprino/daodan`, or select Office in its Pi/OpenCode package, following the
+[Office installation guide](plugins/office.md#install-office). Its three workflow entries follow the
 same adapter mapping as the other plugins:
 
 | Host | PowerPoint (PPTX) | Excel (XLSX) | Word (DOCX) |
 |---|---|---|---|
-| Claude | `/office:create-presentation` | `/office:workbook` | `/office:document` |
-| Copilot | `create-presentation.prompt.md` | `workbook.prompt.md` | `document.prompt.md` |
-| Codex | `create-presentation-workflow` | `workbook-workflow` | `document-workflow` |
-| Pi | `/office-create-presentation` | `/office-workbook` | `/office-document` |
-| OpenCode V2 | `/office:create-presentation` | `/office:workbook` | `/office:document` |
+| Claude | `/office:presentation` | `/office:workbook` | `/office:document` |
+| Copilot | `presentation-coordinator` agent with `presentation.prompt.md` | `workbook.prompt.md` | `document-coordinator` agent with `document.prompt.md` |
+| Codex | `presentation-workflow` | `workbook-workflow` | `document-workflow` |
+| Pi | `/office-presentation` | `/office-workbook` | `/office-document` |
+| OpenCode V2 | `/office:presentation` | `/office:workbook` | `/office:document` |
 
 SlidePoise is an external runtime with its own Python and Node dependencies. Image
 generation, inspection, fonts and a compatible presentation renderer must be
@@ -189,6 +184,20 @@ available in the active session. The packaged bridge discovers the runtime witho
 relying on upstream skill registration for a particular host. See the
 [runtime reference](../plugins/office/skills/slidepoise/references/runtime.md) for
 the inspected version, prerequisites and installation procedure.
+
+DeckCraft is a separate external executable for targeted edits, previews and PDF
+export; see its [runtime reference](../plugins/office/skills/deckcraft/references/runtime.md).
+The presentation entry declares isolated designer/reviewer roles and consults no
+external design provider. Actual
+image generation must use the exposed harness tool in a context that can call it.
+Role dispatch, image access and a visual reader need separate runtime checks.
+Every selected creative provider receives the fixed-canvas and native-object
+requirements from Office's [PPTX compatibility contract](../plugins/office/skills/pptx/references/pptx-compatibility.md).
+Selected-engine previews do not establish fidelity in Microsoft PowerPoint;
+that claim requires actual target-application rendering evidence.
+For example, an explicit tool allowlist can exclude an image tool even when it
+exists elsewhere in the host. Missing access blocks the dependent operation;
+generated wrappers and successful compilation do not prove live availability.
 
 Excel and Word work use an available compatible document engine. The methods
 prefer a suitable host runtime; available `openpyxl` or `python-docx` can handle

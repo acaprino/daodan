@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:6abe308b0a1dfd3ba4b80042782a92a9ab77c9983977b7f9f4edddba935fba5c",
+  "harnessStrategies": {},
+  "host": "codex",
+  "overrides": [],
+  "plugin": "text-humanizer",
+  "version": "2.2.1"
+}

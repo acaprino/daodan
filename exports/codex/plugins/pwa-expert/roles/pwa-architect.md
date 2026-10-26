@@ -1,6 +1,6 @@
 ---
 name: pwa-architect
-description: 'Designs and hardens a whole shippable web app across Chromium, iOS WebKit and Firefox, trading capability for reach. TRIGGER WHEN: building, auditing or scaffolding a PWA end to end, or wiring manifest, service worker, Web Push, install flow and store distribution together. DO NOT TRIGGER WHEN: React performance (use react-development:review-react), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).'
+description: 'Designs and hardens a whole shippable web app across Chromium, iOS WebKit and Firefox, trading capability for reach. TRIGGER WHEN: building, auditing or scaffolding a PWA end to end, or wiring manifest, service worker, Web Push, install flow and store distribution together. DO NOT TRIGGER WHEN: React performance (use react-development:react-best-practices), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).'
 ---
 
 <daodan_host_binding host="codex">
@@ -40,9 +40,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -153,8 +157,8 @@ Every deliverable cites the relevant reference file so the user can verify the r
 Delegate to other agents or plugins when the task crosses out of PWA scope:
 
 - Generic frontend styling, design systems, layout work: out of scope for this agent. For a design and UX review, point the user to `/frontend-review:review-frontend`.
-- React-specific performance, bundle size, re-render audit: `react-development:review-react`.
-- Cross-platform security audit beyond PWA mechanics (mobile / Electron / Tauri rulebook): `platform-engineering:platform-review`.
+- React-specific performance, bundle size, re-render audit: `/daodan:check-health`, its React performance audit.
+- Cross-platform security audit beyond PWA mechanics (mobile / Electron / Tauri rulebook): `/daodan:check-health`, its platform audit.
 - Tauri or Electron desktop wrappers: `tauri-development`.
 - GA4 / analytics instrumentation, Consent Mode: `digital-marketing:ga4-implementation-expert`.
 - Stripe payments inside the PWA: `stripe:stripe-integrator`.

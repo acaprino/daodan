@@ -36,9 +36,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -69,7 +73,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: project-knowledge:ops-writer; version: 3.0.0; source-sha256: 8e71aa656b6b51e7518a86714a93127ff4d6949746fc300c92a4b8091dba7713. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-knowledge:ops-writer; version: 3.0.1; source-sha256: 8e71aa656b6b51e7518a86714a93127ff4d6949746fc300c92a4b8091dba7713. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-knowledge`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<project-knowledge-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-knowledge`. The owning plugin's declared logical skill identities are `project-knowledge:project-knowledge`, `project-knowledge:instructions-method`, `project-knowledge:readme-craft`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `project-knowledge:project-knowledge` -> compiled registry name `project-knowledge` at `skills/project-knowledge/SKILL.md` inside the owner's package; `project-knowledge:instructions-method` -> compiled registry name `instructions-method` at `skills/instructions-method/SKILL.md` inside the owner's package; `project-knowledge:readme-craft` -> compiled registry name `readme-craft` at `skills/readme-craft/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

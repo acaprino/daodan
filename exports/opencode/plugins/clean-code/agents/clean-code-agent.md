@@ -1,5 +1,5 @@
 ---
-description: 'Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use /text-humanizer:humanize-text).'
+description: 'Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).'
 mode: subagent
 permissions:
   - action: "*"
@@ -66,9 +66,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -254,6 +258,6 @@ Report suggestions as **recommendations**, not as changes made.
 ## Related tools: when to use what
 
 - **clean-code-agent** (this agent): the worker behind the readability pass of `/daodan:refactor-code`. Multi-language readability pass: renames variables, improves comments, simplifies structure.
-- **`/text-humanizer:humanize-text`** (text-humanizer plugin, Shinatama marketplace): Prose/text AI trace removal. Use for: "make this text sound human".
+- **text-humanizer** (text-humanizer plugin): Prose/text AI trace removal. Use for: "make this text sound human".
 
 Architectural changes return to the caller's development plan.

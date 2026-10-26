@@ -2,7 +2,7 @@
 description: >
   Full frontend review combining a 9-dimension UI/UX design audit with auto-detected React, TypeScript, PWA and platform code checks into `.frontend-review/report.md`.
   TRIGGER WHEN: asking for a complete frontend review, UI/UX design plus code audit, or pre-release frontend pass.
-  DO NOT TRIGGER WHEN: React-only (use /react-development:review-react), TypeScript-only (use /typescript-development:review-typescript), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /senior-review:code-review).
+  DO NOT TRIGGER WHEN: React-only or TypeScript-only audit (use /daodan:check-health), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /daodan:review-changes).
 argument-hint: "[path] [--full] [--strict-mode]"
 ---
 

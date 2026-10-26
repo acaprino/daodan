@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:2dd3ab8e512eb5a5a39f8bb483731bc825b53cd1e1ab19e41116ef2ea8ef0a8f",
+  "coreDigest": "sha256:9834cc0a25c7b65c4d27eece19db7ffa6fa177d253a47c6720b05244d37ba1e2",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
@@ -8,6 +8,7 @@
     "finish-task": "parallel-subagents",
     "fix-bug": "parallel-subagents",
     "get-second-opinion": "parallel-subagents",
+    "humanize-text": "parallel-subagents",
     "init-project": "parallel-subagents",
     "investigate-problem": "parallel-subagents",
     "map-code": "parallel-subagents",
@@ -27,5 +28,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.1.0"
+  "version": "2.2.0"
 }

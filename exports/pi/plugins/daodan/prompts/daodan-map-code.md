@@ -40,9 +40,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -85,10 +89,14 @@ tool supplied by the `pi-subagents` package, each in its own context. Role deliv
 `inline-prompt`: paste that role's Markdown body into the dispatch prompt verbatim, because the
 worker must receive the whole role rather than a summary of it.
 
-Pi's core ships no subagent tool. If none is available in this session, the declared isolation
+Pi's core ships no subagent tool. Apply the availability check when the selected task
+requires a dispatched worker. If the method explicitly permits a worker-free path
+(for example, read-only inspection or a narrow edit), record why no worker is needed
+and continue that path without this companion. Do not waive a required worker.
+If a worker is needed and no subagent tool is available, the declared isolation
 above decides what happens, and the two cases are not interchangeable:
 
-- **`required`**: stop, and tell the user to run `pi install npm:pi-subagents`. Running the phases
+- **`required`**: stop the dependent dispatch, and tell the user to run `pi install npm:pi-subagents`. Running the phases
   serially in this one context is the loss of isolation rather than a lesser form of it, so a
   report produced that way would claim a contract it did not meet.
 - **`shared`**: run the phases in order in this context, and say in the report that no worker was

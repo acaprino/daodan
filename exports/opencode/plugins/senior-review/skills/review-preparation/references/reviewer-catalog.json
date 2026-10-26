@@ -10,7 +10,7 @@
         "host": "opencode",
         "id": "senior-review:accessibility-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:708697e8178fdb03f2274d3014b70d70b638edb2b6c0bb762f790af6002d4619"
+        "sha256": "sha256:760238c08194b10768d745bfd649316977aa9106322ad87b0a808fa0c50bf864"
       },
       "id": "senior-review:accessibility-auditor",
       "kind": "role",
@@ -40,7 +40,7 @@
         "host": "opencode",
         "id": "senior-review:api-contract-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:0d8fe415b82aeaee3fcfc3616fd8d4e23d825b8b0e0bc4df7175656f8262ee2c"
+        "sha256": "sha256:f082fbe6381926212a91efff7925cfe2020aba97457605bad909072e02c8c47e"
       },
       "id": "senior-review:api-contract-auditor",
       "kind": "role",
@@ -65,7 +65,7 @@
         "host": "opencode",
         "id": "senior-review:chicken-egg-detector",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:df3e932cdd2a7e44da2b7079daa989a6b4ed73851b5ee7fa304bdb0cc800df4e"
+        "sha256": "sha256:7cce17ab9a80a55791464500702e3f1abc0048ade32ec9731b8ee5f819cbbcd2"
       },
       "id": "senior-review:chicken-egg-detector",
       "kind": "role",
@@ -90,7 +90,7 @@
         "host": "opencode",
         "id": "senior-review:cleanup-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:521d7ed6da5f92b319a55c22ec330abb2650192daeb874ac953589996a280250"
+        "sha256": "sha256:d5bbe70e2f41f147acb0b2f25abdf803da94d4bc92f0f2027c9c326a27b8659f"
       },
       "id": "senior-review:cleanup-auditor",
       "kind": "role",
@@ -126,7 +126,7 @@
         "host": "opencode",
         "id": "senior-review:code-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:c1d82c77dfa1412fdeeb2368f8364afcdf848a2e67d860371361aa758ee1b7fa"
+        "sha256": "sha256:288832530260a849f07ebea16d6115e4324adf43d2ae8c2ae051895fe0aebf7f"
       },
       "id": "senior-review:code-auditor",
       "kind": "role",
@@ -209,7 +209,7 @@
         "host": "opencode",
         "id": "senior-review:data-integrity-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:d9294e0406d23daf6502b5a998a9f74c07cb2366792073e903ac5a1e911d7c3a"
+        "sha256": "sha256:4d487c72daa2d1aef84310d60eb9618110f6a1e114663b56c1353ec85b657fd8"
       },
       "id": "senior-review:data-integrity-auditor",
       "kind": "role",
@@ -245,7 +245,7 @@
         "host": "opencode",
         "id": "senior-review:distributed-flow-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:6509d14971a20b1fab7bf767d4ea4f5c45cd338665d1ec1dbef32ad32dcc6c2c"
+        "sha256": "sha256:850ffe4231d60f8c6a64b5c4eef04899c4132082d9f4a68112ec32c7d0895f8b"
       },
       "id": "senior-review:distributed-flow-auditor",
       "kind": "role",
@@ -281,7 +281,7 @@
         "host": "opencode",
         "id": "senior-review:logic-integrity-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:439a9a82845ea9b0151fd72dff3771dc2b5f4c5a5f6a3547b7eddf6ffb0fb2cd"
+        "sha256": "sha256:97c869b6e7ffa1f07533cd64fbe83ead0bf67b81ceb54cfb4cff7429fb9c637f"
       },
       "id": "senior-review:logic-integrity-auditor",
       "kind": "role",
@@ -308,7 +308,7 @@
         "host": "opencode",
         "id": "senior-review:operability-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:79c74f5e880d6a6bd16caea150d474034f5feb8221c7b9a38f3f6b6943fb01d9"
+        "sha256": "sha256:1789f94491ceb092c63a6a243cc2410a305559b72033a2e48ecb984b22aea91c"
       },
       "id": "senior-review:operability-auditor",
       "kind": "role",
@@ -346,7 +346,7 @@
         "host": "opencode",
         "id": "senior-review:performance-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:d9393a85d0dfe34ae2230516d8998ff8bf7b3e9e0bd1f8f8d08e3dcfc4c74c8a"
+        "sha256": "sha256:281aaa0064400fcdd0a31536598d59c90287d9aa5544dbff8588475332a8fadd"
       },
       "id": "senior-review:performance-auditor",
       "kind": "role",
@@ -384,7 +384,7 @@
         "host": "opencode",
         "id": "senior-review:premise-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:e2f0392f46f160c80c65efa2ac12e5137499ccf49df2568d8bbb26bf54897ad0"
+        "sha256": "sha256:690c582046263a79d24a117abe24dd4649b9478b22a4b0f52423da7301923989"
       },
       "id": "senior-review:premise-auditor",
       "kind": "role",
@@ -411,7 +411,7 @@
         "host": "opencode",
         "id": "senior-review:resource-lifecycle-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:fd13d499aa55332a4119fe910c4c8b9ac893954e769e79ce0599068167e4f811"
+        "sha256": "sha256:98b70b9e64af64cb7e9c5c3cd8274ff8320aa555e901510bfbde2cc994f77e43"
       },
       "id": "senior-review:resource-lifecycle-auditor",
       "kind": "role",
@@ -436,7 +436,7 @@
         "host": "opencode",
         "id": "senior-review:security-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:6e4f8ec46ab8d14e6fd05509fe86bd0fb48313d4f28cbfa379699809ed1e80cc"
+        "sha256": "sha256:6675afa06e92593380a48f5046aa6c7dae7bd16178e1999b0e4ffa01c1dc3b30"
       },
       "id": "senior-review:security-auditor",
       "kind": "role",
@@ -482,7 +482,7 @@
         "host": "opencode",
         "id": "senior-review:temporal-resilience-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:5e3e607f599f640aae4f8cbe4620b2aff25f1639fa30f61d3e95bd2411d8535a"
+        "sha256": "sha256:ba5e9b2adeb9d07dcc8571610b40d86f948b4d8db2e3a4fcf03f07796bb30e48"
       },
       "id": "senior-review:temporal-resilience-auditor",
       "kind": "role",
@@ -507,7 +507,7 @@
         "host": "opencode",
         "id": "senior-review:ui-race-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:f7461d043ee8dc1062b558d28b6930feabe4da7bfced18a893b396dbac49cbf2"
+        "sha256": "sha256:59239ae96ac15e7d35e957a1d55e00a2f671209af81c593e2c0e2afc3bc02ba8"
       },
       "id": "senior-review:ui-race-auditor",
       "kind": "role",
@@ -532,7 +532,7 @@
         "host": "opencode",
         "id": "repo-hygiene:workspace-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:7cf7bcef950f9990987caba98b4542d4cee1f1885edacc1e869f834cededd7ea"
+        "sha256": "sha256:8ed8524bb623a9705cdb5664d1e0aa95192f13df12be8bb0d3f5f472716d2f8d"
       },
       "id": "repo-hygiene:workspace-auditor",
       "kind": "role",
@@ -557,7 +557,7 @@
         "host": "opencode",
         "id": "testing:test-suite-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:ed90fdb3e390ee252812e3aad26dce4497a2ad4c129793b2954c45859139925e"
+        "sha256": "sha256:15b9ce70c1e72ec7015d2ec170eabe26c957cdea4f8e14a4132b780cd836673a"
       },
       "id": "testing:test-suite-auditor",
       "kind": "role",
@@ -599,7 +599,7 @@
         "host": "opencode",
         "id": "abstraction-architect:abstraction-architect-agent",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:088deeecb32c07eaa6d6e4a995c3de27f9b5f9fec9e0500ed48fc3db8c541818"
+        "sha256": "sha256:6fa1815455630256a2bbcd4b04b5e26469be8287c51a5242f9e163f57508cfe3"
       },
       "id": "abstraction-architect:abstraction-architect-agent",
       "kind": "role",
@@ -631,7 +631,7 @@
         "host": "opencode",
         "id": "react-development:react-performance-optimizer",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:43993a1d7b555d06724706b581ff9bc4d836a4b56c5f8c3a36f55f037d0771e3"
+        "sha256": "sha256:2b9c83aed28bd365caa130ed10cce85766dd6fc2ad3e9b8a9634f67199187176"
       },
       "id": "react-development:react-performance-optimizer",
       "kind": "role",
@@ -665,7 +665,7 @@
         "host": "opencode",
         "id": "typescript-development:type-safety-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:6355bf07697452c6bbb4cfd03fff2e247ed18af06d8fe538ee5bc856084c8d8d"
+        "sha256": "sha256:840d79edbd8a7ba4e36b8d37db82a6d996be2263b5abae1baa3544d0945904bf"
       },
       "id": "typescript-development:type-safety-auditor",
       "kind": "role",
@@ -695,7 +695,7 @@
         "host": "opencode",
         "id": "platform-engineering:platform-reviewer",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:6a59d8ca50f05b40dc763ef3d2472b346d45e60afc7d9dcc55ca4612368c9051"
+        "sha256": "sha256:0735f8345d5ee806b24b9f17cc6383ae8ea71220b540ca265ec60b143231a695"
       },
       "id": "platform-engineering:platform-reviewer",
       "kind": "role",
@@ -731,7 +731,7 @@
         "host": "opencode",
         "id": "senior-review:authorization-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:7082581f899e04af0fade462a2d679830ea33a75d1ccd73cc88f5288758f9e2f"
+        "sha256": "sha256:a9dd2397891a0f10b675830a6dcfd85e8dbe8a4343d84a4510acc4fb8806b8ac"
       },
       "id": "senior-review:authorization-auditor",
       "kind": "role",
@@ -756,7 +756,7 @@
         "host": "opencode",
         "id": "senior-review:session-delegation-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:cad09a2b7dbef9c93312f87e972a298fa21779675d1bd02c5801990a33ea55f4"
+        "sha256": "sha256:f896a961919197c2e3531358048101e74034509c48704803151e31036a247e87"
       },
       "id": "senior-review:session-delegation-auditor",
       "kind": "role",
@@ -781,7 +781,7 @@
         "host": "opencode",
         "id": "senior-review:secret-exposure-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:22c2db85dc3b5334175ef821cac9c9f0eca5302b809309795f015120206352dc"
+        "sha256": "sha256:8648de4fb50eaffb7d917e0d84762f0e7f015cadeef898a86639fe5ebe9889fb"
       },
       "id": "senior-review:secret-exposure-auditor",
       "kind": "role",
@@ -806,7 +806,7 @@
         "host": "opencode",
         "id": "senior-review:input-validation-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:ffea0167b49fbda955a5c877085eee80345b3a952b7c5685981f6ce5dbf7b5d2"
+        "sha256": "sha256:ece5819146624c6a665daa9f60be287c344fdf4302bcd74e9890832db2a2eb63"
       },
       "id": "senior-review:input-validation-auditor",
       "kind": "role",
@@ -831,7 +831,7 @@
         "host": "opencode",
         "id": "senior-review:untrusted-resource-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:4c37a582c566d9059d9327ccecd0f3a7becac9a1b26a9805ba17ef979ed2e2cf"
+        "sha256": "sha256:2b4308fc42680dbd05c923a36bfcd2489bdf397cd2bb4fcbee1693da93928f48"
       },
       "id": "senior-review:untrusted-resource-auditor",
       "kind": "role",
@@ -856,7 +856,7 @@
         "host": "opencode",
         "id": "senior-review:browser-security-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:f904fb0b679690827321ba551b46fb9930c61b143c7fe44d3b5762e4d1c11f01"
+        "sha256": "sha256:ea3babf59492f9a3055a360e307ded2170eefafe7c5fd213adcd8766655e84be"
       },
       "id": "senior-review:browser-security-auditor",
       "kind": "role",
@@ -881,7 +881,7 @@
         "host": "opencode",
         "id": "senior-review:callback-authenticity-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:2643f3ce5c4bade7afb384b8f93d858262f384f55950be3928ed71aab9fb6601"
+        "sha256": "sha256:aae7c2fdd9b731fdb58f5985dfa04ef35e1faae8a0c69ba338ae73bc73fdfd58"
       },
       "id": "senior-review:callback-authenticity-auditor",
       "kind": "role",
@@ -906,7 +906,7 @@
         "host": "opencode",
         "id": "senior-review:ai-boundary-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:103ca70a7038365db58158677e74b802b13b76c93eb5fa1d599fc3324de6925b"
+        "sha256": "sha256:ad6cfc58efe03f35533cb4c5b4901396f37f52cb66d484493935bd6d3d41d69e"
       },
       "id": "senior-review:ai-boundary-auditor",
       "kind": "role",
@@ -931,7 +931,7 @@
         "host": "opencode",
         "id": "senior-review:audit-trail-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:a3bb677183fcebb9ed8df53e110334fec571ab102033cdac74c942adc3e89820"
+        "sha256": "sha256:1eeda6b570b20c9b7483782378689c96cf24d447c2db13ecfb7e82eaf77784c6"
       },
       "id": "senior-review:audit-trail-auditor",
       "kind": "role",
@@ -956,7 +956,7 @@
         "host": "opencode",
         "id": "senior-review:transaction-integrity-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:b9065e650ee919e2e1eb7cb3ee3aaf51d56ad23eb644b8e251468e6788073ebd"
+        "sha256": "sha256:c42e4525a5b7e7055d0f621190f11a2c116d7156c7df37d687fd1e29f492e448"
       },
       "id": "senior-review:transaction-integrity-auditor",
       "kind": "role",
@@ -981,7 +981,7 @@
         "host": "opencode",
         "id": "senior-review:schema-coherence-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:4f1d5ac254e81460f166f331c88963501b714c7b14dd2bf4d0ce515e4ad5d0c0"
+        "sha256": "sha256:f27ed05858f41e6c258352034a7dd7b65912df80b84620e26a5e1b58d9f9aef8"
       },
       "id": "senior-review:schema-coherence-auditor",
       "kind": "role",
@@ -1006,7 +1006,7 @@
         "host": "opencode",
         "id": "senior-review:cache-consistency-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:b563826a126d320ae248db038386c9e0a75563b8dd8bcb0d32aada263945e1d6"
+        "sha256": "sha256:68bbe1fb6cd292613b084a54122a1b3be4c0cf71fa0d79539cf05fb1f8761d78"
       },
       "id": "senior-review:cache-consistency-auditor",
       "kind": "role",
@@ -1031,7 +1031,7 @@
         "host": "opencode",
         "id": "senior-review:data-representation-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:2351b1b007726984c2f37243292d9a87309aaadba39a76856c6618c6e6edbf16"
+        "sha256": "sha256:f8c0f4fe4a576bb436e1e7164a7f1e6cff41fb871c9217fdc97889c160f86ca1"
       },
       "id": "senior-review:data-representation-auditor",
       "kind": "role",
@@ -1056,7 +1056,7 @@
         "host": "opencode",
         "id": "senior-review:data-retention-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:d705085659b14c2364b601ae50e01ae4271fb18b1c23ab5b8e74d5a5cf6738ff"
+        "sha256": "sha256:a37a51563e13fff33f01b344281787be7e920ee2c2eb02cbeb232ab174fe5c88"
       },
       "id": "senior-review:data-retention-auditor",
       "kind": "role",
@@ -1081,7 +1081,7 @@
         "host": "opencode",
         "id": "senior-review:message-delivery-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:6bab852416fb35862b617494626d77e98e06f2d391bb2460ca8587d89cd321e8"
+        "sha256": "sha256:d5c61add850de0238e3799bdd14d42d6dcdc658645ff7c65ef68db84d4f43a96"
       },
       "id": "senior-review:message-delivery-auditor",
       "kind": "role",
@@ -1106,7 +1106,7 @@
         "host": "opencode",
         "id": "senior-review:remote-effect-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:e8d029041f186607b6b2983584a4b5f455b1fac676d8af1951a01ddeeed7943a"
+        "sha256": "sha256:f7ffd8d5e2e0cad50c68da8e2d540d6aff517516f5d14c3eff8d8920d75f0aa5"
       },
       "id": "senior-review:remote-effect-auditor",
       "kind": "role",
@@ -1131,7 +1131,7 @@
         "host": "opencode",
         "id": "senior-review:service-resilience-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:4062a78e24057f40b6335b9177ae9cdf7c552efdc51551b99470c4a32bbccddb"
+        "sha256": "sha256:98ac1df968f343b028d2d3e1f796064f28d523e136f2b18d71bcaf14bb549a64"
       },
       "id": "senior-review:service-resilience-auditor",
       "kind": "role",
@@ -1156,7 +1156,7 @@
         "host": "opencode",
         "id": "senior-review:sql-efficiency-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:081e6ae7ddfd47009cef5a78d6fb952a339771b79159e60a9e112a828eb47398"
+        "sha256": "sha256:a5135475e949e356202b729eaf0721231b99f43b651382e3ff0ea45e0cff4a0c"
       },
       "id": "senior-review:sql-efficiency-auditor",
       "kind": "role",
@@ -1181,7 +1181,7 @@
         "host": "opencode",
         "id": "senior-review:algorithmic-cost-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:c5e0963972fe6b6fe2621c2a1bc47ad745a0b940d585ba975e49f1d0953c1d0d"
+        "sha256": "sha256:79d15b5a98f72208791642e3e9d5920404eecdf9fddaa84026f052a3b580bcbb"
       },
       "id": "senior-review:algorithmic-cost-auditor",
       "kind": "role",
@@ -1206,7 +1206,7 @@
         "host": "opencode",
         "id": "senior-review:asset-delivery-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:69c14ba43e693a9d49d92c21c989b9982b7b884b5df8da2d7d64039d44537114"
+        "sha256": "sha256:22adecfde689b1d05f0db8435d1d04d2ae9f409e6d2968e231be4b1abde7a67b"
       },
       "id": "senior-review:asset-delivery-auditor",
       "kind": "role",
@@ -1231,7 +1231,7 @@
         "host": "opencode",
         "id": "senior-review:capacity-quota-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:31d4db44ef3dd0e176d61c1d79ec2fd63f14a1f402830658055fd9695a929aa2"
+        "sha256": "sha256:7819688051e74040aa90a4a019f11a674fcb2b46e02b71dab4f6e89d5e438206"
       },
       "id": "senior-review:capacity-quota-auditor",
       "kind": "role",
@@ -1256,7 +1256,7 @@
         "host": "opencode",
         "id": "senior-review:runtime-cost-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:12f487a1487607f536d553aa0b414594a114c6a1df2ee4865b9e2eb29f843aa7"
+        "sha256": "sha256:ce375bb84a497bf036d788232e563ca36b43f0355f912b195024479adb1a2600"
       },
       "id": "senior-review:runtime-cost-auditor",
       "kind": "role",
@@ -1281,7 +1281,7 @@
         "host": "opencode",
         "id": "senior-review:observability-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:a70d16e0d16d9bcbefd676c980ccb686d53028e132396379415060386b231ad3"
+        "sha256": "sha256:978cdb1f050f59706aeae017115d425309bd92d73c1aece8ee1c9b6780c44499"
       },
       "id": "senior-review:observability-auditor",
       "kind": "role",
@@ -1306,7 +1306,7 @@
         "host": "opencode",
         "id": "senior-review:service-health-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:e9c7496e005b17f07d886fb9bf9b9d26b1e020a34a8803292445ff03b8699c71"
+        "sha256": "sha256:39dd8ca8fe15d531a44939f816a23a348a8a4f62b32ea5808207310b2d0b35c4"
       },
       "id": "senior-review:service-health-auditor",
       "kind": "role",
@@ -1331,7 +1331,7 @@
         "host": "opencode",
         "id": "senior-review:release-compatibility-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:f28ac2b48f142ff525bf20d713a178557cd1299f0522ba9e838bc4f6fec564eb"
+        "sha256": "sha256:c15645cc243b4917b849710b8ccfc668e2d66171e52ee1d9c16429f2d854c1ca"
       },
       "id": "senior-review:release-compatibility-auditor",
       "kind": "role",
@@ -1356,7 +1356,7 @@
         "host": "opencode",
         "id": "senior-review:environment-binding-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:93d6128b61810c6b26ba33a32700137151b5c9ea73d9e39aa10e69c52fedc3dd"
+        "sha256": "sha256:4251cf0ec422fbf99e857b7ebcaccf544de3408dd95b6b2791fc8fce59c1d1f5"
       },
       "id": "senior-review:environment-binding-auditor",
       "kind": "role",
@@ -1381,7 +1381,7 @@
         "host": "opencode",
         "id": "senior-review:feature-flag-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:7a3df7f351e1e698e086dec356554f1388f29320260f472692ee77c5a840f361"
+        "sha256": "sha256:d37f8e4f54d6a6b87bff5529b247f384d23df418e9a6e6fae58a4eb354e0663b"
       },
       "id": "senior-review:feature-flag-auditor",
       "kind": "role",
@@ -1406,7 +1406,7 @@
         "host": "opencode",
         "id": "senior-review:recovery-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:a58097404ff6be70445b7522977c96da1252c51dd8cd307f411c62459af993a0"
+        "sha256": "sha256:6ef25e971ce18828bfd53ea2673539e45c692972efd044172097552337a97e87"
       },
       "id": "senior-review:recovery-auditor",
       "kind": "role",
@@ -1431,7 +1431,7 @@
         "host": "opencode",
         "id": "senior-review:accessible-navigation-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:89d0295813e03fe49453184697ba02e2a186969582de6d28baa7cb0f73ff9311"
+        "sha256": "sha256:07cb6c722cb219cea6ba70390a63bd63ecb6ba3008279ac2f7971ed6bb44eb38"
       },
       "id": "senior-review:accessible-navigation-auditor",
       "kind": "role",
@@ -1456,7 +1456,7 @@
         "host": "opencode",
         "id": "senior-review:accessible-perception-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:f2add29eebadc115dd2d64ed0fea9de599fb2f89767aa004db8d2ae590396f4e"
+        "sha256": "sha256:4945074a08be600abaefe822c5eddd1199cbadc908130c41134fe3c956bbe1c1"
       },
       "id": "senior-review:accessible-perception-auditor",
       "kind": "role",
@@ -1481,7 +1481,7 @@
         "host": "opencode",
         "id": "senior-review:local-correctness-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:db6ffa03368ab856251be35d4ec5da02d83ef05e1cdd6b5031ef05c0597c93b5"
+        "sha256": "sha256:d6f720aeda6b61c051dee9d5ae6115374ec8c3fb4a4a603439c0f97d13e709f5"
       },
       "id": "senior-review:local-correctness-auditor",
       "kind": "role",
@@ -1506,7 +1506,7 @@
         "host": "opencode",
         "id": "senior-review:local-concurrency-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:f59c1fa43459447deefa419056fa07a7b27417dfbdb0a5033a943410266baf96"
+        "sha256": "sha256:105c26975380edbe7435341943530f68eda7654b0ce04f8841c21af7ee032d9d"
       },
       "id": "senior-review:local-concurrency-auditor",
       "kind": "role",
@@ -1531,7 +1531,7 @@
         "host": "opencode",
         "id": "senior-review:application-reachability-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:c69ee262dec72215e9aeb16a9f1d3aa29a387e68d50001e57a58edc965ba71f9"
+        "sha256": "sha256:d8031330353b13c17c90ffeee543d2dd3c435538a5d56ccbbbc1c4fc38df9843"
       },
       "id": "senior-review:application-reachability-auditor",
       "kind": "role",
@@ -1556,7 +1556,7 @@
         "host": "opencode",
         "id": "senior-review:dependency-usage-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:653c8f66ae06a71cc38e437f47b5abd04ff7f568aee1195d24485ec1ab8b1e2c"
+        "sha256": "sha256:f22269cdb951f5cdb48084233d835df9c53b53bacad0281bcd360f54466838e3"
       },
       "id": "senior-review:dependency-usage-auditor",
       "kind": "role",
@@ -1581,7 +1581,7 @@
         "host": "opencode",
         "id": "senior-review:artifact-lifecycle-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:22ca186cd61e9cd2cd50690647d3958250203722117f009202e8d1a627db4bf0"
+        "sha256": "sha256:44a03a1a6153a375e66549d4ed9ccd8f93a2e9c4b3309c3df0acbec0ce295ba4"
       },
       "id": "senior-review:artifact-lifecycle-auditor",
       "kind": "role",
@@ -1606,7 +1606,7 @@
         "host": "opencode",
         "id": "testing:test-suite-structure-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:870c9a129fc6af5972f82122d90b8530b98428be80e365eecd4a5e313ed0920d"
+        "sha256": "sha256:122873c9b45122c50fc91aa505288fb29c5b016f20cd337c65fea32ff786dd5e"
       },
       "id": "testing:test-suite-structure-auditor",
       "kind": "role",
@@ -1633,7 +1633,7 @@
         "host": "opencode",
         "id": "testing:test-oracle-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:fae3eb928cf11ae870cb4748a7d6c90e7bc735be3a33cf5a086f7ea4f0090031"
+        "sha256": "sha256:f98a4a4f4a8fdcbf6dae03f4e4e9b2f14b52a2f2c68b6272fdca031126bdb3d3"
       },
       "id": "testing:test-oracle-auditor",
       "kind": "role",
@@ -1658,7 +1658,7 @@
         "host": "opencode",
         "id": "testing:test-reliability-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:533f36eb4943b2bab900221ace0614eb3318cea9f5a18cf2fa6267c691724230"
+        "sha256": "sha256:ae05fa51a7f0054c6360e9e550991c8f35beebad6fe5404614fc6275b8dd156e"
       },
       "id": "testing:test-reliability-auditor",
       "kind": "role",
@@ -1685,7 +1685,7 @@
         "host": "opencode",
         "id": "testing:journey-protection-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:f6f312f1ba264f029477a120d9719ecae305acd79afb35cde51aa7b9f422906e"
+        "sha256": "sha256:0d0a8d3f455aad60f4ab41c2a802de9a03210b93d1b3eaced5c2493d82b749b5"
       },
       "id": "testing:journey-protection-auditor",
       "kind": "role",
@@ -1710,7 +1710,7 @@
         "host": "opencode",
         "id": "testing:contract-test-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:d392162ca6c41690bda0725740c832d811a06b49bb8e0717cf150b75990c0a53"
+        "sha256": "sha256:b5f749503075fcae88aa956d5a5acdc7cc3284fbabcf302d83ecc8c1e37a8c5f"
       },
       "id": "testing:contract-test-auditor",
       "kind": "role",
@@ -1735,7 +1735,7 @@
         "host": "opencode",
         "id": "testing:capacity-test-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:d91e41006af11eed8bac2ef8a8dcc35bb76d36750e9d2a8c67991e612c6ec53f"
+        "sha256": "sha256:f72ba8c6d1140104b84aacbae4244e32e81e37188f555c429ef82dfc5c10f341"
       },
       "id": "testing:capacity-test-auditor",
       "kind": "role",
@@ -1760,7 +1760,7 @@
         "host": "opencode",
         "id": "testing:ai-evaluation-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:095150e0b64e5cd6e03bd1b150e048555caaaa03571bc8883118d16fd132dc8b"
+        "sha256": "sha256:3b4de0c10f92006b984edf5ac1ba70126990bfcac3855e5d3e1ca207bc806673"
       },
       "id": "testing:ai-evaluation-auditor",
       "kind": "role",
@@ -1785,7 +1785,7 @@
         "host": "opencode",
         "id": "react-development:react-effects-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:b351103bab62b6ce6882f5db456f19425017f17c009c05c1498275d00ede5b22"
+        "sha256": "sha256:dedb13151d2536bfe2418da050c763a1bf180b273a985d7dc850a3d7ee2f6310"
       },
       "id": "react-development:react-effects-auditor",
       "kind": "role",
@@ -1810,7 +1810,7 @@
         "host": "opencode",
         "id": "react-development:react-render-cost-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:d74460a83b83a7b9fe050afba6dec0f86c99d898faf318547b9d8336608ef08a"
+        "sha256": "sha256:b3cb14fbd949bf471ac04556ada948675df1bd76f32edd0b9c8af6007ccbc6e4"
       },
       "id": "react-development:react-render-cost-auditor",
       "kind": "role",
@@ -1835,7 +1835,7 @@
         "host": "opencode",
         "id": "react-development:react-bundle-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:b6625e4250fbd674576cfd5d2b9df5da385e73380586c92311ed3483afe06284"
+        "sha256": "sha256:74e2315941de0bb69c06094335bdfae127afeb10414d608a4d681ebbc897178f"
       },
       "id": "react-development:react-bundle-auditor",
       "kind": "role",
@@ -1860,7 +1860,7 @@
         "host": "opencode",
         "id": "react-development:react-dataflow-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:4dd80b0ba9ca66d746a0e8eda4b42b115a759578e82b7a980194cd5fb9adfc3e"
+        "sha256": "sha256:8056c8b9cca3fdaaa90dd4b952f8c20a64e03a86523069d69fa539b7d6ad5469"
       },
       "id": "react-development:react-dataflow-auditor",
       "kind": "role",
@@ -1885,7 +1885,7 @@
         "host": "opencode",
         "id": "typescript-development:type-soundness-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:90155f56138fc20bb17234e3ced4954726566b7c85e4ec5213e2dfded621cdd4"
+        "sha256": "sha256:475beaefe4153ec7ab5e830950cce81cee10a5ace831324032d3e4edc4bde6f2"
       },
       "id": "typescript-development:type-soundness-auditor",
       "kind": "role",
@@ -1910,7 +1910,7 @@
         "host": "opencode",
         "id": "typescript-development:typed-boundary-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:85c2c0623225249c4d730836967dddd6e47f7822a2a566ad622d8b5b692698b3"
+        "sha256": "sha256:ad39742ce9eee3028a567dafcedd0916c080a26ef9eda71a46b42b934982e3c4"
       },
       "id": "typescript-development:typed-boundary-auditor",
       "kind": "role",
@@ -1935,7 +1935,7 @@
         "host": "opencode",
         "id": "platform-engineering:browser-compatibility-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:3b2adc75a5982f8e3f2c6062314cc0ba7e62b23b2201150a1902b3334e8ff539"
+        "sha256": "sha256:cb983c6a1d925857b67dc7054a8c9e147b77b98732b6c00a0dfb8ff1471e8740"
       },
       "id": "platform-engineering:browser-compatibility-auditor",
       "kind": "role",
@@ -1960,7 +1960,7 @@
         "host": "opencode",
         "id": "platform-engineering:offline-lifecycle-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:b46acb2e94bb4ed84df4f62c5e719c90693ab72842effbdccf78c4844ed7c9b7"
+        "sha256": "sha256:67165c5d90f0b05335ebf23d9622a04dd69cc29042a867a1dd6b70ad6980d6ad"
       },
       "id": "platform-engineering:offline-lifecycle-auditor",
       "kind": "role",
@@ -1985,7 +1985,7 @@
         "host": "opencode",
         "id": "platform-engineering:native-lifecycle-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:02a7294af42f606c854dc5cf8688b8892734705c180adfcbfdfa7e7d04be6a49"
+        "sha256": "sha256:82dc3089e504ab7d82d5b27b63e4c58622fbd31375936d930ba48f58a96bb7a9"
       },
       "id": "platform-engineering:native-lifecycle-auditor",
       "kind": "role",
@@ -2010,7 +2010,7 @@
         "host": "opencode",
         "id": "platform-engineering:desktop-bridge-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:7d61eda41891e89572a5cc541e9c320436584e37df59f10e5c586670ab30f4c1"
+        "sha256": "sha256:ad7fe0f992d44e358cc27f4d55e3026c8bdc57a0638e56ede36811d79400ae27"
       },
       "id": "platform-engineering:desktop-bridge-auditor",
       "kind": "role",
@@ -2035,7 +2035,7 @@
         "host": "opencode",
         "id": "platform-engineering:app-distribution-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:a17f2d632bc47b3c58410a39c505dc9b069fd70c119c5b10bea841ca48abbcde"
+        "sha256": "sha256:d5817210dde6d01f83f9c02b78fc36be33b8c611da9c0d63924bfa9c258259b9"
       },
       "id": "platform-engineering:app-distribution-auditor",
       "kind": "role",
@@ -2060,7 +2060,7 @@
         "host": "opencode",
         "id": "abstraction-architect:concept-ownership-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:1353d6301250ea7b9abf0078c0badd91fc1c50238f88fc65e3ccab4f00b4ce95"
+        "sha256": "sha256:c0b0d5613fa6b1fac7408d86df765d063a1c8139f23f7c3838c7a12b2b2dcfe6"
       },
       "id": "abstraction-architect:concept-ownership-auditor",
       "kind": "role",
@@ -2087,7 +2087,7 @@
         "host": "opencode",
         "id": "abstraction-architect:abstraction-fit-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:66888d592df70436fd5904961ea32cfc59df1ca620ad6ece3a694366c9b92980"
+        "sha256": "sha256:03926f2f69da531d24aeae20dacaadb706faa2005e3409d025a33b8779a1fa10"
       },
       "id": "abstraction-architect:abstraction-fit-auditor",
       "kind": "role",
@@ -2114,7 +2114,7 @@
         "host": "opencode",
         "id": "python-development:python-semantics-auditor",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:a31a13bb8a95601133576323cd4cfa6f267b2a7355a6e7b3e2e39a1e90e61efa"
+        "sha256": "sha256:22ac9c538a6e5338c6d18787c1a7792d30f84ab06c5e2030520425868d5e4705"
       },
       "id": "python-development:python-semantics-auditor",
       "kind": "role",
@@ -2137,7 +2137,7 @@
         "host": "opencode",
         "id": "senior-review:python-method",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:8028b7b3c8f4fb916f1f1a7197ea2cfcb98a46749c825a05e5ff98fdcddf7edf"
+        "sha256": "sha256:b7eba941c46964aac766860e8e6613d3785ceefd8431e3135952b8c488500db5"
       },
       "id": "senior-review:python-method",
       "kind": "method-binding",
@@ -2168,7 +2168,7 @@
         "host": "opencode",
         "id": "senior-review:dependencies-method",
         "root_reference": "<plugin-root>",
-        "sha256": "sha256:fbd968899bed14d2a0b74adb961303db6c4b5764194f4a84c16c5ffbea0b34c6"
+        "sha256": "sha256:a19a5b59406d96b59014a78c90c2088e6c63a7124fa280eca53567c692f9c214"
       },
       "id": "senior-review:dependencies-method",
       "kind": "method-binding",

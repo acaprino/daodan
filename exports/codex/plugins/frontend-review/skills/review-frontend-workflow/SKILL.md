@@ -1,6 +1,6 @@
 ---
 name: review-frontend-workflow
-description: 'Full frontend review combining a 9-dimension UI/UX design audit with auto-detected React, TypeScript, PWA and platform code checks into `.frontend-review/report.md`. TRIGGER WHEN: asking for a complete frontend review, UI/UX design plus code audit, or pre-release frontend pass. DO NOT TRIGGER WHEN: React-only (use /react-development:review-react), TypeScript-only (use /typescript-development:review-typescript), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /senior-review:code-review).'
+description: 'Full frontend review combining a 9-dimension UI/UX design audit with auto-detected React, TypeScript, PWA and platform code checks into `.frontend-review/report.md`. TRIGGER WHEN: asking for a complete frontend review, UI/UX design plus code audit, or pre-release frontend pass. DO NOT TRIGGER WHEN: React-only or TypeScript-only audit (use /daodan:check-health), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /daodan:review-changes).'
 ---
 
 > Arguments: `[path] [--full] [--strict-mode]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -42,9 +42,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or

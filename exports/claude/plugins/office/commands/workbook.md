@@ -1,10 +1,10 @@
 ---
 description: >
-  Create, inspect, analyze or edit a native Excel workbook while preserving its
+  Create, derive, revise or analyze a native Excel workbook while preserving its
   formulas, formatting, tables, charts and other required features. TRIGGER WHEN:
-  the user requests XLSX work, spreadsheet analysis, a model, a tracker, a
-  dashboard or a controlled revision to an existing workbook.
-argument-hint: "<workbook task | source files | existing workbook and requested changes>"
+  the user requests XLSX work, spreadsheet analysis, a model, a tracker or a
+  dashboard, or a change or review of an existing workbook.
+argument-hint: "<brief | source files | existing workbook and requested change>"
 ---
 
 <daodan_host_binding host="claude">
@@ -24,6 +24,10 @@ override. Load installed skills by qualified ID; named roles use their owning
 plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
 Required foreign providers use Claude's marketplace/install commands:
 claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A provider that is installed but disabled is enabled with
+claude plugin enable <provider>@<marketplace>; check `claude plugin list --json`
+before the first phase, and stop with that command when any plugin of this
+package's dependency closure, direct or transitive, is off.
 A declared package MCP server is configured through the generated MCP manifest;
 still check its tools are actually available in the active session.
 
@@ -37,9 +41,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -70,13 +78,17 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-Perform the workbook task requested in: $ARGUMENTS
+Handle the workbook task requested in: $ARGUMENTS
 
-Load the `office:xlsx` skill. Inspect existing files before choosing a workbook
-engine. Produce or edit native workbook objects, preserve required features,
-verify the authorized changes and distinguish formula preservation from actual
-recalculation. A request only to inspect or analyze authorizes read-only work.
+Load `office:intake` first. Resolve the starting point, carry-over, depth of
+change and deliverable in its single round of questions, together with the
+workbook questions of `office:xlsx`. Then follow `office:xlsx`. Inspect existing
+files before choosing a workbook engine. Produce or edit native workbook objects,
+preserve required features, verify the authorized changes and distinguish
+formula preservation from actual recalculation. The read-only route never writes
+to the source workbook.
 
-Deliver the requested `.xlsx` for creation/editing, or the findings for read-only
-work, together with a concise workbook review covering checked calculations,
-preservation evidence and any unsupported feature or unverified recalculation.
+Deliver the requested `.xlsx` on the substantial and narrow routes, or the
+findings on the read-only route, together with a concise workbook review covering
+checked calculations, preservation evidence and any unsupported feature or
+unverified recalculation.

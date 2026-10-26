@@ -24,6 +24,118 @@
       "version": "5.2.1"
     },
     {
+      "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
+      "dimensions": [],
+      "file": "skills/agent-sdk-builder/SKILL.md",
+      "frameworks": [],
+      "id": "ai-tooling:agent-sdk-builder",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "agent-sdk-builder",
+      "operations": [],
+      "provider": "ai-tooling",
+      "topics": [],
+      "version": "5.5.3"
+    },
+    {
+      "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/prompt-engineering/SKILL.md",
+      "frameworks": [],
+      "id": "ai-tooling:prompt-engineering",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "6e338f92c01d8e5f0c45ef6bea56d02f919e797182c5503d90edc4b3aad798a8",
+      "name": "prompt-engineering",
+      "operations": [
+        "develop",
+        "document",
+        "review"
+      ],
+      "provider": "ai-tooling",
+      "topics": [
+        "agents",
+        "llm",
+        "prompts"
+      ],
+      "version": "5.5.3"
+    },
+    {
+      "description": "Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/app-analysis/SKILL.md",
+      "frameworks": [],
+      "id": "app-analyzer:app-analysis",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "d5cac4fa6ed903a3820127f1fb0af0fe1ef80abbad1c4516a9c4623a121bbc84",
+      "name": "app-analysis",
+      "operations": [
+        "document"
+      ],
+      "provider": "app-analyzer",
+      "topics": [
+        "app-analysis"
+      ],
+      "version": "1.4.5"
+    },
+    {
+      "description": "Reference knowledge base behind the firefox-extension-dev-agent agent. TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/firefox-extension-dev/SKILL.md",
+      "frameworks": [
+        "firefox",
+        "webextensions"
+      ],
+      "id": "browser-extensions:firefox-extension-dev",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "9b830e383166832d90d4d009b24e6f25c3c52f5fd05d81d237b9e0cbc983380a",
+      "name": "firefox-extension-dev",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "browser-extensions",
+      "topics": [],
+      "version": "2.0.3"
+    },
+    {
+      "description": "Knowledge base of strategy frameworks and market data, loaded by business-planner. TRIGGER WHEN: SaaS business planning or GTM strategy work, including positioning frameworks (April Dunford, Blue Ocean, Crossing the Chasm), PLG/SLG motions, and KPI benchmarks.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/saas-business-plan/SKILL.md",
+      "frameworks": [],
+      "id": "business:saas-business-plan",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "c50be547c87f7577c43638a9240aa72c48af0bb542a101310ccf60863212b97c",
+      "name": "saas-business-plan",
+      "operations": [
+        "develop",
+        "document"
+      ],
+      "provider": "business",
+      "topics": [
+        "business",
+        "saas"
+      ],
+      "version": "1.15.1"
+    },
+    {
       "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /daodan:refactor-code for readability or lifecycle readability phases.",
       "dimensions": [],
       "file": "skills/readability-method/SKILL.md",
@@ -36,7 +148,7 @@
       "operations": [],
       "provider": "clean-code",
       "topics": [],
-      "version": "3.1.1"
+      "version": "3.1.2"
     },
     {
       "description": "Static codebase mapping and standalone navigation of existing map evidence: structure, purpose, integrations, symbols, documentation and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation; consult available map evidence before broad source exploration. Loading the skill starts no analysis or refresh. Verify material claims against current source and use ordinary repository search when no usable map exists. DO NOT TRIGGER WHEN: the task does not involve project code or its documentation.",
@@ -89,7 +201,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.1"
+      "version": "3.2.4"
     },
     {
       "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
@@ -104,7 +216,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.1"
+      "version": "3.2.4"
     },
     {
       "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
@@ -126,7 +238,7 @@
       ],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.1"
+      "version": "3.2.4"
     },
     {
       "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
@@ -147,7 +259,7 @@
       "topics": [
         "customer-review"
       ],
-      "version": "3.2.1"
+      "version": "3.2.4"
     },
     {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
@@ -224,6 +336,156 @@
       "version": "1.1.3"
     },
     {
+      "description": "Render a JSON outline into a standalone browser page; needs internet for the CDN. TRIGGER WHEN: the user says 'interactive map', 'force graph', 'web mindmap', or 'HTML mindmap', or asks for a zoomable, draggable visual export. DO NOT TRIGGER WHEN: the user wants Obsidian MarkMind format (use markmind-exporter).",
+      "dimensions": [],
+      "file": "skills/forcegraph-exporter/SKILL.md",
+      "frameworks": [],
+      "id": "learning:forcegraph-exporter",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "forcegraph-exporter",
+      "operations": [],
+      "provider": "learning",
+      "topics": [],
+      "version": "1.7.3"
+    },
+    {
+      "description": "Produce a Buzan-style radiant outline as structured JSON, optimized for recall over symmetry: single keywords, emoji anchors, cross-links. TRIGGER WHEN: the user asks to create a mind map, mappa mentale, concept map, or visual summary of a topic, text, or file, typically to learn or brainstorm.",
+      "dimensions": [],
+      "file": "skills/generate-mindmap/SKILL.md",
+      "frameworks": [],
+      "id": "learning:generate-mindmap",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "generate-mindmap",
+      "operations": [],
+      "provider": "learning",
+      "topics": [],
+      "version": "1.7.3"
+    },
+    {
+      "description": "Render a JSON outline into a drop-in vault file for the Obsidian plugin. TRIGGER WHEN: the user says 'markmind' or needs MarkMind Rich output from a mindmap structure, typically one produced by generate-mindmap. DO NOT TRIGGER WHEN: the user wants an interactive HTML mindmap (use forcegraph-exporter).",
+      "dimensions": [],
+      "file": "skills/markmind-exporter/SKILL.md",
+      "frameworks": [],
+      "id": "learning:markmind-exporter",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "markmind-exporter",
+      "operations": [],
+      "provider": "learning",
+      "topics": [],
+      "version": "1.7.3"
+    },
+    {
+      "description": "Knowledge base for shipping production games from one Java or Kotlin codebase. TRIGGER WHEN: building, optimizing, debugging, or scaffolding libGDX games; migrating libGDX versions; choosing libGDX architecture patterns.",
+      "dimensions": [
+        "correctness",
+        "performance"
+      ],
+      "file": "skills/libgdx-development/SKILL.md",
+      "frameworks": [
+        "libgdx"
+      ],
+      "id": "libgdx-development:libgdx-development",
+      "kind": "knowledge",
+      "languages": [
+        "java",
+        "kotlin"
+      ],
+      "metadata_sha256": "c8239e58333821377ddc89fbd22fe5de5be187fac860964304d74493e8248d4c",
+      "name": "libgdx-development",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "libgdx-development",
+      "topics": [],
+      "version": "1.1.3"
+    },
+    {
+      "description": "Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages. TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports. DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages (use marketplace-audit or skills-creator instead).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/kernel-marketplace/SKILL.md",
+      "frameworks": [],
+      "id": "marketplace-ops:kernel-marketplace",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "22317b573cfb9a5795db8dd2bd40daefaa4c337f972b17b83aea44aa87c2c8c7",
+      "name": "kernel-marketplace",
+      "operations": [
+        "develop",
+        "document",
+        "review"
+      ],
+      "provider": "marketplace-ops",
+      "topics": [
+        "marketplace",
+        "plugins"
+      ],
+      "version": "2.4.4"
+    },
+    {
+      "description": "Validate structural integrity, dependencies, naming, colors and doc counts of a plugin marketplace. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan components, checking dependencies or doc count drift. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding (use skills-creator).",
+      "dimensions": [],
+      "file": "skills/marketplace-audit/SKILL.md",
+      "frameworks": [],
+      "id": "marketplace-ops:marketplace-audit",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "marketplace-audit",
+      "operations": [],
+      "provider": "marketplace-ops",
+      "topics": [],
+      "version": "2.4.4"
+    },
+    {
+      "description": "Create plugin components (skills, agents, commands, full plugins) and decide skill vs agent architecture. TRIGGER WHEN: creating, adding or scaffolding a new skill, agent, command or plugin (\"new skill\", \"new agent\", \"new plugin\", \"skills-creator\"). DO NOT TRIGGER WHEN: auditing marketplace integrity (use marketplace-audit).",
+      "dimensions": [],
+      "file": "skills/skills-creator/SKILL.md",
+      "frameworks": [],
+      "id": "marketplace-ops:skills-creator",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "skills-creator",
+      "operations": [],
+      "provider": "marketplace-ops",
+      "topics": [],
+      "version": "2.4.4"
+    },
+    {
+      "description": "Knowledge base for running RabbitMQ under production load, split into on-demand references. TRIGGER WHEN: designing, operating, upgrading, monitoring or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: quick conceptual questions (use rabbitmq-expert directly).",
+      "dimensions": [
+        "data-integrity",
+        "distributed-flow"
+      ],
+      "file": "skills/rabbitmq-production/SKILL.md",
+      "frameworks": [
+        "rabbitmq"
+      ],
+      "id": "messaging:rabbitmq-production",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "9766461a797de653021cfe7bb60c294f2bd266250da2656b1331b8e4614d1cb7",
+      "name": "rabbitmq-production",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "messaging",
+      "topics": [],
+      "version": "2.1.3"
+    },
+    {
       "description": "Select the model and effort for each LLM job through task_router.py, and refresh the model catalog and prices. TRIGGER WHEN: a coordinator routes an LLM job, or the catalog or prices need a refresh.",
       "dimensions": [],
       "file": "skills/model-routing/SKILL.md",
@@ -259,6 +521,206 @@
         "multi-model-deliberation"
       ],
       "version": "2.0.0"
+    },
+    {
+      "description": "Report every automated-review violation with its file location and fix. TRIGGER WHEN: preparing an Obsidian plugin for submission or before pushing code.",
+      "dimensions": [],
+      "file": "skills/obsidian-check/SKILL.md",
+      "frameworks": [],
+      "id": "obsidian-development:obsidian-check",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "obsidian-check",
+      "operations": [],
+      "provider": "obsidian-development",
+      "topics": [],
+      "version": "1.5.3"
+    },
+    {
+      "description": "Comply with the automated gate on first submission: eslint-plugin-obsidianmd rules plus the official guidelines. TRIGGER WHEN: writing, reviewing, or fixing Obsidian community plugin code.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/obsidian-plugin-development/SKILL.md",
+      "frameworks": [
+        "obsidian"
+      ],
+      "id": "obsidian-development:obsidian-plugin-development",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "57d13748d328763d95d8b179b00a9d2600fb84ffbf221fd5f64d11799423d817",
+      "name": "obsidian-plugin-development",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "obsidian-development",
+      "topics": [],
+      "version": "1.5.3"
+    },
+    {
+      "description": "Generate the layout, manifest, tsconfig, esbuild config, and a minimal class that passes automated review. TRIGGER WHEN: the user asks to start, create, bootstrap, scaffold, or initialize a new Obsidian community plugin.",
+      "dimensions": [],
+      "file": "skills/obsidian-scaffold/SKILL.md",
+      "frameworks": [],
+      "id": "obsidian-development:obsidian-scaffold",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "obsidian-scaffold",
+      "operations": [],
+      "provider": "obsidian-development",
+      "topics": [],
+      "version": "1.5.3"
+    },
+    {
+      "description": "Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: a new creative deck uses SlidePoise reconstruction or only a spreadsheet or document is requested.",
+      "dimensions": [],
+      "file": "skills/deckcraft/SKILL.md",
+      "frameworks": [],
+      "id": "office:deckcraft",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "deckcraft",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the user's colour source and chosen from candidates in the browser; editorial hierarchy, typography, and font fetching, installation and embedding. How a file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
+      "dimensions": [],
+      "file": "skills/design/SKILL.md",
+      "frameworks": [],
+      "id": "office:design",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "design",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:presentation).",
+      "dimensions": [],
+      "file": "skills/docx/SKILL.md",
+      "frameworks": [],
+      "id": "office:docx",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "docx",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes. TRIGGER WHEN: an Office presentation, document or workbook task begins. DO NOT TRIGGER WHEN: a format method is already executing a resolved route.",
+      "dimensions": [],
+      "file": "skills/intake/SKILL.md",
+      "frameworks": [],
+      "id": "office:intake",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "intake",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
+      "dimensions": [],
+      "file": "skills/pptx/SKILL.md",
+      "frameworks": [],
+      "id": "office:pptx",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "pptx",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. Targeted edits and PDF export use office:deckcraft. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
+      "dimensions": [],
+      "file": "skills/slidepoise/SKILL.md",
+      "frameworks": [],
+      "id": "office:slidepoise",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "slidepoise",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed.",
+      "dimensions": [],
+      "file": "skills/wordcraft/SKILL.md",
+      "frameworks": [],
+      "id": "office:wordcraft",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "wordcraft",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:presentation).",
+      "dimensions": [],
+      "file": "skills/xlsx/SKILL.md",
+      "frameworks": [],
+      "id": "office:xlsx",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "xlsx",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "2.4.0"
+    },
+    {
+      "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
+      "dimensions": [
+        "correctness",
+        "performance"
+      ],
+      "file": "skills/opentelemetry/SKILL.md",
+      "frameworks": [
+        "opentelemetry"
+      ],
+      "id": "opentelemetry:opentelemetry",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "141f48a6a263b2fc4dfe0babf1d9eb00674a9224191270ebbf60da02f048c036",
+      "name": "opentelemetry",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "opentelemetry",
+      "topics": [],
+      "version": "1.4.4"
     },
     {
       "description": "Doctrine and review method for challenging a plan, spec, decision record or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring a cross-model peer review (the review method, loaded by /daodan:get-second-opinion for a file and by the task cycle to challenge a decision record or plan), deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).",
@@ -383,7 +845,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -398,7 +860,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
@@ -419,7 +881,7 @@
       "topics": [
         "readme"
       ],
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "description": "Diagnose project coherence and technical debt through canonical specialist audits and an executable roadmap. TRIGGER WHEN: the user asks for project health, a coherence assessment, technical-debt diagnosis or a prioritized maintenance roadmap, including /daodan:check-health and the assessment stage of /daodan:run-maintenance. DO NOT TRIGGER WHEN: implementing an approved change, repair or verification cycle (use project-delivery:delivery-method), running a full Senior Maintainer campaign (use maintainer-method), or preparing a consultant dossier (use handover-method).",
@@ -467,7 +929,7 @@
       "version": "3.0.0"
     },
     {
-      "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:review-react), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
+      "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:react-best-practices), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
       "dimensions": [
         "correctness",
         "resource-lifecycle"
@@ -492,7 +954,7 @@
         "pwa",
         "service-worker"
       ],
-      "version": "1.3.7"
+      "version": "1.3.8"
     },
     {
       "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
@@ -820,6 +1282,28 @@
       "version": "1.1.0"
     },
     {
+      "description": "Web research methodology: query formulation, source authority ranking, WebSearch/serper.dev backends, bot-block fallbacks and anti-loop rules. TRIGGER WHEN: performing web research in quick-searcher, deep-researcher or /research:team-research. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/web-search-techniques/SKILL.md",
+      "frameworks": [],
+      "id": "research:web-search-techniques",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "6dee8e808a511eda7a9e273d5563e831799b3f52bc7ed683f04dc6739988310f",
+      "name": "web-search-techniques",
+      "operations": [
+        "research"
+      ],
+      "provider": "research",
+      "topics": [
+        "research",
+        "web-search"
+      ],
+      "version": "6.2.6"
+    },
+    {
       "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /daodan:tidy-repo, code-review Step 7c or lifecycle cleanup.",
       "dimensions": [],
       "file": "skills/application-cleanup-method/SKILL.md",
@@ -983,7 +1467,7 @@
       "operations": [],
       "provider": "system-utils",
       "topics": [],
-      "version": "2.1.4"
+      "version": "2.1.5"
     },
     {
       "description": "Knowledge base indexing core, desktop, and mobile references. TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.",
@@ -1062,6 +1546,28 @@
       "provider": "testing",
       "topics": [],
       "version": "4.4.0"
+    },
+    {
+      "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/anti-ai-writing-patterns/SKILL.md",
+      "frameworks": [],
+      "id": "text-humanizer:anti-ai-writing-patterns",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "e99eb3a2f44c34f9f33f013f735328403f7efbefbee733b1bd0682a4f2bebeae",
+      "name": "anti-ai-writing-patterns",
+      "operations": [
+        "document"
+      ],
+      "provider": "text-humanizer",
+      "topics": [
+        "humanize",
+        "prose"
+      ],
+      "version": "2.2.1"
     },
     {
       "description": "Vendor-neutral broker integration vocabulary: the five archetypes, single-broker vs multi-broker platforms, order state machine, session recovery and evidence ladder. TRIGGER WHEN: comparing brokers or integration paths, integrating a broker without a dedicated skill, or classifying an access path. DO NOT TRIGGER WHEN: targeting a broker with its own skill (use ibkr or mt5).",
@@ -1236,7 +1742,35 @@
       "operations": [],
       "provider": "work-controller",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.0.1"
+    },
+    {
+      "description": "Build, configure, debug and extend browser and Electron terminal UIs with xterm.js (@xterm/xterm). TRIGGER WHEN: working with xterm.js, @xterm/xterm, FitAddon, WebglAddon, SearchAddon, AttachAddon, node-pty over WebSocket, ANSI/VT sequences, or embedding a web terminal in React/Vue/Electron.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/xtermjs-skill/SKILL.md",
+      "frameworks": [
+        "xterm",
+        "xterm.js"
+      ],
+      "id": "xterm:xtermjs-skill",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "87a58230f2e399625dfd8f6e8b6eb71e5f3606d0803902424aaa6f35512e41bc",
+      "name": "xtermjs-skill",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "xterm",
+      "topics": [],
+      "version": "1.2.3"
     }
   ],
   "installation_evidence": false,

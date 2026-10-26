@@ -1,6 +1,6 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows and web research live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength. A Daodan plugin that loads or dispatches a Shinatama component declares it as `name@shinatama`, like any cross-marketplace dependency; the rest of Shinatama stays a recommended companion. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists, domain verticals, office workflows and web research. The 24 domain, office, research and framework plugins extracted to `acaprino/shinatama` in marketplace 36.0.0 returned to this single marketplace, with `text-humanizer` back as a local dependency and `/daodan:humanize-text` restored to the `daodan` entry plugin while domain verticals keep their own workflow namespaces. `skill-catalog` discovers every plugin's knowledge sidecars and selects them per run. It ships to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
 
@@ -15,13 +15,17 @@ a lead by reading source. Leaf and specialist plugins such as work-controller,
 skill-catalog, repo-hygiene, testing, clean-code and the language plugins do not
 depend on it.
 
-Every command lives in one entry plugin, `daodan`, since marketplace 38.0.0 (see
+Every core harness command lives in one entry plugin, `daodan`, since marketplace 38.0.0 (see
 `docs/superpowers/specs/2026-10-19-command-set-design.md`): one command per
 intention, no parameters, the only argument free text. Authorizations are asked
 when a step needs them, once, and recorded in the run. Each command is a thin
-entry into its owner's method; every other plugin keeps skills, roles and
+entry into its owner's method; every core specialist plugin keeps skills, roles and
 contracts and has no command. A specialist method a command used to carry lives
-in its owner's skill, where the entry loads it by name.
+in its owner's skill, where the entry loads it by name. Independent domain verticals (`office`, `research`, `digital-marketing`, `trading-broker-integration`, `pwa-expert`, `browser-extensions`, `grabber-development`, `libgdx-development`, `marketplace-ops`, `opentelemetry`, `rag-development`, `stripe`, `system-utils`, `xterm`, `ai-tooling`, `frontend-review`, `learning`) keep their own workflow namespaces.
+
+The `daodan` commands are the primary entry points: start there for project
+work, whatever the stack or domain, and call a vertical's own command directly
+only when the request is already specific to that domain.
 
 project-delivery owns ADR, FRD, evidence bootstrap and the methods behind the delivery commands: initialization,
 the task cycle (change, repair, refactor), continue, status, finish, sync,
@@ -57,7 +61,7 @@ testing owns universal test governance;
 Python contributes pytest-patterns, without a second test writer.
 
 By decision of 2026-10-24, work-controller is the general-purpose process engine
-and it leaves Daodan for its own repository, Deadly Brain. Daodan, Shinatama and
+and it leaves Daodan for its own repository, Deadly Brain. Daodan and
 other projects depend on it; it depends on none of them. It composes a process
 from context, an interview or a consumer's archetype into YAML, validates it
 (registered components, neutral capabilities, acyclic dependencies through
@@ -437,7 +441,9 @@ source-repository mapping. This delegation does not assert equivalent coverage o
 the retired `memory-forensics` or `anti-reversing-techniques` skills. Preserve the
 original retirement history without restoring a local copy or a sync-table row.
 
-`ai-tooling`, its hard dependency `superpowers@claude-plugins-official` and the rules that govern them live in Shinatama; the table rows above stay as history. Nothing here may re-import the superpowers skills, including the 14 skills and 6 agents that `exports/vscode/` vendored until the universal cutover removed the extension. A cross-marketplace dependency always uses the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2.
+As of marketplace 8.2.0, superpowers is a declared hard dependency of `ai-tooling` (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`; cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2). Any place that points at the superpowers planning skills says so unconditionally: load the skills, and if they are unavailable stop the dependent phase and recover superpowers through the active host provisioning mechanism; the Claude command `/plugin install superpowers@claude-plugins-official` applies only on Claude Code. This supersedes the earlier rule that kept superpowers references conditional; do not reintroduce conditional phrasing.
+
+The scoped exception that used to sit here is closed. From 2026-07-30 until the universal cutover, `exports/vscode/` vendored 14 superpowers skills and the 6 agents that served them, because there was no Copilot install path for superpowers and the extension shipped them or nothing did. The extension is gone, so the copy is gone with it, and the delegation is now unconditional again on every host: `ai-tooling` hard-depends on `superpowers@claude-plugins-official`, and nothing anywhere may re-import those skills. Superpowers publishes its own marketplace (`obra/superpowers-marketplace`), which is the install path to point users at.
 
 The universal cutover also retired the whole hand-mirroring apparatus it depended on: the per-bundle catalog, the extension manifest generator, the export structural checker, the mirror workflow and the release workflow. Do not rebuild any of them. A host that needs a different shape gets an adapter; a host that needs different meaning gets a fingerprinted override; nothing gets a second hand-maintained copy of a plugin.
 
@@ -478,17 +484,22 @@ specialist edges optional.
 | codebase-map | none |
 | repo-hygiene | none |
 | abstraction-architect | codebase-map |
-| testing | work-controller |
-| senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog |
-| project-knowledge | work-controller, codebase-map, senior-review, report-rendering; text-humanizer@shinatama |
+| testing | work-controller, report-rendering |
+| senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, report-rendering |
+| project-knowledge | work-controller, codebase-map, text-humanizer, senior-review, report-rendering |
 | project-delivery | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
 | project-lifecycle | project-delivery, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, report-rendering |
 | clean-code | work-controller |
+| text-humanizer | none |
 | python-development | testing, work-controller |
+| typescript-development | work-controller, testing |
 | dependency-audit | none |
 | peer-review | none |
 | moe | peer-review |
-| daodan | every other plugin of the marketplace, directly or through its providers: what a command loads or dispatches, and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe); text-humanizer@shinatama, whose role its entries dispatch |
+| business | text-humanizer, research |
+| digital-marketing | text-humanizer, report-rendering |
+| frontend-review | react-development, typescript-development, pwa-expert, platform-engineering |
+| daodan | every core harness and language/stack plugin of the marketplace, directly or through its providers: what a command loads or dispatches (including text-humanizer), and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe) |
 
 
 Resolved knowledge is a distinct per-run input contract. The required skill-catalog
@@ -509,9 +520,10 @@ the catalog cannot find is a recorded gap, not a stop, so a Kotlin task with
 kotlin-development disabled ran on a generic worker without Kotlin knowledge.
 Required, it is installed with `daodan` and the preflight's provider probe stops
 on it when disabled. The dependency linter accepts such an edge when the consumer
-also requires skill-catalog, the channel that reads it. Shinatama's knowledge
-stays a companion the catalog reads; a Shinatama component a Daodan plugin loads
-or dispatches is a declared `name@shinatama` dependency.
+also requires skill-catalog, the channel that reads it. Domain verticals with their
+own roles or workflows remain independent plugins in the same marketplace; any
+plugin that loads or dispatches another local plugin's component declares that
+plugin in `[dependencies].required`.
 
 The manifests are the control plane; this table records the architectural boundary.
 The dependency linter fails unresolved, undeclared and unused runtime edges.
@@ -553,7 +565,8 @@ the host's native configuration. Preserve concrete install instructions in the
 consumer. Grabber's separately scoped Patchright technique remains local.
 
 testing delegates TDD to mattpocock-skills@mattpocock and browser E2E mechanics to
-developer-essentials@claude-code-workflows. project-delivery owns its task cycle
+developer-essentials@claude-code-workflows. ai-tooling delegates development
+methods to superpowers@claude-plugins-official. project-delivery owns its task cycle
 and declares no upstream development method since 2026-10-18: its interview, plan
 and execution are shaped by the map, the decision records and the protocol's wave
 rules, which the delegated planning skills did not have, so running both would
