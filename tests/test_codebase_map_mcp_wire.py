@@ -20,8 +20,7 @@ SERVER = (Path(__file__).resolve().parents[1] /
 HAS_SDK = importlib.util.find_spec("mcp") is not None
 
 
-@unittest.skipUnless(HAS_SDK, "requires the actual MCP SDK runtime")
-class CodebaseMapWireTests(unittest.TestCase):
+class CodebaseMapWireFixture(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="map-mcp-wire-")
         self.addCleanup(self.temporary.cleanup)
@@ -121,6 +120,9 @@ class CodebaseMapWireTests(unittest.TestCase):
             return result["structuredContent"]
         return json.loads(result["content"][0]["text"])
 
+
+@unittest.skipUnless(HAS_SDK, "requires the actual MCP SDK runtime")
+class CodebaseMapWireTests(CodebaseMapWireFixture):
     def test_stdin_eof_stops_server_cleanly(self):
         self.process.stdin.close()
         self.assertEqual(self.process.wait(timeout=10), 0)

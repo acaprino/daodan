@@ -75,6 +75,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Local service and MCP
 
+- [Startup and binding](#startup-and-binding)
+- [Local Code Mode (opt-in)](#local-code-mode-opt-in)
+- [Tools](#tools)
+- [Host execution and phase hooks](#host-execution-and-phase-hooks)
+- [Progress and durable events](#progress-and-durable-events)
+- [Native consumers](#native-consumers)
+
 ## Startup and binding
 
 The declared `codebase-map` server runs over stdio:
@@ -137,9 +144,171 @@ The compiler supplies automatic manifests or host-specific registration notes.
 Verify the active host's connection before calling these tools. A shell workflow
 uses its existing commands and needs no MCP connection.
 
+## Local Code Mode (opt-in)
+
+The same server can expose `search` and `execute` in place of its 19 native
+tools. The model writes JavaScript to discover operations, compose calls, filter
+intermediate values and return a selected JSON result. Schemas and dispatch come
+from the existing MCP wrappers, so their argument validation, project binding,
+source checks, locks and publication gates remain authoritative. Code Mode starts
+no LLM, analysis worker or scheduler.
+
+### Start and register
+
+Install Deno separately, outside the bound project. The minimum is 2.4; use a
+maintained, patched release. Deno is required only for Code Mode. Start with:
+
+```text
+uv run --no-config --no-project --script <installed-plugin-root>/skills/map-method/scripts/mcp_server.py --project <project-root> --code-mode --deno /absolute/path/to/deno
+```
+
+`--deno` must be an absolute executable path outside the project. If omitted,
+the server searches absolute `PATH` entries and rejects an executable inside the
+project. A missing or unsupported Deno fails startup. Project-local Deno
+configuration and environment settings do not select or configure the runner.
+`--project` and `--store` retain the binding described above.
+
+Configure these arguments on the existing `codebase-map` server registration;
+do not register a second copy of its native catalog. Verify that `tools/list`
+returns exactly `search` and `execute`. A standard MCP client can call them
+without supplying a JavaScript runtime itself. Automatic manifests and manual
+registration retain the active host's existing mechanism. Native startup remains
+the default and needs no Deno installation.
+
+### Discover and compose
+
+| Tool | Inputs | JavaScript capabilities |
+|---|---|---|
+| `search` | `code`: an async function | `catalog`, the permitted MCP tool descriptors; no operation calls |
+| `execute` | `code`: an async function; `tools`: explicit list of operation names | `tools.<name>(arguments)`, limited to the listed permitted operations |
+
+Discover only the descriptions and schemas needed for the task. For example,
+call `search` with:
+
+```json
+{
+  "code": "async () => catalog.filter(({name}) => /_(runs|outline)$/.test(name))"
+}
+```
+
+Then call `execute` with `tools` set to
+`["codebase_map_runs", "codebase_map_outline"]` and this `code` value:
+
+```javascript
+async () => {
+  const listing = await tools.codebase_map_runs({});
+  const eligible = listing.runs.filter(run => run.readable && run.source_available);
+  const selected = eligible.slice(0, 3);
+  const outlines = [];
+  for (const run of selected) {
+    const outline = await tools.codebase_map_outline({run_id: run.run_id, limit: 5});
+    outlines.push({
+      run_id: run.run_id,
+      matched: outline.matched,
+      truncated: outline.truncated,
+      symbols: outline.items.map(({path, symbol, start, end}) => ({path, symbol, start, end}))
+    });
+  }
+  return {
+    outlines,
+    omitted_eligible_runs: eligible.length - selected.length,
+    unavailable_runs: listing.runs.filter(run => !run.readable || !run.source_available)
+      .map(({run_id, error, check_unavailable}) => ({run_id, error, check_unavailable}))
+  };
+}
+```
+
+This selects up to three existing runs, reads their outlines in one execution and
+returns bounded metadata with omissions. It creates no run. These symbol records
+do not establish source-reading coverage. Each operation takes one JSON object. Await every operation before
+returning, and return a JSON value explicitly. A tool omitted from the `tools`
+list cannot be called, even when it appears in `search`. Each execution has fresh
+JavaScript state; only the existing service's records persist.
+
+### Mutations and approval
+
+The default catalog contains only operations explicitly annotated read-only.
+For a workflow that needs writes, the process owner grants each mutation at
+startup with repeatable arguments, for example:
+
+```text
+--code-mode-allow-write codebase_map_create_run
+--code-mode-allow-write codebase_map_checkpoint
+```
+
+These grant only those named mutations. Unknown names, wildcards and names of
+read-only operations are rejected. Generated code and `execute.tools` cannot
+expand the startup permissions. `codebase_map_context` writes an evidence packet
+and therefore also needs its own grant. Granting publication does not bypass the
+existing delivery and freshness checks.
+
+The outer `execute` tool is annotated as mutating when any write is granted.
+A host's approval of that outer call covers the selected program; there is no
+separate host approval for each internal operation. Startup grants must represent
+the host owner's intended authority. Review the program and its named tools
+before authorizing a run with writes.
+
+### Results, failures and receipts
+
+A successful `search` or `execute` returns:
+
+- `value`: the JSON value selected by the generated function.
+- `calls`: broker-owned receipts for admitted operations, with `tool`, `ok`, and
+  either `output_bytes` or an error. Search has no operation calls.
+- `stats`: `tool_calls`, `intermediate_bytes`, `selected_value_bytes`,
+  `receipt_bytes` and `elapsed_ms`.
+
+Read `calls` even when `value` looks successful. Catching an operation error in
+JavaScript does not remove its failed receipt. If execution fails, its MCP tool
+error includes the receipts for admitted calls. A completed mutation can precede
+a later error or exceeded limit; successful earlier calls are not rolled back.
+Check canonical `status` and `events` before retrying a mutation.
+
+The byte counts distinguish selected values from the additional call receipts.
+The statistics measure serialized UTF-8 bytes and elapsed time, not billed model
+tokens. The two-tool interface keeps unused schemas and intermediate results out
+of the model context, while generated code, discovery results and selected output
+still consume context. Compare complete tasks, including retries, before claiming
+a saving; this feature has no universal token-reduction percentage.
+
+### Execution limits and boundary
+
+| Resource | Default bound |
+|---|---|
+| JavaScript source | 32 KiB UTF-8 |
+| JavaScript lifetime | 30 seconds |
+| Internal operation calls | 32 |
+| Arguments for one operation | 64 KiB serialized JSON |
+| Selected final JSON value | 64 KiB serialized JSON |
+| One intermediate operation result | 8 MiB serialized JSON |
+| Cumulative intermediate results | 32 MiB serialized JSON |
+| V8 old-space heap | 128 MiB |
+| Runner stderr | 16 KiB |
+
+Oversized output fails explicitly. The final-value bound excludes the broker's
+receipts and statistics. Keep selections small and preserve relevant gaps and
+truncation flags. The existing operation-specific limits still apply.
+
+Generated code runs in a separate Deno Worker through a fixed shipped runner,
+with filesystem, network, environment, subprocess, FFI and system-information
+permissions denied, and remote imports disabled. The runner uses a disposable
+working directory and a clean environment. The permitted Python operations are the route to project data;
+they retain their existing confinement. Scripts cannot choose a new project,
+output root, executable or capability through tool arguments.
+
+On cancellation, protocol failure or deadline, the broker stops admitting calls
+and terminates the runner. An already admitted atomic map operation may finish;
+its outcome remains accounted for. The 30-second JavaScript deadline is therefore
+not a hard wall-clock deadline for such an operation. Deno permissions are a
+runtime boundary, not a complete OS sandbox. The old-space limit is not a total
+process-memory or disk quota. This feature is for bounded local composition and
+makes no isolation claim for a multi-tenant hostile-code service.
+
 ## Tools
 
-Every tool returns structured JSON and reports errors as MCP tool failures.
+Native mode exposes these 19 tools. Code Mode discovers the permitted subset of
+the same operations and calls their existing wrappers. Every tool returns
+structured JSON and reports errors as MCP tool failures.
 
 | Tool | Inputs and behavior |
 |---|---|

@@ -291,6 +291,16 @@ events; its [MCP contract](../plugins/codebase-map/skills/map-method/references/
 keeps worker execution and native UI in the host. Existing shell analysis entries
 remain usable without connecting the server.
 
+Codebase Map also supports opt-in local Code Mode. Append `--code-mode` and,
+when needed, `--deno /absolute/path/to/deno` to the same server registration.
+It exposes `search` and `execute` over the existing registry, with read-only
+operations by default and explicitly named startup grants for writes. Deno 2.4+
+is an additional runtime requirement only for this mode; use a maintained release.
+The [Code Mode guide](../plugins/codebase-map/skills/map-method/references/mcp.md#local-code-mode-opt-in)
+defines discovery, composition, approval scope and execution limits. Check
+`tools/list` after changing registration; this optional interface does not change
+the generated native startup arguments.
+
 To use the server by hand on a host that does not start it, run the declared command
 with `--project <project root>` as one stdio server named `codebase-map`, keep both
 `--no-config` and `--no-project`, and check that `codebase_map_scope` or

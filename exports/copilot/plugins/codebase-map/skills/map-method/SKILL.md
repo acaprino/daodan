@@ -168,6 +168,7 @@ Language Support above applies throughout.
 - `migrate_root.py`: project-bound legacy migration; historical-path resolution.
 - `snapshot.py`: scope, SQLite snapshots (explicit JSON), run resolution, incremental changes.
 - `source_reader.py`: manifest graphs, outlines and validated source blocks.
+- MCP and Code Mode: `references/mcp.md`; `mcp_server.py`, `mcp_service.py`, `code_mode.py`, `code_mode_runner.js`.
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
 - `cascade_scan.py`: global stylesheet layout risks, cascade overrides and screen rules (Phase 5).
 - `languages/`: per-language adapters listed above.

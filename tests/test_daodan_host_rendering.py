@@ -94,6 +94,19 @@ class HostRenderingTests(unittest.TestCase):
         root = self.package(host, plugin)
         return {path.relative_to(root).as_posix(): _read(path) for path in root.rglob("*.md")}
 
+    def test_code_mode_runtime_ships_with_its_native_server_on_every_host(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                package = self.package(host, "codebase-map")
+                for filename in ("mcp_server.py", "code_mode.py", "code_mode_mcp.py",
+                                 "code_mode_runner.js"):
+                    relative = Path("skills/map-method/scripts") / filename
+                    self.assertEqual((package / relative).read_bytes(),
+                                     (MAP / relative).read_bytes())
+                reference = _read(package / "skills/map-method/references/mcp.md")
+                self.assertIn("--code-mode-allow-write", reference)
+                self.assertIn("--code-mode --deno", reference)
+
     # -- dispatch plan -----------------------------------------------------
 
     def test_the_map_entry_binds_every_isolated_map_worker_on_every_host(self):

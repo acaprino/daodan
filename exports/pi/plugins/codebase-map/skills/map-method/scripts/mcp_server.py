@@ -205,9 +205,23 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--store", default=None,
                         help="project-relative analysis store beginning with a dot directory; "
                              "default .codebase-map, fixed for the lifetime of this server")
+    parser.add_argument("--code-mode", action="store_true",
+                        help="expose search/execute composition instead of individual tools")
+    parser.add_argument("--deno", type=Path,
+                        help="absolute Deno 2.4+ executable outside the project; Code Mode only")
+    parser.add_argument("--code-mode-allow-write", action="append", default=[], metavar="NAME",
+                        help="grant one exact native mutation to Code Mode; repeat as needed")
     args = parser.parse_args(argv)
+    if not args.code_mode and (args.deno is not None or args.code_mode_allow_write):
+        parser.error("--deno and --code-mode-allow-write require --code-mode")
     try:
         server = create_server(args.project, args.store)
+        if args.code_mode:
+            from code_mode import DenoExecutor
+            from code_mode_mcp import create_code_mode_server
+            executor = DenoExecutor(args.deno, project_root=args.project.resolve())
+            server = anyio.run(partial(create_code_mode_server, server, executor,
+                                      tuple(args.code_mode_allow_write)))
     except ValueError as exc:
         parser.error(str(exc))
     server.run(transport="stdio")
