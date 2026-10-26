@@ -860,7 +860,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.2.0"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -875,7 +875,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.2.0"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
@@ -896,7 +896,7 @@
       "topics": [
         "readme"
       ],
-      "version": "3.1.0"
+      "version": "3.2.0"
     },
     {
       "description": "Diagnose project coherence and technical debt through canonical specialist audits and an executable roadmap. TRIGGER WHEN: the user asks for project health, a coherence assessment, technical-debt diagnosis or a prioritized maintenance roadmap, including /daodan:check-health and the assessment stage of /daodan:run-maintenance. DO NOT TRIGGER WHEN: implementing an approved change, repair or verification cycle (use project-delivery:delivery-method), running a full Senior Maintainer campaign (use maintainer-method), or preparing a consultant dossier (use handover-method).",

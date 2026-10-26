@@ -94,6 +94,12 @@ information is retained or moved with a pointer. Old age, no inbound links,
 length or a preferred writing style alone do not authorize removal. Preserve
 historical ADRs as history rather than silently rewriting approved decisions.
 
+Daodan documentation restructuring first follows `documentation-organization.md`.
+Never create files or make in-place edits under `docs/superpowers/`, including
+link repair or staging. Existing artifacts there need their own recorded human
+retention and destination answer before move, merge, archive or retirement;
+global authorization and moving with a pointer do not satisfy that gate.
+
 Edit only planned documents, leaving generated output to its generator. Update
 inbound links and named consumers in the authorized scope; report consumers
 outside scope as open actions. Separate implemented behavior from desired intent.

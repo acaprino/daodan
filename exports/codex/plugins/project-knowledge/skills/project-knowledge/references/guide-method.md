@@ -79,6 +79,11 @@ need an existing README update and no new guide directory. A comprehensive
 multi-document set is allowed only when requested or justified in the authorized
 plan; numbered files are a naming choice, never a required package or quota.
 
+For Daodan's requested per-plugin layout, load `documentation-organization.md`
+and dispatch `project-knowledge:documentation-organizer`. That profile supplies
+the explicit file/audience plan and legacy human decision gates. Use its owned
+mapping for writer assignments; preserve unanswered protected source bytes.
+
 Resolve the mode before dispatch. Audit-only reviews existing documentation with
 documentation-engineer and guide-reviewer, then returns native findings through
 the protocol, writing only their owned reports. Plan-only delivers the
