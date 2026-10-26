@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
+  "description": "Behavior-driven test authoring and suite maintenance: review existing protection, reuse and update checks before justified additions, diagnose failures, and consolidate redundant tests while preserving independent failure modes and bugfix provenance. Snapshot-bound gates and owned recovery govern accepted changes; TDD and browser E2E methods remain delegated to their required providers.",
   "license": "MIT",
   "name": "testing",
-  "version": "4.4.0"
+  "version": "4.5.0"
 }

@@ -1015,7 +1015,7 @@ class LoopRecordTests(ProtocolCase):
         self.assertTrue((self.project / ".daodan/runs/wt-run/work.json").is_file())
         self.assertFalse((worktree / ".daodan").exists())
         self.assertEqual(Path(record["project"]["worktree"]), worktree.resolve())
-        rows = self.invoke("agenda", extra=["--branch", "task/wt"])["tasks"]
+        rows = self.invoke("agenda", extra=["--branch", "task/wt", "--run-id", "wt-run"])["tasks"]
         self.assertEqual([r["run_id"] for r in rows], ["wt-run"])
         self.git("worktree", "remove", "--force", str(worktree))
         self.assertTrue((self.project / ".daodan/runs/wt-run/work.json").is_file())

@@ -34,7 +34,6 @@ from scripts.daodan.catalogs import (  # noqa: E402
     CATALOG_NAME,
     assert_cross_host_identity,
     catalog_document,
-    merge_into_legacy,
     render_catalog,
 )
 from scripts.daodan.load import load_plugin  # noqa: E402
@@ -243,9 +242,8 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
             adapter = load_adapter(root / "adapters", host)
             packages = {plugin.name: staged_packages[(host, plugin.name)] for plugin in plugins}
             catalog_path = root / adapter.layout["marketplace"]
-            removed = {path.name for path in retired if path.parent == root / adapter.layout["root"] / "plugins"}
             rendered = _render_host_catalog(root, adapter, host, plugins, version, catalog_path,
-                                            packages, removed,
+                                            packages,
                                             name=catalog_name, description=catalog_description)
             files.append((catalog_path, rendered))
             files.extend(_package_files(root, adapter))
@@ -432,31 +430,14 @@ def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
 
 
 def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Path,
-                         packages=None, retired=frozenset(), *,
+                         packages=None, *,
                          name: str = CATALOG_NAME, description: str = CATALOG_DESCRIPTION) -> bytes:
-    """Serialize one host catalog, folding into a legacy one while migration runs.
-
-    Until every plugin is a neutral kernel, the live Claude catalog still carries
-    hand-written entries for the plugins that have not moved yet. Overwriting it
-    with the compiled catalog would uninstall them, so compiled entries are
-    merged into it instead and the generated catalog is written whole only once
-    nothing legacy is left.
-    """
+    """Serialize current kernel and adapter authority, never saved registrations."""
     packages = packages if packages is not None else {
         plugin.name: root / adapter.layout["root"] / "plugins" / plugin.name
         for plugin in plugins
     }
-    compiled = {plugin.name for plugin in plugins}
     confined_source(root, catalog_path, allow_missing=True)
-    if catalog_path.is_file():
-        existing = json.loads(catalog_path.read_text(encoding="utf-8"))
-        existing["plugins"] = [entry for entry in existing.get("plugins", []) if entry["name"] not in retired]
-        legacy = [
-            entry for entry in existing.get("plugins", []) if entry["name"] not in compiled
-        ]
-        if legacy:
-            document = merge_into_legacy(existing, plugins, host, packages)
-            return (json.dumps(document, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
     return render_catalog(
         host, plugins, version, packages, layout=adapter.layout, name=name, description=description
     )

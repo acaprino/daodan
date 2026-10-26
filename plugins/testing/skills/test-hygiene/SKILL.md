@@ -25,7 +25,7 @@ Test ownership: source at unit; behavior at integration, contract and e2e.
 
 Full protocol with per-rule detail in `references/prevention-rules.md`. The condensed form:
 
-1. **Search before writing.** Locate the existing owner for the intended layer and behavioral scope, and extend it. A parallel file for the same owner requires a justified scope split.
+1. **Review before adding.** Locate and read the existing owner for the intended layer and behavioral scope. Map protection before adding any case: reuse, update or justify the gap. Zero additions is valid. A parallel file requires a justified scope split.
 2. **Deterministic ownership per layer.** Unit tests: one primary test file per source file, mirroring the source path (`src/foo/bar.py` maps to `tests/unit/foo/test_bar.py`), following the project's established convention and documenting justified scope splits. Integration, contract, and e2e tests are behavior-owned: one primary file per behavioral scope (a flow, an endpoint, a contract), legitimately spanning several source modules. The violation at those layers is an unexplained second file for the same scope, not multi-module reach.
 3. **Explicit layers** (unit, integration, contract, e2e) with runtime budgets, identified through the project's directories, colocated paths or runner markers. A new test goes in the lowest layer that can prove its contract without hiding the relevant boundary.
 4. **Behavior through justified interfaces.** Prefer observable contracts. Internal access, boundary doubles and ordering checks require a named boundary or diagnostic regression; inspect their purpose before rewriting them.
@@ -63,6 +63,9 @@ Defaults; a project's own convention overrides them.
 A behavior's primary proof lives at ONE layer. Cross-layer overlap is duplication only when two tests protect substantially the same failure mode through the same observable contract without adding independent risk coverage; a calculation checked at unit, its persistence at integration, and the user flow at e2e are three behaviors, not one repeated. A test that crosses a real database boundary belongs in integration. A controlled database-port double can isolate service behavior at unit, but cannot prove SQL, transactions or persistence; those contracts require the real boundary in an appropriate test lane.
 
 ## Related knowledge
+
+Source revisions, license notices and delegation boundaries are indexed in
+`references/upstream.md`; read it for provenance or integration maintenance.
 
 Required upstream skills need a capability preflight on the active host: resolve
 and load the actual installed skill before accepting an action that needs it.

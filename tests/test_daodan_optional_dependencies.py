@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.daodan.catalogs import merge_into_legacy, render_catalog
+from scripts.daodan.adapter import load_adapter
+from scripts.daodan.catalogs import render_catalog
+from scripts.daodan_build import _render_host_catalog
 from scripts.daodan.load import load_plugin
 from scripts.daodan.model import ModelError
 from scripts.daodan.validate import validate_dependencies
@@ -95,18 +97,38 @@ class OptionalDependencyTests(unittest.TestCase):
                 if host == "opencode":
                     self.assertNotIn("dependencies", catalog["daodan"]["plugins"][plugin.name])
 
-    def test_legacy_merge_removes_stale_required_and_optional_edges(self):
+    def test_publication_factory_recomputes_required_and_optional_edges(self):
         optional = replace(self.base, optional_dependencies=(self.provider,))
-        existing = {"plugins": [{"name": self.base.name, "dependencies": [self.provider],
-                                  "optionalDependencies": ["old@marketplace"]}]}
+        root = Path(self.temporary.name)
         packages = {self.base.name: self.kernel}
         for host in ("claude", "codex", "copilot"):
-            with self.subTest(host=host):
-                merged = merge_into_legacy(existing, [optional], host, packages)
-                self.assertEqual(merged["plugins"][0]["dependencies"], [])
-                self.assertEqual(merged["plugins"][0]["optionalDependencies"], [self.provider])
-                cleared = merge_into_legacy(merged, [self.base], host, packages)
-                self.assertNotIn("optionalDependencies", cleared["plugins"][0])
+            adapter = load_adapter(ROOT / "adapters", host)
+            catalog_path = root / adapter.layout["marketplace"]
+            catalog_path.parent.mkdir(parents=True, exist_ok=True)
+            for plugin in (optional, self.base):
+                with self.subTest(host=host, optional=bool(plugin.optional_dependencies)):
+                    existing = {"name": "old", "metadata": {"version": "0.0.1"},
+                                "allowCrossMarketplaceDependenciesOn": ["stale-marketplace"],
+                                "plugins": [{"name": self.base.name, "dependencies": [self.provider],
+                                             "optionalDependencies": ["old@marketplace"]},
+                                            {"name": "ghost", "source": "./old/ghost"}]}
+                    saved = json.dumps(existing).encode("utf-8")
+                    catalog_path.write_bytes(saved)
+                    rendered = _render_host_catalog(
+                        root, adapter, host, [plugin], "2.0.0", catalog_path, packages)
+                    self.assertEqual(rendered, render_catalog(
+                        host, [plugin], "2.0.0", packages, layout=adapter.layout))
+                    self.assertEqual(catalog_path.read_bytes(), saved)
+                    current = json.loads(rendered)
+                    self.assertEqual([entry["name"] for entry in current["plugins"]], [self.base.name])
+                    entry = current["plugins"][0]
+                    self.assertEqual(entry["dependencies"], [])
+                    if plugin.optional_dependencies:
+                        self.assertEqual(entry["optionalDependencies"], [self.provider])
+                        self.assertEqual(current["allowCrossMarketplaceDependenciesOn"], ["external-marketplace"])
+                    else:
+                        self.assertNotIn("optionalDependencies", entry)
+                        self.assertNotIn("allowCrossMarketplaceDependenciesOn", current)
 
     def test_documentation_separates_optional_providers_from_required_closure(self):
         plugin = replace(self.base, optional_dependencies=(self.provider,), workflows=(),

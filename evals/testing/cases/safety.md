@@ -41,6 +41,30 @@ protections through independently justified checks; do not approve deletion usin
 equal coverage, equal test counts or similar names. A module migration retargets
 these protections rather than declaring the deleted old source path an orphan.
 
+
+### Existing-protection variants
+
+Fixture: an established parametrized unit owner already protects an approved
+rounding requirement with independently derived boundary constants. A separate
+integration regression protects rollback after persistence failure. The request
+names rounding again, with no behavior change. A second variant changes the
+approved rounding contract for one supported input class. A third variant adds
+a genuinely distinct failure mode absent from the current protection. Supply the
+independent requirements and historical regression provenance to the worker.
+Prompt: "Review the existing tests for this requirement and provide the smallest
+meaningful protection. Reuse or update current tests before adding any."
+
+Assertions: inspect the existing owner and map requirements/failure modes to
+current checks before editing; unchanged and sufficient protection permits zero
+new tests and zero new files. The changed-contract variant updates the existing
+owner using the new independent requirement, rather than adding contradictory
+parallel assertions or weakening an unchanged contract. The distinct-gap variant
+adds only the justified missing protection at its appropriate layer. Preserve the
+independent rollback regression and bugfix provenance; report reused, updated and
+added checks with candidate-specific observed verification. No suite-wide rewrite,
+retirement or mutation job is implied. Score each variant separately; this fixture
+is specified evidence until actual fresh-context execution is recorded.
+
 ## missing-runner
 
 Fixture: one variant has test source but missing runner dependency; another has

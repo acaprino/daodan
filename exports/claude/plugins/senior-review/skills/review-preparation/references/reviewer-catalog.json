@@ -194,7 +194,7 @@
         "senior-review/roles/temporal-resilience-auditor.md": "sha256:2f4bf0061b92a1db1598e1ba9f9677558c13b92a4d4b0fc6b6e9e69295c1efc4",
         "senior-review/roles/transaction-integrity-auditor.md": "sha256:f6bf40375e03842ef33bc1616a9bc6474831406f67af1a67e4766fb861010143",
         "senior-review/roles/untrusted-resource-auditor.md": "sha256:1e9a3547e1cd5baee9f99aab5f65d982fd54f7a8259b40b265f2ea120e8514db",
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/test-reliability-auditor.md": "sha256:ece6fdb68640c605edeb06a1835d3176367a53c758f7152d5bff3c13ad6704ed"
       },
       "trigger_when": "any member applies: branches, arithmetic, conversions, errors, local interfaces or instance state are in scope.; shared memory, locks, reentrancy, cancellation or concurrent initialization are in scope.; reviewing parsers, normalization, validation, queries, shell commands, templates, eval, deserialization and adversarial size/depth.; target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, tasks, threads, timers or native/GPU resources.; loops, parsing, copies, recursion, rendering or hot-path scheduling are in scope.; reviewing caller-supplied IDs, RLS, IAM, permission policies, privileged fields, list/export/batch/admin routes and file access.; reviewing login, token issuance/verification, password storage, refresh/logout/revocation, signed URLs and service identity.; reviewing credentials, key management, encryption, sensitive comparisons, source/configuration, bundles, logs, errors and build artifacts.; reviewing caller-controlled paths, archives, filenames, uploads/downloads, URLs, redirects, renderers and network destinations.; reviewing rendering/DOM sinks, cookies, CSRF, CORS, CSP, transport and edge response policy.; reviewing signed webhooks, provider callbacks, signature middleware, timestamp/replay windows and callback key selection.; reviewing prompts, retrieved documents, memory, tool results, model-selected destinations and tool invocation.; reviewing sensitive actions, privileged changes, required failed attempts, audit sinks, log framing and audit access controls.; queues, workers, quotas, authentication-attempt limits, replicas, fan-out, cache expiry or concurrency limits are in scope.; reviewing schemas, constraints, ORM mappings, repository writes, imports, isolation, upserts, deduplication or offline conflict reconciliation.; reviewing migrations, schema files, ORM models or entities, repository SQL, database functions, procedures, triggers, views or a constraint added to an existing table.; reviewing caches, replicas, indexes, projections, invalidation, read-your-writes and access/deletion propagation.; reviewing money/ranges, timezones/dates, NULL/defaults, enum/JSON versions, cursors, migrations and backfills.; reviewing data-class policies, deletion requests, expiry jobs, copies/derivatives, backup restore, replay and legal-hold exceptions.; startup ordering, initialization, bootstrap or config loading, service discovery, readiness before traffic, seed data or migration dependencies are in scope.; reviewing timers, schedulers, polling, retry/reconnect, background jobs, queues, resident workers, deadlines, watchdogs or restart recovery.; reviewing publishers/consumers, AMQP topology, confirms, acknowledgements, replay, prefetch, DLQ/redrive and partition offsets.; reviewing external mutations, payments, outbox/inbox, sagas, idempotency, leases/fencing, leadership and distributed commit.; reviewing HTTP/gRPC/service calls, remote timeouts/cancellation, mesh/client retries, circuit breakers, bulkheads and half-open connections.; deployment variables, configuration layers, artifact promotion, endpoints or mesh routing are in scope.; checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, DTOs, runtime validation, AMQP payloads or AI/tool schemas against producers and consumers.; reviewing runner viability, isolation, intermittent failures and trustworthy timing or coverage evidence.."
@@ -575,10 +575,10 @@
         "prepared-test-suite-context"
       ],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "test-suite-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/ai-evaluation-auditor.md": "sha256:907da825459de9ba658fd6d06f09e7673bcdf336dd974574fb92b695fe8650d2",
         "testing/roles/capacity-test-auditor.md": "sha256:c2222c02655a063cf0ffa43e8d144cdcc4a4ddc290fd49376a54e7cc0a9298aa",
         "testing/roles/contract-test-auditor.md": "sha256:97c02b7f7258971a412ab0c782058bb9fca83abce5242a6f59b6fbb8b576d059",
@@ -1615,10 +1615,10 @@
         "prepared-test-suite-context"
       ],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "test-suite-structure-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/test-suite-structure-auditor.md": "sha256:d6f975c57640d1ff53117b043ccd4b5c0426b109a56ba9f327cb80d74077895a"
       },
       "trigger_when": "reviewing test ownership, layer fitness, retired behavior, disabled collection and duplicate failure-mode protection."
@@ -1640,10 +1640,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "test-oracle-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/test-oracle-auditor.md": "sha256:757767dd2bb5625dddd0bcfc8cbe023c880dfaa1a888f3c8614e0172e359f5c1"
       },
       "trigger_when": "reviewing contradictory, implementation-coupled or vacuous assertions against independent product requirements."
@@ -1667,10 +1667,10 @@
         "prepared-test-suite-context"
       ],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "test-reliability-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/test-reliability-auditor.md": "sha256:ece6fdb68640c605edeb06a1835d3176367a53c758f7152d5bff3c13ad6704ed"
       },
       "trigger_when": "reviewing runner viability, isolation, intermittent failures and trustworthy timing or coverage evidence."
@@ -1692,10 +1692,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "journey-protection-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/journey-protection-auditor.md": "sha256:5516c93b416397c37f977802675489f76c1d81bd52858daf4c3a3f87b5c79adc"
       },
       "trigger_when": "reviewing whether tests protect required entry, success, failure and recovery outcomes through the critical journey."
@@ -1717,10 +1717,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "contract-test-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/contract-test-auditor.md": "sha256:97c02b7f7258971a412ab0c782058bb9fca83abce5242a6f59b6fbb8b576d059"
       },
       "trigger_when": "reviewing whether producer and consumer contract tests detect real wire, schema, error and version drift."
@@ -1742,10 +1742,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "capacity-test-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/capacity-test-auditor.md": "sha256:c2222c02655a063cf0ffa43e8d144cdcc4a4ddc290fd49376a54e7cc0a9298aa"
       },
       "trigger_when": "reviewing workload, bottleneck reachability and latency, error or backlog assertions against declared capacity requirements."
@@ -1767,10 +1767,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "testing",
-      "provider_version": "4.4.0",
+      "provider_version": "4.5.0",
       "role": "ai-evaluation-auditor",
       "source_hashes": {
-        "testing/kernel": "sha256:8ccaf6abacb185f6cfef6622b6f00e304176ed07dd4abefd2d2b833e8af21ca2",
+        "testing/kernel": "sha256:91a5fdfdc69ea98bf28a0ddb4a6e9bb3452a0352dec8d66c3cf059a939d02596",
         "testing/roles/ai-evaluation-auditor.md": "sha256:907da825459de9ba658fd6d06f09e7673bcdf336dd974574fb92b695fe8650d2"
       },
       "trigger_when": "reviewing AI or retrieval evaluation cases, independent oracles, leakage and stochastic coverage against required capabilities."

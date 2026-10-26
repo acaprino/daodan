@@ -796,7 +796,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.2.2"
+      "version": "1.2.3"
     },
     {
       "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
@@ -811,7 +811,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.2.2"
+      "version": "1.2.3"
     },
     {
       "description": "Extract, validate, reconcile, approve, version and verify evidence-bound functional requirements documents in docs/frd/. TRIGGER WHEN: the user asks for an evidence-bound FRD, requirements and domain references must be extracted from project sources, a fresh extraction must be reconciled with manual review, or an FRD needs approval, revision or verification. DO NOT TRIGGER WHEN: recording an architecture or technical decision (use project-delivery:adr-method), writing general project documentation without evidence spans, or treating current implementation as an automatically approved requirement.",
@@ -826,7 +826,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.2.2"
+      "version": "1.2.3"
     },
     {
       "description": "Draft missing ADR and FRD from verified project evidence without turning legacy behavior or stale documentation into approved requirements. TRIGGER WHEN: a project has no ADR or FRD, existing project knowledge must be bootstrapped from code, documentation or Codebase Map, or /daodan:init-project needs initial requirement records. DO NOT TRIGGER WHEN: recording one already understood decision (use adr-method), editing an existing FRD (use frd-method), or running the implementation cycle (use delivery-method).",
@@ -845,7 +845,7 @@
         "documentation",
         "requirements"
       ],
-      "version": "1.2.2"
+      "version": "1.2.3"
     },
     {
       "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file. TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.",
@@ -1530,7 +1530,7 @@
         "testing",
         "tests"
       ],
-      "version": "4.4.0"
+      "version": "4.5.0"
     },
     {
       "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence. Load before dispatching testing:test-suite-auditor.",
@@ -1545,10 +1545,10 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "4.4.0"
+      "version": "4.5.0"
     },
     {
-      "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when auditing a suite, quarantining tests or consolidating a module's tests (consolidation through /daodan:tidy-repo).",
+      "description": "Maintain existing test suites: diagnose failures, review and consolidate redundant tests, preserving behavior, independent failure modes and bugfix provenance. Load for suite audits, quarantine or rationalization through /daodan:maintain-tests (also composed by /daodan:tidy-repo).",
       "dimensions": [],
       "file": "skills/test-remediation-method/SKILL.md",
       "frameworks": [],
@@ -1560,7 +1560,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "4.4.0"
+      "version": "4.5.0"
     },
     {
       "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",

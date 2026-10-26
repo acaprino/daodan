@@ -1,0 +1,26 @@
+name = "maintain-tests"
+entrypoint = "maintain-tests.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work"]
+
+[[phases]]
+id = "execute"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:work"]
+produces = ["artifact:test-consolidate-report", "artifact:result"]
+
+[dispatch]
+roles = ["testing/test-suite-auditor", "testing/test-writer"]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = ["project", "objective", "scope", "authorization"]
+outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
+artifacts = ["test-consolidate-report", "result"]
+schemas = []
+shared_schemas = ["work-controller/contracts/work.toml"]

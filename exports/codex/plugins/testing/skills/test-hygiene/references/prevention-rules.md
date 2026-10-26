@@ -78,16 +78,24 @@ The full protocol behind each binding rule in SKILL.md. These rules are written 
 
 ## 1. Search before writing (the protocol)
 
+Before adding any case, including inside an existing file, read affected existing
+tests and map each approved behavior and independent failure mode to its current
+check and oracle. Choose reuse, update or a justified addition. Existing
+protection can satisfy the request with zero new tests. Changed requirements
+need revised checks; unchanged contracts retain their meaningful regressions.
+Counts, age and a refactor alone never establish obsolescence. Broader
+consolidation uses `testing:test-remediation-method` and its acceptance gate.
+
 Before creating ANY test file, identify its layer and behavioral owner. For unit tests use the source-file search below. For integration, contract and e2e tests search for the intended flow, endpoint or contract; a source module already covered at another layer does not prevent a justified new behavioral scope.
 
-1. **Derive the expected test path** from the source path using the project's convention (see rule 2). If a file exists there, extend it. Done.
+1. **Derive the expected test path** from the source path using the project's convention (see rule 2). If a file exists there, review its checks as the candidate owner. Finding a file does not establish a protection gap.
 2. **Glob for name variants** of the target source file `<name>` across the test tree: `test_<name>*`, `<name>.test.*`, `<name>.spec.*`, `<name>_test.*`.
 3. **Grep the test tree for imports** of the target module (its module path, not just the basename) to catch tests that cover it from a misplaced file.
-4. **Resolve the intended owner at the intended layer.** A hit for that owner normally means extend it. Source imports at another layer do not prevent a new flow, endpoint or contract test. A new file requires evidence of an absent owner or a justified split with distinct scope, placement and fixture/lifecycle needs; state the searches and why extending the existing owner would be unsuitable.
+4. **Resolve the intended owner at the intended layer.** Reuse sufficient protection; update the existing owner for an approved contract change or evidenced gap. Source imports at another layer do not prevent a justified new flow, endpoint or contract test. A new file requires evidence of an absent owner or a justified split with distinct scope, placement and fixture/lifecycle needs; state the searches and why extending the existing owner would be unsuitable.
 
-Preference order when a hit exists:
+After review establishes a contract change or protection gap, prefer:
 
-1. Add a case to an existing test group (describe block, test class, parametrize list) covering the same behavior area.
+1. Update the affected case for an approved contract change, or add the missing case to its existing group (describe block, test class, parametrize list). Preserve independent protections.
 2. Add a new test group to the existing file for the module.
 3. Create a new unit file when that source owner has no unit file or a documented scope split is justified. Higher-layer files require an uncovered behavioral scope or justified split, not a source module without tests anywhere.
 

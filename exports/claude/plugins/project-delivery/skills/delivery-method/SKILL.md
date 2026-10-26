@@ -130,7 +130,7 @@ commit through the reviewed workflow.
 - Task workspaces/catalog: load skill `worktree-manager:worktree-method`.
 - Requested challenge: `peer-review:cross-model-peer-review`; dispatch `peer-review:packet-builder`,
   `peer-review:respondent`. Requested opinion: `moe:multi-model-deliberation`.
-- Load skills: `report-rendering:report-renderer`, then `references/project-run-view.md`.
+- HTML: the coordinator must load skill `report-rendering:report-renderer` and read `references/project-run-view.md` before closure when requested/useful.
 
 The worktree method owns workspace creation/resumption and catalog annotations;
 Work Controller owns agenda/grants. Status and brainstorming create no worktree.
@@ -140,6 +140,6 @@ Missing Worktrunk blocks dependent operations with its recovery path.
 
 Validate the protocol's `result.json`, retaining native reports, hashes, gaps
 and contradictory/shared-premise findings. Missing deliveries block completion.
-Report inventory, reading and runtime separately, exact candidates and limits.
+Report inventory/reading/runtime separately, with exact candidates/limits.
 Static checks prove no runtime execution; self-checks no independent correctness;
 quarantine moves no recovered disk space.

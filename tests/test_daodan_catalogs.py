@@ -18,11 +18,11 @@ from scripts.daodan.catalogs import (  # noqa: E402
     CatalogError,
     assert_cross_host_identity,
     catalog_document,
-    merge_into_legacy,
     render_catalog,
 )
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.render import render_plugin  # noqa: E402
+from scripts.daodan_build import _render_host_catalog  # noqa: E402
 
 VALID = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
@@ -35,43 +35,74 @@ def build_fixture_catalogs():
 
 
 class CatalogTests(unittest.TestCase):
-    def test_legacy_merge_replaces_compiled_entries_and_preserves_foreign_entries(self):
-        """O01 migration keeps unrelated legacy registrations byte-equivalent."""
-        base = load_plugin(VALID)
+    def test_publication_factory_rebuilds_stale_catalogs_from_current_authority(self):
+        """Saved registrations are generated output, never a second owner."""
+        base = load_plugin(REPO_ROOT / "tests/fixtures/daodan/valid-mcp/plugins/example")
+        base = replace(base, required_dependencies=("current-tool@current-marketplace",))
         newcomer = replace(base, name="newcomer", version="2.0.0")
-        foreign = {"name": "foreign", "version": "7.0.0",
-                   "source": {"source": "github", "repo": "someone/foreign"},
-                   "agents": ["./old/worker.md"], "custom": {"keep": True}}
-        existing = {"name": "legacy", "metadata": {"version": "9.0.0"},
-                    "plugins": [foreign, {"name": "example", "version": "0.0.1",
-                                          "source": "./old/example",
-                                          "agents": ["./old/agent.md"],
-                                          "skills": ["./old/skill"],
-                                          "commands": ["./old/command.md"],
-                                          "mcpServers": "./old/.mcp.json"}]}
-        before = json.dumps(existing, sort_keys=True)
-        with tempfile.TemporaryDirectory(prefix="daodan-legacy-catalog-") as holder:
-            packages = {name: Path(holder) / name for name in ("example", "newcomer")}
-            for package in packages.values():
-                (package / "skills/tools").mkdir(parents=True)
-                (package / "skills/tools/SKILL.md").write_text("fixture", encoding="utf-8")
-
-            for host in ("claude", "copilot", "codex"):
+        plugins = [newcomer, base]
+        with tempfile.TemporaryDirectory(prefix="daodan-current-catalog-") as holder:
+            root = Path(holder)
+            for host in HOSTS:
                 with self.subTest(host=host):
-                    merged = merge_into_legacy(existing, [base, newcomer], host, packages)
+                    adapter = load_adapter(REPO_ROOT / "adapters", host)
+                    catalog_path = root / adapter.layout["marketplace"]
+                    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+                    stale = {"name": "old-marketplace", "metadata": {"version": "0.0.1",
+                             "description": "Old description"}, "version": "0.0.1",
+                             "allowCrossMarketplaceDependenciesOn": ["old-marketplace"],
+                             "plugins": [
+                                 {"name": "example", "version": "0.0.1", "source": "./old/example",
+                                  "agents": ["./old/worker.md"], "skills": ["./old/skill"],
+                                  "commands": ["./old/command.md"], "mcpServers": "./old/.mcp.json"},
+                                 {"name": "ghost", "version": "7.0.0",
+                                  "source": f"./exports/{host}/plugins/ghost"},
+                                 {"name": "ghost", "version": "7.0.0",
+                                  "source": f"./exports/{host}/plugins/ghost"},
+                                 {"name": "foreign", "version": "8.0.0",
+                                  "source": {"source": "github", "repo": "someone/foreign"}}]}
+                    saved = (json.dumps(stale, indent=3) + "\n").encode("utf-8")
+                    catalog_path.write_bytes(saved)
+                    ghost = root / adapter.layout["root"] / "plugins/ghost/owned-note.txt"
+                    ghost.parent.mkdir(parents=True, exist_ok=True)
+                    ghost.write_bytes(b"preserve physical output pending retirement")
+                    packages = {plugin.name: root / host / plugin.name for plugin in plugins}
+                    for plugin in plugins:
+                        render_plugin(plugin, adapter, packages[plugin.name],
+                                      adapters_root=REPO_ROOT / "adapters")
 
-                    self.assertEqual(merged["metadata"], {"version": "9.0.0"})
-                    self.assertEqual(merged["plugins"][0], foreign)
-                    self.assertEqual([item["name"] for item in merged["plugins"]],
-                                     ["foreign", "example", "newcomer"])
-                    for entry, version in zip(merged["plugins"][1:], ("1.2.3", "2.0.0")):
-                        self.assertEqual(entry["version"], version)
-                        self.assertEqual(entry["source"],
-                                         f"./exports/{host}/plugins/{entry['name']}")
-                        self.assertEqual(entry["skills"], ["./skills/tools"])
-                        for stale in ("agents", "commands", "mcpServers"):
-                            self.assertNotIn(stale, entry)
-                    self.assertEqual(json.dumps(existing, sort_keys=True), before)
+                    rendered = _render_host_catalog(
+                        root, adapter, host, plugins, "4.5.6", catalog_path, packages,
+                        name="current-marketplace", description="Current description")
+                    expected = render_catalog(
+                        host, plugins, "4.5.6", packages, layout=adapter.layout,
+                        name="current-marketplace", description="Current description")
+                    self.assertEqual(rendered, expected)
+                    self.assertEqual(catalog_path.read_bytes(), saved)
+                    self.assertEqual(ghost.read_bytes(), b"preserve physical output pending retirement")
+                    current = json.loads(rendered)
+                    self.assertEqual(current["name"], "current-marketplace")
+                    self.assertNotIn("./old/", rendered.decode("utf-8"))
+                    if host in {"claude", "copilot", "codex"}:
+                        self.assertEqual(current["metadata"]["version"], "4.5.6")
+                        self.assertEqual([(item["name"], item["version"]) for item in current["plugins"]],
+                                         [("example", "1.2.3"), ("newcomer", "2.0.0")])
+                        self.assertEqual(current["allowCrossMarketplaceDependenciesOn"], ["current-marketplace"])
+                        for entry in current["plugins"]:
+                            self.assertEqual(entry["source"], f"./exports/{host}/plugins/{entry['name']}")
+                            expected_skills = ["./skills/tools"]
+                            if host == "codex":
+                                expected_skills.insert(0, "./skills/review-workflow")
+                            self.assertEqual(entry["skills"], expected_skills)
+                            self.assertEqual(entry["dependencies"], ["current-tool@current-marketplace"])
+                    else:
+                        self.assertEqual(current["version"], "4.5.6")
+                        self.assertNotIn("plugins", current)
+                        if host == "opencode":
+                            self.assertEqual(list(current["daodan"]["plugins"]), ["example", "newcomer"])
+                            entry = current["daodan"]["plugins"]["example"]
+                            self.assertEqual(entry["skills"][0]["id"], "example:tools")
+                            self.assertEqual(entry["commands"][0]["name"], "example:review")
 
     def test_catalogs_share_identity_names_and_versions(self):
         catalogs = build_fixture_catalogs()

@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.2.0"
+    "version": "42.2.1"
   },
   "name": "daodan",
   "owner": {
@@ -194,6 +194,7 @@
         "./commands/humanize-text.md",
         "./commands/init-project.md",
         "./commands/investigate-problem.md",
+        "./commands/maintain-tests.md",
         "./commands/map-code.md",
         "./commands/new-feature.md",
         "./commands/onboard-project.md",
@@ -243,7 +244,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.4.2"
+      "version": "2.5.0"
     },
     {
       "author": {
@@ -622,7 +623,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/claude/plugins/project-delivery",
-      "version": "1.2.2"
+      "version": "1.2.3"
     },
     {
       "agents": [
@@ -1020,7 +1021,7 @@
         "work-controller",
         "report-rendering"
       ],
-      "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
+      "description": "Behavior-driven test authoring and suite maintenance: review existing protection, reuse and update checks before justified additions, diagnose failures, and consolidate redundant tests while preserving independent failure modes and bugfix provenance. Snapshot-bound gates and owned recovery govern accepted changes; TDD and browser E2E methods remain delegated to their required providers.",
       "license": "MIT",
       "name": "testing",
       "skills": [
@@ -1029,7 +1030,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "4.4.0"
+      "version": "4.5.0"
     },
     {
       "agents": [

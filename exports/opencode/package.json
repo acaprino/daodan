@@ -1035,6 +1035,11 @@
             "name": "daodan:write-tests"
           },
           {
+            "description": "Maintain an existing test suite: review protection, update outdated checks, consolidate duplicates and reorganize ownership, with accepted scope and verified protection. TRIGGER WHEN: the user asks to clean up, rationalize, consolidate, reorganize or revise existing tests. DO NOT TRIGGER WHEN: only adding protection for a behavior (use write-tests) or fixing a product defect (use fix-bug).",
+            "file": "commands/maintain-tests.md",
+            "name": "daodan:maintain-tests"
+          },
+          {
             "description": "Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, or the depth chosen at the projects first use, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).",
             "file": "commands/map-code.md",
             "name": "daodan:map-code"
@@ -6609,7 +6614,7 @@
             ]
           },
           {
-            "description": "Authors behavior-driven suites for existing code, or drives new ones red-green. Auto-detects the framework, and follows the test-hygiene search-before-write protocol instead of creating parallel files. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.",
+            "description": "Reuses and updates existing behavior-driven tests before adding justified protection, or drives new behavior red-green. Detects the framework and follows test-hygiene ownership rules. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.",
             "file": "agents/test-writer.md",
             "id": "testing:test-writer",
             "permissions": [
@@ -7004,7 +7009,7 @@
             "name": "test-preparation"
           },
           {
-            "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when auditing a suite, quarantining tests or consolidating a modules tests (consolidation through /daodan:tidy-repo).",
+            "description": "Maintain existing test suites: diagnose failures, review and consolidate redundant tests, preserving behavior, independent failure modes and bugfix provenance. Load for suite audits, quarantine or rationalization through /daodan:maintain-tests (also composed by /daodan:tidy-repo).",
             "file": "skills/test-remediation-method/SKILL.md",
             "id": "testing:test-remediation-method",
             "name": "test-remediation-method"
@@ -7553,5 +7558,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "42.2.0"
+  "version": "42.2.1"
 }

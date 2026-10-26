@@ -67,6 +67,9 @@ the existing `test-consolidate-report` artifact and project-result envelope;
 operational JSON remains state, not report content. Include:
 
 - Before/after table: files, test cases, runtime, coverage.
+- Existing checks reused, updated or consolidated, with each added check's
+  distinct protected failure mode. Zero additions is valid; lower counts alone
+  are not an objective or proof of preserved protection.
 - Behaviors dropped, each with the user's recorded reason from Step 4.
 - Quarantine entries processed and entries remaining for other modules.
 - Suggested next module by the latest audit's remediation ranking, when a `TEST_AUDIT.md` exists.

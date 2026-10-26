@@ -75,13 +75,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Finish a task (phase 7)
 
-Load `worktree-manager:worktree-method` and read its `references/lifecycle.md`.
-That method owns preparation and cleanup; existing reviews and protocol gates
-remain mandatory.
+Load skill `worktree-manager:worktree-method`; read its `references/lifecycle.md`
+for preparation/cleanup. Retain review/protocol gates.
 
-1. **Task.** Resolve the agenda's branch task and holder. Take over only after
-   confirmation that the other session closed. A branch without a task finishes
-   without inventing one. Require sealed waves and answered questions.
+1. **Task.** Resolve agenda branch/task/holder. Take over only after confirmation
+   the other session closed. Without a task, finish without inventing one. Require sealed waves and answered questions.
 2. **Candidate.** Record the method choice with **Squash** preselected and
    **Preserve full history** offered. Preselection is not consent. Prepare the
    selected candidate separately, retaining original commits and receipts.

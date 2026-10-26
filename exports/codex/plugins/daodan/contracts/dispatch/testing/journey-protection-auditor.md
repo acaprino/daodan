@@ -72,7 +72,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: testing:journey-protection-auditor; version: 4.4.0; source-sha256: 5516c93b416397c37f977802675489f76c1d81bd52858daf4c3a3f87b5c79adc. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: testing:journey-protection-auditor; version: 4.5.0; source-sha256: 5516c93b416397c37f977802675489f76c1d81bd52858daf4c3a3f87b5c79adc. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `testing`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<testing-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `testing`. The owning plugin's declared logical skill identities are `testing:test-hygiene`, `testing:test-preparation`, `testing:test-remediation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
