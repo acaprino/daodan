@@ -90,6 +90,7 @@ class CatalogTests(unittest.TestCase):
         catalog = build_fixture_catalogs()["pi"]
         self.assertNotIn("plugins", catalog)
         self.assertEqual(catalog["keywords"], ["pi-package"])
+        self.assertEqual(catalog["license"], "MIT")
         self.assertIs(catalog["private"], True)
         self.assertEqual(catalog["pi"]["skills"], ["./exports/pi/plugins/*/skills"])
         self.assertEqual(catalog["pi"]["prompts"], ["./exports/pi/plugins/*/prompts"])

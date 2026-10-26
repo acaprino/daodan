@@ -317,7 +317,16 @@ and [implementation plan](docs/superpowers/plans/2026-10-07-daodan-coherent-harn
 record this migration. [Behavioral evals](evals/) complement deterministic compiler
 and helper tests.
 
-MIT licensed. The Daodan is the symbiote that augments its host.
+## License
+
+Daodan's original source code, plugin kernels, skills, roles, workflows, adapters,
+compiler, generated host packages and documentation are released under the
+[MIT License](LICENSE). Every plugin manifest declares `license = "MIT"`.
+
+Third-party and upstream-derived materials retain their original licenses and
+attribution notices. External dependencies are not relicensed by Daodan.
+
+The Daodan is the symbiote that augments its host.
 
 
 ## Scope-aware knowledge selection

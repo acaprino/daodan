@@ -65,6 +65,11 @@ records how code context is being rebuilt around search, and the
 [embedding benchmark](plugins/codebase-map-research.md#embedding-benchmark) why the local embedder is
 EmbeddingGemma 2. The harness and frozen gold live in
 [`evals/codebase-map/context-scope/`](../evals/codebase-map/context-scope/README.md).
+For prompt and agent design, see [Progetta prompt e agenti affidabili](references/prompt-agent-research.md),
+the research page on verifiable instructions, evidence boundaries, independent
+verification and end-to-end evaluation. Vendor documentation and the
+code-retrieval literature behind that embedder are collected in the
+[EmbeddingGemma reference](references/embeddinggemma-papers.md).
 
 ## Installation and migration
 

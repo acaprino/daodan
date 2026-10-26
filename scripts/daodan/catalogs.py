@@ -156,6 +156,7 @@ def _pi_manifest(document):
         "version": document["metadata"]["version"],
         "private": True,
         "description": document["metadata"].get("description", CATALOG_DESCRIPTION),
+        "license": "MIT",
         "keywords": ["pi-package"],
         "pi": {"prompts": [f"{tree}/prompts"], "skills": [f"{tree}/skills"]},
     }

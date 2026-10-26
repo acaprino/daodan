@@ -3,6 +3,7 @@
   "keywords": [
     "pi-package"
   ],
+  "license": "MIT",
   "name": "daodan",
   "pi": {
     "prompts": [

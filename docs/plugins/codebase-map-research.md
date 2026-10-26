@@ -168,6 +168,44 @@ other three projects had already been used, so their figures are diagnostic.
   almost verbatim from memory, so this figure overstates what a stub achieves on
   code the model has never seen.
 
+### Private code, questions mined from history
+
+The public libraries are in every model's training data. Two private Python
+projects of the owner (a trading platform core, 3 116 to 3 348 entities; a
+meal-planning backend, 1 130 to 1 217 entities) supplied questions no model
+could recall, with the method of Gandhi et al.: a `fix`, `feat` or `perf` commit
+made after a snapshot becomes a request written by a model from its message and
+diff without naming the changed symbols, checked mechanically for leaked names,
+verified by a second model, and frozen before any search; the gold is the code it
+changed, as it stood in the snapshot. Two rounds, each with its own snapshots and
+commits: the first (47 questions) measured the frozen configuration once and then
+chose a design; the second (28 unseen questions, later commits) measured that
+design once. Gold delivered whole at 6k / 12k / 24k.
+
+| Arm | First round, 47 questions | Second round, 28 unseen questions | Rewrite cost per question |
+|---|---|---|---|
+| Question as written, no model call | 0.34 / 0.51 / 0.56 | 0.21 / 0.38 / 0.43 | 0 |
+| Shipped two-pass rewrite (Haiku) | 0.45 / 0.50 / 0.70 | 0.18 / 0.45 / 0.55 | 0.0008 USD |
+| A and D on the same rewrites | 0.48 / 0.62 / 0.73 | 0.27 / 0.39 / 0.55 | 0.0008 USD |
+| Haiku asked also for up to five picks among the shown symbols, delivered first, then A | 0.54 / 0.65 / 0.75 (chosen on these questions) | 0.36 / 0.41 / 0.48 | 0.0010 USD |
+| Sonnet 5.5 as rewriter, A and D | 0.55 / 0.65 / 0.76 | 0.38 / 0.59 / 0.64 | 0.017 USD |
+
+- Private code is much harder than the libraries: the shipped path delivers 55%
+  of the gold at 24k instead of 91 to 100%, and three of the 28 unseen questions
+  get nothing under any arm.
+- The rewrite is still the largest gain, and a mid-tier rewriter is worth its
+  cost on this code: Sonnet beat Haiku with picks at 12k and 24k in 7 and 6
+  questions, losing 1 and 2. The first round had suggested that prompt work
+  closes that gap; the unseen questions refute it except at 6k.
+- Picks are a bet that pays at the smallest budget: a gold entity was among the
+  five picks in half the questions, and then it is delivered at 6k where nothing
+  else is; when wrong, five large picks consume the budget and cost the delivery
+  at 24k. A capped budget share for picks is the untested fix.
+- A and D did not confirm on unseen private code: better at 6k, worse at 12k,
+  equal at 24k against the shipped path.
+- Stubs of hypothetical code (B) invented 134 absent names on the trading core
+  against 12 for search strings and lost 8 points at 24k: rejected on private code.
+
 ## Limits
 
 - The papers measure web search, question answering, small snippet pools,
