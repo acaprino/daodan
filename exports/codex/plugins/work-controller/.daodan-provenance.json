@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:c7f36950064dfa7bfd955ffbb259eca6007ebd2044e29ff83b37b1ae225e812e",
+  "coreDigest": "sha256:30d98f65ad3a46b98ec60732440d3acd809b0397478afe2ac06ef7656fa2a681",
   "harnessStrategies": {},
   "host": "codex",
   "overrides": [],
   "plugin": "work-controller",
-  "version": "3.1.2"
+  "version": "3.1.3"
 }

@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import uuid
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from .errors import DefinitionError
@@ -34,7 +34,16 @@ def relative_path(value: str, *, field: str = "path") -> Path:
     if not isinstance(value, str) or not value.strip():
         raise DefinitionError(f"{field} must be a nonempty relative path")
     path = Path(value)
-    if path.is_absolute() or path.drive or ".." in path.parts or value.startswith(("~", "/")):
+    windows_path = PureWindowsPath(value)
+    if (
+        path.is_absolute()
+        or path.drive
+        or ".." in path.parts
+        or value.startswith(("~", "/"))
+        or windows_path.drive
+        or windows_path.root
+        or ".." in windows_path.parts
+    ):
         raise DefinitionError(f"{field} must stay inside the workspace: {value}")
     return path
 

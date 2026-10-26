@@ -1757,7 +1757,7 @@
       "operations": [],
       "provider": "work-controller",
       "topics": [],
-      "version": "3.1.2"
+      "version": "3.1.3"
     },
     {
       "description": "Manage Git task workspaces through the external Worktrunk CLI: create or resume under .daodan, list every worktree, annotate descriptions and tags, prepare safe lifecycle handoffs and check supported upstream releases. TRIGGER WHEN: starting or resuming an isolated task, listing or annotating worktrees, preparing their integration or cleanup, or updating Worktrunk compatibility. DO NOT TRIGGER WHEN: reviewing code correctness or deciding whether a task is complete; those decisions remain with the existing review and delivery owners.",
