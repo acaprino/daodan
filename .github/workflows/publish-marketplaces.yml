@@ -52,6 +52,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install Work Controller runtime parser
+        run: python -m pip install 'PyYAML>=6.0.3,<7'
+
       - name: Validate before building
         run: python -m unittest discover -s tests
 
