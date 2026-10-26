@@ -1005,6 +1005,11 @@
             "name": "daodan:show-status"
           },
           {
+            "description": "List all project worktrees, add concise descriptions and tags, create or resume a task workspace, and check Worktrunk upstream compatibility. TRIGGER WHEN: the user asks to list, describe, tag or manage task worktrees, or update the Worktrunk engine. DO NOT TRIGGER WHEN: starting a feature or finishing a task; those entries compose the same workspace method within their existing delivery cycle.",
+            "file": "commands/worktrees.md",
+            "name": "daodan:worktrees"
+          },
+          {
             "description": "Close the current branchs task: complete review of the branch, merge with your authorization, decision record verified when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).",
             "file": "commands/finish-task.md",
             "name": "daodan:finish-task"
@@ -1105,6 +1110,7 @@
           "project-knowledge",
           "project-lifecycle",
           "work-controller",
+          "worktree-manager",
           "python-development",
           "react-development",
           "repo-hygiene",
@@ -2422,6 +2428,7 @@
         "dependencies": [
           "model-routing",
           "work-controller",
+          "worktree-manager",
           "project-knowledge",
           "senior-review",
           "testing",
@@ -7497,6 +7504,20 @@
           }
         ]
       },
+      "worktree-manager": {
+        "dependencies": [
+          "work-controller"
+        ],
+        "root": "plugins/worktree-manager",
+        "skills": [
+          {
+            "description": "Manage Git task workspaces through the external Worktrunk CLI: create or resume under .daodan, list every worktree, annotate descriptions and tags, prepare safe lifecycle handoffs and check supported upstream releases. TRIGGER WHEN: starting or resuming an isolated task, listing or annotating worktrees, preparing their integration or cleanup, or updating Worktrunk compatibility. DO NOT TRIGGER WHEN: reviewing code correctness or deciding whether a task is complete; those decisions remain with the existing review and delivery owners.",
+            "file": "skills/worktree-method/SKILL.md",
+            "id": "worktree-manager:worktree-method",
+            "name": "worktree-method"
+          }
+        ]
+      },
       "xterm": {
         "commands": [
           {
@@ -7532,5 +7553,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "42.0.1"
+  "version": "42.2.0"
 }

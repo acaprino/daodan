@@ -83,9 +83,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Project delivery
 
-Load the `work-controller:work-record` skill for records, snapshots, verification and
-recovery. Coordinate authorized outcomes and dispatch within scope; reuse detection
-owners.
+Load `work-controller:work-record` for records, snapshots, verification and recovery.
+Coordinate authorized outcomes within scope; reuse detection owners.
 
 ## Load map
 
@@ -119,12 +118,10 @@ current authorizations and this session. Preview is the default; `fix` and
 `commit` grants are recorded separately, never push or permanent deletion.
 Without `docs/adr/README.md`, the run's `intent.md` replaces records.
 
-New execution runs set `process_required: true`. Load
-`work-controller:work-record` and its `references/process-runtime.md` to admit
-the approved YAML and bind its process and worker outputs before dispatch.
-Resume legacy unbound runs through their recorded method without rewriting
-history. Graph execution, the native delivery ledger and domain reviews must
-all succeed; keep Git commits in the reviewed domain workflow.
+New execution runs set `process_required: true`; read Work Controller's
+`references/process-runtime.md` to admit approved YAML and bind worker outputs
+before dispatch. Legacy runs retain their recorded method. Graph, native ledger
+and domain reviews must succeed; commits remain in the reviewed workflow.
 
 ## Canonical methods
 
@@ -132,30 +129,34 @@ Load owners by name, never by path.
 
 | Need | Load or dispatch |
 |---|---|
-| Static context, impact packets, exact run binding | `codebase-map:map-method`; dispatch `codebase-map:map-analyst` in an isolated context for an analysis |
-| Decisions governing a scope; proposing, approving and verifying a record | `project-delivery:adr-method` |
+| Static context, packets, run binding | `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst` for analysis |
+| Decisions and record lifecycle | `project-delivery:adr-method` |
 | Root-cause investigation | `senior-review:investigation-method` |
-| Review at any stage and of any kind, shape `light` or `branch` | `senior-review:review-method`; shape `branch` through `senior-review:review-preparation` |
+| Any review, `light` or `branch` | `senior-review:review-method`; `branch` through `senior-review:review-preparation` |
 | Application subtraction | `senior-review:application-cleanup-method` |
 | Suite preparation and remediation | `testing:test-preparation`, `testing:test-remediation-method` |
 | Test authoring | dispatch `testing:test-writer` |
-| Readability with behavior preserved | `clean-code:readability-method` |
+| Behavior-preserving readability | `clean-code:readability-method` |
 | Structural diagnosis | `abstraction-architect:abstraction-architect` and its auditor |
 | Durable instructions, guides, README | `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft` |
 | Workspace detection and reversible operations | `repo-hygiene:repo-hygiene` |
-| Another model's challenge of a record or plan, on request | `peer-review:cross-model-peer-review`, dispatching `peer-review:packet-builder` and `peer-review:respondent`; a question goes to `moe:multi-model-deliberation` |
+| Task workspaces and catalog | `worktree-manager:worktree-method` |
+| Requested model challenge | `peer-review:cross-model-peer-review`, dispatching `peer-review:packet-builder` and `peer-review:respondent`; questions use `moe:multi-model-deliberation` |
 
 For a Codebase Map, execute the analyze entry's preflight, checkpoints,
 delivery check and publication decision here and dispatch the analyst for the
 phases; loading a role as a skill runs nothing. Never start a command from
 inside another.
 
+The worktree method owns workspace creation/resumption and catalog annotations;
+Work Controller owns agenda and grants. Status and brainstorming create no
+worktree. Missing Worktrunk blocks dependent operations with its recovery path.
+
 ## Delivery and closure
 
-Keep every specialist's native report, hashes, scope, status, evidence and
-declared gaps. A missing delivery stays missing; a failed worker is not an
-empty result. Deduplicate findings by behavior or concept, keep contradictions,
-and treat two reviewers with one inherited premise as one observation.
+Keep native reports, hashes, scope, status, evidence and gaps. Missing/failed
+deliveries stay visible. Deduplicate by behavior, retain contradictions and
+count shared-premise reviewers as one observation.
 
 For an HTML view, requested or useful for navigation, the coordinator must
 load skill `report-rendering:report-renderer` and read `references/project-run-view.md`

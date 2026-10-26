@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.0.1"
+    "version": "42.2.0"
   },
   "name": "daodan",
   "owner": {
@@ -210,6 +210,7 @@
         "./commands/tidy-repo.md",
         "./commands/verify.md",
         "./commands/workbook.md",
+        "./commands/worktrees.md",
         "./commands/write-docs.md",
         "./commands/write-tests.md"
       ],
@@ -228,6 +229,7 @@
         "project-knowledge",
         "project-lifecycle",
         "work-controller",
+        "worktree-manager",
         "python-development",
         "react-development",
         "repo-hygiene",
@@ -241,7 +243,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.3.0"
+      "version": "2.4.1"
     },
     {
       "author": {
@@ -595,6 +597,7 @@
       "dependencies": [
         "model-routing",
         "work-controller",
+        "worktree-manager",
         "project-knowledge",
         "senior-review",
         "testing",
@@ -619,7 +622,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/claude/plugins/project-delivery",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "agents": [
@@ -1112,7 +1115,23 @@
         "./skills/work-record"
       ],
       "source": "./exports/claude/plugins/work-controller",
-      "version": "3.1.0"
+      "version": "3.1.1"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "work-controller"
+      ],
+      "description": "Manage task workspaces through the external Worktrunk CLI: main-checkout paths, persistent descriptions and tags, complete Git inventory, safe reuse and verified upstream compatibility. Delivery retains review, merge authorization and completion.",
+      "license": "MIT",
+      "name": "worktree-manager",
+      "skills": [
+        "./skills/worktree-method"
+      ],
+      "source": "./exports/claude/plugins/worktree-manager",
+      "version": "1.0.0"
     },
     {
       "author": {

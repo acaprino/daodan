@@ -75,7 +75,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Phase 1: preflight and workspace
 
-Probe first; record `workspace` and `preflight`. Do not edit project files.
+Probe; record `workspace` and `preflight`.
 
 ## Probes
 
@@ -92,14 +92,13 @@ Probe first; record `workspace` and `preflight`. Do not edit project files.
 | Test baseline | the project's declared test command on the scope's tests | `GREEN`; `KNOWN_RED` with the failure fingerprint the user accepted; `UNKNOWN_RED` |
 | Migrations | the project's migration status command when one is declared | `ALIGNED`, `PENDING`, `DIVERGED`, `UNKNOWN` or `NOT_APPLICABLE` |
 
-Hash failing test identifiers: unchanged means known; changed unknown.
+Hash failing tests: unchanged known; changed unknown.
 
 ## Model binding persistence
 
-Load the local `model-routing:model-routing` owner for per-job model bindings;
-pass confirmed assignments to the Work Controller coordinator. The bundled
-engine does not make model calls or discover a host's model identity. Never
-hardcode models or host aliases here.
+Load `model-routing:model-routing` for per-job bindings; pass confirmed assignments
+to Work Controller. Its engine neither calls models nor discovers host identity.
+Never hardcode models or host aliases.
 
 Store the confirmed routing artifact in
 `environment.models.assignments[request_sha256]` using loaded
@@ -109,13 +108,20 @@ existing assignments. Revision conflict: reread and merge. Resume: pass persiste
 
 ## Workspace mode
 
-Present probes; ask once with a recommended default:
+Load `worktree-manager:worktree-method`; follow its creation/reuse and runtime
+probe contract. Honor recorded user/project policy; otherwise new Git-bound
+tasks use `WORKTREE`. Reuse requires matching repository, branch, task and holder.
 
-| Mode | Recommend when | Consequence |
+| Mode | Use when | Consequence |
 |---|---|---|
-| `WORKTREE` | more than one wave, parallel tasks, or a dirty working tree | a worktree under the project's declared worktree root on branch `task/<run>-<slug>`; parallel waves allowed; removed at integration |
-| `BRANCH` | a clean tree and a task the user wants on its own branch | branch `task/<run>-<slug>` in the checkout; waves run sequentially |
-| `IN_PLACE` | a small task on the current branch | waves run sequentially; every preexisting modified file is recorded as protected and never restored by a rollback |
+| `WORKTREE` | default or selected | main checkout's `.daodan/worktrees/`; task-associated naming; parallel waves allowed |
+| `BRANCH` | selected | current checkout, project naming; sequential waves |
+| `IN_PLACE` | selected | sequential waves; protect preexisting edits from rollback |
+
+Record task ID, branch and path. Prove host read/write/check access before run
+initialization: project paths are immutable. Never nest state homes. Resume
+failed setup under existing authorization; do not recreate checkouts or install
+global hooks.
 
 For test files or services missing from the worktree (env, schema, fixtures),
 record `path`, `kind` and `secret`. Reference secrets; never copy their values.
@@ -125,10 +131,10 @@ record `path`, `kind` and `secret`. Reference secrets; never copy their values.
 | Situation | Rule |
 |---|---|
 | Interrupted merge or rebase | Stop; offer to resolve it first. |
-| Behind upstream | Offer rebase or fast-forward, or pin `base_sha` to the current head with the gap recorded. |
+| Behind upstream | Offer rebase, fast-forward or a pinned `base_sha` with recorded gap. |
 | `UNKNOWN_RED` baseline | No feature starts on a broken base: offer a repair of the failing oracle, a repair wave first, or `KNOWN_RED` with the user's explicit word. |
 | `PENDING` or `DIVERGED` migrations | Warn before any test that touches the schema; a worktree gets its own schema binding. |
-| Dirty tree and `IN_PLACE` | Record protected paths; a task whose `write_set` intersects them stops with `NEEDS_REPLAN`. |
+| Dirty `IN_PLACE` | Protect preexisting paths; intersecting `write_set` stops with `NEEDS_REPLAN`. |
 | Stale map on the scope | Run the incremental update now; the interview reads a fresh map or names the stale paths as unknown. |
 
 Write `workspace`, `preflight` and `environment`; state mode, base commit and baseline.

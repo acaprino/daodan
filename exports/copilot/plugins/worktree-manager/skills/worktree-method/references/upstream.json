@@ -1,0 +1,39 @@
+{
+  "schema": "daodan/worktrunk-upstream/v1",
+  "repository": "max-sixty/worktrunk",
+  "version": "0.81.0",
+  "tag": "v0.81.0",
+  "commit": "e42f0f6fef2fdbd98fc92e5cd6c3cbea55b65b38",
+  "license": "MIT OR Apache-2.0",
+  "release_url": "https://github.com/max-sixty/worktrunk/releases/tag/v0.81.0",
+  "license_url": "https://github.com/max-sixty/worktrunk/blob/v0.81.0/LICENSE",
+  "published_at": "2026-10-20T21:28:34Z",
+  "list_schema": 2,
+  "assets": [
+    {
+      "name": "worktrunk-aarch64-apple-darwin.tar.xz",
+      "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.81.0/worktrunk-aarch64-apple-darwin.tar.xz",
+      "sha256": "b9c3f2f8071554cf88500466d65d35e18ad5edad5762479a1f14bcddd5ab7882"
+    },
+    {
+      "name": "worktrunk-aarch64-unknown-linux-musl.tar.xz",
+      "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.81.0/worktrunk-aarch64-unknown-linux-musl.tar.xz",
+      "sha256": "7a334d2e64c577afd0247e2411eff673360ab1f18897564f2d2e5d5374fbd74b"
+    },
+    {
+      "name": "worktrunk-x86_64-apple-darwin.tar.xz",
+      "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.81.0/worktrunk-x86_64-apple-darwin.tar.xz",
+      "sha256": "211fa3585afa0ce243de0f007fbe2d8b86c5c88c85eda17d09311b32e8533714"
+    },
+    {
+      "name": "worktrunk-x86_64-pc-windows-msvc.zip",
+      "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.81.0/worktrunk-x86_64-pc-windows-msvc.zip",
+      "sha256": "389b595cb67482085419968939e329d61901cca9e959e4b6c288f01387b768b8"
+    },
+    {
+      "name": "worktrunk-x86_64-unknown-linux-musl.tar.xz",
+      "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.81.0/worktrunk-x86_64-unknown-linux-musl.tar.xz",
+      "sha256": "0c253f216985ce9cd7b202a11606b5ce6aa934b1019fd1fbb9b7ce2b47b1c74a"
+    }
+  ]
+}

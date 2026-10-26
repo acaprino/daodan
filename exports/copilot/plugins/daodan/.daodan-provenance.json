@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f8ff49148a264c44dbe138fe69e61a60d84fb84101ef3a3ebd8bf4c67520d54e",
+  "coreDigest": "sha256:171ee93d23b357dd682db1fdb32855a811cc1cb6468e25552f5bbe99d5d5cfc3",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
@@ -29,11 +29,12 @@
     "tidy-repo": "parallel-subagents",
     "verify": "parallel-subagents",
     "workbook": "parallel-subagents",
+    "worktrees": "parallel-subagents",
     "write-docs": "parallel-subagents",
     "write-tests": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.3.0"
+  "version": "2.4.1"
 }

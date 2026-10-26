@@ -490,6 +490,7 @@ specialist edges optional.
 | Owner | Direct required local dependencies |
 |---|---|
 | work-controller | none |
+| worktree-manager | work-controller |
 | model-routing | none |
 | skill-catalog | none |
 | codebase-map | none |
@@ -498,7 +499,7 @@ specialist edges optional.
 | testing | work-controller, report-rendering |
 | senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, report-rendering |
 | project-knowledge | work-controller, codebase-map, text-humanizer, senior-review, report-rendering |
-| project-delivery | model-routing, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
+| project-delivery | model-routing, work-controller, worktree-manager, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
 | project-lifecycle | project-delivery, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, report-rendering |
 | clean-code | work-controller |
 | office | work-controller |
@@ -582,7 +583,12 @@ and execution are shaped by the map, the decision records and the protocol's wav
 rules, which the delegated planning skills did not have, so running both would
 mean two methods for one step. peer-review carries its own review-reception
 doctrine in its respondent role. Neither change reimports a retired skill; the
-worktree procedure of the cycle's preflight is a few lines the cycle owns. Do not
-vendor upstream methods, revive the retired generic worktree plugin or restore the
+workspace procedure loads worktree-manager's original method and external
+Worktrunk CLI. New managed checkouts live under the main checkout's
+`.daodan/worktrees/`; the persistent catalog adds task descriptions and tags to
+Git's complete inventory. The CLI's supported release is pinned and upgrades
+require compatibility checks. Review, authorization and completion remain with
+their existing owners. Do not vendor upstream methods, revive the retired generic
+worktree implementation or restore the
 flawed codebase-cleanup trio. Dependency audit is a separately
 maintained tool-first capability, not forced package remediation.

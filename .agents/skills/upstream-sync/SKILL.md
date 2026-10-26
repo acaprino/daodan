@@ -24,6 +24,22 @@ Nothing listed under "Deliberately not vendored" in `AGENTS.md` belongs in the t
 
 ## Default upstream-update strategy
 
+### Delegated executable updates
+
+Worktrunk is maintained as an external executable through
+`worktree-manager:worktree-method`, `references/upstream.md`. Include Worktrunk
+in generic upstream-update requests and requests naming it. Run its bundled
+`worktrunk_runtime.py upstream-check`, compare the pinned release with upstream,
+and follow that method's isolated compatibility probes before advancing
+`references/upstream.json` or activating a binary. Preserve original Daodan
+catalog, review and authorization behavior. Report discovered, supported and
+installed versions separately. No Worktrunk source is copied and no copied-source
+sync-table row is added; a new release alone never authorizes bypassing tests or
+silently replacing the supported runtime. This is on-demand dependency maintenance,
+not a scheduled monitor.
+
+### Copied-source updates
+
 When the user asks for "upstream updates" (or similar), this is the default workflow. Do not blindly overwrite local files - most syncs need targeted merging because local has legitimate customizations.
 
 1. **Check the applicable copied-source sync targets in parallel**. For each copied-source file in the sync table below, diff the upstream against the local version. Office design snapshots are on demand: include them only when the user requests Office upstream review or names the relevant source, not in a generic batch by default. Exclude inspiration-only provenance rows from vendored pull, merge and sync operations; their original local plugins remain eligible for `custom-plugin-refresh`. Spawn Explore agents when there are many files to parallelize the diffing. Focus the reports on: which files differ, what changed, and whether the drift is intentional or worth pulling.
