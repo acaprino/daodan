@@ -5,5 +5,5 @@
   "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, presentation, workbook, theme, verify, humanize, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle; the Office entries drive the `office` methods.",
   "license": "MIT",
   "name": "daodan",
-  "version": "2.5.0"
+  "version": "2.6.0"
 }

@@ -109,6 +109,10 @@ writing read `references/guide-method.md`; for authorized changes read
 - Discovery: `codebase-explorer`, with the exact scope and owned context output.
 - Documentation drift: `documentation-engineer`, explicitly audit-only until
   application is authorized.
+- Daodan documentation restructuring and per-plugin dossiers:
+  `documentation-organizer`; first read `references/documentation-organization.md`.
+  Its per-document human decisions and forbidden `docs/superpowers/` output
+  rule apply before the general application method.
 - Cross-document evidence review: `guide-reviewer`, explicitly audit-only.
 - Structured writing: overview-writer, tech-writer, flow-writer,
   onboarding-writer and ops-writer, only for their assigned files.

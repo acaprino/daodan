@@ -2620,6 +2620,18 @@
             ]
           },
           {
+            "description": "Organize Daodan plugin dossiers and trace dependency/intake provenance. TRIGGER WHEN: dispatched for documentation restructuring, per-plugin specifications or knowledge migration. DO NOT TRIGGER WHEN: auditing prose drift alone (use documentation-engineer).",
+            "file": "agents/documentation-organizer.md",
+            "id": "project-knowledge:documentation-organizer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
             "description": "Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author user and data flow documentation.",
             "file": "agents/flow-writer.md",
             "id": "project-knowledge:flow-writer",
@@ -7558,5 +7570,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "42.2.1"
+  "version": "42.3.2"
 }

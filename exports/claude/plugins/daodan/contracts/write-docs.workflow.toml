@@ -19,6 +19,7 @@ roles = [
   "project-knowledge/codebase-explorer",
   "project-knowledge/doc-humanizer",
   "project-knowledge/documentation-engineer",
+  "project-knowledge/documentation-organizer",
   "project-knowledge/flow-writer",
   "project-knowledge/guide-reviewer",
   "project-knowledge/instructions-auditor",

@@ -160,6 +160,25 @@ The `report-rendering` leaf supplies optional offline HTML views of canonical
 Markdown. Domain owners retain their reports, scoring and verdicts. See
 [report rendering](docs/plugins/report-rendering.md) for the executable contract.
 
+## Documentation ownership and destinations
+
+Daodan documentation uses one dossier per plugin under `docs/plugins/<plugin>/`:
+index, functional/technical specifications, use cases and tutorials, research, validation,
+dependencies, intakes and licenses. The documentation organizer's canonical
+contract is `plugins/project-knowledge/skills/project-knowledge/references/documentation-organization.md`.
+Intake provenance covers copied sources and delegated tools, runtimes, models
+and parsers, with evidence-backed dates and both Daodan and upstream revisions.
+
+Never create files or make in-place edits under `docs/superpowers/`, including
+plans, specifications, research, generated indexes, link repairs and staging.
+Before an existing artifact there is moved, merged, archived or retired, ask the
+user whether to keep that identified document and where to move it; record its
+own explicit answer. Global reorganization authorization does not replace this
+decision. Preserve unanswered source bytes and continue independent work. An
+approved relocation may remove its exact verified source, but creates no
+replacement or redirect under the forbidden root. Operational notes remain in
+the owned run; historical references do not authorize new writes there.
+
 ## Project structure
 
 `plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow and every skill's `SKILL.md` of that plugin with a note giving the exact command to register: a consumer reaches a provider's tools through its skill. `codebase-map`, `peer-review`, `moe` and `work-controller` declare their servers under their owning skills, launched with `uv run --no-config --no-project --script` so the project under work never chooses a server's package index or interpreter. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.

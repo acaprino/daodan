@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.2.1"
+    "version": "42.3.2"
   },
   "name": "daodan",
   "owner": {
@@ -244,7 +244,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.5.0"
+      "version": "2.6.0"
     },
     {
       "author": {
@@ -630,6 +630,7 @@
         "./agents/codebase-explorer.md",
         "./agents/doc-humanizer.md",
         "./agents/documentation-engineer.md",
+        "./agents/documentation-organizer.md",
         "./agents/flow-writer.md",
         "./agents/guide-reviewer.md",
         "./agents/instructions-auditor.md",
@@ -657,7 +658,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/claude/plugins/project-knowledge",
-      "version": "3.1.0"
+      "version": "3.2.0"
     },
     {
       "author": {

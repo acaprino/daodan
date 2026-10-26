@@ -2,7 +2,7 @@
 name: write-docs-coordinator
 description: 'Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).'
 tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
-agents: ['codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'text-humanizer:text-humanizer', 'work-controller:isolated-worker']
+agents: ['codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:documentation-organizer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'text-humanizer:text-humanizer', 'work-controller:isolated-worker']
 ---
 
 > Arguments: `[what to write]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -115,7 +115,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `text-humanizer:text-humanizer`, `work-controller:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:documentation-organizer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `text-humanizer:text-humanizer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -131,6 +131,7 @@ Role bindings:
 - `project-knowledge:codebase-explorer`: dispatch the installed `project-knowledge:codebase-explorer` agent by its qualified identity.
 - `project-knowledge:doc-humanizer`: dispatch the installed `project-knowledge:doc-humanizer` agent by its qualified identity.
 - `project-knowledge:documentation-engineer`: dispatch the installed `project-knowledge:documentation-engineer` agent by its qualified identity.
+- `project-knowledge:documentation-organizer`: dispatch the installed `project-knowledge:documentation-organizer` agent by its qualified identity.
 - `project-knowledge:flow-writer`: dispatch the installed `project-knowledge:flow-writer` agent by its qualified identity.
 - `project-knowledge:guide-reviewer`: dispatch the installed `project-knowledge:guide-reviewer` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.
@@ -158,6 +159,7 @@ specialist method it needs together with `work-controller:work-record`:
 | Request | Method |
 |---|---|
 | nothing, or "update the docs" | `project-knowledge:project-knowledge`: drift audit, then the authorized corrections |
+| reorganize Daodan documentation, plugin dossiers, intake/provenance inventory | `project-knowledge:project-knowledge`: load `references/documentation-organization.md` and dispatch `project-knowledge:documentation-organizer` |
 | a guide, onboarding, architecture, flows, operations | `project-knowledge:project-knowledge`: its guide method |
 | the README | `project-knowledge:readme-craft` |
 | instructions, CLAUDE.md, AGENTS.md | `project-knowledge:instructions-method` |
@@ -170,3 +172,6 @@ Before anything is written, run `run_state.py first-use --project ROOT`; on
 `first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first.
 Audit first; writing into the repository is an authorization asked when needed.
+Reuse an existing scoped authorization. For restructuring, the organizer's
+forbidden `docs/superpowers/` output and per-document human retention/destination
+decisions remain mandatory before the general writing authorization is applied.

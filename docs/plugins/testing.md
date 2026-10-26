@@ -1,5 +1,7 @@
 # Testing Plugin
 
+Design record: [Testing maintenance](testing/plans/2026-10-26-testing-maintenance.md).
+
 > Behavior-driven authoring and suite maintenance: review and update existing checks, add missing protection, diagnose failures and consolidate redundant tests without losing meaningful regressions.
 
 The [plugin README](../../plugins/testing/README.md) indexes responsibilities,
