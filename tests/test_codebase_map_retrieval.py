@@ -11,6 +11,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map
 sys.path.insert(0, str(SCRIPTS))
 import snapshot
 import retrieval
+import source_reader
 
 
 class RetrievalTests(unittest.TestCase):
@@ -44,6 +45,36 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(trace["results"][0]["entity_id"], "billing.py::invoiceTotal")
         self.assertIn("traceback", trace["results"][0]["provenance"])
         self.assertEqual(self.manifest.read_bytes(), before)
+
+    def test_refresh_batches_source_reads(self):
+        original = source_reader.read_packet
+        calls = []
+
+        def counted(store, requests):
+            calls.append(requests)
+            return original(store, requests)
+
+        with mock.patch.object(source_reader, "read_packet", side_effect=counted):
+            self.refresh()
+        self.assertEqual(len(calls), 3)
+        for requests in calls:
+            self.assertEqual({request["path"] for request in requests}, {"billing.py", "other.py"})
+            self.assertTrue(all(request["full_file"] for request in requests))
+
+    def test_search_batches_source_freshness_verification(self):
+        self.refresh()
+        original = source_reader.read_packet
+        calls = []
+
+        def counted(store, requests):
+            calls.append(requests)
+            return original(store, requests)
+
+        with mock.patch.object(source_reader, "read_packet", side_effect=counted):
+            self.assertTrue(self.search("tax")["results"])
+        self.assertEqual(len(calls), 1)
+        self.assertEqual({request["path"] for request in calls[0]}, {"billing.py", "other.py"})
+        self.assertTrue(all(request["full_file"] for request in calls[0]))
 
     def test_module_context_remains_searchable_and_line_addressable(self):
         self.write("billing.py", 'API_ENDPOINT = "payments.example"\n\ndef send(data):\n    return data\n')

@@ -64,15 +64,19 @@ def _verify_tree(store):
     actual = {p.relative_to(root).as_posix() for p in snapshot.iter_files(target, perimeter)}
     if actual != set(store.iter_paths()):
         raise ValueError("source inventory changed; refresh the snapshot before retrieval")
-    # Verify every dependency, including empty files and files without symbols.
-    for rel in sorted(actual):
-        source_reader.read_packet(store, [{"path": rel, "full_file": True}])
+    # Verify every dependency in one reader pass, including empty files and
+    # files without symbols. Per-file packets would rebuild the Git perimeter
+    # for every source and make each search pay that process cost repeatedly.
+    source_reader.read_packet(store, [{"path": rel, "full_file": True} for rel in sorted(actual)])
 
 
 def _documents(store):
-    for rel, entry in store.iter_files(semantic=False):
-        packet = source_reader.read_packet(store, [{"path": rel, "full_file": True}])
-        numbered = packet["files"][0]["blocks"][0]["source"]
+    entries = list(store.iter_files(semantic=False))
+    packet = source_reader.read_packet(
+        store, [{"path": rel, "full_file": True} for rel, _entry in entries])
+    sources = {file["path"]: file["blocks"][0]["source"] for file in packet["files"]}
+    for rel, entry in entries:
+        numbered = sources[rel]
         lines = [line.split(": ", 1)[1] for line in numbered.removesuffix("\n").split("\n")]
         symbols = dict(entry.get("symbols") or {})
         covered = set()
