@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:79783f2343b490f1804d9b899e09e3169fcfa745bf1ef66c1d9798ab31f78ee0",
+  "coreDigest": "sha256:1819fbcb14d8d3013d69275cd0deabbae606f7c497bbf1be4ae4bea757d71feb",
   "harnessStrategies": {
     "brainstorm-idea": "native-team",
     "check-health": "native-team",
@@ -35,5 +35,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.4.0"
+  "version": "2.4.1"
 }

@@ -30,18 +30,18 @@ REVIEW = REPO_ROOT / "plugins/senior-review/skills"
 UNIT_CAPS = {
     LIFECYCLE / "SKILL.md": 300,
     LIFECYCLE / "references/change.md": 320,
-    LIFECYCLE / "references/preflight.md": 580,
+    LIFECYCLE / "references/preflight.md": 578,
     LIFECYCLE / "references/interview.md": 275,
     LIFECYCLE / "references/waves.md": 450,
     LIFECYCLE / "references/worker-brief.md": 300,
     LIFECYCLE / "references/verify.md": 300,
-    LIFECYCLE / "references/finish.md": 250,
+    LIFECYCLE / "references/finish.md": 240,
     LIFECYCLE / "references/realign.md": 243,
     LIFECYCLE / "references/sync.md": 175,
     LIFECYCLE / "references/retention.md": 420,
     LIFECYCLE / "references/brainstorm.md": 200,
     SPECIFICATION: 240,
-    LIFECYCLE / "references/init.md": 265,
+    LIFECYCLE / "references/init.md": 210,
     LIFECYCLE / "references/first-use.md": 291,
     LIFECYCLE / "references/refactor.md": 245,
     LIFECYCLE / "references/continue.md": 165,
@@ -55,7 +55,7 @@ UNIT_CAPS = {
     ASSESS / "SKILL.md": 230,
     ASSESS / "references/assess.md": 740,
     ASSESS / "references/native-reports.md": 230,
-    PROTOCOL: 1_325,
+    PROTOCOL: 1_240,
     QUESTIONS: 95,
     AUTHORING: 208,
     ADR / "SKILL.md": 428,
@@ -94,7 +94,8 @@ STEPS = {
     "brainstorm": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/brainstorm.md", QUESTIONS, ADR / "SKILL.md"),
     "light review, standalone": (PROTOCOL, REVIEW / "review-method/SKILL.md", REVIEW / "review-method/references/light.md"),
     "investigation": (PROTOCOL, REVIEW / "investigation-method/SKILL.md"),
-    "initialization": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/init.md", ADR / "SKILL.md"),
+    "initialization": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/init.md",
+                       LIFECYCLE / "references/brainstorm.md", QUESTIONS, ADR / "SKILL.md"),
     "first use": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/first-use.md", ADR / "SKILL.md"),
     "refactor: plan and execution": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/refactor.md",
                                      LIFECYCLE / "references/waves.md", LIFECYCLE / "references/worker-brief.md"),
@@ -159,6 +160,7 @@ STEPS = {name: (*units, CONTEXT_BRIEF) if LIFECYCLE / "SKILL.md" in units else u
 SPECIFICATION_STEPS = {
     "brainstorm", "change: interview and record", "change: plan and execution",
     "change: wave review", "refactor: plan and execution", "continue", "verify",
+    "initialization",
 }
 STEPS = {name: (*units, SPECIFICATION) if name in SPECIFICATION_STEPS else units
          for name, units in STEPS.items()}

@@ -31,7 +31,7 @@ class ProjectSpecificationContracts(unittest.TestCase):
         cls.registry = registry
         for host in HOSTS:
             adapter = load_adapter(REPO_ROOT / "adapters", host)
-            for owner in ("daodan", "project-delivery", "project-knowledge"):
+            for owner in ("daodan", "project-delivery", "project-knowledge", "python-development"):
                 package = Path(cls.temporary.name) / host / owner
                 render_plugin(registry[owner], adapter, package,
                               adapters_root=REPO_ROOT / "adapters",
@@ -157,6 +157,59 @@ class ProjectSpecificationContracts(unittest.TestCase):
                 self.assertIn("EX-*", verify)
                 self.assertIn("INV-*", verify)
                 self.assertRegex(verify, r"(?i)(pass|carry|supply).{0,120}specification")
+
+    def test_standalone_initialization_requires_approved_design_before_scaffolding(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                entry = " ".join(self.entry(host, "init-project").split())
+                self.assertIn("references/init.md", entry)
+                self.assertNotRegex(entry, r"(?i)scaffold(?:ed)? (?:it )?first")
+                self.assertRegex(entry, r"(?i)specification.{0,60}approv|approv.{0,60}specification")
+                initialization = self.reference(host, "init")
+                unscaffolded = " ".join(re.split(
+                    r"\n## (?:An existing project|Existing project)", initialization, maxsplit=1
+                )[0].split())
+                self.assertIn("references/specification.md", unscaffolded)
+                self.assertIn("references/brainstorm.md", unscaffolded)
+                scaffolder = unscaffolded.index("python-development:python-scaffold-method")
+                self.assertLess(unscaffolded.index("references/specification.md"), scaffolder)
+                self.assertLess(unscaffolded.index("references/brainstorm.md"), scaffolder)
+                other_stack = re.search(r"(?i)(official|stack).{0,30}initializer", unscaffolded)
+                self.assertIsNotNone(other_stack)
+                self.assertLess(unscaffolded.index("references/brainstorm.md"), other_stack.start())
+                self.assertRegex(unscaffolded, r"(?i)(reuse|reus).{0,100}approv")
+                self.assertRegex(unscaffolded, r"(?i)(return|resume|continue).{0,80}(initializ|here)")
+                self.assertRegex(unscaffolded, r"(?i)(not|no|without).{0,80}(feature|execution|change cycle)")
+
+    def test_initialization_can_dispatch_design_review_and_existing_setup_workers(self):
+        workflows = {workflow.name: workflow for workflow in self.registry["daodan"].workflows}
+        initialization = workflows["init-project"]
+        required = {"senior-review/premise-auditor", "codebase-map/map-analyst",
+                    "project-knowledge/instructions-auditor"}
+        self.assertLessEqual(required, set(initialization.worker_references()))
+        for host in HOSTS:
+            with self.subTest(host=host):
+                harness = self.entry(host, "init-project").split("## Method", 1)[0]
+                for reference in required:
+                    owner, role = reference.split("/", 1)
+                    self.assertIn(role, harness)
+                    if host in {"codex", "pi"}:
+                        resource = f"contracts/dispatch/{owner}/{role}.md"
+                        self.assertIn(resource, harness)
+                        self.body(host, "daodan", resource)
+
+    def test_python_scaffolder_preserves_the_coordinators_documented_project_root(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                method = self.body(host, "python-development", "skills/python-scaffold-method/SKILL.md")
+                inputs = " ".join(method.split("## Inputs", 1)[1].split("\n## ", 1)[0].split())
+                self.assertIn("docs/specs/", inputs)
+                self.assertIn(".daodan/", inputs)
+                self.assertRegex(inputs, r"(?i)(caller|coordinator|supplied|explicit).{0,80}(root|folder)")
+                self.assertRegex(inputs, r"(?i)preserv.{0,90}(document|record|file|content|docs/)")
+                self.assertRegex(inputs, r"(?i)(existing|already).{0,60}(application|scaffold)")
+                self.assertRegex(inputs, r"(?i)(reject|refuse|out of scope)")
+                self.assertRegex(inputs, r"(?i)(never|do not|no).{0,70}(new|different|another|second|nested).{0,40}(root|directory|folder)")
 
     def test_delivery_requires_its_local_owners_without_superpowers_dispatch(self):
         delivery = self.registry["project-delivery"]

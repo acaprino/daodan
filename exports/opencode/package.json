@@ -945,7 +945,7 @@
       "daodan": {
         "commands": [
           {
-            "description": "Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
+            "description": "Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
             "file": "commands/init-project.md",
             "name": "daodan:init-project"
           },
@@ -3296,7 +3296,7 @@
             "name": "python-audit-method"
           },
           {
-            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs on an empty folder and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
+            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs without an application scaffold and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
             "file": "skills/python-scaffold-method/SKILL.md",
             "id": "python-development:python-scaffold-method",
             "name": "python-scaffold-method"
@@ -7490,7 +7490,7 @@
         "root": "plugins/work-controller",
         "skills": [
           {
-            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity, questions to the user and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, asking the user, recording, resuming or closing a project intervention.",
+            "description": "Shared working discipline, run identity, snapshots, delivery/verification accounting, authorization continuity, user questions and phase recovery. Load before authoring components/tools, briefing workers, asking users, recording, resuming or closing project interventions.",
             "file": "skills/work-record/SKILL.md",
             "id": "work-controller:work-record",
             "name": "work-record"
@@ -7532,5 +7532,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "42.1.0"
+  "version": "42.1.1"
 }

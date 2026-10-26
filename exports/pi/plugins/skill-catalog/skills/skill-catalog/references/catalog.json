@@ -796,7 +796,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
@@ -811,7 +811,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "description": "Extract, validate, reconcile, approve, version and verify evidence-bound functional requirements documents in docs/frd/. TRIGGER WHEN: the user asks for an evidence-bound FRD, requirements and domain references must be extracted from project sources, a fresh extraction must be reconciled with manual review, or an FRD needs approval, revision or verification. DO NOT TRIGGER WHEN: recording an architecture or technical decision (use project-delivery:adr-method), writing general project documentation without evidence spans, or treating current implementation as an automatically approved requirement.",
@@ -826,7 +826,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "description": "Draft missing ADR and FRD from verified project evidence without turning legacy behavior or stale documentation into approved requirements. TRIGGER WHEN: a project has no ADR or FRD, existing project knowledge must be bootstrapped from code, documentation or Codebase Map, or /daodan:init-project needs initial requirement records. DO NOT TRIGGER WHEN: recording one already understood decision (use adr-method), editing an existing FRD (use frd-method), or running the implementation cycle (use delivery-method).",
@@ -845,7 +845,7 @@
         "documentation",
         "requirements"
       ],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file. TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.",
@@ -997,7 +997,7 @@
         "asyncio",
         "concurrency"
       ],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Pydantic v2 models, validators, serialization, FastAPI schemas and v1-to-v2 migration. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+, migrating from Pydantic v1, handling Decimal money fields, or designing FastAPI request/response schemas. DO NOT TRIGGER WHEN: Python testing (use pytest-patterns) or TypeScript schemas (use typescript-development).",
@@ -1023,7 +1023,7 @@
       ],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Python-specific pytest fixtures, async tests, parametrization, mocks and framework configuration. Load as technical context for testing:test-writer or Python development; universal test principles and TDD belong to testing.",
@@ -1047,7 +1047,7 @@
       ],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: `/daodan:check-health` runs on a Python project, the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or a codebase is prepared for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use python-development:python-refactor-method), dead code alone (use senior-review:application-cleanup-method), or test writing (use testing:test-writer with pytest-patterns context).",
@@ -1062,7 +1062,7 @@
       "operations": [],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Grade and rewrite code prose against antirez's 9-type taxonomy, mapped to PEP 257. TRIGGER WHEN: the user asks to improve comments, add docstrings, review comment quality, or audit documentation in a Python codebase.",
@@ -1086,7 +1086,7 @@
       "topics": [
         "comments"
       ],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Find and remove unused variables, functions, classes and unreachable branches with vulture and ruff, filtering framework false positives (Django, FastAPI, pytest, click). TRIGGER WHEN: cleaning up Python codebases, enforcing import hygiene, or integrating dead code checks into CI.",
@@ -1101,7 +1101,7 @@
       "operations": [],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Build wheels and sdists from a pyproject.toml, then publish them. TRIGGER WHEN: packaging Python libraries, choosing a src or flat layout, setting up dynamic versioning, creating CLI entry points, or uploading to TestPyPI and PyPI.",
@@ -1125,7 +1125,7 @@
       "topics": [
         "packaging"
       ],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Measure first with cProfile, line_profiler, memory_profiler or py-spy, then fix what the numbers show. TRIGGER WHEN: debugging slow Python code, optimizing bottlenecks, cutting memory usage, or improving application performance.",
@@ -1149,7 +1149,7 @@
       "topics": [
         "performance"
       ],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for \"readable\", \"maintainable\" or \"clean\" code, a review flags comprehension issues, the task is legacy modernization or onboarding cleanup, or `/daodan:refactor-code` runs on Python code.",
@@ -1164,10 +1164,10 @@
       "operations": [],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
-      "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs on an empty folder and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
+      "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs without an application scaffold and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
       "dimensions": [],
       "file": "skills/python-scaffold-method/SKILL.md",
       "frameworks": [],
@@ -1179,7 +1179,7 @@
       "operations": [],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Handle virtual environments, lockfiles and interpreter version pinning. TRIGGER WHEN: setting up Python projects, managing dependencies, migrating off pip/poetry, or optimizing Python development workflows with uv.",
@@ -1203,7 +1203,7 @@
       ],
       "provider": "python-development",
       "topics": [],
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "description": "Knowledge base for production question-answering pipelines. TRIGGER WHEN: building, optimizing, or auditing RAG systems, including Graph RAG, CRAG, Self-RAG, and Agentic RAG.",
@@ -1745,7 +1745,7 @@
       "version": "3.4.0"
     },
     {
-      "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity, questions to the user and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, asking the user, recording, resuming or closing a project intervention.",
+      "description": "Shared working discipline, run identity, snapshots, delivery/verification accounting, authorization continuity, user questions and phase recovery. Load before authoring components/tools, briefing workers, asking users, recording, resuming or closing project interventions.",
       "dimensions": [],
       "file": "skills/work-record/SKILL.md",
       "frameworks": [],
@@ -1757,7 +1757,7 @@
       "operations": [],
       "provider": "work-controller",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.1.1"
     },
     {
       "description": "Build, configure, debug and extend browser and Electron terminal UIs with xterm.js (@xterm/xterm). TRIGGER WHEN: working with xterm.js, @xterm/xterm, FitAddon, WebglAddon, SearchAddon, AttachAddon, node-pty over WebSocket, ANSI/VT sequences, or embedding a web terminal in React/Vue/Electron.",

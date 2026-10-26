@@ -2121,10 +2121,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "python-development",
-      "provider_version": "4.2.0",
+      "provider_version": "4.2.1",
       "role": "python-semantics-auditor",
       "source_hashes": {
-        "python-development/kernel": "sha256:5d3fb9783cc2d83f901456e60639c4ddd1524cefb8c45b8f97e0d9b42adbdb97",
+        "python-development/kernel": "sha256:9f481c7497f992d395ab0105d8e2aed88651a8adb10c234c9c34e357e840f568",
         "python-development/roles/python-semantics-auditor.md": "sha256:656ff4215b9bfdd70e2a020f475638b3e674ed583fc0bfe7811d70f1f80d88d9"
       },
       "trigger_when": "reviewing Python default evaluation, binding, short-circuit, return, exception and side-effect behavior against required outcomes."
@@ -2156,7 +2156,7 @@
         "python-development:python-dead-code"
       ],
       "source_hashes": {
-        "python-development": "sha256:5d3fb9783cc2d83f901456e60639c4ddd1524cefb8c45b8f97e0d9b42adbdb97"
+        "python-development": "sha256:9f481c7497f992d395ab0105d8e2aed88651a8adb10c234c9c34e357e840f568"
       },
       "trigger_when": "target includes .py or .pyi files, or the relevant package declares pyproject.toml, setup.py, uv.lock or requirements*.txt"
     },
