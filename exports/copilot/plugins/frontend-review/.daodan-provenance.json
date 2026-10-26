@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:07aac0ba79a87ea5ddc5f1a06edc1a1ffe389b316866d5b76692bbbd2c6c2459",
+  "harnessStrategies": {
+    "review-frontend": "parallel-subagents"
+  },
+  "host": "copilot",
+  "overrides": [],
+  "plugin": "frontend-review",
+  "version": "2.1.4"
+}

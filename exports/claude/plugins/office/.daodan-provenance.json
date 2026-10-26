@@ -1,0 +1,13 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:f88173f182c169f7188a7ebffbef7185c9cdcdd321a754a97836469d14f7279c",
+  "harnessStrategies": {
+    "create-presentation": "native-team",
+    "document": "native-team",
+    "workbook": "native-team"
+  },
+  "host": "claude",
+  "overrides": [],
+  "plugin": "office",
+  "version": "1.1.2"
+}

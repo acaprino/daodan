@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:a9455756c00ea0736329a54407fb517b43062656b9e0daec362370397cb477e7",
+  "harnessStrategies": {},
+  "host": "claude",
+  "overrides": [],
+  "plugin": "csp",
+  "version": "1.4.2"
+}

@@ -1,0 +1,478 @@
+# Digital Marketing Plugin
+
+> Drive organic traffic and conversions. Technical SEO audits, content strategy, and marketing optimization with Playwright-powered analysis and persistent reports.
+
+Command examples and named tools in this guide use Claude notation. For other
+hosts, use the entry points and bindings in the source-derived reference below
+and [host setup](../hosts.md).
+
+## Agents
+
+### `seo-specialist`
+
+Intent-first SEO strategist: establishes search intent and topical coverage before touching tags, then runs the semantic and technical audits and maps competitive gaps.
+
+| | |
+|---|---|
+| **Model** | `inherit` |
+| **Use for** | Technical SEO audits, search-intent alignment, keyword and semantic analysis, on-page optimization, structured data, competitive analysis |
+
+**Invocation:**
+```
+Use the seo-specialist agent to [audit/optimize/research] [target]
+```
+
+**Expertise:**
+- Search intent first: classifies the target query (informational, transactional, navigational, commercial investigation), checks the top 3-5 ranking results for the content type that wins, and flags content-intent gaps
+- Semantic audit: keyword and semantic analysis, content depth, readability
+- Technical audit: on-page tags, headings, URLs, links, images, structured data, crawlability, performance signals, security, mobile readiness, E-E-A-T, plus international and local SEO where applicable
+- Scoring: a 0-100 health score with a letter grade, a per-category breakdown, and Error / Warning / Notice classification
+- Competitive analysis: SERP landscape and features, content gaps, keyword overlap, E-E-A-T comparison
+- Applies fixes only after approval, then re-audits and shows before/after scores
+
+---
+
+### `content-marketer`
+
+Audit and rewrite agent for what a visitor actually reads before deciding, built around the conversion pyramid: Functional, then Clear, then Persuasive, then Frictionless. A higher level blocks the lower ones, so CTAs are never optimized on a page whose message is unclear.
+
+| | |
+|---|---|
+| **Model** | `inherit` |
+| **Use for** | Marketing materials, landing page copy, CTAs, product presentation, social media readiness, conversion optimization |
+
+**Invocation:**
+```
+Use the content-marketer agent to [plan/create/optimize] [content/campaign]
+```
+
+**Expertise:**
+- Context first: B2B vs B2C, traffic source (for message match), primary conversion goal
+- UX and conversion audit: page layout, CTAs, social proof and E-E-A-T, product presentation, pricing pages, forms, accessibility, navigation
+- Content and copy audit: headlines, body copy, tone and voice, SEO copy, microcopy, product descriptions
+- Social media audit: share readiness, presence, platform strategy, content mix, social commerce
+- Visual and media audit: images, product gallery, video
+- Metric-driven diagnosis when data is available (bounce, time on page, add-to-cart vs checkout)
+- Before/after rewrites applied in batches after approval, and A/B hypotheses in the form "If we change [Element] from [Control] to [Variant], then [Metric] will increase because [Principle]"
+
+---
+
+> **Moved:** prose humanization (the `text-humanizer` agent, the `/text-humanizer:humanize-text` command, and the `anti-ai-writing-patterns` knowledge base) now lives in the standalone [text-humanizer](text-humanizer.md) plugin, a hard dependency of this one. SEO flows route to `/text-humanizer:humanize-text`.
+
+---
+
+### `ga4-implementation-expert`
+
+GA4 + GTM implementation expert with deep focus on EU/GDPR Consent Mode v2 compliance, custom event tracking, conversion (Key Event) configuration, remarketing audiences, and diagnostic analysis.
+
+| | |
+|---|---|
+| **Model** | `inherit` |
+| **Use for** | GA4 / GTM deployment, Consent Mode v2 compliance, CMP integration (iubenda, Cookiebot, Orestbida CookieConsent), Key Event + Google Ads conversion import, Enhanced Conversions, remarketing audiences, "why isn't my site converting" diagnostics |
+
+**Invocation:**
+```
+Use the ga4-implementation-expert agent to [implement/audit/debug] [GA4 or GTM setup]
+```
+
+**Frameworks covered:** vanilla HTML, Next.js / React, WordPress. Handles dataLayer event taxonomy design, server-side vs client-side tagging, and the full `gtag('consent', 'default' | 'update', ...)` flow with the 4-granular-signal EU pattern (`ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage`).
+
+---
+
+### `llm-seo-optimize`
+
+Answer-engine optimization (AEO) specialist for Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude with web search, and Bing Copilot. Different from traditional SEO: AEO optimizes for getting **cited inside the LLM-generated answer**, not just ranking on a SERP.
+
+| | |
+|---|---|
+| **Model** | `inherit` |
+| **Use for** | Auditing a site for AI-search discoverability, checking E-E-A-T signals, optimizing passage-level extractability, reviewing JSON-LD / Schema.org, diagnosing low citation rate in LLM answers |
+
+**Invocation:**
+```
+Use the llm-seo-optimize agent to audit [url or local path] for answer-engine optimization
+```
+
+**6-phase audit:**
+1. **Crawler access**: full robots.txt user-agent matrix for 13 AI bots (GPTBot, ChatGPT-User, OAI-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, Googlebot, ClaudeBot, Claude-User, Claude-SearchBot, Applebot-Extended, Bytespider, CCBot) with train-vs-retrieve distinction. `anthropic-ai` and `Claude-Web` are retired tokens that identify no Anthropic crawler: they are flagged as legacy entries to clean up, since blocking or allowing them changes nothing. Blocking `Google-Extended` does not remove a page from AI Overviews; blocking `Googlebot` does
+2. **E-E-A-T signals**: author bylines with credentials, publication + last-updated dates in ISO + JSON-LD, primary-source citations, first-hand experience markers, fact-check structure
+3. **Passage-level extractability**: direct-answer first paragraphs, one-question-per-H2, bulleted fact lists, tables with captions, numbers with unit + date + source
+4. **Structured data**: JSON-LD for Article / HowTo / FAQPage / Product / Dataset / ClaimReview / SoftwareApplication / Organization + sameAs
+5. **Citation readiness**: canonical URL, section-anchor permalinks, cite-this-article block, clear licensing, downloadable data
+6. **Prompt-injection hardening**: audit hidden text, invisible CSS, JSON-LD / alt-text / comment payloads that reach the LLM context
+
+**Also covers:** `llms.txt` / `llms-full.txt` proposed standards, AI-referral analytics setup (chatgpt.com, legacy chat.openai.com, perplexity.ai, claude.ai, copilot.microsoft.com, gemini.google.com hostnames), weekly brand-mention citation-share tracking. Search Console does not break AI Overviews out (their impressions and clicks are folded into aggregate Web performance), so the AI-referrer hostnames are the measurable proxy.
+
+---
+
+## Skills
+
+### `brand-naming-method`
+
+Brand naming strategist. Generates, filters, scores, and validates brand names through a strategic semantic workflow.
+
+| | |
+|---|---|
+| **Invoke** | Skill reference or `/digital-marketing:brand-naming` |
+| **Trigger** | "brand name", "naming", "name my app", "name my product", "startup name" |
+
+**Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the domain checker (RDAP, and a headless Patchright registrar page for TLDs with no RDAP), runs market saturation analysis, asks for a reference country when none is given, pre-screens trademarks through a browser (the `playwright` plugin's MCP tools) in that country's national register (UIBM for Italy), EUIPO TMview (falling back to EUIPO eSearch plus for EU trade marks when TMview refuses the browser), USPTO Trademark Search and the WIPO Global Brand Database, grades the reference country, Europe and the world from class A (lowest risk) to D (highest), reports a territory whose register did not answer as not screened instead of grading it A, rates SEO potential, scores the top 5 from 1 to 5 on weighted criteria, and delivers a fixed-template evaluation report: summary, scorecard, the top 3 with a description, a motivation for every score and a trademark class for each territory, the runners-up, the removed names, the checks still open and the evidence. Coined words, letter-mashing and cheap suffixes are banned at generation.
+
+---
+
+### `domain-hunter`
+
+Search domains, compare registrar prices, find promo codes, and get purchase recommendations.
+
+| | |
+|---|---|
+| **Invoke** | Skill reference |
+| **Trigger** | "buy a domain", "domain prices", "domain deals", "compare registrars", ".ai domain", ".com domain" |
+
+**Source:** Ported from [ReScienceLab/opc-skills](https://github.com/ReScienceLab/opc-skills).
+
+**Includes:** `references/registrars.md` (registrar comparison), `references/spaceship-api.md` (Spaceship API docs) and `scripts/domain_checker.py`, the stdlib RDAP availability checker that `brand-naming-method` also calls. It queries each registry directly, several lookups at a time, and reports each domain as AVAILABLE, TAKEN or UNKNOWN; UNKNOWN never means available. A TLD with no RDAP service (`.io`, `.co`, `.it`) is reported UNKNOWN with that note instead of being queried.
+
+---
+
+### `review-reply-method`
+
+Generate professional, empathetic, on-brand replies to online customer reviews. Sentiment analysis, severity detection, adaptive tone, operational suggestions.
+
+| | |
+|---|---|
+| **Invoke** | Skill reference or `/digital-marketing:reply-to-customer-review` |
+| **Trigger** | "reply to review", "respond to customer", "review response", Airbnb / Booking / Tripadvisor / Amazon / App Store / Trustpilot reviews |
+
+**Sectors covered:** hospitality (Airbnb, Booking, Tripadvisor) and e-commerce / app (Amazon, App Store, Trustpilot) with sector-specific phrasing patterns. Detects negative / neutral / positive sentiment and calibrates tone (formal / friendly / casual). Flags operational issues (repeated complaint pattern) worth escalating.
+
+---
+
+### `ga4-implementation`
+
+Knowledge base for implementing GA4 + GTM with EU/GDPR Consent Mode v2 compliance. Referenced by the `ga4-implementation-expert` agent.
+
+| | |
+|---|---|
+| **Invoke** | Skill reference (auto-loaded by ga4-implementation-expert) |
+| **Trigger** | GA4 / GTM deployment, Consent Mode v2, CMP selection, event taxonomy, conversion config, remarketing audiences |
+
+**Content:** CMP selection guide (iubenda, Orestbida CookieConsent, Cookiebot comparison), Consent Mode v2 default + update templates, event taxonomy (recommended + custom), Key Event configuration, Google Ads conversion import, Enhanced Conversions, Predictive Audiences 28-day backfill note, framework-specific integration (Next.js / React, WordPress, vanilla HTML).
+
+---
+
+## Commands
+
+### `/digital-marketing:brand-naming`
+
+Generate, filter, score, and validate brand names through a structured naming workflow.
+
+```
+/digital-marketing:brand-naming "fitness app for busy professionals"
+/digital-marketing:brand-naming "sustainable fashion marketplace" --languages en,es,pt --tlds .com,.co,.app
+```
+
+| Flag | Effect |
+|------|--------|
+| `--languages` | Languages to check for cultural conflicts (default: en,it,es,fr,de,pt) |
+| `--tlds` | TLDs to check for domain availability (default: .com,.app,.io,.co) |
+
+---
+
+### `/digital-marketing:seo-audit`
+
+5-phase technical SEO audit with Playwright analysis, scoring, a checkpoint before applying fixes, and a persistent report.
+
+```
+/digital-marketing:seo-audit https://example.com
+/digital-marketing:seo-audit https://example.com --focus security,performance
+/digital-marketing:seo-audit src/pages --local
+```
+
+| Flag | Effect |
+|------|--------|
+| `--focus` | Comma-separated category names from the technical audit (for example `security,performance`); every other category is marked `not audited` in the scorecard |
+| `--local` | Audit local HTML or template files; approved fixes are edited into the local source |
+| `--strict-mode` | At the checkpoint, recommend fixing every Error before approval |
+
+**Phases:** Discovery -> Technical Audit -> Score -> (Checkpoint) -> Fix -> Report
+
+**Output:** `.seo-audit/` directory with discovery, audit, scorecard, fixes, and final report.
+
+---
+
+### `/digital-marketing:content-strategy`
+
+Marketing and conversion audit. Runs 3 parallel agents (UX/Conversion, Content/Copy, Social/Visual) with a checkpoint before applying changes and a persistent report.
+
+```
+/digital-marketing:content-strategy https://example.com
+/digital-marketing:content-strategy https://example.com --focus cta,social-proof
+/digital-marketing:content-strategy https://example.com --social
+```
+
+| Flag | Effect |
+|------|--------|
+| `--focus` | Comma-separated areas; only the agents owning a requested area run, and every other area is marked `not audited`. Agent A owns `ux`, `cta`, `social-proof`, `pricing`, `forms`, `navigation`; Agent B owns `copy`, `seo-copy`, `microcopy`, `product-descriptions`; Agent C owns `social`, `images`, `video` |
+| `--social` | Shorthand for `--focus social,images,video`, which runs Agent C alone |
+| `--strict-mode` | Promotes every Important finding to Critical and opens the plan with a `VERDICT: PASS` / `VERDICT: FAIL` line (FAIL when any Critical remains) |
+
+**Phases:** Scope -> Parallel Audit (3 agents) -> Synthesis -> (Checkpoint) -> Apply -> Report
+
+**Output:** `.content-strategy/` directory with scope, audit, plan, changes, and final report.
+
+---
+
+### `/digital-marketing:reply-to-customer-review`
+
+Generate a sentiment-calibrated, sector-aware reply to a customer review.
+
+```
+/digital-marketing:reply-to-customer-review "Stay was ok but WiFi was slow" --brand "Hotel X" --tone friendly --sector hospitality
+/digital-marketing:reply-to-customer-review "App crashed on checkout" --brand "MyApp" --lang en --sector ecommerce
+```
+
+| Flag | Effect |
+|------|--------|
+| `--brand` | Brand / product name to reference |
+| `--tone` | `formal` / `friendly` / `casual` (auto-detected if omitted) |
+| `--lang` | Response language (ISO 639-1 code) |
+| `--sector` | `hospitality` / `ecommerce` / `auto` |
+
+---
+
+### `/digital-marketing:ga4-audit`
+
+Playwright-verified GA4 + GTM audit covering Consent Mode v2 compliance, Key Event configuration, remarketing audiences, Ads linking, and CMP integration.
+
+```
+/digital-marketing:ga4-audit https://example.com
+/digital-marketing:ga4-audit https://example.com --gtm GTM-XXXXXX
+/digital-marketing:ga4-audit https://example.com --strict-mode
+```
+
+| Flag | Effect |
+|------|--------|
+| `--gtm` | Skip container detection and audit the given container ID; any other container ID found in the source is still flagged as a duplicate |
+| `--strict-mode` | Report-level escalation: every Warning becomes Critical and the report carries an explicit `VERDICT: FAIL` line when any remains. It never sets a process exit code |
+
+**5-phase audit:** Discovery (CMP + GTM / GA4 ID detection) -> Live verification via Playwright (dataLayer state pre-consent vs post-consent, event coverage per page type) -> Configuration audit (GA4 property, Key Events, Audiences, Ads linking) -> Consent Mode v2 deep check (default / update calls, granular 4-signal mapping, `wait_for_update`) -> Report with prioritized fixes.
+
+**Output:** `.ga4-audit/` directory with discovery, verification log, config audit, consent-mode findings, and final REPORT.md.
+
+---
+
+### `/digital-marketing:llm-seo-audit`
+
+Answer-engine optimization (AEO) audit. Unlike `/digital-marketing:seo-audit`, it optimizes for getting cited inside LLM-generated answers (Google AI Overviews, Perplexity, ChatGPT Search, Claude Search, Bing Copilot) rather than ranking on traditional SERPs.
+
+```
+/digital-marketing:llm-seo-audit https://example.com
+/digital-marketing:llm-seo-audit https://example.com --focus schema,eeat    # target two dimensions
+/digital-marketing:llm-seo-audit ./dist/                                    # static site audit
+/digital-marketing:llm-seo-audit https://example.com --strict-mode          # verdict line, Warnings raised to Critical
+```
+
+| Flag | Effect |
+|------|--------|
+| `--focus` | `crawlers` / `eeat` / `schema` / `passages` / `injection` / `all` (default) |
+| `--strict-mode` | Report-level escalation: every Warning is raised to Critical and the report opens with a `VERDICT: PASS` / `VERDICT: FAIL` line (FAIL when any Critical remains). It never sets a process exit code |
+
+Delegates to the `llm-seo-optimize` agent (6-phase protocol). Output: `.aeo-audit/REPORT.md` with crawler-access matrix, E-E-A-T and extractability scores, JSON-LD coverage, priority fixes, AI-referral tracking setup.
+
+---
+
+**Related:** [research](research.md) (deep research for content strategy) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for browser-based SEO / GA4 / AEO audits and trademark pre-screening; on Claude Code `claude plugin install playwright@claude-plugins-official`, on Codex, Copilot and Pi see the per-host table in the README's [Browser automation](../../README.md#browser-automation-playwright) section)
+
+<!-- daodan:reference:start -->
+## Source-derived reference
+
+Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
+this block; keep explanations above it. `--check` detects stale references.
+
+**Version:** `3.2.1`. **Source:** [plugin.toml](<../../plugins/digital-marketing/plugin.toml>).
+
+### Required dependencies
+
+Every listed plugin dependency is mandatory. Transitive requirements remain
+mandatory when using this plugin alone. The local closure includes this plugin.
+
+| Requirement | Plugins |
+|---|---|
+| Direct local | [report-rendering](<report-rendering.md>), [text-humanizer](<text-humanizer.md>) |
+| Direct external | `playwright@claude-plugins-official` |
+| Local closure (3) | [digital-marketing](<digital-marketing.md>), [report-rendering](<report-rendering.md>), [text-humanizer](<text-humanizer.md>) |
+| External closure (1) | `playwright@claude-plugins-official` |
+
+External bundles are separate upstream installations, not copied local skills.
+See [host setup](<../hosts.md>) for selection and availability requirements.
+
+**Required capabilities:** `repository.read`, `shell.execute`, `repository.write`, `network.fetch`, `contexts.isolate`, `roles.dispatch`.
+**Optional capabilities:** `execution.parallel`.
+Optional capabilities are host mechanisms, not optional local plugin dependencies.
+
+### Registered components
+
+Names below are kernel IDs. Host entry points and paths follow the adapter
+mapping in [the host reference](<../hosts.md>).
+The source links carry the complete instructions and accepted arguments.
+
+| Kind | ID | Purpose and trigger | Source |
+|---|---|---|---|
+| Skill | `digital-marketing:brand-naming-method` | Ideate brand names, filter against archetypes and phonotactic rules, and score survivors on domain availability, market saturation and trademark risk. TRIGGER WHEN: "brand name", "naming", "name my app", "name my product", "product name", "startup name", "come up with a name", "nome del brand", "naming strategico". | [brand-naming-method](<../../plugins/digital-marketing/skills/brand-naming-method/SKILL.md>) |
+| Skill | `digital-marketing:domain-hunter` | Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names. | [domain-hunter](<../../plugins/digital-marketing/skills/domain-hunter/SKILL.md>) |
+| Skill | `digital-marketing:ga4-implementation` | Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted. | [ga4-implementation](<../../plugins/digital-marketing/skills/ga4-implementation/SKILL.md>) |
+| Skill | `digital-marketing:review-reply-method` | Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response. | [review-reply-method](<../../plugins/digital-marketing/skills/review-reply-method/SKILL.md>) |
+| Role | `digital-marketing:content-marketer` | Audits and rewrites what a visitor actually reads before deciding. TRIGGER WHEN: the user asks about marketing materials, conversion optimization, content strategy, social media, CTAs, product presentation, or landing page copy. | [content-marketer](<../../plugins/digital-marketing/roles/content-marketer.md>) |
+| Role | `digital-marketing:ga4-implementation-expert` | Implement compliant GA4, GTM, Consent Mode v2 and conversion tracking across vanilla HTML, Next.js/React and WordPress. TRIGGER WHEN: working with GA4, GTM, gtag, dataLayer, Consent Mode v2, CMP cookie banners (iubenda, Cookiebot, CookieConsent), Microsoft Clarity, Key Events or Google Ads conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy or DPA (use business:privacy-doc-generator). | [ga4-implementation-expert](<../../plugins/digital-marketing/roles/ga4-implementation-expert.md>) |
+| Role | `digital-marketing:llm-seo-optimize` | Rewrites prose and markup for verbatim quotability rather than ranking position. TRIGGER WHEN: prose or markup needs answer-engine (AEO) treatment, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer). | [llm-seo-optimize](<../../plugins/digital-marketing/roles/llm-seo-optimize.md>) |
+| Role | `digital-marketing:seo-specialist` | Establishes intent and topical coverage before touching tags, and maps competitive gaps. TRIGGER WHEN: the user mentions SEO, search rankings, organic traffic, on-page optimization, structured data, or website optimization. | [seo-specialist](<../../plugins/digital-marketing/roles/seo-specialist.md>) |
+| Workflow | `digital-marketing:brand-naming` | Runs the whole workflow from a brief, with optional language and TLD constraints. TRIGGER WHEN: the user asks for brand, startup, product, or company names. DO NOT TRIGGER WHEN: renaming source code identifiers (use clean-code), or picking SEO keywords (use /digital-marketing:seo-audit). | [brand-naming](<../../plugins/digital-marketing/workflows/brand-naming.md>) |
+| Workflow | `digital-marketing:content-strategy` | Reviews whether the material actually persuades a visitor, not whether it is well built. TRIGGER WHEN: the user asks for a content, marketing, conversion, or CRO audit of a website, landing page, or funnel. DO NOT TRIGGER WHEN: the audit is technical SEO only (use /digital-marketing:seo-audit). | [content-strategy](<../../plugins/digital-marketing/workflows/content-strategy.md>) |
+| Workflow | `digital-marketing:ga4-audit` | Inspects a live deployment in the browser to see what really fires. TRIGGER WHEN: the user asks to audit GA4, verify GTM setup, check Consent Mode v2 compliance, debug missing conversions, validate dataLayer events, or check "why isn't my site converting". DO NOT TRIGGER WHEN: the task is general SEO (use /digital-marketing:seo-audit), or content and CTA optimization (use /digital-marketing:content-strategy). | [ga4-audit](<../../plugins/digital-marketing/workflows/ga4-audit.md>) |
+| Workflow | `digital-marketing:llm-seo-audit` | Audit pages for generative search / answer engine citation readiness (AI Overviews, Perplexity, ChatGPT/Claude Search, Bing Copilot). TRIGGER WHEN: auditing AI search visibility, AI-bot crawler allowlists, E-E-A-T, llms.txt, JSON-LD citation schemas, passage extractability or prompt-injection hardening. DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer). | [llm-seo-audit](<../../plugins/digital-marketing/workflows/llm-seo-audit.md>) |
+| Workflow | `digital-marketing:reply-to-customer-review` | Drafts a ready-to-post answer, with brand, tone, language, and sector flags. TRIGGER WHEN: the user pastes a customer review (Airbnb, Booking, Tripadvisor, Amazon, Trustpilot, App Store, Google) and asks for a reply or response. DO NOT TRIGGER WHEN: writing general marketing copy (use content-marketer). | [reply-to-customer-review](<../../plugins/digital-marketing/workflows/reply-to-customer-review.md>) |
+| Workflow | `digital-marketing:seo-audit` | Diagnoses why a page underperforms in traditional Google and Bing results. TRIGGER WHEN: the user asks for a technical SEO audit, Core Web Vitals check, sitemap, redirect, or crawlability review, structured data or meta tags, mobile usability, or SERP ranking analysis. DO NOT TRIGGER WHEN: the goal is being cited by AI answer engines (use /digital-marketing:llm-seo-audit), conversion, CTA, or copy quality (use /digital-marketing:content-strategy), or GA4 tracking (use ga4-implementation-expert). | [seo-audit](<../../plugins/digital-marketing/workflows/seo-audit.md>) |
+
+### Workflow contracts
+
+Contracts describe observable outputs; Markdown bodies define decisions,
+flags, safety gates and execution. Declared `invoke` execution is unsupported.
+
+#### `digital-marketing:brand-naming`
+
+**Arguments:** <code>&lt;brief description or industry&gt; [--country &lt;country&gt;] [--languages &lt;lang1,lang2&gt;] [--tlds &lt;.com,.app,.io&gt;]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `brand-naming-completed` |
+| Artifacts | `brand-naming-report` |
+| Schemas | None declared |
+| Declared workers | None |
+| Composed worker isolation | See phase isolation below |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [brand-naming.toml](<../../plugins/digital-marketing/workflows/brand-naming.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+#### `digital-marketing:content-strategy`
+
+**Arguments:** <code>&lt;url or local path&gt; [--focus &lt;comma-separated areas&gt;] [--social] [--strict-mode]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `content-strategy-completed` |
+| Artifacts | `content-strategy-report` |
+| Schemas | None declared |
+| Declared workers | `digital-marketing/content-marketer` |
+| Composed worker isolation | Required |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [content-strategy.toml](<../../plugins/digital-marketing/workflows/content-strategy.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `scope` | None | None | `shared` | None declared | `preferred` |
+| `audit` | `scope` | `content-marketer`, `per item in selection:audits` | `required` | `all-delivered` | `preferred` |
+| `synthesis` | `audit` | None | `shared` | None declared | `preferred` |
+| `approval` | `synthesis` | None | `shared` | None declared | `preferred` |
+| `apply` | `approval` | None | `shared` | None declared | `preferred` |
+| `report` | `apply` | None | `shared` | None declared | `preferred` |
+
+#### `digital-marketing:ga4-audit`
+
+**Arguments:** <code>&lt;url or local path&gt; [--gtm &lt;container-id&gt;] [--strict-mode]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `ga4-audit-completed` |
+| Artifacts | `ga4-audit-report` |
+| Schemas | None declared |
+| Declared workers | None |
+| Composed worker isolation | See phase isolation below |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [ga4-audit.toml](<../../plugins/digital-marketing/workflows/ga4-audit.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+#### `digital-marketing:llm-seo-audit`
+
+**Arguments:** <code>&lt;url or local path&gt; [--focus &lt;comma-separated: crawlers,eeat,schema,passages,injection &#124; all&gt;] [--strict-mode]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `llm-seo-audit-completed` |
+| Artifacts | `llm-seo-audit-report` |
+| Schemas | None declared |
+| Declared workers | None |
+| Composed worker isolation | See phase isolation below |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [llm-seo-audit.toml](<../../plugins/digital-marketing/workflows/llm-seo-audit.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+#### `digital-marketing:reply-to-customer-review`
+
+**Arguments:** <code>\"&lt;review text&gt;\" [--brand &lt;name&gt;] [--tone formal&#124;friendly&#124;casual] [--lang &lt;code&gt;] [--sector hospitality&#124;ecommerce&#124;auto]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `reply-to-customer-review-completed` |
+| Artifacts | `reply-to-customer-review-report` |
+| Schemas | None declared |
+| Declared workers | None |
+| Composed worker isolation | See phase isolation below |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [reply-to-customer-review.toml](<../../plugins/digital-marketing/workflows/reply-to-customer-review.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+#### `digital-marketing:seo-audit`
+
+**Arguments:** <code>&lt;url or local path&gt; [--focus &lt;comma-separated category names&gt;] [--local] [--strict-mode]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `seo-audit-completed` |
+| Artifacts | `seo-audit-report` |
+| Schemas | None declared |
+| Declared workers | None |
+| Composed worker isolation | See phase isolation below |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [seo-audit.toml](<../../plugins/digital-marketing/workflows/seo-audit.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+### Host exports
+
+Package paths and coordination are derived from the host adapters. `native`
+and `adapted` describe bindings, not successful installed-host execution.
+
+The selected strategy is an adapter binding even for a flat workflow body.
+A dispatch harness is rendered only for declared method workers, task-specific
+workers or phase fan-out; the host reference explains the entry artifacts.
+
+| Host | Package | Binding | Selected workflow strategy |
+|---|---|---|---|
+| claude | [exports/claude/plugins/digital-marketing](<../../exports/claude/plugins/digital-marketing>) | `native` | `brand-naming: native-team`, `content-strategy: native-team`, `ga4-audit: native-team`, `llm-seo-audit: native-team`, `reply-to-customer-review: native-team`, `seo-audit: native-team` |
+| copilot | [exports/copilot/plugins/digital-marketing](<../../exports/copilot/plugins/digital-marketing>) | `native` | `brand-naming: parallel-subagents`, `content-strategy: parallel-subagents`, `ga4-audit: parallel-subagents`, `llm-seo-audit: parallel-subagents`, `reply-to-customer-review: parallel-subagents`, `seo-audit: parallel-subagents` |
+| codex | [exports/codex/plugins/digital-marketing](<../../exports/codex/plugins/digital-marketing>) | `adapted` | `brand-naming: parallel-subagents`, `content-strategy: parallel-subagents`, `ga4-audit: parallel-subagents`, `llm-seo-audit: parallel-subagents`, `reply-to-customer-review: parallel-subagents`, `seo-audit: parallel-subagents` |
+| pi | [exports/pi/plugins/digital-marketing](<../../exports/pi/plugins/digital-marketing>) | `adapted` | `brand-naming: parallel-subagents`, `content-strategy: parallel-subagents`, `ga4-audit: parallel-subagents`, `llm-seo-audit: parallel-subagents`, `reply-to-customer-review: parallel-subagents`, `seo-audit: parallel-subagents` |
+| opencode | [exports/opencode/plugins/digital-marketing](<../../exports/opencode/plugins/digital-marketing>) | `native` | `brand-naming: parallel-subagents`, `content-strategy: parallel-subagents`, `ga4-audit: parallel-subagents`, `llm-seo-audit: parallel-subagents`, `reply-to-customer-review: parallel-subagents`, `seo-audit: parallel-subagents` |
+
+<!-- daodan:reference:end -->

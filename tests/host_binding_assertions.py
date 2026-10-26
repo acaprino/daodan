@@ -1,15 +1,10 @@
 """Strict oracle for the one generated execution binding in host Markdown."""
 from pathlib import Path
-import sys
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.daodan.adapter import load_adapter
 from scripts.daodan.render import _operational_binding
 
-ADAPTERS = REPO_ROOT / "adapters"
+ADAPTERS = Path(__file__).resolve().parents[1] / "adapters"
 
 
 def without_host_binding(case, text, host):

@@ -73,6 +73,29 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertLess(worker, report)
                 self.assertIn(f"**Output file:** `<run>/{output}/report.md`", prose)
 
+    def test_content_focus_selection_is_bound_to_isolated_workers_and_a_delivery_barrier(self):
+        workflow = self.workflow("digital-marketing", "content-strategy")
+        phases = {phase.id: phase for phase in workflow.phases}
+        audit = phases["audit"]
+        self.assertIn(audit.fanout_from, phases["scope"].produces)
+        self.assertEqual(audit.role, "content-marketer")
+        self.assertIn("digital-marketing/content-marketer", workflow.dispatch.roles)
+        self.assertEqual(audit.isolation, "required")
+        self.assertEqual(audit.join, "all-delivered")
+        self.assertEqual(audit.concurrency, "preferred")
+        self.assertIn(audit.id, phases["synthesis"].needs)
+        self.assertIn("approval", phases["apply"].needs)
+        self.assertIn("apply", phases["report"].needs)
+        self.assertEqual(
+            [phase.id for phase in workflow.phases
+             if "artifact:content-strategy-report" in phase.produces],
+            ["report"],
+        )
+        body = (self.registry["digital-marketing"].root / workflow.entrypoint).read_text(encoding="utf-8")
+        self.assertIn("report only", body)
+        self.assertIn("zero applied changes", body)
+        self.assertIn("delivered or failed", body)
+
     def test_nested_review_methods_use_a_declared_isolated_worker_for_inline_tasks(self):
         # code-review became review-changes; team-review and pr-review became
         # the two variants of review-branch (38.0.0).

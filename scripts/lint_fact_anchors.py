@@ -104,6 +104,105 @@ ANCHORS = {
         r"### 5\. Centralize Shared Logic\n([^\n]+)",
         "Shared concept ownership rule: instruction examples and the canonical working block must agree",
     ),
+    "constraint-saturation-threshold": (
+        "plugins/ai-tooling/roles/prompt-engineer.md",
+        rf"(?:above|over)\s+({_COUNT})\s+simultaneously\s+verifiable\s+constraints",
+        "Constraint-saturation working threshold: the count above which a prompt is split or verified",
+    ),
+    "constraint-verifier-trigger": (
+        "plugins/ai-tooling/roles/prompt-engineer.md",
+        rf"({_COUNT}\s+to\s+{_COUNT},\s+add\s+a\s+\w+)",
+        "Constraint-saturation verifier trigger: the band and its required action, which the "
+        "upper-trigger anchor alone left unguarded. The group spans both bounds and the verb so "
+        "that changing either number or the action in one file conflicts with the other",
+    ),
+    "web-api-global-rate": (
+        "plugins/trading-broker-integration/skills/ibkr/references/tws-api-architecture.md",
+        r"(\d+)\s+requests?\s+per\s+second\s+per\s+authenticated\s+username",
+        "Web API global rate limit (was wrongly stated as the per-endpoint 10/s)",
+    ),
+    "tws-message-rate": (
+        "plugins/trading-broker-integration/skills/ibkr/references/order-execution.md",
+        r"(?:Message rate|message rate)[^.\n]{0,20}?(\d+)\s*(?:msg|message)s?\s*/?\s*sec",
+        "TWS socket message rate before error 100",
+    ),
+    "historical-pacing-window": (
+        "plugins/trading-broker-integration/skills/ibkr/references/event-driven-data.md",
+        r"(\d+)[- ]per[- ]600\s*s",
+        "Historical pacing: requests per 600 seconds",
+    ),
+    "historical-identical-cooldown": (
+        "plugins/trading-broker-integration/skills/ibkr/references/event-driven-data.md",
+        r"one\s+(?:request\s+)?per\s+(\d+)\s*s(?:econds)?\b[^.\n]{0,40}(?:across\s+processes|identical)",
+        "Historical pacing: identical-request cooldown",
+    ),
+    "market-data-lines-default": (
+        "plugins/trading-broker-integration/skills/ibkr/references/event-driven-data.md",
+        r"[Mm]arket data lines[^.\n]{0,30}?\(default\s+(\d+)",
+        "Base market-data line allowance",
+    ),
+    "tick-by-tick-share": (
+        "plugins/trading-broker-integration/skills/ibkr/references/event-driven-data.md",
+        r"(?i)tick[- ]by[- ]tick[^.|\n]{0,60}?(\d+)%\s+of\b",
+        "Tick-by-tick pool as a share of market-data lines",
+    ),
+    "max-api-connections": (
+        "plugins/trading-broker-integration/skills/ibkr/references/tws-api-architecture.md",
+        r"max(?:imum)?\s+(\d+)\s+(?:simultaneous\s+)?connections",
+        "Concurrent API clients per terminal",
+    ),
+    "account-summary-cadence": (
+        "plugins/trading-broker-integration/skills/ibkr/references/account-state-and-pnl.md",
+        r"(?:cadence|every)\s+\*{0,2}(three|3)\*{0,2}[- ]minute",
+        "Account summary / account update push cadence",
+    ),
+    "positions-subaccount-limit": (
+        "plugins/trading-broker-integration/skills/ibkr/references/account-state-and-pnl.md",
+        r"(?i)(?:above|>)\s*\**(\d+)\**\s+subaccounts",
+        "reqPositions subaccount ceiling before reqPositionsMulti",
+    ),
+    "published-code-count": (
+        "plugins/trading-broker-integration/skills/ibkr/references/error-codes-and-verdicts.md",
+        r"\*{0,2}(\d+)\s+codes\*{0,2},\s+ranging|all\s+(\d+)\s+published\s+codes",
+        "Size of IBKR's published message-code table",
+    ),
+    "execid-correction-rule": (
+        "plugins/trading-broker-integration/skills/ibkr/references/order-lifecycle-contracts.md",
+        r"digits\s+after\s+the\s+(final|last)\s+period",
+        "execId correction convention (verbatim phrasing)",
+    ),
+    "attached-order-delay": (
+        "plugins/trading-broker-integration/skills/ibkr/references/bracket-orders.md",
+        r"(\d+)\s*ms\s+or\s+less",
+        "Parent-to-child delay that avoids error 10006",
+    ),
+    "aon-nbbo-margin": (
+        "plugins/trading-broker-integration/skills/ibkr/references/order-types-and-attributes.md",
+        r"order size\s+plus\s+(\d+)\s+shares",
+        "AON US-stock simulation: NBBO size above order size",
+    ),
+    "cold-login-budget": (
+        "plugins/trading-broker-integration/skills/ibkr/references/gateway-automation.md",
+        r"cold (?:IBC )?login can take (\d+ to \d+|\d+-\d+) minutes",
+        "Cold IBC login budget",
+    ),
+    "paper-initial-equity": (
+        "plugins/trading-broker-integration/skills/ibkr/references/gateway-verification.md",
+        r"USD\s+([\d,]+)\*{0,2}\s+of\s+(?:paper trading\s+)?Equity with Loan",
+        "Paper account starting equity",
+    ),
+    "broker-archetype-count": (
+        "plugins/trading-broker-integration/skills/broker-vocabulary/"
+        "references/access-archetypes.md",
+        r"\bthe (\w+) archetypes\b",
+        "how many access archetypes the vocabulary defines, echoed in the skill's own SKILL.md and in CLAUDE.md",
+    ),
+    "evidence-ladder-ranks": (
+        "plugins/trading-broker-integration/skills/broker-vocabulary/"
+        "references/evidence-and-probes.md",
+        r"ladder has \*\*(\w+) ranks\*\*",
+        "the evidence ladder's rank count, stated in the generic plugin and in the ibkr skill",
+    ),
     "xray-incident-apply-share": (
         "docs/plugins/codebase-map.md",
         r"(\d+)% of the applied rules used `@apply`",

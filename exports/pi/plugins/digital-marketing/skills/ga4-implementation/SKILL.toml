@@ -1,0 +1,7 @@
+schema = "daodan/skill-metadata/v1"
+kind = "knowledge"
+operations = ["review", "develop"]
+languages = []
+frameworks = ["ga4"]
+topics = []
+dimensions = ["correctness"]

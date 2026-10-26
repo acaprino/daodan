@@ -156,11 +156,11 @@ class OperationalBindingTests(unittest.TestCase):
     def test_nonclaude_roles_inherit_model_and_keep_declared_operation_scope(self):
         for host in ("copilot", "codex", "pi", "opencode"):
             with self.subTest(host=host):
-                rendered = self.render_in_memory("senior-review", host)
+                rendered = self.render_in_memory("research", host)
                 adapter = load_adapter(ADAPTERS, host)
                 from scripts.daodan.templates import render_path
                 relative = render_path(adapter.layout["roles"],
-                                       {"plugin": "senior-review", "role": "api-contract-auditor"})
+                                       {"plugin": "research", "role": "quick-searcher"})
                 text = rendered[relative.as_posix()]
                 meta, _ = _frontmatter(text)
                 self.assertNotIn("model", meta)
@@ -260,8 +260,8 @@ class OperationalBindingTests(unittest.TestCase):
 
     def test_host_subject_and_domain_examples_are_preserved(self):
         examples = (
-            ("project-knowledge", "skills/instructions-method/SKILL.md"),
-            ("codebase-map", "skills/map-method/SKILL.md"),
+            ("marketplace-ops", "skills/kernel-marketplace/SKILL.md"),
+            ("ai-tooling", "skills/agent-sdk-builder/SKILL.md"),
         )
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
@@ -367,7 +367,7 @@ class OperationalBindingTests(unittest.TestCase):
             _copilot_tools("InventedTool")
         with self.assertRaisesRegex(RenderError, "unbound role tool"):
             _copilot_tools("Read, InventedTool")
-        text = self.render_in_memory("senior-review", "copilot")["agents/code-auditor.agent.md"]
+        text = self.render_in_memory("research", "copilot")["agents/deep-researcher.agent.md"]
         meta, _ = _frontmatter(text)
         self.assertIn("'runCommands'", meta["tools"])
         self.assertIn("'edit'", meta["tools"])

@@ -1,0 +1,295 @@
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
+
+<daodan_host_binding host="opencode">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
+shell execution uses shell, network tools are webfetch/websearch, and clarification
+uses the registered question tool. shell takes command, optional workdir, timeout
+in milliseconds and background. It does not provide interactive stdin. Persistent
+capture uses background: true and an explicit noninteractive stop signal.
+Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
+subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
+continues that child, and background: true requests asynchronous completion.
+Use only roles allowed by the current harness and permissions. A child cannot
+dispatch nested workers when its permissions or the configured depth deny it.
+Workflow entries are /<plugin>:<workflow>, registered by the package loader.
+Inherit the session model; an override requires its authorized, actually available
+provider/model identity, not another host's short model alias.
+The loader includes required local providers and registers plugin-declared MCP
+servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
+through this host, never a Claude marketplace command. Check the active registry:
+registration metadata alone does not prove a connected server or usable tool.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# Gateway Verification
+
+Provisioning a disposable paper Gateway and using it to answer questions instead of guessing.
+
+Two scripts ship with this skill:
+
+- **`<plugin-root>/skills/ibkr/scripts/ibkr_gateway.py`** downloads, installs,
+  configures, starts and stops an IB Gateway pinned to paper trading. Standard library only, so it runs
+  before anything else is installed.
+- **`<plugin-root>/skills/ibkr/scripts/ibkr_probe.py`** connects to it and measures
+  venue behaviour: capability dumps, order-shape verdicts, compatibility matrices, bracket lifecycle
+  transcripts, and message-code lookups. Requires `ib_async`.
+
+## Safety model
+
+Live money is one configuration mistake away from any tool that speaks this protocol, so the guards are
+in code rather than in prose.
+
+1. **Live ports are refused before connecting.** `4001` and `7496` abort both scripts. Paper defaults
+   are `4002` (Gateway) and `7497` (TWS).
+2. **The account is re-checked after connecting.** Every managed account must begin with `D` (IBKR
+   paper account ids look like `DU…` / `DF…`). Anything else disconnects and aborts. Port and account
+   are two independent checks on purpose: a paper port can be pointed at a live gateway.
+3. **`TradingMode=paper` is pinned** in the generated IBC configuration.
+4. **Order-placing probes use prices far from the market** and cancel everything on the way out.
+5. **The what-if budget is enforced**, not just documented: probes are spaced to at most one per minute,
+   per IBKR's published guidance.
+
+There is deliberately **no live provisioning path**. Provisioning a production Gateway belongs to your
+deployment tooling, where it can be reviewed.
+
+## Provisioning
+
+```bash
+S=<plugin-root>/skills/ibkr/scripts
+
+python $S/ibkr_gateway.py doctor                       # what is present, which ports are open
+python $S/ibkr_gateway.py install --channel stable     # download + unattended install of Gateway and IBC
+python $S/ibkr_gateway.py configure --user <paper-user>  # writes config.ini, TradingMode=paper
+export IB_PASSWORD='…'                                 # never written to the repository
+python $S/ibkr_gateway.py start --timeout 900          # launches headless, then probes the port
+python $S/ibkr_gateway.py stop
+```
+
+On PowerShell, set the password with `$env:IB_PASSWORD = '...'`; the script invocations are identical.
+
+Notes that come from how these installers actually behave:
+
+- **Everything lands outside the repository**, in a per-user state directory (`IBKR_VERIFY_HOME`
+  overrides it). Credentials never enter the working tree.
+- **Windows and Linux install unattended.** macOS ships a `.dmg` that needs mounting, so the script
+  stops and tells you the two commands rather than pretending.
+- **`start` goes through IBC's service entry points** (`scripts/ibcstart.sh` / `scripts\StartIBC.bat`)
+  with everything passed as explicit arguments. The top-level `gatewaystart.sh` / `StartGateway.bat`
+  are user-editable config files that hard-assign their own paths, config file and trading mode, so
+  environment variables never survive them.
+- **`start` verifies by probing the API port, never by the launcher's exit code.** Launchers background
+  the JVM and return success within a second or two; treating that return as "it started" produces
+  restart loops.
+- **On Linux a display is required** (the Gateway is a Java GUI app): run under `xvfb-run -a`, which
+  `doctor` checks for.
+- **A cold first login can take 10 to 15 minutes** (updates, 2FA on IBKR Mobile, warm-up). The default
+  timeout is 900 s for that reason. A 90-second timeout guarantees a crash loop.
+- **The Gateway is detached from its spawner**, so stopping the script does not kill the Gateway.
+
+The Docker route is a legitimate alternative to all of the above:
+`gnzsnz/ib-gateway-docker` packages IB Gateway plus IBC and supports live and paper simultaneously. The
+same rules apply: one starter, port-probe verification, a generous cold-start timeout.
+
+## Answering a question with the prober
+
+### What does this contract actually permit?
+
+```bash
+python $S/ibkr_probe.py capabilities --stock AAPL
+python $S/ibkr_probe.py capabilities --forex EURUSD
+python $S/ibkr_probe.py capabilities --cfd EUR.USD
+python $S/ibkr_probe.py capabilities --option 'AAPL,20261218,200,C'
+```
+
+Emits JSON: `orderTypes` (the venue's own capability token list), `validExchanges`, `minSize`,
+`sizeIncrement`, trading hours, and **the resolved market rules per exchange**, meaning the actual
+price bands and increments rather than the `minTick` floor. It then calls out on stderr whether tokens
+like `AON`, `GTC`, `IOC` and `POSTONLY` are present for that contract.
+
+**This is the first thing to run for any "does IBKR support X" question.** If an order-type token is
+absent, the answer is no for that contract and no probe is needed. TIF tokens under-report (EUR.USD
+CFD declares no `IOC` yet accepts it at what-if), so an absent TIF still goes to `shape`. Reading
+beats probing whenever reading suffices.
+
+### Will this exact order shape be accepted?
+
+```bash
+python $S/ibkr_probe.py shape --stock AAPL --type STP --tif GTC --attr allOrNone
+python $S/ibkr_probe.py shape --forex EURUSD --type LMT --tif IOC --attr minQty=1000
+```
+
+One what-if submission via `ib.whatIfOrderAsync` (the API that actually returns the venue's
+`OrderState`; on the plain `placeOrder` path ib_async discards it). Returns `ACCEPTED`, `REFUSED` or
+`UNDECIDED`, every non-informational error code, and the margin impact. Each code is then explained
+from the shipped table, including the grade `ib_async` gives it.
+
+A `REFUSED` verdict is trustworthy for that shape. An `ACCEPTED` verdict is a credit check passing, not
+a promise: terminal presets and book state can still refuse the real order.
+
+**What paper can and cannot prove is itself documented.** The one sentence that frames everything else,
+from IBKR's paper-account guide: "Trades entered into a paper trading account will not actually execute
+on any exchange or settle at a clearing house. However, the simulated price of the executions will be
+determined by real market prices and sizes." Real prices, no venue. The TWS API documentation says the
+same thing from the API side: "the Paper Trading Environment relies on more simulated technologies than
+the Live trading environment. As a result, certain behavior such as order execution may vary."
+
+The documented limits follow from that: fills "are simulated from the top of the book" with no deep
+book; "stops and other complex order types are always simulated in paper trading", which "may result in
+slightly different behavior from a production account"; some order types are unsupported outright
+(VWAP, Auction, RFQ, Pegged to Market); combo and EFP trading is limited; US options never receive
+penny fills; mutual funds are not supported; an exchange-directed market order that partially executes
+has its remainder rejected by the simulator; and a market order with no quote on the opposite side is
+held until market data arrives. Validation verdicts transfer to live; fill behaviour, partials and
+timing do not.
+
+**Two gaps that quietly invalidate long-running acceptance tests**, both documented: paper accounts have
+no IPO access, and **corporate actions such as dividends and splits are not processed**. A test that
+holds a position across an ex-dividend date or a split is therefore measuring a fiction, and any
+position-and-PnL reconciliation that spans one will diverge for a reason that has nothing to do with
+your code. Keep acceptance runs inside a corporate-action-free window, or assert only on the paths that
+do not depend on the adjustment.
+
+Account state is documented too: every paper account starts with **USD 1,000,000 of Equity with Loan
+Value**, the cash can be reset from Client Portal to at most five times the production account's value
+with requests before 4pm ET taking effect the next business day, and paper statements are available
+under Client Portal's Reports menu, which makes statement-versus-API reconciliation a paper-testable
+path even though its economics are simulated. A paper account cannot be converted into a live one.
+
+Data on paper follows the live account: "trading permissions, market data subscriptions, base currency,
+and other account configurations are the same as specified for your regular account", subscriptions are
+shared by opt-in (Account Settings, Paper Trading Account), the two logins cannot consume the shared
+data simultaneously, and an unshared paper account gets documented delayed defaults (US stocks and
+options 15 minutes, US futures 10; metals, Forex and US bonds undelayed).
+
+### Which combinations work?
+
+```bash
+python $S/ibkr_probe.py matrix --stock AAPL --types LMT,STP,STPLMT --tifs DAY,GTC,IOC
+```
+
+Prints a compatibility table. Shapes whose **order type** is absent from `ContractDetails.orderTypes`
+are marked `NOT-DECLARED` and skipped rather than probed; every TIF is measured by what-if, because
+the declaration under-reports TIFs (EUR.USD CFD declares no `IOC` and accepts it). At one probe per
+minute, a full 3×3 grid takes about eight minutes; that is the cost of an answer that is true for
+your account.
+
+### What does a bracket actually do here?
+
+```bash
+python $S/ibkr_probe.py bracket --stock AAPL --qty 1 --parent-tif DAY --child-tif GTC
+```
+
+Places a genuinely staged three-leg bracket with prices far from the market (snapped to the market
+rule band so the probe itself cannot die on error 110), waits, and prints per leg: the TIF sent versus
+the TIF read back, status, `filled`, `remaining`, and the full trade log. Then cancels exactly the
+orders it placed. If no live quote arrives (fresh paper accounts often lack market-data subscriptions),
+it refuses to place rather than guessing a reference; pass `--price` with a level you have confirmed.
+
+**A TIF read back different from the one sent is a terminal preset rewriting your order** (the error
+`10349` mechanism), which is otherwise invisible. This probe is the cheapest way to detect that a
+terminal is editing your orders.
+
+Two shapes in the cleanup transcript are expected, not errors: each leg answers `202` (cancelled),
+and a child the OCA relationship already cancelled in cascade answers `10148` ("cannot be cancelled,
+state: Cancelled") to its own explicit cancel -- a live demonstration that 10148 judges the *cancel
+request*, which is exactly why it never belongs in a rejection set. Outside regular trading hours the
+parent also logs a warning-grade `399` ("will not be placed until <open>") and stays alive,
+`ValidationError` pseudo-status notwithstanding.
+
+### What is this code I have never seen?
+
+```bash
+python $S/ibkr_probe.py codes 10256 10257 10349 110 201
+```
+
+No gateway needed. Looks the code up in `assets/tws-message-codes.tsv` (all 458 published codes) and
+reports the grade `ib_async` applies -- by ib_async's rule, not by table membership, so an unlisted
+code in `[2100, 2200)` or in `warningCodes` is correctly reported as a warning. A genuinely
+undocumented fatal code is reported with the warning that `ib_async` will cancel your local record of
+a live order.
+
+## The workflow this supports
+
+For any question about venue behaviour, in order:
+
+1. **Read the capability list** for the contract. Many questions end here.
+2. **Read the documentation**, and quote the sentence. If you cannot locate it as a sentence, you do
+   not have an answer. Silence is a result worth recording.
+3. **Probe the shape** with what-if, respecting the budget.
+4. **Probe the lifecycle** with a real staged order on paper when the question is about states,
+   timing or attachment rather than acceptance.
+5. **Record the answer with its provenance and the shapes it covers**, and delete the open question.
+
+Steps 1 and 2 are free and answer most questions. Step 3 costs a minute. Step 4 costs a few minutes and
+a paper order. None of that is expensive compared to shipping a decision built on an assumption.
+
+## What this cannot tell you
+
+Honest limits, so the transcripts are not over-read:
+
+- **Paper is not production.** Fill behaviour, partial fills, queue position and slippage differ.
+  Acceptance and refusal transfer well; execution quality does not.
+- **A paper account can have different permissions** from your live account. Entity-dependent routing
+  rules in particular may not reproduce.
+- **A result is scoped to the shapes probed.** Measured on `STP` says nothing about `LMT`.
+- **Terminal configuration is per machine.** A verdict measured against this disposable Gateway may
+  differ from the one your production terminal produces, which is exactly why comparing the two is
+  informative.
+
+## Related
+
+- `venue-questions-and-probes.md` - the doctrine: what counts as an answer, and the open-question register
+- `error-codes-and-verdicts.md` - reading the codes the probes return
+- `order-types-and-attributes.md` - the capability vocabulary the prober dumps
+- `bracket-orders.md` - what the bracket probe is testing for
+- `gateway-automation.md` - running a Gateway in production, as opposed to provisioning one for tests

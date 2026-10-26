@@ -434,13 +434,17 @@ class HostRenderingTests(unittest.TestCase):
 class ReportRenderingHostContracts(unittest.TestCase):
     """Read consumer methods and resources from fresh source renderings."""
 
-    CONSUMERS = ("codebase-map", "senior-review")
+    CONSUMERS = ("digital-marketing", "codebase-map", "senior-review")
     PROVIDER = "report-rendering"
     SKILL = "skills/report-renderer/SKILL.md"
     RESOURCES = ("skills/report-renderer/scripts/render_report.py",
                  "skills/report-renderer/assets/report.css",
                  "skills/report-renderer/assets/report.js")
     HOOKS = {
+        "digital-marketing": {
+            "skills/brand-naming-method/SKILL.md": "--profile naming",
+            "skills/brand-naming-method/references/report-template.md": "naming",
+        },
         "codebase-map": {
             "skills/map-method/references/human-view.md": "--profile report",
         },
@@ -542,6 +546,19 @@ class ReportRenderingHostContracts(unittest.TestCase):
                 self.assertIn(supported.state, {"native", "adapted"})
                 self.assertEqual(unavailable.state, "unsupported")
                 self.assertEqual(unavailable.missing_capabilities, ("shell.execute",))
+
+    def test_naming_default_and_root_selected_paths_keep_the_html_in_an_owned_directory(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                method = _read(self.package(host, "digital-marketing") /
+                               "skills/brand-naming-method/SKILL.md")
+                prose = " ".join(method.split())
+
+                self.assertIn("dedicated `.brand-naming/` directory inside the current workspace", prose)
+                self.assertIn("same dedicated owned output directory", prose)
+                self.assertIn("report path in the repository root or a shared directory", prose)
+                self.assertIn("place its HTML in a dedicated `.brand-naming/` subdirectory", prose)
+                self.assertIn("subdirectory as `--root`", prose)
 
     def test_provider_verification_does_not_add_browser_runtime_to_static_xray(self):
         for host in HOSTS:

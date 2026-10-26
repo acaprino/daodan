@@ -122,6 +122,17 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
+      "description": "Constraint Satisfaction Problems and combinatorial optimization with Google OR-Tools CP-SAT solver",
+      "license": "MIT",
+      "name": "csp",
+      "source": "./exports/codex/plugins/csp",
+      "version": "1.4.2"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
       "description": "Evidence-first dependency auditing: runs each ecosystem's real audit tooling for CVEs, outdated packages, license obligations and supply-chain signals, and reports only tool-verified facts under TOOL-REPORTED, INFERRED and UNKNOWN evidence tiers. Obligations-based license analysis instead of a compatibility matrix, and strictly non-destructive remediation.",
       "license": "MIT",
       "name": "dependency-audit",
@@ -130,6 +141,33 @@
       ],
       "source": "./exports/codex/plugins/dependency-audit",
       "version": "2.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "playwright@claude-plugins-official",
+        "text-humanizer",
+        "report-rendering"
+      ],
+      "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot): technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /digital-marketing:ga4-audit Playwright-powered verification, and /digital-marketing:llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
+      "license": "MIT",
+      "name": "digital-marketing",
+      "skills": [
+        "./skills/brand-naming-method",
+        "./skills/brand-naming-workflow",
+        "./skills/content-strategy-workflow",
+        "./skills/domain-hunter",
+        "./skills/ga4-audit-workflow",
+        "./skills/ga4-implementation",
+        "./skills/llm-seo-audit-workflow",
+        "./skills/reply-to-customer-review-workflow",
+        "./skills/review-reply-method",
+        "./skills/seo-audit-workflow"
+      ],
+      "source": "./exports/codex/plugins/digital-marketing",
+      "version": "3.2.1"
     },
     {
       "author": {
@@ -144,6 +182,45 @@
       ],
       "source": "./exports/codex/plugins/docker",
       "version": "1.4.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "impeccable@impeccable",
+        "ui-ux-pro-max@ui-ux-pro-max-skill",
+        "frontend-design@claude-plugins-official",
+        "react-development",
+        "typescript-development",
+        "pwa-expert",
+        "platform-engineering"
+      ],
+      "description": "Full frontend review in one pass, combining a design/UX dimension driven by the impeccable, ui-ux-pro-max, and frontend-design upstream skills as hard prerequisites with stop-and-install, with auto-detected code dimensions (React performance, TypeScript type safety, PWA architecture, platform compliance) spawned from local plugins declared as hard dependencies, so a dimension is skipped only when its signal does not match. Findings consolidate into a unified scored report at .frontend-review/report.md. Pure orchestration; vendors nothing.",
+      "license": "MIT",
+      "name": "frontend-review",
+      "skills": [
+        "./skills/review-frontend-workflow"
+      ],
+      "source": "./exports/codex/plugins/frontend-review",
+      "version": "2.1.4"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "playwright@claude-plugins-official"
+      ],
+      "description": "Expert Python web scraping - coordinator (grabber-architect) plus three specialists: stealth-browser-expert (Patchright/Camoufox/Nodriver + CAPTCHA), http-fingerprint-expert (JA4+/curl_cffi/primp + proxies/Web Unlocker), ai-scraping-expert (Crawl4AI/Firecrawl/ScrapeGraphAI + Pydantic + GraphQL RE)",
+      "license": "MIT",
+      "name": "grabber-development",
+      "skills": [
+        "./skills/grabber-development",
+        "./skills/instagram-grab-workflow"
+      ],
+      "source": "./exports/codex/plugins/grabber-development",
+      "version": "1.8.5"
     },
     {
       "author": {
@@ -311,6 +388,25 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
+        "playwright@claude-plugins-official"
+      ],
+      "description": "Progressive Web App expert for the 2025-2026 baseline. Covers Web App Manifest (id, display_override, scope_extensions, handle_links, file_handlers, share_target), Service Workers (Workbox 7 / Serwist), Web Push (VAPID, RFC 8030/8291/8292, Declarative Push for Safari 18.4+), install flows (beforeinstallprompt, Window Controls Overlay), OPFS storage, Project Fugu capabilities, Core Web Vitals 2025 (INP < 200ms), security (HTTPS, CSP, COOP/COEP), and distribution (Bubblewrap to Google Play, PWA Builder to Microsoft Store, Capacitor to App Store, PWA Builder to Meta Quest). Includes the pwa-architect agent and three commands: /pwa-expert:pwa-audit (hybrid local-code + live-URL via Playwright), /pwa-expert:pwa-scaffold (manifest + SW + iOS meta + framework wiring for Vite, Next.js, Angular, Nuxt, vanilla), /pwa-expert:pwa-checklist (deterministic production-deploy checklist walk).",
+      "license": "MIT",
+      "name": "pwa-expert",
+      "skills": [
+        "./skills/pwa-audit-workflow",
+        "./skills/pwa-checklist-workflow",
+        "./skills/pwa-development",
+        "./skills/pwa-scaffold-workflow"
+      ],
+      "source": "./exports/codex/plugins/pwa-expert",
+      "version": "1.3.7"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
         "testing",
         "work-controller"
       ],
@@ -332,6 +428,21 @@
       ],
       "source": "./exports/codex/plugins/python-development",
       "version": "4.2.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "RAG system design, implementation, and optimization - chunking strategies, embedding models (Voyage 4 family, OpenAI v3, Cohere embed-v4, Gemini, BGE-M3, NV-Embed-v2, Nomic MoE, Jina v3), vector databases (Qdrant 1.13-1.16), hybrid search, modern rerankers (Voyage rerank-2.5, Cohere Rerank 3.5, Jina Reranker v3, mxbai-rerank-v2), advanced patterns (HippoRAG, LightRAG, LongRAG, Agentic RAG, CRAG, Self-RAG, GraphRAG), evaluation (RAGAS/DeepEval/TruLens), and production deployment",
+      "license": "MIT",
+      "name": "rag-development",
+      "skills": [
+        "./skills/rag-audit-workflow",
+        "./skills/rag-development"
+      ],
+      "source": "./exports/codex/plugins/rag-development",
+      "version": "1.6.2"
     },
     {
       "author": {
@@ -379,6 +490,21 @@
       "author": {
         "name": "Alfio Caprino"
       },
+      "dependencies": [],
+      "description": "Deep web research (any topic) modelled on the commercial deep-research products: /research:team-research clarifies scope only when needed, shows a plan of sub-questions for approval, spawns one iterative deep-researcher per sub-question in parallel, verifies contradictions with quick-searcher, synthesizes a long-form cited report and writes it to disk; tiers quick/standard/deep scale effort; optional serper.dev backend via websearch.py when SERPER_API_KEY is set, native WebSearch otherwise. quick-searcher (sonnet) also answers single-fact lookups directly",
+      "license": "MIT",
+      "name": "research",
+      "skills": [
+        "./skills/team-research-workflow",
+        "./skills/web-search-techniques"
+      ],
+      "source": "./exports/codex/plugins/research",
+      "version": "6.2.6"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
       "dependencies": [
         "repo-hygiene",
         "codebase-map",
@@ -421,6 +547,50 @@
       ],
       "source": "./exports/codex/plugins/skill-catalog",
       "version": "1.0.14"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Stripe payments, subscriptions, Connect marketplaces, and revenue optimization for SaaS monetization; includes a dedicated skill (link-first references + scripts) for API patterns, Next.js/TypeScript integration, Embedded Checkout, Billing Meters, Entitlements, webhook reliability and auditing, Stripe Agent Toolkit for LLM tool-calling, test-clock simulation, PCI DSS 4.0 compliance, and pricing design",
+      "license": "MIT",
+      "name": "stripe",
+      "skills": [
+        "./skills/audit-webhooks-workflow",
+        "./skills/stripe"
+      ],
+      "source": "./exports/codex/plugins/stripe",
+      "version": "2.6.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "File organization and cleanup utilities - sort messy folders, find duplicates, and restructure directory hierarchies",
+      "license": "MIT",
+      "name": "system-utils",
+      "skills": [
+        "./skills/file-organizer",
+        "./skills/organize-files-workflow"
+      ],
+      "source": "./exports/codex/plugins/system-utils",
+      "version": "2.1.4"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Tauri 2 desktop and mobile development - IPC optimization, Rust backend patterns, cross-platform builds, and React integration for high-performance apps",
+      "license": "MIT",
+      "name": "tauri-development",
+      "skills": [
+        "./skills/tauri"
+      ],
+      "source": "./exports/codex/plugins/tauri-development",
+      "version": "2.8.3"
     },
     {
       "author": {

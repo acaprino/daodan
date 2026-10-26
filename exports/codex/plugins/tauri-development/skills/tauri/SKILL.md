@@ -1,0 +1,184 @@
+---
+name: tauri
+description: >
+  Knowledge base indexing core, desktop, and mobile references.
+  TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.
+---
+
+<daodan_host_binding host="codex">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Codex binding: the adapter binds repository read to read_file, writes to
+apply_patch and shell execution to shell; use the equivalent registered tools of
+the active Codex runtime and their actual fields. In particular, a shell example's
+command, timeout and background fields are not automatically another runtime's
+cmd, yield_time_ms or session controls.
+Start the runtime's available isolated subagent mechanism with the complete
+rendered role body in its task prompt. Role Markdown and generated dispatch bodies
+are resources, not registered skills or a native role/subagent_type parameter.
+Use only declared role bindings and report an unavailable isolation mechanism.
+Load installed skills by their advertised exact IDs; workflow skills carry the
+<workflow>-workflow suffix. Named-agent examples do not override inline delivery.
+Required foreign providers use Codex's marketplace/install commands:
+codex plugin marketplace add <source>, then codex plugin add <provider>@<marketplace>.
+Register plugin-declared MCP servers through the active host's MCP configuration
+using the generated server command. Do not assume registration makes every tool
+available to a restricted worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# Tauri 2 Development
+
+Index for Tauri 2 patterns -- core, desktop, mobile. Each section points to a focused reference; the references hold gotchas and link out to canonical docs at v2.tauri.app.
+
+## Quick command reference
+
+| Task | Command |
+|------|---------|
+| New project | `npm create tauri-app@latest` |
+| Add plugin | `npm run tauri add <plugin-name>` |
+| Dev (desktop) | `cargo tauri dev` |
+| Build (desktop) | `cargo tauri build` |
+| Info / sanity check | `cargo tauri info` |
+| Init Android / iOS | `npm run tauri android init` / `ios init` |
+| Dev mobile | `npm run tauri android dev` / `ios dev` |
+| Build APK / AAB | `npm run tauri android build --apk` / `--aab` |
+| Build IPA | `npm run tauri ios build` |
+
+## Reading order by topic
+
+### Core
+- `setup.md` -- prerequisites (Rust, Node, Vite gotchas)
+- `rust-patterns.md` -- commands, state, channels, events, error handling
+- `frontend-patterns.md` -- invoke, channels, listeners, capabilities
+- `plugins-core.md` -- universal plugins (fs, http, store, sql, deep-link, ...)
+
+### Desktop
+- `window-management.md` -- multi-window, frameless, tray, menus, global shortcuts
+- `shell-plugin.md` -- spawn child processes, sidecar binaries, scoped commands
+- `build-deploy-desktop.md` -- bundling, code signing, notarization, auto-updater
+- `platform-webviews.md` -- WebView2 / WKWebView / WebKitGTK differences and floors
+- `authentication.md` -- OAuth/PKCE via system browser
+- `ci-cd.md` -- provider-agnostic pipeline patterns
+
+### Mobile
+- `setup-mobile.md` -- Android SDK + iOS Xcode tooling, pinned versions (AGP 8.11.0 / Gradle 8.14.3 / Kotlin 1.9.25), Gradle 9.0 readiness
+- `plugins-mobile.md` -- biometric, barcode, haptics, NFC, geolocation, Android safe-area workaround
+- `authentication-mobile.md` -- deep-link OAuth, Apple Sign-In, Firebase callback
+- `iap.md` -- in-app purchases (Google Play + App Store)
+- `testing.md` -- emulator, ADB, logcat, WebView debugging (happy path)
+- `debugging-mobile.md` -- iOS Web Inspector, Rust backtrace extraction, store crash logs, troubleshooting decision trees
+- `mobile-stale-builds.md` -- the Cargo `rerun-if-changed` gap that ships stale frontends in APKs; `build.rs` walk pattern + Gradle safety net
+- `build-deploy-mobile.md` -- signing, store builds, NDK / 16KB / RustWebViewClient gotchas
+- `ci-cd-mobile.md` -- mobile signing in CI, store upload
+- `distribution-android.md` -- Play Console submission, keystore, Play App Signing, common rejections
+- `distribution-ios.md` -- App Store Connect, certificates and provisioning, Info.plist usage descriptions, TestFlight, App Privacy
+
+### Specialized
+- `high-frequency-ui.md` -- streaming/trading UI composition (atomic state, virtualization, rust-lld)
+- `ipc-streaming.md` -- Channel-vs-emit benchmarks, rkyv zero-copy, backpressure
+
+## Project skeleton
+
+```
+my-app/
++-- src/                          # Frontend (React/Vue/Svelte/...)
++-- src-tauri/
+|   +-- Cargo.toml
+|   +-- tauri.conf.json           # Main config
+|   +-- src/
+|   |   +-- main.rs               # Desktop entry (don't modify)
+|   |   +-- lib.rs                # All your code + mobile entry
+|   +-- capabilities/
+|   |   +-- default.json          # Permissions
+|   +-- gen/
+|       +-- android/              # Generated Android project
+|       +-- apple/                # Generated Xcode project
+```
+
+## Minimum viable config
+
+```json
+// tauri.conf.json
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "MyApp",
+  "identifier": "com.company.myapp",
+  "build": {
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  }
+}
+```
+
+```json
+// capabilities/default.json
+{ "identifier": "default", "windows": ["main"], "permissions": ["core:default"] }
+```
+
+```rust
+// src-tauri/src/lib.rs
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![])
+        .run(tauri::generate_context!())
+        .expect("error");
+}
+```
+
+## Official docs
+
+- Tauri 2: https://v2.tauri.app
+- Plugin index: https://v2.tauri.app/plugin/
+- GitHub: https://github.com/tauri-apps/tauri
+- Awesome Tauri (community): https://github.com/tauri-apps/awesome-tauri

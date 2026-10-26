@@ -77,6 +77,79 @@
       "version": "2.0.0"
     },
     {
+      "description": "Ideate brand names, filter against archetypes and phonotactic rules, and score survivors on domain availability, market saturation and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
+      "dimensions": [],
+      "file": "skills/brand-naming-method/SKILL.md",
+      "frameworks": [],
+      "id": "digital-marketing:brand-naming-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "brand-naming-method",
+      "operations": [],
+      "provider": "digital-marketing",
+      "topics": [],
+      "version": "3.2.1"
+    },
+    {
+      "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
+      "dimensions": [],
+      "file": "skills/domain-hunter/SKILL.md",
+      "frameworks": [],
+      "id": "digital-marketing:domain-hunter",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "domain-hunter",
+      "operations": [],
+      "provider": "digital-marketing",
+      "topics": [],
+      "version": "3.2.1"
+    },
+    {
+      "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/ga4-implementation/SKILL.md",
+      "frameworks": [
+        "ga4"
+      ],
+      "id": "digital-marketing:ga4-implementation",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "da45be2d448aafd20c2d51731b4ef7022e8978b6ebad7fb264ba93d998f56f16",
+      "name": "ga4-implementation",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "digital-marketing",
+      "topics": [],
+      "version": "3.2.1"
+    },
+    {
+      "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/review-reply-method/SKILL.md",
+      "frameworks": [],
+      "id": "digital-marketing:review-reply-method",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "74d30d7a0c8fcfadefc28e9fe175bbddc25dcd7fb8d434905021716be2bda1b4",
+      "name": "review-reply-method",
+      "operations": [
+        "document"
+      ],
+      "provider": "digital-marketing",
+      "topics": [
+        "customer-review"
+      ],
+      "version": "3.2.1"
+    },
+    {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
       "dimensions": [
         "performance",
@@ -98,6 +171,32 @@
       "provider": "docker",
       "topics": [],
       "version": "1.4.3"
+    },
+    {
+      "description": "Knowledge base for production crawlers, from target assessment through observability. TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/grabber-development/SKILL.md",
+      "frameworks": [],
+      "id": "grabber-development:grabber-development",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "3f91bec449ab988f0700bff19479dcc3922ca0ee210543196b42acbc305e9ea0",
+      "name": "grabber-development",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "grabber-development",
+      "topics": [
+        "crawling",
+        "scraping"
+      ],
+      "version": "1.8.5"
     },
     {
       "description": "Idiomatic Kotlin patterns for coroutines, Kotlin Multiplatform (KMP), Jetpack Compose and Ktor. TRIGGER WHEN: writing or reviewing Kotlin with coroutines, Flow, StateFlow, SharedFlow, KMP expect/actual, Compose ViewModels, Ktor JWT/Exposed, sealed classes or DSL builders. DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development).",
@@ -368,6 +467,34 @@
       "version": "3.0.0"
     },
     {
+      "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:review-react), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/pwa-development/SKILL.md",
+      "frameworks": [],
+      "id": "pwa-expert:pwa-development",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "b36a8ff09edcfae1c38984a32604f383a5d64a6936fbeb7ec4cfb179420dc3d9",
+      "name": "pwa-development",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "pwa-expert",
+      "topics": [
+        "pwa",
+        "service-worker"
+      ],
+      "version": "1.3.7"
+    },
+    {
       "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
       "dimensions": [
         "correctness",
@@ -602,6 +729,32 @@
       "version": "4.2.0"
     },
     {
+      "description": "Knowledge base for production question-answering pipelines. TRIGGER WHEN: building, optimizing, or auditing RAG systems, including Graph RAG, CRAG, Self-RAG, and Agentic RAG.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/rag-development/SKILL.md",
+      "frameworks": [],
+      "id": "rag-development:rag-development",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "48506fed42b7d757dfa8fd818676d2a0464a3de7e6aa2f67bc9b5ecf019396fa",
+      "name": "rag-development",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "rag-development",
+      "topics": [
+        "embeddings",
+        "rag",
+        "retrieval"
+      ],
+      "version": "1.6.2"
+    },
+    {
       "description": "Vercel Engineering's 70 rules, ordered by impact across 8 categories. TRIGGER WHEN: writing, reviewing, or refactoring React or Next.js code: components, pages, data fetching, bundle size, or render performance.",
       "dimensions": [
         "correctness",
@@ -794,6 +947,70 @@
       "version": "1.0.14"
     },
     {
+      "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",
+      "dimensions": [
+        "data-integrity",
+        "security"
+      ],
+      "file": "skills/stripe/SKILL.md",
+      "frameworks": [
+        "stripe"
+      ],
+      "id": "stripe:stripe",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ae09633af93c51df174e3e3bd7c192bb3f17622de7ae30a7305b75df77c45009",
+      "name": "stripe",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "stripe",
+      "topics": [],
+      "version": "2.6.3"
+    },
+    {
+      "description": "Scope, plan, and execute the reorganization behind approval gates. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up old files, restructuring project directories, separating work from personal files, or automating file cleanup tasks.",
+      "dimensions": [],
+      "file": "skills/file-organizer/SKILL.md",
+      "frameworks": [],
+      "id": "system-utils:file-organizer",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "file-organizer",
+      "operations": [],
+      "provider": "system-utils",
+      "topics": [],
+      "version": "2.1.4"
+    },
+    {
+      "description": "Knowledge base indexing core, desktop, and mobile references. TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle",
+        "security"
+      ],
+      "file": "skills/tauri/SKILL.md",
+      "frameworks": [
+        "tauri"
+      ],
+      "id": "tauri-development:tauri",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ca8c4bc900ab203471a192e6a7fc551a97efff293999d38203e8be7c182628ea",
+      "name": "tauri",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "tauri-development",
+      "topics": [],
+      "version": "2.8.3"
+    },
+    {
       "description": "Test placement rules and the measure, quarantine, consolidate remediation ladder for degraded test suites. TRIGGER WHEN: creating or placing test files, deciding whether to extend an existing test or add a new file, auditing test-suite health, quarantining flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: TDD workflow mechanics (use mattpocock-skills:tdd) or browser E2E page objects/waiting (use developer-essentials:e2e-testing-patterns).",
       "dimensions": [
         "test-quality"
@@ -845,6 +1062,82 @@
       "provider": "testing",
       "topics": [],
       "version": "4.4.0"
+    },
+    {
+      "description": "Vendor-neutral broker integration vocabulary: the five archetypes, single-broker vs multi-broker platforms, order state machine, session recovery and evidence ladder. TRIGGER WHEN: comparing brokers or integration paths, integrating a broker without a dedicated skill, or classifying an access path. DO NOT TRIGGER WHEN: targeting a broker with its own skill (use ibkr or mt5).",
+      "dimensions": [
+        "correctness",
+        "data-integrity"
+      ],
+      "file": "skills/broker-vocabulary/SKILL.md",
+      "frameworks": [],
+      "id": "trading-broker-integration:broker-vocabulary",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "70a7504993a5b1f1e11502db03b04d2eceee1c70b2598d94d1d8b85ffe9ae62b",
+      "name": "broker-vocabulary",
+      "operations": [
+        "develop",
+        "document",
+        "review"
+      ],
+      "provider": "trading-broker-integration",
+      "topics": [
+        "broker",
+        "trading"
+      ],
+      "version": "2.1.6"
+    },
+    {
+      "description": "Interactive Brokers integration in Python via TWS API and ib_async, with paper Gateway verification tooling. TRIGGER WHEN: building, auditing or debugging TWS / IB Gateway integrations (contracts, market data, orders, brackets, error codes, reconnection, IBC deployment). DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5).",
+      "dimensions": [
+        "correctness",
+        "data-integrity",
+        "resource-lifecycle"
+      ],
+      "file": "skills/ibkr/SKILL.md",
+      "frameworks": [
+        "ib-async",
+        "ibkr"
+      ],
+      "id": "trading-broker-integration:ibkr",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ccb8aaccf721f6875e90f0a41757adcb2361878385bb9cdd53692030328b01f2",
+      "name": "ibkr",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "trading-broker-integration",
+      "topics": [],
+      "version": "2.1.6"
+    },
+    {
+      "description": "Knowledge base for the official API, its polling model, and Windows-side production concerns. TRIGGER WHEN: building, implementing, writing, coding, creating, optimizing, or debugging MT5 or MetaTrader 5 trading systems with Python, including the aiomql and ZeroMQ bridge alternatives. DO NOT TRIGGER WHEN: the broker is Interactive Brokers (use ibkr), or the question is about strategy design rather than the terminal and its API.",
+      "dimensions": [
+        "correctness",
+        "data-integrity"
+      ],
+      "file": "skills/mt5/SKILL.md",
+      "frameworks": [
+        "metatrader",
+        "mt5"
+      ],
+      "id": "trading-broker-integration:mt5",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "fddc9727e12304d1094e7554be71b282e90ab29619cc93efcf4b1bf3c08c870b",
+      "name": "mt5",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "trading-broker-integration",
+      "topics": [],
+      "version": "2.1.6"
     },
     {
       "description": "Run Knip to find unused files, dependencies, exports and types in TypeScript and JavaScript projects. TRIGGER WHEN: cleaning up TypeScript/JavaScript dead code, finding unused npm dependencies or exports, or configuring knip.json/knip.ts. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",

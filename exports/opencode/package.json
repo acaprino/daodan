@@ -158,6 +158,364 @@
           }
         ]
       },
+      "ai-tooling": {
+        "agents": [
+          {
+            "description": "Author, restructure, and evaluate the text that steers a model. TRIGGER WHEN: writing system prompts, designing agent instructions, or optimizing prompt performance for reliability and token efficiency.",
+            "file": "agents/prompt-engineer.md",
+            "id": "ai-tooling:prompt-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Present the efficiency-versus-effectiveness frontier as labelled variants and let the user pick. TRIGGER WHEN: the user wants to review or optimize a prompt, system message, or agent instructions for clarity/tokens/reliability.",
+            "file": "commands/prompt-optimize.md",
+            "name": "ai-tooling:prompt-optimize"
+          }
+        ],
+        "root": "plugins/ai-tooling",
+        "skills": [
+          {
+            "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
+            "file": "skills/agent-sdk-builder/SKILL.md",
+            "id": "ai-tooling:agent-sdk-builder",
+            "name": "agent-sdk-builder"
+          },
+          {
+            "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
+            "file": "skills/prompt-engineering/SKILL.md",
+            "id": "ai-tooling:prompt-engineering",
+            "name": "prompt-engineering"
+          }
+        ]
+      },
+      "app-analyzer": {
+        "agents": [
+          {
+            "description": "Two-phase teardown of a rival product, platform auto-detected. TRIGGER WHEN: analyzing competitor apps, mapping app navigation, extracting design systems, or conducting UX audits on Android via ADB or on the web via Playwright MCP.",
+            "file": "agents/app-analyzer.md",
+            "id": "app-analyzer:app-analyzer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "root": "plugins/app-analyzer",
+        "skills": [
+          {
+            "description": "Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).",
+            "file": "skills/app-analysis/SKILL.md",
+            "id": "app-analyzer:app-analysis",
+            "name": "app-analysis"
+          }
+        ]
+      },
+      "browser-extensions": {
+        "agents": [
+          {
+            "description": "Hands-on developer that writes the code and reads MDN live when the bundled references fall short. TRIGGER WHEN: creating, debugging or publishing any Firefox extension, WebExtension or browser add-on, migrating Manifest V2 to V3, or fixing cross-browser compatibility.",
+            "file": "agents/firefox-extension-dev-agent.md",
+            "id": "browser-extensions:firefox-extension-dev-agent",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs `web-ext lint` plus static checks for forbidden APIs, permission bloat, remote-hosted code and Manifest V3 migration issues. TRIGGER WHEN: linting, validating or checking a Firefox extension, before an AMO submission or a git push on an extension project.",
+            "file": "commands/firefox-lint.md",
+            "name": "browser-extensions:firefox-lint"
+          },
+          {
+            "description": "Lints, signs and uploads a build on the listed or unlisted channel, then walks the user through the review workflow. TRIGGER WHEN: publishing, releasing, submitting, uploading or signing a Firefox extension, or preparing an addons.mozilla.org (AMO) submission.",
+            "file": "commands/firefox-publish.md",
+            "name": "browser-extensions:firefox-publish"
+          },
+          {
+            "description": "Generates manifest.json (V3 default), directory layout, content and background scripts, web-ext config and a working popup. TRIGGER WHEN: creating, bootstrapping or scaffolding a new Firefox extension, WebExtension or browser add-on. DO NOT TRIGGER WHEN: features are added to an existing extension (use the firefox-extension-dev-agent agent).",
+            "file": "commands/firefox-scaffold.md",
+            "name": "browser-extensions:firefox-scaffold"
+          }
+        ],
+        "root": "plugins/browser-extensions",
+        "skills": [
+          {
+            "description": "Reference knowledge base behind the firefox-extension-dev-agent agent. TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.",
+            "file": "skills/firefox-extension-dev/SKILL.md",
+            "id": "browser-extensions:firefox-extension-dev",
+            "name": "firefox-extension-dev"
+          }
+        ]
+      },
+      "business": {
+        "agents": [
+          {
+            "description": "Fractional CMO working Socratically, one phase at a time, against benchmarks. TRIGGER WHEN: the user needs SaaS business planning, go-to-market strategy, positioning, pricing strategy, market sizing, TAM/SAM/SOM, or product-market fit work. DO NOT TRIGGER WHEN: legal or compliance questions (use legal-advisor), privacy documents (use privacy-doc-generator).",
+            "file": "agents/business-planner.md",
+            "id": "business:business-planner",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "subagent",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Advise on technology law and risk, and draft the documents. TRIGGER WHEN: contracts, NDAs, terms of service, IP and copyright, employment law, M&A, corporate governance, regulatory compliance, legal risk assessment, or advisory memos. DO NOT TRIGGER WHEN: Privacy Policies, Cookie Policies, DPAs, or DPIA reports (use privacy-doc-generator); business planning (use business-planner).",
+            "file": "agents/legal-advisor.md",
+            "id": "business:legal-advisor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Draft and audit data-protection documents from a ROPA-driven model. TRIGGER WHEN: the user needs a Privacy Policy, Cookie Policy, DPA, consent notice, or DPIA under GDPR, ePrivacy, Codice Privacy, CCPA, LGPD, or FADP. DO NOT TRIGGER WHEN: general legal, contract, NDA, or IP questions (use legal-advisor); cookie banners, Consent Mode v2, or GTM (use digital-marketing:ga4-implementation-expert); business planning (use business-planner).",
+            "file": "agents/privacy-doc-generator.md",
+            "id": "business:privacy-doc-generator",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "dependencies": [
+          "text-humanizer",
+          "research"
+        ],
+        "root": "plugins/business",
+        "skills": [
+          {
+            "description": "Knowledge base of strategy frameworks and market data, loaded by business-planner. TRIGGER WHEN: SaaS business planning or GTM strategy work, including positioning frameworks (April Dunford, Blue Ocean, Crossing the Chasm), PLG/SLG motions, and KPI benchmarks.",
+            "file": "skills/saas-business-plan/SKILL.md",
+            "id": "business:saas-business-plan",
+            "name": "saas-business-plan"
+          }
+        ]
+      },
       "clean-code": {
         "agents": [
           {
@@ -670,6 +1028,121 @@
           }
         ]
       },
+      "digital-marketing": {
+        "agents": [
+          {
+            "description": "Audits and rewrites what a visitor actually reads before deciding. TRIGGER WHEN: the user asks about marketing materials, conversion optimization, content strategy, social media, CTAs, product presentation, or landing page copy.",
+            "file": "agents/content-marketer.md",
+            "id": "digital-marketing:content-marketer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Implement compliant GA4, GTM, Consent Mode v2 and conversion tracking across vanilla HTML, Next.js/React and WordPress. TRIGGER WHEN: working with GA4, GTM, gtag, dataLayer, Consent Mode v2, CMP cookie banners (iubenda, Cookiebot, CookieConsent), Microsoft Clarity, Key Events or Google Ads conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy or DPA (use business:privacy-doc-generator).",
+            "file": "agents/ga4-implementation-expert.md",
+            "id": "digital-marketing:ga4-implementation-expert",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Rewrites prose and markup for verbatim quotability rather than ranking position. TRIGGER WHEN: prose or markup needs answer-engine (AEO) treatment, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer).",
+            "file": "agents/llm-seo-optimize.md",
+            "id": "digital-marketing:llm-seo-optimize",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Establishes intent and topical coverage before touching tags, and maps competitive gaps. TRIGGER WHEN: the user mentions SEO, search rankings, organic traffic, on-page optimization, structured data, or website optimization.",
+            "file": "agents/seo-specialist.md",
+            "id": "digital-marketing:seo-specialist",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs the whole workflow from a brief, with optional language and TLD constraints. TRIGGER WHEN: the user asks for brand, startup, product, or company names. DO NOT TRIGGER WHEN: renaming source code identifiers (use clean-code), or picking SEO keywords (use /digital-marketing:seo-audit).",
+            "file": "commands/brand-naming.md",
+            "name": "digital-marketing:brand-naming"
+          },
+          {
+            "description": "Reviews whether the material actually persuades a visitor, not whether it is well built. TRIGGER WHEN: the user asks for a content, marketing, conversion, or CRO audit of a website, landing page, or funnel. DO NOT TRIGGER WHEN: the audit is technical SEO only (use /digital-marketing:seo-audit).",
+            "file": "commands/content-strategy.md",
+            "name": "digital-marketing:content-strategy"
+          },
+          {
+            "description": "Inspects a live deployment in the browser to see what really fires. TRIGGER WHEN: the user asks to audit GA4, verify GTM setup, check Consent Mode v2 compliance, debug missing conversions, validate dataLayer events, or check \"why isnt my site converting\". DO NOT TRIGGER WHEN: the task is general SEO (use /digital-marketing:seo-audit), or content and CTA optimization (use /digital-marketing:content-strategy).",
+            "file": "commands/ga4-audit.md",
+            "name": "digital-marketing:ga4-audit"
+          },
+          {
+            "description": "Audit pages for generative search / answer engine citation readiness (AI Overviews, Perplexity, ChatGPT/Claude Search, Bing Copilot). TRIGGER WHEN: auditing AI search visibility, AI-bot crawler allowlists, E-E-A-T, llms.txt, JSON-LD citation schemas, passage extractability or prompt-injection hardening. DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer).",
+            "file": "commands/llm-seo-audit.md",
+            "name": "digital-marketing:llm-seo-audit"
+          },
+          {
+            "description": "Drafts a ready-to-post answer, with brand, tone, language, and sector flags. TRIGGER WHEN: the user pastes a customer review (Airbnb, Booking, Tripadvisor, Amazon, Trustpilot, App Store, Google) and asks for a reply or response. DO NOT TRIGGER WHEN: writing general marketing copy (use content-marketer).",
+            "file": "commands/reply-to-customer-review.md",
+            "name": "digital-marketing:reply-to-customer-review"
+          },
+          {
+            "description": "Diagnoses why a page underperforms in traditional Google and Bing results. TRIGGER WHEN: the user asks for a technical SEO audit, Core Web Vitals check, sitemap, redirect, or crawlability review, structured data or meta tags, mobile usability, or SERP ranking analysis. DO NOT TRIGGER WHEN: the goal is being cited by AI answer engines (use /digital-marketing:llm-seo-audit), conversion, CTA, or copy quality (use /digital-marketing:content-strategy), or GA4 tracking (use ga4-implementation-expert).",
+            "file": "commands/seo-audit.md",
+            "name": "digital-marketing:seo-audit"
+          }
+        ],
+        "dependencies": [
+          "text-humanizer",
+          "report-rendering"
+        ],
+        "root": "plugins/digital-marketing",
+        "skills": [
+          {
+            "description": "Ideate brand names, filter against archetypes and phonotactic rules, and score survivors on domain availability, market saturation and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
+            "file": "skills/brand-naming-method/SKILL.md",
+            "id": "digital-marketing:brand-naming-method",
+            "name": "brand-naming-method"
+          },
+          {
+            "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
+            "file": "skills/domain-hunter/SKILL.md",
+            "id": "digital-marketing:domain-hunter",
+            "name": "domain-hunter"
+          },
+          {
+            "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
+            "file": "skills/ga4-implementation/SKILL.md",
+            "id": "digital-marketing:ga4-implementation",
+            "name": "ga4-implementation"
+          },
+          {
+            "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
+            "file": "skills/review-reply-method/SKILL.md",
+            "id": "digital-marketing:review-reply-method",
+            "name": "review-reply-method"
+          }
+        ]
+      },
       "docker": {
         "root": "plugins/docker",
         "skills": [
@@ -678,6 +1151,270 @@
             "file": "skills/multi-stage-dockerfile/SKILL.md",
             "id": "docker:multi-stage-dockerfile",
             "name": "multi-stage-dockerfile"
+          }
+        ]
+      },
+      "frontend-review": {
+        "commands": [
+          {
+            "description": "Full frontend review combining a 9-dimension UI/UX design audit with auto-detected React, TypeScript, PWA and platform code checks into `.frontend-review/report.md`. TRIGGER WHEN: asking for a complete frontend review, UI/UX design plus code audit, or pre-release frontend pass. DO NOT TRIGGER WHEN: React-only (use /react-development:review-react), TypeScript-only (use /typescript-development:review-typescript), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /senior-review:code-review).",
+            "file": "commands/review-frontend.md",
+            "name": "frontend-review:review-frontend"
+          }
+        ],
+        "dependencies": [
+          "react-development",
+          "typescript-development",
+          "pwa-expert",
+          "platform-engineering"
+        ],
+        "root": "plugins/frontend-review"
+      },
+      "grabber-development": {
+        "agents": [
+          {
+            "description": "Specialist for LLM-assisted web extraction and hybrid CSS+LLM scraping pipelines. TRIGGER WHEN: choosing between Crawl4AI, Firecrawl, ScrapeGraphAI, Browser Use, Stagehand, Skyvern or Jina Reader, designing Pydantic extraction schemas, or estimating LLM extraction cost. DO NOT TRIGGER WHEN: TLS fingerprinting (use http-fingerprint-expert), browser stealth (use stealth-browser-expert), or non-LLM crawler architecture (use grabber-architect).",
+            "file": "agents/ai-scraping-expert.md",
+            "id": "grabber-development:ai-scraping-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Lead architect for production Python crawlers: assesses target protection, selects frameworks and routes to transport, stealth or LLM specialists. TRIGGER WHEN: designing a scraping pipeline end to end, reverse-engineering APIs via network interception, choosing between Scrapy/Crawlee/Crawl4AI/Firecrawl, or setting rate limits and observability. DO NOT TRIGGER WHEN: purely browser stealth (use stealth-browser-expert), HTTP fingerprints (use http-fingerprint-expert), or LLM extraction (use ai-scraping-expert).",
+            "file": "agents/grabber-architect.md",
+            "id": "grabber-development:grabber-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Specialist for scraper transport, TLS/JA3/JA4/HTTP2 fingerprinting and proxy tier selection. TRIGGER WHEN: choosing curl_cffi/primp/async-tls-client, debugging blocked httpx/requests calls, replaying reverse-engineered APIs, or selecting datacenter/ISP/residential/mobile proxies. DO NOT TRIGGER WHEN: rendered browser stealth (use stealth-browser-expert) or LLM extraction (use ai-scraping-expert).",
+            "file": "agents/http-fingerprint-expert.md",
+            "id": "grabber-development:http-fingerprint-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Evasion specialist for the rendered-browser layer of a scraper. TRIGGER WHEN: configuring stealth drivers (Patchright, Camoufox, Nodriver), bypassing Cloudflare/DataDome/PerimeterX, extracting cf_clearance, or wiring CAPTCHA/cursor helpers. DO NOT TRIGGER WHEN: HTTP TLS fingerprinting (use http-fingerprint-expert) or LLM extraction (use ai-scraping-expert).",
+            "file": "agents/stealth-browser-expert.md",
+            "id": "grabber-development:stealth-browser-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Download all full-resolution photos, videos, carousels and reels from an Instagram profile into an incremental local archive. TRIGGER WHEN: downloading, archiving, mirroring or backing up media from an Instagram profile. DO NOT TRIGGER WHEN: building a custom scraper for another site (use grabber-development).",
+            "file": "commands/instagram-grab.md",
+            "name": "grabber-development:instagram-grab"
+          }
+        ],
+        "root": "plugins/grabber-development",
+        "skills": [
+          {
+            "description": "Knowledge base for production crawlers, from target assessment through observability. TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.",
+            "file": "skills/grabber-development/SKILL.md",
+            "id": "grabber-development:grabber-development",
+            "name": "grabber-development"
           }
         ]
       },
@@ -2200,6 +2937,110 @@
             "file": "skills/report-renderer/SKILL.md",
             "id": "report-rendering:report-renderer",
             "name": "report-renderer"
+          }
+        ]
+      },
+      "research": {
+        "agents": [
+          {
+            "description": "Iterative web investigator for one research sub-question: searches, reads primary sources, maintains a dated claim ledger and returns a cited report. TRIGGER WHEN: spawned by /research:team-research with a spawn block, or asked to investigate a question in depth across multiple web sources with citations. DO NOT TRIGGER WHEN: single-fact lookup (use quick-searcher), multi-question research run (use /research:team-research), or local codebase work.",
+            "file": "agents/deep-researcher.md",
+            "id": "research:deep-researcher",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Fast web search agent for single-fact lookups and the verifier spawned by /research:team-research to settle contested claims. TRIGGER WHEN: asking for a single fact, definition, stat, URL or confirmation answerable in 1-3 web searches, or spawned with a verifier block. DO NOT TRIGGER WHEN: multi-source synthesis (use deep-researcher or /research:team-research) or local codebase work.",
+            "file": "agents/quick-searcher.md",
+            "id": "research:quick-searcher",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Deep web research run: plan sub-questions, spawn parallel iterative researchers, verify contradictions and write a cited report to disk. TRIGGER WHEN: the user asks for a deep multi-source web research report on a topic. DO NOT TRIGGER WHEN: single-fact lookup (use research:quick-searcher) or local codebase analysis (use codebase-map).",
+            "file": "commands/team-research.md",
+            "name": "research:team-research"
+          }
+        ],
+        "root": "plugins/research",
+        "skills": [
+          {
+            "description": "Web research methodology: query formulation, source authority ranking, WebSearch/serper.dev backends, bot-block fallbacks and anti-loop rules. TRIGGER WHEN: performing web research in quick-searcher, deep-researcher or /research:team-research. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
+            "file": "skills/web-search-techniques/SKILL.md",
+            "id": "research:web-search-techniques",
+            "name": "web-search-techniques"
           }
         ]
       },
@@ -4627,6 +5468,279 @@
           }
         ]
       },
+      "stripe": {
+        "agents": [
+          {
+            "description": "Turns a codebases real service costs into a defensible price. TRIGGER WHEN: modeling pricing tiers, calculating unit economics, setting quota or usage limits from consumption percentiles, designing monetization strategy, or projecting revenue, ARPU, LTV or break-even. DO NOT TRIGGER WHEN: implementing Stripe plumbing only (use stripe-integrator), or doing general business strategy not tied to pricing (use business-planner).",
+            "file": "agents/revenue-optimizer.md",
+            "id": "stripe:revenue-optimizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Hands-on implementer that writes the integration code rather than auditing it. TRIGGER WHEN: working with the Stripe API for customers, subscriptions, payments, checkout sessions, invoices, payment intents, products and prices, webhooks, Connect marketplaces, metered billing, tax, SCA or 3D Secure, fraud prevention, or disputes.",
+            "file": "agents/stripe-integrator.md",
+            "id": "stripe:stripe-integrator",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Cross-checks what the dashboard says against what the code actually handles. TRIGGER WHEN: auditing a Stripe webhook setup before launch or after an incident, hunting missing event coverage, signature verification pitfalls, missing idempotency or stale endpoints, or growing the event list for Billing Meters and Entitlements. DO NOT TRIGGER WHEN: implementing webhooks from scratch (use stripe-integrator), or general code review (use senior-review:code-auditor).",
+            "file": "agents/stripe-webhooks-auditor.md",
+            "id": "stripe:stripe-webhooks-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs the stripe-webhooks-auditor agent over the current project. TRIGGER WHEN: the user asks to audit or verify a Stripe webhook setup: endpoint configuration, signature verification, idempotency or event coverage.",
+            "file": "commands/audit-webhooks.md",
+            "name": "stripe:audit-webhooks"
+          }
+        ],
+        "root": "plugins/stripe",
+        "skills": [
+          {
+            "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",
+            "file": "skills/stripe/SKILL.md",
+            "id": "stripe:stripe",
+            "name": "stripe"
+          }
+        ]
+      },
+      "system-utils": {
+        "commands": [
+          {
+            "description": "Propose a plan first, then move or delete only what the user confirms, batch by batch. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies. DO NOT TRIGGER WHEN: the task is about code refactoring (use /clean-code:clean-code or /python-development:python-refactor).",
+            "file": "commands/organize-files.md",
+            "name": "system-utils:organize-files"
+          }
+        ],
+        "root": "plugins/system-utils",
+        "skills": [
+          {
+            "description": "Scope, plan, and execute the reorganization behind approval gates. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up old files, restructuring project directories, separating work from personal files, or automating file cleanup tasks.",
+            "file": "skills/file-organizer/SKILL.md",
+            "id": "system-utils:file-organizer",
+            "name": "file-organizer"
+          }
+        ]
+      },
+      "tauri-development": {
+        "agents": [
+          {
+            "description": "Write, debug, and harden idiomatic systems code. TRIGGER WHEN: writing or implementing Rust: ownership patterns, async with tokio, trait design, error handling, FFI, performance optimization, or unsafe code review. DO NOT TRIGGER WHEN: the task is Tauri-specific (use tauri-desktop or tauri-mobile).",
+            "file": "agents/rust-engineer.md",
+            "id": "tauri-development:rust-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Tauri v2 desktop engineer for IPC, capabilities, windows, system tray, WebView tuning and bundling. TRIGGER WHEN: building or reviewing Tauri v2 desktop apps: IPC commands, permissions, windows/tray, WebView2/WKWebView/WebKitGTK, signing, auto-updates or streaming performance. DO NOT TRIGGER WHEN: mobile targets (use tauri-mobile), standalone Rust (use rust-engineer), or React outside Tauri (use react-performance-optimizer).",
+            "file": "agents/tauri-desktop.md",
+            "id": "tauri-development:tauri-desktop",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Senior mobile application engineer. TRIGGER WHEN: Tauri 2 work on Android or iOS: environment setup (Android SDK, Xcode, NDK), emulator and ADB testing, plugins (biometric, haptics, barcode, NFC, geolocation, notifications), in-app purchases, OAuth deep links, Play Store and App Store code signing, or CI/CD for device builds.",
+            "file": "agents/tauri-mobile.md",
+            "id": "tauri-development:tauri-mobile",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "root": "plugins/tauri-development",
+        "skills": [
+          {
+            "description": "Knowledge base indexing core, desktop, and mobile references. TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.",
+            "file": "skills/tauri/SKILL.md",
+            "id": "tauri-development:tauri",
+            "name": "tauri"
+          }
+        ]
+      },
       "testing": {
         "agents": [
           {
@@ -5076,6 +6190,162 @@
             "file": "skills/test-remediation-method/SKILL.md",
             "id": "testing:test-remediation-method",
             "name": "test-remediation-method"
+          }
+        ]
+      },
+      "trading-broker-integration": {
+        "agents": [
+          {
+            "description": "Authority on Interactive Brokers integration: contracts, orders, brackets, data, error verdicts, resilience and deployment, across equities, options, futures, FX, CFDs and crypto. TRIGGER WHEN: building or debugging anything on the TWS API with ib_async, or answering a question about how IBKR behaves. DO NOT TRIGGER WHEN: auditing an existing system end to end (use /trading-broker-integration:ibkr-audit), MetaTrader 5 (use mt5), or broker-agnostic strategy logic.",
+            "file": "agents/ibkr-architect.md",
+            "id": "trading-broker-integration:ibkr-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Architect, harden, and troubleshoot automated retail-broker systems. TRIGGER WHEN: building, implementing, writing, coding, or creating MT5 trading bots, connecting to MT5 terminal via Python, implementing polling event loops, executing orders with correct fill modes, handling MT5 disconnections, deploying MT5 bots on Windows, working with MetaTrader5/aiomql/MQL5-JSON-API/ZeroMQ bridge code, or comparing MT5 vs IBKR approaches.",
+            "file": "agents/mt5-architect.md",
+            "id": "trading-broker-integration:mt5-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Report reliability and production-readiness defects, plus the venue assumptions nobody checked. TRIGGER WHEN: the user asks to review, audit, or validate an IB or TWS trading system: contracts, orders, brackets, pacing, error handling, reconnection, deployment. DO NOT TRIGGER WHEN: building from scratch (use ibkr-architect), answering a single behaviour question (use /trading-broker-integration:ibkr-verify), or MetaTrader 5 (use /trading-broker-integration:mt5-audit).",
+            "file": "commands/ibkr-audit.md",
+            "name": "trading-broker-integration:ibkr-audit"
+          },
+          {
+            "description": "Answer a question about IBKR behaviour with evidence instead of a guess. TRIGGER WHEN: the user asks whether IBKR supports something, why an order was refused, what a code means, or wants a claim about venue behaviour verified against a real gateway. DO NOT TRIGGER WHEN: auditing a whole codebase (use /trading-broker-integration:ibkr-audit), or designing a system from scratch (use the ibkr-architect agent).",
+            "file": "commands/ibkr-verify.md",
+            "name": "trading-broker-integration:ibkr-verify"
+          },
+          {
+            "description": "Report on the reliability, error handling, and production readiness of an existing system. TRIGGER WHEN: the user asks to review, audit, or validate an MT5 Python trading bot (polling loops, fill modes, reconnection, order retcodes, Windows deployment). DO NOT TRIGGER WHEN: building from scratch (use the mt5-architect agent), or auditing an IB system (use /trading-broker-integration:ibkr-audit).",
+            "file": "commands/mt5-audit.md",
+            "name": "trading-broker-integration:mt5-audit"
+          }
+        ],
+        "root": "plugins/trading-broker-integration",
+        "skills": [
+          {
+            "description": "Vendor-neutral broker integration vocabulary: the five archetypes, single-broker vs multi-broker platforms, order state machine, session recovery and evidence ladder. TRIGGER WHEN: comparing brokers or integration paths, integrating a broker without a dedicated skill, or classifying an access path. DO NOT TRIGGER WHEN: targeting a broker with its own skill (use ibkr or mt5).",
+            "file": "skills/broker-vocabulary/SKILL.md",
+            "id": "trading-broker-integration:broker-vocabulary",
+            "name": "broker-vocabulary"
+          },
+          {
+            "description": "Interactive Brokers integration in Python via TWS API and ib_async, with paper Gateway verification tooling. TRIGGER WHEN: building, auditing or debugging TWS / IB Gateway integrations (contracts, market data, orders, brackets, error codes, reconnection, IBC deployment). DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5).",
+            "file": "skills/ibkr/SKILL.md",
+            "id": "trading-broker-integration:ibkr",
+            "name": "ibkr"
+          },
+          {
+            "description": "Knowledge base for the official API, its polling model, and Windows-side production concerns. TRIGGER WHEN: building, implementing, writing, coding, creating, optimizing, or debugging MT5 or MetaTrader 5 trading systems with Python, including the aiomql and ZeroMQ bridge alternatives. DO NOT TRIGGER WHEN: the broker is Interactive Brokers (use ibkr), or the question is about strategy design rather than the terminal and its API.",
+            "file": "skills/mt5/SKILL.md",
+            "id": "trading-broker-integration:mt5",
+            "name": "mt5"
           }
         ]
       },

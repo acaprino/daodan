@@ -1,0 +1,138 @@
+<daodan_host_binding host="claude">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
+uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+command field, and use its registered timeout/background schema. Worker dispatch
+uses the available native Agent mechanism and its registered agent-selection and
+prompt fields. Do not turn a prose role label into an invented role argument.
+Inherit the session model unless the declared workflow and active schema permit an
+override. Load installed skills by qualified ID; named roles use their owning
+plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
+Required foreign providers use Claude's marketplace/install commands:
+claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A declared package MCP server is configured through the generated MCP manifest;
+still check its tools are actually available in the active session.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# Hospitality Review Patterns
+
+Sector-specific reference for responding to reviews in the hospitality industry (hotels, vacation rentals, B&Bs, hostels).
+
+## Platforms
+
+Airbnb, Booking.com, Google Maps, Tripadvisor, Vrbo, Expedia, Hotels.com, Agoda
+
+## Vocabulary Map
+
+Common topics in hospitality reviews and their typical phrasing:
+
+| Category | Positive Signals | Negative Signals |
+|----------|-----------------|------------------|
+| Cleanliness | spotless, immaculate, clean, fresh, well-maintained | dirty, dusty, stains, hair, mold, unclean, filthy |
+| Communication | responsive, helpful, quick reply, great host, welcoming | unresponsive, slow, rude, no reply, unhelpful, ghosted |
+| Accuracy | as described, matched photos, better than expected | misleading, photos don't match, false advertising, smaller than expected |
+| Location | great location, walkable, quiet area, central, close to | noisy area, far from, unsafe, bad neighborhood, hard to find |
+| Value | great value, worth the price, fair, affordable, bargain | overpriced, not worth it, expensive for what you get, rip-off |
+| Amenities | well-equipped, comfortable bed, great kitchen, nice pool | broken, missing, no hot water, weak wifi, uncomfortable, outdated |
+| Check-in | smooth, easy, flexible, self check-in worked perfectly | confusing directions, late check-in, lockbox didn't work, no instructions |
+| Noise | quiet, peaceful, relaxing, serene | noisy, loud neighbors, thin walls, street noise, party house next door |
+
+## Response Patterns by Severity
+
+These are structural guides, not copy-paste templates. Every response must sound like a real person wrote it. Reference specific details from the actual review.
+
+### Positive Review
+
+Structure: Brief thanks -> Reference a specific detail they mentioned -> Casual invite back
+
+Example (friendly tone):
+> Ciao [Name], che bello leggere questo. La terrazza al tramonto piace molto anche a noi. Se torni in zona, facci sapere.
+
+Anti-patterns to avoid: "We're thrilled", "It's exactly the experience we want every guest to have", "your next stay will be just as special".
+
+### Negative - Unfounded/Unrealistic Expectations
+
+Structure: Acknowledge the feeling -> Factual context (one sentence) -> Offer private contact
+
+Example (friendly tone):
+> [Name], ci dispiace che il soggiorno non sia andato come speravi. L'appartamento ha le dimensioni indicate nell'annuncio (45 mq), ma capiamo che dal vivo possa sembrare diverso. Se vuoi parlarne, scrivici a [contact].
+
+Anti-patterns to avoid: "We understand expectations can vary", "we appreciate the feedback and are always looking to improve".
+
+### Negative - Minor Real Problem
+
+Structure: Acknowledge the issue directly -> What you did about it -> Brief invite back
+
+Example (friendly tone):
+> Hai ragione sul [issue], [Name], e ci scusiamo. Abbiamo già [specific action]. Non doveva succedere. Se ci dai un'altra possibilità, vedrai la differenza.
+
+Anti-patterns to avoid: "Thank you for your honest feedback", "This isn't the standard we hold ourselves to", "the experience we're known for".
+
+### Negative - Major Real Problem
+
+Structure: Direct apology -> Take responsibility -> Concrete action taken -> Offer compensation -> Contact info
+
+Example (friendly tone):
+> [Name], quello che è successo con [issue] non va bene, punto. Ci scusiamo. Abbiamo già [urgent action] e cambiato [systemic fix]. Vorremmo rimediare: scrivici a [contact] per [specific compensation]. È giusto così.
+
+Anti-patterns to avoid: "We owe you a sincere apology", "completely unacceptable", "Your feedback is helping us become better".
+
+## Operational Actions by Category
+
+| Issue Category | Suggested Internal Actions |
+|---------------|---------------------------|
+| Cleanliness | Flag to cleaning team, schedule deep clean, review cleaning checklist, inspect before next guest |
+| Communication | Review response time metrics, set up auto-replies, assign dedicated guest contact |
+| Accuracy | Update listing photos, revise description, add clarifying details |
+| Location | Add detailed directions, update local area guide, mention noise levels in listing |
+| Value | Review pricing strategy, compare with competitors, consider seasonal adjustments |
+| Amenities | Schedule maintenance/repair, replace broken items, update amenity list |
+| Check-in | Improve check-in instructions, test lockbox/smart lock, add backup access method |
+| Noise | Add noise disclaimer to listing, provide earplugs, investigate soundproofing |

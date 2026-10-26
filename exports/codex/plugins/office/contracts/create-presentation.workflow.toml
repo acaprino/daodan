@@ -1,0 +1,13 @@
+name = "create-presentation"
+entrypoint = "create-presentation.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:editable-presentation", "artifact:presentation-review"]
+
+[contract]
+inputs = ["presentation-brief", "source-material"]
+outcomes = ["editable-presentation-delivered"]
+artifacts = ["editable-presentation", "presentation-review"]
+schemas = []

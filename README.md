@@ -234,6 +234,29 @@ to install the matching instructions and tools for your agent. Native analysis
 also requires a supported analysis engine. Source-repository mapping remains
 with Codebase Map.
 
+## Presentations, spreadsheets and documents
+
+The [Office plugin](docs/plugins/office.md) creates and revises editable `.pptx`,
+works with native `.xlsx` cells, formulas, tables and charts, and reads, creates
+or edits `.docx` paragraphs, styles, tables and sections. Existing-file edits
+include preservation checks for content and features the task needs to retain.
+
+On Claude Code or OpenCode V2, use `/office:create-presentation`,
+`/office:workbook` or `/office:document`. The [host guide](docs/hosts.md#office-entry-points)
+lists the corresponding Codex skills, Copilot prompts and Pi commands. A normal
+request can describe the outcome, source files, language and template:
+
+```text
+Create an editable Italian PowerPoint from this workbook and Word report.
+Preserve the source figures, use our brand assets and include a reviewed preview.
+```
+
+SlidePoise needs its separate runtime, image-generation tools and a compatible
+presentation renderer. Excel and Word use an available engine that supports the
+requested file features. The plugin's read-only inspectors provide structure and
+preservation evidence; actual recalculation, field updates and visual page review
+need the corresponding engines. See [Office setup and examples](docs/plugins/office.md#setup-and-first-use).
+
 ## What is verified
 
 The compiler validates kernels, bindings, contracts and generated packages.

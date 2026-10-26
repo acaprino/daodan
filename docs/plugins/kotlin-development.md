@@ -36,7 +36,7 @@ Senior Kotlin developer covering coroutines, KMP, modern Kotlin 1.9+ patterns, a
 
 ---
 
-**Related:** [python-development](python-development.md) (language development patterns) | [typescript-development](typescript-development.md) (language development patterns)
+**Related:** [libgdx-development](libgdx-development.md) (when building libGDX games in Kotlin) | [tauri-development](tauri-development.md) (alternative for cross-platform desktop/mobile)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference

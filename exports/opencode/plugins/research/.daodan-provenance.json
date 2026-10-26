@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:1cb0d52a202b7ab44cde8f1ab368ab1fb18c81d82262d54c9524c976e39fd9b9",
+  "harnessStrategies": {
+    "team-research": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "research",
+  "version": "6.2.6"
+}

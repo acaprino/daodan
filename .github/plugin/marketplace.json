@@ -132,6 +132,20 @@
       "version": "2.1.0"
     },
     {
+      "agents": [
+        "./agents/or-tools-expert.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Constraint Satisfaction Problems and combinatorial optimization with Google OR-Tools CP-SAT solver",
+      "license": "MIT",
+      "name": "csp",
+      "source": "./exports/copilot/plugins/csp",
+      "version": "1.4.2"
+    },
+    {
       "author": {
         "name": "Alfio Caprino"
       },
@@ -146,6 +160,34 @@
       "version": "2.0.0"
     },
     {
+      "agents": [
+        "./agents/content-marketer.agent.md",
+        "./agents/content-strategy-coordinator.agent.md",
+        "./agents/ga4-implementation-expert.agent.md",
+        "./agents/llm-seo-optimize.agent.md",
+        "./agents/seo-specialist.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "playwright@claude-plugins-official",
+        "text-humanizer",
+        "report-rendering"
+      ],
+      "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot): technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /digital-marketing:ga4-audit Playwright-powered verification, and /digital-marketing:llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
+      "license": "MIT",
+      "name": "digital-marketing",
+      "skills": [
+        "./skills/brand-naming-method",
+        "./skills/domain-hunter",
+        "./skills/ga4-implementation",
+        "./skills/review-reply-method"
+      ],
+      "source": "./exports/copilot/plugins/digital-marketing",
+      "version": "3.2.1"
+    },
+    {
       "author": {
         "name": "Alfio Caprino"
       },
@@ -158,6 +200,47 @@
       ],
       "source": "./exports/copilot/plugins/docker",
       "version": "1.4.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "impeccable@impeccable",
+        "ui-ux-pro-max@ui-ux-pro-max-skill",
+        "frontend-design@claude-plugins-official",
+        "react-development",
+        "typescript-development",
+        "pwa-expert",
+        "platform-engineering"
+      ],
+      "description": "Full frontend review in one pass, combining a design/UX dimension driven by the impeccable, ui-ux-pro-max, and frontend-design upstream skills as hard prerequisites with stop-and-install, with auto-detected code dimensions (React performance, TypeScript type safety, PWA architecture, platform compliance) spawned from local plugins declared as hard dependencies, so a dimension is skipped only when its signal does not match. Findings consolidate into a unified scored report at .frontend-review/report.md. Pure orchestration; vendors nothing.",
+      "license": "MIT",
+      "name": "frontend-review",
+      "source": "./exports/copilot/plugins/frontend-review",
+      "version": "2.1.4"
+    },
+    {
+      "agents": [
+        "./agents/ai-scraping-expert.agent.md",
+        "./agents/grabber-architect.agent.md",
+        "./agents/http-fingerprint-expert.agent.md",
+        "./agents/stealth-browser-expert.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "playwright@claude-plugins-official"
+      ],
+      "description": "Expert Python web scraping - coordinator (grabber-architect) plus three specialists: stealth-browser-expert (Patchright/Camoufox/Nodriver + CAPTCHA), http-fingerprint-expert (JA4+/curl_cffi/primp + proxies/Web Unlocker), ai-scraping-expert (Crawl4AI/Firecrawl/ScrapeGraphAI + Pydantic + GraphQL RE)",
+      "license": "MIT",
+      "name": "grabber-development",
+      "skills": [
+        "./skills/grabber-development"
+      ],
+      "source": "./exports/copilot/plugins/grabber-development",
+      "version": "1.8.5"
     },
     {
       "author": {
@@ -344,6 +427,28 @@
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
       "version": "3.0.0"
+    },
+    {
+      "agents": [
+        "./agents/pwa-architect.agent.md",
+        "./agents/pwa-audit-coordinator.agent.md",
+        "./agents/pwa-checklist-coordinator.agent.md",
+        "./agents/pwa-scaffold-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "playwright@claude-plugins-official"
+      ],
+      "description": "Progressive Web App expert for the 2025-2026 baseline. Covers Web App Manifest (id, display_override, scope_extensions, handle_links, file_handlers, share_target), Service Workers (Workbox 7 / Serwist), Web Push (VAPID, RFC 8030/8291/8292, Declarative Push for Safari 18.4+), install flows (beforeinstallprompt, Window Controls Overlay), OPFS storage, Project Fugu capabilities, Core Web Vitals 2025 (INP < 200ms), security (HTTPS, CSP, COOP/COEP), and distribution (Bubblewrap to Google Play, PWA Builder to Microsoft Store, Capacitor to App Store, PWA Builder to Meta Quest). Includes the pwa-architect agent and three commands: /pwa-expert:pwa-audit (hybrid local-code + live-URL via Playwright), /pwa-expert:pwa-scaffold (manifest + SW + iOS meta + framework wiring for Vite, Next.js, Angular, Nuxt, vanilla), /pwa-expert:pwa-checklist (deterministic production-deploy checklist walk).",
+      "license": "MIT",
+      "name": "pwa-expert",
+      "skills": [
+        "./skills/pwa-development"
+      ],
+      "source": "./exports/copilot/plugins/pwa-expert",
+      "version": "1.3.7"
     },
     {
       "agents": [

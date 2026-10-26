@@ -1,0 +1,12 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:5f44e03ed3a6270e3e4a1eda90a3550e11e3b178cd9a1bd060e7604702478182",
+  "harnessStrategies": {
+    "xterm-debug": "parallel-subagents",
+    "xterm-implement": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "xterm",
+  "version": "1.2.3"
+}

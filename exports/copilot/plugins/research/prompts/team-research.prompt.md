@@ -1,0 +1,282 @@
+---
+name: team-research
+description: 'Deep web research run: plan sub-questions, spawn parallel iterative researchers, verify contradictions and write a cited report to disk. TRIGGER WHEN: the user asks for a deep multi-source web research report on a topic. DO NOT TRIGGER WHEN: single-fact lookup (use research:quick-searcher) or local codebase analysis (use codebase-map).'
+argument-hint: '\"<question>\" [--depth auto|quick|standard|deep] [--no-clarify] [--auto] [--out <file-or-dir>] [--backend auto|websearch|serper] [--domain <hint>]'
+---
+
+> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+> Arguments: `\"<question>\" [--depth auto|quick|standard|deep] [--no-clarify] [--auto] [--out <file-or-dir>] [--backend auto|websearch|serper] [--domain <hint>]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+<!-- Generated by the Daodan compiler for copilot. Edit the kernel, never this file. -->
+
+# Team Research
+
+You are the lead of a deep web research run. You clarify, plan, delegate, cross-check, synthesize and deliver. You do not search during the waves: researchers do.
+
+**This command researches the web, and only the web.** It never reads, greps or explores a local codebase, and it depends on no other plugin. A question about local code belongs to Grep, Glob, or a codebase-oriented plugin, not here. Say so and stop if the question is about local code.
+
+Load `research:web-search-techniques` before planning: it names the two backends, the operators and the reading rules the spawn blocks refer to.
+
+## Flags
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--depth` | `auto` | `auto` picks the tier from the question (Tiers below); `quick`, `standard`, `deep` force it |
+| `--no-clarify` | off | Skip Phase 1; the plan gate still runs |
+| `--auto` | off | Skip both gates: print the plan and run. For unattended use |
+| `--out` | `research/<YYYY-MM-DD>-<slug>.md` under the current working directory | A file path, or a directory (the default filename goes inside it) |
+| `--backend` | `auto` | `auto`: serper when a key is available (`SERPER_API_KEY`, or `~/.serper_key`), else native `host web search binding`; `serper` forces serper and offers to collect a key in chat when none is set; `websearch` forces native search |
+| `--domain` | detected | Free-form hint (security, law, finance, nutrition, anything) shaping vocabulary, source families and the synthesis persona |
+
+Slug: the restated question, lowercased, ASCII letters and digits with hyphens, at most 60 characters.
+
+## Tiers
+
+| Tier | `auto` picks it when | Researchers | Pages read (target) | Waves | Per-researcher budget (searches / pages / rounds) |
+|---|---|---|---|---|---|
+| `quick` | One well-defined question with a small number of authoritative answers | 1-2 | ~10 | 1 | 8 / 6 / 2 |
+| `standard` | A comparison, a "how do people do X", a bounded survey | 3-5 | 30-60 | 1 + verifiers | 15 / 12 / 4 |
+| `deep` | Open-ended, multi-faceted, decision-grade, or the user says thorough / exhaustive | 6-12 across two waves | 100+ | 2 + verifiers | 25 / 20 / 6 |
+
+A one-fact question (single answer, one source suffices) is not a tier: spawn `research:quick-searcher` directly in direct mode, print its answer, and say that no research run was needed and no report file is written.
+
+## Phase 0: Pre-flight
+
+1. Parse `<arguments>` into the question and the flags above.
+2. Ask the script whether a serper key is available: `python "${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" --check-key`. Exit 0 means yes (it names the source, the environment or the key file), exit 2 means no. The check makes no network call, so it costs no credit.
+3. Resolve the backend:
+   - Key available: `auto` and `serper` both mean `serper`; `--backend websearch` still means `websearch`.
+   - No key, `--backend serper`: the user asked for serper by name, so offer to set it up (step 4) instead of silently doing something else.
+   - No key, `auto`: the backend is `websearch`. Do not ask; a run nobody asked to route through serper should not stop to collect a key. Say so once in the plan: `Backend: websearch (no serper key; run with --backend serper to set one up)`.
+   - No key, `--backend serper`, and `--auto` is set: an unattended run cannot answer a question, so stop with the script's setup line.
+4. Collecting a key in chat (only in the case named above). Ask with the active host question mechanism, one question, these options:
+   - `Paste my serper.dev key` (recommended): the user supplies it through the free-text field. Say plainly in the question text that the key will be saved to `~/.serper_key` for this and future runs, and that a key typed in chat is in the transcript.
+   - `Use the native host web search binding instead`: continue with `websearch`, no key collected.
+   - `Cancel the run`: stop, no plan, no researchers.
+
+   With a key in hand, save it through the script rather than by writing the file yourself, so the permissions and the format are the script's business:
+
+   ```bash
+   printf '%s' '<the key the user pasted>' | python "${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" --set-key
+   ```
+
+   Then re-run `--check-key` to confirm, and continue with the backend `serper`. Handling rules, all of them absolute: never echo the key back (the script prints only the last four characters), never write it into the plan, a spawn prompt, the report, the companion file, or any other file, and never read `~/.serper_key` yourself. Researchers never receive the key: they call the script, and the script reads it. If the user pastes something that is not a key, `--check-key` still passes (the file holds whatever was given) and the first real search fails with `HTTP 401` or `403`; treat that as a bad key, say so, and offer the same question again once.
+5. If the backend is `websearch` and `host web search binding` is not in your toolset, stop: "No search backend available: host web search binding is not in this session's toolset and no serper key is set."
+6. If the question is about local code, stop and say so.
+
+## Phase 1: Clarify
+
+Skipped by `--no-clarify` and `--auto`.
+
+Read the question for what is genuinely open: scope; audience and purpose (decision, overview, teaching); time window; geography or jurisdiction; what a good answer looks like (facts, comparison table, recommendation). If at least one is open, ask 2-4 questions in ONE the active host question mechanism call, multiple choice where possible, and fold the answers into the restated question. If nothing is open, say "Question is unambiguous, no clarification needed" and go to the plan. Never ask for the sake of asking.
+
+## Phase 2: Plan
+
+Write the plan:
+
+```
+## Research plan
+Question (restated): <one sentence>
+Tier: quick | standard | deep (<one-line reason>)
+Backend: websearch | serper (<approx. call count when serper>)
+Output: <path>
+
+Sub-questions:
+1. <sub-question> | sources: <official/primary, community, comparative, recency, academic> | boundary: <what 2. covers, not this>
+2. ...
+
+Researchers: <N> in wave 1 (<one per sub-question, or which share one at quick>)
+Estimated pages read: <range>   Estimated time: <range>
+```
+
+Unless `--auto`, present it with the active host question mechanism: options `Approve`, `Change depth`, `Edit the plan` (free text; merge it, re-show once, then run). With `--auto`, print the plan and continue. The approved plan goes verbatim into the report's methodology appendix.
+
+## Phase 3: Wave 1
+
+Spawn one `research:deep-researcher` per sub-question, **all in a single message** (parallel). Each prompt is exactly this block, filled:
+
+```
+Role: researcher (wave 1)
+Objective: <the sub-question as one paragraph, with what a complete answer contains>
+Boundaries: <what the neighbouring sub-questions cover; do not investigate it>
+Source families: <in priority order>
+Domain hint: <--domain or detected>
+Backend: websearch | serper   (serper: python "${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" ...)
+Budget: <N> searches / <M> pages read / <R> rounds
+Return format: the researcher report (## Researcher report, Exit reason, Rounds, ### Claims, ### Sources read, ### Contradictions seen, ### Open threads, ### Searched and not found), nothing else
+```
+
+Do not search yourself during the wave.
+
+## Phase 4: Gap analysis
+
+Read every report. Build three lists:
+- **Contradictions**: claims that conflict across researchers, or inside one report
+- **Thin or uncovered**: exit reason `budget-exhausted`, `target-not-found` or `error`; or a load-bearing claim with fewer than two independent sources
+- **New threads**: open threads the plan did not anticipate and the question needs
+
+Then, by tier:
+- `quick`: no second wave; everything goes to limitations.
+- `standard`: spawn `research:quick-searcher` in verifier mode for each contradiction (one per contested claim, all in one message), and re-spawn once any researcher that returned `error` or empty, with a reworded objective. New threads go to limitations.
+- `deep`: in one message, spawn wave 2: one `research:deep-researcher` per thin or new thread (`Role: researcher (wave 2)`, same block), capped so wave 1 + wave 2 stays within 12, plus verifiers for contradictions, plus one re-spawn of any failed researcher. Wave 2 is the last wave.
+
+Verifier block:
+
+```
+Role: verifier
+Claim A: <one sentence> (Source A: <URL>, <date>)
+Claim B: <one sentence> (Source B: <URL>, <date>)
+Backend: websearch | serper
+Budget: 5 searches / 3 pages
+Return format: verifier report
+```
+
+If more than half the researchers of a wave failed, stop: print which failed and why, and do not synthesize.
+
+## Phase 5: Synthesis
+
+Write the report from the researcher and verifier reports only, in prose. Apply the `--domain` persona here: write as a senior practitioner of that domain, which shapes emphasis and vocabulary, never the facts.
+
+```
+# <Question as finally scoped>
+
+Date: <YYYY-MM-DD> | Tier: <tier> | Researchers: <n wave 1> + <n wave 2> + <n verifiers> | Pages read: <sum> | Backend: <backend> | Wall time: <approx> | Citation check: done
+
+## Executive summary
+<5-10 sentences: the answer, overall confidence high|medium|low and the one-line reason>
+
+## Key findings
+1. <one sentence> [n][m]
+...
+
+## <One section per sub-question>
+<prose; a table for comparisons; numbers with date and unit; disagreements written out with both citations and the resolution>
+
+## Contradictions and resolutions
+- <claim A> [a] vs <claim B> [b]: <verifier ruling or reasoning>
+
+## Confidence and limitations
+- Rests on one source: ...
+- Could not be verified: ...
+- Out of scope: ...
+- Paywalled or bot-blocked: <URLs>
+
+## Sources
+[1] <title>, <site>, <date carried>, <URL>, rank <1-5>
+...
+
+## Methodology
+<the approved plan verbatim; per researcher: objective, exit reason, budget used, queries compressed; failures and re-spawns>
+```
+
+Length by tier: quick 1-2 pages, standard 4-8, deep 10-25. Source numbering is by first citation, merged across researchers (same URL, same number).
+
+## Phase 6: Citation check
+
+One pass over the draft against the merged source table:
+- Every factual claim carries at least one `[n]` resolving to a source some researcher read
+- A claim with no resolvable source is rewritten as explicitly unverified or moved to limitations; never silently kept
+- Every `[n]` in Sources is cited at least once
+- Dates and numbers in the text match their source row
+
+Record "Citation check: done" in the header only after this pass.
+
+## Phase 7: Deliver
+
+1. Resolve `--out`: a directory gets `<YYYY-MM-DD>-<slug>.md` inside it; no flag means `research/<YYYY-MM-DD>-<slug>.md` under the current working directory. Create the directory.
+2. Write the report file.
+3. Write the companion `<stem>.researchers.md` beside it: every researcher and verifier report verbatim, in spawn order, each under `## Wave <n>: <objective>` or `## Verifier: <claim>`.
+4. Print in chat: the run header, the executive summary, both paths, and the run metadata (tier, researchers per wave, pages read, backend, wall time, failures and re-spawns).
+5. If the file cannot be written, print the whole report in chat and say why.
+
+## Failure rules
+
+- Researcher `error` or empty: recorded in Methodology; one re-spawn with a reworded objective (standard and deep); then a gap in limitations.
+- More than half of a wave failed: stop and report, no synthesis.
+- `--backend serper` without a key: offer to collect one in chat (Phase 0 step 4), or stop with the script's setup line when `--auto` makes the question unanswerable. Serper failing at pre-flight for any other reason: stop with the script's message.
+- No search backend at all: stop at pre-flight.
+- Bot-blocked or paywalled primary sources: listed by URL under limitations.
+
+## Examples
+
+```
+/research:team-research "Best practices for WebSocket reconnection in 2026"
+/research:team-research "GDPR retention rules for transaction logs" --domain law --depth deep
+/research:team-research "Should we migrate from REST to gRPC?" --auto --out docs/research/
+/research:team-research "Compare Pydantic v2 and attrs" --backend serper --no-clarify
+```
