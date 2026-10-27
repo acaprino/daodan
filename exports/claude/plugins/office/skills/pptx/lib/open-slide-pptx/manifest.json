@@ -52,12 +52,12 @@
   },
   "bundle": {
     "path": "bundle/open-slide-pptx.js",
-    "sha256": "8dc3511fe7af2877515671b5e00eca60eb4ee4bf15a68dc609127e0b9c162951",
-    "bytes": 79332
+    "sha256": "6c7b675835338cb46e26700d91a655cd57652b44d7e564ee7e01404337d26feb",
+    "bytes": 79428
   },
   "files": {
-    "bundle/open-slide-pptx.js": "8dc3511fe7af2877515671b5e00eca60eb4ee4bf15a68dc609127e0b9c162951",
-    "entry/office-entry.ts": "d0a22fe538a2eaa220173890161f8ecd7e1f291e4116e4d642673b550d2c33cc",
+    "bundle/open-slide-pptx.js": "6c7b675835338cb46e26700d91a655cd57652b44d7e564ee7e01404337d26feb",
+    "entry/office-entry.ts": "c8394aba01edf049291987ebf09b8f2df0b6b42f1623885db493ac07c284b773",
     "src/lib/pptx/color.ts": "c1722b232c5bfd8d4290c508792d118e248d15b05dbfc44946b21ea58eba10e7",
     "src/lib/pptx/css.ts": "6631f084614b4a1eacf7f0a6b7b7dddecbbce000746d1edc004808564ce79d9d",
     "src/lib/pptx/fonts.ts": "58764839b3a6656ad6332f82790daf199cc3a186257a6c969950d5a0d93c4583",

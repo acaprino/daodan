@@ -136,8 +136,9 @@ The bridge verifies the vendored hashes before every run, so an edited vendor
 fails here rather than converting silently; a checkout that converted line
 endings is reported as such. An existing output or evidence path is refused:
 each conversion writes a new candidate name, so a reviewed candidate and its
-record stay intact. Driver exit codes: 2 job or design contract, 3 missing
-runtime, 4 conversion failure.
+record stay intact. The bridge exits with the driver's code (2 job or design
+contract, 3 missing runtime, 4 conversion failure), or 1 for its own checks
+(arguments, an existing candidate, Node discovery, the hash guard).
 
 ## Runtime prerequisites
 

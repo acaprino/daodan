@@ -63,7 +63,14 @@ async function settle(panels: Element[]): Promise<string[]> {
   style.setAttribute('data-office-settle', '');
   style.textContent = SETTLE_STYLE;
   document.head.appendChild(style);
-  await nextFrame();
+  // Panels stack below the 1080px viewport; bring each into view so content
+  // revealed by an IntersectionObserver or a scroll handler exists when measured.
+  for (const panel of panels) {
+    panel.scrollIntoView({ block: 'start', inline: 'start' });
+    await nextFrame();
+    await nextFrame();
+  }
+  window.scrollTo(0, 0);
   await nextFrame();
   await document.fonts.ready;
   const problems: string[] = [];

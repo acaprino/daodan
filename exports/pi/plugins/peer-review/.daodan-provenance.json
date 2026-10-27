@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e37bb132c4a24e753e01d6cf8303c5171642e7c025ca640dc9918b05592a3852",
+  "coreDigest": "sha256:2cd398015a1678f18b66164a068c49fc9f3195c19c830928930c9aef05ac594a",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],
   "plugin": "peer-review",
-  "version": "3.1.0"
+  "version": "3.1.1"
 }

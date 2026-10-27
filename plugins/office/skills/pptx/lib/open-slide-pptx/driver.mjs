@@ -164,7 +164,8 @@ function resolveBrowser(requested, playwright) {
   } catch {
     bundled = null;
   }
-  if (bundled && fs.existsSync(bundled)) return { executablePath: bundled, source: 'playwright bundled chromium', launchPath: null };
+  // Launch the probed binary itself; Playwright's default headless shell is a different executable.
+  if (bundled && fs.existsSync(bundled)) return { executablePath: bundled, source: 'playwright bundled chromium', launchPath: bundled };
   return { executablePath: null, source: 'no browser found' };
 }
 
@@ -288,7 +289,9 @@ function startServer(html, root) {
     }
     if (pathname === BUNDLE_ROUTE) return send(response, BUNDLE);
     const normalized = path.posix.normalize(pathname);
-    if (normalized.split('/').some((segment) => segment.startsWith('.'))) return refuse(404, 'Not found', pathname);
+    // The HTML's own directory may sit under a dot directory; dotfiles below it or elsewhere are never served.
+    const below = normalized.startsWith(htmlDirectory) ? normalized.slice(htmlDirectory.length) : normalized;
+    if (below.split('/').some((segment) => segment.startsWith('.'))) return refuse(404, 'Not found', pathname);
     const candidate = path.resolve(realRoot, '.' + normalized);
     let real = null;
     try {
@@ -306,7 +309,9 @@ function startServer(html, root) {
     });
     response.end(fs.readFileSync(file));
   }
-  const htmlRoute = '/' + path.relative(realRoot, fs.realpathSync(html)).split(path.sep).map(encodeURIComponent).join('/');
+  const htmlSegments = path.relative(realRoot, fs.realpathSync(html)).split(path.sep);
+  const htmlRoute = '/' + htmlSegments.map(encodeURIComponent).join('/');
+  const htmlDirectory = '/' + htmlSegments.slice(0, -1).map((segment) => segment + '/').join('');
   return new Promise((resolve) => {
     server.listen(0, '127.0.0.1', () => {
       state.host = `127.0.0.1:${server.address().port}`;

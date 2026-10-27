@@ -29,7 +29,16 @@ VERSION_TIMEOUT_SECONDS = 30
 
 
 class BridgeError(ValueError):
-    """A runtime, job or vendored-engine guard cannot be satisfied."""
+    """A runtime, job or vendored-engine guard cannot be satisfied.
+
+    ``code`` is the process exit status: the driver's own code (2 job or design
+    contract, 3 missing runtime, 4 conversion failure) when the driver decided,
+    otherwise 1 for a bridge-side check.
+    """
+
+    def __init__(self, message, code=1):
+        super().__init__(message)
+        self.code = code
 
 
 def sha256(path):
@@ -247,9 +256,10 @@ def convert_html(runtime, html, output, evidence=None, assets_root=None, browser
         detail = {key: payload.get(key) for key in ("page_errors", "console_warnings", "blocked_requests",
                                                    "missing_local_requests") if payload.get(key)}
         suffix = f" ({json.dumps(detail, sort_keys=True)})" if detail else ""
+        code = payload.get("code") if payload.get("code") in (2, 3, 4) else 4
         raise BridgeError(
             f"Conversion failed (exit {completed.returncode}, code {payload.get('code')}): "
-            f"{payload.get('message', 'no driver message')}{suffix}")
+            f"{payload.get('message', 'no driver message')}{suffix}", code=code)
     if not destination.is_file():
         raise BridgeError(f"The driver reported success but wrote no package: {destination}")
     actual = sha256(destination)
@@ -303,7 +313,7 @@ def main(argv=None):
                                   timeout_ms=args.timeout_ms, headless=not args.headed)
     except BridgeError as error:
         print(str(error), file=sys.stderr)
-        return 1
+        return error.code
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

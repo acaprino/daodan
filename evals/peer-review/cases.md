@@ -190,7 +190,7 @@ touches no network is fine before that point; a transport call is not.
 
 **Probe.** `skills/cross-model-peer-review/references/review.md` Critical rule 2; Phase 0 step 5 (the
 `peer_profiles` call); Phase 1b ("Consent gate"); every call site of
-`peer_ask`/`mcp__peer-review__peer_ask` in the file.
+`peer_ask` in the file.
 
 **Pass.** The command states the rule explicitly ("No call to the `peer_ask`
 transport tool may be reachable before [the consent gate]. Calling
@@ -218,7 +218,7 @@ actual orchestrating session following the phases of `references/review.md` with
 `peer-review` MCP server connected and observing that a packet-only run
 never calls `peer_ask`; that requires a live run this harness's environment
 cannot produce (the `peer-review` MCP server is not connected in this
-session, so `mcp__peer-review__peer_ask` is not even a callable tool here).
+session, so `peer_ask` is not even a callable tool here).
 What was executed instead, cheaply, reusing the Task 6 stub-server approach:
 a local HTTP stub stood up on `127.0.0.1`, `server.py` loaded as a module
 against it, and `peer_profiles()` called (the one tool Phase 0 calls before

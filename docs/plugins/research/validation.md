@@ -21,12 +21,22 @@ degli hook in un host installato e la validazione di una ricerca accademica.
 | `python -m unittest discover -s tests -p test_opencode_loader.py` | 2 test superati | Suite Node dal gate Python e manifest OpenCode reale |
 | `python -m unittest discover -s tests -p test_daodan_hooks.py` | 14 test superati | Contratto neutrale, host nativi/adattati/non supportati e comandi generati |
 | `python -m unittest discover -s tests -p test_daodan_catalogs.py` | 17 test superati | Cataloghi, identità e loader OpenCode byte-identico al template |
-| `python scripts/daodan_build.py` | Completato | Rigenerazione dei cinque host dai kernel e dagli adapter |
-| `python scripts/daodan_build.py --check --support` | Da rieseguire a writer concorrente concluso | Il supporto è completo; il drift intermittente riguarda soltanto `office`, fuori dal perimetro scientifico |
+| `python scripts/daodan_build.py` | Superato prima dell'ultimo ritocco a `project-delivery` | L'ultima rigenerazione è stata interrotta da una modifica concorrente ad `ai-tooling` (`references` non presente), fuori dal perimetro scientifico |
+| `python scripts/daodan_build.py --check --support` | Da rieseguire a writer concorrenti conclusi | Il supporto è completo; il drift intermittente riguarda `office` e `ai-tooling`, fuori dal perimetro scientifico |
 | `python scripts/sync_plugin_docs.py --check` e `sync_codex_instructions.py --check` | Superati, 0 derive | Parità della documentazione e delle istruzioni |
 | `python scripts/lint_dependency_graph.py`, `lint_bundled_paths.py`, `lint_plugin_registration.py`, `lint_fact_anchors.py`, `lint_host_vocabulary.py` | Tutti superati | Dipendenze, percorsi distribuiti, registrazione, fatti ancorati e vocabolario neutrale |
 | `python adapters/copilot/policies/xray-guard/test_xray_guard.py` | 36/36 superati | Confinamento del guard Copilot esistente |
 | `git diff --check` | Superato | Nessun errore di whitespace nel candidato |
+
+## Esito della suite completa
+
+Un'esecuzione completa ha raccolto 2785 test con 11 fallimenti e 1 errore.
+Dopo le correzioni di questo lavoro, i gruppi interessati passano: `office`
+35/35, budget dei metodi 5/5, fixture host 7/7, runtime scientifico 23/23.
+Resta un fallimento fuori perimetro nel runtime Work Controller,
+`test_active_pass_rejects_legacy_review_without_composition`, riprodotto anche
+isolatamente. Su richiesta dell'utente non sono state eseguite altre suite;
+l'esito completo finale non è quindi dichiarato.
 
 Il test post-pointer usa deliberatamente una directory al posto della ricevuta
 Markdown derivata. Verifica che il puntatore canonico resti pubblicato e che il

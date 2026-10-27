@@ -238,7 +238,7 @@ judges that. From Phase 1 onward the two are the same run: every later phase rea
    `YYYY-MM-DD-HHMM`. Directory: `.peer-review/<timestamp>-<slug>/`. On a name collision
    (a concurrent invocation in the same minute), append `-2`, `-3`, ... Create the
    directory before any write.
-5. **Resolve the challenger profile.** Call the `mcp__peer-review__peer_profiles` tool
+5. **Resolve the challenger profile.** Call the `peer_profiles` tool
    with no arguments. It returns `{default, profiles: [{name, base_url, model,
    api_key_env, params, key_source, warnings, available}], source}`. `params` is the
    profile's extra request fields (`reasoning_effort` and the like), already validated:
@@ -440,7 +440,7 @@ makes this gate a decision about a document rather than about an intention.
 
 1. Load the Round 1 prompt: read `<plugin-root>/skills/cross-model-peer-review/references/round-prompts.md` and
    extract the fenced block under `## Round 1 (critique)`.
-2. Call the `mcp__peer-review__peer_ask` tool: `profile` is the resolved profile name,
+2. Call the `peer_ask` tool: `profile` is the resolved profile name,
    `system` is the Round 1 prompt text, `content_path` is `<run directory>/00-packet.md`.
    Pass the path. The packet is never pasted into the call: the transport reads it, and
    that is the only reason R15's third link holds.
@@ -597,7 +597,7 @@ For round `r` (2 or 3), files `05-challenge-r2.md`/`07-challenge-r3.md` and
    confirmation, so there is something for the challenger's `CONFIRM-RESTATEMENT` or
    `REJECT-RESTATEMENT` reply to answer.
 3. **Write the payload, then send it.** Write step 2's payload to `sent/r<r>.md` in the
-   run directory, then call `mcp__peer-review__peer_ask` with this prompt as `system`
+   run directory, then call `peer_ask` with this prompt as `system`
    and `content_path` pointing at that file. The file is not a copy of what is sent, it
    is what is sent: the transport accepts no inline text. Handle the error shape per
    "Transport error handling" above.
@@ -707,7 +707,7 @@ For round `r` (2 or 3), files `05-challenge-r2.md`/`07-challenge-r3.md` and
    claim of the challenger's own words to defend.
 2. Load the Certification prompt: read `<plugin-root>/skills/cross-model-peer-review/references/round-prompts.md`
    under `## Certification`. Write the collected findings plus renderings to
-   `sent/certification.md`, then call `mcp__peer-review__peer_ask` with the prompt as
+   `sent/certification.md`, then call `peer_ask` with the prompt as
    `system` and `content_path` pointing at that file. Handle the error shape per
    "Transport error handling" above.
 3. On success, write the reply to `09-certification.md`. For each finding:
@@ -733,7 +733,7 @@ For round `r` (2 or 3), files `05-challenge-r2.md`/`07-challenge-r3.md` and
 4. **Corrective round, at most once for the whole run**, only for findings reverted in
    step 3. If a corrective round has not already run in this invocation:
    - Write only the reverted findings' original verbatim claims and falsifiers to
-     `sent/corrective.md`, then call `mcp__peer-review__peer_ask` once more with
+     `sent/corrective.md`, then call `peer_ask` once more with
      `content_path` pointing at that file and `system` built from the same Challenge
      round prompt semantics but scoped to "answer against your original claim, this is
      a corrective round, not a debate" framing. Handle the error shape: on

@@ -294,6 +294,17 @@ class ConversionTransportTests(unittest.TestCase):
         assets.mkdir()
         self.assertIn("inside the asset root", self.run_bridge(assets_root=assets))
 
+    def test_the_command_exits_with_the_driver_code(self):
+        payload = {"status": "error", "code": 2, "message": "Office HTML contract violated: panel 1"}
+        with mock.patch.object(bridge, "discover", return_value=self.RUNTIME), \
+                mock.patch.object(subprocess, "run",
+                                  return_value=subprocess.CompletedProcess(args=[], returncode=2,
+                                                                           stdout=json.dumps(payload), stderr="")), \
+                mock.patch("sys.stderr"):
+            status = bridge.main(["convert", "--html", str(self.html),
+                                  "--output", str(self.directory / "deck.pptx")])
+        self.assertEqual(2, status)
+
     def test_the_probe_stops_without_a_usable_browser(self):
         payload = {"status": "probe", "bundle": {"present": True},
                    "playwright": {"available": True, "version": "1.62.1"},
@@ -542,16 +553,19 @@ class RealConversionTests(unittest.TestCase):
         listener = socket.socket()
         listener.bind(("127.0.0.1", 0))
         listener.listen(1)
-        listener.settimeout(0.5)
+        listener.settimeout(0.2)
         port = listener.getsockname()[1]
         connections = []
+        done = threading.Event()
 
         def accept():
-            try:
-                connection, _ = listener.accept()
-                connections.append(connection)
-            except OSError:
-                pass
+            # Listen for the whole conversion, not a fixed window that could close first.
+            while not done.is_set():
+                try:
+                    connection, _ = listener.accept()
+                    connections.append(connection)
+                except OSError:
+                    continue
 
         watcher = threading.Thread(target=accept)
         watcher.start()
@@ -564,6 +578,7 @@ class RealConversionTests(unittest.TestCase):
                     "fetch('https://example.invalid/beacon').catch(()=>{});</script>")
                 message = self.refused(source, temporary)
         finally:
+            done.set()
             watcher.join()
             listener.close()
             for connection in connections:
@@ -591,6 +606,39 @@ class RealConversionTests(unittest.TestCase):
             self.assertEqual([], result["missing_local_requests"])
             evidence = json.loads(Path(result["evidence"]).read_text(encoding="utf-8"))
             self.assertGreaterEqual(evidence["scene"][0]["kinds"].get("picture", 0), 1)
+
+    def test_a_design_under_a_dot_directory_converts_with_its_assets(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            run = project / ".daodan" / "runs" / "r1"
+            (run / "img").mkdir(parents=True)
+            (run / "img" / "a.png").write_bytes(tiny_png())
+            source = self.write_design(
+                run,
+                "<img src='img/a.png' style='position:absolute;left:100px;top:100px;width:200px;height:200px'>"
+                "<h1 style='position:absolute;left:100px;top:600px'>Run design</h1>")
+            result = self.convert(source, temporary, assets_root=project)
+            self.assertEqual(1, result["panels"])
+            self.assertEqual([], result["missing_local_requests"])
+
+    def test_content_revealed_on_scroll_is_measured_on_every_panel(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "reveal.html"
+            panel = ("<section class='slide' data-office-slide><h1 class='reveal' "
+                     "style='position:absolute;left:120px;top:200px'>{}</h1></section>")
+            source.write_text(
+                "<!DOCTYPE html><html><head><meta charset='utf-8'><style>body{margin:0}"
+                ".slide{position:relative;width:1920px;height:1080px;box-sizing:border-box;overflow:hidden;"
+                "background:#f4f1ea}.reveal{visibility:hidden}.reveal.shown{visibility:visible}</style></head><body>"
+                + panel.format("First reveal") + panel.format("Second reveal")
+                + "<script>new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)"
+                  "e.target.classList.add('shown')})).observe(document.querySelectorAll('.reveal')[0]);"
+                  "new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)"
+                  "e.target.classList.add('shown')})).observe(document.querySelectorAll('.reveal')[1]);</script>"
+                + "</body></html>", encoding="utf-8")
+            result = self.convert(source, temporary)
+            with zipfile.ZipFile(result["output"]) as package:
+                self.assertIn("Second reveal", package.read("ppt/slides/slide2.xml").decode("utf-8"))
 
     def test_a_missing_local_asset_or_a_dotfile_refuses_the_design(self):
         with tempfile.TemporaryDirectory() as temporary:

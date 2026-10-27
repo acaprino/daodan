@@ -98,7 +98,7 @@ Load by step:
 - Plan/execution: `references/waves.md`; dispatch: `references/worker-brief.md`.
 - Specifications/approval/handoff: `references/specification.md`.
 - Brainstorm: `references/brainstorm.md`.
-- Load skills: `references/investigate.md`.
+- Investigation: `references/investigate.md`.
 - Documentation: `references/document.md`.
 - Repair/refactor: `references/repair.md`, `references/refactor.md`.
 - Resume/status: `references/continue.md`, `references/status.md`.
@@ -115,36 +115,36 @@ ADRs stay separate.
 
 New execution runs set `process_required: true`; use work-record's
 `references/process-runtime.md` to admit approved YAML and bind workers before
-dispatch. Preserve legacy unbound runs. Require process/delivery/domain gates;
-commit through review.
+dispatch. Preserve legacy unbound runs; require process/delivery/domain gates and
+reviewed commits.
 
 ## Canonical methods
 
-- Load skills: Maps: `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst`.
+- Maps: `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst`.
   Own analyze preflight/checkpoints/delivery/publication; loading is not dispatch.
 - Load skills: `project-delivery:adr-method`.
-- Load skills: Science checkpoints: load skill `research:science-based-approach` before substantive
-  decisions, within the caller run and grants.
-- Load skills: Load skill `senior-review:investigation-method`.
+- Load skills: `research:science-based-approach` before substantive decisions;
+  automatic checkpoint in caller run/grants.
+- Load skills: `senior-review:investigation-method`.
 - Load skills: `senior-review:review-method`; branches: `senior-review:review-preparation`.
 - Load skills: `senior-review:application-cleanup-method`.
-- Load skills: Tests: `testing:test-preparation`, `testing:test-remediation-method`; dispatch `testing:test-writer`.
-- Load skills: Load skill `clean-code:readability-method`.
-- Load skills: Load skill `abstraction-architect:abstraction-architect` and its auditor.
-- Load skills: Load skills `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft`.
-- Load skills: Load skill `repo-hygiene:repo-hygiene`.
-- Load skills: Task workspaces/catalog: load skill `worktree-manager:worktree-method`.
-- Load skills: Requested challenge: `peer-review:cross-model-peer-review`; dispatch `peer-review:packet-builder`,
+- Tests: `testing:test-preparation`, `testing:test-remediation-method`; dispatch `testing:test-writer`.
+- Load skills: `clean-code:readability-method`.
+- Load skills: `abstraction-architect:abstraction-architect` and its auditor.
+- Load skills: `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft`.
+- Load skills: `repo-hygiene:repo-hygiene`.
+- Task workspaces/catalog: load skill `worktree-manager:worktree-method`.
+- Requested challenge: `peer-review:cross-model-peer-review`; dispatch `peer-review:packet-builder`,
   `peer-review:respondent`. Requested opinion: `moe:multi-model-deliberation`.
-- Load skills: HTML: the coordinator must load skill `report-rendering:report-renderer` and read `references/project-run-view.md` before closure when requested/useful.
+- HTML: the coordinator must load skill `report-rendering:report-renderer` and read `references/project-run-view.md` before closure when requested/useful.
 
-The worktree method owns workspace creation/resumption and catalog annotations;
-Work Controller owns agenda/grants. Status and brainstorming create no worktree.
-Missing Worktrunk blocks dependent operations with its recovery path.
+Worktree method owns workspaces and catalog annotations; Work Controller owns
+agenda/grants. Status and brainstorming create none. Missing Worktrunk blocks
+dependent operations with its recovery path.
 
 ## Delivery and closure
 
 Validate `result.json`, retaining reports, hashes, gaps and shared-premise
 contradictions. Missing deliveries block completion. Separate inventory, reading
-and runtime with exact candidates/limits. Static checks prove no runtime execution;
-self-checks no independent correctness; quarantine recovers no disk space.
+and runtime with exact candidates/limits. Static checks are not runtime,
+self-checks not independent correctness, quarantine not recovered disk space.

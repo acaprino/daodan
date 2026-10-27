@@ -72,7 +72,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: office:presentation-reviewer; version: 3.5.1; source-sha256: 9cad1a3e82b64d196123576581bb38c7c9f6ceca8a4f59738c64ebb41d227f82. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: office:presentation-reviewer; version: 3.5.2; source-sha256: 9cad1a3e82b64d196123576581bb38c7c9f6ceca8a4f59738c64ebb41d227f82. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:content`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

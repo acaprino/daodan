@@ -58,7 +58,7 @@ UNIT_CAPS = {
     PROTOCOL: 1_240,
     QUESTIONS: 95,
     AUTHORING: 208,
-    ADR / "SKILL.md": 428,
+    ADR / "SKILL.md": 412,
     ADR / "references/adr-template.md": 375,
     REVIEW / "review-method/SKILL.md": 450,
     REVIEW / "review-method/references/light.md": 500,
