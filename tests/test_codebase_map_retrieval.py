@@ -1,4 +1,5 @@
 """Local retrieval protects evidence, freshness and atomic publication."""
+import json
 import sys
 import sqlite3
 import tempfile
@@ -231,6 +232,154 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(set(schemas), {f"daodan/{name}/v1" for name in
                         ("context-request", "scope-plan", "context-packet", "map-slice")})
         self.assertTrue({"snapshot", "components", "edges", "gaps"} <= set(schemas["daodan/map-slice/v1"]["required"]))
+
+
+class IndexStateTests(unittest.TestCase):
+    """The index lifecycle reports one state and repairs only what is not fresh."""
+
+    setUp = RetrievalTests.setUp
+    write = RetrievalTests.write
+    refresh = RetrievalTests.refresh
+    search = RetrievalTests.search
+
+    def state(self):
+        return retrieval.index_state(self.manifest, self.index)
+
+    def test_missing_fresh_and_default_index_name(self):
+        self.assertEqual(self.state()["state"], "missing")
+        self.assertEqual(retrieval.index_name(self.manifest), self.index)
+        self.refresh()
+        fresh = self.state()
+        self.assertEqual((fresh["state"], fresh["documents"]), ("fresh", 4))
+        self.assertEqual(retrieval.index_state(self.manifest)["state"], "fresh")
+        with snapshot.open_snapshot(self.manifest) as store:
+            self.assertEqual(fresh["binding"]["manifest_digest"], retrieval._binding(store)["manifest_digest"])
+
+    def test_stale_names_the_differing_binding_keys(self):
+        self.refresh()
+        self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)\n")
+        snapshot.write_snapshot(self.root, self.manifest)
+        stale = self.state()
+        self.assertEqual(stale["state"], "stale")
+        self.assertIn("manifest_digest", stale["reason"])
+        with self.assertRaisesRegex(ValueError, "stale retrieval index"):
+            self.search("invoice")
+
+    def test_other_schema_is_stale_and_an_unreadable_index_is_failed(self):
+        self.refresh()
+        import sqlite3
+        from contextlib import closing
+        with closing(sqlite3.connect(self.index)) as db:
+            metadata = json.loads(db.execute("SELECT value FROM metadata").fetchone()[0])
+            metadata["binding"]["schema"] = "daodan/retrieval-index/v2"
+            db.execute("DELETE FROM metadata")
+            db.execute("INSERT INTO metadata VALUES(?)", (json.dumps(metadata),))
+            db.commit()
+        stale = self.state()
+        self.assertEqual(stale["state"], "stale")
+        self.assertIn("schema", stale["reason"])
+        self.assertEqual(retrieval.ensure_index(self.manifest, self.index)["action"], "rebuilt")
+        with mock.patch.object(retrieval, "_read", side_effect=sqlite3.OperationalError("database is locked")):
+            failed = retrieval.index_state(self.manifest, self.index)
+            self.assertEqual(failed["state"], "failed")
+            self.assertEqual(retrieval.ensure_index(self.manifest, self.index)["action"], "none")
+        self.assertTrue(self.index.exists())
+        self.assertEqual(self.state()["state"], "fresh")
+
+    def test_gap_result_carries_the_whole_envelope(self):
+        gap = retrieval.gap_result(self.state(), 7, "snapshot.py index M")
+        self.assertEqual(set(gap), set(retrieval.public_result(self.refresh_and_search())) | {"index_state"})
+        self.assertEqual((gap["index_state"], gap["results"], gap["limit"], gap["capabilities"]["fts5"]),
+                         ("missing", [], 7, False))
+        self.assertTrue(gap["gaps"][0].startswith("retrieval_missing: "))
+        self.assertTrue(gap["gaps"][0].endswith("run snapshot.py index M"))
+
+    def refresh_and_search(self):
+        self.refresh()
+        return self.search("tax adjustment", limit=2)
+
+    def test_corrupt_index_is_reported_and_rebuilt(self):
+        self.index.write_bytes(b"not a database")
+        corrupt = self.state()
+        self.assertEqual(corrupt["state"], "corrupt")
+        self.assertIn("not a readable retrieval index", corrupt["reason"])
+        checked = retrieval.ensure_index(self.manifest, self.index, check=True)
+        self.assertEqual((checked["state"], checked["action"]), ("corrupt", "reported"))
+        self.assertEqual(self.index.read_bytes(), b"not a database")
+        repaired = retrieval.ensure_index(self.manifest, self.index)
+        self.assertEqual((repaired["state"], repaired["action"], repaired["previous"]), ("fresh", "rebuilt", "corrupt"))
+        self.assertEqual(repaired["refresh"]["mode"], "rebuild")
+        self.assertEqual(self.search("tax adjustment")["results"][0]["entity_id"], "billing.py::invoiceTotal")
+
+    def test_ensure_index_refreshes_stale_and_leaves_fresh_alone(self):
+        built = retrieval.ensure_index(self.manifest, self.index)
+        self.assertEqual((built["state"], built["action"], built["previous"]), ("fresh", "rebuilt", "missing"))
+        untouched = retrieval.ensure_index(self.manifest, self.index)
+        self.assertEqual((untouched["state"], untouched["action"]), ("fresh", "none"))
+        self.assertNotIn("refresh", untouched)
+        self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)\n")
+        snapshot.write_snapshot(self.root, self.manifest)
+        refreshed = retrieval.ensure_index(self.manifest, self.index)
+        self.assertEqual((refreshed["state"], refreshed["action"], refreshed["previous"]), ("fresh", "refreshed", "stale"))
+        self.assertEqual(refreshed["refresh"]["mode"], "incremental")
+
+    def test_held_lock_and_missing_fts5_are_failed_not_raised(self):
+        lock = self.index.with_name(self.index.name + ".lock")
+        lock.write_bytes(b"")
+        held = retrieval.ensure_index(self.manifest, self.index)
+        self.assertEqual((held["state"], held["action"], held["lock"]), ("failed", "none", str(lock)))
+        self.assertIn("lock held", held["reason"])
+        missing = self.state()
+        self.assertEqual((missing["state"], missing["lock"]), ("missing", str(lock)))
+        self.assertGreaterEqual(missing["lock_age_s"], 0)
+        leftover = self.index.with_name(".retrieval-crashed.sqlite")
+        leftover.write_bytes(b"half written")
+        broken = retrieval.ensure_index(self.manifest, self.index, break_lock=True)
+        self.assertEqual((broken["state"], broken["action"], broken["lock_broken"]), ("fresh", "rebuilt", str(lock)))
+        self.assertFalse(lock.exists())
+        self.assertFalse(leftover.exists())
+        lock.write_bytes(b"")
+        checked = retrieval.ensure_index(self.manifest, self.index, check=True)
+        self.assertEqual((checked["state"], checked["action"], checked["lock"]), ("fresh", "none", str(lock)))
+        self.assertTrue(lock.exists())
+        swept = retrieval.ensure_index(self.manifest, self.index, break_lock=True)
+        self.assertEqual((swept["state"], swept["action"]), ("fresh", "none"))
+        self.assertFalse(lock.exists())
+        self.index.unlink()
+        with mock.patch.object(retrieval, "_require_fts5", side_effect=ValueError("SQLite FTS5 unavailable; use a Python runtime with FTS5")):
+            failed = retrieval.ensure_index(self.manifest, self.index)
+        self.assertEqual(failed["state"], "failed")
+        self.assertIn("FTS5 unavailable", failed["reason"])
+        self.assertFalse(self.index.exists())
+        with self.assertRaises(ValueError):
+            retrieval.index_state(self.manifest, self.root / "elsewhere.sqlite")
+
+    def test_search_verify_false_skips_only_the_tree_read(self):
+        self.refresh()
+        with mock.patch.object(retrieval, "_verify_tree", side_effect=AssertionError("tree read")) as read:
+            result = retrieval.search(self.index, "tax adjustment", anchors=[], limit=5, verify=False)
+            self.assertEqual(result["results"][0]["entity_id"], "billing.py::invoiceTotal")
+            read.assert_not_called()
+            with self.assertRaisesRegex(AssertionError, "tree read"):
+                retrieval.search(self.index, "tax adjustment", anchors=[], limit=5)
+        self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)\n")
+        snapshot.write_snapshot(self.root, self.manifest)
+        with self.assertRaisesRegex(ValueError, "stale retrieval index"):
+            retrieval.search(self.index, "tax adjustment", anchors=[], limit=5, verify=False)
+
+    def test_public_result_trims_records_and_keeps_the_envelope(self):
+        self.refresh()
+        public = retrieval.public_result(self.search("tax adjustment", limit=2))
+        self.assertEqual(set(public), {"schema", "document_digest", "exact", "exact_total", "exact_truncated", "ambiguous",
+                                       "matched", "returned", "truncated", "limit", "gaps", "ranking_policy",
+                                       "capabilities", "results"})
+        first = public["results"][0]
+        self.assertEqual(set(first), {"entity_id", "kind", "path", "start_line", "end_line", "signatures", "provenance", "score"})
+        self.assertEqual((first["entity_id"], first["kind"], first["path"], first["start_line"]),
+                         ("billing.py::invoiceTotal", "function", "billing.py", 1))
+        self.assertIn("fts5", first["provenance"])
+        self.assertNotIn("binding", public)
+        self.assertNotIn("anchor", first)
 
 
 if __name__ == "__main__":
