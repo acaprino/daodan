@@ -28,8 +28,7 @@ Every target is relative to that project, and every run ID selects the exact
 `.codebase-map/runs/<run-id>/` (or `<store>/runs/<run-id>/` when started with
 `--store`). Foreign paths, traversal, symlinks and Windows
 junctions are rejected. Clients cannot supply an executable, output root or
-manifest path. Legacy stores follow the project-bound migration contract;
-resolve a reported migration conflict before continuing.
+manifest path.
 
 ### Custom analysis store
 
@@ -38,7 +37,7 @@ The process that starts the server may move the whole store with
 `--project`; `MapService(project_root, store)` takes the same value. Omitting it
 keeps `.codebase-map/`. The path is exact POSIX, starts with a dot directory so
 every perimeter already leaves it out of the analyzed sources, and may not reuse
-`.codebase-map`, `.codebase-xray`, `.git` or a device name. Run IDs then select
+`.codebase-map`, `.git` or a device name. Run IDs then select
 `<store>/runs/<run-id>/`, and the registry, locks and published mirror live in
 that store. A target inside its top directory is refused like the canonical
 output.
@@ -47,14 +46,12 @@ The first write creates the store and its marker `.codebase-map-store.json`,
 `{"schema": "daodan/codebase-map-store/v1", "store": "<path>"}`. The marker binds
 the store to its project: the `snapshot.py` commands accept a run directory in
 such a store and derive the project from the marker. The shell entry workflows,
-worker roles and `migrate_root.py resolve` still name `.codebase-map/`, so they
+worker roles still name `.codebase-map/`, so they
 use a custom store only when the host hands them the exact run directory. An
 existing non-empty directory without the matching marker is refused rather than
 adopted, and a marker that names another path invalidates every run in the
 store; recovering a store whose marker was lost means rewriting that exact
-marker. A custom store has no
-legacy predecessor, so the `.codebase-xray` migration does not apply to it; the
-default store keeps that contract. The canonical `.codebase-map/` mirror and
+marker. The canonical `.codebase-map/` mirror and
 its consumers do not see runs in a custom store: the starting host owns that
 choice and points its own consumers at the store.
 
@@ -232,7 +229,7 @@ and the required dispatch check when the recipient tokenizer is unavailable.
 `MapService(project_root, store=None)` exposes the same methods as the tool suffixes and
 contains no SDK imports. A native backend can call it directly while its agents
 use MCP; both share the same run store and checks. Service mutations serialize
-through the existing project migration lock, and registry/publication retain
+through the project lock, and registry/publication retain
 their own canonical lock, an OS lock that a crashed holder releases. Run
 creation builds its snapshot before taking the project lock and removes its own
 run directory if preparation fails. Concurrent calls may receive the existing bounded project-lock retry error

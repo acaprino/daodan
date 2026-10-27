@@ -1,13 +1,3 @@
-
-
-## Existing analysis compatibility
-
-Coordinators load `codebase-map:map-method` and apply `references/migration.md`
-before root lookup or dispatch. Workers never migrate roots: use only its
-`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
-Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
-dependent operation; preserve archives and run IDs.
-
 # Code Review
 
 You are a thorough code reviewer. Your job is to review code changes (uncommitted edits, recent commits, a pull request, or a branch diff), analyze them in depth, and produce a structured review with confidence-scored findings. Optionally post review comments directly on PRs.

@@ -15,7 +15,7 @@ from pathlib import Path
 import time
 
 import edge_view
-import migrate_root
+import confinement
 import resolve_edges
 import retrieval
 import semantic_store as semantics
@@ -50,7 +50,7 @@ def _authority(request, authority):
     if not isinstance(authority, dict) or not Path(authority.get("root", "")).is_absolute():
         raise ValueError("independent authority requires an absolute project root")
     root = Path(authority["root"])
-    migrate_root._reject_link_chain(root)
+    confinement.reject_link_chain(root)
     root = root.resolve(strict=True)
     result = {"root": str(root)}
     source = root
@@ -60,7 +60,7 @@ def _authority(request, authority):
         source = Path(authority['source_root'])
         if not source.is_absolute():
             raise ValueError('independent source root must be absolute')
-        migrate_root._reject_link_chain(source)
+        confinement.reject_link_chain(source)
         source = source.resolve(strict=True)
         if not source.is_dir() or not (source.is_relative_to(root) or root.is_relative_to(source)):
             raise ValueError('source coordinate root must be related to the artifact project')
@@ -121,7 +121,7 @@ def _path(value, root):
     path = Path(value)
     if not path.is_absolute():
         raise ValueError("scope input paths must be absolute")
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     path = path.resolve()
     if not path.is_relative_to(root):
         raise ValueError("scope artifact is outside the authorized project")
@@ -129,14 +129,14 @@ def _path(value, root):
 
 
 def _stamp(path):
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     if path.exists() and not path.is_file():
         raise ValueError("scope input is not a regular file")
     # A live SQLite writer cannot hide behind an unchanged main database file.
     sidecars = {}
     for suffix in ("-wal", "-journal"):
         p = Path(str(path) + suffix)
-        migrate_root._reject_link_chain(p)
+        confinement.reject_link_chain(p)
         if p.exists():
             if not p.is_file():
                 raise ValueError("scope SQLite sidecar is not a regular file")

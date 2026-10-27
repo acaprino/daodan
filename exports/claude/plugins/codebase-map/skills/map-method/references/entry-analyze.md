@@ -91,13 +91,11 @@ The analyst has its own load contract; do not load its phase units here.
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | before: Method loads; section: Resources | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | all | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/migration.md` | all | migration |
 
 ## Preflight
 
 ### Resolve controls and run identity
 
-Run the project-bound migration in `references/run.md` before root lookup.
 Parse target and existing flags (`critical`, `comments`, `docs_only`, `phase`,
 `depth`), `--format sqlite|json` (default SQLite for a new run), `--run-name`, `--update` and `--no-update`. Additional controls:
 

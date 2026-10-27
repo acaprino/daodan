@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "project-lifecycle"
-version = "3.0.0"
+version = "3.0.1"
 description = "Project assessment, consultant handover and guided Senior Maintainer campaigns. Composes ADR-driven delivery through project-delivery while preserving native audits, exact run identities and honest coverage."
 license = "MIT"
 

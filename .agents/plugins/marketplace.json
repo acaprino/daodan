@@ -31,7 +31,7 @@
         "./skills/abstraction-architect"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "5.2.1"
+      "version": "5.2.2"
     },
     {
       "author": {
@@ -129,7 +129,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "8.10.1"
+      "version": "8.11.0"
     },
     {
       "author": {
@@ -556,7 +556,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "3.3.0"
+      "version": "3.3.1"
     },
     {
       "author": {
@@ -590,7 +590,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -679,7 +679,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/codex/plugins/repo-hygiene",
-      "version": "2.2.0"
+      "version": "2.2.1"
     },
     {
       "author": {
@@ -747,7 +747,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "author": {
@@ -893,7 +893,7 @@
         "./skills/work-record"
       ],
       "source": "./exports/codex/plugins/work-controller",
-      "version": "3.1.5"
+      "version": "3.1.6"
     },
     {
       "author": {

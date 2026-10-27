@@ -211,8 +211,6 @@ and their own documents own their numbers.
    `discover` screens what a harness actually offers, `prepare-choice` freezes one
    snodo's request and prompt, `resolve` validates an answer and binds the host
    triple `(model_param, effort_applied, packet_policy)`.
-4. [`docs/codebase-map-migration.md`](../codebase-map-migration.md): the relocation
-   record from the retired archive root.
 
 ## Open points across the prototypes
 

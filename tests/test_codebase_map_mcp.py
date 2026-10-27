@@ -199,7 +199,7 @@ class MapServiceTests(unittest.TestCase):
 
     def test_output_root_spellings_and_resolved_aliases_are_refused(self):
         self.create()
-        for target in (".CODEBASE-MAP", ".Codebase-Map/runs/example", ".CODEBASE-XRAY"):
+        for target in (".CODEBASE-MAP", ".Codebase-Map/runs/example"):
             with self.subTest(target=target), self.assertRaisesRegex(ValueError, "analysis output"):
                 self.service.scope(target)
         alias = self.project / "archive-alias"
@@ -669,18 +669,6 @@ class MapServiceTests(unittest.TestCase):
         with mock.patch.object(Path, "lstat", lstat), self.assertRaises(ValueError):
             self.service.scope("src")
 
-    def test_legacy_pending_migration_is_read_only_and_write_preflight_migrates(self):
-        old = self.project / ".codebase-xray"
-        old.mkdir()
-        (old / "runs.json").write_text('{"schema":2,"active":[],"latest_completed":null}')
-        (old / "07-final-report.md").write_text("# Previous report\n")
-        with self.assertRaisesRegex(ValueError, "migration"):
-            self.service.runs()
-        self.assertTrue((old / "07-final-report.md").exists())
-        self.create()
-        self.assertEqual((self.project / ".codebase-map/07-final-report.md").read_text(), "# Previous report\n")
-
-
 class CustomStoreTests(unittest.TestCase):
     STORE = ".app/codebase-map"
 
@@ -773,21 +761,17 @@ class CustomStoreTests(unittest.TestCase):
 
     def test_invalid_store_paths_are_refused_at_binding(self):
         for store in ("", ".", "..", "../outside", "app/map", "/abs", "C:/map", ".app\\map",
-                      ".app/../map", ".app//map", ".codebase-map", ".CODEBASE-XRAY/map",
+                      ".app/../map", ".app//map", ".codebase-map",
                       ".git/map", ".app/con", ".app/map.", ".app/ map", ".app/CONIN$",
                       ".app/com\u00b9", ".app/m?p", ".app/m\x01p", 7):
             with self.subTest(store=store), self.assertRaises(ValueError):
                 mcp_service.MapService(self.project, store)
 
-    def test_store_cannot_be_a_source_target_and_skips_legacy_migration(self):
-        legacy = self.project / ".codebase-xray"
-        legacy.mkdir()
-        (legacy / "runs.json").write_text('{"schema":2,"active":[],"latest_completed":null}')
+    def test_store_cannot_be_a_source_target(self):
         self.service.create_run("src", "example")
         for target in (".app", ".APP/codebase-map", ".app/codebase-map/runs/example"):
             with self.subTest(target=target), self.assertRaisesRegex(ValueError, "analysis output"):
                 self.service.scope(target)
-        self.assertTrue((legacy / "runs.json").is_file())
         self.assertFalse((self.project / ".codebase-map").exists())
 
 

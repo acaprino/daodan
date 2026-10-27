@@ -14,11 +14,6 @@ its own method prepares inputs.
 Load `work-controller:work-record` for preflight and confined run records. Read-only reviews may use a dirty workspace: capture its complete snapshot and
 preserve edits. Review grants no mutation.
 
-The coordinator alone may perform the project-bound Codebase Map preflight
-before dispatch: move an idle legacy archive intact and write only bound
-relocation metadata. This bounded exception authorizes no application changes,
-analysis run, worker migration or generic filesystem move.
-
 A caller-bound candidate is authoritative. Validate its project/worktree, run,
 scope and current snapshot through work-controller before deriving review inputs.
 Use its captured baseline and exact candidate content, including scoped untracked

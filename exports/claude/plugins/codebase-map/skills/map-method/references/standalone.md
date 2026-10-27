@@ -73,7 +73,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Use this path for read-only evidence consumption during ordinary project work
 and inside analyze or other composed workflows, with or without a Daodan command.
-This unit grants no root migration, run creation, snapshot refresh, card
+This unit grants no run creation, snapshot refresh, card
 deepening or publication. Standalone consumption never performs them; a composed
 workflow performs only operations already authorized by its own method.
 

@@ -27,7 +27,7 @@ import time
 
 BACKEND_MODE = __name__ == '__main__' and sys.argv[1:] == ['--encode-stdio']
 if not BACKEND_MODE:
-    import migrate_root
+    import confinement
     import retrieval
     from snapshot_store import open_snapshot, artifact_digest
 
@@ -72,7 +72,7 @@ def _publish_json(path, value, *, reuse_identical=False):
     """Atomically publish new evidence without replacing any existing bytes."""
     path = Path(path)
     payload = (retrieval._json(value) + '\n').encode('utf8')
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     if path.exists():
         if reuse_identical and path.read_bytes() == payload:
             return
@@ -82,13 +82,13 @@ def _publish_json(path, value, *, reuse_identical=False):
     try:
         with os.fdopen(descriptor, 'wb') as handle:
             handle.write(payload)
-        migrate_root._reject_link_chain(path)
+        confinement.reject_link_chain(path)
         try:
             # Same-directory hard-link publication is atomic and cannot clobber
             # a destination created after the initial ownership check.
             os.link(temporary, path)
         except FileExistsError:
-            migrate_root._reject_link_chain(path)
+            confinement.reject_link_chain(path)
             if not reuse_identical or path.read_bytes() != payload:
                 raise ValueError('embedding output collision; existing evidence preserved')
     finally:
@@ -147,7 +147,7 @@ def _unpack(payload, dimensions, digest):
 
 
 def _load(index):
-    migrate_root._reject_link_chain(index)
+    confinement.reject_link_chain(index)
     with closing(retrieval._read(index)) as db:
         try:
             metadata = json.loads(db.execute('SELECT value FROM metadata').fetchone()[0])
@@ -220,7 +220,7 @@ def refresh_index(manifest: Path, index: Path, *, provider) -> dict:
                 raise ValueError('snapshot changed during embedding refresh')
             if (artifact_digest(index) if index.exists() else None) != before:
                 raise ValueError('embedding generation changed during refresh')
-            migrate_root._reject_link_chain(index)
+            confinement.reject_link_chain(index)
             os.replace(temporary, index)
             return {**metadata, 'index': str(index), 'artifact_digest': artifact_digest(index),
                     'encoded': len(pending), 'reused': len(members) - len(pending),
@@ -312,7 +312,7 @@ def validate_result(result, lexical_metadata, query, records):
     expected_name = 'embedding-query-' + retrieval._digest(payload) + '.json'
     if path.parent.resolve() != index.parent.resolve() or path.name != expected_name:
         raise ValueError('embedding query receipt does not bind the supplied query/ranks')
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     if not path.is_file() or artifact_digest(path) != receipt['digest']:
         raise StaleEmbedding('embedding query receipt changed or is unavailable')
     if json.loads(path.read_bytes()) != payload:
@@ -424,7 +424,7 @@ class ProcessProvider:
         self.process = None
         self.timeout = timeout
         self.root = Path(scratch_dir).absolute()
-        migrate_root._reject_link_chain(self.root)
+        confinement.reject_link_chain(self.root)
         self.temporary = tempfile.TemporaryDirectory(prefix='.embedding-runtime-', dir=self.root)
         self.directory = Path(self.temporary.name)
         self.errors = (self.directory / 'stderr.log').open('w', encoding='utf8')
@@ -466,7 +466,7 @@ class ProcessProvider:
     def encode(self, texts):
         message = self._exchange({'texts': texts})
         output = self.directory / 'response.json'
-        migrate_root._reject_link_chain(output)
+        confinement.reject_link_chain(output)
         try:
             result = json.loads(output.read_text(encoding='utf8'))
             if message.get('status') != 'encoded' or message.get('count') != len(texts) or len(result) != len(texts):
@@ -493,7 +493,7 @@ class ProcessProvider:
         # TemporaryDirectory recursively removes only this validated owned child.
         if self.directory.parent.resolve() != self.root.resolve():
             raise ValueError('embedding scratch directory escaped its owner')
-        migrate_root._reject_link_chain(self.directory)
+        confinement.reject_link_chain(self.directory)
         self.temporary.cleanup()
 
     def __enter__(self):
@@ -516,7 +516,7 @@ def main(argv=None):
             raise ValueError('unknown embedding request schema, operation or fields')
         manifest, index = _destination(request['manifest'], request['index'])
         output = args.report_out.absolute()
-        migrate_root._reject_link_chain(output)
+        confinement.reject_link_chain(output)
         if (output.parent.resolve() != manifest.parent.resolve() or output.suffix != '.json'
                 or output.resolve() in {manifest.resolve(), index.resolve(), args.request.resolve()}):
             raise ValueError('embedding report must be a separate JSON beside its manifest')

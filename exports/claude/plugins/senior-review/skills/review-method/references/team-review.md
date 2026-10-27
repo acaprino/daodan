@@ -69,16 +69,6 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-
-
-## Existing analysis compatibility
-
-Coordinators load `codebase-map:map-method` and apply `references/migration.md`
-before root lookup or dispatch. Workers never migrate roots: use only its
-`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
-Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
-dependent operation; preserve archives and run IDs.
-
 ## Phase 2: Adversarial Review (parallel)
 
 1. There is no team-creation step. The host harness dispatches each reviewer as this phase requires and records every one as `delivered` or `failed`.

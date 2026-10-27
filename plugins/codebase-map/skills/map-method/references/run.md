@@ -1,8 +1,5 @@
 # Run
 
-Coordinators: before root lookup, run `python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`.
-Require exit 0. Workers only resolve bindings; legacy roots/bindings activate migration load.
-
 ## Concurrent Runs Model
 
 Runs are isolated; targets and sessions may overlap.

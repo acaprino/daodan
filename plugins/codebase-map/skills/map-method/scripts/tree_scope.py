@@ -61,7 +61,7 @@ DEPENDENCY_DIRS = frozenset({
 
 # Dot directories a reader does not need named back: the repository's own
 # store, and the Codebase Map's own output.
-_UNREPORTED = frozenset({".git", ".codebase-map", ".codebase-xray"})
+_UNREPORTED = frozenset({".git", ".codebase-map"})
 
 GIT_TIMEOUT_SECONDS = 30
 

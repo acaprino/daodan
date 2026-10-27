@@ -55,7 +55,8 @@ class CodebaseMapExportTests(unittest.TestCase):
         for host, adapter in cls.adapters.items():
             for plugin in (cls.canonical, cls.registry["abstraction-architect"],
                            cls.registry["project-lifecycle"], cls.registry["project-knowledge"],
-                           cls.registry["senior-review"], cls.registry["daodan"]):
+                           cls.registry["senior-review"], cls.registry["repo-hygiene"],
+                           cls.registry["daodan"]):
                 package = Path(cls.temp.name) / host / plugin.name
                 render_plugin(
                     plugin, adapter, package, adapters_root=ADAPTERS,
@@ -206,11 +207,10 @@ class CodebaseMapExportTests(unittest.TestCase):
                     self.assertIn(resource, wrapper)
                     self.assertIn("same worker context", wrapper)
             policy = tomllib.loads(read(self.package(host, "codebase-map") / "policies/write-confinement.toml"))
-            self.assertEqual(policy["migration"]["legacy_root"], ".codebase-xray")
-            self.assertTrue(policy["migration"]["preserve_evidence_bytes"])
-            self.assertTrue(policy["migration"]["require_idle_legacy_runs"])
+            self.assertNotIn("migration", policy)
             method = self.component(host, "codebase-map", "skills", "map-method").parent
-            self.assertTrue((method / "scripts/migrate_root.py").is_file())
+            self.assertTrue((method / "scripts/confinement.py").is_file())
+            self.assertFalse((method / "scripts/migrate_root.py").exists())
 
     def test_standalone_map_consumption_ships_on_all_hosts(self):
         description = read(self.canonical.root / "skills/map-method/SKILL.md").split("---", 2)[1]
@@ -245,7 +245,7 @@ class CodebaseMapExportTests(unittest.TestCase):
                 self.assertNotIn("--reuse", standalone_evidence)
                 prose = " ".join(standalone.split())
                 self.assertIn("inside analyze or other composed workflows", prose)
-                self.assertIn("This unit grants no root migration, run creation, snapshot refresh", prose)
+                self.assertIn("This unit grants no run creation, snapshot refresh", prose)
                 self.assertIn("codebase_map_outline", prose)
                 self.assertIn("codebase_map_edit_impact", prose)
                 self.assertIn("verify material behavior and business rules against current source", prose)
@@ -257,19 +257,16 @@ class CodebaseMapExportTests(unittest.TestCase):
                 self.assertNotIn("entry-analyze.md", standalone)
                 self.assertNotIn("migrate_root.py", standalone)
 
-    def test_abstraction_worker_only_resolves_after_coordinator_migration_on_all_hosts(self):
+    def test_abstraction_worker_never_launches_a_map_on_all_hosts(self):
         for host in HOSTS:
             with self.subTest(host=host):
                 text = " ".join(read(self.component(
                     host, "abstraction-architect", "roles", "abstraction-architect-agent",
                 )).split())
-                self.assertIn("coordinator must complete root migration before dispatching", text)
-                self.assertIn("use only the provider's `migrate_root.py resolve`", text)
-                self.assertIn("performs no root migration", text)
-                self.assertIn("never writes the legacy store", text)
-                self.assertIn("still selects `.codebase-xray`, stop", text)
+                self.assertIn("never launches a Map and never writes the map", text)
+                self.assertNotIn("migrate_root", text)
                 self.assertIn("Edit nothing except `report_path`", text)
-                self.assertNotIn("and apply its `references/migration.md`", text)
+                self.assertNotIn("references/migration.md", text)
                 census = read(self.package(host, "abstraction-architect") /
                               "skills/abstraction-architect/references/concept-census.md")
                 self.assertIn("Read the supplied bound run's phase files", census)
@@ -277,51 +274,27 @@ class CodebaseMapExportTests(unittest.TestCase):
                 self.assertNotIn("## Existing analysis compatibility", census)
                 self.assertNotIn("references/migration.md", census)
 
-    def test_handover_preflight_exception_keeps_worker_and_content_limits_on_all_hosts(self):
+    def test_handover_writes_only_its_run_and_dossier_on_all_hosts(self):
         for host in HOSTS:
             with self.subTest(host=host):
                 text = " ".join(read(self.component(
                     host, "project-lifecycle", "skills", "handover-method",
                 )).split())
-                self.assertIn("bounded coordinator preflight exception", text)
-                self.assertIn("move an idle legacy archive intact", text)
-                self.assertIn("write only the helper's bound relocation metadata", text)
-                self.assertIn("Workers do not perform this migration", text)
-                self.assertIn("grants no analysis run, content edits or generic filesystem move", text)
+                self.assertIn("Only run-owned records, worker reports and the dossier may be written.", text)
+                self.assertNotIn("preflight exception", text)
                 self.assertIn("Application files, tests, durable instructions, README and project guides", text)
 
-
-    def test_shared_worker_units_and_readonly_coordinators_keep_migration_ownership_on_all_hosts(self):
-        worker_units = {
-            "project-knowledge": "skills/project-knowledge/references/preparation.md",
-            "senior-review": "skills/review-quality-gates/SKILL.md",
-        }
-        readonly_units = {
-            "project-knowledge": ["skills/project-knowledge/SKILL.md"],
-            "senior-review": ["skills/review-method/SKILL.md", "skills/review-preparation/SKILL.md"],
-        }
+    def test_no_shipped_unit_names_a_root_migration_on_all_hosts(self):
+        plugins = ("abstraction-architect", "codebase-map", "project-knowledge",
+                   "project-lifecycle", "repo-hygiene", "senior-review")
+        retired = ("migrate_root", "references/migration.md", ".codebase-xray")
         for host in HOSTS:
-            with self.subTest(host=host):
-                for plugin, resource in worker_units.items():
-                    prose = " ".join(read(self.package(host, plugin) / resource).split())
-                    self.assertIn("Coordinators load `codebase-map:map-method`", prose)
-                    self.assertIn("Workers never migrate roots", prose)
-                    self.assertIn("use only its `migrate_root.py resolve`", prose)
-                    self.assertIn("still-legacy `.codebase-xray` path blocks", prose)
-                for plugin, resources in readonly_units.items():
-                    for resource in resources:
-                        prose = " ".join(read(self.package(host, plugin) / resource).split())
-                        self.assertIn("coordinator alone may perform the project-bound Codebase Map preflight", prose)
-                        self.assertIn("write only bound relocation metadata", prose)
-                        self.assertIn("authorizes no application changes, analysis run, worker migration or generic filesystem move", prose)
-                references = self.package(host, "codebase-map") / "skills/map-method/references"
-                for name in ("reading.md", "run.md"):
-                    preflight = read(references / name).split("\n## ", 1)[0]
-                    self.assertIn("Coordinators: before", preflight)
-                    self.assertIn("Workers only resolve bindings", preflight)
-                migration = " ".join(read(references / "migration.md").split())
-                self.assertIn("Coordinators run preflight", migration)
-                self.assertIn("Workers only resolve supplied bindings afterward", migration)
+            for plugin in plugins:
+                with self.subTest(host=host, plugin=plugin):
+                    for path in self.package(host, plugin).rglob("*.md"):
+                        text = read(path)
+                        for name in retired:
+                            self.assertNotIn(name, text, f"{path} still names {name}")
 
 
 if __name__ == "__main__":

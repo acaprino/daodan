@@ -95,8 +95,7 @@ the choice made and kept, and what does the first use do?
   says so in its output. From then on the project is enabled. No command
   deletes `docs/adr/` or a record to disable the feature.
 - **First use.** A project is at its first Daodan use when its main checkout
-  has neither `.daodan/` nor `.codebase-map/` (nor a `.codebase-xray/` awaiting
-  migration). The first command that would create either one starts with the
+  has neither `.daodan/` nor `.codebase-map/`. The first command that would create either one starts with the
   first-use step, before that write. It asks two questions once: whether the
   project will use decision records, and whether to analyze it now, with three
   answers: no, lite, or deep (the map's `full` depth, every phase). Yes to

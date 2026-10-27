@@ -21,7 +21,7 @@
         "abstraction",
         "architecture"
       ],
-      "version": "5.2.1"
+      "version": "5.2.2"
     },
     {
       "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-map",
       "topics": [],
-      "version": "8.10.1"
+      "version": "8.11.0"
     },
     {
       "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; the audit method in references/audit.md is run by /daodan:check-health and by the dependency perspective of /daodan:review-changes and /daodan:review-branch. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:application-cleanup-method or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",
@@ -875,7 +875,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.3.0"
+      "version": "3.3.1"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -890,7 +890,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.3.0"
+      "version": "3.3.1"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
@@ -911,7 +911,7 @@
       "topics": [
         "readme"
       ],
-      "version": "3.3.0"
+      "version": "3.3.1"
     },
     {
       "description": "Diagnose project coherence and technical debt through canonical specialist audits and an executable roadmap. TRIGGER WHEN: the user asks for project health, a coherence assessment, technical-debt diagnosis or a prioritized maintenance roadmap, including /daodan:check-health and the assessment stage of /daodan:run-maintenance. DO NOT TRIGGER WHEN: implementing an approved change, repair or verification cycle (use project-delivery:delivery-method), running a full Senior Maintainer campaign (use maintainer-method), or preparing a consultant dossier (use handover-method).",
@@ -926,7 +926,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: the user asks to be onboarded, walked through an unfamiliar codebase, given a project takeover or intake dossier, or runs /daodan:onboard-project. DO NOT TRIGGER WHEN: being new to a project is only background for a code change (use project-delivery:delivery-method), correcting and rationalizing the project (use maintainer-method), or writing durable repository documentation (use project-knowledge:project-knowledge).",
@@ -941,7 +941,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use project-delivery:delivery-method).",
@@ -956,7 +956,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:react-best-practices), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
@@ -1294,7 +1294,7 @@
         "filesystem",
         "git"
       ],
-      "version": "2.2.0"
+      "version": "2.2.1"
     },
     {
       "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: diagram-only exports (use learning:forcegraph-exporter or learning:markmind-exporter).",
@@ -1361,7 +1361,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -1383,7 +1383,7 @@
       "topics": [
         "defects"
       ],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection. TRIGGER WHEN: the user reports an error, regression or strange behavior whose cause is unknown and wants it investigated, a coordinator investigates a problem, or a bug fix starts without a known cause. DO NOT TRIGGER WHEN: assessing a change or artifact for defects (use review-method), or the root cause is already established with evidence.",
@@ -1398,7 +1398,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating code-review, team-review or pr-review results.",
@@ -1413,7 +1413,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "Unified review engine: the light review and the branch review (variants team-review and pr-review, and code-review), including signal-selected stack specialists. TRIGGER WHEN: the user asks to review current changes, a commit, a file, a plan, a specification, a document, a branch or a pull request for defects, or /daodan:review-changes, /daodan:review-branch or a lifecycle review phase runs a review. DO NOT TRIGGER WHEN: establishing the root cause of a reported failure without reviewing an artifact (use investigation-method), or removing dead code (use application-cleanup-method).",
@@ -1428,7 +1428,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt. Load before dispatching reviewers in senior-review or project-lifecycle.",
@@ -1443,7 +1443,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation. TRIGGER WHEN: running team-review (/daodan:review-branch) or code-review quality gates, or consolidating findings from parallel reviewers.",
@@ -1458,7 +1458,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.7.0"
+      "version": "16.7.1"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",
@@ -1787,7 +1787,7 @@
       "operations": [],
       "provider": "work-controller",
       "topics": [],
-      "version": "3.1.5"
+      "version": "3.1.6"
     },
     {
       "description": "Manage Git task workspaces through the external Worktrunk CLI: create or resume under .daodan, list every worktree, annotate descriptions and tags, prepare safe lifecycle handoffs and check supported upstream releases. TRIGGER WHEN: starting or resuming an isolated task, listing or annotating worktrees, preparing their integration or cleanup, or updating Worktrunk compatibility. DO NOT TRIGGER WHEN: reviewing code correctness or deciding whether a task is complete; those decisions remain with the existing review and delivery owners.",

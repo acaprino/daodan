@@ -69,13 +69,6 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-## Existing analysis compatibility
-
-Coordinators load `codebase-map:map-method` and apply `references/migration.md`
-before root lookup or dispatch. Workers use supplied bindings and never migrate
-roots. Failed resolution or a still-legacy `.codebase-xray` path blocks the
-dependent operation; preserve archives and run IDs.
-
 # Code-review worker briefs
 
 The computed roster selects reviewers. This reference supplies handoff rules for

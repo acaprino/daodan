@@ -98,7 +98,6 @@ You have three modes. The prompt that spawns you names which one. They have diff
 **Forbidden inputs.** Do not read, and do not accept in your prompt:
 
 - `.codebase-map/` in any form, including a run directory under `.codebase-map/runs/`
-- legacy `.codebase-xray/` in any form, including relocated runs or summaries
 - `.team-review/02-interconnect.md`
 - any summary, excerpt or paraphrase of a Codebase Map conclusion
 - any context packet, map slice, lifecycle receipt or semantic card of the same code

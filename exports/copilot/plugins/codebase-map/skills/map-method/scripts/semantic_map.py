@@ -11,7 +11,7 @@ import re
 import tempfile
 
 import card_store
-import migrate_root
+import confinement
 import semantic_store
 import snapshot
 import source_reader
@@ -49,7 +49,7 @@ def _link(label, path, line=None):
 
 
 def _plain(path):
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     if path.exists() and (not path.is_file() or path.stat().st_nlink != 1):
         raise ValueError(f"artifact must be a regular file without aliases: {path}")
 

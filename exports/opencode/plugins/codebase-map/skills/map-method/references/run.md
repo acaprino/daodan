@@ -1,5 +1,3 @@
-> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
-
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -76,9 +74,6 @@ Compiled binding and static checks do not prove an installed host executed a run
 </daodan_host_binding>
 
 # Run
-
-Coordinators: before root lookup, run `python "<plugin-root>/skills/map-method/scripts/migrate_root.py" --project <project-root>`.
-Require exit 0. Workers only resolve bindings; legacy roots/bindings activate migration load.
 
 ## Concurrent Runs Model
 

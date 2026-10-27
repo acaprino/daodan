@@ -71,9 +71,6 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Reading an analysis
 
-Coordinators: before lookup, run `python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0.
-Workers only resolve bindings; legacy bindings require migration.
-
 ## Producer views
 
 Generate `semantic-map.md` with `semantic_map.py MANIFEST --path AREA`; unread/stale

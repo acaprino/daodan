@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:7db4cfa86fe6486c43104a9dc6fb60842b2b2c9b831b51212aa85ef76c256958",
+  "coreDigest": "sha256:4617e2034b3b124d6dc399b47c2ca198dec06e5fb748fcdd53f35fd931b4fa5f",
   "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "abstraction-architect",
-  "version": "5.2.1"
+  "version": "5.2.2"
 }

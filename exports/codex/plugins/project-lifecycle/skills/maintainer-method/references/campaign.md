@@ -72,16 +72,6 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-
-
-## Existing analysis compatibility
-
-Coordinators load `codebase-map:map-method` and apply `references/migration.md`
-before root lookup or dispatch. Workers never migrate roots: use only its
-`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
-Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
-dependent operation; preserve archives and run IDs.
-
 # Senior Maintainer campaign
 
 Target is the whole project, a path, or the name of a module or feature, which you
@@ -225,7 +215,7 @@ Runs and recovery
   Record plan dependencies, action owners, expected deliveries and required gates
   before execution.
 - A run's scope is fixed at its start. Exclude from it, then, every report root the
-  tools of this campaign write: .codebase-map/, .codebase-xray/, .team-review/, .repo-hygiene/ and
+  tools of this campaign write: .codebase-map/, .team-review/, .repo-hygiene/ and
   any other. Analysis output is not a project input.
 - Preserve required behavior, preexisting edits, foreign files, other sessions' work
   and meaningful test protection. Before a mutating batch, confirm as the protocol

@@ -126,10 +126,7 @@ outcome for every brief.
    subtraction uses `senior-review:application-cleanup-method`; significant semantic
    refactors return to the caller's development plan, never cleanup.
 
-Read-only review preserves application files and preexisting edits. The
-coordinator alone may perform the project-bound Codebase Map preflight: move an
-idle legacy archive intact and write only bound relocation metadata. It
-authorizes no application changes, analysis run, worker migration or generic filesystem move.
+Read-only review preserves application files and preexisting edits.
 Before accepted fixes load `work-controller:work-record` for preflight,
 authorizations, baseline, candidate gate and owned recovery. Commit/publication
 require separate authorization; review grants neither.

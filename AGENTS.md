@@ -201,17 +201,12 @@ A kernel can export canonical contract files through `[contracts].exports`. Work
 
 The compiler is `scripts/daodan/`: `model.py` and `load.py` (strict TOML loading), `validate.py` and `trust.py` (semantic and secret validation), `adapter.py` (capability parity and strategy selection), `overrides.py` (the fingerprint gate), `render.py`, `templates.py`, `provenance.py`, `catalogs.py` and `report.py`. Standard library only, no third-party dependency anywhere in the toolchain.
 
-`codebase-map` is the canonical static analysis plugin, formerly `codebase-xray`
-(and `deep-dive-analysis` before marketplace 14.0.0). Its downstream artifact
-contract is `.codebase-map/`, declared in its write-confinement policy. The
-former compatibility plugin is retired: only `codebase-map` methods and worker
-identities are registered, and its entry is `/daodan:map-code`. Before producer or consumer root lookup,
-`map-method`'s project-bound migration helper moves an idle
-`.codebase-xray/` archive without changing evidence bytes and leaves an explicit
-relocation record. Historical analysis paths are resolved through that record;
-new runs only write `.codebase-map/`. Active legacy runs and conflicting populated
-roots block migration. Never merge archives, silently choose a competing root,
-or rewrite stored snapshots and citations. See [migration](docs/codebase-map-migration.md).
+`codebase-map` is the canonical static analysis plugin. Its downstream artifact
+contract is `.codebase-map/`, declared in its write-confinement policy. Only
+`codebase-map` methods and worker identities are registered, and its entry is
+`/daodan:map-code`. Every helper binds one project through `confinement.py`,
+which refuses symbolic links and reparse points and serializes operations on that
+project with an OS lock released when its owner exits.
 
 The Codebase Map is static analysis and stays so: runtime evidence counts only when the user supplies it. Marketplace 28.3.0 drew the consequence after a Phazly incident of 2026-09-14: a global dark-theme rule in a `.css` file overrode a consent screen's positioning and locked users out on mobile, and the Codebase Map run that had the component in its inventory could not have cited the rule, because `snapshot.py` inventoried only parsed source and configuration and dropped every stylesheet. Presentation files now enter the manifest, paths that gate entry into the product are mandatory critical paths traced with their effective style cascade, `Usability-blocking` is a risk category, and the final report states three coverage figures: files in inventory, files read in depth, files exercised at runtime, the last always none. A file count is never coverage. Marketplace 28.4.0 made CSS, SCSS and LESS a parsed language, one symbol per applied rule, and added `cascade_scan.py`, which lists every rule whose selector reaches the document root or its untargeted children and sets a property that decides layout, with the rules it can override and what decides it. Its output is leads: whether two selectors match the same element is confirmed by reading, in Phase 5. Its Tailwind `@apply` expansion is load-bearing: on the incident's own stylesheets 90% of the applied rules used `@apply`, the consent modal's `fixed` included, and without it the scan found the culprit and missed the victim. Exercising those paths in a browser belongs to the project's own tests or to `frontend-review`; do not add a browser step to the Codebase Map on a later pass.
 
@@ -593,7 +588,7 @@ repo-hygiene is a leaf permanently. Its catalog has full and lite profiles; the 
 profile stays diff-scoped and omits historical workspace checks. Git auxiliary state
 is detection-only at every permission level: dropped stashes, deleted branches and
 removed worktrees are not recoverable by a tracked-content phase commit. Untracked
-removals are quarantined, never deleted. C5 protects .daodan/, .codebase-map/, .codebase-xray/ and
+removals are quarantined, never deleted. C5 protects .daodan/, .codebase-map/ and
 sentinel-marked run roots by name/presence, without interpreting protocol state.
 
 Lifecycle consolidation manages only its own run's concluded artifacts, with

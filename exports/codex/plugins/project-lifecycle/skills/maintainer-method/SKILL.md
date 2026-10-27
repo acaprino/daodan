@@ -82,14 +82,6 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-## Existing analysis compatibility
-
-Coordinators load `codebase-map:map-method` and apply `references/migration.md`
-before root lookup or dispatch. Workers never migrate roots: use only its
-`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
-Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
-dependent operation; preserve archives and run IDs.
-
 # Senior Maintainer
 
 Lead the campaign; the user decides its scope, roadmap and outstanding product
@@ -125,7 +117,7 @@ Before a helper takes any snapshot, inventory forbidden inputs by names only
 and exclude their concrete project-relative paths. Use codebase-map:map-method's
 forbidden-file rule without reading credential contents. The protocol hashes
 directory inputs: a prohibition on quoting secrets does not prevent that read.
-Also exclude .daodan/, .codebase-map/, .codebase-xray/, .team-review/, .repo-hygiene/ and every
+Also exclude .daodan/, .codebase-map/, .team-review/, .repo-hygiene/ and every
 other report root this campaign writes. Declare dependency/build exclusions that
 are outside the intended scope. Scope exclusions are concrete paths, not globs.
 

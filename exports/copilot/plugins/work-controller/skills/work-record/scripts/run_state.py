@@ -96,7 +96,7 @@ def checkout_home(project):
     return common_path.parent
 
 
-STATE_DIRECTORIES = (".codebase-map", ".codebase-xray", ".daodan")
+STATE_DIRECTORIES = (".codebase-map", ".daodan")
 
 
 def first_use_probe(project):

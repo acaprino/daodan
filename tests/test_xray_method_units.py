@@ -18,7 +18,6 @@ ROUTER = METHOD / "SKILL.md"
 ANALYZE = METHOD / "references/entry-analyze.md"
 ANALYST = PLUGIN / "roles/map-analyst.md"
 UNITS = (
-    "migration",
     "run",
     "snapshot",
     "update",

@@ -1,5 +1,3 @@
-> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
-
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -76,9 +74,6 @@ Compiled binding and static checks do not prove an installed host executed a run
 </daodan_host_binding>
 
 # Reading an analysis
-
-Coordinators: before lookup, run `python "<plugin-root>/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0.
-Workers only resolve bindings; legacy bindings require migration.
 
 ## Producer views
 

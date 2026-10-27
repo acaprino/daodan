@@ -77,8 +77,6 @@ OPTIONAL_ALLOWANCES = {
     "methodology": 1_919 + 164 + 290,
     "patterns": 1_628,
     "comments": 1_869,
-    # New legacy-root branch is measured separately; original core caps stay fixed.
-    "migration": 209,
 }
 READ_CONDITIONS = {
     "always", "full", "lite", "update", "cards", "documentation", "not-lite",
@@ -279,9 +277,8 @@ class XrayLoadBudgetTests(unittest.TestCase):
             for documentation in (False, True):
                 for options in _option_sets():
                     _, files = load(body, mode=mode, documentation=documentation, options=options)
-                    expected = core | ({"references/migration.md"} if "migration" in options else set())
                     with self.subTest(mode=mode, documentation=documentation, options=sorted(options)):
-                        self.assertEqual(files, expected)
+                        self.assertEqual(files, core)
 
     def test_phase_seven_does_not_grant_workers_completion_or_view_ownership(self) -> None:
         body = (METHOD / "references/phase-7.md").read_text(encoding="utf-8")
@@ -352,7 +349,6 @@ class XrayLoadBudgetTests(unittest.TestCase):
             "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md", "references/standalone.md"},
             "patterns": {"references/SEMANTIC_PATTERNS.md"},
             "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
-            "migration": {"references/migration.md"},
         }
         for role, core in ROLE_RESOURCES.items():
             body = (PLUGIN / role).read_text(encoding="utf-8")
@@ -528,7 +524,6 @@ class XrayLoadBudgetTests(unittest.TestCase):
             "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md", "references/standalone.md"},
             "patterns": {"references/SEMANTIC_PATTERNS.md"},
             "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
-            "migration": {"references/migration.md"},
         }
         for options in _option_sets():
             words, files = load(body, options=options)

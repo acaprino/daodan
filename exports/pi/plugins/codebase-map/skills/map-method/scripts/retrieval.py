@@ -10,7 +10,7 @@ import re
 import sqlite3
 import tempfile
 
-import migrate_root
+import confinement
 import snapshot
 import source_reader
 from snapshot_store import open_snapshot, logical_digest, artifact_digest
@@ -107,8 +107,8 @@ def _documents(store):
 
 def _destination(manifest, index_path):
     manifest, index_path = Path(manifest).absolute(), Path(index_path).absolute()
-    migrate_root._reject_link_chain(manifest)
-    migrate_root._reject_link_chain(index_path)
+    confinement.reject_link_chain(manifest)
+    confinement.reject_link_chain(index_path)
     if (index_path.parent.resolve() != manifest.parent.resolve()
             or index_path.resolve() == manifest.resolve() or index_path.suffix != ".sqlite"):
         raise ValueError("retrieval index must be a separate SQLite file beside its manifest")
@@ -170,7 +170,7 @@ def refresh_index(manifest: Path, index_path: Path) -> dict:
                 raise ValueError("snapshot changed during indexing; retry with a stable snapshot")
             if (artifact_digest(index_path) if index_path.exists() else None) != index_before:
                 raise ValueError("retrieval index changed during refresh; previous generation retained")
-            migrate_root._reject_link_chain(index_path)
+            confinement.reject_link_chain(index_path)
             os.replace(temporary, index_path)
             return {"schema": SCHEMA, "binding": binding, "mode": mode, "documents": len(docs),
                     "inserted": len(set(docs) - set(previous)), "updated": len(changed & set(previous)),
@@ -224,7 +224,7 @@ def search(index_path: Path, query: str, *, anchors: list[dict], limit: int,
     if type(limit) is not int or not 1 <= limit <= 1000:
         raise ValueError("limit must be an integer from 1 through 1000")
     index_path = Path(index_path)
-    migrate_root._reject_link_chain(index_path)
+    confinement.reject_link_chain(index_path)
     with closing(_read(index_path)) as db:
         _require_fts5(db)
         metadata = json.loads(db.execute("SELECT value FROM metadata").fetchone()[0])

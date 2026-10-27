@@ -81,7 +81,7 @@ class CodebaseMapAnalysisOwnerTests(unittest.TestCase):
         self.assertEqual(resources, {"SKILL.md", "run.md", "snapshot.md"})
         router = next(row for row in rows if row[0].endswith("SKILL.md"))
         self.assertIn("before: Method loads", router[1])
-        self.assertEqual({row[2] for row in rows}, {"always", "migration"})
+        self.assertEqual({row[2] for row in rows}, {"always"})
         self.assertNotIn("execute phases inline", entry.lower())
         self.assertNotIn("before applying changes", entry)
         self.assertIn("codebase-map:map-analyst", entry)

@@ -1,5 +1,3 @@
-> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
-
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -75,9 +73,6 @@ Compiled binding and static checks do not prove an installed host executed a run
 </daodan_host_binding>
 
 # Run
-
-Coordinators: before root lookup, run `python "<plugin-root>/skills/map-method/scripts/migrate_root.py" --project <project-root>`.
-Require exit 0. Workers only resolve bindings; legacy roots/bindings activate migration load.
 
 ## Concurrent Runs Model
 

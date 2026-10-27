@@ -1,5 +1,3 @@
-> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
-
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -80,9 +78,6 @@ Compiled binding and static checks do not prove an installed host executed a run
 </daodan_host_binding>
 
 # Run
-
-Coordinators: before root lookup, run `python "${PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`.
-Require exit 0. Workers only resolve bindings; legacy roots/bindings activate migration load.
 
 ## Concurrent Runs Model
 

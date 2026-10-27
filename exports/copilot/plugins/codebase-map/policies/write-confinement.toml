@@ -40,11 +40,3 @@ forbid_writes_outside_roots = true
 level = "prompt"
 mechanical_implementation = "copilot:xray-guard"
 mechanical_wired = false
-
-# A coordinator runs this project-bound preflight before writer confinement.
-# Workers only write their canonical run. This exception grants no generic move.
-[migration]
-legacy_root = ".codebase-xray"
-helper = "skills/map-method/scripts/migrate_root.py"
-preserve_evidence_bytes = true
-require_idle_legacy_runs = true

@@ -80,14 +80,6 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-## Existing analysis compatibility
-
-Coordinators load `codebase-map:map-method` and apply `references/migration.md`
-before root lookup or dispatch. Workers never migrate roots: use only its
-`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
-Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
-dependent operation; preserve archives and run IDs.
-
 # Consultant handover
 
 Own orientation and its evidence, not remediation. Produce a usable dossier for an
@@ -111,12 +103,7 @@ tasks; deep broadens those traces and constraints across the requested scope.
 State what was inventoried, read in depth and exercised. Depth is a coverage plan,
 not a correctness certificate or permission to exceed the target.
 
-Only run-owned records, worker reports and the dossier may be written, with one
-bounded coordinator preflight exception. Before delegating analysis readers, the
-coordinator may run the installed `codebase-map:map-method` skill's project-bound
-`migrate_root.py` preflight to move an idle legacy archive intact and write only
-the helper's bound relocation metadata. Workers do not perform this migration.
-This exception grants no analysis run, content edits or generic filesystem move.
+Only run-owned records, worker reports and the dossier may be written.
 Application files, tests, durable instructions, README and project guides are
 outside this entry's write authorization, even when another request allowed their
 maintenance.
@@ -146,7 +133,7 @@ it neither changes the protocol schema nor substitutes for work.json.
 Before any project snapshot, discover forbidden paths by names only and record
 their concrete project-relative exclusions. The protocol helper hashes files in
 directory scopes; omitting those exclusions would read forbidden content. Exclude
-every tool report root: .daodan/, .codebase-map/, .codebase-xray/,
+every tool report root: .daodan/, .codebase-map/,
 .team-review/, .repo-hygiene/ and other discovered tool output. Also identify
 dependency/build/cache output that is outside the requested project source and
 declare its exclusions. Never silently apply an undeclared perimeter. A supplied

@@ -359,7 +359,6 @@ class HostRenderingTests(unittest.TestCase):
                 body = _read(self.package(host, "senior-review") / relative)
                 mode = body.split("## Mode 1:", 1)[1].split("## Mode 2:", 1)[0]
                 self.assertIn("`.codebase-map/` in any form", mode)
-                self.assertIn("`.codebase-xray/` in any form", mode)
                 self.assertIn("stop and report the contamination", mode)
                 self.assertNotIn("references/migration.md", body)
 

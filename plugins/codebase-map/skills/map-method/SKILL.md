@@ -35,7 +35,6 @@ Loading `codebase-map:map-method` starts no analysis or run.
 
 | Unit | Holds | Loaded by |
 |---|---|---|
-| `references/migration.md` | legacy root migration and bound-path resolution | legacy archives, redirects, bindings or blocked preflight |
 | `references/run.md` | classic/team runs, concurrency and perimeter | whoever owns the run |
 | `references/snapshot.md` | snapshot ownership, scope, write, diff, carry and check commands | whoever owns the run's snapshot |
 | `references/update.md` | incremental re-derivation | analyst on accepted updates |
@@ -62,14 +61,13 @@ Use canonical skeletons in owned output. Put partition identity below titles, ne
 
 ## Method loads
 
-Conditional reads: methodology, patterns, comments; migration for legacy roots, redirects, bindings or blocked preflight. Follow nested loads; count their union with core reads.
+Conditional reads: methodology, patterns, comments. Follow nested loads; count their union with core reads.
 
 | Resource | Sections | When |
 |---|---|---|
 | `references/AI_ANALYSIS_METHODOLOGY.md` | all | methodology |
 | `references/SEMANTIC_PATTERNS.md` | all | patterns |
 | `references/ANTIREZ_COMMENTING_STANDARDS.md` | all | comments |
-| `references/migration.md` | all | migration |
 
 ## Resources
 
@@ -83,7 +81,7 @@ Language Support above applies throughout.
 - `comment_rewriter.py`: multi-language comment analysis.
 - `rewrite_comments.py`: comment quality CLI: scan/analyze/rewrite/report.
 - `doc_review.py`: documentation maintenance (Phase 6).
-- `migrate_root.py`: project-bound legacy migration; historical-path resolution.
+- `confinement.py`: project binding, link refusal and the per-project lock every helper shares.
 - `snapshot.py`: scope, SQLite snapshots (explicit JSON), run resolution, incremental changes.
 - `source_reader.py`: manifest graphs, outlines and validated source blocks.
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.

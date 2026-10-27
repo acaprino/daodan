@@ -5,5 +5,5 @@
   "description": "Project assessment, consultant handover and guided Senior Maintainer campaigns. Composes ADR-driven delivery through project-delivery while preserving native audits, exact run identities and honest coverage.",
   "license": "MIT",
   "name": "project-lifecycle",
-  "version": "3.0.0"
+  "version": "3.0.1"
 }

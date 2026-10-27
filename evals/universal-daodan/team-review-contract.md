@@ -23,7 +23,7 @@ asserts, for every host:
 - all seven record contracts are exported by `senior-review` and listed by review-branch, which also
   keeps the seven outcomes of the former team-review command
 - `codebase-map` writes only `.codebase-map` through the neutral write-confinement
-  policy; historical `.codebase-xray` report archives use the project-bound migration helper
+  policy
 - `senior-review` declares no external team runtime, and every dimension plugin stays a hard
   dependency of it and of `daodan`
 

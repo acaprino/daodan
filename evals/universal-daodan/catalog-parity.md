@@ -17,7 +17,6 @@ adapter names. No plugin is `unsupported` on any host, which is the release gate
 | `business` | 1.12.0 | native | native | adapted | adapted | native |
 | `clean-code` | 1.3.2 | native | native | adapted | adapted | native |
 | `codebase-mapper` | 3.1.1 | native | native | adapted | adapted | native |
-| `codebase-xray` | 4.2.1 | native | native | adapted | adapted | native |
 | `csp` | 1.4.0 | native | native | adapted | adapted | native |
 | `dependency-audit` | 1.1.0 | native | native | native | native | native |
 | `digital-marketing` | 3.0.0 | native | native | adapted | adapted | native |

@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:dbc2e349f47db1b7623cfae3ed67171a3215dc6b6bf50a460cb3a621cc2b10f4",
+  "coreDigest": "sha256:199c04183dd3f748949f9bea6f97c24e8479c7e77e463c918004473d1baac9ff",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "repo-hygiene",
-  "version": "2.2.0"
+  "version": "2.2.1"
 }

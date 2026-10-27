@@ -2436,7 +2436,7 @@ def _reject_links(path: Path) -> None:
 CANONICAL_STORE = ".codebase-map"
 STORE_MARKER = ".codebase-map-store.json"
 STORE_SCHEMA = "daodan/codebase-map-store/v1"
-_STORE_RESERVED = {CANONICAL_STORE, ".codebase-xray", ".git"}
+_STORE_RESERVED = {CANONICAL_STORE, ".git"}
 _DEVICE_NAMES = frozenset({"con", "prn", "aux", "nul", "conin$", "conout$",
                            *(f"{port}{i}" for port in ("com", "lpt")
                              for i in (*range(1, 10), "\u00b9", "\u00b2", "\u00b3"))})

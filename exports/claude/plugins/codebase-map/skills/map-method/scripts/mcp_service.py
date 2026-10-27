@@ -21,7 +21,7 @@ import subprocess
 import sys
 
 import card_store
-import migrate_root
+import confinement
 import semantic_store
 import snapshot
 import source_reader
@@ -73,7 +73,7 @@ def _limit(value: int) -> int:
 
 
 def _json(path: Path) -> dict:
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     if not path.is_file():
         raise ValueError(f"required regular file is missing: {path}")
     value = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -83,7 +83,7 @@ def _json(path: Path) -> dict:
 
 
 def _write(path: Path, value: dict) -> None:
-    migrate_root._reject_link_chain(path)
+    confinement.reject_link_chain(path)
     snapshot._write_json_atomic(path, value)
 
 
@@ -91,10 +91,10 @@ class MapService:
     """Reuse canonical helpers within one explicit, existing project directory."""
 
     def __init__(self, project_root, store=None):
-        self.project_root = migrate_root._project(project_root)
+        self.project_root = confinement.bind_project(project_root)
         self.store = None if store is None else snapshot.validate_store(store)
         self.root = self.project_root / (self.store or snapshot.CANONICAL_STORE)
-        self._outputs = {".codebase-map", ".codebase-xray"}
+        self._outputs = {".codebase-map"}
         if self.store is not None:
             self._outputs.add(self.store.split("/")[0])
 
@@ -103,15 +103,9 @@ class MapService:
         with ExitStack() as snapshots:
             token = _SNAPSHOTS.set(snapshots)
             try:
-                # Share the existing OS project lock with migration. Calling its locked
-                # implementation avoids reacquiring a POSIX lock on another descriptor.
-                migrate_root._reject_link_chain(self.project_root)
-                with migrate_root._migration_lock(self.project_root):
-                    if self.store is None:
-                        migration = migrate_root._migrate_locked(self.project_root, check=not write)
-                        if migration["status"] in {"migration_required", "recovery_required"}:
-                            raise ValueError("analysis-root migration is required; run migrate_root.py --project for this bound project before querying")
-                    migrate_root._reject_link_chain(self.root)
+                confinement.reject_link_chain(self.project_root)
+                with confinement.project_lock(self.project_root):
+                    confinement.reject_link_chain(self.root)
                     if self.store is not None:
                         self._bind_store(write=write)
                     yield
@@ -123,7 +117,7 @@ class MapService:
         # same project. An existing directory without the matching marker
         # belongs to something else and is never adopted.
         marker = self.root / snapshot.STORE_MARKER
-        migrate_root._reject_link_chain(marker)
+        confinement.reject_link_chain(marker)
         expected = {"schema": snapshot.STORE_SCHEMA, "store": self.store}
         if marker.exists():
             if _json(marker) != expected:
@@ -133,7 +127,7 @@ class MapService:
             raise ValueError("analysis store exists without its marker; choose an empty or new directory")
         if write:
             self.root.mkdir(parents=True, exist_ok=True)
-            migrate_root._reject_link_chain(self.root)
+            confinement.reject_link_chain(self.root)
             _write(marker, expected)
 
     def _target(self, value, *, require_exists=True):
@@ -141,7 +135,7 @@ class MapService:
         if relative.split("/")[0].casefold() in {name.casefold() for name in self._outputs}:
             raise ValueError("analysis output cannot be the source target")
         target = self.project_root / relative
-        migrate_root._reject_link_chain(target)
+        confinement.reject_link_chain(target)
         resolved = target.resolve()
         if any(resolved.is_relative_to((self.project_root / name).resolve())
                for name in self._outputs):
@@ -175,12 +169,12 @@ class MapService:
         if not root.is_absolute() or ".." in root.parts:
             raise ValueError("manifest root must be a canonical absolute path")
         relative_target = _relative(manifest["target"], root=True)
-        migrate_root._reject_link_chain(root)
+        confinement.reject_link_chain(root)
         if (root / relative_target).resolve() != target:
             raise ValueError("snapshot and state target bindings differ")
         for relative in file_headers(manifest):
             source = root / _relative(relative)
-            migrate_root._reject_link_chain(source)
+            confinement.reject_link_chain(source)
             if not source.resolve().is_relative_to(self.project_root):
                 raise ValueError("manifest source escapes the bound project")
             if source.resolve() != target and not source.resolve().is_relative_to(target):
@@ -204,11 +198,11 @@ class MapService:
         # Snapshot helpers read source files after walking the canonical
         # perimeter. Reject links on those candidates before invoking parsers.
         for path in snapshot.iter_files(target):
-            migrate_root._reject_link_chain(path)
+            confinement.reject_link_chain(path)
 
     def _run_path(self, run_id):
         path = self.root / "runs" / _run_id(run_id)
-        migrate_root._reject_link_chain(path)
+        confinement.reject_link_chain(path)
         return path
 
     def _bound_run(self, run_id):
@@ -226,7 +220,7 @@ class MapService:
         if state.get("parent_run") is not None:
             self._run_path(state["parent_run"])
         for name in ("changes.json", "carry.json", EVENT_FILE):
-            migrate_root._reject_link_chain(run / name)
+            confinement.reject_link_chain(run / name)
         manifest = open_snapshot(resolve_run_snapshot(run, state))
         snapshots = _SNAPSHOTS.get()
         if snapshots is None:
@@ -246,7 +240,7 @@ class MapService:
                  "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
                  "snapshot/context", "cards.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
-            migrate_root._reject_link_chain(path)
+            confinement.reject_link_chain(path)
         delivery = state.get("delivery")
         if delivery is not None:
             artifacts = delivery.get("artifacts") if isinstance(delivery, dict) else None
@@ -257,7 +251,7 @@ class MapService:
                     _relative(name)
                     names.add(name)
         for name in names:
-            migrate_root._reject_link_chain(run / name)
+            confinement.reject_link_chain(run / name)
 
     def _status(self, run_id):
         run, state, _, target = self._bound_run(run_id)
@@ -282,7 +276,7 @@ class MapService:
 
     def _journal(self, run):
         path = run / EVENT_FILE
-        migrate_root._reject_link_chain(path)
+        confinement.reject_link_chain(path)
         if not path.exists():
             return []
         value = _json(path)
@@ -350,7 +344,7 @@ class MapService:
             if run.exists():
                 raise ValueError("run already exists; resume the exact run or choose another run_id")
             self.root.mkdir(parents=True, exist_ok=True)
-            migrate_root._reject_link_chain(self.root)
+            confinement.reject_link_chain(self.root)
             descriptor, name = tempfile.mkstemp(prefix=f".{run_id}-snapshot-", dir=self.root)
             os.close(descriptor)
             temporary = Path(name)
@@ -395,21 +389,21 @@ class MapService:
     def runs(self):
         with self._operation():
             directory = self.root / "runs"
-            migrate_root._reject_link_chain(directory)
+            confinement.reject_link_chain(directory)
             values = []
             if directory.exists():
                 if not directory.is_dir():
                     raise ValueError("analysis runs root must be a directory")
                 for path in sorted(directory.iterdir()):
                     try:
-                        migrate_root._reject_link_chain(path)
+                        confinement.reject_link_chain(path)
                         if path.is_dir():
                             values.append(dict(self._status(path.name), readable=True))
                     except (ValueError, OSError, TypeError, KeyError) as exc:
                         # One damaged or foreign run must not hide the others.
                         values.append({"run_id": path.name, "readable": False, "error": str(exc)})
             registry = self.root / "runs.json"
-            migrate_root._reject_link_chain(registry)
+            confinement.reject_link_chain(registry)
             return {"runs": values, "registry": snapshot._read_registry(self.root) if registry.exists() else None}
 
     def outline(self, run_id, path=None, pattern=None, limit=100):
@@ -428,7 +422,7 @@ class MapService:
         path = run / name
         if path.suffix != ".sqlite" or path.name in {"manifest.sqlite", "cards.sqlite", "retrieval.sqlite"}:
             raise ValueError("engine_store must name an engine SQLite artifact within its run")
-        migrate_root._reject_link_chain(path)
+        confinement.reject_link_chain(path)
         if not path.resolve().is_relative_to(run.resolve()):
             raise ValueError("engine_store is outside its run")
         return path
@@ -481,11 +475,11 @@ class MapService:
             run, _, manifest, _ = self._bound_run(run_id)
             out = _relative(out)
             output = manifest.path.parent / out
-            migrate_root._reject_link_chain(output)
+            confinement.reject_link_chain(output)
             checkpoint = None
             if cursor is not None:
                 checkpoint = run / _relative(cursor)
-                migrate_root._reject_link_chain(checkpoint)
+                confinement.reject_link_chain(checkpoint)
             request = dict(request)
             base_engine = None
             if base_run_id is not None:
@@ -503,7 +497,7 @@ class MapService:
                        'retrieval': str(manifest.path.parent / 'retrieval.sqlite')}
             if embedding_result is not None:
                 dense = run / _relative(embedding_result)
-                migrate_root._reject_link_chain(dense)
+                confinement.reject_link_chain(dense)
                 if not dense.is_relative_to(manifest.path.parent) or dense.suffix != '.json':
                     raise ValueError('embedding receipt must be a JSON inside the bound snapshot directory')
                 indexes['embedding_result'] = str(dense)
@@ -599,7 +593,7 @@ class MapService:
             if name not in allowed:
                 raise ValueError("artifact is not declared by this run")
             path = run / name
-            migrate_root._reject_link_chain(path)
+            confinement.reject_link_chain(path)
             if not path.is_file():
                 raise ValueError("declared artifact has not been delivered")
             digest = hashlib.sha256()
