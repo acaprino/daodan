@@ -26,8 +26,11 @@ time, or record it with the work record's `ask` and close the turn. Mark each fa
 
 ## 2. Perimeter
 
-From the stack and the named symbols, load `codebase-map:map-method` and take
-`snapshot.py edit-impact` for each. The suspects are the commits that touched
+From the stack and the named symbols, load `codebase-map:map-method`, locate
+the symbols through its `references/locate.md` (`codebase_map_search` or
+`snapshot.py search` with the names in the report and the traceback frames;
+exact symbol and traceback matches rank first), then take `snapshot.py
+edit-impact` for each. The suspects are the commits that touched
 the perimeter after the last known good
 (`git log --format='%h %an %ad %s' GOOD..HEAD -- PATHS`), or its last twenty
 without one. Without a map, a recorded gap, the perimeter comes from the stack
