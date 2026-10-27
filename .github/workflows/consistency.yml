@@ -65,9 +65,9 @@ jobs:
       - name: Copilot write-confinement policy tests
         run: python adapters/copilot/policies/xray-guard/test_xray_guard.py
 
-  # Enforces steps 1 and 2 of the marketplace update workflow: a change under
-  # plugins/<name>/ must bump that plugin's version and metadata.version in
-  # marketplace.json within the same push or PR.
+  # Enforces step 1 of the marketplace update workflow: a change under
+  # plugins/<name>/ must bump that plugin's version within the same push or PR.
+  # metadata.version is the release number: it may stay, and only moves forward.
   version-bumps:
     runs-on: ubuntu-latest
     steps:

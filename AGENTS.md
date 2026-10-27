@@ -311,11 +311,14 @@ repository `downstream-exports` workflow for the review procedure.
 
 When changes modify a plugin kernel, update the marketplace **before committing**:
 
-1. **Bump the plugin version** - increment `version` in that plugin's `plugins/<name>/plugin.toml`
-2. **Bump the marketplace version** - increment `metadata.version` in `.claude-plugin/marketplace.json`
-3. **Rebuild** - `python scripts/daodan_build.py`, then `python scripts/daodan_build.py --check`
-4. **Commit together** - stage the kernel files and everything the build regenerated under `exports/` and the root manifests, in one commit
-5. **Push to remote** - `git push` to `master`
+1. **Bump the plugin version** - increment `version` in that plugin's `plugins/<name>/plugin.toml`: patch for a fix or a fact update, minor for a new capability, section, file or reference
+2. **Rebuild** - `python scripts/daodan_build.py`, then `python scripts/daodan_build.py --check`
+3. **Commit together** - stage the kernel files and everything the build regenerated under `exports/` and the root manifests, in one commit
+4. **Push to remote** - `git push` to `master`
+
+`metadata.version` in `.claude-plugin/marketplace.json` is the release number, not a per-change counter: bump it only when the user asks for a release. `publish-marketplaces.yml` tags each new value `v<metadata.version>`, and Pi and OpenCode install that tag, so a plugin change reaches those two hosts at the next release; Claude Code, Copilot and Codex read the registered repository and follow the plugin version. A release takes a patch or minor increment like a plugin.
+
+A major version, of a plugin or of the marketplace, needs the user's explicit request or a breaking change: a removed or renamed plugin, component or command, a changed contract or artifact path that a consumer reads, or a new dependency a user must install. Restructuring, new features and large changes that keep every existing entry working are minor. This is the decision of 2026-10-27, taken after the marketplace reached 42.x by bumping on every change.
 
 There is no hand-mirroring step any more, and no per-host obligation to remember: the compiler writes every host, and `--check` fails the build when a committed package no longer reproduces from its kernel.
 
@@ -324,7 +327,7 @@ There is no hand-mirroring step any more, and no per-host obligation to remember
 1. Create `plugins/<name>/plugin.toml` declaring `schema = "daodan/v1"`, identity, `[capabilities]`, `[dependencies]` and `[components]`
 2. Add the component bodies: `roles/<role>.md`, `workflows/<workflow>.md` with a `workflows/<workflow>.toml` sidecar, `skills/<skill>/SKILL.md`, and any `contracts/` or `policies/`
 3. Declare capabilities from the closed registry in `scripts/daodan/validate.py`. A capability outside it fails the build rather than being guessed at by an adapter. Local dependencies go in `[dependencies].required`, always: see the dependency policy below
-4. Build every host, bump `metadata.version`, and commit the kernel plus the generated output together
+4. Build every host and commit the kernel plus the generated output together
 
 ## Git workflow
 
@@ -345,7 +348,7 @@ The build is `python scripts/daodan_build.py`. It loads every kernel, validates 
 5. `python -m unittest discover -s tests` — the compiler's own suite plus the port and parity contract tests: the neutral model, validation, adapter parity, the override fingerprint gate, deterministic rendering and transactional replacement, catalogs, the CLI, both canary ports, universal catalog parity, the publication workflow contract, the cutover identity gate, what each host package must say (`test_daodan_host_rendering.py`, on the real `codebase-map` and `senior-review` kernels) and the Codebase Map script suites (`test_xray_scripts.py`, `test_xray_snapshot.py`, `test_xray_stylesheet.py`), and the OpenCode loader's `node --test` suite through `test_opencode_loader.py`, which both workflows give a Node runtime so it runs rather than skips.
 6. `python scripts/daodan_build.py --check --support` — the drift gate. Every committed package and catalog must reproduce byte-for-byte from the kernels and adapters in the same commit.
 7. `python adapters/copilot/policies/xray-guard/test_xray_guard.py` — the Copilot write-confinement policy implementation, 36 cases.
-8. `python scripts/check_version_bumps.py <base-rev> [<head-rev>]` — over the pushed or PR range, a change under `plugins/<name>/` or under `adapters/<host>/overrides/<name>/` must come with a bump of that plugin's version and of `metadata.version`. Generated packages under `exports/` never count: they are compiler output, and a rebuild is not a plugin change.
+8. `python scripts/check_version_bumps.py <base-rev> [<head-rev>]` — over the pushed or PR range, a change under `plugins/<name>/` or under `adapters/<host>/overrides/<name>/` must come with a bump of that plugin's version. `metadata.version` may stay as it is; when it changes it must increase, because a published release number is never reused. Generated packages under `exports/` never count: they are compiler output, and a rebuild is not a plugin change.
 9. `python scripts/lint_host_vocabulary.py` rejects host-specific team primitives in neutral behavior. Kernels state delivery/ownership/barrier obligations and adapter wrappers supply their mechanisms. The baseline is empty. Operational tool names and dispatch fields in nested references are checked alongside team primitives; neutral frontmatter and host-as-subject examples are preserved. Never add a baseline to make a check pass. Marketplace operations and SDK knowledge retain host vocabulary when tooling is their subject; instruction examples belong to the knowledge owner's skill.
 
 When a change legitimately trips a linter, fix the declaration or the reference, not the linter; heuristic misreads go in its `ALLOWLIST` with a reason.

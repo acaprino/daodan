@@ -4,13 +4,15 @@ Stdlib only, runs from the repository root:
 
     python scripts/check_version_bumps.py <base-rev> [<head-rev>]
 
-head-rev defaults to HEAD. Enforces steps 1 and 2 of the marketplace update
+head-rev defaults to HEAD. Enforces step 1 of the marketplace update
 workflow in CLAUDE.md: when a commit range touches files under
 plugins/<name>/, or to an adapter override that affects it under
 adapters/<host>/overrides/<name>/, that plugin's version in
-.claude-plugin/marketplace.json must strictly increase across the range, and so must
-metadata.version. Generated packages under exports/<host>/plugins/<name>/ do
-not count: they are compiler output. Exits non-zero on
+.claude-plugin/marketplace.json must strictly increase across the range.
+Generated packages under exports/<host>/plugins/<name>/ do not count: they are
+compiler output. metadata.version is the release number, bumped only when the
+user cuts a release, so it may stay unchanged; when it changes it must strictly
+increase, because a published release tag is never reused. Exits non-zero on
 violations.
 
 Cases handled per changed plugin directory:
@@ -133,15 +135,17 @@ def main():
         if name is not None:
             plugins_touched[name].append(path)
 
-    if not plugins_touched:
-        print(f"no plugin changes in {base}..{head}")
-        return
-
-    base_versions = versions_of(manifest_at(base))
-    head_manifest = manifest_at(head)
-    head_versions = versions_of(head_manifest)
+    base_manifest, head_manifest = manifest_at(base), manifest_at(head)
+    base_versions, head_versions = versions_of(base_manifest), versions_of(head_manifest)
 
     problems = []
+    base_meta = base_manifest.get("metadata", {}).get("version")
+    head_meta = head_manifest.get("metadata", {}).get("version")
+    if head_meta != base_meta and not _version_increased(base_meta, head_meta):
+        problems.append(
+            f"metadata.version may stay or strictly increase, never change from {base_meta!r} to {head_meta!r}; "
+            f"use numeric triplets in {MANIFEST}")
+
     for name in sorted(plugins_touched):
         n_files = len(plugins_touched[name])
         if name in head_versions:
@@ -155,18 +159,14 @@ def main():
                 f"registered in {MANIFEST}")
         # dir gone at head: plugin removal, nothing to check
 
-    base_meta = manifest_at(base).get("metadata", {}).get("version")
-    head_meta = head_manifest.get("metadata", {}).get("version")
-    if not _version_increased(base_meta, head_meta):
-        problems.append(
-            f"metadata.version must strictly increase from {base_meta!r} to {head_meta!r} despite plugin changes "
-            f"({', '.join(sorted(plugins_touched))}); bump it in {MANIFEST}")
-
     if problems:
         print(f"FAIL  version bumps ({base}..{head}):")
         for p in problems:
             print("        ", p)
         sys.exit(1)
+    if not plugins_touched:
+        print(f"no plugin changes in {base}..{head}, metadata {base_meta} -> {head_meta}")
+        return
     print(f"ok    version bumps: {', '.join(sorted(plugins_touched))} all bumped, "
           f"metadata {base_meta} -> {head_meta}")
 

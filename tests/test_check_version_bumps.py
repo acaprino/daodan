@@ -105,9 +105,26 @@ class VersionBumpTests(unittest.TestCase):
                 self.assertEqual(code, 1, output)
                 self.assertIn("plugins/example", output)
 
-    def test_marketplace_rejects_equality_and_numeric_downgrades(self):
-        pairs = (("1.0.0", "1.0.0"), ("1.0.1", "1.0.0"),
-                 ("1.10.0", "1.9.9"), ("2.0.0", "1.99.99"))
+    def test_plugin_change_without_a_release_keeps_the_marketplace_version(self):
+        before = manifest("4.0.0", "1.2.3")
+        after = manifest("4.0.1", "1.2.3")
+
+        code, output = self.run_check(before, after)
+
+        self.assertEqual(code, 0, output)
+        self.assertIn("ok    version bumps", output)
+
+    def test_marketplace_downgrade_is_rejected_without_plugin_changes(self):
+        before = manifest("4.0.0", "1.2.3")
+        after = manifest("4.0.0", "1.2.2")
+
+        code, output = self.run_check(before, after, changed=())
+
+        self.assertEqual(code, 1, output)
+        self.assertIn("metadata.version", output)
+
+    def test_marketplace_rejects_numeric_downgrades(self):
+        pairs = (("1.0.1", "1.0.0"), ("1.10.0", "1.9.9"), ("2.0.0", "1.99.99"))
         for old, new in pairs:
             with self.subTest(before=old, after=new):
                 before = manifest("4.0.0", old)
