@@ -1,5 +1,5 @@
 ---
-description: Runs the stripe-webhooks-auditor agent over the current project. TRIGGER WHEN: the user asks to audit or verify a Stripe webhook setup: endpoint configuration, signature verification, idempotency or event coverage.
+description: 'Runs the stripe-webhooks-auditor agent over the current project. TRIGGER WHEN: the user asks to audit or verify a Stripe webhook setup: endpoint configuration, signature verification, idempotency or event coverage.'
 ---
 
 <daodan_host_binding host="claude">

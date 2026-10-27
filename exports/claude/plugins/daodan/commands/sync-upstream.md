@@ -1,5 +1,5 @@
 ---
-description: Bring other peoples work into this copy: fetch, report what arrived and whether it touches an open task, fast-forward only, then realign map, records and documentation. TRIGGER WHEN: the user wants to pull, update from upstream, or see what others changed. DO NOT TRIGGER WHEN: the user wants their own work merged (use finish-task).
+description: 'Bring other peoples work into this copy: fetch, report what arrived and whether it touches an open task, fast-forward only, then realign map, records and documentation. TRIGGER WHEN: the user wants to pull, update from upstream, or see what others changed. DO NOT TRIGGER WHEN: the user wants their own work merged (use finish-task).'
 ---
 
 <daodan_host_binding host="claude">

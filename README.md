@@ -199,6 +199,11 @@ request. Authorizations are asked when a step needs them, once. Each command
 works alone and is also a step of the task cycle. Domain verticals keep their own
 namespaces (`/office:*` is folded into `daodan` because its entries are general).
 
+Claude Code's `/` menu also lists every installed skill, so a rulebook such as
+`testing:test-hygiene` shows up there beside the commands. Such an entry loads
+knowledge into the conversation and starts no workflow. The commands are the `/daodan:*` entries below and the domain
+verticals' own workflows: to clean up a test suite, use `/daodan:maintain-tests`.
+
 When unsure which work command fits, use `new-feature`: the interview corrects
 the course. On the other hosts the names follow the host: `/daodan-new-feature`
 on Pi, the `new-feature-workflow` skill on Codex, the `new-feature` prompt on
@@ -241,12 +246,12 @@ Copilot; OpenCode V2 uses the Claude Code form.
 | `/daodan:review-changes` | Light review of your changes, a commit, a file or a document |
 | `/daodan:review-branch` | Complete review of a branch or a pull request |
 | `/daodan:write-tests` | Tests for the code you name |
-| `/daodan:maintain-tests` | Audit, clean up, reorganize or consolidate an existing test suite with verified protection |
+| `/daodan:maintain-tests` | Audit, clean up, reorganize or consolidate an existing test suite with verified protection. Removals are proposed per test, and an unanswered one stays |
 | `/daodan:map-code` | Deepen the Codebase Map on an area, or map the project |
 | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
 | `/daodan:humanize-text` | Make a text or file read naturally without inventing content |
 | `/daodan:record-decision` | A decision record outside a task; turns records on for a project without them |
-| `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
+| `/daodan:tidy-repo` | Junk files, dead code and redundant tests in one pass, the tests through the same method as `maintain-tests`: preview, then one authorization |
 
 ### Office
 

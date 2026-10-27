@@ -47,7 +47,7 @@
         "./skills/prompt-optimize-workflow"
       ],
       "source": "./exports/codex/plugins/ai-tooling",
-      "version": "5.6.0"
+      "version": "5.6.1"
     },
     {
       "author": {
@@ -80,7 +80,7 @@
         "./skills/firefox-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/browser-extensions",
-      "version": "2.0.3"
+      "version": "2.0.4"
     },
     {
       "author": {
@@ -208,7 +208,7 @@
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "2.6.2"
+      "version": "2.6.3"
     },
     {
       "author": {
@@ -249,7 +249,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "3.2.4"
+      "version": "3.2.5"
     },
     {
       "author": {
@@ -348,7 +348,7 @@
         "./skills/libgdx-development"
       ],
       "source": "./exports/codex/plugins/libgdx-development",
-      "version": "1.1.3"
+      "version": "1.1.4"
     },
     {
       "author": {
@@ -368,7 +368,7 @@
         "./skills/skills-validate-workflow"
       ],
       "source": "./exports/codex/plugins/marketplace-ops",
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "author": {
@@ -469,7 +469,7 @@
         "./skills/otel-audit-workflow"
       ],
       "source": "./exports/codex/plugins/opentelemetry",
-      "version": "1.4.4"
+      "version": "1.4.5"
     },
     {
       "author": {
@@ -609,7 +609,7 @@
         "./skills/pwa-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/pwa-expert",
-      "version": "1.3.8"
+      "version": "1.3.9"
     },
     {
       "author": {
@@ -776,7 +776,7 @@
         "./skills/stripe"
       ],
       "source": "./exports/codex/plugins/stripe",
-      "version": "2.6.3"
+      "version": "2.6.4"
     },
     {
       "author": {
@@ -826,7 +826,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/codex/plugins/testing",
-      "version": "4.5.0"
+      "version": "4.5.1"
     },
     {
       "author": {

@@ -1,5 +1,5 @@
 ---
-description: Generates manifest, service worker, iOS meta tags, registration code and icon stubs, detecting the framework in use. TRIGGER WHEN: scaffolding, bootstrapping or adding PWA support to a Vite, Next.js, Angular, Nuxt or vanilla project.
+description: 'Generates manifest, service worker, iOS meta tags, registration code and icon stubs, detecting the framework in use. TRIGGER WHEN: scaffolding, bootstrapping or adding PWA support to a Vite, Next.js, Angular, Nuxt or vanilla project.'
 ---
 
 <daodan_host_binding host="claude">

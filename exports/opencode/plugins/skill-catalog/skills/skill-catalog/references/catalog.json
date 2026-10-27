@@ -36,7 +36,7 @@
       "operations": [],
       "provider": "ai-tooling",
       "topics": [],
-      "version": "5.6.0"
+      "version": "5.6.1"
     },
     {
       "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
@@ -61,7 +61,7 @@
         "llm",
         "prompts"
       ],
-      "version": "5.6.0"
+      "version": "5.6.1"
     },
     {
       "description": "Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).",
@@ -110,7 +110,7 @@
       ],
       "provider": "browser-extensions",
       "topics": [],
-      "version": "2.0.3"
+      "version": "2.0.4"
     },
     {
       "description": "Knowledge base of strategy frameworks and market data, loaded by business-planner. TRIGGER WHEN: SaaS business planning or GTM strategy work, including positioning frameworks (April Dunford, Blue Ocean, Crossing the Chasm), PLG/SLG motions, and KPI benchmarks.",
@@ -201,7 +201,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.4"
+      "version": "3.2.5"
     },
     {
       "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
@@ -216,7 +216,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.4"
+      "version": "3.2.5"
     },
     {
       "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
@@ -238,7 +238,7 @@
       ],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.4"
+      "version": "3.2.5"
     },
     {
       "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
@@ -259,7 +259,7 @@
       "topics": [
         "customer-review"
       ],
-      "version": "3.2.4"
+      "version": "3.2.5"
     },
     {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
@@ -405,7 +405,7 @@
       ],
       "provider": "libgdx-development",
       "topics": [],
-      "version": "1.1.3"
+      "version": "1.1.4"
     },
     {
       "description": "Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages. TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports. DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages (use marketplace-audit or skills-creator instead).",
@@ -429,7 +429,7 @@
         "marketplace",
         "plugins"
       ],
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "description": "Validate structural integrity, dependencies, naming, colors and doc counts of a plugin marketplace. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan components, checking dependencies or doc count drift. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding (use skills-creator).",
@@ -444,7 +444,7 @@
       "operations": [],
       "provider": "marketplace-ops",
       "topics": [],
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "description": "Create plugin components (skills, agents, commands, full plugins) and decide skill vs agent architecture. TRIGGER WHEN: creating, adding or scaffolding a new skill, agent, command or plugin (\"new skill\", \"new agent\", \"new plugin\", \"skills-creator\"). DO NOT TRIGGER WHEN: auditing marketplace integrity (use marketplace-audit).",
@@ -459,7 +459,7 @@
       "operations": [],
       "provider": "marketplace-ops",
       "topics": [],
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "description": "Knowledge base for running RabbitMQ under production load, split into on-demand references. TRIGGER WHEN: designing, operating, upgrading, monitoring or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: quick conceptual questions (use rabbitmq-expert directly).",
@@ -750,7 +750,7 @@
       ],
       "provider": "opentelemetry",
       "topics": [],
-      "version": "1.4.4"
+      "version": "1.4.5"
     },
     {
       "description": "Doctrine and review method for challenging a plan, spec, decision record or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring a cross-model peer review (the review method, loaded by /daodan:get-second-opinion for a file and by the task cycle to challenge a decision record or plan), deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).",
@@ -984,7 +984,7 @@
         "pwa",
         "service-worker"
       ],
-      "version": "1.3.8"
+      "version": "1.3.9"
     },
     {
       "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
@@ -1497,7 +1497,7 @@
       ],
       "provider": "stripe",
       "topics": [],
-      "version": "2.6.3"
+      "version": "2.6.4"
     },
     {
       "description": "Scope, plan, and execute the reorganization behind approval gates. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up old files, restructuring project directories, separating work from personal files, or automating file cleanup tasks.",
@@ -1540,7 +1540,7 @@
       "version": "2.8.3"
     },
     {
-      "description": "Test placement rules and the measure, quarantine, consolidate remediation ladder for degraded test suites. TRIGGER WHEN: creating or placing test files, deciding whether to extend an existing test or add a new file, auditing test-suite health, quarantining flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: TDD workflow mechanics (use mattpocock-skills:tdd) or browser E2E page objects/waiting (use developer-essentials:e2e-testing-patterns).",
+      "description": "Rules for writing, placing and judging tests, and the remediation ladder they feed. A rulebook that test writers, auditors and the maintenance method load; it does not maintain a suite. TRIGGER WHEN: creating or placing test files, deciding whether to extend an existing test or add a new file, or judging test-suite structure against the rules. DO NOT TRIGGER WHEN: a user asks to clean up, consolidate or reduce an existing suite (start /daodan:maintain-tests, whose method loads these rules), TDD workflow mechanics (use mattpocock-skills:tdd) or browser E2E page objects/waiting (use developer-essentials:e2e-testing-patterns).",
       "dimensions": [
         "test-quality"
       ],
@@ -1560,7 +1560,7 @@
         "testing",
         "tests"
       ],
-      "version": "4.5.0"
+      "version": "4.5.1"
     },
     {
       "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence. Load before dispatching testing:test-suite-auditor.",
@@ -1575,7 +1575,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "4.5.0"
+      "version": "4.5.1"
     },
     {
       "description": "Maintain existing test suites: diagnose failures, review and consolidate redundant tests, preserving behavior, independent failure modes and bugfix provenance. Load for suite audits, quarantine or rationalization through /daodan:maintain-tests (also composed by /daodan:tidy-repo).",
@@ -1590,7 +1590,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "4.5.0"
+      "version": "4.5.1"
     },
     {
       "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",

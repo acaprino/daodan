@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ff9eb5a10fff92b7b91beb62b4abf0694848e5e6c8ba180f8eda3e4eda472df0",
+  "coreDigest": "sha256:127a7af9c8a0906060b6aacef9140573f4843b5bfb1c94da3d2ba915a23f11c4",
   "harnessStrategies": {
     "audit-webhooks": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "stripe",
-  "version": "2.6.3"
+  "version": "2.6.4"
 }

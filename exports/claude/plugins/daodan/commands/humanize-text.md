@@ -1,5 +1,5 @@
 ---
-description: Make a text read naturally, removing the patterns of machine writing, without inventing content. TRIGGER WHEN: the user asks to humanize, rewrite naturally or de-AI a text or a file. DO NOT TRIGGER WHEN: code is to be refactored (use refactor-code) or documentation written (use write-docs).
+description: 'Make a text read naturally, removing the patterns of machine writing, without inventing content. TRIGGER WHEN: the user asks to humanize, rewrite naturally or de-AI a text or a file. DO NOT TRIGGER WHEN: code is to be refactored (use refactor-code) or documentation written (use write-docs).'
 ---
 
 <daodan_host_binding host="claude">

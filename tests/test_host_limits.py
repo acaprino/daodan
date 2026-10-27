@@ -116,5 +116,64 @@ class HostLimitTests(unittest.TestCase):
                     )
 
 
+# The files each host parses as components, under exports/<host>/plugins/.
+REGISTERED = {
+    "claude": ("*/commands/*.md", "*/agents/*.md", "*/skills/*/SKILL.md"),
+    "copilot": ("*/prompts/*.md", "*/agents/*.md", "*/skills/*/SKILL.md"),
+    "codex": ("*/roles/*.md", "*/skills/*/SKILL.md"),
+    "pi": ("*/prompts/*.md", "*/skills/*/SKILL.md"),
+    "opencode": ("*/commands/*.md", "*/agents/*.md", "*/skills/*/SKILL.md"),
+}
+PLAIN_START = set("-?:,[]{}#&*!|>'\"%@`")
+
+
+def frontmatter_scalar_errors(text: str) -> list[str]:
+    """Top-level frontmatter scalars a YAML parser would reject.
+
+    A plain scalar may not contain ": " or " #" nor start with an indicator; a
+    single-quoted one escapes a quote by doubling it. Block scalars, flow
+    collections and nested mappings are left to their own content.
+    """
+    text = text.replace("\r\n", "\n")
+    end = text.find("\n---\n", 4)
+    if not text.startswith("---\n") or end == -1:
+        return ["no frontmatter"]
+    errors = []
+    for line in text[4:end].split("\n"):
+        if not line or line[0] in " \t#" or ":" not in line:
+            continue
+        key, _, value = line.partition(":")
+        value = value.strip()
+        if not value or value in BLOCK_SCALARS or value[0] in "[{":
+            continue
+        if value[0] == "'":
+            if len(value) < 2 or value[-1] != "'" or "'" in value[1:-1].replace("''", ""):
+                errors.append(f"{key}: unbalanced single quotes")
+        elif value[0] == '"':
+            if len(value) < 2 or value[-1] != '"':
+                errors.append(f"{key}: unbalanced double quotes")
+        elif value[0] in PLAIN_START or ": " in value or " #" in value or value.endswith(":"):
+            errors.append(f"{key}: plain scalar a YAML parser rejects")
+    return errors
+
+
+class RenderedFrontmatterTests(unittest.TestCase):
+    def test_every_registered_component_has_parseable_frontmatter(self):
+        """A frontmatter the host cannot parse loses every field it carries.
+
+        Claude Code read 37 commands whose description was a plain scalar
+        holding ": " as broken YAML, so its slash menu showed the operational
+        binding, the first body line, in place of each description.
+        """
+        for host, patterns in REGISTERED.items():
+            root = REPO_ROOT / "exports" / host / "plugins"
+            checked = 0
+            for pattern in patterns:
+                for path in sorted(root.glob(pattern)):
+                    checked += 1
+                    errors = frontmatter_scalar_errors(path.read_text(encoding="utf-8"))
+                    self.assertEqual(errors, [], f"{host}: {path.relative_to(root)}")
+            self.assertGreater(checked, 0, f"{host}: no registered component found")
+
 if __name__ == "__main__":
     unittest.main()

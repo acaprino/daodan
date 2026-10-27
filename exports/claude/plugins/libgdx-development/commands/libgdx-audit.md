@@ -1,5 +1,5 @@
 ---
-description: Report correctness, performance, and lifecycle defects. TRIGGER WHEN: the user asks to review, audit, or validate a libGDX game: rendering pipeline, asset disposal, Screen lifecycle, GL thread blocking, multi-platform config, version migration. DO NOT TRIGGER WHEN: building a new game from scratch (use libgdx-architect).
+description: 'Report correctness, performance, and lifecycle defects. TRIGGER WHEN: the user asks to review, audit, or validate a libGDX game: rendering pipeline, asset disposal, Screen lifecycle, GL thread blocking, multi-platform config, version migration. DO NOT TRIGGER WHEN: building a new game from scratch (use libgdx-architect).'
 ---
 
 <daodan_host_binding host="claude">

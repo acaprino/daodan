@@ -1,5 +1,5 @@
 ---
-description: Diagnose the projects debt without changing it: structure, duplicated concepts, dead code, tests, documentation and instructions, workspace, and each stacks own audit (Python, React, TypeScript, platform, dependencies). Produces a plan of actions with owners and gates. TRIGGER WHEN: the user asks how healthy a project is, what its technical debt is, or what to clean up first. DO NOT TRIGGER WHEN: one change is to be reviewed (use review-changes or review-branch).
+description: 'Diagnose the projects debt without changing it: structure, duplicated concepts, dead code, tests, documentation and instructions, workspace, and each stacks own audit (Python, React, TypeScript, platform, dependencies). Produces a plan of actions with owners and gates. TRIGGER WHEN: the user asks how healthy a project is, what its technical debt is, or what to clean up first. DO NOT TRIGGER WHEN: one change is to be reviewed (use review-changes or review-branch).'
 ---
 
 <daodan_host_binding host="claude">

@@ -1,5 +1,5 @@
 ---
-description: Restructure code without changing its behavior: characterization tests first, waves with structural oracles, a review of equivalence. Covers readability too. TRIGGER WHEN: the user wants code restructured, simplified, deduplicated, renamed or made more readable with the same behavior. DO NOT TRIGGER WHEN: behavior should change (use new-feature or fix-bug).
+description: 'Restructure code without changing its behavior: characterization tests first, waves with structural oracles, a review of equivalence. Covers readability too. TRIGGER WHEN: the user wants code restructured, simplified, deduplicated, renamed or made more readable with the same behavior. DO NOT TRIGGER WHEN: behavior should change (use new-feature or fix-bug).'
 ---
 
 <daodan_host_binding host="claude">

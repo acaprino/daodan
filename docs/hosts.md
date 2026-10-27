@@ -162,6 +162,11 @@ Codex keeps its `-workflow` suffix for stable installed names. Names cannot repe
 across component kinds within a kernel. The compiler does not turn generated
 dispatch resources or contract files into extra user commands.
 
+Claude's `/` menu also lists every knowledge skill as `/<plugin>:<skill>`, so a
+specialist without commands still shows entries there. Selecting one loads that
+skill's instructions into the conversation and starts no workflow; the user
+entries are the workflow commands in the table above.
+
 ## Office entry points
 
 The [Office plugin](plugins/office.md) provides editable PowerPoint presentations

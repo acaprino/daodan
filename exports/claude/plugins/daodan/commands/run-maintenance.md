@@ -1,5 +1,5 @@
 ---
-description: Run the complete guided maintenance campaign: orientation, stage-by-stage repair of knowledge, structure, tests and artifacts, each stage approved before the next, final verification. TRIGGER WHEN: the user wants a whole project brought back into good shape over several stages. DO NOT TRIGGER WHEN: one diagnosis is enough (use check-health) or one change is wanted (use new-feature, fix-bug or refactor-code).
+description: 'Run the complete guided maintenance campaign: orientation, stage-by-stage repair of knowledge, structure, tests and artifacts, each stage approved before the next, final verification. TRIGGER WHEN: the user wants a whole project brought back into good shape over several stages. DO NOT TRIGGER WHEN: one diagnosis is enough (use check-health) or one change is wanted (use new-feature, fix-bug or refactor-code).'
 ---
 
 <daodan_host_binding host="claude">

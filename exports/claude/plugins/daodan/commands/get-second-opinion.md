@@ -1,5 +1,5 @@
 ---
-description: Have another model challenge a file (a plan, a decision record, a document, code), or have several models deliberate on a question. Asks for consent before any content leaves the machine. TRIGGER WHEN: the user asks for a second opinion, another models view, or a challenge of a plan or decision. DO NOT TRIGGER WHEN: a normal review is wanted (use review-changes or review-branch).
+description: 'Have another model challenge a file (a plan, a decision record, a document, code), or have several models deliberate on a question. Asks for consent before any content leaves the machine. TRIGGER WHEN: the user asks for a second opinion, another models view, or a challenge of a plan or decision. DO NOT TRIGGER WHEN: a normal review is wanted (use review-changes or review-branch).'
 ---
 
 <daodan_host_binding host="claude">

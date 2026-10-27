@@ -1,5 +1,5 @@
 ---
-description: Reviews whether the material actually persuades a visitor, not whether it is well built. TRIGGER WHEN: the user asks for a content, marketing, conversion, or CRO audit of a website, landing page, or funnel. DO NOT TRIGGER WHEN: the audit is technical SEO only (use /digital-marketing:seo-audit).
+description: 'Reviews whether the material actually persuades a visitor, not whether it is well built. TRIGGER WHEN: the user asks for a content, marketing, conversion, or CRO audit of a website, landing page, or funnel. DO NOT TRIGGER WHEN: the audit is technical SEO only (use /digital-marketing:seo-audit).'
 ---
 
 <daodan_host_binding host="claude">

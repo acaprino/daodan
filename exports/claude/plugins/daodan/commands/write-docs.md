@@ -1,5 +1,5 @@
 ---
-description: Realign the documentation with the code, or write what you ask for: a guide and its diagrams, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a diagram for the documentation, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).
+description: 'Realign the documentation with the code, or write what you ask for: a guide and its diagrams, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a diagram for the documentation, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).'
 ---
 
 <daodan_host_binding host="claude">

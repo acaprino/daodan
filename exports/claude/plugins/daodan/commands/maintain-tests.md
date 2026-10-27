@@ -1,5 +1,5 @@
 ---
-description: Maintain an existing test suite: review protection, update outdated checks, consolidate duplicates and reorganize ownership, with accepted scope and verified protection. TRIGGER WHEN: the user asks to clean up, rationalize, consolidate, reorganize or revise existing tests. DO NOT TRIGGER WHEN: only adding protection for a behavior (use write-tests) or fixing a product defect (use fix-bug).
+description: 'Maintain an existing test suite: review protection, update outdated checks, consolidate duplicates and reorganize ownership, with accepted scope and verified protection. TRIGGER WHEN: the user asks to clean up, rationalize, consolidate, reorganize or revise existing tests. DO NOT TRIGGER WHEN: only adding protection for a behavior (use write-tests) or fixing a product defect (use fix-bug).'
 ---
 
 <daodan_host_binding host="claude">

@@ -1,5 +1,5 @@
 ---
-description: Quick health check for any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to validate marketplace.json, check plugin file references, report plugin counts and version status, or audit structural integrity. DO NOT TRIGGER WHEN: reviewing plugin content quality (use /marketplace-ops:marketplace-review) or authoring new plugins.
+description: 'Quick health check for any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to validate marketplace.json, check plugin file references, report plugin counts and version status, or audit structural integrity. DO NOT TRIGGER WHEN: reviewing plugin content quality (use /marketplace-ops:marketplace-review) or authoring new plugins.'
 ---
 
 <daodan_host_binding host="claude">

@@ -1,5 +1,5 @@
 ---
-description: Resume the current branchs task, from this session or another: answers pending questions with the text given, then continues from the first open step. TRIGGER WHEN: the user wants to go on with an interrupted task, answers questions a command left pending, or opens a new session on a task branch. DO NOT TRIGGER WHEN: no task exists on this branch and the user wants new work (use new-feature, fix-bug or refactor-code).
+description: 'Resume the current branchs task, from this session or another: answers pending questions with the text given, then continues from the first open step. TRIGGER WHEN: the user wants to go on with an interrupted task, answers questions a command left pending, or opens a new session on a task branch. DO NOT TRIGGER WHEN: no task exists on this branch and the user wants new work (use new-feature, fix-bug or refactor-code).'
 ---
 
 <daodan_host_binding host="claude">

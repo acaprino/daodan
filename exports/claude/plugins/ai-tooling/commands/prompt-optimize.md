@@ -1,5 +1,5 @@
 ---
-description: Present the efficiency-versus-effectiveness frontier as labelled variants and let the user pick. TRIGGER WHEN: the user wants to review or optimize a prompt, system message, or agent instructions for clarity/tokens/reliability.
+description: 'Present the efficiency-versus-effectiveness frontier as labelled variants and let the user pick. TRIGGER WHEN: the user wants to review or optimize a prompt, system message, or agent instructions for clarity/tokens/reliability.'
 ---
 
 <daodan_host_binding host="claude">

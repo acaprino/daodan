@@ -1,5 +1,5 @@
 ---
-description: Route any Office request from one intake into the requested document, deck, workbook, theme, verification or repair methods with shared content/design.
+description: 'Route any Office request from one intake into the requested document, deck, workbook, theme, verification or repair methods with shared content/design.'
 ---
 
 <daodan_host_binding host="claude">

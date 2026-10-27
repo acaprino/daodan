@@ -1,5 +1,5 @@
 ---
-description: Create, derive, revise, review or export a native Word document through shared Office content/design and independent document composition and saved review.
+description: 'Create, derive, revise, review or export a native Word document through shared Office content/design and independent document composition and saved review.'
 ---
 
 <daodan_host_binding host="claude">

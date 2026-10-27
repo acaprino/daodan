@@ -1,5 +1,5 @@
 ---
-description: Create requested reusable PowerPoint/Word themes and templates from supplied brand materials or ad hoc visual proposals with native samples and checks.
+description: 'Create requested reusable PowerPoint/Word themes and templates from supplied brand materials or ad hoc visual proposals with native samples and checks.'
 ---
 
 <daodan_host_binding host="claude">

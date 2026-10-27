@@ -57,7 +57,7 @@
         "./skills/prompt-engineering"
       ],
       "source": "./exports/claude/plugins/ai-tooling",
-      "version": "5.6.0"
+      "version": "5.6.1"
     },
     {
       "agents": [
@@ -98,7 +98,7 @@
         "./skills/firefox-extension-dev"
       ],
       "source": "./exports/claude/plugins/browser-extensions",
-      "version": "2.0.3"
+      "version": "2.0.4"
     },
     {
       "agents": [
@@ -246,7 +246,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.6.2"
+      "version": "2.6.3"
     },
     {
       "author": {
@@ -295,7 +295,7 @@
         "./skills/review-reply-method"
       ],
       "source": "./exports/claude/plugins/digital-marketing",
-      "version": "3.2.4"
+      "version": "3.2.5"
     },
     {
       "author": {
@@ -409,7 +409,7 @@
         "./skills/libgdx-development"
       ],
       "source": "./exports/claude/plugins/libgdx-development",
-      "version": "1.1.3"
+      "version": "1.1.4"
     },
     {
       "agents": [
@@ -434,7 +434,7 @@
         "./skills/skills-creator"
       ],
       "source": "./exports/claude/plugins/marketplace-ops",
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "agents": [
@@ -551,7 +551,7 @@
         "./skills/opentelemetry"
       ],
       "source": "./exports/claude/plugins/opentelemetry",
-      "version": "1.4.4"
+      "version": "1.4.5"
     },
     {
       "agents": [
@@ -723,7 +723,7 @@
         "./skills/pwa-development"
       ],
       "source": "./exports/claude/plugins/pwa-expert",
-      "version": "1.3.8"
+      "version": "1.3.9"
     },
     {
       "agents": [
@@ -976,7 +976,7 @@
         "./skills/stripe"
       ],
       "source": "./exports/claude/plugins/stripe",
-      "version": "2.6.3"
+      "version": "2.6.4"
     },
     {
       "author": {
@@ -1044,7 +1044,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "4.5.0"
+      "version": "4.5.1"
     },
     {
       "agents": [

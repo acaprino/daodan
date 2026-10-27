@@ -1,5 +1,5 @@
 ---
-description: List all project worktrees, add concise descriptions and tags, create or resume a task workspace, and check Worktrunk upstream compatibility. TRIGGER WHEN: the user asks to list, describe, tag or manage task worktrees, or update the Worktrunk engine. DO NOT TRIGGER WHEN: starting a feature or finishing a task; those entries compose the same workspace method within their existing delivery cycle.
+description: 'List all project worktrees, add concise descriptions and tags, create or resume a task workspace, and check Worktrunk upstream compatibility. TRIGGER WHEN: the user asks to list, describe, tag or manage task worktrees, or update the Worktrunk engine. DO NOT TRIGGER WHEN: starting a feature or finishing a task; those entries compose the same workspace method within their existing delivery cycle.'
 ---
 
 <daodan_host_binding host="claude">

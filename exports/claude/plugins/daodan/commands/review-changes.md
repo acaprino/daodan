@@ -1,5 +1,5 @@
 ---
-description: Light review of the current changes, the last commit, or the file, folder or commit you name: the projects tools, then one reviewer chosen by the targets kind. Code, plans, specifications and documents. Read-only. TRIGGER WHEN: the user asks to review their changes, a commit, a file or a document. DO NOT TRIGGER WHEN: a whole branch or a pull request is to be reviewed (use review-branch).
+description: 'Light review of the current changes, the last commit, or the file, folder or commit you name: the projects tools, then one reviewer chosen by the targets kind. Code, plans, specifications and documents. Read-only. TRIGGER WHEN: the user asks to review their changes, a commit, a file or a document. DO NOT TRIGGER WHEN: a whole branch or a pull request is to be reviewed (use review-branch).'
 ---
 
 <daodan_host_binding host="claude">

@@ -1,5 +1,5 @@
 ---
-description: Investigate an error, a bug or a strange behavior without fixing it: facts, perimeter from the map, hypotheses verified one by one in isolation, a reproduction test, bisection. Ends with the demonstrated cause or the remaining hypotheses and what would decide them. TRIGGER WHEN: the user reports an error, a failure, a regression or behavior they cannot explain, and the cause is not known. DO NOT TRIGGER WHEN: the cause is known and a fix is wanted (use fix-bug).
+description: 'Investigate an error, a bug or a strange behavior without fixing it: facts, perimeter from the map, hypotheses verified one by one in isolation, a reproduction test, bisection. Ends with the demonstrated cause or the remaining hypotheses and what would decide them. TRIGGER WHEN: the user reports an error, a failure, a regression or behavior they cannot explain, and the cause is not known. DO NOT TRIGGER WHEN: the cause is known and a fix is wanted (use fix-bug).'
 ---
 
 <daodan_host_binding host="claude">

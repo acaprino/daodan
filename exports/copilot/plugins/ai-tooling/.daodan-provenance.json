@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:bc7448623ebd057af6908331cff99b71c4c1d5bd8494bad20f4a78cbf37d6e5e",
+  "coreDigest": "sha256:5e5323092bd04b13d4b32cc59d68e2d997bd3e9dffb7d4aa613941bb3a62d3d4",
   "harnessStrategies": {
     "prompt-optimize": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "ai-tooling",
-  "version": "5.6.0"
+  "version": "5.6.1"
 }

@@ -1,5 +1,5 @@
 ---
-description: Create, derive, revise, review or export an editable PowerPoint presentation through shared Office content/design, native DeckCraft and independent review.
+description: 'Create, derive, revise, review or export an editable PowerPoint presentation through shared Office content/design, native DeckCraft and independent review.'
 ---
 
 <daodan_host_binding host="claude">

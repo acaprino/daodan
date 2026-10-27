@@ -1,5 +1,5 @@
 ---
-description: Guide an idea into a project specification in docs/specs/: clarify intent, compare approaches, write the design and obtain approval before planning. Reuse supplied specifications and answers. Writes no code. TRIGGER WHEN: the user wants brainstorming, project design or specifications, or an idea needs clarification before building it; no explicit command is required. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).
+description: 'Guide an idea into a project specification in docs/specs/: clarify intent, compare approaches, write the design and obtain approval before planning. Reuse supplied specifications and answers. Writes no code. TRIGGER WHEN: the user wants brainstorming, project design or specifications, or an idea needs clarification before building it; no explicit command is required. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).'
 ---
 
 <daodan_host_binding host="claude">

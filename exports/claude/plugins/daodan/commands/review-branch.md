@@ -1,5 +1,5 @@
 ---
-description: Complete review of a branch against its base, or of a pull request: every perspective the signals activate, the map, blind derivation of premises and the verification panel, chosen by a script from the diff and the map. TRIGGER WHEN: the user asks for a full or deep review of a branch, a pull request or a large change, or before a merge. DO NOT TRIGGER WHEN: only the current changes or one commit are to be reviewed (use review-changes).
+description: 'Complete review of a branch against its base, or of a pull request: every perspective the signals activate, the map, blind derivation of premises and the verification panel, chosen by a script from the diff and the map. TRIGGER WHEN: the user asks for a full or deep review of a branch, a pull request or a large change, or before a merge. DO NOT TRIGGER WHEN: only the current changes or one commit are to be reviewed (use review-changes).'
 ---
 
 <daodan_host_binding host="claude">
