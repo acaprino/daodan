@@ -254,6 +254,27 @@ class CodebaseMapExportTests(unittest.TestCase):
                 self.assertIn("composed producer instead follows its authorized refresh", prose)
                 self.assertIn("artifact-only consumers stay within their declared inputs", prose)
                 self.assertNotIn("codebase_map_create_run", standalone)
+
+    def test_locate_guide_ships_on_all_hosts_and_is_bound(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                locate = self.assert_shared_resource(host, "locate.md")
+                standalone = " ".join(self.assert_shared_resource(host, "standalone.md").split())
+                reading = self.assert_shared_resource(host, "reading.md")
+                mcp = self.assert_shared_resource(host, "mcp.md")
+                self.assertLessEqual(len(read(self.canonical.root / "skills/map-method/references/locate.md").splitlines()), 60)
+                prose = " ".join(locate.split())
+                for step in ("codebase_map_search", "codebase_map_outline", "codebase_map_graph",
+                             "codebase_map_read", "codebase_map_edit_impact", "snapshot.py search",
+                             "write one test that fails", "About 6 searches and 10 symbol reads"):
+                    self.assertIn(step, prose)
+                self.assertIn("follow `locate.md`", standalone)
+                self.assertIn("codebase_map_search", standalone)
+                task_views = reading.split("## Task views", 1)[1].split("## Method loads", 1)[0]
+                self.assertIn("| Locating code for a change | `locate.md`", task_views)
+                self.assertIn("| `codebase_map_search` |", mcp)
+                self.assertIn("| `codebase_map_index` |", mcp)
+                self.assertNotIn("No command-line entry or MCP tool builds it", mcp)
                 self.assertNotIn("entry-analyze.md", standalone)
                 self.assertNotIn("migrate_root.py", standalone)
 

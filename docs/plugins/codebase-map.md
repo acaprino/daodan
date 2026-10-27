@@ -285,10 +285,11 @@ The three coverage lines are mandatory, in the condensed lite report as well. A 
 
 ## Local MCP integration
 
-The bundled `codebase-map` server exposes 19 tools for project-bound snapshots,
-verified source reads, edit impact and stale-caller classification, bounded
-context packets (`codebase_map_context`), run checkpoints, persistent events,
-resume, stop and publication. Request progress reports deterministic operations. The host owns
+The bundled `codebase-map` server exposes 21 tools for project-bound snapshots,
+verified source reads, ranked lexical search (`codebase_map_search`) and the
+index that serves it (`codebase_map_index`), edit impact and stale-caller
+classification, bounded context packets (`codebase_map_context`), run
+checkpoints, persistent events, resume, stop and publication. Request progress reports deterministic operations. The host owns
 analysis workers, their lifetime and continuation. Existing shell workflows remain
 available independently of the MCP connection. The process that starts the server
 may bind a custom project-relative store with `--store`; it carries a
@@ -303,13 +304,122 @@ server on a host without automatic registration as described in
 [hosts](../hosts.md#mcp-and-helper-runtimes); keep `--no-config --no-project` in any
 custom `uv run` command.
 
+## Code access: how an agent finds the code it must change
+
+Since plugin 8.12.0 the map carries its own search engine and a guide that tells
+an agent how to use it. This section explains the mechanism in plain terms, with
+examples, and says where the design comes from.
+
+### The three things, and what each one is for
+
+```mermaid
+flowchart LR
+    A[Source tree] -->|snapshot.py write<br/>codebase_map_create_run| M[(Map<br/>manifest.sqlite)]
+    M -->|built with the map| I[(Lexical index<br/>retrieval.sqlite)]
+    M -->|optional, per project| E[(Dense index<br/>EmbeddingGemma)]
+    I --> S[codebase_map_search]
+    M --> O[codebase_map_outline<br/>codebase_map_graph]
+    M --> R[codebase_map_read<br/>hash-verified]
+```
+
+- **The map** is the inventory: every file, every symbol with its line span,
+  signature and digests, who calls whom. Every agent needs it, and every tool
+  below reads it.
+- **The lexical index** is a full-text index (SQLite FTS5) over the map's
+  symbols: name, path, signature and body, split into subtokens so that
+  `InvoiceTotal`, `invoice_total` and `invoice total` all meet. It is built
+  together with the map, in about a fifth of the map's own build time, and
+  repaired with one call when it is missing, stale or corrupt.
+- **The dense index** (semantic embeddings) is optional and off by default. It
+  ranks by meaning instead of by words. The measurement below did not find a
+  task where it beat the lexical index, so it stays an opt-in per project.
+
+### The loop an agent follows
+
+```mermaid
+sequenceDiagram
+    participant Req as Request
+    participant Ag as Agent
+    participant S as search
+    participant M as outline / graph
+    participant R as read
+    participant T as tests
+    Req->>Ag: "signals stay open until restart; expire them on every candle"
+    Ag->>S: query: "expire signals EXPIRED startup"
+    S-->>Ag: 20 ranked entities (ids, paths, lines, signatures)
+    Ag->>M: outline of the hit's file, graph one hop
+    M-->>Ag: siblings, callers, callees
+    Ag->>R: read the 3 symbols kept
+    R-->>Ag: verified source
+    Ag->>T: write one test that fails for the stated reason
+    Ag->>Ag: edit, run the tests, stop
+```
+
+Worked example from the measurement (a private trading project): the request
+said that open signals were only expired at startup. The agent searched
+`expire signals EXPIRED startup`, the first hit was
+`agent_strategy_adrastea.py::AdrasteaSignalGeneratorAgent._cleanup_expired_signals`,
+the second the repository method that marks them. One outline call showed the
+candle handler next to it, one read of three symbols was enough to write the
+failing test, and the fix passed the hidden tests of the real commit. The whole
+task used 6 searches and 9 reads.
+
+The guide that states this loop, with its budgets, is
+[`locate.md`](../../plugins/codebase-map/skills/map-method/references/locate.md).
+The implementer's brief in project-delivery and the investigation method in
+senior-review point to it, so the agents that change code receive it.
+
+### What a search returns
+
+```json
+{"results": [
+  {"entity_id": "app/services/food_pool.py::filter_dietary_substitutes",
+   "kind": "function", "path": "app/services/food_pool.py",
+   "start_line": 212, "end_line": 240,
+   "signatures": ["def filter_dietary_substitutes(pool, profile)"],
+   "provenance": ["fts5"], "score": -4.21}],
+ "exact": [], "gaps": [], "ranking_policy": "exact-fts5-bm25-v1", "index_state": "fresh"}
+```
+
+Never source text: the agent reads the entities it keeps with
+`codebase_map_read`, which verifies the bytes against the snapshot. A search
+does not reread the tree (that read cost 2 to 5 seconds per call on a 500-file
+project against 0.3 seconds for the ranking itself), so a symbol that moved
+since the snapshot is reported at the read, one call later. A missing or stale
+index is a `gaps` entry naming `codebase_map_index`, never an error.
+
+### Where this comes from
+
+An end-to-end experiment on 2026-10-27 (run
+`.daodan/runs/20261026-code-context-e2e-gate`, the diary
+[`context-building-benchmarks.md`](../research/context-building-benchmarks.md))
+gave a coding agent 23 real bugs from two private projects, judged by the hidden
+tests of the real fixes, under three access paths:
+
+| Access path | Solved | Cost per solved task | One search |
+|---|---|---|---|
+| map + lexical search + reproduce-then-fix | 21 of 23 | 0.27 USD | 1.2 s |
+| map + hybrid search (embeddings + lexical) | 19 of 23 | 0.31 USD | 1.6 s |
+| pre-built static packet, no search | 19 of 23 | 0.34 USD | none |
+
+Retrieval was a tie: read per file, both search paths surfaced the right code
+in every task. The differences in solved tasks are within noise for 23 tasks;
+the cost difference is not. Nine of the ten failures had the right file open and
+did half of the request, which is why the loop ends with "reproduce, then fix"
+and why the guide asks for the names of the whole request. The static packet
+was dropped: it cost the most and, without a search, the agent edited the wrong
+file once. The embedding index stayed optional by the owner's decision. The
+measurement covers Python, a strong model and precise requests, one replicate;
+the specification that turned it into these tools is
+[`2026-10-27-code-access-design.md`](../specs/2026-10-27-code-access-design.md).
+
 <!-- daodan:reference:start -->
 ## Source-derived reference
 
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `8.11.0`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
+**Version:** `8.12.0`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
 
 ### Required dependencies
 
