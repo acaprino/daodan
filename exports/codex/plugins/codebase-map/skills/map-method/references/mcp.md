@@ -146,10 +146,12 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | `codebase_map_outline` | `run_id`, optional `path`, `pattern` (literal case-insensitive substrings separated by `\|`, never a regular expression), `limit=100`: bound symbol metadata |
 | `codebase_map_graph` | `run_id`, optional `paths`, `hops=2`, `limit=100`: verified static graph and diagnostics |
 | `codebase_map_read` | `run_id`, `requests`: verified source blocks; a result above 4,000,000 characters is refused, so split the request |
+| `codebase_map_search` | `run_id`, `query`, optional `anchors` (at most 100, each `entity_id`, `path` with `line`, or `symbol`), `limit=20` (1 to 100): the run's lexical index ranked for the query, exact symbol and traceback matches first, then FTS5 subtoken matches; records carry `entity_id`, `kind`, `path`, `start_line`, `end_line`, `signatures`, `provenance` and `score`, never source. Read-only; the binding of the index is checked but the tree is not reread, so read hits with `codebase_map_read`. A `missing`, `stale` or `corrupt` index returns no results and a `gaps` entry naming `codebase_map_index`; see `locate.md` for the loop |
+| `codebase_map_index` | `run_id`, optional `check=false`, `break_lock=false`: state of the lexical index beside the snapshot (`fresh`, `missing`, `stale`, `corrupt`, `failed`) and, unless `check`, its repair; `break_lock` removes the lock and temporaries a crashed build left, since a bare lock has no owner; writes only `retrieval.sqlite`, its lock and its temporaries beside the manifest. A run whose index failed at creation stays usable: the event journal carries `index_failed` and searches report the gap |
 | `codebase_map_edit_impact` | `run_id`, `targets` (symbol ids `path::Name` or file paths), `neighbors=20`, `history=5`, `include_source=true`, `hops=1`, `include_neighbor_source=false`, `include_slices=false`, `budget_chars=120000`: for each target its digests, signature records and card, L1 callers/callees with exact reference sites, optional L2 signatures, optional verified L1 neighbour source, optional lazy Python slices, L4 related tests and obligations, unresolved references, recent changes and verified target source. Budget omissions and DO NOT TOUCH unavailability are explicit. Evidence and leads, never a verdict; an unreadable or stale source is reported in `source.error` and the metadata stays usable |
 | `codebase_map_symbols_at` | `run_id`, optional `requests` (each with `path` and line `ranges`), or `base_run_id` with a unified `diff`: symbols overlapping explicit ranges in the candidate run, or removed lines in the base run and added lines in the candidate. Stable entity keys are kept separate from revision anchors; unplaced files and ranges are declared gaps |
 | `codebase_map_stale_callers` | `run_id`, `base_run_id`, `limit=100`: compare two runs and classify candidate callers of changed symbols into RED `edit_impact`, GREEN `validation_impact` and `do_not_touch`, with changed symbols, digest-version incompatibilities and impacted SCCs in callees-before-callers order |
-| `codebase_map_context` | `run_id`, `request`, `recipient`, optional `out="context"`, `cursor`, `base_run_id`, `embedding_result`: bounded evidence packet and resumable cursor for a bound run; see "Preparing and calling the context tool". It writes artifacts, so it is not annotated read-only, and it refreshes no index |
+| `codebase_map_context` | `run_id`, `request`, `recipient`, optional `out="context"`, `cursor`, `base_run_id`, `embedding_result`: bounded evidence packet and resumable cursor for a bound run; see "Preparing and calling the context tool". It writes artifacts, so it is not annotated read-only, and it refreshes no index: the lexical index is built with the snapshot and repaired by `codebase_map_index` |
 | `codebase_map_meta_query` | `run_id`, optional `paths`, `symbol`, `freshness`, `include_history=true`, `limit=100`: Meta-Code symbols with their digests and signature records, card freshness and the bounded changeset history. Cards come from the analysis root's `cards.sqlite`, judged against this run's snapshot; read-only, and cards are written with `snapshot.py meta-upsert` |
 | `codebase_map_diff` | `run_id`: read-only source and parser comparison; preserves the snapshot |
 | `codebase_map_artifact` | `run_id`, `name`: one declared artifact's content, `bytes` and digest of the whole file; content stops at 2,000,000 bytes with `truncated: true` |
@@ -194,9 +196,11 @@ host and the team workflow.
 The tool reads derived inputs and creates none of them. Prepare each for the exact
 manifest the run is bound to:
 
-1. Retrieval index (required): `retrieval.refresh_index(<manifest>, <manifest
-   directory>/retrieval.sqlite)` from `scripts/retrieval.py`. No command-line
-   entry or MCP tool builds it; a missing index stays a bound missing input.
+1. Retrieval index (required): `<manifest directory>/retrieval.sqlite`, built
+   by `codebase_map_create_run` and `snapshot.py write` with the snapshot and
+   repaired by `codebase_map_index` or `snapshot.py index MANIFEST`
+   (`--check` reports without writing). A missing index stays a bound missing
+   input of the packet until one of those runs.
 2. Python call edges (recommended): `resolve_edges.py <manifest> --environment
    <venv of the analyzed project> --compact` writes `engine-edges.sqlite` beside
    the manifest. Without it callers come from the lexical edges alone, which

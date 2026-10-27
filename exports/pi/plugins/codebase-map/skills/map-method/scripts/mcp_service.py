@@ -22,6 +22,7 @@ import sys
 
 import card_store
 import confinement
+import retrieval
 import semantic_store
 import snapshot
 import source_reader
@@ -369,6 +370,7 @@ class MapService:
                     (run / "snapshot").mkdir()
                     os.replace(temporary, run / state["snapshot"]["path"])
                     _write(run / "state.json", state)
+                    index = retrieval.ensure_index(run / state["snapshot"]["path"])
                     arguments = [run]
                     if stop_after is not None:
                         arguments.extend(["--stop-after", stop_after])
@@ -378,6 +380,10 @@ class MapService:
                     shutil.rmtree(run, ignore_errors=True)
                     raise
                 self._event(run, "run_created")
+                if index["state"] != "fresh":
+                    # The run stays usable without its index: searches report the gap
+                    # and codebase_map_index repairs it.
+                    self._event(run, "index_failed", message=f"{index['state']}: {index['reason']}")
                 return self._status(run_id)
         finally:
             temporary.unlink(missing_ok=True)
@@ -405,6 +411,36 @@ class MapService:
             registry = self.root / "runs.json"
             confinement.reject_link_chain(registry)
             return {"runs": values, "registry": snapshot._read_registry(self.root) if registry.exists() else None}
+
+    def search(self, run_id, query, anchors=None, limit=20):
+        """Rank the run's lexical index for `query`; a non-fresh index is a gap, never an error."""
+        if not isinstance(query, str) or len(query) > 16_384:
+            raise ValueError("query must be text of at most 16384 characters")
+        if anchors is None:
+            anchors = []
+        if not isinstance(anchors, list) or len(anchors) > 100:
+            raise ValueError("anchors must be a list of at most 100 anchors")
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise ValueError("limit must be an integer from 1 through 100")
+        with self._operation():
+            _, _, manifest, _ = self._bound_run(run_id)
+            state = retrieval.index_state(manifest.path)
+            if state["state"] != "fresh":
+                return {**retrieval.gap_result(state, limit, f"codebase_map_index(run_id={run_id!r})"), "run_id": run_id}
+            result = retrieval.search(retrieval.index_name(manifest.path), query, anchors=anchors, limit=limit,
+                                      verify=False)
+            return {**retrieval.public_result(result), "run_id": run_id, "index_state": "fresh"}
+
+    def index(self, run_id, check=False, break_lock=False):
+        """Report or repair the run's lexical index beside its snapshot."""
+        if not isinstance(check, bool) or not isinstance(break_lock, bool):
+            raise ValueError("check and break_lock must be booleans")
+        with self._operation(write=not check):
+            run, _, manifest, _ = self._bound_run(run_id)
+            result = retrieval.ensure_index(manifest.path, check=check, break_lock=break_lock)
+            if not check and result.get("action") in ("rebuilt", "refreshed"):
+                self._event(run, "index_refreshed", message=result["action"])
+            return {**result, "run_id": run_id}
 
     def outline(self, run_id, path=None, pattern=None, limit=100):
         _limit(limit)
@@ -493,8 +529,11 @@ class MapService:
                 raise ValueError('context base requires a bound base_run_id')
             authority = {'root': str(self.project_root), 'source_root': str(Path(manifest['root'])),
                          'read_boundary': [manifest['target']], 'write_boundary': []}
-            indexes = {'cards': str(self.root / card_store.CARD_STORE_NAME),
-                       'retrieval': str(manifest.path.parent / 'retrieval.sqlite')}
+            indexes = {'cards': str(self.root / card_store.CARD_STORE_NAME)}
+            # Name the lexical index only when it is on disk: an absent index is the
+            # planner's `retrieval_missing` gap, not an unreadable database.
+            if retrieval.index_name(manifest.path).is_file():
+                indexes['retrieval'] = str(retrieval.index_name(manifest.path))
             if embedding_result is not None:
                 dense = run / _relative(embedding_result)
                 confinement.reject_link_chain(dense)

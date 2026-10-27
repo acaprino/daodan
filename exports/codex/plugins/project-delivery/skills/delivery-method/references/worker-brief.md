@@ -91,6 +91,7 @@ rejected alternatives: <RA-* ids and their text, when they touch this task>
 ## Files
 write_set: <exact paths; nothing else may change>
 read context: <verified `task-packet`: cards and sources of the write_set, one-hop callers and callees, current signatures>
+locate: the packet is a starting point, not the search; follow `codebase-map:map-method` `references/locate.md`: `codebase_map_search` with the names in the objective and examples, `codebase_map_outline` and `codebase_map_graph` on the hits, `codebase_map_read` by symbol, `codebase_map_edit_impact` before the edit; without an MCP server, `snapshot.py search MANIFEST --query Q` and the matching subcommands
 protected paths: <preexisting modified files, in IN_PLACE mode>
 
 ## Oracle

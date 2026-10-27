@@ -3197,10 +3197,71 @@ def cmd_write(args: argparse.Namespace) -> int:
             result = write_snapshot(Path(args.target), Path(args.out),
                                     format=getattr(args, "format", "sqlite"), previous=previous)
         print(f"snapshot: {result['file_count']} files -> {args.out}")
-        return 0
     except (OSError, ValueError) as error:
         print(f"snapshot: cannot write manifest: {error}", file=sys.stderr)
         return 2
+    if getattr(args, "no_index", False):
+        return 0
+    import retrieval
+    index = retrieval.ensure_index(Path(args.out))
+    if index["state"] != "fresh":
+        print(f"index: {index['state']}: {index['reason']}", file=sys.stderr)
+        return 1
+    print(f"index: {index['action']} -> {index['index']} ({index['documents']} documents)")
+    return 0
+
+
+def _index_command(manifest: Path) -> str:
+    return f"{Path(__file__).name} index {manifest}"
+
+
+def cmd_index(args: argparse.Namespace) -> int:
+    """Report or repair the lexical index beside a manifest; exit 0 only when it ends fresh."""
+    try:
+        import retrieval
+        result = retrieval.ensure_index(Path(args.manifest), check=args.check, break_lock=args.break_lock)
+    except (OSError, ValueError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["state"] == "fresh" else 1
+
+
+def _search_anchor(value: str) -> dict:
+    text = value.strip()
+    if text.startswith("{"):
+        anchor = json.loads(text)
+        if not isinstance(anchor, dict):
+            raise ValueError("an anchor must be a JSON object or an entity id")
+        return anchor
+    return {"entity_id": text}
+
+
+def cmd_search(args: argparse.Namespace) -> int:
+    """Rank the lexical index for a query; a non-fresh index is a gap, never an error."""
+    try:
+        import retrieval
+        manifest = Path(args.manifest)
+        if type(args.limit) is not int or not 1 <= args.limit <= 1000:
+            raise ValueError("limit must be an integer from 1 through 1000")
+        anchors = [_search_anchor(item) for item in args.anchor or []]
+        if any(set(anchor) - {"entity_id", "path", "symbol", "line", "start", "end"} for anchor in anchors):
+            raise ValueError("anchor keys are entity_id, path, symbol, line, start and end")
+        state = retrieval.index_state(manifest)
+        if state["state"] != "fresh":
+            print(json.dumps(retrieval.gap_result(state, args.limit, _index_command(manifest)), indent=2, sort_keys=True))
+            return 0
+        dense = None
+        if args.embedding_result:
+            _reject_links(Path(args.embedding_result))
+            dense = json.loads(Path(args.embedding_result).read_text(encoding="utf-8"))
+        result = retrieval.search(retrieval.index_name(manifest), args.query, anchors=anchors, limit=args.limit,
+                                  embedding_result=dense, verify=args.verify_tree)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+    print(json.dumps({**retrieval.public_result(result), "index_state": "fresh"}, indent=2, sort_keys=True))
+    return 0
 
 
 def _cards_path(args: argparse.Namespace) -> Path:
@@ -3344,7 +3405,27 @@ def main(argv: list[str] | None = None) -> int:
     write_parser.add_argument("--out", required=True)
     write_parser.add_argument("--format", choices=("sqlite", "json"), default="sqlite")
     write_parser.add_argument("--reuse", help="prior manifest; verify every file before reusing its parse")
+    write_parser.add_argument("--no-index", action="store_true",
+                              help="skip the lexical index that write builds beside the manifest")
     write_parser.set_defaults(func=cmd_write)
+
+    index_parser = sub.add_parser("index", help="build or repair the lexical index beside a manifest")
+    index_parser.add_argument("manifest")
+    index_parser.add_argument("--check", action="store_true", help="report the index state and write nothing")
+    index_parser.add_argument("--break-lock", action="store_true",
+                              help="remove a lock and temporaries left by a crashed build before repairing")
+    index_parser.set_defaults(func=cmd_index)
+
+    search_parser = sub.add_parser("search", help="rank the lexical index of a manifest for a query")
+    search_parser.add_argument("manifest")
+    search_parser.add_argument("--query", required=True)
+    search_parser.add_argument("--anchor", action="append",
+                               help="an entity id or a JSON anchor object; repeatable")
+    search_parser.add_argument("--limit", type=int, default=20)
+    search_parser.add_argument("--embedding-result", help="a daodan/embedding-result/v1 JSON beside the manifest")
+    search_parser.add_argument("--verify-tree", action="store_true",
+                               help="reread the whole source tree before ranking (slow; the index binding is always checked)")
+    search_parser.set_defaults(func=cmd_search)
 
     resolve_parser = sub.add_parser("resolve", help="resolve the declared snapshot path and small header of a bound run")
     resolve_parser.add_argument("run_dir")

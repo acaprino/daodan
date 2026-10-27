@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import sqlite3
 import tempfile
+import time
 
 import confinement
 import snapshot
@@ -215,8 +216,128 @@ def _anchor_records(store, records, anchor):
     return sorted(selected, key=lambda r: r["entity_id"]), ambiguous
 
 
+INDEX_STATES = ("fresh", "missing", "stale", "corrupt", "failed")
+_BINDING_KEYS = ("schema", "document_version", "tokenizer", "ranking", "root", "target", "scope",
+                 "parser_fingerprint", "manifest", "manifest_digest", "sqlite_version")
+
+
+def index_name(manifest: Path) -> Path:
+    """The lexical index of a manifest: `retrieval.sqlite` beside it."""
+    return Path(manifest).with_name("retrieval.sqlite")
+
+
+def index_state(manifest: Path, index_path: Path | None = None) -> dict:
+    """Report the index without touching it: fresh, missing, stale or corrupt.
+
+    `fresh` means the stored binding equals the manifest's current binding, so
+    `search` would accept it. `stale` names the binding keys that differ.
+    `corrupt` covers a file that is not a readable index of this schema.
+    Invalid paths raise, as `refresh_index` does.
+    """
+    manifest, index_path = _destination(manifest, index_path or index_name(manifest))
+    if not manifest.is_file():
+        raise ValueError(f"manifest does not exist: {manifest}")
+    report = {"index": str(index_path), "manifest": str(manifest)}
+    lock = index_path.with_name(index_path.name + ".lock")
+    if lock.exists():
+        report["lock"] = str(lock)
+        report["lock_age_s"] = round(max(0.0, time.time() - lock.stat().st_mtime), 1)
+    if not index_path.exists():
+        return {**report, "state": "missing", "reason": "no retrieval index beside the manifest"}
+    try:
+        with closing(_read(index_path)) as db:
+            metadata = json.loads(db.execute("SELECT value FROM metadata").fetchone()[0])
+            stored = metadata["binding"]
+            documents = metadata["documents"]
+            if not isinstance(stored, dict):
+                raise KeyError("binding")
+    except sqlite3.OperationalError as error:
+        # The file exists but cannot be opened or queried: a sharing violation, a
+        # missing table. Not a verdict on its content, so nothing is deleted.
+        return {**report, "state": "failed", "reason": f"cannot read the retrieval index: {error}"}
+    except (sqlite3.DatabaseError, TypeError, KeyError, ValueError, json.JSONDecodeError) as error:
+        return {**report, "state": "corrupt", "reason": f"not a readable retrieval index: {error}"}
+    with open_snapshot(manifest) as store:
+        current = _binding(store)
+    differing = [key for key in _BINDING_KEYS if stored.get(key) != current.get(key)]
+    if differing or stored != current:
+        return {**report, "state": "stale", "documents": documents,
+                "reason": "binding differs: " + ", ".join(differing or sorted(set(stored) ^ set(current)))}
+    return {**report, "state": "fresh", "documents": documents, "binding": current}
+
+
+def ensure_index(manifest: Path, index_path: Path | None = None, *, check: bool = False,
+                 break_lock: bool = False) -> dict:
+    """Repair the index unless `check`: rebuild `missing`, `stale` and `corrupt`.
+
+    Returns the final `state` plus `action` (`none`, `reported`, `rebuilt`,
+    `refreshed`), the reason of a non-fresh state and the `refresh_index`
+    result when one ran. `failed` carries the message of an unavailable FTS5,
+    a held lock or a write error, and leaves the previous generation in place.
+    A lock is a bare file without an owner, so a lock left by a crashed build
+    is removed only on an explicit `break_lock`, together with the crashed
+    build's `.retrieval-*.sqlite` temporaries.
+    """
+    before = index_state(manifest, index_path)
+    if before["state"] == "fresh" and not (break_lock and "lock" in before):
+        return {**before, "action": "none"}
+    if check:
+        return {**before, "action": "reported"}
+    manifest, index_path = _destination(manifest, index_path or index_name(manifest))
+    lock = index_path.with_name(index_path.name + ".lock")
+    if break_lock and lock.exists():
+        confinement.reject_link_chain(lock)
+        lock.unlink()
+        for leftover in index_path.parent.glob(".retrieval-*.sqlite"):
+            confinement.reject_link_chain(leftover)
+            leftover.unlink()
+        before = dict(index_state(manifest, index_path), lock_broken=str(lock))
+        if before["state"] == "fresh":
+            return {**before, "action": "none"}
+    try:
+        if before["state"] == "corrupt":
+            confinement.reject_link_chain(index_path)
+            index_path.unlink()
+        elif before["state"] == "failed":
+            return {**before, "action": "none"}
+        refresh = refresh_index(manifest, index_path)
+    except FileExistsError as error:
+        return {**before, "state": "failed", "action": "none", "lock": str(lock),
+                "reason": f"index lock held: {error.filename or lock}; a crashed build leaves it, break_lock removes it"}
+    except (ValueError, OSError, sqlite3.Error) as error:
+        return {**before, "state": "failed", "action": "none", "reason": str(error)}
+    after = index_state(manifest, index_path)
+    action = "rebuilt" if refresh["mode"] == "rebuild" else "refreshed"
+    broken = {"lock_broken": before["lock_broken"]} if "lock_broken" in before else {}
+    return {**after, **broken, "action": action, "previous": before["state"], "refresh": refresh}
+
+
+def gap_result(state: dict, limit: int, repair: str) -> dict:
+    """The search envelope when the index is not fresh: no results, one gap naming the repair."""
+    return {"schema": "daodan/retrieval-result/v1", "document_digest": None, "results": [], "exact": [],
+            "exact_total": 0, "exact_truncated": 0, "ambiguous": [], "matched": 0, "returned": 0, "truncated": 0,
+            "limit": limit, "ranking_policy": None,
+            "capabilities": {"exact": False, "fts5": False, "embedding": "unavailable"},
+            "index_state": state["state"], "gaps": [f"retrieval_{state['state']}: {state['reason']}; run {repair}"]}
+
+
+def public_result(result: dict) -> dict:
+    """The search envelope for agents: the ranking metadata and trimmed records, no source text."""
+    records = []
+    for record in result["results"]:
+        anchor = record.get("anchor") or {}
+        records.append({"entity_id": record["entity_id"], "kind": (record.get("entity_key") or {}).get("kind"),
+                        "path": anchor.get("file"), "start_line": anchor.get("start_line"),
+                        "end_line": anchor.get("end_line"), "signatures": record.get("signatures") or [],
+                        "provenance": record.get("provenance") or [], "score": record.get("score")})
+    keep = ("schema", "document_digest", "exact", "exact_total", "exact_truncated", "ambiguous", "matched",
+            "returned", "truncated", "limit", "gaps", "ranking_policy", "capabilities")
+    return {**{key: result[key] for key in keep if key in result}, "results": records}
+
+
 def search(index_path: Path, query: str, *, anchors: list[dict], limit: int,
-           embedding_result: dict | None = None) -> dict:
+           embedding_result: dict | None = None, verify: bool = True) -> dict:
+    """Rank the index for `query`. `verify=False` skips the whole-tree read and keeps the binding check."""
     if not isinstance(query, str) or len(query) > 16_384:
         raise ValueError("query must be text of at most 16384 characters")
     if not isinstance(anchors, list) or len(anchors) > 100:
@@ -232,7 +353,8 @@ def search(index_path: Path, query: str, *, anchors: list[dict], limit: int,
         with open_snapshot(manifest) as store:
             if metadata["binding"] != _binding(store):
                 raise ValueError("stale retrieval index or incompatible snapshot; refresh the index")
-            _verify_tree(store)
+            if verify:
+                _verify_tree(store)
             records = {key: json.loads(value) for key, value in db.execute("SELECT entity_id,record FROM documents")}
             ranked, exact, ambiguous, gaps = {}, [], [], []
 
