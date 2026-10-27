@@ -42,6 +42,7 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | `references/evidence.md` | evidence, forbidden files, commands, source reading, classification; maintained-document verification separately | every phase worker and every consumer that reads source |
 | `references/reading.md` | analysis reading | every consumer of a bound analysis |
 | `references/standalone.md` | shared read-only map discovery, navigation, impact and fallback | every map consumer, including analysis and composed workflows |
+| `references/locate.md` | the measured loop for finding the code a request is about: search by name, expand with outline and graph, read by symbol, reproduce, then fix | every agent that changes code with a map |
 | `references/phase-0.md` | Phase 0 knowledge discovery | analyst and team entry |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
 | `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |

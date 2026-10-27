@@ -12,7 +12,9 @@ workflow performs only operations already authorized by its own method.
    Latest-state questions may use the mirror; work bound to an invocation keeps
    that exact run directory. Do not select a partial run as a completed analysis.
 2. **Navigate before scanning.** Use the task table in `reading.md`, section
-   `Task views`. Query `codebase_map_outline`, `codebase_map_graph`,
+   `Task views`. To find the code a request is about, follow `locate.md`:
+   `codebase_map_search` with the names in the request, then
+   `codebase_map_outline` and `codebase_map_graph` on the hits. Query
    `codebase_map_meta_query` and `codebase_map_artifact` as pertinent, or search
    the run's Markdown and the project with ordinary tools. Locate symbols,
    contracts, flows and documentation leads before broadly reading source.
