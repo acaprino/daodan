@@ -390,6 +390,8 @@ def validate_pass_review(review, candidate, receipt, review_rules, deliveries,
             or (expected_stage is not None and review.get("stage") != expected_stage)
             or review.get("grounding", {}).get("candidate") != candidate):
         raise ProtocolError("The pre-commit review must be a light changeset review bound to its candidate")
+    if not all(field in review for field in ("required_specialists", "jobs")):
+        raise ProtocolError("A PASS review needs a composition plan: required_specialists and jobs")
     bound = {key: delivery for key, delivery in deliveries.items()
              if isinstance(delivery, dict) and delivery.get("review") == receipt["id"]}
     validate_reviews([review], review_rules, bound, complete=True)

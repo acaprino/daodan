@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "work-controller"
-version = "3.1.4"
+version = "3.1.5"
 description = "Durable process graphs, run records, agenda, gates, grants, artifact exchange and recovery for coordinated work, with a local console and read-only MCP."
 license = "MIT"
 

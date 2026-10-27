@@ -521,7 +521,7 @@ class DesignComparisonTests(unittest.TestCase):
                                     capture_output=True, text=True, timeout=15,
                                     creationflags=subprocess.CREATE_NO_WINDOW)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.addCleanup(lambda: os.rmdir(alias) if alias.exists() else None)
+        self.addCleanup(lambda: (os.unlink if alias.is_symlink() else os.rmdir)(alias) if alias.exists() else None)
         document = valid_comparison()
         document["sample"]["image"] = {"path": "linked-assets/logo.png", "alt": "Project logo"}
 

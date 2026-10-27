@@ -581,7 +581,7 @@ class CreativeComparisonTests(unittest.TestCase):
                                     capture_output=True, text=True, timeout=15,
                                     creationflags=subprocess.CREATE_NO_WINDOW)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.addCleanup(lambda: os.rmdir(alias) if alias.exists() else None)
+        self.addCleanup(lambda: (os.unlink if alias.is_symlink() else os.rmdir)(alias) if alias.exists() else None)
         for target in ("sample", "frame", "source"):
             document = copy.deepcopy(self.document)
             if target == "sample":
