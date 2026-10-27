@@ -93,8 +93,12 @@ authoritative instruction file, between `<!-- LOOP-HARNESS:BEGIN -->` and
 its start: the verified test, lint, type and build commands with their
 prerequisites; on a project that keeps decision records, the active ones per
 domain, by identity and title, supplied by the caller as resolved active decision inputs; the
-workspace convention (worktree root, branch naming); and the sentence that the
-loop's run records live under `.daodan/runs/`. Reasons stay in the records,
+workspace convention (worktree root, branch naming); the neutral specification
+destination (`docs/specs/` unless explicitly configured otherwise); and routing:
+design/brainstorm requests use Daodan's delivery method, which writes and obtains approval of
+the specification before planning, reusing existing answers. This is an instruction,
+not proof of automatic host activation. State that run records live under
+`.daodan/runs/`. Reasons stay in the records,
 procedures stay in the loaded methods, and run state never enters the block.
 
 Create the block at project initialization when creation is authorized;

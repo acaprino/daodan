@@ -14,7 +14,9 @@ complete visual proposals for the settled brief. Existing format designers,
 native producers and reviewers prove representative real content before the
 HTML gallery and explicit choice in `DESIGN.md`. DOCX and PPTX own their
 independent `structure.md` and `layout-patterns.md` references, native construction
-and saved-file review. The existing five roles retain their production boundaries.
+and saved-file review. PPTX construction runs through DeckCraft or, from an
+approved HTML design, through the bundled conversion engine. The existing five
+roles retain their production boundaries.
 
 Palette extraction/generation, font checks, inspectors and native template tools
 remain available. Direction catalogs supply ideas and seeds; each new brief
@@ -34,11 +36,15 @@ owning skill's shipped references, so the generated host packages carry them.
 | Theme Factory seed palettes | Directions Q–T in [directions.md](skills/design/references/directions.md); [anthropics/skills](https://github.com/anthropics/skills) at `dbd4588f9e1033efb41dad4bef2f7947c8993d44` | Apache-2.0. [Retirement/provenance](skills/design/references/theme-factory-upstream.md) and [full terms](skills/design/references/LICENSE-theme-factory-APACHE-2.0.txt). The former preset skill/showcase is not shipped. |
 | PPT Visual region sketches | [PPTX layout-patterns.md](skills/pptx/references/layout-patterns.md); [claude-office-skills/skills](https://github.com/claude-office-skills/skills) at `9c4c7d5cd2813a8936bf2c9fdb174ea883b85a11` | [MIT terms](skills/pptx/references/LICENSE-ppt-visual-MIT.txt). Only adapted sketches and specification handoffs; native object constraints and shared visual ownership remain local. |
 | Word composition inspiration | [DOCX layout-patterns.md](skills/docx/references/layout-patterns.md); [tivojn/Office](https://github.com/tivojn/Office) at `303e55d42a71aca4bc1dffdb49f6c1f090889899` | Original local guidance. The inspected source lacked complete license terms; no source blocks, assets or fonts were copied. This is not a copied-source sync target. |
+| open-slide PPTX exporter | Vendored engine under [pptx/lib/open-slide-pptx](skills/pptx/lib/open-slide-pptx/UPSTREAM.md); [open-slide/open-slide](https://github.com/open-slide/open-slide), `@open-slide/core` 2.3.1 at `82349cf2d07d37b75975170503a82fcaacae9298` | MIT, Copyright (c) 2026 Yiwei Ho, with retained notices for the engine, `fflate` 0.8.3 and `html-to-image` 1.11.13. Eleven upstream files copied verbatim under an owner-authorized scoped exception to the no-new-vendor policy, hash-guarded by `manifest.json` and the bridge. The entry, driver, rebuild script and bridge are Office code. Copied-source sync row, manual on-demand refresh. |
 
 DeckCraft, WordCraft and GridCraft are separately supplied runtimes, not bundled
 engines or copied-source dependencies. Their skills link the actual runtime
 contracts and require capability/version evidence before dependent production.
-Installed fonts retain their own licenses and embedding permissions.
+Installed fonts retain their own licenses and embedding permissions. The
+open-slide exporter in the row above is the single bundled copied source; its
+contract is [html-to-pptx.md](skills/pptx/references/html-to-pptx.md) and it
+requires Node, the Playwright module and a Chromium-family browser on the host.
 
 PPT Design remains a candidate for an observed gap after the paired native
 proof. Future upstream contributions

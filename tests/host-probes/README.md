@@ -156,3 +156,16 @@ Release baseline, applied when the table is filled in:
 - `parallel fan-out`, `shared tasks` and `peer messaging` may be `conditional` or `no`.
 - Copilot must report `worker allowlist = yes`.
 - Codex may report `packaged roles = no` only when inline role delivery succeeds.
+
+## Lifecycle hook evidence
+
+OpenCode 2.1.4 was also probed on 2026-10-27 with an isolated configuration and
+XDG state under the approved temporary root. The probe loaded the real generated
+`exports/opencode/index.js`, selected `research` and its required dependency, and
+captured the primary `session.context` payload. The generated loader registered
+`prompt` and `context`; the captured system array contained exactly one
+`{type: "text", text: "Science Mode is ON..."}` part. A separate API probe showed
+that `session.created` can precede plugin activation, so the loader also executes
+its session-start callback once at the first prompt. See
+[`docs/plugins/research/validation.md`](../../docs/plugins/research/validation.md)
+for commands, evidence boundaries and unmeasured paths.

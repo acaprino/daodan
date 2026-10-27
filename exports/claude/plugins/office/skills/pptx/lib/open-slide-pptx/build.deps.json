@@ -1,0 +1,10 @@
+{
+  "comment": "Development-time build inputs for the vendored open-slide PPTX exporter. rebuild.mjs copies this file into its work directory as package.json, installs the pinned versions there and bundles the engine. Nothing here is installed inside the plugin directory, so no node_modules tree is ever shipped to a host package.",
+  "dependencies": {
+    "fflate": "0.8.3",
+    "html-to-image": "1.11.13"
+  },
+  "devDependencies": {
+    "vite": "8.3.3"
+  }
+}

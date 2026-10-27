@@ -124,6 +124,27 @@ Each has a watch row in the `upstream-sync` table and a paragraph under the
 README's "Upstream projects and inspiration". Do not add either as a dependency
 or a copied-source sync target without a new, scoped authorization.
 
+### 4.3 Adopted candidate: open-slide PPTX exporter for Office
+
+Copied-source intake of 2026-10-27, authorized by the owner as a scoped
+exception to the no-new-vendor policy after the comparative conversion benchmark
+in `office-conversion-benchmark/20261027-graphical/` measured this exporter as
+the strongest HTML to PPTX lane: 73/73 source text units kept as native text,
+the best visual result, no native table.
+
+| Dimension | Resolution |
+|---|---|
+| Capability | Mechanical HTML to PPTX conversion (measured DOM to scene to PresentationML) for `office:pptx` construction. No local equivalent existed, and delegation would have put the upstream package and its install back into every host run. |
+| Integration | Copied source: eleven verbatim files of `@open-slide/core` 2.3.1 at `82349cf2d07d37b75975170503a82fcaacae9298`, MIT, Copyright (c) 2026 Yiwei Ho, plus `fflate` 0.8.3 and `html-to-image` 1.11.13 inside the built bundle. Not delegation and not original inspiration. |
+| Availability | Node `^20.19.0` or `>=22.12.0`, the Playwright Node module and a Chromium-family browser. Discovery, overrides and recovery are in `plugins/office/skills/pptx/references/html-to-pptx.md`; a missing runtime stops with those instructions. |
+| Provenance | `plugins/office/skills/pptx/lib/open-slide-pptx/UPSTREAM.md` records the pin, registry integrity, exclusions and refresh protocol; the three MIT notices are retained; `manifest.json` hashes are verified by the bridge before each conversion and by `tests/test_office_pptx_convert.py`; the copied-source row lives in `upstream-sync`. |
+
+Excluded and never copied: `pptx/render.ts`, upstream tests, the open-slide
+application, CLI, Vite plugin and React tree. Office owns the entry wrapper,
+driver, rebuild script, bridge and contract reference. The authorization is
+scoped to those eleven files: it is not a general permission to vendor, and a
+future refresh follows the recorded protocol instead of a new intake.
+
 ## 5. Adapt to local conventions
 
 For original local content and dependency wiring, apply these conventions while preserving existing attribution:

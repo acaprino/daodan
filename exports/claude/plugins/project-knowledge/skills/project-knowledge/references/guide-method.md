@@ -106,6 +106,10 @@ Writers share verified context but their agreement is inherited evidence unless
 they derive the premise themselves. Dispatch only the needed writers using the
 host's supported strategy. Check every delivery before cross-document review.
 
+When the plan calls for a published-quality figure, load the `diagram-design:diagram-design` skill
+and follow `references/diagram-patterns.md`; an unavailable provider stops that figure
+and reports the install block carried there instead of substituting a simpler diagram.
+
 Dispatch guide-reviewer in audit-only mode with the planned file set. A review
 may request corrections or a navigation index when the plan calls for one; it
 does not create a fixed glossary/index package or edit another writer's files.

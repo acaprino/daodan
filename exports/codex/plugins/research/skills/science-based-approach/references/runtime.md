@@ -101,8 +101,9 @@ belong to the caller's owned run. Never interpolate user text into shell code.
 
 For science-mode without arguments, report state, origin and project plus the
 host coverage from the generated entry note: Claude/Codex register plugin hooks;
-Copilot/Pi/OpenCode use method checkpoints. Installed hook trust/event delivery
-is unknown unless actually probed. Never run research to obtain status.
+OpenCode adapts callbacks in its loader; Copilot/Pi use method checkpoints.
+Installed hook trust/event delivery is unknown unless actually probed.
+Never run research to obtain status.
 
 ## Checkpoint
 

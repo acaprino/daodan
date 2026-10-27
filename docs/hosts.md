@@ -463,8 +463,11 @@ Python helper bundled under the skill. Enabling the plugin makes registration
 discoverable; the host retains its trust controls before execution. No global
 settings are edited. Python must be available as `python` to the host process.
 
-Copilot, Pi and OpenCode exports retain the explicit scientific checkpoints in
-Daodan methods; they declare no native interception for this feature. A callback
+Copilot and Pi exports retain the explicit scientific checkpoints in
+Daodan methods; they declare no native interception for this feature.
+OpenCode adapts lifecycle callbacks through its plugin loader, executing
+session-start hooks on session creation and user-prompt-submit hooks on
+prompt/chat dispatch via Python without crashing the runtime. A callback
 only emits routing context after reading Science Mode. It performs no research
 or publication. See the [technical contract](plugins/research/technical-spec.md)
 and [validation evidence](plugins/research/validation.md) for the distinction

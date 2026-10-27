@@ -109,8 +109,10 @@ Evidence never approves a requirement or rewrites an accepted ADR/FRD.
 
 Native session/prompt hooks only supply routing context; they perform no research,
 network access, mode mutation or archive publication. Claude/Codex packages
-register supported events, subject to the host's trust settings. Other hosts
-retain these method checkpoints without promising interception outside Daodan.
+register supported events, subject to the host's trust settings. OpenCode's
+loader registers prompt and primary-context callbacks, with a first-prompt
+session-start fallback when creation was not observed. Copilot and Pi retain
+these method checkpoints without promising interception outside Daodan.
 
 ## Resume and explicit retry
 

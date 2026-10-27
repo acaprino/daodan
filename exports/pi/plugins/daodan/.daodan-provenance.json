@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:1063898bc812362cadff33668ee14267ef474b739991ce9c266f522c86106972",
+  "coreDigest": "sha256:216471d8b3109f9302b537feca9581f94d153c7172aa7374358e4755aaf8fffa",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
@@ -37,5 +37,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.6.1"
+  "version": "2.6.2"
 }

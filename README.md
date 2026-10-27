@@ -143,11 +143,6 @@ explains the lifecycle and ownership boundaries.
 /daodan:finish-task                   branch review, merge, realignment
 ```
 
-```mermaid
-flowchart LR
-    A["Interview & Spec"] --> B["Micro-Tasks (TDD)"] --> C["Pre-Commit Review"] --> D["Branch Review & Merge"]
-```
-
 Start with initialization, choose the command for the work, and finish with
 review and realignment. Use the host-specific entry names below.
 

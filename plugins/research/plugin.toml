@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "research"
-version = "7.0.0"
+version = "7.0.2"
 description = "Scientific project research with traceable papers, empirical protocols, immutable revision history and Science Mode; deep web research and quick source lookups remain available."
 license = "MIT"
 

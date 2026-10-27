@@ -50,11 +50,11 @@ strategy = "none"
 state = "unsupported"
 strategy = "none"
 
-# V2 exposes runtime hooks to plugins, but no probe has measured them and no
-# plugin requires this capability, so the honest state is unsupported.
+# The host does not read hooks.json: the loader executes lifecycle callbacks
+# on OpenCode session and prompt events.
 [capabilities."hooks.lifecycle"]
-state = "unsupported"
-strategy = "none"
+state = "adapted"
+strategy = "loader-hooks"
 
 # The host does not read a `.mcp.json`: the loader registers each declared
 # server through the plugin MCP transform, from data the compiler writes. The

@@ -15,6 +15,10 @@ Link to relevant project documentation rather than duplicate a long reference.
 Clarify scope and limitations before making unsupported claims of maturity,
 speed, compatibility or popularity.
 
+Use callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`) judiciously:
+a single callout for a scannable TL;DR, key prerequisite or safety warning gives
+high impact, whereas decorating every paragraph degrades readability.
+
 ## Getting started
 
 Use the project's actual installation and distribution mechanism. A CLI, library,

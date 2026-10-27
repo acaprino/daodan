@@ -16,6 +16,17 @@ Il lab valuta Gutsy v0.4 Q4_K_M per routing, compattazione fast-jev e selezione 
 | [Guida del pilot](pilot-guide.md) e [piano di implementazione](2026-10-26-gutsy-modal-pilot.md) | Riproducibilità, comandi e lavoro completato |
 | [Campagna estesa](gutsy-campaign-design-2026-10-26.md), [schema dei conteggi](campaign-outline.json) e [piano di esecuzione](campaign-execution-plan-2026-10-26.md) | Confronti fra strategie, corpus, profili CPU e regole decisionali |
 
+## Esperimenti Julia (27 ottobre 2026)
+
+| Documento | Contenuto |
+|---|---|
+| [Pilot Julia su CPU](julia-pilot-results-2026-10-27.md) | Prima prova del modello su routing, tool e compattazione; target di memoria e latenza |
+| [Ablazione dei criteri](julia-criteria-ablation-2026-10-27.md) | Criteri descrittivi contro letterali su 32 casi nuovi; esito negativo |
+| [Diagnostica d'uso](julia-usage-diagnostic-2026-10-27.md) | Difetti confermati di fixture e adattatore; controllo ufficiale e direzione per il contratto |
+| [Retest con contratto corretto](julia-adapter-retest-2026-10-27.md) | Contratto deterministico, prova offline della mappatura, retest controllato: 3/8, esito rosso |
+
+La serie valuta `SupersonicLabs/Julia-1` come motore di decisione leggero su CPU locale. Il pilot misura, l'ablazione e la diagnostica correggono, il retest applica la regola pre-dichiarata: la compattazione con questo modello si chiude; le misure restano come evidenza.
+
 ## Note e verifiche di progettazione
 
 1. [Fonti e comportamento di Gutsy](references/gutsy-source-notes.md).

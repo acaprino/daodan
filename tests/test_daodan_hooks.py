@@ -245,7 +245,7 @@ class HookContractTests(unittest.TestCase):
         self.declare(capability="required")
         plugin = load_plugin(self.kernel)
 
-        for host in ("copilot", "pi", "opencode"):
+        for host in ("copilot", "pi"):
             with self.subTest(host=host):
                 adapter = load_adapter(ADAPTERS, host)
                 live = self.temp / f"existing {host}"
@@ -260,6 +260,14 @@ class HookContractTests(unittest.TestCase):
                 self.assertIn("hooks.lifecycle", support.missing_capabilities)
                 self.assertEqual(sentinel.read_bytes(), b"previous package must survive")
                 self.assertEqual([path.name for path in live.iterdir()], ["sentinel.txt"])
+
+    def test_required_hook_capability_is_supported_on_opencode_as_adapted(self):
+        self.declare(capability="required")
+        plugin = load_plugin(self.kernel)
+        adapter = load_adapter(ADAPTERS, "opencode")
+        support = resolve_support(plugin, adapter)
+        self.assertNotIn("hooks.lifecycle", support.missing_capabilities)
+        self.assertEqual(support.state, "adapted")
 
     def test_generated_command_preserves_literal_arguments_payload_and_spaced_root(self):
         args = ["", "with spaces", "apostrophe's", 'double "quotes"',

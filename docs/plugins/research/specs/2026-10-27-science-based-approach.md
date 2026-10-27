@@ -167,15 +167,16 @@ esplicitamente `wired = false`, quindi non è registrato automaticamente come ho
 Mancava il percorso generale di dichiarazione neutrale e registrazione degli eventi
 per i nuovi hook scientifici, non la possibilità di esportarne gli script.
 L'implementazione aggiunge `[[hooks]]` neutri e genera `hooks/hooks.json` per
-Claude e Codex, conservando i controlli di fiducia dell'host. Gli altri host
-mantengono i checkpoint dei metodi. Il [contratto tecnico](../technical-spec.md)
+Claude e Codex, mentre per OpenCode adatta l'intercettazione nel proprio loader
+eseguendo gli script Python sugli eventi di sessione e prompt. Copilot e Pi
+mantengono i checkpoint dei metodi con fallback esplicito. Il [contratto tecnico](../technical-spec.md)
 descrive il formato e i limiti.
 I plugin esterni possono distribuire manifest hook propri, fuori dalla compilazione
 Daodan. Le righe `hooks.lifecycle` degli adattatori sono evidenza dichiarativa,
 non collaudi. La verifica distingue,
 per Claude, Codex, Copilot, Pi e OpenCode, aggancio del workflow,
-manifest/evento nativo generato, installazione e prova eseguita. Un host senza
-hook nativi conserva il percorso del workflow e dichiara il limite per gli usi
+manifest/evento generato o adattato nel loader, installazione e prova eseguita. Un host senza
+registrazione di hook conserva il percorso del workflow e dichiara il limite per gli usi
 diretti esterni ai workflow. Non promettere intercettazione universale.
 
 Evidenze locali: [copia delle policy nel renderer](../../../../scripts/daodan/render.py),

@@ -25,8 +25,10 @@ Prima delle fasi Office si rispettano i prerequisiti di attivazione dei pacchett
 | DOCX modificabile, render o PDF Word | [WordCraft](https://github.com/storytold/wordcraft) | [Metodo](../../../plugins/office/skills/wordcraft/SKILL.md) e [runtime](../../../plugins/office/skills/wordcraft/references/runtime.md) |
 | PPTX modificabile, render o PDF delle slide | [DeckCraft](https://github.com/storytold/deckcraft) | [Metodo](../../../plugins/office/skills/deckcraft/SKILL.md) e [runtime](../../../plugins/office/skills/deckcraft/references/runtime.md) |
 | XLSX con formule e calcolo | [GridCraft](https://github.com/storytold/gridcraft) | [Metodo](../../../plugins/office/skills/gridcraft/SKILL.md) e [runtime](../../../plugins/office/skills/gridcraft/references/runtime.md) |
+| PPTX nativo da un design HTML approvato | Motore open-slide incluso nel plugin, con Node, modulo Playwright e browser Chromium esterni | [Contratto di conversione](../../../plugins/office/skills/pptx/references/html-to-pptx.md) e [provenienza](../../../plugins/office/skills/pptx/lib/open-slide-pptx/UPSTREAM.md) |
 
-Office distribuisce metodi, bridge e inspector; gli engine, gli installer e i server MCP dei runtime non sono inclusi nel plugin. Il run scopre eseguibile o strumenti esposti, versione e schema effettivo dei comandi. Una versione di riferimento non dimostra che quel runtime sia installato o compatibile con ogni file.
+Office distribuisce metodi, bridge e inspector; gli engine, gli installer e i server MCP dei runtime non sono inclusi nel plugin. L'unica eccezione è il motore di conversione HTML→PPTX, copiato in perimetro delimitato sotto autorizzazione del proprietario e protetto dagli hash di `manifest.json`; Node, il modulo Playwright e il browser restano prerequisiti esterni con recovery esplicita.
+ Il run scopre eseguibile o strumenti esposti, versione e schema effettivo dei comandi. Una versione di riferimento non dimostra che quel runtime sia installato o compatibile con ogni file.
 
 Il metodo DOCX contempla un engine diverso soltanto con una scelta esplicita e capacità provate. Un inspector che legge il package non è un motore di scrittura. I workbook con funzionalità non preservate dal runtime richiedono una decisione sullo scopo prima dell'editing.
 

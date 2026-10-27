@@ -47,10 +47,11 @@ function evaluate(rules, action, resource) {
 }
 
 function fakeContext({ options = {}, rejectSkill, existingMcp = {}, existingAgents = {} } = {}) {
-  const calls = { skills: [], agents: {}, commands: [], mcp: {}, prompts: [], transforms: 0 };
+  const calls = { skills: [], agents: {}, commands: [], mcp: {}, prompts: [], transforms: 0, hooks: {} };
   const agents = structuredClone(existingAgents);
   const ctx = {
     options,
+    location: { directory: FIXTURE },
     skill: {
       transform: async (fn) => {
         calls.transforms++;
@@ -95,6 +96,10 @@ function fakeContext({ options = {}, rejectSkill, existingMcp = {}, existingAgen
     session: {
       prompt: async (input) => {
         calls.prompts.push(input);
+      },
+      hook: async (name, callback) => {
+        calls.hooks[name] = callback;
+        return { dispose: async () => delete calls.hooks[name] };
       },
     },
   };
@@ -368,4 +373,76 @@ test("resolveSelection is pure and ordered", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(FIXTURE, "package.json"), "utf8")).daodan;
   assert.deepEqual(resolveSelection(manifest, {}).selected, ["a", "b", "c"]);
   assert.deepEqual(resolveSelection(manifest, { plugins: ["a"] }).selected, ["a", "b"]);
+});
+
+test("setup registers V2 lifecycle hooks and executes callbacks safely", async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-hooks-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.cpSync(FIXTURE, directory, { recursive: true });
+
+  const scriptDir = path.join(directory, "plugins", "a", "scripts");
+  fs.mkdirSync(scriptDir, { recursive: true });
+  const scriptPath = path.join(scriptDir, "test_hook.py");
+  fs.writeFileSync(
+    scriptPath,
+    `import json, sys
+from pathlib import Path
+data = json.loads(sys.stdin.read())
+with Path(__file__).with_name("events.jsonl").open("a", encoding="utf-8") as stream:
+    stream.write(json.dumps(data) + "\\n")
+event = data.get("hook_event_name")
+if data.get("prompt") != "OFF":
+    out = {"hookSpecificOutput": {"hookEventName": event, "additionalContext": "INJECTED_CONTEXT"}}
+    sys.stdout.write(json.dumps(out))
+`,
+  );
+
+  const manifestPath = path.join(directory, "package.json");
+  const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  document.daodan.plugins.a.hooks = [
+    {
+      name: "a-session",
+      event: "session-start",
+      script: "scripts/test_hook.py",
+      args: [],
+      timeout: 5,
+    },
+    {
+      name: "a-prompt",
+      event: "user-prompt-submit",
+      script: "scripts/test_hook.py",
+      args: [],
+      timeout: 5,
+    },
+  ];
+  fs.writeFileSync(manifestPath, JSON.stringify(document));
+
+  const context = fakeContext();
+  const cleanup = await createLoader(directory)(context.ctx);
+  assert.equal(typeof cleanup, "function");
+  assert.deepEqual(Object.keys(context.calls.hooks).sort(), ["context", "prompt"]);
+
+  await context.calls.hooks.prompt({ sessionID: "s1", messageID: "m1", prompt: { text: "user message" } });
+  const output = { sessionID: "s1", system: [{ type: "text", text: "base system" }] };
+  await context.calls.hooks.context(output);
+  assert.deepEqual(output.system.at(-1), { type: "text", text: "INJECTED_CONTEXT" });
+
+  // A later prompt replaces earlier context. Empty hook output leaves no stale text.
+  await context.calls.hooks.prompt({ sessionID: "s1", messageID: "m2", prompt: { text: "OFF" } });
+  const disabled = { sessionID: "s1", system: [{ type: "text", text: "base system" }] };
+  await context.calls.hooks.context(disabled);
+  assert.equal(disabled.system.length, 1);
+
+  const events = fs
+    .readFileSync(path.join(scriptDir, "events.jsonl"), "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  assert.deepEqual(events.map((event) => event.hook_event_name), [
+    "SessionStart",
+    "UserPromptSubmit",
+    "UserPromptSubmit",
+  ]);
+  assert.equal(events[1].prompt, "user message");
+  cleanup();
 });

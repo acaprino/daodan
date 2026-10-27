@@ -220,6 +220,16 @@ class ScienceResearchTests(unittest.TestCase):
         self.assertEqual(self.run_cli("checkpoint", "--record", payload=maintenance)["status"], "not-applicable")
         self.assertEqual(self.snapshot(), before)
 
+    def test_empty_update_batch_and_no_selector_contract(self):
+        for selector in ("all", "tutte"):
+            self.assertEqual(self.run_cli("select", selector)["research"], [])
+        self.assertEqual(self.snapshot(), {})
+        method = (ROOT / "plugins/research/skills/science-based-approach/references/update.md").read_text(encoding="utf-8")
+        self.assertIn("With no selector", method)
+        self.assertIn("exactly one identity is linked", method)
+        self.assertIn("otherwise ask for the scope before any mutation", method)
+        self.assertIn("nessuna ricerca\nda aggiornare", method)
+
     def test_off_blocks_automatic_checkpoint_and_publication_but_allows_explicit(self):
         self.preference(False)
         before = self.snapshot()
@@ -489,12 +499,15 @@ class ScienceResearchTests(unittest.TestCase):
         record = self.publication()
         archive = self.project / record["path"]
         archive.mkdir()
-        view = archive / "README.md"
-        view.mkdir()  # Filesystem failure after immutable artifacts and pointer publication.
+        view = archive / "checks" / f"{record['check']['id']}.md"
+        view.parent.mkdir(parents=True)
+        view.mkdir()  # Derived-view failure after immutable artifacts and pointer publication.
         self.run_cli("publish", payload=record, code=2)
         self.assertEqual(self.run_cli("list")["research"][0]["revision"], 1)
+        pointer = (archive / "science.json").read_bytes()
         view.rmdir()
         self.assertEqual(self.run_cli("publish", payload=record)["status"], "unchanged")
+        self.assertEqual((archive / "science.json").read_bytes(), pointer)
         self.assertTrue(index.read_bytes().startswith(prefix))
         suffix = b"\nHuman suffix remains too.\n"
         index.write_bytes(index.read_bytes() + suffix)
@@ -578,6 +591,7 @@ class ScienceResearchTests(unittest.TestCase):
         self.assertEqual(external.read_bytes(), original)
         self.assertTrue(linked.is_symlink())
         linked.unlink()
+        self.assertEqual(self.snapshot(), {})
 
     @unittest.skipUnless(os.name == "nt", "Windows junction boundary")
     def test_windows_junction_archive_is_rejected(self):

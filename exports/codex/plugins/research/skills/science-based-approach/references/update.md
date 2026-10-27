@@ -79,6 +79,11 @@ update-research works even when Science Mode is OFF or its config is malformed;
 it does not repair/change mode. Reuse caller scope and grants.
 
 Resolve an exact ID or topic; disambiguate multiple matches before mutation.
+With no selector, use research explicitly linked to the current task only when
+exactly one identity is linked; otherwise ask for the scope before any mutation.
+An empty inventory, including an empty all/tutte batch, returns `nessuna ricerca
+da aggiornare` without network work or archive writes. A nonexistent selector
+never implicitly creates research.
 Apply `reuse.md` first, including existing unindexed Markdown. Keep the same
 current file and identity: new evidence updates it, visibly strikes through
 superseded claims, refreshes research timestamps and appends a descriptive

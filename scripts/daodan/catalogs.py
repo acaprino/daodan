@@ -245,7 +245,17 @@ def _opencode_entry(
         }
         for server in plugin.mcp_servers
     ]
-    for key, items in (("skills", skills), ("agents", agents), ("commands", commands), ("mcp", servers)):
+    hooks = [
+        {
+            "name": hook.name,
+            "event": hook.event,
+            "script": hook.script.as_posix(),
+            "args": list(hook.args),
+            "timeout": hook.timeout,
+        }
+        for hook in plugin.hooks
+    ]
+    for key, items in (("skills", skills), ("agents", agents), ("commands", commands), ("mcp", servers), ("hooks", hooks)):
         if items:
             entry[key] = items
     return entry

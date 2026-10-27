@@ -531,6 +531,8 @@ def publish(home: Path, payload: dict, guard: Callable[[], dict | None] | None =
     # Invocation mode is authority, not scientific content. An explicit request
     # can resume identical staged work after automatic mode was turned off.
     request_digest = digest(encoded({key: value for key, value in payload.items() if key != "automatic"}))
+    if "current_path" in payload:
+        current_path(home, directory, payload["current_path"])
     with writing(home):
         stopped = guard() if guard else None
         if stopped:

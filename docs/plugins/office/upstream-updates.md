@@ -14,6 +14,7 @@ La [procedura canonica di sincronizzazione](../../../.claude/skills/upstream-syn
 | Theme Factory | Quattro palette seed nelle direzioni Q–T; [record di ritiro](../../../plugins/office/skills/design/references/theme-factory-upstream.md) | Skill, preset e showcase ritirati dalla distribuzione. Nessun obbligo di sync e nessun ripristino automatico. |
 | PPT Visual | Sketch e passaggio alla specifica in [layout-patterns PPTX](../../../plugins/office/skills/pptx/references/layout-patterns.md#provenance) | Riesame manuale su richiesta del solo contributo registrato; palette e produzione restano Office. |
 | Ispirazione Word | [Composizioni DOCX originali](../../../plugins/office/skills/docx/references/layout-patterns.md#provenance) | Provenienza, non target di copia o merge. Le idee si valutano come ispirazione originale. |
+| Motore di conversione open-slide | Undici file verbatim in [pptx/lib/open-slide-pptx](../../../plugins/office/skills/pptx/lib/open-slide-pptx/UPSTREAM.md), bundle e `manifest.json` | Unico target copied-source di Office: riesame manuale su richiesta, avanzamento deliberato del pin, ricopia verbatim, `node rebuild.mjs`, conversione della fixture e suite Office. Non modificare mai un file venduto: la guardia degli hash lo tratta come drift. |
 
 Le versioni effettive di WordCraft, DeckCraft e GridCraft appartengono alla manutenzione dei runtime delegati. Distinguere revisione di riferimento, versione disponibile e versione installata; non ricavare compatibilità da un pin documentale. Vedere [dipendenze](dependencies.md).
 

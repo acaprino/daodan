@@ -56,6 +56,12 @@ def render_hooks(plugin: PluginSpec, adapter: HostAdapter) -> tuple[str | None, 
             "declared native hook registration. Use the method's explicit workflow checkpoints; "
             "automatic interception outside those workflows is unavailable.",
         )
+    if binding.strategy == "loader-hooks":
+        return None, (
+            "This package registers lifecycle callbacks through the OpenCode plugin loader "
+            "when the plugin is enabled. Execution requires Python 3 on PATH as `python`. "
+            "The loader intercepts session and prompt events without crashing the host.",
+        )
     if binding.strategy != "hooks-manifest":
         raise ValueError(f"{adapter.host}: unsupported lifecycle hook strategy {binding.strategy!r}")
     entries = adapter.layout.get("hook_events", "").split(",")

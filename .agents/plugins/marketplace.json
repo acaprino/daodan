@@ -2,6 +2,7 @@
   "allowCrossMarketplaceDependenciesOn": [
     "claude-code-workflows",
     "claude-plugins-official",
+    "diagram-design",
     "impeccable",
     "mattpocock",
     "taste-skill",
@@ -9,7 +10,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.5.0"
+    "version": "42.7.0"
   },
   "name": "daodan",
   "owner": {
@@ -207,7 +208,7 @@
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "2.6.1"
+      "version": "2.6.2"
     },
     {
       "author": {
@@ -453,7 +454,7 @@
         "./skills/xlsx"
       ],
       "source": "./exports/codex/plugins/office",
-      "version": "3.4.0"
+      "version": "3.5.0"
     },
     {
       "author": {
@@ -543,7 +544,8 @@
         "codebase-map",
         "text-humanizer",
         "senior-review",
-        "report-rendering"
+        "report-rendering",
+        "diagram-design@diagram-design"
       ],
       "description": "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle.",
       "license": "MIT",
@@ -554,7 +556,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "3.2.1"
+      "version": "3.3.0"
     },
     {
       "author": {
@@ -712,7 +714,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/codex/plugins/research",
-      "version": "7.0.0"
+      "version": "7.0.2"
     },
     {
       "author": {

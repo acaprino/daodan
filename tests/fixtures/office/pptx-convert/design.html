@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Office conversion fixture</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #d9d9d6; }
+  body { font-family: Arial, Helvetica, sans-serif; }
+  .slide {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin: 0 auto 40px;
+  }
+  .cover { background: #101828; color: #f5f5f4; }
+  .cover .accent {
+    position: absolute; left: 120px; top: 300px;
+    width: 220px; height: 14px; border-radius: 7px;
+    background: linear-gradient(90deg, #e8590c 0%, #f08c00 100%);
+  }
+  .cover h1 {
+    position: absolute; left: 120px; top: 360px; margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 96px; line-height: 1.05; font-weight: 700; letter-spacing: -1px;
+  }
+  .cover p {
+    position: absolute; left: 120px; top: 620px; margin: 0;
+    font-size: 34px; line-height: 1.4; color: #cbd5e1; max-width: 1100px;
+  }
+  .cover .meta {
+    position: absolute; left: 120px; top: 900px;
+    font-size: 24px; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8;
+  }
+  .content { background: #f7f7f5; color: #1f2937; }
+  .content h2 {
+    position: absolute; left: 120px; top: 100px; margin: 0;
+    font-family: Georgia, 'Times New Roman', serif; font-size: 64px; font-weight: 700;
+  }
+  .content ul {
+    position: absolute; left: 120px; top: 260px; margin: 0; padding-left: 44px;
+    font-size: 34px; line-height: 1.7; max-width: 900px;
+  }
+  .content ul li::marker { color: #e8590c; }
+  .card {
+    position: absolute; right: 120px; top: 260px; width: 620px;
+    background: #ffffff; border: 2px solid #e2e8f0; border-radius: 18px;
+    padding: 36px; box-sizing: border-box;
+  }
+  .card h3 { margin: 0 0 18px; font-size: 34px; color: #0f172a; }
+  .card p { margin: 0; font-size: 26px; line-height: 1.5; color: #475569; }
+  .badge {
+    position: absolute; right: 120px; top: 120px;
+    background: #101828; color: #f8fafc; font-size: 22px;
+    padding: 12px 24px; border-radius: 999px; letter-spacing: 1px;
+  }
+  .chart { position: absolute; left: 120px; top: 700px; }
+  .photo { position: absolute; right: 120px; top: 700px; width: 300px; height: 200px; }
+</style>
+</head>
+<body>
+  <section class="slide cover" data-office-slide data-office-notes="Aprire con la decisione, non con il contesto.">
+    <div class="accent"></div>
+    <h1>Conversione nativa<br>da HTML a PPTX</h1>
+    <p>Una prova di contratto: testo nativo, forme, elenco, immagine e nota del relatore in due pannelli 1920x1080.</p>
+    <div class="meta">Office fixture | 2026-10-27</div>
+  </section>
+
+  <section class="slide content" data-office-slide data-office-notes="Citare il limite: nessuna tabella nativa.">
+    <div class="badge">Prova</div>
+    <h2>Cosa conserva il motore</h2>
+    <ul>
+      <li>Testo nativo con i colori e i pesi dichiarati</li>
+      <li>Forme con riempimento, bordo e raggio</li>
+      <li>Immagini e tracciati rasterizzati quando servono</li>
+    </ul>
+    <div class="card">
+      <h3>Limite noto</h3>
+      <p>Le tabelle HTML non diventano tabelle native di PowerPoint: il motore le misura come forme e testo.</p>
+    </div>
+    <svg class="chart" width="520" height="240" viewBox="0 0 520 240" role="img" aria-label="Istogramma di prova">
+      <rect x="0" y="0" width="520" height="240" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+      <rect x="40" y="120" width="80" height="100" fill="#e8590c"/>
+      <rect x="160" y="70" width="80" height="150" fill="#f08c00"/>
+      <rect x="280" y="40" width="80" height="180" fill="#101828"/>
+      <text x="40" y="30" font-family="Arial" font-size="20" fill="#475569">Resa per pannello</text>
+    </svg>
+    <img class="photo" alt="Riquadro di prova"
+         src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23134e4a'/%3E%3Ccircle cx='150' cy='100' r='60' fill='%235eead4'/%3E%3C/svg%3E">
+  </section>
+</body>
+</html>

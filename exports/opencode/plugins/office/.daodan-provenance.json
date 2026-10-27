@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:46eb7a66dad9278cdb382c7bbfda7bc2c85529c4bbfca3e65183eee29e03b39e",
+  "coreDigest": "sha256:e39c9aab12adaa76fd9fda068857bfdf998ee3f7bc51a3515687be5335189ef6",
   "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "office",
-  "version": "3.4.0"
+  "version": "3.5.0"
 }

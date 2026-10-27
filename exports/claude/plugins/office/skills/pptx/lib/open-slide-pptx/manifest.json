@@ -1,0 +1,73 @@
+{
+  "schema": "office/open-slide-pptx-manifest/v1",
+  "upstream": {
+    "repository": "https://github.com/open-slide/open-slide",
+    "package": "@open-slide/core",
+    "version": "2.3.1",
+    "git_ref": "82349cf2d07d37b75975170503a82fcaacae9298",
+    "npm_tarball": "https://registry.npmjs.org/@open-slide/core/-/core-2.3.1.tgz",
+    "npm_integrity": "sha512-NpEB6NATbyGqaO0MSmJYEvhBsVx7ISiP0YzxT4QkMuosZRyPFyZcjYfxMO1gPc/mmfAZao+5wLizyPQ9OKMwPQ==",
+    "npm_shasum": "654c7b21947683027f227e2fb01cd6171927a80c",
+    "source_archive_sha256": "d8183a5f2c79d517e1793bc72e65e2e0c8936e77fbd8260486de9df944d17db8",
+    "license": "MIT",
+    "copied_paths": [
+      "packages/core/src/app/lib/sdk.ts",
+      "packages/core/src/app/lib/pptx/color.ts",
+      "packages/core/src/app/lib/pptx/css.ts",
+      "packages/core/src/app/lib/pptx/fonts.ts",
+      "packages/core/src/app/lib/pptx/images.ts",
+      "packages/core/src/app/lib/pptx/measure.ts",
+      "packages/core/src/app/lib/pptx/ooxml.ts",
+      "packages/core/src/app/lib/pptx/raster.ts",
+      "packages/core/src/app/lib/pptx/scene.ts",
+      "packages/core/src/app/lib/pptx/text-lines.ts",
+      "packages/core/src/app/lib/pptx/units.ts"
+    ],
+    "excluded": [
+      "packages/core/src/app/lib/pptx/render.ts (React offscreen mount, not used by this wrapper)",
+      "packages/core/src/app/lib/pptx/*.test.ts",
+      "the open-slide application, CLI, Vite plugin and React tree"
+    ]
+  },
+  "third_party": [
+    {
+      "package": "fflate",
+      "version": "0.8.3",
+      "license": "MIT",
+      "notice": "LICENSE-fflate-MIT.txt"
+    },
+    {
+      "package": "html-to-image",
+      "version": "1.11.13",
+      "license": "MIT",
+      "notice": "LICENSE-html-to-image-MIT.txt"
+    }
+  ],
+  "tools": {
+    "node": "v24.14.1",
+    "vite": "8.3.3",
+    "minify": true,
+    "format": "iife",
+    "global": "officeHtmlToPptx"
+  },
+  "bundle": {
+    "path": "bundle/open-slide-pptx.js",
+    "sha256": "8174ce526a0f1fe8a015a60ad629003763721a2ab969a1d637e7e506625f744c",
+    "bytes": 77586
+  },
+  "files": {
+    "bundle/open-slide-pptx.js": "8174ce526a0f1fe8a015a60ad629003763721a2ab969a1d637e7e506625f744c",
+    "entry/office-entry.ts": "a9ee79ab32698354032037526814bd8d0667c8b6adcbe57b11bda009eaff476f",
+    "src/lib/pptx/color.ts": "c1722b232c5bfd8d4290c508792d118e248d15b05dbfc44946b21ea58eba10e7",
+    "src/lib/pptx/css.ts": "6631f084614b4a1eacf7f0a6b7b7dddecbbce000746d1edc004808564ce79d9d",
+    "src/lib/pptx/fonts.ts": "58764839b3a6656ad6332f82790daf199cc3a186257a6c969950d5a0d93c4583",
+    "src/lib/pptx/images.ts": "028261406fb2c64b6797ba0efa60c93c7054a08be1aefcfbdef8e94f5940e58e",
+    "src/lib/pptx/measure.ts": "ed44e0ea1f84083eae8b57b588c39823b68d677800b5944754ffe45eb73f7afd",
+    "src/lib/pptx/ooxml.ts": "e880590bf0cd7fb4864d5fcf4b790d408d1e1c63c6d0d12c1a7bacf3c1cc03cd",
+    "src/lib/pptx/raster.ts": "cc4fc3323706ef6becc23df16490a20ddbf40caf1a03b07a17b550b9f4b73f17",
+    "src/lib/pptx/scene.ts": "1e8711c389ac76dd59040bb1651d42ed88cf3efc01897009617f8b603a280613",
+    "src/lib/pptx/text-lines.ts": "0b943c5c279af48488181f0cd030e066e2556fd3280f7c39a3046673916f174a",
+    "src/lib/pptx/units.ts": "c3bb0a0368345cd3393c75b86bed57d6c94f7f95a0c4f13a25b7c9573a2a5321",
+    "src/lib/sdk.ts": "a179cd96ef5ba14d85e86a84ace5df60f641087beca2887440567b8d93d95ec6"
+  }
+}

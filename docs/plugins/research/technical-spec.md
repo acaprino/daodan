@@ -49,7 +49,7 @@ plugin; gli argomenti non diventano codice shell.
 | Codex | SessionStart e UserPromptSubmit | Controlli nei metodi |
 | Copilot | Nessun hook nativo generato | Controlli nei metodi |
 | Pi | Nessun hook nativo generato | Controlli nei metodi |
-| OpenCode | Nessun hook nativo generato | Controlli nei metodi |
+| OpenCode | Prompt e primary-context nel loader V2; SessionStart alla creazione se osservata, altrimenti al primo prompt | Controlli nei metodi |
 
 Un plugin abilitato rende gli hook individuabili; l'host conserva i propri
 controlli di fiducia prima dell'esecuzione. Il callback legge lo stato e fornisce

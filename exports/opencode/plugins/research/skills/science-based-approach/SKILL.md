@@ -7,7 +7,7 @@ description: >
   ADR/FRD and problem solving when evidence can change the decision.
 ---
 
-> This package retains its lifecycle callback scripts, but this host has no declared native hook registration. Use the method's explicit workflow checkpoints; automatic interception outside those workflows is unavailable.
+> This package registers lifecycle callbacks through the OpenCode plugin loader when the plugin is enabled. Execution requires Python 3 on PATH as `python`. The loader intercepts session and prompt events without crashing the host.
 
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes

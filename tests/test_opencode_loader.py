@@ -40,17 +40,36 @@ const errors = [];
 console.error = (...args) => errors.push(args.join(" "));
 const ctx = {
   options: {},
+  location: { directory: process.cwd() },
   skill: { transform: async (fn) => fn(editor("skills")) },
   agent: { transform: async (fn) => fn(editor("agents")) },
   command: { transform: async (fn) => fn(editor("commands")) },
   mcp: { transform: async (fn) => fn(editor("mcp")) },
-  session: { prompt: async () => {} },
+  session: {
+    prompt: async () => {},
+    hook: async (name, callback) => {
+      registered[name] = callback;
+      return { dispose: async () => {} };
+    },
+  },
 };
-await createLoader("exports/opencode")(ctx);
+const registered = {};
+const cleanup = await createLoader("exports/opencode")(ctx);
 const plugins = JSON.parse(fs.readFileSync("exports/opencode/package.json", "utf8")).daodan.plugins;
 const expected = { skills: 0, agents: 0, commands: 0, mcp: 0 };
-for (const entry of Object.values(plugins)) for (const kind of Object.keys(expected)) expected[kind] += (entry[kind] ?? []).length;
-process.stdout.write(JSON.stringify({ counts, expected, errors }));
+let lifecycle = 0;
+for (const entry of Object.values(plugins)) {
+  for (const kind of Object.keys(expected)) expected[kind] += (entry[kind] ?? []).length;
+  lifecycle += (entry.hooks ?? []).length;
+}
+process.stdout.write(JSON.stringify({
+  counts,
+  expected,
+  lifecycle,
+  errors,
+  registered: Object.keys(registered).sort(),
+  cleanup: typeof cleanup,
+}));
 """
         result = self.node("--input-type=module", "-e", script)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -58,6 +77,9 @@ process.stdout.write(JSON.stringify({ counts, expected, errors }));
         self.assertEqual(report["errors"], [])
         self.assertEqual(report["counts"], report["expected"])
         self.assertGreater(report["counts"]["agents"], 0)
+        self.assertGreater(report["lifecycle"], 0)
+        self.assertEqual(report["registered"], ["context", "prompt"])
+        self.assertEqual(report["cleanup"], "function")
 
 
 if __name__ == "__main__":

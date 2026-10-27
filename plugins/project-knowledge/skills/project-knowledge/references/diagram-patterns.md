@@ -2,6 +2,29 @@
 
 Reference templates for diagrams used in project-knowledge output documents.
 
+## Editorial figures: the Diagram Design provider
+
+Mermaid patterns stay the default for schemas that live and change beside the
+code. When a guide is going to be published and needs an editorial figure
+(architecture, sequence, data model, timeline, quadrant, or another of the
+types in the upstream list), load the `diagram-design:diagram-design` skill and
+follow its method, applying the project's brand; export SVG or PNG when the
+document needs a portable figure.
+
+```bash
+/plugin marketplace add cathrynlavery/diagram-design
+/plugin install diagram-design@diagram-design
+```
+
+Diagram Design is a required external provider of project-knowledge, installed
+by hand from its own marketplace; no upstream source is copied into this
+repository, and the upstream Install section lists the command for every host.
+A figure restates verified content only: it never invents a relationship, a
+component or a quantity that the evidence does not carry. When the provider is
+unavailable, stop that figure and report it as a broken install with the
+commands above; do not substitute Mermaid or a hand-built SVG for a figure that
+was planned as editorial.
+
 ## 1. Mindmap (01-overview.md)
 
 Project concept map showing high-level structure and relationships.

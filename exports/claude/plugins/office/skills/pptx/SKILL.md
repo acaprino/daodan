@@ -149,6 +149,12 @@ missing assets or native/render capabilities block their dependent proposal proo
 | Narrow: targeted content or formatting edit | `office:deckcraft` | Preserve the direction and palette; no designer dispatch: a change that needs a new design decision goes back to the user and re-enters intake; reviewer checks changes and preservation |
 | Read-only: review, preview or printable PDF | `office:deckcraft` for renders and export, never writing to the source | No redesign; reviewer inspects the source renders and any export |
 
+Substantial construction runs through `office:deckcraft` or, when the accepted
+design has an HTML source, through the mechanical conversion in
+`references/html-to-pptx.md`. Inspection, rendering, coverage and independent
+review are the same either way, and editing an existing deck stays with
+`office:deckcraft`.
+
 For a reusable template, generate the base with `office:design`'s
 `template_kit.py` (slide master, theme and layouts in a `.potx`), add an editable
 exemplar deck built on it with representative page types, and a short reuse note.
@@ -237,6 +243,15 @@ discovered commands. Reject a design or reference image whose objects DeckCraft
 cannot build with the required editability before propagating it across the deck.
 DeckCraft applies scoped edits to a separate candidate after preservation checks.
 Keep source and earlier candidates intact.
+
+On the HTML conversion route the coordinator runs `scripts/pptx_convert_bridge.py`
+under `references/html-to-pptx.md` instead of transcribing objects: the designer's
+1920x1080 panels become native text, shapes, pictures and notes in one
+deterministic pass with no model call. Its prerequisites are Node, the Playwright
+module and a Chromium-family browser. A missing runtime stops with the recovery
+steps recorded in the report; it is never replaced silently by another
+construction path. The saved candidate then follows the same inspection,
+rendering, coverage and independent review as a DeckCraft build.
 
 When the deck uses fonts outside Microsoft Office, embed them in a separate
 candidate with `office:design`'s `font_embed.py` and record its inspection result.

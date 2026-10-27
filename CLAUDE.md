@@ -461,6 +461,8 @@ Ten areas were removed and delegated to their upstreams because maintaining the 
 
 Standing policy since 2026-08-04: this repository no longer maintains vendored copies of external repositories. New capability never gets vendored in; it gets delegated with a declared dependency.
 
+One scoped exception is in force: `office` vendors the open-slide PPTX exporter subset (`plugins/office/skills/pptx/lib/open-slide-pptx/src/`, eleven files of `@open-slide/core` 2.3.1, MIT), because the owner authorized that exact copy on 2026-10-27 to obtain mechanical HTML to PPTX conversion without a runtime dependency on the upstream package. The exception covers those files, their prebuilt bundle and their retained notices. It does not extend to the open-slide application, CLI, Vite plugin or React tree, nor to any other repository. The copy is hash-guarded by `manifest.json`, refreshed only through the protocol in that directory's `UPSTREAM.md`, and tracked as a copied-source row in the `upstream-sync` table. Every other new capability is still delegated.
+
 | Area | Upstream | Removed in |
 |---|---|---|
 | Frontend and design (`frontend` plugin: 3 agents, 5 skills, 1 command) | `pbakaus/impeccable`, `nextlevelbuilder/ui-ux-pro-max-skill`, `paulirish/dotfiles` | marketplace 7.0.0 |

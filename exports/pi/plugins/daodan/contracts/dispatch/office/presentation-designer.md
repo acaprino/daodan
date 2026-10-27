@@ -73,7 +73,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: office:presentation-designer; version: 3.4.0; source-sha256: d971ab7e589adcf3f7dad65505babfb539420147e06876d0a094b6f07c6a01af. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: office:presentation-designer; version: 3.5.0; source-sha256: c7b7e7c2fc09d443fc4c6bf7f2e4e3afb12fe5bcebee5180ce8875be878e3560. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:content`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `office:intake` -> compiled registry name `intake` at `skills/intake/SKILL.md` inside the owner's package; `office:content` -> compiled registry name `content` at `skills/content/SKILL.md` inside the owner's package; `office:design` -> compiled registry name `design` at `skills/design/SKILL.md` inside the owner's package; `office:pptx` -> compiled registry name `pptx` at `skills/pptx/SKILL.md` inside the owner's package; `office:deckcraft` -> compiled registry name `deckcraft` at `skills/deckcraft/SKILL.md` inside the owner's package; `office:wordcraft` -> compiled registry name `wordcraft` at `skills/wordcraft/SKILL.md` inside the owner's package; `office:gridcraft` -> compiled registry name `gridcraft` at `skills/gridcraft/SKILL.md` inside the owner's package; `office:xlsx` -> compiled registry name `xlsx` at `skills/xlsx/SKILL.md` inside the owner's package; `office:docx` -> compiled registry name `docx` at `skills/docx/SKILL.md` inside the owner's package; `office:integrity` -> compiled registry name `integrity` at `skills/integrity/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -120,6 +120,14 @@ through supported native objects, not default catalog seeds. Record each slide's
 job, headline, evidence and source associations. For requested reusable templates
 add exemplar types and replacement/growth rules; separate POTX is optional unless
 requested. A wireframe or HTML preview is not saved-native-file evidence.
+
+When the coordinator assigns the HTML conversion route under
+`<office-plugin-root>/skills/pptx/references/html-to-pptx.md`, author the same
+composition decisions as 1920x1080 `data-office-slide` panels with local assets
+and installed fonts instead of a per-object command list, and record that route,
+the panel count and the HTML path in the report. Identity, purpose, geometry,
+typography and editability stay in the slide-object specification; a conversion
+is not a fidelity verdict and the rendered review is unchanged.
 
 Choose supplied/reused, searched or harness-generated/edited imagery according
 to the brief. Return source-linked asset route, prompt intent, references, crop,

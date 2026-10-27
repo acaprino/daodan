@@ -20,6 +20,7 @@ Le informazioni sotto descrivono i record e i testi conservati nel repository. N
 | Lineage RampStack e Peter Bamuhigire | Lo stesso record Agentit identifica fonti, revisioni e contributi | Testi integrali [RampStack MIT](../../../plugins/office/skills/design/references/LICENSE-rampstackco-MIT.txt) e [Peter Bamuhigire MIT](../../../plugins/office/skills/design/references/LICENSE-peterbamuhigire-MIT.txt), con i rispettivi copyright. |
 | Seed Theme Factory | [theme-factory-upstream.md](../../../plugins/office/skills/design/references/theme-factory-upstream.md) | [Termini Apache-2.0 e notice conservati](../../../plugins/office/skills/design/references/LICENSE-theme-factory-APACHE-2.0.txt). Restano quattro palette nelle direzioni Q–T; skill, preset e showcase precedenti sono ritirati. |
 | Sketch PPT Visual | [Provenienza dei layout PPTX](../../../plugins/office/skills/pptx/references/layout-patterns.md#provenance) | [MIT integrale](../../../plugins/office/skills/pptx/references/LICENSE-ppt-visual-MIT.txt), copyright Claude Office Skills Contributors. L'adattamento riguarda sketch e handoff alla specifica. |
+| Motore di conversione open-slide | [UPSTREAM.md](../../../plugins/office/skills/pptx/lib/open-slide-pptx/UPSTREAM.md) con pin, hash e protocollo di refresh | [MIT, Copyright (c) 2026 Yiwei Ho](../../../plugins/office/skills/pptx/lib/open-slide-pptx/LICENSE-open-slide-MIT.txt), più le notice di [fflate](../../../plugins/office/skills/pptx/lib/open-slide-pptx/LICENSE-fflate-MIT.txt) e [html-to-image](../../../plugins/office/skills/pptx/lib/open-slide-pptx/LICENSE-html-to-image-MIT.txt) incluse nel bundle. Undici file copiati byte per byte sotto autorizzazione scoped del proprietario; entry, driver, rebuild e bridge sono codice Office. |
 
 Il record Agentit conserva anche gli hash delle due fonti prima dell'adattamento e descrive le modifiche per stili Word, canvas PPTX, font, immagini e review. Il README è l'indice visibile; i testi completi e le attribuzioni restano presso i file distribuiti sotto le skill.
 
@@ -33,11 +34,11 @@ La [provenienza DOCX](../../../plugins/office/skills/docx/references/layout-patt
 
 PPT Design resta un candidato. Le dichiarazioni della relazione originale (§11) restano attribuite a quella ricerca, senza una nuova verifica dei termini in questa guida. Il precedente record di valutazione Taste è storico; la dipendenza dichiarata e il bridge definiscono l'uso adottato.
 
-Il divieto di nuove copie vendorizzate resta applicabile anche a materiale con licenza permissiva. Per una nuova capacità vedere [intake esterno](upstream-intake.md); per gli adattamenti già registrati vedere [aggiornamenti](upstream-updates.md).
+Il divieto di nuove copie vendorizzate resta applicabile anche a materiale con licenza permissiva. L'unica deroga in vigore riguarda il motore di conversione open-slide, autorizzata in modo esplicito e delimitato dal proprietario il 2026-10-27: undici file a un pin preciso, notice conservate, hash di controllo e nessuna estensione all'applicazione upstream o ad altre fonti. Per una nuova capacità vedere [intake esterno](upstream-intake.md); per gli adattamenti già registrati vedere [aggiornamenti](upstream-updates.md).
 
 ## Runtime, font e asset
 
-WordCraft, DeckCraft e GridCraft sono runtime forniti separatamente. Il README li distingue dagli adattamenti copiati: Office non distribuisce i loro motori. I [contratti delle dipendenze](dependencies.md) guidano la scoperta di versione e capacità; la licenza Office non sostituisce i termini del runtime fornito.
+WordCraft, DeckCraft e GridCraft sono runtime forniti separatamente. Il README li distingue dagli adattamenti copiati: Office non distribuisce i loro motori. Il motore di conversione HTML→PPTX è invece distribuito dentro il plugin: pin, notice e protocollo stanno nella tabella dei contributi conservati. I [contratti delle dipendenze](dependencies.md) guidano la scoperta di versione e capacità; la licenza Office non sostituisce i termini del runtime fornito.
 
 Le [regole tipografiche locali](../../../plugins/office/skills/design/references/typography.md#establish-constraints) richiedono verifica di famiglia, versione, pesi reali, glifi e uso consentito nell'output previsto. Un nome nel catalogo o un font visibile in un PDF non prova installazione, incorporabilità o diritto di redistribuzione.
 

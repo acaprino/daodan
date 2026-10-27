@@ -126,6 +126,14 @@ job, headline, evidence and source associations. For requested reusable template
 add exemplar types and replacement/growth rules; separate POTX is optional unless
 requested. A wireframe or HTML preview is not saved-native-file evidence.
 
+When the coordinator assigns the HTML conversion route under
+`<plugin-root>/skills/pptx/references/html-to-pptx.md`, author the same
+composition decisions as 1920x1080 `data-office-slide` panels with local assets
+and installed fonts instead of a per-object command list, and record that route,
+the panel count and the HTML path in the report. Identity, purpose, geometry,
+typography and editability stay in the slide-object specification; a conversion
+is not a fidelity verdict and the rendered review is unchanged.
+
 Choose supplied/reused, searched or harness-generated/edited imagery according
 to the brief. Return source-linked asset route, prompt intent, references, crop,
 placement and alt text under
