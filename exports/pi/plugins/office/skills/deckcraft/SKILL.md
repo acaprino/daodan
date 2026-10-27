@@ -9,6 +9,7 @@ description: >
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+> This package retains its lifecycle callback scripts, but this host has no declared native hook registration. Use the method's explicit workflow checkpoints; automatic interception outside those workflows is unavailable.
 
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
@@ -91,7 +92,9 @@ Use the external [DeckCraft](https://github.com/storytold/deckcraft) engine for
 direct native deck construction, targeted edits, native object operations,
 rendering and PDF export. It is the only presentation construction engine.
 Read `references/runtime.md` before discovery or the first operation. Office
-ships transport and read-only inspection helpers, not the engine or an MCP server.
+ships transport and read-only inspection helpers and the pinned installer of
+`office:intake`, not the engine or an MCP server. When `discover` finds no engine,
+follow the engine recovery in `office:intake`'s dependency preflight.
 
 The presentation coordinator loads `office:pptx` for creative
 decisions, specialist review and image-tool ownership. When invoked by it, return

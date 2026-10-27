@@ -12,14 +12,24 @@ is alpha; record the actual local version and read its command schema on use.
 - [File-format parity](https://github.com/storytold/gridcraft/blob/v0.11.1/docs/file-format-parity.md)
 - [Known gaps](https://github.com/storytold/gridcraft/blob/v0.11.1/docs/gaps.md)
 
-## Discover without installing
+## Discover, then install on approval
 
 Look for an actual exposed GridCraft MCP interface or `gridcraft-cli` in the
 host's executable search path and verified application install location. Check
 existence instead of assuming PATH registration. The desktop UI is not required
-for headless CLI or MCP operations. Use the
-[official release page](https://github.com/storytold/gridcraft/releases) for a
-missing runtime; installation is a separate action under user authorization.
+for headless CLI or MCP operations.
+
+Then check the engine Office installed itself with
+`office:intake`'s `engine_install.py find gridcraft`. When none exists, tell the
+user in one line what `engine_install.py plan gridcraft` reports (official source, size,
+licence, destination), record it, then run
+`engine_install.py install gridcraft --approved`. It downloads only the pinned release asset
+from `github.com/storytold/gridcraft`, checks its size and SHA-256, unpacks it into
+the owned engine home (`~/.daodan/engines`, or `DAODAN_ENGINE_HOME`) and proves
+`--version` before it reports success; without approval nothing is fetched.
+Windows x64 is the verified path; Linux x86_64 and macOS assets are pinned by
+digest and proved by the same probe. Elsewhere use the
+[official release page](https://github.com/storytold/gridcraft/releases).
 
 ## Discover the actual API
 

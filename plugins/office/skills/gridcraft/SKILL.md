@@ -12,9 +12,11 @@ description: >
 
 Use the external [GridCraft](https://github.com/storytold/gridcraft) engine to
 produce, edit and calculate the actual workbook. Read `references/runtime.md`
-before the first operation. Office ships this method, not the engine, installer
-or MCP server. Discover the executable or actual exposed MCP tools and inspect
-their current schema. Do not invent commands or silently install another library.
+before the first operation. Office ships this method and the pinned installer of
+`office:intake`, not the engine or an MCP server. Discover the executable or
+actual exposed MCP tools and inspect their current schema. When none exists,
+follow the engine recovery in `office:intake`'s dependency preflight. Do not
+invent commands or silently install another library.
 
 When called by `office:xlsx`, consume its accepted workbook plan and source
 inventory. The workbook coordinator builds the file; do not start another

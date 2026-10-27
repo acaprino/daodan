@@ -84,10 +84,20 @@ MIT OR Apache-2.0. No upstream implementation is copied into Office.
 - [MCP contract](https://github.com/storytold/deckcraft/blob/v0.10.0/docs/mcp.md)
 - [MIT license](https://github.com/storytold/deckcraft/blob/v0.10.0/LICENSE-MIT)
 
-Install a compatible official package or extract the portable package into an
-owned runtime directory. Do not launch the desktop app merely to use the CLI.
-Put `deckcraft-cli` on PATH or set `DECKCRAFT_CLI` to its executable. The bridge's
-`--binary ABSOLUTE_PATH` before its subcommand overrides discovery. Verify the
+Discovery order: `DECKCRAFT_CLI`, then PATH, then the engine Office installed
+itself. When none exists, tell the user in one line what
+`office:intake`'s `engine_install.py plan deckcraft` reports (official source,
+size, licence, destination), record it, then run
+`engine_install.py install deckcraft --approved`. It downloads only
+the pinned release asset from `github.com/storytold/deckcraft`, checks its size and
+SHA-256, unpacks it into the owned engine home (`~/.daodan/engines`, or
+`DAODAN_ENGINE_HOME`) and proves `--version` before it reports success; without
+approval nothing is fetched. Pinned platforms: Windows x64, Linux x86_64 and macOS.
+Windows x64 is the verified path; the other assets are pinned by digest and proved
+by the same `--version` probe. On any other platform install the official package
+yourself and set `DECKCRAFT_CLI`. Do not launch the desktop app merely to use the
+CLI. The bridge's `--binary ABSOLUTE_PATH` before its subcommand overrides
+discovery. Verify the
 reported version and command help; a different version requires contract checks,
 not silent assumptions about the reference release. No separate PowerPoint
 installation is needed for DeckCraft rendering. Fonts still affect the output.

@@ -1,12 +1,12 @@
 schema = "daodan/v1"
 name = "office"
-version = "3.5.2"
+version = "3.6.0"
 description = "Design editable Word documents and presentations from one intake, a validated shared editorial record and an ad hoc visual system compared on real content; construct PPTX through DeckCraft or by mechanical conversion of an approved HTML design with the bundled open-slide exporter and revise it through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification."
 license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write", "shell.execute", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = ["work-controller", "taste-skill@taste-skill"]
@@ -16,3 +16,9 @@ skills = ["intake", "content", "design", "pptx", "deckcraft", "wordcraft", "grid
 roles = ["content-strategist", "presentation-designer", "presentation-reviewer", "document-designer", "document-reviewer"]
 workflows = []
 policies = []
+
+[[hooks]]
+name = "office-routing"
+event = "user-prompt-submit"
+script = "skills/intake/scripts/office_hook.py"
+timeout = 5

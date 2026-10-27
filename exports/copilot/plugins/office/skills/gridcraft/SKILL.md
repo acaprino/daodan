@@ -8,6 +8,8 @@ description: >
   DO NOT TRIGGER WHEN: only read-only package inspection is needed (use office:xlsx's inspector).
 ---
 
+> This package retains its lifecycle callback scripts, but this host has no declared native hook registration. Use the method's explicit workflow checkpoints; automatic interception outside those workflows is unavailable.
+
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -91,9 +93,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Use the external [GridCraft](https://github.com/storytold/gridcraft) engine to
 produce, edit and calculate the actual workbook. Read `references/runtime.md`
-before the first operation. Office ships this method, not the engine, installer
-or MCP server. Discover the executable or actual exposed MCP tools and inspect
-their current schema. Do not invent commands or silently install another library.
+before the first operation. Office ships this method and the pinned installer of
+`office:intake`, not the engine or an MCP server. Discover the executable or
+actual exposed MCP tools and inspect their current schema. When none exists,
+follow the engine recovery in `office:intake`'s dependency preflight. Do not
+invent commands or silently install another library.
 
 When called by `office:xlsx`, consume its accepted workbook plan and source
 inventory. The workbook coordinator builds the file; do not start another

@@ -111,7 +111,9 @@ close mandatory local dependencies; exclusions cannot remove a required dependen
 For Pi and OpenCode, replace `<metadata.version>` with an existing released tag.
 Required external providers must also be available on your host. A command stops
 when a required provider is missing or disabled. Installing `office` does not
-install its separate DeckCraft, WordCraft or GridCraft runtimes.
+install its separate DeckCraft, WordCraft or GridCraft runtimes; the first
+operation that needs one asks once, then installs the pinned official release
+into `~/.daodan/engines`.
 
 [Host setup and requirements](docs/hosts.md) ·
 [Distribution and migration](docs/migration-from-claude-code-daodan.md)
@@ -266,7 +268,8 @@ entries live in `daodan`. Its shared intake routes the requested operation, its
 design method connects editable Word documents and PowerPoint decks, and its
 format methods preserve supplied files and verify saved candidates. Native
 construction and rendering use separately available DeckCraft, WordCraft and
-GridCraft runtimes; installing the plugin does not install those engines. See
+GridCraft runtimes; installing the plugin does not install those engines, the
+first operation that needs one asks once and installs it. See
 [Office](docs/plugins/office.md) for the format and runtime contracts.
 
 </details>

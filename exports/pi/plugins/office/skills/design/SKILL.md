@@ -9,6 +9,7 @@ license: Apache-2.0
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+> This package retains its lifecycle callback scripts, but this host has no declared native hook registration. Use the method's explicit workflow checkpoints; automatic interception outside those workflows is unavailable.
 
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes

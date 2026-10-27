@@ -75,7 +75,19 @@ operations do not open a creative dependency phase they do not consume.
 
 Probe the actual installed runtime/tool schema before its dependent operation;
 a manifest or reference version is not execution evidence. No implicit
-installation, external publication or substitute engine. Missing required
+installation, external publication or substitute engine. A missing DeckCraft,
+WordCraft or GridCraft engine has one recovery, and it is not a question: the
+request for the work authorizes the download. Say in one line what `plan <engine>`
+reports (official source, size, licence, destination), record it through
+`work-controller:work-record`, and run `install <engine> --approved`. An objection
+from the user, or a failed install, blocks the dependent delivery. `find <engine>`
+shows an existing install. All three commands take the form
+
+```text
+python "${CLAUDE_PLUGIN_ROOT}/skills/intake/scripts/engine_install.py" plan|find|install ENGINE
+```
+
+with ENGINE one of `deckcraft`, `wordcraft` or `gridcraft`. Missing required
 capability, after activation, blocks only dependent deliveries while independent work continues.
 Unresolved asset/font license blocks incorporation. Do not silently downgrade a
 required dependency into a fallback or invent active-host tools.

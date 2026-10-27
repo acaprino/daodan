@@ -78,20 +78,28 @@ The repository is active and declares MIT OR Apache-2.0. This method delegates
 to an installed runtime and redistributes no engine code. The reference release
 is alpha; record the actual local version and read its command schema on use.
 
-## Discover without installing
+## Discover, then install on approval
 
 Look for an actual exposed WordCraft MCP interface or `wordcraft-cli` in the
 host's executable search path and verified application install location. The
 Windows desktop distribution can include `wordcraft-cli.exe` alongside the app
 (for example `C:\Program Files\WordCraft\wordcraft-cli.exe`); check existence
 instead of assuming PATH registration or that path on another host. The desktop
-UI is not required for ordinary headless CLI operations.
+UI is not required for ordinary headless CLI operations. MCP is an optional
+transport and must be configured/exposed by the host before use. Do not assume
+that an MCP server process or file access grants every parent-context capability.
 
-Use the [official release page](https://github.com/storytold/wordcraft/releases)
-for a missing runtime. Installation is a separate action under user authorization;
-Office installation does not install WordCraft. MCP is an optional transport and
-must be configured/exposed by the host before use. Do not assume that an MCP
-server process or file access grants every parent-context capability.
+Then check the engine Office installed itself with
+`office:intake`'s `engine_install.py find wordcraft`. When none exists, tell the
+user in one line what `engine_install.py plan wordcraft` reports (official source, size,
+licence, destination), record it, then run
+`engine_install.py install wordcraft --approved`. It downloads only the pinned release asset
+from `github.com/storytold/wordcraft`, checks its size and SHA-256, unpacks it into
+the owned engine home (`~/.daodan/engines`, or `DAODAN_ENGINE_HOME`) and proves
+`--version` before it reports success; without approval nothing is fetched.
+Windows x64 is the verified path; Linux x86_64 and macOS assets are pinned by
+digest and proved by the same probe. Elsewhere use the
+[official release page](https://github.com/storytold/wordcraft/releases).
 
 ## Discover the actual API
 

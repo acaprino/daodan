@@ -7,6 +7,8 @@ description: >
   DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed.
 ---
 
+> This package registers lifecycle callbacks through `hooks/hooks.json` when the plugin is enabled. Execution requires the host's hook trust approval and Python 3 on PATH as `python`. The compiler does not approve hooks or modify host settings. Generated registration and subprocess checks do not prove installed-host execution.
+
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -85,9 +87,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Use the external [WordCraft](https://github.com/storytold/wordcraft) engine to
 produce the actual DOCX after design. Read `references/runtime.md` before the
-first operation. Office ships this method, not the engine, installer or MCP server.
-Discover the executable or actual exposed MCP tools and inspect their current
-schema. Do not invent commands or silently install another writing library.
+first operation. Office ships this method and the pinned installer of
+`office:intake`, not the engine or an MCP server. Discover the executable or
+actual exposed MCP tools and inspect their current schema. When none exists,
+follow the engine recovery in `office:intake`'s dependency preflight. Do not
+invent commands or silently install another writing library.
 
 For bounded `proposal` production under `office:design`'s
 `references/art-direction.md`, consume the assigned candidate's unselected DESIGN

@@ -8,6 +8,8 @@ description: >
   DO NOT TRIGGER WHEN: only a spreadsheet or document is requested.
 ---
 
+> This package registers lifecycle callbacks through `hooks/hooks.json` when the plugin is enabled. Execution requires the host's hook trust approval and Python 3 on PATH as `python`. The compiler does not approve hooks or modify host settings. Generated registration and subprocess checks do not prove installed-host execution.
+
 <daodan_host_binding host="claude">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -85,7 +87,9 @@ Use the external [DeckCraft](https://github.com/storytold/deckcraft) engine for
 direct native deck construction, targeted edits, native object operations,
 rendering and PDF export. It is the only presentation construction engine.
 Read `references/runtime.md` before discovery or the first operation. Office
-ships transport and read-only inspection helpers, not the engine or an MCP server.
+ships transport and read-only inspection helpers and the pinned installer of
+`office:intake`, not the engine or an MCP server. When `discover` finds no engine,
+follow the engine recovery in `office:intake`'s dependency preflight.
 
 The presentation coordinator loads `office:pptx` for creative
 decisions, specialist review and image-tool ownership. When invoked by it, return

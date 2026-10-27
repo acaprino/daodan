@@ -1937,6 +1937,15 @@
         "dependencies": [
           "work-controller"
         ],
+        "hooks": [
+          {
+            "args": [],
+            "event": "user-prompt-submit",
+            "name": "office-routing",
+            "script": "skills/intake/scripts/office_hook.py",
+            "timeout": 5
+          }
+        ],
         "root": "plugins/office",
         "skills": [
           {

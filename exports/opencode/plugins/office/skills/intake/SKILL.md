@@ -6,6 +6,9 @@ description: >
   question round. Route mixed or unspecified deliverables before format work.
 ---
 
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
+> This package registers lifecycle callbacks through the OpenCode plugin loader when the plugin is enabled. Execution requires Python 3 on PATH as `python`. Prompt hooks feed the primary model context; session-start falls back to the first prompt when creation was not observed. Hook failures do not crash the host.
+
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -150,7 +153,19 @@ operations do not open a creative dependency phase they do not consume.
 
 Probe the actual installed runtime/tool schema before its dependent operation;
 a manifest or reference version is not execution evidence. No implicit
-installation, external publication or substitute engine. Missing required
+installation, external publication or substitute engine. A missing DeckCraft,
+WordCraft or GridCraft engine has one recovery, and it is not a question: the
+request for the work authorizes the download. Say in one line what `plan <engine>`
+reports (official source, size, licence, destination), record it through
+`work-controller:work-record`, and run `install <engine> --approved`. An objection
+from the user, or a failed install, blocks the dependent delivery. `find <engine>`
+shows an existing install. All three commands take the form
+
+```text
+python "<plugin-root>/skills/intake/scripts/engine_install.py" plan|find|install ENGINE
+```
+
+with ENGINE one of `deckcraft`, `wordcraft` or `gridcraft`. Missing required
 capability, after activation, blocks only dependent deliveries while independent work continues.
 Unresolved asset/font license blocks incorporation. Do not silently downgrade a
 required dependency into a fallback or invent active-host tools.

@@ -5,6 +5,7 @@ sandbox. DeckCraft's separately configured headless MCP server offers root limit
 """
 
 import argparse
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -22,15 +23,24 @@ class BridgeError(ValueError):
     """An executable or command plan cannot be used as requested."""
 
 
+def installed(environ):
+    """The CLI that office:intake's engine_install.py put in the owned engine home, if any."""
+    script = Path(__file__).resolve().parents[2] / "intake" / "scripts" / "engine_install.py"
+    spec = importlib.util.spec_from_file_location("office_engine_install", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.find("deckcraft", environ)
+
+
 def discover(binary=None, environ=None):
     env = os.environ if environ is None else environ
     selected = binary or env.get("DECKCRAFT_CLI")
     if selected:
         path = Path(selected).expanduser().resolve()
     else:
-        found = shutil.which("deckcraft-cli", path=env.get("PATH", ""))
+        found = shutil.which("deckcraft-cli", path=env.get("PATH", "")) or installed(env)
         if not found:
-            raise BridgeError("deckcraft-cli is unavailable. Install the official DeckCraft CLI or set DECKCRAFT_CLI to its executable; see references/runtime.md.")
+            raise BridgeError("deckcraft-cli is unavailable. Ask the user once, then run office:intake's engine_install.py install deckcraft --approved; or set DECKCRAFT_CLI to an existing executable. See references/runtime.md.")
         path = Path(found).resolve()
     if not path.is_file():
         raise BridgeError(f"DeckCraft executable is missing: {path}")
