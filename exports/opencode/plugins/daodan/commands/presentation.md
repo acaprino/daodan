@@ -1,5 +1,5 @@
 ---
-description: 'Create, derive, revise, review or export an editable PowerPoint presentation with creative specialists, DeckCraft construction and editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck or consulting deck, or a change, review or export of an existing presentation.'
+description: 'Create, derive, revise, review or export an editable PowerPoint presentation through shared Office content/design, native DeckCraft and independent review.'
 ---
 
 <daodan_host_binding host="opencode">
@@ -139,53 +139,34 @@ The phase graph and the record schemas are in `contracts/presentation.workflow.t
 
 Handle the presentation task requested in: $ARGUMENTS
 
-Load `office:intake` first. Resolve the starting point, carry-over, depth of
-change and deliverable in its single round of questions, together with the
-presentation questions of `office:pptx`. Then follow
-`office:pptx` for the route, specialist delivery and image-tool
-contract.
+Load `office:intake` first, then follow `office:pptx` for its operation matrix,
+shared-record finalization, native object/image contracts and specialist delivery.
+Inspect supplied files and settle inherited decisions/dependencies once.
 
-Run only the steps of the operation's row in `office:pptx` ("Run only the steps
-the operation needs"): an expansion or revision inherits the deck's purpose,
-audience, mode and theme, plans only the delta and designs only new and changed
-slides; a restyle keeps the content and redesigns the look; an edit plans and
-designs nothing. When the operation has a content plan, dispatch
-`office:content-strategist` first to plan the claims, slide count, sequence and
-patterns, following `office:pptx`'s `references/content-planning.md`; bring its
-overflow, gaps and proposed cuts to the user. Then read its `references/pptx-compatibility.md`,
-`references/design-library.md` and `references/design-preview.md` before creative
-work, then select the visual direction from `office:design`'s
-`references/directions.md` and slide patterns from `office:pptx`'s
-`references/layout-patterns.md`; bind every
-design choice to the fixed canvas, supported native objects,
-fonts and editability requirements. When the direction is uncertain, compile
-the plan, render the static preview and let the user choose the direction and
-sequence before image generation or construction. Load `office:deckcraft` for
-native construction of the accepted slide specification.
+Full/delta content uses `office:content` and declared `office:content-strategist`;
+restyle/edit/review/export does not reopen global content. Reuse a shared bundle
+delivery. `office:design` owns the new-look Taste input/output contract, reviewed
+native proposals, v2 gallery and explicit DESIGN.md selection. Then finalize the
+existing plan's display direction from
+the selected theme, recompute its canonical binding and freeze/validate CONTENT.md
+with that actual plan before native pattern/capacity validation. This derived
+binding changes no claims or content revision; editorial changes return to content.
 
-On the narrow route, load `office:deckcraft` for targeted edits and preserve the
-accepted direction. On the read-only route, load `office:deckcraft` for renders,
-previews or PDF export; the read-only route never writes to the source deck.
+For final construction, dispatch declared isolated `office:presentation-designer`
+in `final` mode for scoped composition and `office:presentation-reviewer` in
+`final` mode for exact saved-render review. Load only their
+targeted contracts in workers; a skill load is not a worker dispatch. The
+coordinator alone writes native files through `office:deckcraft` and owns image
+calls, candidate identity and repairs. Separate POTX is optional unless requested.
+Preserve sources, round trips, approved cuts, coverage, native editability,
+font/embedding order and independent target-application evidence. Narrow edits
+retain the look; read-only work never writes to the source.
 
-The coordinator owns the approved plan, candidate files, image generation calls,
-repair loop and final report. Dispatch the declared `office:content-strategist`,
-`office:presentation-designer` and `office:presentation-reviewer` roles in
-isolated contexts as specified by that method. A skill load is not a worker dispatch.
+Inspect workbook sources through `office:xlsx`, Word through `office:docx`, and
+preserve source conditions and uncertainty. Continue authorized corrections;
+missing runtime, isolation, image or render evidence blocks only its dependent
+delivery and remains explicit. A stopped worker is not a delivery.
 
-When the source includes an Excel workbook, load the `office:xlsx` skill to
-inspect its native data, formulas and calculation evidence before using figures
-or rebuilding editable charts.
-
-When the source includes a Word document, load the `office:docx` skill to read
-its native content, tables and annotations before developing the presentation.
-
-Continue authorized corrections until required deliveries exist. Missing runtime,
-image tool, isolation, renderer or reviewer evidence blocks its dependent step
-and must appear in the result. A worker's stopped turn is not a delivery.
-
-Deliver the editable `.pptx` on the substantial and narrow routes, and the
-requested findings, preview or printable PDF on the read-only route. Include a
-concise presentation review recording the reviewed deck's identity, inspected
-slides, native editability, preservation checks and unresolved limitations.
-Printing means a printable PDF unless an available printer interface is
-explicitly requested.
+Deliver the requested editable PPTX, findings or export with a concise review:
+exact identity, inspected slides, native preservation/editability, verdict and
+limits. Printing means a printable PDF unless a real printer action is requested.

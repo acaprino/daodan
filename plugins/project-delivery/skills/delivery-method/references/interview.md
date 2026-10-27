@@ -12,6 +12,11 @@
 4. Record grounding as `active` in the run's `adr` section and every later
    worker brief.
 
+Before settling technical claims or specification acceptance criteria, load
+`research:science-based-approach` and compose its automatic checkpoint with the
+caller task, phase and semantic context. Preserve the outcome and pin reused
+research revisions/claims; OFF grants no scientific archive or network work.
+
 Before fixing scope, trace affected callers, tests, fixtures, configuration and
 exports beyond map neighbours. Include paths that must change together; locate
 bugs’ shared cause before choosing repairs. Replan before editing unapproved paths.

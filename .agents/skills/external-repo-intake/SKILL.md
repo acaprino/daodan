@@ -76,6 +76,54 @@ Before retaining any upstream text or code, inspect its license. Delegation copi
 
 Inspect the canonical owner and its public license through supported read-only tools. Keep any authorized research output in an owned run. Read the selected method and its contract before wiring it; measure the relevant overlap and explain why delegation or original inspiration serves the request. Inspection grants no permission to copy upstream content.
 
+### 4.1 Evaluated candidate: Taste v2 for Office
+
+Read-only intake record, not an approved copied-source target. Source:
+[Leonxlnx/taste-skill v2.1.5](https://github.com/Leonxlnx/taste-skill/tree/12af471f627f866411b4bd785b19646d3672784c),
+commit `12af471f627f866411b4bd785b19646d3672784c`, MIT with complete license
+and copyright notice. The current no-new-vendor policy still applies. Do not
+copy or add a sync row until a scoped copied-source policy is authorized.
+
+The useful capability is the chain from subject-specific material to idea,
+direction, complete content and rendered critique. It is not the frontend build
+engine. The proposed selective scope is:
+
+| Upstream scope | Office use and intentional boundary |
+|---|---|
+| `references/copy.md` | Shared content: argument before composition, claims with proof, no filler and complete content at the required density. Keep Office source fidelity. Do not import permission to invent plausible sample details, website headline limits or web calls to action. |
+| `library/directions.json` | Candidate visual-direction records for `office:design`: subject, tone, needs, idea, typography, colour, imagery, richness and pitfalls. Adapt selected records into existing Office directions and `DESIGN.md`; do not import the full library, CSS, viewport geometry or random deal. |
+| `references/type.md`, `references/colour.md` | Few distinct type roles, scale contrast, semantic colour roles, deliberate proportions, contrast and image treatment. Enrich existing Office guidance only where different; retain native point sizes, font discovery/embedding and brand exceptions. Do not transfer px/vw constants or palette bans as universal Office rules. |
+| `references/layout.md` | Shared-edge discipline, deliberate negative space, composition beyond the opening, rhythm and avoidance of accidental repetition. DOCX and PPTX designers translate these independently; there is no shared page/slide geometry and no universal ban on repeated document layouts. |
+| `references/critique.md` | Render-only critique: first glance, focal point, squint, cover-the-brand specificity, edges, frame, type, colour, imagery, sameness, substance and collisions. Keep existing independent reviewers, candidate identity and severity gates. Do not import Awwwards weights, score caps, mandatory photography/motion or the three-round loop as a second contract. |
+| `references/tells.md` | A dated prompt to question default devices and generic copy, plus the principle that removal without a real idea produces empty work. Select only Office-relevant anti-patterns. Do not import bans on numbering, hairlines, monospace, italic serif, colour families or other legitimate brand/editorial choices. |
+
+A proposed first direction set for later authorization is `one-motif`,
+`editorial-report`, `page-is-the-object`, `quiet-instrument` and
+`colour-chapters`. Each needs a native DOCX/PPTX interpretation and a real
+content case. `research.md` and `websites.json` are upstream web-study evidence,
+not evidence that a numeric rule transfers to Office.
+
+Exclude `scripts/`, Node/browser tooling, `library/heroes.json`,
+`library/sections.json`, `app.json`, `motions.json`, `scenes/`, `photos.json`,
+mobile viewport rules, app/dashboard rules, mandatory motion or photo quotas,
+and open-collection harvesting. Keep Office intake, brand authority, image
+ownership, native producers, existing layout catalogs and reviewer contracts.
+The upstream's reported build time and token budget are not an Office target.
+
+### 4.2 Evaluated candidates: huashu-design and diagram-design for Office
+
+Read-only intake record of 2026-10-27, resolved as original local inspiration
+(step 1), not delegation and not a copied source. Both are MIT.
+
+| Candidate | Read at | Verdict |
+|---|---|---|
+| [alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design) v3.0 | `4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1` | HTML-native design skill; its PPTX is converted from rendered HTML (`html2pptx`), which the Office native-object contract excludes. Adopted as ideas only: the sample/converge/justify palette protocol, OKLCH chroma bands, temperature spread and default-look pitfalls in `office`'s `references/directions.md`; contrast sources, six further pairings, the overused-face table and display thresholds in `references/font-pairings.md`. Its style library, scripts, animation and web modules are out of scope. |
+| [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) | `97d795138448f6a739a0cebc3d9beb37a42077f1` | Draws diagrams as HTML+SVG; DeckCraft does not render SVG and a raster export never replaces a required editable diagram. Adopted as ideas only: role-based colours, seven node treatments, one accent, hairline strokes, grid snapping and label hierarchy, re-expressed in points for native shapes in `office`'s `references/diagram-style.md`. Its pipeline, importers, exporters and web fonts are out of scope. |
+
+Each has a watch row in the `upstream-sync` table and a paragraph under the
+README's "Upstream projects and inspiration". Do not add either as a dependency
+or a copied-source sync target without a new, scoped authorization.
+
 ## 5. Adapt to local conventions
 
 For original local content and dependency wiring, apply these conventions while preserving existing attribution:

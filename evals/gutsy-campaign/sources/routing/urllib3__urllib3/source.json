@@ -1,0 +1,35 @@
+{
+  "repository": "urllib3/urllib3",
+  "source_path": "src/urllib3/util/url.py",
+  "revision": "8883fd900057ee65f553586389ecd70269f05e04",
+  "source_url": "https://github.com/urllib3/urllib3/blob/8883fd900057ee65f553586389ecd70269f05e04/src/urllib3/util/url.py",
+  "artifact_sha256": "b2fda11a5cab9671d4ba3f519529073b257d4383ca51f7b91b946f138ea495b4",
+  "license": "MIT",
+  "license_url": "https://github.com/urllib3/urllib3/blob/8883fd900057ee65f553586389ecd70269f05e04/LICENSE.txt",
+  "license_sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686",
+  "license_text": "MIT License\n\nCopyright (c) 2008-2020 Andrey Petrov and contributors.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
+  "functions": [
+    {
+      "name": "_encode_target",
+      "start_line": 465,
+      "end_line": 480,
+      "snippet": "def _encode_target(target: str) -> str:\n    \"\"\"Percent-encodes a request target so that there are no invalid characters\n\n    Pre-condition for this function is that 'target' must start with '/'.\n    If that is the case then _TARGET_RE will always produce a match.\n    \"\"\"\n    match = _TARGET_RE.match(target)\n    if not match:  # Defensive:\n        raise LocationParseError(f\"{target!r} is not a valid request URI\")\n\n    path, query = match.groups()\n    encoded_target = _encode_invalid_chars(path, _PATH_CHARS)\n    if query is not None:\n        query = _encode_invalid_chars(query, _QUERY_CHARS)\n        encoded_target += \"?\" + query\n    return encoded_target",
+      "sha256": "b11c6ecec9af2cb587994104bbfa4bc07260a3a72b4e08621aea3ef84614e7d0"
+    },
+    {
+      "name": "auth_decoded",
+      "start_line": 127,
+      "end_line": 141,
+      "snippet": "    def auth_decoded(self) -> tuple[None, None] | tuple[str, str | None]:\n        \"\"\"\n        User information with %-escapes decoded as UTF-8, returned as a\n        ``(username, password)`` tuple.\n\n        Both values are ``None`` if ``auth`` is ``None``.\n        ``password`` is ``None`` if not present in the auth component.\n        \"\"\"\n        if self.auth is None:\n            return None, None\n        username, sep, password = self.auth.partition(\":\")\n        return (\n            _unquote(username, encoding=\"utf-8\"),\n            _unquote(password, encoding=\"utf-8\") if sep else None,\n        )",
+      "sha256": "31a800b093a6d232bba8c6b4149488f56ceae790ef273e862a3aad0b80be8a44"
+    },
+    {
+      "name": "auth_decoded_joined",
+      "start_line": 144,
+      "end_line": 164,
+      "snippet": "    def auth_decoded_joined(self) -> str | None:\n        \"\"\"\n        User information with %-escapes decoded as UTF-8, as a string\n        prepared for encoding into an 'authorization: basic ...' header.\n\n        This property does not choose the encoding used for an\n        'authorization: basic ...' header. Use the ``basic_auth_encoding`` or\n        ``proxy_basic_auth_encoding`` parameters of\n        :func:`urllib3.util.make_headers` when converting the returned string\n        into Basic authentication bytes.\n\n        This is a convenience property that joins the username and\n        password with a colon, if both are present.\n        If only the username is present, a trailing colon is still\n        appended.\n        If ``auth`` is ``None``, this returns ``None``.\n        \"\"\"\n        username, password = self.auth_decoded\n        if username is None:\n            return None\n        return f\"{username}:{password or ''}\"",
+      "sha256": "89db07aa6d288a160e14b3ee43ab5ef768158b083c545cf0f6e159c0354fac0e"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

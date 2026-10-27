@@ -74,10 +74,12 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Document quality
 
-For a new reading architecture or substantial restyling, use `office:design`
-(direction, palette, pairing, editorial and typographic method). The document designer
-uses `document-design.md` for concrete page/template instructions in the existing
-brief. This reference keeps the DOCX production checks.
+Use `office:content` for changed strategy/logical sequence and `office:design`
+for changed visual identity. The document designer consumes working/proposal or
+final selected records under design's `references/art-direction.md` mode contract
+and uses `layout-patterns.md` for native page/flow/style
+instructions. This reference retains DOCX production checks; it grants no silent
+editorial rewrite or restyle.
 
 Design for the reader's task: what they need to learn, decide or do. Put the main
 message early and let headings explain the argument. Match the supplied brand or

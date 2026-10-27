@@ -122,7 +122,7 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 |---|---|
 | Direct local | [research](<research.md>), [text-humanizer](<text-humanizer.md>) |
 | Direct external | None |
-| Local closure (3) | [business](<business.md>), [research](<research.md>), [text-humanizer](<text-humanizer.md>) |
+| Local closure (4) | [business](<business.md>), [research](<research.md>), [text-humanizer](<text-humanizer.md>), [work-controller](<work-controller.md>) |
 | External closure (0) | None |
 
 External bundles are separate upstream installations, not copied local skills.

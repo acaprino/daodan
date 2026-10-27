@@ -18,7 +18,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AbstractSet, Iterable, Mapping
 
-from .validate import SourcePathError, ValidationIssue, confined_source, source_members
+from .validate import (SourcePathError, ValidationIssue, confined_source,
+                       native_hook_frontmatter, source_members)
 
 OVERRIDE_MANIFEST = "override.toml"
 
@@ -162,6 +163,11 @@ def validate_override(
                 issues.append(
                     ValidationIssue("override-missing-replacement", manifest, replacement.as_posix())
                 )
+            elif native_hook_frontmatter((spec.root / replacement).read_text(encoding="utf-8")):
+                issues.append(ValidationIssue(
+                    "override-undeclared-hooks", manifest,
+                    "hook registrations belong in neutral [[hooks]], not replacement frontmatter",
+                ))
 
     sources_valid = True
     for path in spec.source_paths:

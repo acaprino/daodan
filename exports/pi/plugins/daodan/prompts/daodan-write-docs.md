@@ -120,7 +120,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `text-humanizer:text-humanizer`, `work-controller:isolated-worker`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:documentation-organizer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `text-humanizer:text-humanizer`, `work-controller:isolated-worker`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -136,6 +136,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `project-knowledge:codebase-explorer`: read `contracts/dispatch/project-knowledge/codebase-explorer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:doc-humanizer`: read `contracts/dispatch/project-knowledge/doc-humanizer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:documentation-engineer`: read `contracts/dispatch/project-knowledge/documentation-engineer.md` inside this package and pass its complete role body verbatim.
+- `project-knowledge:documentation-organizer`: read `contracts/dispatch/project-knowledge/documentation-organizer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:flow-writer`: read `contracts/dispatch/project-knowledge/flow-writer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:guide-reviewer`: read `contracts/dispatch/project-knowledge/guide-reviewer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:instructions-auditor`: read `contracts/dispatch/project-knowledge/instructions-auditor.md` inside this package and pass its complete role body verbatim.
@@ -162,6 +163,7 @@ specialist method it needs together with `work-controller:work-record`:
 | Request | Method |
 |---|---|
 | nothing, or "update the docs" | `project-knowledge:project-knowledge`: drift audit, then the authorized corrections |
+| reorganize Daodan documentation, plugin dossiers, intake/provenance inventory | `project-knowledge:project-knowledge`: load `references/documentation-organization.md` and dispatch `project-knowledge:documentation-organizer` |
 | a guide, onboarding, architecture, flows, operations | `project-knowledge:project-knowledge`: its guide method |
 | the README | `project-knowledge:readme-craft` |
 | instructions, CLAUDE.md, AGENTS.md | `project-knowledge:instructions-method` |
@@ -174,3 +176,6 @@ Before anything is written, run `run_state.py first-use --project ROOT`; on
 `first_use: true`, load `project-delivery:delivery-method` and follow its
 `references/first-use.md` first.
 Audit first; writing into the repository is an authorization asked when needed.
+Reuse an existing scoped authorization. For restructuring, the organizer's
+forbidden `docs/superpowers/` output and per-document human retention/destination
+decisions remain mandatory before the general writing authorization is applied.

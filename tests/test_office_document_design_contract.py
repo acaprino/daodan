@@ -6,9 +6,7 @@ establish installed-host execution or saved Word pagination and visual fidelity.
 
 import fnmatch
 import json
-import os
 import sys
-import tempfile
 import re
 import unittest
 from dataclasses import replace
@@ -20,18 +18,17 @@ for import_root in (REPO_ROOT, REPO_ROOT / "tests"):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
-from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support
+from scripts.daodan.adapter import resolve_support
 from scripts.daodan.catalogs import render_catalog
-from scripts.daodan.load import load_plugin
-from scripts.daodan.render import render_plugin
 from host_binding_assertions import canonical_markdown, loaded_instruction_text, without_host_binding
 import office_entries
+from test_office_unified_contract import use_published_office
 
 
 OFFICE = REPO_ROOT / "plugins/office"
 ADAPTERS = REPO_ROOT / "adapters"
 ROLE = "document-designer"
-DESIGN_REFERENCE = Path("skills/docx/references/document-design.md")
+DESIGN_REFERENCE = Path("skills/docx/references/layout-patterns.md")
 ROLE_PATHS = {
     "claude": "agents/document-designer.md",
     "copilot": "agents/document-designer.agent.md",
@@ -65,25 +62,15 @@ def _frontmatter(text):
 class DocumentDesignContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.plugin = load_plugin(OFFICE)
+        use_published_office(cls)
         # The document entry is a `daodan` workflow: the entry contract is read
         # from the entry plugin, the methods and roles from the office package.
         cls.document_plugin = office_entries.entry_plugin(("document",))
         cls.workflow = next(item for item in cls.document_plugin.workflows if item.name == "document")
-        cls.temporary = tempfile.TemporaryDirectory(dir=str(REPO_ROOT) if os.name == "nt" else None)
-        cls.packages = {}
-        cls.adapters = {}
-        cls.entries = office_entries.render_entries(cls.temporary.name, ("document",))
-        for host in HOSTS:
-            adapter = load_adapter(ADAPTERS, host)
-            package = Path(cls.temporary.name) / host / "office"
-            render_plugin(cls.plugin, adapter, package, adapters_root=ADAPTERS)
-            cls.packages[host] = package
-            cls.adapters[host] = adapter
 
     @classmethod
     def tearDownClass(cls):
-        cls.temporary.cleanup()
+        """The shared publisher cleans its immutable packages at process exit."""
 
     def entry(self, host):
         return loaded_instruction_text(self, self.entries[host] / ENTRY_PATHS[host], host)
@@ -100,9 +87,9 @@ class DocumentDesignContractTests(unittest.TestCase):
         self.assertIn("pptx", components.skills)
         self.assertFalse(self.plugin.mcp_servers)
 
-    def test_word_dispatch_is_isolated_and_only_owns_its_designer_and_reviewer(self):
+    def test_word_dispatch_is_isolated_with_shared_content_and_document_specialists(self):
         dispatch = self.workflow.dispatch
-        self.assertEqual(dispatch.roles, (f"office/{ROLE}", "office/document-reviewer"))
+        self.assertEqual(dispatch.roles, ("office/content-strategist", f"office/{ROLE}", "office/document-reviewer"))
         self.assertTrue(dispatch.isolated)
         self.assertFalse(dispatch.inline_workers)
         self.assertTrue(all(phase.invoke is None for phase in self.workflow.phases))
@@ -157,7 +144,7 @@ class DocumentDesignContractTests(unittest.TestCase):
                 body = _read(package / relative)
                 for skill in ("docx", "design"):
                     self.assertIn(f"`office:{skill}`", body)
-                self.assertIn("document-design.md", body)
+                self.assertIn("references/layout-patterns.md", body)
                 if host in {"codex", "pi"}:
                     # Codex and Pi hold the role body inside the entry package,
                     # under the owner-qualified dispatch contract path.
@@ -197,7 +184,7 @@ class DocumentDesignContractTests(unittest.TestCase):
             with self.subTest(host=host):
                 exported = without_host_binding(self, _read(package / DESIGN_REFERENCE), host)
                 self.assertEqual(canonical_markdown(exported), canonical_markdown(source))
-                self.assertIn("references/document-design.md", _read(package / "skills/docx/SKILL.md"))
+                self.assertIn("references/layout-patterns.md", _read(package / "skills/docx/SKILL.md"))
                 self.assertIn("document-designer", self.entry(host))
                 self.assertNotIn("plugins/office/", exported)
 
@@ -223,11 +210,12 @@ class DocumentDesignContractTests(unittest.TestCase):
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 design = _normalized(_read(package / "skills/design/SKILL.md"))
-                self.assertIn("share one direction, one palette and one pairing", design)
+                self.assertIn("same selected design", design)
                 for relative in ("skills/docx/SKILL.md", "skills/pptx/SKILL.md"):
                     method = _normalized(_read(package / relative))
                     self.assertIn("`office:design`", method)
-                    self.assertIn("both format designers consume the same record", method)
+                    self.assertIn("both format designers consume the same", method)
+                    self.assertIn("revisions", method)
                 for relative in (
                     ROLE_PATHS[host],
                     ROLE_PATHS[host].replace("document-designer", "presentation-designer"),
@@ -235,6 +223,12 @@ class DocumentDesignContractTests(unittest.TestCase):
                     role = _normalized(_read(package / relative))
                     self.assertIn("`office:design`", role)
                     self.assertIn("Do not independently replace it", role)
+                    self.assertIn("`proposal` or `final` mode", role)
+                    self.assertIn("unselected DESIGN payloads", role)
+                    self.assertIn("require_selected=False", role)
+                    self.assertIn("selected DESIGN.md", role)
+                    self.assertIn("references/art-direction.md", role)
+                    self.assertIn("content revision and requested formats", role)
 
     def test_word_layout_ideas_are_attributed_without_claiming_a_copied_source_port(self):
         text = _normalized(_read(OFFICE / DESIGN_REFERENCE))
@@ -295,7 +289,7 @@ class DocumentDesignContractTests(unittest.TestCase):
                 self.assertIn("`office:wordcraft`", _read(package / "skills/docx/SKILL.md"))
                 production = _normalized(_read(package / "skills/wordcraft/SKILL.md"))
                 self.assertIn("references/runtime.md", production)
-                self.assertRegex(production, r"(?i)accepted document design report")
+                self.assertRegex(production, r"(?i)accepted native design report")
                 self.assertRegex(production, r"(?i)native.*(?:paragraph|style|table)")
                 self.assertRegex(production, r"(?i)save a no-edit round-trip.*separate candidate")
                 self.assertRegex(production, r"(?i)reopen.*saved candidate")
@@ -350,12 +344,13 @@ class DocumentReviewContractTests(unittest.TestCase):
             with self.subTest(host=host):
                 relative = ROLE_PATHS[host].replace("document-designer", "document-reviewer")
                 body = _normalized(_read(package / relative))
-                for phrase in ("Verify candidate path and SHA-256", "Review every page",
+                for phrase in ("Verify candidate path and SHA-256",
                                "## Classify every defect", "**Blocking**", "**Advisory**",
                                "document-level defect", "pass/needs-fix/blocked verdict",
                                "Do not edit the document, generate images or dispatch workers",
                                "docx_inspect.py coverage", "`office:design`", "`office:docx`"):
                     self.assertIn(phrase, body)
+                self.assertRegex(body, r"(?i)final/read-only mode review every page")
                 self.assertIn("document-reviewer", self.entry(host))
                 method = _normalized(_read(package / "skills/docx/SKILL.md"))
                 for phrase in ("Dispatch `office:document-reviewer`", "Run at most three review rounds",
@@ -369,7 +364,7 @@ class DocumentReviewContractTests(unittest.TestCase):
                 body = _normalized(_read(package / ROLE_PATHS[host].replace("document-designer", "document-reviewer")))
                 self.assertIn("the document under review is the unchanged source", body)
                 workflow = _normalized(self.entry(host))
-                self.assertIn("rendered unchanged source for a read-only review", workflow)
+                self.assertIn("unchanged read-only source", workflow)
 
 
 class DocumentTypeContractTests(unittest.TestCase):
@@ -382,7 +377,7 @@ class DocumentTypeContractTests(unittest.TestCase):
              "Handbook", "Tutorial or guide", "Policy", "Minutes", "Letter", "Image-led dossier")
 
     def test_twelve_document_types_each_fix_sequence_opening_and_heading_voice(self):
-        catalog = _read(OFFICE / "skills/docx/references/document-types.md")
+        catalog = _read(OFFICE / "skills/docx/references/structure.md")
         rows = re.findall(r"^\| \*\*(.+?)\*\* \|", catalog, re.M)
         self.assertEqual(tuple(rows), self.TYPES)
         header = re.search(r"^\| Type \| (.+) \|$", catalog, re.M).group(1)
@@ -392,22 +387,24 @@ class DocumentTypeContractTests(unittest.TestCase):
         for stale in ("Word equivalent", "Showcase"):
             self.assertNotIn(stale, catalog)
 
-    def test_shared_design_skill_owns_look_and_each_format_owns_structure(self):
+    def test_shared_content_owns_strategy_and_formats_supply_independent_structure(self):
         design = _read(OFFICE / "skills/design/SKILL.md")
-        self.assertIn("## Structure belongs to the format", design)
+        self.assertIn("`office:content` owns", design)
+        self.assertIn("logical sequence", design)
         self.assertNotIn("Word equivalent", design)
         self.assertNotIn("| Pyramid |", design)
-        library = _read(OFFICE / "skills/pptx/references/design-library.md")
+        library = _read(OFFICE / "skills/pptx/references/structure.md")
         self.assertIn("## Choose the argument mode", library)
         for host, package in self.packages.items():
             with self.subTest(host=host):
-                self.assertTrue((package / "skills/docx/references/document-types.md").is_file())
+                self.assertTrue((package / "skills/docx/references/structure.md").is_file())
                 intake = _read(package / "skills/intake/SKILL.md")
-                self.assertIn("document type for a document from `office:docx`", intake)
+                self.assertIn("`office:content` owns these editorial dimensions", intake)
+                self.assertIn("format `references/structure.md` catalogs", intake)
                 for relative in (ROLE_PATHS[host], ROLE_PATHS[host].replace("document-designer", "document-reviewer"),
-                                 "skills/docx/SKILL.md", "skills/docx/references/document-design.md"):
+                                 "skills/docx/SKILL.md", "skills/docx/references/layout-patterns.md"):
                     body = _normalized(_read(package / relative))
-                    self.assertIn("document-types.md", body)
+                    self.assertIn("structure.md", body)
                     self.assertNotIn("argument mode", body)
                 reviewer = _normalized(_read(package / ROLE_PATHS[host].replace("document-designer", "document-reviewer")))
                 self.assertIn("the document type's opening is not delivered", reviewer)

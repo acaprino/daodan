@@ -1,0 +1,78 @@
+{
+  "repository": "https://github.com/ShishirPatil/gorilla",
+  "revision": "6ea57973c7a6097fd7c5915698c54c17c5b1b6c8",
+  "license": "Apache-2.0",
+  "license_evidence": "berkeley-function-call-leaderboard/bfcl_eval/data/README.md frontmatter: license: apache-2.0",
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstream_path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357
+    },
+    {
+      "path": "README.md",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/README.md",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/README.md",
+      "sha256": "93119d83df28fee0a9f3ea41b0c6a947aad9f7ba4334ae89fef41c74b67b208d",
+      "bytes": 20277
+    },
+    {
+      "path": "BFCL_v4_live_multiple.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_multiple.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_multiple.json",
+      "sha256": "fd8ccfad4d911420d0e3341dbe2fff77d1d341da934248b9bb2bda24ab3a10c8",
+      "bytes": 3891277
+    },
+    {
+      "path": "answers/BFCL_v4_live_multiple.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_multiple.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_multiple.json",
+      "sha256": "97e90d59c5bd76c55a2920ce93e5566e9046307d3f558578f085f9d3a56c3084",
+      "bytes": 199668
+    },
+    {
+      "path": "BFCL_v4_live_parallel_multiple.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_parallel_multiple.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_parallel_multiple.json",
+      "sha256": "21d4b9319c1faac431e22757b367ea28917fe467364c3a4b17f16ec06d4f6e79",
+      "bytes": 82332
+    },
+    {
+      "path": "answers/BFCL_v4_live_parallel_multiple.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_parallel_multiple.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_parallel_multiple.json",
+      "sha256": "f5b5f360556c5feb51db46fb9f56ee4b304f4b45b161599bbb14161c98a2873f",
+      "bytes": 7420
+    },
+    {
+      "path": "BFCL_v4_live_parallel.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_parallel.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_parallel.json",
+      "sha256": "6c26e9fdc3350cf596e6d1ea9c179cbff834761bccf562f4141ed29a839ca421",
+      "bytes": 15649
+    },
+    {
+      "path": "answers/BFCL_v4_live_parallel.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_parallel.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_parallel.json",
+      "sha256": "8a9f189ff0e832ebbbbdade1fd95a7dbcc67406e9177df3f0aad76f59ab00350",
+      "bytes": 4972
+    },
+    {
+      "path": "BFCL_v4_live_simple.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_simple.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_live_simple.json",
+      "sha256": "1af2ac87dca47556db7b7e37e51e28b459a38b594e3c7b3c792b4903598ca0c4",
+      "bytes": 260140
+    },
+    {
+      "path": "answers/BFCL_v4_live_simple.json",
+      "upstream_path": "berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_simple.json",
+      "url": "https://raw.githubusercontent.com/ShishirPatil/gorilla/6ea57973c7a6097fd7c5915698c54c17c5b1b6c8/berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_live_simple.json",
+      "sha256": "fec9cfa9744a936f9126981e85a2023da1e63e273eafebc81923a1162fad70ce",
+      "bytes": 46972
+    }
+  ]
+}

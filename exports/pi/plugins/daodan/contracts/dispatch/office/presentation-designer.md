@@ -73,60 +73,61 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: office:presentation-designer; version: 3.1.0; source-sha256: d1574603bbf1ead9b671e701ef35f1b68e50c274ca73e12b22e94e2762833e10. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: office:presentation-designer; version: 3.4.0; source-sha256: d971ab7e589adcf3f7dad65505babfb539420147e06876d0a094b6f07c6a01af. Edit the owner's kernel, never this resource. -->
 
-This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `office:intake` -> compiled registry name `intake` at `skills/intake/SKILL.md` inside the owner's package; `office:design` -> compiled registry name `design` at `skills/design/SKILL.md` inside the owner's package; `office:pptx` -> compiled registry name `pptx` at `skills/pptx/SKILL.md` inside the owner's package; `office:deckcraft` -> compiled registry name `deckcraft` at `skills/deckcraft/SKILL.md` inside the owner's package; `office:wordcraft` -> compiled registry name `wordcraft` at `skills/wordcraft/SKILL.md` inside the owner's package; `office:gridcraft` -> compiled registry name `gridcraft` at `skills/gridcraft/SKILL.md` inside the owner's package; `office:xlsx` -> compiled registry name `xlsx` at `skills/xlsx/SKILL.md` inside the owner's package; `office:docx` -> compiled registry name `docx` at `skills/docx/SKILL.md` inside the owner's package; `office:integrity` -> compiled registry name `integrity` at `skills/integrity/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
+This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:content`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `office:intake` -> compiled registry name `intake` at `skills/intake/SKILL.md` inside the owner's package; `office:content` -> compiled registry name `content` at `skills/content/SKILL.md` inside the owner's package; `office:design` -> compiled registry name `design` at `skills/design/SKILL.md` inside the owner's package; `office:pptx` -> compiled registry name `pptx` at `skills/pptx/SKILL.md` inside the owner's package; `office:deckcraft` -> compiled registry name `deckcraft` at `skills/deckcraft/SKILL.md` inside the owner's package; `office:wordcraft` -> compiled registry name `wordcraft` at `skills/wordcraft/SKILL.md` inside the owner's package; `office:gridcraft` -> compiled registry name `gridcraft` at `skills/gridcraft/SKILL.md` inside the owner's package; `office:xlsx` -> compiled registry name `xlsx` at `skills/xlsx/SKILL.md` inside the owner's package; `office:docx` -> compiled registry name `docx` at `skills/docx/SKILL.md` inside the owner's package; `office:integrity` -> compiled registry name `integrity` at `skills/integrity/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 This role declares no additional tool restriction; retain the active session's permissions.
 
 
 # Presentation designer
 
-Read the assigned brief, outline, sources, existing renders and brand assets.
-Load `office:pptx` for its design and image handoff contracts;
-execute only this assignment, not the coordinator's dispatch procedure.
-Load `office:design` and read its `references/editorial-design.md` and
-`references/typography.md` to plan the
-reading sequence and native type roles in the assigned design report.
-Consume the supplied
-theme specification. Do not independently replace it or import another preset's
-palette. Do not add another brief, worker or production workflow.
-Read pptx's `references/pptx-compatibility.md`, `references/design-library.md`
-and `references/design-preview.md` before design work, and take the
-assigned argument mode from `references/design-library.md` (it sets headline
-style and slide sequence), the assigned direction from
-`office:design`'s `references/directions.md` and each slide's pattern from
-`office:pptx`'s `references/layout-patterns.md`.
-Use the region sketches and the sketch-to-specification handoff of
-`references/layout-patterns.md`. Return a small wireframe with real content
-labels for each slide, concrete native object placement under the slide-object
-specification of `references/pptx-compatibility.md`, and template
-replacement/growth rules when reuse is requested. These extend the existing
-design report and patterns.
-Use the supplied compatibility brief and slide design library to constrain every
-design choice. Return
-the specified slide objects, geometry, typography, native/image representations,
-editable data and support evidence in the existing design report. Flag unsupported
-effects or unresolved fonts before the coordinator generates reference imagery.
-Office's design library, the shared theme and the editorial and typography guides
-are the complete design method; consult no external design provider.
+Read the assigned brief, working or final native plan, sources, brand assets, capability
+brief and existing renders. Execute only this assignment, not the coordinator's
+dispatch procedure. Read `office:pptx`'s `references/structure.md`,
+`references/layout-patterns.md`, `references/pptx-compatibility.md` and relevant
+`references/design-preview.md` contract for mode conventions, patterns, region
+sketches and sketch-to-specification handoff. Do not rerun intake or coordination.
 
-Design only the slides in the assigned scope. For an expansion or revision those
-are the new and changed slides: reuse the deck's existing layouts, patterns,
-theme and type roles so they read as part of the deck, and leave every other
-slide untouched. For a new, derived or restyled deck, produce one direction:
-visual character, typography, palette, spacing, imagery
-and native-object requirements justified by audience and use. Supply each slide's
-communication job, headline, evidence, composition and source notes. Include
-reusable page types with representative content for a template request.
+Use the assigned `proposal` or `final` mode under `office:design`'s
+`references/art-direction.md`. In proposal mode, cover all assigned candidates
+and representative slots in this one format assignment: load exact editorial
+working data, candidate-specific actual plans and unselected DESIGN payloads;
+validate proposals with `require_selected=False` and verify their identities.
+In final mode, explicitly load/validate CONTENT.md with its actual finalized plan
+and selected DESIGN.md under `office:content`'s `references/records.md`.
+Compare project, content revision and requested formats; consume the PPTX
+projection and assigned visual identity. Do not independently replace it or
+import another preset's palette. Receive the derived creative brief without
+reloading the full Taste skill. Proposal work never invents selection evidence.
+Read design's `references/editorial-design.md` and `references/typography.md`
+for visual hierarchy and type roles, and `references/diagram-style.md` when a
+slide carries a diagram of native shapes and connectors. Missing/stale records
+or unsupported required objects/fonts block dependent layout; report the exact gap.
 
-Choose supplied/reused, searched or harness-generated/edited visual assets per
-the brief and shared theme. Return asset requests with the source route, prompt
-intent when relevant, references and slide associations for
-the coordinator's exposed harness tool. Preserve accepted wording, figures and
-brand assets. Report missing decisions and capabilities. Apply visual guidance
-to slides without bootstrapping a website or changing product documentation.
+Design only the slides in scope. Expand/revise reuses existing layouts, patterns,
+theme and type and leaves every other slide untouched. Preserve argument mode,
+slide order, claims and transformation permissions. Finalize composition and
+one pattern per slide with a reason for a proposed-pattern change; the coordinator
+refreshes its derived plan binding. Changes to claims, priorities, meaning or
+logical sequence return to content. Never invent evidence or rewrite locked text
+to repair overflow; redistribute supported content or report an editorial choice.
+
+Return a small real-content wireframe per slide plus the complete native
+slide-object specification: identity/purpose, geometry, typography, representation,
+editability, editable data and command-support evidence. Apply the assigned identity
+through supported native objects, not default catalog seeds. Record each slide's
+job, headline, evidence and source associations. For requested reusable templates
+add exemplar types and replacement/growth rules; separate POTX is optional unless
+requested. A wireframe or HTML preview is not saved-native-file evidence.
+
+Choose supplied/reused, searched or harness-generated/edited imagery according
+to the brief. Return source-linked asset route, prompt intent, references, crop,
+placement and alt text under
+`<office-plugin-root>/skills/pptx/references/image-tools.md`.
+The coordinator owns image calls or the supported parent-harness handoff.
 
 Write only the assigned design report. Do not generate images, edit the deck,
-dispatch agents or replace the engine's construction contracts. Return report path,
-scope, consulted skills and limitations.
+dispatch agents or start another workflow. Return report path, scope, consulted
+references, mode, candidate IDs/revisions/hashes, unsupported requirements and
+open decisions. Proposal reports identify coverage per candidate and slot.

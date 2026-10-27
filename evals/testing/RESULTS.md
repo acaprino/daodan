@@ -18,4 +18,4 @@ and treated an equivalent mutant as an investigation result rather than grounds
 for deletion. No consolidation, replacement, quarantine or application fix ran.
 These selected decision observations are partial coverage, not a passed execution
 of all eleven cases or a live installed-host workflow. See the
-[validation record](../../docs/superpowers/reports/2026-10-08-instructions-test-policy-validation.md).
+[validation record](../../docs/research/prompt-agent-design/reports/2026-10-08-instructions-test-policy-validation.md).

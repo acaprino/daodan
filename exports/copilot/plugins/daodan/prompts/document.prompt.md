@@ -1,6 +1,6 @@
 ---
 name: document
-description: 'Create, derive, revise, review or export a native Word document with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter or template, or a change, review or export of an existing document.'
+description: 'Create, derive, revise, review or export a native Word document through shared Office content/design and independent document composition and saved review.'
 argument-hint: '<brief | source files | existing document and requested change>'
 ---
 

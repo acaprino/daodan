@@ -33,11 +33,25 @@ writing read `references/guide-method.md`; for authorized changes read
 `references/writing-guidelines.md`, `references/audience-adaptation.md` and
 `references/diagram-patterns.md` according to the task.
 
+## Scientific grounding
+
+For substantive specifications or scientific/technical claims that may change a
+decision, load the skill `research:science-based-approach` and compose its automatic
+checkpoint before writing. Pass caller task, phase, context and existing grants.
+OFF skips automatic archive/network work; editorial-only changes can be
+not-applicable. Pin research revision and claim IDs, separate findings from
+approved intent, and keep read-only results in the owned run or chat. Reuse a
+caller checkpoint instead of starting another command or interview.
+
 ## Reusable dispatch
 
 - Discovery: `codebase-explorer`, with the exact scope and owned context output.
 - Documentation drift: `documentation-engineer`, explicitly audit-only until
   application is authorized.
+- Daodan documentation restructuring and per-plugin dossiers:
+  `documentation-organizer`; first read `references/documentation-organization.md`.
+  Its per-document human decisions and forbidden `docs/superpowers/` output
+  rule apply before the general application method.
 - Cross-document evidence review: `guide-reviewer`, explicitly audit-only.
 - Structured writing: overview-writer, tech-writer, flow-writer,
   onboarding-writer and ops-writer, only for their assigned files.

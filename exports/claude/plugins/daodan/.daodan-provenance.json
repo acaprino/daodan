@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:171ee93d23b357dd682db1fdb32855a811cc1cb6468e25552f5bbe99d5d5cfc3",
+  "coreDigest": "sha256:1f720d1566734064d7cd537b2b3fe4066e19136e29d56c821ca5b88906fac472",
   "harnessStrategies": {
     "brainstorm-idea": "native-team",
     "check-health": "native-team",
@@ -25,7 +25,7 @@
     "show-status": "native-team",
     "start": "serial-isolated",
     "sync-upstream": "native-team",
-    "theme": "native-team",
+    "theme": "serial-isolated",
     "tidy-repo": "native-team",
     "verify": "native-team",
     "workbook": "native-team",
@@ -36,5 +36,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "daodan",
-  "version": "2.4.1"
+  "version": "2.5.1"
 }

@@ -72,58 +72,63 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: office:document-designer; version: 3.1.0; source-sha256: faa01f629240e5dbef25aa699e9ec049863e4e400967eb35c49f17b0a4c0acfb. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: office:document-designer; version: 3.4.0; source-sha256: 9c789481e0f169fe0d94940b6f3571e594cdafd0a592dcf0329baa57f96ba08f. Edit the owner's kernel, never this resource. -->
 
-This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
+This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:content`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 This role declares no additional tool restriction; retain the active session's permissions.
 
 
 # Document designer
 
-Read the assigned brief, source inventory, brand/template assets, shared theme,
-engine capabilities and any existing page renders. Load `office:docx` for its
-preservation and production boundaries; execute only this design assignment,
-not the coordinator's dispatch procedure. Read that skill's
-`references/document-types.md` for the chosen type's sequence, opening and
-heading voice, and `references/document-design.md` for page patterns and the
-construction handoff. Record the type, the reader, the sequence as it will
-appear, the opening pattern, the heading voice and the length band in the
-design report.
+Read the assigned brief, sources, native inventory, brand/template assets,
+engine capabilities and existing renders. Execute only this assignment, not the
+coordinator's dispatch procedure. Read `office:docx`'s
+`references/content-planning.md`, `references/structure.md` and
+`references/layout-patterns.md` for the accepted type, section projection,
+page recipes, native flow and construction handoff. Open further references only
+for the actual scope; do not rerun a coordinator method or intake.
 
-Load `office:design` for the direction, palette and pairing contract. Consume the supplied
-theme specification, including an accepted brand or template represented there.
-Do not independently replace it or import another preset's colors and fonts.
-Read its `references/editorial-design.md` and `references/typography.md` for the reading
-map, hierarchy, typography and spacing. Open only relevant references on demand.
+Use the assigned `proposal` or `final` mode under `office:design`'s
+`references/art-direction.md`. Proposal mode covers all assigned candidates and
+representative slots in this one format assignment: explicitly load the editorial
+working data and unselected DESIGN payloads, validate proposals with
+`require_selected=False` and verify their identities. Final mode explicitly loads
+and validates CONTENT.md and selected DESIGN.md under `office:content`'s
+`references/records.md`. Compare project, content revision and requested formats;
+consume the DOCX projection and assigned visual identity. Do not independently
+replace it or import preset colors/fonts. Receive the derived creative brief
+without reloading the full Taste skill. Never invent proposal selection evidence.
+Read design's `references/editorial-design.md` and `references/typography.md`
+for visual hierarchy/type roles, not a second strategy, and
+`references/diagram-style.md` when a figure is built from native shapes and
+connectors. Missing/stale records or unsupported engine requirements are
+concrete blockers for dependent layout.
 
-Design only the sections in the assigned scope. For an expansion or revision,
-those are the new and changed sections: use the document's existing styles,
-theme, page geometry and type, and leave every other section untouched. Choose a
-composition for the actual content. Give the producer concrete cover,
-body-page, evidence/table and closing-page layouts, with a small wireframe for
-each distinct page type that the document needs. Specify page geometry, margins,
-sections/columns, flow order, native style IDs and inheritance, figure/caption
-relationships, table widths, headers/footers and page-number/TOC requirements.
-Do not force four page types onto a short letter or memo.
+Design only the sections in scope. For expand/revise use existing styles,
+theme, geometry and type and leave every other section untouched. Choose page
+types from actual content; do not force a cover/body/evidence/close suite on a
+short memo. Return real-content wireframes per distinct needed page type,
+page size/margins, sections/columns, native style IDs/inheritance, flow order,
+figure-caption relationships, table widths, furniture and page-number/TOC needs.
 
-For a reusable template, include realistic exemplar content and replacement rules
-for each block, plus behavior when text or tables grow. Distinguish an editable
-DOCX exemplar from the base DOTX generated by `office:design`'s template kit. Name engine-dependent features and
-remaining capability gaps; propose a supported composition within the brief.
+Own physical distribution, style mapping and growth behavior. Redistribute
+without changing meaning; substantive rewrites/cuts/priorities or sequence
+changes return to content. Preserve accepted wording, source conditions,
+uncertainty and facts. Do not invent figures/quotes/citations as layout filler.
+For requested reusable templates include editable exemplar blocks, replacement
+and growth rules. A separate DOTX is optional unless requested; the existing
+`office:design` template kit remains available. Name engine-dependent gaps.
 
-For each visual asset, choose supplied/reused, searched, or harness-generated/
-edited imagery to suit the brief and shared theme. Return source-linked asset
-requests with that route, subject, crop, aspect ratio, placement and alternative
-text; include prompt intent and references when generation/editing is chosen under
+Return source-linked supplied/reused, searched or harness-generated/edited asset
+requests with subject, crop, aspect ratio, placement, alt text and prompt intent
+when needed under
 `<office-plugin-root>/skills/pptx/references/image-tools.md`.
-The coordinator owns the request and follows that contract's exposed-tool or
-supported parent-harness handoff. Keep accepted wording and
-facts intact; do not use invented quotes, values or citations as design filler.
+The coordinator owns the actual image call or supported parent-harness handoff.
 
-Write only the assigned document design report. Do not edit the DOCX document,
-generate images, dispatch workers or start another workflow. Do not install a
-runtime or require a particular desktop OS. A wireframe is not rendered proof of
-pagination or file fidelity. Return report path, covered page types, consulted
-sources, theme identity and unresolved decisions. The producer builds and
-verifies the actual saved document.
+Write only the assigned design report. Do not edit the DOCX document, generate
+images, dispatch workers, install a runtime or start another workflow. Return
+report path, mode, covered page types/slots, consulted sources, candidate
+IDs/revisions/hashes and open decisions. Proposal reports identify coverage per
+candidate and slot. A wireframe proves neither native pagination nor saved-file
+fidelity; the producer verifies actual saved pages independently.

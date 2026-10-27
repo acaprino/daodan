@@ -1,15 +1,15 @@
 schema = "daodan/v1"
 name = "project-delivery"
-version = "1.1.1"
+version = "1.2.0"
 description = "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarially reviewed implementation plans, Work Controller job execution, verified commits, reconciliation and authorized merge."
 license = "MIT"
 
 [capabilities]
-required = ["repository.read", "repository.write", "shell.execute", "contexts.isolate", "roles.dispatch"]
+required = ["network.fetch", "repository.read", "repository.write", "shell.execute", "contexts.isolate", "roles.dispatch"]
 optional = ["execution.parallel"]
 
 [dependencies]
-required = ["model-routing", "work-controller", "worktree-manager", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-map", "repo-hygiene", "clean-code", "typescript-development", "python-development", "skill-catalog", "peer-review", "moe", "report-rendering"]
+required = ["research", "model-routing", "work-controller", "worktree-manager", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-map", "repo-hygiene", "clean-code", "typescript-development", "python-development", "skill-catalog", "peer-review", "moe", "report-rendering"]
 
 [components]
 skills = ["delivery-method", "adr-method", "frd-method", "project-bootstrap"]

@@ -1,0 +1,54 @@
+{
+  "repository": "https://github.com/tamaratran/fast-jev-compaction",
+  "revision": "e3f262a7f4d42bd8dd32ced30d26176f7cb545b0",
+  "license": "MIT",
+  "license_file": "LICENSE",
+  "license_sha256": "06dcddbb6908a0c6dd4a9e8ec822eea41d5a460a53089fecccc8a68049e99241",
+  "public": true,
+  "retrieval": "git show of pinned public dependency commit; bytes copied without modification",
+  "files": [
+    {
+      "source_path": "LICENSE",
+      "local_file": "LICENSE",
+      "sha256": "06dcddbb6908a0c6dd4a9e8ec822eea41d5a460a53089fecccc8a68049e99241",
+      "bytes": 1056,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/blob/e3f262a7f4d42bd8dd32ced30d26176f7cb545b0/LICENSE"
+    },
+    {
+      "source_path": "src/compact.ts",
+      "local_file": "compact.ts",
+      "sha256": "6dcfe27bc00c1ba9065135a61a128bde0da41b9d300dbfd286de3cd6ce8b745b",
+      "bytes": 10736,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/blob/e3f262a7f4d42bd8dd32ced30d26176f7cb545b0/src/compact.ts"
+    },
+    {
+      "source_path": "src/state.ts",
+      "local_file": "state.ts",
+      "sha256": "585a9e571340a56d604ea7b90a395f286e575fe24b8394600c38064d972c03dc",
+      "bytes": 10568,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/blob/e3f262a7f4d42bd8dd32ced30d26176f7cb545b0/src/state.ts"
+    },
+    {
+      "source_path": "src/request.ts",
+      "local_file": "request.ts",
+      "sha256": "aaa0922f89b1a38b304cf8cf922038641338cdae04e1a636c2a618c60c55b53a",
+      "bytes": 1946,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/blob/e3f262a7f4d42bd8dd32ced30d26176f7cb545b0/src/request.ts"
+    },
+    {
+      "source_path": "src/client.ts",
+      "local_file": "client.ts",
+      "sha256": "c324203676c7256abfd828110ab5181e2bb702c5b0acfb25f9930f1f529a1fff",
+      "bytes": 1509,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/blob/e3f262a7f4d42bd8dd32ced30d26176f7cb545b0/src/client.ts"
+    },
+    {
+      "source_path": "src/types.ts",
+      "local_file": "types.ts",
+      "sha256": "dbb401b0f9b09af3a8ec4bb331f2c7141dfa70dc38c3dbfd501183d44930973f",
+      "bytes": 5199,
+      "url": "https://github.com/tamaratran/fast-jev-compaction/blob/e3f262a7f4d42bd8dd32ced30d26176f7cb545b0/src/types.ts"
+    }
+  ],
+  "use": "Exact public code excerpts inside explicitly synthetic tool-result wrappers and continuation scenarios. Not observed user sessions or real execution logs."
+}

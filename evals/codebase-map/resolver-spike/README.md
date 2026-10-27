@@ -118,7 +118,7 @@ script positionally.
 The continuation separates selected references from actual engine requests,
 checks all source hashes before and after inference, and requires an exact
 declaration name position for confirmation. Those changes and their verification
-are recorded in the [Python delivery report](../../../docs/superpowers/reports/2026-10-22-codebase-map-python-resolver-delivery.md).
+are recorded in the Python delivery report.
 
 What did not ship: every LSP engine (tsserver, JDTLS, rust-analyzer, gopls) stays
 in this harness, and OP-1/OP-2 in

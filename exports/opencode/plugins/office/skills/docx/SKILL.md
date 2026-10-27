@@ -171,31 +171,60 @@ content merely to make an editing library handle it.
 
 ## Coordinate document design
 
-On the substantial intake route, the operation recorded at intake decides the
-steps. Create, restyle, and derive without carrying the look over choose a look
-and design every page type. Expand and revise inherit the document's type, styles,
-theme and template, and design only the new or changed sections in the styles
-the document already uses; untouched sections are not redesigned. When the
-operation gives the document a new look, the coordinator loads `office:design`: it owns the
-direction, the palette built from the user's colour source and chosen from
-candidates, the font pairing with its installation and embedding, and the
-editorial and typographic method. Choose the document type from
-`references/document-types.md` at intake (reader, purpose, section sequence,
-opening, heading voice, length band) and record it with those decisions in the
-existing brief; a document derived from an existing one keeps the source's type
-unless the brief changes its purpose. Preserve supplied brands and template styles. For a DOCX/PPTX
-bundle both format designers consume the same record.
-Read `references/document-types.md` for the type's sequence and
-`references/document-design.md` for concrete page patterns, reusable template
-instructions and the document design report handoff.
+The operation from `office:intake` selects the steps below. Preserve supplied
+brands/template styles and inherited decisions. A combined DOCX/PPTX delivery
+reuses one content/design identity with independent projections and layouts;
+both format designers consume the same record revisions.
 
-Dispatch `office:document-designer` in an isolated context through the registered
+| Operation | Content | Theme | Layout/build scope |
+|---|---|---|---|
+| Create | Full shared plan | New ad hoc proposals | All required page types; new native candidate |
+| Derive | Full requested projection | Inherit carried look, otherwise new | New distribution with carried claims preserved |
+| Expand | Delta; accepted units retained | Inherited | New/moved sections only, on existing styles/template |
+| Revise | Delta; changes and authorized cuts | Inherited | Changed sections only |
+| Restyle | None: content/sequence retained | New ad hoc proposals | Apply selected theme throughout requested scope |
+| Edit | None: no global strategy | Inherited | Authorized local edit only |
+| Review or export | None | None | Unchanged source, requested findings/export |
+
+For full/delta planning, load `office:content`, then dispatch
+`office:content-strategist` through this entry's declared isolated bindings.
+Supply the settled brief, all sources and source inventory, accepted records,
+operation, per-block permissions/cuts, requested formats and assigned absolute
+artifact paths. Read `references/content-planning.md` for the DOCX projection;
+`references/structure.md` supplies the twelve document-type conventions. Verify
+complete editorial working data, source associations and requested projections;
+return gaps/conflicts/overflow or unsupported cuts to the appropriate decision.
+Missing/partial artifacts are not delivery. Reuse an already accepted shared
+content result rather than dispatching it again for the second format.
+
+When a new look is needed, load `office:design` and its
+`references/art-direction.md`: the settled Office brief enters Taste, then the
+existing format designers, native producers and reviewers prove representative
+candidates in `proposal` mode before the v2 gallery and explicit DESIGN.md selection.
+Otherwise reuse the accepted theme and rebind its record under `office:design`'s
+`references/records.md` when content identity/revision or requested formats
+change. Use that same procedure to bootstrap an inherited legacy theme.
+After proposal selection or inherited rebinding, explicitly load CONTENT.md and
+DESIGN.md using the shared record loader and run their structural validation; compare project,
+content revision and exact requested formats. For a bundle with PPTX, finalize
+its plan/display binding under `office:pptx` before freezing the shared content
+record. A new filename is no substitute for these checks. Restyle and local
+operations reuse accepted editorial decisions. For a legacy restyle needing a
+new DESIGN binding, the coordinator serializes unchanged source content and
+inherited decisions in the shared contract without a new strategy or strategist.
+Legacy inspection/local editing requires no fabricated retrospective record.
+
+Read `references/layout-patterns.md` for concrete page patterns, native flow,
+styles, geometry/growth and the format design-report handoff. The designer owns
+composition under the accepted projection, not silent editorial revision.
+
+Dispatch `office:document-designer` in `final` mode in an isolated context through the registered
 `/daodan:document` entry's generated bindings, or those of `/daodan:start`, which
 declares the same roles. If loaded directly, resolve that
 entry before dispatch; continue the same task. A role name alone cannot supply an
-inline worker body. Supply the brief, source inventory, brand/template assets,
-accepted shared theme, engine capability limits, existing renders and an absolute
-assigned design report path. Default models inherit the session. Unavailable
+inline worker body. Supply the brief, loaded content/design paths and revisions, DOCX projection,
+source inventory, brand/template assets, engine capability limits, existing
+renders, allowed changes and an absolute assigned design report path. Default models inherit the session. Unavailable
 isolation blocks that design delivery; continue independent source preparation.
 
 The designer writes only its assigned report and returns page-type wireframes,
@@ -267,8 +296,12 @@ comment anchors, revision ranges, fields or hyperlinks remain valid. When the
 substantial route starts from an existing document (derived, restyled,
 restructured or shortened), write the approved cuts recorded at intake to a cuts
 file and run `docx_inspect.py coverage` on the source and each candidate. Every
-unexpectedly missing item is restored or brought back to the user as a proposed
-cut; never cut content the user did not approve.
+unexpectedly missing unchanged/locked item is restored or brought back to the
+user as a proposed cut; never cut content the user did not approve. Keep literal
+coverage for those blocks. For an authorized free transformation, retain its
+source/destination mapping and independently compare facts, conditions,
+uncertainty and claim strength; similarity or a generated map alone proves no
+semantic conservation.
 
 Render the saved DOCX with an available compatible renderer and inspect its actual
 pages. Check clipping, overlaps, headings separated from their text, tables split
@@ -278,13 +311,13 @@ Verify key claims and figures independently of the document's own text.
 
 ## Independent review
 
-Dispatch `office:document-reviewer` in an isolated context through the registered
+Dispatch `office:document-reviewer` in `final` mode in an isolated context through the registered
 `/daodan:document` entry's (or `/daodan:start`'s) generated bindings after actual candidate rendering, or
 on the read-only route after rendering the unchanged source, which then stands in
 for the candidate. Supply the exact candidate path and SHA-256, render engine and
 version, page manifest, brief, design report, source and candidate inspections,
-allowed changes, the coverage report when one exists, the `office:design` record
-and font evidence. Require inspected page identities, concrete defects classified
+allowed changes, the coverage report when one exists, the exact loaded CONTENT.md/DESIGN.md identities (when present), per-block
+transformation permissions and font evidence. Require inspected page identities, concrete defects classified
 blocking or advisory, preservation findings, coverage gaps, field-update evidence
 and a pass/needs-fix/blocked verdict. An empty response or an uninspected render
 cannot satisfy this delivery. Unavailable isolation blocks the review delivery.

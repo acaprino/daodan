@@ -14,7 +14,7 @@ untracked content; missing comparison evidence remains a declared gap.
 
 ## Research basis for concise, effective agents
 
-[Progetta prompt e agenti affidabili](../references/prompt-agent-research.md)
+[Progetta prompt e agenti affidabili](../research/prompt-engineering-and-brevity.md)
 collects the scientific references for this plugin's prompt and agent design:
 atomic verifiable instructions, hierarchy and data boundaries, scoped evidence,
 independent verification and end-to-end non-inferiority testing. Papers are
@@ -46,7 +46,7 @@ Thirteen broad reviewer identities are generated presets assembled from canonica
 specialists declared in their existing provider manifests. Ad hoc jobs use the
 same leaves and delivery contracts for the assigned context. Registration and
 generation establish availability, not behavioral qualification. See the
-[delivery evidence](../superpowers/reports/2026-10-23-reviewer-composition-delivery.md)
+[delivery evidence](../research/review-quality/reports/2026-10-23-reviewer-composition-delivery.md)
 for the exact verified stage. Canonical bodies own checks and evidence requirements;
 the guide and catalog do not duplicate their checklists.
 

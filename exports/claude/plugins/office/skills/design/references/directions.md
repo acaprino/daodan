@@ -71,24 +71,75 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Visual directions
 
-Twenty coherent visual directions for Word documents and PowerPoint decks. A
-direction fixes composition and rhythm for slides and pages and names the font
-pairing. Choose one for the whole file with the context column, record it in
-the brief, and keep it; vary slide patterns and page patterns under it, never the
-direction. A supplied brand or template wins over every direction: extract its
-palette and fonts into direction `H` and keep the rest of these rules.
+Twenty visual-direction resources for ad hoc Word and PowerPoint proposals.
+Use their principles, rhythm and font suggestions when they fit the actual brief;
+no catalog letter or pairing is compulsory. Combine compatible principles into
+one coherent selected `DESIGN.md`, then keep that identity across the work.
+Format designers choose composition and geometry. A supplied brand or template
+wins; `H` is an available catalog label, not a required relabeling of that source.
 
-The palette is built for each file from the user's colour source by
-`scripts/palette.py` (see `SKILL.md`). The palette column below is that
-direction's **default seeds**, used only when the user supplies no image,
-website, stylesheet, existing file or description: pass its accent as the first
-seed, and its ink as the second when the direction's character depends on it.
-It is given as `background / ink / surface / accent`, then the muted text colour
-and the data colours; every ink, accent and muted colour holds at least `4.5:1`
-on both background and surface. The pairing number points into
-`font-pairings.md`, which supplies the faces, weights, fetch spec and the Office
-fallback: install the pairing before construction and embed it on delivery as
-`SKILL.md` describes.
+The palette column holds **default seeds**, not selected or certified project
+colors. Use them only when appropriate to the brief and user color source.
+`palette.py` extracts or generates candidates; inspect and pass its actual
+contrast/distinctness checks before selection. The columns are
+`background / ink / surface / accent`, then muted text and data colors.
+The pairing number points to `font-pairings.md` as a resource for faces, weights,
+fetch specs and Office fallbacks. Verify actual fonts and apply the selected
+record; never replace its values with catalog seeds during layout or production.
+
+## Derive the palette before using a seed
+
+A seed copied into a hundred decks makes a hundred decks look alike, and a
+colour nobody can explain is a colour drawn from habit. Before a proposal keeps a
+seed, run the three steps and write the result into the proposal payload:
+
+1. **Sample.** Take candidate colours from what the work already contains, in
+   this order: supplied brand assets (logo, guidelines, template), the real
+   images and products that will appear, then the subject's own colour memory
+   (a vineyard, a hospital, a port authority each carry one). Inventing a hue
+   with no source is the step to avoid.
+2. **Converge.** Reduce to two or three chromatic colours plus one neutral
+   ladder written as lightness steps (for example L 0.15 / 0.35 / 0.65 / 0.92
+   / 0.98 in OKLCH). Keep chromatic colours apart by at least 60° of hue or 0.3
+   of lightness, then run `palette.py` for the contrast and distinctness checks.
+3. **Justify.** One sentence per chromatic colour saying where it comes from and
+   what was changed ("ochre from the logo, chroma lowered to 0.08 for an ink
+   feel"). A colour that cannot be justified in one sentence is a seed, and a
+   seed is replaced.
+
+Lower chroma reads as print, higher as screen. Use these OKLCH chroma bands:
+
+| Use | Chroma | Reads as |
+|---|---|---|
+| Page or slide background | 0.01 to 0.04 | Paper, restful |
+| Brand or accent colour | 0.08 to 0.15 | Ink: visible without glare |
+| Small emphasis (key figure, callout rule) | 0.15 to 0.22 | Lively, small areas only |
+| Above 0.25 over a full surface | Avoid | Fluorescent; only for a deliberately screen-native brand |
+
+The same hue sits in different contexts at different chroma and lightness: a
+muted, slightly orange red belongs to an institution, a saturated red to a
+consumer campaign; a greyed indigo to craft, `#0066FF` to software. Ask which
+context the subject has before keeping the first blue that comes to mind.
+
+## Temperature and spread
+
+Every direction has a temperature. Models drift towards the quiet end (pale
+ground, generous white space, one restrained accent), so a proposal set must
+not sit entirely there.
+
+| Temperature | Directions |
+|---|---|
+| Quiet | A, B, E, F, L, P |
+| Neutral | D, G, J, K, M, N, Q, S |
+| Bold | C, I, O, R, T |
+| Set by the brand | H |
+
+When two or three proposals are shown, they differ in skeleton (column
+structure, where the focal element sits, the ratio between display and body
+sizes), not only in colour or weight, and at most two share a temperature. A
+recolour of one arrangement is one proposal, not two. A direction used on the
+previous delivery for the same client is not reused on the next one without a
+reason recorded in the proposal.
 
 ## Context routing
 
@@ -150,6 +201,12 @@ fallback: install the pairing before construction and embed it on delivery as
 - Do not carry a web motion or hover language into slides; the deck is static
   unless animation is explicitly requested and supported.
 - Do not let the palette fight user brand assets; brand wins.
+- Do not reach for the default dark look: a uniform navy ground near `#0D1117`
+  with cyan or violet glows. Dark stages `I` and `R` carry one bright accent and
+  no glow; a dark direction needs that same authorial reason.
+- Do not use a purple-to-blue gradient as the universal background, emoji in
+  place of icons, or a rounded card with a coloured left border as the default
+  container, unless the brand itself uses them.
 
 ## Provenance
 
@@ -160,3 +217,11 @@ Golden Hour and Sunset Boulevard presets of
 contrast-checked ink, surface and muted colours; see `theme-factory-upstream.md`
 and `LICENSE-theme-factory-APACHE-2.0.txt`. The other preset palettes were
 already covered in character by directions `A` to `P`.
+
+The palette derivation, the temperature spread and the three default-look
+pitfalls above are original Office guidance adopting ideas from
+[alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design) (MIT),
+read at commit `4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1`: its sample, converge
+and justify colour protocol, its temperature-tagged style library and its
+default aesthetic bans. No upstream text, style entry, palette or script is
+copied; its HTML production, animation and web modules are out of scope.

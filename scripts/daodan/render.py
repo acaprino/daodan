@@ -24,11 +24,14 @@ from typing import Mapping, Sequence
 
 from .adapter import HostAdapter, resolve_support, select_coordination
 from .catalogs import OWNER
+from .hooks import HOOK_MANIFEST, render_hooks
 from .model import PluginSpec, WorkflowSpec
 from .overrides import OverrideSpec
 from .provenance import ADAPTER_VERSION, write_provenance
 from .templates import render_path, render_template
-from .validate import MCP_CAPABILITY, SourcePathError, confined_source, source_members
+from .validate import (MCP_CAPABILITY, SourcePathError, confined_source,
+                       native_hook_frontmatter, source_members, validate_hooks,
+                       validate_native_hook_sources)
 
 #: The strategy of a host that starts a plugin-declared MCP server from a
 #: manifest at the package root, and the strategy of a host that does not and
@@ -392,6 +395,8 @@ def _host_text(
     placeholder onto itself and needs no placeholder note. The execution binding
     is independent of placeholder rewriting and is added on every host.
     """
+    if native_hook_frontmatter(text):
+        raise RenderError("frontmatter hooks must use neutral [[hooks]] declarations")
     layout = adapter.layout
     root_reference = layout.get("plugin_root_reference", DEFAULT_PLUGIN_ROOT_REFERENCE)
     arguments_reference = layout.get("arguments_reference", DEFAULT_ARGUMENTS_REFERENCE)
@@ -739,6 +744,9 @@ def render_plugin(
         )
 
     kernel_files = _kernel_files(plugin)
+    hook_issues = validate_hooks(plugin) + validate_native_hook_sources(plugin)
+    if hook_issues:
+        raise RenderError("; ".join(f"{issue.path}: {issue.code}: {issue.message}" for issue in hook_issues))
     registry = dict(plugin_registry or {})
     if not registry:
         from .load import load_plugin
@@ -763,6 +771,8 @@ def render_plugin(
     manifest_layout = adapter.layout.get("plugin_manifest")
     if manifest_layout:
         manifest = render_template(_manifest_template(adapter, adapters_root), context)
+        if "hooks" in json.loads(manifest):
+            raise RenderError("adapter manifest hooks must use neutral [[hooks]] declarations")
         _write_text(staging_root / render_path(manifest_layout, context), manifest)
 
     # A declared MCP server becomes a package-root manifest on a host that
@@ -770,7 +780,13 @@ def render_plugin(
     # skill's SKILL.md, on a host that needs the user to register it. Skills
     # carry it because a consumer reaches a provider's tools through its skill:
     # a plugin whose commands moved to another plugin still announces its server.
-    mcp_notes = _mcp_rendering(plugin, adapter, staging_root)
+    try:
+        hook_manifest, hook_notes = render_hooks(plugin, adapter)
+    except ValueError as error:
+        raise RenderError(str(error)) from error
+    if hook_manifest is not None:
+        _write_text(staging_root / HOOK_MANIFEST, hook_manifest)
+    mcp_notes = _mcp_rendering(plugin, adapter, staging_root) + hook_notes
     operational_binding = _operational_binding(adapter, adapters_root)
 
     def markdown(destination: Path, text: str, hint: str | None = None,

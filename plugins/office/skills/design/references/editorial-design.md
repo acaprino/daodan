@@ -3,85 +3,47 @@ revision fc38111622ac459ccf843234863bd0b8fcb6ebfd (Apache-2.0).
 Modified for Office native formats, production ownership and harness image tools.
 See agentit-upstream.md for attribution, licenses and sync boundaries. -->
 
-# Editorial design for Office
+# Visual hierarchy for Office
 
-Design how a reader enters, navigates and retains a story. Own the editorial
-concept, hierarchy, sequence and reading furniture. Pair with `typography.md`
-for typography and spatial decisions.
-`office:docx` owns native Word production; `office:pptx` coordinates
-PPTX production through the selected engine. This skill adds no worker or engine.
+This adapted reference owns visual hierarchy and reading furniture under the
+assigned proposal or accepted `DESIGN.md`. `office:content` owns the reading job, claim relationships
+and logical sequence; format designers own page flow or slide composition.
+Use `typography.md` for type roles. Keep one existing brief and assigned format
+design report, with explicit content/design revisions.
+The creative input/output and proposal/final modes live in `art-direction.md`.
 
-## Inputs and boundary
+## Apply the accepted identity
 
-Use approved content or an explicitly provisional outline, audience, reading
-setting, figures/tables/quotes/notes, brand constraints and target format. Preserve
-meaning, accepted wording, facts and attribution. Missing evidence permits a
-provisional structure, not invented claims. Keep one existing document brief or
-presentation design report; do not create a second reporting pipeline.
+1. Distinguish title, standfirst, headings, body, captions, callouts, notes,
+   source lines and navigation through a small coherent hierarchy.
+2. Provide entry and re-entry cues appropriate to the length and reading context.
+   Keep source associations and figure/caption links visible; avoid ceremonial
+   navigation in short work.
+3. Give each figure a visual role consistent with its supplied communication
+   purpose. Specify crop, emphasis and nearby explanation without changing facts
+   or accepted wording. Native data remains editable when required.
+4. Use whitespace, scale and image treatment to serve the accepted content.
+   The DOCX/PPTX layout references supply native recipes and growth/geometry;
+   do not repair overflow by silently rewriting or shrinking text.
+5. Compare representative real content under each assigned candidate or selected theme and inspect
+   actual saved-file renders for hierarchy, captions, contrast and navigation.
+   The v2 gallery displays retained native renders; its metadata is not proof
+   of their derivation or native properties. The v1 sampler is limited design intent.
 
-Preserve an accepted brand, template or direction. The direction recorded at
-intake (`directions.md`) supplies palette and pairing; this method decides
-composition under it. Do not replace the accepted direction or a Word template
-silently.
+## Production boundaries
 
-## Procedure
+DOCX uses flowing paragraphs, native headings, sections, lists, captions and
+tables. PPTX uses a fixed canvas and explicit editable objects under
+`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/pptx-compatibility.md`.
+A browser layout or reference image does not certify either native result.
+Reusable templates need representative real content and proved engine support.
 
-1. Define the reading job: what the reader should understand or decide at the
-   opening, middle and close. Map sections or slide roles before styling.
-2. Assign content roles: title, standfirst, headings, body, captions, callouts,
-   notes, source lines and navigation. Pair their hierarchy with
-   `typography.md` rather than choosing sizes independently.
-3. Design entry and re-entry points. Use a lead, meaningful headings, contents or
-   running cues where the document's length warrants them. Avoid ceremonial
-   navigation on a short sequential read.
-4. Give every figure a communication job, source, caption and nearby explanation.
-   Choose inset, breakout or full-width treatment deliberately. Preserve readable
-   labels and native editable data when required. A pull quote must earn its space.
-5. Vary reading, evidence, rest and emphasis. Use whitespace, crop, scale and
-   pacing to serve the argument. Avoid repeating one layout or applying a universal
-   ratio. Choose a composition from the content, not from decoration.
-6. Adapt to the medium using the native-format rules below. A live deck needs a
-   clear claim per slide and presenter context; circulation needs enough labels,
-   sources and context to stand alone.
-7. Review actual saved-file renders with realistic content. Check reading order,
-   sequence, captions, headings, contrast, crop, overflow and intended viewing
-   distance. A design sketch or generated reference image is not this evidence.
-8. Record reading map, style roles, figure associations, chosen theme, native
-   representations and remaining checks in the existing brief or design report.
+For imagery, return intent, references, crop, placement and alternative text to
+the production coordinator under
+`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/image-tools.md`.
+This method adds no image provider, worker or production engine.
 
-## Native-format rules
-
-| Target | Composition | Production evidence |
-|---|---|---|
-| DOCX | Flowing paragraphs with native heading styles, sections, lists, captions and tables; intentional page size, margins and breaks | Render the saved DOCX; inspect pagination, heading attachment, table splits, footers and references |
-| PPTX | Fixed canvas with explicit object geometry; the recorded direction and a justified pattern per slide | Follow the presentation compatibility brief; verify editable objects and inspect actual candidate slide renders |
-| Reusable template | Representative page/slide types with realistic content, stable role names and reuse guidance | Verify what the selected engine actually preserves; do not claim untested master-layout or template-format support |
-
-Do not build a website and assume conversion preserves its layout pixel for pixel.
-For PPTX, read
-`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/pptx-compatibility.md`
-and honor its editability and target-application evidence rules. For DOCX, prefer
-native flow and styles over floating text boxes used to imitate a screenshot.
-
-For generated or edited imagery, the shared image contract is
-`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/image-tools.md`;
-this method only returns image intent, reference assets, crop and placement to
-the production owner.
-
-## Review and handoff
-
-Give the production owner the content map, source associations, hierarchy,
-figure/caption links, medium-specific layout choices and unresolved decisions.
-Keep dense research traceable; make projected claims readable from the stated
-distance. Do not quietly rewrite approved content to repair layout.
-
-For ordinary printing, inspect the actual paginated export. Commercial press
-claims additionally need the printer's written process, profile, stock, trim,
-bleed, safety, binding, ink limits and proof specification. Without these, label
-the print concept provisional; do not invent production values.
-
-Editorial guidance does not certify an editable file, accessibility, font
-embedding, exact pagination or print readiness. Record observed renders and
-unavailable checks separately. Complete this design contribution when the reading
-map, meaningful figure associations and medium-specific choices are explicit;
-the existing production method retains its file and delivery gates.
+For ordinary printing inspect the actual paginated export. Commercial press
+claims also need the printer's process/profile, stock, trim, bleed, safety,
+binding, ink limits and proof specification; absent those, label the concept
+provisional. Record observed renders and unavailable checks separately.

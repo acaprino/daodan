@@ -6,6 +6,7 @@ argument-hint: '\"<question>\" [--depth auto|quick|standard|deep] [--no-clarify]
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
 > Arguments: `\"<question>\" [--depth auto|quick|standard|deep] [--no-clarify] [--auto] [--out <file-or-dir>] [--backend auto|websearch|serper] [--domain <hint>]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> This package retains its lifecycle callback scripts, but this host has no declared native hook registration. Use the method's explicit workflow checkpoints; automatic interception outside those workflows is unavailable.
 
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes

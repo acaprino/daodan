@@ -1055,17 +1055,17 @@
             "name": "daodan:tidy-repo"
           },
           {
-            "description": "One entry for any Office request: read the inputs, work out what the user wants (a theme, a new deck, document or workbook, an edit, expansion, revision or restyle of an existing file, a check or a repair), map the decisions, ask once and run the right workflows in order. TRIGGER WHEN: an Office request does not name one format workflow, combines several deliverables, or starts from files, websites or notes whose use is not yet clear.",
+            "description": "Route any Office request from one intake into the requested document, deck, workbook, theme, verification or repair methods with shared content/design.",
             "file": "commands/start.md",
             "name": "daodan:start"
           },
           {
-            "description": "Create, derive, revise, review or export an editable PowerPoint presentation with creative specialists, DeckCraft construction and editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck or consulting deck, or a change, review or export of an existing presentation.",
+            "description": "Create, derive, revise, review or export an editable PowerPoint presentation through shared Office content/design, native DeckCraft and independent review.",
             "file": "commands/presentation.md",
             "name": "daodan:presentation"
           },
           {
-            "description": "Create, derive, revise, review or export a native Word document with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter or template, or a change, review or export of an existing document.",
+            "description": "Create, derive, revise, review or export a native Word document through shared Office content/design and independent document composition and saved review.",
             "file": "commands/document.md",
             "name": "daodan:document"
           },
@@ -1085,7 +1085,7 @@
             "name": "daodan:fix"
           },
           {
-            "description": "Create a reusable PowerPoint or Word theme and template from any colour source (logo, website, stylesheets, an existing file, a description or nothing), or inherit one from a supplied file. TRIGGER WHEN: the user asks for a theme, a template, a slide master, a brand kit or a house style for decks or documents.",
+            "description": "Create requested reusable PowerPoint/Word themes and templates from supplied brand materials or ad hoc visual proposals with native samples and checks.",
             "file": "commands/theme.md",
             "name": "daodan:theme"
           },
@@ -1869,7 +1869,7 @@
       "office": {
         "agents": [
           {
-            "description": "Plan what a presentation says from its sources: digest documents, research, notes and an existing deck into a claim ledger, set the slide budget, build the storyline and route each slide to a layout pattern. Return a content report and a plan JSON without designing or editing the deck.",
+            "description": "Build the shared editorial record for requested Word documents and PowerPoint decks: source/claim ledger, transformation permissions, logical sequence and full or delta native-format projections. Return assigned content artifacts without choosing visual identity, final composition or editing native files.",
             "file": "agents/content-strategist.md",
             "id": "office:content-strategist",
             "permissions": [
@@ -1881,7 +1881,7 @@
             ]
           },
           {
-            "description": "Develop presentation art direction and slide composition from a supplied brief, sources and brand assets. Return design instructions and image requests without modifying the presentation.",
+            "description": "Compose native proposal or final slides from assigned content and visual records. Return native object geometry, justified patterns and image requests without rewriting editorial strategy or modifying the presentation.",
             "file": "agents/presentation-designer.md",
             "id": "office:presentation-designer",
             "permissions": [
@@ -1905,7 +1905,7 @@
             ]
           },
           {
-            "description": "Design editable Word documents from a supplied brief and shared theme. Return page layouts, reusable template instructions, native style mappings and image requests without modifying the document.",
+            "description": "Compose proposal or final Word pages from assigned content and visual records. Return page layouts, native style/flow mappings, growth rules and image requests without rewriting strategy or modifying the native document.",
             "file": "agents/document-designer.md",
             "id": "office:document-designer",
             "permissions": [
@@ -1935,13 +1935,19 @@
         "root": "plugins/office",
         "skills": [
           {
-            "description": "Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes; route a request that names no format to the right workflows. TRIGGER WHEN: an Office presentation, document or workbook task begins, or an Office request must be routed. DO NOT TRIGGER WHEN: a format method is already executing a resolved route.",
+            "description": "Shared Office intake: inspect materials, settle operation, requested formats, editorial/visual decisions and phase-specific dependencies in one brief and question round. Route mixed or unspecified deliverables before format work.",
             "file": "skills/intake/SKILL.md",
             "id": "office:intake",
             "name": "intake"
           },
           {
-            "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the users colour source and chosen from candidates in the browser; editorial hierarchy, typography, and font fetching, installation and embedding. How a file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
+            "description": "Shared editorial method for requested Word documents and PowerPoint decks: source and claim ledger, transformation permissions, logical sequence and format projections in a validated CONTENT.md. Use after Office intake; revisions inherit accepted decisions and local edits change only their scope.",
+            "file": "skills/content/SKILL.md",
+            "id": "office:content",
+            "name": "content"
+          },
+          {
+            "description": "Design a shared visual identity for requested Office documents and decks: Taste art direction, real native proposal comparison, explicit DESIGN.md selection, semantic palette, typography, imagery and native theme handoff. Use when intake calls for a new look; revisions inherit accepted decisions.",
             "file": "skills/design/SKILL.md",
             "id": "office:design",
             "name": "design"
@@ -2426,6 +2432,7 @@
       },
       "project-delivery": {
         "dependencies": [
+          "research",
           "model-routing",
           "work-controller",
           "worktree-manager",
@@ -2607,6 +2614,18 @@
                 "effect": "allow",
                 "resource": "*"
               },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Organize Daodan plugin dossiers and trace dependency/intake provenance. TRIGGER WHEN: dispatched for documentation restructuring, per-plugin specifications or knowledge migration. DO NOT TRIGGER WHEN: auditing prose drift alone (use documentation-engineer).",
+            "file": "agents/documentation-organizer.md",
+            "id": "project-knowledge:documentation-organizer",
+            "permissions": [
               {
                 "action": "external_directory",
                 "effect": "allow",
@@ -2945,6 +2964,7 @@
           }
         ],
         "dependencies": [
+          "research",
           "work-controller",
           "codebase-map",
           "text-humanizer",
@@ -3850,7 +3870,25 @@
             "description": "Deep web research run: plan sub-questions, spawn parallel iterative researchers, verify contradictions and write a cited report to disk. TRIGGER WHEN: the user asks for a deep multi-source web research report on a topic. DO NOT TRIGGER WHEN: single-fact lookup (use research:quick-searcher) or local codebase analysis (use codebase-map).",
             "file": "commands/team-research.md",
             "name": "research:team-research"
+          },
+          {
+            "description": "Research a concrete problem through academic sources and publish a traceable scientific record.",
+            "file": "commands/science-research.md",
+            "name": "research:science-research"
+          },
+          {
+            "description": "Recheck scientific research, preserve revision history and identify superseded evidence and affected decisions.",
+            "file": "commands/update-research.md",
+            "name": "research:update-research"
+          },
+          {
+            "description": "Read or change the projects Science Mode; default ON, explicit on/off, empty input reports status.",
+            "file": "commands/science-mode.md",
+            "name": "research:science-mode"
           }
+        ],
+        "dependencies": [
+          "work-controller"
         ],
         "root": "plugins/research",
         "skills": [
@@ -3859,6 +3897,12 @@
             "file": "skills/web-search-techniques/SKILL.md",
             "id": "research:web-search-techniques",
             "name": "web-search-techniques"
+          },
+          {
+            "description": "Build and refresh a projects scientific evidence base from papers actually read, with traceable claims, local test protocols and immutable research history. Use for explicit scientific research or substantive brainstorming, specifications, ADR/FRD and problem solving when evidence can change the decision.",
+            "file": "skills/science-based-approach/SKILL.md",
+            "id": "research:science-based-approach",
+            "name": "science-based-approach"
           }
         ]
       },
@@ -7553,5 +7597,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "42.2.0"
+  "version": "42.5.0"
 }

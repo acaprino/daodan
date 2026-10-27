@@ -91,8 +91,10 @@ against the chosen construction engine.
   verified in the installed engine from assumptions. Check the commands needed
   for the proposed composition before accepting it.
 - Resolve font families and weights available to construction and target
-  rendering. Preserve a supplied template's typography. Install the direction's
-  pairing and embed it in the delivered file through `office:design`.
+  rendering. Preserve a supplied template's typography. Use the assigned DESIGN
+  typography roles in proposal or final mode; catalog pairings are optional.
+  If a required face is missing, install it only within the task's authority and
+  check its license. Embed permitted fonts through `office:design`.
   Record any substitution and recheck line breaks; claim embedding only from the
   `font_embed.py inspect` result, and never promise how another computer renders
   a font that is not embedded. Check the weights against the renderer: a weight
@@ -117,7 +119,7 @@ and origin. For each meaningful element, provide:
 |---|---|
 | Identity and purpose | Stable slide ID from the deck plan (not thumbnail order), object identity, communication role, selected pattern and variation, exact accepted content and its source or citation |
 | Geometry | Declared origin and unit; x/y position, width/height, margins or padding, alignment and stacking order |
-| Typography | Font role from the pairing, weight, size, line spacing, colour role from the chosen palette, and intended line breaks or fit constraints |
+| Typography | Font role from the assigned DESIGN, weight, size, line spacing, colour role from its palette, and intended line breaks or fit constraints |
 | Representation | Native text, shape, connector, table or chart; or a separate image asset with crop, dimensions, placement and provenance (supplied, searched or generated under `image-tools.md`) |
 | Editability | What must remain editable, including chart series/data, table cells and diagram labels |
 | Engine evidence | Supported construction operation/type, overflow or splitting behaviour, and any unresolved feature or target-renderer limitation |

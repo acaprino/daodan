@@ -75,18 +75,22 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Design preview before construction
 
-Render a static HTML wireframe of the presentation plan so the user chooses the
-visual direction and the slide sequence before any image generation or native
-construction. The preview is a review artifact: it is not a PowerPoint
-deliverable, it is not a rendered deck, and it never replaces native construction
-or the independent rendered review.
+Render the finalized native presentation plan as a static HTML wireframe for
+count, sequence, proposed patterns and density. This is distinct from
+`office:design`'s complete real-content visual-system comparison. It is neither
+a native PowerPoint deliverable nor a saved render or independent review.
+For a new look, `office:design`'s `references/art-direction.md` first uses
+candidate-specific working plans/display bindings for native proposal proof.
+After visual selection, finalize the display/CONTENT plan binding for final
+native-plan validation. Content prepares complete editorial working data first
+without inventing colors to satisfy this preview.
 
 ## When to prepare it
 
 1. More than a few slides, a reusable template, or a substantial redesign.
-2. Genuine direction uncertainty, or a user who asks to see options before the deck.
-3. Before any harness image-generation call, so a direction choice is not paid for
-   twice.
+2. A user who needs to inspect proposed sequence or patterns before the deck.
+3. For candidate-specific proposal planning or final construction, using the
+   corresponding working or selected binding.
 
 A fully autonomous request, or one that already fixed direction and outline,
 skips the gate and records the inferred choices instead.
@@ -108,8 +112,8 @@ Write one JSON file in the presentation workspace:
 }
 ```
 
-- `direction`: `library` names a direction from `office:design`'s
-  `references/directions.md` (`A` to `T`); `palette` carries the chosen
+- `direction`: optional `library` names a direction from `office:design`'s
+  `references/directions.md` (`A` to `T`); ad hoc themes need no letter. `palette` carries the selected
   palette's `background`, `ink`, `surface` and `accent` as `#RRGGBB` values;
   `name` labels the palette (its variant or the brand).
 - `slides[]`: `pattern` must match a pattern name from `layout-patterns.md`
@@ -118,15 +122,18 @@ Write one JSON file in the presentation workspace:
   unless the slide carries `"mode": "showcase"`, where the visual may stand alone.
 - `content` lists are used for density checks; give them the real planned counts
   so the preview can flag a slide that exceeds its pattern's capacity.
-- One direction per deck; one pattern per slide. Vary the pattern across slides.
-- A plan from `content-planning.md` also carries `id`, `job`, `claims` (claim
-  IDs) and, for an existing deck, `status`: `kept`, `updated`, `moved`, `new` or
+- One assigned proposal or selected visual identity per plan copy; a justified
+  final pattern per slide.
+  Content can propose patterns; the designer owns composition.
+- A plan from `content-planning.md` also carries `content_revision` and per-slide `id`,
+  `job`, `claims` (shared claim IDs) and, for an existing deck, `status`: `kept`, `updated`, `moved`, `new` or
   `merged` (cut slides are not in the plan). The sequence table shows status and
   claims; an unknown status is a plan problem.
 
-Always put the chosen palette's actual colors in `direction.palette`: its
+Always put the assigned palette's actual colors in `direction.palette`: its
 background, ink, surface and accent. Set `direction.name` to the palette's
-name. Keep `library` for the composition direction. The explicit palette
+name. Keep `library` only when a catalog resource is used; it does not select fonts
+or final composition. The explicit palette
 overrides the direction's default seeds, so the preview and both format design
 reports use the same colours.
 This wireframe helper does not preview the selected fonts; verify them in the
@@ -164,13 +171,15 @@ and rerun.
 
 ## What the preview does and does not prove
 
-- It proves the palette, the slide order, the pattern choice and the density fit
-  were agreed before construction.
+- It displays the selected palette, slide order, proposed patterns and density
+  fit. The coordinator separately records actual approval or autonomous authority.
 - It does not prove rendering, fonts, native object behavior, or fidelity in
   Microsoft PowerPoint. Those require the saved candidate and the rendered review
   under `pptx-compatibility.md`.
-- A style proof is a different artifact: one representative slide built
-  natively with the construction engine and rendered, once per candidate
-  direction the user chose. Generated imagery inside it follows `image-tools.md`
-  and needs the user's explicit budget decision. Record the direction, the slide
-  and any generations in the completion evidence.
+- A native proposal proof is a different artifact. Follow `office:design`'s
+  art-direction and v2 record contracts for saved representative slides, exact
+  candidate bindings and independent critique before selection. Include the
+  opening and actual difficult-content jobs; a cover alone is insufficient.
+  Generated imagery follows `image-tools.md` and the existing brief's authority.
+  Record the candidate, source slides, assets, native/render tools and observed
+  checks. This wireframe cannot stand in for those saved-native renders.

@@ -90,9 +90,26 @@ first operation. Office ships this method, not the engine, installer or MCP serv
 Discover the executable or actual exposed MCP tools and inspect their current
 schema. Do not invent commands or silently install another writing library.
 
-When called by `office:docx`, consume its accepted document design report, the
-`office:design` record (direction, palette by role, pairing) and source inventory. The document coordinator builds
-the file; do not start another designer or workflow. Map the page plan to supported
+For bounded `proposal` production under `office:design`'s
+`references/art-direction.md`, consume the assigned candidate's unselected DESIGN
+payload, editorial working data and native specification. Validate the proposal
+with `require_selected=False` and verify exact project/content/design identities
+and requested formats; bundles also verify their candidate-specific working PPTX
+plan binding. Build only the assigned representative units to separate native
+specimens and render their saved bytes. These are proof artifacts, not selected
+final deliveries; never fabricate selection or skip source/native checks for the
+units in scope.
+
+For `final` production called by `office:docx`, consume its accepted native design report,
+source inventory, DOCX content projection and selected `office:design` record.
+Explicitly load CONTENT.md/DESIGN.md through `office:content`'s
+`references/records.md`, validate them and compare project, content revision and
+requested formats. Bundles require the coordinator's finalized actual-PPTX-plan
+validation before dependent production. Reuse existing records; local legacy
+edits need no fabricated global record. Missing/stale records for a newly planned deliverable block its
+production. Return inherited-binding gaps to the coordinator for the canonical
+rebind procedure in `office:design`'s `references/records.md`; retain exact
+matching checks. The document coordinator builds the file; do not start another designer or workflow. Map the page plan to supported
 native paragraphs, styles, lists, sections, tables and images.
 
 ## Inspect and preserve
@@ -120,7 +137,8 @@ For edits use its `file` input; for a new document use a supported blank templat
 Read current command definitions for parameters and units rather than guessing.
 The documented version supports a command list and saving DOCX/PDF in one job.
 
-Apply the accepted native style map and page settings. Keep headings, body text,
+Apply the assigned proposal or selected DESIGN.md through its native style/theme map and
+page settings; a separate DOTX is optional except when requested. Keep headings, body text,
 captions, list numbering and table cells editable. Insert generated imagery only
 after the harness image contract returns a verified usable asset. WordCraft
 does not replace the harness image tool or authorize another image service.

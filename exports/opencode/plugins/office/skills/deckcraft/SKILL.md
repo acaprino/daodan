@@ -97,17 +97,33 @@ The presentation coordinator loads `office:pptx` for creative
 decisions, specialist review and image-tool ownership. When invoked by it, return
 operation evidence without starting another coordinator or specialist team.
 Read `<plugin-root>/skills/pptx/references/pptx-compatibility.md`
-and `<plugin-root>/skills/pptx/references/design-library.md`
+and `<plugin-root>/skills/pptx/references/layout-patterns.md`
 before design or native construction, including direct use. Bind accepted object
 geometry, font choices and native editability to actual supported commands.
 For a narrow edit/export, preserve the existing design and apply only the relevant
 compatibility and preservation checks.
 
-For direct new-deck construction or substantial redesign, consume the
-`office:design` record (direction, chosen palette by role, pairing, argument
-mode, reading map and type roles) from the existing design specification. It
-does not replace the presentation coordinator's specialist or saved-render
-review duties.
+For bounded `proposal` production under `office:design`'s
+`references/art-direction.md`, consume the assigned candidate's unselected DESIGN
+payload, editorial working data, candidate-specific actual plan/binding and native
+specification. Validate the proposal with `require_selected=False` and verify exact
+project/content/design identities and requested formats. Build only the assigned
+representative units to separate native specimens and render their saved bytes.
+These are proof artifacts, not selected final deliveries; never fabricate selection
+or skip source/native checks for the units in scope.
+
+For newly planned `final` construction, consume the content projection, finalized plan,
+selected `office:design` record and accepted native object specification. Follow
+`office:content`'s `references/records.md` to explicitly load/validate CONTENT.md
+with that actual plan and DESIGN.md; compare project, content revision and exact
+requested formats. The coordinator finalizes display values/canonical plan
+binding after visual selection under `office:pptx` before production. Apply
+the assigned palette/font values through native themes/styles/masters; a separate
+POTX is optional except when requested. Do not reopen content, visual selection
+or composition here. Local legacy edits retain the source without fabricating
+global records. These handoffs do not replace specialist or saved-render review.
+Return inherited-binding gaps to the coordinator for the rebind procedure in
+`office:design`'s `references/records.md`; retain exact matching checks.
 
 ## Discover and establish scope
 

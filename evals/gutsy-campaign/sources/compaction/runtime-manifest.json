@@ -1,0 +1,106 @@
+{
+  "revision": "e3f262a7f4d42bd8dd32ced30d26176f7cb545b0",
+  "upstream_relative_path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/deps/fast-jev",
+  "entrypoint": "dist/index.js",
+  "files": [
+    {
+      "path": "src/client.ts",
+      "sha256": "5c8cd8928aa76766df8b78a54ce8c7af3d6def3d74c8fc8bf3a59d13bf6010b0",
+      "git_blob_sha256": "c324203676c7256abfd828110ab5181e2bb702c5b0acfb25f9930f1f529a1fff",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "src/compact.ts",
+      "sha256": "bd89b7b8cfc4eb9e149ea4b5bdd8a2052c4118694823925cfa8b66bad4588a8e",
+      "git_blob_sha256": "6dcfe27bc00c1ba9065135a61a128bde0da41b9d300dbfd286de3cd6ce8b745b",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "44f2f21c208f86fed0ce7ad0ffe8bae79f290192b23847ee009318b9763edc84",
+      "git_blob_sha256": "5f832b5688b80900fa4ef50a5f9d150137b19c8dceaa7cbe8a1fa2980cc1de4a",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "src/messages.ts",
+      "sha256": "ff951c54647821116c62aec308552f4c9c936fe1dd71f46585de75790f5c02c8",
+      "git_blob_sha256": "fe60ebbde4f588a8fd0af4a8c88e8d6a4d308ae06b7eab6ad7dc80a01702a0f9",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "src/request.ts",
+      "sha256": "4c75b3a8d9dfdbdec0363541903273b8a728fc8ccca0248dd749a9e920acc8f4",
+      "git_blob_sha256": "aaa0922f89b1a38b304cf8cf922038641338cdae04e1a636c2a618c60c55b53a",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "src/state.ts",
+      "sha256": "b21bdb1777ba1556d3cf2639a85cd23a2a9f6d5388fda73017437c4fe12f44df",
+      "git_blob_sha256": "585a9e571340a56d604ea7b90a395f286e575fe24b8394600c38064d972c03dc",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "src/types.ts",
+      "sha256": "f46e0108f11cc4479f19c5e3a8fc3bba22766aa8e70d5cac85b5a7fed1a99a08",
+      "git_blob_sha256": "dbb401b0f9b09af3a8ec4bb331f2c7141dfa70dc38c3dbfd501183d44930973f",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d4e60c1de5207b247fe6e8b7f10ca2268f25e70edf168fcfd4759d35b4119216",
+      "git_blob_sha256": "aaf7f9fbe78debc4c9acf94ed67d6e1fb92983bf5cb6aaa1c2d23c2a09d2ffb1",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "d9c60c6f17ce579b39d9de5890c882762aede6ac67b80df1a9b975bd0165163b",
+      "git_blob_sha256": "7e22a0639ed3557ca78efa651922d2bc07e80e96a7bde38e1a147ab9709a5d86",
+      "kind": "pinned_source",
+      "checkout_transform": "CRLF/LF normalization only"
+    },
+    {
+      "path": "dist/client.js",
+      "sha256": "79d7fb1073c120d57124b618389e6deec3db61260ea9d3bba45f8c19503aa5f2",
+      "kind": "compiled_runtime"
+    },
+    {
+      "path": "dist/compact.js",
+      "sha256": "f3f82f7c35fa8165109e9f34320a86c6eb612cb134972b874ecd5f376785e9d5",
+      "kind": "compiled_runtime"
+    },
+    {
+      "path": "dist/index.js",
+      "sha256": "17c08fcc6e999c79d9b2d2109d6e54cf3a9d903df3a29f98a6a7b4e08e49484e",
+      "kind": "compiled_runtime"
+    },
+    {
+      "path": "dist/messages.js",
+      "sha256": "938b727844dd705dcfbe0b65491e1f05b242acfba63cf653fc9e921bcc80c478",
+      "kind": "compiled_runtime"
+    },
+    {
+      "path": "dist/request.js",
+      "sha256": "e546b033eb224f67cf899d417e6e9b497449e02258b2c140e0e73c61c6b2eda2",
+      "kind": "compiled_runtime"
+    },
+    {
+      "path": "dist/state.js",
+      "sha256": "0c6ae27002d016c36005e60f2e4a92683d718d3a68f59905744be161dac48f0f",
+      "kind": "compiled_runtime"
+    },
+    {
+      "path": "dist/types.js",
+      "sha256": "01ae2a5b120382f9a648ced7ee8507493a134f216d100fc61600c6c9738235d2",
+      "kind": "compiled_runtime"
+    }
+  ],
+  "provenance": "Source/package/lock verified against git show at exact commit allowing Windows CRLF checkout conversion only; both original blob and checkout hashes recorded. Compiled runtime hashes bind the already-built pilot dependency. Every executable JS module in dist is fingerprinted."
+}

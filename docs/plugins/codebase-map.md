@@ -29,9 +29,7 @@ storage is local: the model receives targeted text, never database/base64 bytes.
 No percentage of token savings is inferred from disk size. Format selection is
 independent of full/lite depth and the filename extension. State, events and
 protocol responses remain JSON; reports remain Markdown. SQLite indexes may use
-more disk space than a compact JSON manifest. See the
-[35.0.0 verification record](../superpowers/reports/2026-10-16-codebase-map-binary-storage.md)
-for executed checks and limits.
+more disk space than a compact JSON manifest. See the 35.0.0 verification record for executed checks and limits.
 
 The resolved snapshot is the single structural index for a bound run.
 `snapshot.py write <target> --out <new-manifest> --reuse <previous-manifest>`
@@ -478,9 +476,7 @@ bound a pass, `--report-out <path>` writes the full report to disk, and `--compa
 emits only the bounded summary on stdout. The report distinguishes selected references
 from actual engine requests against the Python population, records probe/init,
 inference and total elapsed time, mean and p95 request latency, and an inference-only
-extrapolation with its deterministic sampling bias and assumptions. The
-[Python delivery report](../superpowers/reports/2026-10-22-codebase-map-python-resolver-delivery.md)
-records the measured local pass separately from the original campaign. An absent or
+extrapolation with its deterministic sampling bias and assumptions. The Python delivery verification records the measured local pass separately from the original campaign. An absent or
 unready engine is a declared degradation that writes nothing and names its recovery
 command; `--dry-run` grades without writing.
 
@@ -569,15 +565,15 @@ declarative payload contracts, including the existing I1 map-slice fields.
 
 ### Research basis for code search
 
-The search-first redesign of the context path
-([specification](../superpowers/specs/2026-10-25-context-packet-redesign.md))
-searches the question, has the model-routing tier1 model rewrite it from names the
-search found, ranks whole entities with EmbeddingGemma 2 and FTS5, and fills the
-budget in rank order. The companion page
-[research and benchmarks behind code search](codebase-map-research.md) records
-what each source below measured and what carries over to one repository on a CPU,
-the [embedder benchmark](codebase-map-research.md#embedding-benchmark), and what
-the harness measured in response.
+The search-first direction under evaluation uses the specification's
+[context-packet record](../superpowers/specs/2026-10-25-context-packet-redesign.md)
+and the benchmark harness to test grounded rewriting, whole-entity ranking and
+budgeted delivery. The shipped retrieval core documented above is FTS5 plus
+optional EmbeddingGemma 2; harness-only rewrite and fusion variants are not
+described as shipped without an executable binding. Literature and findings live
+in [Context-building research](../research/context-building-research.md). Local
+outcomes, rejected paths and the current candidate live in the
+[context-building benchmark and test diary](../research/context-building-benchmarks.md).
 
 - Query rewriting: Gao et al., [HyDE](https://arxiv.org/abs/2212.10496) (ACL 2023);
   Li et al., [ReCo](https://arxiv.org/abs/2401.04514) (ACL 2024); Gurioli et al.,
@@ -693,7 +689,7 @@ Limits that shape use today:
 
 The [context-scope results](../../evals/codebase-map/context-scope/RESULTS.md)
 hold the measurements behind these limits, and the
-[embedder benchmark](codebase-map-research.md#embedding-benchmark) the comparison of local embedders.
+[embedder benchmark](../research/context-building-benchmarks.md#embedding-benchmark) the comparison of local embedders.
 
 ### Context consumers
 

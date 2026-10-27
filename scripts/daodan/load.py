@@ -18,11 +18,13 @@ from .model import (
     CONCURRENCIES,
     ISOLATIONS,
     JOIN_POLICIES,
+    HOOK_EVENTS,
     SCHEMA,
     CapabilityRequirements,
     ComponentIndex,
     ContractSpec,
     DispatchSpec,
+    HookSpec,
     McpServerSpec,
     ModelError,
     PhaseSpec,
@@ -43,6 +45,7 @@ PLUGIN_KEYS = frozenset(
         "mcp",
         "contracts",
         "reviewers",
+        "hooks",
     }
 )
 PLUGIN_REQUIRED_KEYS = ("schema", "name", "version", "description", "license")
@@ -53,6 +56,7 @@ DEPENDENCY_KEYS = frozenset({"required", "optional"})
 COMPONENT_KEYS = frozenset({"skills", "roles", "workflows", "policies"})
 MCP_KEYS = frozenset({"servers"})
 MCP_SERVER_KEYS = frozenset({"name", "command", "args"})
+HOOK_KEYS = frozenset({"name", "event", "script", "args", "timeout"})
 
 WORKFLOW_KEYS = frozenset({"name", "entrypoint", "phases", "contract", "dispatch"})
 DISPATCH_KEYS = frozenset({"roles", "isolated", "inline_workers"})
@@ -237,6 +241,35 @@ def load_mcp_servers(manifest: Path, table: Mapping[str, Any]) -> tuple[McpServe
     return tuple(servers)
 
 
+def load_hooks(manifest: Path, table: Mapping[str, Any]) -> tuple[HookSpec, ...]:
+    """Load only declarative Python callbacks, never raw shell or prompt bodies."""
+    rows = table.get("hooks", [])
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        raise ModelError(manifest, "hooks must be an array of tables")
+    hooks = []
+    for row in rows:
+        _reject_unknown(manifest, row, HOOK_KEYS, "hooks")
+        script = _string(manifest, row, "script", "hooks")
+        if (not script or "\\" in script or ":" in script
+                or any(part in {"", ".", ".."} for part in script.split("/"))
+                or any(ord(char) < 32 for char in script)):
+            raise ModelError(manifest, "hooks.script must be a normalized plugin-relative POSIX path")
+        timeout = row.get("timeout", 10)
+        if type(timeout) is not int or not 1 <= timeout <= 60:
+            raise ModelError(manifest, "hooks.timeout must be an integer from 1 to 60 seconds")
+        arguments = _strings(manifest, row, "args", "hooks")
+        if any("\0" in argument for argument in arguments):
+            raise ModelError(manifest, "hooks.args cannot contain NUL")
+        hooks.append(HookSpec(
+            name=_string(manifest, row, "name", "hooks"),
+            event=_choice(manifest, row.get("event"), HOOK_EVENTS, "hooks.event"),
+            script=_relative(manifest, script, "hooks.script"),
+            args=arguments,
+            timeout=timeout,
+        ))
+    return tuple(hooks)
+
+
 def load_plugin(path: Path) -> PluginSpec:
     """Load one plugin content kernel from its directory."""
     root = Path(path)
@@ -328,4 +361,5 @@ def load_plugin(path: Path) -> PluginSpec:
         mcp_servers=load_mcp_servers(manifest, table),
         contract_exports=exports,
         reviewer_compositions=tuple(composition_rows),
+        hooks=load_hooks(manifest, table),
     )

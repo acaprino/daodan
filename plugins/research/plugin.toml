@@ -1,18 +1,32 @@
 schema = "daodan/v1"
 name = "research"
-version = "6.2.6"
-description = "Deep web research (any topic) modelled on the commercial deep-research products: /research:team-research clarifies scope only when needed, shows a plan of sub-questions for approval, spawns one iterative deep-researcher per sub-question in parallel, verifies contradictions with quick-searcher, synthesizes a long-form cited report and writes it to disk; tiers quick/standard/deep scale effort; optional serper.dev backend via websearch.py when SERPER_API_KEY is set, native WebSearch otherwise. quick-searcher (sonnet) also answers single-fact lookups directly"
+version = "7.0.0"
+description = "Scientific project research with traceable papers, empirical protocols, immutable revision history and Science Mode; deep web research and quick source lookups remain available."
 license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
-required = []
+required = ["work-controller"]
 
 [components]
-skills = ["web-search-techniques"]
+skills = ["web-search-techniques", "science-based-approach"]
 roles = ["deep-researcher", "quick-searcher"]
-workflows = ["team-research"]
+workflows = ["team-research", "science-research", "update-research", "science-mode"]
 policies = []
+
+[[hooks]]
+name = "science-session"
+event = "session-start"
+script = "skills/science-based-approach/scripts/science_runtime.py"
+args = ["hook"]
+timeout = 10
+
+[[hooks]]
+name = "science-prompt"
+event = "user-prompt-submit"
+script = "skills/science-based-approach/scripts/science_runtime.py"
+args = ["hook"]
+timeout = 10

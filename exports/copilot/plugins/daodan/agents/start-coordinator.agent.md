@@ -1,6 +1,6 @@
 ---
 name: start-coordinator
-description: 'One entry for any Office request: read the inputs, work out what the user wants (a theme, a new deck, document or workbook, an edit, expansion, revision or restyle of an existing file, a check or a repair), map the decisions, ask once and run the right workflows in order. TRIGGER WHEN: an Office request does not name one format workflow, combines several deliverables, or starts from files, websites or notes whose use is not yet clear.'
+description: 'Route any Office request from one intake into the requested document, deck, workbook, theme, verification or repair methods with shared content/design.'
 tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['office:content-strategist', 'office:document-designer', 'office:document-reviewer', 'office:presentation-designer', 'office:presentation-reviewer']
 ---
@@ -139,31 +139,34 @@ The phase graph and record schemas ship with this package in
 
 Handle the Office request in: <arguments>
 
-Load `office:intake` and the skill `work-controller:work-record`, then follow intake's
-`references/routing.md`: inventory and read every input, name the destination,
-route to workflows and operations, settle every decision the request and the
-inputs supply, then ask the remaining decisions in one round in the work
-record's question shape, recorded before they are put.
+Load `office:intake` and `work-controller:work-record`, then follow intake's
+`references/routing.md`: read/classify inputs, name destinations, record
+phase-specific dependencies, settle inherited decisions and ask remaining
+material choices once through the existing question contract.
 
-Run the routed work here, in order, as the coordinator of each method. This
-entry declares every Office role, so the dispatch bindings each method requires
-are available in this context:
+Run routed methods here in order; do not start nested coordinators. This entry
+declares every Office role and supplies their generated isolated bindings:
 
-- `presentation`: follow `office:pptx`, dispatching `office:content-strategist`,
-  `office:presentation-designer` and `office:presentation-reviewer` as it
-  specifies for the operation.
-- `document`: follow `office:docx`, dispatching `office:document-designer` and
-  `office:document-reviewer` as it specifies for the operation.
-- `workbook`: follow `office:xlsx`.
-- `theme`: follow `office:design`'s template procedure.
-- `verify` and `fix`: follow `office:integrity`.
+- `document`: `office:docx`; dispatch `office:content-strategist` for full/delta
+  content, `office:document-designer` for scoped layout and
+  `office:document-reviewer` for exact saved-render review.
+- `presentation`: `office:pptx`; dispatch the same strategist when needed,
+  `office:presentation-designer` and `office:presentation-reviewer`.
+- `theme`: `office:design` and the requested reusable-template procedure, using
+  the same declared format designers/reviewers for native proof and final review.
+- `workbook`: `office:xlsx`; `verify` and `fix`: `office:integrity`.
 
-Each method takes its recorded brief as its intake round and runs only the steps
-of its operation. Pass outputs forward: a generated theme is the base of the
-deck or document that follows; a document and a deck from one brief share one
-design record. Never overwrite a supplied file. A worker's stopped turn is not a
-delivery; missing runtime, isolation or reviewer evidence blocks its dependent
-step and must appear in the result.
+For a DOCX/PPTX bundle prepare shared editorial data once and select one DESIGN.md
+after `office:design`'s reviewed native proposals and v2 gallery; preserve one
+content/design identity/revision and only requested projections. Finalize PPTX
+display values and canonical binding after visual
+selection, then validate/load the actual CONTENT.md/plan and DESIGN.md before
+final composition. Proposal working bindings follow design's art-direction
+contract. Reuse accepted records for the next format instead of repeating
+strategy or selection. Layout and native review remain format-specific.
 
-Deliver every destination with its own review or report, the route and the
-decisions as finally recorded, and the checks that remained unverified.
+Only the operation's necessary phases run. Pass outputs forward, preserve
+supplied files and separate candidates, and verify expected reports/coverage.
+Missing capability blocks dependent delivery; a worker stop is not success.
+Deliver each destination with its review/report, final recorded decisions and
+checks that remain unavailable.

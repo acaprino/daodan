@@ -6,7 +6,7 @@ One row per (case, command) run. Recall counts partial as 0.5. See per-case scor
 |------|------|---------|--------|---------|-------------|-------|
 
 The 2026-10-23/24 specialist campaign is summarized in the
-[focused delivery report](../../docs/superpowers/reports/2026-10-23-reviewer-composition-delivery.md).
+the focused delivery report.
 Independent bounded source qualifications accepted 54 of 64 focused/process
 reviewers. Ten reviewers and both method bindings remain unqualified and deferred.
 The report records the four final native Codex preset/ad hoc trials separately.

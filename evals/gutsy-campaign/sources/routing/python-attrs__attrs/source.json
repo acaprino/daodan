@@ -1,0 +1,35 @@
+{
+  "repository": "python-attrs/attrs",
+  "source_path": "src/attr/validators.py",
+  "revision": "c8bb9bfaa2843e7844b5bb13bed4370b51feec4f",
+  "source_url": "https://github.com/python-attrs/attrs/blob/c8bb9bfaa2843e7844b5bb13bed4370b51feec4f/src/attr/validators.py",
+  "artifact_sha256": "04df88cefdc8a7176b800c5d35df3bcae0a43d9c303362fc15b783cef53517c5",
+  "license": "MIT",
+  "license_url": "https://github.com/python-attrs/attrs/blob/c8bb9bfaa2843e7844b5bb13bed4370b51feec4f/LICENSE",
+  "license_sha256": "882115c95dfc2af1eeb6714f8ec6d5cbcabf667caff8729f42420da63f714e9f",
+  "license_text": "The MIT License (MIT)\n\nCopyright (c) 2015 Hynek Schlawack and the attrs contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
+  "functions": [
+    {
+      "name": "set_disabled",
+      "start_line": 43,
+      "end_line": 58,
+      "snippet": "def set_disabled(disabled):\n    \"\"\"\n    Globally disable or enable running validators.\n\n    By default, they are run.\n\n    Args:\n        disabled (bool): If `True`, disable running all validators.\n\n    .. warning::\n\n        This function is not thread-safe!\n\n    .. versionadded:: 21.3.0\n    \"\"\"\n    set_run_validators(not disabled)",
+      "sha256": "e94fe35bd42e9c395e4bf8226b39595dbadaf24f134ffd6a7d3480f08110791b"
+    },
+    {
+      "name": "get_disabled",
+      "start_line": 61,
+      "end_line": 70,
+      "snippet": "def get_disabled():\n    \"\"\"\n    Return a bool indicating whether validators are currently disabled or not.\n\n    Returns:\n        bool:`True` if validators are currently disabled.\n\n    .. versionadded:: 21.3.0\n    \"\"\"\n    return not get_run_validators()",
+      "sha256": "1c3316dea33ac56d74dac310afadc9980f904ca0b3dd0af594513e931bfe60ea"
+    },
+    {
+      "name": "disabled",
+      "start_line": 74,
+      "end_line": 90,
+      "snippet": "def disabled():\n    \"\"\"\n    Context manager that disables running validators within its context.\n\n    .. warning::\n\n        This context manager is not thread-safe!\n\n    .. versionadded:: 21.3.0\n    .. versionchanged:: 26.1.0 The contextmanager is nestable.\n    \"\"\"\n    prev = get_run_validators()\n    set_run_validators(False)\n    try:\n        yield\n    finally:\n        set_run_validators(prev)",
+      "sha256": "d24ec0422aef9c9e620a4e6a8487e7c6ed4674065d9fe6c7068402bdea713d7c"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

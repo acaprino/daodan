@@ -5,10 +5,8 @@ host execution or PowerPoint fidelity. Runtime tests belong to each engine.
 """
 
 import json
-import os
 import re
 import sys
-import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -22,13 +20,13 @@ for import_root in (REPO_ROOT, REPO_ROOT / "tests"):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
-from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support
+from scripts.daodan.adapter import resolve_support
 from scripts.daodan.catalogs import render_catalog
 from scripts.daodan.load import load_plugin
-from scripts.daodan.render import render_plugin
 from scripts.daodan.validate import validate_dependencies
 from host_binding_assertions import canonical_markdown, loaded_instruction_text, without_host_binding
 import office_entries
+from test_office_unified_contract import use_published_office
 
 
 OFFICE = REPO_ROOT / "plugins/office"
@@ -38,7 +36,7 @@ PLANNER = "content-strategist"
 DISPATCHED = (PLANNER, *ROLES)
 ALL_ROLES = (*DISPATCHED, "document-designer", "document-reviewer")
 COMPATIBILITY_REFERENCE = Path("skills/pptx/references/pptx-compatibility.md")
-DESIGN_LIBRARY_REFERENCE = Path("skills/pptx/references/design-library.md")
+STRUCTURE_REFERENCE = Path("skills/pptx/references/structure.md")
 HARNESS_PATHS = {
     "claude": "commands/presentation.md",
     "copilot": "agents/presentation-coordinator.agent.md",
@@ -59,11 +57,6 @@ def _read(path):
     return Path(path).read_text(encoding="utf-8")
 
 
-def _temp_dir():
-    """Keep temporary files on the repository drive so package paths resolve."""
-    return str(REPO_ROOT) if os.name == "nt" else None
-
-
 def _normalized(text):
     return " ".join(text.split())
 
@@ -77,25 +70,15 @@ def _frontmatter(text):
 class PresentationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.plugin = load_plugin(OFFICE)
+        use_published_office(cls)
         # The presentation entry is a `daodan` workflow: its harness is read from
         # the entry plugin, the methods, roles and catalogs from office.
         cls.presentation_plugin = office_entries.entry_plugin(("presentation",))
         cls.workflow = next(item for item in cls.presentation_plugin.workflows if item.name == "presentation")
-        cls.temporary = tempfile.TemporaryDirectory(dir=_temp_dir())
-        cls.packages = {}
-        cls.adapters = {}
-        cls.entries = office_entries.render_entries(cls.temporary.name, ("presentation",))
-        for host in HOSTS:
-            adapter = load_adapter(ADAPTERS, host)
-            package = Path(cls.temporary.name) / host / "office"
-            render_plugin(cls.plugin, adapter, package, adapters_root=ADAPTERS)
-            cls.adapters[host] = adapter
-            cls.packages[host] = package
 
     @classmethod
     def tearDownClass(cls):
-        cls.temporary.cleanup()
+        """The shared publisher cleans its immutable packages at process exit."""
 
     def harness(self, host):
         return loaded_instruction_text(self, self.entries[host] / HARNESS_PATHS[host], host)
@@ -114,19 +97,22 @@ class PresentationContractTests(unittest.TestCase):
         )
         self.assertFalse(self.plugin.mcp_servers, "External DeckCraft is not a bundled server")
 
-    def test_office_consults_no_external_design_provider(self):
+    def test_taste_is_the_required_bounded_art_direction_provider(self):
         self.assertEqual(getattr(self.plugin, "optional_dependencies", ()), ())
-        self.assertFalse(any(name.split("@", 1)[0] in {"impeccable", "taste-skill"}
+        self.assertIn("taste-skill@taste-skill", self.plugin.required_dependencies)
+        self.assertFalse(any(name.split("@", 1)[0] == "impeccable"
                              for name in self.plugin.required_dependencies))
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 self.assertFalse((package / "skills/pptx/references/creative-providers.md").exists())
                 method = _normalized(_read(package / "skills/pptx/SKILL.md"))
-                self.assertIn("consult no external design provider", method)
+                self.assertIn("references/art-direction.md", method)
+                self.assertIn("required Taste contribution", method)
                 for role in ROLES:
                     body = _normalized(_read(package / ROLE_PATHS[host].format(role=role)))
-                    self.assertIn("consult no external design provider", body)
-                    self.assertNotRegex(body, r"`(?:impeccable|taste-skill):")
+                    self.assertIn("office:design", body)
+                    self.assertIn("references/art-direction.md", body)
+                    self.assertNotIn("impeccable:", body)
 
     def test_isolated_method_dispatch_is_serial_and_has_only_owned_roles(self):
         self.assertTrue(self.workflow.dispatch.isolated)
@@ -227,7 +213,7 @@ class PresentationContractTests(unittest.TestCase):
     def test_nested_presentation_contracts_survive_every_host_verbatim(self):
         for host, package in self.packages.items():
             for reference in (
-                "design-library.md",
+                "structure.md",
                 "design-preview.md",
                 "image-tools.md",
                 "layout-patterns.md",
@@ -245,7 +231,9 @@ class PresentationContractTests(unittest.TestCase):
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 entry = _normalized(self.harness(host))
-                self.assertIn("slide patterns from `office:pptx`'s `references/layout-patterns.md`", entry)
+                self.assertIn("follow `office:pptx`", entry)
+                method = _normalized(_read(package / "skills/pptx/SKILL.md"))
+                self.assertIn("references/layout-patterns.md", method)
                 self.assertTrue((package / "skills/pptx/references/layout-patterns.md").is_file())
 
     def test_embedding_precedes_candidate_rendering_and_review_on_every_host(self):
@@ -270,9 +258,9 @@ class PresentationContractTests(unittest.TestCase):
         self.assertIn("this catalog adds no second schema", source)
         self.assertIn("Copyright (c) 2026 Claude Office Skills Contributors", license_text)
         self.assertIn("Permission is hereby granted, free of charge", license_text)
-        library = _read(OFFICE / "skills/pptx/references/design-library.md")
+        library = _read(OFFICE / "skills/pptx/references/layout-patterns.md")
         self.assertNotIn("| Slide ID |", library)
-        self.assertIn("single slide-object specification", library)
+        self.assertIn("native slide-object specification", library)
         compatibility = _read(OFFICE / "skills/pptx/references/pptx-compatibility.md")
         self.assertIn("do not introduce\na second construction schema", compatibility)
         self.assertIn("Stable slide ID from the deck plan", compatibility)
@@ -282,10 +270,11 @@ class PresentationContractTests(unittest.TestCase):
                 self.assertIn("references/layout-patterns.md", designer)
                 self.assertNotIn("ppt-visual.md", designer)
                 self.assertIn("wireframe", designer)
-                self.assertIn("native object placement", designer)
+                self.assertIn("native object geometry", designer)
                 reviewer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-reviewer")))
                 self.assertIn("references/layout-patterns.md", reviewer)
-                self.assertIn("references/directions.md", reviewer)
+                self.assertIn("DESIGN.md", reviewer)
+                self.assertIn("references/editorial-design.md", reviewer)
                 self.assertEqual((package / license_relative).read_bytes(), (OFFICE / license_relative).read_bytes())
 
     def test_pptx_constraints_reach_the_workflow_workers_and_the_engine(self):
@@ -296,7 +285,8 @@ class PresentationContractTests(unittest.TestCase):
         )
         for host, package in self.packages.items():
             with self.subTest(host=host, consumer="workflow"):
-                self.assertIn("pptx-compatibility.md", self.harness(host))
+                self.assertIn("follow `office:pptx`", self.harness(host))
+                self.assertIn("pptx-compatibility.md", _read(package / "skills/pptx/SKILL.md"))
             for consumer in (*consumers, *(ROLE_PATHS[host].format(role=role) for role in ROLES)):
                 with self.subTest(host=host, consumer=consumer):
                     text = _normalized(_read(package / consumer))
@@ -318,6 +308,10 @@ class PresentationContractTests(unittest.TestCase):
         ):
             with self.subTest(obligation=obligation):
                 self.assertIn(obligation, text)
+        self.assertIn("assigned DESIGN typography roles in proposal or final mode", text)
+        self.assertIn("catalog pairings are optional", text)
+        self.assertIn("install it only within the task's authority and check its license", text)
+        self.assertIn("claim embedding only from the `font_embed.py inspect` result", text)
 
     def test_pptx_object_plan_preserves_editability_and_source_data(self):
         text = _normalized(_read(OFFICE / COMPATIBILITY_REFERENCE))
@@ -378,21 +372,22 @@ class PresentationContractTests(unittest.TestCase):
             self.assertIn(obligation, text)
         self.assertNotRegex(text, r"\b(?:image_gen__imagegen|mcp__\w+|spawn_agent)\b")
 
-    def test_design_library_routes_to_directions_and_patterns_with_density_caps(self):
-        index = _normalized(_read(OFFICE / "skills/pptx/references/design-library.md"))
+    def test_split_structure_visual_identity_and_patterns_retain_density_caps(self):
+        structure = _normalized(_read(OFFICE / "skills/pptx/references/structure.md"))
+        design = _normalized(_read(OFFICE / "skills/design/SKILL.md"))
         directions = _normalized(_read(OFFICE / "skills/design/references/directions.md"))
         patterns = _normalized(_read(OFFICE / "skills/pptx/references/layout-patterns.md"))
         for obligation in (
             "at most 4 cards or text columns per slide",
             "at most 7 nodes in a process or architecture",
             "never below `13 pt`",
-            "one visual direction",
             "one pattern per slide",
         ):
             with self.subTest(obligation=obligation):
-                self.assertIn(obligation, index)
-        self.assertIn("references/directions.md", index)
-        self.assertIn("layout-patterns.md", index)
+                self.assertIn(obligation, patterns)
+        self.assertIn("one coherent identity", design)
+        self.assertIn("references/directions.md", design)
+        self.assertIn("layout-patterns.md", structure)
         for direction in ("A Executive Boardroom", "H Brand-Led Custom", "P Compliance Formal"):
             with self.subTest(direction=direction):
                 self.assertIn(direction, directions)
@@ -436,16 +431,19 @@ class PresentationContractTests(unittest.TestCase):
                 deckcraft = _normalized(_read(package / "skills/deckcraft/SKILL.md"))
                 self.assertIn("pptx_inspect.py\" coverage SOURCE.pptx CANDIDATE.pptx --cuts cuts.json", deckcraft)
                 reviewer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-reviewer")))
-                self.assertIn("every `missing` item is lost source text", reviewer)
+                self.assertIn("every `missing` unchanged/locked item is lost source text", reviewer)
+                self.assertIn("source/destination mapping and direct comparison", reviewer)
+                self.assertIn("facts, conditions, uncertainty and claim strength", reviewer)
         intake = _normalized(_read(OFFICE / "skills/intake/SKILL.md"))
-        self.assertIn("record the approved cuts", intake)
+        self.assertIn("approved cuts", intake)
+        self.assertIn("Source content outside authorized cuts/transformations must reach the result", intake)
 
     def test_argument_mode_is_chosen_recorded_and_reviewed(self):
-        library = _normalized(_read(OFFICE / "skills/pptx/references/design-library.md"))
+        library = _normalized(_read(OFFICE / "skills/pptx/references/structure.md"))
         for mode in ("Pyramid", "Narrative", "Instructional", "Showcase", "Briefing"):
             with self.subTest(mode=mode):
                 self.assertIn(f"| {mode} |", library)
-        self.assertIn("Headline set by the argument mode", library)
+        self.assertIn("Headline set by the argument mode", _read(OFFICE / "skills/pptx/references/layout-patterns.md"))
         self.assertIn("one argument mode", library)
         for host, package in self.packages.items():
             with self.subTest(host=host):
@@ -464,7 +462,7 @@ class PresentationContractTests(unittest.TestCase):
                 self.assertIn("exact candidate path and SHA-256", method)
                 self.assertIn("obtain an updated review tied to the new candidate", method)
                 reviewer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-reviewer")))
-                self.assertIn("Review every page", reviewer)
+                self.assertRegex(reviewer, r"(?i)final/read-only mode review every page")
                 self.assertIn("Missing render or visual access blocks visual approval", reviewer)
                 self.assertIn("Do not edit the deck, generate images or dispatch workers", reviewer)
                 designer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-designer")))
@@ -507,7 +505,10 @@ class PresentationContractTests(unittest.TestCase):
         header = _frontmatter(self.harness("copilot"))
         tool_line = next(line for line in header.splitlines() if line.startswith("tools:"))
         actual = set(re.findall(r"'([^']+)'", tool_line))
-        self.assertEqual(actual, {"agent", "edit", "fetch", "runCommands", "search"})
+        # Real publication includes these servers from the declared provider
+        # closure. They grant no image tool, and no other wildcard is allowed.
+        self.assertEqual(actual, {"agent", "edit", "fetch", "runCommands", "search",
+                                  "codebase-map/*", "moe/*", "peer-review/*", "work-controller/*"})
         contract = _normalized(_read(self.packages["copilot"] / "skills/pptx/references/image-tools.md"))
         self.assertIn("If the coordinator lacks the tool", contract)
         self.assertIn("otherwise record the missing capability", contract)

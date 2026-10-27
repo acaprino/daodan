@@ -1,0 +1,35 @@
+{
+  "repository": "encode/httpx",
+  "source_path": "httpx/_utils.py",
+  "revision": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+  "source_url": "https://github.com/encode/httpx/blob/b5addb64f0161ff6bfe94c124ef76f6a1fba5254/httpx/_utils.py",
+  "artifact_sha256": "fd355ea802afc4990a1ddcfb74579be2cd0b66a41781e1645d281f88704aff5a",
+  "license": "BSD-3-Clause",
+  "license_url": "https://github.com/encode/httpx/blob/b5addb64f0161ff6bfe94c124ef76f6a1fba5254/LICENSE.md",
+  "license_sha256": "4ec59d544f12b5f539a3a716fd321ac58ccd8030b465221f2c880200cdf28d8d",
+  "license_text": "Copyright © 2019, [Encode OSS Ltd](https://www.encode.io/).\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n\n* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n\n* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n\n* Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n",
+  "functions": [
+    {
+      "name": "primitive_value_to_str",
+      "start_line": 15,
+      "end_line": 27,
+      "snippet": "def primitive_value_to_str(value: PrimitiveData) -> str:\n    \"\"\"\n    Coerce a primitive data type into a string value.\n\n    Note that we prefer JSON-style 'true'/'false' for boolean values here.\n    \"\"\"\n    if value is True:\n        return \"true\"\n    elif value is False:\n        return \"false\"\n    elif value is None:\n        return \"\"\n    return str(value)",
+      "sha256": "d5cb25a9a847770ce1073b621a6cbf393accca361db7ab216235937db3a8e6c1"
+    },
+    {
+      "name": "peek_filelike_length",
+      "start_line": 95,
+      "end_line": 117,
+      "snippet": "def peek_filelike_length(stream: typing.Any) -> int | None:\n    \"\"\"\n    Given a file-like stream object, return its length in number of bytes\n    without reading it into memory.\n    \"\"\"\n    try:\n        # Is it an actual file?\n        fd = stream.fileno()\n        # Yup, seems to be an actual file.\n        length = os.fstat(fd).st_size\n    except (AttributeError, OSError):\n        # No... Maybe it's something that supports random access, like `io.BytesIO`?\n        try:\n            # Assuming so, go to end of stream to figure out its length,\n            # then put it back in place.\n            offset = stream.tell()\n            length = stream.seek(0, os.SEEK_END)\n            stream.seek(offset)\n        except (AttributeError, OSError):\n            # Not even that? Sorry, we're doomed...\n            return None\n\n    return length",
+      "sha256": "84b4e4135cf29cda724d384bd59d617ac71e90dd3d187c51374d1a312a36a8fd"
+    },
+    {
+      "name": "priority",
+      "start_line": 206,
+      "end_line": 217,
+      "snippet": "    def priority(self) -> tuple[int, int, int]:\n        \"\"\"\n        The priority allows URLPattern instances to be sortable, so that\n        we can match from most specific to least specific.\n        \"\"\"\n        # URLs with a port should take priority over URLs without a port.\n        port_priority = 0 if self.port is not None else 1\n        # Longer hostnames should match first.\n        host_priority = -len(self.host)\n        # Longer schemes should match first.\n        scheme_priority = -len(self.scheme)\n        return (port_priority, host_priority, scheme_priority)",
+      "sha256": "eccc76f9fe8108f1936b71eaa16122b2965efbfd15657cc6724e497b349964f2"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

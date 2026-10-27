@@ -21,6 +21,7 @@ ISOLATIONS: tuple[str, ...] = ("shared", "required")
 JOIN_POLICIES: tuple[str, ...] = ("all-delivered", "best-effort")
 CONCURRENCIES: tuple[str, ...] = ("preferred", "required", "forbidden")
 INLINE_WORKER_REFERENCE = "work-controller/isolated-worker"
+HOOK_EVENTS: tuple[str, ...] = ("session-start", "user-prompt-submit")
 
 
 @dataclass(frozen=True)
@@ -108,6 +109,17 @@ class McpServerSpec:
 
 
 @dataclass(frozen=True)
+class HookSpec:
+    """A bounded Python callback; adapters own event registration and launch syntax."""
+
+    name: str
+    event: str
+    script: Path
+    args: tuple[str, ...] = ()
+    timeout: int = 10
+
+
+@dataclass(frozen=True)
 class PluginSpec:
     root: Path
     schema: str
@@ -123,6 +135,7 @@ class PluginSpec:
     contract_exports: tuple[Path, ...] = ()
     optional_dependencies: tuple[str, ...] = ()
     reviewer_compositions: tuple[tuple[str, tuple[str, ...]], ...] = ()
+    hooks: tuple[HookSpec, ...] = ()
 
     @property
     def foreign_providers(self) -> dict[str, str]:

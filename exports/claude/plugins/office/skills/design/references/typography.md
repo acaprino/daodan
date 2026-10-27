@@ -77,7 +77,7 @@ Attribution and retained licenses: agentit-upstream.md in this directory. -->
 # Typography and layout for Office
 
 Make text serve reading, hierarchy and the actual medium. Pair with
-`editorial-design.md` for reading architecture. Define typography within the
+`editorial-design.md` for visual hierarchy; take logical sequence from `office:content`. Define typography within the
 existing document brief or presentation design report; `office:docx` and
 `office:pptx` retain editable-file production and verification.
 This method is not a brand redesign, copy rewrite or extra production engine.
@@ -86,8 +86,9 @@ This method is not a brand redesign, copy rewrite or extra production engine.
 
 Record content class, audience, language/scripts, page size or slide canvas,
 delivery context, brand rules and available fonts. Honor approved faces and
-template styles. The direction recorded at intake supplies the palette and
-the pairing from `font-pairings.md`; a supplied brand or template replaces both.
+template styles. The assigned proposal or selected `DESIGN.md` supplies palette,
+font roles and fallbacks under `art-direction.md`'s proposal/final boundary.
+`font-pairings.md` is a resource; a supplied brand or template remains binding.
 
 Check font family, version, real weights and italics, glyph coverage and permitted
 use in the intended output. Choose a compatible available fallback and inspect
@@ -111,9 +112,10 @@ prove embedding or grant redistribution rights.
 5. Use a small set of spacing decisions for headings, captions, lists and figures.
    A heading must visibly belong to its content. Align labels and numeric data
    for their task; avoid ornamental tracking that repairs an unsuitable measure.
-6. Map the roles to native format settings below. Recompose dense material by
-   changing its structure, splitting a slide or adjusting a table; do not simply
-   shrink all text until it fits. Preserve approved meaning and source links.
+6. Map the roles to native settings below. The format designer redistributes
+   dense material or adjusts a table; changed logical sequence, substantive
+   rewriting or cuts return to content. Do not shrink all text until it fits.
+   Preserve approved meaning and source links.
 7. Embed non-Office fonts through `SKILL.md`'s `font_embed.py` step when the
    engine is available, and record the inspection result, not just a requested flag.
 8. Render dense, sparse and long-label cases from the saved DOCX or PPTX. Inspect

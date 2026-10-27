@@ -1,6 +1,6 @@
 ---
 name: presentation
-description: 'Create, derive, revise, review or export an editable PowerPoint presentation with creative specialists, DeckCraft construction and editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck or consulting deck, or a change, review or export of an existing presentation.'
+description: 'Create, derive, revise, review or export an editable PowerPoint presentation through shared Office content/design, native DeckCraft and independent review.'
 argument-hint: '<brief | source files | existing presentation and requested change>'
 ---
 

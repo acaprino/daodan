@@ -309,11 +309,20 @@ class PaletteContractTests(unittest.TestCase):
                 for name in ("palette.py", "palette_preview.py"):
                     self.assertEqual((root / "design/scripts" / name).read_bytes(),
                                      (SCRIPTS / name).read_bytes())
-                skill = (root / "design/SKILL.md").read_text(encoding="utf-8")
+                skill = " ".join((root / "design/SKILL.md").read_text(encoding="utf-8").split())
                 self.assertIn("palette.py\" candidates", skill)
-                self.assertIn("ask which number to use", skill)
-                intake = (root / "intake/SKILL.md").read_text(encoding="utf-8")
-                self.assertIn("colour source", intake)
+                for route in ("from-image", "from-url", "from-css", "from-file"):
+                    self.assertIn("palette.py\" " + route, skill)
+                self.assertIn("palette_preview.py", skill)
+                self.assertIn("cannot record a choice", skill)
+                self.assertRegex(skill, r"design_compare\.py\" .* --select \S+ --authority user --source")
+                self.assertIn("--authority autonomous", skill)
+                self.assertIn("under an existing grant and cite its source", skill)
+                intake = " ".join((root / "intake/SKILL.md").read_text(encoding="utf-8").split())
+                self.assertRegex(intake, r"colou?r sources?")
+                self.assertIn("information source, binding brand/template, aesthetic reference", intake)
+                self.assertIn("Record provenance and rights", intake)
+                self.assertIn("not a second intake interview", intake)
 
 
 if __name__ == "__main__":

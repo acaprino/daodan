@@ -1,8 +1,8 @@
 ---
 name: document-coordinator
-description: 'Create, derive, revise, review or export a native Word document with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter or template, or a change, review or export of an existing document.'
+description: 'Create, derive, revise, review or export a native Word document through shared Office content/design and independent document composition and saved review.'
 tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
-agents: ['office:document-designer', 'office:document-reviewer']
+agents: ['office:content-strategist', 'office:document-designer', 'office:document-reviewer']
 ---
 
 > Arguments: `<brief | source files | existing document and requested change>`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -115,7 +115,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `office:document-designer`, `office:document-reviewer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `office:content-strategist`, `office:document-designer`, `office:document-reviewer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -126,6 +126,7 @@ Dispatch plan:
 
 Role bindings:
 
+- `office:content-strategist`: dispatch the installed `office:content-strategist` agent by its qualified identity.
 - `office:document-designer`: dispatch the installed `office:document-designer` agent by its qualified identity.
 - `office:document-reviewer`: dispatch the installed `office:document-reviewer` agent by its qualified identity.
 
@@ -136,35 +137,31 @@ The phase graph and record schemas ship with this package in
 
 Handle the document task requested in: <arguments>
 
-Load `office:intake` first. Resolve the starting point, carry-over, depth of
-change and deliverable in its single round of questions, together with the
-document questions of `office:docx`. Then follow `office:docx`. Inspect supplied
-files before choosing an editing engine. Create or revise native document
-content, preserve required features and verify the saved result. Keep layout
-review and actual field updates distinct from package checks.
+Load `office:intake` first, then follow `office:docx`. Inspect supplied files,
+settle operation/material roles, inherited decisions and phase-specific
+dependencies in its single question round. Ask nothing the recorded brief settles.
 
-Run only the steps the operation recorded at intake needs. When it gives the
-document a new look (create, restyle, or derive without carrying the look over),
-load `office:design`: build and choose the palette from the user's colour source,
-record direction and pairing, and install the pairing's fonts; preserve supplied
-brands and templates. An expansion or revision inherits the document's type,
-styles and theme and designs only its new or changed sections. Record the document
-type chosen at intake from `office:docx`'s `references/document-types.md`. Follow `office:docx`
-to dispatch the isolated `office:document-designer`, scoped to the sections the
-operation designs, with its real generated role binding. Require concrete page layouts and template instructions, verify the
-assigned design report, then load `office:wordcraft` to build, save, reopen and
-render the actual DOCX in the coordinator. On the narrow and read-only routes,
-retain the existing layout and do not start creative dispatch. The read-only
-route never writes to the source document. On every route, dispatch the
-isolated `office:document-reviewer` on the rendered candidate (or on the
-rendered unchanged source for a read-only review) as `office:docx` specifies,
-and resolve its blocking findings within at most three review rounds.
+Use that method's full/delta/no-plan matrix. For create/derive or expand/revise,
+load `office:content` and dispatch declared `office:content-strategist` with the
+requested formats and assigned artifacts, unless its shared delivery already
+exists. New-look work loads `office:design` for its Taste input/output contract,
+reviewed native proposals, v2 gallery and explicit DESIGN.md selection; other
+operations inherit the look.
+Both format methods reuse one CONTENT.md/DESIGN.md identity for a bundle,
+with independent native projections. Validate/load actual records before layout;
+finish any PPTX derived plan binding as its method requires.
 
-When figures come from a workbook, load the `office:xlsx` skill to inspect its
-native data and calculation evidence before including them in the document.
+For final construction, dispatch isolated `office:document-designer` in `final`
+mode only for the operation's layout scope, verify its report, then execute
+`office:wordcraft` in the coordinator to
+build/save/reopen/render a separate native candidate. A separate DOTX is optional
+unless requested. Keep narrow/read-only requests scoped; read-only work never
+writes to the supplied source. Dispatch isolated `office:document-reviewer` in
+`final` mode on the exact rendered candidate or unchanged read-only source under `office:docx`'s
+review contract. Preserve coverage/cuts, native features, embedding order and
+bounded repairs. A stopped worker or missing render is not completed review.
 
-Deliver editable `.docx` on the substantial route, preserve the required source
-format for narrow edits, and deliver the requested findings or export on the
-read-only route. Include a concise document review recording candidate identity,
-inspected pages, the reviewer's verdict and open findings, coverage of source
-text, preservation checks and any unsupported operation or unverified layout.
+Workbook figures require `office:xlsx` native data/calculation evidence. Deliver
+the requested editable file, findings or export and its concise review with
+candidate identity, inspected pages, source fidelity/preservation, field-update
+and font evidence, verdict and explicit unavailable checks.

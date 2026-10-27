@@ -1,0 +1,153 @@
+{
+  "files": [
+    {
+      "old": "docs/research/gutsy-cpu-briefing-2026-10-26.md",
+      "sha256_before": "2e3b20a38dc0b74f0a13730a66147b99347f242a9d6d5e892ffe499260f075c2",
+      "new": "docs/gutsay/gutsy-cpu-briefing-2026-10-26.md",
+      "sha256_after": "2e3b20a38dc0b74f0a13730a66147b99347f242a9d6d5e892ffe499260f075c2"
+    },
+    {
+      "old": "docs/research/gutsy-preliminary-tests-2026-10-26.md",
+      "sha256_before": "491bee7735df529e4d064631c08e4a2867d470448f8daca6f909738e65cb0a22",
+      "new": "docs/gutsay/gutsy-preliminary-tests-2026-10-26.md",
+      "sha256_after": "990aaeb9630fc4d211172b59a798c95a6efe5572c7209803ab28c7f582d098b6"
+    },
+    {
+      "old": "docs/research/gutsy-campaign-design-2026-10-26.md",
+      "sha256_before": "bc71536ccf58392403769328ad979251408546abcc7d6fb8decf0cae97e1528b",
+      "new": "docs/gutsay/gutsy-campaign-design-2026-10-26.md",
+      "sha256_after": "a53e2421154422dddcfec2f4b8fb177713b17a219939e479e8edbfdea99c9cfa"
+    },
+    {
+      "old": "docs/superpowers/plans/2026-10-26-gutsy-modal-pilot.md",
+      "sha256_before": "86e054251b10ab0232fbe9153397b1beed98164b4e4049497bc23edc40577a9a",
+      "new": "docs/gutsay/2026-10-26-gutsy-modal-pilot.md",
+      "sha256_after": "c989d4c24f5b253a5652e4df57004140b40ea5b1c72824e05da1f40b3af0c4d6"
+    },
+    {
+      "old": "evals/gutsy-decision-pilot/README.md",
+      "sha256_before": "ec2b3486dbdfae9f81c5eda1c00817cd1df96123a4ee33b58134c0c85fb9fa18",
+      "new": "docs/gutsay/pilot-guide.md",
+      "sha256_after": "bb1c14b7eda7996cfd835610e96035d993fc4647349b2f46a9ee769685c2e8e1"
+    },
+    {
+      "old": "evals/gutsy-decision-pilot/RESULTS.md",
+      "sha256_before": "09a20ddc31e923350d9b912430f45eb04a6c219f9cdd495ed08e235974a9de5e",
+      "new": "docs/gutsay/pilot-results-2026-10-26.md",
+      "sha256_after": "09a20ddc31e923350d9b912430f45eb04a6c219f9cdd495ed08e235974a9de5e"
+    },
+    {
+      "old": ".daodan/runs/2026-10-26-gutsy-briefing/gutsy-source-notes.md",
+      "sha256_before": "cff1f2817a3aa846ac675be9688f4d3781c5c009a1f284e84a10110f4d8443f5",
+      "new": "docs/gutsay/references/gutsy-source-notes.md",
+      "sha256_after": "cff1f2817a3aa846ac675be9688f4d3781c5c009a1f284e84a10110f4d8443f5"
+    },
+    {
+      "old": ".daodan/runs/2026-10-26-gutsy-campaign-design/statistics.md",
+      "sha256_before": "deaba3a93b4d61036976fd711a2bfc2a16da3da758d117a2a37e997b5288f298",
+      "new": "docs/gutsay/references/statistics.md",
+      "sha256_after": "deaba3a93b4d61036976fd711a2bfc2a16da3da758d117a2a37e997b5288f298"
+    },
+    {
+      "old": ".daodan/runs/2026-10-26-gutsy-campaign-design/strategies.md",
+      "sha256_before": "d6245db30f5b954b78328718f74605571ac456067ddcf96e99bc1dc06da9d661",
+      "new": "docs/gutsay/references/strategies.md",
+      "sha256_after": "cb5e93d0fc38f530d1ebb10792da5fc120ed8e0fb11662165ec6fdb3435b699d"
+    },
+    {
+      "old": ".daodan/runs/2026-10-26-gutsy-campaign-design/real-cases.md",
+      "sha256_before": "06503e95ba0d0285ebe405014593f058e8d91608c6b9339ebc59c910488b0925",
+      "new": "docs/gutsay/references/real-cases.md",
+      "sha256_after": "06ae95ed2e7c190cf534a214fe5e71b9dbec5ba32373c4e8e2f9dff8a9ea00e6"
+    },
+    {
+      "old": ".daodan/runs/2026-10-26-gutsy-campaign-design/review.md",
+      "sha256_before": "1f9f624642a8dae8f1599a728d8f762b5d4007247312e98bda865797965ca2e9",
+      "new": "docs/gutsay/references/review.md",
+      "sha256_after": "7038dbc4030878250af0267e47aa1c8c417b58f1c9befe10b7c20025a5970df8"
+    },
+    {
+      "old": ".daodan/runs/2026-10-26-gutsy-campaign-design/campaign-outline.json",
+      "sha256_before": "e7ecbd31809f3153c7299d5ff8e0a0c1491597ab2c840c6339167696b38d6079",
+      "new": "docs/gutsay/campaign-outline.json",
+      "sha256_after": "e7ecbd31809f3153c7299d5ff8e0a0c1491597ab2c840c6339167696b38d6079"
+    }
+  ],
+  "preserved_pilot_evidence": [
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/.write-lock",
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/compaction-delivery.md",
+      "sha256": "5d92cf38bf1b9673f9a1fd946c2eb02fff4ee3e4b9c945fb0149ffdd3002b507"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/completion-patch.json",
+      "sha256": "23601d3f5dbb5e5d0ffa59aaa50e54321869ed3b33eef7c1a9d11adec2c9ca37"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/execution-report.md",
+      "sha256": "09a20ddc31e923350d9b912430f45eb04a6c219f9cdd495ed08e235974a9de5e"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/modal-app-states.json",
+      "sha256": "797e8ad2e569ea6c21c6ae4eb1d210bbf06239e90f047497e9801ff36d6d696a"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/result.json",
+      "sha256": "bedbf64d5888d104018aedc7ef09f4fac4ae4d9b86069880e794a25371809a2a"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/review.md",
+      "sha256": "ac8b10b225aafa6c8a76e6ef54f47101e228bdbef772e715a9bf6e0990025013"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/routing-delivery.md",
+      "sha256": "24b286d46b0d7e3130c2c0b639155b66b9f8027c3470669c10f689ca8e5bd373"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/tools-delivery.md",
+      "sha256": "6bc4b515062b43b85e00d321fd487a75d24ce4d5a411caf867a18e6551947265"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/unit-checks.txt",
+      "sha256": "bf16f74e7660765b08034a19f5b3bc4df5ffaade5d5691e47ba6e34b1b4c5c4d"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/work.json",
+      "sha256": "d0d05557e903f179fa118e4618a3b74a3d7926cacbeccf14ab600ba50e16e2b2"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/cases.json",
+      "sha256": "452fd29200f104286a2f05fb98028a0b629965ce018aa2782cab6c025a3d5cbb"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/deterministic-checks.json",
+      "sha256": "944166b7cf064d3232f601861fa877794dd7c89d6a625c9a3af9831c8aff9243"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/input.json",
+      "sha256": "3646b7a515b8ac111026833e9d0da8f2e23919dbcf1c932836b35f7a8415f9fb"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/manifest.json",
+      "sha256": "69fd9da9430673c7809db72952cbe71f38f7bc734c807f669c878d0c2efcaddf"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/modal-results.json",
+      "sha256": "bd41f02fe9039c8d1e7141eb8a9fe7a8641ba26152378d229615d0c976abf515"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/REPORT.md",
+      "sha256": "d1cc1f41a252b3bc24cdbe7cbf6aea3876a044d1c9270a817af277e09abf1143"
+    },
+    {
+      "path": ".daodan/runs/2026-10-26-gutsy-modal-pilot/artifacts/scores.json",
+      "sha256": "f624f36aa22f17dafb2813da96284f9390502dfe87795f73cb810adb119d27cf"
+    }
+  ],
+  "description": "Documentation relocation; historical pilot evidence and its recorded paths remain unchanged.",
+  "schema": "gutsy-document-relocation/v1",
+  "date": "2026-10-26"
+}

@@ -86,7 +86,7 @@ Choose a question before choosing a script or schema.
 | How reviewer selection is evaluated, and how it relates to the wider routing design | [Choicer evaluation](choicer-eval-prototype.md) |
 | What happens when a reviewer-selection answer is missing, malformed or uncertain | [Mock Nomination](mock-nomination-prototype.md) |
 | Whether extra analysis engines can recover missing call relationships | [Resolver spike](code-graph-resolver-spike.md) |
-| Which local embedding model finds the code a request needs | [Embedding benchmark](../plugins/codebase-map-research.md#embedding-benchmark) |
+| Which local embedding model finds the code a request needs | [Embedding benchmark](../research/context-building-benchmarks.md#embedding-benchmark) |
 | Which Python parser fits the map, including files being edited | [Python parser comparison](code-graph-python-parser.md) |
 | Whether SQL and PL/SQL grammars preserve known behaviours and gaps | [Grammar parity](code-graph-grammar-parity.md) |
 | What a result actually demonstrates, and what remains untested | Each card's introduction, then its **Verified** and **Not verified** sections |
@@ -107,7 +107,7 @@ different questions, so a green test count is not a shared score of maturity.
 | [Choicer evaluation](choicer-eval-prototype.md) | Can a prompt or local classifier make useful routing decisions? | The offline results expose limits in both the input corpus and the classifier. They do not promote a local model into the active cycle. |
 | [Mock Nomination](mock-nomination-prototype.md) | Does selection policy handle uncertain answers and preserve required reviewers? | Scripted answers test the contract and its bridge to the simulated work graph. They provide no new model-quality evidence. |
 | [Resolver spike](code-graph-resolver-spike.md) | Can a type checker or language server identify calls the lexical resolver leaves unresolved? | Additional relationships can be recovered, with engine, language and grading limits. The recorded sample is not a guarantee for all projects. |
-| [Embedding benchmark](../plugins/codebase-map-research.md#embedding-benchmark) | Which local embedder delivers the most of the code a request needs, at what cost? | EmbeddingGemma 2 (q4) beat CodeRankEmbed in all three projects and replaced it; the cost moved from tokens to indexing time. |
+| [Embedding benchmark](../research/context-building-benchmarks.md#embedding-benchmark) | Which local embedder delivers the most of the code a request needs, at what cost? | EmbeddingGemma 2 (q4) beat CodeRankEmbed in all three projects and replaced it; the cost moved from tokens to indexing time. |
 | [Python parser comparison](code-graph-python-parser.md) | Does switching parser improve the map enough to justify its cost? | The recorded decision keeps Python's standard-library parser; extraction and recovery policy are separate parts of the problem. |
 | [Grammar parity](code-graph-grammar-parity.md) | Can we detect known SQL and PL/SQL parsing behaviours changing? | Named checks expose both working constructs and known gaps. Hand-written cases do not establish accuracy on real production code. |
 

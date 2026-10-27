@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "office"
-version = "3.1.0"
-description = "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification."
+version = "3.4.0"
+description = "Design editable Word documents and presentations from one intake, a validated shared editorial record and an ad hoc visual system compared on real content; construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification."
 license = "MIT"
 
 [capabilities]
@@ -9,10 +9,10 @@ required = ["repository.read", "repository.write", "shell.execute", "network.fet
 optional = []
 
 [dependencies]
-required = ["work-controller"]
+required = ["work-controller", "taste-skill@taste-skill"]
 
 [components]
-skills = ["intake", "design", "pptx", "deckcraft", "wordcraft", "gridcraft", "xlsx", "docx", "integrity"]
+skills = ["intake", "content", "design", "pptx", "deckcraft", "wordcraft", "gridcraft", "xlsx", "docx", "integrity"]
 roles = ["content-strategist", "presentation-designer", "presentation-reviewer", "document-designer", "document-reviewer"]
 workflows = []
 policies = []

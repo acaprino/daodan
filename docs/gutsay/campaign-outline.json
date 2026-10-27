@@ -1,0 +1,27 @@
+{
+  "schema": "gutsy-campaign-design/v1",
+  "status": "design-not-materialized-not-executed",
+  "date": "2026-10-26",
+  "base_scenarios_target_per_domain": 600,
+  "base_scenarios_target_total": 1800,
+  "split_target_per_domain": {"development": 120, "calibration": 120, "verification": 360},
+  "independence_unit": "semantic family and provenance cluster, not scenario or request count",
+  "core": {
+    "routing": {"scenarios": 600, "questions_per_scenario_by_arm": [10, 2, 2], "question_cap": 8400},
+    "tools": {"scenarios": 600, "eligible_candidate_cap": 13, "family_questions": 5, "question_cap": 10800},
+    "compaction": {"scenarios": 600, "representations": 3, "question_variants": 2, "candidate_pairs_per_scenario": 1, "questions_per_pair": 2, "question_cap": 7200}
+  },
+  "robustness": {"scenarios_per_domain": 120, "perturbations": 4, "routing_questions": 2, "tools_questions_cap": 13, "compaction_questions": 2, "question_cap": 8160},
+  "performance": {"workloads": 6, "profiles": 4, "batch_modes": 2, "replications": 10, "questions_per_cycle": 52, "question_cap": 4160},
+  "joint_compaction": {"episodes": 24, "candidate_pair_cap": 4, "arms": 6, "questions_per_pair": 2, "question_cap": 1152},
+  "defined_question_cap": 39872,
+  "stress_and_retry_reserve": 10128,
+  "overall_question_cap": 50000,
+  "calibration_grid": {"tool_inclusion_threshold": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], "compaction_keep_call": [0.3, 0.5, 0.7], "compaction_keep_result": [0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.9], "routing_max_reject": [0.05, 0.15, 0.30], "routing_min_margin": [0.05, 0.15, 0.30]},
+  "primary_comparisons": ["R3 vs R1", "T2 vs T1", "C1-Q1 vs C0-Q0"],
+  "inference": {"cluster_bootstrap_replications": 10000, "primary_comparison_interval_confidence": 0.9833333333333333, "primary_family_confidence": 0.95, "correction": "Bonferroni across three primary contrasts", "denominator": "all preregistered metric-eligible verification scenarios; coverage, fallback and valid-response-only quality reported separately"},
+  "resources_proposal": {"cpu_request_and_limit": 4, "memory_limit_mib": 4096, "gpu": false, "max_containers": 1, "global_deadline_hours": 22, "function_timeout_hours": 23, "operational_budget_usd": 6},
+  "requires_confirmation": ["duration and cost ceiling"],
+  "launch_gates": ["public-source allowlist and exact data rights", "materialized cases and verified oracles", "grouped splits sealed", "expanded manifest fits budget", "durable checkpoint and resume verified", "runtime parity checked", "duration and cost ceiling confirmed"],
+  "new_runtime_or_inference_performed": false
+}

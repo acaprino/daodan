@@ -4,7 +4,12 @@ entrypoint = "theme.md"
 [[phases]]
 id = "run"
 isolation = "shared"
+concurrency = "forbidden"
 produces = ["artifact:theme-template", "artifact:theme-record"]
+
+[dispatch]
+roles = ["office/presentation-designer", "office/presentation-reviewer", "office/document-designer", "office/document-reviewer"]
+isolated = true
 
 [contract]
 inputs = ["colour-source"]

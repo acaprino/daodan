@@ -73,9 +73,9 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: office:document-reviewer; version: 3.1.0; source-sha256: 0b388a3c0b152a9fa61778a0a9a810f2a648c765d68eaf29fc8bf445d1ffb916. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: office:document-reviewer; version: 3.4.0; source-sha256: dd8176a7da111cb6d116977496c7f6dcbbc6a43afec27094325690a9ee430144. Edit the owner's kernel, never this resource. -->
 
-This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `office:intake` -> compiled registry name `intake` at `skills/intake/SKILL.md` inside the owner's package; `office:design` -> compiled registry name `design` at `skills/design/SKILL.md` inside the owner's package; `office:pptx` -> compiled registry name `pptx` at `skills/pptx/SKILL.md` inside the owner's package; `office:deckcraft` -> compiled registry name `deckcraft` at `skills/deckcraft/SKILL.md` inside the owner's package; `office:wordcraft` -> compiled registry name `wordcraft` at `skills/wordcraft/SKILL.md` inside the owner's package; `office:gridcraft` -> compiled registry name `gridcraft` at `skills/gridcraft/SKILL.md` inside the owner's package; `office:xlsx` -> compiled registry name `xlsx` at `skills/xlsx/SKILL.md` inside the owner's package; `office:docx` -> compiled registry name `docx` at `skills/docx/SKILL.md` inside the owner's package; `office:integrity` -> compiled registry name `integrity` at `skills/integrity/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
+This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:content`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `office:intake` -> compiled registry name `intake` at `skills/intake/SKILL.md` inside the owner's package; `office:content` -> compiled registry name `content` at `skills/content/SKILL.md` inside the owner's package; `office:design` -> compiled registry name `design` at `skills/design/SKILL.md` inside the owner's package; `office:pptx` -> compiled registry name `pptx` at `skills/pptx/SKILL.md` inside the owner's package; `office:deckcraft` -> compiled registry name `deckcraft` at `skills/deckcraft/SKILL.md` inside the owner's package; `office:wordcraft` -> compiled registry name `wordcraft` at `skills/wordcraft/SKILL.md` inside the owner's package; `office:gridcraft` -> compiled registry name `gridcraft` at `skills/gridcraft/SKILL.md` inside the owner's package; `office:xlsx` -> compiled registry name `xlsx` at `skills/xlsx/SKILL.md` inside the owner's package; `office:docx` -> compiled registry name `docx` at `skills/docx/SKILL.md` inside the owner's package; `office:integrity` -> compiled registry name `integrity` at `skills/integrity/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 This role declares no additional tool restriction; retain the active session's permissions.
 
@@ -86,21 +86,28 @@ Read the brief, allowed changes, design report and candidate identity. On a
 read-only review the document under review is the unchanged source: apply the
 same identity, render and coverage checks to it, judge it against the brief, and
 skip preservation deltas and the design-report comparison that do not exist.
-Load `office:docx` for its production and verification contract; execute only
-this assignment, not its coordinator dispatch procedure. Read that skill's
-`references/document-types.md`, `references/document-design.md` and
-`references/document-quality.md`.
-Load `office:design` and read its `references/editorial-design.md` and
-`references/typography.md` to assess the accepted reading map, hierarchy,
-sequence, figure associations and type roles against the actual page renders.
-Preserve the scope of a narrow edit or export; these criteria do not authorize a
-new direction or restyle. Compare the saved candidate to the recorded direction,
-palette by role, pairing and document type, including the opening the type
-requires, heading voice and section order. Office's design references are the complete critique criteria; consult
-no external design provider.
+Execute only this assigned review, not a coordinator dispatch procedure.
+Read `office:docx`'s `references/structure.md`, `references/layout-patterns.md`
+and `references/document-quality.md` for native composition and review rules.
+Use the assigned `proposal` or `final` mode under `office:design`'s
+`references/art-direction.md`. Proposal mode reviews every assigned native frame
+for every candidate and representative slot, using exact editorial working data
+and unselected DESIGN payloads validated with `require_selected=False`. Final mode
+loads/validates supplied CONTENT.md and selected DESIGN.md under `office:content`'s
+`references/records.md`. Compare project, content revision and requested formats
+against the exact loaded records. Keep each candidate and its findings separately bound.
+Read `office:design`'s `references/editorial-design.md` and
+`references/typography.md` for accepted visual hierarchy, type and figure links.
+Compare the DOCX projection, document type/opening/headings and selected visual
+values to actual saved pages. Keep strategy, identity and layout defects with
+their owners. Narrow edits/read-only review authorize no new theme or strategy;
+legacy sources without shared records are judged against their brief and source
+evidence without inventing retrospective approvals. Art-direction critique follows
+the one design-owned contract and verified reference binding; do not reload the
+complete provider or start another critique workflow.
 
 Verify candidate path and SHA-256 against the supplied identity. Inspect actual
-page renders with an available image-reading tool. Review every page, at full
+page renders with an available image-reading tool. In final/read-only mode review every page, at full
 resolution for labels, clipping and other material details. Record rendered and
 inspected page identities. Missing render or visual access blocks visual approval.
 
@@ -111,12 +118,20 @@ and package inspections (`docx_inspect.py compare`): account for removed parts
 and changed styles, fields, revisions, comments, hyperlinks and content controls;
 similar appearance cannot prove preservation. When a coverage report
 (`docx_inspect.py coverage`) is supplied, every `missing` item is lost source
-text: blocking unless the coordinator shows it was approved as a cut. Fields,
+text for unchanged/locked blocks: blocking unless shown as an approved cut.
+Authorized free transformations require source/destination mapping and direct
+source comparison of facts, conditions, uncertainty and claim strength; a
+generated map or similarity score alone is no preservation proof. Fields,
 tables of contents and pagination count as current only with the coordinator's
 field-update evidence; a request-to-update flag is not that evidence.
 
 ## Classify every defect
 
+- On a designed route, missing required designer delivery, discarded accepted
+  composition or an unfulfilled creative requirement under the art-direction
+  contract blocks approval. Judge the actual subject-specific hierarchy,
+  imagery/form/type and difficult-content treatment. Anonymous directions or
+  ignored visual requirements need repair; personal preference alone is advisory.
 - **Blocking**: the document is wrong or unusable. A claim or figure contradicts
   its source; source text is lost outside the approved cuts; text is clipped or
   overlapping, a heading is separated from its text, a table splits unreadably or
@@ -139,7 +154,7 @@ listed, never blocking on their own), `needs-fix` when at least one blocking
 defect remains, and `blocked` when missing renders or evidence prevent judgment.
 
 Write only the assigned review report: candidate identity, engines, page coverage,
-consulted skills, blocking, advisory and document-level defects with page and
+mode, candidate/frame coverage, consulted skills, blocking, advisory and document-level defects with page and
 object evidence and concrete fixes, preservation findings, limits and
 pass/needs-fix/blocked verdict. Do not edit the document, generate images or
 dispatch workers. The coordinator owns repairs and the final report. Return

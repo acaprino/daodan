@@ -8,7 +8,6 @@ import contextlib
 import importlib.util
 import io
 import json
-import os
 import re
 import subprocess
 import sys
@@ -24,11 +23,10 @@ for import_root in (REPO_ROOT, REPO_ROOT / "tests"):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
-from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
-from scripts.daodan.render import render_plugin  # noqa: E402
 from host_binding_assertions import loaded_instruction_text  # noqa: E402
 import office_entries  # noqa: E402
+from test_office_unified_contract import published_office, use_published_office  # noqa: E402
 
 OFFICE = REPO_ROOT / "plugins/office"
 SKILLS = OFFICE / "skills"
@@ -72,34 +70,26 @@ def _normalized(text):
 class ContentPlanningTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.plugin = load_plugin(OFFICE)
-        cls.temporary = tempfile.TemporaryDirectory(dir=str(REPO_ROOT) if os.name == "nt" else None)
-        cls.packages = {}
-        cls.entries = office_entries.render_entries(cls.temporary.name, ("presentation",))
-        for host in HOSTS:
-            package = Path(cls.temporary.name) / host / "office"
-            render_plugin(cls.plugin, load_adapter(REPO_ROOT / "adapters", host), package,
-                          adapters_root=REPO_ROOT / "adapters")
-            cls.packages[host] = package
+        use_published_office(cls)
 
     @classmethod
     def tearDownClass(cls):
-        cls.temporary.cleanup()
+        """The shared publisher cleans its immutable packages at process exit."""
 
     def test_intake_asks_the_planning_decisions_once(self):
         intake = _normalized((SKILLS / "intake/SKILL.md").read_text(encoding="utf-8"))
-        for decision in ("purpose and goal", "audience", "scope", "delivery", "length or slides to add", "density"):
+        for decision in ("intent/goal", "audience", "scope", "channel", "extent", "density"):
             self.assertIn(decision, intake)
-        self.assertIn("propose a length with its reasoning instead of asking an open question", intake)
+        self.assertIn("propose a length with its reasoning instead of asking an open question", intake.lower())
 
-    def test_planning_reference_owns_budget_density_ledger_and_deck_delta(self):
+    def test_projection_retains_budget_density_shared_ledger_and_deck_delta(self):
         plan = _normalized((SKILLS / "pptx/references/content-planning.md").read_text(encoding="utf-8"))
         for obligation in ("one content slide per 1 to 2 minutes", "Never shrink text or exceed the density caps",
-                           "| Light |", "| Standard |", "| Dense |", "claim ledger",
+                           "| Light |", "| Standard |", "| Dense |", "`office:content`'s shared ledger",
                            "Quotes, figures and names come only from sources",
                            "A core claim with no slide is a defect of the plan",
                            "only with the user's approval", "never a second slide with the opposite claim",
-                           "pptx_inspect.py coverage", "The plan never decides colours, fonts or object geometry"):
+                           "pptx_inspect.py coverage", "without inventing the plan's display `direction`"):
             self.assertIn(obligation, plan)
         statuses = set(re.findall(r"^\| `([a-z]+)` \|", (SKILLS / "pptx/references/content-planning.md")
                                   .read_text(encoding="utf-8"), re.M))
@@ -109,21 +99,24 @@ class ContentPlanningTests(unittest.TestCase):
         sidecar = (office_entries.DAODAN / "workflows/presentation.toml").read_text(encoding="utf-8")
         self.assertIn('"office/content-strategist"', sidecar)
         method = _normalized((SKILLS / "pptx/SKILL.md").read_text(encoding="utf-8"))
-        self.assertLess(method.index("Dispatch `office:content-strategist` first"),
+        self.assertLess(method.index("Dispatch `office:content-strategist` when"),
                         method.index("Dispatch `office:presentation-designer`"))
-        self.assertIn("The designer keeps the plan's slide order, claims and patterns", method)
+        self.assertIn("The designer keeps slide order, claims and permissions", method)
+        self.assertIn("a pattern change needs a reason", method)
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 body = _normalized((package / ROLE_PATHS[host].format(role="content-strategist")).read_text(encoding="utf-8"))
                 self.assertIn("references/content-planning.md", body)
-                self.assertIn("Do not choose colours, fonts, directions or object geometry", body)
-                self.assertIn("Never write a figure, quote, name or result that no source contains", body)
-                self.assertIn("must pass `design_preview.py` validation", body)
+                self.assertIn("Do not invent colors/fonts", body)
+                self.assertIn("Never invent facts, quotes or figures", body)
+                self.assertIn("never final geometry", body)
+                self.assertIn("no claims or content revision", method)
+                self.assertIn("design_preview.py", method)
                 # The presentation entry is a `daodan` workflow; Copilot's prompt
                 # entry hands off to a coordinator agent that holds the method.
                 entry = office_entries.entry_path(self.entries[host], host, "presentation")
                 harness = _normalized(loaded_instruction_text(self, entry, host))
-                self.assertIn("dispatch `office:content-strategist` first", harness)
+                self.assertIn("declared `office:content-strategist`", harness)
 
     def test_preview_shows_plan_status_and_rejects_unknown_status(self):
         library = preview.load_library()
@@ -159,9 +152,9 @@ class OperationTests(unittest.TestCase):
             [cell.strip() for cell in line.strip().strip("|").split("|")] for line in table[2:])}
 
     def test_intake_names_every_operation_with_its_route_and_inheritance(self):
-        rows = self.table_rows(SKILLS / "intake/SKILL.md", "## Resolve the operation")
+        rows = self.table_rows(SKILLS / "intake/SKILL.md", "## Materials and operation")
         self.assertEqual(set(OPERATIONS), set(rows))
-        routes = {name: row[2] for name, row in rows.items()}
+        routes = {name: row[1] for name, row in rows.items()}
         self.assertEqual({"Substantial"}, {routes[name] for name in ("Create", "Derive", "Expand", "Revise", "Restyle")})
         self.assertEqual(("Narrow", "Read-only"), (routes["Edit"], routes["Review or export"]))
         self.assertIn("direction, palette, fonts, template", rows["Expand"][3])
@@ -180,7 +173,7 @@ class OperationTests(unittest.TestCase):
             self.assertNotIn("Every slide", rows[operation][design])
         for operation in ("Restyle", "Edit", "Review or export"):
             self.assertTrue(rows[operation][plan].startswith("None"), operation)
-        self.assertIn("generate the base", rows["Restyle"][theme])
+        self.assertIn("separate `.potx` optional", rows["Restyle"][theme])
         self.assertEqual("None", rows["Edit"][design])
 
     def test_planning_and_design_skip_what_the_operation_inherits(self):
@@ -190,15 +183,18 @@ class OperationTests(unittest.TestCase):
         planning = _normalized((SKILLS / "pptx/references/content-planning.md").read_text(encoding="utf-8"))
         self.assertIn("Do not re-plan, reword or re-pattern a slide the request does not touch", planning)
         design = _normalized((SKILLS / "design/SKILL.md").read_text(encoding="utf-8"))
-        self.assertIn("An expansion or revision inherits the file's direction, palette, pairing and template", design)
+        self.assertIn("Expansion and revision inherit accepted direction, palette, type and template", design)
         docx = _normalized((SKILLS / "docx/SKILL.md").read_text(encoding="utf-8"))
-        self.assertIn("Expand and revise inherit the document's type, styles, theme and template", docx)
+        self.assertIn("Preserve supplied brands/template styles and inherited decisions", docx)
+        docx_rows = self.table_rows(SKILLS / "docx/SKILL.md", "## Coordinate document design")
+        for operation in ("Expand", "Revise"):
+            self.assertEqual(docx_rows[operation][2], "Inherited")
         for role in ("presentation-designer", "document-designer"):
             body = _normalized((OFFICE / "roles" / f"{role}.md").read_text(encoding="utf-8"))
             self.assertIn("Design only the", body)
-            self.assertIn("leave every other", body)
+            self.assertRegex(body, r"leaves? every other")
         strategist = _normalized((OFFICE / "roles/content-strategist.md").read_text(encoding="utf-8"))
-        self.assertIn("a delta plan for expand and revise", strategist)
+        self.assertIn("a delta plan for expand/revise", strategist)
 
 
 class RoutingTests(unittest.TestCase):
@@ -241,19 +237,43 @@ class RoutingTests(unittest.TestCase):
         start = next(item for item in entry_plugin.workflows if item.name == "start")
         self.assertTrue(start.dispatch.isolated)
         self.assertEqual({f"office/{role}" for role in plugin.components.roles}, set(start.dispatch.roles))
-        with tempfile.TemporaryDirectory(dir=str(REPO_ROOT) if os.name == "nt" else None) as temporary:
-            entries = office_entries.render_entries(temporary, ("start",))
-            for host in HOSTS:
-                package = Path(temporary) / host / "office"
-                render_plugin(plugin, load_adapter(REPO_ROOT / "adapters", host), package,
-                              adapters_root=REPO_ROOT / "adapters")
-                with self.subTest(host=host):
-                    text = _normalized(loaded_instruction_text(
-                        self, office_entries.entry_path(entries[host], host, "start"), host))
-                    self.assertIn("`references/routing.md`", text)
-                    for method in ("`office:pptx`", "`office:docx`", "`office:xlsx`", "`office:integrity`"):
-                        self.assertIn(method, text)
-                    self.assertTrue((package / "skills/intake/references/routing.md").is_file())
+        fixture = published_office()
+        entries = fixture["entries"]
+        for host, package in fixture["packages"].items():
+            with self.subTest(host=host):
+                text = _normalized(loaded_instruction_text(
+                    self, office_entries.entry_path(entries[host], host, "start"), host))
+                self.assertIn("`references/routing.md`", text)
+                for method in ("`office:pptx`", "`office:docx`", "`office:xlsx`", "`office:integrity`"):
+                    self.assertIn(method, text)
+                self.assertTrue((package / "skills/intake/references/routing.md").is_file())
+
+
+    def test_theme_uses_the_existing_isolated_proposal_and_final_format_roles(self):
+        theme = next(workflow for workflow in office_entries.entry_plugin(("theme",)).workflows
+                     if workflow.name == "theme")
+        expected = {"presentation-designer", "presentation-reviewer", "document-designer", "document-reviewer"}
+        self.assertEqual(set(theme.dispatch.roles), {"office/" + role for role in expected})
+        self.assertTrue(theme.dispatch.isolated)
+        self.assertFalse(theme.dispatch.inline_workers)
+        fixture = published_office()
+        for host, package in fixture["packages"].items():
+            with self.subTest(host=host):
+                entry = _normalized(loaded_instruction_text(self, office_entries.entry_path(
+                    fixture["entries"][host], host, "theme"), host))
+                self.assertIn("references/art-direction.md", entry)
+                self.assertIn("native proposals before the gallery and explicit DESIGN.md selection", entry)
+                self.assertIn("reviewers in `final` mode on the actual saved exemplars", entry)
+                self.assertIn("prototype approval does not review the final", entry)
+                for role in expected:
+                    body = _normalized((package / ROLE_PATHS[host].format(role=role)).read_text(encoding="utf-8"))
+                    self.assertIn("`proposal` or `final` mode", body)
+                    if host in {"codex", "pi"}:
+                        resource = f"contracts/dispatch/office/{role}.md"
+                        self.assertIn(resource, entry)
+                        self.assertTrue((fixture["entries"][host] / resource).is_file())
+                    else:
+                        self.assertIn("office:" + role, entry)
 
 
 class TemplateKitTests(unittest.TestCase):
@@ -364,7 +384,7 @@ class TemplateKitTests(unittest.TestCase):
     def test_design_method_and_theme_entry_use_the_kit(self):
         design = _normalized((SKILLS / "design/SKILL.md").read_text(encoding="utf-8"))
         self.assertIn("template_kit.py", design)
-        self.assertIn("build on that file itself", design)
+        self.assertIn("Preserve a supplied template instead of regenerating it", design)
         pptx = _normalized((SKILLS / "pptx/SKILL.md").read_text(encoding="utf-8"))
         self.assertNotIn("Do not label a PPTX exemplar as a PowerPoint `.potx` template", pptx)
         self.assertIn("template_kit.py", pptx)
@@ -373,7 +393,8 @@ class TemplateKitTests(unittest.TestCase):
         self.assertEqual(set(plugin.components.workflows), set())
         self.assertIn("theme", load_plugin(office_entries.DAODAN).components.workflows)
         theme = _normalized((office_entries.DAODAN / "workflows/theme.md").read_text(encoding="utf-8"))
-        for obligation in ("Load `office:design`", "inherit it as direction `H`", "template_kit.py", "office:integrity"):
+        for obligation in ("`office:design`", "preserve that base", "template_kit.py", "office:integrity",
+                           "Because reusable templates are requested here", "`--samples`"):
             self.assertIn(obligation, theme)
 
 

@@ -103,7 +103,8 @@ changes the result, that is a decision for the user.
 The destination is what the user holds at the end: a deck, a document, a
 workbook, a theme (`.potx` and `.dotx`), an integrity report, a repaired copy or
 an export (PDF, preview). A request can have several. A document and a deck made
-from the same brief share one design record. When the destination itself is
+from the same brief share one CONTENT.md and one DESIGN.md identity/revision,
+with independent requested-format projections and composition. When the destination itself is
 unclear ("do something with this website"), it is the first and only question
 of the first round.
 
@@ -122,7 +123,7 @@ of the first round.
 | Check, validate or audit a file | `verify` | |
 | Repair the defects of a file | `fix` | |
 | Read, summarize, review or export a file | the file's workflow | Review or export |
-| A document and its deck from one brief | `document`, then `presentation` | Create, sharing one design record |
+| A document and its deck from one brief | `document`, then `presentation` | Create, sharing one content and one design record |
 
 Operations combine (expand and restyle); the workflow runs the union of their
 steps, as `office:intake`'s operation table describes.
@@ -132,15 +133,20 @@ steps, as `office:intake`'s operation table describes.
 The decisions each routed workflow leaves open are the operation's row in
 `office:intake`, the format's planning decisions and, when the look is new, the
 design decisions. Before asking anything, settle every decision the request
-states or an input supplies: an existing file gives its argument mode, audience,
-theme and styles; a website or logo gives the colours; a report gives the claims.
+states or an input supplies: an existing file supplies its accepted audience, structure, theme and styles;
+a website or logo supplies observed colors; a report supplies source claims.
+Take the shared editorial dimensions and phase-specific dependency record from
+`office:intake`; do not treat observations as complete visual-system decisions.
 Propose a default with its reason where one is sound (a slide count from the
 speaking time). What remains goes to the user through `work-controller`'s
 question rules, in one round, one decision per question, with the recommended
 option first; the agent never answers a user decision itself. A decision that
 depends on another waits for it: the palette choice follows the colour source;
-slide design follows the content plan; a deck built on a new theme follows the
-theme.
+final composition follows accepted content and theme. New-look native proposals
+use the working content/candidate bindings under `office:design`'s
+`references/art-direction.md` before that visual selection. The content owner can prepare
+complete editorial working data before new-look selection; the coordinator binds
+PPTX display values and finalizes the existing plan/CONTENT linkage afterwards.
 
 ## 5. Record and run
 

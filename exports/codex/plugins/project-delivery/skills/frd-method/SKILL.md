@@ -92,6 +92,15 @@ It writes only the FRD records and their generated index.
 
 ## Grounded extraction
 
+Before drafting or revising substantive claims, load
+`research:science-based-approach` and compose its automatic checkpoint, reusing
+the caller's run and grants. Keep user needs, product hypotheses, observations
+and scientific support separate. Cite a pinned local research revision with
+its exact digest and Unicode excerpt when using scientific evidence in the
+FRD schema; a web URL alone cannot satisfy its source-span contract. If local
+publication is not authorized, retain the scientific gap instead of fabricating
+a local span. Evidence never approves a requirement or rewrites an Accepted FRD.
+
 1. Establish the requested product behavior, actors and scope from the user's request and interview. Current behavior, documentation and requested behavior remain distinct.
 2. Inspect current code and documents. Use Codebase Map inventory, symbols and links to find evidence, then read the cited current source. The map is static navigation evidence, never a correctness oracle or a source of runtime proof.
 3. Record requirements, `PERSON`, `ORGANIZATION` and `LOCATION` entities, and relationships with exact Unicode source spans. Report contradictions and runtime gaps instead of inventing certainty.

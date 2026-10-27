@@ -1,0 +1,35 @@
+{
+  "repository": "pydantic/pydantic",
+  "source_path": "pydantic/types.py",
+  "revision": "8459f597aac7f86bf44338b7a140010f9471368f",
+  "source_url": "https://github.com/pydantic/pydantic/blob/8459f597aac7f86bf44338b7a140010f9471368f/pydantic/types.py",
+  "artifact_sha256": "2c202677d845365c529e72d3c25efba27c5e8edf1b8f2c7ce702c47bb392633f",
+  "license": "MIT",
+  "license_url": "https://github.com/pydantic/pydantic/blob/8459f597aac7f86bf44338b7a140010f9471368f/LICENSE",
+  "license_sha256": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3",
+  "license_text": "The MIT License (MIT)\n\nCopyright (c) 2017 to present Pydantic Services Inc. and individual contributors.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
+  "functions": [
+    {
+      "name": "conbytes",
+      "start_line": 669,
+      "end_line": 689,
+      "snippet": "def conbytes(\n    *,\n    min_length: int | None = None,\n    max_length: int | None = None,\n    strict: bool | None = None,\n) -> type[bytes]:\n    \"\"\"A wrapper around `bytes` that allows for additional constraints.\n\n    Args:\n        min_length: The minimum length of the bytes.\n        max_length: The maximum length of the bytes.\n        strict: Whether to validate the bytes in strict mode.\n\n    Returns:\n        The wrapped bytes type.\n    \"\"\"\n    return Annotated[  # pyright: ignore[reportReturnType]\n        bytes,\n        Strict(strict) if strict is not None else None,\n        annotated_types.Len(min_length or 0, max_length),\n    ]",
+      "sha256": "bce6a4ae358dd997c3abb3898f7c52eed227ef285d424053e95589c70322f1b8"
+    },
+    {
+      "name": "conset",
+      "start_line": 852,
+      "end_line": 865,
+      "snippet": "def conset(\n    item_type: type[HashableItemType], *, min_length: int | None = None, max_length: int | None = None\n) -> type[set[HashableItemType]]:\n    \"\"\"A wrapper around `typing.Set` that allows for additional constraints.\n\n    Args:\n        item_type: The type of the items in the set.\n        min_length: The minimum length of the set.\n        max_length: The maximum length of the set.\n\n    Returns:\n        The wrapped set type.\n    \"\"\"\n    return Annotated[set[item_type], annotated_types.Len(min_length or 0, max_length)]  # pyright: ignore[reportReturnType]",
+      "sha256": "e49cf29b04c939f5fad68ce4968180d2c17d55389f2eb47d163c318007cc9ef4"
+    },
+    {
+      "name": "confrozenset",
+      "start_line": 868,
+      "end_line": 881,
+      "snippet": "def confrozenset(\n    item_type: type[HashableItemType], *, min_length: int | None = None, max_length: int | None = None\n) -> type[frozenset[HashableItemType]]:\n    \"\"\"A wrapper around `typing.FrozenSet` that allows for additional constraints.\n\n    Args:\n        item_type: The type of the items in the frozenset.\n        min_length: The minimum length of the frozenset.\n        max_length: The maximum length of the frozenset.\n\n    Returns:\n        The wrapped frozenset type.\n    \"\"\"\n    return Annotated[frozenset[item_type], annotated_types.Len(min_length or 0, max_length)]  # pyright: ignore[reportReturnType]",
+      "sha256": "e4b499bd927934bcb409fa7a9a46588713ba18b462d45c8356cb6460da4d45e0"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

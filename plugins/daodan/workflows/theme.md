@@ -1,30 +1,42 @@
 ---
 description: >
-  Create a reusable PowerPoint or Word theme and template from any colour source
-  (logo, website, stylesheets, an existing file, a description or nothing), or
-  inherit one from a supplied file. TRIGGER WHEN: the user asks for a theme, a
-  template, a slide master, a brand kit or a house style for decks or documents.
-argument-hint: "<colour source or file to inherit> [pptx | docx | both] [font pairing or brand fonts]"
+  Create requested reusable PowerPoint/Word themes and templates from supplied
+  brand materials or ad hoc visual proposals with native samples and checks.
+argument-hint: "<color source or inherited file> [pptx | docx | both] [fonts or brand]"
 ---
 
 Create the theme requested in: $ARGUMENTS
 
-Load `office:design`. Inspect a supplied file first. When the user supplies a
-template or a file whose look must carry over, inherit it as direction `H`:
-record its palette with `palette.py from-file`, keep its masters, layouts and
-styles, and deliver it unchanged as the base. Otherwise ask once, in the
-manner of `office:intake`, for what the request leaves open: the formats (deck,
-document or both), the colour source and the font pairing or brand fonts.
+Load `office:intake` and `office:design`. Inspect supplied files and inherit
+binding masters/layouts/styles when requested. Record observed palette/fonts and
+preserve that base; do not silently regenerate it. Ask only unsettled formats,
+material roles, constraints or autonomy in the shared intake round.
 
-Build the palette candidates from the colour source, show the comparison page
-and record the user's choice; on an explicitly autonomous request choose as
-`office:design` describes and say so. Install the pairing's fonts, then generate
-the base with `template_kit.py` to a new path for each requested format, with
-`--samples` for a second, sample copy to render.
+For a new identity follow `office:design`'s `references/art-direction.md` and
+v2 record contract: the existing declared format designers and reviewers prove
+native proposals before the gallery and explicit DESIGN.md selection. Use this
+entry's isolated bindings, or `/daodan:start`'s, without a nested workflow.
+Use accepted CONTENT.md or prepare its representative source-backed exemplar
+data with `office:content`;
+theme roles, supplied brief and actual brand values can supply real sample text
+without invented business claims; absent table/evidence jobs carry the record
+contract's explicit inapplicability reasons. Record unresolved sample gaps.
+Validate/load the selected record and its exact content identity/formats. Check
+actual palettes/fonts and record substitutions.
 
-Verify every generated file with `office:integrity`, render the sample copy with
-the format's engine where available (`office:deckcraft`, `office:wordcraft`)
-and inspect the renders. Deliver the `.potx` and `.dotx` bases, the sample
-renders, the palette by role with its contrast check, the fonts with their
-installation status and the kit report's layout-to-pattern map. Report any
-check that was unavailable as unverified.
+Because reusable templates are requested here, generate a new `.potx` and/or
+`.dotx` with the existing `template_kit.py`, selected compatible palette/font
+values and native layouts/styles, plus a separate `--samples` exemplar copy to
+render. Kit defaults cannot replace the accepted composition; verify any required
+layout/style adaptation through the native engine. Ordinary document/deck
+workflows may omit these separate bases. Reuse a binding supplied template
+rather than replacing it; add requested editable
+exemplars/reuse guidance only within scope.
+
+Verify each template with `office:integrity`; render and inspect actual samples
+through available `office:deckcraft`/`office:wordcraft`, preserving their runtime
+version/capability limits. Use the existing requested-format reviewers in `final`
+mode on the actual saved exemplars; prototype approval does not review the final
+base/exemplar combination. Deliver requested bases, exemplars/renders, DESIGN.md,
+contrast/font evidence and the kit report's layout/style map. A preview or package
+check does not prove native application fidelity; report unavailable checks.

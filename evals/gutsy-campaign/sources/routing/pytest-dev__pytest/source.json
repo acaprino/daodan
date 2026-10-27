@@ -1,0 +1,35 @@
+{
+  "repository": "pytest-dev/pytest",
+  "source_path": "src/_pytest/pathlib.py",
+  "revision": "41d12cdbb4a35a7877768d93d8dc50a9117a8d8c",
+  "source_url": "https://github.com/pytest-dev/pytest/blob/41d12cdbb4a35a7877768d93d8dc50a9117a8d8c/src/_pytest/pathlib.py",
+  "artifact_sha256": "514a634ce07ff8f773e5951b47cd321e18699b8616ec8cc3a5bf6978615e3655",
+  "license": "MIT",
+  "license_url": "https://github.com/pytest-dev/pytest/blob/41d12cdbb4a35a7877768d93d8dc50a9117a8d8c/LICENSE",
+  "license_sha256": "ca836a5f9ecca3b2f350230faa20a48fb8b145653b5568d784862df864706b9b",
+  "license_text": "The MIT License (MIT)\n\nCopyright (c) 2004 Holger Krekel and others\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
+  "functions": [
+    {
+      "name": "_chmod_rwx",
+      "start_line": 73,
+      "end_line": 97,
+      "snippet": "def _chmod_rwx(p: str) -> bool:\n    \"\"\"Grant owner sufficient permissions for deletion.\n\n    Directories get ``S_IRWXU`` (read+write+exec for traversal).\n    Regular files get ``S_IRUSR | S_IWUSR`` only, to avoid making\n    non-executable files executable as a side effect.\n\n    Returns True if permissions were actually changed, False if they were\n    already sufficient or couldn't be changed.\n    \"\"\"\n    try:\n        old_mode = os.stat(p).st_mode\n    except OSError:\n        # Path may have been removed concurrently, or be inaccessible.\n        return False\n    perm_mode = stat.S_IMODE(old_mode)\n    bits = stat.S_IRWXU if stat.S_ISDIR(old_mode) else stat.S_IRUSR | stat.S_IWUSR\n    new_mode = perm_mode | bits\n    if perm_mode == new_mode:\n        return False\n    try:\n        os.chmod(p, new_mode)\n    except OSError:\n        return False\n    return True",
+      "sha256": "dc874f8ed5e4c796ef89c9207188ce0604cda7c6dbcd59cc4cf424310c932fc1"
+    },
+    {
+      "name": "ensure_extended_length_path",
+      "start_line": 175,
+      "end_line": 190,
+      "snippet": "def ensure_extended_length_path(path: Path) -> Path:\n    \"\"\"Get the extended-length version of a path (Windows).\n\n    On Windows, by default, the maximum length of a path (MAX_PATH) is 260\n    characters, and operations on paths longer than that fail. But it is possible\n    to overcome this by converting the path to \"extended-length\" form before\n    performing the operation:\n    https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation\n\n    On Windows, this function returns the extended-length absolute version of path.\n    On other platforms it returns path unchanged.\n    \"\"\"\n    if sys.platform.startswith(\"win32\"):\n        path = path.resolve()\n        path = Path(get_extended_length_path_str(str(path)))\n    return path",
+      "sha256": "055224e36b5d8949c6504225bda78d3c9ffe5c9ae32e31ea53719ee84202a82c"
+    },
+    {
+      "name": "get_extended_length_path_str",
+      "start_line": 193,
+      "end_line": 202,
+      "snippet": "def get_extended_length_path_str(path: str) -> str:\n    \"\"\"Convert a path to a Windows extended length path.\"\"\"\n    long_path_prefix = \"\\\\\\\\?\\\\\"\n    unc_long_path_prefix = \"\\\\\\\\?\\\\UNC\\\\\"\n    if path.startswith((long_path_prefix, unc_long_path_prefix)):\n        return path\n    # UNC\n    if path.startswith(\"\\\\\\\\\"):\n        return unc_long_path_prefix + path[2:]\n    return long_path_prefix + path",
+      "sha256": "a9fa2ee30e8a1cd3ac48d08e6b3d36e7e4ae3e81b6d7638cca9accba8c47a305"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

@@ -4,11 +4,12 @@
     "claude-plugins-official",
     "impeccable",
     "mattpocock",
+    "taste-skill",
     "ui-ux-pro-max-skill"
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.2.0"
+    "version": "42.5.0"
   },
   "name": "daodan",
   "owner": {
@@ -243,7 +244,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "2.4.1"
+      "version": "2.5.1"
     },
     {
       "author": {
@@ -509,12 +510,14 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "work-controller"
+        "work-controller",
+        "taste-skill@taste-skill"
       ],
-      "description": "Design editable Word documents and presentations from one intake and one shared design method (direction, ad hoc contrast-safe palette chosen in the browser, downloaded and embedded fonts, argument mode); construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
+      "description": "Design editable Word documents and presentations from one intake, a validated shared editorial record and an ad hoc visual system compared on real content; construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
       "license": "MIT",
       "name": "office",
       "skills": [
+        "./skills/content",
         "./skills/deckcraft",
         "./skills/design",
         "./skills/docx",
@@ -526,7 +529,7 @@
         "./skills/xlsx"
       ],
       "source": "./exports/claude/plugins/office",
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "agents": [
@@ -595,6 +598,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
+        "research",
         "model-routing",
         "work-controller",
         "worktree-manager",
@@ -622,13 +626,14 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/claude/plugins/project-delivery",
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "agents": [
         "./agents/codebase-explorer.md",
         "./agents/doc-humanizer.md",
         "./agents/documentation-engineer.md",
+        "./agents/documentation-organizer.md",
         "./agents/flow-writer.md",
         "./agents/guide-reviewer.md",
         "./agents/instructions-auditor.md",
@@ -641,6 +646,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
+        "research",
         "work-controller",
         "codebase-map",
         "text-humanizer",
@@ -656,7 +662,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/claude/plugins/project-knowledge",
-      "version": "3.0.1"
+      "version": "3.2.0"
     },
     {
       "author": {
@@ -830,17 +836,23 @@
         "name": "Alfio Caprino"
       },
       "commands": [
-        "./commands/team-research.md"
+        "./commands/science-mode.md",
+        "./commands/science-research.md",
+        "./commands/team-research.md",
+        "./commands/update-research.md"
       ],
-      "dependencies": [],
-      "description": "Deep web research (any topic) modelled on the commercial deep-research products: /research:team-research clarifies scope only when needed, shows a plan of sub-questions for approval, spawns one iterative deep-researcher per sub-question in parallel, verifies contradictions with quick-searcher, synthesizes a long-form cited report and writes it to disk; tiers quick/standard/deep scale effort; optional serper.dev backend via websearch.py when SERPER_API_KEY is set, native WebSearch otherwise. quick-searcher (sonnet) also answers single-fact lookups directly",
+      "dependencies": [
+        "work-controller"
+      ],
+      "description": "Scientific project research with traceable papers, empirical protocols, immutable revision history and Science Mode; deep web research and quick source lookups remain available.",
       "license": "MIT",
       "name": "research",
       "skills": [
+        "./skills/science-based-approach",
         "./skills/web-search-techniques"
       ],
       "source": "./exports/claude/plugins/research",
-      "version": "6.2.6"
+      "version": "7.0.0"
     },
     {
       "agents": [

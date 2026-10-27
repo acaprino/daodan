@@ -1,18 +1,18 @@
 schema = "daodan/v1"
 name = "project-knowledge"
-version = "3.0.1"
+version = "3.2.0"
 description = "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle."
 license = "MIT"
 
 [capabilities]
-required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
+required = ["network.fetch", "repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
 optional = ["execution.parallel"]
 
 [dependencies]
-required = ["work-controller", "codebase-map", "text-humanizer", "senior-review", "report-rendering"]
+required = ["research", "work-controller", "codebase-map", "text-humanizer", "senior-review", "report-rendering"]
 
 [components]
 skills = ["project-knowledge", "instructions-method", "readme-craft"]
-roles = ["codebase-explorer", "doc-humanizer", "documentation-engineer", "flow-writer", "guide-reviewer", "instructions-auditor", "onboarding-writer", "ops-writer", "overview-writer", "tech-writer"]
+roles = ["codebase-explorer", "doc-humanizer", "documentation-engineer", "documentation-organizer", "flow-writer", "guide-reviewer", "instructions-auditor", "onboarding-writer", "ops-writer", "overview-writer", "tech-writer"]
 workflows = []
 policies = []

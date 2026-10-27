@@ -1,7 +1,7 @@
 # Brainstorm
 
 Explore an idea with the user before a task exists. It reads the project,
-writes no code, record or plan; its `brainstorm` run holds the conversation.
+writes no code, decision record or implementation plan; its `brainstorm` run holds the conversation. Scientific publication follows the bounded exception below.
 
 ## Ground first
 
@@ -13,6 +13,7 @@ writes no code, record or plan; its `brainstorm` run holds the conversation.
    active records are constraints, and a record the idea contradicts is said
    at once.
 3. Read what the project's instructions say about the area.
+4. Load `research:science-based-approach`, automatic checkpoint entry, before comparing alternatives. Reuse the caller's context and run. Read mode first; OFF skips scientific archive/network work. Read-only brainstorming keeps results in the authorized run or chat. Research publication under its canonical docs destination is permitted only when the caller already grants documented research; it does not authorize product edits or a second interview.
 
 ## Talk
 
@@ -31,5 +32,5 @@ gives a concept a second owner.
 - **Keep it.** With the user's agreement, write
   `docs/ideas/<YYYY-MM-DD>-<slug>.md`: the idea, the code and records it
   touches, the alternatives with their costs, and the open questions. It is
-  the only project file a brainstorm writes.
-- **Drop it.** Nothing is written outside the run.
+  the idea document a brainstorm writes. The scientific-publication exception above remains bound to the caller's existing grants.
+- **Drop it.** Nothing further is written outside the run; preserve any scientific research already published within its grant.

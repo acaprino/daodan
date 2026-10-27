@@ -78,7 +78,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 Eighteen slide patterns for the fixed 16:9 canvas. Choose the pattern by the
 slide's communication job, and record the selected pattern and variation axis in
 the design report so the deck can be verified against its plan. Geometry, type
-scale and density caps come from `design-library.md`; editability and coordinate
+scale and density caps appear below; editability and coordinate
 rules come from `pptx-compatibility.md`.
 
 Common slots for every content pattern: `kicker` (optional), `headline`,
@@ -236,3 +236,44 @@ MIT; full license in `LICENSE-ppt-visual-MIT.txt`). The upstream's separate
 colour and font catalogs, image-library sourcing and foreign tools are not
 adopted: palette and pairing come from `office:design`. This is a pinned adapted
 snapshot with manual review on request.
+
+
+## Canvas geometry and typography scale
+
+Design for the fixed `16:9` widescreen canvas (`13.333 in x 7.5 in`, `1920 x 1080 px`)
+unless the brief, an existing deck or a corporate template specifies another ratio:
+
+1. **Margins and spacing**: keep at least `0.6 in` (`86 px`) left/right margin and
+   `0.5 in` (`72 px`) top/bottom margin. Leave at least `0.25 in` (`36 px`) gap
+   between cards, columns and chart containers. Keep at least 25% of each slide as
+   open background so content breathes.
+2. **Headline set by the argument mode**: in pyramid and narrative decks, state
+   each content slide's takeaway in one complete line or two short lines
+   (`26 to 34 pt` bold), never a vague topic label alone. Instructional, showcase
+   and briefing decks use their mode's headline at the same scale. Place a short
+   section kicker (`11 to 13 pt` uppercase or accent bold) above the headline
+   when helpful.
+3. **Readable body and data scale**:
+   - Cover title: `40 to 52 pt` bold; subtitle/context: `18 to 22 pt`.
+   - Card titles and table headers: `16 to 20 pt` bold.
+   - Body copy and table cells: `14 to 18 pt` regular (never below `13 pt`).
+   - Chart axis labels, data labels and footnotes: `11 to 13 pt` with high contrast.
+4. **Density caps**: at most 4 cards or text columns per slide, at most 5 bullets
+   or 6 lines inside any text box, and at most 7 nodes in a process or
+   architecture diagram. Repeated slots follow their pattern's range in
+   `layout-patterns.md` (for example 3 to 6 timeline periods, 4 to 7 table
+   rows). Split overloaded content across two slides rather than shrinking text.
+
+## Native composition and handoff
+
+Consume the content projection and assigned proposal or selected `DESIGN.md`
+under `office:design`'s `references/art-direction.md` mode contract. A provisional pattern
+from content is a suggestion; the presentation designer finalizes one pattern
+per slide, records a reason for a change and preserves claims, sequence and
+transformation permissions. Return editorial changes to the content owner.
+Vary composition to serve the actual content; adjacent repeated patterns need
+a content reason. Adapt catalog recipes to the brief and supported canvas.
+For each slide return the native slide-object specification from
+`pptx-compatibility.md`, with source associations and the shared record revisions.
+Map colors, fonts and engine tokens to that assigned design. Never substitute a
+direction's default seeds or claim unsupported effects.

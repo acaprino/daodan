@@ -130,6 +130,7 @@ Load owners by name, never by path.
 | Need | Load or dispatch |
 |---|---|
 | Static context, packets, run binding | `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst` for analysis |
+| Scientific grounding before substantive decisions | Load `research:science-based-approach`, automatic checkpoint entry; reuse the caller run and grants |
 | Decisions and record lifecycle | `project-delivery:adr-method` |
 | Root-cause investigation | `senior-review:investigation-method` |
 | Any review, `light` or `branch` | `senior-review:review-method`; `branch` through `senior-review:review-preparation` |

@@ -3,8 +3,9 @@
 `editorial-design` and `typography-and-layout` are modified source adaptations
 from [marcmarti9/agentit](https://github.com/marcmarti9/agentit), pinned to
 `fc38111622ac459ccf843234863bd0b8fcb6ebfd` (2026-10-23).
-The original source paths are `skills/design/references/editorial-design.md (formerly skills/editorial-design/SKILL.md` and
-`skills/design/references/typography.md (formerly skills/typography-and-layout/SKILL.md`. Agentit's Apache-2.0 terms are retained
+The pinned original source paths are `skills/editorial-design/SKILL.md` and
+`skills/typography-and-layout/SKILL.md`; Office stores their adaptations in
+`editorial-design.md` and `typography.md` here. Agentit's Apache-2.0 terms are retained
 in `LICENSE-APACHE-2.0.txt`. Office's own MIT license does not replace these terms.
 
 | Original file | SHA-256 of source before adaptation |

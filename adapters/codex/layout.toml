@@ -12,6 +12,8 @@ workflows = "skills/${workflow}-workflow/SKILL.md"
 # called `brand-naming` would otherwise register two skills under one name.
 workflow_name = "${workflow}-workflow"
 team_workflow_template = "subagent-workflow.SKILL.md.tmpl"
+hook_events = "session-start:SessionStart,user-prompt-submit:UserPromptSubmit"
+hook_root_environment = "PLUGIN_ROOT,CLAUDE_PLUGIN_ROOT"
 
 # Codex hands PLUGIN_ROOT to hook commands only; a skill body gets no variable,
 # so the reference is a marker the agent resolves once from where it loaded the

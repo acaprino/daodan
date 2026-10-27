@@ -103,7 +103,7 @@ prove neither token savings nor preserved effectiveness. Dispatch of one shared
 worker type cannot satisfy a different method binding or scope.
 
 Existing cases and the 22 October smoke runs are evidence to inspect, not
-qualification of new leaves. The [T0 migration findings](../../docs/superpowers/reports/2026-10-23-reviewer-specialist-migration.md)
+qualification of new leaves. The T0 migration findings
 identify two setups needing correction before affected scores count:
 
 - `synthetic-payment-double-insert`, bug 3: the shown retry encounters the

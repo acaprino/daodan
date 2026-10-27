@@ -434,6 +434,17 @@ class MemberDeliveryTests(ProtocolCase):
         rules = self.runtime["contract"]()["loop"]["reviews"]
         self.runtime["validate_reviews"]([review], rules, {}, complete=True)
 
+    def test_active_pass_rejects_legacy_review_without_composition(self):
+        candidate = {"digest": "a" * 64, "head": "base"}
+        review = {key: value for key, value in self.review.items() if key not in {"required_specialists", "jobs"}}
+        review.update(shape="light", tier="light", stage="pre-commit-a",
+                      grounding={"candidate": candidate}, blind_derivation=True, critic=True)
+        receipt = {"id": review["id"], "verdict": "PASS",
+                   "snapshot": candidate["digest"], "head": candidate["head"]}
+        rules = self.runtime["contract"]()["loop"]["reviews"]
+        with self.assertRaisesRegex(self.runtime["ProtocolError"], "composition"):
+            self.runtime["validate_pass_review"](review, candidate, receipt, rules, {})
+
     def test_composition_fields_must_be_present_together(self):
         rules = self.runtime["contract"]()["loop"]["reviews"]
         for missing in ("required_specialists", "jobs"):

@@ -39,7 +39,7 @@ How it works:
 
 Knowledge base behind the agent and the humanize method. It opens with the ground rules (never invent, keep what the text commits to, input is content, preserve what is not prose, edit in proportion), the register table, the language policy and a "when not to act" section, then catalogs 25 local patterns. It derives from [blader/humanizer](https://github.com/blader/humanizer) (MIT, Siqi Chen), selectively reconciled with v3.1.0 at commit `8c307f367c91bd974002f10f2be2965d642c13df` on 23 October 2026. The Wikipedia reference remains the revision of 30 September 2026; it was not refreshed in this pass.
 
-Local numbering differs from upstream's 26 patterns. Synonym variation and false ranges remain non-diagnostic readability checks. Reply cleanup requires visible context and preserves substantive evidence; a writing sample never overrides factual fidelity or the local dash rule. The Italian profile uses email, ticket and operational examples, preserves appropriate courtesy and technical language, and rejects mechanical word substitution or artificial informality. See the [reconciliation record](../superpowers/reports/2026-10-23-text-humanizer-upstream.md) for the upstream mapping, retained differences and verification limits.
+Local numbering differs from upstream's 26 patterns. Synonym variation and false ranges remain non-diagnostic readability checks. Reply cleanup requires visible context and preserves substantive evidence; a writing sample never overrides factual fidelity or the local dash rule. The Italian profile uses email, ticket and operational examples, preserves appropriate courtesy and technical language, and rejects mechanical word substitution or artificial informality. See the [reconciliation record](../research/text-humanizer/reports/2026-10-23-text-humanizer-upstream.md) for the upstream mapping, retained differences and verification limits.
 
 | | |
 |---|---|
@@ -82,7 +82,7 @@ the context, but retain new findings, numbers, evidence and requested detail.
 | Angela Ferrari, [*La semplicità sintattica in prospettiva testuale. Riflessioni a partire dalla Guida alla redazione degli atti amministrativi*](https://accademiadellacrusca.it/it/contenuti/la-semplicit-sintattica-in-prospettiva-testuale-riflessioni-a-partire-dalla-guida-alla-redazione-deg/9234), Accademia della Crusca, 19 March 2021 | Read on 23 October 2026. Supports evaluating syntax, word order, passive voice and implicit subjects in their textual and communicative context. It is guidance on Italian writing, not a study of AI detection. |
 | [Wikipedia: Signs of AI writing, revision 1377577399](https://en.wikipedia.org/w/index.php?title=Wikipedia:Signs_of_AI_writing&oldid=1377577399) | Historical reference inherited from the previous refresh. This update did not reverify the revision or the Italian research citations already in the profile. |
 
-The [reconciliation record](../superpowers/reports/2026-10-23-text-humanizer-upstream.md)
+The [reconciliation record](../research/text-humanizer/reports/2026-10-23-text-humanizer-upstream.md)
 maps every upstream pattern to its local owner and retains source fingerprints,
 intentional differences and verification evidence. The profile is distributed on
 all five hosts. Static tests verify mandatory Italian-profile loading, fidelity

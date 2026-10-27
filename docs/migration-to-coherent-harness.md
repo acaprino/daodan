@@ -79,7 +79,7 @@ filesystem free-space changes are different measurements.
 
 Review installed-host compatibility separately from compiler/package checks.
 See the [architecture](superpowers/specs/2026-10-07-daodan-coherent-harness-design.md)
-and [validation record](superpowers/reports/2026-10-07-daodan-harness-validation.md).
+and the harness validation records.
 
 ## Marketplace 32: scope-aware knowledge
 

@@ -103,10 +103,17 @@ def _family(text):
 
 
 def load_pairing(number):
+    # The catalog table is read by its header, so a column added for human
+    # readers does not shift the columns this kit depends on.
+    columns = None
     for line in PAIRINGS.read_text(encoding="utf-8").splitlines():
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if len(cells) == 7 and cells[0] == str(number):
-            heading, body, fallback = cells[3], cells[4], cells[6]
+        if cells[:1] == ["#"]:
+            columns = {name: index for index, name in enumerate(cells)}
+            continue
+        if columns and cells[0] == str(number) and len(cells) == len(columns):
+            heading, body = cells[columns["Headings"]], cells[columns["Body"]]
+            fallback = cells[columns["Office fallback (headings / body)"]]
             weight = int(re.search(r"\b(\d{3})\b", heading).group(1))
             heading_fallback, _, body_fallback = fallback.partition("/")
             return {

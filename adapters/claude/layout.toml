@@ -7,6 +7,8 @@ skills = "skills/${skill}/SKILL.md"
 roles = "agents/${role}.md"
 workflows = "commands/${workflow}.md"
 team_workflow_template = "team-workflow.md.tmpl"
+hook_events = "session-start:SessionStart,user-prompt-submit:UserPromptSubmit"
+hook_root_environment = "CLAUDE_PLUGIN_ROOT"
 
 # The kernel writes Claude's own placeholders, so each maps onto itself and no
 # note is needed. A workflow that does not fan out is the kernel file verbatim.

@@ -5,6 +5,8 @@ For Git investigations, apply `references/preflight.md`; load
 Identify uncommitted input before workspace selection: HEAD omits it.
 Explanations/status requests create no worktree.
 
+Load `research:science-based-approach` and compose its automatic checkpoint when scientific or empirical uncertainty can change the diagnosis. Reuse the investigation run and permissions; without a publication grant keep scientific findings in that run/chat.
+
 Load `senior-review:investigation-method`. Preserve observed facts, map/search
 perimeter, independent hypotheses, reproduction and verdict. Write no product
 code; hypotheses never become requirements.

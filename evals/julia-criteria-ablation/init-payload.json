@@ -1,0 +1,80 @@
+{
+  "operation": "evaluation",
+  "objective": "Measure descriptive versus literal Boolean criteria on fresh synthetic compaction scenarios using pinned Julia and actual fast-jev on local CPU.",
+  "scope": {
+    "paths": [
+      "evals/julia-criteria-ablation",
+      "docs/gutsay/julia-criteria-ablation-2026-10-27.md"
+    ],
+    "excluded": [
+      "all prior runs and reports",
+      "plugins",
+      "exports",
+      "docs/superpowers"
+    ]
+  },
+  "authorizations": {
+    "source": "User: ok fallo, following explicit proposal to compare descriptive criteria on new cases and preserve the prior pilot.",
+    "local_cpu_inference": true,
+    "evaluation_edits": true,
+    "training": false,
+    "remote_paid_runs": false,
+    "commit": false,
+    "push": false
+  },
+  "budget": {
+    "max_inference_seconds": 600,
+    "per_request_seconds": 45,
+    "max_questions": 136,
+    "threads": 4,
+    "batch_size": 1,
+    "hard_process_rss_bytes": 2147483648,
+    "target_process_rss_bytes": 1073741824,
+    "cloud_usd": 0
+  },
+  "phases": {
+    "prepare": {
+      "status": "in_progress"
+    },
+    "execute": {
+      "status": "pending"
+    },
+    "report": {
+      "status": "pending"
+    }
+  },
+  "deliveries": {
+    "preflight": {
+      "status": "pending",
+      "output": "preflight-review.md"
+    },
+    "execution": {
+      "status": "pending",
+      "output": "execution/resources.json"
+    },
+    "review": {
+      "status": "pending",
+      "output": "results-review.md"
+    }
+  },
+  "required_gates": [
+    "preflight",
+    "identity",
+    "execution-accounting",
+    "results-review"
+  ],
+  "plan": [
+    {
+      "id": "prepare",
+      "action": "Freeze and independently review fresh cases, paired protocol, hashes and CPU guard."
+    },
+    {
+      "id": "execute",
+      "action": "Run the two frozen variants once under local CPU limits."
+    },
+    {
+      "id": "report",
+      "action": "Replay actual fast-jev, independently verify findings and publish the scoped report."
+    }
+  ]
+}

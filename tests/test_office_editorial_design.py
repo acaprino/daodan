@@ -6,10 +6,8 @@ host has consulted a skill or that a document has been visually verified.
 
 import fnmatch
 import json
-import os
 import re
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -19,12 +17,10 @@ for import_root in (REPO_ROOT, REPO_ROOT / "tests"):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
-from scripts.daodan.adapter import HOSTS, load_adapter
 from scripts.daodan.catalogs import render_catalog
-from scripts.daodan.load import load_plugin
-from scripts.daodan.render import render_plugin
 from host_binding_assertions import canonical_markdown, loaded_instruction_text, without_host_binding
 import office_entries
+from test_office_unified_contract import use_published_office
 
 
 OFFICE = REPO_ROOT / "plugins/office"
@@ -60,24 +56,18 @@ def _read(path):
     return Path(path).read_text(encoding="utf-8")
 
 
+def _normalized(text):
+    return " ".join(text.split())
+
+
 class EditorialDesignContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.plugin = load_plugin(OFFICE)
-        cls.temporary = tempfile.TemporaryDirectory(dir=str(REPO_ROOT) if os.name == "nt" else None)
-        cls.packages = {}
-        cls.adapters = {}
-        cls.entries = office_entries.render_entries(cls.temporary.name, ("document",))
-        for host in HOSTS:
-            adapter = load_adapter(ADAPTERS, host)
-            package = Path(cls.temporary.name) / host / "office"
-            render_plugin(cls.plugin, adapter, package, adapters_root=ADAPTERS)
-            cls.packages[host] = package
-            cls.adapters[host] = adapter
+        use_published_office(cls)
 
     @classmethod
     def tearDownClass(cls):
-        cls.temporary.cleanup()
+        """The shared publisher cleans its immutable packages at process exit."""
 
     def assert_skill_loads(self, text, skills=DESIGN_SKILLS):
         for skill in skills:
@@ -222,8 +212,8 @@ class EditorialDesignContractTests(unittest.TestCase):
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 skill = _read(package / "skills/design/SKILL.md")
-                for phrase in ("palette.py\" candidates", "palette_preview.py\"", "ask which number to use",
-                               "from-image", "from-url", "from-css", "from-file", "default seeds",
+                for phrase in ("palette.py\" candidates", "palette_preview.py\"", "design_compare.py\"",
+                               "from-image", "from-url", "from-css", "from-file", "cannot record a choice",
                                "font_fetch.py\" install", "font_embed.py\" embed", "brand or template always wins"):
                     self.assertIn(phrase, skill)
                 self.assertNotIn("office:theme-factory", skill)
@@ -237,6 +227,43 @@ class EditorialDesignContractTests(unittest.TestCase):
                 self.assertIn("anthropics/skills", attribution)
                 self.assertRegex(attribution, r"\b[0-9a-f]{40}\b")
                 self.assertIn("Apache", _read(package / THEME_LICENSE))
+
+    def test_taste_input_output_and_creative_review_have_one_canonical_owner(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                boundary = _normalized(_read(package / "skills/design/references/art-direction.md"))
+                for requirement in (
+                    "taste-skill:design-taste-frontend", "actual registered identity",
+                    "complete installed skill folder", "Load the skill once", "references/critique.md",
+                    "Settled operation", "Exact CONTENT project/revision", "complete units, sources, claims and locks",
+                    "Complete unselected `office/design/v1` payloads", "asset requests", "buildability gaps",
+                    "Taste does not change wording, claims, sequence, depth, transformation permissions, selection authority or native geometry",
+                    "do not run upstream intake", "Binding brand and Office accessibility, source and native requirements prevail",
+                    "contextual design hypotheses", "image quotas and numeric beauty scores are not Office gates",
+                    "actual hardest reading", "Anonymous composition or ignored visual requirements is a creative failure",
+                    "personal preference alone is advisory", "Missing proof or visual access is `blocked`",
+                    "Repair failed proposals before the v2 gallery and selection",
+                ):
+                    self.assertIn(requirement, boundary)
+                design = _normalized(_read(package / "skills/design/SKILL.md"))
+                self.assertIn("references/art-direction.md", design)
+                self.assertIn("office/design-candidates/v2", design)
+                self.assertIn("V1 is a limited theme sampler", design)
+                for name in ("editorial-design.md", "typography.md"):
+                    guidance = _normalized(_read(package / "skills/design/references" / name))
+                    self.assertIn("art-direction.md", guidance)
+
+    def test_font_catalog_is_optional_without_losing_actual_font_verification(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                pairings = _normalized(_read(package / "skills/design/references/font-pairings.md"))
+                self.assertIn("optional resources", pairings)
+                self.assertIn("assigned candidate remain authoritative", pairings)
+                self.assertIn("a seed, not a required font choice", pairings)
+                self.assertIn("actual selected families, weights, glyphs, licenses and recipient fallbacks", pairings)
+                self.assertIn("including fonts outside this catalog", pairings)
+                self.assertNotRegex(pairings, r"(?i)(?:always|only|must).{0,35}(?:24\s*pt|catalog.{0,15}weights)")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AbstractSet, Mapping, Sequence
 
-from .model import INLINE_WORKER_REFERENCE, PluginSpec
+from .model import HOOK_EVENTS, INLINE_WORKER_REFERENCE, PluginSpec
 
 KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -44,6 +44,7 @@ CAPABILITY_REGISTRY: frozenset[str] = frozenset(
 #: so that a host with no way to start the server fails the build instead of
 #: shipping a workflow whose tool calls can never connect.
 MCP_CAPABILITY = "mcp.servers"
+HOOK_CAPABILITY = "hooks.lifecycle"
 
 #: The only prefix an MCP server argument may use to name a shipped file: the
 #: compiler copies every file under a declared skill and nothing else at the
@@ -493,6 +494,73 @@ def validate_execution_contracts(plugin: PluginSpec) -> list[ValidationIssue]:
     return issues
 
 
+def native_hook_frontmatter(text: str) -> bool:
+    """Find executable hook fields in frontmatter, excluding body examples."""
+    normalized = text.replace("\r\n", "\n").lstrip("\ufeff")
+    if not normalized.startswith("---\n"):
+        return False
+    end = normalized.find("\n---", 4)
+    if end == -1:
+        return False
+    return bool(re.search(r'''(?m)^(?:["']?hooks["']?\s*:|\{\s*["']?hooks["']?\s*:)''',
+                          normalized[4:end]))
+
+
+def validate_hooks(plugin: PluginSpec) -> list[ValidationIssue]:
+    """Require declared callbacks, confined shipped scripts and explicit capability."""
+    issues: list[ValidationIssue] = []
+    manifest = plugin.root / "plugin.toml"
+    declared = HOOK_CAPABILITY in (*plugin.capabilities.required, *plugin.capabilities.optional)
+    if plugin.hooks and not declared:
+        issues.append(ValidationIssue("hook-capability-undeclared", manifest, HOOK_CAPABILITY))
+    if declared and not plugin.hooks:
+        issues.append(ValidationIssue("hook-capability-without-hooks", manifest, HOOK_CAPABILITY))
+    seen: set[str] = set()
+    for hook in plugin.hooks:
+        if not KEBAB.fullmatch(hook.name):
+            issues.append(ValidationIssue("non-kebab-identity", manifest, f"hooks: {hook.name}"))
+        if hook.name in seen:
+            issues.append(ValidationIssue("duplicate-hook", manifest, hook.name))
+        seen.add(hook.name)
+        if hook.event not in HOOK_EVENTS:
+            issues.append(ValidationIssue("unknown-hook-event", manifest, hook.event))
+        if type(hook.timeout) is not int or not 1 <= hook.timeout <= 60:
+            issues.append(ValidationIssue("invalid-hook-timeout", manifest, hook.name))
+        script = hook.script.as_posix()
+        parts = hook.script.parts
+        if (_is_escaping(script) or ":" in script or "\\" in script
+                or any(ord(char) < 32 for char in script)):
+            issues.append(ValidationIssue("path-outside-plugin", manifest, script))
+            continue
+        if (len(parts) < 3 or parts[0] != "skills" or parts[1] not in plugin.components.skills
+                or hook.script.suffix != ".py"
+                or any(part.startswith(".") or part == "__pycache__" for part in parts)):
+            issues.append(ValidationIssue("hook-script-not-shipped", manifest, script))
+            continue
+        try:
+            confined_source(plugin.root, plugin.root / hook.script, allow_missing=True)
+        except SourcePathError as error:
+            issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
+            continue
+        if not (plugin.root / hook.script).is_file():
+            issues.append(ValidationIssue("hook-script-not-shipped", manifest, script))
+        if any("\0" in argument for argument in hook.args):
+            issues.append(ValidationIssue("invalid-hook-argument", manifest, hook.name))
+    return issues
+
+
+def validate_native_hook_sources(plugin: PluginSpec) -> list[ValidationIssue]:
+    """Native registrations must come from the neutral hook declarations."""
+    issues: list[ValidationIssue] = []
+    for path in source_members(plugin.root):
+        relative = path.relative_to(plugin.root)
+        if relative.as_posix() in {"hooks.json", "hooks/hooks.json"}:
+            issues.append(ValidationIssue("undeclared-native-hooks", path, "declare [[hooks]] in plugin.toml"))
+        if path.suffix == ".md" and native_hook_frontmatter(path.read_text(encoding="utf-8")):
+            issues.append(ValidationIssue("undeclared-native-hooks", path, "frontmatter hooks bypass the neutral control plane"))
+    return issues
+
+
 def validate_mcp_servers(plugin: PluginSpec) -> list[ValidationIssue]:
     """An MCP server is a capability the host must supply and a file the package must ship.
 
@@ -616,6 +684,8 @@ def validate_plugins(
         issues.extend(validate_contract_exports(plugin, registry))
         issues.extend(validate_capabilities(plugin, capabilities))
         issues.extend(validate_mcp_servers(plugin))
+        issues.extend(validate_hooks(plugin))
+        issues.extend(validate_native_hook_sources(plugin))
         issues.extend(validate_workflow_graph(plugin))
         issues.extend(validate_execution_contracts(plugin))
     return issues

@@ -1,6 +1,6 @@
 ---
 name: start
-description: 'One entry for any Office request: read the inputs, work out what the user wants (a theme, a new deck, document or workbook, an edit, expansion, revision or restyle of an existing file, a check or a repair), map the decisions, ask once and run the right workflows in order. TRIGGER WHEN: an Office request does not name one format workflow, combines several deliverables, or starts from files, websites or notes whose use is not yet clear.'
+description: 'Route any Office request from one intake into the requested document, deck, workbook, theme, verification or repair methods with shared content/design.'
 argument-hint: '<what you want, with any files, URLs or notes>'
 ---
 

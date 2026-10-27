@@ -1,7 +1,7 @@
 # Specialist cases and leaf template
 
 Authoring and qualification use the [manual evaluation protocol](README.md#specialist-qualification).
-The [T0 migration matrix](../../docs/superpowers/reports/2026-10-23-reviewer-specialist-migration.md)
+The T0 migration matrix
 maps source controls to proposed owners and cases. Its rows are not independent
 tests or reviewer registrations. One fixture may cover several controls when
 each mechanism and countercase remains independently observable.

@@ -391,7 +391,7 @@ Review each host against its adapter and runtime evidence:
 | Pi | Role skills and prompt identities, `pi-subagents` isolation, core tool/input schema, `pi-mcp-adapter`, questions and capture lifecycle |
 | OpenCode V2 | Registered qualified skill/agent/command IDs, native `subagent`/`shell`/`question` schemas, permission actions, registered references and dependency recovery |
 
-The [2026-10-11 compatibility audit](superpowers/reports/2026-10-11-host-export-compatibility.md)
+The 2026-10-11 operational compatibility audit
 records the pre-fix shared and host-specific defects and separately describes
 the 32.10.0 source/rendering corrections and their compiler checks. Those checks
 do not establish live runtime repair on every host. Historical successful fixture
@@ -437,7 +437,7 @@ and fails when that source changes.
 Compiler tests prove rendering, registration, confinement helpers and parity.
 [Historical host probes](../tests/host-probes/README.md) describe the fixtures they
 measured; they do not establish installed-host behavior for the redesigned
-lifecycle. Consult the [validation report](superpowers/reports/2026-10-07-daodan-harness-validation.md)
+lifecycle. Consult the 2026-10-07 validation report
 for the measured release evidence and its limits.
 
 ## Available knowledge inventory
@@ -454,3 +454,18 @@ reviewed owner classification exists. No automatic install or home/cache crawl i
 performed. Selection is read-only, snapshot-bound and accounted for per worker in
 the same review ledger. Python 3.11+ is required for the stdlib helper. Compiler and
 fixture tests validate the port; they do not constitute installed-host runtime probes.
+
+## Scientific lifecycle hooks
+
+The research kernel declares optional session-start and user-prompt-submit hooks.
+The compiler generates `hooks/hooks.json` for Claude and Codex, referring to the
+Python helper bundled under the skill. Enabling the plugin makes registration
+discoverable; the host retains its trust controls before execution. No global
+settings are edited. Python must be available as `python` to the host process.
+
+Copilot, Pi and OpenCode exports retain the explicit scientific checkpoints in
+Daodan methods; they declare no native interception for this feature. A callback
+only emits routing context after reading Science Mode. It performs no research
+or publication. See the [technical contract](plugins/research/technical-spec.md)
+and [validation evidence](plugins/research/validation.md) for the distinction
+between generated registration, subprocess tests and installed-host delivery.

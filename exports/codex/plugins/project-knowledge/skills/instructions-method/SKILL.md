@@ -149,6 +149,18 @@ without evidence of the actual guard in the relevant environment.
 Run status, task lists, temporary paths and one-run results stay in the operational
 record, never in durable instructions.
 
+## Scientific knowledge pointer
+
+When a project adopts scientific research and instruction changes are authorized,
+keep a concise durable pointer to `docs/research/README.md` and
+`research:science-based-approach` in its canonical instruction file. Explain that
+mode is read at runtime, relevant evidence is revision-qualified and limits stay
+visible. Require existing related Markdown to be searched before new research;
+returning topics update the same file with timestamps, visible supersession and
+descriptive changelog, retaining history separately. Preserve unrelated
+instructions and apply the project's synchronization
+rule. Never persist the current ON/OFF state, check date or run progress here.
+
 ## Loop block
 
 A project driven by the lifecycle loop carries one bounded block in its

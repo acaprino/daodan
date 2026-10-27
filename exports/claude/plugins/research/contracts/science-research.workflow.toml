@@ -1,0 +1,13 @@
+name = "science-research"
+entrypoint = "science-research.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:science-research-result"]
+
+[contract]
+inputs = ["repository", "user-request"]
+outcomes = ["science-research-completed"]
+artifacts = ["science-research-result"]
+shared_schemas = ["work-controller/contracts/work.toml"]

@@ -2,6 +2,37 @@
 
 Word, PowerPoint and Excel file design, creation, editing and verification.
 
+## Documentazione Office
+
+Office realizza e verifica file Word, PowerPoint ed Excel modificabili. Parti
+dalla funzione che ti serve o da un esempio d'uso; le pagine di manutenzione
+raccolgono separatamente struttura, contributi esterni e licenze.
+
+### Usare il plugin
+
+| Pagina | Trovi qui |
+|---|---|
+| [Funzioni e ingressi](office/functions.md) | Che cosa puoi chiedere e quale ingresso scegliere |
+| [Esempi d'uso](office/examples.md) | Richieste complete, materiali, file attesi e controlli del risultato |
+| [Intake del lavoro e percorso](office/workflow.md) | Brief, contenuto, design, composizione e consegna |
+| [Dipendenze e runtime](office/dependencies.md) | Prerequisiti, capacità dell'host e recupero delle dipendenze mancanti |
+| [Verifiche e limiti](office/verification.md) | Cosa provano record, inspector, render, test e benchmark |
+
+### Mantenere il plugin
+
+| Pagina | Trovi qui |
+|---|---|
+| [Struttura e responsabilità](office/structure.md) | Kernel, skill, ruoli, contratti e confini fra formati |
+| [Intake di componenti esterni](office/upstream-intake.md) | Valutazione di una nuova capacità, perimetro e condizioni di adozione |
+| [Aggiornamenti upstream](office/upstream-updates.md) | Revisione dei contributi già registrati e preservazione del metodo locale |
+| [Fonti e licenze](office/licenses.md) | Provenienza, termini conservati, runtime, font e asset |
+
+Le pagine descrivono i contratti presenti nelle fonti. Gli esempi sono
+illustrativi e le verifiche non eseguite restano esplicite. L'inventario dei
+componenti e delle dipendenze rimane nel riferimento generato in fondo.
+
+## Install Office
+
 **Install:** `daodan@daodan` includes Office. Select `office@daodan` alone for its
 methods and roles; the seven command entries belong to `daodan@daodan`.
 
@@ -9,8 +40,8 @@ methods and roles; the seven command entries belong to `daodan@daodan`.
 |---|---|
 | **Entries** | `/daodan:start`, `/daodan:presentation`, `/daodan:document`, `/daodan:workbook`, `/daodan:verify`, `/daodan:fix`, `/daodan:theme` |
 | **Roles** | office:content-strategist, office:presentation-designer, office:presentation-reviewer, office:document-designer, office:document-reviewer |
-| **Skills** | office:intake, office:design, office:pptx, office:deckcraft, office:wordcraft, office:gridcraft, office:xlsx, office:docx, office:integrity |
-| **Dependencies** | work-controller |
+| **Skills** | office:intake, office:content, office:design, office:pptx, office:deckcraft, office:wordcraft, office:gridcraft, office:xlsx, office:docx, office:integrity |
+| **Dependencies** | work-controller, taste-skill@taste-skill |
 
 Command examples and named tools in this guide use Claude notation. For other
 hosts, use the entry points and bindings in the source-derived reference below
@@ -18,8 +49,8 @@ and [host setup](../hosts.md).
 
 ## What the plugin does
 
-Design editable Word documents and presentations from one intake and one shared
-design method; construct and revise PPTX through DeckCraft, DOCX through WordCraft,
+Design editable Word documents and presentations from one intake, a shared
+editorial record and an ad hoc visual identity; construct and revise PPTX through DeckCraft, DOCX through WordCraft,
 and XLSX through GridCraft; verify and repair any of them with static integrity rules.
 
 Use `/daodan:start` for a request that combines formats or starts with files,
@@ -32,6 +63,22 @@ Office owns the methods, helpers and specialist roles. The `daodan` entry plugin
 loads them through its required local dependency; Office declares no workflow
 entries of its own. The kernel retains its subtree history from `acaprino/mukade`
 and is maintained here as part of Daodan.
+
+`office:content` binds sources, claims, permitted transformations and requested
+DOCX/PPTX projections in `CONTENT.md`. `office:design` compares two or three
+complete visual proposals using required Taste v2 knowledge within the existing
+Office workflow. Format designers, native producers and reviewers first prove
+the same representative real content in saved DOCX/PPTX specimens. A self-contained
+HTML gallery shows those exact native renders. Explicit user or authorized autonomous
+selection produces `DESIGN.md`. A combined delivery reuses both records.
+
+Format designers own final composition through parallel `structure.md` and
+`layout-patterns.md` references. Native styles/themes apply the accepted design;
+separate DOTX/POTX files are optional unless reusable templates are requested.
+Existing palette, font, template and inspection tools remain in their owners.
+Local edits and read-only operations inherit accepted decisions. See the
+[source and license index](../../plugins/office/README.md) for retained pins and
+terms and the [Taste input/output boundary](../../plugins/office/skills/design/references/art-direction.md).
 
 ## Runtime requirements and evidence
 
@@ -55,7 +102,7 @@ host executing an Office workflow.
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `3.1.0`. **Source:** [plugin.toml](<../../plugins/office/plugin.toml>).
+**Version:** `3.4.0`. **Source:** [plugin.toml](<../../plugins/office/plugin.toml>).
 
 ### Required dependencies
 
@@ -65,9 +112,9 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 | Requirement | Plugins |
 |---|---|
 | Direct local | [work-controller](<work-controller.md>) |
-| Direct external | None |
+| Direct external | `taste-skill@taste-skill` |
 | Local closure (2) | [office](<office.md>), [work-controller](<work-controller.md>) |
-| External closure (0) | None |
+| External closure (1) | `taste-skill@taste-skill` |
 
 External bundles are separate upstream installations, not copied local skills.
 See [host setup](<../hosts.md>) for selection and availability requirements.
@@ -84,8 +131,9 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `office:intake` | Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes; route a request that names no format to the right workflows. TRIGGER WHEN: an Office presentation, document or workbook task begins, or an Office request must be routed. DO NOT TRIGGER WHEN: a format method is already executing a resolved route. | [intake](<../../plugins/office/skills/intake/SKILL.md>) |
-| Skill | `office:design` | Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the user's colour source and chosen from candidates in the browser; editorial hierarchy, typography, and font fetching, installation and embedding. How a file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image. | [design](<../../plugins/office/skills/design/SKILL.md>) |
+| Skill | `office:intake` | Shared Office intake: inspect materials, settle operation, requested formats, editorial/visual decisions and phase-specific dependencies in one brief and question round. Route mixed or unspecified deliverables before format work. | [intake](<../../plugins/office/skills/intake/SKILL.md>) |
+| Skill | `office:content` | Shared editorial method for requested Word documents and PowerPoint decks: source and claim ledger, transformation permissions, logical sequence and format projections in a validated CONTENT.md. Use after Office intake; revisions inherit accepted decisions and local edits change only their scope. | [content](<../../plugins/office/skills/content/SKILL.md>) |
+| Skill | `office:design` | Design a shared visual identity for requested Office documents and decks: Taste art direction, real native proposal comparison, explicit DESIGN.md selection, semantic palette, typography, imagery and native theme handoff. Use when intake calls for a new look; revisions inherit accepted decisions. | [design](<../../plugins/office/skills/design/SKILL.md>) |
 | Skill | `office:pptx` | Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image. | [pptx](<../../plugins/office/skills/pptx/SKILL.md>) |
 | Skill | `office:deckcraft` | Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: only a spreadsheet or document is requested. | [deckcraft](<../../plugins/office/skills/deckcraft/SKILL.md>) |
 | Skill | `office:wordcraft` | Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed. | [wordcraft](<../../plugins/office/skills/wordcraft/SKILL.md>) |
@@ -93,10 +141,10 @@ The source links carry the complete instructions and accepted arguments.
 | Skill | `office:xlsx` | Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use /daodan:presentation). | [xlsx](<../../plugins/office/skills/xlsx/SKILL.md>) |
 | Skill | `office:docx` | Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use /daodan:presentation). | [docx](<../../plugins/office/skills/docx/SKILL.md>) |
 | Skill | `office:integrity` | Verify the integrity of a Word, PowerPoint or Excel file with static rules, then repair what can be repaired on a separate candidate. TRIGGER WHEN: checking a DOCX, PPTX or XLSX for broken links, formula errors, missing alternative text, inconsistent formulas, empty placeholders or other defects, or fixing them. DO NOT TRIGGER WHEN: creating a new document, deck or workbook (use the office document, presentation or workbook workflows). | [integrity](<../../plugins/office/skills/integrity/SKILL.md>) |
-| Role | `office:content-strategist` | Plan what a presentation says from its sources: digest documents, research, notes and an existing deck into a claim ledger, set the slide budget, build the storyline and route each slide to a layout pattern. Return a content report and a plan JSON without designing or editing the deck. | [content-strategist](<../../plugins/office/roles/content-strategist.md>) |
-| Role | `office:presentation-designer` | Develop presentation art direction and slide composition from a supplied brief, sources and brand assets. Return design instructions and image requests without modifying the presentation. | [presentation-designer](<../../plugins/office/roles/presentation-designer.md>) |
+| Role | `office:content-strategist` | Build the shared editorial record for requested Word documents and PowerPoint decks: source/claim ledger, transformation permissions, logical sequence and full or delta native-format projections. Return assigned content artifacts without choosing visual identity, final composition or editing native files. | [content-strategist](<../../plugins/office/roles/content-strategist.md>) |
+| Role | `office:presentation-designer` | Compose native proposal or final slides from assigned content and visual records. Return native object geometry, justified patterns and image requests without rewriting editorial strategy or modifying the presentation. | [presentation-designer](<../../plugins/office/roles/presentation-designer.md>) |
 | Role | `office:presentation-reviewer` | Independently inspect presentation renders, source fidelity, native editability evidence and preservation deltas. Return a review bound to the exact candidate, or to the unchanged source deck on a read-only review, without editing it. | [presentation-reviewer](<../../plugins/office/roles/presentation-reviewer.md>) |
-| Role | `office:document-designer` | Design editable Word documents from a supplied brief and shared theme. Return page layouts, reusable template instructions, native style mappings and image requests without modifying the document. | [document-designer](<../../plugins/office/roles/document-designer.md>) |
+| Role | `office:document-designer` | Compose proposal or final Word pages from assigned content and visual records. Return page layouts, native style/flow mappings, growth rules and image requests without rewriting strategy or modifying the native document. | [document-designer](<../../plugins/office/roles/document-designer.md>) |
 | Role | `office:document-reviewer` | Independently inspect Word document renders, source fidelity, native structure evidence and preservation deltas. Return a review bound to the exact candidate, or to the unchanged source document on a read-only review, without editing it. | [document-reviewer](<../../plugins/office/roles/document-reviewer.md>) |
 
 ### Host exports

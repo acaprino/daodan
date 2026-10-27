@@ -1,0 +1,35 @@
+{
+  "repository": "pallets/click",
+  "source_path": "src/click/utils.py",
+  "revision": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+  "source_url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/src/click/utils.py",
+  "artifact_sha256": "4720e22c292047ff1a747546b1ba80e96d1d8e8158e2e21ff01cdddb6498db17",
+  "license": "BSD-3-Clause",
+  "license_url": "https://github.com/pallets/click/blob/2247b35ea1c47c727d7a06e51fa280e12a863ff6/LICENSE.txt",
+  "license_sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+  "license_text": "Copyright 2014 Pallets\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are\nmet:\n\n1.  Redistributions of source code must retain the above copyright\n    notice, this list of conditions and the following disclaimer.\n\n2.  Redistributions in binary form must reproduce the above copyright\n    notice, this list of conditions and the following disclaimer in the\n    documentation and/or other materials provided with the distribution.\n\n3.  Neither the name of the copyright holder nor the names of its\n    contributors may be used to endorse or promote products derived from\n    this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\nPARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\nHOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\nSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED\nTO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\nPROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\nLIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\nNEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n",
+  "functions": [
+    {
+      "name": "_safecall",
+      "start_line": 36,
+      "end_line": 49,
+      "snippet": "def _safecall(func: t.Callable[P, R]) -> t.Callable[P, R | None]:\n    \"\"\"Wraps a function so that it swallows exceptions.\n\n    :meta private:\n    \"\"\"\n\n    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | None:\n        try:\n            return func(*args, **kwargs)\n        except Exception:\n            pass\n        return None\n\n    return update_wrapper(wrapper, func)",
+      "sha256": "4d4529afdfa27b6249e82beec2400ffa5c99b9130fee3bc821ec2fcbcc2354c9"
+    },
+    {
+      "name": "make_str",
+      "start_line": 52,
+      "end_line": 59,
+      "snippet": "def make_str(value: t.Any) -> str:\n    \"\"\"Converts a value into a valid string.\"\"\"\n    if isinstance(value, bytes):\n        try:\n            return value.decode(sys.getfilesystemencoding())\n        except UnicodeError:\n            return value.decode(\"utf-8\", \"replace\")\n    return str(value)",
+      "sha256": "94ca9ba47003c606d366218e20d0d8696f8047443b6d9d0e5669a7fc5b63f599"
+    },
+    {
+      "name": "_make_default_short_help",
+      "start_line": 62,
+      "end_line": 100,
+      "snippet": "def _make_default_short_help(help: str, max_length: int = 45) -> str:\n    \"\"\"Returns a condensed version of help string.\n\n    :meta private:\n    \"\"\"\n    # Consider only the first paragraph and collapse newlines, tabs and spaces.\n    words = help.partition(\"\\n\\n\")[0].split()\n\n    # The first paragraph started with a \"no rewrap\" marker, ignore it.\n    if words and words[0] == \"\\b\":\n        words = words[1:]\n\n    if not words:\n        return \"\"\n\n    last_index = len(words) - 1\n\n    # A period ends a sentence when it closes the text, or when the next word\n    # does not start in lowercase. A lowercase word continues the sentence, so\n    # the period belongs to an abbreviation such as \"vs.\".\n    for i, word in enumerate(words):\n        if word.endswith(\".\") and (i == last_index or not words[i + 1][0].islower()):\n            words = words[: i + 1]\n            break\n\n    text = \" \".join(words)\n\n    if len(text) <= max_length:\n        return text\n\n    # The suffix alone does not fit, and shorten() rejects such a width.\n    if max_length < len(\"...\"):\n        return \"...\"\n\n    # Imported late to keep the import footprint small.\n    import textwrap\n\n    # Do not split hyphenated words.\n    return textwrap.shorten(text, max_length, placeholder=\"...\", break_on_hyphens=False)",
+      "sha256": "95e41bdc282dfb292ea2ad84b7151ae2f39e355faed7bd99dbb05174f594edfa"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

@@ -61,15 +61,20 @@ boundary interfaces, real and mocked implementations, and open integration point
 including the duplicated routing policy.
 
 The [context packet redesign](superpowers/specs/2026-10-25-context-packet-redesign.md)
-records how code context is being rebuilt around search, and the
-[embedding benchmark](plugins/codebase-map-research.md#embedding-benchmark) why the local embedder is
-EmbeddingGemma 2. The harness and frozen gold live in
+records how code context is being rebuilt around search.
+
+The [Gutsy CPU lab](gutsay/README.md) collects its briefing, preliminary protocol,
+Modal pilot results and proposed larger evaluation campaign.
+
+### Research library (`docs/research/`)
+
+- [Context-building research](research/context-building-research.md): scientific literature, papers and findings on code search and retrieval.
+- [Context-building benchmark and test diary](research/context-building-benchmarks.md): local benchmark results, approach ledger, costs and rejected paths.
+- [Local embedding model](research/local-embedding-model.md): model architecture, task prompts, MRL and local CPU indexing validation.
+- [Prompt engineering and brevity](research/prompt-engineering-and-brevity.md): scientific research on verifiable instructions, context length, CoT and agent evaluation.
+
+The harness and frozen gold live in
 [`evals/codebase-map/context-scope/`](../evals/codebase-map/context-scope/README.md).
-For prompt and agent design, see [Progetta prompt e agenti affidabili](references/prompt-agent-research.md),
-the research page on verifiable instructions, evidence boundaries, independent
-verification and end-to-end evaluation. Vendor documentation and the
-code-retrieval literature behind that embedder are collected in the
-[EmbeddingGemma reference](references/embeddinggemma-papers.md).
 
 ## Installation and migration
 
@@ -83,9 +88,7 @@ code-retrieval literature behind that embedder are collected in the
 ## Export compatibility evidence
 
 The [host reference](hosts.md#operational-compatibility-review) describes the
-operational review for all five adapters. The
-[2026-10-11 audit](superpowers/reports/2026-10-11-host-export-compatibility.md)
-records identified instruction, dispatch and permission defects, with source
+operational review for all five adapters. The 2026-10-11 audit records identified instruction, dispatch and permission defects, with source
 locations, the 32.10.0 source/rendering corrections, and the distinction between
 static checks and live execution. Source and compiler verification do not close
 an unmeasured affected runtime path; report that limit explicitly.

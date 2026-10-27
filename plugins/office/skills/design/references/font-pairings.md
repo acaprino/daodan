@@ -1,46 +1,95 @@
 # Font pairings
 
-Twelve heading/body pairings from Google Fonts for Office documents and decks.
+Eighteen heading/body pairings from Google Fonts for Office documents and decks.
 Every face is OFL-1.1 and permits installation and document embedding; each was
 downloaded and verified with `scripts/font_fetch.py` when this catalog was written.
-Choose one pairing for the whole file; a supplied brand or template font always
-comes first. The direction in `directions.md` names its pairing by the number
-below; this catalog supplies the type.
+Use these pairings as optional resources when authoring the DESIGN typography
+roles. Brand/template constraints and the assigned candidate remain authoritative.
+A numbered pairing in `directions.md` is a seed, not a required font choice.
 
 The `Spec` column is the exact argument for `font_fetch.py`: it requests only the
-weights the pairing uses. The fallback is a font that ships with Microsoft Office,
-for a recipient who has neither the font nor an embedded copy.
+weights listed in that example. Verify the actual selected families, weights,
+glyphs, licenses and recipient fallbacks for the current file, including fonts
+outside this catalog. The table's Office fallbacks are starting points to check.
 
-| # | Pairing | Tone and use | Headings | Body | Spec | Office fallback (headings / body) |
-|---|---|---|---|---|---|---|
-| 1 | Inter | Corporate, consulting, SaaS: neutral and very legible on screen | Inter 600/700 | Inter 400, italic | `Inter:ital,wght@0,400;0,600;0,700;1,400` | Arial / Calibri |
-| 2 | Source Serif 4 + Source Sans 3 | Board, finance, strategy: classic authority | Source Serif 4 600 | Source Sans 3 400/700, italic | `Source Serif 4:wght@600` `Source Sans 3:ital,wght@0,400;0,700;1,400` | Cambria / Calibri |
-| 3 | Playfair Display + Lato | Brand story, culture, magazine-style decks | Playfair Display 700 | Lato 400/700, italic | `Playfair Display:wght@700` `Lato:ital,wght@0,400;0,700;1,400` | Georgia / Calibri |
-| 4 | Libre Baskerville + Libre Franklin | Long reports, publications, policy papers | Libre Baskerville 700 | Libre Franklin 400/600, italic | `Libre Baskerville:wght@700` `Libre Franklin:ital,wght@0,400;0,600;1,400` | Georgia / Arial |
-| 5 | IBM Plex Sans + IBM Plex Mono | Engineering, IT, data and architecture | IBM Plex Sans 600 | IBM Plex Sans 400, italic; Plex Mono 400 for code | `IBM Plex Sans:ital,wght@0,400;0,600;1,400` `IBM Plex Mono:wght@400` | Arial / Calibri, Consolas |
-| 6 | Montserrat + Open Sans | Marketing, product launch, events | Montserrat 600/700 | Open Sans 400/600, italic | `Montserrat:wght@600;700` `Open Sans:ital,wght@0,400;0,600;1,400` | Arial / Calibri |
-| 7 | Cormorant Garamond + Montserrat | Luxury, hospitality, fashion: elegant and airy | Cormorant Garamond 600 | Montserrat 400 | `Cormorant Garamond:wght@600` `Montserrat:wght@400` | Garamond / Arial |
-| 8 | Nunito | Education, onboarding, HR: friendly and rounded | Nunito 700 | Nunito 400, italic | `Nunito:ital,wght@0,400;0,700;1,400` | Calibri / Calibri |
-| 9 | Barlow Semi Condensed + Barlow | Dashboards, KPIs, operations: dense data | Barlow Semi Condensed 600 | Barlow 400/500, italic | `Barlow Semi Condensed:wght@600` `Barlow:ital,wght@0,400;0,500;1,400` | Arial Narrow / Arial |
-| 10 | Space Grotesk + Inter | Startup pitch, tech product: contemporary | Space Grotesk 700 | Inter 400, italic | `Space Grotesk:wght@700` `Inter:ital,wght@0,400;1,400` | Arial / Calibri |
-| 11 | DM Serif Display + DM Sans | Non-profit, wellness, food, culture: warm | DM Serif Display 400 | DM Sans 400/700, italic | `DM Serif Display:wght@400` `DM Sans:ital,wght@0,400;0,700;1,400` | Georgia / Calibri |
-| 12 | Noto Serif + Noto Sans | Compliance, public sector, multilingual content | Noto Serif 700 | Noto Sans 400/700, italic | `Noto Serif:wght@700` `Noto Sans:ital,wght@0,400;0,700;1,400` | Cambria / Arial |
+## Where the contrast comes from
+
+A pairing works because its two faces differ in one deliberate way. Decide which
+before choosing names; a pairing without a source of contrast is two fonts that
+happen to be installed.
+
+| Source | Mechanism | Risk |
+|---|---|---|
+| Form | Serif display with sans body, or the reverse | The x-heights must sit close, or the body looks a size smaller than the headings on the same line |
+| Family | One superfamily for both roles (Inter, Nunito, Plex, Noto) | Safe and even, with little expression; carry the hierarchy with size and weight |
+| Era | A face from one century against a face from another, at least two centuries apart | Fifty years apart looks like an accident; a low x-height old face needs about 8% more size when mixed with a modern sans on one line |
+
+The `Contrast` column names the source for each pairing.
+
+| # | Pairing | Tone and use | Contrast | Headings | Body | Spec | Office fallback (headings / body) |
+|---|---|---|---|---|---|---|---|
+| 1 | Inter | Corporate, consulting, SaaS: neutral and very legible on screen | Family | Inter 600/700 | Inter 400, italic | `Inter:ital,wght@0,400;0,600;0,700;1,400` | Arial / Calibri |
+| 2 | Source Serif 4 + Source Sans 3 | Board, finance, strategy: classic authority | Family | Source Serif 4 600 | Source Sans 3 400/700, italic | `Source Serif 4:wght@600` `Source Sans 3:ital,wght@0,400;0,700;1,400` | Cambria / Calibri |
+| 3 | Playfair Display + Lato | Brand story, culture, magazine-style decks | Form | Playfair Display 700 | Lato 400/700, italic | `Playfair Display:wght@700` `Lato:ital,wght@0,400;0,700;1,400` | Georgia / Calibri |
+| 4 | Libre Baskerville + Libre Franklin | Long reports, publications, policy papers | Form | Libre Baskerville 700 | Libre Franklin 400/600, italic | `Libre Baskerville:wght@700` `Libre Franklin:ital,wght@0,400;0,600;1,400` | Georgia / Arial |
+| 5 | IBM Plex Sans + IBM Plex Mono | Engineering, IT, data and architecture | Family | IBM Plex Sans 600 | IBM Plex Sans 400, italic; Plex Mono 400 for code | `IBM Plex Sans:ital,wght@0,400;0,600;1,400` `IBM Plex Mono:wght@400` | Arial / Calibri, Consolas |
+| 6 | Montserrat + Open Sans | Marketing, product launch, events | Form | Montserrat 600/700 | Open Sans 400/600, italic | `Montserrat:wght@600;700` `Open Sans:ital,wght@0,400;0,600;1,400` | Arial / Calibri |
+| 7 | Cormorant Garamond + Montserrat | Luxury, hospitality, fashion: elegant and airy | Form | Cormorant Garamond 600 | Montserrat 400 | `Cormorant Garamond:wght@600` `Montserrat:wght@400` | Garamond / Arial |
+| 8 | Nunito | Education, onboarding, HR: friendly and rounded | Family | Nunito 700 | Nunito 400, italic | `Nunito:ital,wght@0,400;0,700;1,400` | Calibri / Calibri |
+| 9 | Barlow Semi Condensed + Barlow | Dashboards, KPIs, operations: dense data | Family | Barlow Semi Condensed 600 | Barlow 400/500, italic | `Barlow Semi Condensed:wght@600` `Barlow:ital,wght@0,400;0,500;1,400` | Arial Narrow / Arial |
+| 10 | Space Grotesk + Inter | Startup pitch, tech product: contemporary | Form | Space Grotesk 700 | Inter 400, italic | `Space Grotesk:wght@700` `Inter:ital,wght@0,400;1,400` | Arial / Calibri |
+| 11 | DM Serif Display + DM Sans | Non-profit, wellness, food, culture: warm | Form | DM Serif Display 400 | DM Sans 400/700, italic | `DM Serif Display:wght@400` `DM Sans:ital,wght@0,400;0,700;1,400` | Georgia / Calibri |
+| 12 | Noto Serif + Noto Sans | Compliance, public sector, multilingual content | Family | Noto Serif 700 | Noto Sans 400/700, italic | `Noto Serif:wght@700` `Noto Sans:ital,wght@0,400;0,700;1,400` | Cambria / Arial |
+| 13 | Newsreader + Geist | Research briefings, reports, quiet editorial decks: a screen-tuned transitional serif over a plain sans | Form | Newsreader 500 | Geist 400/600, italic | `Newsreader:wght@500` `Geist:ital,wght@0,400;0,600;1,400` | Georgia / Arial |
+| 14 | EB Garamond + IBM Plex Sans | Humanities, culture, long papers: a 16th-century serif against a rational modern sans | Era | EB Garamond 500, set about 8% larger than Plex on a shared line | IBM Plex Sans 400, italic | `EB Garamond:wght@500` `IBM Plex Sans:ital,wght@0,400;1,400` | Garamond / Arial |
+| 15 | Lora + Hanken Grotesk | Services, wellness, mid-length reports: a calligraphic serif over a neutral grotesque | Form | Lora 600 | Hanken Grotesk 400/600, italic | `Lora:wght@600` `Hanken Grotesk:ital,wght@0,400;0,600;1,400` | Georgia / Calibri |
+| 16 | Schibsted Grotesk + Source Serif 4 | News, media, analyst notes: a newspaper grotesque as display, serif body for sustained reading | Form, reversed | Schibsted Grotesk 700 | Source Serif 4 400, italic | `Schibsted Grotesk:wght@700` `Source Serif 4:ital,wght@0,400;1,400` | Arial / Cambria |
+| 17 | Archivo + Inter | Campaigns, keynotes, big-number pages: a wide heavy grotesque with Inter kept to body sizes | Form | Archivo 800 | Inter 400, italic | `Archivo:wght@800` `Inter:ital,wght@0,400;1,400` | Arial Black / Calibri |
+| 18 | Bricolage Grotesque + Newsreader | Creative agencies, culture, bold editorial decks: ink-trap display over a calm serif body | Form | Bricolage Grotesque 700 | Newsreader 400, italic | `Bricolage Grotesque:wght@700` `Newsreader:ital,wght@0,400;1,400` | Arial / Georgia |
+
+## Overused faces
+
+Some faces became the default answer of design tools and now read as
+"generated" before the content is read. They remain legitimate when the brand
+uses them or the role suits them; the substitute is for the case where the face
+was reached for by habit.
+
+| Face in its overused role | Why it reads as a default | Substitute in this catalog |
+|---|---|---|
+| Inter as a display face (pairings 1, 10) | Drawn for interface text; at display sizes it is even and expressionless | Archivo (17) or Schibsted Grotesk (16) for headings; keep Inter for body |
+| Space Grotesk (pairing 10) | The reflex "tech" display of product pages | Schibsted Grotesk (16); Familjen Grotesk 700 is a verified alternative |
+| Playfair Display (pairing 3) | The reflex "elegant" display; invitation-card feel | DM Serif Display (11) or Cormorant Garamond (7) |
+| Fraunces, Instrument Serif as display | The reflex "tasteful" serif of generated layouts; Instrument Serif has one weight | Newsreader (13, 18) |
+
+A warm paper ground with a high-contrast serif is a look family, not an overused
+face. One proposal may use it; three proposals in that family are one proposal.
 
 ## Choosing
 
-- Match the tone to the audience and argument settled at intake, not to taste
-  alone. A deck's visual direction may name Office fonts; a pairing replaces them
-  only when the user accepts it.
+- Match the typography to the audience, content and assigned direction. A catalog
+  suggestion cannot replace the candidate's typography roles. A material change
+  follows the existing design revision and selection authority.
+- Respect display thresholds. Cormorant Garamond holds only at 30 pt and above
+  (its hairlines break smaller); Bricolage Grotesque and Archivo 800 are display
+  faces, with body set in their partner. A low x-height serif on the same line
+  as a modern sans (EB Garamond with Plex, Newsreader with Geist) needs about
+  8% more size to look equal.
 - Check script coverage for the content's languages. Noto covers Latin, Greek and
   Cyrillic; other scripts need the matching Noto family (for example Noto Sans JP
   or Noto Sans Arabic) fetched the same way.
-- Display faces (Playfair Display, Cormorant Garamond, DM Serif Display) are for
-  headings at `24 pt` and above only; never set body text or table cells in them.
-- Use only the listed weights. A bold or italic that was not fetched is
-  synthesized by the application and renders worse.
+- Use display faces where their shapes and size remain readable in the actual
+  DOCX/PPTX context. Verify dense body and table text at the intended reading size.
+- Fetch and verify every selected weight and italic face. Do not rely on
+  synthesized styles or treat the table's example weights as an allowed set.
 
 ## Provenance
 
 This catalog and the fetch and embed helpers are original Office guidance, not
 part of the adapted upstream typography skill. Fonts are downloaded at run time
 from Google Fonts and are not bundled; their licenses travel inside each file.
+Pairings 13 to 18, the contrast-source column, the overused-face table and the
+display thresholds adopt ideas from the typography reasoning of
+[alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design) (MIT),
+read at commit `4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1`, rewritten for Office
+point sizes and verified with `font_fetch.py` on 2026-10-27. No upstream text,
+CSS or web sizing rule is copied.

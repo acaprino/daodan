@@ -1,13 +1,10 @@
 ---
 name: design
 description: >
-  Shared visual design method for Office documents and presentations: one
-  direction for composition, rhythm and type; an ad hoc palette built from the
-  user's colour source and chosen from candidates in the browser; editorial
-  hierarchy, typography, and font fetching, installation and embedding. How a
-  file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a
-  Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or
-  read-only, or the deliverable is a website, a workbook or a standalone image.
+  Design a shared visual identity for requested Office documents and decks:
+  Taste art direction, real native proposal comparison, explicit DESIGN.md
+  selection, semantic palette, typography, imagery and native theme handoff.
+  Use when intake calls for a new look; revisions inherit accepted decisions.
 license: Apache-2.0
 ---
 
@@ -97,187 +94,167 @@ Compiled binding and static checks do not prove an installed host executed a run
 Factory (Apache-2.0). See references/agentit-upstream.md and
 references/theme-factory-upstream.md for attribution and retained licenses. -->
 
-# Office design
+# Office visual design
 
-Decide how a file looks once, for the whole file, and hand the format method a
-complete record it can build and review against. This skill adds no worker and
-no engine: `office:pptx` and `office:docx` own construction,
-rendering and review; the format designer roles write their reports under the
-direction and palette recorded here.
+Own the shared visual system. `office:content` owns intent, audience, market,
+claims, depth and logical sequence; DOCX/PPTX designers own final composition
+and native geometry. This skill adds no worker or engine. One brief can yield
+both formats with the same selected design and independent layouts.
 
-## One direction, one palette, one pairing
+## Preserve or design
 
-A **direction** from `references/directions.md` fixes composition and rhythm
-for slides and pages, and names the font pairing from
-`references/font-pairings.md`. The **palette** is built for this file from the
-user's own colour source (below); a direction's row only supplies default seeds
-when the user gives no source. A supplied brand or template always wins:
-extract its palette and fonts as direction `H`, check every text colour at
-`4.5:1`, and keep the rest of these rules. A file derived from an existing one
-keeps the source's direction and palette unless the brief asks for a restyle.
-Do not mix directions, do not replace the accepted palette or pairing silently,
-and record every substitution with its reason.
+Read the brief, material roles and accepted content/design records. New work,
+restyle or a derivation without inherited look designs an identity for the
+actual subject, audience, brand and requested formats. Expansion and revision
+inherit accepted direction, palette, type and template; skip new proposals,
+font installation and template generation unless their authorized scope changes
+them. Narrow edits and read-only work retain the accepted look.
 
-A Word document and a presentation made from the same brief share one
-direction, one palette and one pairing, so the pair reads as one piece of work.
+For a new look, follow the single Taste input/output and proposal-review contract
+in `references/art-direction.md`. It consumes the settled Office brief and returns
+our design payloads; it adds no intake, editorial strategy or production engine.
 
-## Build the palette from the user's source
+When inherited content identity/revision or requested formats change, use the
+inherited-design rebinding procedure in `references/records.md`. Keep the visual
+choice and predecessor intact while publishing a correctly bound new record.
 
-Ask at intake where the colours come from, and run the matching extraction:
+Use `references/directions.md` and `references/font-pairings.md` as resources,
+not compulsory letters, pairings or presets. Derive the palette through the
+sample, converge and justify steps in `directions.md` before keeping any seed,
+and keep the proposal set spread across its temperatures. Proposals may adapt
+compatible principles into one coherent identity. `references/diagram-style.md`
+supplies the colour roles, node treatments, strokes, grid and label sizes for
+diagrams built from native shapes. A supplied brand or template always wins;
+inherit its masters/styles and record actual colors/fonts. Separate observed
+source values from proposed additions; record justified fallbacks.
+
+## Prepare usable palettes
+
+Extract the user's color source with the existing helpers:
 
 ```text
-python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-image LOGO-OR-PICTURE.png
+python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-image LOGO.png
 python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-url https://example.com
-python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-css PROJECT-DIR-OR-STYLESHEET
-python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-file EXISTING.pptx
+python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-css PROJECT-OR-STYLESHEET
+python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" from-file EXISTING.docx
+python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" candidates --seed "#1D4ED8" > palettes.json
+python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" check selected-palette.json
 ```
 
-| Source | What is read |
-|---|---|
-| An image: logo, photograph, illustration, screenshot | Dominant colours by area, neutrals dropped (needs Pillow) |
-| A website | `theme-color`, the first stylesheets, the social image and icon |
-| A project's stylesheets or design tokens (CSS, SCSS, LESS, token JSON, a design document) | Declared colours, with `primary`, `brand`, `accent` tokens weighted first |
-| An existing PPTX or DOCX | The theme colour scheme and the colours used on its pages |
-| A mood, sector or direction in words ("finance, sober", "warm, artisan") | You choose one or two seed hues and chroma from that description and record the reasoning; no script |
-| Nothing | The seeds of the chosen direction's row |
+For words or no source, choose and justify seeds from the brief; the script does
+not interpret language. Candidate generation can report failed checks. Inspect
+`check.passes` and diagnostics, extract the actual palette object to
+`selected-palette.json`, filter failed candidates or refine their colors/
+data categories, then rerun `palette.py check` on the actual palette. Never select
+`faithful` or another variant merely because it was generated. Preserve text
+contrast of `4.5:1`, data contrast of `3:1` and the helper's distinctness/CVD checks;
+do not claim a passing palette before observing its result. A binding brand
+conflict needs a supported treatment or recorded decision, not silent recoloring.
 
-Take one or two seeds from the result (the primary colour and, when it adds
-character, a second one) and build the candidates:
+`palette_preview.py` remains an optional chromatic helper:
 
 ```text
-python "${PLUGIN_ROOT}/skills/design/scripts/palette.py" candidates --seed "#1D4ED8" --seed "#E76F51" > candidates.json
-python "${PLUGIN_ROOT}/skills/design/scripts/palette_preview.py" candidates.json --out compare.html --open
+python "${PLUGIN_ROOT}/skills/design/scripts/palette_preview.py" palettes.json --out palette-compare.html --open
 ```
 
-`candidates` builds five complete palettes from the same seeds, each changing one
-thing: sober, faithful, bold, deep and dark. Every palette carries the roles
-background, ink, surface, accent, muted text and three or four data colours.
-The script guarantees legibility, not taste: ink, accent and muted text hold at
-least `4.5:1` on both background and surface; data colours hold `3:1` on the
-background, differ from each other perceptually and stay apart under simulated
-red-green colour blindness; background, surface and ink share the seed's hue at
-low chroma so the palette reads as one; only the accent is saturated.
+It shows fixed palette examples and cannot record a choice. It does not satisfy
+the complete visual-system comparison below.
 
-`palette_preview.py` writes one static page: a compact overview of the five
-candidates, with the detail of each (colour roles, contrast figures, the same
-sample slide and sample page) shown on hover and pinned on click. Open it for the
-user, then **ask which number to use**; the page cannot report the choice. On a
-fully autonomous request choose `faithful` unless the brief's tone argues for
-another variant, and say so. Record the chosen palette's hex values by role in
-the brief; construction and review verify against them. Do not retouch a chosen
-colour by hand without re-running `palette.py check` on the result.
+## Prove, compare and select the complete system
 
-## Write the theme into a template
+Follow `references/art-direction.md` for the bounded Taste contribution and
+`references/records.md` for the v2 proposal/CLI contract. Author two or three
+complete unselected DESIGN payloads on the exact editorial working revision.
+Give each a subject-specific idea and coherent type, palette, imagery, form and
+data treatment. Use the same complete real content, sources and representative
+jobs in only the requested formats; a table/evidence job can be inapplicable
+with its recorded reason, never invented. A recolor or font swap is not another
+compositional direction. Detailed hierarchy/type guidance stays in
+`references/editorial-design.md` and `references/typography.md`.
 
-The palette and pairing reach the file as a real theme, not only as values the
-engine applies object by object. Generate the base template from the chosen
-palette and pairing:
+Dispatch the existing format designers and reviewers in `proposal` mode under
+the art-direction contract. Resolve authorized image requests before building
+separate native specimens, inspect their saved renders and repair failed
+creative proposals. Cover the opening and difficult real-content jobs, not just
+an attractive cover. Assemble the exact reviewed native frames and bindings as
+`office/design-candidates/v2`. V1 is a limited theme sampler and cannot satisfy
+this complete creative comparison.
 
 ```text
-python "${PLUGIN_ROOT}/skills/design/scripts/template_kit.py" BASE.potx --palette candidates.json --variant faithful --pairing 2
-python "${PLUGIN_ROOT}/skills/design/scripts/template_kit.py" BASE.dotx --palette candidates.json --variant faithful --pairing 2 --page a4
+python "${PLUGIN_ROOT}/skills/design/scripts/design_compare.py" candidates.json --out COMPARE.html
+python "${PLUGIN_ROOT}/skills/design/scripts/design_compare.py" candidates.json --select technical --authority user --source "Decision Q2" --out DESIGN.md
+python "${PLUGIN_ROOT}/skills/content/scripts/office_records.py" validate DESIGN.md
 ```
 
-A `.potx` carries the theme (palette roles as theme colours, pairing as heading
-and body fonts), a slide master and nine layouts mapped to the patterns of
-`office:pptx`'s `layout-patterns.md`; a `.dotx` carries the theme and the
-paragraph, character and table styles, page geometry and a page-number footer.
-`.pptx` and `.docx` outputs are the same base as an ordinary file to build on;
-`--samples` adds one sample slide per layout or sample pages for rendering. Brand
-fonts replace the pairing with `--heading-font` and `--body-font`. The report
-lists layouts, theme colours, fonts and notes; it never overwrites a file.
+Open and inspect the native-render gallery; keep its proof limits visible.
+Record the user's explicit answer through the existing Work Controller question contract,
+or select with `--authority autonomous` under an existing grant and cite its
+source. Browser highlighting is not a returned answer. A compatible combination
+is a new complete authored candidate with parent IDs and greater revision;
+create fresh native proof and review it before selecting. No automatic merge
+invents decisions.
 
-Inherit instead of generating when the user supplies a template or a file whose
-look must carry over (direction `H`): build on that file itself, so its masters,
-layouts, styles and theme survive, and use `palette.py from-file` only to record
-its colours. Render a sample built on any template before claiming its look.
+Load the saved `DESIGN.md` through `office_records.load_record(Path(...))`, run
+`validate_design`, and compare `project_id`, `content.project_id`,
+`content.revision` and exact `formats` to the loaded content. The name alone
+proves nothing. Pass this exact design revision to designers, producers and
+reviewers in `final` mode. Revisions use new paths; never overwrite accepted
+records.
 
-## Structure belongs to the format
+The selected record owns semantic colors/proportions, type roles/fallbacks,
+spacing principles, imagery, data, components and requested-format adaptations.
+For PPTX the coordinator now fills the existing plan's display `direction` from
+this selection, recomputes its `canonical-json-v1` binding, and freezes/validates
+final `CONTENT.md` with that actual plan under the format method. This derived
+binding finalization changes no claims or content revision. Editorial changes
+return to the content owner. Shared design supplies no slide/page geometry.
 
-This skill decides how a file looks, never how it argues. A deck chooses one of
-the five argument modes of `office:pptx` (`references/design-library.md`:
-pyramid, narrative, instructional, showcase, briefing), because a deck is
-spoken over and its headlines carry the argument. A document chooses one of the
-document types of `office:docx` (`references/document-types.md`: decision memo,
-briefing note, proposal, report, white paper, procedure, handbook, tutorial,
-policy, minutes, letter, image-led dossier), because a document is read alone
-and its section sequence is the argument. The two catalogs are not mapped onto
-each other: a deck and a document made from the same brief share direction,
-palette and pairing, and each takes its structure from its own catalog.
+## Materialize native styles and optional templates
 
-## Procedure on the substantial route
+Apply selected values through native styles, themes, masters and layouts. A
+separate DOTX/POTX is optional for ordinary work; generate one when useful or
+when reusable templates are requested. The existing kit can materialize a
+compatible palette/font choice:
 
-Run it only when the operation recorded at intake gives the file a new look:
-create, restyle, or derive without carrying the look over. An expansion or
-revision inherits the file's direction, palette, pairing and template; record
-them with `palette.py from-file` and skip the palette choice, font fetch and
-template generation, and design new parts with what the file already uses.
+```text
+python "${PLUGIN_ROOT}/skills/design/scripts/template_kit.py" BASE.potx --palette palettes.json --variant deep --pairing 2
+python "${PLUGIN_ROOT}/skills/design/scripts/template_kit.py" BASE.dotx --palette palettes.json --variant deep --pairing 2 --page a4
+```
 
-1. Take audience, purpose, the format's structure choice (argument mode for a
-   deck, document type for a document), direction or brand, colour source,
-   carry-over and approved cuts from the intake record. Ask nothing that intake
-   already settled.
-2. Build the palette candidates from the colour source, show the comparison and
-   record the chosen palette.
-3. Build the reading map with `references/editorial-design.md`: what the reader
-   understands or decides at the opening, middle and close; content roles;
-   entry and re-entry points; a communication job for every figure.
-4. Set the type roles with `references/typography.md`: the fewest roles that
-   show the structure, sizes in points, weights, spacing and reading measure,
-   mapped to the direction's pairing. Numeric scales live with the format:
-   `office:pptx`'s `design-library.md` for the 16:9 canvas,
-   `office:docx`'s `document-design.md` for the page.
-5. Install the pairing's faces before construction (below) and record which
-   faces were installed, which fell back and why. Generate the base template
-   from the chosen palette and pairing, or keep the supplied one (above).
-6. Hand the format method the record: direction, palette by role, pairing and
-   font status, reading map, type roles and open decisions; the format keeps its
-   own structure choice beside it. The format
-   designer role turns it into slide-object or page specifications.
-7. After the final save, embed the fonts and record the inspection result.
+Use the actual selected passing variant and supported font arguments; the
+example does not select a project palette. Custom fonts use `--heading-font`
+and `--body-font`. The kit's POTX has a master and nine pattern layouts; its
+DOTX has native styles, page geometry and footer. Ordinary PPTX/DOCX bases and
+`--samples` are supported. Preserve a supplied template instead of regenerating
+it; `palette.py from-file` records its values. Render an actual sample before
+claiming template behavior. Kit geometry does not override the designer's
+accepted composition or the runtime's actual capabilities.
 
-A narrow edit or a read-only task does not re-enter this procedure: it keeps
-the accepted direction and palette and records that choice.
+## Fonts and final-file evidence
 
-## Fetch, install and embed fonts
-
-A pairing's faces are downloaded and installed, never assumed present. Before
-construction, in the coordinator, with the pairing's `Spec` from the catalog:
+Check selected families, real weights, glyph coverage, licenses, embedding
+permissions and installed faces before construction. Reuse available approved
+faces. Missing open faces can use the existing verified fetch/install helper
+within the brief's dependency authority:
 
 ```text
 python "${PLUGIN_ROOT}/skills/design/scripts/font_fetch.py" status "Inter:ital,wght@0,400;0,600;0,700;1,400"
 python "${PLUGIN_ROOT}/skills/design/scripts/font_fetch.py" install "Inter:ital,wght@0,400;0,600;0,700;1,400"
-```
-
-`install` downloads only the missing faces from Google Fonts, verifies each
-file's family, weight, style, embedded license (OFL, Apache or UFL) and embedding
-permission, and installs it for the current user without administrator rights.
-Tell the user which faces were installed. A face that fails verification or
-download is not used: fall back to the pairing's Office font and record why.
-Applications already running may need a restart to see a new font; render with a
-renderer started after installation.
-
-After saving the final DOCX or PPTX, embed the fonts so recipients see the same
-type, and inspect the result:
-
-```text
 python "${PLUGIN_ROOT}/skills/design/scripts/font_embed.py" embed CANDIDATE.pptx DELIVERY.pptx
 python "${PLUGIN_ROOT}/skills/design/scripts/font_embed.py" inspect DELIVERY.pptx
 ```
 
-`embed` saves a new copy through an installed Microsoft PowerPoint or Word on
-Windows. PowerPoint embeds only the characters used, so a recipient can view the
-deck as designed but needs the font installed to type new text in it; Word embeds
-complete fonts. Without that engine, `embed` reports the missing capability:
-deliver the file with the pairing's Office fallback named, or a PDF, and say that
-recipients need the fonts. `inspect` works on any host and lists the fonts a file
-uses and embeds. Report fonts left unembedded; do not claim embedding without
-the inspection result.
+`install` downloads only missing faces, verifies family/weight/style, embedded
+open license and embedding permission, and installs for the current user. Record
+installed faces and substitutions. Do not use a failed or unlicensed face;
+record an approved compatible fallback. Render in an application started after
+installation when needed.
 
-## Evidence
-
-Design guidance does not certify an editable file, accessibility, pagination,
-embedding or rendering fidelity. The format method's saved-file render, package
-inspection and independent review supply that evidence; record what was
-observed and what remained unverified, separately. Contrast figures come from
-the hex values, not from how an engine, projector or printer reproduces them.
+Embedding saves a separate copy through installed Microsoft Word/PowerPoint on
+Windows. PowerPoint embeds used characters, Word complete fonts. Missing engine
+or embedding support is a named limit, not proof that fonts travelled. Complete
+embedding before preservation checks, actual saved-file rendering and independent
+review so they bind to the exact delivered copy. Read-only work never embeds into
+the source. Contrast checks, HTML previews and structural records do not prove
+editability, accessibility, pagination, embedding or target-application fidelity;
+format methods retain those checks and disclose unavailable evidence.

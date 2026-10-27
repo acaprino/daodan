@@ -1,0 +1,35 @@
+{
+  "repository": "pallets/flask",
+  "source_path": "src/flask/helpers.py",
+  "revision": "d086db856be187255b8ec61ef409357393020f32",
+  "source_url": "https://github.com/pallets/flask/blob/d086db856be187255b8ec61ef409357393020f32/src/flask/helpers.py",
+  "artifact_sha256": "4e2b647be02a93f655ddd058105c5ed8e9ffe3daef398ef3dd21e3a3817623fb",
+  "license": "BSD-3-Clause",
+  "license_url": "https://github.com/pallets/flask/blob/d086db856be187255b8ec61ef409357393020f32/LICENSE.txt",
+  "license_sha256": "489a8e1108509ed98a37bb983e11e0f7e1d31f0bd8f99a79c8448e7ff37d07ea",
+  "license_text": "Copyright 2010 Pallets\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are\nmet:\n\n1.  Redistributions of source code must retain the above copyright\n    notice, this list of conditions and the following disclaimer.\n\n2.  Redistributions in binary form must reproduce the above copyright\n    notice, this list of conditions and the following disclaimer in the\n    documentation and/or other materials provided with the distribution.\n\n3.  Neither the name of the copyright holder nor the names of its\n    contributors may be used to endorse or promote products derived from\n    this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\nPARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\nHOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\nSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED\nTO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\nPROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\nLIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\nNEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n",
+  "functions": [
+    {
+      "name": "get_debug_flag",
+      "start_line": 28,
+      "end_line": 33,
+      "snippet": "def get_debug_flag() -> bool:\n    \"\"\"Get whether debug mode should be enabled for the app, indicated by the\n    :envvar:`FLASK_DEBUG` environment variable. The default is ``False``.\n    \"\"\"\n    val = os.environ.get(\"FLASK_DEBUG\")\n    return bool(val and val.lower() not in {\"0\", \"false\", \"no\"})",
+      "sha256": "8eaa62d1fc8b6d2d4f0b39dc4d780bc949325e843e58eebdf4722240fd5c0383"
+    },
+    {
+      "name": "get_load_dotenv",
+      "start_line": 36,
+      "end_line": 48,
+      "snippet": "def get_load_dotenv(default: bool = True) -> bool:\n    \"\"\"Get whether the user has disabled loading default dotenv files by\n    setting :envvar:`FLASK_SKIP_DOTENV`. The default is ``True``, load\n    the files.\n\n    :param default: What to return if the env var isn't set.\n    \"\"\"\n    val = os.environ.get(\"FLASK_SKIP_DOTENV\")\n\n    if not val:\n        return default\n\n    return val.lower() in (\"0\", \"false\", \"no\")",
+      "sha256": "f6869da0be0b9fbd716f724ae675bde4aa898d4b4b7dc078a14ba951542fff75"
+    },
+    {
+      "name": "redirect",
+      "start_line": 254,
+      "end_line": 278,
+      "snippet": "def redirect(\n    location: str, code: int = 303, Response: type[BaseResponse] | None = None\n) -> BaseResponse:\n    \"\"\"Create a redirect response object.\n\n    If :data:`~flask.current_app` is available, it will use its\n    :meth:`~flask.Flask.redirect` method, otherwise it will use\n    :func:`werkzeug.utils.redirect`.\n\n    :param location: The URL to redirect to.\n    :param code: The status code for the redirect.\n    :param Response: The response class to use. Not used when\n        ``current_app`` is active, which uses ``app.response_class``.\n\n    .. versionchanged:: 3.2\n        ``code`` defaults to ``303`` instead of ``302``.\n\n    .. versionadded:: 2.2\n        Calls ``current_app.redirect`` if available instead of always\n        using Werkzeug's default ``redirect``.\n    \"\"\"\n    if (ctx := _cv_app.get(None)) is not None:\n        return ctx.app.redirect(location, code=code)\n\n    return _wz_redirect(location, code=code, Response=Response)",
+      "sha256": "702bf9effb2b9a0cedc82df42544b4063371b120508d710cd26f24bdcc06aa8f"
+    }
+  ],
+  "notice": "Unmodified source excerpts. Evaluation tasks are new controlled transformations, not observed issue requests."
+}

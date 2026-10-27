@@ -1,6 +1,6 @@
 # Historical catalog parity and host probes
 
-This record describes the universal migration through marketplace 29.0.0, with 40 kernels. Its table and installed-host observations are historical evidence, not assertions about the current harness. Marketplace 30.0.0 validation is recorded in [the harness validation report](../../docs/superpowers/reports/2026-10-07-daodan-harness-validation.md). Current kernel/catalog parity is enforced by `tests/test_universal_catalog_parity.py` against the actual manifest set.
+This record describes the universal migration through marketplace 29.0.0, with 40 kernels. Its table and installed-host observations are historical evidence, not assertions about the current harness. Marketplace 30.0.0 validation was recorded in the harness validation report. Current kernel/catalog parity is enforced by `tests/test_universal_catalog_parity.py` against the actual manifest set.
 
 ## Historical compiler parity
 

@@ -579,6 +579,21 @@
       "version": "1.5.3"
     },
     {
+      "description": "Shared editorial method for requested Word documents and PowerPoint decks: source and claim ledger, transformation permissions, logical sequence and format projections in a validated CONTENT.md. Use after Office intake; revisions inherit accepted decisions and local edits change only their scope.",
+      "dimensions": [],
+      "file": "skills/content/SKILL.md",
+      "frameworks": [],
+      "id": "office:content",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "content",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "3.4.0"
+    },
+    {
       "description": "Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: only a spreadsheet or document is requested.",
       "dimensions": [],
       "file": "skills/deckcraft/SKILL.md",
@@ -591,10 +606,10 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
-      "description": "Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the user's colour source and chosen from candidates in the browser; editorial hierarchy, typography, and font fetching, installation and embedding. How a file argues stays with its format. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image.",
+      "description": "Design a shared visual identity for requested Office documents and decks: Taste art direction, real native proposal comparison, explicit DESIGN.md selection, semantic palette, typography, imagery and native theme handoff. Use when intake calls for a new look; revisions inherit accepted decisions.",
       "dimensions": [],
       "file": "skills/design/SKILL.md",
       "frameworks": [],
@@ -606,7 +621,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use /daodan:presentation).",
@@ -621,7 +636,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Create, edit, inspect, calculate and check real Excel workbooks through the external GridCraft CLI or exposed MCP interface. TRIGGER WHEN: producing or editing XLSX for office:xlsx, recalculating formulas or checking workbook fidelity with GridCraft. DO NOT TRIGGER WHEN: only read-only package inspection is needed (use office:xlsx's inspector).",
@@ -636,10 +651,10 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
-      "description": "Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes; route a request that names no format to the right workflows. TRIGGER WHEN: an Office presentation, document or workbook task begins, or an Office request must be routed. DO NOT TRIGGER WHEN: a format method is already executing a resolved route.",
+      "description": "Shared Office intake: inspect materials, settle operation, requested formats, editorial/visual decisions and phase-specific dependencies in one brief and question round. Route mixed or unspecified deliverables before format work.",
       "dimensions": [],
       "file": "skills/intake/SKILL.md",
       "frameworks": [],
@@ -651,7 +666,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Verify the integrity of a Word, PowerPoint or Excel file with static rules, then repair what can be repaired on a separate candidate. TRIGGER WHEN: checking a DOCX, PPTX or XLSX for broken links, formula errors, missing alternative text, inconsistent formulas, empty placeholders or other defects, or fixing them. DO NOT TRIGGER WHEN: creating a new document, deck or workbook (use the office document, presentation or workbook workflows).",
@@ -666,7 +681,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
@@ -681,7 +696,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed.",
@@ -696,7 +711,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use /daodan:presentation).",
@@ -711,7 +726,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.1.0"
+      "version": "3.4.0"
     },
     {
       "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
@@ -796,7 +811,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to investigate or debug a problem, build or refactor code, produce complete project documentation, define specifications or implementation plans, resume work, or finish and merge a delivery. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
@@ -811,7 +826,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "description": "Extract, validate, reconcile, approve, version and verify evidence-bound functional requirements documents in docs/frd/. TRIGGER WHEN: the user asks for an evidence-bound FRD, requirements and domain references must be extracted from project sources, a fresh extraction must be reconciled with manual review, or an FRD needs approval, revision or verification. DO NOT TRIGGER WHEN: recording an architecture or technical decision (use project-delivery:adr-method), writing general project documentation without evidence spans, or treating current implementation as an automatically approved requirement.",
@@ -826,7 +841,7 @@
       "operations": [],
       "provider": "project-delivery",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "description": "Draft missing ADR and FRD from verified project evidence without turning legacy behavior or stale documentation into approved requirements. TRIGGER WHEN: a project has no ADR or FRD, existing project knowledge must be bootstrapped from code, documentation or Codebase Map, or /daodan:init-project needs initial requirement records. DO NOT TRIGGER WHEN: recording one already understood decision (use adr-method), editing an existing FRD (use frd-method), or running the implementation cycle (use delivery-method).",
@@ -845,7 +860,7 @@
         "documentation",
         "requirements"
       ],
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file. TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.",
@@ -860,7 +875,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.0.1"
+      "version": "3.2.0"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -875,7 +890,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "3.0.1"
+      "version": "3.2.0"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
@@ -896,7 +911,7 @@
       "topics": [
         "readme"
       ],
-      "version": "3.0.1"
+      "version": "3.2.0"
     },
     {
       "description": "Diagnose project coherence and technical debt through canonical specialist audits and an executable roadmap. TRIGGER WHEN: the user asks for project health, a coherence assessment, technical-debt diagnosis or a prioritized maintenance roadmap, including /daodan:check-health and the assessment stage of /daodan:run-maintenance. DO NOT TRIGGER WHEN: implementing an approved change, repair or verification cycle (use project-delivery:delivery-method), running a full Senior Maintainer campaign (use maintainer-method), or preparing a consultant dossier (use handover-method).",
@@ -1297,6 +1312,21 @@
       "version": "1.1.0"
     },
     {
+      "description": "Build and refresh a project's scientific evidence base from papers actually read, with traceable claims, local test protocols and immutable research history. Use for explicit scientific research or substantive brainstorming, specifications, ADR/FRD and problem solving when evidence can change the decision.",
+      "dimensions": [],
+      "file": "skills/science-based-approach/SKILL.md",
+      "frameworks": [],
+      "id": "research:science-based-approach",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "science-based-approach",
+      "operations": [],
+      "provider": "research",
+      "topics": [],
+      "version": "7.0.0"
+    },
+    {
       "description": "Web research methodology: query formulation, source authority ranking, WebSearch/serper.dev backends, bot-block fallbacks and anti-loop rules. TRIGGER WHEN: performing web research in quick-searcher, deep-researcher or /research:team-research. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
       "dimensions": [
         "correctness"
@@ -1316,7 +1346,7 @@
         "research",
         "web-search"
       ],
-      "version": "6.2.6"
+      "version": "7.0.0"
     },
     {
       "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /daodan:tidy-repo, code-review Step 7c or lifecycle cleanup.",

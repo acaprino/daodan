@@ -12,4 +12,4 @@ stale activation and plain links from imports, and left guard/production evidenc
 unverified. One deliberately incorrect unit expectation failed against approved
 behavior. Correction, regeneration, restart and real-host enforcement were not
 performed, so this is partial decision coverage rather than a completed case.
-See the [validation record](../../docs/superpowers/reports/2026-10-08-instructions-test-policy-validation.md).
+See the validation record.

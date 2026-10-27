@@ -85,21 +85,28 @@ Read the brief, allowed changes, design report and candidate identity. On a
 read-only review the document under review is the unchanged source: apply the
 same identity, render and coverage checks to it, judge it against the brief, and
 skip preservation deltas and the design-report comparison that do not exist.
-Load `office:docx` for its production and verification contract; execute only
-this assignment, not its coordinator dispatch procedure. Read that skill's
-`references/document-types.md`, `references/document-design.md` and
-`references/document-quality.md`.
-Load `office:design` and read its `references/editorial-design.md` and
-`references/typography.md` to assess the accepted reading map, hierarchy,
-sequence, figure associations and type roles against the actual page renders.
-Preserve the scope of a narrow edit or export; these criteria do not authorize a
-new direction or restyle. Compare the saved candidate to the recorded direction,
-palette by role, pairing and document type, including the opening the type
-requires, heading voice and section order. Office's design references are the complete critique criteria; consult
-no external design provider.
+Execute only this assigned review, not a coordinator dispatch procedure.
+Read `office:docx`'s `references/structure.md`, `references/layout-patterns.md`
+and `references/document-quality.md` for native composition and review rules.
+Use the assigned `proposal` or `final` mode under `office:design`'s
+`references/art-direction.md`. Proposal mode reviews every assigned native frame
+for every candidate and representative slot, using exact editorial working data
+and unselected DESIGN payloads validated with `require_selected=False`. Final mode
+loads/validates supplied CONTENT.md and selected DESIGN.md under `office:content`'s
+`references/records.md`. Compare project, content revision and requested formats
+against the exact loaded records. Keep each candidate and its findings separately bound.
+Read `office:design`'s `references/editorial-design.md` and
+`references/typography.md` for accepted visual hierarchy, type and figure links.
+Compare the DOCX projection, document type/opening/headings and selected visual
+values to actual saved pages. Keep strategy, identity and layout defects with
+their owners. Narrow edits/read-only review authorize no new theme or strategy;
+legacy sources without shared records are judged against their brief and source
+evidence without inventing retrospective approvals. Art-direction critique follows
+the one design-owned contract and verified reference binding; do not reload the
+complete provider or start another critique workflow.
 
 Verify candidate path and SHA-256 against the supplied identity. Inspect actual
-page renders with an available image-reading tool. Review every page, at full
+page renders with an available image-reading tool. In final/read-only mode review every page, at full
 resolution for labels, clipping and other material details. Record rendered and
 inspected page identities. Missing render or visual access blocks visual approval.
 
@@ -110,12 +117,20 @@ and package inspections (`docx_inspect.py compare`): account for removed parts
 and changed styles, fields, revisions, comments, hyperlinks and content controls;
 similar appearance cannot prove preservation. When a coverage report
 (`docx_inspect.py coverage`) is supplied, every `missing` item is lost source
-text: blocking unless the coordinator shows it was approved as a cut. Fields,
+text for unchanged/locked blocks: blocking unless shown as an approved cut.
+Authorized free transformations require source/destination mapping and direct
+source comparison of facts, conditions, uncertainty and claim strength; a
+generated map or similarity score alone is no preservation proof. Fields,
 tables of contents and pagination count as current only with the coordinator's
 field-update evidence; a request-to-update flag is not that evidence.
 
 ## Classify every defect
 
+- On a designed route, missing required designer delivery, discarded accepted
+  composition or an unfulfilled creative requirement under the art-direction
+  contract blocks approval. Judge the actual subject-specific hierarchy,
+  imagery/form/type and difficult-content treatment. Anonymous directions or
+  ignored visual requirements need repair; personal preference alone is advisory.
 - **Blocking**: the document is wrong or unusable. A claim or figure contradicts
   its source; source text is lost outside the approved cuts; text is clipped or
   overlapping, a heading is separated from its text, a table splits unreadably or
@@ -138,7 +153,7 @@ listed, never blocking on their own), `needs-fix` when at least one blocking
 defect remains, and `blocked` when missing renders or evidence prevent judgment.
 
 Write only the assigned review report: candidate identity, engines, page coverage,
-consulted skills, blocking, advisory and document-level defects with page and
+mode, candidate/frame coverage, consulted skills, blocking, advisory and document-level defects with page and
 object evidence and concrete fixes, preservation findings, limits and
 pass/needs-fix/blocked verdict. Do not edit the document, generate images or
 dispatch workers. The coordinator owns repairs and the final report. Return

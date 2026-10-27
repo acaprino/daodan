@@ -1,5 +1,9 @@
 # Context and scope holdout: results
 
+> Raw historical evidence, not the current decision tracker. The consolidated
+> diary and current approach ledger live in
+> [Codebase Map: context-building benchmark and test diary](../../../docs/research/context-building-benchmarks.md).
+
 Run of 2026-10-24 on Starlette 1.9.0 (37 files, 669 retrieval documents, 263 129
 characters of source), 24 frozen queries, `tuning: false`. Scripts: kernel of marketplace
 39.0.2 with the context adapter (the path run used the 39.0.3 candidate). Protocol and limits are in `README.md`. Coverage is the
@@ -131,7 +135,7 @@ arms deliver whole bodies):
 
 The CodeRankEmbed arm, its harness and its result files were removed on 2026-10-26
 when EmbeddingGemma 2 replaced that model. The comparison of the two embedders is in
-[docs/plugins/codebase-map-research.md](../../../docs/plugins/codebase-map-research.md#embedding-benchmark).
+[docs/research/context-building-benchmarks.md](../../../docs/research/context-building-benchmarks.md#embedding-benchmark).
 One finding of the arm still holds for the planner and packet builder: with a dense
 ranking as lead source they returned `needs_split` for 24 of 24 queries at 24 000
 characters, because every lead became a source-requiring row.

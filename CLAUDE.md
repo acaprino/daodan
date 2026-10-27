@@ -154,9 +154,36 @@ The `report-rendering` leaf supplies optional offline HTML views of canonical
 Markdown. Domain owners retain their reports, scoring and verdicts. See
 [report rendering](docs/plugins/report-rendering.md) for the executable contract.
 
+## Documentation ownership and destinations
+
+Daodan documentation uses one dossier per plugin under `docs/plugins/<plugin>/`:
+index, functional/technical specifications, use cases and tutorials, research, validation,
+dependencies, intakes and licenses. The documentation organizer's canonical
+contract is `plugins/project-knowledge/skills/project-knowledge/references/documentation-organization.md`.
+Intake provenance covers copied sources and delegated tools, runtimes, models
+and parsers, with evidence-backed dates and both Daodan and upstream revisions.
+
+Never create files or make in-place edits under `docs/superpowers/`, including
+plans, specifications, research, generated indexes, link repairs and staging.
+Before an existing artifact there is moved, merged, archived or retired, ask the
+user whether to keep that identified document and where to move it; record its
+own explicit answer. Global reorganization authorization does not replace this
+decision. Preserve unanswered source bytes and continue independent work. An
+approved relocation may remove its exact verified source, but creates no
+replacement or redirect under the forbidden root. Operational notes remain in
+the owned run; historical references do not authorize new writes there.
+
 ## Project structure
 
 `plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow and every skill's `SKILL.md` of that plugin with a note giving the exact command to register: a consumer reaches a provider's tools through its skill. `codebase-map`, `peer-review`, `moe` and `work-controller` declare their servers under their owning skills, launched with `uv run --no-config --no-project --script` so the project under work never chooses a server's package index or interpreter. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
+
+Lifecycle callbacks are declared as neutral `[[hooks]]` in plugin.toml: named
+session-start or user-prompt-submit event, skill-local Python script, literal
+arguments and bounded timeout, with `hooks.lifecycle` declared required or
+optional. Adapters generate native registration where supported; unsupported
+optional hooks retain method checkpoints. Raw hook manifests/frontmatter do not
+bypass the compiler. Enabling a plugin does not waive the host's trust review.
+See `docs/hosts.md` for registration and execution evidence boundaries.
 
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 
@@ -377,7 +404,7 @@ generated reference is stale. `docs/hosts.md` explains installation, selection,
 entry-point mapping, environments, MCP, dispatch and enforcement limits. These
 references document compiled support; they do not establish live host behavior.
 
-`docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-map`), and [`prompt-agent-research.md`](docs/references/prompt-agent-research.md), the research basis for concise, verifiable prompt and agent design. `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/project-delivery/` covers pre-commit evidence, interrupted commits and independent delivery. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-map/` does the same for the Codebase Map pipeline (marketplace 26.4.0): twelve behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned and the perimeter's exclusions named, standalone map consumption without Daodan commands with source verification and explicit fallback), the first nine written after the 2026-09-03 review; `evals/codebase-map/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
+`docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-map`), and [`prompt-engineering-and-brevity.md`](docs/research/prompt-engineering-and-brevity.md), the research basis for concise, verifiable prompt and agent design. `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/project-delivery/` covers pre-commit evidence, interrupted commits and independent delivery. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-map/` does the same for the Codebase Map pipeline (marketplace 26.4.0): twelve behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned and the perimeter's exclusions named, standalone map consumption without Daodan commands with source verification and explicit fallback), the first nine written after the 2026-09-03 review; `evals/codebase-map/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
 
 The review entries, `/daodan:review-changes` and `/daodan:review-branch`, are thin pointers to the canonical review-method, review-preparation and review-consolidation skills; the light review is its own unit and reads none of the variant references. Agent prompts, fix-loop and native output references remain under review-quality-gates. application-cleanup-method is the named Step 7c method, reached from `/daodan:tidy-repo`, and carries severity acceptance, exclusive-workspace/clean-tree prerequisites and snapshot-bound gates. A `fix` authorization edits and verifies without committing; a `commit` authorization additionally commits and is required for bulk application subtraction.
 
@@ -498,8 +525,9 @@ specialist edges optional.
 | abstraction-architect | codebase-map |
 | testing | work-controller, report-rendering |
 | senior-review | work-controller, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, report-rendering |
-| project-knowledge | work-controller, codebase-map, text-humanizer, senior-review, report-rendering |
-| project-delivery | model-routing, work-controller, worktree-manager, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
+| research | work-controller |
+| project-knowledge | research, work-controller, codebase-map, text-humanizer, senior-review, report-rendering |
+| project-delivery | research, model-routing, work-controller, worktree-manager, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, typescript-development, python-development, skill-catalog, peer-review, moe, report-rendering |
 | project-lifecycle | project-delivery, work-controller, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog, peer-review, report-rendering |
 | clean-code | work-controller |
 | office | work-controller |
@@ -562,10 +590,21 @@ verified summaries, retained evidence, unchanged fingerprints and explicit purge
 permission. It does not widen repo-hygiene or system-utils into arbitrary project
 deletion. system-utils organizes personal folders and inactive archives.
 
-research remains web-only and dependency-free. Its deep pipeline plans subquestions,
-dispatches native isolated researchers, verifies contradictions and cites sources
-actually read. A one-fact question uses quick-searcher and writes no report. Local
-experiments belong to consolidate. The research depth bands and backend/key rules
+research owns `science-based-approach`, Science Mode and the scientific archive,
+using work-controller for run discipline and the common project home. Consult
+`docs/research/README.md` for relevant academic, algorithmic and technological
+evidence through that method when Science Mode permits automatic work; explicit
+research remains available when OFF. Cite immutable research revisions and claim
+identities, preserve uncertainty and supersession, and keep one canonical owner
+under each plugin's research dossier. Search related existing Markdown, including
+unindexed research, before creating documents. Reuse the same current file for
+a returning topic; update timestamps, visibly strike through superseded claims
+and keep a descriptive changelog. Ambiguous overlapping owners require a choice,
+not another duplicate. Instructions never store the current mode.
+The existing team-research pipeline and web researchers remain web-only: they
+plan subquestions, verify contradictions and cite sources actually read. A
+one-fact question uses quick-searcher and writes no report. The task owner and
+testing execute local product experiments; research retains protocols/results. The research depth bands and backend/key rules
 are load-bearing in its design and evals: no key in prompts, auto backend needs no
 key, preflight never spends a search credit.
 

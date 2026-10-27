@@ -146,7 +146,7 @@ This card documents the harness; nothing here was executed to write it.
 - Feeds the resolver layer of spec §3.2.2, which fixes the mandatory `resolver` field, resolver identity in the fingerprint and the graded confidence vocabulary from this measurement.
 - Reads the manifest written by [`snapshot.py`](../../plugins/codebase-map/skills/map-method/scripts/snapshot.py) and baselines the lexical resolver of [`semantic_store.py`](../../plugins/codebase-map/skills/map-method/scripts/semantic_store.py).
 - [`gap_diagnosis.py`](../../evals/codebase-map/python-parser/gap_diagnosis.py) in [python-parser](code-graph-python-parser.md) replays this harness's Python gap with the corrected project-membership test.
-- [grammar-parity](code-graph-grammar-parity.md) supersedes `sql_parity_spike.py`; the [embedding benchmark](../plugins/codebase-map-research.md#embedding-benchmark) records the retrieval-quality comparison.
+- [grammar-parity](code-graph-grammar-parity.md) supersedes `sql_parity_spike.py`; the [embedding benchmark](../research/context-building-benchmarks.md#embedding-benchmark) records the retrieval-quality comparison.
 - Consumer plugin: [`codebase-map`](../plugins/codebase-map.md), skill `codebase-map:map-method`, entry `/daodan:map-code` (names per [docs/catalog.md](../catalog.md)).
 
 ### Open points

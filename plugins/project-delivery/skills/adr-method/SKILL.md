@@ -34,6 +34,12 @@ whole directory.
 
 ## Propose: the interview's output
 
+Before choosing or revising alternatives, load `research:science-based-approach`
+and compose its automatic checkpoint with the caller's run and grants. Cite
+research identity, immutable revision and claim IDs with applicability and limits.
+A changed source identifies decisions to review; it never rewrites or approves
+an Accepted record. Reuse the same checkpoint when the interview already did it.
+
 Once the interview fixed scope, nominal, boundary and rejection examples,
 rejected alternatives and invariants, write the body and `propose` with
 title, slug, run identity, `HEAD`, scope lists, any `--supersedes` (another

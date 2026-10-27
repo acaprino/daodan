@@ -434,13 +434,14 @@ def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
 def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Path,
                          packages=None, retired=frozenset(), *,
                          name: str = CATALOG_NAME, description: str = CATALOG_DESCRIPTION) -> bytes:
-    """Serialize one host catalog, folding into a legacy one while migration runs.
+    """Serialize a host catalog; only Claude supplies legacy migration input.
 
     Until every plugin is a neutral kernel, the live Claude catalog still carries
     hand-written entries for the plugins that have not moved yet. Overwriting it
     with the compiled catalog would uninstall them, so compiled entries are
     merged into it instead and the generated catalog is written whole only once
-    nothing legacy is left.
+    nothing legacy is left. Other hosts' catalogs are generated outputs, never
+    authorities for plugin identities, versions or native serialization.
     """
     packages = packages if packages is not None else {
         plugin.name: root / adapter.layout["root"] / "plugins" / plugin.name
@@ -448,7 +449,7 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
     }
     compiled = {plugin.name for plugin in plugins}
     confined_source(root, catalog_path, allow_missing=True)
-    if catalog_path.is_file():
+    if host == "claude" and catalog_path.is_file():
         existing = json.loads(catalog_path.read_text(encoding="utf-8"))
         existing["plugins"] = [entry for entry in existing.get("plugins", []) if entry["name"] not in retired]
         legacy = [

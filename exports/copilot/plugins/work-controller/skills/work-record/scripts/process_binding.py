@@ -77,7 +77,7 @@ def validate(record, project, root, no_links, report_path):
     if run["definition_digest"] != binding["definition_digest"]:
         raise ValueError("Process definition differs from the bound immutable revision")
     agent_jobs = {job["id"] for job in store.jobs(binding["run_id"])
-                  if job["payload"]["type"] == "agent"}
+                  if store.job(binding["run_id"], job["id"])["payload"]["type"] == "agent"}
     if not agent_jobs.issubset({entry["job"] for entry in mappings.values()}):
         raise ValueError("Every process agent job requires a mapped work delivery")
     if "commit" in run["grants"]:

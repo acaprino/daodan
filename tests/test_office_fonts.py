@@ -374,12 +374,15 @@ def _text(path):
 
 
 class FontContractTests(unittest.TestCase):
-    def test_catalog_lists_twelve_open_pairings_with_fetchable_specs(self):
+    def test_catalog_lists_eighteen_open_pairings_with_fetchable_specs(self):
         catalog = (SCRIPTS.parent / "references/font-pairings.md").read_text(encoding="utf-8")
-        rows = [line for line in catalog.splitlines() if line.startswith("| ") and line[2].isdigit()]
-        self.assertEqual(len(rows), 12)
+        lines = catalog.splitlines()
+        header = next(line for line in lines if line.startswith("| # |"))
+        spec_column = [cell.strip() for cell in header.strip("|").split("|")].index("Spec") + 1
+        rows = [line for line in lines if line.startswith("| ") and line[2].isdigit()]
+        self.assertEqual(len(rows), 18)
         for row in rows:
-            specs = [cell.strip("`") for cell in row.split("|")[6].split("` `")]
+            specs = [cell.strip("`") for cell in row.split("|")[spec_column].split("` `")]
             for spec in (cell.strip(" `") for cell in specs):
                 with self.subTest(spec=spec):
                     fetch.parse_spec(spec)
@@ -397,12 +400,22 @@ class FontContractTests(unittest.TestCase):
                 typography = _text(root / "design/SKILL.md")
                 self.assertIn("design/scripts/font_fetch.py\" install", typography)
                 self.assertIn("design/scripts/font_embed.py\" embed", typography)
-                self.assertIn("claim embedding without the inspection result", typography.replace("do not ", ""))
+                self.assertIn("design/scripts/font_embed.py\" inspect", typography)
+                self.assertIn("not proof that fonts travelled", typography)
+                self.assertIn("embedding before preservation checks, actual saved-file rendering and independent review",
+                              typography)
+                self.assertIn("Check selected families, real weights, glyph coverage, licenses, embedding permissions",
+                              typography)
+                self.assertIn("not compulsory letters, pairings or presets", typography)
                 directions = _text(root / "design/references/directions.md")
                 self.assertRegex(directions, r"\| \*\*A Executive Boardroom\*\* \|.*\| 1: Inter / Inter \|")
                 for method in ("pptx/SKILL.md", "docx/SKILL.md"):
-                    self.assertIn("font_embed.py", _text(root / method))
-                    self.assertIn("font pairing", _text(root / method))
+                    body = _text(root / method)
+                    self.assertIn("font_embed.py", body)
+                    self.assertIn("record its inspection result", body)
+                    self.assertIn("without embedding", body)
+                    self.assertIn("`office:design`", body)
+                    self.assertIn("DESIGN.md", body)
 
 if __name__ == "__main__":
     unittest.main()
