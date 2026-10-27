@@ -945,7 +945,7 @@
       "daodan": {
         "commands": [
           {
-            "description": "Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
+            "description": "Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
             "file": "commands/init-project.md",
             "name": "daodan:init-project"
           },
@@ -965,7 +965,7 @@
             "name": "daodan:run-maintenance"
           },
           {
-            "description": "Explore an idea with the user, grounded in the code and, when the project keeps them, its decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
+            "description": "Guide an idea into a project specification in docs/specs/: clarify intent, compare approaches, write the design and obtain approval before planning. Reuse supplied specifications and answers. Writes no code. TRIGGER WHEN: the user wants brainstorming, project design or specifications, or an idea needs clarification before building it; no explicit command is required. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
             "file": "commands/brainstorm-idea.md",
             "name": "daodan:brainstorm-idea"
           },
@@ -980,7 +980,7 @@
             "name": "daodan:get-second-opinion"
           },
           {
-            "description": "Add new behavior through the task cycle: an interview grounded in your code, its intent kept in a proposed decision record when the project uses them, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
+            "description": "Add new behavior through the task cycle: reuse or write a project specification in docs/specs/, obtain its approval, plan waves and execute through stack specialists with a light review before each commit. ADRs keep separate technical decisions. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
             "file": "commands/new-feature.md",
             "name": "daodan:new-feature"
           },
@@ -1033,6 +1033,11 @@
             "description": "Write tests for the code you name: behavior-driven, in the projects framework and layout, extending existing files rather than creating parallel ones. TRIGGER WHEN: the user asks for tests, more coverage or a test for a specific behavior. DO NOT TRIGGER WHEN: a defect is to be fixed with its test (use fix-bug) or the suite is to be audited (use check-health).",
             "file": "commands/write-tests.md",
             "name": "daodan:write-tests"
+          },
+          {
+            "description": "Maintain an existing test suite: review protection, update outdated checks, consolidate duplicates and reorganize ownership, with accepted scope and verified protection. TRIGGER WHEN: the user asks to clean up, rationalize, consolidate, reorganize or revise existing tests. DO NOT TRIGGER WHEN: only adding protection for a behavior (use write-tests) or fixing a product defect (use fix-bug).",
+            "file": "commands/maintain-tests.md",
+            "name": "daodan:maintain-tests"
           },
           {
             "description": "Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, or the depth chosen at the projects first use, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).",
@@ -2453,7 +2458,7 @@
         "root": "plugins/project-delivery",
         "skills": [
           {
-            "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to investigate or debug a problem, build or refactor code, produce complete project documentation, define specifications or implementation plans, resume work, or finish and merge a delivery. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
+            "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
             "file": "skills/delivery-method/SKILL.md",
             "id": "project-delivery:delivery-method",
             "name": "delivery-method"
@@ -3323,7 +3328,7 @@
             "name": "python-audit-method"
           },
           {
-            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs on an empty folder and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
+            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs without an application scaffold and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
             "file": "skills/python-scaffold-method/SKILL.md",
             "id": "python-development:python-scaffold-method",
             "name": "python-scaffold-method"
@@ -6653,7 +6658,7 @@
             ]
           },
           {
-            "description": "Authors behavior-driven suites for existing code, or drives new ones red-green. Auto-detects the framework, and follows the test-hygiene search-before-write protocol instead of creating parallel files. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.",
+            "description": "Reuses and updates existing behavior-driven tests before adding justified protection, or drives new behavior red-green. Detects the framework and follows test-hygiene ownership rules. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.",
             "file": "agents/test-writer.md",
             "id": "testing:test-writer",
             "permissions": [
@@ -7048,7 +7053,7 @@
             "name": "test-preparation"
           },
           {
-            "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when auditing a suite, quarantining tests or consolidating a modules tests (consolidation through /daodan:tidy-repo).",
+            "description": "Maintain existing test suites: diagnose failures, review and consolidate redundant tests, preserving behavior, independent failure modes and bugfix provenance. Load for suite audits, quarantine or rationalization through /daodan:maintain-tests (also composed by /daodan:tidy-repo).",
             "file": "skills/test-remediation-method/SKILL.md",
             "id": "testing:test-remediation-method",
             "name": "test-remediation-method"
@@ -7541,7 +7546,7 @@
         "root": "plugins/work-controller",
         "skills": [
           {
-            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity, questions to the user and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, asking the user, recording, resuming or closing a project intervention.",
+            "description": "Shared working discipline, run identity, snapshots, delivery/verification accounting, authorization continuity, user questions and phase recovery. Load before authoring components/tools, briefing workers, asking users, recording, resuming or closing project interventions.",
             "file": "skills/work-record/SKILL.md",
             "id": "work-controller:work-record",
             "name": "work-record"

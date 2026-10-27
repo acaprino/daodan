@@ -185,6 +185,7 @@
         "./skills/humanize-text-workflow",
         "./skills/init-project-workflow",
         "./skills/investigate-problem-workflow",
+        "./skills/maintain-tests-workflow",
         "./skills/map-code-workflow",
         "./skills/new-feature-workflow",
         "./skills/onboard-project-workflow",
@@ -206,7 +207,7 @@
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "2.5.1"
+      "version": "2.6.1"
     },
     {
       "author": {
@@ -530,7 +531,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/codex/plugins/project-delivery",
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "author": {
@@ -633,7 +634,7 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/codex/plugins/python-development",
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "author": {
@@ -814,7 +815,7 @@
         "work-controller",
         "report-rendering"
       ],
-      "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
+      "description": "Behavior-driven test authoring and suite maintenance: review existing protection, reuse and update checks before justified additions, diagnose failures, and consolidate redundant tests while preserving independent failure modes and bugfix provenance. Snapshot-bound gates and owned recovery govern accepted changes; TDD and browser E2E methods remain delegated to their required providers.",
       "license": "MIT",
       "name": "testing",
       "skills": [
@@ -823,7 +824,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/codex/plugins/testing",
-      "version": "4.4.0"
+      "version": "4.5.0"
     },
     {
       "author": {
@@ -890,7 +891,7 @@
         "./skills/work-record"
       ],
       "source": "./exports/codex/plugins/work-controller",
-      "version": "3.1.1"
+      "version": "3.1.3"
     },
     {
       "author": {

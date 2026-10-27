@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:5d3fb9783cc2d83f901456e60639c4ddd1524cefb8c45b8f97e0d9b42adbdb97",
+  "coreDigest": "sha256:9f481c7497f992d395ab0105d8e2aed88651a8adb10c234c9c34e357e840f568",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "python-development",
-  "version": "4.2.0"
+  "version": "4.2.1"
 }

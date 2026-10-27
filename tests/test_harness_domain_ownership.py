@@ -1,5 +1,7 @@
 """Ownership contracts for the harness and its unified correctness review."""
 import json
+from dataclasses import replace
+from hashlib import sha256
 from pathlib import Path
 import re
 import tempfile
@@ -116,16 +118,16 @@ def markdown_section(case, text, title):
 
 def assert_brief_inputs(case, text):
     for pattern in (r"(?i)success criteria|observable delivery criteria",
-                    r"(?i)approved requirement source", r"(?i)applicable[^.]*instruction[^.]*rules",
+                    r"(?i)approved requirement source", r"(?i)applicable(?:[^.]*instruction[^.]*rules| instructions\b)",
                     r"(?i)working discipline|four[^.]*rules"):
         case.assertRegex(text, pattern)
 
 
 def assert_review_input_boundary(case, text, worker=False):
     case.assertRegex(text, r"(?i)independent discovery")
-    case.assertRegex(text, r"(?i)omit peer findings|excludes peer results before your own delivery")
-    case.assertRegex(text, r"(?i)verification or criticism")
-    case.assertRegex(text, r"(?i)findings explicitly assigned by the domain method")
+    case.assertRegex(text, r"(?i)omit peer findings|excludes peer (?:results before your own delivery|findings)")
+    case.assertRegex(text, r"(?i)verification(?: or |/)criticism")
+    case.assertRegex(text, r"(?i)findings (?:explicitly assigned by the domain method|the domain method explicitly declares as inputs)")
     if worker:
         case.assertIn("Do not read undeclared peer or private artifacts", text)
         case.assertIn("do not dispatch further workers", text)
@@ -136,8 +138,8 @@ def assert_review_input_boundary(case, text, worker=False):
 def assert_discipline_authority(case, protocol):
     discipline = markdown_section(case, protocol, "Working discipline")
     case.assertRegex(discipline, r"(?i)existing task authorization covers removal necessary to the approved change")
-    case.assertRegex(discipline, r"(?i)grants no additional mutation or runtime authority")
-    case.assertRegex(discipline, r"(?i)read-only worker[^.]*success[^.]*assigned evidence and report[^.]*permitted method")
+    case.assertRegex(discipline, r"(?i)grants no additional mutation(?: or |/)runtime authority")
+    case.assertRegex(discipline, r"(?i)(?:read-only worker[^.]*success[^.]*assigned evidence and report|read-only success concerns assigned evidence/report)[^.]*permitted method")
 
 
 def assert_delegated_writer(case, role):
@@ -154,7 +156,19 @@ def assert_delegated_writer(case, role):
     case.assertRegex(generation, r"(?i)run the test suite")
     interactive = role[role.index("# MODE 2:"):role.index("# ANTI-PATTERNS")]
     case.assertRegex(interactive, r"(?i)only[^.]*user[^.]*explicitly[^.]*interactive tdd teaching[^.]*implement the production code themselves")
+    assert_protection_delta(case, role)
     return delegated
+
+
+def assert_protection_delta(case, role):
+    """Authoring must decide the protection delta before growing the suite."""
+    delta = markdown_section(case, role, "Step 2: Protection delta")
+    for pattern in (r"(?i)existing check", r"(?i)reuse.*update.*add",
+                    r"(?i)zero new tests[^.]*valid",
+                    r"(?i)failure mode", r"(?i)evidence"):
+        case.assertRegex(delta, pattern)
+    case.assertRegex(role, r"(?i)read[^.]*affected existing tests|review[^.]*affected existing tests")
+    case.assertRegex(role, r"(?i)preserve[^.]*distinct failure modes|preserve[^.]*independent failure modes")
 
 
 class HarnessDomainOwnershipTests(unittest.TestCase):
@@ -234,6 +248,40 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
 
         assert_delegated_writer(self, role)
 
+    def test_test_maintenance_entry_declares_canonical_isolated_owners(self):
+        entry = manifest(ENTRY)
+        self.assertIn("maintain-tests", entry["components"]["workflows"])
+        self.assertTrue({"testing", "work-controller"}.issubset(entry["dependencies"]["required"]))
+        workflow = tomllib.loads((ROOT / "plugins/daodan/workflows/maintain-tests.toml").read_text(encoding="utf-8"))
+        self.assertEqual(set(workflow["dispatch"]["roles"]),
+                         {"testing/test-suite-auditor", "testing/test-writer"})
+        self.assertIs(workflow["dispatch"]["isolated"], True)
+        self.assertIs(workflow["dispatch"]["inline_workers"], True)
+
+        from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support
+        from scripts.daodan.load import load_plugin
+
+        plugin = load_plugin(ROOT / "plugins" / ENTRY)
+        maintenance = next(w for w in plugin.workflows if w.name == "maintain-tests")
+        plugin = replace(plugin, workflows=(maintenance,))
+        for host in HOSTS:
+            adapter = load_adapter(ROOT / "adapters", host)
+            with self.subTest(host=host, capability="baseline"):
+                self.assertIn(resolve_support(plugin, adapter).state, {"native", "adapted"})
+            for capability in ("contexts.isolate", "roles.dispatch"):
+                bindings = dict(adapter.bindings)
+                bindings[capability] = replace(bindings[capability], state="unsupported")
+                with self.subTest(host=host, capability=capability):
+                    report = resolve_support(plugin, replace(adapter, bindings=bindings))
+                    self.assertEqual(report.state, "unsupported")
+                    self.assertIn(capability, report.missing_capabilities)
+            shared = replace(adapter, strategies=tuple(
+                replace(strategy, isolated=False) for strategy in adapter.strategies))
+            with self.subTest(host=host, capability="isolated-strategy"):
+                report = resolve_support(plugin, shared)
+                self.assertEqual(report.state, "unsupported")
+                self.assertEqual(report.workflow_strategies, (("maintain-tests", "none"),))
+
     def test_execution_discipline_survives_all_five_host_bodies_and_inline_resources(self):
         from scripts.daodan.adapter import HOSTS, load_adapter
         from scripts.daodan.load import load_plugin
@@ -276,6 +324,16 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                     self.assertIn("CLAUDE.md for Claude", instructions)
                     self.assertIn("do not invent a universal filename", instructions)
                     self.assertIn("do not rewrite a generated instruction copy directly", instructions)
+                with self.subTest(host=host, component="testing-upstream-provenance"):
+                    skill = roots["testing"] / "skills/test-hygiene"
+                    self.assertIn("references/upstream.md", (skill / "SKILL.md").read_text(encoding="utf-8"))
+                    provenance = (skill / "references/upstream.md").read_text(encoding="utf-8")
+                    for notice, expected_hash in (
+                            ("LICENSE-mattpocock-skills-MIT.txt", "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5"),
+                            ("LICENSE-wshobson-agents-MIT.txt", "f89abb55d9f073f38f1703e4518f0613c788c6174be7f13b8dfe48a1c076c746")):
+                        self.assertIn(notice, provenance)
+                        self.assertIn(expected_hash, provenance)
+                        self.assertEqual(sha256((skill / "references" / notice).read_bytes()).hexdigest(), expected_hash)
                 for reference in ("working-principles", "instruction-example"):
                     with self.subTest(host=host, component=reference):
                         path = roots["project-knowledge"] / f"skills/instructions-method/references/{reference}.md"
@@ -292,6 +350,14 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                             assert_review_input_boundary(self, contract, worker=True)
                         else:
                             assert_delegated_writer(self, text)
+                with self.subTest(host=host, component="test-maintenance-entry"):
+                    body = without_host_binding(self, (roots[ENTRY] / wrapper_path(
+                        host, ENTRY, "maintain-tests")).read_text(encoding="utf-8"), host)
+                    for owner in ("work-controller:work-record", "testing:test-preparation",
+                                  "testing:test-remediation-method"):
+                        self.assertIn(owner, body)
+                    self.assertRegex(body, r"(?i)dry.run")
+                    self.assertRegex(body, r"(?i)accept|authoriz")
                 if host in {"codex", "pi"}:
                     # Since 38.0.0 the lifecycle and review entries are daodan's,
                     # so the inline role bodies ship in its package.

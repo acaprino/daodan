@@ -79,36 +79,35 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Initialize a project
 
-Initialize new or existing projects. Idempotent: keep every valid existing part.
-Every work command runs it when no loop block exists.
+Preserve valid parts; initialize missing loop blocks.
 
-## An empty folder
+## Before scaffolding
 
-Ask what to build: purpose, stack, kind (service, library, command-line tool,
-application). For Python, load the skill `python-development:python-scaffold-method`,
-whose plan-and-confirm step is the authorization. For another stack, use its
-official initializer with the user's choices and show the command before
-running it. Then continue below.
+Documentation and run records are not application code. For projects without
+application code, load `references/specification.md`; verify and reuse the approved
+binding. If approval is missing or stale, follow `references/brainstorm.md` only
+through specification approval, then return here. Do not start feature execution.
 
-## An existing project
+Reuse saved first-use choices. For Python, load `python-development:python-scaffold-method`;
+its plan confirmation separately authorizes scaffolding. For another stack, show
+its official initializer with the user's choices before authorized execution.
 
-1. **Map.** Execute the analyze entry's preflight at the first use's depth, lite
-   by default (none skips this step), dispatch
-   `codebase-map:map-analyst` in an isolated context, and bind the run. An
-   existing completed run on the same target is offered as the update parent.
-   Areas deepen later, where tasks work.
-2. **Requirement records.** When requested, draft missing ADR/FRD through
-   `project-delivery:project-bootstrap` from verified evidence, Proposed only.
-   Validate both through their owners.
-3. **Environment.** Probe the interpreter and runners as
-   `references/preflight.md` does and record them in the run's `environment`.
-4. **Instructions.** Load `project-knowledge:instructions-method`; create the
-   authoritative file when authorized, or audit it, and write the loop block
-   with the verified test, lint, type and build commands, the workspace
-   convention and the active records resolved in step 2.
-5. **Baseline.** Run the declared test command once and record the baseline
-   as `references/preflight.md` classifies it; record `last_synced` as the
-   current head.
-6. **Report.** What exists, what was created, what could not be verified (a
-   runner missing, a command that needs an environment), and the first task's
-   command.
+## Existing project or completed scaffold
+
+Apply deferred first-use choices once repository and source exist.
+
+1. **Map.** Execute analyze preflight at first-use depth (lite default,
+   none skips). Dispatch isolated `codebase-map:map-analyst`, bind the run,
+   offer a completed same-target run as update parent. Deepen task areas later.
+2. **Records.** When requested, draft missing ADR/FRD through
+   `project-delivery:project-bootstrap` from verified evidence, Proposed only;
+   validate through their owners.
+3. **Environment.** Probe interpreter/runners per `references/preflight.md`;
+   record `environment`.
+4. **Instructions.** Load `project-knowledge:instructions-method`; create when
+   authorized or audit. Write the loop block with verified test/lint/type/build
+   commands, workspace convention and resolved active records.
+5. **Baseline.** Run declared tests once, classify per `references/preflight.md`,
+   record `last_synced` at current HEAD.
+6. **Report.** State what exists/was created, unavailable checks and the first
+   task's command.

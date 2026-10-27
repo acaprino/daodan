@@ -16,9 +16,10 @@ Decision records are optional. A project keeps them exactly when
 `docs/adr/README.md` exists, and Daodan asks once, at the project's first use,
 together with whether to analyze the project now (no, lite or deep). A yes
 creates the index and commits it alone, so task worktrees start with it. Without
-records the task cycle works the same: the interview's examples, rejected
-alternatives and invariants go into the task's run as `intent.md`, and no
-command mentions records. `/daodan:record-decision` turns them on later by
+records the task cycle still writes and approves its project specification in
+`docs/specs/`; the run's `intent.md` links that document and its approval. ADRs
+capture separate technical decisions when enabled, without duplicating the
+specification. `/daodan:record-decision` turns them on later by
 creating the index. No command turns them off.
 
 The rest of this guide describes a project that keeps them.

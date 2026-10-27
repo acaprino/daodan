@@ -126,7 +126,8 @@ class CatalogGenerationAuthorityTests(unittest.TestCase):
             with self.subTest(host=host):
                 self.assert_compiled_catalog(host)
 
-    def test_authoritative_claude_legacy_registration_survives_partial_migration(self):
+    def test_claude_metadata_does_not_preserve_generated_legacy_residue(self):
+        """Accepted metadata is input; unregistered entries are generated residue."""
         legacy = {"name": "foreign", "version": "7.0.0",
                   "source": {"source": "github", "repo": "someone/foreign"},
                   "agents": ["./old/worker.md"], "custom": {"keep": True}}
@@ -138,15 +139,10 @@ class CatalogGenerationAuthorityTests(unittest.TestCase):
 
         actual = self.catalog("claude")
         self.assertEqual(actual["metadata"], self.authority["metadata"])
-        self.assertEqual(actual["custom"], self.authority["custom"])
-        self.assertEqual(actual["plugins"][0], legacy)
-        self.assertEqual([entry["name"] for entry in actual["plugins"]], ["foreign", "example"])
-        self.assertEqual(actual["plugins"][1]["version"], "1.2.3")
-        self.assertEqual(actual["plugins"][1]["source"], "./exports/claude/plugins/example")
+        self.assertNotIn("custom", actual)
         for host in HOSTS:
-            if host != "claude":
-                with self.subTest(host=host):
-                    self.assert_compiled_catalog(host)
+            with self.subTest(host=host):
+                self.assert_compiled_catalog(host)
 
 
 if __name__ == "__main__":

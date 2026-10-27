@@ -74,28 +74,31 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Continue a task
 
-Load `worktree-manager:worktree-method`; reconcile run, Git identity, catalog and
-holder at the original project path.
+Load `references/specification.md`; verify recorded specification bytes/approval
+before resuming. Changed bytes reopen approval/plans.
+
+Load `worktree-manager:worktree-method`; reconcile run/Git-identity/catalog/holder
+at original project path.
 
 1. **Find.** `run_state.py agenda --project <root> --branch <branch>`.
-   Detached: replace `--branch` with `--worktree <original-checkout>`; add
-   `--run-id <task>` when known. Match run/project/holder. Check the original
-   agenda before offering `Daodan-Task:` trailer/branch-record adoption.
-   One open task per branch.
+   Detached: replace `--branch` with `--worktree <original-checkout>`; include known
+   `--run-id <task>`. Match run/project/holder; inspect original
+   agenda before `Daodan-Task:` trailer/branch-record adoption.
+   One open task/branch.
 2. **Take.** `resume` with session/current authorizations. Commit recovery requires
-   matching parent, bytes, owned paths and trailer. Integration recovery requires
+   matching parent/bytes/owned-paths/trailer. Integration recovery requires
    delivered branch review, unchanged raw snapshot/identity, exact verified
-   detached result and preserved source branch. Refresh candidate; preserve
+   detached result, preserved source branch. Refresh candidate; preserve
    receipts/gates; verify stale final gates. Refuse other changes. Take over only
-   after the user confirms the previous session closed.
+   after user confirms previous session closed.
 3. **Answer.** Record command text against pending questions first, source
-   `continue`; ask remaining questions one per turn.
-4. **Continue.** Restart the first open wave/review/merge; verify and review
-   changed bytes before the next wave.
+   `continue`; ask remaining questions one/turn.
+4. **Continue.** Restart first open wave/review/merge; verify and review
+   changed bytes before next wave.
 
-Retry failed setup/cleanup, never verified integration. Completed records remain
+Retry failed setup/cleanup, never verified integration. Completed records
 immutable; cleanup receipts stay outside.
 
 For `process`, follow `work-controller:work-record`'s `references/process-runtime.md`:
 validate identity and reconcile attempts/host handles before redispatch.
-Legacy records retain their method.
+Legacy records retain method.

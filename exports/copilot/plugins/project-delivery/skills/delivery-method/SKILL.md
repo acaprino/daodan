@@ -2,7 +2,7 @@
 name: delivery-method
 description: >
   Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge.
-  TRIGGER WHEN: the user wants to investigate or debug a problem, build or refactor code, produce complete project documentation, define specifications or implementation plans, resume work, or finish and merge a delivery.
+  TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command.
   DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.
 ---
 
@@ -87,89 +87,69 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Project delivery
 
-Load `work-controller:work-record` for records, snapshots, verification and recovery.
-Coordinate authorized outcomes within scope; reuse detection owners.
+Load `work-controller:work-record` for grants/snapshots/delivery/recovery.
+Own design-to-delivery; compose methods, never competing workflows.
 
 ## Load map
 
-Read each step's units at its start.
+Load by step:
 
-| Operation or step | Read |
-|---|---|
-| first use | `references/first-use.md` |
-| initialization or missing ADR/FRD | `references/init.md`; `project-delivery:project-bootstrap` |
-| change, phase 1 | `references/preflight.md`, `references/context-cycle.md` |
-| change, phases 2 and 3 | `references/interview.md` |
-| change, phases 4 and 5 | `references/waves.md`, then `references/worker-brief.md` before each dispatch |
-| change, overview | `references/change.md` |
-| investigate, debug | `references/investigate.md` |
-| complete documentation | `references/document.md` |
-| repair, refactor | `references/repair.md`, `references/refactor.md`, then the change phases they name |
-| continue a task | `references/continue.md` |
-| status | `references/status.md` |
-| verify | `references/verify.md` |
-| brainstorm | `references/brainstorm.md` |
-| finish, phase 7 | `references/finish.md`, then `references/realign.md` |
-| sync | `references/sync.md`, then `references/realign.md` |
-| consolidate | `references/realign.md`; a run's output, `references/retention.md` |
-| a requested HTML view | the project-run view of `report-rendering:report-renderer` |
+- First use: `references/first-use.md`.
+- Initialization/ADR/FRD bootstrap: `references/init.md`; `project-delivery:project-bootstrap`.
+- Change overview: `references/change.md`.
+- Preflight: `references/preflight.md`, `references/context-cycle.md`.
+- Interview/specification: `references/interview.md`.
+- Plan/execution: `references/waves.md`; dispatch: `references/worker-brief.md`.
+- Specifications/approval/handoff: `references/specification.md`.
+- Brainstorm: `references/brainstorm.md`.
+- Load skills: `references/investigate.md`.
+- Documentation: `references/document.md`.
+- Repair/refactor: `references/repair.md`, `references/refactor.md`.
+- Resume/status: `references/continue.md`, `references/status.md`.
+- Verification: `references/verify.md`.
+- Integration: `references/finish.md`, `references/realign.md`.
+- Sync: `references/sync.md`, `references/realign.md`.
+- Consolidation: `references/realign.md`, `references/retention.md`.
 
 ## Run record
 
-Inputs: operation, root, objective and source; optional target, run and evidence.
-Initialize through the protocol helper. Resume the agenda's branch task with
-current authorizations and this session. Preview is the default; `fix` and
-`commit` grants are recorded separately, never push or permanent deletion.
-Without `docs/adr/README.md`, the run's `intent.md` replaces records.
+Initialize operation/root/objective/source/scope.
+Resume with current grants and session; preview is default. Specifications live
+in `docs/specs/`; `intent.md` binds approval. ADRs retain separate technical decisions.
 
-New execution runs set `process_required: true`; read Work Controller's
-`references/process-runtime.md` to admit approved YAML and bind worker outputs
-before dispatch. Legacy runs retain their recorded method. Graph, native ledger
-and domain reviews must succeed; commits remain in the reviewed workflow.
+New execution runs set `process_required: true`; follow work-record's
+`references/process-runtime.md` to admit approved YAML and bind workers before
+dispatch. Preserve legacy unbound runs. Require process/delivery/domain gates;
+commit through the reviewed workflow.
 
 ## Canonical methods
 
-Load owners by name, never by path.
-
-| Need | Load or dispatch |
-|---|---|
-| Static context, packets, run binding | `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst` for analysis |
-| Scientific grounding before substantive decisions | Load `research:science-based-approach`, automatic checkpoint entry; reuse the caller run and grants |
-| Decisions and record lifecycle | `project-delivery:adr-method` |
-| Root-cause investigation | `senior-review:investigation-method` |
-| Any review, `light` or `branch` | `senior-review:review-method`; `branch` through `senior-review:review-preparation` |
-| Application subtraction | `senior-review:application-cleanup-method` |
-| Suite preparation and remediation | `testing:test-preparation`, `testing:test-remediation-method` |
-| Test authoring | dispatch `testing:test-writer` |
-| Behavior-preserving readability | `clean-code:readability-method` |
-| Structural diagnosis | `abstraction-architect:abstraction-architect` and its auditor |
-| Durable instructions, guides, README | `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft` |
-| Workspace detection and reversible operations | `repo-hygiene:repo-hygiene` |
-| Task workspaces and catalog | `worktree-manager:worktree-method` |
-| Requested model challenge | `peer-review:cross-model-peer-review`, dispatching `peer-review:packet-builder` and `peer-review:respondent`; questions use `moe:multi-model-deliberation` |
-
-For a Codebase Map, execute the analyze entry's preflight, checkpoints,
-delivery check and publication decision here and dispatch the analyst for the
-phases; loading a role as a skill runs nothing. Never start a command from
-inside another.
+- Maps: `codebase-map:map-method`; dispatch isolated `codebase-map:map-analyst`.
+  Own analyze preflight/checkpoints/delivery/publication; loading is not dispatch.
+- Load skills: `project-delivery:adr-method`.
+- Load skills: `research:science-based-approach` before substantive decisions,
+  automatic checkpoint entry; reuse the caller run and grants.
+- Load skills: `senior-review:investigation-method`.
+- Load skills: `senior-review:review-method`; branches: `senior-review:review-preparation`.
+- Load skills: `senior-review:application-cleanup-method`.
+- Tests: `testing:test-preparation`, `testing:test-remediation-method`; dispatch `testing:test-writer`.
+- Load skills: `clean-code:readability-method`.
+- Load skills: `abstraction-architect:abstraction-architect` and its auditor.
+- Load skills: `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft`.
+- Load skills: `repo-hygiene:repo-hygiene`.
+- Task workspaces/catalog: load skill `worktree-manager:worktree-method`.
+- Requested challenge: `peer-review:cross-model-peer-review`; dispatch `peer-review:packet-builder`,
+  `peer-review:respondent`. Requested opinion: `moe:multi-model-deliberation`.
+- HTML: the coordinator must load skill `report-rendering:report-renderer` and read `references/project-run-view.md` before closure when requested/useful.
 
 The worktree method owns workspace creation/resumption and catalog annotations;
-Work Controller owns agenda and grants. Status and brainstorming create no
-worktree. Missing Worktrunk blocks dependent operations with its recovery path.
+Work Controller owns agenda/grants. Status and brainstorming create no worktree.
+Missing Worktrunk blocks dependent operations with its recovery path.
 
 ## Delivery and closure
 
-Keep native reports, hashes, scope, status, evidence and gaps. Missing/failed
-deliveries stay visible. Deduplicate by behavior, retain contradictions and
-count shared-premise reviewers as one observation.
-
-For an HTML view, requested or useful for navigation, the coordinator must
-load skill `report-rendering:report-renderer` and read `references/project-run-view.md`
-before closing; workers keep native deliveries.
-
-Use the protocol envelope for `result.json`, referencing each native report.
-Validate before claiming completion; validation alone is no reading evidence.
-Report inventory, reading and runtime coverage separately, each check's exact
-candidate, decisions, changes, limits and next actions. Source inspection proves
-no runtime coverage; self-generated tests prove no correctness; quarantine moves
-prove no recovered disk space.
+Validate the protocol's `result.json`, retaining native reports, hashes, gaps
+and contradictory/shared-premise findings. Missing deliveries block completion.
+Report inventory/reading/runtime separately, with exact candidates/limits.
+Static checks prove no runtime execution; self-checks no independent correctness;
+quarantine moves no recovered disk space.

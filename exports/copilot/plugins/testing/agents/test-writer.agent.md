@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: 'Authors behavior-driven suites for existing code, or drives new ones red-green. Auto-detects the framework, and follows the test-hygiene search-before-write protocol instead of creating parallel files. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.'
+description: 'Reuses and updates existing behavior-driven tests before adding justified protection, or drives new behavior red-green. Detects the framework and follows test-hygiene ownership rules. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.'
 tools: ['search', 'edit', 'runCommands']
 ---
 
@@ -156,12 +156,23 @@ Use this for coordinator-owned test authoring, or when the user asks for tests o
 - Analyze the public API surface. What are the inputs? What are the side effects?
 - Identify the boundary contract and choose controlled doubles for isolated behavior or real fixtures for integration (Fetch/Axios, Prisma/SQLAlchemy, fs/os). A boundary does not automatically require a mock.
 
-## Step 2: Test Plan Matrix
-Instead of just writing tests, construct a matrix of behaviors:
-- **Happy Paths:** The core business logic works as intended.
-- **Edge Cases:** Empty arrays, null/None, extreme numbers, unusual characters.
-- **Error States:** Network timeouts, missing files, invalid credentials.
-- **State Transitions:** If testing a state machine or class, verify the lifecycle.
+## Step 2: Protection delta
+
+Read the affected existing tests and compare their independent oracles with the
+approved requirement before proposing changes. Map each requested behavior and
+distinct failure mode to current protection:
+
+| Requirement / failure mode | Existing check | Action (reuse/update/add) | Evidence |
+|---|---|---|---|
+
+Reuse a sufficient check; update its existing owner when an approved contract
+changes; add only protection for an evidenced gap. Zero new tests is a valid
+result when existing checks already protect the requested behavior. Choose
+relevant success, boundary, error and state-transition cases from that gap,
+without generating an exhaustive speculative matrix. Preserve distinct failure
+modes and bugfix provenance. A refactor retargets meaningful protection; it does
+not establish that an old assertion is obsolete. Broader redundancy or retirement
+uses `testing:test-remediation-method` and its accepted inventory.
 
 ## Step 3: Execution
 - Write the tests following the target framework's best practices (e.g., `describe/it` for Jest, `def test_*` with fixtures for Pytest).
@@ -195,7 +206,7 @@ Use this only when the user explicitly chooses interactive TDD teaching and will
 - Suggest refactorings. Re-run the tests to ensure they still pass.
 
 ## Step 5: Loop
-- Proceed to the next behavior in the Test Plan Matrix and write the next failing test.
+- Proceed to the next agreed unprotected behavior and write its failing test.
 
 ---
 
@@ -213,7 +224,9 @@ Use this only when the user explicitly chooses interactive TDD teaching and will
 
 # OUTPUT FORMAT
 
-Deliver the saved test paths, protected behaviors, detected framework and observed
+Deliver the reuse/update/add decisions, existing checks reviewed, justified gaps
+and saved test paths. Explain new-file ownership and preserved independent
+protection; a verified reuse-only result needs no new file. Include the detected framework and observed
 verification commands/results, bound to the candidate. State missing checks and
 remaining risk. Link saved code; show it inline only when requested or when no file
 was written. A command proposed for the user is unexecuted evidence.

@@ -49,7 +49,7 @@ Supply the native conventions below once in the assignment. Findings require cur
 ### Recommended Remediation Order
 
 1. Resolve product/oracle/environment diagnoses and missing runner/configuration/absent-suite findings; keep unresolved protection visible
-2. `/daodan:tidy-repo` test consolidation for the worst modules by D5/D7 density: [ranked list]
+2. `/daodan:maintain-tests` consolidation for the worst modules by D5/D7 density: [ranked list]
 3. [Coverage-absence modules worth new tests, if D9 found any]
 ```
 

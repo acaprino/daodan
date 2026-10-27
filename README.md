@@ -17,17 +17,18 @@
   <a href="#license">MIT License</a>
 </p>
 
-## TL;DR
-
-Daodan gives coding agents a reusable understanding of your project and a task
-cycle for making verified changes. A local Codebase Map records the code;
-relevant skills supply context for analysis, development and research. Tasks keep
-decisions, changes, tests and documentation connected. Specialist plugins extend
-the same marketplace to Office, languages, frameworks, marketing and other domains.
+> [!NOTE]
+> **TL;DR**
+>
+> Daodan gives coding agents a reusable understanding of your project and a task
+> cycle for making verified changes. A local Codebase Map records the code;
+> relevant skills supply context for analysis, development and research. Tasks keep
+> decisions, changes, tests and documentation connected. Specialist plugins extend
+> the same marketplace to Office, languages, frameworks, marketing and other domains.
 
 | Plugins | Skills | Workflows | Agents |
 |:---:|:---:|:---:|:---:|
-| **48** | **95** | **64** | **141** |
+| **48** | **95** | **65** | **141** |
 
 ## What sets Daodan apart
 
@@ -142,6 +143,11 @@ explains the lifecycle and ownership boundaries.
 /daodan:finish-task                   branch review, merge, realignment
 ```
 
+```mermaid
+flowchart LR
+    A["Interview & Spec"] --> B["Micro-Tasks (TDD)"] --> C["Pre-Commit Review"] --> D["Branch Review & Merge"]
+```
+
 Start with initialization, choose the command for the work, and finish with
 review and realignment. Use the host-specific entry names below.
 
@@ -150,10 +156,11 @@ review and realignment. Use the host-specific entry names below.
 
 A work command asks whether to work in a worktree, a branch or in place, then
 interviews you with real examples from your code, one question at a time, until
-scope, examples, rejected alternatives and invariants are fixed. It writes them
-as a proposed decision record under `docs/adr/` when the project keeps decision
-records, a choice asked once at its first use, or into the task's run otherwise;
-then it plans waves of micro-tasks of at most
+scope, examples, rejected alternatives and invariants are fixed. It reuses or
+writes a project specification in `docs/specs/` and obtains approval of its exact
+text before planning. Separate technical decisions use `docs/adr/` when the
+project keeps those records; the run links the specification and its approval.
+Then it plans waves of micro-tasks of at most
 four files, has the stack's specialist write each one test first, and commits each
 with a line naming the task and wave. It stops only for your answers, the plan
 approval and the merge authorization. How many reviewers each review gets is
@@ -222,6 +229,7 @@ Copilot; OpenCode V2 uses the Claude Code form.
 | `/daodan:review-changes` | Light review of your changes, a commit, a file or a document |
 | `/daodan:review-branch` | Complete review of a branch or a pull request |
 | `/daodan:write-tests` | Tests for the code you name |
+| `/daodan:maintain-tests` | Audit, clean up, reorganize or consolidate an existing test suite with verified protection |
 | `/daodan:map-code` | Deepen the Codebase Map on an area, or map the project |
 | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
 | `/daodan:humanize-text` | Make a text or file read naturally without inventing content |
@@ -255,7 +263,7 @@ GridCraft runtimes; installing the plugin does not install those engines. See
 
 ## Plugin, skill and command catalog
 
-All **48 local plugins**, **95 registered skills**, **64 commands/workflows** and
+All **48 local plugins**, **95 registered skills**, **65 commands/workflows** and
 **141 agents/roles**, grouped below. Open a category, then a plugin to see its
 complete component list and source links.
 
@@ -276,7 +284,7 @@ See the [dependency catalog](docs/catalog.md) and [host reference](docs/hosts.md
 | Components | Registered names |
 |---|---|
 | Skills | None |
-| Commands / workflows | [/daodan:init-project](plugins/daodan/workflows/init-project.md), [/daodan:onboard-project](plugins/daodan/workflows/onboard-project.md), [/daodan:check-health](plugins/daodan/workflows/check-health.md), [/daodan:run-maintenance](plugins/daodan/workflows/run-maintenance.md), [/daodan:brainstorm-idea](plugins/daodan/workflows/brainstorm-idea.md), [/daodan:investigate-problem](plugins/daodan/workflows/investigate-problem.md), [/daodan:get-second-opinion](plugins/daodan/workflows/get-second-opinion.md), [/daodan:new-feature](plugins/daodan/workflows/new-feature.md), [/daodan:fix-bug](plugins/daodan/workflows/fix-bug.md), [/daodan:refactor-code](plugins/daodan/workflows/refactor-code.md), [/daodan:continue-task](plugins/daodan/workflows/continue-task.md), [/daodan:show-status](plugins/daodan/workflows/show-status.md), [/daodan:worktrees](plugins/daodan/workflows/worktrees.md), [/daodan:finish-task](plugins/daodan/workflows/finish-task.md), [/daodan:sync-upstream](plugins/daodan/workflows/sync-upstream.md), [/daodan:review-changes](plugins/daodan/workflows/review-changes.md), [/daodan:review-branch](plugins/daodan/workflows/review-branch.md), [/daodan:write-tests](plugins/daodan/workflows/write-tests.md), [/daodan:map-code](plugins/daodan/workflows/map-code.md), [/daodan:write-docs](plugins/daodan/workflows/write-docs.md), [/daodan:record-decision](plugins/daodan/workflows/record-decision.md), [/daodan:tidy-repo](plugins/daodan/workflows/tidy-repo.md), [/daodan:start](plugins/daodan/workflows/start.md), [/daodan:presentation](plugins/daodan/workflows/presentation.md), [/daodan:document](plugins/daodan/workflows/document.md), [/daodan:workbook](plugins/daodan/workflows/workbook.md), [/daodan:verify](plugins/daodan/workflows/verify.md), [/daodan:fix](plugins/daodan/workflows/fix.md), [/daodan:theme](plugins/daodan/workflows/theme.md), [/daodan:humanize-text](plugins/daodan/workflows/humanize-text.md) |
+| Commands / workflows | [/daodan:init-project](plugins/daodan/workflows/init-project.md), [/daodan:onboard-project](plugins/daodan/workflows/onboard-project.md), [/daodan:check-health](plugins/daodan/workflows/check-health.md), [/daodan:run-maintenance](plugins/daodan/workflows/run-maintenance.md), [/daodan:brainstorm-idea](plugins/daodan/workflows/brainstorm-idea.md), [/daodan:investigate-problem](plugins/daodan/workflows/investigate-problem.md), [/daodan:get-second-opinion](plugins/daodan/workflows/get-second-opinion.md), [/daodan:new-feature](plugins/daodan/workflows/new-feature.md), [/daodan:fix-bug](plugins/daodan/workflows/fix-bug.md), [/daodan:refactor-code](plugins/daodan/workflows/refactor-code.md), [/daodan:continue-task](plugins/daodan/workflows/continue-task.md), [/daodan:show-status](plugins/daodan/workflows/show-status.md), [/daodan:worktrees](plugins/daodan/workflows/worktrees.md), [/daodan:finish-task](plugins/daodan/workflows/finish-task.md), [/daodan:sync-upstream](plugins/daodan/workflows/sync-upstream.md), [/daodan:review-changes](plugins/daodan/workflows/review-changes.md), [/daodan:review-branch](plugins/daodan/workflows/review-branch.md), [/daodan:write-tests](plugins/daodan/workflows/write-tests.md), [/daodan:maintain-tests](plugins/daodan/workflows/maintain-tests.md), [/daodan:map-code](plugins/daodan/workflows/map-code.md), [/daodan:write-docs](plugins/daodan/workflows/write-docs.md), [/daodan:record-decision](plugins/daodan/workflows/record-decision.md), [/daodan:tidy-repo](plugins/daodan/workflows/tidy-repo.md), [/daodan:start](plugins/daodan/workflows/start.md), [/daodan:presentation](plugins/daodan/workflows/presentation.md), [/daodan:document](plugins/daodan/workflows/document.md), [/daodan:workbook](plugins/daodan/workflows/workbook.md), [/daodan:verify](plugins/daodan/workflows/verify.md), [/daodan:fix](plugins/daodan/workflows/fix.md), [/daodan:theme](plugins/daodan/workflows/theme.md), [/daodan:humanize-text](plugins/daodan/workflows/humanize-text.md) |
 | Agents / roles | None |
 
 </details>

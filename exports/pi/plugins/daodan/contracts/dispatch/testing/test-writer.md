@@ -73,7 +73,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: testing:test-writer; version: 4.4.0; source-sha256: 73f1a775ca467902527441b7821a038bdd45e4bb5ba1c01013994be0ead4bda8. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: testing:test-writer; version: 4.5.0; source-sha256: 5370bffecbded7a4e6fb59ab5e1d02147143b867680264fe5b4f58b2957fe17a. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `testing`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<testing-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `testing`. The owning plugin's declared logical skill identities are `testing:test-hygiene`, `testing:test-preparation`, `testing:test-remediation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `testing:test-hygiene` -> compiled registry name `test-hygiene` at `skills/test-hygiene/SKILL.md` inside the owner's package; `testing:test-preparation` -> compiled registry name `test-preparation` at `skills/test-preparation/SKILL.md` inside the owner's package; `testing:test-remediation-method` -> compiled registry name `test-remediation-method` at `skills/test-remediation-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -151,12 +151,23 @@ Use this for coordinator-owned test authoring, or when the user asks for tests o
 - Analyze the public API surface. What are the inputs? What are the side effects?
 - Identify the boundary contract and choose controlled doubles for isolated behavior or real fixtures for integration (Fetch/Axios, Prisma/SQLAlchemy, fs/os). A boundary does not automatically require a mock.
 
-## Step 2: Test Plan Matrix
-Instead of just writing tests, construct a matrix of behaviors:
-- **Happy Paths:** The core business logic works as intended.
-- **Edge Cases:** Empty arrays, null/None, extreme numbers, unusual characters.
-- **Error States:** Network timeouts, missing files, invalid credentials.
-- **State Transitions:** If testing a state machine or class, verify the lifecycle.
+## Step 2: Protection delta
+
+Read the affected existing tests and compare their independent oracles with the
+approved requirement before proposing changes. Map each requested behavior and
+distinct failure mode to current protection:
+
+| Requirement / failure mode | Existing check | Action (reuse/update/add) | Evidence |
+|---|---|---|---|
+
+Reuse a sufficient check; update its existing owner when an approved contract
+changes; add only protection for an evidenced gap. Zero new tests is a valid
+result when existing checks already protect the requested behavior. Choose
+relevant success, boundary, error and state-transition cases from that gap,
+without generating an exhaustive speculative matrix. Preserve distinct failure
+modes and bugfix provenance. A refactor retargets meaningful protection; it does
+not establish that an old assertion is obsolete. Broader redundancy or retirement
+uses `testing:test-remediation-method` and its accepted inventory.
 
 ## Step 3: Execution
 - Write the tests following the target framework's best practices (e.g., `describe/it` for Jest, `def test_*` with fixtures for Pytest).
@@ -190,7 +201,7 @@ Use this only when the user explicitly chooses interactive TDD teaching and will
 - Suggest refactorings. Re-run the tests to ensure they still pass.
 
 ## Step 5: Loop
-- Proceed to the next behavior in the Test Plan Matrix and write the next failing test.
+- Proceed to the next agreed unprotected behavior and write its failing test.
 
 ---
 
@@ -208,7 +219,9 @@ Use this only when the user explicitly chooses interactive TDD teaching and will
 
 # OUTPUT FORMAT
 
-Deliver the saved test paths, protected behaviors, detected framework and observed
+Deliver the reuse/update/add decisions, existing checks reviewed, justified gaps
+and saved test paths. Explain new-file ownership and preserved independent
+protection; a verified reuse-only result needs no new file. Include the detected framework and observed
 verification commands/results, bound to the candidate. State missing checks and
 remaining risk. Link saved code; show it inline only when requested or when no file
 was written. A command proposed for the user is unexecuted evidence.

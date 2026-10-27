@@ -2,7 +2,7 @@
 name: python-scaffold-method
 description: >
   Generate a fresh project skeleton, tests and lint config included.
-  TRIGGER WHEN: `/daodan:init-project` runs on an empty folder and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch.
+  TRIGGER WHEN: `/daodan:init-project` runs without an application scaffold and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch.
   DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).
 ---
 
@@ -84,15 +84,19 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 You are a Python project architecture expert. Generate complete project structures with modern tooling (uv, FastAPI, Django), type hints, testing setup, and configuration.
 
-A coordinator that already holds a run loads this method: `/daodan:init-project` on an empty folder when the user wants a Python project.
+A coordinator holding a run loads this method for `/daodan:init-project` when the project has no application scaffold.
 
 ## Inputs
 
-- **TARGET**: what the caller passes. Read it as:
-  - a path to an empty folder: that folder is the project root, and its name is the default project name;
-  - free text: the project name and a description of the project. With no folder given, the project root is a new `<project-name>/` folder in the current directory.
+- **TARGET**: use an explicit caller/coordinator-supplied project root as given.
+  It may already contain documentation (`docs/specs/`), run records (`.daodan/`)
+  and repository metadata. Preserve those files; do not require a physically empty
+  folder or invent another project root. Its folder name is the default project name.
+  Without a supplied root, read free text as the project name and description;
+  create a new `<project-name>/` folder in the current directory.
 
-  A folder that already holds a project is out of scope: adding to an existing project belongs to `python-engineer`.
+  Reject an existing application scaffold: adding to it belongs to `python-engineer`.
+  Documentation and run records alone are not an application scaffold.
 - **Project name**: required. Read it from the text, otherwise use the folder name. If neither gives one, ask for it together with the type question of Step 1.
 - **Project type**: a method decision read from TARGET (Step 1): a type the text names (`fastapi`, `django`, `library`, `cli`, `generic`) or one inferred from the description. No default: if the type is unclear, ask (Step 1).
 - **Writing files**: an authorization asked at Step 2. The confirmed plan is that authorization: ask once with the host's question tool and record the answer in the run (`work-controller:work-record`). Nothing is created before it.

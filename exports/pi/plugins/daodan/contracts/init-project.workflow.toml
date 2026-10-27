@@ -14,7 +14,7 @@ consumes = ["artifact:work"]
 produces = ["artifact:result"]
 
 [dispatch]
-roles = ["codebase-map/map-analyst", "project-knowledge/instructions-auditor"]
+roles = ["codebase-map/map-analyst", "project-knowledge/instructions-auditor", "senior-review/premise-auditor"]
 isolated = true
 inline_workers = true
 

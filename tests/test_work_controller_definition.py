@@ -3,12 +3,14 @@ from __future__ import annotations
 import copy
 import tempfile
 import unittest
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from unittest.mock import patch
 
 import yaml
 
 import work_controller_test_support  # noqa: F401: load the bundled runtime.
 
+from work_controller import util
 from work_controller.compose import compose_process
 from work_controller.definition import (
     Definition,
@@ -193,23 +195,44 @@ class DefinitionTests(unittest.TestCase):
         self.assertLess(definition.order.index("setup"), definition.order.index("review"))
 
     def test_unsafe_paths_and_missing_write_set_are_rejected(self) -> None:
-        for path in ("../escape.md", "/absolute.md", "C:\\escape.md"):
-            with self.subTest(path=path):
-                self.assert_invalid(
-                    make_process(inputs=[make_artifact(path=path)])
-                )
-
-        produced = make_artifact(path="../escape.md")
-        self.assert_invalid(
-            make_process(
-                [make_job(produces=[produced], write_set=[produced["path"]])]
-            )
+        unsafe = (
+            "../escape.md", "/absolute.md", "~user/escape.md",
+            r"C:\escape.md", "C:escape.md", r"\\server\share\escape.md",
+            r"\\?\C:\escape.md", r"\escape.md", r"..\escape.md",
+            r"artifacts\../escape.md", r"artifacts/..\escape.md",
         )
-        self.assert_invalid(make_process([make_job(write_set=["../escape"])]))
-        self.assert_invalid(
-            make_process(
-                [make_job(produces=[make_artifact()], write_set=[])]
+        controls = []
+        for value in ("artifacts/report.md", r"artifacts\report.md"):
+            data = make_process(
+                [make_job(produces=[make_artifact(path=value)], write_set=[value])],
+                inputs=[make_artifact("input", "artifacts/input.md")],
             )
+            controls.append((value, data, parse_data(data)))
+
+        # Model both native lexical grammars without mocking filesystem access.
+        for flavor in (PurePosixPath, PureWindowsPath):
+            with patch.object(util, "Path", flavor):
+                for value in unsafe:
+                    artifact = make_artifact(path=value)
+                    fields = {
+                        "inputs": make_process(inputs=[artifact]),
+                        "produces": make_process([
+                            make_job(produces=[artifact], write_set=[value])
+                        ]),
+                        "write_set": make_process([make_job(write_set=[value])]),
+                    }
+                    for field, data in fields.items():
+                        with self.subTest(flavor=flavor.__name__, path=value, field=field):
+                            self.assert_invalid(data)
+                for value, data, expected in controls:
+                    with self.subTest(flavor=flavor.__name__, valid=value):
+                        self.assertEqual(util.relative_path(value), flavor(value))
+                        actual = parse_data(data)
+                        self.assertEqual(actual.data, expected.data)
+                        self.assertEqual(actual.digest, expected.digest)
+
+        self.assert_invalid(
+            make_process([make_job(produces=[make_artifact()], write_set=[])])
         )
 
     def test_command_contract(self) -> None:

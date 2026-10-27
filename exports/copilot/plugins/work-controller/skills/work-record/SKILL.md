@@ -1,11 +1,10 @@
 ---
 name: work-record
 description: >
-  Shared working discipline, canonical run identity, snapshot bindings, delivery
-  and verification accounting, authorization continuity, questions to the user
-  and safe phase recovery for coordinated project work. Load before authoring
-  agent components or tools, briefing workers, asking the user, recording,
-  resuming or closing a project intervention.
+  Shared working discipline, run identity, snapshots, delivery/verification
+  accounting, authorization continuity, user questions and phase recovery.
+  Load before authoring components/tools, briefing workers, asking users,
+  recording, resuming or closing project interventions.
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
@@ -94,28 +93,25 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Ownership
 
-This leaf owns operational records and their validation. Its contract,
-`${PLUGIN_ROOT}/contracts/work.toml`, is declared by consumers in
-`contract.shared_schemas` and never copied. A workflow's `[dispatch]` lists its
-method workers; `inline_workers` binds this plugin's `isolated-worker` to a
-concrete task and report contract. Only a grant authorizes work. Domain owners
-keep findings, severity and dispositions; a result references the original
-report, its hash, author, input snapshot and interpreting adapter.
+Own operational records and validation. The contract,
+`${PLUGIN_ROOT}/contracts/work.toml`, belongs in consumers'
+`contract.shared_schemas`, never copied. Workflow `[dispatch]` lists method workers;
+`inline_workers` binds this plugin's `isolated-worker` to a task/report contract. Only grants authorize work. Domain owners
+keep findings, severity and dispositions; results reference original reports,
+hashes, authors, input snapshots and interpreting adapters.
 
-The complete local process runtime is bundled in this plugin. Before composing,
-executing or resuming a graph, or opening its console or MCP interface, read
-`references/process-runtime.md`. The launcher is
-`${PLUGIN_ROOT}/skills/work-record/scripts/controller.py`; no standalone
-repository or separately installed process-controller package is required.
+Read `references/process-runtime.md` before graph composition/execution/resume
+or console/MCP use. The complete runtime is bundled:
+`${PLUGIN_ROOT}/skills/work-record/scripts/controller.py`; no separate
+repository/process-controller installation required.
 
-State lives in `.daodan/` of the main checkout (the project root outside Git),
-so worktree records survive removal and every session shares one agenda. The
-coordinator owns `work.json`, `result.json` and its scratch files in the run
-directory; each worker owns one declared report.
+State: main checkout's `.daodan/` (project root outside Git). Records survive
+worktree removal; sessions share one agenda. Coordinator owns run `work.json`,
+`result.json`, scratch; workers own one declared report each.
 
 ## Working discipline
 
-The coordinator and every worker apply these rules to their assigned task.
+Coordinator and workers apply these rules to assigned tasks.
 
 Working assumptions: State material assumptions and unresolved alternatives before dependent work. Ask only for an essential decision that existing instructions or authorization cannot resolve; continue independent authorized work.
 
@@ -127,10 +123,9 @@ Working verification: Define observable success criteria from approved requireme
 
 Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
 
-Existing task authorization covers removal necessary to the approved change;
-preserve owner-required acceptance and test-retirement rules. This discipline
-grants no additional mutation or runtime authority. For a read-only worker,
-success concerns the assigned evidence and report within its permitted method.
+Existing task authorization covers removal necessary to the approved change; preserve owner-required acceptance
+and test-retirement rules. This discipline grants no additional mutation/runtime
+authority. Read-only success concerns assigned evidence/report within the permitted method.
 
 ## Authoring components
 
@@ -139,78 +134,71 @@ templates or specialist guidance, read and apply `references/component-authoring
 
 ## Isolated worker briefs
 
-Before dispatch, brief each worker with task objective, approved requirement
-source, applicable instruction rules, observable delivery criteria, input
-snapshot, owned files, authorizations, budget and expected report path. Include
-the working discipline in each prompt; inherited context and a role body alone
-do not define the task.
+Before dispatch, brief workers with objective, approved requirement source,
+applicable instructions, observable delivery criteria, input snapshot, owned files,
+authorizations, budget and report path. Include working discipline in every prompt;
+inherited context and role bodies alone do not define tasks.
 
-For independent discovery, omit peer findings and unverified coordinator
-conclusions. Verification or criticism may receive findings explicitly assigned
-by the domain method as declared inputs. Keep those purposes and their delivery
-criteria distinct.
+Independent discovery excludes peer findings and unverified coordinator conclusions.
+Verification/criticism may receive findings the domain method explicitly declares
+as inputs. Keep purposes and delivery criteria distinct.
 
 ## Run-state interface
 
 Use `python "${PLUGIN_ROOT}/skills/work-record/scripts/run_state.py"`.
-Every write names this session with `--session ID`:
+Append `--project ROOT` throughout; append `--run-id ID` except to init,
+agenda and first-use. Writes also require this session's `--session ID`.
 
 ```text
-init --project ROOT --payload INPUT.json [--run-id ID]
-update --project ROOT --run-id ID --expected-revision N --payload PATCH.json
-ask --project ROOT --run-id ID --payload QUESTION.json
-answer --project ROOT --run-id ID --payload ANSWER.json
-resume --project ROOT --run-id ID --payload CONTEXT.json
-show --project ROOT --run-id ID [--historical]
-snapshot --project ROOT --run-id ID
-validate --project ROOT --run-id ID [--current] [--result RESULT.json]
-agenda --project ROOT [--branch NAME]
-first-use --project ROOT
-bind-process --project ROOT --run-id ID --expected-revision N --payload BINDING.json
+init --payload INPUT.json [--run-id ID]
+update --expected-revision N --payload PATCH.json
+ask --payload QUESTION.json
+answer --payload ANSWER.json
+resume --payload CONTEXT.json
+show [--historical]
+snapshot
+validate [--current] [--result RESULT.json]
+agenda [--branch NAME]
+first-use
+bind-process --expected-revision N --payload BINDING.json
 ```
 
-Init requires `operation`, `objective`, `scope` (`paths`, optional `focus` and
-`excluded`), `authorizations` and `budget`. Declare every expected worker in
-`deliveries` before dispatch and every known mandatory check in
-`required_gates`. Update merges objects, replaces arrays and refuses a stale
-revision; a refused write changes nothing, so a draft plan is checked by
-writing it. Identity, scope, `authorizations`, the baseline and a completed run
-never change. Required gates, rulings, reviews and `grants` are append-only: an
-authorization asked later is a grant with its kind, scope and the user's answer
-as `source` (`kind: user`, `reference`). Questions change only through `ask`
-and `answer`; read `references/questions.md` before asking.
+Init requires `operation`, `objective`, `scope` (`paths`, optional `focus`,
+`excluded`), `authorizations`, `budget`. Declare expected `deliveries` workers
+before dispatch and known mandatory `required_gates`. Updates merge objects, replace arrays and reject
+stale revisions without changes; check draft plans by writing them. Identity,
+scope, `authorizations`, baseline and completed runs never change. Required gates, rulings, reviews and `grants` are append-only: later
+authorization is a grant with kind, scope and user answer as `source`
+(`kind: user`, `reference`). Questions change only through `ask`/`answer`;
+read `references/questions.md` before asking.
 
-Only the holder writes a task; `--take-over` follows confirmation that the other
-session closed. `resume` checks authorizations, scope and candidate, records the
-holder and returns pending work and replans. A branch holds one open loop task.
-New input or scope means a new run; record interruptions at once. `show --historical`
-reads old records; never resumes them.
+Only holders write tasks; `--take-over` requires confirmation the other session
+closed. `resume` checks authorizations, scope and candidate, records the holder
+and returns pending work/replans. One open loop task per branch. New input/scope
+requires a new run; record interruptions immediately. `show --historical` reads,
+never resumes, old records.
 
-A gate carries its status, the candidate `digest` and `head` that `snapshot`
-prints, and evidence naming the command, or the remote job with its revision
-and attempt. Snapshots hash scoped inputs byte for byte, dirty and untracked
-files included. A remote check counts only when `head_matches_snapshot` is
-true: a job for HEAD cannot verify uncommitted, ignored or transformed inputs,
-so run the check locally or record it unavailable. `validate --current` rejects
-changed inputs or workspace; `--result` checks the envelope against this
-revision, snapshot, ledger and gates.
+Gates carry status, snapshot `digest`/`head` and command evidence or remote
+job/revision/attempt. Snapshots hash scoped inputs byte-for-byte, including dirty
+and untracked files. Remote checks require `head_matches_snapshot: true`: HEAD jobs cannot verify
+uncommitted, ignored or transformed inputs; check locally or record unavailable.
+`validate --current` rejects changed inputs/workspace; `--result` checks the
+envelope against this revision, snapshot, ledger and gates.
 
-New process-backed consumers set `process_required: true` at init. Before
-dispatch, admit the YAML graph and use `bind-process` to attach its immutable
-identity and native delivery mapping. The bridge verifies delivered report
-bytes against admitted process artifacts and requires process success in
-addition to every existing domain gate. It grants no execution or commit
-authority. Existing JSON records remain readable and resumable without an
-invented graph or rewritten history. The exact binding and recovery procedure
-is in `references/process-runtime.md`.
+New process-backed consumers init `process_required: true`. Before dispatch,
+admit YAML; `bind-process` its immutable identity/native delivery mapping.
+The bridge matches report bytes to admitted artifacts. Process success supplements
+domain gates, granting no execution/commit authority. Legacy JSON stays readable/
+resumable without invented graphs/rewritten history. Binding/recovery:
+`references/process-runtime.md`.
 
 ## Loop sections
 
-A lifecycle run may carry `workspace`, `preflight`, `adr`, `waves`, `rulings`,
-`reviews`, `questions`, `environment` and `integration`, each validated when present. A wave task that needs an answer lists `question:<id>`
-in `consumes` and waits for it. A review's roster is appended as senior-review's
-`review_roster.py compute` wrote it, before dispatch; `--deeper` appends one a
-tier up, and nothing lowers one. Running tasks need a delivered adversarial
+Lifecycle runs may carry `workspace`, `preflight`, `adr`, `waves`, `rulings`,
+`reviews`, `questions`, `environment`, `integration`, validated when present.
+Answer-dependent tasks consume `question:<id>` and wait. Before dispatch append
+the roster as senior-review's `review_roster.py compute` wrote it; `--deeper`
+appends one tier higher; nothing lowers it. Running tasks need a delivered adversarial
 PASS plan review on the exact plan digest and current bytes. Commits bind parent,
 owned diff and wave trailer; completion binds sealed waves, branch review,
 reviewed ancestry, merge and realignment. Resume reconciles commit-record crashes.
@@ -219,38 +207,35 @@ reviewed ancestry, merge and realignment. Resume reconciles commit-record crashe
 
 Runs are `in_progress` or `complete`; phases `pending`, `in_progress`,
 `complete` or `skipped` (with a reason); deliveries `pending`, `running`,
-`delivered` or `failed`, a retry keeping its failed attempt. Completion requires
-closed phases, every delivery delivered, no interruption, no open question and
-every required gate passed on the current candidate. Keep failed or unavailable
-checks explicit; partial reports authorize nothing. A delivered worker names an
-existing run-owned `output`, even without findings. A worker that honestly
-reports a product defect delivered; a worker failure never becomes a delivery.
-Report the uncovered dimension.
+`delivered` or `failed`; retries retain failed attempts. Completion requires
+closed phases, all deliveries delivered, no interruption/open
+question and every required gate passed on the current candidate. Keep failed/
+unavailable checks explicit; partial reports authorize nothing. Delivered workers
+name existing run-owned `output`, even without findings. Honest product-defect
+reports count as delivery; worker failures never do. Report uncovered dimensions.
 
 ## Baseline, gate and recovery
 
-Before a mutating phase, verify exclusive ownership of the working tree, other
-active sessions included; bulk removal needs an isolated owned worktree, never
-a clean status alone. Record the authorized paths, starting HEAD, scoped
-snapshot, preexisting edits and untracked files, and resolve build and test
-gates from the project's instructions. A failing, unavailable or forbidden
-baseline without a correlated remote alternative leaves the phase open.
+Before mutation, verify exclusive working-tree ownership, including active
+sessions. Bulk removal needs an isolated owned worktree; clean status is insufficient.
+Record authorized paths, starting HEAD, scoped snapshot, preexisting edits/untracked
+files. Resolve build/test gates from project instructions. Failed/unavailable/forbidden
+baselines without correlated remote alternatives leave phases open.
 
 Before a phase, record `pre_phase_sha` and recovery bytes. Snapshot the applied
 candidate; run gates and review before commit. Committed tasks need `candidate`,
 passing `verification_receipt`, PASS `pre_commit_review`, `commit_sha` and light
-changeset review binding. The helper rejects stale bindings
-and checks HEAD and bytes. Commit when authorized. On failure, restore owned
-edits and
-keep the preceding phase and every foreign file; never derive a rollback target
+changeset review binding. The helper rejects stale bindings and checks HEAD/bytes.
+Commit when authorized. On failure, restore owned edits;
+preserve preceding phases and foreign files; never derive a rollback target
 from `HEAD~1`. Reset to `pre_phase_sha` only in an exclusively owned worktree
 with a proven clean baseline and no foreign change; otherwise restore by path
 or hand the exact conflict to the user. Never run `git clean`, a broad checkout
 or a hard reset in a shared checkout. A published phase is undone by an
 authorized revert, never by rewriting history.
 
-The helper confines its own writes mechanically. It does not roll back, dispatch
-workers or confine their tools: that stays a prompt obligation until an adapter
+The helper mechanically confines its own writes; it neither rolls back, dispatches
+workers nor confines their tools. Those remain prompt obligations until an adapter
 proves a mechanism.
 
 ## Compiler dispatch resources

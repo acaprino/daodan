@@ -1,7 +1,7 @@
 ---
 name: test-remediation-method
 description: >
-  Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when auditing a suite, quarantining tests or consolidating a module's tests (consolidation through /daodan:tidy-repo).
+  Maintain existing test suites: diagnose failures, review and consolidate redundant tests, preserving behavior, independent failure modes and bugfix provenance. Load for suite audits, quarantine or rationalization through /daodan:maintain-tests (also composed by /daodan:tidy-repo).
 ---
 
 <daodan_host_binding host="claude">
