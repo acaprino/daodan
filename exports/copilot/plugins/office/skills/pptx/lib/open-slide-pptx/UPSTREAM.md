@@ -118,16 +118,19 @@ for the Office entry and for the built bundle in `manifest.json`;
 and `tests/test_office_pptx_convert.py` recomputes them in the suite. An edit to
 a vendored file therefore fails instead of drifting silently.
 
-Excluded on purpose: `pptx/render.ts` (the React offscreen mount this wrapper
-does not use), every `*.test.ts`, and the whole open-slide application, CLI,
-Vite plugin and React tree.
+Excluded on purpose: `pptx/render.ts` (the React offscreen mount), every
+`*.test.ts`, and the whole open-slide application, CLI, Vite plugin and React
+tree. `render.ts` also fast-forwarded animations and waited for `data-waitfor`
+targets before measuring; the Office entry reimplements that settle step, so a
+design's entrance animations are measured at their end frame.
 
 ## Third-party code inside the bundle
 
 `fflate` 0.8.3 (MIT, notice in `LICENSE-fflate-MIT.txt`) supplies the ZIP writer
 and `html-to-image` 1.11.13 (MIT, notice in `LICENSE-html-to-image-MIT.txt`)
 supplies the rasterizer's canvas capture. Both declare no dependencies of their
-own, both are bundled by `rebuild.mjs` and neither is vendored as source here.
+own, both are pinned in `build.deps.json` and bundled by `rebuild.mjs`, and
+neither is vendored as source here.
 
 ## Office-owned additions
 
@@ -154,14 +157,19 @@ debugging and do not commit that output.
 ## Refresh protocol
 
 1. Read the upstream diff for the eleven paths at a new pin before copying
-   anything, and record why the advance is needed.
-2. Re-copy those paths verbatim, keeping the local layout, then run
-   `node rebuild.mjs` so `manifest.json` and the bundle move together.
+   anything, and record why the advance is needed. Check `fflate` and
+   `html-to-image` for fixes at the same time.
+2. Edit the pin in `build.deps.json` (`upstream`, and the two library versions
+   when they advance); it is the only place the pin is data. Re-copy the paths
+   verbatim, keeping the local layout, then run `node rebuild.mjs` so
+   `manifest.json`, the bundle banner and the bundle move together.
 3. Run the fixture conversion in `tests/test_office_pptx_convert.py` and the
    Office suite; inspect the saved package with `office:deckcraft`'s
    `pptx_inspect.py` and render it before claiming any fidelity.
-4. Update this note, the Office `README.md` source row and the copied-source row
-   in the `upstream-sync` table with the new pin.
+4. Update every prose record that states the pin: this note, the Office
+   `README.md` source row, the copied-source row in the `upstream-sync` table and
+   section 4.3 of `external-repo-intake` (then regenerate the Codex copies). The
+   tests read the pin from `build.deps.json`.
 
 Never hand-edit a vendored file: the hash guard treats it as drift, and a local
 fix belongs in the Office entry or driver instead.
@@ -175,8 +183,8 @@ an actual render and independent review; see `references/html-to-pptx.md`.
 
 ## Why this vendor exists
 
-The comparative conversion benchmark in
-`office-conversion-benchmark/20261027-graphical/` measured six HTML to Office
+The comparative conversion benchmark summarized in the Daodan repository's
+Office documentation dossier (`verification.md`) measured six HTML to Office
 lanes on one frozen source: this exporter kept 73/73 source text units as native
 text and produced the strongest visual result, while the alternatives lost
 captions, joined words, malformed a native table or dropped the composition.

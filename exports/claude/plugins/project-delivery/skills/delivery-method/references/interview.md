@@ -83,10 +83,9 @@ or changed evidence; do not restart an answered interview.
    scope and inherit the relevant active records as constraints.
 3. Read base-commit root/nested instructions through `git show <base_sha>:<path>`.
    Record grounding in the run and worker briefs.
-4. Before settling technical claims or specification acceptance criteria, load
-   `research:science-based-approach` and compose its automatic checkpoint with
-   the caller task, phase and semantic context. Preserve the outcome and pin
-   reused research revisions/claims; OFF grants no scientific archive or
+4. Before technical claims or acceptance criteria, load
+   `research:science-based-approach`, compose its automatic checkpoint and pin
+   reused revisions/claims with outcomes. OFF permits no scientific archive or
    network work.
 
 Trace affected callers, tests, fixtures, configuration and exports beyond map
@@ -96,10 +95,10 @@ serialization checks before splitting work. Derive types and mocks.
 
 ## Settle and record
 
-Ask through the work record, one question per turn, grounded in concrete
-current/proposed inputs and outputs. Fix scope/exclusions, nominal/boundary/rejection
-`EX-*`, rejected `RA-*`, `INV-*`, affected decisions and execution authorization.
-Replan before editing unapproved paths. Open choices remain explicit.
+Ask through the work record, one question per turn on current/proposed inputs and
+outputs. Fix scope/exclusions, nominal/boundary/rejection `EX-*`, rejected `RA-*`,
+`INV-*`, affected decisions and execution authorization. Replan before unapproved
+paths; keep choices explicit.
 
 Write or revise the project specification and follow its review and approval
 contract before planning. The run's `intent.md` links that specification.

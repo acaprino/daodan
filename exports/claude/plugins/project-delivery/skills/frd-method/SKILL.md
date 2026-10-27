@@ -87,19 +87,16 @@ It writes only the FRD records and their generated index.
 
 ## Grounded extraction
 
-Before drafting or revising substantive claims, load
-`research:science-based-approach` and compose its automatic checkpoint, reusing
-the caller's run and grants. Keep user needs, product hypotheses, observations
-and scientific support separate. Cite a pinned local research revision with
-its exact digest and Unicode excerpt when using scientific evidence in the
-FRD schema; a web URL alone cannot satisfy its source-span contract. If local
-publication is not authorized, retain the scientific gap instead of fabricating
-a local span. Evidence never approves a requirement or rewrites an Accepted FRD.
+Before substantive claims, load `research:science-based-approach` and compose
+its automatic checkpoint. In the schema, scientific evidence requires a pinned
+local revision, exact digest and Unicode excerpt, never just a URL. Keep needs,
+hypotheses, observations and support separate. Unauthorized publication leaves
+a named gap. Evidence never approves or rewrites an Accepted FRD.
 
-1. Establish the requested product behavior, actors and scope from the user's request and interview. Current behavior, documentation and requested behavior remain distinct.
-2. Inspect current code and documents. Use Codebase Map inventory, symbols and links to find evidence, then read the cited current source. The map is static navigation evidence, never a correctness oracle or a source of runtime proof.
-3. Record requirements, `PERSON`, `ORGANIZATION` and `LOCATION` entities, and relationships with exact Unicode source spans. Report contradictions and runtime gaps instead of inventing certainty.
-4. Write extraction JSON and run `propose`. Generated records and items remain `Proposed` and `extracted`; extraction never constitutes approval or verification.
+1. Establish behavior, actors and scope from the request and interview; keep current, documented and requested behavior distinct.
+2. Inspect code and documents. Use Codebase Map to locate evidence, then read cited source; the map is static navigation, not correctness or runtime proof.
+3. Record requirements, entities and relationships with exact Unicode spans; report contradictions and runtime gaps.
+4. Write extraction JSON and run `propose`. Records and items remain `Proposed` and `extracted`, never approved or verified.
 
 Evidence must point to a project-relative file and match its current byte digest
 and exact `[start,end)` excerpt. Do not cite an inaccessible, stale or inferred

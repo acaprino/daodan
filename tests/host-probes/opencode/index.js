@@ -12,6 +12,7 @@
 // or out of a transform callback, because one plugin failing there can take
 // down the host's entire plugin generation, providers included.
 
+import childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -175,6 +176,106 @@ async function transform(domain, label, callback) {
   }
 }
 
+/** Run one lifecycle callback without blocking OpenCode's event loop. */
+export function executeLifecycleHook(hook, eventName, cwd, extraPayload = {}) {
+  return new Promise((resolve) => {
+    let settled = false;
+    let timer;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      resolve(value);
+    };
+    if (!fs.existsSync(hook.script)) {
+      console.error(`${TAG} hook script missing: ${hook.script}`);
+      finish(null);
+      return;
+    }
+    const payload = JSON.stringify({
+      hook_event_name: eventName,
+      cwd: forward(cwd || process.cwd()),
+      ...extraPayload,
+    });
+    const env = {
+      ...process.env,
+      CLAUDE_PLUGIN_ROOT: hook.pluginRoot,
+      PLUGIN_ROOT: hook.pluginRoot,
+      PYTHONUNBUFFERED: "1",
+    };
+    let child;
+    try {
+      child = childProcess.spawn(process.env.PYTHON || "python", [hook.script, ...(hook.args ?? [])], {
+        env,
+        windowsHide: true,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+    } catch (error) {
+      console.error(`${TAG} hook "${hook.name}" failed to start:`, error?.message ?? error);
+      finish(null);
+      return;
+    }
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      if (stdout.length < 1_048_576) stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      if (stderr.length < 65_536) stderr += chunk;
+    });
+    timer = setTimeout(() => {
+      console.error(`${TAG} hook "${hook.name}" timed out`);
+      child.kill();
+      finish(null);
+    }, (hook.timeout ?? 10) * 1000);
+    child.once("error", (error) => {
+      console.error(`${TAG} hook "${hook.name}" failed:`, error.message);
+      finish(null);
+    });
+    child.once("close", (status) => {
+      if (settled) return;
+      if (status !== 0) {
+        console.error(`${TAG} hook "${hook.name}" exited with status ${status}: ${stderr.trim()}`);
+        finish(null);
+        return;
+      }
+      const text = stdout.trim();
+      if (!text) {
+        finish(null);
+        return;
+      }
+      try {
+        finish(JSON.parse(text));
+      } catch {
+        console.error(`${TAG} hook "${hook.name}" returned invalid JSON`);
+        finish(null);
+      }
+    });
+    child.stdin.on("error", () => {});
+    child.stdin.end(payload);
+  });
+}
+
+async function runLifecycleHooks(hooks, eventName, cwd, extraPayload) {
+  const contexts = [];
+  for (const hook of hooks) {
+    let result = null;
+    try {
+      result = await executeLifecycleHook(hook, eventName, cwd, extraPayload);
+    } catch (error) {
+      console.error(`${TAG} hook "${hook.name}" rejected:`, error?.message ?? error);
+    }
+    const specific = result?.hookSpecificOutput;
+    const text = specific?.additionalContext;
+    if (specific?.hookEventName === eventName && typeof text === "string" && text.trim()) {
+      contexts.push(text);
+    }
+  }
+  return contexts;
+}
+
 /** A V2 setup function bound to one package directory. */
 export function createLoader(directory) {
   return async function setup(ctx) {
@@ -271,6 +372,110 @@ export function createLoader(directory) {
           }
         }
       });
+
+      const lifecycleHooks = [];
+      for (const { entry, root } of plugins) {
+        for (const hook of entry.hooks ?? []) {
+          lifecycleHooks.push({
+            name: hook.name,
+            event: hook.event,
+            script: path.join(root, hook.script),
+            args: hook.args ?? [],
+            timeout: hook.timeout ?? 10,
+            pluginRoot: root,
+          });
+        }
+      }
+
+      const sessionStartHooks = lifecycleHooks.filter((h) => h.event === "session-start");
+      const promptSubmitHooks = lifecycleHooks.filter((h) => h.event === "user-prompt-submit");
+      if (sessionStartHooks.length + promptSubmitHooks.length === 0) return;
+      if (typeof ctx?.session?.hook !== "function") {
+        console.error(`${TAG} lifecycle hooks unavailable: ctx.session.hook is missing`);
+        return;
+      }
+
+      const contexts = new Map();
+      const pendingStarts = new Map();
+      const started = new Set();
+      const controller = new AbortController();
+      const stateFor = (sessionID) => {
+        if (!contexts.has(sessionID)) contexts.set(sessionID, { startup: [], prompt: [] });
+        return contexts.get(sessionID);
+      };
+      const ensureSessionStart = (sessionID, cwd, extraPayload) => {
+        if (started.has(sessionID)) return Promise.resolve();
+        if (pendingStarts.has(sessionID)) return pendingStarts.get(sessionID);
+        const pending = (async () => {
+          stateFor(sessionID).startup = await runLifecycleHooks(
+            sessionStartHooks,
+            "SessionStart",
+            cwd,
+            extraPayload,
+          );
+          started.add(sessionID);
+        })()
+          .catch((error) => console.error(`${TAG} session-start hooks failed:`, error?.message ?? error))
+          .finally(() => pendingStarts.delete(sessionID));
+        pendingStarts.set(sessionID, pending);
+        return pending;
+      };
+
+      // V2's prompt hook is the reliable entry point: the bus creation event can
+      // predate plugin activation, so session-start also has a first-prompt fallback.
+      await ctx.session.hook("prompt", async (event) => {
+        const sessionID = event?.sessionID;
+        if (!sessionID) return;
+        const cwd = ctx.location?.directory ?? process.cwd();
+        if (sessionStartHooks.length) await ensureSessionStart(sessionID, cwd, { sessionID });
+        const state = stateFor(sessionID);
+        state.prompt = [];
+        if (!promptSubmitHooks.length) return;
+        state.startup = [];
+        state.prompt = await runLifecycleHooks(promptSubmitHooks, "UserPromptSubmit", cwd, {
+          sessionID,
+          messageID: event.messageID,
+          prompt: event.prompt?.text ?? "",
+        });
+      });
+
+      // This hook runs for the primary model request, including tool continuations.
+      await ctx.session.hook("context", async (event) => {
+        const sessionID = event?.sessionID;
+        if (!sessionID || !Array.isArray(event.system)) return;
+        const pending = pendingStarts.get(sessionID);
+        if (pending) await pending;
+        const state = contexts.get(sessionID);
+        if (!state) return;
+        const additions = [...new Set([...state.startup, ...state.prompt])];
+        for (const text of additions) event.system.push({ type: "text", text });
+      });
+
+      if (sessionStartHooks.length && typeof ctx.event?.subscribe === "function") {
+        void (async () => {
+          for await (const event of ctx.event.subscribe({ signal: controller.signal })) {
+            const sessionID = event?.data?.sessionID;
+            if (!sessionID) continue;
+            if (event.type === "session.deleted") {
+              started.delete(sessionID);
+              contexts.delete(sessionID);
+              continue;
+            }
+            if (event.type !== "session.created") continue;
+            const cwd = event.data?.location?.directory ?? ctx.location?.directory ?? process.cwd();
+            await ensureSessionStart(sessionID, cwd, { sessionID, event });
+          }
+        })().catch((error) => {
+          if (!controller.signal.aborted) {
+            console.error(`${TAG} session event subscription failed:`, error?.message ?? error);
+          }
+        });
+      }
+      return () => {
+        controller.abort();
+        contexts.clear();
+        started.clear();
+      };
     } catch (error) {
       console.error(`${TAG} setup failed:`, error?.message ?? error);
     }

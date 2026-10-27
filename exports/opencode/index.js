@@ -261,7 +261,12 @@ export function executeLifecycleHook(hook, eventName, cwd, extraPayload = {}) {
 async function runLifecycleHooks(hooks, eventName, cwd, extraPayload) {
   const contexts = [];
   for (const hook of hooks) {
-    const result = await executeLifecycleHook(hook, eventName, cwd, extraPayload);
+    let result = null;
+    try {
+      result = await executeLifecycleHook(hook, eventName, cwd, extraPayload);
+    } catch (error) {
+      console.error(`${TAG} hook "${hook.name}" rejected:`, error?.message ?? error);
+    }
     const specific = result?.hookSpecificOutput;
     const text = specific?.additionalContext;
     if (specific?.hookEventName === eventName && typeof text === "string" && text.trim()) {

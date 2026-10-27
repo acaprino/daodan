@@ -143,6 +143,21 @@ explains the lifecycle and ownership boundaries.
 /daodan:finish-task                   branch review, merge, realignment
 ```
 
+```mermaid
+flowchart LR
+    classDef foundation fill:#f0f4f8,stroke:#2b4c7e,stroke-width:1px,color:#1a202c
+    classDef delivery fill:#eefaf6,stroke:#2d7a5b,stroke-width:1px,color:#1a202c
+    classDef review fill:#fff7ed,stroke:#c2410c,stroke-width:1px,color:#1a202c
+    classDef terminal fill:#1e293b,stroke:#0f172a,stroke-width:1px,color:#ffffff
+
+    Map["1. Codebase Map"]:::foundation --> RDD["2. Specs & Decisions (RDD / ADR)"]:::delivery
+    RDD --> WCC["3. Worktree & Task Records (WCC)"]:::delivery
+    WCC --> TDD["4. Task Waves (TDD)"]:::delivery
+    TDD --> Review{"5. Senior Review"}:::review
+    Review --> Done(["6. Merge & Realignment"]):::terminal
+    Review -. Defect .-> TDD
+```
+
 Start with initialization, choose the command for the work, and finish with
 review and realignment. Use the host-specific entry names below.
 

@@ -34,7 +34,7 @@ La [provenienza DOCX](../../../plugins/office/skills/docx/references/layout-patt
 
 PPT Design resta un candidato. Le dichiarazioni della relazione originale (§11) restano attribuite a quella ricerca, senza una nuova verifica dei termini in questa guida. Il precedente record di valutazione Taste è storico; la dipendenza dichiarata e il bridge definiscono l'uso adottato.
 
-Il divieto di nuove copie vendorizzate resta applicabile anche a materiale con licenza permissiva. L'unica deroga in vigore riguarda il motore di conversione open-slide, autorizzata in modo esplicito e delimitato dal proprietario il 2026-10-27: undici file a un pin preciso, notice conservate, hash di controllo e nessuna estensione all'applicazione upstream o ad altre fonti. Per una nuova capacità vedere [intake esterno](upstream-intake.md); per gli adattamenti già registrati vedere [aggiornamenti](upstream-updates.md).
+Il divieto di nuove copie vendorizzate resta applicabile anche a materiale con licenza permissiva. L'unica deroga in vigore riguarda il motore di conversione open-slide, autorizzata in modo esplicito e delimitato dal proprietario il 2026-10-27: undici file a un pin preciso, il bundle che li compila insieme a `fflate` e `html-to-image` (MIT, versioni in `build.deps.json`), notice conservate, hash di controllo e nessuna estensione all'applicazione upstream o ad altre fonti. Per una nuova capacità vedere [intake esterno](upstream-intake.md); per gli adattamenti già registrati vedere [aggiornamenti](upstream-updates.md).
 
 ## Runtime, font e asset
 

@@ -1,0 +1,4 @@
+# The vendored open-slide exporter is hash-guarded byte for byte, in the kernel
+# and in every generated host package. A checkout that converts its line endings
+# (Git for Windows ships core.autocrlf=true) would fail every conversion.
+**/open-slide-pptx/** -text

@@ -111,33 +111,27 @@ whole directory.
 
 ## Propose: the interview's output
 
-Before choosing or revising alternatives, load `research:science-based-approach`
-and compose its automatic checkpoint with the caller's run and grants. Cite
-research identity, immutable revision and claim IDs with applicability and limits.
-A changed source identifies decisions to review; it never rewrites or approves
-an Accepted record. Reuse the same checkpoint when the interview already did it.
+Before alternatives, load `research:science-based-approach` and compose its
+automatic checkpoint. Cite research identity, immutable revision and claims with
+applicability and limits. Changed sources identify reviews; they never rewrite
+or approve Accepted records. Reuse an existing interview checkpoint.
 
-Once the interview fixed scope, nominal, boundary and rejection examples,
-rejected alternatives and invariants, write the body and `propose` with
-title, slug, run identity, `HEAD`, scope lists, any `--supersedes` (another
-decision it replaces) and any `--depends-on` (`Accepted` decisions it builds
-on). A refusal names what to fix; never hand-edit the index. To change an
-`Accepted` decision, `propose --revise ADR-NNNN` writes its next version,
-`Proposed` under the same number. `ADR-NNNN` cites the active version,
-`ADR-NNNN vN` pins one.
+After the interview fixes scope, examples, alternatives and invariants, write
+the body and `propose` with title, slug, run identity, `HEAD`, scope lists and
+optional `--supersedes`/`--depends-on`. A refusal names the fix; never hand-edit
+the index. `propose --revise ADR-NNNN` writes the next `Proposed` version under
+that number. `ADR-NNNN` cites the active version; `ADR-NNNN vN` pins one.
 
 Versions: at most one `Accepted` and one `Proposed` version per decision.
 
 ## Approve, retire, verify
 
-`Accepted` means the user approved this exact text. Show the record with its `digest` (`validate --adr ADR-NNNN`) and ask. On
-approval, `promote` sets `Accepted` and marks the previous version and each
-`supersedes` target `Superseded`, as one transaction; record each
-`dependents_to_review` as an open question (`ask`). Approval authorizes no
-work; a merge never approves. Unapproved, a record stays `Proposed`;
-abandoned, it gets `retire --adr ADR-NNNN --reason TEXT --expect-digest D`,
-`Abandoned` for good. Never delete a record. A rewrite refuses, writing
-nothing, on a digest other than `--expect-digest`: show the record again.
+`Accepted` means the user approved this exact text. Show the record and digest,
+then `promote`; previous and superseded versions change in one transaction.
+Record `dependents_to_review` with `ask`. Approval authorizes no work or merge.
+Unapproved records stay `Proposed`; abandon with
+`retire --adr ADR-NNNN --reason TEXT --expect-digest D`; never delete.
+A mismatched `--expect-digest` refuses the rewrite: show the record again.
 
 After a review confirms the code conforms, `verify` sets `last_verified_sha`;
 approval never verifies. `validate --sha` lists as `drifted` each `Accepted`

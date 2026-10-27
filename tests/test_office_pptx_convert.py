@@ -7,11 +7,16 @@ reason instead of passing silently.
 
 import importlib.util
 import json
+import os
 import shutil
+import socket
+import struct
 import subprocess
 import tempfile
+import threading
 import unittest
 import zipfile
+import zlib
 from pathlib import Path
 from unittest import mock
 
@@ -38,7 +43,8 @@ VENDORED = {
     "src/lib/pptx/text-lines.ts",
     "src/lib/pptx/units.ts",
 }
-UPSTREAM_PIN = "82349cf2d07d37b75975170503a82fcaacae9298"
+PIN = json.loads((LIB / "build.deps.json").read_text(encoding="utf-8"))["upstream"]
+UPSTREAM_PIN = PIN["git_ref"]
 BUNDLE_NAME = "bundle/open-slide-pptx.js"
 
 
@@ -73,7 +79,7 @@ class VendorIntegrityTests(unittest.TestCase):
     def test_manifest_records_the_pin_licenses_and_exclusions(self):
         upstream = manifest()["upstream"]
         self.assertEqual("@open-slide/core", upstream["package"])
-        self.assertEqual("2.3.1", upstream["version"])
+        self.assertEqual(PIN, upstream, "manifest.json must carry the build.deps.json pin")
         self.assertEqual(UPSTREAM_PIN, upstream["git_ref"])
         self.assertEqual("MIT", upstream["license"])
         self.assertEqual(sorted(VENDORED), sorted(
@@ -130,6 +136,31 @@ class VendorIntegrityTests(unittest.TestCase):
             with self.assertRaises(bridge.BridgeError):
                 bridge.verify_manifest(copy)
 
+    def test_a_checkout_that_converted_line_endings_is_diagnosed_as_such(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            copy = Path(temporary) / "open-slide-pptx"
+            shutil.copytree(LIB, copy)
+            target = copy / "src/lib/pptx/units.ts"
+            target.write_bytes(target.read_bytes().replace(b"\n", b"\r\n"))
+            with self.assertRaises(bridge.BridgeError) as caught:
+                bridge.verify_manifest(copy)
+            self.assertIn("line endings", str(caught.exception))
+            self.assertNotIn("read-only", str(caught.exception))
+
+    def test_git_never_converts_the_line_endings_of_the_guarded_files(self):
+        guarded = [str((LIB / name).relative_to(ROOT)).replace("\\", "/") for name in manifest()["files"]]
+        completed = subprocess.run(["git", "check-attr", "text", "--", *guarded], cwd=ROOT,
+                                   capture_output=True, text=True, check=True)
+        lines = completed.stdout.strip().splitlines()
+        self.assertEqual(len(guarded), len(lines))
+        for line in lines:
+            self.assertTrue(line.endswith(": text: unset"), line)
+
+    def test_the_rebuild_takes_the_pin_from_build_inputs(self):
+        source = (LIB / "rebuild.mjs").read_text(encoding="utf-8")
+        self.assertNotIn(UPSTREAM_PIN, source, "the pin is data in build.deps.json, not code")
+        self.assertIn("build.deps.json", source)
+
 
 class NodeVersionTests(unittest.TestCase):
     def test_supported_and_unsupported_releases(self):
@@ -179,7 +210,7 @@ class DiscoveryTests(unittest.TestCase):
         self.assertTrue(call.kwargs["capture_output"])
         self.assertEqual("24.14", runtime["node_version"])
         self.assertEqual(manifest()["bundle"]["sha256"], runtime["bundle_sha256"])
-        self.assertEqual("2.3.1", runtime["engine"]["version"])
+        self.assertEqual(PIN["version"], runtime["engine"]["version"])
 
     def test_a_missing_bundle_points_at_the_rebuild(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -204,7 +235,7 @@ class ConversionTransportTests(unittest.TestCase):
     RUNTIME = {"node": "node", "node_version": "24.14", "lib": str(LIB),
                "bundle": str(LIB / "bundle" / "open-slide-pptx.js"),
                "bundle_sha256": "0" * 64,
-               "engine": {"package": "@open-slide/core", "version": "2.3.1",
+               "engine": {"package": "@open-slide/core", "version": PIN["version"],
                           "git_ref": UPSTREAM_PIN, "license": "MIT"}}
 
     def setUp(self):
@@ -246,6 +277,33 @@ class ConversionTransportTests(unittest.TestCase):
 
     def test_an_out_of_range_timeout_is_refused(self):
         self.assertIn("timeout_ms", self.run_bridge(timeout_ms=10))
+
+    def test_an_existing_candidate_is_never_overwritten(self):
+        output = self.directory / "deck.pptx"
+        output.write_bytes(b"earlier candidate")
+        self.assertIn("Refusing to overwrite", self.run_bridge(output=output))
+        self.assertEqual(b"earlier candidate", output.read_bytes())
+
+    def test_an_existing_evidence_record_is_never_overwritten(self):
+        record = self.directory / "deck.conversion.json"
+        record.write_text("{}", encoding="utf-8")
+        self.assertIn("Refusing to overwrite", self.run_bridge(evidence=record))
+
+    def test_the_html_must_sit_inside_the_asset_root(self):
+        assets = self.directory / "assets"
+        assets.mkdir()
+        self.assertIn("inside the asset root", self.run_bridge(assets_root=assets))
+
+    def test_the_probe_stops_without_a_usable_browser(self):
+        payload = {"status": "probe", "bundle": {"present": True},
+                   "playwright": {"available": True, "version": "1.62.1"},
+                   "browser": {"available": False, "recovery": "Set OFFICE_PPTX_BROWSER to an existing browser"}}
+        with mock.patch.object(subprocess, "run",
+                               return_value=subprocess.CompletedProcess(args=[], returncode=3,
+                                                                        stdout=json.dumps(payload), stderr="")):
+            with self.assertRaises(bridge.BridgeError) as caught:
+                bridge.probe(self.RUNTIME)
+        self.assertIn("OFFICE_PPTX_BROWSER", str(caught.exception))
 
     def test_the_driver_runs_from_an_argument_list_with_a_temporary_job_file(self):
         output = self.directory / "deck.pptx"
@@ -344,6 +402,16 @@ def runtime_available():
     return (runtime, probe), None
 
 
+def tiny_png():
+    """A valid 2x2 opaque PNG, built rather than pasted so its checksums hold."""
+    def chunk(kind, data):
+        body = kind + data
+        return struct.pack(">I", len(data)) + body + struct.pack(">I", zlib.crc32(body))
+    rows = b"".join(b"\x00" + b"\xe8\x5d\x04" * 2 for _ in range(2))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 2, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
+
+
 class RealConversionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -360,7 +428,7 @@ class RealConversionTests(unittest.TestCase):
             try:
                 result = bridge.convert_html(self.runtime, html=FIXTURE, output=output, evidence=record)
             except bridge.BridgeError as error:
-                if "Chromium did not start" in str(error):
+                if "The browser did not start" in str(error):
                     self.skipTest(f"no usable browser: {error}")
                 raise
             self.assertEqual(2, result["panels"])
@@ -420,7 +488,137 @@ class RealConversionTests(unittest.TestCase):
             message = str(caught.exception)
             self.assertIn("contract violated", message)
             self.assertIn("1920x1080", message)
+            self.assertIn("code 2", message)
             self.assertFalse((directory / "broken.pptx").exists())
+
+    def write_design(self, directory, body, head="", name="design.html"):
+        source = Path(directory) / name
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "<!DOCTYPE html><html><head><meta charset='utf-8'><style>"
+            "body{margin:0}.slide{position:relative;width:1920px;height:1080px;box-sizing:border-box;"
+            "overflow:hidden;background:#f4f1ea;font-family:Arial,sans-serif}"
+            f"</style>{head}</head><body><section class='slide' data-office-slide>{body}</section>"
+            "</body></html>", encoding="utf-8")
+        return source
+
+    def convert(self, source, directory, name="deck", **options):
+        directory = Path(directory)
+        return bridge.convert_html(self.runtime, html=source, output=directory / f"{name}.pptx",
+                                   evidence=directory / f"{name}.conversion.json", **options)
+
+    def refused(self, source, directory, **options):
+        with self.assertRaises(bridge.BridgeError) as caught:
+            self.convert(source, directory, **options)
+        self.assertFalse((Path(directory) / "deck.pptx").exists(), "a refused design leaves no package")
+        return str(caught.exception)
+
+    def test_entrance_animations_are_measured_at_their_end_frame(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = self.write_design(
+                temporary,
+                "<h1 class='rise' style='position:absolute;left:120px;top:200px;font-size:96px'>Animated title</h1>"
+                "<div class='rise' style='position:absolute;left:120px;top:500px;width:600px;height:200px;"
+                "background:#e85d04'></div>",
+                head="<style>@keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1}}"
+                     ".rise{animation:rise 1.2s both .3s}</style>")
+            result = self.convert(source, temporary)
+            evidence = json.loads(Path(result["evidence"]).read_text(encoding="utf-8"))
+            self.assertGreaterEqual(evidence["scene"][0]["nodes"], 2)
+            with zipfile.ZipFile(result["output"]) as package:
+                self.assertIn("Animated title", package.read("ppt/slides/slide1.xml").decode("utf-8"))
+
+    def test_a_panel_without_visible_content_is_refused(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "empty.html"
+            source.write_text(
+                "<!DOCTYPE html><html><head><style>body{margin:0}.slide{position:relative;width:1920px;"
+                "height:1080px;box-sizing:border-box}</style></head><body>"
+                "<section class='slide' data-office-slide><p style='opacity:0'>hidden</p></section>"
+                "</body></html>", encoding="utf-8")
+            self.assertIn("measured no visible content", self.refused(source, temporary))
+
+    def test_remote_requests_and_sockets_are_blocked_and_refuse_the_design(self):
+        listener = socket.socket()
+        listener.bind(("127.0.0.1", 0))
+        listener.listen(1)
+        listener.settimeout(0.5)
+        port = listener.getsockname()[1]
+        connections = []
+
+        def accept():
+            try:
+                connection, _ = listener.accept()
+                connections.append(connection)
+            except OSError:
+                pass
+
+        watcher = threading.Thread(target=accept)
+        watcher.start()
+        try:
+            with tempfile.TemporaryDirectory() as temporary:
+                source = self.write_design(
+                    temporary,
+                    "<h1 style='position:absolute;left:120px;top:200px'>Egress</h1>"
+                    f"<script>new WebSocket('ws://127.0.0.1:{port}/egress');"
+                    "fetch('https://example.invalid/beacon').catch(()=>{});</script>")
+                message = self.refused(source, temporary)
+        finally:
+            watcher.join()
+            listener.close()
+            for connection in connections:
+                connection.close()
+        self.assertEqual([], connections, "a WebSocket reached a listener outside the conversion origin")
+        self.assertIn("contract violated", message)
+        self.assertIn(f"ws://127.0.0.1:{port}/egress", message)
+        self.assertIn("https://example.invalid/beacon", message)
+
+    def test_relative_assets_resolve_from_the_html_directory_under_an_asset_root(self):
+        png = tiny_png()
+        with tempfile.TemporaryDirectory() as temporary:
+            site = Path(temporary) / "site"
+            (site / "deck" / "img").mkdir(parents=True)
+            (site / "brand").mkdir()
+            (site / "deck" / "img" / "a.png").write_bytes(png)
+            (site / "brand" / "logo.png").write_bytes(png)
+            source = self.write_design(
+                site / "deck",
+                "<img src='img/a.png' style='position:absolute;left:100px;top:100px;width:300px;height:300px'>"
+                "<div style=\"position:absolute;left:600px;top:100px;width:300px;height:300px;"
+                "background:url('/brand/logo.png') center/cover\"></div>"
+                "<h1 style='position:absolute;left:100px;top:600px'>Assets</h1>")
+            result = self.convert(source, temporary, assets_root=site)
+            self.assertEqual([], result["missing_local_requests"])
+            evidence = json.loads(Path(result["evidence"]).read_text(encoding="utf-8"))
+            self.assertGreaterEqual(evidence["scene"][0]["kinds"].get("picture", 0), 1)
+
+    def test_a_missing_local_asset_or_a_dotfile_refuses_the_design(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            (Path(temporary) / ".env").write_text("SECRET=1", encoding="utf-8")
+            source = self.write_design(
+                temporary,
+                "<h1 style='position:absolute;left:120px;top:200px'>Assets</h1>"
+                "<div style=\"position:absolute;left:0;top:0;width:10px;height:10px;"
+                "background:url('img/absent.png')\"></div>"
+                "<script>fetch('.env').catch(()=>{});</script>")
+            message = self.refused(source, temporary)
+        self.assertIn("/img/absent.png", message)
+        self.assertIn("/.env", message)
+
+    def test_a_named_browser_that_does_not_exist_stops_the_run(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = self.write_design(temporary, "<h1>Browser</h1>")
+            absent = str(Path(temporary) / "absent-chrome.exe")
+            with mock.patch.dict(os.environ, {"OFFICE_PPTX_BROWSER": absent}):
+                message = self.refused(source, temporary)
+        self.assertIn("OFFICE_PPTX_BROWSER does not exist", message)
+        self.assertIn("code 3", message)
+
+    def test_the_same_design_produces_the_same_package_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            first = self.convert(FIXTURE, temporary, name="first")
+            second = self.convert(FIXTURE, temporary, name="second")
+        self.assertEqual(first["output_sha256"], second["output_sha256"])
 
 
 if __name__ == "__main__":

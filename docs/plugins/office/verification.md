@@ -50,6 +50,20 @@ python -m unittest discover -s tests -p test_office_unified_contract.py
 
 Per il checker sul file esatto e i suoi codici d'uscita consultare [office:integrity](../../../plugins/office/skills/integrity/SKILL.md). Un `pass` statico lascia esplicite le voci non controllate.
 
+## Confronto meccanico HTML → PPTX e DOCX (2026-10-27)
+
+Prova che ha motivato la copia del motore open-slide. Una sorgente HTML congelata di tre tavole 1280×720 (griglia e flex, gradienti, sovrapposizioni, PNG ritagliato, due SVG, tabella con celle unite, testo lungo; SHA-256 `cb1ba3e3d1faa6c832ebc0189ca8bba59bbebeb60695a20bd90cb7a884d71d1d`) è stata convertita da sei percorsi, senza chiamate a modelli e senza ritocchi grafici. Rese salvate esaminate con DeckCraft 0.8.0 e WordCraft 0.8.0; Microsoft Office non era disponibile.
+
+| Percorso | Testi nativi | Tabella | Risultato osservato |
+|---|---:|---|---|
+| open-slide 2.3.1 (`82349cf2d07d37b75975170503a82fcaacae9298`, archivio SHA-256 `d8183a5f2c79d517e1793bc72e65e2e0c8936e77fbd8260486de9df944d17db8`) | 73/73 | Forme e testo, non nativa | Il più vicino all'originale; differenze tipografiche e negli elenchi |
+| dom-to-pptx 2.1.2 | 72/73 | Nativa | Perde la didascalia della tabella, cambia ritaglio e rotazione |
+| junyuaini/html2pptx 1.1.0 | 71/73 | Nativa ma con griglia incoerente | Parole unite, duplicazioni, sfondo errato |
+| WordCraft 0.8.0 (DOCX) | 73/73 | Nativa | 5 pagine a flusso, stili quasi tutti persi |
+| docx/html 9.14.0 (DOCX) | 73/73 | Nativa | 7 pagine, più colori e tipografia, griglia e posizioni perse |
+
+I conteggi misurano la presenza delle unità testuali, non la fedeltà. Per open-slide la sorgente è stata scalata uniformemente a 1920×1080 dentro un contenitore dichiarato. Il risparmio di token rispetto a una costruzione via modello non è stato misurato. Driver, log ed evidenze native restano nella cartella locale del benchmark, non versionata; questo riepilogo è il record conservato.
+
 ## Come documentare una prova o un benchmark
 
 Un rapporto di prova identifica revisione del plugin, fonti e loro hash, richiesta, ambiente, runtime/versione e candidato. Conserva protocollo, aspettative indipendenti, risultati, difetti e verifiche assenti. Se confronta due metodi, usa gli stessi materiali e criteri e registra anche riletture, tentativi scartati, tempo e token di tutti i partecipanti.

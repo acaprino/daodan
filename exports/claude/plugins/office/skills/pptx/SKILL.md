@@ -247,11 +247,13 @@ Keep source and earlier candidates intact.
 On the HTML conversion route the coordinator runs `scripts/pptx_convert_bridge.py`
 under `references/html-to-pptx.md` instead of transcribing objects: the designer's
 1920x1080 panels become native text, shapes, pictures and notes in one
-deterministic pass with no model call. Its prerequisites are Node, the Playwright
+reproducible pass with no model call. Its prerequisites are Node, the Playwright
 module and a Chromium-family browser. A missing runtime stops with the recovery
 steps recorded in the report; it is never replaced silently by another
-construction path. The saved candidate then follows the same inspection,
-rendering, coverage and independent review as a DeckCraft build.
+construction path. A refused design (exit code 2) goes back to the designer with
+the converter's named problems; each rerun writes a new candidate name. The
+saved candidate then follows the same inspection, rendering, coverage and
+independent review as a DeckCraft build.
 
 When the deck uses fonts outside Microsoft Office, embed them in a separate
 candidate with `office:design`'s `font_embed.py` and record its inspection result.

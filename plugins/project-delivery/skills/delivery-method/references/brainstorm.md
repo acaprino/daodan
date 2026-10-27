@@ -5,21 +5,18 @@ Record conversation and approvals; write no code or plan.
 
 ## Ground and discuss
 
-Read supplied specifications and project instructions first. For existing code,
-load `codebase-map:map-method` and deepen the affected area through
-`references/deepen.md`; cite source and existing reusable behavior. With decision
-records, load `project-delivery:adr-method` and `resolve` that scope. Name conflicts.
-An empty project needs no scaffold or map to discuss its design; mark absent
-code evidence explicitly. Before comparing alternatives, load
-`research:science-based-approach`, automatic checkpoint entry, reusing the
-caller's context and run; read mode first, since OFF skips scientific archive
-and network work.
+Read supplied specifications and project instructions. For existing code, load
+`codebase-map:map-method`, deepen through `references/deepen.md` and cite reusable
+behavior. With decision records, load `project-delivery:adr-method` and `resolve`
+the scope; name conflicts. Empty projects need no scaffold or map; mark absent
+code evidence. Before comparing alternatives, load `research:science-based-approach`,
+compose its automatic checkpoint in the caller run and read mode first: OFF skips
+scientific archive and network work.
 
 Ask one essential question per turn through the work record: purpose, users,
-constraints and success. Reuse supplied answers. Compare two or three
-viable approaches with implementation/test costs and risks; recommend one.
-Once the user chooses, write and review the specification automatically under
-the shared contract. Do not silently promote assumptions to requirements.
+constraints and success. Reuse answers. Compare two or three viable approaches
+with costs and risks; recommend one. Once the user chooses, write and review the
+specification under the shared contract. Never promote assumptions to requirements.
 
 ## Close with the user's choice
 

@@ -60,7 +60,8 @@ def render_hooks(plugin: PluginSpec, adapter: HostAdapter) -> tuple[str | None, 
         return None, (
             "This package registers lifecycle callbacks through the OpenCode plugin loader "
             "when the plugin is enabled. Execution requires Python 3 on PATH as `python`. "
-            "The loader intercepts session and prompt events without crashing the host.",
+            "Prompt hooks feed the primary model context; session-start falls back to the "
+            "first prompt when creation was not observed. Hook failures do not crash the host.",
         )
     if binding.strategy != "hooks-manifest":
         raise ValueError(f"{adapter.host}: unsupported lifecycle hook strategy {binding.strategy!r}")

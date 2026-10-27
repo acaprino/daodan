@@ -3,7 +3,7 @@ description: 'Research a concrete problem through academic sources and publish a
 argument-hint: '<problem>'
 ---
 
-> This package registers lifecycle callbacks through the OpenCode plugin loader when the plugin is enabled. Execution requires Python 3 on PATH as `python`. The loader intercepts session and prompt events without crashing the host.
+> This package registers lifecycle callbacks through the OpenCode plugin loader when the plugin is enabled. Execution requires Python 3 on PATH as `python`. Prompt hooks feed the primary model context; session-start falls back to the first prompt when creation was not observed. Hook failures do not crash the host.
 
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes

@@ -10,7 +10,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "42.7.0"
+    "version": "42.7.1"
   },
   "name": "daodan",
   "owner": {
@@ -484,7 +484,7 @@
         "work-controller",
         "taste-skill@taste-skill"
       ],
-      "description": "Design editable Word documents and presentations from one intake, a validated shared editorial record and an ad hoc visual system compared on real content; construct and revise PPTX through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
+      "description": "Design editable Word documents and presentations from one intake, a validated shared editorial record and an ad hoc visual system compared on real content; construct PPTX through DeckCraft or by mechanical conversion of an approved HTML design with the bundled open-slide exporter and revise it through DeckCraft, DOCX through WordCraft, and XLSX through GridCraft; verify and repair any of them with static integrity rules. Includes harness imagery and saved-file verification.",
       "license": "MIT",
       "name": "office",
       "skills": [
@@ -500,7 +500,7 @@
         "./skills/xlsx"
       ],
       "source": "./exports/copilot/plugins/office",
-      "version": "3.5.0"
+      "version": "3.5.1"
     },
     {
       "agents": [
@@ -594,7 +594,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/copilot/plugins/project-delivery",
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     {
       "agents": [

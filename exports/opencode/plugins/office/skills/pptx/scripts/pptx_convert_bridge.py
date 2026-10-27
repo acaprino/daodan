@@ -79,6 +79,12 @@ def verify_manifest(lib=LIB):
         if not target.is_file():
             raise BridgeError(f"A file recorded in manifest.json is missing: {target}")
         if not isinstance(digest, str) or sha256(target) != digest:
+            content = target.read_bytes()
+            if b"\r\n" in content and hashlib.sha256(content.replace(b"\r\n", b"\n")).hexdigest() == digest:
+                raise BridgeError(
+                    f"The checkout converted the line endings of {name}. Reinstall the plugin from a "
+                    "clone that honours the repository .gitattributes (or with core.autocrlf=false); "
+                    "the engine itself is unchanged.")
             raise BridgeError(
                 f"Vendored engine content changed: {name}. Those files are read-only; refresh them "
                 f"through the protocol in {UPSTREAM_NOTE.name} and rebuild the bundle.")
@@ -149,7 +155,7 @@ def last_json(text):
 
 
 def probe(runtime, timeout=PROBE_TIMEOUT_SECONDS):
-    """Report the actual driver runtime; a missing browser is the driver's decision."""
+    """Report the actual driver runtime; any missing prerequisite is a stop."""
     try:
         completed = subprocess.run([runtime["node"], str(DRIVER), "--probe"], capture_output=True,
                                    text=True, encoding="utf-8", errors="replace", timeout=timeout)
@@ -166,7 +172,10 @@ def probe(runtime, timeout=PROBE_TIMEOUT_SECONDS):
     playwright = payload.get("playwright") or {}
     if not playwright.get("available"):
         raise BridgeError(
-            f"The Playwright Node module is unavailable. {playwright.get('recovery', '')}".strip())
+            f"The Playwright Node module is unavailable or too old. {playwright.get('recovery', '')}".strip())
+    browser = payload.get("browser") or {}
+    if not browser.get("available"):
+        raise BridgeError(browser.get("recovery") or "No usable Chromium-family browser was found.")
     return payload
 
 
@@ -188,6 +197,11 @@ def convert_html(runtime, html, output, evidence=None, assets_root=None, browser
         raise BridgeError(f"The evidence record must be a .json path: {record}")
     if not record.parent.is_dir():
         raise BridgeError(f"The evidence directory does not exist: {record.parent}")
+    for existing in (destination, record):
+        if existing.exists():
+            raise BridgeError(
+                f"Refusing to overwrite {existing}: earlier candidates and their evidence stay intact; "
+                "choose a new candidate name.")
     job = {
         "html": str(source.resolve()),
         "output": str(destination.resolve()),
@@ -198,6 +212,8 @@ def convert_html(runtime, html, output, evidence=None, assets_root=None, browser
         root = Path(assets_root).expanduser()
         if not root.is_dir():
             raise BridgeError(f"The asset root does not exist: {root}")
+        if not source.resolve().is_relative_to(root.resolve()):
+            raise BridgeError(f"The design HTML must sit inside the asset root {root.resolve()}: {source}")
         job["assets_root"] = str(root.resolve())
     if browser is not None:
         job["browser_executable"] = str(Path(browser).expanduser())
@@ -270,7 +286,9 @@ def main(argv=None):
             command.add_argument("--html", required=True, help="Design HTML with data-office-slide panels.")
             command.add_argument("--output", required=True, help="Destination .pptx path.")
             command.add_argument("--evidence", help="Conversion evidence .json path.")
-            command.add_argument("--assets-root", help="Directory that bounds local asset serving.")
+            command.add_argument("--assets-root",
+                                 help="Directory served to the page; must contain the HTML. Relative URLs "
+                                      "still resolve from the HTML's directory, /-rooted URLs from this root.")
             command.add_argument("--browser", help="Chrome, Edge or Chromium executable.")
             command.add_argument("--timeout-ms", type=int, help="Per-step browser timeout in milliseconds.")
             command.add_argument("--headed", action="store_true", help="Run with a visible browser window.")

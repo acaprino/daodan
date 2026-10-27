@@ -1,5 +1,34 @@
 {
-  "comment": "Development-time build inputs for the vendored open-slide PPTX exporter. rebuild.mjs copies this file into its work directory as package.json, installs the pinned versions there and bundles the engine. Nothing here is installed inside the plugin directory, so no node_modules tree is ever shipped to a host package.",
+  "comment": "Rebuild inputs for the vendored open-slide PPTX exporter. `upstream` is the pin a refresh edits; rebuild.mjs copies it into manifest.json. The dependency blocks become the work directory's package.json; nothing is installed inside the plugin directory, so no node_modules tree is ever shipped to a host package.",
+  "upstream": {
+    "repository": "https://github.com/open-slide/open-slide",
+    "package": "@open-slide/core",
+    "version": "2.3.1",
+    "git_ref": "82349cf2d07d37b75975170503a82fcaacae9298",
+    "npm_tarball": "https://registry.npmjs.org/@open-slide/core/-/core-2.3.1.tgz",
+    "npm_integrity": "sha512-NpEB6NATbyGqaO0MSmJYEvhBsVx7ISiP0YzxT4QkMuosZRyPFyZcjYfxMO1gPc/mmfAZao+5wLizyPQ9OKMwPQ==",
+    "npm_shasum": "654c7b21947683027f227e2fb01cd6171927a80c",
+    "source_archive_sha256": "d8183a5f2c79d517e1793bc72e65e2e0c8936e77fbd8260486de9df944d17db8",
+    "license": "MIT",
+    "copied_paths": [
+      "packages/core/src/app/lib/sdk.ts",
+      "packages/core/src/app/lib/pptx/color.ts",
+      "packages/core/src/app/lib/pptx/css.ts",
+      "packages/core/src/app/lib/pptx/fonts.ts",
+      "packages/core/src/app/lib/pptx/images.ts",
+      "packages/core/src/app/lib/pptx/measure.ts",
+      "packages/core/src/app/lib/pptx/ooxml.ts",
+      "packages/core/src/app/lib/pptx/raster.ts",
+      "packages/core/src/app/lib/pptx/scene.ts",
+      "packages/core/src/app/lib/pptx/text-lines.ts",
+      "packages/core/src/app/lib/pptx/units.ts"
+    ],
+    "excluded": [
+      "packages/core/src/app/lib/pptx/render.ts (React offscreen mount; its animation settle step is reimplemented in entry/office-entry.ts)",
+      "packages/core/src/app/lib/pptx/*.test.ts",
+      "the open-slide application, CLI, Vite plugin and React tree"
+    ]
+  },
   "dependencies": {
     "fflate": "0.8.3",
     "html-to-image": "1.11.13"

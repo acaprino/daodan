@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e39c9aab12adaa76fd9fda068857bfdf998ee3f7bc51a3515687be5335189ef6",
+  "coreDigest": "sha256:3349109ddbc3766c4c0bf75fcef0c26f98fd4d5e1f6939ed686af3127b447f43",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "office",
-  "version": "3.5.0"
+  "version": "3.5.1"
 }

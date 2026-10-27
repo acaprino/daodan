@@ -128,7 +128,7 @@ or a copied-source sync target without a new, scoped authorization.
 
 Copied-source intake of 2026-10-27, authorized by the owner as a scoped
 exception to the no-new-vendor policy after the comparative conversion benchmark
-in `office-conversion-benchmark/20261027-graphical/` measured this exporter as
+summarized in `docs/plugins/office/verification.md` measured this exporter as
 the strongest HTML to PPTX lane: 73/73 source text units kept as native text,
 the best visual result, no native table.
 
