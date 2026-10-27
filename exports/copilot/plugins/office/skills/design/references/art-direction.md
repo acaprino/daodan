@@ -170,7 +170,7 @@ and registry resolution, not a claim that Claude installation commands work ther
 |---|---|
 | Copilot | `~/.copilot/skills/design-taste-frontend/` or project `.agents/skills/design-taste-frontend/` |
 | Pi | `~/.agents/skills/design-taste-frontend/` or project `.agents/skills/design-taste-frontend/` |
-| OpenCode | `~/.config/opencode/skills/design-taste-frontend/` or project `.agents/skills/design-taste-frontend/`; verify the actual supported V2 registry |
+| OpenCode | `skills/design-taste-frontend/` of the config directory the host reads (`OPENCODE_CONFIG_DIR` when set, otherwise `~/.config/opencode`) or project `.agents/skills/design-taste-frontend/`; verify the actual supported V2 registry |
 
 Provision the complete upstream `skills/taste-skill/` folder, retaining its
 references beside SKILL.md, under the host's actual installation authority.

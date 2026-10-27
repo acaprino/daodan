@@ -591,7 +591,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: only a spreadsheet or document is requested.",
@@ -606,7 +606,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Design a shared visual identity for requested Office documents and decks: Taste art direction, real native proposal comparison, explicit DESIGN.md selection, semantic palette, typography, imagery and native theme handoff. Use when intake calls for a new look; revisions inherit accepted decisions.",
@@ -621,7 +621,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use /daodan:presentation).",
@@ -636,7 +636,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Create, edit, inspect, calculate and check real Excel workbooks through the external GridCraft CLI or exposed MCP interface. TRIGGER WHEN: producing or editing XLSX for office:xlsx, recalculating formulas or checking workbook fidelity with GridCraft. DO NOT TRIGGER WHEN: only read-only package inspection is needed (use office:xlsx's inspector).",
@@ -651,7 +651,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Shared Office intake: inspect materials, settle operation, requested formats, editorial/visual decisions and phase-specific dependencies in one brief and question round. Route mixed or unspecified deliverables before format work.",
@@ -666,7 +666,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Verify the integrity of a Word, PowerPoint or Excel file with static rules, then repair what can be repaired on a separate candidate. TRIGGER WHEN: checking a DOCX, PPTX or XLSX for broken links, formula errors, missing alternative text, inconsistent formulas, empty placeholders or other defects, or fixing them. DO NOT TRIGGER WHEN: creating a new document, deck or workbook (use the office document, presentation or workbook workflows).",
@@ -681,7 +681,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
@@ -696,7 +696,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed.",
@@ -711,7 +711,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use /daodan:presentation).",
@@ -726,7 +726,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
