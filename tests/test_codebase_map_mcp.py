@@ -535,6 +535,89 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(len(packet["content"]), mcp_service.MAX_ARTIFACT_BYTES)
         self.assertEqual(packet["sha256"], __import__("hashlib").sha256(body.encode()).hexdigest())
 
+    def test_create_run_builds_the_lexical_index_beside_the_snapshot(self):
+        self.create()
+        index = self.run_dir / "snapshot/retrieval.sqlite"
+        self.assertTrue(index.exists())
+        self.assertFalse(index.with_name("retrieval.sqlite.lock").exists())
+        report = self.service.index("example", check=True)
+        self.assertEqual((report["state"], report["action"], report["run_id"]), ("fresh", "none", "example"))
+        self.assertEqual(report["documents"], 2)
+
+    def test_search_ranks_trimmed_records_without_reading_the_tree(self):
+        self.create()
+        import retrieval
+        with mock.patch.object(retrieval, "_verify_tree", side_effect=AssertionError("tree read")):
+            result = self.service.search("example", "selected limit", limit=5)
+        self.assertEqual((result["run_id"], result["index_state"]), ("example", "fresh"))
+        self.assertEqual(result["results"][0]["entity_id"], "module.py::selected")
+        self.assertEqual(set(result["results"][0]),
+                         {"entity_id", "kind", "path", "start_line", "end_line", "signatures", "provenance", "score"})
+        self.assertNotIn("binding", result)
+        exact = self.service.search("example", "module.py::selected")
+        self.assertIn("exact", exact["results"][0]["provenance"])
+        anchored = self.service.search("example", "nothing", anchors=[{"path": "module.py", "line": 3}])
+        self.assertEqual(anchored["results"][0]["entity_id"], "module.py::selected")
+        for bad in ({"limit": 0}, {"limit": 101}, {"anchors": "x"}):
+            with self.assertRaises(ValueError):
+                self.service.search("example", "selected", **bad)
+
+    def test_context_with_a_query_uses_the_built_index_and_reports_its_absence_as_a_gap(self):
+        self.create()
+        request = dict(self.context_request(), query="selected limit", anchors=[])
+        recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 1000,
+                     'max_chars': 100000, 'max_evaluations': 100, 'policy': 'ordered'}
+        def gap_kinds(result):
+            packet = json.loads(Path(result['path']).read_text(encoding='utf8'))
+            return [gap.get('kind') for gap in packet.get('gaps', [])]
+        with_index = self.service.context('example', request, recipient, out='context-with-index')
+        self.assertNotIn('retrieval_missing', gap_kinds(with_index))
+        (self.run_dir / "snapshot/retrieval.sqlite").unlink()
+        without = self.service.context('example', request, recipient, out='context-without-index')
+        self.assertIn('retrieval_missing', gap_kinds(without))
+
+    def test_search_on_a_missing_or_stale_index_is_a_gap_and_index_repairs_it(self):
+        self.create()
+        index = self.run_dir / "snapshot/retrieval.sqlite"
+        index.unlink()
+        missing = self.service.search("example", "selected")
+        self.assertEqual((missing["index_state"], missing["results"]), ("missing", []))
+        self.assertTrue(missing["gaps"][0].startswith("retrieval_missing: "))
+        self.assertIn("codebase_map_index(run_id='example')", missing["gaps"][0])
+        checked = self.service.index("example", check=True)
+        self.assertEqual((checked["state"], checked["action"]), ("missing", "reported"))
+        self.assertFalse(index.exists())
+        repaired = self.service.index("example")
+        self.assertEqual((repaired["state"], repaired["action"], repaired["previous"]), ("fresh", "rebuilt", "missing"))
+        self.assertEqual(self.service.search("example", "selected")["results"][0]["entity_id"], "module.py::selected")
+        self.assertIn("index_refreshed", [e["event"] for e in self.service.events("example")["events"]])
+        index.write_bytes(b"not a database")
+        corrupt = self.service.search("example", "selected")
+        self.assertEqual(corrupt["index_state"], "corrupt")
+        self.assertEqual(corrupt["capabilities"]["fts5"], False)
+        self.assertEqual(self.service.index("example")["previous"], "corrupt")
+        lock = index.with_name("retrieval.sqlite.lock")
+        lock.write_bytes(b"")
+        index.unlink()
+        self.assertEqual(self.service.index("example")["state"], "failed")
+        broken = self.service.index("example", break_lock=True)
+        self.assertEqual((broken["state"], broken["lock_broken"]), ("fresh", str(lock)))
+        with self.assertRaises(ValueError):
+            self.service.index("example", break_lock="yes")
+
+    def test_create_run_keeps_the_run_when_the_index_fails(self):
+        import retrieval
+        with mock.patch.object(retrieval, "ensure_index",
+                               return_value={"state": "failed", "reason": "SQLite FTS5 unavailable; use a Python runtime with FTS5"}):
+            status = self.create()
+        self.assertEqual(status["run_id"], "example")
+        self.assertTrue(self.run_dir.is_dir())
+        events = [e["event"] for e in self.service.events("example")["events"]]
+        self.assertIn("index_failed", events)
+        missing = self.service.search("example", "selected")
+        self.assertEqual(missing["index_state"], "missing")
+        self.assertEqual(self.service.index("example")["state"], "fresh")
+
     def test_outline_pattern_is_literal_not_a_regular_expression(self):
         self.create()
         self.assertTrue(self.service.outline("example", pattern="SELECTED|absent")["items"])

@@ -128,9 +128,15 @@ class CodebaseMapWireTests(unittest.TestCase):
     def test_real_tool_catalog_exposes_typed_tools_without_context(self):
         catalog = self.request("tools/list", {})["result"]["tools"]
         by_name = {tool["name"]: tool for tool in catalog}
-        for name in ("scope", "create_run", "runs", "status", "outline", "graph", "read",
+        for name in ("scope", "create_run", "runs", "status", "outline", "graph", "read", "search", "index",
                      "diff", "artifact", "checkpoint", "events", "resume", "stop", "publish"):
             self.assertIn("codebase_map_" + name, by_name)
+        search = by_name["codebase_map_search"]
+        self.assertTrue(search["annotations"]["readOnlyHint"])
+        self.assertEqual(set(search["inputSchema"]["required"]), {"run_id", "query"})
+        self.assertNotIn("embedding_result", search["inputSchema"]["properties"])
+        self.assertEqual(search["inputSchema"]["properties"]["limit"]["default"], 20)
+        self.assertFalse(by_name["codebase_map_index"]["annotations"]["readOnlyHint"])
         for tool in catalog:
             properties = tool["inputSchema"].get("properties", {})
             self.assertNotIn("ctx", properties)
