@@ -6,20 +6,17 @@ The frozen v1 suite remains the owner of the underlying DESIGN requirements.
 
 import copy
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
 
 from test_office_records import records, valid_design
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "plugins/office/skills/content/scripts/office_records.py"
-TEMP_ROOT = ROOT / "office-verification-tmp/taste-tests"
 
 
 def valid_preview():
@@ -39,11 +36,7 @@ def valid_preview():
 
 class CreativeDesignRecordTests(unittest.TestCase):
     def setUp(self):
-        TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-        environment = mock.patch.dict(os.environ, {"TMP": str(TEMP_ROOT), "TEMP": str(TEMP_ROOT)})
-        environment.start()
-        self.addCleanup(environment.stop)
-        temporary = tempfile.TemporaryDirectory(prefix="creative-records-", dir=TEMP_ROOT)
+        temporary = tempfile.TemporaryDirectory(prefix="creative-records-")
         self.addCleanup(temporary.cleanup)
         self.directory = Path(temporary.name)
 

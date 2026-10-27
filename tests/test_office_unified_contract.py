@@ -11,7 +11,6 @@ from functools import lru_cache
 import hashlib
 import importlib.util
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -37,7 +36,6 @@ from test_office_design_compare import Document, valid_comparison
 from test_office_creative_comparison import canonical_digest, creative_comparison
 
 
-TEMP_ROOT = ROOT / "office-verification-tmp/taste-tests"
 ROLE_PATHS = {"claude": "agents/{role}.md", "copilot": "agents/{role}.agent.md",
               "codex": "roles/{role}.md", "pi": "skills/office-{role}/SKILL.md",
               "opencode": "agents/{role}.md"}
@@ -50,8 +48,7 @@ def normalized(path):
 @lru_cache(maxsize=1)
 def published_office():
     """One immutable candidate per process; publish once, clean up at process exit."""
-    TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-    temporary = tempfile.TemporaryDirectory(prefix="office-published-", dir=TEMP_ROOT)
+    temporary = tempfile.TemporaryDirectory(prefix="office-published-")
     atexit.register(temporary.cleanup)
     registry = {path.parent.name: load_plugin(path.parent)
                 for path in sorted((ROOT / "plugins").glob("*/plugin.toml"))}
@@ -81,10 +78,7 @@ class UnifiedOfficeContractTests(unittest.TestCase):
         use_published_office(cls)
 
     def setUp(self):
-        self.environment = mock.patch.dict(os.environ, {"TMP": str(TEMP_ROOT), "TEMP": str(TEMP_ROOT)})
-        self.environment.start()
-        self.addCleanup(self.environment.stop)
-        temporary = tempfile.TemporaryDirectory(prefix="office-contract-", dir=TEMP_ROOT)
+        temporary = tempfile.TemporaryDirectory(prefix="office-contract-")
         self.addCleanup(temporary.cleanup)
         self.directory = Path(temporary.name)
         write_text = Path.write_text

@@ -17,7 +17,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
 import zlib
 
 from test_office_design_compare import Document, jpeg_bytes, png_bytes, valid_comparison
@@ -26,7 +25,6 @@ from test_office_records import records
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "plugins/office/skills/design/scripts/design_compare.py"
-TEMP_ROOT = ROOT / "office-verification-tmp/taste-tests"
 SELECT = ("--select", "technical", "--authority", "user", "--source", "Q7: choose technical")
 MIB = 1024 * 1024
 
@@ -119,11 +117,7 @@ def sized_png(size, marker=b"x"):
 
 class CreativeComparisonTests(unittest.TestCase):
     def setUp(self):
-        TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-        environment = mock.patch.dict(os.environ, {"TMP": str(TEMP_ROOT), "TEMP": str(TEMP_ROOT)})
-        environment.start()
-        self.addCleanup(environment.stop)
-        temporary = tempfile.TemporaryDirectory(prefix="creative-comparison-", dir=TEMP_ROOT)
+        temporary = tempfile.TemporaryDirectory(prefix="creative-comparison-")
         self.addCleanup(temporary.cleanup)
         self.directory = Path(temporary.name)
         self.inputs = self.directory / "inputs"

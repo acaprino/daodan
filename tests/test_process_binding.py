@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 
 import work_controller_test_support  # noqa: F401: load the bundled runtime.
 
@@ -18,17 +16,9 @@ from work_controller.engine import Engine
 from work_controller.errors import StateError
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-TEST_TEMP_ROOT = REPO_ROOT / ".daodan/runs/20261026-office-binding-repair/tmp"
-
-
 class ProcessBindingTests(unittest.TestCase):
     def setUp(self):
-        TEST_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-        environment = patch.dict(os.environ, {"TMP": str(TEST_TEMP_ROOT), "TEMP": str(TEST_TEMP_ROOT)})
-        environment.start()
-        self.addCleanup(environment.stop)
-        temporary = tempfile.TemporaryDirectory(prefix="process-binding-", dir=TEST_TEMP_ROOT)
+        temporary = tempfile.TemporaryDirectory(prefix="process-binding-")
         self.addCleanup(temporary.cleanup)
         self.temporary = Path(temporary.name)
         self.project = self.temporary / "workspace"

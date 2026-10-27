@@ -15,7 +15,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
 import zlib
 
 from test_office_records import valid_design, records
@@ -23,7 +22,6 @@ from test_office_records import valid_design, records
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "plugins/office/skills/design/scripts/design_compare.py"
-TEMP_ROOT = ROOT / ".daodan/runs/20261026-office-unified-delivery/tmp-tests"
 
 
 def valid_comparison(formats=("docx", "pptx")):
@@ -154,11 +152,7 @@ class DesignComparisonTests(unittest.TestCase):
             raise FileNotFoundError(f"Required comparison CLI is not implemented: {SCRIPT}")
 
     def setUp(self):
-        TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-        self.environment = mock.patch.dict(os.environ, {"TMP": str(TEMP_ROOT), "TEMP": str(TEMP_ROOT)})
-        self.environment.start()
-        self.addCleanup(self.environment.stop)
-        self.temporary = tempfile.TemporaryDirectory(prefix="office-comparison-", dir=TEMP_ROOT)
+        self.temporary = tempfile.TemporaryDirectory(prefix="office-comparison-")
         self.addCleanup(self.temporary.cleanup)
         self.directory = Path(self.temporary.name)
         self.inputs = self.directory / "inputs"

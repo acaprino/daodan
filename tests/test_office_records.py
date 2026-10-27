@@ -9,18 +9,15 @@ import copy
 import hashlib
 import importlib.util
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "plugins/office/skills/content/scripts/office_records.py"
-TEMP_ROOT = ROOT / ".daodan/runs/20261026-office-unified-delivery/tmp-tests"
 
 
 def valid_pptx_plan():
@@ -574,11 +571,7 @@ class RecordFileTests(unittest.TestCase):
     """Real file/CLI boundaries, isolated under the assigned run's temporary root."""
 
     def setUp(self):
-        TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-        self.environment = mock.patch.dict(os.environ, {"TMP": str(TEMP_ROOT), "TEMP": str(TEMP_ROOT)})
-        self.environment.start()
-        self.addCleanup(self.environment.stop)
-        self.temporary = tempfile.TemporaryDirectory(prefix="office-records-", dir=TEMP_ROOT)
+        self.temporary = tempfile.TemporaryDirectory(prefix="office-records-")
         self.addCleanup(self.temporary.cleanup)
         self.directory = Path(self.temporary.name)
 
