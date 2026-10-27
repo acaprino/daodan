@@ -72,7 +72,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: project-knowledge:onboarding-writer; version: 3.2.0; source-sha256: b045fdad199b1950968b8000f555d3de0a4e066f2f3f5fa34ed5716487efc41a. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-knowledge:onboarding-writer; version: 3.2.1; source-sha256: b045fdad199b1950968b8000f555d3de0a4e066f2f3f5fa34ed5716487efc41a. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-knowledge`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<project-knowledge-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-knowledge`. The owning plugin's declared logical skill identities are `project-knowledge:project-knowledge`, `project-knowledge:instructions-method`, `project-knowledge:readme-craft`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

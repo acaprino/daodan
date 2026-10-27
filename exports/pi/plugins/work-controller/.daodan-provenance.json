@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:2de63108da0f60a221131648bc2cdfe9c359dc099605453397bb2ca13f24116b",
+  "coreDigest": "sha256:6845ea24e242c0b0d2de1a8407b1b2760be36866af15f5cbd0ff657fc38163c6",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],
   "plugin": "work-controller",
-  "version": "3.1.3"
+  "version": "3.1.4"
 }
