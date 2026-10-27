@@ -238,9 +238,10 @@ class UnifiedOfficeContractTests(unittest.TestCase):
         for prerequisite in ("claude plugin enable", "claude plugin list --json", "before the first phase",
                              "stop with that command", "dependency closure, direct or transitive, is off"):
             self.assertIn(prerequisite, claude)
-        standalone = {"copilot": "~/.copilot/skills/design-taste-frontend/",
-                      "pi": "~/.agents/skills/design-taste-frontend/",
-                      "opencode": "~/.config/opencode/skills/design-taste-frontend/"}
+        standalone = {"copilot": ("~/.copilot/skills/design-taste-frontend/",),
+                      "pi": ("~/.agents/skills/design-taste-frontend/",),
+                      "opencode": ("`skills/design-taste-frontend/` of the config directory the host reads",
+                                   "`OPENCODE_CONFIG_DIR` when set, otherwise `~/.config/opencode`")}
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 boundary = normalized(package / "skills/design/references/art-direction.md")
@@ -268,8 +269,9 @@ class UnifiedOfficeContractTests(unittest.TestCase):
                 self.assertIn("An inherited content-only change", boundary)
                 self.assertIn("without new proposals", boundary)
                 self.assertIn("Narrow edits and read-only work do not load a new direction or reopen intake", boundary)
+                for location in standalone.get(host, ()):
+                    self.assertIn(location, boundary)
                 if host in standalone:
-                    self.assertIn(standalone[host], boundary)
                     self.assertIn("registry resolution", boundary)
 
     def test_missing_emitted_native_runtime_produces_no_candidate_and_leaves_record_checks_available(self):
