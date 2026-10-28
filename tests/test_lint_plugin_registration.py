@@ -53,6 +53,25 @@ class OpenCodeRegistrationTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("commands/stray.md", result.stdout)
 
+    def test_dangling_routing_entry_fails(self):
+        document = json.loads(self.manifest.read_text(encoding="utf-8"))
+        target = next(iter(document["daodan"]["plugins"]))
+        document["daodan"]["plugins"][target]["routing"] = "hooks/entry-routing.md"
+        self.manifest.write_text(json.dumps(document), encoding="utf-8")
+        result = self.lint()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("dangling hooks/entry-routing.md", result.stdout)
+
+    def test_unregistered_routing_file_fails(self):
+        document = json.loads(self.manifest.read_text(encoding="utf-8"))
+        target = next(iter(document["daodan"]["plugins"]))
+        extra = self.root / f"exports/opencode/plugins/{target}/hooks/entry-routing.md"
+        extra.parent.mkdir(parents=True, exist_ok=True)
+        extra.write_text("x\n", encoding="utf-8")
+        result = self.lint()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unregistered hooks/entry-routing.md", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

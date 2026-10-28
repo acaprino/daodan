@@ -36,7 +36,9 @@ Three passes, each independently reported. Exits non-zero if any fails.
                    again: every `file` there exists, and every rendered skill,
                    agent and command under `exports/opencode/plugins/` is named
                    by one. A component the manifest omits ships and is never
-                   registered.
+                   registered. The same two directions cover each plugin's
+                   optional routing file: a named `routing` entry must exist,
+                   and a shipped `hooks/entry-routing.md` must be named by one.
   5. component refs
                    prose names components as `plugin:name` (a skill to load, a
                    role to dispatch) and as `/plugin:workflow` (a command to
@@ -181,6 +183,11 @@ def check_opencode() -> list[tuple[str, str, str]]:
                 declared.add(path)
                 if not path.is_file():
                     violations.append(("opencode manifest", name, f"dangling {item['file']}"))
+        if "routing" in entry:
+            path = root / entry["root"] / entry["routing"]
+            declared.add(path)
+            if not path.is_file():
+                violations.append(("opencode manifest", name, f"dangling {entry['routing']}"))
     for package in sorted(OPENCODE_PACKAGES.iterdir()):
         if not package.is_dir():
             continue
@@ -188,6 +195,7 @@ def check_opencode() -> list[tuple[str, str, str]]:
             *package.glob("skills/*/SKILL.md"),
             *package.glob("agents/*.md"),
             *package.glob("commands/*.md"),
+            *package.glob("hooks/entry-routing.md"),
         ]
         for path in sorted(rendered):
             if path not in declared:
