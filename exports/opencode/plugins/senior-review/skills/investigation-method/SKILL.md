@@ -83,21 +83,19 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Investigation
 
-From an observed defect to the code and change that cause it; never an edit
-to product code. Load `work-controller:work-record`: a run with
-operation `investigate` that writes only under itself, plus the reproduction
-test.
+Trace an observed defect to its causal code/change; never edit product code.
+Load `work-controller:work-record`: operation `investigate`, writing only inside
+the run and the reproduction test.
 
 ## 1. Facts
 
-From the environment where it failed (the run's `environment`), collect the
-exact message, stack trace, logs and durations, the triggering input or steps,
-and the last known good commit, release or date. Read those logs first when
-available; without them, a local rerun counts only if it shows the same
-symptom. A round duration on every attempt (30.0x s) points to a configured
-timeout; record where it is set. Ask for what is missing one question at a
-time, or record it with the work record's `ask` and close the turn. Mark each fact
-`observed` (the user, a log, a run) or `derived`.
+From the failing environment (run's `environment`), collect exact message,
+stack trace, logs/durations, triggering input/steps and last known good
+commit/release/date. Read available logs first; otherwise a local rerun counts
+only with the same symptom. Repeated round durations (30.0x s) suggest a
+configured timeout; record its location. Ask for missing facts one question at
+a time, or record them with work-record's `ask` and close the turn. Mark facts
+`observed` (user, log, run) or `derived`.
 
 ## 2. Perimeter
 

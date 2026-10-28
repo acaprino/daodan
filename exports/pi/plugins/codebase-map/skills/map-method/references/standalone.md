@@ -75,35 +75,29 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Map consumption
 
-Use this path for read-only evidence consumption during ordinary project work
-and inside analyze or other composed workflows, with or without a Daodan command.
-This unit grants no run creation, snapshot refresh, card
-deepening or publication. Standalone consumption never performs them; a composed
-workflow performs only operations already authorized by its own method.
+Consume evidence read-only inside analyze or other composed workflows and ordinary
+work, with or without commands. This unit grants no run creation, snapshot refresh,
+card deepening or publication. Standalone consumers never perform them; composed
+workflows require their method's authorization.
 
-1. **Locate existing evidence.** With MCP, call `codebase_map_runs`, then
-   `codebase_map_status` for the selected completed run. Without MCP, inspect
-   `.codebase-map/runs.json`, the published `state.json` and the root mirror.
-   Latest-state questions may use the mirror; work bound to an invocation keeps
-   that exact run directory. Do not select a partial run as a completed analysis.
-2. **Navigate before scanning.** Use the task table in `reading.md`, section
-   `Task views`. To find the code a request is about, follow `locate.md`:
-   `codebase_map_search` with the names in the request, then
-   `codebase_map_outline` and `codebase_map_graph` on the hits. Query
-   `codebase_map_meta_query` and `codebase_map_artifact` as pertinent, or search
-   the run's Markdown and the project with ordinary tools. Locate symbols,
-   contracts, flows and documentation leads before broadly reading source.
-3. **Verify and bound the work.** Before editing, call
-   `codebase_map_edit_impact` on affected symbols when available. Read exact
-   target and neighbor source with `codebase_map_read` or ordinary file tools
-   only when the consumer may read source; artifact-only consumers stay within
-   their declared inputs. The map supplies leads, not verdicts; verify material
-   behavior and business rules against current source. Static evidence
-   establishes no runtime behavior.
-4. **Recover by consumer role.** `codebase_map_diff` compares a bound snapshot
-   with current source. A newer snapshot does not refresh an older report or
-   card. A read-only consumer discloses absent, incomplete, inaccessible or
-   drifting evidence and continues with ordinary repository exploration, never
-   starting analysis, update or deepening implicitly. A composed producer
-   instead follows its authorized refresh, re-derivation or blocking procedure;
-   this unit never replaces those obligations.
+1. **Locate evidence.** Call `codebase_map_runs`, then `codebase_map_status` on
+   a completed run. Without MCP inspect `.codebase-map/runs.json`, published
+   `state.json` and root mirror. Latest-state questions may use mirrors;
+   invocation-bound work keeps its exact run directory. Exclude partial runs.
+2. **Navigate before scanning.** Use `reading.md`'s `Task views`; follow
+   `locate.md`: `codebase_map_search` request names, then `codebase_map_outline`
+   and `codebase_map_graph` hits. Use `codebase_map_meta_query` and
+   `codebase_map_artifact` as pertinent, or search run Markdown and project.
+   Locate symbols, contracts, flows and documentation leads before broad source
+   reading.
+3. **Verify before editing.** Call `codebase_map_edit_impact` on affected symbols
+   when available. Authorized consumers read exact target and neighbor source via
+   `codebase_map_read` or file tools; artifact-only consumers stay within their
+   declared inputs. Maps supply leads, not verdicts: verify material behavior and
+   business rules against current source. Static evidence proves no runtime behavior.
+4. **Recover.** `codebase_map_diff` compares bound snapshot with current source;
+   newer snapshots never refresh older reports or cards. A read-only consumer
+   discloses absent, incomplete, inaccessible or drifting evidence and continues
+   with ordinary repository exploration, never starting analysis, update or
+   deepening implicitly. A composed producer instead follows its authorized refresh,
+   re-derivation or blocking procedure; these obligations remain.

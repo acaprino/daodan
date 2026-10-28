@@ -27,7 +27,7 @@ UNIT_BUDGETS = {
     "references/deepen.md": 380,
     "references/evidence.md": 2_436,
     "references/reading.md": 142,
-    "references/standalone.md": 280,
+    "references/standalone.md": 225,
     "references/phase-0.md": 355,
     "references/phases-1-2.md": 801,
     "references/phases-3-4.md": 1_348,

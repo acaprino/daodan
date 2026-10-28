@@ -129,7 +129,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -532,7 +532,7 @@
         "./skills/project-bootstrap"
       ],
       "source": "./exports/codex/plugins/project-delivery",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -747,7 +747,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {

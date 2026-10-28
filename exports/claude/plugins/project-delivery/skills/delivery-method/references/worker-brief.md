@@ -71,25 +71,24 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Worker brief for one micro-task
 
-The writer receives only this brief. Fill every field from the run record;
-missing fields block dispatch. Include the working discipline and isolated
-worker contract required by `work-controller:work-record`.
+Give the writer only this brief, filled from the run; missing fields block dispatch.
+Include `work-controller:work-record`'s working discipline and isolated worker contract.
 
 ```
 ## Task
 id: <task id>            wave: <wave id>            run: <run id>
-process: <bound process ID and attempt ID when present; legacy unbound otherwise>
+process: <bound process/attempt IDs; otherwise legacy unbound>
 objective: <one sentence>
-specification: <bound path, SHA-256, approval question/run and relevant approved requirements; absent for legacy or pure repair/refactor>
-examples to make pass: <EX-* ids and their text>
-invariants to keep: <INV-* ids and text; authoritative boundary contract/version, wire/errors, derived types/mocks and serialization check agreed before parallel producer/consumer work>
-rejected alternatives: <RA-* ids and their text, when they touch this task>
+specification: <bound path, SHA-256, approval question/run, relevant approved requirements; absent for legacy or pure repair/refactor>
+examples to make pass: <EX-* ids/text>
+invariants to keep: <INV-* ids/text; authoritative boundary contract/version, wire/errors, derived types/mocks, serialization check agreed before parallel producer/consumer work>
+rejected alternatives: <relevant RA-* ids/text>
 
 ## Files
 write_set: <exact paths; nothing else may change>
-read context: <verified `task-packet`: cards and sources of the write_set, one-hop callers and callees, current signatures>
-locate: the packet is a starting point, not the search; follow `codebase-map:map-method` `references/locate.md`: `codebase_map_search` with the names in the objective and examples, `codebase_map_outline` and `codebase_map_graph` on the hits, `codebase_map_read` by symbol, `codebase_map_edit_impact` before the edit; without an MCP server, `snapshot.py search MANIFEST --query Q` and the matching subcommands
-protected paths: <preexisting modified files, in IN_PLACE mode>
+read context: <verified `task-packet`: write_set cards/sources, one-hop callers/callees, current signatures>
+locate: packet alone is insufficient; follow `codebase-map:map-method` `references/locate.md`: `codebase_map_search` using objective/example names, `codebase_map_outline` and `codebase_map_graph` on hits, `codebase_map_read` by symbol, `codebase_map_edit_impact` before editing; without MCP, `snapshot.py search MANIFEST --query Q` and matching subcommands
+protected paths: <preexisting modified files in IN_PLACE>
 
 ## Oracle
 command: <test command>
@@ -100,16 +99,16 @@ verification after the change: <command>
 <id: decision, reason>
 
 ## Evidence pack
-<tool results already available for these files, or "none">
+<available tool results for these files, or "none">
 
 ## Authorization
-edits inside write_set only; no commit; no new dependency; no change to a public contract not named above
+write_set only; no commit/new dependency; public-contract changes only as named above
 
 ## Exit
 Return exactly one of:
-- OK, with the changed paths, the oracle output before and after, the verification output, and any ruling (decision, reason, cost if wrong, evidence)
-- NEEDS_REPLAN, with the file that must change and why, or the human decision missing and its evidence
-- ORACLE_INVALID, with the oracle output and why it did not fail as expected
+- OK, changed paths, before/after oracle output, verification output, rulings (decision, reason, cost if wrong, evidence)
+- NEEDS_REPLAN, required file/reason, or missing human decision/evidence
+- ORACLE_INVALID, oracle output and why failure differed from expectation
 Do not widen write_set. Do not weaken the oracle. Do not retry past one attempt.
 ```
 
