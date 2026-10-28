@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:86c1d4496fc90b8558a55aba2709eba161b2c2527543d350808a6d4bac7a1362",
+  "coreDigest": "sha256:890d0bcb016e72187b2fdada0c5ab4a7cb2404b82e1f04fd8f86992851e0ce60",
   "harnessStrategies": {
     "firefox-lint": "parallel-subagents",
     "firefox-publish": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "browser-extensions",
-  "version": "1.0.1"
+  "version": "1.0.0"
 }

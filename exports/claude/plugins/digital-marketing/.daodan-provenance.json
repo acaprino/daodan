@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:a2f7669c90fabec14772cafe8b9f4577e3fc5a6d4b9d60738295257cc1fb8cf2",
+  "coreDigest": "sha256:397ab2ba52a65a3eb5afd1538a222a5177a74f638618dc9654d0f054f5e733d2",
   "harnessStrategies": {
     "brand-naming": "native-team",
     "content-strategy": "native-team",
@@ -12,5 +12,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "digital-marketing",
-  "version": "1.0.1"
+  "version": "1.0.0"
 }

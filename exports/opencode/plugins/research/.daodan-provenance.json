@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:7195f2e0a2de0b284a6a27c4e1f923e3d7db775ee086b0965a8575daef2d8320",
+  "coreDigest": "sha256:902d9d281c26c613c4b31249582f288a532f6e27669d9b1c2adac1b85b3dfbd0",
   "harnessStrategies": {
     "science-mode": "parallel-subagents",
     "science-research": "parallel-subagents",
@@ -10,5 +10,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "research",
-  "version": "1.0.1"
+  "version": "1.0.0"
 }

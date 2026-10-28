@@ -55,7 +55,7 @@
         "./skills/prompt-engineering"
       ],
       "source": "./exports/copilot/plugins/ai-tooling",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -74,7 +74,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/copilot/plugins/app-analyzer",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -94,7 +94,7 @@
         "./skills/firefox-extension-dev"
       ],
       "source": "./exports/copilot/plugins/browser-extensions",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -116,7 +116,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/copilot/plugins/business",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -173,7 +173,7 @@
       "license": "MIT",
       "name": "csp",
       "source": "./exports/copilot/plugins/csp",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -278,7 +278,7 @@
         "./skills/review-reply-method"
       ],
       "source": "./exports/copilot/plugins/digital-marketing",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "author": {
@@ -333,7 +333,7 @@
         "./skills/grabber-development"
       ],
       "source": "./exports/copilot/plugins/grabber-development",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "author": {
@@ -537,7 +537,7 @@
         "./skills/cross-model-peer-review"
       ],
       "source": "./exports/copilot/plugins/peer-review",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -687,7 +687,7 @@
         "./skills/pwa-development"
       ],
       "source": "./exports/copilot/plugins/pwa-expert",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -775,7 +775,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/copilot/plugins/repo-hygiene",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "author": {
@@ -810,7 +810,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/copilot/plugins/research",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -895,7 +895,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/copilot/plugins/senior-review",
-      "version": "1.0.2"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -994,7 +994,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/copilot/plugins/testing",
-      "version": "1.0.1"
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -1104,7 +1104,7 @@
         "./skills/xtermjs-skill"
       ],
       "source": "./exports/copilot/plugins/xterm",
-      "version": "1.0.1"
+      "version": "1.0.0"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:fd4a1c7b08c413db7c40135b2c89b5f44e86ed75162e06d5337beda209935d05",
+  "coreDigest": "sha256:590962da0a3b57f73662c52f3ff1ef3b68cf4efffbbd05922af9b3b3f7549316",
   "harnessStrategies": {
     "pwa-audit": "parallel-subagents",
     "pwa-checklist": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "pwa-expert",
-  "version": "1.0.1"
+  "version": "1.0.0"
 }

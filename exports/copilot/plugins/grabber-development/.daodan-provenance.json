@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:94cb009530a0ccdcf804a13e4c303224359ee06e87591f35cd1984396b94a51f",
+  "coreDigest": "sha256:998832a42e35660c212275866bf94a77e25c9c44466aea7321da4a38e9738544",
   "harnessStrategies": {
     "instagram-grab": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "grabber-development",
-  "version": "1.0.1"
+  "version": "1.0.0"
 }
