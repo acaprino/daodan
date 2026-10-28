@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:12b1d1f6848cd842a908cc9e8c69dfa9f591de97af93eea1f6adf698c2080b5c",
+  "coreDigest": "sha256:177ca3a52f078202335b0f2bb9f531bf84aae9e6c2e2e39e5253e23d77edd1d3",
   "harnessStrategies": {
     "libgdx-audit": "native-team"
   },

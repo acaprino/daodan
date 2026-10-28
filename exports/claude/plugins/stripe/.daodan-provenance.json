@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:fe5d27c3598d922bbca7e0a3a8ffa20a519e414fd0847e8d63f7c639e8514573",
+  "coreDigest": "sha256:a93adb6708f581e2fdd975cbbe946bc8c7a2a4ce59b079e697e92d0b744255a1",
   "harnessStrategies": {
     "audit-webhooks": "native-team"
   },

@@ -128,6 +128,8 @@ Working verification: Define observable success criteria from approved requireme
 
 Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
 
+Working processes: no harness command leaves a hung process behind. Every command that spawns subprocesses (monitors, model runtimes, wait loops, background workers) must terminate them on success and kill them, with the parent, on failure, on timeout and on caller stop. A completed or failed measurement is closed only after its worker and monitor processes are confirmed exited, not merely after its files exist. Prefer bounded patterns: monitor loops that reap their children, subprocess timeouts that kill, and a recovery step that reaps the run's own processes before any retry. Never kill processes that are not your own.
+
 ## Designing prompts and agents
 
 The research in [`prompt-engineering-and-brevity.md`](docs/research/prompt-engineering-and-brevity.md)
@@ -225,6 +227,14 @@ optional. Adapters generate native registration where supported; unsupported
 optional hooks retain method checkpoints. Raw hook manifests/frontmatter do not
 bypass the compiler. Enabling a plugin does not waive the host's trust review.
 See `docs/hosts.md` for registration and execution evidence boundaries.
+
+A kernel opts into chat entry routing with a second, compiler-owned declaration,
+`[routing]`: `workflows = true` and/or one or more `[[routing.keywords]]` rows.
+The compiler alone renders its per-host delivery, and routing adds no entry note
+to any body. On Claude and Codex it is a session-start hook; on OpenCode the
+loader reads a manifest-named text file into a routing slot that a prompt never
+clears. Copilot and Pi get no delivery for it at all, only the workflow and skill
+descriptions the catalog already carries.
 
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 

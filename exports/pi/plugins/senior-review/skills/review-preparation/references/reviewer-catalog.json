@@ -647,7 +647,7 @@
       "provider_version": "1.0.0",
       "role": "react-performance-optimizer",
       "source_hashes": {
-        "react-development/kernel": "sha256:dd088cef1ac1506d42f7af7aef9860cece26e50dfa8493d2c2a77ba2eb25daf3",
+        "react-development/kernel": "sha256:0dd2ae277f5f0054fc7b56bd44d21c7bfbeb2eec9cff861a89f3bb6a54121a8d",
         "react-development/roles/react-bundle-auditor.md": "sha256:c4209dca71e7cf9c2e2f364bbc96b294026f9294039b444ab8455786b5c2019e",
         "react-development/roles/react-dataflow-auditor.md": "sha256:35940bae6114a7201311fc532aa3098006cb2f4323f48d04fa8517c65a9857ee",
         "react-development/roles/react-effects-auditor.md": "sha256:d8988a38fca846dc8915409deca9363c01ac9df05be84c79085211bc60a3affc",
@@ -679,7 +679,7 @@
       "provider_version": "1.0.0",
       "role": "type-safety-auditor",
       "source_hashes": {
-        "typescript-development/kernel": "sha256:1b38012614654e3b67e8ee386de78e74dda583835f2fd18bcc9c1c995d9f7bce",
+        "typescript-development/kernel": "sha256:0070cf5056885b738f73b855f3408a9bb670a23ef7baedb579c2557ab4c90f67",
         "typescript-development/roles/type-soundness-auditor.md": "sha256:90f66512f5c81eb7493ae1ae473e84b422f926fb8a1ee6e36163d53fac8fc127",
         "typescript-development/roles/typed-boundary-auditor.md": "sha256:3dd5a3f5e83eef35fd69064b2bf7bffb38f189600e9bb51099f78552f56ff188"
       },
@@ -1795,7 +1795,7 @@
       "provider_version": "1.0.0",
       "role": "react-effects-auditor",
       "source_hashes": {
-        "react-development/kernel": "sha256:dd088cef1ac1506d42f7af7aef9860cece26e50dfa8493d2c2a77ba2eb25daf3",
+        "react-development/kernel": "sha256:0dd2ae277f5f0054fc7b56bd44d21c7bfbeb2eec9cff861a89f3bb6a54121a8d",
         "react-development/roles/react-effects-auditor.md": "sha256:d8988a38fca846dc8915409deca9363c01ac9df05be84c79085211bc60a3affc"
       },
       "trigger_when": "reviewing React effect dependencies, current callbacks, repeated actions and deterministic subscription cleanup."
@@ -1820,7 +1820,7 @@
       "provider_version": "1.0.0",
       "role": "react-render-cost-auditor",
       "source_hashes": {
-        "react-development/kernel": "sha256:dd088cef1ac1506d42f7af7aef9860cece26e50dfa8493d2c2a77ba2eb25daf3",
+        "react-development/kernel": "sha256:0dd2ae277f5f0054fc7b56bd44d21c7bfbeb2eec9cff861a89f3bb6a54121a8d",
         "react-development/roles/react-render-cost-auditor.md": "sha256:078d8e728a4eabbe17227ac32ce25dbd9df1740c8805839aba4561a98119d0c6"
       },
       "trigger_when": "reviewing React subscriptions, component identity, hydration and avoidable render or main-thread work with causal evidence."
@@ -1845,7 +1845,7 @@
       "provider_version": "1.0.0",
       "role": "react-bundle-auditor",
       "source_hashes": {
-        "react-development/kernel": "sha256:dd088cef1ac1506d42f7af7aef9860cece26e50dfa8493d2c2a77ba2eb25daf3",
+        "react-development/kernel": "sha256:0dd2ae277f5f0054fc7b56bd44d21c7bfbeb2eec9cff861a89f3bb6a54121a8d",
         "react-development/roles/react-bundle-auditor.md": "sha256:c4209dca71e7cf9c2e2f364bbc96b294026f9294039b444ab8455786b5c2019e"
       },
       "trigger_when": "reviewing eager dependency reachability, code splitting, resource hints and optional feature delivery against the actual build."
@@ -1870,7 +1870,7 @@
       "provider_version": "1.0.0",
       "role": "react-dataflow-auditor",
       "source_hashes": {
-        "react-development/kernel": "sha256:dd088cef1ac1506d42f7af7aef9860cece26e50dfa8493d2c2a77ba2eb25daf3",
+        "react-development/kernel": "sha256:0dd2ae277f5f0054fc7b56bd44d21c7bfbeb2eec9cff861a89f3bb6a54121a8d",
         "react-development/roles/react-dataflow-auditor.md": "sha256:35940bae6114a7201311fc532aa3098006cb2f4323f48d04fa8517c65a9857ee"
       },
       "trigger_when": "reviewing request dependency graphs, server/client transfer, request isolation and cache freshness in React applications."
@@ -1895,7 +1895,7 @@
       "provider_version": "1.0.0",
       "role": "type-soundness-auditor",
       "source_hashes": {
-        "typescript-development/kernel": "sha256:1b38012614654e3b67e8ee386de78e74dda583835f2fd18bcc9c1c995d9f7bce",
+        "typescript-development/kernel": "sha256:0070cf5056885b738f73b855f3408a9bb670a23ef7baedb579c2557ab4c90f67",
         "typescript-development/roles/type-soundness-auditor.md": "sha256:90f66512f5c81eb7493ae1ae473e84b422f926fb8a1ee6e36163d53fac8fc127"
       },
       "trigger_when": "reviewing unsafe type escapes, assertions, generic contracts, exhaustiveness and effective compiler checks."
@@ -1920,7 +1920,7 @@
       "provider_version": "1.0.0",
       "role": "typed-boundary-auditor",
       "source_hashes": {
-        "typescript-development/kernel": "sha256:1b38012614654e3b67e8ee386de78e74dda583835f2fd18bcc9c1c995d9f7bce",
+        "typescript-development/kernel": "sha256:0070cf5056885b738f73b855f3408a9bb670a23ef7baedb579c2557ab4c90f67",
         "typescript-development/roles/typed-boundary-auditor.md": "sha256:3dd5a3f5e83eef35fd69064b2bf7bffb38f189600e9bb51099f78552f56ff188"
       },
       "trigger_when": "reviewing HTTP, queue, storage and environment values before untrusted runtime data is treated as a TypeScript type."
@@ -2124,7 +2124,7 @@
       "provider_version": "1.0.0",
       "role": "python-semantics-auditor",
       "source_hashes": {
-        "python-development/kernel": "sha256:5a534d472f88db1b809be4e4f3b3e6cc42c40df5c87a21905bbf2bce67658f41",
+        "python-development/kernel": "sha256:5ca2a2b1802afa798e9d1a35dffb29ee3eddc11158ae3c1ba9f26731b3d32d1a",
         "python-development/roles/python-semantics-auditor.md": "sha256:656ff4215b9bfdd70e2a020f475638b3e674ed583fc0bfe7811d70f1f80d88d9"
       },
       "trigger_when": "reviewing Python default evaluation, binding, short-circuit, return, exception and side-effect behavior against required outcomes."
@@ -2156,7 +2156,7 @@
         "python-development:python-dead-code"
       ],
       "source_hashes": {
-        "python-development": "sha256:5a534d472f88db1b809be4e4f3b3e6cc42c40df5c87a21905bbf2bce67658f41"
+        "python-development": "sha256:5ca2a2b1802afa798e9d1a35dffb29ee3eddc11158ae3c1ba9f26731b3d32d1a"
       },
       "trigger_when": "target includes .py or .pyi files, or the relevant package declares pyproject.toml, setup.py, uv.lock or requirements*.txt"
     },
@@ -2182,7 +2182,7 @@
         "dependency-audit:dependency-audit"
       ],
       "source_hashes": {
-        "dependency-audit": "sha256:5db68a4151df270527279f88730ba7b6fd15e37b309d3edddd79494979198923"
+        "dependency-audit": "sha256:29664817375cc52e9feb1420c7cf5b169a39bd5e3b205cd72901cd0e1b110b6a"
       },
       "trigger_when": "candidate changes a manifest or lockfile"
     }

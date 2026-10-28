@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:d13fd809eccb9d8ca51a532cd12c9fa64b084685691b2af83360f4d56dad8ccd",
+  "coreDigest": "sha256:9e8b1d9f1ec166975c365612a38a6e56fd4810106c46af7341b2d985e26a0e01",
   "harnessStrategies": {
     "otel-audit": "parallel-subagents"
   },

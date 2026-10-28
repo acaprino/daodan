@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:b96b2f2cec2010e9933b26bdd4d93fd5737732ba36c11c34f11b68e8a1bfd7e8",
+  "coreDigest": "sha256:2b645cccce49d9c05a0f3d1d4baeab1023fed718bda9b25fb612b249f80b1f6a",
   "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],

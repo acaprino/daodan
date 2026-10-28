@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:240549316f9d7e4811d323dc8b457f0f590759920797712e09a17f59b90d74f0",
+  "coreDigest": "sha256:7f1484fa0c155644c24c073fcaf596b2015e0497d1371e127c9fe23c6e38b311",
   "harnessStrategies": {
     "brand-naming": "native-team",
     "content-strategy": "native-team",

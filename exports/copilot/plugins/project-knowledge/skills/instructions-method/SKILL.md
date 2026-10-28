@@ -187,7 +187,10 @@ domain, by identity and title, supplied by the caller as resolved active decisio
 workspace convention (worktree root, branch naming); the neutral specification
 destination (`docs/specs/` unless explicitly configured otherwise); and routing:
 design/brainstorm requests use Daodan's delivery method, which writes and obtains approval of
-the specification before planning, reusing existing answers. This is an instruction,
+the specification before planning, reusing existing answers; the block also names the
+core entries for ongoing project work (`/daodan:investigate-problem`, `/daodan:fix-bug`,
+`/daodan:new-feature`, `/daodan:refactor-code`, `/daodan:continue-task`, `/daodan:finish-task`),
+so a host that cannot act on this file's routing hints still has them in text. This is an instruction,
 not proof of automatic host activation. State that run records live under
 `.daodan/runs/`. Reasons stay in the records,
 procedures stay in the loaded methods, and run state never enters the block.

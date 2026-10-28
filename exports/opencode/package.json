@@ -211,6 +211,7 @@
           }
         ],
         "root": "plugins/ai-tooling",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
@@ -242,6 +243,7 @@
           }
         ],
         "root": "plugins/app-analyzer",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).",
@@ -329,6 +331,7 @@
           }
         ],
         "root": "plugins/browser-extensions",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Reference knowledge base behind the firefox-extension-dev-agent agent. TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.",
@@ -507,6 +510,7 @@
           "research"
         ],
         "root": "plugins/business",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base of strategy frameworks and market data, loaded by business-planner. TRIGGER WHEN: SaaS business planning or GTM strategy work, including positioning frameworks (April Dunford, Blue Ocean, Crossing the Chasm), PLG/SLG motions, and KPI benchmarks.",
@@ -940,7 +944,8 @@
             ]
           }
         ],
-        "root": "plugins/csp"
+        "root": "plugins/csp",
+        "routing": "hooks/entry-routing.md"
       },
       "daodan": {
         "commands": [
@@ -1125,10 +1130,12 @@
           "text-humanizer",
           "typescript-development"
         ],
-        "root": "plugins/daodan"
+        "root": "plugins/daodan",
+        "routing": "hooks/entry-routing.md"
       },
       "dependency-audit": {
         "root": "plugins/dependency-audit",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; the audit method in references/audit.md is run by /daodan:check-health and by the dependency perspective of /daodan:review-changes and /daodan:review-branch. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:application-cleanup-method or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",
@@ -1226,6 +1233,7 @@
           "report-rendering"
         ],
         "root": "plugins/digital-marketing",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Ideate brand names, filter against archetypes and phonotactic rules, and score survivors on domain availability, market saturation and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
@@ -1255,6 +1263,7 @@
       },
       "docker": {
         "root": "plugins/docker",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
@@ -1278,7 +1287,8 @@
           "pwa-expert",
           "platform-engineering"
         ],
-        "root": "plugins/frontend-review"
+        "root": "plugins/frontend-review",
+        "routing": "hooks/entry-routing.md"
       },
       "grabber-development": {
         "agents": [
@@ -1519,6 +1529,7 @@
           }
         ],
         "root": "plugins/grabber-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base for production crawlers, from target assessment through observability. TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.",
@@ -1530,6 +1541,7 @@
       },
       "kotlin-development": {
         "root": "plugins/kotlin-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Idiomatic Kotlin patterns for coroutines, Kotlin Multiplatform (KMP), Jetpack Compose and Ktor. TRIGGER WHEN: writing or reviewing Kotlin with coroutines, Flow, StateFlow, SharedFlow, KMP expect/actual, Compose ViewModels, Ktor JWT/Exposed, sealed classes or DSL builders. DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development).",
@@ -1548,6 +1560,7 @@
           }
         ],
         "root": "plugins/learning",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Render a JSON outline into a standalone browser page; needs internet for the CDN. TRIGGER WHEN: the user says interactive map, force graph, web mindmap, or HTML mindmap, or asks for a zoomable, draggable visual export. DO NOT TRIGGER WHEN: the user wants Obsidian MarkMind format (use markmind-exporter).",
@@ -1637,6 +1650,7 @@
           }
         ],
         "root": "plugins/libgdx-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base for shipping production games from one Java or Kotlin codebase. TRIGGER WHEN: building, optimizing, debugging, or scaffolding libGDX games; migrating libGDX versions; choosing libGDX architecture patterns.",
@@ -1724,6 +1738,7 @@
           }
         ],
         "root": "plugins/marketplace-ops",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Validate structural integrity, dependencies, naming, colors and doc counts of a plugin marketplace. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan components, checking dependencies or doc count drift. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding (use skills-creator).",
@@ -1801,6 +1816,7 @@
           }
         ],
         "root": "plugins/messaging",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base for running RabbitMQ under production load, split into on-demand references. TRIGGER WHEN: designing, operating, upgrading, monitoring or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: quick conceptual questions (use rabbitmq-expert directly).",
@@ -1850,6 +1866,7 @@
       },
       "obsidian-development": {
         "root": "plugins/obsidian-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Report every automated-review violation with its file location and fix. TRIGGER WHEN: preparing an Obsidian plugin for submission or before pushing code.",
@@ -2078,6 +2095,7 @@
           }
         ],
         "root": "plugins/opentelemetry",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
@@ -2474,6 +2492,7 @@
           }
         ],
         "root": "plugins/project-delivery",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.",
@@ -3136,6 +3155,7 @@
           }
         ],
         "root": "plugins/pwa-expert",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:react-best-practices), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
@@ -3284,6 +3304,7 @@
           "work-controller"
         ],
         "root": "plugins/python-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
@@ -3473,6 +3494,7 @@
           }
         ],
         "root": "plugins/rag-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base for production question-answering pipelines. TRIGGER WHEN: building, optimizing, or auditing RAG systems, including Graph RAG, CRAG, Self-RAG, and Agentic RAG.",
@@ -3721,6 +3743,7 @@
           }
         ],
         "root": "plugins/react-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Vercel Engineerings 70 rules, ordered by impact across 8 categories. TRIGGER WHEN: writing, reviewing, or refactoring React or Next.js code: components, pages, data fetching, bundle size, or render performance.",
@@ -3934,6 +3957,7 @@
           }
         ],
         "root": "plugins/research",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Web research methodology: query formulation, source authority ranking, WebSearch/serper.dev backends, bot-block fallbacks and anti-loop rules. TRIGGER WHEN: performing web research in quick-searcher, deep-researcher or /research:team-research. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
@@ -6535,6 +6559,7 @@
           }
         ],
         "root": "plugins/stripe",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",
@@ -6553,6 +6578,7 @@
           }
         ],
         "root": "plugins/system-utils",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Scope, plan, and execute the reorganization behind approval gates. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up old files, restructuring project directories, separating work from personal files, or automating file cleanup tasks.",
@@ -6637,6 +6663,7 @@
           }
         ],
         "root": "plugins/tauri-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Knowledge base indexing core, desktop, and mobile references. TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.",
@@ -7278,6 +7305,7 @@
           }
         ],
         "root": "plugins/trading-broker-integration",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Vendor-neutral broker integration vocabulary: the five archetypes, single-broker vs multi-broker platforms, order state machine, session recovery and evidence ladder. TRIGGER WHEN: comparing brokers or integration paths, integrating a broker without a dedicated skill, or classifying an access path. DO NOT TRIGGER WHEN: targeting a broker with its own skill (use ibkr or mt5).",
@@ -7490,6 +7518,7 @@
           "testing"
         ],
         "root": "plugins/typescript-development",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Run Knip to find unused files, dependencies, exports and types in TypeScript and JavaScript projects. TRIGGER WHEN: cleaning up TypeScript/JavaScript dead code, finding unused npm dependencies or exports, or configuring knip.json/knip.ts. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",
@@ -7619,6 +7648,7 @@
           }
         ],
         "root": "plugins/xterm",
+        "routing": "hooks/entry-routing.md",
         "skills": [
           {
             "description": "Build, configure, debug and extend browser and Electron terminal UIs with xterm.js (@xterm/xterm). TRIGGER WHEN: working with xterm.js, @xterm/xterm, FitAddon, WebglAddon, SearchAddon, AttachAddon, node-pty over WebSocket, ANSI/VT sequences, or embedding a web terminal in React/Vue/Electron.",

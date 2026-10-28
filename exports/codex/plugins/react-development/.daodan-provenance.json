@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:0b3a0526fad821adf719a4b6d6a758c8dbbc6ea07e52187b2de96c440474e744",
+  "coreDigest": "sha256:417a1119970bff1a9b9a006d318277fd51471707357cb70caacd3c3fc5051824",
   "harnessStrategies": {},
   "host": "codex",
   "overrides": [],

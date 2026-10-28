@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:998832a42e35660c212275866bf94a77e25c9c44466aea7321da4a38e9738544",
+  "coreDigest": "sha256:0c1b3d362b73e15a92f5f3eda66d81a62174076fd4996ea5151a81a5e0100f3a",
   "harnessStrategies": {
     "instagram-grab": "parallel-subagents"
   },

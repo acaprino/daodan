@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:61f66223a8e485f85f0ba9bb1c34d2e29b68b3c2b3ab15267a0ffd3a05cbf14b",
+  "coreDigest": "sha256:faf4f67a207235a7e4622bd35c92623227a296e431c273955331275bb0f072e2",
   "harnessStrategies": {
     "marketplace-health": "parallel-subagents",
     "marketplace-review": "parallel-subagents",

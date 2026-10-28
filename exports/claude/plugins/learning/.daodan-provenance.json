@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:15cd9619a6e12158abe65dde686eaa0f2931784b7722a88bb301d9d2163edd36",
+  "coreDigest": "sha256:8d1e6643c718902594c31845f808d6900e0a0549537c53f582c59c281394e7e0",
   "harnessStrategies": {
     "export-to-markmind": "native-team"
   },

@@ -74,7 +74,7 @@ External bundles are separate upstream installations, not copied local skills.
 See [host setup](<../hosts.md>) for selection and availability requirements.
 
 **Required capabilities:** `repository.read`, `shell.execute`.
-**Optional capabilities:** `network.fetch`.
+**Optional capabilities:** `network.fetch`, `hooks.lifecycle`.
 Optional capabilities are host mechanisms, not optional local plugin dependencies.
 
 ### Registered components

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:225003cb8a1171f67e002450ae8f2e0099e5ffdc956aa175544f3146ad1c6eaf",
+  "coreDigest": "sha256:d32f2c0f6ef9eacc6c1f01e3933080e526af202753deb42348408079d3ef03a5",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],

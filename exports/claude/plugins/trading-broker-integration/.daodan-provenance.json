@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f4dddbdfcfb12ae99d42172fad1a548922f4324a58dd20f85748835c37de89a1",
+  "coreDigest": "sha256:6179e61d767ded88f62a24bd6a28a0df08fcead3be3dfebfac4139a0b0505ed5",
   "harnessStrategies": {
     "ibkr-audit": "native-team",
     "ibkr-verify": "native-team",

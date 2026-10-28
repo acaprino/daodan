@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:8eb05eb5d6a8dcd3192088d543418c4133e4a1f4c26f4d84eb2c383080bd2beb",
+  "coreDigest": "sha256:3ab92407870035b043a6b5c354fca1e858a63b00eeb1d876ac18cf8b3ac063fb",
   "harnessStrategies": {
     "brainstorm-idea": "parallel-subagents",
     "check-health": "parallel-subagents",
