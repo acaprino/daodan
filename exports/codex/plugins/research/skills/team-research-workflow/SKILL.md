@@ -14,9 +14,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Codex binding: the adapter binds repository read to read_file, writes to
 apply_patch and shell execution to shell; use the equivalent registered tools of
-the active Codex runtime and their actual fields. In particular, a shell example's
+the active Codex runtime and their actual fields. Network search and network fetch
+use the runtime's registered web search tool when the Codex configuration enables
+it. A user question uses the runtime's registered question tool when one exists;
+otherwise ask it in the reply and wait for the answer. In particular, a shell example's
 command, timeout and background fields are not automatically another runtime's
 cmd, yield_time_ms or session controls.
 Start the runtime's available isolated subagent mechanism with the complete
@@ -99,7 +109,7 @@ Load `research:web-search-techniques` before planning: it names the two backends
 | `--no-clarify` | off | Skip Phase 1; the plan gate still runs |
 | `--auto` | off | Skip both gates: print the plan and run. For unattended use |
 | `--out` | `research/<YYYY-MM-DD>-<slug>.md` under the current working directory | A file path, or a directory (the default filename goes inside it) |
-| `--backend` | `auto` | `auto`: serper when a key is available (`SERPER_API_KEY`, or `~/.serper_key`), else native `host web search binding`; `serper` forces serper and offers to collect a key in chat when none is set; `websearch` forces native search |
+| `--backend` | `auto` | `auto`: serper when a key is available (`SERPER_API_KEY`, or `~/.serper_key`), else native network search; `serper` forces serper and offers to collect a key in chat when none is set; `websearch` forces native search |
 | `--domain` | detected | Free-form hint (security, law, finance, nutrition, anything) shaping vocabulary, source families and the synthesis persona |
 
 Slug: the restated question, lowercased, ASCII letters and digits with hyphens, at most 60 characters.
@@ -123,9 +133,9 @@ A one-fact question (single answer, one source suffices) is not a tier: spawn `r
    - No key, `--backend serper`: the user asked for serper by name, so offer to set it up (step 4) instead of silently doing something else.
    - No key, `auto`: the backend is `websearch`. Do not ask; a run nobody asked to route through serper should not stop to collect a key. Say so once in the plan: `Backend: websearch (no serper key; run with --backend serper to set one up)`.
    - No key, `--backend serper`, and `--auto` is set: an unattended run cannot answer a question, so stop with the script's setup line.
-4. Collecting a key in chat (only in the case named above). Ask with the active host question mechanism, one question, these options:
+4. Collecting a key in chat (only in the case named above). Ask one user question with these options:
    - `Paste my serper.dev key` (recommended): the user supplies it through the free-text field. Say plainly in the question text that the key will be saved to `~/.serper_key` for this and future runs, and that a key typed in chat is in the transcript.
-   - `Use the native host web search binding instead`: continue with `websearch`, no key collected.
+   - `Use the native network search instead`: continue with `websearch`, no key collected.
    - `Cancel the run`: stop, no plan, no researchers.
 
    With a key in hand, save it through the script rather than by writing the file yourself, so the permissions and the format are the script's business:
@@ -135,14 +145,14 @@ A one-fact question (single answer, one source suffices) is not a tier: spawn `r
    ```
 
    Then re-run `--check-key` to confirm, and continue with the backend `serper`. Handling rules, all of them absolute: never echo the key back (the script prints only the last four characters), never write it into the plan, a spawn prompt, the report, the companion file, or any other file, and never read `~/.serper_key` yourself. Researchers never receive the key: they call the script, and the script reads it. If the user pastes something that is not a key, `--check-key` still passes (the file holds whatever was given) and the first real search fails with `HTTP 401` or `403`; treat that as a bad key, say so, and offer the same question again once.
-5. If the backend is `websearch` and `host web search binding` is not in your toolset, stop: "No search backend available: host web search binding is not in this session's toolset and no serper key is set."
+5. If the backend is `websearch` and the host binding leaves network search unavailable in this session, stop: "No search backend available: this session has no network search tool and no serper key is set."
 6. If the question is about local code, stop and say so.
 
 ## Phase 1: Clarify
 
 Skipped by `--no-clarify` and `--auto`.
 
-Read the question for what is genuinely open: scope; audience and purpose (decision, overview, teaching); time window; geography or jurisdiction; what a good answer looks like (facts, comparison table, recommendation). If at least one is open, ask 2-4 questions in ONE the active host question mechanism call, multiple choice where possible, and fold the answers into the restated question. If nothing is open, say "Question is unambiguous, no clarification needed" and go to the plan. Never ask for the sake of asking.
+Read the question for what is genuinely open: scope; audience and purpose (decision, overview, teaching); time window; geography or jurisdiction; what a good answer looks like (facts, comparison table, recommendation). If at least one is open, ask 2-4 questions in ONE user question, multiple choice where possible, and fold the answers into the restated question. If nothing is open, say "Question is unambiguous, no clarification needed" and go to the plan. Never ask for the sake of asking.
 
 ## Phase 2: Plan
 
@@ -163,7 +173,7 @@ Researchers: <N> in wave 1 (<one per sub-question, or which share one at quick>)
 Estimated pages read: <range>   Estimated time: <range>
 ```
 
-Unless `--auto`, present it with the active host question mechanism: options `Approve`, `Change depth`, `Edit the plan` (free text; merge it, re-show once, then run). With `--auto`, print the plan and continue. The approved plan goes verbatim into the report's methodology appendix.
+Unless `--auto`, present it as a user question: options `Approve`, `Change depth`, `Edit the plan` (free text; merge it, re-show once, then run). With `--auto`, print the plan and continue. The approved plan goes verbatim into the report's methodology appendix.
 
 ## Phase 3: Wave 1
 

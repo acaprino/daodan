@@ -13,8 +13,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -356,7 +365,7 @@ If a category genuinely has no findings after thorough analysis, state what you 
 
 If `--dry-run` is in `$ARGUMENTS`, show all fixes without applying them.
 
-Otherwise, apply fixes through the host repository-edit binding:
+Otherwise, apply fixes through repository edit:
 - Fix one issue at a time, starting with Critical and High severity
 - Verify each fix doesn't conflict with other terminal setup code
 - Preserve addon loading order: open() -> WebGL -> Fit -> other addons -> fit()

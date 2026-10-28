@@ -18,8 +18,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -105,7 +114,7 @@ Users can navigate between phases:
 
 # State Management (Draft Document)
 
-After completing each phase, use the host repository-write or edit binding to update a running draft file named `draft-business-plan.md` in the user's working directory. Structure:
+After completing each phase, use repository write or edit to update a running draft file named `draft-business-plan.md` in the user's working directory. Structure:
 
 ```
 # [Product Name] -- Business Plan Draft
@@ -120,7 +129,7 @@ This prevents context loss across phases and gives the user a tangible artifact 
 
 # Research Agents
 
-Use the `research` plugin's agents for data gathering instead of raw host web search binding/host page-fetch binding. `research` is a hard dependency of this plugin:
+Use the `research` plugin's agents for data gathering instead of raw network search/network fetch. `research` is a hard dependency of this plugin:
 
 - **`research:quick-searcher`**: for fast lookups: market size figures, specific competitor data, pricing page checks, single-fact verification. Use in Phases 1, 3, 5.
 - **`research:deep-researcher`**: for systematic multi-source investigation: comprehensive competitive landscape, industry trend analysis, detailed market reports. Use in Phases 1, 3 when the user's sector requires thorough coverage.
@@ -137,7 +146,7 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 1: Market Sizing
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/market-sizing.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/market-sizing.md`
 
 **Ask:**
 - What does your SaaS do? (2-sentence pitch)
@@ -161,7 +170,7 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 2: Audience & JTBD
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/audience-personas.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/audience-personas.md`
 
 **Ask:**
 - Who is the customer? (company profile for B2B, user profile for B2C)
@@ -183,7 +192,7 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 3: Competitive Analysis
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/competitive-analysis.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/competitive-analysis.md`
 
 **Ask:**
 - Who are your competitors? (include indirect: Excel, manual processes, interns)
@@ -205,7 +214,7 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 4: Positioning
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/positioning-pmf.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/positioning-pmf.md`
 
 **Ask:**
 - What would customers do if your product didn't exist?
@@ -228,7 +237,7 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 5: Pricing
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/pricing.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/pricing.md`
 
 **Ask:**
 - What value metric makes sense? (per user, per transaction, per feature, per usage)
@@ -251,7 +260,7 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 6: Go-to-Market
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/go-to-market.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/go-to-market.md`
 
 **Ask:**
 - What's your budget for customer acquisition?
@@ -273,9 +282,9 @@ Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, 
 
 ## Phase 7: Metrics, KPI & Financial Projections
 
-**Action Required:** Before asking questions, use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/advertising-metrics.md`
+**Action Required:** Before asking questions, use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/advertising-metrics.md`
 
-Also use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/tools-resources.md`
+Also use repository read to load: `${CLAUDE_PLUGIN_ROOT}/skills/saas-business-plan/references/tools-resources.md`
 
 **Ask:**
 - What's your current stage? (pre-launch, post-launch, growth)
@@ -294,7 +303,7 @@ Also use the host repository-read binding to load: `${CLAUDE_PLUGIN_ROOT}/skills
 
 **Output:** North Star Metric, KPI targets, burn rate, runway, break-even estimate, tool recommendations, execution timeline.
 
-**Final deliverable:** Use the host repository-write binding to finalize `draft-business-plan.md` into a comprehensive document named `[ProductName]_GTM_Strategy.md`, structured according to the "Documento finale di positioning strategy" format in tools-resources.md. Include all conclusions from Phases 1-7.
+**Final deliverable:** Use repository write to finalize `draft-business-plan.md` into a comprehensive document named `[ProductName]_GTM_Strategy.md`, structured according to the "Documento finale di positioning strategy" format in tools-resources.md. Include all conclusions from Phases 1-7.
 
 ---
 

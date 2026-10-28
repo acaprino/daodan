@@ -77,7 +77,7 @@ configuration owners. Only confirmed ineligible/obsolete, unresolved environment
 limitations or evidenced intermittent tests may be proposed for temporary
 quarantine with remaining protection, owner, return condition and explicit acceptance.
 
-Present the non-empty categories through the host question mechanism with multiple category choices (label: category and file count; description: sample paths). Only accepted categories proceed. This gate is never bypassed: `--yes` affects only the per-batch re-confirmation below.
+Present the non-empty categories as a user question with multiple category choices (label: category and file count; description: sample paths). Only accepted categories proceed. This gate is never bypassed: `--yes` affects only the per-batch re-confirmation below.
 
 ### 5b: Baseline
 

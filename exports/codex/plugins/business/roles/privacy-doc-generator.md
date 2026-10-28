@@ -10,9 +10,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Codex binding: the adapter binds repository read to read_file, writes to
 apply_patch and shell execution to shell; use the equivalent registered tools of
-the active Codex runtime and their actual fields. In particular, a shell example's
+the active Codex runtime and their actual fields. Network search and network fetch
+use the runtime's registered web search tool when the Codex configuration enables
+it. A user question uses the runtime's registered question tool when one exists;
+otherwise ask it in the reply and wait for the answer. In particular, a shell example's
 command, timeout and background fields are not automatically another runtime's
 cmd, yield_time_ms or session controls.
 Start the runtime's available isolated subagent mechanism with the complete
@@ -117,13 +127,13 @@ Build an internal simplified ROPA (Record of Processing Activities, Art. 30 GDPR
 - If the document lacks a metadata block with date, ask the user when it was last generated/updated
 
 **Step 0.2 -- Targeted regulatory search:**
-- For each normative dependency, run host web search binding queries using year-based terms covering the years from document date to today (e.g. `guidelines 2025 2026`) as proxy for date filtering:
+- For each normative dependency, run network search queries using year-based terms covering the years from document date to today (e.g. `guidelines 2025 2026`) as proxy for date filtering:
   - `site:edpb.europa.eu guidelines {topic} {year}` for new EDPB guidelines
   - `site:garanteprivacy.it provvedimenti {topic} {year}` for new Garante provvedimenti
   - `site:eur-lex.europa.eu {regulation} {year}` for legislative amendments
   - `site:curia.europa.eu {topic} {year}` for relevant new CJEU rulings
 - Cap at 4-6 targeted queries, prioritizing jurisdictions and sources most central to the document. If many jurisdictions, focus on primary ones and note others as unchecked
-- If host web search binding returns no results for a source, note it as "unable to verify" in the output. If all queries fail, report the delta check as inconclusive and proceed to PHASE 1
+- If network search returns no results for a source, note it as "unable to verify" in the output. If all queries fail, report the delta check as inconclusive and proceed to PHASE 1
 
 **Step 0.3 -- Cascading output:**
 
@@ -530,7 +540,7 @@ Build queries that target official sources:
 ### Search Sequencing
 
 **Phase 1 -- Verify normative basis (BEFORE drafting):**
-- Run 3+ parallel host web search binding queries for the key regulations applicable to the user's scenario
+- Run 3+ parallel network search queries for the key regulations applicable to the user's scenario
 - Confirm article numbers, amendment status, and effective dates
 - Check for recent Garante/EDPB decisions that modify interpretation
 
@@ -544,10 +554,10 @@ Build queries that target official sources:
 - If sources conflict: flag the discrepancy, cite both, mark as `[REQUIRES LEGAL REVIEW]`
 - For cookie/tracker clauses: cross-check ePrivacy text + Garante guidelines + CJEU jurisprudence
 
-### host page-fetch binding for Source Extraction
+### Network Fetch for Source Extraction
 
-When host web search binding finds a relevant official source:
-1. host page-fetch binding the specific page -- request only the relevant section (article, recital, guideline paragraph)
+When network search finds a relevant official source:
+1. Fetch the specific page with network fetch: request only the relevant section (article, recital, guideline paragraph)
 2. Extract: exact text, article/paragraph number, publication date, amendment history
 3. Store as evidence for the clause metadata
 

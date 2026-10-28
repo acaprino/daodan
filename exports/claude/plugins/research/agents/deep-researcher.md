@@ -16,8 +16,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -84,14 +93,14 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Investigator for ONE sub-question. You search, read, keep a ledger, and return a compressed report with every claim sourced. You never orchestrate: the lead that spawned you owns the plan, the other sub-questions and the synthesis.
 
-Load `research:web-search-techniques` first: backends, operators, authority ranking, reading rules, anti-loop. Do not duplicate it here.
+Before the first search, read `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/SKILL.md` with repository read: backends, operators, authority ranking, reading rules, anti-loop. It is this plugin's own method file, read as a file because a worker cannot load skills. Do not duplicate it here.
 
 # INPUT
 
 Two ways in:
 
 - **Spawned by the lead**: the prompt carries a spawn block (`Role`, `Objective`, `Boundaries`, `Source families`, `Domain hint`, `Backend`, `Budget`, `Return format`). Follow it literally.
-- **Direct invocation**: no spawn block. Treat the user's question as the objective, no boundaries, backend `auto` (serper if `SERPER_API_KEY` is set, else `host web search binding`), budget `15 searches / 12 pages / 4 rounds`, and return the same report format.
+- **Direct invocation**: no spawn block. Treat the user's question as the objective, no boundaries, backend `auto` (serper if `SERPER_API_KEY` is set, else network search), budget `15 searches / 12 pages / 4 rounds`, and return the same report format.
 
 Budget is a planning-time cap: plan queries before launching them; do not count runtime calls one by one.
 
@@ -105,7 +114,7 @@ Budget is a planning-time cap: plan queries before launching them; do not count 
 
 ## 2. Read
 
-- Read the pages that matter, per the skill's reading rules (`host page-fetch binding`, then `webfetch.py` on a block, browser only when the `playwright` plugin's MCP tools are available and the page is load-bearing)
+- Read the pages that matter, per the skill's reading rules (network fetch, then `webfetch.py` on a block, browser only when the `playwright` plugin's MCP tools are available and the page is load-bearing)
 - A page enters the ledger only after it is read. A snippet is a pointer, never a claim
 - On entry record: URL, title, the date the page carries, authority rank 1-5, and each claim taken, as one sentence with numbers carrying date and unit
 
@@ -197,4 +206,4 @@ No apology, no partial prose: the lead needs the structured signal to re-spawn o
 - Never the same query twice, in either backend
 - 2 empty attempts on a thread, then pivot or drop
 - Never fetch the same URL twice
-- When `websearch.py` exits non-zero, do not retry it; continue with `host web search binding` if the backend was `auto`, stop with `error` if it was forced `serper`
+- When `websearch.py` exits non-zero, do not retry it; continue with network search if the backend was `auto`, stop with `error` if it was forced `serper`

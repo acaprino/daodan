@@ -10,9 +10,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
 execution uses bash or the registered powershell alternative. Use their actual
 command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi has no network tool: network fetch and network search run as shell
+commands, and a user question is asked in the reply while the run waits for the
+answer.
 Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
 pi install npm:pi-subagents. Use that extension's registered subagent schema and
 pass the full rendered role body inline. Role skills named <plugin>-<role> are
@@ -113,7 +123,7 @@ run this again:
   OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
-Do not fall back to a host page-fetch binding-only audit: a live audit without a browser leaves every browser check unrun, and a report that lists them as skipped still reads as an audit. `--local` targets need no browser.
+Do not fall back to a fetch-only audit: a live audit without a browser leaves every browser check unrun, and a report that lists them as skipped still reads as an audit. `--local` targets need no browser.
 
 ### Initialize
 
@@ -130,7 +140,7 @@ Gather baseline information before auditing.
 3. **Sitemap** -- fetch the sitemap found in robots.txt (fallback to `/sitemap.xml` if not declared), count URLs, check lastmod dates
 4. **Tech detection** -- identify CMS/framework from headers, meta generators, DOM patterns
 5. **Site structure** -- map primary navigation, identify page types
-6. **Search intent** -- for each audited page, classify the target query intent (informational / transactional / navigational / commercial investigation) and check via `host web search binding` whether the top 3-5 ranking results use the same content type. Intent mismatches feed the Core SEO and Content Quality findings in Phase 2
+6. **Search intent** -- for each audited page, classify the target query intent (informational / transactional / navigational / commercial investigation) and check via network search whether the top 3-5 ranking results use the same content type. Intent mismatches feed the Core SEO and Content Quality findings in Phase 2
 
 **Output file:** `.seo-audit/01-discovery.md`
 

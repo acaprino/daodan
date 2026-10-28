@@ -1,5 +1,8 @@
 Copilot binding: repository reads use search, writes use edit, shell execution uses
-runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+runCommands and network fetch uses fetch in the adapter's tool allowlist. fetch
+retrieves a known URL and does not search: network search needs a search tool
+registered in this session. A user question is asked in the reply, and the run
+waits for the answer. Custom
 agent dispatch uses the agent allowlist alias; the current CLI documents a task
 dispatch tool. Call the mechanism actually registered in this session, not an
 allowlist alias assumed to be a callable tool.

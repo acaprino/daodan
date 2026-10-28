@@ -11,9 +11,16 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
-shell execution uses shell, network tools are webfetch/websearch, and clarification
-uses the registered question tool. shell takes command, optional workdir, timeout
+shell execution uses shell, network fetch uses webfetch, network search uses
+websearch, and a user question uses the registered question tool. shell takes command, optional workdir, timeout
 in milliseconds and background. It does not provide interactive stdin. Persistent
 capture uses background: true and an explicit noninteractive stop signal.
 Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
@@ -340,7 +347,7 @@ Close with these caveats, adapted to the case:
 
 ## Step 2: The user picks the pole
 
-After the agent returns, present its output and ask the user which variant to adopt, through the active host question mechanism: one option per variant, each label naming the pole and each description carrying the token estimate and the main trade-off; put your recommended variant first with "(Recommended)". Skip the question and deliver the matching pole directly when:
+After the agent returns, present its output and ask the user which variant to adopt with a user question: one option per variant, each label naming the pole and each description carrying the token estimate and the main trade-off; put your recommended variant first with "(Recommended)". Skip the question and deliver the matching pole directly when:
 
 - `--optimize-for` was passed (clarity -> A, reliability -> A with constraints and examples emphasized, tokens -> C), or
 - the user already stated their target in the request.

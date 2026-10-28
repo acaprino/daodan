@@ -1,6 +1,6 @@
 ## Step 3: Run Parallel Review Agents
 
-Use the host coordination mechanism to dispatch the validated jobs in isolated contexts.
+Run the validated jobs through worker dispatch, in isolated contexts.
 
 ### Shared Instructions for All Agents
 

@@ -50,6 +50,8 @@ The core owns roles, workflow dependencies, required context isolation, joins an
 
 **Never name a host tool, team API or dispatch primitive in neutral content.** That is the rule the whole split rests on: the moment a kernel says `Agent` or `runCommands`, one host's vocabulary has become everyone's contract.
 
+A body names the operation instead, from the fixed vocabulary that `adapters/operational-binding.md.tmpl` declares (repository read, file discovery, content search, repository write, repository edit, shell execution, network fetch, network search, user question, worker dispatch), and every host template maps each operation to its tool. Never invent a stand-in name: the 32.10.0 neutralization replaced tool names with phrases such as `host web search binding` that no adapter mapped, and `research` then checked whether a tool by that name was in its toolset. `lint_host_vocabulary.py` rejects that shape.
+
 ## What each host expects
 
 | | claude | copilot | codex | pi | opencode |

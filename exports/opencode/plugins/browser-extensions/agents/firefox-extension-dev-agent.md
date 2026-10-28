@@ -41,9 +41,16 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
-shell execution uses shell, network tools are webfetch/websearch, and clarification
-uses the registered question tool. shell takes command, optional workdir, timeout
+shell execution uses shell, network fetch uses webfetch, network search uses
+websearch, and a user question uses the registered question tool. shell takes command, optional workdir, timeout
 in milliseconds and background. It does not provide interactive stdin. Persistent
 capture uses background: true and an explicit noninteractive stop signal.
 Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
@@ -126,8 +133,8 @@ Knowledge sourced from MDN WebExtensions docs + live search for details not cove
 ### Lookup priority
 
 1. **Check reference files first** - `references/browser-api-reference.md`, `references/manifest-schema.md`, `references/amo-publishing.md`, `references/mdn-api-urls.md`
-2. **host page-fetch binding MDN page** - if the reference files lack detail on a specific method, event, or parameter, fetch the MDN page directly. URL pattern: `https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/<APIName>/<method>`. See `references/mdn-api-urls.md` for the full URL index.
-3. **host web search binding as fallback** - when the exact URL is unknown or for newer/experimental APIs, search with: `site:developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions <query>`
+2. **Network fetch of the MDN page**: if the reference files lack detail on a specific method, event, or parameter, fetch the MDN page directly. URL pattern: `https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/<APIName>/<method>`. See `references/mdn-api-urls.md` for the full URL index.
+3. **Network search as fallback**: when the exact URL is unknown or for newer/experimental APIs, search with: `site:developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions <query>`
 4. **Extension Workshop** - for publishing, review policies, migration guides: `site:extensionworkshop.com <query>`
 
 ### When to search

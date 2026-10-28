@@ -7,9 +7,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Codex binding: the adapter binds repository read to read_file, writes to
 apply_patch and shell execution to shell; use the equivalent registered tools of
-the active Codex runtime and their actual fields. In particular, a shell example's
+the active Codex runtime and their actual fields. Network search and network fetch
+use the runtime's registered web search tool when the Codex configuration enables
+it. A user question uses the runtime's registered question tool when one exists;
+otherwise ask it in the reply and wait for the answer. In particular, a shell example's
 command, timeout and background fields are not automatically another runtime's
 cmd, yield_time_ms or session controls.
 Start the runtime's available isolated subagent mechanism with the complete
@@ -76,7 +86,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Runtime interface
 
-Use the installed helper through the host shell binding:
+Use the installed helper through shell execution:
 
 `python "<plugin-root>/skills/science-based-approach/scripts/science_runtime.py"`
 

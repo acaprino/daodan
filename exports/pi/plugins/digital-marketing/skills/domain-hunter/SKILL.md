@@ -14,9 +14,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
 execution uses bash or the registered powershell alternative. Use their actual
 command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi has no network tool: network fetch and network search run as shell
+commands, and a user question is asked in the reply while the run waits for the
+answer.
 Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
 pi install npm:pi-subagents. Use that extension's registered subagent schema and
 pass the full rendered role body inline. Role skills named <plugin>-<role> are
@@ -83,7 +93,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 </daodan_host_binding>
 
 <!-- upstream: ReScienceLab/opc-skills - skills/domain-hunter/SKILL.md -->
-<!-- Local drift: Step 3 (Find Promo Codes) uses host web search binding queries instead of upstream Python scripts -->
+<!-- Local drift: Step 3 (Find Promo Codes) uses network search queries instead of upstream Python scripts -->
 
 # Domain Hunter Skill
 
@@ -138,7 +148,7 @@ When the script left a domain UNKNOWN, give the user these as links to click in 
 
 ### Step 2: Compare Prices
 
-Use **host web search binding** to find current prices:
+Use **network search** to find current prices:
 
 ```
 Search query: "cheapest .{tld} domain registrar 2026 site:tld-list.com"
@@ -152,7 +162,7 @@ Search query: ".{tld} domain price comparison tldes.com"
 
 ### Step 3: Find Promo Codes
 
-Use **host web search binding** to search registrar social accounts and communities for promo codes:
+Use **network search** to search registrar social accounts and communities for promo codes:
 
 **Twitter/X search** - search registrar accounts for recent promos:
 ```
@@ -214,7 +224,7 @@ The script checks availability via RDAP. No API key is needed, and RDAP uses the
 - **Patchright is needed for that step.** Install with `pip install patchright && patchright install chromium`. Without it, or when the page does not load (Gandi sits behind a bot check at times), those domains print `UNKNOWN` with the reason and the run continues. That is a missing dependency to report, not a pass: never read it as available, and never fall back to opening the user's own browser.
 - **Exit status.** `2` when every result is UNKNOWN, `0` otherwise.
 
-If the script cannot run at all, fall back to the RDAP curl check (Step 1, Method 1) with its TLD caveat, or host web search binding queries.
+If the script cannot run at all, fall back to the RDAP curl check (Step 1, Method 1) with its TLD caveat, or network search queries.
 
 ## References
 

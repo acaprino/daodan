@@ -47,7 +47,7 @@
         "./skills/prompt-optimize-workflow"
       ],
       "source": "./exports/codex/plugins/ai-tooling",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -63,7 +63,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/codex/plugins/app-analyzer",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -80,7 +80,7 @@
         "./skills/firefox-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/browser-extensions",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -97,7 +97,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/codex/plugins/business",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -140,7 +140,7 @@
       "license": "MIT",
       "name": "csp",
       "source": "./exports/codex/plugins/csp",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -249,7 +249,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -302,7 +302,7 @@
         "./skills/instagram-grab-workflow"
       ],
       "source": "./exports/codex/plugins/grabber-development",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -483,7 +483,7 @@
         "./skills/cross-model-peer-review"
       ],
       "source": "./exports/codex/plugins/peer-review",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -609,7 +609,7 @@
         "./skills/pwa-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/pwa-expert",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -679,7 +679,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/codex/plugins/repo-hygiene",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -714,7 +714,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/codex/plugins/research",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -747,7 +747,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "author": {
@@ -826,7 +826,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/codex/plugins/testing",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -925,7 +925,7 @@
         "./skills/xtermjs-skill"
       ],
       "source": "./exports/codex/plugins/xterm",
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   ]
 }

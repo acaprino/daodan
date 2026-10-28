@@ -15,9 +15,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
 execution uses bash or the registered powershell alternative. Use their actual
 command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi has no network tool: network fetch and network search run as shell
+commands, and a user question is asked in the reply while the run waits for the
+answer.
 Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
 pi install npm:pi-subagents. Use that extension's registered subagent schema and
 pass the full rendered role body inline. Role skills named <plugin>-<role> are

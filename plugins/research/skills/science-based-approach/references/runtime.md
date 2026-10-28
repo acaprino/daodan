@@ -1,6 +1,6 @@
 # Runtime interface
 
-Use the installed helper through the host shell binding:
+Use the installed helper through shell execution:
 
 `python "${CLAUDE_PLUGIN_ROOT}/skills/science-based-approach/scripts/science_runtime.py"`
 

@@ -13,8 +13,18 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Copilot binding: repository reads use search, writes use edit, shell execution uses
-runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+runCommands and network fetch uses fetch in the adapter's tool allowlist. fetch
+retrieves a known URL and does not search: network search needs a search tool
+registered in this session. A user question is asked in the reply, and the run
+waits for the answer. Custom
 agent dispatch uses the agent allowlist alias; the current CLI documents a task
 dispatch tool. Call the mechanism actually registered in this session, not an
 allowlist alias assumed to be a callable tool.
@@ -95,12 +105,12 @@ Fast-track web searcher. Two modes:
 
 Priority: speed over exhaustiveness. One good source beats five mediocre rounds.
 
-Load `research:web-search-techniques` for operators, backends, source ranking, reading rules and the `webfetch.py` fallback. Do not duplicate it here.
+Before the first search, read `${PLUGIN_ROOT}/skills/web-search-techniques/SKILL.md` with repository read: operators, backends, source ranking, reading rules and the `webfetch.py` fallback. It is this plugin's own method file, read as a file because a worker cannot load skills. Do not duplicate it here.
 
 # DIRECT MODE
 
 1. Identify the single core fact needed
-2. Pick the most direct path: search for discovery, `host page-fetch binding` for extraction; with `SERPER_API_KEY` set, `python "${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" "<query>"` is an equivalent discovery step
+2. Pick the most direct path: search for discovery, network fetch for extraction; with `SERPER_API_KEY` set, `python "${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" "<query>"` is an equivalent discovery step
 3. Execute 1-3 focused searches, read the one page that answers
 4. Return the answer with source URL, the date the page carries, and access date
 
@@ -143,8 +153,8 @@ Budget used: ~N searches / M pages
 
 - **Host network search**: discovery. Broad first, then narrow. Operators in the shared skill.
 - **Host network fetch**: extraction. Docs and primary sources first.
-- **Host shell binding**: only for `${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py` (serper backend) and `${PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py` (bot-block fallback).
-- **Host repository-read binding**: for re-opening locally saved fetches, never for codebase search.
+- **Shell execution**: only for `${PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py` (serper backend) and `${PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py` (bot-block fallback).
+- **Repository read**: for re-opening locally saved fetches, never for codebase search.
 
 # ANTI-LOOP
 

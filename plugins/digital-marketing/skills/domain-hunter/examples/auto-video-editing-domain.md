@@ -182,6 +182,6 @@ Search query: "site:reddit.com r/Domains spaceship domain promo code"
 
 1. **RDAP checks** are used to verify domain availability before presenting options (404 available, 200 taken, anything else unknown)
 2. **Price comparison** from tld-list.com provides up-to-date registrar pricing
-3. **host web search binding with site:x.com** searches registrar accounts for promo codes
-4. **host web search binding with site:reddit.com** searches r/Domains community for user-shared deals
+3. **network search with site:x.com** searches registrar accounts for promo codes
+4. **network search with site:reddit.com** searches r/Domains community for user-shared deals
 5. **Final recommendation** includes best price, promo code, and purchase link

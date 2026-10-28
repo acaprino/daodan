@@ -378,10 +378,10 @@ When reviewing an existing prompt:
 
 <operating_instructions>
 ## Tool Usage
-- Use host file-discovery binding and host content-search binding to find prompts embedded in codebases (system prompts in source files, agent definitions, config files)
-- Use host repository-read binding to examine existing prompts before proposing changes
-- Use host repository-edit binding to apply targeted prompt improvements in-place
-- Use host repository-write binding only when creating new prompt files from scratch
+- Use file discovery and content search to find prompts embedded in codebases (system prompts in source files, agent definitions, config files)
+- Use repository read to examine existing prompts before proposing changes
+- Use repository edit to apply targeted prompt improvements in-place
+- Use repository write only when creating new prompt files from scratch
 
 ## Audit depth
 

@@ -18,7 +18,7 @@ Before analyzing any tag or element, establish the strategic foundation:
    - Transactional: user wants to buy or act (pricing, signup, purchase)
    - Navigational: user seeks a specific brand/page
    - Commercial Investigation: user is comparing options before deciding
-2. **Audit Intent Alignment**: does the content type (blog vs product page vs comparison) and content format match what SERP competitors are ranking with? Use `host web search binding` to check the top 3-5 results for the target keyword
+2. **Audit Intent Alignment**: does the content type (blog vs product page vs comparison) and content format match what SERP competitors are ranking with? Use network search to check the top 3-5 results for the target keyword
 3. **Content-Intent Gap**: flag mismatches -- a product page trying to rank for an informational query, or an FAQ page targeting a transactional keyword
 
 Only after establishing intent, proceed with semantic and technical audits.
@@ -35,13 +35,13 @@ Primary tooling for live site analysis: the Playwright MCP tools, from the `play
 - `browser_resize` - test responsive design at 375px (mobile), 768px (tablet), 1280px (desktop)
 - `browser_click` / `browser_type` - interact with navigation, search, forms to test functionality
 
-Fallback: the host network-fetch binding for simple HTTP checks, curl through its shell binding for headers and status codes.
+Fallback: network fetch for simple HTTP checks, curl through its shell binding for headers and status codes.
 
 ## SEMANTIC & CONTENT QUALITY
 
 ### Search Intent Alignment
 - Content type match: does the page format (listicle, guide, product, comparison) match what ranks in the SERP?
-- Content depth: using `host web search binding`, compare heading structure and covered topics of top 3 competitors -- identify content gaps
+- Content depth: using network search, compare heading structure and covered topics of top 3 competitors -- identify content gaps
 - Topic coverage: are secondary topics and related subtopics addressed?
 - User journey: does the content match the stage of the buyer's journey the searcher is in?
 
@@ -118,7 +118,7 @@ Fallback: the host network-fetch binding for simple HTTP checks, curl through it
 - noindex/nofollow: intentional, not accidental on important pages
 - Pagination: proper handling (rel next/prev or load-more)
 - JavaScript: critical content in initial HTML, not JS-render-only
-- **JS SEO check**: compare `host page-fetch binding` output (static HTML) vs `browser_snapshot` (rendered DOM) -- flag any critical text, headings, links, or structured data present only in the rendered version, as search engines may not index JS-rendered content reliably
+- **JS SEO check**: compare network fetch output (static HTML) vs `browser_snapshot` (rendered DOM) -- flag any critical text, headings, links, or structured data present only in the rendered version, as search engines may not index JS-rendered content reliably
 - Crawl budget: no infinite parameter URLs, faceted nav handled
 
 ### Performance Signals
@@ -199,7 +199,7 @@ When comparing against competitors:
 - **SERP landscape**: what content types rank (guides, product pages, videos, tools)? What SERP features appear (featured snippets, PAA, knowledge panels, image packs)?
 - Keyword overlap: shared vs. unique ranking keywords
 - Content gaps: topics competitor ranks for that target does not
-- Content depth: analyze competitor headings, structure, and content comprehensiveness via host web search binding to identify topics the target page is missing
+- Content depth: analyze competitor headings, structure, and content comprehensiveness via network search to identify topics the target page is missing
 - Search intent alignment: compare how well each page matches the user intent behind target keywords
 - Technical comparison: speed, mobile experience, schema coverage
 - SERP features: who wins featured snippets, knowledge panels, PAA -- what format/structure do winners use?

@@ -207,7 +207,7 @@ Close with these caveats, adapted to the case:
 
 ## Step 2: The user picks the pole
 
-After the agent returns, present its output and ask the user which variant to adopt, through the active host question mechanism: one option per variant, each label naming the pole and each description carrying the token estimate and the main trade-off; put your recommended variant first with "(Recommended)". Skip the question and deliver the matching pole directly when:
+After the agent returns, present its output and ask the user which variant to adopt with a user question: one option per variant, each label naming the pole and each description carrying the token estimate and the main trade-off; put your recommended variant first with "(Recommended)". Skip the question and deliver the matching pole directly when:
 
 - `--optimize-for` was passed (clarity -> A, reliability -> A with constraints and examples emphasized, tokens -> C), or
 - the user already stated their target in the request.

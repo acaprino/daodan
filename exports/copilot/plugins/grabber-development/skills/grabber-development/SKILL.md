@@ -12,8 +12,18 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Copilot binding: repository reads use search, writes use edit, shell execution uses
-runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+runCommands and network fetch uses fetch in the adapter's tool allowlist. fetch
+retrieves a known URL and does not search: network search needs a search tool
+registered in this session. A user question is asked in the reply, and the run
+waits for the answer. Custom
 agent dispatch uses the agent allowlist alias; the current CLI documents a task
 dispatch tool. Call the mechanism actually registered in this session, not an
 allowlist alias assumed to be a callable tool.
@@ -99,7 +109,7 @@ The one carve-out is a target listed under **Bundled Targets** below. Its Discov
 The default path is **user-driven navigation with live capture**, not automated clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
 
 1. Ask the bare minimum to start: target URL, what data is wanted, authenticated yes/no. One short batch of questions, then stop asking.
-2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, on Claude Code installed with `claude plugin install playwright@claude-plugins-official`, on other hosts by registering `npx @playwright/mcp@latest` as the MCP server `playwright`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, run an inline Patchright script through the host shell binding with `headless=False` and every handler in the Capture Surface. Keep it alive through the host-supported background/session mechanism and a caller-controlled completion signal; do not assume interactive stdin.
+2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, on Claude Code installed with `claude plugin install playwright@claude-plugins-official`, on other hosts by registering `npx @playwright/mcp@latest` as the MCP server `playwright`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, run an inline Patchright script through shell execution with `headless=False` and every handler in the Capture Surface. Keep it alive through the host-supported background/session mechanism and a caller-controlled completion signal; do not assume interactive stdin.
 3. Tell the user verbatim: "Browser is open with full network capture (XHR + fetch + WebSocket + SSE + workers + cookies + main-frame navigations). Log in, navigate to the data, apply the filters you'd use day-to-day, then tell me when you are done so I can signal the capture process and reason from real endpoints."
 4. While the user navigates, you watch the capture stream. When they signal completion and the caller stops the capture, you have: real URLs, real endpoint paths, real field names, real WebSocket frames, real auth cookies. *Now* you can scaffold.
 

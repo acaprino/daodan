@@ -15,8 +15,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -449,10 +458,10 @@ When reviewing an existing prompt:
 
 <operating_instructions>
 ## Tool Usage
-- Use host file-discovery binding and host content-search binding to find prompts embedded in codebases (system prompts in source files, agent definitions, config files)
-- Use host repository-read binding to examine existing prompts before proposing changes
-- Use host repository-edit binding to apply targeted prompt improvements in-place
-- Use host repository-write binding only when creating new prompt files from scratch
+- Use file discovery and content search to find prompts embedded in codebases (system prompts in source files, agent definitions, config files)
+- Use repository read to examine existing prompts before proposing changes
+- Use repository edit to apply targeted prompt improvements in-place
+- Use repository write only when creating new prompt files from scratch
 
 ## Audit depth
 

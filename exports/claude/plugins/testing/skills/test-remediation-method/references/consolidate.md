@@ -5,8 +5,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -98,7 +107,7 @@ Determine critical flows and failure modes from the project contract and existin
 
 ## Step 4: Approval gate
 
-Present the inventory through the host question mechanism, grouped per owner (source file for unit tests, behavioral scope above that layer): the keep-list (behaviors the rewrite will cover) and the delete-list (duplicates, never-failing, dropped quarantine entries). Unanswered rows default to KEEP. No flag bypasses this gate. Contradictory pairs need an explicit ruling: which behavior is the correct one (check the authorized product contract, historical bugfix evidence and independent oracle before proposing; the current implementation cannot declare itself correct).
+Present the inventory as a user question, grouped per owner (source file for unit tests, behavioral scope above that layer): the keep-list (behaviors the rewrite will cover) and the delete-list (duplicates, never-failing, dropped quarantine entries). Unanswered rows default to KEEP. No flag bypasses this gate. Contradictory pairs need an explicit ruling: which behavior is the correct one (check the authorized product contract, historical bugfix evidence and independent oracle before proposing; the current implementation cannot declare itself correct).
 
 ## Step 5: Rewrite
 

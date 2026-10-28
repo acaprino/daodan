@@ -40,7 +40,7 @@ run this again:
   OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
-Do not fall back to a host page-fetch binding-only analysis. Local files need no browser.
+Do not fall back to a fetch-only analysis. Local files need no browser.
 
 ### Initialize
 

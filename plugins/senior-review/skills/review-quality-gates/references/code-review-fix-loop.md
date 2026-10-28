@@ -19,7 +19,7 @@ caller's workspace, authorizations and pre-phase recovery point.
 
 ### 7a. Severity Acceptance
 
-Present a single prompt listing all severity levels with findings. Use the host question mechanism with multiple severity choices:
+Present a single prompt listing all severity levels with findings. Ask it as a user question with multiple severity choices:
 
 When Critical or High findings exist:
 - [x] **Critical + High (Recommended)** -- N issues

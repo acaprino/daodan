@@ -5,9 +5,16 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
-shell execution uses shell, network tools are webfetch/websearch, and clarification
-uses the registered question tool. shell takes command, optional workdir, timeout
+shell execution uses shell, network fetch uses webfetch, network search uses
+websearch, and a user question uses the registered question tool. shell takes command, optional workdir, timeout
 in milliseconds and background. It does not provide interactive stdin. Persistent
 capture uses background: true and an explicit noninteractive stop signal.
 Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
@@ -257,6 +264,6 @@ Search query: "site:reddit.com r/Domains spaceship domain promo code"
 
 1. **RDAP checks** are used to verify domain availability before presenting options (404 available, 200 taken, anything else unknown)
 2. **Price comparison** from tld-list.com provides up-to-date registrar pricing
-3. **host web search binding with site:x.com** searches registrar accounts for promo codes
-4. **host web search binding with site:reddit.com** searches r/Domains community for user-shared deals
+3. **network search with site:x.com** searches registrar accounts for promo codes
+4. **network search with site:reddit.com** searches r/Domains community for user-shared deals
 5. **Final recommendation** includes best price, promo code, and purchase link

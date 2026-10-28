@@ -39,7 +39,7 @@ run this again:
   OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
-Do not fall back to a host page-fetch binding-only audit: a live audit without a browser leaves every browser check unrun, and a report that lists them as skipped still reads as an audit. `--local` targets need no browser.
+Do not fall back to a fetch-only audit: a live audit without a browser leaves every browser check unrun, and a report that lists them as skipped still reads as an audit. `--local` targets need no browser.
 
 ### Initialize
 
@@ -56,7 +56,7 @@ Gather baseline information before auditing.
 3. **Sitemap** -- fetch the sitemap found in robots.txt (fallback to `/sitemap.xml` if not declared), count URLs, check lastmod dates
 4. **Tech detection** -- identify CMS/framework from headers, meta generators, DOM patterns
 5. **Site structure** -- map primary navigation, identify page types
-6. **Search intent** -- for each audited page, classify the target query intent (informational / transactional / navigational / commercial investigation) and check via `host web search binding` whether the top 3-5 ranking results use the same content type. Intent mismatches feed the Core SEO and Content Quality findings in Phase 2
+6. **Search intent** -- for each audited page, classify the target query intent (informational / transactional / navigational / commercial investigation) and check via network search whether the top 3-5 ranking results use the same content type. Intent mismatches feed the Core SEO and Content Quality findings in Phase 2
 
 **Output file:** `.seo-audit/01-discovery.md`
 

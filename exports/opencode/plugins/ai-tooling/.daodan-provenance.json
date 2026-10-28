@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:c32d3aff00bf6d8b45c17e2023c50921e2a6b3663303cf929efeeda2f84ee3ea",
+  "coreDigest": "sha256:a585212c6a86df3fa57b97ff275fedefa306911b19331efe2e2761b7222788d1",
   "harnessStrategies": {
     "prompt-optimize": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "ai-tooling",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

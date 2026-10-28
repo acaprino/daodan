@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["curl_cffi>=0.7", "beautifulsoup4>=4.12"]
+# ///
 """Fast web fetcher with Chrome TLS impersonation for research agents.
 
 Uses curl_cffi to impersonate a real Chrome browser (TLS fingerprint, HTTP/2,
@@ -6,14 +10,13 @@ header order) so sites that block bots via TLS/JA3 fingerprinting serve
 normal content. Falls back to httpx if curl_cffi is unavailable.
 
 Usage:
-    python webfetch.py URL [--timeout SECONDS] [--max-chars CHARS] [--raw]
+    uv run --no-config --no-project --script webfetch.py URL [--timeout SECONDS] [--max-chars CHARS] [--raw]
 
 Returns clean text content extracted from HTML pages.
 Exits with code 1 on timeout or error -- agents should proceed without the result.
 
-Dependencies (install before use):
-    pip install curl_cffi beautifulsoup4
-    # Optional fallback: pip install httpx
+Dependencies are declared inline above (PEP 723), so `uv run --script` provides
+them. httpx remains an optional fallback for a plain interpreter without curl_cffi.
 """
 
 from __future__ import annotations

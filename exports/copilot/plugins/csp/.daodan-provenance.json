@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:67bca5b030db5fe1f83725a690492ed8472b6f0875b72093874ace92988c8409",
+  "coreDigest": "sha256:be6e2a028d9f60f459930d2f97c49215daf0500b0b832bc602d24fb8445ddc15",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "csp",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

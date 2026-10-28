@@ -5,9 +5,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
 execution uses bash or the registered powershell alternative. Use their actual
 command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi has no network tool: network fetch and network search run as shell
+commands, and a user question is asked in the reply while the run waits for the
+answer.
 Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
 pi install npm:pi-subagents. Use that extension's registered subagent schema and
 pass the full rendered role body inline. Role skills named <plugin>-<role> are
@@ -73,7 +83,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: peer-review:packet-builder; version: 1.0.0; source-sha256: fda2036339311cc7d38ac9aba4053488a4f4a5181d7c8b042bbc38c1cef0c090. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: peer-review:packet-builder; version: 1.0.1; source-sha256: fda2036339311cc7d38ac9aba4053488a4f4a5181d7c8b042bbc38c1cef0c090. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `peer-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<peer-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `peer-review`. The owning plugin's declared logical skill identities are `peer-review:cross-model-peer-review`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `peer-review:cross-model-peer-review` -> compiled registry name `cross-model-peer-review` at `skills/cross-model-peer-review/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

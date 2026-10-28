@@ -5,8 +5,18 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Copilot binding: repository reads use search, writes use edit, shell execution uses
-runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+runCommands and network fetch uses fetch in the adapter's tool allowlist. fetch
+retrieves a known URL and does not search: network search needs a search tool
+registered in this session. A user question is asked in the reply, and the run
+waits for the answer. Custom
 agent dispatch uses the agent allowlist alias; the current CLI documents a task
 dispatch tool. Call the mechanism actually registered in this session, not an
 allowlist alias assumed to be a callable tool.
@@ -261,6 +271,6 @@ Search query: "site:reddit.com r/Domains spaceship domain promo code"
 
 1. **RDAP checks** are used to verify domain availability before presenting options (404 available, 200 taken, anything else unknown)
 2. **Price comparison** from tld-list.com provides up-to-date registrar pricing
-3. **host web search binding with site:x.com** searches registrar accounts for promo codes
-4. **host web search binding with site:reddit.com** searches r/Domains community for user-shared deals
+3. **network search with site:x.com** searches registrar accounts for promo codes
+4. **network search with site:reddit.com** searches r/Domains community for user-shared deals
 5. **Final recommendation** includes best price, promo code, and purchase link

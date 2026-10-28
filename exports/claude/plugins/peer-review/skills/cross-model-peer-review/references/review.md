@@ -5,8 +5,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -132,8 +141,8 @@ The method decides the rest; the caller passes no options:
 7. **Every `peer_ask` call can return `{"error": "..."}` instead of a reply.** Follow
    "Transport error handling" below at every call site; never treat an error payload as
    a challenger reply.
-8. **Never end a turn waiting.** Wherever the run needs the operator, it asks with
-   the active host question mechanism; wherever it stops for good, it says the run is over and why. A
+8. **Never end a turn waiting.** Wherever the run needs the operator, it asks a user
+   question; wherever it stops for good, it says the run is over and why. A
    turn that ends on a printed question is indistinguishable from a finished run, and
    an operator who reads it as finished waits for a run that is waiting for them.
    This is a dialogue between two people, not a prompt on a terminal: consent and every
@@ -185,8 +194,8 @@ If the tool returns `{"error": "<message>"}` instead of a reply (`text`, `usage`
    note kept in memory for Phase 6.
 3. Stop issuing further `peer_ask` calls for the rest of the run.
 4. If this happened on the very first call (Phase 2, round 1), there is no ledger yet
-   and nothing partial exists to protect. Report the verbatim error, then **ask with
-   the active host question mechanism** whether to send the same packet again or end the run. A timeout
+   and nothing partial exists to protect. Report the verbatim error, then **ask a user
+   question** whether to send the same packet again or end the run. A timeout
    is the common case here and it is transient: the challenger is thinking and the
    socket cannot tell that apart from a dead connection. Retrying resends
    `00-packet.md` unchanged, under the consent already given at Phase 1b, so it needs
@@ -242,7 +251,7 @@ judges that. From Phase 1 onward the two are the same run: every later phase rea
    - Chosen name: a configured profile the caller's request names explicitly, else
      `default`.
    - If `default` is null, the request names no profile, and at least one profile
-     reports `available: true`: ask once, using the active host question mechanism,
+     reports `available: true`: ask once, with a user question,
      header `Challenger`, question `Which profile challenges this run?`, one option per
      available profile naming its `model` at its `base_url`. The answer is the chosen
      name.
@@ -405,7 +414,7 @@ shown because consent is given to one specific file, and the transport reports b
 the digest of what it actually sent: the two are compared in Phase 2, which is what
 makes this gate a decision about a document rather than about an intention.
 
-3. **Ask, using the active host question mechanism.** Do not end the turn on printed text: to the
+3. **Ask a user question.** Do not end the turn on printed text: to the
    operator, output that asks for nothing is output from a run that finished. Header
    `Send packet`, question `Send this packet to <model> at <base_url>?`, two options:
 
@@ -765,7 +774,7 @@ not already a ledger field. Sections, in order:
 1. **Accepted changes**, as concrete edits. One entry per `RESOLVED_ACCEPT` finding:
    the finding id, the claim in one line, and a concrete edit action against the
    artifact (what text or section changes, and how) specific enough for the Apply step
-   to execute it through the host repository-edit binding.
+   to execute it through repository edit.
 2. **Refutations with evidence.** One entry per `RESOLVED_REFUTE` finding: the claim,
    the respondent's locator and evidence that satisfied the falsifier as stated.
 3. **Standoffs.** One entry per `STANDOFF` finding: the challenger's position, the
@@ -846,7 +855,7 @@ why, rather than silently ignoring the request.
 In artifact mode:
 
 1. Print the Accepted changes edit list from the verdict.
-2. **Ask, using the active host question mechanism.** Do not end the turn on printed
+2. **Ask a user question.** Do not end the turn on printed
    text. Header `Apply changes`, question `Apply the accepted changes to <artifact
    path>?`, two options:
 
@@ -858,7 +867,7 @@ In artifact mode:
 
 - **Not authorized**: stop. Nothing is modified.
 - **Authorized**: for each Accepted changes entry, apply the described edit to the
-  artifact through the host repository-edit binding. After all edits, append a changelog section to the
+  artifact through repository edit. After all edits, append a changelog section to the
   artifact:
 
   ```markdown

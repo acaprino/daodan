@@ -78,9 +78,14 @@ def scan_text(path, text):
             start = lines.index("---", 1) + 1
         except ValueError:
             pass
+    # The last alternative is an invented tool name ("host web search binding",
+    # "the active host question mechanism"): no adapter maps it, so a worker
+    # looks for a tool that does not exist. Bodies name the operations the
+    # shared binding template declares (network search, user question, ...).
     operational = re.compile(
         r"\b(via Bash|through Bash|Bash tool|Agent tool|Task tool|Read tool|Write tool|Edit tool|Glob tool|Grep tool|WebSearch|WebFetch)\b"
         r"|`(Bash|Agent|AskUserQuestion|Read|Write|Edit|Glob|Grep)`"
+        r"|\b[Hh]ost [a-z-]+(?: [a-z-]+)? (?:binding|mechanism)\b"
     )
     for line_no, line in enumerate(lines[start:], start + 1):
         for match in TOKENS.finditer(line):

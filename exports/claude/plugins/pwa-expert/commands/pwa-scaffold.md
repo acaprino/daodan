@@ -9,8 +9,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -129,11 +138,11 @@ Scaffold a production-ready PWA into the current project. Delegate execution to 
 1. Parse `package.json` if present.
 2. Look for `vite.config.*`, `next.config.*`, `angular.json`, `nuxt.config.*` in the project root.
 3. If `$ARGUMENTS` is provided, use it (one of: `vite`, `next`, `angular`, `nuxt`, `vanilla`).
-4. If detection is ambiguous, ask the user through the active host question mechanism which framework to target.
+4. If detection is ambiguous, ask the user which framework to target with a user question.
 
 ## Inputs to collect
 
-Before generating files, use the active host question mechanism to gather:
+Before generating files, use a user question to gather:
 
 1. App name (full): used for manifest `name`. Example: "Acme Productivity Suite".
 2. App name (short): used for manifest `short_name` and the iOS meta `apple-mobile-web-app-title`. Example: "Acme".
@@ -144,14 +153,14 @@ Before generating files, use the active host question mechanism to gather:
 
 ## Idempotency
 
-Before writing each file, check if it exists. If it does, show a diff and ask through the active host question mechanism whether to overwrite, merge, or skip. Never silently overwrite an existing manifest or SW.
+Before writing each file, check if it exists. If it does, show a diff and ask with a user question whether to overwrite, merge, or skip. Never silently overwrite an existing manifest or SW.
 
 ## Generated artifacts (per framework)
 
 ### Vite (vite-plugin-pwa)
 
 - `public/manifest.webmanifest` with the full set of members per `manifest.md` (id, display_override, icons any+maskable, screenshots wide+narrow, shortcuts).
-- `vite.config.ts` (or `.js`): add the `VitePWA` plugin from `vite-plugin-pwa` with `registerType: 'prompt'`, `strategies: 'generateSW'`, manifest reference, `workbox.runtimeCaching` with the four canonical strategies (CacheFirst for hashed assets, NetworkFirst for navigation with `networkTimeoutSeconds: 3`, StaleWhileRevalidate for low-criticality data, NetworkOnly + BackgroundSyncPlugin for POST mutations). If `vite.config.*` already exists, modify it in-place through the host repository-edit binding. Never overwrite.
+- `vite.config.ts` (or `.js`): add the `VitePWA` plugin from `vite-plugin-pwa` with `registerType: 'prompt'`, `strategies: 'generateSW'`, manifest reference, `workbox.runtimeCaching` with the four canonical strategies (CacheFirst for hashed assets, NetworkFirst for navigation with `networkTimeoutSeconds: 3`, StaleWhileRevalidate for low-criticality data, NetworkOnly + BackgroundSyncPlugin for POST mutations). If `vite.config.*` already exists, modify it in-place through repository edit. Never overwrite.
 - `index.html`: insert the iOS meta tag block plus `<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">` and `<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">`.
 - Registration: `vite-plugin-pwa` provides `virtual:pwa-register`. Add `import { registerSW } from 'virtual:pwa-register'` and the workbox-window banner pattern (see `service-workers.md`) in `src/main.ts(x)`.
 - `public/icons/README.md`: explain the icon requirements (192+512 PNG `any`, 192+512 PNG `maskable`, 180x180 opaque `apple-touch-icon.png`, optional SVG `any`). Include the 40 percent safe-zone rule for maskable icons.
@@ -168,7 +177,7 @@ Before writing each file, check if it exists. If it does, show a diff and ask th
 
 ### Angular (ng add @angular/pwa)
 
-- Run `ng add @angular/pwa --project <project-name>` through the host shell binding. This schematic creates the manifest, the SW, registration, and `ngsw-config.json`.
+- Run `ng add @angular/pwa --project <project-name>` through shell execution. This schematic creates the manifest, the SW, registration, and `ngsw-config.json`.
 - After the schematic completes, edit `src/manifest.webmanifest` to include the modern members (id, display_override, icons any+maskable, screenshots, shortcuts) that the schematic does not generate by default.
 - Edit `src/index.html` to add the iOS meta tag block plus `apple-touch-icon`.
 - Edit `ngsw-config.json` to add a `dataGroups` entry with strategy `freshness` for API origins.

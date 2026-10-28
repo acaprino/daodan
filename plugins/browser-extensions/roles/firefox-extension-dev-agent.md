@@ -23,8 +23,8 @@ Knowledge sourced from MDN WebExtensions docs + live search for details not cove
 ### Lookup priority
 
 1. **Check reference files first** - `references/browser-api-reference.md`, `references/manifest-schema.md`, `references/amo-publishing.md`, `references/mdn-api-urls.md`
-2. **host page-fetch binding MDN page** - if the reference files lack detail on a specific method, event, or parameter, fetch the MDN page directly. URL pattern: `https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/<APIName>/<method>`. See `references/mdn-api-urls.md` for the full URL index.
-3. **host web search binding as fallback** - when the exact URL is unknown or for newer/experimental APIs, search with: `site:developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions <query>`
+2. **Network fetch of the MDN page**: if the reference files lack detail on a specific method, event, or parameter, fetch the MDN page directly. URL pattern: `https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/<APIName>/<method>`. See `references/mdn-api-urls.md` for the full URL index.
+3. **Network search as fallback**: when the exact URL is unknown or for newer/experimental APIs, search with: `site:developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions <query>`
 4. **Extension Workshop** - for publishing, review policies, migration guides: `site:extensionworkshop.com <query>`
 
 ### When to search

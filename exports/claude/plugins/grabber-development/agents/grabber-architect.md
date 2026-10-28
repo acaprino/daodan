@@ -16,8 +16,17 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
+Claude binding: repository read, file discovery and content search use Read, Glob
+and Grep; repository write and repository edit use Write and Edit; shell execution
+uses Bash; network fetch uses WebFetch and network search uses WebSearch; a user
+question uses AskUserQuestion. Pass the executable string in Bash's
 command field, and use its registered timeout/background schema. Worker dispatch
 uses the available native Agent mechanism and its registered agent-selection and
 prompt fields. Do not turn a prose role label into an invented role argument.
@@ -106,7 +115,7 @@ When a scraping task lands on you, **your next non-question tool call MUST launc
 1. Ask the bare minimum to start: target URL, what data, authenticated yes/no. One short batch.
 2. Launch the browser yourself with `headless=False` and the full capture surface attached. Two execution paths:
    - **Playwright MCP tools** (the `playwright` plugin, a declared dependency): `browser_navigate` opens a visible browser; the user navigates in it; `browser_network_requests` dumps the captured requests and `browser_run_code_unsafe` runs any Playwright code the capture needs. Good for HTTP and fetch traffic.
-   - **Inline Patchright through the host shell binding**: run the async Python template in the session temporary directory with a caller-owned stop signal and the host background/session mechanism. Do not require interactive stdin. Use it when the target needs stealth, or the capture must include WebSocket frames, SSE or worker traffic.
+   - **Inline Patchright through shell execution**: run the async Python template in the session temporary directory with a caller-owned stop signal and the host background/session mechanism. Do not require interactive stdin. Use it when the target needs stealth, or the capture must include WebSocket frames, SSE or worker traffic.
 3. Tell the user: "Browser open with full network capture. Log in, navigate to the data, apply your usual filters, tell me when you are done so I can dump the capture and work from real endpoints."
 4. Watch the capture stream during navigation. When the user confirms completion, signal the capture process and collect its output: that is your discovery output.
 

@@ -16,9 +16,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
 execution uses bash or the registered powershell alternative. Use their actual
 command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi has no network tool: network fetch and network search run as shell
+commands, and a user question is asked in the reply while the run waits for the
+answer.
 Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
 pi install npm:pi-subagents. Use that extension's registered subagent schema and
 pass the full rendered role body inline. Role skills named <plugin>-<role> are
@@ -122,8 +132,8 @@ Two backends produce candidate pages. Neither produces claims: only a page that 
 
 | Backend | When | How |
 |---|---|---|
-| Native host network search | Default. Always available when the tool is in the toolset | The tool call, with the operators below |
-| serper.dev (Google) | A key is available, or `--backend serper` | `python "<plugin-root>/skills/web-search-techniques/scripts/websearch.py" "<query>" [--vertical search|news|scholar] [--num N] [--since h|d|w|m|y] [--gl CC] [--hl LANG] [--page P] [--json]` through the host shell binding |
+| Native network search | Default, whenever the host binding maps network search to a tool present in this session | The tool call, with the operators below |
+| serper.dev (Google) | A key is available, or `--backend serper` | `python "<plugin-root>/skills/web-search-techniques/scripts/websearch.py" "<query>" [--vertical search|news|scholar] [--num N] [--since h|d|w|m|y] [--gl CC] [--hl LANG] [--page P] [--json]` through shell execution |
 
 Selection rule (the lead decides once per run and writes it into every spawn prompt): `auto` means serper when a key is available, else native. The chosen backend is stated in the plan, in each researcher report and in the final report header.
 
@@ -144,12 +154,12 @@ Cost note (checked 2026-08-23): serper.dev gives 2,500 free queries, then $1.00 
 ## Reading, Not Skimming
 
 A search result is a candidate. A claim enters a researcher's ledger only from a page that was read:
-1. Fetch the page through the active host network-fetch binding (prefer docs and primary sources; target anchors on long pages)
-2. On a bot-block (403, 429, challenge page) or thin content (under ~200 useful characters), `python3 "<plugin-root>/skills/web-search-techniques/scripts/webfetch.py" <url>`
+1. Fetch the page through network fetch (prefer docs and primary sources; target anchors on long pages)
+2. On a bot-block (403, 429, challenge page) or thin content (under ~200 useful characters), `uv run --no-config --no-project --script "<plugin-root>/skills/web-search-techniques/scripts/webfetch.py" <url>`
 3. If the Playwright MCP tools of the `playwright` plugin are available and the page is a primary source the answer depends on, drive a real browser with them as the last resort (`browser_navigate`, then `browser_snapshot`); if they are not, record the URL under limitations and move on. This is a pointer, not a dependency.
 4. Record: URL, title, the date the page carries, authority rank (below), and the claims taken from it
 
-## host page-fetch binding Guidance
+## Network Fetch Guidance
 
 - Prefer documentation pages and API references over blog posts
 - Evaluate fetched content: low-authority source means discard and re-search
@@ -158,11 +168,13 @@ A search result is a candidate. A claim enters a researcher's ledger only from a
 
 ## webfetch.py Fallback
 
-When the host network-fetch tool returns a bot-block (403, 429, Cloudflare challenge) or thin content (under ~200 chars of useful text), fall back to the plugin's stealth fetcher:
+When network fetch returns a bot-block (403, 429, Cloudflare challenge) or thin content (under ~200 chars of useful text), fall back to the plugin's stealth fetcher:
 
 ```bash
-python3 "<plugin-root>/skills/web-search-techniques/scripts/webfetch.py" <url>
+uv run --no-config --no-project --script "<plugin-root>/skills/web-search-techniques/scripts/webfetch.py" <url>
 ```
+
+`uv` installs the script's declared dependencies (curl_cffi, beautifulsoup4) on first use and caches them; the flags keep the project under work from choosing its interpreter or package index.
 
 Behavior:
 - Impersonates Chrome TLS fingerprint via curl_cffi
@@ -171,11 +183,11 @@ Behavior:
 - On failure, proceed without the result (do not retry in a loop)
 
 Invocation options:
-- `--timeout SECONDS` (default: 30)
+- `--timeout SECONDS` (default: 15)
 - `--max-chars CHARS` (truncate output)
 - `--raw` (return raw HTML instead of extracted text)
 
-Requires the active host shell capability and a worker permission that allows executing this helper. Do not copy a foreign tool name into frontmatter.
+Requires shell execution and `uv` on PATH. Without `uv`, or on a non-zero exit, record the URL under limitations and continue.
 
 ## Anti-Loop Rules
 

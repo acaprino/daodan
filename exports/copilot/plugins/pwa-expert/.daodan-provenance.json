@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:d354da790f872fe602514e0c383aa3a9f87dc6fb5912f7fa916ac79392e8723e",
+  "coreDigest": "sha256:fd4a1c7b08c413db7c40135b2c89b5f44e86ed75162e06d5337beda209935d05",
   "harnessStrategies": {
     "pwa-audit": "parallel-subagents",
     "pwa-checklist": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "pwa-expert",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

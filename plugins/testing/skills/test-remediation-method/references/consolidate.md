@@ -27,7 +27,7 @@ Determine critical flows and failure modes from the project contract and existin
 
 ## Step 4: Approval gate
 
-Present the inventory through the host question mechanism, grouped per owner (source file for unit tests, behavioral scope above that layer): the keep-list (behaviors the rewrite will cover) and the delete-list (duplicates, never-failing, dropped quarantine entries). Unanswered rows default to KEEP. No flag bypasses this gate. Contradictory pairs need an explicit ruling: which behavior is the correct one (check the authorized product contract, historical bugfix evidence and independent oracle before proposing; the current implementation cannot declare itself correct).
+Present the inventory as a user question, grouped per owner (source file for unit tests, behavioral scope above that layer): the keep-list (behaviors the rewrite will cover) and the delete-list (duplicates, never-failing, dropped quarantine entries). Unanswered rows default to KEEP. No flag bypasses this gate. Contradictory pairs need an explicit ruling: which behavior is the correct one (check the authorized product contract, historical bugfix evidence and independent oracle before proposing; the current implementation cannot declare itself correct).
 
 ## Step 5: Rewrite
 

@@ -12,9 +12,19 @@ tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
+Bodies name operations, never tools: repository read, file discovery, content
+search, repository write, repository edit, shell execution, network fetch, network
+search, user question and worker dispatch. The host binding below maps each one to
+a registered tool. An operation it leaves unbound, or whose tool is absent from
+this session, is unavailable: report it as missing, never search for a tool named
+after the operation.
+
 Codex binding: the adapter binds repository read to read_file, writes to
 apply_patch and shell execution to shell; use the equivalent registered tools of
-the active Codex runtime and their actual fields. In particular, a shell example's
+the active Codex runtime and their actual fields. Network search and network fetch
+use the runtime's registered web search tool when the Codex configuration enables
+it. A user question uses the runtime's registered question tool when one exists;
+otherwise ask it in the reply and wait for the answer. In particular, a shell example's
 command, timeout and background fields are not automatically another runtime's
 cmd, yield_time_ms or session controls.
 Start the runtime's available isolated subagent mechanism with the complete
@@ -164,19 +174,19 @@ If `<arguments>` is a URL, use the Playwright MCP tools of the `playwright` plug
 
 If the Playwright MCP tools are unavailable, stop and tell the user to install Microsoft's Playwright MCP server for the host: on Claude Code `claude plugin install playwright@claude-plugins-official`; on Codex, VS Code, Copilot CLI, Pi or OpenCode, register `npx @playwright/mcp@latest` as the MCP server `playwright` (the exact command for each host is in the Browser automation section of the Daodan README). It is a declared dependency; a live audit without a browser is not run. Mode B (a local codebase) needs no browser.
 
-Live-mode auth note: if the target URL is behind authentication, ask the user through the active host question mechanism whether to run the audit against a public route only, or whether the user can provide login steps. Never attempt to bypass auth.
+Live-mode auth note: if the target URL is behind authentication, ask the user, with a user question, whether to run the audit against a public route only, or whether the user can provide login steps. Never attempt to bypass auth.
 
 ## Mode B: Local code
 
 If `<arguments>` is a path or omitted, search the codebase:
 
-1. Find the manifest: host file-discovery binding for `manifest.webmanifest`, `manifest.json`, `app/manifest.ts` (Next.js 14+), `src/manifest.ts`. Parse and verify against `production-checklist.md` §1.
-2. Find the SW source: host file-discovery binding for `sw.js`, `sw.ts`, `service-worker.js`, `service-worker.ts`, `app/sw.ts` (Serwist), `ngsw-config.json` (Angular). Read and audit caching strategies, `skipWaiting` / `clients.claim` use, cleanup in `activate`, offline fallback.
-3. Find the SW registration: host content-search binding for `serviceWorker.register`, `workbox-window`, `Workbox(`, `Serwist(`, or Next.js implicit registration via `@serwist/next`.
-4. Find iOS meta tags: host content-search binding for `apple-mobile-web-app-capable`. Confirm the full block from `manifest.md` §"iOS meta tag block".
+1. Find the manifest: file discovery for `manifest.webmanifest`, `manifest.json`, `app/manifest.ts` (Next.js 14+), `src/manifest.ts`. Parse and verify against `production-checklist.md` §1.
+2. Find the SW source: file discovery for `sw.js`, `sw.ts`, `service-worker.js`, `service-worker.ts`, `app/sw.ts` (Serwist), `ngsw-config.json` (Angular). Read and audit caching strategies, `skipWaiting` / `clients.claim` use, cleanup in `activate`, offline fallback.
+3. Find the SW registration: content search for `serviceWorker.register`, `workbox-window`, `Workbox(`, `Serwist(`, or Next.js implicit registration via `@serwist/next`.
+4. Find iOS meta tags: content search for `apple-mobile-web-app-capable`. Confirm the full block from `manifest.md` §"iOS meta tag block".
 5. Find security headers: read `next.config.*` (Next.js headers function), `vite.config.*` plus any `server` plugin, `nginx.conf` / `.htaccess` if present, `firebase.json` `hosting.headers`, `vercel.json` `headers`. Check HSTS, CSP, COOP, COEP, Permissions-Policy.
-6. Find Web Push: host content-search binding for `pushManager.subscribe`, `setVapidDetails`, `web-push`. If found, audit the subscription flow and server-side delivery against `push-notifications.md`.
-7. Find storage usage: host content-search binding for `localStorage.`, `IDBDatabase`, `openDB(`, `navigator.storage`. Flag anti-patterns from `storage-persistence.md` (for example, `localStorage` used for large data).
+6. Find Web Push: content search for `pushManager.subscribe`, `setVapidDetails`, `web-push`. If found, audit the subscription flow and server-side delivery against `push-notifications.md`.
+7. Find storage usage: content search for `localStorage.`, `IDBDatabase`, `openDB(`, `navigator.storage`. Flag anti-patterns from `storage-persistence.md` (for example, `localStorage` used for large data).
 8. Detect framework via `package.json` and configs. Apply framework-specific checks from `frameworks-tooling.md` (Vite vite-plugin-pwa config, Serwist app/sw.ts, Angular ngsw-config.json structure).
 
 If the codebase contains a build artifact directory (`dist/`, `.next/`, `build/`), do not audit the generated SW from there. Always work from source. Generated SW files are derivative and may be stale relative to config.
