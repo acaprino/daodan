@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
 required = ["playwright@claude-plugins-official", "text-humanizer", "report-rendering"]
@@ -16,3 +16,6 @@ skills = ["brand-naming-method", "domain-hunter", "ga4-implementation", "review-
 roles = ["content-marketer", "ga4-implementation-expert", "llm-seo-optimize", "seo-specialist"]
 workflows = ["brand-naming", "content-strategy", "ga4-audit", "llm-seo-audit", "reply-to-customer-review", "seo-audit"]
 policies = []
+
+[routing]
+workflows = true

@@ -30,3 +30,10 @@ event = "user-prompt-submit"
 script = "skills/science-based-approach/scripts/science_runtime.py"
 args = ["hook"]
 timeout = 10
+
+[routing]
+workflows = true
+
+[[routing.keywords]]
+words = ["scientific papers", "arXiv", "literature review", "articoli scientifici", "letteratura scientifica"]
+target = "science-based-approach"

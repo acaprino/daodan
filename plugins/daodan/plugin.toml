@@ -8,7 +8,7 @@ license = "MIT"
 # `network.fetch` is required because this plugin also carries the Office
 # entries: their methods fetch a colour source, fonts and imagery.
 required = ["repository.read", "repository.write", "shell.execute", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
 required = [
@@ -73,3 +73,6 @@ workflows = [
   "humanize-text",
 ]
 policies = []
+
+[routing]
+workflows = true
