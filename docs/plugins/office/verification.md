@@ -62,7 +62,7 @@ Prova che ha motivato la copia del motore open-slide. Una sorgente HTML congelat
 | WordCraft 0.8.0 (DOCX) | 73/73 | Nativa | 5 pagine a flusso, stili quasi tutti persi |
 | docx/html 9.14.0 (DOCX) | 73/73 | Nativa | 7 pagine, più colori e tipografia, griglia e posizioni perse |
 
-I conteggi misurano la presenza delle unità testuali, non la fedeltà. Per open-slide la sorgente è stata scalata uniformemente a 1920×1080 dentro un contenitore dichiarato. Il risparmio di token rispetto a una costruzione via modello non è stato misurato. Driver, log ed evidenze native restano nella cartella locale del benchmark, non versionata; questo riepilogo è il record conservato.
+I conteggi misurano la presenza delle unità testuali, non la fedeltà. Per open-slide la sorgente è stata scalata uniformemente a 1920×1080 dentro un contenitore dichiarato. Il risparmio di token rispetto a una costruzione via modello non è stato misurato. Brief, rapporto, dipendenze ed evidenza indipendente della scelta sono conservati in [conversion-benchmark-20261027/](conversion-benchmark-20261027/report.md); driver, runtime e log nativi restano nella cartella locale del benchmark, esclusa dal versionamento.
 
 ## Come documentare una prova o un benchmark
 
@@ -72,4 +72,4 @@ Le misure attribuite a un progetto esterno non diventano target Office senza un 
 
 ## Fonti e direzione di sviluppo
 
-La relazione originaria offre una direzione di prodotto e prior art ingegneristica. Non costituisce uno studio comparativo dell'efficacia complessiva di Office. Le [fonti e licenze](licenses.md) indicano i contributi conservati; i nuovi candidati seguono l'[intake esterno](upstream-intake.md). La documentazione del metodo non promette l'esito di una prova nativa o un beneficio quantitativo non misurato.
+La [relazione originaria](../../specs/2026-10-26-office-unified-system.md) offre una direzione di prodotto e prior art ingegneristica. Non costituisce uno studio comparativo dell'efficacia complessiva di Office. Le [fonti e licenze](licenses.md) indicano i contributi conservati; i nuovi candidati seguono l'[intake esterno](upstream-intake.md). La documentazione del metodo non promette l'esito di una prova nativa o un beneficio quantitativo non misurato.

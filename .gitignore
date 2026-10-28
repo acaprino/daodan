@@ -52,3 +52,7 @@ package-lock.json
 /exports/*/plugins/.*.lock
 /.tritech/
 .jcode/local/
+
+# Office benchmark and verification scratch (local-only, kept on disk, never committed)
+/office-conversion-benchmark/
+/office-verification-tmp/
