@@ -1,7 +1,7 @@
 # Daodan
 
 <p align="center">
-  <img src="docs/assets/branding/daodan-logo-oni-regular.png" alt="Daodan logo" width="560">
+  <img src="docs/assets/branding/daodan-logo-xenotron-glow.png" alt="Daodan logo" width="560">
 </p>
 
 <p align="center">
