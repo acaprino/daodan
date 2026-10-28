@@ -478,3 +478,18 @@ only emits routing context after reading Science Mode. It performs no research
 or publication. See the [technical contract](plugins/research/technical-spec.md)
 and [validation evidence](plugins/research/validation.md) for the distinction
 between generated registration, subprocess tests and installed-host delivery.
+
+## Decision-record session hook
+
+project-delivery declares one optional session-start hook, `decision-records`,
+which runs `skills/adr-method/scripts/adr_hook.py` with a 10 second timeout. It
+reads `adr_tool.py state` and adds decision-record context for the main model:
+on an `active` project each settled product or feature decision becomes a
+`Proposed` record, an `undecided` project is asked once at the first settled
+decision, and a `declined` one gets no context. It writes nothing and names
+only `project-delivery:adr-method` and `/daodan:record-decision`. Claude and Codex register it through the generated
+`hooks/hooks.json`, OpenCode through its plugin loader with the session-start
+timing above. Copilot and Pi declare no native interception: there the capture
+rule lives only in the Daodan brainstorm, the task interview and adr-method, so
+another plugin's brainstorming is not covered. `tests/test_adr_hook.py` runs the
+helper as a subprocess; it is not installed-host evidence.

@@ -6,6 +6,8 @@ description: >
   DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination.
 ---
 
+> This package registers lifecycle callbacks through `hooks/hooks.json` when the plugin is enabled. Execution requires the host's hook trust approval and Python 3 on PATH as `python`. The compiler does not approve hooks or modify host settings. Generated registration and subprocess checks do not prove installed-host execution.
+
 <daodan_host_binding host="claude">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered

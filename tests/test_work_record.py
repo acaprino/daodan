@@ -1178,7 +1178,7 @@ class LoopRecordTests(ProtocolCase):
 
 
 class FirstUseTests(ProtocolCase):
-    """ADR-0005: the read-only first-use probe."""
+    """The read-only first-use probe: a map or a run ends first use, a bare .daodan/ does not."""
 
     def probe(self, project=None):
         stdout = io.StringIO()
@@ -1190,28 +1190,37 @@ class FirstUseTests(ProtocolCase):
     def test_probe_of_a_fresh_project_reports_first_use_and_writes_nothing(self):
         self.git("init", "-q")
         before = sorted(p.name for p in self.project.iterdir())
-        self.assertEqual(self.probe(), {"first_use": True, "records": False})
+        self.assertEqual(self.probe(), {"first_use": True})
         self.assertEqual(sorted(p.name for p in self.project.iterdir()), before)
         self.assertFalse((self.project / ".daodan").exists())
 
     def test_a_map_directory_ends_first_use(self):
         self.git("init", "-q")
         (self.project / ".codebase-map").mkdir()
-        self.assertEqual(self.probe(), {"first_use": False, "records": False})
+        self.assertEqual(self.probe(), {"first_use": False})
 
-    def test_an_adr_index_enables_records(self):
+    def test_a_bare_daodan_directory_keeps_first_use_and_a_run_directory_ends_it(self):
+        """The process store and a declined decision-record answer create .daodan/ before any run."""
+        self.git("init", "-q")
+        (self.project / ".daodan/processes").mkdir(parents=True)
+        (self.project / ".daodan/adr-declined").write_text("declined\n", encoding="utf-8")
+        (self.project / ".daodan/.daodan-root").touch()
+        self.assertEqual(self.probe(), {"first_use": True})
+        (self.project / ".daodan/runs").mkdir()
+        self.assertEqual(self.probe(), {"first_use": False})
+
+    def test_an_adr_index_alone_is_not_daodan_state(self):
         self.git("init", "-q")
         (self.project / "docs/adr").mkdir(parents=True)
         (self.project / "docs/adr/README.md").write_text("# Decision records\n", encoding="utf-8")
-        result = self.probe()
-        self.assertEqual((result["first_use"], result["records"]), (True, True))
+        self.assertEqual(self.probe(), {"first_use": True})
 
     def test_probe_from_a_linked_worktree_reports_the_main_checkout(self):
         self.committed_project()
         worktree = self.temp / "wt"
         self.git("worktree", "add", "-q", "-b", "task/wt", str(worktree))
         self.assertTrue(self.probe(worktree)["first_use"])
-        (self.project / ".daodan").mkdir()
+        (self.project / ".daodan/runs").mkdir(parents=True)
         self.assertFalse(self.probe(worktree)["first_use"])
 
 

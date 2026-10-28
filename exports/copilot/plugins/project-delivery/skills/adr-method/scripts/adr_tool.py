@@ -8,7 +8,13 @@ as "- item" lines, and the one nested mapping "scope" whose children are lists.
 
 Commands:
   template                         print a skeleton body to fill after the interview
-  init-index  --project ROOT       create the index when it is missing
+  state       --project PATH       whether the project keeps decision records: active, declined
+                                   or undecided, with the foreign record directories and the
+                                   project root (the top of the Git work tree owning PATH); writes nothing
+  decline     --project PATH       store the user's no: the local Git config, or .daodan/adr-declined
+                                   outside Git
+  init-index  --project ROOT       clear a stored decline, then create the index, or append its
+                                   marked block to a README.md that has none
   propose     --project ROOT --title T --slug S --task TASK --sha SHA --body FILE
               [--paths P ...] [--modules M ...] [--domains D ...] [--symbols S ...]
               [--supersedes ADR-NNNN ...] [--depends-on ADR-NNNN ...]
@@ -23,7 +29,8 @@ Commands:
                                    --adr prints the digests of its Accepted and Proposed
                                    versions, --sha lists the drifted Accepted records
   resolve     --project ROOT [--paths P ...] [--modules M ...] [--domains D ...]
-              [--symbols S ...]    list the Accepted, unsuperseded records governing a scope
+              [--symbols S ...]    list the Accepted, unsuperseded records governing a scope and
+                                   the foreign record directories to read as constraints
   promote     --project ROOT --adr ADR-NNNN --sha SHA --expect-digest D
                                    approved Proposed version -> Accepted, supersede what it replaces
   verify      --project ROOT --adr ADR-NNNN --sha SHA --expect-digest D
@@ -31,6 +38,9 @@ Commands:
   retire      --project ROOT --adr ADR-NNNN --reason TEXT --expect-digest D
                                    Proposed version -> Abandoned
   index       --project ROOT       rewrite the index from the records
+
+propose and promote take --sha unless the project has no commit yet; then the
+record carries a null sha.
 
 Every command prints JSON. A refusal exits 1 with the reason on stderr and
 writes nothing. Every write holds the exclusive lock .adr-lock in the ADR
@@ -49,9 +59,12 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import posixpath
 import re
+import stat
 import subprocess
 import sys
+import time
 import uuid
 
 ID_PATTERN = re.compile(r"^ADR-(\d{4})$")
@@ -78,6 +91,14 @@ HEADER_END = "<!-- adr-header:end -->"
 HEADER_BLOCK = re.compile(r"\A(# [^\n]*\n)\n<!-- adr-header:start -->\n.*?\n<!-- adr-header:end -->\n", re.S)
 DEFAULT_DIR = "docs/adr"
 LOCK_NAME = ".adr-lock"
+FRD_INDEX = "docs/frd/README.md"
+DECLINE_KEY = "daodan.decisionRecords"
+DECLINE_MARKER = ".daodan/adr-declined"
+TURN_ON = "Run /daodan:record-decision to turn decision records back on."
+FOREIGN_DIRS = ("adr", "adrs", "decisions", "architecture-decisions")
+FOREIGN_FILE = re.compile(r"^(?:ADR-)?(\d{4})-.+\.md$")
+WALK_DEPTH = 6
+WALK_SKIP = ("node_modules", "vendor", "dist", "build", "target", "__pycache__")
 
 TEMPLATE = """# {adr_id}: {title}
 
@@ -218,7 +239,8 @@ def render_header(front):
     parts = [f"Version {front['version']}"]
     status = front["status"]
     if status == "Accepted":
-        parts.append(f"Accepted {front['accepted_on']} at {front['accepted_at_sha'][:7]}")
+        sha = front["accepted_at_sha"]
+        parts.append(f"Accepted {front['accepted_on']}" + (f" at {sha[:7]}" if sha else " before the first commit"))
     elif status == "Superseded":
         parts.append(f"Superseded by {front['superseded_by']}")
     elif status == "Abandoned":
@@ -303,6 +325,29 @@ def read_record(path):
     return {"path": path, "front": front, "body": body, "digest": hashlib.sha256(raw).hexdigest()}
 
 
+def daodan_front(text):
+    """Whether a text opens with Daodan front matter: a --- block holding the adr_id key."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    if lines[0] != "---":
+        return False
+    for line in lines[1:]:
+        if line == "---":
+            return False
+        if line.startswith("adr_id:"):
+            return True
+    return False
+
+
+def daodan_record(path):
+    """Whether a numbered file is Daodan's; any other is another tool's, read and never written."""
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(65536)
+    except OSError:
+        return False
+    return daodan_front(head.decode("utf-8", errors="replace"))
+
+
 def write_record(record):
     text = compose(record["front"], record["body"])
     atomic_write(record["path"], text)
@@ -315,6 +360,8 @@ def load_records(directory):
     if not directory.is_dir():
         return records
     for path in sorted(directory.glob("ADR-*.md")):
+        if FOREIGN_FILE.fullmatch(path.name) and not daodan_record(path):
+            continue
         match = FILE_PATTERN.fullmatch(path.name)
         if not match:
             raise AdrError(f"{path.name}: file name must be ADR-NNNN-<slug>.md or ADR-NNNN-vN-<slug>.md")
@@ -380,10 +427,8 @@ def check_fields(record):
         items = front[key]
         if not isinstance(items, list) or any(not isinstance(item, str) or not item for item in items):
             raise AdrError(f"{where}: {key} must be a list of strings")
-    for key in ("proposed_at_sha",):
-        if not isinstance(front[key], str) or not SHA_PATTERN.fullmatch(front[key]):
-            raise AdrError(f"{where}: {key} must be a commit sha")
-    for key in ("accepted_at_sha", "last_verified_sha"):
+    # A sha is null only when the project had no commit when the record was proposed or accepted.
+    for key in ("proposed_at_sha", "accepted_at_sha", "last_verified_sha"):
         value = front[key]
         if value is not None and (not isinstance(value, str) or not SHA_PATTERN.fullmatch(value)):
             raise AdrError(f"{where}: {key} must be a commit sha or null")
@@ -395,9 +440,8 @@ def check_fields(record):
     if status == "Proposed" and (front["accepted_at_sha"] is not None or front["accepted_on"] is not None
                                  or front["superseded_by"] is not None):
         raise AdrError(f"{where}: a Proposed record has no accepted_at_sha, accepted_on or superseded_by")
-    if status == "Accepted" and (front["accepted_at_sha"] is None or front["accepted_on"] is None
-                                 or front["superseded_by"] is not None):
-        raise AdrError(f"{where}: an Accepted record carries accepted_at_sha and accepted_on and no superseded_by")
+    if status == "Accepted" and (front["accepted_on"] is None or front["superseded_by"] is not None):
+        raise AdrError(f"{where}: an Accepted record carries accepted_on and no superseded_by")
     if status == "Abandoned":
         reason = front["retired_reason"]
         if front["retired_on"] is None or not isinstance(reason, str) or not reason.strip():
@@ -529,7 +573,9 @@ def render_index(records):
              "| ADR | Title | Governs | Symbols | Accepted at |", "|---|---|---|---:|---|"]
     for record in having("Accepted"):
         front, link, where = row(record)
-        lines.append(f"| {link} | {front['title']} | {where} | {len(front['governs_symbols'])} | `{front['accepted_at_sha']}` |")
+        sha = front["accepted_at_sha"]
+        lines.append(f"| {link} | {front['title']} | {where} | {len(front['governs_symbols'])} | "
+                     + (f"`{sha}` |" if sha else "no commit |"))
     if not having("Accepted"):
         lines.append("| none | | | | |")
     lines += ["", "## Proposed", "", "| ADR | Title | Governs | From task |", "|---|---|---|---|"]
@@ -554,16 +600,26 @@ def render_index(records):
     return "\n".join(lines) + "\n"
 
 
-def index_text(directory, records, create=False):
-    """The index file regenerated from the records, rendered before any write so a refusal writes nothing."""
+def has_index(text):
+    start, end = text.find(INDEX_START), text.find(INDEX_END)
+    return 0 <= start < end
+
+
+def index_text(directory, records, create=False, adopt=False):
+    """The index file regenerated from the records, rendered before any write so a refusal writes nothing.
+
+    Every byte outside the markers is kept. adopt (init-index) appends the marked block to a README.md
+    that has none, after its last byte."""
     path = directory / "README.md"
     block = render_index(records)
     if path.is_file():
-        text = path.read_text(encoding="utf-8")
-        start, end = text.find(INDEX_START), text.find(INDEX_END)
-        if start < 0 or end < 0 or end < start:
-            raise AdrError("README.md lacks the adr-index markers; add them or move the prose elsewhere")
-        return path, text[:start] + block.rstrip("\n") + text[end + len(INDEX_END):]
+        text = path.read_bytes().decode("utf-8")
+        if has_index(text):
+            start, end = text.find(INDEX_START), text.find(INDEX_END)
+            return path, text[:start] + block.rstrip("\n") + text[end + len(INDEX_END):]
+        if not adopt:
+            raise AdrError("README.md lacks the adr-index markers; run init-index to append them")
+        return path, text + ("" if not text or text.endswith("\n") else "\n") + "\n" + block
     if create:
         return path, ("# Architecture decision records\n\n"
                       "One record per version of a decision: ADR-NNNN-<slug>.md, then ADR-NNNN-vN-<slug>.md.\n"
@@ -669,8 +725,11 @@ def drifted(project, records, sha):
 # --- commands ---------------------------------------------------------------
 
 
-def next_identity(records):
+def next_identity(records, directory):
+    """The number after every Daodan record and every numbered file another tool keeps beside them."""
     numbers = [int(record["front"]["adr_id"][4:]) for record in records.values()]
+    if directory.is_dir():
+        numbers += [int(match.group(1)) for path in directory.iterdir() if (match := FOREIGN_FILE.fullmatch(path.name))]
     return f"ADR-{(max(numbers) + 1 if numbers else 1):04d}"
 
 
@@ -683,6 +742,193 @@ def git_author(project):
     return result.stdout.strip() or "unknown"
 
 
+# --- project state: active, declined or undecided ---------------------------
+
+
+def run_git(project, *arguments, deadline=None):
+    """One Git command in the project: (exit code, stdout), exit code None when Git cannot run."""
+    timeout = None if deadline is None else max(0.1, deadline - time.monotonic())
+    try:
+        result = subprocess.run(["git", "-C", str(project), *arguments], capture_output=True, text=True,
+                                encoding="utf-8", errors="replace", timeout=timeout)
+    except OSError:
+        return None, ""
+    except subprocess.TimeoutExpired:
+        raise AdrError(f"git {arguments[0]} exceeded the time budget") from None
+    return result.returncode, result.stdout
+
+
+def in_git(project, deadline=None):
+    """Whether a Git work tree owns the project. One its enclosing repository ignores is its own root."""
+    code, out = run_git(project, "rev-parse", "--is-inside-work-tree", deadline=deadline)
+    if code != 0 or out.strip() != "true":
+        return False
+    code, _ = run_git(project, "check-ignore", "-q", ".", deadline=deadline)
+    return code != 0
+
+
+def has_commit(project):
+    return in_git(project) and run_git(project, "rev-parse", "--verify", "--quiet", "HEAD")[0] == 0
+
+
+def given_sha(project, sha, command):
+    """The --sha value. Only a project without a commit may omit it, and its record carries null."""
+    if sha is None:
+        if has_commit(project):
+            raise AdrError(f"{command} requires --sha")
+        return None
+    if not SHA_PATTERN.fullmatch(sha):
+        raise AdrError("sha must be a commit sha")
+    return sha
+
+
+def no_links(path, boundary):
+    """Refuse a symbolic link or reparse point between the boundary and the path."""
+    for item in (path, *path.parents):
+        if item == boundary:
+            break
+        try:
+            metadata = item.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(metadata.st_mode) or getattr(metadata, "st_file_attributes", 0) & 0x400:
+            raise AdrError(f"{item.relative_to(boundary).as_posix()} is a link; refusing to write through it")
+
+
+def candidate_files(project, own, git_owned, deadline=None):
+    """Project-relative paths that can reveal decision records: tracked candidates with Git, a bounded walk without."""
+    if git_owned:
+        pathspecs = [".adr-dir", ":(glob)**/.adr-dir", f":(glob){own}/*",
+                     *(f":(glob,icase)**/{name}/*" for name in FOREIGN_DIRS)]
+        code, out = run_git(project, "ls-files", "-z", "--", *pathspecs, deadline=deadline)
+        if code != 0:
+            raise AdrError("git ls-files failed")
+        return [path for path in out.split("\0") if path]
+    found = []
+    for folder, directories, files in os.walk(project):
+        if deadline is not None and time.monotonic() > deadline:
+            raise AdrError("the project walk exceeded the time budget")
+        relative = Path(folder).relative_to(project)
+        depth = len(relative.parts)
+        directories[:] = [] if depth >= WALK_DEPTH else [
+            name for name in directories if not name.startswith(".") and name not in WALK_SKIP]
+        found.extend((relative / name).as_posix() for name in files)
+    return found
+
+
+def foreign_dirs(project, files, own):
+    """Directories holding another tool's decision records: named by .adr-dir, or by convention.
+
+    The ADR directory own is Daodan's index only when its README.md carries the adr-index markers; it
+    is foreign too when it holds a numbered record without Daodan front matter or a README.md without
+    the markers. New Daodan records still go there, beside the foreign files."""
+    found = set()
+    for name in files:
+        parent, _, leaf = name.rpartition("/")
+        if leaf == ".adr-dir":
+            try:
+                named = (project / name).read_text(encoding="utf-8").strip().splitlines()
+            except (OSError, UnicodeError):
+                continue
+            target = named[0].strip().replace("\\", "/") if named else ""
+            resolved = posixpath.normpath(posixpath.join(parent, target)) if target else ""
+            if (resolved and resolved != own and not posixpath.isabs(target) and ":" not in target
+                    and resolved != ".." and not resolved.startswith("../") and (project / resolved).is_dir()):
+                found.add(resolved)
+        elif parent == own:
+            if FOREIGN_FILE.fullmatch(leaf) and not daodan_record(project / name):
+                found.add(own)
+        elif parent.rpartition("/")[2].lower() in FOREIGN_DIRS and FOREIGN_FILE.fullmatch(leaf):
+            found.add(parent)
+    readme = project / own / "README.md"
+    if readme.is_file():
+        try:
+            if not has_index(readme.read_bytes().decode("utf-8", errors="replace")):
+                found.add(own)
+        except OSError:
+            found.add(own)
+    return sorted(found)
+
+
+def detect_foreign(project, own, git_owned, deadline=None):
+    return foreign_dirs(project, candidate_files(project, own, git_owned, deadline), own)
+
+
+def declined(project, git_owned, deadline=None):
+    """A stored no: the local Git config value, or the .daodan/adr-declined marker, read in Git too."""
+    if git_owned:
+        code, out = run_git(project, "config", "--local", "--get", DECLINE_KEY, deadline=deadline)
+        if code == 0 and out.strip() == "declined":
+            return True
+    return (project / DECLINE_MARKER).is_file()
+
+
+def project_root(project, deadline=None):
+    """(root, git_owned): the top of the Git work tree that owns the path and does not ignore it, else the path."""
+    if not in_git(project, deadline):
+        return project, False
+    code, out = run_git(project, "rev-parse", "--show-toplevel", deadline=deadline)
+    if code != 0 or not out.strip():
+        raise AdrError("git rev-parse --show-toplevel failed")
+    return Path(out.strip()).resolve(), True
+
+
+def project_state(project, directory=DEFAULT_DIR, deadline=None):
+    """Active when records exist (the index, an FRD or foreign records), else declined or undecided."""
+    project, _ = adr_dir(project, directory)
+    project, git_owned = project_root(project, deadline)
+    project, own = adr_dir(project, directory)
+    relative = own.relative_to(project).as_posix()
+    foreign = detect_foreign(project, relative, git_owned, deadline)
+    frd = (project / FRD_INDEX).is_file()
+    if (own / "README.md").is_file() or frd or foreign:
+        state = "active"
+    elif declined(project, git_owned, deadline):
+        state = "declined"
+    else:
+        state = "undecided"
+    return {"state": state, "adr_dir": relative, "foreign": foreign, "frd": frd, "project": str(project)}
+
+
+def clear_decline(project):
+    """Forget a stored no, the Git config value and the marker both. True when one was stored."""
+    cleared = False
+    if in_git(project) and run_git(project, "config", "--local", "--get", DECLINE_KEY)[0] == 0:
+        if run_git(project, "config", "--local", "--unset", DECLINE_KEY)[0] != 0:
+            raise AdrError(f"git config --local --unset {DECLINE_KEY} failed")
+        cleared = True
+    marker = project / DECLINE_MARKER
+    if marker.is_file():
+        no_links(marker, project)
+        marker.unlink()
+        cleared = True
+    return cleared
+
+
+def command_state(args):
+    return project_state(args.project, args.dir)
+
+
+def command_decline(args):
+    project, _ = adr_dir(args.project, args.dir)
+    project, git_owned = project_root(project)
+    if git_owned:
+        if run_git(project, "config", "--local", DECLINE_KEY, "declined")[0] != 0:
+            raise AdrError(f"git config --local {DECLINE_KEY} failed")
+        stored = f"git config --local {DECLINE_KEY}"
+    else:
+        root, marker = project / ".daodan", project / DECLINE_MARKER
+        no_links(marker, project)
+        no_links(root / ".daodan-root", project)
+        if root.is_dir() and not (root / ".daodan-root").is_file() and any(root.iterdir()):
+            raise AdrError(".daodan must be dedicated and carry .daodan-root")
+        root.mkdir(exist_ok=True)
+        (root / ".daodan-root").touch(exist_ok=True)
+        atomic_write(marker, f"Decision records declined on {date.today().isoformat()}. {TURN_ON}\n")
+        stored = DECLINE_MARKER
+    return {"state": "declined", "stored": stored, "message": TURN_ON, "project": str(project)}
+
+
 def chosen(given, inherited):
     return list(inherited if given is None else given)
 
@@ -693,8 +939,7 @@ def command_propose(args):
         raise AdrError("propose --revise keeps the slug of version 1; drop --slug")
     if not args.revise and not SLUG_PATTERN.fullmatch(args.slug):
         raise AdrError("slug must be lowercase words joined by single hyphens")
-    if not SHA_PATTERN.fullmatch(args.sha):
-        raise AdrError("sha must be a commit sha")
+    sha = given_sha(project, args.sha, "propose")
     body = Path(args.body).read_text(encoding="utf-8")
     if body.startswith("---"):
         raise AdrError("The body file holds the sections only; the tool writes the front matter")
@@ -714,7 +959,7 @@ def command_propose(args):
             slug = FILE_PATTERN.fullmatch(next(r for r in versions if r["front"]["version"] == 1)["path"].name).group(3)
         else:
             base = {"title": "", "scope": {}, "governs_symbols": [], "depends_on": []}
-            identity, version, slug = next_identity(records), 1, args.slug
+            identity, version, slug = next_identity(records, directory), 1, args.slug
         title = (args.title or base["title"]).strip()
         path = directory / (f"{identity}-{slug}.md" if version == 1 else f"{identity}-v{version}-{slug}.md")
         if path.exists():
@@ -735,7 +980,7 @@ def command_propose(args):
             "scope": {key: chosen(getattr(args, key), base["scope"].get(key, [])) for key in SCOPE_KEYS},
             "governs_symbols": chosen(args.symbols, base["governs_symbols"]),
             "depends_on": chosen(args.depends_on, base["depends_on"]),
-            "created_from_task": args.task, "proposed_on": date.today().isoformat(), "proposed_at_sha": args.sha,
+            "created_from_task": args.task, "proposed_on": date.today().isoformat(), "proposed_at_sha": sha,
             "accepted_on": None, "accepted_at_sha": None, "last_verified_sha": None,
             "retired_on": None, "retired_reason": None,
             "supersedes": chosen(args.supersedes, ()), "superseded_by": None, "changes": changes,
@@ -784,6 +1029,9 @@ def rewrite(args, status, refusal, change):
 
 
 def command_promote(args):
+    project, _ = adr_dir(args.project, args.dir)
+    args.sha = given_sha(project, args.sha, "promote")
+
     def change(record, versions, records):
         front = record["front"]
         previous = current(versions, "Accepted")
@@ -861,26 +1109,38 @@ def command_validate(args):
 
 
 def command_resolve(args):
-    _, directory = adr_dir(args.project, args.dir)
+    project, directory = adr_dir(args.project, args.dir)
     records = load_records(directory)
     validate_all(records)
-    return {"active": resolve(records, args.paths or (), args.modules or (), args.domains or (), args.symbols or ())}
+    foreign = detect_foreign(project, directory.relative_to(project).as_posix(), in_git(project))
+    return {"active": resolve(records, args.paths or (), args.modules or (), args.domains or (), args.symbols or ()),
+            "foreign_records_to_read_as_constraints": foreign}
 
 
 def command_index(args):
     project, directory = adr_dir(args.project, args.dir)
-    with write_lock(directory, create=args.command == "init-index"):
+    initial = args.command == "init-index"
+    if initial:
+        # Refuse before any change, then clear the stored no before the first write: a failed clear writes nothing.
         records = load_records(directory)
         validate_all(records)
-        path, text = index_text(directory, records, create=args.command == "init-index")
+        index_text(directory, records, create=True, adopt=True)
+        cleared = clear_decline(project)
+    with write_lock(directory, create=initial):
+        records = load_records(directory)
+        validate_all(records)
+        path, text = index_text(directory, records, create=initial, adopt=initial)
         atomic_write(path, text)
-    return {"index": str(path.relative_to(project).as_posix()), "records": len(records)}
+    output = {"index": str(path.relative_to(project).as_posix()), "records": len(records)}
+    if initial:
+        output["decline_cleared"] = cleared
+    return output
 
 
-COMMANDS = {"init-index": command_index, "propose": command_propose, "validate": command_validate,
-            "resolve": command_resolve, "promote": command_promote, "verify": command_verify,
-            "retire": command_retire, "index": command_index}
-REQUIRED = {"promote": ("adr", "sha", "expect_digest"), "verify": ("adr", "sha", "expect_digest"),
+COMMANDS = {"state": command_state, "decline": command_decline, "init-index": command_index,
+            "propose": command_propose, "validate": command_validate, "resolve": command_resolve,
+            "promote": command_promote, "verify": command_verify, "retire": command_retire, "index": command_index}
+REQUIRED = {"promote": ("adr", "expect_digest"), "verify": ("adr", "sha", "expect_digest"),
             "retire": ("adr", "reason", "expect_digest")}
 
 
@@ -903,7 +1163,7 @@ def main(argv=None):
             raise AdrError("--project is required")
         required = REQUIRED.get(args.command, ())
         if args.command == "propose":
-            required = ("task", "sha", "body") + (() if args.revise else ("title", "slug"))
+            required = ("task", "body") + (() if args.revise else ("title", "slug"))
         missing = [f"--{name.replace('_', '-')}" for name in required if getattr(args, name) is None]
         if missing:
             raise AdrError(f"{args.command} requires " + ", ".join(missing))

@@ -20,8 +20,9 @@ workflow execution. Record that distinction in RESULTS.md.
 | proportional-change | change | Small authorized change reaches verified delivery without a blanket full audit or test quota |
 | unified-stack-review | verify, review | One candidate and delivery ledger include applicable stack review and failed dimensions |
 | global-rationalization | change, verify | Broad refactoring starts with current full static context and preserves suite and instruction consequences |
-| first-use-choices | first use | Decision records and the analysis depth are asked once, before any write, and honored |
-| records-off-cycle | change, repair | Without decision records the run's intent is the single oracle and nothing mentions records |
+| first-use-choices | first use | Only the analysis depth is asked, once, before any write, and honored; a bare `.daodan/` or a decline marker does not end first use |
+| records-off-cycle | change, repair | On a project that declined decision records the run's intent is the single oracle and nothing mentions records; `record-decision` turns them back on |
+| records-in-brainstorm | brainstorm | Whatever brainstorming method runs, each settled decision becomes a `Proposed` record under `docs/adr/` on a project keeping records, an undecided project is asked once, a declined one never, and foreign records are never written |
 
 Run host probes against actual installed packages when available. Adapter
 rendering alone cannot demonstrate an external upstream skill was available.

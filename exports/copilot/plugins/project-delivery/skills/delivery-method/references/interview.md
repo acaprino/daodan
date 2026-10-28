@@ -97,8 +97,8 @@ or changed evidence; do not restart an answered interview.
 
 1. Load `codebase-map:map-method`; deepen through `references/deepen.md`.
    Read cards, `edit-impact` neighbours and current source; cards are leads.
-2. With decision records, load `project-delivery:adr-method`; `resolve` the
-   scope and inherit the relevant active records as constraints.
+2. Load `project-delivery:adr-method`; `resolve` the scope and inherit the
+   relevant active records as constraints.
 3. Read base-commit root/nested instructions through `git show <base_sha>:<path>`.
    Record grounding in the run and worker briefs.
 4. Before technical claims or acceptance criteria, load
@@ -120,10 +120,9 @@ paths; keep choices explicit.
 
 Write or revise the project specification and follow its review and approval
 contract before planning. The run's `intent.md` links that specification.
-When a separate technical decision needs an ADR, use `template` and `propose`
-(or `--revise`), review it, then obtain approval of its own digest before
-`promote`; record `dependents_to_review` with `ask`. Unapproved records stay
-`Proposed`. Do not duplicate the full design into an ADR.
+Every settled decision follows the capture rule of `project-delivery:adr-method`:
+where records are kept, a `Proposed` record reviewed before its own approval,
+citing the specification without duplicating its design.
 
 On request, challenge the specification or record through
 `peer-review:cross-model-peer-review`, dispatching `peer-review:packet-builder`

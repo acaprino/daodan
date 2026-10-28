@@ -96,7 +96,7 @@ has its own unit.
 |---|---|---|
 | 1. Preflight and workspace | Git state probed, baseline classified, map fresh, workspace mode chosen with the user | `references/preflight.md` |
 | 2. Interview | Scope, examples, rejected alternatives and invariants fixed from real code | `references/interview.md` |
-| 3. Specification | Project design reviewed and approved; separate technical decisions recorded when needed | `references/interview.md` |
+| 3. Specification | Project design reviewed and approved; where the project keeps decision records, every settled decision a `Proposed` record citing it | `references/interview.md` |
 | 4. Plan | Waves of micro-tasks compiled, checked by the helper, reviewed as a `plan` | `references/waves.md` |
 | 5. Execution | Tasks specialist-written, verified and light-reviewed before atomic commit; waves reviewed and sealed | `references/waves.md`, `references/worker-brief.md` |
 | 6. Candidate | The whole candidate reviewed with shape `branch`; blocking findings repaired in a bounded wave | `references/verify.md` |

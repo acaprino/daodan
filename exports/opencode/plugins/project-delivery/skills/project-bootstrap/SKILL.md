@@ -6,6 +6,8 @@ description: >
   DO NOT TRIGGER WHEN: recording one already understood decision (use adr-method), editing an existing FRD (use frd-method), or running the implementation cycle (use delivery-method).
 ---
 
+> This package registers lifecycle callbacks through the OpenCode plugin loader when the plugin is enabled. Execution requires Python 3 on PATH as `python`. Prompt hooks feed the primary model context; session-start falls back to the first prompt when creation was not observed. Hook failures do not crash the host.
+
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered

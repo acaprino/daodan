@@ -49,7 +49,7 @@ change is the task cycle: a probed preflight with the workspace mode chosen by t
 user (worktree, branch or in place), an interview grounded in the map and in the
 active decision records, a project specification under `docs/specs/` reviewed and
 approved before planning (the run's intent binds its path, digest and approval),
-separate technical decisions under `docs/adr/` on projects that keep them, and waves of micro-tasks
+each settled decision as a record under `docs/adr/` on projects that keep them, and waves of micro-tasks
 checked mechanically by the protocol helper and written by the stack's specialist,
 an adversarial review of the intent, of the exact plan, of each task before its
 atomic commit and of each wave, plus a branch review of the whole candidate

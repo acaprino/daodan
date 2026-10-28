@@ -30,7 +30,12 @@ answers are reused; initialization does not start feature execution. Documents
 and run records can already exist in the caller's scaffold root and are preserved.
 
 `adr-method` creates, resolves, validates, approves, versions and verifies separate
-technical decisions under `docs/adr/`, citing the specification instead of copying it. [Decision records](../decision-records.md)
+technical decisions under `docs/adr/`, citing the specification instead of copying it.
+On Claude, Codex and OpenCode an optional session-start hook,
+`skills/adr-method/scripts/adr_hook.py`, reads the project's record state and,
+writing nothing, tells the model to capture each product or feature decision a
+brainstorming settles, whatever its method, or to ask once whether to keep
+records. [Decision records](../decision-records.md)
 describes states, versioning and drift. `frd-method` manages requirements,
 people, organizations, locations, relations, exact evidence spans and manual
 corrections. `project-bootstrap` drafts missing ADR/FRD from verified sources;
@@ -45,7 +50,7 @@ loaded only when its phase starts:
 |---|---|---|
 | 1. Preflight | Git state, upstream distance, test baseline, migrations and map freshness are probed; the user chooses `WORKTREE`, `BRANCH` or `IN_PLACE` | `preflight.md` |
 | 2. Interview | One question per turn, anchored to code evidence, until scope, examples, rejected alternatives and invariants are fixed | `interview.md` |
-| 3. Specification | A light `spec` review checks the project specification; its exact bytes need approval before planning. Separate ADRs retain their own approval | `interview.md` |
+| 3. Specification | A light `spec` review checks the project specification; its exact bytes need approval before planning. On a project keeping decision records, each settled decision is also a `Proposed` ADR with its own approval | `interview.md` |
 | 4. Plan | Bit-sized tasks carry bounded write sets, base-failing oracles and verification commands. An adversarial `plan` review must be delivered with PASS on the exact plan digest and current bytes before any task enters `running` | `waves.md` |
 | 5. Execution | A specialist writes each task. The coordinator reruns verification and a light changeset review on the uncommitted candidate, then commits atomically only after PASS and authorization. Snapshot, verification, review and commit SHA must match; later edits invalidate the evidence | `waves.md`, `worker-brief.md` |
 | 6. Candidate | The whole candidate receives a branch review; blocking findings get at most two remediation waves | `verify.md` |
@@ -55,8 +60,8 @@ loaded only when its phase starts:
 first unsealed wave. An interrupted commit is reconciled from HEAD and scoped
 bytes, never retried blindly or rolled back through `HEAD~1`.
 
-Initialization brings a project into the cycle with its map, optional decision
-index, instruction loop block and test baseline. `brainstorm` writes and reviews the design, then offers build, keep or drop;
+Initialization brings a project into the cycle with its map, instruction loop
+block and test baseline; the first-use question asks only about the analysis. `brainstorm` writes and reviews the design, then offers build, keep or drop;
 `sync` fast-forwards and realigns; `retention` handles only concluded run output.
 The density of every unit and phase context is capped by
 `tests/test_skill_load_budget.py`.
@@ -120,7 +125,7 @@ External bundles are separate upstream installations, not copied local skills.
 See [host setup](<../hosts.md>) for selection and availability requirements.
 
 **Required capabilities:** `network.fetch`, `repository.read`, `repository.write`, `shell.execute`, `contexts.isolate`, `roles.dispatch`.
-**Optional capabilities:** `execution.parallel`.
+**Optional capabilities:** `execution.parallel`, `hooks.lifecycle`.
 Optional capabilities are host mechanisms, not optional local plugin dependencies.
 
 ### Registered components
@@ -132,7 +137,7 @@ The source links carry the complete instructions and accepted arguments.
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
 | Skill | `project-delivery:delivery-method` | Coordinate analysis, debugging, features and complete documentation through grounded specifications, adversarial plans, verified commits and authorized merge. TRIGGER WHEN: the user wants to brainstorm or design a project, define specifications or implementation plans, investigate or debug, build or refactor code, produce project documentation, resume work, or finish a delivery. Route design conversations to the owned brainstorm without requiring an explicit command. DO NOT TRIGGER WHEN: diagnosing project health without implementing (use project-lifecycle:assess-method), requesting code explanation, or requesting one isolated specialist audit without delivery coordination. | [delivery-method](<../../plugins/project-delivery/skills/delivery-method/SKILL.md>) |
-| Skill | `project-delivery:adr-method` | Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge). | [adr-method](<../../plugins/project-delivery/skills/adr-method/SKILL.md>) |
+| Skill | `project-delivery:adr-method` | Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, a brainstorming or interview settles a product, feature, design, contract or domain decision, whatever brainstorming method runs, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the conversation settles no decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge). | [adr-method](<../../plugins/project-delivery/skills/adr-method/SKILL.md>) |
 | Skill | `project-delivery:frd-method` | Extract, validate, reconcile, approve, version and verify evidence-bound functional requirements documents in docs/frd/. TRIGGER WHEN: the user asks for an evidence-bound FRD, requirements and domain references must be extracted from project sources, a fresh extraction must be reconciled with manual review, or an FRD needs approval, revision or verification. DO NOT TRIGGER WHEN: recording an architecture or technical decision (use project-delivery:adr-method), writing general project documentation without evidence spans, or treating current implementation as an automatically approved requirement. | [frd-method](<../../plugins/project-delivery/skills/frd-method/SKILL.md>) |
 | Skill | `project-delivery:project-bootstrap` | Draft missing ADR and FRD from verified project evidence without turning legacy behavior or stale documentation into approved requirements. TRIGGER WHEN: a project has no ADR or FRD, existing project knowledge must be bootstrapped from code, documentation or Codebase Map, or /daodan:init-project needs initial requirement records. DO NOT TRIGGER WHEN: recording one already understood decision (use adr-method), editing an existing FRD (use frd-method), or running the implementation cycle (use delivery-method). | [project-bootstrap](<../../plugins/project-delivery/skills/project-bootstrap/SKILL.md>) |
 

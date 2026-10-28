@@ -91,8 +91,8 @@ Record conversation and approvals; write no code or plan.
 
 Read supplied specifications and project instructions. For existing code, load
 `codebase-map:map-method`, deepen through `references/deepen.md` and cite reusable
-behavior. With decision records, load `project-delivery:adr-method` and `resolve`
-the scope; name conflicts. Empty projects need no scaffold or map; mark absent
+behavior. Load `project-delivery:adr-method`: `resolve` the scope, name
+conflicts and capture each settled decision. Empty projects need no scaffold or map; mark absent
 code evidence. Before comparing alternatives, load `research:science-based-approach`,
 compose its automatic checkpoint in the caller run and read mode first: OFF skips
 scientific archive and network work.

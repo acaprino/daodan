@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["network.fetch", "repository.read", "repository.write", "shell.execute", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
 required = ["research", "model-routing", "work-controller", "worktree-manager", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-map", "repo-hygiene", "clean-code", "typescript-development", "python-development", "skill-catalog", "peer-review", "moe", "report-rendering"]
@@ -16,3 +16,9 @@ skills = ["delivery-method", "adr-method", "frd-method", "project-bootstrap"]
 roles = []
 workflows = []
 policies = ["run-write-confinement"]
+
+[[hooks]]
+name = "decision-records"
+event = "session-start"
+script = "skills/adr-method/scripts/adr_hook.py"
+timeout = 10

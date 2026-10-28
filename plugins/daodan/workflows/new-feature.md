@@ -1,6 +1,6 @@
 ---
 description: >
-  Add new behavior through the task cycle: reuse or write a project specification in docs/specs/, obtain its approval, plan waves and execute through stack specialists with a light review before each commit. ADRs keep separate technical decisions.
+  Add new behavior through the task cycle: reuse or write a project specification in docs/specs/, obtain its approval, plan waves and execute through stack specialists with a light review before each commit. On a project that keeps decision records, each settled decision becomes a Proposed record.
   TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits.
   DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).
 argument-hint: "<what to build>"

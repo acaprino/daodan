@@ -8,11 +8,14 @@ from datetime import date
 import hashlib
 import io
 import json
+import os
 import runpy
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "plugins/project-delivery/skills/adr-method/scripts/adr_tool.py"
@@ -250,7 +253,7 @@ class AdrToolTests(unittest.TestCase):
         write(path, text.replace("status: Proposed", "status: Superseded"))
         self.assertIn("names superseded_by", self.tool("validate", ok=False))
         write(path, text.replace("status: Proposed", "status: Accepted"))
-        self.assertIn("carries accepted_at_sha", self.tool("validate", ok=False))
+        self.assertIn("an Accepted record carries accepted_on", self.tool("validate", ok=False))
         write(path, text.replace("version: 1\n", ""))
         self.assertIn("front matter is missing version", self.tool("validate", ok=False))
         write(path, text.replace("version: 1\n", "version: 2\n"))
@@ -467,6 +470,312 @@ class AdrToolTests(unittest.TestCase):
         refusal = self.revise("ADR-0001", extra=("--supersedes", "ADR-0001"), ok=False)
         self.assertIn("a version never supersedes its own decision", refusal)
         self.assertEqual(self.snapshot(), before)
+
+
+RUN_STATE = REPO_ROOT / "plugins/work-controller/skills/work-record/scripts/run_state.py"
+
+
+class ProjectStateTests(unittest.TestCase):
+    """Project state, the stored no and records before the first commit.
+
+    The examples are EX-1 to EX-7 of docs/specs/2026-10-28-adr-brainstorm-method-design.md.
+    GIT_CEILING_DIRECTORIES keeps a project without Git from reaching an enclosing repository.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+        self.project = self.root / "project"
+        self.project.mkdir()
+        self.runtime = runpy.run_path(str(SCRIPT))
+        ceiling = mock.patch.dict(os.environ, {"GIT_CEILING_DIRECTORIES": str(self.root)})
+        ceiling.start()
+        self.addCleanup(ceiling.stop)
+        self.body = self.root / "body.md"
+        write(self.body, BODY)
+
+    def git(self, *arguments, ok=True):
+        return subprocess.run(["git", "-C", str(self.project), *arguments], capture_output=True, text=True,
+                              encoding="utf-8", check=ok).stdout.strip()
+
+    def init_git(self, commit=False):
+        self.git("init", "-q")
+        for key, value in (("user.name", "Test Author"), ("user.email", "adr@example.invalid"),
+                           ("core.autocrlf", "false"), ("commit.gpgsign", "false")):
+            self.git("config", key, value)
+        if commit:
+            write(self.project / "README.md", "project\n")
+            self.git("add", "README.md")
+            self.git("commit", "-q", "-m", "start")
+
+    def tool(self, command, *argv, ok=True, project=None):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = self.runtime["main"]([command, "--project", str(project or self.project), *argv])
+        self.assertEqual(code, 0 if ok else 1, stderr.getvalue())
+        return json.loads(stdout.getvalue()) if ok else stderr.getvalue()
+
+    def state(self):
+        result = self.tool("state")
+        result.pop("checked_at")
+        self.assertEqual(result.pop("project"), str(self.project))
+        return result
+
+    def propose(self, *extra, ok=True):
+        return self.tool("propose", "--title", "Store sessions in Redis", "--slug", "store-sessions-in-redis",
+                         "--task", "brainstorm-sessions", "--body", str(self.body), "--domains", "sessions",
+                         *extra, ok=ok)
+
+    def tree(self):
+        files = sorted(self.project.rglob("*"))
+        return {path.relative_to(self.project).as_posix(): path.read_bytes() if path.is_file() else None
+                for path in files if "objects" not in path.parts and "logs" not in path.parts}
+
+    def record(self):
+        return (self.project / "docs/adr/ADR-0001-store-sessions-in-redis.md").read_text(encoding="utf-8")
+
+    def test_a_new_git_project_is_undecided_and_yes_makes_the_first_record(self):
+        """EX-1, INV-3: state writes nothing; yes creates the index and the first Proposed record."""
+        self.init_git()
+        before = self.tree()
+        self.assertEqual(self.state(), {"state": "undecided", "adr_dir": "docs/adr", "foreign": [], "frd": False})
+        self.assertEqual(self.tree(), before)
+        self.assertFalse(self.tool("init-index")["decline_cleared"])
+        created = self.propose()
+        self.assertEqual((created["adr_id"], created["status"]), ("ADR-0001", "Proposed"))
+        self.assertIn("proposed_at_sha: null\n", self.record())
+        self.assertEqual(self.state()["state"], "active")
+
+    def test_a_no_in_git_is_stored_in_the_local_config(self):
+        """EX-2: the answer lives in the local Git config and the reply names the way back."""
+        self.init_git()
+        result = self.tool("decline")
+        self.assertEqual((result["state"], result["stored"]), ("declined", "git config --local daodan.decisionRecords"))
+        self.assertIn("/daodan:record-decision", result["message"])
+        self.assertEqual(self.git("config", "--local", "--get", "daodan.decisionRecords"), "declined")
+        self.assertEqual(self.state()["state"], "declined")
+        self.assertFalse((self.project / ".daodan").exists())
+
+    def test_foreign_records_make_the_project_active_and_are_never_written(self):
+        """EX-3, INV-5, INV-6: records exist, so a stored no does not count; new records go to docs/adr."""
+        self.init_git(commit=True)
+        legacy = self.project / "doc/adr/0001-use-postgres.md"
+        write(legacy, "# 1. Use Postgres\n")
+        self.git("add", "doc")
+        self.git("commit", "-q", "-m", "legacy records")
+        self.git("config", "--local", "daodan.decisionRecords", "declined")
+        self.assertEqual(self.state(), {"state": "active", "adr_dir": "docs/adr", "foreign": ["doc/adr"], "frd": False})
+        self.tool("init-index")
+        self.propose("--sha", self.git("rev-parse", "HEAD"))
+        self.git("add", "docs")
+        self.git("commit", "-q", "-m", "first record")
+        self.assertEqual(legacy.read_bytes(), b"# 1. Use Postgres\n")
+        self.assertEqual(sorted(path.name for path in legacy.parent.iterdir()), ["0001-use-postgres.md"])
+        self.assertEqual(self.state()["foreign"], ["doc/adr"])
+
+    def test_foreign_directories_come_from_adr_dir_or_convention_and_only_tracked_files(self):
+        self.init_git()
+        write(self.project / ".adr-dir", "architecture/records\n")
+        write(self.project / "architecture/records/0001-record-architecture-decisions.md", "# 1\n")
+        write(self.project / "notes/decisions/meeting.md", "minutes\n")
+        write(self.project / "src/adrs/0002-cache.txt", "not markdown\n")
+        write(self.project / "scratch/decisions/0003-queue.md", "untracked\n")
+        self.git("add", ".adr-dir", "architecture", "notes", "src")
+        self.assertEqual(self.state()["foreign"], ["architecture/records"])
+        write(self.project / "services/api/architecture-decisions/ADR-0004-queue.md", "# 4\n")
+        self.git("add", "services")
+        self.assertEqual(self.state()["foreign"], ["architecture/records", "services/api/architecture-decisions"])
+
+    def test_without_git_a_bounded_walk_finds_foreign_records(self):
+        write(self.project / "doc/adr/0001-use-postgres.md", "# 1\n")
+        write(self.project / "node_modules/pkg/decisions/0001-x.md", "# vendored\n")
+        write(self.project / ".cache/adr/0001-x.md", "# hidden\n")
+        write(self.project / "a/b/c/d/e/f/g/adr/0001-deep.md", "# beyond six levels\n")
+        self.assertEqual(self.state(), {"state": "active", "adr_dir": "docs/adr", "foreign": ["doc/adr"], "frd": False})
+
+    def test_an_frd_alone_makes_the_project_active(self):
+        """EX-4: no question; the first settled decision creates the index and ADR-0001."""
+        self.init_git()
+        write(self.project / "docs/frd/README.md", "# Requirements\n")
+        self.assertEqual(self.state(), {"state": "active", "adr_dir": "docs/adr", "foreign": [], "frd": True})
+        self.tool("init-index")
+        self.assertEqual(self.propose()["adr_id"], "ADR-0001")
+
+    def test_init_index_clears_a_stored_no(self):
+        """EX-6: /daodan:record-decision on a declined project clears the decline and creates the index."""
+        self.init_git()
+        self.tool("decline")
+        self.assertTrue(self.tool("init-index")["decline_cleared"])
+        self.assertEqual(self.git("config", "--local", "--get", "daodan.decisionRecords", ok=False), "")
+        self.assertEqual(self.state()["state"], "active")
+        self.assertFalse(self.tool("init-index")["decline_cleared"])
+
+    def test_a_no_outside_git_writes_the_marker_and_keeps_the_first_use_question(self):
+        """EX-7: .daodan/adr-declined, a dedicated .daodan/, and first_use still true."""
+        self.assertEqual(self.state()["state"], "undecided")
+        result = self.tool("decline")
+        self.assertEqual(result["stored"], ".daodan/adr-declined")
+        self.assertTrue((self.project / ".daodan/adr-declined").is_file())
+        self.assertTrue((self.project / ".daodan/.daodan-root").is_file())
+        self.assertEqual(self.state()["state"], "declined")
+        probe = subprocess.run([sys.executable, "-B", str(RUN_STATE), "first-use", "--project", str(self.project)],
+                               capture_output=True, text=True, check=True)
+        self.assertEqual(json.loads(probe.stdout), {"first_use": True})
+        self.assertTrue(self.tool("init-index")["decline_cleared"])
+        self.assertFalse((self.project / ".daodan/adr-declined").exists())
+        self.assertEqual(self.state()["state"], "active")
+
+    def test_a_no_outside_git_refuses_a_shared_or_linked_daodan_directory(self):
+        write(self.project / ".daodan/notes.txt", "another tool's file\n")
+        self.assertIn(".daodan must be dedicated", self.tool("decline", ok=False))
+        self.assertFalse((self.project / ".daodan/adr-declined").exists())
+        linked = self.root / "linked"
+        elsewhere = self.root / "elsewhere"
+        linked.mkdir()
+        elsewhere.mkdir()
+        try:
+            os.symlink(elsewhere, linked / ".daodan", target_is_directory=True)
+        except OSError as error:
+            self.skipTest(f"symbolic links unavailable: {error}")
+        self.project = linked
+        self.assertIn("is a link", self.tool("decline", ok=False))
+        self.assertEqual(list(elsewhere.iterdir()), [])
+
+    def test_records_before_the_first_commit_carry_a_null_sha(self):
+        for name, with_git in (("git-without-commit", True), ("no-git", False)):
+            with self.subTest(name):
+                self.project = self.root / name
+                self.project.mkdir()
+                if with_git:
+                    self.init_git()
+                self.tool("init-index")
+                self.propose()
+                digest = self.tool("validate", "--adr", "ADR-0001")["proposed"]["digest"]
+                self.assertIsNone(self.tool("promote", "--adr", "ADR-0001", "--expect-digest", digest)["accepted_at_sha"])
+                record = self.record()
+                for line in ("proposed_at_sha: null\n", "accepted_at_sha: null\n", "before the first commit"):
+                    self.assertIn(line, record)
+                self.assertIn("| no commit |", (self.project / "docs/adr/README.md").read_text(encoding="utf-8"))
+                self.assertTrue(self.tool("validate")["valid"])
+                self.assertIsNone(self.tool("resolve", "--domains", "sessions")["active"][0]["accepted_at_sha"])
+
+    def test_a_project_with_a_commit_still_requires_the_sha(self):
+        self.init_git(commit=True)
+        self.tool("init-index")
+        before = self.tree()
+        self.assertIn("propose requires --sha", self.propose(ok=False))
+        self.assertEqual(self.tree(), before)
+        head = self.git("rev-parse", "HEAD")
+        self.propose("--sha", head)
+        digest = self.tool("validate", "--adr", "ADR-0001")["proposed"]["digest"]
+        self.assertIn("promote requires --sha", self.tool("promote", "--adr", "ADR-0001", "--expect-digest", digest, ok=False))
+        self.assertEqual(self.tool("validate", "--adr", "ADR-0001")["proposed"]["digest"], digest)
+        self.assertEqual(self.tool("promote", "--adr", "ADR-0001", "--sha", head, "--expect-digest", digest)["accepted_at_sha"], head)
+
+    def test_foreign_records_inside_the_adr_directory_make_it_foreign(self):
+        """docs/adr is Daodan's only with the adr-index markers; another tool's records there make it foreign."""
+        self.init_git()
+        write(self.project / ".adr-dir", "docs/adr\n")
+        write(self.project / "docs/adr/0001-record-architecture-decisions.md", "# 1. Record architecture decisions\n")
+        self.git("add", ".adr-dir", "docs")
+        self.assertEqual(self.state(), {"state": "active", "adr_dir": "docs/adr", "foreign": ["docs/adr"], "frd": False})
+        self.project = self.root / "readme-only"
+        write(self.project / "docs/adr/README.md", "# Decisions\n")
+        self.assertEqual(self.state(), {"state": "active", "adr_dir": "docs/adr", "foreign": ["docs/adr"], "frd": False})
+        self.project = self.root / "daodan-only"
+        self.project.mkdir()
+        self.tool("init-index")
+        self.propose()
+        self.assertEqual(self.state()["foreign"], [])
+
+    def test_init_index_adopts_a_foreign_directory_without_rewriting_it(self):
+        """The marked block is appended to a README.md without markers; numbering skips the foreign files."""
+        self.init_git()
+        readme = "# Decisions\r\n\r\nKept by adr-tools."
+        foreign = {"docs/adr/README.md": readme,
+                   "docs/adr/0001-record-architecture-decisions.md": "# 1. Record architecture decisions\n",
+                   "docs/adr/ADR-0002-use-kafka.md": "# ADR-0002 Use Kafka\n\nStatus: accepted\n"}
+        for name, text in foreign.items():
+            write(self.project / name, text)
+        self.git("add", "docs")
+        self.tool("init-index")
+        index = (self.project / "docs/adr/README.md").read_bytes()
+        self.assertTrue(index.startswith(readme.encode("utf-8")))
+        self.assertIn(b"<!-- adr-index:start -->", index[len(readme):])
+        self.assertEqual(self.tool("validate")["records"], 0)
+        self.assertEqual(self.propose()["adr_id"], "ADR-0003")
+        self.assertTrue((self.project / "docs/adr/ADR-0003-store-sessions-in-redis.md").is_file())
+        self.assertEqual(self.tool("validate")["records"], 1)
+        self.tool("index")
+        self.assertTrue((self.project / "docs/adr/README.md").read_bytes().startswith(readme.encode("utf-8")))
+        for name, text in list(foreign.items())[1:]:
+            self.assertEqual((self.project / name).read_bytes(), text.encode("utf-8"))
+        self.assertEqual(self.state()["foreign"], ["docs/adr"])
+        write(self.project / "docs/adr/ADR-0009-broken.md", "---\nadr_id: ADR-0008\n---\n")
+        self.assertIn("does not match the file name", self.tool("validate", ok=False))
+
+    def test_state_and_decline_from_a_subdirectory_use_the_work_tree_root(self):
+        self.init_git()
+        write(self.project / "docs/frd/README.md", "# Requirements\n")
+        nested = self.project / "src/app"
+        nested.mkdir(parents=True)
+        result = self.tool("state", project=nested)
+        self.assertEqual((result["project"], result["state"], result["frd"]), (str(self.project), "active", True))
+        (self.project / "docs/frd/README.md").unlink()
+        self.assertEqual(self.tool("decline", project=nested)["project"], str(self.project))
+        self.assertEqual(self.state()["state"], "declined")
+        write(self.project / ".gitignore", "own/\n")
+        ignored = self.project / "own"
+        ignored.mkdir()
+        result = self.tool("state", project=ignored)
+        self.assertEqual((result["project"], result["state"]), (str(ignored), "undecided"))
+
+    def test_git_lists_only_the_candidate_paths(self):
+        self.init_git()
+        write(self.project / "src/main.py", "print(1)\n")
+        write(self.project / "notes/Decisions/0002-use-redis.md", "# 2\n")
+        self.git("add", ".")
+        module = self.runtime["main"].__globals__
+        original, listed = module["run_git"], []
+
+        def spy(project, *arguments, deadline=None):
+            code, out = original(project, *arguments, deadline=deadline)
+            if arguments[0] == "ls-files":
+                listed.extend(path for path in out.split("\0") if path)
+            return code, out
+
+        with mock.patch.dict(module, {"run_git": spy}):
+            self.assertEqual(self.state()["foreign"], ["notes/Decisions"])
+        self.assertEqual(listed, ["notes/Decisions/0002-use-redis.md"])
+
+    def test_a_marker_counts_as_a_no_in_git_and_init_index_clears_both_before_writing(self):
+        self.init_git()
+        marker = self.project / ".daodan/adr-declined"
+        write(marker, "declined\n")
+        self.assertEqual(self.state()["state"], "declined")
+        self.git("config", "--local", "daodan.decisionRecords", "declined")
+        lock = self.project / ".git/config.lock"
+        write(lock, "")
+        before = self.tree()
+        self.assertIn("--unset daodan.decisionRecords failed", self.tool("init-index", ok=False))
+        self.assertEqual(self.tree(), before)
+        lock.unlink()
+        self.assertTrue(self.tool("init-index")["decline_cleared"])
+        self.assertFalse(marker.exists())
+        self.assertEqual(self.git("config", "--local", "--get", "daodan.decisionRecords", ok=False), "")
+        self.assertEqual(self.state()["state"], "active")
+
+    def test_resolve_names_foreign_directories_and_needs_no_adr_directory(self):
+        self.init_git()
+        result = self.tool("resolve", "--paths", "src/app.py")
+        self.assertEqual(result["active"], [])
+        self.assertEqual(result["foreign_records_to_read_as_constraints"], [])
+        write(self.project / "doc/adr/0001-use-postgres.md", "# 1. Use Postgres\n")
+        self.git("add", "doc")
+        self.assertEqual(self.tool("resolve", "--paths", "src/app.py")["foreign_records_to_read_as_constraints"],
+                         ["doc/adr"])
+        self.assertFalse((self.project / "docs").exists())
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 adr_id: ADR-0005
 version: 1
 title: "Make decision records opt-in, chosen once at a project's first Daodan use"
-status: Proposed
+status: Abandoned
 author: Alfio Caprino
 scope:
   paths:
@@ -34,8 +34,8 @@ proposed_at_sha: 09156a0c15abaa7407daf2f37ca29c836546a3c3
 accepted_on: null
 accepted_at_sha: null
 last_verified_sha: null
-retired_on: null
-retired_reason: null
+retired_on: 2026-10-28
+retired_reason: "Superseded by the owner's decision of 2026-10-28 (ADR-0008): records on by default during brainstorming, asked once at the first settled decision."
 supersedes:
 superseded_by: null
 changes:
@@ -44,7 +44,7 @@ changes:
 # ADR-0005: Make decision records opt-in, chosen once at a project's first Daodan use
 
 <!-- adr-header:start -->
-Version 1 · Proposed 2026-10-24 by Alfio Caprino
+Version 1 · Abandoned 2026-10-28: Superseded by the owner's decision of 2026-10-28 (ADR-0008): records on by default during brainstorming, asked once at the first settled decision. · proposed 2026-10-24 by Alfio Caprino
 <!-- adr-header:end -->
 
 ## Context and Problem Statement

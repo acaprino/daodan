@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: 'Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).'
+description: 'Bring a project into the Daodan cycle: the first-use analysis depth, map, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).'
 argument-hint: '[what to build, without application code]'
 ---
 

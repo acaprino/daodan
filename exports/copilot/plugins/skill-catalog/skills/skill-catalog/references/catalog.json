@@ -799,7 +799,7 @@
       "version": "1.0.0"
     },
     {
-      "description": "Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
+      "description": "Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, a brainstorming or interview settles a product, feature, design, contract or domain decision, whatever brainstorming method runs, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the conversation settles no decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
       "dimensions": [],
       "file": "skills/adr-method/SKILL.md",
       "frameworks": [],

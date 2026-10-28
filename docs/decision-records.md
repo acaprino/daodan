@@ -12,21 +12,47 @@ and checks them.
 
 ## A project's choice
 
-Decision records are optional. A project keeps them exactly when
-`docs/adr/README.md` exists, and Daodan asks once, at the project's first use,
-together with whether to analyze the project now (no, lite or deep). A yes
-creates the index and commits it alone, so task worktrees start with it. Without
-records the task cycle still writes and approves its project specification in
-`docs/specs/`; the run's `intent.md` links that document and its approval. ADRs
-capture separate technical decisions when enabled, without duplicating the
-specification. `/daodan:record-decision` turns them on later by
-creating the index. No command turns them off.
+Decision records are a project's method by default
+([ADR-0008](adr/ADR-0008-decision-records-by-default.md)). Daodan asks once per
+project, at the first decision that a product or feature brainstorming settles,
+never at session start and never for a brainstorming that settles nothing. A yes
+creates `docs/adr/README.md` and, when the project has a commit, commits it
+alone so task worktrees start with it; the decision becomes the first record,
+`Proposed` until you approve it. A no is stored in the local Git configuration
+(`daodan.decisionRecords=declined`, shared by every worktree and never
+committed; outside Git, `.daodan/adr-declined`) and is never asked again; the
+reply says that `/daodan:record-decision` turns records back on, which clears
+the stored no and creates the index.
+
+A project that already keeps decision records is not asked. Daodan's index, an
+FRD index in `docs/frd/README.md`, or ADRs in another directory (the directory
+an adr-tools `.adr-dir` file names, or one called `adr`, `adrs`, `decisions` or
+`architecture-decisions` holding numbered records) make records active. Those
+foreign records are read as constraints and never written: new records always
+go to `docs/adr/`, whose index is created at the first settled decision. Reviews
+and other callers read only `docs/adr/`, so foreign records constrain
+brainstorming and interviews but not reviews.
+
+Capture needs no map, run or other Daodan state, and works whatever
+brainstorming method runs on Claude, Codex and OpenCode: there a session-start
+hook of project-delivery reads the project's state and tells the model to
+propose each settled decision, or to ask the question. Copilot and Pi have no
+such hook, so there records are captured only through Daodan's own brainstorm,
+task interview and decision method, and another plugin's brainstorming is not
+covered.
+
+Without records the task cycle still writes and approves its project
+specification in `docs/specs/`; the run's `intent.md` links that document and
+its approval. On a project that keeps records, every decision a brainstorming or
+interview settles also becomes a `Proposed` record that cites the specification
+without duplicating its design.
 
 The rest of this guide describes a project that keeps them.
 
 ## The short version
 
-1. A task's interview ends with a record in state `Proposed`.
+1. A brainstorming or a task's interview that settles a decision ends with a
+   record in state `Proposed`.
 2. A light review checks it. Then you are shown the record with its digest and
    asked to approve that exact text. Your approval makes it `Accepted`, whether
    its code is absent, in progress or present. Approval starts no work and
@@ -99,9 +125,9 @@ The helper writes it. Nobody edits it by hand.
 | `status` | `Proposed`, `Accepted`, `Superseded` or `Abandoned` |
 | `scope` | `paths` (shell globs; `dir/**` matches everything below `dir`), `modules` and `domains`, with at least one entry |
 | `governs_symbols` | Codebase Map symbol identities, such as `py:src/orders/validator.py#validate_order` |
-| `created_from_task` | The run or task that proposed it |
-| `proposed_at_sha` | The base commit when it was proposed |
-| `accepted_at_sha` | The commit at the user's approval |
+| `created_from_task` | The run or task that proposed it, or the brainstorm's slug outside a run |
+| `proposed_at_sha` | The base commit when it was proposed; `null` on a project with no commit yet |
+| `accepted_at_sha` | The commit at the user's approval; `null` on a project with no commit yet |
 | `last_verified_sha` | The commit at which a reviewer last confirmed the code conforms; empty until the first `verify` |
 | `changes` | On a revision, the items whose text differs from the `Accepted` version |
 | `depends_on` | The `Accepted` decisions this one builds on |
@@ -148,8 +174,8 @@ agreed to.
 
 | Moment | Command | What happens |
 |---|---|---|
-| First use of a project | the first command that writes Daodan state | Asks whether the project keeps records; yes runs `init-index`. An existing directory is validated, never rewritten |
-| Exploring an idea | `/daodan:brainstorm-idea` | `resolve` on the area, read only. No record is written |
+| First settled decision | any product or feature brainstorming, whatever its method | On a project that has neither records nor a stored no, asks once whether to keep them; yes runs `init-index` and proposes the decision, no runs `decline`. An existing index is validated, never rewritten |
+| Exploring an idea | `/daodan:brainstorm-idea` | `resolve` on the area. Each decision the brainstorm settles is proposed as a record; one that settles nothing writes none |
 | Interview | `/daodan:new-feature`; `/daodan:fix-bug` only when the fix changes a contract | `resolve` the scope and inherit the one to three active records as constraints. The interview respects them, revises them or names the ones it supersedes |
 | End of the interview | same | `propose` writes the record `Proposed`. A light review of kind `spec` checks it, and the premise auditor checks every claim it makes about the code |
 | Approval | same | You see the record with its digest. On your approval `promote` makes it `Accepted` at the current commit, and each record that depends on a decision it supersedes becomes an open question of the run. Without approval it stays `Proposed` |
@@ -159,8 +185,8 @@ agreed to.
 | Verification | same | Every `EX-*` needs a test that fails on the base and passes on the candidate. Every `INV-*` needs a test or a review finding confirming it holds. The branch review receives the records governing the changed files (`resolve --paths`) |
 | Finish | `/daodan:finish-task` | Nothing is promoted. After the merge, `verify` records the merge commit on each record the branch review confirmed. Then the map, the documentation and the instruction loop block are realigned; the loop block lists the active records per domain, and the drifted records are reported |
 | Sync | `/daodan:sync-upstream` | Nothing is promoted. The realignment reports the drifted records, among them those whose governed files the incoming commits changed |
-| Outside a task | `/daodan:record-decision` | The same grounded interview and `propose`, then your approval promotes the record without waiting for code. The approval creates no task. On a project without records it creates the index first |
-| Status | `/daodan:show-status` | `validate --sha HEAD_SHA`: the number of records in each state, and the drifted ones with their files |
+| Outside a task | `/daodan:record-decision` | The same grounded interview and `propose`, then your approval promotes the record without waiting for code. The approval creates no task. On a project without records it creates the index first, clearing a stored no |
+| Status | `/daodan:show-status` | `validate --sha HEAD_SHA` (without `--sha` before the first commit): the number of records in each state, and the drifted ones with their files. Before any run it still lists records a brainstorm captured, with the foreign record directories |
 
 On request, `/daodan:get-second-opinion` has another model challenge a record
 before you approve it. It never runs by default.
@@ -228,7 +254,9 @@ nothing.
 | Command | Does | Refuses |
 |---|---|---|
 | `template` | Prints the body skeleton to fill after the interview | |
-| `init-index --project ROOT` | Creates the index when it is missing | |
+| `state --project ROOT` | Reads only: prints `active`, `declined` or `undecided`, the index directory, the foreign record directories and whether an FRD index exists | |
+| `decline --project ROOT` | Stores the user's no: `daodan.decisionRecords=declined` in the local Git configuration, or `.daodan/adr-declined` outside Git | |
+| `init-index --project ROOT` | Creates the index when it is missing and clears a stored no | |
 | `propose --project ROOT --title T --slug S --task TASK --sha SHA --body FILE` plus scope lists, `--supersedes` and `--depends-on` | Allocates the next identity, writes the record `Proposed`, rewrites the index | A missing section or item, a template placeholder, an empty scope, a `supersedes` or `depends_on` target that is not `Accepted` |
 | `propose --revise ADR-NNNN --task TASK --sha SHA --body FILE`, optional `--title` and scope lists, never `--slug` | Writes the next version of an `Accepted` decision as `Proposed`, with its `changes` | A decision that already has a `Proposed` version, a version that supersedes its own decision |
 | `validate --project ROOT [--adr ADR-NNNN] [--sha SHA]` | Checks one record, or every record and the index, and prints each digest; with `--sha`, lists the `drifted` records | An inconsistent status, a supersede chain that loops or ends in a `Proposed` record, a stale index |
@@ -237,6 +265,9 @@ nothing.
 | `verify --project ROOT --adr ADR-NNNN --sha SHA --expect-digest D` | Sets `last_verified_sha` after a reviewer confirmed the code conforms | A digest that differs |
 | `retire --project ROOT --adr ADR-NNNN --reason TEXT --expect-digest D` | Moves a `Proposed` record to `Abandoned` | A record that is not `Proposed`, a digest that differs |
 | `index --project ROOT` | Rewrites the generated block of `docs/adr/README.md` from the records | |
+
+On a project with no commit yet, `propose` and `promote` take no `--sha` and
+record `null`.
 
 The block between `adr-index:start` and its end marker in `docs/adr/README.md`
 is generated. Edit a record, then run `index`; never edit the block by hand.

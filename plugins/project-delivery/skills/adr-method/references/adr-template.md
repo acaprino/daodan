@@ -2,8 +2,7 @@
 
 Version 1 of a decision is `docs/adr/ADR-NNNN-<slug>.md`; version N is
 `ADR-NNNN-vN-<slug>.md`, slug of version 1. The helper writes the front matter
-and header, the coordinator the body. Run `template` for the skeleton and
-`validate` before anyone uses the record.
+and header, the coordinator the body. Run `template`, then `validate` before use.
 
 ## Front matter (written by the helper, canonical order)
 
@@ -47,7 +46,8 @@ Under the title, between `<!-- adr-header:start -->` and
 
 Rules the validator enforces:
 
-- `status` is `Proposed`, `Accepted` (with `accepted_on`, `accepted_at_sha`),
+- `status` is `Proposed`, `Accepted` (with `accepted_on`, and `accepted_at_sha`,
+  null only if accepted before the first commit),
   `Superseded` (with `superseded_by`: a later version, `ADR-0014 v3`, or another
   decision listing it in `supersedes`) or `Abandoned` (with `retired_on`,
   `retired_reason`). Chains never loop or end in a `Proposed` or `Abandoned` record.

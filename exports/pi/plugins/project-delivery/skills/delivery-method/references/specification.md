@@ -108,5 +108,6 @@ Carry this binding into the plan and worker briefs. Before planning, execution, 
 plans; reopen only affected decisions. Worktree handoffs must preserve the same
 bytes at the bound path without overwriting other work.
 
-ADRs record separate technical decisions and cite the specification. FRDs retain
-their evidence-bound requirements; neither replaces this document.
+Where the project keeps decision records, every settled decision also becomes a
+`Proposed` ADR citing this specification, never duplicating its design. FRDs
+retain their evidence-bound requirements; neither replaces this document.

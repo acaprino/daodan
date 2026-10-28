@@ -945,7 +945,7 @@
       "daodan": {
         "commands": [
           {
-            "description": "Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
+            "description": "Bring a project into the Daodan cycle: the first-use analysis depth, map, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
             "file": "commands/init-project.md",
             "name": "daodan:init-project"
           },
@@ -980,7 +980,7 @@
             "name": "daodan:get-second-opinion"
           },
           {
-            "description": "Add new behavior through the task cycle: reuse or write a project specification in docs/specs/, obtain its approval, plan waves and execute through stack specialists with a light review before each commit. ADRs keep separate technical decisions. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
+            "description": "Add new behavior through the task cycle: reuse or write a project specification in docs/specs/, obtain its approval, plan waves and execute through stack specialists with a light review before each commit. On a project that keeps decision records, each settled decision becomes a Proposed record. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
             "file": "commands/new-feature.md",
             "name": "daodan:new-feature"
           },
@@ -2464,6 +2464,15 @@
           "moe",
           "report-rendering"
         ],
+        "hooks": [
+          {
+            "args": [],
+            "event": "session-start",
+            "name": "decision-records",
+            "script": "skills/adr-method/scripts/adr_hook.py",
+            "timeout": 10
+          }
+        ],
         "root": "plugins/project-delivery",
         "skills": [
           {
@@ -2473,7 +2482,7 @@
             "name": "delivery-method"
           },
           {
-            "description": "Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
+            "description": "Create, resolve, validate, approve, version and verify canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, a brainstorming or interview settles a product, feature, design, contract or domain decision, whatever brainstorming method runs, a task needs the decisions governing its scope, the user approves, revises or abandons a record, or a reviewed change verifies records or lists their drift. DO NOT TRIGGER WHEN: the conversation settles no decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
             "file": "skills/adr-method/SKILL.md",
             "id": "project-delivery:adr-method",
             "name": "adr-method"

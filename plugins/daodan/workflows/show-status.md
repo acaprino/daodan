@@ -10,5 +10,9 @@ description: >
 Load the skills `project-delivery:delivery-method` and
 `work-controller:work-record` and follow the lifecycle method's
 `references/status.md`. When `run_state.py first-use` returns `first_use: true`,
-say that Daodan has not been used on this project, name `/daodan:init-project`
-and stop. It reads only: no run is opened and nothing is written.
+say that Daodan has not been used on this project and name `/daodan:init-project`.
+A brainstorm captures decision records without a run, so when `adr_tool.py state`
+of `project-delivery:adr-method` reports `active`, also list the records as step 4
+of `references/status.md` does (`validate` without `--sha` before the first
+commit) and the `foreign` directories `state` names. Then stop. It reads only:
+no run is opened and nothing is written.

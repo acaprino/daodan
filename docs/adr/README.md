@@ -24,9 +24,9 @@ run `index`; do not edit this block by hand.
 | [ADR-0001](<ADR-0001-work-graph-step0-llm.md>) | Use an LLM prompt for Step 0 work-graph proposals | `plugins/project-lifecycle/skills/lifecycle-method/**`, `plugins/model-routing/skills/model-routing/references/task-routing.md`, `plugins/senior-review/skills/review-preparation/**`, `evals/project-lifecycle/work-graph/**`, `work-graph-composition`, `model-routing`, `reviewer-composition`, `offline-execution` | `work-graph-step0-llm-20261023` |
 | [ADR-0002](<ADR-0002-work-controller.md>) | Keep the complete Work Controller engine in Daodan | `plugins/project-protocol`, `plugins/work-controller`, `plugins/model-routing`, `plugins/senior-review/skills`, `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md`, `project-protocol`, `work-controller`, `model-routing`, `run-state`, `clarification`, `decision-map`, `work-graph`, `model-routing`, `orchestration`, `runtime-input`, `usage-ledger` | `conversation-2026-10-24` |
 | [ADR-0003](<ADR-0003-usage-ledger.md>) | Measure each run's tokens and cost from local host logs | `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/scripts/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/waves.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `work-controller`, `project-lifecycle`, `run-state`, `usage-ledger`, `budget`, `model-routing` | `conversation-2026-10-24` |
-| [ADR-0005](<ADR-0005-decision-records-opt-in.md>) | Make decision records opt-in, chosen once at a project's first Daodan use | `plugins/project-lifecycle/skills/lifecycle-method/**`, `plugins/project-lifecycle/skills/handover-method/SKILL.md`, `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/**`, `plugins/daodan/workflows/**`, `plugins/project-knowledge/skills/instructions-method/SKILL.md`, `plugins/senior-review/skills/review-preparation/references/candidate-grounding.md`, `tests/test_work_record.py`, `tests/test_skill_load_budget.py`, `evals/project-lifecycle/**`, `docs/decision-records.md`, `CLAUDE.md`, `README.md`, `lifecycle-method`, `adr-method`, `work-record`, `decision-records`, `initialization` | `session-674d0b20-adr-opt-in` |
 | [ADR-0006](<ADR-0006-adr-project-delivery.md>) | Extract ADR-driven project delivery into adr-project | `plugins/adr-project/**`, `plugins/project-lifecycle/**`, `plugins/project-knowledge/**`, `plugins/work-controller/**`, `plugins/daodan/**`, `project-delivery`, `decision-records` | `adr-project-extraction` |
 | [ADR-0007](<ADR-0007-griffin-drkerr-evolution.md>) | Coordinate evidence-bound project evolution in Project Delivery | `plugins/project-delivery/**`, `plugins/work-controller/**`, `docs/frd/**`, `project-delivery`, `requirements-engineering`, `decision-records` | `project-delivery` |
+| [ADR-0008](<ADR-0008-decision-records-by-default.md>) | Decision records by default during brainstorming | `plugins/project-delivery/**`, `plugins/work-controller/skills/work-record/scripts/run_state.py`, `plugins/daodan/workflows/record-decision.md`, `decision-records`, `project-delivery` | `adr-brainstorm` |
 
 ## Superseded
 
@@ -38,6 +38,6 @@ run `index`; do not edit this block by hand.
 
 | ADR | Title | Retired on | Reason |
 |---|---|---|---|
-| none | | | |
+| [ADR-0005](<ADR-0005-decision-records-opt-in.md>) | Make decision records opt-in, chosen once at a project's first Daodan use | 2026-10-28 | Superseded by the owner's decision of 2026-10-28 (ADR-0008): records on by default during brainstorming, asked once at the first settled decision. |
 
 <!-- adr-index:end -->

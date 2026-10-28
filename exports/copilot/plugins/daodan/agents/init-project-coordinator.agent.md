@@ -1,6 +1,6 @@
 ---
 name: init-project-coordinator
-description: 'Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).'
+description: 'Bring a project into the Daodan cycle: the first-use analysis depth, map, verified environment and commands, the loop block in the instructions, the test baseline. Without application code, obtain specification approval before scaffolding. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).'
 tools: ['agent', 'codebase-map/*', 'edit', 'fetch', 'moe/*', 'peer-review/*', 'runCommands', 'search', 'work-controller/*']
 agents: ['codebase-map:map-analyst', 'project-knowledge:instructions-auditor', 'senior-review:premise-auditor', 'work-controller:isolated-worker']
 ---
@@ -162,5 +162,5 @@ obtain or verify the approved specification before any scaffolder; existing vali
 approval and answered questions are reused. The shared initialization method owns
 this prerequisite for every caller. Return to initialization after approval;
 starting a feature requires its own authorization. Existing projects retain valid
-parts and get the chosen map, optional record index, environment, instruction loop
+parts and get the chosen map, environment, instruction loop
 block and baseline. Report created parts, unavailable checks and the first task.

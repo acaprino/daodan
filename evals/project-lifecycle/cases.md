@@ -112,30 +112,66 @@ No static X-ray evidence is reported as runtime exercise.
 
 ## first-use-choices
 
-Prompt: on a Git project with no `.daodan/`, `.codebase-map/` or `docs/adr/`,
-run `/daodan:new-feature`. Repeat four times: answer no records and a deep
-analysis; yes records and a lite analysis; no records and no analysis; and, on a
-fresh copy, run `/daodan:map-code` first and `/daodan:new-feature` after it. Add
-a project initialized before decision records became optional (`.daodan/`
-present, no `docs/adr/`), a never-used project given `/daodan:show-status`, and
-a records-off project given `/daodan:record-decision`.
+Prompt: on a Git project with no `.daodan/runs/`, `.codebase-map/` or
+`docs/adr/`, run `/daodan:new-feature`. Repeat four times: answer a deep
+analysis, a lite analysis and no analysis; and, on a fresh copy, run
+`/daodan:map-code` first and `/daodan:new-feature` after it. Add a project whose
+only Daodan state is the `.daodan/` store a plugin server created at session
+start, a project that declined decision records outside Git (only
+`.daodan/adr-declined`), a project with `.daodan/runs/` present, and a
+never-used project given `/daodan:show-status`.
 
-Assertions: both questions are asked once, in one message, before any write;
-`map-code` asks only the depth; the analysis runs at `full`, `lite` or not at
-all as answered, and a declined analysis is built later at lite depth on the
-task's scope without a new question; yes creates `docs/adr/README.md` and
-commits it alone; no creates nothing under `docs/adr/`; no later command asks again; the pre-existing project is
-never asked; `show-status` asks nothing, writes nothing and says Daodan was not
-used; `record-decision` creates the index, says records are now on, and later
-tasks resolve and propose.
+Assertions: the first-use question concerns only the analysis, is asked once
+before any write and never mentions decision records; `map-code` never asks a
+depth the user named, and `new-feature` after it asks nothing; the analysis runs
+at `full`, `lite` or not at all as answered, and a declined analysis is built
+later at lite depth on the task's scope without a new question; first use
+creates nothing under `docs/adr/`; the server-created store and the decline
+marker still yield the analysis question, while the project with runs is never
+asked; no later command asks again; `show-status` asks nothing, writes nothing
+and says Daodan was not used.
 
 ## records-off-cycle
 
-Prompt: on a project without `docs/adr/README.md`, run a feature through the
-cycle to finish, then a defect fix whose cause changes no contract.
+Prompt: on a Git project whose local configuration holds
+`daodan.decisionRecords=declined`, with no ADR or FRD anywhere, run a feature
+through the cycle to finish, then a defect fix whose cause changes no contract.
+Then run `/daodan:record-decision` on the same project.
 
-Assertions: no `resolve`, `propose` or `promote` runs and no question, brief or
-report mentions decision records; the interview's examples, rejected
-alternatives and invariants are the run's `intent.md`; the plan, each brief, each wave review and verification cite those
-items by id; finish promotes nothing and the loop block lists no records; the fix
-keeps its examples in the plan.
+Assertions: during the feature and the fix no `propose` or `promote` runs, no
+question, brief or report mentions decision records and nothing under
+`docs/adr/` is written; the interview's examples, rejected alternatives and
+invariants are the run's `intent.md`; the plan, each brief, each wave review and
+verification cite those items by id; finish promotes nothing and the loop block
+lists no records; the fix keeps its examples in the plan. `record-decision`
+clears the stored decline, creates the index, says records are now on, and later
+tasks resolve and propose.
+
+## records-in-brainstorm
+
+Prompt: run a product or feature brainstorming, once through
+`/daodan:brainstorm-idea` and once through another plugin's brainstorming
+method, with no Codebase Map and no Daodan run, on each of these projects: (1) a
+new Git project with no records, settling "store sessions in Redis", answered
+yes; (2) the same, answered no, followed by a later session; (3) a project
+holding the adr-tools record `doc/adr/0001-use-postgres.md`; (4) a project
+holding only `docs/frd/README.md`; (5) any project, with a brainstorming that
+only explores and settles nothing; (6) a declined project given
+`/daodan:record-decision`; (7) an empty folder without Git, answered no.
+
+Assertions: (1) the question is asked once, at the first settled decision and
+not at session start; yes creates `docs/adr/README.md`, commits it alone when
+the project has a commit, and writes the decision as `ADR-0001` in state
+`Proposed`, shown to the user and promoted only on approval of its exact text,
+and `/daodan:show-status` afterwards lists it although no run exists;
+(2) no stores the decline in the local Git configuration, the reply names
+`/daodan:record-decision`, and the later session adds no records context and
+asks nothing; (3) no question is asked, the next settled decision becomes
+`docs/adr/ADR-0001-<slug>.md`, the foreign `0001` stays byte-identical and is
+cited as a constraint; (4) no question is asked and the first settled decision
+creates the index and becomes `ADR-0001`; (5) no question and no file; (6) the
+decline is cleared and the index created; (7) `.daodan/adr-declined` exists and
+the first-use probe still returns `first_use: true`. In every case each record
+carries at least one agreed example and a non-empty scope, new records exist
+only under `docs/adr/`, and the session-start hook writes nothing. On Copilot
+and Pi the assertions apply to the Daodan brainstorming only.

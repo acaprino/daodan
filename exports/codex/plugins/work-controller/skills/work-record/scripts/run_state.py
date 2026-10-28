@@ -96,18 +96,21 @@ def checkout_home(project):
     return common_path.parent
 
 
-STATE_DIRECTORIES = (".codebase-map", ".daodan")
+STATE_DIRECTORIES = (".codebase-map", ".daodan/runs")
 
 
 def first_use_probe(project):
-    """Whether a project has any Daodan state yet (ADR-0005). Writes nothing."""
+    """Whether a project has a map or a run yet, in its main checkout or itself. Writes nothing.
+
+    A bare `.daodan/` does not count: the process store and a declined
+    decision-record answer create it before any analysis or run exists.
+    """
     project = Path(project).resolve()
     if not project.is_dir():
         raise ProtocolError("Project root must be a directory")
     home = checkout_home(project)
-    found = sorted(name for name in STATE_DIRECTORIES if (home / name).is_dir() or (project / name).is_dir())
-    records = any((base / "docs/adr/README.md").is_file() for base in (home, project))
-    return {"first_use": not found, "records": records}
+    found = any((base / name).is_dir() for name in STATE_DIRECTORIES for base in (home, project))
+    return {"first_use": not found}
 
 
 def roots(project):
