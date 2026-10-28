@@ -4,6 +4,24 @@
 
 [Used by Senior Review](../plugins/senior-review.md) · [Context-building research](context-building-research.md)
 
+*Last substantive update: 2026-10-28. The operational recommendations below were
+revised; no new literature search or behavioral experiment was performed.*
+
+## Abstract
+
+Building reliable agents, skills and prompts requires more than writing each
+document clearly: it also requires organizing all the instructions a model
+receives and retains throughout its work. We propose identifying obligations,
+clarifying their priority and applicability, reducing unnecessary instruction
+load, and making rules available before the actions they govern. Every
+reorganization should preserve obligations, checks and prohibitions, verifying
+both their presence and their effect in the new context. Structure, concision
+and verbatim preservation are useful tools, not guarantees. Effectiveness should
+be assessed through before-and-after comparisons and external checks on results,
+including on the low-cost models intended for actual use. These are operational
+recommendations to validate on the relevant models and tasks, not a promise of
+universal reliability.
+
 ## TL;DR
 
 - **Core principle:** Design instructions and agents around observable evidence, authority boundaries, and independent verification, rather than imaginary personas or sprawling prose.
@@ -62,3 +80,80 @@
 2. **Closed loops on real tools (ReAct):** Agents must operate through dedicated tools with bounded, deterministic outputs, observe outcomes, and advance based on demonstrated evidence.
 3. **Avoid verbose CoT when unnecessary:** For extraction, formatting, or translation tasks, demanding intermediate reasoning chains multiplies costs without improving semantic accuracy (*To CoT or not to CoT?*).
 4. **Mandatory verifiable citations:** Any finding or verdict emitted during audit or review phases must cite the exact file and line number; lack of citation invalidates the finding (*ALCE*).
+
+### 3. Operational application: making the principles executable
+
+These five practices are operational recommendations, not universally validated
+results. Structured templates, numbered procedures and MUST/MUST NOT lists can
+improve clarity; their form alone does not establish compliance.
+
+1. **Inventory before editing.** Register every obligation (directives, checks,
+   exceptions, stop conditions) with stable ID, verbatim text, hash, source
+   anchor, applicability and precedence. Audit coverage: preservation checks
+   apply to the registered inventory, while undiscovered obligations remain a
+   residual risk. Start as an index over existing sources; make it authoritative
+   only after auditing coverage and checking the wording and activation of all
+   required instructions in each applicable context.
+2. **Account composition statically.** Build the declared load graph (skills,
+   references, dispatched roles) without running workflows or agents. Account
+   for the retained load per executor and phase, including repeated instructions
+   and retained history; isolated agents have separate contexts. Static analysis
+   covers declared loads, not necessarily dynamically retrieved content or tool
+   output. Keep unresolved loads explicitly unknown, never zero. Constraint
+   counts and rendered volume are diagnostics, not proof of compliance;
+   splitting or merging rules must remain visible in the inventory comparison.
+3. **Load lazily by applicability, not by convenience.** Defer a reference only
+   if its obligations begin at that phase; otherwise extract the normative part
+   into the earlier active set. Lazy loading is a semantic migration, not a
+   plumbing change: it alters when rules become available.
+4. **Preserve verbatim first.** One canonical owner per obligation, but as many
+   deliveries as separate model contexts require. Identical wording does not
+   guarantee identical behavior after changes to timing, priority or context.
+   Review authoritative paraphrases separately, with old-to-new mappings and
+   declared residual risk. Text checks and finite behavioral tests do not, by
+   themselves, prove general semantic equivalence.
+5. **Introduce checks incrementally and evaluate before and after.** Begin with
+   reporting, then consider limits on load growth. A baseline describes the
+   existing state; it does not establish an effective absolute threshold. Set
+   limits against task outcomes and observed compliance, not counts alone.
+   Use frozen old/new fixtures and external grading of results and tool traces,
+   including on the intended low-cost models. Keep deterministic structural
+   checks distinct from probabilistic behavioral evaluations. Results provide
+   bounded regression evidence for the tested models and cases, not an
+   equivalence proof or a guarantee for other models.
+
+## Illustrative case and evidence limits
+
+A preliminary inspection of one instruction marketplace reported a median role
+of 42 lines and 3 rule markers. One illustrative eight-file composition was
+estimated at about 5,300 tokens and 35 rule markers before project context.
+These were exploratory counts: rule markers are lexical matches, not verified
+independent constraints, and the token figure was an estimate rather than a
+tokenizer measurement or an observation of the actual runtime context.
+
+Internal model discussions critically reviewed these observations and the
+proposed method; they did not independently validate the measurements or the
+recommendations. This case motivates further evaluation, not a claim of
+general effectiveness. The abstract and operational guidance do not depend on
+these figures.
+
+## Changelog
+
+### 2026-10-28
+
+Added a standalone operational abstract in English, separated the illustrative
+case from the general guidance, and qualified the preservation and evaluation
+claims. Existing literature references and findings remain unchanged.
+
+- Superseded ~~fixed MUST/MUST NOT skeletons cannot contain procedures, output
+  contracts and stop conditions~~: structured formats can help, but are not
+  sufficient evidence of compliance.
+- Superseded ~~"no rule lost" is provable only against a complete, human-audited
+  register of obligations~~: preservation is auditable relative to the registered
+  inventory, with residual risk from omissions and contextual changes.
+- Superseded ~~mechanical equivalence proofs for paraphrase do not exist~~:
+  text checks and finite behavioral tests alone do not prove general semantic
+  equivalence.
+- Superseded ~~absolute thresholds derive from rendered baselines, not from
+  token conversion~~: baselines and volume measurements inform evaluation;
+  effective limits require evidence from the relevant tasks and models.
