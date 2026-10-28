@@ -106,6 +106,23 @@ their sources; distinguish assumptions from established facts. Preserve the sour
 file and save edits to a separate output path. Never execute embedded objects,
 macros or external links while inspecting a document.
 
+## Start and finish through the gate
+
+Before the first write, open a gate record. It keeps a copy of the source
+document; every candidate gets a new name and the source is never written.
+Never write a document by editing its package XML by hand. Before calling any
+candidate finished, run `check`: it opens and renders every page with WordCraft
+into the record folder, compares its text with the source and verifies the
+independent review. Only the verdict `deliverable` means finished; report any
+other verdict with its problems and next step as printed. Read-only work writes
+nothing and needs no record.
+
+```text
+python "${PLUGIN_ROOT}/skills/intake/scripts/office_gate.py" start SOURCE.docx
+python "${PLUGIN_ROOT}/skills/intake/scripts/office_gate.py" start --dir PROJECT --format docx
+python "${PLUGIN_ROOT}/skills/intake/scripts/office_gate.py" check RECORD CANDIDATE.docx [--review REPORT] [--cuts CUTS.json]
+```
+
 ## Choose the available engine
 
 For physical DOCX creation, editing, rendering and PDF export, load
@@ -308,8 +325,7 @@ source/destination mapping and independently compare facts, conditions,
 uncertainty and claim strength; similarity or a generated map alone proves no
 semantic conservation.
 
-Render the saved DOCX with an available compatible renderer and inspect its actual
-pages. Check clipping, overlaps, headings separated from their text, tables split
+Run the gate's `check` and inspect the actual pages it rendered. Check clipping, overlaps, headings separated from their text, tables split
 awkwardly, blank pages, image quality, page numbers and header/footer collisions.
 Correct routine defects within the brief, save and review the affected pages again.
 Verify key claims and figures independently of the document's own text.
@@ -317,8 +333,8 @@ Verify key claims and figures independently of the document's own text.
 ## Independent review
 
 Dispatch `office:document-reviewer` in `final` mode in an isolated context through the registered
-`/daodan:document` entry's (or `/daodan:start`'s) generated bindings after actual candidate rendering, or
-on the read-only route after rendering the unchanged source, which then stands in
+`/daodan:document` entry's (or `/daodan:start`'s) generated bindings when `check`
+answers `review-needed`, on the renders it names, or on the read-only route after rendering the unchanged source, which then stands in
 for the candidate. Supply the exact candidate path and SHA-256, render engine and
 version, page manifest, brief, design report, source and candidate inspections,
 allowed changes, the coverage report when one exists, the exact loaded CONTENT.md/DESIGN.md identities (when present), per-block
@@ -337,7 +353,8 @@ oscillating between fixes. Do not apply a verdict to another file.
 
 Deliver the editable `.docx`, with a useful preview when
 available, and a concise account of changes with the reviewer's verdict and open
-findings. Name the editing and rendering engines and any remaining
+findings. Call it finished only on the gate's `deliverable` verdict for that
+exact candidate. Name the editing and rendering engines and any remaining
 preservation or field-update limit. If rendering was unavailable, label page layout
 unverified and distinguish completed structural checks. Never call a document
 visually verified from package inspection alone.

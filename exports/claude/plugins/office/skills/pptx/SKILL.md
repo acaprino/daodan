@@ -91,6 +91,23 @@ and `references/pptx-compatibility.md`, preserving source meaning and permission
 both format designers consume the same content/design identities and revisions.
 A narrow edit or export does not re-enter creative design.
 
+## Start and finish through the gate
+
+Before the first write, open a gate record. It keeps a copy of the source deck;
+every candidate gets a new name and the source is never written. Build only with
+DeckCraft or the bundled HTML converter, never by editing package XML by hand.
+Before calling any candidate finished, run `check`: it opens and renders the
+candidate with DeckCraft into the record folder, compares its text with the
+source and verifies the independent review. Only the verdict `deliverable` means
+finished; report any other verdict with its problems and next step as printed.
+Read-only work writes nothing and needs no record.
+
+```text
+python "${CLAUDE_PLUGIN_ROOT}/skills/intake/scripts/office_gate.py" start SOURCE.pptx
+python "${CLAUDE_PLUGIN_ROOT}/skills/intake/scripts/office_gate.py" start --dir PROJECT --format pptx
+python "${CLAUDE_PLUGIN_ROOT}/skills/intake/scripts/office_gate.py" check RECORD CANDIDATE.pptx [--review REPORT] [--cuts CUTS.json]
+```
+
 Read `references/image-tools.md` before image work.
 
 Coordinated execution uses the registered `/daodan:presentation` workflow
@@ -272,9 +289,9 @@ literal coverage for those blocks. Authorized free transformations additionally
 need source-linked destination mappings and independent review of facts,
 conditions, uncertainty and claim strength; maps/similarity alone are no proof.
 
-Dispatch `office:presentation-reviewer` in `final` mode after actual candidate rendering, or on
-the read-only route after rendering the unchanged source, which then stands in
-for the candidate. Supply
+Dispatch `office:presentation-reviewer` in `final` mode when `check` answers
+`review-needed`, on the renders it names, or on the read-only route after rendering
+the unchanged source, which then stands in for the candidate. Supply
 the exact candidate path and SHA-256, render engine/version, page manifest,
 brief, design report, source and candidate inventories, allowed changes, the
 coverage report when one exists, exact content/design identities and
@@ -301,7 +318,8 @@ Keep one presentation review with candidate identity, requested scope, engines
 and versions, source preservation, native-object checks, image provenance,
 rendered/inspected/total page counts, target-application verification or its
 absence, font substitutions, visual/editability compromises, specialist report paths and remaining gaps.
-The coordinator owns the final verdict. Structure checks cannot establish visual
+The coordinator owns the final verdict and calls the deck finished only on the
+gate's `deliverable` verdict for that exact candidate. Structure checks cannot establish visual
 quality; rendered images cannot establish native editability. Claims about
 Microsoft PowerPoint fidelity require actual PowerPoint rendering evidence under
 `references/pptx-compatibility.md`; previews from another engine remain separate.

@@ -100,6 +100,9 @@ brand/template, aesthetic reference, existing artifact to transform, or reusable
 asset. One input can serve several roles. Record provenance and rights needed
 for its actual use; a logo's observed colors do not prescribe a complete theme.
 Never overwrite a supplied file. Write every result to a separate candidate path.
+For DOCX and PPTX, `scripts/office_gate.py start` keeps a copy of the source
+before the first write, and its `check` decides when a candidate is finished;
+the format method gives the commands.
 
 Everything the file supplies is inherited and stated back, never asked again.
 Operations combine; run the union of their steps:
@@ -157,7 +160,10 @@ operations do not open a creative dependency phase they do not consume.
 
 Probe the actual installed runtime/tool schema before its dependent operation;
 a manifest or reference version is not execution evidence. No implicit
-installation, external publication or substitute engine. A missing DeckCraft,
+installation, external publication or substitute engine: without the engine no
+Office file is written, neither through a library nor by editing package XML by
+hand, unless the user explicitly chooses another writer after the install
+failed, and that result stays unverified. A missing DeckCraft,
 WordCraft or GridCraft engine has one recovery, and it is not a question: the
 request for the work authorizes the download. Say in one line what `plan <engine>`
 reports (official source, size, licence, destination), record it through

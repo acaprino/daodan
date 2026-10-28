@@ -84,6 +84,8 @@ defect remains, and `blocked` when missing renders or evidence prevent judgment.
 Write only the assigned review report: candidate identity, engines, page coverage,
 mode, candidate/frame coverage, consulted skills, blocking, advisory and deck-level defects with page/object
 evidence and concrete fixes, preservation findings, limits and
-pass/needs-fix/blocked verdict. Do not edit the
+pass/needs-fix/blocked verdict. The delivery gate reads three things from it: the
+candidate's full SHA-256, every inspected render by file name (`slide-01.png`)
+and a final `Verdict: pass`, `Verdict: needs-fix` or `Verdict: blocked` line. Do not edit the
 deck, generate images or dispatch workers. The coordinator owns repairs and the
 final report. Return report path and verdict; a stopped turn is not a delivery.

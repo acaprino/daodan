@@ -72,7 +72,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: office:presentation-reviewer; version: 3.6.1; source-sha256: 9cad1a3e82b64d196123576581bb38c7c9f6ceca8a4f59738c64ebb41d227f82. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: office:presentation-reviewer; version: 3.7.0; source-sha256: 93c95a95a32304942d70f58be9c551eb5030daf05dc7856189247b6b7467bdac. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `office`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<office-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `office`. The owning plugin's declared logical skill identities are `office:intake`, `office:content`, `office:design`, `office:pptx`, `office:deckcraft`, `office:wordcraft`, `office:gridcraft`, `office:xlsx`, `office:docx`, `office:integrity`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -155,6 +155,8 @@ defect remains, and `blocked` when missing renders or evidence prevent judgment.
 Write only the assigned review report: candidate identity, engines, page coverage,
 mode, candidate/frame coverage, consulted skills, blocking, advisory and deck-level defects with page/object
 evidence and concrete fixes, preservation findings, limits and
-pass/needs-fix/blocked verdict. Do not edit the
+pass/needs-fix/blocked verdict. The delivery gate reads three things from it: the
+candidate's full SHA-256, every inspected render by file name (`slide-01.png`)
+and a final `Verdict: pass`, `Verdict: needs-fix` or `Verdict: blocked` line. Do not edit the
 deck, generate images or dispatch workers. The coordinator owns repairs and the
 final report. Return report path and verdict; a stopped turn is not a delivery.
