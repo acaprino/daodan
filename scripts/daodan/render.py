@@ -24,10 +24,11 @@ from typing import Mapping, Sequence
 
 from .adapter import HostAdapter, resolve_support, select_coordination
 from .catalogs import OWNER
-from .hooks import HOOK_MANIFEST, render_hooks
+from .hooks import HOOK_MANIFEST, ROUTING_TEXT, render_hooks
 from .model import PluginSpec, WorkflowSpec
 from .overrides import OverrideSpec
 from .provenance import ADAPTER_VERSION, write_provenance
+from .routing import routing_text
 from .templates import render_path, render_template
 from .validate import (MCP_CAPABILITY, SourcePathError, confined_source,
                        native_hook_frontmatter, source_members, validate_hooks,
@@ -780,10 +781,16 @@ def render_plugin(
     # skill's SKILL.md, on a host that needs the user to register it. Skills
     # carry it because a consumer reaches a provider's tools through its skill:
     # a plugin whose commands moved to another plugin still announces its server.
+    #
+    # Routing text ships wherever the host gets a line; Claude and Codex also
+    # get its session-start entry, and no body gets a note for it.
     try:
-        hook_manifest, hook_notes = render_hooks(plugin, adapter)
+        routing = routing_text(plugin, adapter, registry)
+        hook_manifest, hook_notes = render_hooks(plugin, adapter, routing is not None)
     except ValueError as error:
         raise RenderError(str(error)) from error
+    if routing is not None:
+        _write_text(staging_root / ROUTING_TEXT, routing)
     if hook_manifest is not None:
         _write_text(staging_root / HOOK_MANIFEST, hook_manifest)
     mcp_notes = _mcp_rendering(plugin, adapter, staging_root) + hook_notes
