@@ -51,7 +51,10 @@ package-lock.json
 /.moe/
 /exports/*/plugins/.*.lock
 /.tritech/
-.jcode/local/
+.jcode/
+
+# JanuraCode session-continuation dumps written to the repository root
+/20*-this-session-is-being-continued-from-a-previous-*.txt
 
 # Office benchmark and verification scratch (local-only, kept on disk, never committed)
 /office-conversion-benchmark/
