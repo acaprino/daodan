@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:127a7af9c8a0906060b6aacef9140573f4843b5bfb1c94da3d2ba915a23f11c4",
+  "coreDigest": "sha256:fe5d27c3598d922bbca7e0a3a8ffa20a519e414fd0847e8d63f7c639e8514573",
   "harnessStrategies": {
     "audit-webhooks": "parallel-subagents"
   },
   "host": "codex",
   "overrides": [],
   "plugin": "stripe",
-  "version": "2.6.4"
+  "version": "1.0.0"
 }

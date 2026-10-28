@@ -72,7 +72,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-fit-auditor; version: 5.2.2; source-sha256: e2df69310067ed9a048f56045c54a897f0590553c35cfca14640f12c0da262a4. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-fit-auditor; version: 1.0.0; source-sha256: e2df69310067ed9a048f56045c54a897f0590553c35cfca14640f12c0da262a4. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`. The owning plugin's declared logical skill identities are `abstraction-architect:abstraction-architect`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

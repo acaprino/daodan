@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "learning"
-version = "1.7.3"
+version = "1.0.0"
 description = "Learning and knowledge management - mind map generation from any content, Obsidian MarkMind export, and interactive force-graph HTML visualization"
 license = "MIT"
 

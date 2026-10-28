@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:17f3a95def6cddc91c2c15fcf4206a72c60672565778c20b7f9eb315e14a5b9e",
+  "coreDigest": "sha256:f4dddbdfcfb12ae99d42172fad1a548922f4324a58dd20f85748835c37de89a1",
   "harnessStrategies": {
     "ibkr-audit": "parallel-subagents",
     "ibkr-verify": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "trading-broker-integration",
-  "version": "2.1.6"
+  "version": "1.0.0"
 }

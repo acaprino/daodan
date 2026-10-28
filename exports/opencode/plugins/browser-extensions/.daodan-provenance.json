@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ef25777bbf0a88667c006ffa4c2670789bf35caebd027fe38cd1e2567b2c4ced",
+  "coreDigest": "sha256:cacc62ebc9b41429f6779a1e29a5c5662b9a17d6a56e1e4dd5bb355959fdf4e2",
   "harnessStrategies": {
     "firefox-lint": "parallel-subagents",
     "firefox-publish": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "browser-extensions",
-  "version": "2.0.4"
+  "version": "1.0.0"
 }

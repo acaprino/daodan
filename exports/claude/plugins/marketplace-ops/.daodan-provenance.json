@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:51d1123133a629d16be16ed4852f893aaad1dafbc10219b7043558aa71fe8a67",
+  "coreDigest": "sha256:61f66223a8e485f85f0ba9bb1c34d2e29b68b3c2b3ab15267a0ffd3a05cbf14b",
   "harnessStrategies": {
     "marketplace-health": "native-team",
     "marketplace-review": "native-team",
@@ -10,5 +10,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "marketplace-ops",
-  "version": "2.4.5"
+  "version": "1.0.0"
 }

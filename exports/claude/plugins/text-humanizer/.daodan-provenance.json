@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:6abe308b0a1dfd3ba4b80042782a92a9ab77c9983977b7f9f4edddba935fba5c",
+  "coreDigest": "sha256:18e763b30ce3cfe7b82f45fe5d10d7e411b2347d2eaff9920f7ed6163171d671",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "text-humanizer",
-  "version": "2.2.1"
+  "version": "1.0.0"
 }

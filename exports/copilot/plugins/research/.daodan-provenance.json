@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f9122740d1f924f71b31e7f44094d6af35852af94f21baa4fa1f036d2e5a268a",
+  "coreDigest": "sha256:2a03d3c2e959ee69a315aa78dc1b0563f267fb3cef9785fd16c083cc24626d56",
   "harnessStrategies": {
     "science-mode": "parallel-subagents",
     "science-research": "parallel-subagents",
@@ -10,5 +10,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "research",
-  "version": "7.0.2"
+  "version": "1.0.0"
 }

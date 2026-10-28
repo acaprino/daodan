@@ -350,6 +350,8 @@ When changes modify a plugin kernel, update the marketplace **before committing*
 
 A major version, of a plugin or of the marketplace, needs the user's explicit request or a breaking change: a removed or renamed plugin, component or command, a changed contract or artifact path that a consumer reads, or a new dependency a user must install. Restructuring, new features and large changes that keep every existing entry working are minor. This is the decision of 2026-10-27, taken after the marketplace reached 42.x by bumping on every change.
 
+On 2026-10-28, by the owner's explicit decision, the marketplace (then 42.7.3) and every plugin were reset to 1.0.0. Version numbers that predate that date, here, in `docs/`, in `evals/` and in commit history ("marketplace 28.3.0", "codebase-map 7.0.1"), belong to the earlier series and stay as history: order them by date, never by number. Every later bump compares within the new series. `check_version_bumps.py` was left unchanged and rejects the reset range itself; that one failed consistency run was accepted. A host that cached an earlier-series package under a number the new series reuses must remove that cache directory and reinstall.
+
 There is no hand-mirroring step any more, and no per-host obligation to remember: the compiler writes every host, and `--check` fails the build when a committed package no longer reproduces from its kernel.
 
 ## Adding a new plugin

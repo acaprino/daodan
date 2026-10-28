@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:8b7bb49f74e5c2826cc90d7b4d58adf1284cb32acd61009e3c6fa4d9a007c3be",
+  "coreDigest": "sha256:9948d2988bba924db14997bf72e9fa173824215634c3b269d9b7d1f2eed0ce87",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "moe",
-  "version": "2.0.0"
+  "version": "1.0.0"
 }

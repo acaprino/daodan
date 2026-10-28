@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e61478363bbea05465a2f40c193c605ddf9144a98cb437dccd9ea3b836d255a2",
+  "coreDigest": "sha256:79cc772d941d4abd6d165b05d36c7e3c65f44317981b0cff627bb76e3ba429e6",
   "harnessStrategies": {
     "organize-files": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "system-utils",
-  "version": "2.1.5"
+  "version": "1.0.0"
 }

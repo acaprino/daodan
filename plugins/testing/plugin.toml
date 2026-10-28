@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "testing"
-version = "4.5.1"
+version = "1.0.0"
 description = "Behavior-driven test authoring and suite maintenance: review existing protection, reuse and update checks before justified additions, diagnose failures, and consolidate redundant tests while preserving independent failure modes and bugfix provenance. Snapshot-bound gates and owned recovery govern accepted changes; TDD and browser E2E methods remain delegated to their required providers."
 license = "MIT"
 

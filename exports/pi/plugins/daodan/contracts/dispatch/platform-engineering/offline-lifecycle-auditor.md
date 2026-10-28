@@ -73,7 +73,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: platform-engineering:offline-lifecycle-auditor; version: 2.3.0; source-sha256: 521e135756a0a3928c0d8cb5647019e4b4305a4b776afd7d8d4dc34f66dd790a. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: platform-engineering:offline-lifecycle-auditor; version: 1.0.0; source-sha256: 521e135756a0a3928c0d8cb5647019e4b4305a4b776afd7d8d4dc34f66dd790a. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `platform-engineering`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<platform-engineering-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `platform-engineering`. The owning plugin's declared logical skill identities are `platform-engineering:platform-engineering`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `platform-engineering:platform-engineering` -> compiled registry name `platform-engineering` at `skills/platform-engineering/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

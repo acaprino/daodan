@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:9f481c7497f992d395ab0105d8e2aed88651a8adb10c234c9c34e357e840f568",
+  "coreDigest": "sha256:5a534d472f88db1b809be4e4f3b3e6cc42c40df5c87a21905bbf2bce67658f41",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],
   "plugin": "python-development",
-  "version": "4.2.1"
+  "version": "1.0.0"
 }

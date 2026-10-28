@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "moe"
-version = "2.0.0"
+version = "1.0.0"
 description = "Ultra Nerd: bounded multi-model problem solving with independent proposals, reciprocal challenges and evidence-backed synthesis. Explicit opt-in for difficult tasks with increased token consumption."
 license = "MIT"
 

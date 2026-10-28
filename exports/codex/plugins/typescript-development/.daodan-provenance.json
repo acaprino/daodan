@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:4db462fc45eeeaadc43bde91e66f4709b999cc4e4e24b38e98c4ea32d8fb4336",
+  "coreDigest": "sha256:6c472db9bb328f08ad0bc89e2dc2a6f699ce143e88e85e736c8e6da1137d379a",
   "harnessStrategies": {},
   "host": "codex",
   "overrides": [],
   "plugin": "typescript-development",
-  "version": "3.4.0"
+  "version": "1.0.0"
 }
