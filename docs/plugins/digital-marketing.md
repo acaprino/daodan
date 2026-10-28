@@ -81,12 +81,12 @@ Use the ga4-implementation-expert agent to [implement/audit/debug] [GA4 or GTM s
 
 ### `llm-seo-optimize`
 
-Answer-engine optimization (AEO) specialist for Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude with web search, and Bing Copilot. Different from traditional SEO: AEO optimizes for getting **cited inside the LLM-generated answer**, not just ranking on a SERP.
+Answer-engine optimization (AEO, also called GEO) specialist for Google AI Overviews and AI Mode, ChatGPT Search, Perplexity, Microsoft Copilot and Claude. It audits whether answer engines can reach a site, select its pages and cite them correctly, then fixes what blocks them. It does not rewrite prose to attract citations: the [research behind it](../research/generative-engine-optimization.md) found that such rewrites do not hold on current engines, while access, indexing and relevance decide.
 
 | | |
 |---|---|
 | **Model** | `inherit` |
-| **Use for** | Auditing a site for AI-search discoverability, checking E-E-A-T signals, optimizing passage-level extractability, reviewing JSON-LD / Schema.org, diagnosing low citation rate in LLM answers |
+| **Use for** | Auditing AI-search visibility, crawler and CDN access, Search Console generative AI settings, E-E-A-T, answerability of customer questions, JSON-LD accuracy, measuring AI citations and traffic |
 
 **Invocation:**
 ```
@@ -94,14 +94,14 @@ Use the llm-seo-optimize agent to audit [url or local path] for answer-engine op
 ```
 
 **6-phase audit:**
-1. **Crawler access**: full robots.txt user-agent matrix for 13 AI bots (GPTBot, ChatGPT-User, OAI-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, Googlebot, ClaudeBot, Claude-User, Claude-SearchBot, Applebot-Extended, Bytespider, CCBot) with train-vs-retrieve distinction. `anthropic-ai` and `Claude-Web` are retired tokens that identify no Anthropic crawler: they are flagged as legacy entries to clean up, since blocking or allowing them changes nothing. Blocking `Google-Extended` does not remove a page from AI Overviews; blocking `Googlebot` does
-2. **E-E-A-T signals**: author bylines with credentials, publication + last-updated dates in ISO + JSON-LD, primary-source citations, first-hand experience markers, fact-check structure
-3. **Passage-level extractability**: direct-answer first paragraphs, one-question-per-H2, bulleted fact lists, tables with captions, numbers with unit + date + source
-4. **Structured data**: JSON-LD for Article / HowTo / FAQPage / Product / Dataset / ClaimReview / SoftwareApplication / Organization + sameAs
+1. **Eligibility and access**: indexing, snippet controls (`nosnippet`, `data-nosnippet`, `max-snippet`), the Search Console Search generative AI control, a robots.txt table per user agent split into search crawlers, user-triggered fetchers and training tokens, CDN and WAF bot policies (Cloudflare's Search, Agent and Training policies) with a probe run only on authorization, discovery (sitemap, IndexNow, Business Profile, Bing Places, Merchant Center). llms.txt is reported as information only, since Google Search ignores it
+2. **E-E-A-T signals**: author bylines with credentials, publication and last-updated dates in ISO and JSON-LD (changed only on substantive updates), primary-source citations, first-hand experience, evidence for claims
+3. **Answerability**: whether each important page answers the customers' real questions (what, for whom, where, price, how, limits, proof, who is responsible), built from a question set agreed with the user; citation-bait rewrites are never recommended
+4. **Structured data**: JSON-LD only where it matches visible content, for rich results; no special schema is needed for AI features
 5. **Citation readiness**: canonical URL, section-anchor permalinks, cite-this-article block, clear licensing, downloadable data
-6. **Prompt-injection hardening**: audit hidden text, invisible CSS, JSON-LD / alt-text / comment payloads that reach the LLM context
+6. **Prompt-injection hardening**: non-rendered HTML first (comments, meta tags, headers, JSON-LD, alt text), hidden text, invisible CSS, persuasion aimed at engines, unmoderated user content
 
-**Also covers:** `llms.txt` / `llms-full.txt` proposed standards, AI-referral analytics setup (chatgpt.com, legacy chat.openai.com, perplexity.ai, claude.ai, copilot.microsoft.com, gemini.google.com hostnames), weekly brand-mention citation-share tracking. Search Console does not break AI Overviews out (their impressions and clicks are folded into aggregate Web performance), so the AI-referrer hostnames are the measurable proxy.
+**Measurement:** three separate questions. Shown or cited: the Search Console Generative AI performance report (AI Overviews and AI Mode impressions, every site since 2026-08-31), Bing Webmaster Tools AI Performance (preview) and repeated sampling of the question set on each engine. Visits: GA4's AI Assistant channel (AI Overviews and AI Mode clicks count as Organic Search) and AI referrer hostnames. Outcomes: conversions per AI channel.
 
 ---
 
@@ -264,11 +264,11 @@ Playwright-verified GA4 + GTM audit covering Consent Mode v2 compliance, Key Eve
 
 ### `/digital-marketing:llm-seo-audit`
 
-Answer-engine optimization (AEO) audit. Unlike `/digital-marketing:seo-audit`, it optimizes for getting cited inside LLM-generated answers (Google AI Overviews, Perplexity, ChatGPT Search, Claude Search, Bing Copilot) rather than ranking on traditional SERPs.
+Answer-engine optimization (AEO) audit: can Google AI Overviews and AI Mode, ChatGPT Search, Perplexity, Copilot and Claude reach, select and correctly cite the site. It complements `/digital-marketing:seo-audit`, whose indexing and crawlability checks are prerequisites for every Google AI feature.
 
 ```
 /digital-marketing:llm-seo-audit https://example.com
-/digital-marketing:llm-seo-audit https://example.com --focus schema,eeat    # target two dimensions
+/digital-marketing:llm-seo-audit https://example.com --focus crawlers         # access only
 /digital-marketing:llm-seo-audit ./dist/                                    # static site audit
 /digital-marketing:llm-seo-audit https://example.com --strict-mode          # verdict line, Warnings raised to Critical
 ```
@@ -278,11 +278,11 @@ Answer-engine optimization (AEO) audit. Unlike `/digital-marketing:seo-audit`, i
 | `--focus` | `crawlers` / `eeat` / `schema` / `passages` / `injection` / `all` (default) |
 | `--strict-mode` | Report-level escalation: every Warning is raised to Critical and the report opens with a `VERDICT: PASS` / `VERDICT: FAIL` line (FAIL when any Critical remains). It never sets a process exit code |
 
-Delegates to the `llm-seo-optimize` agent (6-phase protocol). Output: `.aeo-audit/REPORT.md` with crawler-access matrix, E-E-A-T and extractability scores, JSON-LD coverage, priority fixes, AI-referral tracking setup.
+Delegates to the `llm-seo-optimize` agent (6-phase protocol). Output: `.aeo-audit/REPORT.md` with eligibility, search and training crawlers blocked, CDN state, E-E-A-T score, questions answered, JSON-LD accuracy, priority fixes and the measurement setup.
 
 ---
 
-**Related:** [research](research.md) (deep research for content strategy) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for browser-based SEO / GA4 / AEO audits and trademark pre-screening; on Claude Code `claude plugin install playwright@claude-plugins-official`, on Codex, Copilot and Pi see the per-host table in the README's [Browser automation](../../README.md#browser-automation-playwright) section)
+**Related:** [GEO research](../research/generative-engine-optimization.md) (evidence behind the AEO audit) | [research](research.md) (deep research for content strategy) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for browser-based SEO / GA4 / AEO audits and trademark pre-screening; on Claude Code `claude plugin install playwright@claude-plugins-official`, on Codex, Copilot and Pi see the per-host table in the README's [Browser automation](../../README.md#browser-automation-playwright) section)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference
@@ -290,7 +290,7 @@ Delegates to the `llm-seo-optimize` agent (6-phase protocol). Output: `.aeo-audi
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `1.0.0`. **Source:** [plugin.toml](<../../plugins/digital-marketing/plugin.toml>).
+**Version:** `1.1.0`. **Source:** [plugin.toml](<../../plugins/digital-marketing/plugin.toml>).
 
 ### Required dependencies
 
@@ -325,12 +325,12 @@ The source links carry the complete instructions and accepted arguments.
 | Skill | `digital-marketing:review-reply-method` | Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response. | [review-reply-method](<../../plugins/digital-marketing/skills/review-reply-method/SKILL.md>) |
 | Role | `digital-marketing:content-marketer` | Audits and rewrites what a visitor actually reads before deciding. TRIGGER WHEN: the user asks about marketing materials, conversion optimization, content strategy, social media, CTAs, product presentation, or landing page copy. | [content-marketer](<../../plugins/digital-marketing/roles/content-marketer.md>) |
 | Role | `digital-marketing:ga4-implementation-expert` | Implement compliant GA4, GTM, Consent Mode v2 and conversion tracking across vanilla HTML, Next.js/React and WordPress. TRIGGER WHEN: working with GA4, GTM, gtag, dataLayer, Consent Mode v2, CMP cookie banners (iubenda, Cookiebot, CookieConsent), Microsoft Clarity, Key Events or Google Ads conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy or DPA (use business:privacy-doc-generator). | [ga4-implementation-expert](<../../plugins/digital-marketing/roles/ga4-implementation-expert.md>) |
-| Role | `digital-marketing:llm-seo-optimize` | Rewrites prose and markup for verbatim quotability rather than ranking position. TRIGGER WHEN: prose or markup needs answer-engine (AEO) treatment, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer). | [llm-seo-optimize](<../../plugins/digital-marketing/roles/llm-seo-optimize.md>) |
+| Role | `digital-marketing:llm-seo-optimize` | Audits whether answer engines can reach, select and correctly cite a site, and fixes what blocks them. TRIGGER WHEN: AI search visibility (Google AI Overviews and AI Mode, ChatGPT Search, Perplexity, Copilot, Claude) needs an audit or a fix, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer). | [llm-seo-optimize](<../../plugins/digital-marketing/roles/llm-seo-optimize.md>) |
 | Role | `digital-marketing:seo-specialist` | Establishes intent and topical coverage before touching tags, and maps competitive gaps. TRIGGER WHEN: the user mentions SEO, search rankings, organic traffic, on-page optimization, structured data, or website optimization. | [seo-specialist](<../../plugins/digital-marketing/roles/seo-specialist.md>) |
 | Workflow | `digital-marketing:brand-naming` | Runs the whole workflow from a brief, with optional language and TLD constraints. TRIGGER WHEN: the user asks for brand, startup, product, or company names. DO NOT TRIGGER WHEN: renaming source code identifiers (use clean-code), or picking SEO keywords (use /digital-marketing:seo-audit). | [brand-naming](<../../plugins/digital-marketing/workflows/brand-naming.md>) |
 | Workflow | `digital-marketing:content-strategy` | Reviews whether the material actually persuades a visitor, not whether it is well built. TRIGGER WHEN: the user asks for a content, marketing, conversion, or CRO audit of a website, landing page, or funnel. DO NOT TRIGGER WHEN: the audit is technical SEO only (use /digital-marketing:seo-audit). | [content-strategy](<../../plugins/digital-marketing/workflows/content-strategy.md>) |
 | Workflow | `digital-marketing:ga4-audit` | Inspects a live deployment in the browser to see what really fires. TRIGGER WHEN: the user asks to audit GA4, verify GTM setup, check Consent Mode v2 compliance, debug missing conversions, validate dataLayer events, or check "why isn't my site converting". DO NOT TRIGGER WHEN: the task is general SEO (use /digital-marketing:seo-audit), or content and CTA optimization (use /digital-marketing:content-strategy). | [ga4-audit](<../../plugins/digital-marketing/workflows/ga4-audit.md>) |
-| Workflow | `digital-marketing:llm-seo-audit` | Audit pages for generative search / answer engine citation readiness (AI Overviews, Perplexity, ChatGPT/Claude Search, Bing Copilot). TRIGGER WHEN: auditing AI search visibility, AI-bot crawler allowlists, E-E-A-T, llms.txt, JSON-LD citation schemas, passage extractability or prompt-injection hardening. DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer). | [llm-seo-audit](<../../plugins/digital-marketing/workflows/llm-seo-audit.md>) |
+| Workflow | `digital-marketing:llm-seo-audit` | Audit whether answer engines (AI Overviews, AI Mode, ChatGPT Search, Perplexity, Copilot, Claude) can reach, select and correctly cite a site. TRIGGER WHEN: auditing AI search visibility, AI-bot crawler or CDN access, Search Console generative AI settings, E-E-A-T, answerability of customer questions, JSON-LD accuracy, llms.txt questions or prompt-injection hardening. DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer). | [llm-seo-audit](<../../plugins/digital-marketing/workflows/llm-seo-audit.md>) |
 | Workflow | `digital-marketing:reply-to-customer-review` | Drafts a ready-to-post answer, with brand, tone, language, and sector flags. TRIGGER WHEN: the user pastes a customer review (Airbnb, Booking, Tripadvisor, Amazon, Trustpilot, App Store, Google) and asks for a reply or response. DO NOT TRIGGER WHEN: writing general marketing copy (use content-marketer). | [reply-to-customer-review](<../../plugins/digital-marketing/workflows/reply-to-customer-review.md>) |
 | Workflow | `digital-marketing:seo-audit` | Diagnoses why a page underperforms in traditional Google and Bing results. TRIGGER WHEN: the user asks for a technical SEO audit, Core Web Vitals check, sitemap, redirect, or crawlability review, structured data or meta tags, mobile usability, or SERP ranking analysis. DO NOT TRIGGER WHEN: the goal is being cited by AI answer engines (use /digital-marketing:llm-seo-audit), conversion, CTA, or copy quality (use /digital-marketing:content-strategy), or GA4 tracking (use ga4-implementation-expert). | [seo-audit](<../../plugins/digital-marketing/workflows/seo-audit.md>) |
 

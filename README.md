@@ -1136,6 +1136,15 @@ native-shape diagram style of [office](docs/plugins/office.md)'s design skill.
 Office re-expresses them in points for editable shapes and connectors; the
 upstream SVG pipeline, importers and exporters are not used.
 
+[claude-seo](https://github.com/AgriciDaniel/claude-seo), by AgriciDaniel (MIT),
+and [geo-optimizer-skill](https://github.com/Auriti-Labs/geo-optimizer-skill), by
+Auriti-Labs (MIT), audit sites for AI search visibility. Their checks of CDN and
+WAF bot blocking inspired the access probe of
+[digital-marketing](docs/plugins/digital-marketing.md)'s answer-engine audit: the
+probe runs only with authorization, compares a bot user agent with a browser, and
+reports what the firewall does to unverified traffic. The audit states these ideas
+in its own words; their code, scoring and paid integrations are not used.
+
 ## Contributing
 
 > [!WARNING]

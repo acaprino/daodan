@@ -1165,7 +1165,7 @@
             ]
           },
           {
-            "description": "Rewrites prose and markup for verbatim quotability rather than ranking position. TRIGGER WHEN: prose or markup needs answer-engine (AEO) treatment, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer).",
+            "description": "Audits whether answer engines can reach, select and correctly cite a site, and fixes what blocks them. TRIGGER WHEN: AI search visibility (Google AI Overviews and AI Mode, ChatGPT Search, Perplexity, Copilot, Claude) needs an audit or a fix, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer).",
             "file": "agents/llm-seo-optimize.md",
             "id": "digital-marketing:llm-seo-optimize",
             "permissions": [
@@ -1206,7 +1206,7 @@
             "name": "digital-marketing:ga4-audit"
           },
           {
-            "description": "Audit pages for generative search / answer engine citation readiness (AI Overviews, Perplexity, ChatGPT/Claude Search, Bing Copilot). TRIGGER WHEN: auditing AI search visibility, AI-bot crawler allowlists, E-E-A-T, llms.txt, JSON-LD citation schemas, passage extractability or prompt-injection hardening. DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer).",
+            "description": "Audit whether answer engines (AI Overviews, AI Mode, ChatGPT Search, Perplexity, Copilot, Claude) can reach, select and correctly cite a site. TRIGGER WHEN: auditing AI search visibility, AI-bot crawler or CDN access, Search Console generative AI settings, E-E-A-T, answerability of customer questions, JSON-LD accuracy, llms.txt questions or prompt-injection hardening. DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer).",
             "file": "commands/llm-seo-audit.md",
             "name": "digital-marketing:llm-seo-audit"
           },

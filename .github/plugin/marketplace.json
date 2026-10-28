@@ -268,7 +268,7 @@
         "text-humanizer",
         "report-rendering"
       ],
-      "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot): technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /digital-marketing:ga4-audit Playwright-powered verification, and /digital-marketing:llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
+      "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews and AI Mode, ChatGPT Search, Perplexity, Microsoft Copilot, Claude): technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /digital-marketing:ga4-audit Playwright-powered verification, and /digital-marketing:llm-seo-audit AEO command with crawler and CDN access, Search Console generative AI settings, E-E-A-T, answerability of customer questions, structured data accuracy and AI visibility measurement. Prose humanization lives in the standalone text-humanizer plugin.",
       "license": "MIT",
       "name": "digital-marketing",
       "skills": [
@@ -278,7 +278,7 @@
         "./skills/review-reply-method"
       ],
       "source": "./exports/copilot/plugins/digital-marketing",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "author": {

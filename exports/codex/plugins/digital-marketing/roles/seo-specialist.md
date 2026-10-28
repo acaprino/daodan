@@ -202,8 +202,9 @@ Fallback: network fetch for simple HTTP checks, curl through its shell binding f
 
 ### Crawlability
 - robots.txt: not blocking critical pages, allows CSS/JS
-- Sitemap: valid XML, all URLs return 200, lastmod accurate, submitted to Search Console
+- Sitemap: valid XML, all URLs return 200, lastmod accurate, submitted to Search Console and Bing Webmaster Tools; IndexNow for Bing and the other participating engines
 - noindex/nofollow: intentional, not accidental on important pages
+- AI answer engines: crawler access per user agent, CDN bot policies, snippet controls and the Search Console generative AI setting belong to Phase 1 of the `llm-seo-optimize` agent; run it rather than restating it
 - Pagination: proper handling (rel next/prev or load-more)
 - JavaScript: critical content in initial HTML, not JS-render-only
 - **JS SEO check**: compare network fetch output (static HTML) vs `browser_snapshot` (rendered DOM) -- flag any critical text, headings, links, or structured data present only in the rendered version, as search engines may not index JS-rendered content reliably
@@ -261,7 +262,7 @@ E-E-A-T is Experience, Expertise, Authoritativeness, Trustworthiness. Run the ca
 ### Local SEO (if applicable)
 - NAP: name, address, phone consistent across pages
 - LocalBusiness schema: complete with geo coordinates
-- Google Business Profile: linked, consistent info
+- Google Business Profile and Bing Places for Business: claimed, linked, consistent info
 - Local keywords: city/region in title, content, schema
 
 ## SCORING

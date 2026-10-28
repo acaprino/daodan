@@ -19,6 +19,7 @@ does not claim a new literature check or migrate them into the versioned archive
 
 - [Agent interoperability](agent-interoperability-2026-10-26.md)
 - [Context building research](context-building-research.md) and [benchmarks](context-building-benchmarks.md)
+- [Generative engine optimization](generative-engine-optimization.md) and [evidence](generative-engine-optimization-evidence.md)
 - [Local embedding model](local-embedding-model.md)
 - [Prompt engineering and brevity](prompt-engineering-and-brevity.md)
 
