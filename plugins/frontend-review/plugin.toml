@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = ["impeccable@impeccable", "ui-ux-pro-max@ui-ux-pro-max-skill", "frontend-design@claude-plugins-official", "react-development", "typescript-development", "pwa-expert", "platform-engineering"]
@@ -16,3 +16,6 @@ skills = []
 roles = []
 workflows = ["review-frontend"]
 policies = []
+
+[routing]
+workflows = true

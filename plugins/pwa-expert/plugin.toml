@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = ["playwright@claude-plugins-official"]
@@ -16,3 +16,6 @@ skills = ["pwa-development"]
 roles = ["pwa-architect"]
 workflows = ["pwa-audit", "pwa-checklist", "pwa-scaffold"]
 policies = []
+
+[routing]
+workflows = true
