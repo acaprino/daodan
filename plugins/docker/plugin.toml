@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = ["multi-stage-dockerfile"]
 roles = []
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["Dockerfile", "Docker image", "container image"]
+target = "multi-stage-dockerfile"

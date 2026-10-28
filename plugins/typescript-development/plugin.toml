@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
 required = ["work-controller", "testing"]
@@ -22,3 +22,21 @@ members = [
   "typescript-development:type-soundness-auditor",
   "typescript-development:typed-boundary-auditor",
 ]
+
+[routing]
+
+[[routing.keywords]]
+words = ["TypeScript", "tsconfig"]
+target = "typescript-write"
+
+[[routing.keywords]]
+words = ["Zod", "TypeScript generics"]
+target = "mastering-typescript"
+
+[[routing.keywords]]
+words = ["knip", "unused exports"]
+target = "knip"
+
+[[routing.keywords]]
+words = ["type safety", "any type"]
+target = "type-safety-rules"

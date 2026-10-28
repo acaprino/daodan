@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = ["kotlin-specialist"]
 roles = []
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["Kotlin", "coroutines", "Jetpack Compose", "KMP", "Ktor"]
+target = "kotlin-specialist"

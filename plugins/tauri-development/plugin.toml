@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,13 @@ skills = ["tauri"]
 roles = ["rust-engineer", "tauri-desktop", "tauri-mobile"]
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["Tauri"]
+target = "tauri"
+
+[[routing.keywords]]
+words = ["Rust"]
+target = "rust-engineer"
