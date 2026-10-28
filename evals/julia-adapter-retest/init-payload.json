@@ -1,0 +1,81 @@
+{
+  "operation": "evaluation",
+  "objective": "Correct the fast-jev compaction adapter contract, prove offline that every possible answer maps to its intended action, and retest eight minimal balanced cases plus the official control on pinned Julia local CPU.",
+  "scope": {
+    "paths": [
+      "evals/julia-adapter-retest",
+      "docs/gutsay/julia-adapter-retest-2026-10-27.md",
+      "docs/gutsay/README.md"
+    ],
+    "excluded": [
+      "all prior runs and reports",
+      "plugins",
+      "exports",
+      "docs/superpowers"
+    ]
+  },
+  "authorizations": {
+    "source": "User: ok fallo, approving the proposed corrective cycle (offline adapter fix, minimal balanced retest, verdict rule) after the 2026-10-27 usage diagnostic.",
+    "local_cpu_inference": true,
+    "evaluation_edits": true,
+    "training": false,
+    "remote_paid_runs": false,
+    "commit": false,
+    "push": false
+  },
+  "budget": {
+    "max_inference_seconds": 420,
+    "per_request_seconds": 45,
+    "max_questions": 20,
+    "threads": 4,
+    "batch_size": 1,
+    "hard_process_rss_bytes": 2147483648,
+    "target_process_rss_bytes": 1073741824,
+    "cloud_usd": 0
+  },
+  "phases": {
+    "prepare": {
+      "status": "in_progress"
+    },
+    "execute": {
+      "status": "pending"
+    },
+    "report": {
+      "status": "pending"
+    }
+  },
+  "deliveries": {
+    "offline": {
+      "status": "pending",
+      "output": "offline-verification.json"
+    },
+    "execution": {
+      "status": "pending",
+      "output": "execution/resources.json"
+    },
+    "review": {
+      "status": "pending",
+      "output": "review.md"
+    }
+  },
+  "required_gates": [
+    "offline-verification",
+    "identity",
+    "execution-accounting",
+    "results-review"
+  ],
+  "plan": [
+    {
+      "id": "prepare",
+      "action": "Correct the adapter contract and freeze cases, requests and the offline mapping proof."
+    },
+    {
+      "id": "execute",
+      "action": "Run the frozen requests once under local CPU limits with the official positive control."
+    },
+    {
+      "id": "report",
+      "action": "Analyze, independently review and publish the scoped report with the verdict rule applied."
+    }
+  ]
+}
