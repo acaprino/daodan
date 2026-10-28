@@ -186,6 +186,23 @@ class ScoreResultsTests(unittest.TestCase):
         self.assertTrue(scores["better_than_baseline_trigger_rate"])
         self.assertTrue(scores["passed"])
 
+    def test_matches_a_command_invocation_without_its_leading_slash(self):
+        # A real Skill tool call never carries the host's leading slash (the
+        # probe records "daodan:fix-bug", not "/daodan:fix-bug"), while
+        # expected_entry for a command case is written with it.
+        results = {
+            "with_hooks": {
+                "t1": "daodan:fix-bug", "t2": "daodan:new-feature",
+                "t3": "daodan:write-tests", "t4": "daodan:tidy-repo",
+                "v1": "digital-marketing:seo-audit",
+                "v2": "react-development:react-best-practices",
+                "n1": None, "n2": None, "n3": None, "n4": None,
+            },
+            "without_hooks": {k: None for k in ("t1", "t2", "t3", "t4", "v1", "v2", "n1", "n2", "n3", "n4")},
+        }
+        scores = run_eval.score_results(self.cases, results)
+        self.assertAlmostEqual(scores["accuracy_with_hooks"], 1.0)
+
     def test_fail_case_below_accuracy_target_and_not_better_than_baseline(self):
         # Only 2 of 6 positive cases correct with hooks (33%, below the 85%
         # target); the baseline matches it exactly, so "better" also fails.

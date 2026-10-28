@@ -149,11 +149,17 @@ def score_results(cases: list[dict[str, Any]], results: dict[str, Any]) -> dict[
     positive_cases = [c for c in cases if c["kind"] != "non-task"]
     negative_cases = [c for c in cases if c["kind"] == "non-task"]
 
+    def normalized(entry: Any) -> Any:
+        # A command's expected_entry carries its host slash ("/daodan:fix-bug");
+        # a Skill tool invocation never does ("daodan:fix-bug"). Compare by identity.
+        return entry.lstrip("/") if isinstance(entry, str) else entry
+
     def accuracy(invocations: dict[str, Any]) -> float:
         if not positive_cases:
             return 0.0
         correct = sum(
-            1 for c in positive_cases if invocations.get(c["id"]) == c["expected_entry"]
+            1 for c in positive_cases
+            if normalized(invocations.get(c["id"])) == normalized(c["expected_entry"])
         )
         return correct / len(positive_cases)
 

@@ -498,15 +498,31 @@ feature at all; the workflow and skill descriptions already in the catalog are
 the only routing signal there.
 
 Per INV-6, a claim that a host actually executes the routing hook, not merely
-that the compiler generated it, rests on a passed installed-host probe. Until
-that probe runs, Codex is marked "generated, not probed" for chat entry routing.
-OpenCode's 2026-10-27 probe on record at
-[validation evidence](plugins/research/validation.md:46-66) covers its
-session-start/prompt hook mechanism in general; it predates the routing-specific
-slot added for this feature and does not by itself prove routing delivery, so
-OpenCode is marked "generated, not probed" for this feature too until a
-routing-specific probe passes. Copilot renders nothing for chat entry routing,
-consistent with the design above; a separate probe rechecks only whether the
+that the compiler generated it, rests on a passed installed-host probe.
+
+- **Claude**: probed on 2026-10-28, measured results in
+  [RESULTS.md](../evals/entry-routing/RESULTS.md). The hook delivers
+  (`additionalContext` reaches the model: every with-hooks hit is evidence of
+  it), but the full 65-case activation measurement did not meet the S-6 target
+  at the tested scale (30 plugins); see that file for the honest result and
+  why a disposable probe cannot settle the question at the user's real,
+  larger scale.
+- **Codex**: attempted the same day in an isolated `CODEX_HOME` with only the
+  real `auth.json` copied in. The plugin installed cleanly into that isolated
+  cache, but `codex exec` failed with `workspace routing discovery failed`
+  before producing any model output, a backend/workspace error unrelated to
+  hook rendering. Still marked "generated, not probed".
+- **OpenCode**: attempted the same day with a project-local `opencode.json`
+  (global config never touched). `opencode run --standalone` hung with no
+  output for the full timeout. Its 2026-10-27 probe on record at
+  [validation evidence](plugins/research/validation.md:46-66) covers the
+  general session-start/prompt hook mechanism, predates this feature's
+  routing-specific slot, and does not by itself prove routing delivery. Still
+  marked "generated, not probed" for this feature.
+- **Copilot**: not attempted; the local Copilot CLI installation is broken on
+  the machine this probe ran from, unrelated to this work. Copilot renders
+  nothing for chat entry routing, consistent with the design above; a separate
+  probe (unattempted) would recheck only whether the
 Copilot CLI runs a plugin's session-start hook mechanism at all, which this
 feature does not depend on.
 
