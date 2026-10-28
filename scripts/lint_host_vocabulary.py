@@ -86,6 +86,7 @@ def scan_text(path, text):
         r"\b(via Bash|through Bash|Bash tool|Agent tool|Task tool|Read tool|Write tool|Edit tool|Glob tool|Grep tool|WebSearch|WebFetch)\b"
         r"|`(Bash|Agent|AskUserQuestion|Read|Write|Edit|Glob|Grep)`"
         r"|\b[Hh]ost [a-z-]+(?: [a-z-]+)? (?:binding|mechanism)\b"
+        r"|\b[Hh]ost (?:network|repository|shell|content|file|question|web)\b"
     )
     for line_no, line in enumerate(lines[start:], start + 1):
         for match in TOKENS.finditer(line):

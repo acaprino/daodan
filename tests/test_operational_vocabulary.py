@@ -18,10 +18,12 @@ class OperationalVocabularyTests(unittest.TestCase):
     def test_invented_tool_names_are_rejected(self):
         text = ("Search with host web search binding.\n"
                 "Ask with the active host question mechanism.\n"
+                "- **Host network search**: discovery.\n"
+                "Collect through the host shell.\n"
                 "Use network search, then network fetch; ask a user question.\n"
                 "Stop when the host binding leaves network search unavailable.\n")
         hits = list(scan_text(Path("roles/researcher.md"), text))
-        self.assertEqual([1, 2], [hit[1] for hit in hits])
+        self.assertEqual([1, 2, 3, 4], [hit[1] for hit in hits])
 
     def test_codex_provisioning_uses_the_available_cli_commands(self):
         text = "claude plugin install testing@daodan\nclaude plugin marketplace update daodan\n"

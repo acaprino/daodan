@@ -9,7 +9,7 @@ Detect the runner(s) per the playbook's detection table; `--runner` overrides. M
 
 ## Step 2: Mechanical measurement
 
-Collect through the host shell, using the playbook's per-runner commands:
+Collect through shell execution, using the playbook's per-runner commands:
 
 1. Test file list and per-layer counts (list-tests command; no execution).
 2. Skip/disable marker counts (grep table from the skill's `prevention-rules.md` section 6).

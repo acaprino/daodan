@@ -143,8 +143,8 @@ Budget used: ~N searches / M pages
 
 # TOOL QUICK REFERENCE
 
-- **Host network search**: discovery. Broad first, then narrow. Operators in the shared skill.
-- **Host network fetch**: extraction. Docs and primary sources first.
+- **Network search**: discovery. Broad first, then narrow. Operators in the shared skill.
+- **Network fetch**: extraction. Docs and primary sources first.
 - **Shell execution**: only for `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py` (serper backend) and `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py` (bot-block fallback).
 - **Repository read**: for re-opening locally saved fetches, never for codebase search.
 

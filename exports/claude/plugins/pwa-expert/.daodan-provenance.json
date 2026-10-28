@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:590962da0a3b57f73662c52f3ff1ef3b68cf4efffbbd05922af9b3b3f7549316",
+  "coreDigest": "sha256:e3c826aefee4da015212181fa9b163b1736973cbf4535c7c4713a50e0c70c3c7",
   "harnessStrategies": {
     "pwa-audit": "native-team",
     "pwa-checklist": "native-team",
