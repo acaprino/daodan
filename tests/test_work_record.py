@@ -443,6 +443,330 @@ class ProjectProtocolTests(ProtocolCase):
         self.assertEqual(foreign.read_text(), "must survive")
 
 
+class WorkspaceReservationTests(ProtocolCase):
+    """Explicit branch reservations do not decide whether the work is complete."""
+
+    def setUp(self):
+        super().setUp()
+        self.committed_project()
+        self.branch = self.git("rev-parse", "--abbrev-ref", "HEAD")
+        self.payload["workspace"] = {
+            "mode": "IN_PLACE", "branch": self.branch,
+            "base_sha": self.git("rev-parse", "HEAD"),
+        }
+
+    def reservation_payload(self, identity, *, holder=None):
+        payload = {
+            "id": identity, "reason": "The previous session has stopped using this branch",
+            "source": {"kind": "user", "reference": "User in this chat: LIBERO; autorizzo"},
+        }
+        if holder is not None:
+            payload["expected_holder"] = copy.deepcopy(holder)
+        return payload
+
+    @contextlib.contextmanager
+    def interrupted_agenda_write(self):
+        """Inject an OS failure at the record/agenda persistence boundary."""
+        runtime_globals = self.runtime["main"].__globals__
+        write = runtime_globals["atomic_write"]
+        failed = False
+
+        def fail_once(path, *args, **kwargs):
+            nonlocal failed
+            if Path(path).name == "agenda.json" and not failed:
+                failed = True
+                raise OSError("simulated agenda write interruption")
+            return write(path, *args, **kwargs)
+
+        with patch.dict(runtime_globals, {"atomic_write": fail_once}):
+            yield
+        self.assertTrue(failed, "The fault must reach the agenda persistence boundary")
+
+    def test_explicit_release_preserves_unfinished_work_and_the_previous_holder(self):
+        self.payload["required_gates"] = ["tests"]
+        original = self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        payload = self.reservation_payload("release-1", holder=holder)
+        (self.project / "app.py").write_text("print('unfinished edit')\n")
+
+        released = self.invoke("release-workspace", payload,
+                               ["--session", "s2", "--expected-revision", "0"])
+
+        self.assertEqual(released["revision"], 1)
+        self.assertEqual(released["workspace_reservation"]["state"], "released")
+        for key in original.keys() - {"revision", "updated_at", "workspace_reservation"}:
+            self.assertEqual(released[key], original[key], key)
+        event, = released["workspace_reservation"]["events"]
+        self.assertEqual((event["id"], event["action"], event["reason"], event["source"],
+                          event["previous_holder"], event["revision"]),
+                         ("release-1", "release", payload["reason"], payload["source"], holder, 1))
+        self.assertEqual(event["actor"]["session"], "s2")
+        self.assertTrue(event["at"])
+        row, = self.invoke("agenda")["tasks"]
+        self.assertEqual((row["status"], row["holder"], row["workspace_reservation"]),
+                         ("in_progress", holder, "released"))
+        self.assertEqual((self.project / "app.py").read_text(), "print('unfinished edit')\n")
+
+    def test_reservation_commands_require_exact_revision_holder_and_user_evidence(self):
+        self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+
+        for command, revision in (("release-workspace", 0), ("acquire-workspace", 1)):
+            good = self.reservation_payload(command, holder=holder)
+            args = ["--session", "s1", "--expected-revision", str(revision)]
+            before, agenda = self.invoke("show"), self.invoke("agenda")
+            invalid = []
+            for field in ("id", "reason", "source", "expected_holder"):
+                invalid.append((f"missing {field}", {k: v for k, v in good.items() if k != field}, args))
+            invalid.extend([
+                ("blank reason", {**good, "reason": "  "}, args),
+                ("blank reference", {**good, "source": {"kind": "user", "reference": " "}}, args),
+                ("nonhuman source", {**good, "source": {"kind": "agent", "reference": "guessed idle"}}, args),
+                ("unknown field", {**good, "status": "complete"}, args),
+                ("missing session", good, ["--expected-revision", str(revision)]),
+                ("missing revision", good, ["--session", "s1"]),
+                ("wrong revision", good, ["--session", "s1", "--expected-revision", "99"]),
+            ])
+            for field in ("session", "host", "since"):
+                invalid.append((f"stale holder {field}",
+                                {**good, "expected_holder": {**holder, field: "other"}}, args))
+
+            for label, payload, extra in invalid:
+                with self.subTest(command=command, case=label):
+                    self.invoke(command, payload, extra, ok=False)
+                    self.assertEqual(self.invoke("show"), before)
+                    self.assertEqual(self.invoke("agenda"), agenda)
+
+            self.invoke(command, good, args)
+
+    def test_generic_writes_cannot_forge_a_reservation_or_rewrite_its_history(self):
+        forged = {"state": "released", "events": []}
+        self.invoke("init", {**self.payload, "workspace_reservation": forged},
+                    ["--session", "s1"], ok=False)
+        original = self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+
+        self.invoke("update", {"workspace_reservation": forged},
+                    ["--session", "s1", "--expected-revision", "0"], ok=False)
+
+        self.assertEqual(self.invoke("show"), original)
+        released = self.invoke("release-workspace", self.reservation_payload("release-1", holder=holder),
+                               ["--session", "s1", "--expected-revision", "0"])
+        self.invoke("update", {"workspace_reservation": {"state": "active", "events": []}},
+                    ["--session", "s1", "--expected-revision", "1", "--take-over"], ok=False)
+        self.assertEqual(self.invoke("show"), released)
+
+    def test_released_work_blocks_every_mutation_and_resume_including_takeover(self):
+        self.init(["--session", "s1"])
+        question = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
+        self.invoke("ask", question, ["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        released = self.invoke("release-workspace", self.reservation_payload("release-1", holder=holder),
+                               ["--session", "s1", "--expected-revision", "1"])
+        agenda = self.invoke("agenda")
+        operations = (
+            ("update", {"interruption": {"reason": "must remain blocked"}}),
+            ("ask", question),
+            ("answer", {"question": "Q1", "text": "yes", "source": "chat"}),
+            ("bind-process", {}),
+            ("resume", {"authorizations": self.payload["authorizations"]}),
+        )
+
+        for command, payload in operations:
+            for session in ("s1", "s2"):
+                with self.subTest(command=command, session=session):
+                    failure = self.invoke(command, payload,
+                                          ["--session", session, "--expected-revision", "2", "--take-over"],
+                                          ok=False)
+                    self.assertIn("released", failure.stderr.lower())
+                    self.assertEqual(self.invoke("show"), released)
+                    self.assertEqual(self.invoke("agenda"), agenda)
+
+        self.assertTrue(self.invoke("validate")["valid"])
+        self.assertEqual(self.invoke("snapshot")["digest"], released["candidate"]["snapshot"]["digest"])
+
+    def test_release_frees_the_branch_but_acquire_cannot_displace_an_active_task(self):
+        original = self.init(["--session", "s1"])
+        self.assertNotIn("workspace_reservation", original)
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        self.invoke("init", self.payload, ["--run-id", "second-run", "--session", "s2"], ok=False)
+        released = self.invoke("release-workspace", self.reservation_payload("release-1", holder=holder),
+                               ["--session", "s1", "--expected-revision", "0"])
+        self.invoke("init", self.payload, ["--run-id", "second-run", "--session", "s2"])
+        acquire = self.reservation_payload("acquire-1", holder=holder)
+
+        failure = self.invoke("acquire-workspace", acquire,
+                              ["--session", "s2", "--expected-revision", "1", "--take-over"], ok=False)
+
+        self.assertIn("second-run", failure.stderr)
+        self.assertEqual(self.invoke("show"), released)
+        second_holder = self.invoke("agenda", extra=["--run-id", "second-run"])["tasks"][0]["holder"]
+        self.invoke("release-workspace", self.reservation_payload("release-second", holder=second_holder),
+                    ["--run-id", "second-run", "--session", "s2", "--expected-revision", "0"])
+        self.invoke("acquire-workspace", acquire,
+                    ["--session", "s2", "--expected-revision", "1"], ok=False)
+        acquired = self.invoke("acquire-workspace", acquire,
+                               ["--session", "s2", "--expected-revision", "1", "--take-over"])
+        self.assertEqual(acquired["workspace_reservation"]["state"], "active")
+        self.assertEqual(acquired["candidate"], original["candidate"])
+        self.assertEqual(acquired["status"], "in_progress")
+        self.assertEqual(acquired["workspace_reservation"]["events"][0],
+                         released["workspace_reservation"]["events"][0])
+        event = acquired["workspace_reservation"]["events"][1]
+        self.assertEqual((event["action"], event["previous_holder"], event["actor"]["session"], event["revision"]),
+                         ("acquire", holder, "s2", 2))
+        row = self.invoke("agenda")["tasks"][0]
+        self.assertEqual((row["holder"]["session"], row["workspace_reservation"]), ("s2", "active"))
+        self.invoke("update", {"interruption": {"reason": "stale owner"}},
+                    ["--session", "s1", "--expected-revision", "2"], ok=False)
+        resumed = self.invoke("resume", {"authorizations": self.payload["authorizations"]}, ["--session", "s2"])
+        self.assertEqual(resumed["pending_deliveries"], ["audit"])
+
+    def test_acquire_refuses_a_different_branch_or_changed_candidate(self):
+        self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        released = self.invoke("release-workspace", self.reservation_payload("release-1", holder=holder),
+                               ["--session", "s1", "--expected-revision", "0"])
+        acquire = self.reservation_payload("acquire-1", holder=holder)
+        args = ["--session", "s1", "--expected-revision", "1"]
+        self.git("checkout", "-q", "-b", "other-branch")
+
+        self.invoke("acquire-workspace", acquire, args, ok=False)
+
+        self.assertEqual(self.invoke("show"), released)
+        self.git("checkout", "-q", self.branch)
+        (self.project / "app.py").write_text("print('new owner changed source')\n")
+        self.invoke("acquire-workspace", acquire, args, ok=False)
+        self.assertEqual(self.invoke("show"), released)
+        (self.project / "app.py").write_text("print('original')\n")
+        self.assertEqual(self.invoke("acquire-workspace", acquire, args)["revision"], 2)
+
+    def test_retries_are_idempotent_only_for_the_last_exact_operation(self):
+        self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        release = self.reservation_payload("release-1", holder=holder)
+        release_args = ["--session", "s1", "--expected-revision", "0"]
+        released = self.invoke("release-workspace", release, release_args)
+        agenda = self.invoke("agenda")
+
+        self.assertEqual(self.invoke("release-workspace", release, release_args), released)
+
+        self.assertEqual(self.invoke("agenda"), agenda)
+        for changed in ({**release, "reason": "different reason"},
+                        {**release, "source": {"kind": "user", "reference": "different message"}},
+                        {**release, "expected_holder": {**holder, "since": "different"}}):
+            self.invoke("release-workspace", changed, release_args, ok=False)
+        self.invoke("release-workspace", release,
+                    ["--session", "s2", "--expected-revision", "0"], ok=False)
+        self.invoke("release-workspace", release,
+                    ["--session", "s1", "--expected-revision", "1"], ok=False)
+        acquire = self.reservation_payload("acquire-1", holder=holder)
+        acquire_args = ["--session", "s1", "--expected-revision", "1"]
+        acquired = self.invoke("acquire-workspace", acquire, acquire_args)
+        self.assertEqual(self.invoke("acquire-workspace", acquire, acquire_args), acquired)
+        self.invoke("release-workspace", release, release_args, ok=False)
+        self.assertEqual(self.invoke("show"), acquired)
+        self.assertEqual(len(acquired["workspace_reservation"]["events"]), 2)
+
+    def test_concurrent_acquisitions_leave_exactly_one_active_branch_owner(self):
+        self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        self.invoke("release-workspace", self.reservation_payload("release-1", holder=holder),
+                    ["--session", "s1", "--expected-revision", "0"])
+        self.invoke("init", self.payload, ["--run-id", "second-run", "--session", "s2"])
+        second_holder = self.invoke("agenda", extra=["--run-id", "second-run"])["tasks"][0]["holder"]
+        self.invoke("release-workspace", self.reservation_payload("release-2", holder=second_holder),
+                    ["--run-id", "second-run", "--session", "s2", "--expected-revision", "0"])
+        commands = []
+        for run_id, session, previous_holder in (("test-run", "s1", holder), ("second-run", "s2", second_holder)):
+            payload = self.temp / f"acquire-{run_id}.json"
+            payload.write_text(json.dumps(self.reservation_payload(f"acquire-{run_id}", holder=previous_holder)))
+            commands.append([sys.executable, str(SCRIPT), "acquire-workspace", "--project", str(self.project),
+                             "--run-id", run_id, "--session", session, "--expected-revision", "1",
+                             "--payload", str(payload)])
+
+        processes = [subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                     for command in commands]
+        results = []
+        try:
+            for process in processes:
+                stdout, stderr = process.communicate(timeout=30)
+                results.append((process.returncode, stdout, stderr))
+        finally:
+            for process in processes:
+                if process.poll() is None:
+                    process.kill()
+                    process.communicate(timeout=10)
+
+        self.assertEqual(sorted(result[0] for result in results), [0, 1], results)
+        records = [self.invoke("show", extra=["--run-id", run_id]) for run_id in ("test-run", "second-run")]
+        self.assertEqual(sorted(record["revision"] for record in records), [1, 2])
+        self.assertEqual(sorted(record["workspace_reservation"]["state"] for record in records),
+                         ["active", "released"])
+        for record in records:
+            row = self.invoke("agenda", extra=["--run-id", record["run_id"]])["tasks"][0]
+            self.assertEqual(row["workspace_reservation"], record["workspace_reservation"]["state"])
+
+    def test_interrupted_reservation_write_replays_projection_without_repeating_events(self):
+        original = self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        source_bytes = (self.project / "app.py").read_bytes()
+        transitions = (("release-workspace", "release-1", 0, "released"),
+                       ("acquire-workspace", "acquire-1", 1, "active"))
+
+        for command, identity, revision, state in transitions:
+            payload = self.reservation_payload(identity, holder=holder)
+            args = ["--session", "s2", "--expected-revision", str(revision)]
+            if command == "acquire-workspace":
+                args += ["--take-over"]
+            old_agenda = self.invoke("agenda")
+            with self.interrupted_agenda_write():
+                failure = self.invoke(command, payload, args, ok=False)
+
+            self.assertIn("simulated agenda write interruption", failure.stderr)
+            durable = self.invoke("show")
+            self.assertEqual(durable["revision"], revision + 1)
+            self.assertEqual(durable["workspace_reservation"]["state"], state)
+            self.assertEqual(durable["candidate"], original["candidate"])
+            self.assertEqual(self.invoke("agenda"), old_agenda)
+            if command == "acquire-workspace":
+                self.invoke("update", {"interruption": {"reason": "stale holder"}},
+                            ["--session", "s1", "--expected-revision", "2"], ok=False)
+                self.invoke("resume", {"authorizations": self.payload["authorizations"]},
+                            ["--session", "s1"], ok=False)
+                self.assertEqual(self.invoke("show"), durable)
+
+            self.assertEqual(self.invoke(command, payload, args), durable)
+            row = self.invoke("agenda")["tasks"][0]
+            self.assertEqual((row["workspace_reservation"], row["reservation_revision"]), (state, revision + 1))
+            self.assertEqual(row["holder"], durable["workspace_reservation"]["events"][-1]["holder"])
+            self.assertEqual(len(durable["workspace_reservation"]["events"]), revision + 1)
+            self.assertEqual((self.project / "app.py").read_bytes(), source_bytes)
+
+        self.assertEqual(self.invoke("resume", {"authorizations": self.payload["authorizations"]},
+                                     ["--session", "s2"])["revision"], 2)
+
+    def test_durable_acquisition_blocks_another_run_even_when_the_agenda_is_stale(self):
+        self.init(["--session", "s1"])
+        holder = self.invoke("agenda")["tasks"][0]["holder"]
+        self.invoke("release-workspace", self.reservation_payload("release-1", holder=holder),
+                    ["--session", "s1", "--expected-revision", "0"])
+        acquire = self.reservation_payload("acquire-1", holder=holder)
+        args = ["--session", "s1", "--expected-revision", "1"]
+        with self.interrupted_agenda_write():
+            self.invoke("acquire-workspace", acquire, args, ok=False)
+        durable = self.invoke("show")
+        self.assertEqual(self.invoke("agenda")["tasks"][0]["workspace_reservation"], "released")
+
+        failure = self.invoke("init", self.payload, ["--run-id", "second-run", "--session", "s2"], ok=False)
+
+        self.assertIn("test-run", failure.stderr)
+        self.assertFalse((self.project / ".daodan/runs/second-run").exists())
+        self.assertEqual(self.invoke("show"), durable)
+        self.assertEqual(self.invoke("acquire-workspace", acquire, args), durable)
+        self.assertEqual(self.invoke("agenda")["tasks"][0]["workspace_reservation"], "active")
+
+
 class LoopRecordTests(ProtocolCase):
     """The loop sections: workspace, preflight, adr, waves and rulings."""
 

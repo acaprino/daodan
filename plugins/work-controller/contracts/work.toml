@@ -50,6 +50,13 @@ required = ["mode", "branch", "base_sha"]
 modes = ["WORKTREE", "BRANCH", "IN_PLACE"]
 binding_required = ["path", "kind", "secret"]
 
+[loop.workspace_reservation]
+states = ["active", "released"]
+legacy_state = "active"
+actions = ["release", "acquire"]
+event_required = ["id", "action", "reason", "source", "actor", "previous_holder", "holder", "revision", "at"]
+append_only = true
+
 [loop.preflight]
 baseline = ["GREEN", "KNOWN_RED", "UNKNOWN_RED"]
 migrations = ["ALIGNED", "PENDING", "DIVERGED", "UNKNOWN", "NOT_APPLICABLE"]

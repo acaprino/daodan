@@ -29,7 +29,8 @@ OPERATION = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 CONTRACT = Path(__file__).resolve().parents[3] / "contracts/work.toml"
 LOCK_WAIT = 30
 IMMUTABLE = frozenset({"schema", "revision", "run_id", "project", "scope", "authorizations",
-                       "operation", "objective", "output_root", "created_at", "candidate"})
+                       "operation", "objective", "output_root", "created_at", "candidate",
+                       "workspace_reservation"})
 
 
 class ProtocolError(ValueError):
@@ -312,6 +313,77 @@ def validate_preflight(section, rules):
         raise ProtocolError("A KNOWN_RED baseline records the fingerprint of its accepted failures")
     if section.get("migrations", "NOT_APPLICABLE") not in rules["migrations"]:
         raise ProtocolError(f"Unknown migration state: {section.get('migrations')}")
+
+
+def reservation_state(record):
+    """Legacy loop records retain their exclusive reservation."""
+    return record.get("workspace_reservation", {}).get("state", "active")
+
+
+def validate_holder(holder):
+    if holder is not None and (not isinstance(holder, dict)
+            or set(holder) != {"session", "host", "since"}
+            or any(not isinstance(value, str) or not value.strip() for value in holder.values())):
+        raise ProtocolError("Expected holder must be null or its exact session, host and since")
+
+
+def validate_reservation_request(payload):
+    required = {"id", "reason", "source", "expected_holder"}
+    if not isinstance(payload, dict) or set(payload) != required:
+        raise ProtocolError("Workspace reservation requires id, reason, source and expected_holder")
+    if not isinstance(payload["id"], str) or not RUN_ID.fullmatch(payload["id"]):
+        raise ProtocolError("Workspace reservation id must be a run-style identifier")
+    if not isinstance(payload["reason"], str) or not payload["reason"].strip():
+        raise ProtocolError("Workspace reservation requires a nonempty reason")
+    source = payload["source"]
+    if (not isinstance(source, dict) or set(source) != {"kind", "reference"}
+            or source["kind"] != "user" or not isinstance(source["reference"], str)
+            or not source["reference"].strip()):
+        raise ProtocolError("Workspace reservation requires the user's explicit answer as source")
+    validate_holder(payload["expected_holder"])
+
+
+def validate_workspace_reservation(record):
+    reservation = record.get("workspace_reservation")
+    if reservation is None and "workspace_reservation" not in record:
+        return
+    rules = contract()["loop"]["workspace_reservation"]
+    if (not isinstance(record.get("workspace"), dict) or not isinstance(reservation, dict)
+            or set(reservation) != {"state", "events"}
+            or reservation["state"] not in rules["states"]
+            or not isinstance(reservation["events"], list) or not reservation["events"]):
+        raise ProtocolError("Workspace reservation needs a workspace, state and nonempty events")
+    seen, previous_revision, action = set(), 0, "release"
+    for event in reservation["events"]:
+        if not isinstance(event, dict) or set(event) != set(rules["event_required"]):
+            raise ProtocolError("Workspace reservation event has invalid fields")
+        validate_reservation_request({"id": event["id"], "reason": event["reason"],
+                                      "source": event["source"], "expected_holder": event["previous_holder"]})
+        if event["id"] in seen or event["action"] != action:
+            raise ProtocolError("Workspace reservation events must alternate release/acquire with unique IDs")
+        revision = event["revision"]
+        if (type(revision) is not int or not previous_revision < revision <= record["revision"]):
+            raise ProtocolError("Workspace reservation event revisions must increase within the record")
+        actor = event["actor"]
+        if (not isinstance(actor, dict) or set(actor) != {"session", "host"}
+                or any(not isinstance(value, str) or not value.strip() for value in actor.values())
+                or not isinstance(event["at"], str) or not event["at"].strip()):
+            raise ProtocolError("Workspace reservation event requires actor and timestamp")
+        validate_holder(event["holder"])
+        expected = (event["previous_holder"] if action == "release"
+                    else {**actor, "since": event["at"]})
+        if event["holder"] != expected:
+            raise ProtocolError("Workspace reservation event holder does not match its action")
+        seen.add(event["id"])
+        previous_revision, action = revision, "acquire" if action == "release" else "release"
+    expected_state = "released" if action == "acquire" else "active"
+    if reservation["state"] != expected_state:
+        raise ProtocolError("Workspace reservation state disagrees with its last event")
+
+
+def require_active_reservation(record):
+    if reservation_state(record) == "released":
+        raise ProtocolError("Workspace reservation is released; use acquire-workspace before resuming or writing")
 
 
 def validate_adr(section, rules):
@@ -937,6 +1009,7 @@ def validate_loop(record):
     present = {name: record[name] for name in rules["sections"] if name in record}
     if "workspace" in present:
         validate_workspace(present["workspace"], rules["workspace"])
+    validate_workspace_reservation(record)
     if "preflight" in present:
         validate_preflight(present["preflight"], rules["preflight"])
     if "adr" in present:
@@ -1250,8 +1323,14 @@ def validate_integrated_commit(project, integration, current, scope=None, output
         raise ProtocolError("Squash review snapshot must match the clean integrated content")
 
 
-def validate_transitions(old, new, project=None):
+def validate_transitions(old, new, project=None, *, reservation_action=False):
     rules = contract()
+    if not reservation_action and old.get("workspace_reservation") != new.get("workspace_reservation"):
+        raise ProtocolError("Workspace reservation changes only through release-workspace and acquire-workspace")
+    if "workspace" in old:
+        for key in ("mode", "branch", "base_sha", "worktree_path"):
+            if old["workspace"].get(key) != (new.get("workspace") or {}).get(key):
+                raise ProtocolError("Workspace identity cannot change; release its reservation explicitly")
     if "process" in old and new.get("process") != old["process"]:
         raise ProtocolError("Process binding is immutable; a changed graph needs a new work record")
     if old.get("process_required") and new.get("process_required") is not True:
@@ -1485,6 +1564,7 @@ def commit_change(project, root, path, session, take_over, change):
     """
     with writer_lock(root / ".write-lock", root), writer_lock(path.with_name(".write-lock"), root):
         before = validate_record(read_json(path), project, root)
+        require_active_reservation(before)
         updated = change(before)
         if updated is None:
             return before
