@@ -513,7 +513,7 @@ def validate_hooks(plugin: PluginSpec) -> list[ValidationIssue]:
     declared = HOOK_CAPABILITY in (*plugin.capabilities.required, *plugin.capabilities.optional)
     if plugin.hooks and not declared:
         issues.append(ValidationIssue("hook-capability-undeclared", manifest, HOOK_CAPABILITY))
-    if declared and not plugin.hooks:
+    if declared and not plugin.hooks and plugin.routing is None:
         issues.append(ValidationIssue("hook-capability-without-hooks", manifest, HOOK_CAPABILITY))
     seen: set[str] = set()
     for hook in plugin.hooks:
@@ -546,6 +546,27 @@ def validate_hooks(plugin: PluginSpec) -> list[ValidationIssue]:
             issues.append(ValidationIssue("hook-script-not-shipped", manifest, script))
         if any("\0" in argument for argument in hook.args):
             issues.append(ValidationIssue("invalid-hook-argument", manifest, hook.name))
+    return issues
+
+
+def validate_routing(plugin: PluginSpec) -> list[ValidationIssue]:
+    """Require the hook capability, known local targets and at least one line."""
+    routing = plugin.routing
+    if routing is None:
+        return []
+    issues: list[ValidationIssue] = []
+    manifest = plugin.root / "plugin.toml"
+    if HOOK_CAPABILITY not in (*plugin.capabilities.required, *plugin.capabilities.optional):
+        issues.append(ValidationIssue("routing-capability-undeclared", manifest, HOOK_CAPABILITY))
+    targets = {*plugin.components.skills, *plugin.components.roles,
+               *(workflow.name for workflow in plugin.workflows)}
+    for keyword in routing.keywords:
+        if keyword.target not in targets:
+            issues.append(ValidationIssue("routing-target-unknown", manifest, keyword.target))
+    if not routing.keywords and not (routing.workflows and plugin.workflows):
+        issues.append(ValidationIssue(
+            "routing-empty", manifest, "[routing] lists no workflow and no keyword row",
+        ))
     return issues
 
 
@@ -685,6 +706,7 @@ def validate_plugins(
         issues.extend(validate_capabilities(plugin, capabilities))
         issues.extend(validate_mcp_servers(plugin))
         issues.extend(validate_hooks(plugin))
+        issues.extend(validate_routing(plugin))
         issues.extend(validate_native_hook_sources(plugin))
         issues.extend(validate_workflow_graph(plugin))
         issues.extend(validate_execution_contracts(plugin))

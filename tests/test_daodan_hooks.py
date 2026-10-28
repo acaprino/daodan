@@ -178,6 +178,16 @@ class HookContractTests(unittest.TestCase):
 
                 self.assert_contract_rejected()
 
+    def test_capability_without_hooks_or_routing_keeps_its_issue(self):
+        for capability in ("required", "optional"):
+            with self.subTest(capability=capability):
+                self.declare(hooks=[], capability=capability)
+                plugin = load_plugin(self.kernel)
+
+                self.assertIsNone(plugin.routing)
+                self.assertIn("hook-capability-without-hooks",
+                              [issue.code for issue in validate_plugins([plugin], CAPABILITY_REGISTRY)])
+
     def test_missing_unshipped_and_escaping_handler_paths_are_rejected(self):
         for path in ("scripts/handler.py", "skills/undeclared/scripts/handler.py"):
             unshipped = self.kernel / path

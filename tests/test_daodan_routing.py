@@ -1,10 +1,10 @@
-"""Loader contract for the declarative `[routing]` table of a plugin kernel.
+"""Loader and validation contract for the declarative `[routing]` table.
 
 Routing lines are derived at build time from kernel metadata, so the loader
 owns their shape: closed keys, bounded terms and component-form targets.
-Capability, target existence and empty routing are semantic validation and
-are not exercised here. Tests use owned temporary copies of the example
-fixture; no network, no subprocess.
+Validation owns capability agreement, target existence and the refusal of a
+routing that produces no line. Tests use owned temporary copies of the
+example fixture; no network, no subprocess.
 """
 
 import json
@@ -20,8 +20,10 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.model import ModelError, RoutingKeyword, RoutingSpec  # noqa: E402
+from scripts.daodan.validate import CAPABILITY_REGISTRY, validate_plugins  # noqa: E402
 
 FIXTURE = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
+WORKFLOWS_ONLY = "\n[routing]\nworkflows = true\n"
 
 
 def keyword_row(words, target="review", **extra):
@@ -31,7 +33,9 @@ def keyword_row(words, target="review", **extra):
     )
 
 
-class RoutingLoadTests(unittest.TestCase):
+class RoutingKernelCase(unittest.TestCase):
+    """Owned temporary copy of the example kernel, rewritten per case."""
+
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp(prefix="daodan routing "))
         self.addCleanup(self.remove_owned_temp)
@@ -48,6 +52,8 @@ class RoutingLoadTests(unittest.TestCase):
         (self.kernel / "plugin.toml").write_text(prefix + self.base + routing, encoding="utf-8")
         return load_plugin(self.kernel)
 
+
+class RoutingLoadTests(RoutingKernelCase):
     def test_declared_routing_loads_into_spec(self):
         plugin = self.load(
             "\n[routing]\nworkflows = true\n"
@@ -103,6 +109,66 @@ class RoutingLoadTests(unittest.TestCase):
                     self.load(routing, prefix)
                 self.assertIn("routing", caught.exception.message)
                 self.assertIn(field, caught.exception.message)
+
+
+class RoutingValidationTests(RoutingKernelCase):
+    def setUp(self):
+        super().setUp()
+        skill = self.kernel / "skills/guide"
+        skill.mkdir(parents=True)
+        (skill / "SKILL.md").write_text(
+            "---\nname: guide\ndescription: Routing fixture\n---\n\n# Guide\n",
+            encoding="utf-8",
+        )
+        self.base = self.base.replace('skills = []', 'skills = ["guide"]')
+
+    def issues(self, routing, capability="optional"):
+        base = self.base
+        if capability == "optional":
+            base = base.replace('optional = ["execution.parallel"]',
+                                'optional = ["execution.parallel", "hooks.lifecycle"]')
+        elif capability == "required":
+            base = base.replace('"roles.dispatch"]', '"roles.dispatch", "hooks.lifecycle"]')
+        (self.kernel / "plugin.toml").write_text(base + routing, encoding="utf-8")
+        return validate_plugins([load_plugin(self.kernel)], CAPABILITY_REGISTRY)
+
+    def codes(self, routing, capability="optional"):
+        return [issue.code for issue in self.issues(routing, capability)]
+
+    def remove_workflows(self):
+        shutil.rmtree(self.kernel / "workflows")
+        self.base = self.base.replace('workflows = ["review"]', 'workflows = []')
+
+    def test_routing_with_capability_and_no_hooks_is_valid(self):
+        for capability in ("optional", "required"):
+            with self.subTest(capability=capability):
+                self.assertEqual(self.codes(WORKFLOWS_ONLY, capability), [])
+
+    def test_routing_without_capability_is_rejected(self):
+        self.assertEqual(self.codes(WORKFLOWS_ONLY, capability=None),
+                         ["routing-capability-undeclared"])
+
+    def test_unknown_target_is_rejected(self):
+        issues = self.issues("\n[routing]\n" + keyword_row(["audit"], "missing"))
+
+        self.assertEqual([issue.code for issue in issues], ["routing-target-unknown"])
+        self.assertIn("missing", issues[0].message)
+
+    def test_skill_role_and_workflow_targets_are_accepted(self):
+        for target in ("guide", "inspector", "review"):
+            with self.subTest(target=target):
+                self.assertEqual(self.codes("\n[routing]\n" + keyword_row(["audit"], target)), [])
+
+    def test_workflows_flag_without_workflows_or_keywords_is_empty(self):
+        self.remove_workflows()
+
+        self.assertEqual(self.codes(WORKFLOWS_ONLY), ["routing-empty"])
+        self.assertEqual(self.codes(WORKFLOWS_ONLY + keyword_row(["audit"], "inspector")), [])
+
+    def test_routing_without_workflows_or_keywords_is_empty(self):
+        for routing in ("\n[routing]\n", "\n[routing]\nworkflows = false\n"):
+            with self.subTest(routing=routing):
+                self.assertEqual(self.codes(routing), ["routing-empty"])
 
 
 if __name__ == "__main__":
