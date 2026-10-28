@@ -479,6 +479,37 @@ or publication. See the [technical contract](plugins/research/technical-spec.md)
 and [validation evidence](plugins/research/validation.md) for the distinction
 between generated registration, subprocess tests and installed-host delivery.
 
+### Chat entry routing
+
+A plugin opts into chat entry routing with `[routing]` in its kernel rather than
+with a hand-written hook; the compiler alone renders delivery, and no body
+carries an entry note. Claude and Codex get a session-start hook named
+`entry-routing` in the generated `hooks/hooks.json`, plus the rendered text at
+`hooks/entry-routing.md`, read by one Python launcher that prints
+`hookSpecificOutput.additionalContext` and exits 0 with no output on any error
+(missing root, file or encoding). A plugin that also declares `[[hooks]]`
+(`research`) gets both entries in the same `hooks/hooks.json`. OpenCode carries
+no separate process: the manifest's `daodan` key names each selected plugin's
+routing text file, and the loader reads it once per session into a routing slot
+that, unlike the `startup` slot, is never cleared by a prompt
+(`index.js:398-408,466-477`); the context hook that pushes it registers whenever routing
+text or lifecycle hooks are selected. Copilot and Pi get no delivery for this
+feature at all; the workflow and skill descriptions already in the catalog are
+the only routing signal there.
+
+Per INV-6, a claim that a host actually executes the routing hook, not merely
+that the compiler generated it, rests on a passed installed-host probe. Until
+that probe runs, Codex is marked "generated, not probed" for chat entry routing.
+OpenCode's 2026-10-27 probe on record at
+[validation evidence](plugins/research/validation.md:46-66) covers its
+session-start/prompt hook mechanism in general; it predates the routing-specific
+slot added for this feature and does not by itself prove routing delivery, so
+OpenCode is marked "generated, not probed" for this feature too until a
+routing-specific probe passes. Copilot renders nothing for chat entry routing,
+consistent with the design above; a separate probe rechecks only whether the
+Copilot CLI runs a plugin's session-start hook mechanism at all, which this
+feature does not depend on.
+
 ## Decision-record session hook
 
 project-delivery declares one optional session-start hook, `decision-records`,

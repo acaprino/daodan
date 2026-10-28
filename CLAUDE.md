@@ -226,6 +226,14 @@ optional hooks retain method checkpoints. Raw hook manifests/frontmatter do not
 bypass the compiler. Enabling a plugin does not waive the host's trust review.
 See `docs/hosts.md` for registration and execution evidence boundaries.
 
+A kernel opts into chat entry routing with a second, compiler-owned declaration,
+`[routing]`: `workflows = true` and/or one or more `[[routing.keywords]]` rows.
+The compiler alone renders its per-host delivery, and routing adds no entry note
+to any body. On Claude and Codex it is a session-start hook; on OpenCode the
+loader reads a manifest-named text file into a routing slot that a prompt never
+clears. Copilot and Pi get no delivery for it at all, only the workflow and skill
+descriptions the catalog already carries.
+
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 
 **Everything under `exports/` and every root marketplace manifest is generated.** `scripts/daodan_build.py` compiles kernels plus adapters into `exports/claude/`, `exports/copilot/`, `exports/codex/`, `exports/pi/` and `exports/opencode/`, and into `.claude-plugin/marketplace.json`, `.github/plugin/marketplace.json`, `.agents/plugins/marketplace.json`, the root `package.json` and `exports/opencode/package.json`. The last two are the odd members and neither is a Node project. Pi has no marketplace, it installs a package and reads the manifest at that package's root, so the repository root is where its catalog has to live. OpenCode V2 has none either: a package reaches it only as a plugin, so its catalog is that plugin's own manifest, whose `daodan` key lists every skill, agent, command and MCP server, and the package carries `index.js`, a fixed loader copied verbatim from `adapters/opencode/templates/` that registers them from that key. The loader imports nothing outside Node's standard library, and its tests run under `node --test` from the Python suite. Report-rendering browser assets live under their owning skill and require no Node runtime in generated reports. Never hand-edit any of them; edit the kernel and rebuild.
