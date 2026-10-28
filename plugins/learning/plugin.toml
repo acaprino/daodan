@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,6 @@ skills = ["forcegraph-exporter", "generate-mindmap", "markmind-exporter"]
 roles = []
 workflows = ["export-to-markmind"]
 policies = []
+
+[routing]
+workflows = true

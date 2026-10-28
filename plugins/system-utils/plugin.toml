@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,6 @@ skills = ["file-organizer"]
 roles = []
 workflows = ["organize-files"]
 policies = []
+
+[routing]
+workflows = true

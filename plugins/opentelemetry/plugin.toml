@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,6 @@ skills = ["opentelemetry"]
 roles = ["otel-architect"]
 workflows = ["otel-audit"]
 policies = []
+
+[routing]
+workflows = true
