@@ -84,6 +84,13 @@ uv run --no-config --no-project --script <installed-plugin-root>/skills/map-meth
 must never choose the package index or interpreter of its own analyzer. Keep
 both flags in any custom registration.
 
+Build the map with the runtime that serves it: `codebase_map_create_run` on
+this server, or `snapshot.py write` under the same `uv` environment. The binding
+of the lexical index records the SQLite version and the parser fingerprint of
+the interpreter that built it, so a map written by another Python reads as
+`stale` for this server; `codebase_map_index` rebuilds the index, and a manifest
+written with a different parser set needs a new run.
+
 `uv` provisions the official MCP Python SDK 2.x in its own runtime environment.
 The server requires Python 3.12 or later, which its `requires-python` header makes
 `uv` provision and its startup check enforces. Existing parser dependencies stay

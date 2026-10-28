@@ -129,7 +129,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "8.12.0"
+      "version": "8.12.1"
     },
     {
       "author": {

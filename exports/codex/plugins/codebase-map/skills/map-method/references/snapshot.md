@@ -103,7 +103,9 @@ python "<plugin-root>/skills/map-method/scripts/snapshot.py" write <target> \
 
 `write` also builds the lexical index `retrieval.sqlite` beside the manifest
 (`--no-index` skips it; `snapshot.py index MANIFEST [--check]` repairs or reports
-it; `snapshot.py search MANIFEST --query Q` ranks it, see `locate.md`).
+it; `snapshot.py search MANIFEST --query Q` ranks it, see `locate.md`). Run
+`write` with the interpreter that will serve the map: the index binding records
+its SQLite version and parser fingerprint, so another Python reads it as `stale`.
 
 Choose one file per run. After writing, set `state.json -> snapshot`:
 `{"format":"sqlite","path":"snapshot/manifest.sqlite","storage_version":1}`,
