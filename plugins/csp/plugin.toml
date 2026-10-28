@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = []
 roles = ["or-tools-expert"]
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["OR-Tools", "CP-SAT", "constraint solver", "scheduling optimization"]
+target = "or-tools-expert"

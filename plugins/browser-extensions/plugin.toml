@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = ["firefox-extension-dev"]
 roles = ["firefox-extension-dev-agent"]
 workflows = ["firefox-lint", "firefox-publish", "firefox-scaffold"]
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["Firefox extension", "WebExtension", "Manifest V3", "estensione Firefox"]
+target = "firefox-extension-dev"
