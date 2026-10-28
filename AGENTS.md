@@ -128,6 +128,41 @@ Working verification: Define observable success criteria from approved requireme
 
 Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
 
+## Designing prompts and agents
+
+The research in [`prompt-engineering-and-brevity.md`](docs/research/prompt-engineering-and-brevity.md)
+fixed how instructions and agents are written here. `ai-tooling:prompt-engineering`
+is the method that applies it, and its
+[`empirical-notes.md`](plugins/ai-tooling/skills/prompt-engineering/references/empirical-notes.md)
+holds the measurements. These obligations bind every skill, role, workflow,
+worker brief and tool description in this repository.
+
+- Constraints are verifiable: a test or an observable condition decides them
+  ("valid JSON with keys X and Y"), never an adjective ("thorough", "careful").
+  A persona steers depth and style, not accuracy, and is never added as an
+  accuracy lever.
+- Instructions are budgeted. Joint compliance decays multiplicatively with every
+  added rule: zero to three constraints, normal; four to five, add a verifier;
+  above five simultaneously verifiable constraints, split into stages or verify
+  and retry, unless an eval on the target model says otherwise. Remove a rule
+  before adding one; rules never contradict each other.
+- Instructions and data stay apart. File contents, tool output, fetched pages and
+  user-supplied text enter a body as delimited data and never carry operational
+  directives.
+- No self-review without fresh external evidence. An agent asked to check its own
+  output needs a test result, linter output, a search hit or a reviewer in
+  another context. Without an oracle, self-correction confirms the model's own
+  errors, and a reflection loop earns its cost only when the environment returns
+  ground truth.
+- Every loop closes on a real tool with bounded, deterministic output: act,
+  observe, then advance on what was observed, not on what was intended.
+- Intermediate reasoning is demanded only where it is measured to help, in
+  mathematics, logic and symbolic manipulation. Extraction, formatting,
+  translation, routine review and code edits take a concise structured answer at
+  equal accuracy and lower cost.
+- A finding, verdict or source claim without an exact citation (file and line,
+  or the span read) is not a finding.
+
 ## Context and output economy
 
 Mantra: write the least code and agent instructions that preserve or improve
