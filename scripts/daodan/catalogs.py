@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 from .adapter import HOSTS, load_adapter
+from .hooks import ROUTING_TEXT
 from .model import PluginSpec
 from .templates import render_path
 from .validate import _duplicate_plugin_issues
@@ -199,6 +200,11 @@ def _opencode_entry(
     def described(relative: str) -> dict[str, str]:
         meta, _ = _frontmatter((package / relative).read_text(encoding="utf-8"))
         return {key: _one_line(value.strip("'\"")) for key, value in meta.items()}
+
+    # The rendered package is the source of truth for whether this plugin's
+    # routing text shipped; routing_text() is never recomputed here.
+    if (package / ROUTING_TEXT).is_file():
+        entry["routing"] = ROUTING_TEXT.as_posix()
 
     context = _package_context(plugin, "opencode")
     skills = []

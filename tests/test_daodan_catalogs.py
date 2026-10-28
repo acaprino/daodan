@@ -238,6 +238,34 @@ class CatalogTests(unittest.TestCase):
                 for item in entry[kind]:
                     self.assertTrue((package / item["file"]).is_file(), item["file"])
 
+    def test_opencode_catalog_names_the_routing_file_when_rendered(self):
+        adapter = load_adapter(REPO_ROOT / "adapters", "opencode")
+        with tempfile.TemporaryDirectory(prefix="daodan-opencode-routing-") as holder:
+            kernel = Path(holder) / "kernel" / "example"
+            shutil.copytree(VALID, kernel)
+            manifest = kernel / "plugin.toml"
+            text = manifest.read_text(encoding="utf-8").replace(
+                'optional = ["execution.parallel"]',
+                'optional = ["execution.parallel", "hooks.lifecycle"]')
+            manifest.write_text(text + "\n[routing]\nworkflows = true\n", encoding="utf-8")
+            routed_plugin = load_plugin(kernel)
+
+            routed = Path(holder) / "routed"
+            render_plugin(routed_plugin, adapter, routed, adapters_root=REPO_ROOT / "adapters")
+            self.assertTrue((routed / "hooks/entry-routing.md").is_file())
+            routed_catalog = json.loads(render_catalog(
+                "opencode", [routed_plugin], "1.0.0", {"example": routed}, layout=adapter.layout))
+            self.assertEqual(
+                routed_catalog["daodan"]["plugins"]["example"]["routing"], "hooks/entry-routing.md")
+
+            plain_plugin = load_plugin(VALID)
+            plain = Path(holder) / "plain"
+            render_plugin(plain_plugin, adapter, plain, adapters_root=REPO_ROOT / "adapters")
+            self.assertFalse((plain / "hooks/entry-routing.md").exists())
+            plain_catalog = json.loads(render_catalog(
+                "opencode", [plain_plugin], "1.0.0", {"example": plain}, layout=adapter.layout))
+            self.assertNotIn("routing", plain_catalog["daodan"]["plugins"]["example"])
+
     def test_identity_check_rejects_a_divergent_host(self):
         catalogs = build_fixture_catalogs()
         catalogs["codex"]["plugins"][0]["version"] = "9.9.9"

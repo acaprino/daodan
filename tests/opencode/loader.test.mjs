@@ -118,6 +118,20 @@ async function run(context, directory = FIXTURE) {
   return log;
 }
 
+/** Like `run`, but also returns the setup's cleanup function to the caller. */
+async function runCaptured(context, directory = FIXTURE) {
+  const log = [];
+  const original = { error: console.error, warn: console.warn, log: console.log };
+  console.error = console.warn = console.log = (...args) => log.push(args.join(" "));
+  let cleanup;
+  try {
+    cleanup = await createLoader(directory)(context.ctx);
+  } finally {
+    Object.assign(console, original);
+  }
+  return { log, cleanup };
+}
+
 const ids = (calls) => ({
   skills: calls.skills.map((s) => s.id).sort(),
   agents: Object.keys(calls.agents).sort(),
@@ -444,5 +458,137 @@ if data.get("prompt") != "OFF":
     "UserPromptSubmit",
   ]);
   assert.equal(events[1].prompt, "user message");
+  cleanup();
+});
+
+test("routing text stays in every model request across a hook that clears startup", async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-routing-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.cpSync(FIXTURE, directory, { recursive: true });
+
+  const routingDir = path.join(directory, "plugins", "a", "hooks");
+  fs.mkdirSync(routingDir, { recursive: true });
+  fs.writeFileSync(path.join(routingDir, "entry-routing.md"), "ROUTING_A entries.\n");
+
+  const scriptDir = path.join(directory, "plugins", "b", "scripts");
+  fs.mkdirSync(scriptDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(scriptDir, "office_hook.py"),
+    `import json, sys
+data = json.loads(sys.stdin.read())
+out = {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "OFFICE_CONTEXT"}}
+sys.stdout.write(json.dumps(out))
+`,
+  );
+
+  const manifestPath = path.join(directory, "package.json");
+  const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  document.daodan.plugins.a.routing = "hooks/entry-routing.md";
+  document.daodan.plugins.b.hooks = [
+    { name: "b-prompt", event: "user-prompt-submit", script: "scripts/office_hook.py", args: [], timeout: 5 },
+  ];
+  fs.writeFileSync(manifestPath, JSON.stringify(document));
+
+  const context = fakeContext();
+  const cleanup = await createLoader(directory)(context.ctx);
+  assert.deepEqual(Object.keys(context.calls.hooks).sort(), ["context", "prompt"]);
+
+  await context.calls.hooks.prompt({ sessionID: "s1", messageID: "m1", prompt: { text: "first" } });
+  const first = { sessionID: "s1", system: [] };
+  await context.calls.hooks.context(first);
+  assert.ok(first.system.some((item) => item.text === "ROUTING_A entries.\n"), JSON.stringify(first));
+  assert.ok(first.system.some((item) => item.text === "OFFICE_CONTEXT"), JSON.stringify(first));
+
+  await context.calls.hooks.prompt({ sessionID: "s1", messageID: "m2", prompt: { text: "second" } });
+  await context.calls.hooks.prompt({ sessionID: "s1", messageID: "m3", prompt: { text: "third" } });
+  const third = { sessionID: "s1", system: [] };
+  await context.calls.hooks.context(third);
+  assert.ok(third.system.some((item) => item.text === "ROUTING_A entries.\n"), JSON.stringify(third));
+
+  cleanup();
+});
+
+test("routing text reaches context when the selection has no lifecycle hook at all", async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-routing-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.cpSync(FIXTURE, directory, { recursive: true });
+
+  const routingDir = path.join(directory, "plugins", "c", "hooks");
+  fs.mkdirSync(routingDir, { recursive: true });
+  fs.writeFileSync(path.join(routingDir, "entry-routing.md"), "ROUTING_C entries.\n");
+
+  const manifestPath = path.join(directory, "package.json");
+  const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  document.daodan.plugins.c.routing = "hooks/entry-routing.md";
+  fs.writeFileSync(manifestPath, JSON.stringify(document));
+
+  const context = fakeContext({ options: { plugins: ["c"] } });
+  const cleanup = await createLoader(directory)(context.ctx);
+  assert.deepEqual(Object.keys(context.calls.hooks).sort(), ["context"]);
+
+  const output = { sessionID: "s1", system: [] };
+  await context.calls.hooks.context(output);
+  assert.deepEqual(output.system, [{ type: "text", text: "ROUTING_C entries.\n" }]);
+
+  assert.equal(typeof cleanup, "function");
+  cleanup();
+});
+
+test("a missing routing file is logged, and another plugin's routing and every registration still happen", async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-routing-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.cpSync(FIXTURE, directory, { recursive: true });
+
+  const routingDir = path.join(directory, "plugins", "b", "hooks");
+  fs.mkdirSync(routingDir, { recursive: true });
+  fs.writeFileSync(path.join(routingDir, "entry-routing.md"), "ROUTING_B entries.\n");
+
+  const manifestPath = path.join(directory, "package.json");
+  const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  document.daodan.plugins.a.routing = "hooks/entry-routing.md"; // never written for "a"
+  document.daodan.plugins.b.routing = "hooks/entry-routing.md";
+  fs.writeFileSync(manifestPath, JSON.stringify(document));
+
+  const context = fakeContext();
+  const { log, cleanup } = await runCaptured(context, directory);
+
+  assert.deepEqual(ids(context.calls), {
+    skills: ["a:guide", "b:base"],
+    agents: ["a:worker"],
+    commands: ["a:run", "c:explain"],
+  });
+  assert.ok(log.some((line) => line.includes("routing text for a") && line.includes("skipped")), log.join("\n"));
+
+  const output = { sessionID: "s1", system: [] };
+  await context.calls.hooks.context(output);
+  assert.deepEqual(output.system, [{ type: "text", text: "ROUTING_B entries.\n" }]);
+  cleanup();
+});
+
+test("a routing path outside the package root is skipped and logged", async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-routing-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.cpSync(FIXTURE, directory, { recursive: true });
+
+  fs.writeFileSync(path.join(directory, "outside-routing.md"), "OUTSIDE\n");
+
+  const routingDir = path.join(directory, "plugins", "b", "hooks");
+  fs.mkdirSync(routingDir, { recursive: true });
+  fs.writeFileSync(path.join(routingDir, "entry-routing.md"), "ROUTING_B entries.\n");
+
+  const manifestPath = path.join(directory, "package.json");
+  const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  document.daodan.plugins.a.routing = "../../outside-routing.md";
+  document.daodan.plugins.b.routing = "hooks/entry-routing.md";
+  fs.writeFileSync(manifestPath, JSON.stringify(document));
+
+  const context = fakeContext();
+  const { log, cleanup } = await runCaptured(context, directory);
+
+  assert.ok(log.some((line) => line.includes("routing text for a") && line.includes("escapes")), log.join("\n"));
+
+  const output = { sessionID: "s1", system: [] };
+  await context.calls.hooks.context(output);
+  assert.deepEqual(output.system, [{ type: "text", text: "ROUTING_B entries.\n" }]);
   cleanup();
 });

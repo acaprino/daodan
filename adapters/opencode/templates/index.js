@@ -167,6 +167,14 @@ function guarded(label, action) {
   }
 }
 
+/** Resolve `file` under `root`, or null when it would escape that directory. */
+function confinedPath(root, file) {
+  const base = path.resolve(root);
+  const resolved = path.resolve(base, file);
+  const relative = path.relative(base, resolved);
+  return relative === "" || relative.startsWith("..") || path.isAbsolute(relative) ? null : resolved;
+}
+
 async function transform(domain, label, callback) {
   if (!domain || typeof domain.transform !== "function") return;
   try {
@@ -387,9 +395,21 @@ export function createLoader(directory) {
         }
       }
 
+      // Routing text is static for the whole session: read once here, confined
+      // to each plugin's own package root, and pushed on every model request.
+      const routingTexts = [];
+      for (const { name, entry, root } of plugins) {
+        if (!entry.routing) continue;
+        guarded(`routing text for ${name}`, () => {
+          const resolved = confinedPath(root, entry.routing);
+          if (!resolved) throw new Error(`"${entry.routing}" escapes the package root`);
+          routingTexts.push(fs.readFileSync(resolved, "utf8"));
+        });
+      }
+
       const sessionStartHooks = lifecycleHooks.filter((h) => h.event === "session-start");
       const promptSubmitHooks = lifecycleHooks.filter((h) => h.event === "user-prompt-submit");
-      if (sessionStartHooks.length + promptSubmitHooks.length === 0) return;
+      if (sessionStartHooks.length + promptSubmitHooks.length + routingTexts.length === 0) return;
       if (typeof ctx?.session?.hook !== "function") {
         console.error(`${TAG} lifecycle hooks unavailable: ctx.session.hook is missing`);
         return;
@@ -423,31 +443,36 @@ export function createLoader(directory) {
 
       // V2's prompt hook is the reliable entry point: the bus creation event can
       // predate plugin activation, so session-start also has a first-prompt fallback.
-      await ctx.session.hook("prompt", async (event) => {
-        const sessionID = event?.sessionID;
-        if (!sessionID) return;
-        const cwd = ctx.location?.directory ?? process.cwd();
-        if (sessionStartHooks.length) await ensureSessionStart(sessionID, cwd, { sessionID });
-        const state = stateFor(sessionID);
-        state.prompt = [];
-        if (!promptSubmitHooks.length) return;
-        state.startup = [];
-        state.prompt = await runLifecycleHooks(promptSubmitHooks, "UserPromptSubmit", cwd, {
-          sessionID,
-          messageID: event.messageID,
-          prompt: event.prompt?.text ?? "",
+      // It registers only when a lifecycle hook exists; routing text needs no
+      // per-prompt processing of its own.
+      if (sessionStartHooks.length || promptSubmitHooks.length) {
+        await ctx.session.hook("prompt", async (event) => {
+          const sessionID = event?.sessionID;
+          if (!sessionID) return;
+          const cwd = ctx.location?.directory ?? process.cwd();
+          if (sessionStartHooks.length) await ensureSessionStart(sessionID, cwd, { sessionID });
+          const state = stateFor(sessionID);
+          state.prompt = [];
+          if (!promptSubmitHooks.length) return;
+          state.startup = [];
+          state.prompt = await runLifecycleHooks(promptSubmitHooks, "UserPromptSubmit", cwd, {
+            sessionID,
+            messageID: event.messageID,
+            prompt: event.prompt?.text ?? "",
+          });
         });
-      });
+      }
 
       // This hook runs for the primary model request, including tool continuations.
+      // Routing text is pushed on every request, ahead of `startup` and `prompt`,
+      // and is never cleared by the prompt hook above.
       await ctx.session.hook("context", async (event) => {
         const sessionID = event?.sessionID;
         if (!sessionID || !Array.isArray(event.system)) return;
         const pending = pendingStarts.get(sessionID);
         if (pending) await pending;
         const state = contexts.get(sessionID);
-        if (!state) return;
-        const additions = [...new Set([...state.startup, ...state.prompt])];
+        const additions = [...new Set([...routingTexts, ...(state?.startup ?? []), ...(state?.prompt ?? [])])];
         for (const text of additions) event.system.push({ type: "text", text });
       });
 
