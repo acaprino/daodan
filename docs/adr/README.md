@@ -16,6 +16,7 @@ run `index`; do not edit this block by hand.
 | ADR | Title | Governs | Symbols | Accepted at |
 |---|---|---|---:|---|
 | [ADR-0004](<ADR-0004-adr-versions-and-drift.md>) | Version decision records in place and check what a change invalidates | `plugins/project-knowledge/skills/adr-method/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/status.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/realign.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/verify.md`, `plugins/senior-review/skills/review-preparation/**`, `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/SKILL.md`, `plugins/work-controller/skills/work-record/scripts/run_state.py`, `plugins/daodan/workflows/record-decision.*`, `docs/adr/**`, `docs/decision-records.md`, `adr-method`, `decision-records` | 0 | `2d4a9f445979bdf16524d9affbed38b941b42f75` |
+| [ADR-0008](<ADR-0008-decision-records-by-default.md>) | Decision records by default during brainstorming | `plugins/project-delivery/**`, `plugins/work-controller/skills/work-record/scripts/run_state.py`, `plugins/daodan/workflows/record-decision.md`, `decision-records`, `project-delivery` | 0 | `8839c75223d45d16fae2331f985526827959e319` |
 
 ## Proposed
 
@@ -26,7 +27,6 @@ run `index`; do not edit this block by hand.
 | [ADR-0003](<ADR-0003-usage-ledger.md>) | Measure each run's tokens and cost from local host logs | `plugins/work-controller/contracts/work.toml`, `plugins/work-controller/skills/work-record/scripts/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/waves.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `work-controller`, `project-lifecycle`, `run-state`, `usage-ledger`, `budget`, `model-routing` | `conversation-2026-10-24` |
 | [ADR-0006](<ADR-0006-adr-project-delivery.md>) | Extract ADR-driven project delivery into adr-project | `plugins/adr-project/**`, `plugins/project-lifecycle/**`, `plugins/project-knowledge/**`, `plugins/work-controller/**`, `plugins/daodan/**`, `project-delivery`, `decision-records` | `adr-project-extraction` |
 | [ADR-0007](<ADR-0007-griffin-drkerr-evolution.md>) | Coordinate evidence-bound project evolution in Project Delivery | `plugins/project-delivery/**`, `plugins/work-controller/**`, `docs/frd/**`, `project-delivery`, `requirements-engineering`, `decision-records` | `project-delivery` |
-| [ADR-0008](<ADR-0008-decision-records-by-default.md>) | Decision records by default during brainstorming | `plugins/project-delivery/**`, `plugins/work-controller/skills/work-record/scripts/run_state.py`, `plugins/daodan/workflows/record-decision.md`, `decision-records`, `project-delivery` | `adr-brainstorm` |
 
 ## Superseded
 

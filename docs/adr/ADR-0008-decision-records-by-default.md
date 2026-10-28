@@ -2,7 +2,7 @@
 adr_id: ADR-0008
 version: 1
 title: Decision records by default during brainstorming
-status: Proposed
+status: Accepted
 author: Alfio Caprino
 scope:
   paths:
@@ -18,8 +18,8 @@ depends_on:
 created_from_task: adr-brainstorm
 proposed_on: 2026-10-28
 proposed_at_sha: b52dc32e479631e7b18ac235134db924213b713b
-accepted_on: null
-accepted_at_sha: null
+accepted_on: 2026-10-28
+accepted_at_sha: 8839c75223d45d16fae2331f985526827959e319
 last_verified_sha: null
 retired_on: null
 retired_reason: null
@@ -31,7 +31,7 @@ changes:
 # ADR-0008: Decision records by default during brainstorming
 
 <!-- adr-header:start -->
-Version 1 · Proposed 2026-10-28 by Alfio Caprino
+Version 1 · Accepted 2026-10-28 at 8839c75 · proposed 2026-10-28 by Alfio Caprino
 <!-- adr-header:end -->
 
 ## Context and Problem Statement
