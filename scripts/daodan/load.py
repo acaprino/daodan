@@ -8,7 +8,9 @@ host. Prompt bodies are never accepted here; they live in Markdown.
 
 from __future__ import annotations
 
+import re
 import tomllib
+import unicodedata
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -29,6 +31,8 @@ from .model import (
     ModelError,
     PhaseSpec,
     PluginSpec,
+    RoutingKeyword,
+    RoutingSpec,
     WorkflowSpec,
 )
 
@@ -46,6 +50,7 @@ PLUGIN_KEYS = frozenset(
         "contracts",
         "reviewers",
         "hooks",
+        "routing",
     }
 )
 PLUGIN_REQUIRED_KEYS = ("schema", "name", "version", "description", "license")
@@ -57,6 +62,11 @@ COMPONENT_KEYS = frozenset({"skills", "roles", "workflows", "policies"})
 MCP_KEYS = frozenset({"servers"})
 MCP_SERVER_KEYS = frozenset({"name", "command", "args"})
 HOOK_KEYS = frozenset({"name", "event", "script", "args", "timeout"})
+ROUTING_KEYS = frozenset({"workflows", "keywords"})
+ROUTING_KEYWORD_KEYS = frozenset({"words", "target"})
+ROUTING_MAX_WORDS = 8
+ROUTING_MAX_WORD_LENGTH = 64
+COMPONENT_NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 
 WORKFLOW_KEYS = frozenset({"name", "entrypoint", "phases", "contract", "dispatch"})
 DISPATCH_KEYS = frozenset({"roles", "isolated", "inline_workers"})
@@ -270,6 +280,47 @@ def load_hooks(manifest: Path, table: Mapping[str, Any]) -> tuple[HookSpec, ...]
     return tuple(hooks)
 
 
+def load_routing(manifest: Path, table: Mapping[str, Any]) -> RoutingSpec | None:
+    """Read the optional `[routing]` table: a workflows flag and `[[routing.keywords]]` rows."""
+    routing = table.get("routing")
+    if routing is None:
+        return None
+    if not isinstance(routing, dict):
+        raise ModelError(manifest, "[routing] must be a table")
+    _reject_unknown(manifest, routing, ROUTING_KEYS, "routing")
+    workflows = routing.get("workflows", False)
+    if not isinstance(workflows, bool):
+        raise ModelError(manifest, "routing.workflows must be a boolean")
+    rows = routing.get("keywords", [])
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        raise ModelError(manifest, "routing.keywords must be an array of tables")
+    keywords = []
+    for row in rows:
+        _reject_unknown(manifest, row, ROUTING_KEYWORD_KEYS, "routing.keywords")
+        words = _strings(manifest, row, "words", "routing.keywords")
+        if not 1 <= len(words) <= ROUTING_MAX_WORDS:
+            raise ModelError(
+                manifest, f"routing.keywords.words must list 1 to {ROUTING_MAX_WORDS} terms"
+            )
+        for word in words:
+            if (not word.strip() or len(word) > ROUTING_MAX_WORD_LENGTH
+                    or any(unicodedata.category(char) == "Cc" for char in word)):
+                raise ModelError(
+                    manifest,
+                    f"routing.keywords.words term {word!r} must be non-blank, at most "
+                    f"{ROUTING_MAX_WORD_LENGTH} characters and free of control characters",
+                )
+        if len(set(words)) != len(words):
+            raise ModelError(manifest, "routing.keywords.words must not repeat a term")
+        target = _string(manifest, row, "target", "routing.keywords")
+        if not COMPONENT_NAME.fullmatch(target):
+            raise ModelError(
+                manifest, f"routing.keywords.target {target!r} must be a component name"
+            )
+        keywords.append(RoutingKeyword(words=words, target=target))
+    return RoutingSpec(workflows=workflows, keywords=tuple(keywords))
+
+
 def load_plugin(path: Path) -> PluginSpec:
     """Load one plugin content kernel from its directory."""
     root = Path(path)
@@ -362,4 +413,5 @@ def load_plugin(path: Path) -> PluginSpec:
         contract_exports=exports,
         reviewer_compositions=tuple(composition_rows),
         hooks=load_hooks(manifest, table),
+        routing=load_routing(manifest, table),
     )

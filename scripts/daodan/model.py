@@ -120,6 +120,22 @@ class HookSpec:
 
 
 @dataclass(frozen=True)
+class RoutingKeyword:
+    """Short terms that route a request to one skill, role or workflow of the plugin."""
+
+    words: tuple[str, ...]
+    target: str
+
+
+@dataclass(frozen=True)
+class RoutingSpec:
+    """Declarative routing metadata; adapters derive the entry lines at build time."""
+
+    workflows: bool = False
+    keywords: tuple[RoutingKeyword, ...] = ()
+
+
+@dataclass(frozen=True)
 class PluginSpec:
     root: Path
     schema: str
@@ -136,6 +152,7 @@ class PluginSpec:
     optional_dependencies: tuple[str, ...] = ()
     reviewer_compositions: tuple[tuple[str, tuple[str, ...]], ...] = ()
     hooks: tuple[HookSpec, ...] = ()
+    routing: RoutingSpec | None = None
 
     @property
     def foreign_providers(self) -> dict[str, str]:
