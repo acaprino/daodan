@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = ["playwright@claude-plugins-official"]
@@ -16,3 +16,9 @@ skills = ["app-analysis"]
 roles = ["app-analyzer"]
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["competitor app", "app teardown", "app concorrente"]
+target = "app-analyzer"

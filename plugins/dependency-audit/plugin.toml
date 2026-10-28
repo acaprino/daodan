@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute"]
-optional = ["network.fetch"]
+optional = ["network.fetch", "hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = ["dependency-audit"]
 roles = []
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["CVE", "vulnerable dependencies", "dependency licenses", "dipendenze vulnerabili"]
+target = "dependency-audit"
