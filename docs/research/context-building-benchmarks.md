@@ -8,7 +8,8 @@
 > It tracks benchmark configurations, results, costs, rejected approaches and the
 > best current candidate. Scientific papers and literature-derived findings stay
 > in [Code-context retrieval: scientific research and findings](context-building-research.md).
-> Snapshot: 2026-10-26. No benchmark was re-executed for this consolidation.
+> Snapshot: 2026-10-27. The end-to-end gate of 2026-10-27 is the only run added
+> since the 2026-10-26 consolidation; see the [changelog](#changelog).
 
 [Current assessment](#current-assessment) ·
 [Approach ledger](#approach-ledger) ·
@@ -17,7 +18,8 @@
 [Costs](#costs) ·
 [Limits](#limits) ·
 [Next decisions](#next-decisions) ·
-[Evidence register](#evidence-register)
+[Evidence register](#evidence-register) ·
+[Changelog](#changelog)
 
 ## Current assessment
 
@@ -38,9 +40,16 @@
 4. **Engineering priority:** reliability and resumability of semantic indexing,
    plus correct source reading and freshness checks. More workers or ranking
    variants do not fix those constraints.
-5. **Next decision:** test whether a static context packet improves real agent
+5. ~~**Next decision:** test whether a static context packet improves real agent
    outcomes against bounded exploration with search tools. Do not start another
-   ranking sweep on the consumed holdouts.
+   ranking sweep on the consumed holdouts.~~ Superseded on 2026-10-27 by the
+   [end-to-end gate](#2026-10-27-end-to-end-gate-on-modal).
+6. **End-to-end gate (2026-10-27, measured):** on 23 fresh private tasks with
+   hidden test oracles, Sonnet 5.5 solved 21 with lexical search (B0), 19 with
+   hybrid EmbeddingGemma search (B1) and 19 with the static A+D packet (A2).
+   No difference is significant; by the pre-registered rule the static packet
+   is not adopted as default and EmbeddingGemma stays opt-in. The packet cost
+   the most per solved task.
 
 ### Status vocabulary
 
@@ -308,6 +317,52 @@ with a quality rerun, then optional bounded sharding. Process sharding is
 architecturally compatible with deterministic vectors but is not a current API
 execution path.
 
+### 2026-10-27: end-to-end gate on Modal
+
+Run `.daodan/runs/20261026-code-context-e2e-gate/` (local only; report in
+Italian at `REPORT.md`, protocol `00-protocol.md`, reproducibility and failure
+logs under `results/`). Measured, single replicate.
+
+- **Design.** 24 unused commits from Jupiter and Phazly (12 each), stratified;
+  requests written by Opus 5.5 and verified by Fable 5.1, naming no changed
+  symbol or file; hidden oracle = the tests the commit changed, validated to fail
+  before and pass after the gold patch. Same agent (Sonnet 5.5, Claude Code
+  2.1.311), same prompt ("reproduce, then fix"), tools and limits (60 turns,
+  2.00 USD, 1,500 s) in every arm. B0: lexical search plus file reads. B1: hybrid
+  search (EmbeddingGemma 2 q4 0.75, lexical 0.25). A2: no search, a 24,000-char
+  packet from a grounded Sonnet rewrite with A+D ranking.
+- **Execution.** One Linux container per run on Modal (8 CPU, 16 GB), 69 runs.
+  One task (`hp-132e2647`) was excluded before any run because its gold patch
+  fails on Linux. Two harness defects found by a 3-run probe were fixed before
+  the full run: Windows-built retrieval indexes on Linux, and a visible-suite
+  reference measured on Windows (up to 80 Linux-only failures).
+- **Success, 23 tasks:** B0 21, B1 19, A2 19. A2 vs B1: 0.00, 95% CI
+  -0.17 to +0.17, exact McNemar 2/2, p = 1.0. B1 vs B0 and A2 vs B0: -0.09,
+  CI -0.22 to 0.00, 0/2, p = 0.5. No tool or environment failure; one wall-time
+  exhaustion (B0).
+- **Cost and time (list price):** cost per solved task B0 0.268 USD (one unknown
+  cost, lower bound), B1 0.307, A2 0.338; median wall time B0 240 s, B1 234 s,
+  A2 190 s. The gold change appeared in some search result in 22 of 23 runs for
+  both B0 and B1. The 23rd (`hp-c69ab2e5`) is a measurement gap, not a retrieval
+  miss: the commit changes only a module-level dict (`DIETARY_SUBSTITUTES` in
+  `app/services/food_pool.py`), the gold list counts functions and classes only,
+  so it is empty and the hit can never register; both arms returned and edited
+  that file. Read per file, retrieval located the right place in 23 of 23 runs.
+- **Failures were rarely localization.** Of 10 unsolved runs, 9 edited at
+  least one gold source file and missed part of the requested behavior or ran
+  out of time; one A2 run edited an upstream handler although its packet
+  contained the gold file.
+- **Decision (pre-registered):** the static packet is not adopted as default and
+  no further static-ranking sweep runs on these data; EmbeddingGemma stays
+  opt-in. The result is inconclusive for effects under about 20 points and
+  negative for larger ones; it is not evidence of equality.
+- **Ceiling effect:** every arm solved over 80%. With a strong agent and read
+  tools, context construction was not the bottleneck on these tasks. A test where
+  context could matter needs a smaller model or vaguer requests and at least
+  two replicates.
+- **Separate record:** 38 local runs of the same holdout, stopped at the owner's
+  request (B0 8/12, B1 7/13, A2 9/13), never pooled with the Modal runs.
+
 ## Costs
 
 ### Query-time model and delivery cost
@@ -351,6 +406,10 @@ difference on that corpus, not equal end-to-end task value.
 - Slim localization agent: 0.45 USD for 24 Starlette questions.
 - Not measured: supporting agents that read papers and wrote or verified
   questions, and remote compute expenditure.
+- End-to-end gate (2026-10-27, list price, agent runs on a subscription):
+  dataset requests 12.25 USD; pilots 4.17 USD; interrupted local holdout
+  6.26 USD plus 6 unknown; Modal holdout 17.88 USD plus 1 unknown. Modal
+  compute for encoding and runs is not included.
 
 ## Limits
 
@@ -389,7 +448,10 @@ This is a **proposed sequence**, not a measured result.
 2. **Close correctness and reliability prerequisites.** Verify the source-reader
    fix, current freshness behavior, slow-batch timeout handling and resumable
    indexing before comparing performance again.
-3. **Run an end-to-end gate first.** On fresh private tasks with executable or
+3. ~~**Run an end-to-end gate first.**~~ Done on 2026-10-27; see the
+   [end-to-end gate](#2026-10-27-end-to-end-gate-on-modal). No arm improved task
+   success, so step 4 does not start on these data. Original wording kept for
+   the record: on fresh private tasks with executable or
    independently adjudicated outcomes, compare the same agent under equal total
    budgets using:
    - bounded exploration with ordinary lexical/source tools;
@@ -420,3 +482,30 @@ This is a **proposed sequence**, not a measured result.
 | `.daodan/runs/20261025-context-redesign/private-holdouts/` | Local-only private candidates, requests, verdicts, frozen questions and raw results; not for public release |
 | `.daodan/runs/20261025-context-redesign/worktree/evals/codebase-map/context-scope/harness/` | Research harness on local branch `context-ablation`; experiment code, not shipped product |
 | `.daodan/runs/20261025-context-redesign/logs/` and `vectors/` | Frozen run scripts, logs, cached vectors and manifests |
+| `.daodan/runs/20261026-code-context-e2e-gate/` | Local-only end-to-end gate of 2026-10-27: protocol, harness, frozen private tasks, 69 Modal runs, `REPORT.md` (Italian), `results/summary-modal.json`; not for public release |
+
+## Changelog
+
+- **2026-10-27:** added the end-to-end gate on Modal (23 private tasks, three
+  arms, one replicate); struck through the "next decision" it answers in the
+  current assessment and step 3 of the next decisions; recorded its expenditure
+  and evidence location; snapshot date moved to 2026-10-27. Later the same day:
+  the one run where the gold change was absent from every search result was
+  traced to an empty gold list (module-level dict change), not to retrieval.
+  Evening: the result became product in codebase-map 8.12.0 (`codebase_map_search`,
+  `codebase_map_index`, the lexical index built with every snapshot, the
+  `locate.md` guide, bindings in project-delivery and senior-review; spec
+  `docs/specs/2026-10-27-code-access-design.md`, run `.daodan/runs/20261027-code-access`);
+  parity replay 136 of 137 recorded searches identical through the new path.
+  2026-10-28 morning: acceptance 7 (instrumented consumer gate, run
+  `.daodan/runs/20261027-acceptance7`): with the worker brief's `locate:` line and the
+  real codebase-map 8.12.0 server, the agent called `codebase_map_search` before its
+  first read and first edit in 21 of 21 judged tasks; 19 solved on the hidden oracle;
+  median 5 searches, 0.25 USD per run; 6.43 USD known spend; two cells lost by a
+  harness parser defect. A map built by another interpreter is `stale` for the server.
+  2026-10-28: prompt test P1 (run `.daodan/runs/20261028-prompt-requirements`): the brief
+  obliged a numbered requirement list before the first edit. 20 of 23 solved; on the
+  21 tasks both arms judged, 19 against 19 (one gained, one lost); 0.34 against 0.25 USD
+  per run; the list appeared before the first edit in only 6 of 23 runs. Inconclusive
+  under the rule fixed beforehand; the requirement-list line stays a hypothesis.
+- **2026-10-26:** consolidation into this single canonical diary.
