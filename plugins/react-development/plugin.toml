@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -24,3 +24,9 @@ members = [
   "react-development:react-bundle-auditor",
   "react-development:react-dataflow-auditor",
 ]
+
+[routing]
+
+[[routing.keywords]]
+words = ["React", "JSX", "Next.js", "React hooks"]
+target = "react-best-practices"

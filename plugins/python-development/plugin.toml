@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
-optional = ["execution.parallel"]
+optional = ["execution.parallel", "hooks.lifecycle"]
 
 [dependencies]
 required = ["testing", "work-controller"]
@@ -16,3 +16,33 @@ skills = ["async-python-patterns", "pydantic-v2", "python-comments", "python-dea
 roles = ["python-engineer", "python-refactor-agent", "python-semantics-auditor"]
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["Python"]
+target = "python-engineer"
+
+[[routing.keywords]]
+words = ["pytest"]
+target = "pytest-patterns"
+
+[[routing.keywords]]
+words = ["Pydantic"]
+target = "pydantic-v2"
+
+[[routing.keywords]]
+words = ["uv", "pyproject.toml"]
+target = "uv-package-manager"
+
+[[routing.keywords]]
+words = ["asyncio"]
+target = "async-python-patterns"
+
+[[routing.keywords]]
+words = ["PyPI", "wheel", "Python packaging"]
+target = "python-packaging"
+
+[[routing.keywords]]
+words = ["Python profiling", "Python performance"]
+target = "python-performance-optimization"

@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "shell.execute", "repository.write", "network.fetch", "contexts.isolate", "roles.dispatch"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,6 @@ skills = ["marketplace-audit", "skills-creator", "kernel-marketplace"]
 roles = ["marketplace-manager"]
 workflows = ["marketplace-health", "marketplace-review", "marketplace-scaffold-plugin", "skills-validate"]
 policies = []
+
+[routing]
+workflows = true
