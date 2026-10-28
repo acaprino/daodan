@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = ["xtermjs-skill"]
 roles = []
 workflows = ["xterm-debug", "xterm-implement"]
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["xterm.js", "web terminal", "terminale web"]
+target = "xtermjs-skill"

@@ -22,3 +22,13 @@ name = "decision-records"
 event = "session-start"
 script = "skills/adr-method/scripts/adr_hook.py"
 timeout = 10
+
+[routing]
+
+[[routing.keywords]]
+words = ["ADR", "architecture decision record", "decision record"]
+target = "adr-method"
+
+[[routing.keywords]]
+words = ["FRD", "functional requirements", "requisiti funzionali"]
+target = "frd-method"

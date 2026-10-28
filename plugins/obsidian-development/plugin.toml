@@ -6,7 +6,7 @@ license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write"]
-optional = []
+optional = ["hooks.lifecycle"]
 
 [dependencies]
 required = []
@@ -16,3 +16,9 @@ skills = ["obsidian-check", "obsidian-plugin-development", "obsidian-scaffold"]
 roles = []
 workflows = []
 policies = []
+
+[routing]
+
+[[routing.keywords]]
+words = ["Obsidian plugin", "plugin Obsidian"]
+target = "obsidian-plugin-development"
