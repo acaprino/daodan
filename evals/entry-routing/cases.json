@@ -1,0 +1,457 @@
+[
+  {
+    "id": "task-001",
+    "lang": "it",
+    "prompt": "ho un'idea per un nuovo modulo di pagamento, aiutami a definirla prima di scrivere codice",
+    "kind": "task",
+    "expected_entry": "/daodan:brainstorm-idea"
+  },
+  {
+    "id": "task-002",
+    "lang": "en",
+    "prompt": "I have a rough idea for a notifications feature, can we brainstorm and write a spec before building it",
+    "kind": "task",
+    "expected_entry": "/daodan:brainstorm-idea"
+  },
+  {
+    "id": "task-003",
+    "lang": "it",
+    "prompt": "quanto e' in salute questo progetto? cosa dovremmo ripulire per primo?",
+    "kind": "task",
+    "expected_entry": "/daodan:check-health"
+  },
+  {
+    "id": "task-004",
+    "lang": "en",
+    "prompt": "how much technical debt does this project have, and what should we clean up first",
+    "kind": "task",
+    "expected_entry": "/daodan:check-health"
+  },
+  {
+    "id": "task-005",
+    "lang": "it",
+    "prompt": "riprendiamo il task interrotto ieri, ho le risposte alle domande in sospeso",
+    "kind": "task",
+    "expected_entry": "/daodan:continue-task"
+  },
+  {
+    "id": "task-006",
+    "lang": "en",
+    "prompt": "let's continue the interrupted task, here are my answers to the pending questions",
+    "kind": "task",
+    "expected_entry": "/daodan:continue-task"
+  },
+  {
+    "id": "task-007",
+    "lang": "it",
+    "prompt": "c'è un bug nel login, risolviamolo",
+    "kind": "task",
+    "expected_entry": "/daodan:fix-bug"
+  },
+  {
+    "id": "task-008",
+    "lang": "en",
+    "prompt": "there's a regression in checkout, users can't submit payment, please fix it",
+    "kind": "task",
+    "expected_entry": "/daodan:fix-bug"
+  },
+  {
+    "id": "task-009",
+    "lang": "it",
+    "prompt": "voglio investigare perché i test falliscono",
+    "kind": "task",
+    "expected_entry": "/daodan:investigate-problem"
+  },
+  {
+    "id": "task-010",
+    "lang": "en",
+    "prompt": "our server keeps crashing at night and I don't know why, can we look into it",
+    "kind": "task",
+    "expected_entry": "/daodan:investigate-problem"
+  },
+  {
+    "id": "task-011",
+    "lang": "it",
+    "prompt": "puoi mappare e analizzare la struttura di questo repository?",
+    "kind": "task",
+    "expected_entry": "/daodan:map-code"
+  },
+  {
+    "id": "task-012",
+    "lang": "en",
+    "prompt": "can you map the codebase structure and refresh the architecture map",
+    "kind": "task",
+    "expected_entry": "/daodan:map-code"
+  },
+  {
+    "id": "task-013",
+    "lang": "it",
+    "prompt": "i nostri test sono un disastro, bisogna consolidarli e riorganizzarli",
+    "kind": "task",
+    "expected_entry": "/daodan:maintain-tests"
+  },
+  {
+    "id": "task-014",
+    "lang": "en",
+    "prompt": "our test suite has grown messy, let's rationalize and consolidate the existing tests",
+    "kind": "task",
+    "expected_entry": "/daodan:maintain-tests"
+  },
+  {
+    "id": "task-015",
+    "lang": "it",
+    "prompt": "vogliamo aggiungere l'esportazione PDF come nuova funzionalità",
+    "kind": "task",
+    "expected_entry": "/daodan:new-feature"
+  },
+  {
+    "id": "task-016",
+    "lang": "en",
+    "prompt": "we want to add a new dashboard widget showing recent orders",
+    "kind": "task",
+    "expected_entry": "/daodan:new-feature"
+  },
+  {
+    "id": "task-017",
+    "lang": "it",
+    "prompt": "sono nuovo su questo progetto, puoi guidarmi attraverso la struttura?",
+    "kind": "task",
+    "expected_entry": "/daodan:onboard-project"
+  },
+  {
+    "id": "task-018",
+    "lang": "en",
+    "prompt": "I'm taking over this codebase from another team, walk me through it",
+    "kind": "task",
+    "expected_entry": "/daodan:onboard-project"
+  },
+  {
+    "id": "task-019",
+    "lang": "it",
+    "prompt": "voglio mettere per iscritto la decisione tecnica di usare Postgres invece di Mongo",
+    "kind": "task",
+    "expected_entry": "/daodan:record-decision"
+  },
+  {
+    "id": "task-020",
+    "lang": "en",
+    "prompt": "let's write down and record the decision to adopt the new caching layer",
+    "kind": "task",
+    "expected_entry": "/daodan:record-decision"
+  },
+  {
+    "id": "task-021",
+    "lang": "it",
+    "prompt": "rifattorizziamo la classe UserService",
+    "kind": "task",
+    "expected_entry": "/daodan:refactor-code"
+  },
+  {
+    "id": "task-022",
+    "lang": "en",
+    "prompt": "this module is a mess, let's simplify and deduplicate it without changing behavior",
+    "kind": "task",
+    "expected_entry": "/daodan:refactor-code"
+  },
+  {
+    "id": "task-023",
+    "lang": "it",
+    "prompt": "fai una revisione completa di questo branch prima del merge",
+    "kind": "task",
+    "expected_entry": "/daodan:review-branch"
+  },
+  {
+    "id": "task-024",
+    "lang": "en",
+    "prompt": "can you do a deep review of this pull request before we merge it",
+    "kind": "task",
+    "expected_entry": "/daodan:review-branch"
+  },
+  {
+    "id": "task-025",
+    "lang": "it",
+    "prompt": "puoi rivedere le modifiche che ho appena fatto a questo file?",
+    "kind": "task",
+    "expected_entry": "/daodan:review-changes"
+  },
+  {
+    "id": "task-026",
+    "lang": "en",
+    "prompt": "please review my latest commit before I push it",
+    "kind": "task",
+    "expected_entry": "/daodan:review-changes"
+  },
+  {
+    "id": "task-027",
+    "lang": "it",
+    "prompt": "vogliamo rimettere in ordine tutto il progetto in più fasi",
+    "kind": "task",
+    "expected_entry": "/daodan:run-maintenance"
+  },
+  {
+    "id": "task-028",
+    "lang": "en",
+    "prompt": "let's bring the whole project back into good shape over several stages",
+    "kind": "task",
+    "expected_entry": "/daodan:run-maintenance"
+  },
+  {
+    "id": "task-029",
+    "lang": "it",
+    "prompt": "ripuliamo il repository da codice morto e file inutili",
+    "kind": "task",
+    "expected_entry": "/daodan:tidy-repo"
+  },
+  {
+    "id": "task-030",
+    "lang": "en",
+    "prompt": "clean up the repo, remove dead code and junk files",
+    "kind": "task",
+    "expected_entry": "/daodan:tidy-repo"
+  },
+  {
+    "id": "task-031",
+    "lang": "it",
+    "prompt": "scrivi una guida e un README per questo modulo",
+    "kind": "task",
+    "expected_entry": "/daodan:write-docs"
+  },
+  {
+    "id": "task-032",
+    "lang": "en",
+    "prompt": "we need onboarding documentation and a README for new contributors",
+    "kind": "task",
+    "expected_entry": "/daodan:write-docs"
+  },
+  {
+    "id": "task-033",
+    "lang": "it",
+    "prompt": "servono più test per questa funzione di validazione",
+    "kind": "task",
+    "expected_entry": "/daodan:write-tests"
+  },
+  {
+    "id": "task-034",
+    "lang": "en",
+    "prompt": "can you write tests for this specific behavior we just added",
+    "kind": "task",
+    "expected_entry": "/daodan:write-tests"
+  },
+  {
+    "id": "task-035",
+    "lang": "it",
+    "prompt": "il task è completo, possiamo chiuderlo e fare il merge",
+    "kind": "task",
+    "expected_entry": "/daodan:finish-task"
+  },
+  {
+    "id": "task-036",
+    "lang": "en",
+    "prompt": "what's open right now, where does the task stand, what should I do next",
+    "kind": "task",
+    "expected_entry": "/daodan:show-status"
+  },
+  {
+    "id": "task-037",
+    "lang": "it",
+    "prompt": "vogliamo aggiornare dal repository upstream e vedere cosa è cambiato",
+    "kind": "task",
+    "expected_entry": "/daodan:sync-upstream"
+  },
+  {
+    "id": "task-038",
+    "lang": "en",
+    "prompt": "can you list and tag the active task worktrees",
+    "kind": "task",
+    "expected_entry": "/daodan:worktrees"
+  },
+  {
+    "id": "task-039",
+    "lang": "it",
+    "prompt": "vorrei un secondo parere da un altro modello su questo piano",
+    "kind": "task",
+    "expected_entry": "/daodan:get-second-opinion"
+  },
+  {
+    "id": "task-040",
+    "lang": "en",
+    "prompt": "can you humanize this paragraph so it sounds less like AI wrote it",
+    "kind": "task",
+    "expected_entry": "/daodan:humanize-text"
+  },
+  {
+    "id": "vert-001",
+    "lang": "it",
+    "prompt": "fai un audit SEO del sito",
+    "kind": "vertical",
+    "expected_entry": "/digital-marketing:seo-audit"
+  },
+  {
+    "id": "vert-002",
+    "lang": "it",
+    "prompt": "questo componente React rirenderizza troppo",
+    "kind": "keyword",
+    "expected_entry": "react-development:react-best-practices"
+  },
+  {
+    "id": "vert-003",
+    "lang": "en",
+    "prompt": "can you audit our Interactive Brokers IBKR order execution flow for correctness",
+    "kind": "keyword",
+    "expected_entry": "trading-broker-integration:ibkr"
+  },
+  {
+    "id": "vert-004",
+    "lang": "it",
+    "prompt": "dobbiamo controllare la nostra integrazione con MT5 per il trading automatico",
+    "kind": "keyword",
+    "expected_entry": "trading-broker-integration:mt5"
+  },
+  {
+    "id": "vert-005",
+    "lang": "en",
+    "prompt": "can you run a deep multi-source research report on quantum error correction advances",
+    "kind": "vertical",
+    "expected_entry": "/research:team-research"
+  },
+  {
+    "id": "vert-006",
+    "lang": "it",
+    "prompt": "dobbiamo scrivere i requisiti funzionali FRD per questa nuova funzionalità",
+    "kind": "keyword",
+    "expected_entry": "project-delivery:frd-method"
+  },
+  {
+    "id": "vert-007",
+    "lang": "en",
+    "prompt": "please audit our Stripe webhook endpoint configuration and signature verification",
+    "kind": "vertical",
+    "expected_entry": "/stripe:audit-webhooks"
+  },
+  {
+    "id": "vert-008",
+    "lang": "en",
+    "prompt": "how should I write a multi-stage Dockerfile for this service",
+    "kind": "keyword",
+    "expected_entry": "docker:multi-stage-dockerfile"
+  },
+  {
+    "id": "vert-009",
+    "lang": "it",
+    "prompt": "voglio scrivere un ADR per questa decisione architetturale",
+    "kind": "keyword",
+    "expected_entry": "project-delivery:adr-method"
+  },
+  {
+    "id": "vert-010",
+    "lang": "en",
+    "prompt": "we need to harden our RabbitMQ quorum queues setup",
+    "kind": "keyword",
+    "expected_entry": "messaging:rabbitmq-production"
+  },
+  {
+    "id": "nontask-001",
+    "lang": "it",
+    "prompt": "come funziona il modulo di login?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-002",
+    "lang": "en",
+    "prompt": "what does this function do?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-003",
+    "lang": "it",
+    "prompt": "ciao, come stai oggi?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-004",
+    "lang": "en",
+    "prompt": "thanks, that makes sense now",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-005",
+    "lang": "it",
+    "prompt": "puoi spiegarmi cos'è un decoratore in Python?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-006",
+    "lang": "en",
+    "prompt": "what's the difference between a list and a tuple in Python?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-007",
+    "lang": "it",
+    "prompt": "che tempo fa oggi?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-008",
+    "lang": "en",
+    "prompt": "can you explain what this regex pattern matches?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-009",
+    "lang": "it",
+    "prompt": "qual è la differenza tra async e sync in questo codice?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-010",
+    "lang": "en",
+    "prompt": "I just wanted to say good morning",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-011",
+    "lang": "it",
+    "prompt": "cosa fa questa classe UserService esattamente?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-012",
+    "lang": "en",
+    "prompt": "how does the authentication middleware work in this codebase?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-013",
+    "lang": "it",
+    "prompt": "grazie mille per l'aiuto di ieri",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-014",
+    "lang": "en",
+    "prompt": "what does HTTP status 429 mean?",
+    "kind": "non-task",
+    "expected_entry": null
+  },
+  {
+    "id": "nontask-015",
+    "lang": "it",
+    "prompt": "mi spieghi la differenza tra REST e GraphQL?",
+    "kind": "non-task",
+    "expected_entry": null
+  }
+]
