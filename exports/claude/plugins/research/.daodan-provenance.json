@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:0810d0a6a1071559fa68e0db99d4891fb7fa6b0aa1424b7a2e3836e99b1da8d9",
+  "coreDigest": "sha256:07f703c9b64c31bfc722c845e04c9f1db9bca9c00933747ee93f3349ac565317",
   "harnessStrategies": {
     "science-mode": "native-team",
     "science-research": "native-team",

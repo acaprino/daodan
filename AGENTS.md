@@ -128,8 +128,6 @@ Working verification: Define observable success criteria from approved requireme
 
 Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
 
-Working processes: no harness command leaves a hung process behind. Every command that spawns subprocesses (monitors, model runtimes, wait loops, background workers) must terminate them on success and kill them, with the parent, on failure, on timeout and on caller stop. A completed or failed measurement is closed only after its worker and monitor processes are confirmed exited, not merely after its files exist. Prefer bounded patterns: monitor loops that reap their children, subprocess timeouts that kill, and a recovery step that reaps the run's own processes before any retry. Never kill processes that are not your own.
-
 ## Designing prompts and agents
 
 The research in [`prompt-engineering-and-brevity.md`](docs/research/prompt-engineering-and-brevity.md)

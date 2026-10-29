@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e3c826aefee4da015212181fa9b163b1736973cbf4535c7c4713a50e0c70c3c7",
+  "coreDigest": "sha256:6709f9eb82bcf9e4fb51700ee92c97bcd89c5d01169b52f4849d67e7a5f68160",
   "harnessStrategies": {
     "pwa-audit": "parallel-subagents",
     "pwa-checklist": "parallel-subagents",
