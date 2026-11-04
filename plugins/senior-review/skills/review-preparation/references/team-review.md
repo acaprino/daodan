@@ -18,7 +18,7 @@ verification never share discovery contexts or peer results.
 
 | Phase | Work | Output |
 |---|---|---|
-| 0 | Resolve the target (0), detect dimensions (0b), discover the evidence this review needs without reading any Codebase Map output (0c) | `.team-review/00-scope.md`, `01a-review-knowledge-leads.md` |
+| 0 | Resolve the target (0), detect dimensions (0b), discover source-derived evidence without consuming Codebase Map analyses or knowledge leads (0c) | `.team-review/00-scope.md`, `01a-review-knowledge-leads.md` |
 | 1 | Codebase Map analysis (1a) and blind premise derivation (1c) in parallel, joined (1d), then the interconnect map (1b) | `01b-independent-claims.md`, `01-knowledge-provenance.md`, `02-interconnect.md` |
 | 2 | One isolated worker per validated job, with canonical member checks; every finding declares its load-bearing premise and provenance | assigned job reports |
 | 3 | Delivery barrier: every job and member delivers findings or an explicit no-findings result | ledger |
@@ -38,6 +38,10 @@ Before starting, invoke these skills to inform the review process:
 - `senior-review:defect-taxonomy`: 140+ defect subcategories with CWE/OWASP mappings (includes `logic-integrity.md`)
 
 ## Pre-flight Checks
+
+Verify the [Codebase Map prerequisite](../../../README.md#prerequisito) before
+Phase 0. Scope resolution uses the existing run's indexes; the scoped Phase 1a
+analysis does not establish this prerequisite.
 
 1. Confirm the harness can dispatch isolated reviewers; stop if it cannot.
 2. Parse `$ARGUMENTS`:
@@ -159,7 +163,9 @@ Mark `phase_0b_detection` complete in `state.json`.
 
 ## Phase 0c: Review Evidence Discovery
 
-Runs inline before required blind derivation or context work. It collects source-derived leads even when shared analytical context is withheld. It discovers what evidence is relevant to this review; how the repository documents itself is the Codebase Map's discovery. **It never reads `.codebase-map/` in any form**, the mirror and earlier runs included: the Codebase Map's leads enter at the Phase 1d join and nowhere earlier.
+Runs inline before required blind derivation or context work. It collects source-derived leads even when shared analytical context is withheld. Structural indexes used for target resolution may locate source; module descriptions and proposals are locating hints, never behavioral premises or evidence for a lead. This phase derives its leads by reading repository sources, tests and documents.
+
+**The coordinator must not read Codebase Map analysis artifacts (`01..07.md`), semantic cards or generated knowledge leads before Phase 0c completes**, including mirrors and earlier runs. Codebase Map's knowledge leads enter at the Phase 1d join and nowhere earlier. This permits index-based localization in Phase 0 without treating shared analysis as independent discovery. Phase 1c retains its separate no-map-access rule.
 
 1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior Codebase Map run.
 2. Extract the concepts, domains and symbols the diff touches. Names of changed functions, classes, modules and config keys are the starting set; add the domain nouns that appear in the diff's own strings and comments.
@@ -175,7 +181,7 @@ Runs inline before required blind derivation or context work. It collects source
 # Review Knowledge Leads
 
 > Leads, not truth. Immutable once written.
-> Discovered by senior-review independently of any Codebase Map output.
+> Source-derived pointers, not inherited Codebase Map knowledge leads or analytical conclusions.
 
 ## Navigation rules followed
 | Source | Rule |
@@ -233,7 +239,8 @@ When required, dispatch before reading shared analytical conclusions. Run alongs
    ```
    Mode 1: independent derivation.
 
-   Target scope: [contents of .team-review/00-scope.md]
+   Target scope: [target, intent and file/symbol locators from .team-review/00-scope.md;
+   omit module descriptions, graph interpretations and analytical conclusions]
    Knowledge leads: .team-review/01a-review-knowledge-leads.md
    Diff: {diff content}
 

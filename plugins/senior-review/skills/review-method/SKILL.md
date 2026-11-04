@@ -12,6 +12,9 @@ Input: variant, target/flags, output root; optional same-snapshot `prepared` bun
 Preparation resolves absent `shape` (`light`/`branch`) and `target-kind`
 (`changeset`/`plan`/`spec`/`doc`). Output: native report and project-result envelope.
 
+Before either shape, verify the [Codebase Map prerequisite](../../README.md#prerequisito):
+the entire project's map must already be complete.
+
 **Shape `light`:** read only `references/light.md` in this method. Branch uses
 `team-review`, or `pr-review` for a pull request, through these steps.
 
