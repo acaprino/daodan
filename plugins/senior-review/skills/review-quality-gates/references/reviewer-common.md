@@ -25,7 +25,9 @@ these conventions in the brief. Reuse existing contracts and native report forma
   Do not consume peer findings before independent delivery. Cite used map anchors
   and preserve causal provenance.
 - Establish a reachable trigger, violated requirement and observable consequence.
-  A pattern or missing preferred technique alone proves nothing. Calibrate severity
+  A pattern or missing preferred technique alone proves nothing. Where the
+  project configures a linter or formatter, style and formatting are its job,
+  not findings; report only what those tools cannot see. Calibrate severity
   to impact; invent no percentages, loads, timings, costs, universal thresholds
   or finding quotas. Route overlaps by the violated mechanism or contract.
 

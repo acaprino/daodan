@@ -14,6 +14,9 @@ stack specialists. Do not substitute a fixed pair of code/security reviewers.
 Read the Shared Instructions for All Agents section of `references/code-review.md`
 inside this skill. Apply its intent, scope, hypothesis and premise-provenance rules
 using this PR's exact candidate and comparison. Unknown intent stays unknown.
+When the PR description or a review comment explains a non-obvious choice, a
+finding that contests it quotes that reasoning and says why it does not hold
+before proposing an alternative.
 Load `senior-review:review-quality-gates` and its
 `references/code-review-agents.md` for concise worker handoffs and input adaptations.
 Follow preparation's `references/stack-dimensions.md` for stack/method bindings.

@@ -9,7 +9,9 @@ references and consolidation are separate methods.
 Preserve caller-bound baseline, candidate and scoped untracked content. Standalone,
 a named path/directory/project reviews content unless changes are requested.
 A commit reviews that commit; no argument reviews staged/unstaged/untracked
-changes, else the last commit. Branches/PRs require branch review. State target/basis.
+changes, else the last commit. Branches/PRs require branch review. State target/basis and the intent in one
+sentence (what the candidate changes and why), from the task, the user's words
+or the commit messages; unable to state it, ask before dispatch.
 
 Kind: `changeset` for source/styles/markup/contracts; `spec` for ADRs or requirements;
 `plan` for tasks naming changes; `doc` for other prose. Empty target: report,
@@ -76,5 +78,7 @@ After the checks close, run `record` once as review-consolidation's
 `references/learned-facts.md` says (facts reach discovery jobs only); its single ledger
 append supersedes the read-only, write-confinement and read-this-unit-alone rules.
 Write `review-<id>.md`: verdict, target/basis, tools, findings/verification,
-preexisting issues, gaps/advice. Cycle `BLOCK` reopens the task; standalone fixes
+preexisting issues, gaps/advice, questions for the author (what the review could
+not verify and only the author can answer, each with its `file:line`; never a
+finding in disguise). Cycle `BLOCK` reopens the task; standalone fixes
 remain the user's decision. Close with the protocol envelope.

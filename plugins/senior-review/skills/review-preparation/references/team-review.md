@@ -105,7 +105,8 @@ Before starting, invoke these skills to inform the review process:
    replace it with uncommitted changes, or claim an empty diff covers the target.
    Missing comparison or unsupported roster preparation remains an explicit gap.
 3. Collect the list of changed file paths and extensions for Phase 0b.
-4. Write `.team-review/00-scope.md` with target, files, flags. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
+4. State the candidate's intent in one sentence (what it changes and why), from the task, the PR description or the commit messages; if no source supports one, ask the caller before any dispatch and record `intent: unknown` when none comes. That sentence is the intent every worker prompt pastes.
+5. Write `.team-review/00-scope.md` with target, intent, files, flags. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
 
 ## Phase 0b: Bind the computed reviewer selection
 

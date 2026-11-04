@@ -89,6 +89,9 @@ declaring the requested output complete.
 
    ### Coverage Gaps
    [paste the ## Coverage Gaps list from .team-review/97-coverage-gaps.md]
+
+   ### Questions for the author ({count})
+   [what reviewers could not verify and only the author can answer: unknown intent, a contested premise, a choice no comment explains. Each names the file:line it concerns. Never a finding in disguise]
    ```
 
    Where `{cost_guard_note}` is `, narrowed to stakes+band (N unverified)` when the cost guard fired, else empty.

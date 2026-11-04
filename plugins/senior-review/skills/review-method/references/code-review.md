@@ -8,7 +8,7 @@ Include these instructions in every agent prompt:
 
 ```
 ## Intent
-[paste the 2-3 line intent summary from Step 1b]
+[paste the one-sentence intent from preparation's Phase 0, or `intent: unknown`]
 
 ## Diff Scope & Pre-existing Classification
 
