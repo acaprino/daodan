@@ -1,7 +1,5 @@
 # Incremental update
 
-## Incremental Updates
-
 `scripts/snapshot.py` mechanically prepares snapshot, change-set, carry and gate
 inputs. Snapshots record file size/mtime/content hashes, symbol
 spans/body hashes and git metadata. A method edit also changes its enclosing

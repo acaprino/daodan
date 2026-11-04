@@ -432,10 +432,9 @@ an undeclared skip or failed map never permits publication.
 
 ## Phase 4: Publish, Completion & Next Steps Menu
 
-After successful synthesis, only the coordinator loads
-`${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/human-view.md` for requested
-or useful HTML. Workers never load presentation instructions. Keep requested view
-failures open; `--skip-synthesis` creates no report to render.
+After successful synthesis, `07-final-report.md` is the human view: no HTML
+renderer is adapted, so a requested HTML view stays open and keeps the run open.
+Workers never load presentation instructions.
 
 1. Account for every dispatched worker as delivered or failed; no worker may
    still be writing during publication. The harness owns worker cleanup.

@@ -154,11 +154,10 @@ For a delivered stop record partial status and pending `not_yet_produced`
 artifacts. Docs-only and single-phase results stay in the run. Report their
 exact paths, coverage and continuation; never replace the shared mirror.
 
-For a complete publishing mode, only this coordinator loads `human-view.md`
-when a view is requested or useful. Verify native output and every requested
-view before completion; a requested view failure keeps the run open. Then
-require `complete` and `may_publish` from the gate and invoke `publish $RUN_DIR`
-from the snapshot unit.
+For a complete publishing mode, `07-final-report.md` is the human view: no
+HTML renderer is adapted, so a requested HTML view stays open and keeps the run
+open. Then require `complete` and `may_publish` from the gate and invoke
+`publish $RUN_DIR` from the snapshot unit.
 
 The helper replaces the whole mirror and updates the registry as specified in
 `references/run.md`; never copy just the files that happen to exist. On partial,

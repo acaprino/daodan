@@ -47,6 +47,10 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | `references/standalone.md` | shared read-only map discovery, navigation, impact and fallback | every map consumer, including analysis and composed workflows |
 | `references/locate.md` | the measured loop for finding the code a request is about: search by name, expand with outline and graph, read by symbol, reproduce, then fix | every agent that changes code with a map |
 | `references/modules.md` | the module graph: build units read from manifests, modules declared by the project or proposed by a model, with members, relations, freshness and the name query | every consumer resolving a module or sub-app boundary, including review scope resolution |
+| `references/scope.md` | progressive code scope: `scope_planner.py` selecting evidence from snapshots, edges and optional retrieval | whoever plans the evidence of an analysis or intervention |
+| `references/context.md` | bounded context packets from a scope plan (`snapshot.py context`) | whoever prepares a recipient's input |
+| `references/embeddings.md` | optional local embeddings, opt-in only | whoever explicitly selects the embedding provider |
+| `references/mcp.md` | the MCP server, its tools and events | whoever runs or calls the server |
 | `references/phase-0.md` | Phase 0 knowledge discovery | analyst and team entry |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
 | `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |
@@ -63,16 +67,6 @@ Loading `codebase-map:map-method` starts no analysis or run.
 ## Team bindings
 
 Use canonical skeletons in owned output. Put partition identity below titles, never in headings. Workers and synthesizers do not update classic state.
-
-## Method loads
-
-Conditional reads: methodology, patterns, comments. Follow nested loads; count their union with core reads.
-
-| Resource | Sections | When |
-|---|---|---|
-| `references/AI_ANALYSIS_METHODOLOGY.md` | all | methodology |
-| `references/SEMANTIC_PATTERNS.md` | all | patterns |
-| `references/ANTIREZ_COMMENTING_STANDARDS.md` | all | comments |
 
 ## Resources
 

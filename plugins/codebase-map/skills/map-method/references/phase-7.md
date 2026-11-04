@@ -83,9 +83,9 @@ reading nor runtime evidence.
 
 The three coverage lines are mandatory, including in the condensed lite report.
 
-For requested or useful HTML, only the entry coordinator loads `references/human-view.md`.
-Workers never load presentation instructions. The entry coordinator marks the run
-complete only after native delivery and every requested view pass their gates.
+This report is the human view: no HTML renderer is adapted, so a requested HTML
+view stays open and keeps the run open. Workers never load presentation
+instructions.
 
 ## Team mode
 

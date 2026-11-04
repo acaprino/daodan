@@ -4,7 +4,7 @@
 existing snapshots, verified lexical/Jedi edges and optional local retrieval.
 It performs machine computation only. It never starts an encoder, calls an LLM,
 refreshes an index, edits project source or closes a process gate. The complete
-checkpoint stays on disk; P7 owns recipient packets, tokenization and CLI/MCP.
+checkpoint stays on disk; `context.md` owns recipient packets, tokenization and CLI/MCP.
 
 ## Inputs and authority
 
@@ -100,7 +100,7 @@ freshness checks count as machine time. Time limits are cooperative, so an
 individual provider query or filesystem call can finish after the cap; no hard
 preemption is promised. Counts record supplied actual/estimated observations;
 they do not include unobserved future calls or guarantee a recipient context
-window. P7 owns packet costs including wrappers and tokenizer results.
+window. `context.md` owns packet costs including wrappers and tokenizer results.
 
 The frontier orders mandatory source targets, exact/diff/proposed sites, canonical
 impact, retrieval leads and indirect neighbors. Retrieval keeps its producer's
