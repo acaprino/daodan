@@ -23,25 +23,60 @@ a declared module is superseded (graph gap `proposal_superseded`); the ledger
 keeps it. Promotion is a human copying the record into
 `codebase-modules.json`.
 
-Build units: `package.json` workspaces and packages, `pnpm-workspace.yaml`,
-`lerna.json`, `deno.json`, Nx `project.json`, `pyproject.toml` (project,
-poetry, uv workspace and path sources), `setup.cfg`, `setup.py`,
-`Cargo.toml` (workspace, path dependencies), `go.mod` and `go.work`,
-`pom.xml` (modules, dependencies, `group:artifact` alias),
-`settings.gradle[.kts]` and `build.gradle[.kts]` (`include`, `project(":x")`),
-`.sln` and `.csproj/.fsproj/.vbproj` (ProjectReference, AssemblyName),
-`composer.json` (path repositories), `Gemfile` and `.gemspec`,
-`pubspec.yaml` and `melos.yaml`, `Package.swift`, `mix.exs` (umbrella, path
-deps), `CMakeLists.txt` (`add_subdirectory`), `.cabal` and `stack.yaml`,
-`build.sbt` (`project in file`, `dependsOn`), `.tf` (local `module` sources),
-`build.zig.zon`, Julia `Project.toml`, `dune-project`, Daodan `plugin.toml`
-(`schema = "daodan/v1"`). Manifests in one
-directory merge into one unit; the first name wins, the others become
-aliases, the directory name too. A workspace pattern (`*` inside a segment,
-`**` across) registers its member directories, with a `workspace-member` unit
-where no manifest exists. A nested unit is excluded from its parent's files.
-An unreadable manifest or a unit whose directory the snapshot does not hold is
-a graph gap.
+### Build units: the manifests read
+
+27 ecosystems, 32 manifests (`READERS` and `SUFFIX_READERS` in `modules.py`).
+"Parser" says what the reader trusts: a structured parser from the standard
+library, or a regular expression over a file that is really a program
+(Gradle, sbt, Swift, Mix, `setup.py`), which reads only literal declarations.
+
+| Ecosystem | Manifest | Unit kind | Reads | Parser |
+|---|---|---|---|---|
+| npm | `package.json` | `npm-package`, `npm-workspace` | name, description, `dependencies`, `devDependencies`, `peerDependencies`, `optionalDependencies`, `workspaces` | JSON |
+| pnpm | `pnpm-workspace.yaml` | `pnpm-workspace` | `packages` (negations skipped) | YAML |
+| lerna | `lerna.json` | `lerna-workspace` | `packages` | JSON |
+| deno | `deno.json`, `deno.jsonc` | `deno-package`, `deno-workspace` | name, `workspace` members | JSON |
+| nx | `project.json` | `nx-project` | name, `implicitDependencies` | JSON |
+| python | `pyproject.toml` | `python-package`, `uv-workspace` | `project` or `tool.poetry` name and description, dependencies and optional groups, `tool.uv.workspace.members`, `tool.uv.sources` and poetry `path` dependencies | TOML |
+| python | `setup.cfg` | `python-package` | `metadata.name` | INI |
+| python | `setup.py` | `python-package` | `name=` literal | regex |
+| cargo | `Cargo.toml` | `cargo-crate`, `cargo-workspace` | package name and description, `dependencies`, `dev-dependencies`, `build-dependencies` with `path`, `workspace.members` | TOML |
+| go | `go.mod` | `go-module` | `module`, `require`, `replace ... => ./local` | regex |
+| go | `go.work` | `go-workspace` | `use` directories | regex |
+| maven | `pom.xml` | `maven-module`, `maven-aggregator` | `artifactId`, `groupId` (own or parent) as alias `group:artifact`, description, dependency `artifactId`s, `modules` | XML |
+| gradle | `settings.gradle`, `settings.gradle.kts` | `gradle-build` | `rootProject.name`, `include`, `includeBuild` | regex |
+| gradle | `build.gradle`, `build.gradle.kts` | `gradle-project` | `project(":x")` references | regex |
+| dotnet | `*.sln` | `dotnet-solution`, one `dotnet-project` per listed project | `Project(...)` entries ending in `.csproj`, `.fsproj`, `.vbproj` | regex |
+| dotnet | `*.csproj`, `*.fsproj`, `*.vbproj` | `dotnet-project` | `AssemblyName`, `ProjectReference`, `PackageReference` | XML |
+| composer | `composer.json` | `composer-package` | name, description, `require`, `require-dev`, `path` repositories | JSON |
+| rubygems | `*.gemspec` | `ruby-gem` | `.name`, `add_dependency`, `add_runtime_dependency`, `add_development_dependency` | regex |
+| bundler | `Gemfile` | `ruby-bundle` | `gem` names, `gem ... path:` | regex |
+| pub | `pubspec.yaml` | `dart-package`, `dart-workspace` | name, description, `dependencies` and `dev_dependencies` with `path`, `workspace` | YAML |
+| melos | `melos.yaml` | `melos-workspace` | name, `packages` | YAML |
+| swiftpm | `Package.swift` | `swift-package` | `Package(name:)`, `.package(path:)`, `.package(url:)` | regex |
+| mix | `mix.exs` | `mix-project`, `mix-umbrella` | `app:`, `apps_path:`, deps with `path:`, versioned deps | regex |
+| cmake | `CMakeLists.txt` | `cmake-project` | `project()`, `add_subdirectory()` | regex |
+| cabal | `*.cabal` | `cabal-package` | `name`, `build-depends` | regex |
+| stack | `stack.yaml` | `stack-workspace` | `packages` (string or `location`) | YAML |
+| sbt | `build.sbt` | `sbt-project` | `lazy val x = project in file("...")`, `dependsOn`, `name :=` | regex |
+| terraform | `*.tf` | `terraform-root` | `module "x" { source = "./y" }` local sources (no unit without one) | regex |
+| zig | `build.zig.zon` | `zig-package` | `.name`, dependencies with `.path` | regex |
+| julia | `Project.toml` | `julia-package` | name, `deps` | TOML |
+| dune | `dune-project` | `dune-project` | `(name x)` | regex |
+| daodan | `plugin.toml` | `daodan-plugin` | `schema = "daodan/v1"` (else ignored), name, description, `dependencies.required` and `.optional` | TOML |
+
+Manifests in one directory merge into one unit; the first name wins, the
+others become aliases, the directory name too. A workspace pattern (`*`
+inside a segment, `**` across) registers its member directories, with a
+`workspace-member` unit where no manifest exists. A nested unit is excluded
+from its parent's files. An unreadable manifest or a unit whose directory the
+snapshot does not hold is a graph gap.
+
+A project with no build manager, or one whose folders are split by function,
+technology or architectural role beyond what any manifest says, gets no build
+unit for that split: the code never infers a module from a directory name.
+That split enters the graph through the other two provenances, `declared` by
+the project or `proposed` by a model and verified member by member.
 
 ## Node
 
