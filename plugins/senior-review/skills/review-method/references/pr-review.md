@@ -12,8 +12,8 @@ or method binding, including accessibility, performance, operability and applica
 stack specialists. Do not substitute a fixed pair of code/security reviewers.
 
 Read the Shared Instructions for All Agents section of `references/code-review.md`
-inside this skill. Apply its intent, scope, hypothesis and premise-provenance rules
-using this PR's exact candidate and comparison. Unknown intent stays unknown.
+inside this skill. Apply its intent and scope rules using this PR's exact
+candidate and comparison; finding fields arrive with the job's `common` binding. Unknown intent stays unknown.
 When the PR description or a review comment explains a non-obvious choice, a
 finding that contests it quotes that reasoning and says why it does not hold
 before proposing an alternative.

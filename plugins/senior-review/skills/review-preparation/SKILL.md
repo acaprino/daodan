@@ -31,7 +31,7 @@ the actual candidate and leave any gate needing that comparison unavailable.
 | Always, before the variant | `references/candidate-grounding.md`: target kind/basis, governing snapshot policy, ground-truth gate, evidence pack, budget and roster by kind |
 | Then | `references/<variant>.md` |
 | Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
-| Reviewer catalog | `references/reviewer-catalog.json` (compiled): reviewer identities, triggers, prerequisites, host bindings. Never scan role kernels at runtime |
+| Reviewer catalog | identities and composition members from `plugin.toml` (`[components].roles`, `[reviewers.compositions]`), the entries `scripts/review_roster.py` reads. The compiled `references/reviewer-catalog.json` with triggers, prerequisites and host bindings, and `scripts/composition.py` named in `references/composition.md`, are not in this base: job binding stays a declared gap. Never scan role kernels at runtime |
 | Always, after the roster | `references/composition.md`: bind and validate specialist jobs before recording the complete review or dispatching |
 
 Execute preparation once under the computed roster and support requirements.

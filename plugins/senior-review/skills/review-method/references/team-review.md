@@ -87,22 +87,10 @@ Per `## Reviewer Hints` in the interconnect map, focus your reading on these anc
 ## Instructions
 Follow your agent definition's analysis phases, knowledge-base loading, output format, and severity classification. Cite file:line for every finding.
 
-## Premise declaration (required on every finding)
+## Finding fields
 
-Every finding carries two extra fields:
-
-- **Load-bearing premise:** the single proposition whose falsity collapses this
-  finding. It must be minimal, falsifiable and scoped.
-    Bad:  "The implementation is broken."
-    Bad:  "Heartbeat handling is incorrect."   (a paraphrase of your finding)
-    Good: "No credential-bearing response path exists after registration."
-- **premise_provenance:** one of `independent`, `shared-context`, `mixed`.
-  This records CAUSAL DEPENDENCE, not citation. If you absorbed the premise from
-  the Codebase Map output or the interconnect map, it is `shared-context`, even if
-  your finding never cites an anchor. `mixed` means part of the premise rests on
-  shared context and part on evidence you derived yourself. Declare `independent`
-  only when you re-derived the whole premise from code, tests or documents you
-  read yourself.
+Use the fields and definitions of `## Deliver once` in the specialist review
+conventions (`reviewer-common.md`) delivered with this job's `common` binding.
 
 Write the one report to the prepared job.output_path using the native structured format, retaining every assigned member's findings and coverage.
 ```

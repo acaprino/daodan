@@ -13,8 +13,9 @@ not additional dispatches. Supply:
 - Run/review identity, exact candidate snapshot, target and authorized scope.
 - Intent, applicable project instructions and the actual comparison when present.
 - Source and evidence-pack paths, allowed context and scoped knowledge bindings.
-- The shared Intent, Diff Scope, hypothesis and premise-provenance instructions
-  from the code-review variant. Missing comparison remains an explicit gap.
+- The shared Intent and Diff Scope instructions from the code-review variant;
+  finding fields arrive with the job's `common` binding (`reviewer-common.md`).
+  Missing comparison remains an explicit gap.
 - One assigned intermediate report path (`job.output_path`) and the required delivery outcome.
 
 Load the role body once. Let it inspect the relevant full source, callers,

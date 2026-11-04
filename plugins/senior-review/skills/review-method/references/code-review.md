@@ -27,36 +27,10 @@ For content basis, admit evidenced defects in the named scope, including
 preexisting ones, under the requested snapshot's policy. For claims basis, judge
 the document's assertions under its method; do not reinterpret it as a source audit.
 
-## Premise declaration (required on every finding)
+## Finding fields
 
-Every finding carries two extra fields:
-
-- **Load-bearing premise:** the single proposition whose falsity collapses this
-  finding. It must be minimal, falsifiable and scoped.
-    Bad:  "The implementation is broken."
-    Bad:  "Heartbeat handling is incorrect."   (a paraphrase of your finding)
-    Good: "No credential-bearing response path exists after registration."
-- **premise_provenance:** one of `independent`, `shared-context`, `mixed`.
-  This records CAUSAL DEPENDENCE, not citation. If you absorbed the premise from
-  the Codebase Map output or the interconnect map, it is `shared-context`, even if
-  your finding never cites an anchor. `mixed` means part of the premise rests on
-  shared context and part on evidence you derived yourself. Declare `independent`
-  only when you re-derived the whole premise from code, tests or documents you
-  read yourself.
-
-## Hypothesis fields (required on every finding)
-
-A finding is a hypothesis the verification panel will try to falsify. Give it:
-
-- **Trigger:** the concrete input, state or timing under which the defect
-  manifests. "Could fail" without a trigger is not a finding.
-- **Counterevidence checked:** what you looked for that would have refuted the
-  finding (guards, validations, callers, tests, configuration) and did not find.
-- **introduced_by_candidate:** true only when the candidate change causes the
-  defect. Apply the classification above only to changeset basis; this field does
-  not exclude an eligible content or claims finding.
-- **evidence_class:** `reproduced` (a test or run showed it), `tool-reported`
-  (a tool in the evidence pack reported it), `measured` or `derived`.
+Use the fields and definitions of `## Deliver once` in the specialist review
+conventions (`reviewer-common.md`) delivered with this job's `common` binding.
 
 The evidence pack is attached to this brief. Do not restate a tool line and do
 not spend reading on what a tool already settled; report what tools cannot see.

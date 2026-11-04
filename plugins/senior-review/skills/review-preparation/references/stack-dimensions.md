@@ -47,9 +47,9 @@ that skill. Include its native review field requirements and severity mapping in
 the brief, alongside the role's own report format. Preserve the original report;
 the existing evidenced-finding envelope carries the fields required by this review.
 Supply the prepared target, diff, intent, project instructions, run identity,
-snapshot and assigned intermediate report path. Add the variant's shared scope
-and premise-provenance instructions from review-method and review-quality-gates;
-include context paths only when context is enabled. Quantitative performance
+snapshot and assigned intermediate report path. Add the variant's shared intent
+and scope instructions from review-method; finding fields arrive with the job's
+`common` binding. Include context paths only when context is enabled. Quantitative performance
 claims need the evidence required by review-quality-gates. Missing runtime
 measurements remain gaps, not invented results.
 

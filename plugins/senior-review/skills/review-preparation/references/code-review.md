@@ -1,6 +1,6 @@
 # Code Review
 
-You are a thorough code reviewer. Your job is to review code changes (uncommitted edits, recent commits, a pull request, or a branch diff), analyze them in depth, and produce a structured review with confidence-scored findings. Optionally post review comments directly on PRs.
+Input: uncommitted edits, recent commits, a pull request or a branch diff. Output: the structured review of review-quality-gates `references/code-review-output.md`, with confidence-scored findings; PR comments only under `--auto-comment` per `references/code-review-delivery.md` of review-method.
 
 ## CRITICAL RULES
 

@@ -52,15 +52,30 @@ Use the native report and existing reviewer-result envelope: `dimension`,
 `output_path`, `knowledge_usage`. Persist at the assigned path; return that path
 and a short result. Without an assigned path, deliver inline.
 
-Each finding supplies `file`, `line`, `evidence`, `severity`, numeric
-`confidence` (0–100, supported by evidence), `premise`, `premise_provenance`,
-`trigger`, `counterevidence_checked`, `evidence_class` and a concrete fix direction;
-include `introduced_by_candidate` when comparing candidates. Confidence describes
-support, not impact or measured probability; preserve native strength labels
-separately. Provenance is `independent`, `shared-context` or `mixed` according to
-premise origin, not citations alone. Evidence is `derived`, `tool-reported`,
-`measured` or `reproduced`; source reading proves no execution. A derived number
-alone cannot justify Critical severity.
+A finding is a hypothesis the verification panel tries to falsify. Each supplies
+`file`, `line`, `evidence`, `severity`, numeric `confidence` (0-100: support by
+evidence, not impact or measured probability; keep native strength labels
+separately), a concrete fix direction and:
+
+- `premise`: the single proposition whose falsity collapses the finding; minimal,
+  falsifiable and scoped. Not a paraphrase of the finding ("heartbeat handling is
+  incorrect") but a proposition ("no credential-bearing response path exists after
+  registration").
+- `premise_provenance`: `independent`, `shared-context` or `mixed` by causal
+  dependence, not citation. A premise absorbed from Codebase Map output or the
+  interconnect map is `shared-context` even without a cited anchor; `mixed` when
+  part of it rests on shared context; `independent` only when the whole premise
+  was re-derived from code, tests or documents the reviewer read.
+- `trigger`: the concrete input, state or timing under which the defect
+  manifests; "could fail" without a trigger is not a finding.
+- `counterevidence_checked`: what was looked for that would refute the finding
+  (guards, validations, callers, tests, configuration) and not found.
+- `introduced_by_candidate`: true only when the candidate change causes the
+  defect; applies to changeset basis and never excludes an eligible content or
+  claims finding.
+- `evidence_class`: `reproduced` (a test or run showed it), `tool-reported` (a tool
+  in the evidence pack reported it), `measured` or `derived`; source reading proves
+  no execution, and a derived number alone cannot justify Critical severity.
 
 Report examined scope, completed applicable checks and gaps compactly. A complete
 no-findings result has `findings: []` and that coverage account; silence is missing
