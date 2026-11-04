@@ -82,7 +82,7 @@ output is not this artifact. Never enter plan mode.
 
 The unit of an update is the partition, coarser than the claim-level update of `references/entry-analyze.md`. Available only with a candidate parent whose change set does not recommend `full`; the checkpoint decides whether to use it.
 
-1. The partition set must equal the parent's `state.json -> partitions`; any difference means a full run, named at the checkpoint.
+1. The set of partition names and paths must equal the parent's `state.json -> partitions`; any difference means a full run, named at the checkpoint.
 2. A partition's affected files are the change set's `affected_files` under its path. Record `partitions[i].update` as `"copied"` (none) or `"re-analyzed"` with the count, before either branch runs: the summary and `changes.md` read this field and cannot reconstruct it.
 3. Copied: once the update is accepted, copy `.codebase-map/runs/<parent-id>/partitions/<name>/` whole into `$RUN_DIR/partitions/<name>/` and set `status: "done"`. Both waves skip a partition already `"done"`.
 4. Re-analyzed: both waves, normal prompts, the workers never see the change set.
@@ -91,7 +91,7 @@ The unit of an update is the partition, coarser than the claim-level update of `
 
 ### Scope preview
 
-Always shown, after discovery and detection; it waits only for an unresolved decision. With an eligible update, list each partition as `unchanged (copied)` or `re-analyzed ([N] affected files)` with the parent run-id and totals above, and recommend the update unless a full run was requested. When the change set recommends `full` or the partition set differs, give the reasons (`changes.json` `reasons`, plus "the partition set changed since the parent run") and recommend a full run. Never offer an ineligible update.
+Always shown, after discovery and detection, with observed values: the spawn plan counts the workers actually dispatched after depth, skipped phases and copied partitions. It waits only for an unresolved decision. With an eligible update, list each partition as `unchanged (copied)` or `re-analyzed ([N] affected files)` with the parent run-id and totals above, and recommend the update unless a full run was requested. When the change set recommends `full` or the partition set differs, give the reasons (`changes.json` `reasons`, plus "the partition set changed since the parent run") and recommend a full run. Never offer an ineligible update.
 
 ```
 Codebase Map team-mode scope:
@@ -111,7 +111,7 @@ Spawn plan: <structure count> structure + <behavior count> behavior + <quality c
             + <synthesizer count> synthesizer + <mapper count> interconnect-mapper = <total> agents.
 ```
 
-Proceed in the same turn when the scope is settled: a fresh run of the requested target, `--no-update`, an update already chosen, `--yes` or "proceed with your recommendation", partitions the user supplied. Ask when a material choice remains (update or fresh undecided, conflicting inclusion rules, a requested partition approval): one concrete question after the preview, through the host's user-input tool or, without one, as plain text ending the turn. Accept ordinary replies ("yes", "exclude web", "merge api and workers") and recompute eligibility and the preview when the set changes. A later request to wait beats an earlier `--yes`. Never end with only a statement that confirmation is required. On cancel: `status: "cancelled"`, `snapshot.py unregister $RUN_DIR`, exit.
+Proceed in the same turn when the scope is settled: a fresh run of the requested target, `--no-update`, an update already chosen, `--yes` or "proceed with your recommendation", partitions the user supplied. Ask when a material choice remains (update or fresh undecided, conflicting inclusion rules, a requested partition approval): one concrete question after the preview, through the host's user-input tool or, without one, as plain text ending the turn. Accept ordinary replies ("yes", "exclude web", "merge api and workers") and recompute eligibility and the preview when the set changes. A later request to wait beats an earlier `--yes`. Never end with only a statement that confirmation is required; an unavailable tool or elapsed time is not an answer, the decision stays pending. On cancel: `status: "cancelled"`, `snapshot.py unregister $RUN_DIR`, exit.
 
 Then finalize `partitions` as `{name, path, language_primary, file_count, loc_estimate, status: "pending"}` and set `phase_0_detection: "complete"`.
 
@@ -174,7 +174,7 @@ For each partition with `status == "structure_done"`:
    Cite a call or import leaving your partition as <other-partition>::<symbol>.
    ```
 
-2. Dispatch one `partition-quality-worker`, title `P<i>.C — Risks+Docs for partition <name>`, same template; owned files `05-risks.md` and `06-documentation.md`, only `05-risks.md` under lite.
+2. Dispatch one `partition-quality-worker`, title `P<i>.C — Risks+Docs for partition <name>`, same template as B including its extra lines; owned files `05-risks.md` and `06-documentation.md`, only `05-risks.md` under lite.
 
 Record both. Hold the barrier; when `P<i>.B` and `P<i>.C` (only `P<i>.C` in lite) are delivered set `"done"`. When every partition is `done` or `failed`, set `phase_1_partition_workers: "complete"`, or `"failed"` if every partition failed.
 
