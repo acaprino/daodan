@@ -10,61 +10,45 @@ uv run --no-config --no-project --script <installed-plugin-root>/skills/map-meth
 
 `--no-config --no-project` keep `uv` from reading the analyzed project's
 `uv.toml`, `pyproject.toml` or `.python-version`: a repository under analysis
-must never choose the package index or interpreter of its own analyzer. Keep
-both flags in any custom registration.
+never chooses the package index or interpreter of its own analyzer. Keep both
+flags in any custom registration. `uv` provisions the official MCP Python SDK
+2.x; the server requires Python 3.12 or later (`requires-python` header plus a
+startup check). Parser dependencies stay optional with the CLI's diagnostics
+and fallbacks; `mcp_service.py` and the build stay standard-library-only.
 
 Build the map with the runtime that serves it: `codebase_map_create_run` on
-this server, or `snapshot.py write` under the same `uv` environment. The binding
-of the lexical index records the SQLite version and the parser fingerprint of
-the interpreter that built it, so a map written by another Python reads as
-`stale` for this server; `codebase_map_index` rebuilds the index, and a manifest
-written with a different parser set needs a new run. Run creation also derives
-the module graph (`modules.json`) beside the snapshot; a failed derivation
-records `modules_failed` and `codebase_map_modules(refresh=true)` repairs it.
+this server, or `snapshot.py write` under the same `uv` environment. The lexical
+index records the SQLite version and parser fingerprint that built it, so a map
+written by another Python reads as `stale` (`codebase_map_index` rebuilds the
+index; a different parser set needs a new run). Run creation also derives the
+module graph beside the snapshot; a failed derivation records `modules_failed`
+and `codebase_map_modules(refresh=true)` repairs it.
 
-`uv` provisions the official MCP Python SDK 2.x in its own runtime environment.
-The server requires Python 3.12 or later, which its `requires-python` header makes
-`uv` provision and its startup check enforces. Existing parser dependencies stay
-optional, with the same parser diagnostics and fallback as the CLI. The build
-and the reusable `mcp_service.py` module remain standard-library-only.
-
-The project is fixed at startup. Omitting `--project` binds the startup working
-directory; a consumer that controls subprocess launch should pass it explicitly.
-`scope` and `status` (and so `runs`) return the bound `project_root`; verify it
-before creating a run. Helper subprocesses run from the helper directory and
-resolve `git` from absolute `PATH` entries only, never from the project.
-Every target is relative to that project, and every run ID selects the exact
-`.codebase-map/runs/<run-id>/` (or `<store>/runs/<run-id>/` when started with
-`--store`). Foreign paths, traversal, symlinks and Windows
-junctions are rejected. Clients cannot supply an executable, output root or
-manifest path.
+The project is fixed at startup: `--project`, or the working directory when
+omitted, so a consumer that controls the launch passes it explicitly. `scope`
+and `status` (hence `runs`) return the bound `project_root`; verify it before
+creating a run. Every target is relative to the project; every run ID selects
+exactly `.codebase-map/runs/<run-id>/` (or `<store>/runs/<run-id>/`). Foreign
+paths, traversal, symlinks and Windows junctions are rejected; clients supply no
+executable, output root or manifest path. Helper subprocesses run from the helper
+directory and resolve `git` from absolute `PATH` entries only.
 
 ### Custom analysis store
 
-The process that starts the server may move the whole store with
-`--store <project-relative-path>`, fixed for the server's lifetime like
-`--project`; `MapService(project_root, store)` takes the same value. Omitting it
-keeps `.codebase-map/`. The path is exact POSIX, starts with a dot directory so
-every perimeter already leaves it out of the analyzed sources, and may not reuse
-`.codebase-map`, `.git` or a device name. Run IDs then select
-`<store>/runs/<run-id>/`, and the registry, locks and published mirror live in
-that store. A target inside its top directory is refused like the canonical
-output.
-
-The first write creates the store and its marker `.codebase-map-store.json`,
-`{"schema": "daodan/codebase-map-store/v1", "store": "<path>"}`. The marker binds
-the store to its project: the `snapshot.py` commands accept a run directory in
-such a store and derive the project from the marker. The shell entry workflows,
-worker roles still name `.codebase-map/`, so they
-use a custom store only when the host hands them the exact run directory. An
-existing non-empty directory without the matching marker is refused rather than
-adopted, and a marker that names another path invalidates every run in the
-store; recovering a store whose marker was lost means rewriting that exact
-marker. The canonical `.codebase-map/` mirror and
-its consumers do not see runs in a custom store: the starting host owns that
-choice and points its own consumers at the store.
-
-The host registers the server. Verify its connection before calling these
+`--store <project-relative-path>` (or `MapService(project_root, store)`), fixed
+for the server's lifetime, moves the whole store: runs, registry, locks and the
+published mirror. The path is exact POSIX, starts with a dot directory so every
+perimeter already excludes it, and may not reuse `.codebase-map`, `.git` or a
+device name; a target inside it is refused. The first write creates the marker
+`.codebase-map-store.json`, `{"schema": "daodan/codebase-map-store/v1",
+"store": "<path>"}`, which binds the store to its project: `snapshot.py`
+commands accept a run directory in such a store and derive the project from
+it. A non-empty directory without the marker is refused, a marker naming another
+path invalidates every run in the store, and a lost marker is recovered by
+rewriting that exact marker. Shell workflows and worker roles name
+`.codebase-map/`, so they use a custom store only when the host hands them the
+exact run directory; the canonical mirror and its consumers do not see such
+runs. The host registers the server. Verify its connection before calling these
 tools; a shell workflow uses its existing commands and needs no MCP connection.
 
 ## Tools
@@ -96,7 +80,11 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | `codebase_map_stop` | `run_id`, `reason`: record partial state and unregister after workers have stopped |
 | `codebase_map_publish` | `run_id`: canonical freshness, delivery and whole-mirror publication; only an `in_progress` run publishes, so resume a stopped run first |
 
-For example, source requests use the source reader's existing selection shape:
+Source requests use the source reader's selection shape; `full_file: true`
+requests the entire inventoried file, and identity checks and whole-file
+fallbacks are those of `references/evidence.md`. Emitted bytes are not a
+model's deep-reading ledger, and runtime coverage stays none unless the user
+supplied it.
 
 ```json
 {
@@ -108,43 +96,29 @@ For example, source requests use the source reader's existing selection shape:
 }
 ```
 
-`full_file: true` requests the entire inventoried file. Source/parser identity
-checks and whole-file fallbacks remain those in `references/evidence.md`.
-Outline metadata and emitted source bytes are distinct from a model's actual
-deep-reading ledger. Runtime coverage remains none unless supplied by the user.
-
-Creation defaults to SQLite, separate from analysis flags. State declares
-`snapshot.format`, `snapshot.path` and `snapshot.storage_version`. Existing and
-parent runs retain that exact binding; legacy runs without it are JSON only.
-Ambiguous/mismatched files fail. Readers close after each operation. JSON
-compatibility remains in Daodan; integrations may restrict reads to SQLite.
-
-Creation supports classic full, lite, docs-only and single-phase runs, with the
-existing combinations and stop limits. It creates a full new snapshot rather
-than carrying incremental claims. `diff` provides change detection; existing CLI
-update/carry remains the owner of incremental re-derivation. Reading supports
-existing classic and team runs. Native team partitioning still belongs to the
-host and the team workflow.
+Creation defaults to SQLite, separately from analysis flags; state declares
+`snapshot.format`, `snapshot.path` and `snapshot.storage_version`, existing and
+parent runs keep their binding, legacy runs without it are JSON only, ambiguous
+or mismatched files fail, and readers close after each operation. Creation
+covers classic full, lite, docs-only and single-phase runs with their stop
+limits, always with a full new snapshot: `diff` detects change, and the CLI
+`update`/`carry` owns incremental re-derivation. Reading covers classic and team
+runs; team partitioning belongs to the host and the team workflow.
 
 ### Preparing and calling the context tool
 
-The tool reads derived inputs and creates none of them. Prepare each for the exact
-manifest the run is bound to:
+The tool reads derived inputs and creates none; each belongs to one manifest,
+so after a refresh rebuild them or they are refused with `retrieval index
+belongs to a different candidate`:
 
 1. Retrieval index (required): `<manifest directory>/retrieval.sqlite`, built
-   by `codebase_map_create_run` and `snapshot.py write` with the snapshot and
+   with the snapshot by `codebase_map_create_run` and `snapshot.py write`,
    repaired by `codebase_map_index` or `snapshot.py index MANIFEST`
-   (`--check` reports without writing). A missing index stays a bound missing
-   input of the packet until one of those runs.
+   (`--check` reports without writing). Missing, it stays a bound missing input.
 2. Python call edges (recommended): `resolve_edges.py <manifest> --environment
    <venv of the analyzed project> --compact` writes `engine-edges.sqlite` beside
-   the manifest. Without it callers come from the lexical edges alone, which
-   resolve fewer calls made through instances.
+   the manifest; without it, callers come from the lexical edges alone.
 3. Cards (optional): the project card store; only fresh cards enter a packet.
-
-Every index belongs to one manifest. After the map is refreshed into a new
-manifest, rebuild its index and edges: the old ones are refused with
-`retrieval index belongs to a different candidate`.
 
 ```json
 {
@@ -165,89 +139,75 @@ manifest, rebuild its index and edges: the old ones are refused with
 }
 ```
 
-Reading the result: `status` is `ready`, `incomplete` or `needs_split`, with
-`status_reason`, the packet path, digests, counts, gaps and cost. Retrieval hits
-are leads: they fill the budget and never block the packet. A request with only a
-`query` stays `incomplete` (`not_localized`) and delivers leads; supply an
-accepted target (`anchors`, `diff`, `proposed_edits`) or a requirement for a
-`ready` packet. `needs_split` names why (`core_too_large`, `missing_support` and
-the others in `references/context.md`); split the task or raise the recipient
-limit, then call again. Pass the returned `cursor` only to continue the remaining
-evidence of the same request. Costs are characters, never tokens, unless the
-dispatch owner counts them. Planning and packing a 669-entity Python package
-took about 8 seconds.
+The result carries `status` (`ready`, `incomplete`, `needs_split`),
+`status_reason`, the packet path, digests, counts, gaps and cost. Retrieval
+hits are leads: they fill the budget and never block the packet. A request
+with only a `query` stays `incomplete` (`not_localized`) with leads; a `ready`
+packet needs an accepted target (`anchors`, `diff`, `proposed_edits`) or a
+requirement. `needs_split` names why (`core_too_large`, `missing_support` and
+the others in `references/context.md`): split the task or raise the recipient
+limit, then call again. Pass the returned `cursor` only to continue the same
+request. Costs are characters unless the dispatch owner counts tokens. Planning
+and packing a 669-entity Python package took about 8 seconds.
 
 ## Host execution and phase hooks
 
-After run preparation, the host resolves scope, dispatches the declared isolated
-workers with the exact run and manifest, and follows the canonical method.
-The service starts no LLM, does not select models and owns no scheduler.
-Creating a run or finishing an MCP call does not complete an analysis.
+After run preparation the host resolves scope, dispatches the declared isolated
+workers with the exact run and manifest, and follows the canonical method. The
+service starts no LLM, selects no model and owns no scheduler; creating a run or
+finishing a call completes no analysis.
 
-`status` includes `source_available`. If a target was deleted or renamed, history,
-events and stopping remain available, while `check` is null and
-`check_unavailable` explains the missing-source condition. `diff` reports the
-recorded files and symbols as removed. Verified reads, resume and publication
-require the source target. Existing canonical absolute target metadata is
-accepted only inside the bound project; client target arguments remain relative.
-
-The host calls `checkpoint` with `phase_started`, `phase_completed` or `blocked`.
-A completed checkpoint requires that phase's real declared artifacts and their
-applicable delivery checks; it does not certify their semantic conclusions.
-Canonical state remains the completion authority. The host verifies requested
-human views before publication, because the structural gate cannot establish
-that a requested UI artifact was delivered.
-
-To interrupt, first stop the host's workers, then call `stop`. This records a
-recoverable partial run; it sends no signal to agents. Resume checks source and
-parser freshness and prepares the next work, while the host restarts workers.
-A published (`complete`) run is never resumed; create a new run. Resume counts
-phases whose artifacts it binds as inherited proof as completed. `checkpoint`
-never moves `current_phase` backwards. Service state writes re-read
-`state.json` and change only the keys they own, so concurrent worker fields
-survive.
-Cancelling an MCP request does not cancel an analysis; an in-flight synchronous
-mutation may finish and remain visible through `status` and `events`.
+- `status` includes `source_available`. A deleted or renamed target keeps
+  history, events and stopping available, with `check` null and
+  `check_unavailable` explaining; `diff` reports the recorded files and symbols
+  as removed; verified reads, resume and publication need the source. Absolute
+  target metadata is accepted only inside the bound project; client targets stay
+  relative.
+- The host calls `checkpoint` with `phase_started`, `phase_completed` or
+  `blocked`. A completed checkpoint requires the phase's real declared artifacts
+  and their delivery checks, not their semantic conclusions; canonical state
+  remains the completion authority, and the host verifies requested human views
+  before publication because the structural gate cannot.
+- To interrupt, stop the host's workers first, then call `stop`: it records a
+  recoverable partial run and signals no agent. Resume checks source and parser
+  freshness and prepares the next work while the host restarts workers; it
+  counts phases whose artifacts it binds as inherited proof. A published
+  (`complete`) run is never resumed: create a new run.
+- `checkpoint` never moves `current_phase` backwards. Service state writes
+  re-read `state.json` and change only the keys they own, so concurrent worker
+  fields survive. Cancelling an MCP request cancels no analysis: an in-flight
+  synchronous mutation may finish and remain visible through `status` and
+  `events`.
 
 ## Progress and durable events
 
-Request-scoped progress uses the standard MCP `progressToken` mechanism. Calls
-report operation start and successful completion with increasing values and no
-invented analysis percentage. These notifications exist only for the active
-request, and a caller may ignore them.
+Request-scoped progress uses the standard MCP `progressToken`: operation start
+and successful completion with increasing values, no invented percentage, only
+for the active request, ignorable.
 
-Run history is persisted in `mcp-events.json` inside the run. `events` returns
-`events`, `next_cursor` and `has_more`. Each event has `cursor`, `timestamp`,
-`run_id` and `event`, with phase/message details when applicable. A native UI
-stores the last cursor, requests `after` that value, and drains pages while
-`has_more` is true. Restarting the server preserves history. A journal holds at
-most 10,000 events; past that, transitions still apply but the event is refused
-with an error, and canonical state stays authoritative.
-
-Events record successful service-controlled transitions and explicit host hooks.
-Direct CLI or worker writes do not automatically emit events. `status` reads the
-canonical files on every request, so clients can reconcile external changes.
-There is no filesystem watcher, arbitrary callback URL, notification scheduler
-or MCP Tasks requirement. The native app owns polling/subscriptions and display.
-Events are derived history; after an interruption, reconcile against state and
-delivery checks rather than treating the last notification as proof of success.
+Run history persists in `mcp-events.json` inside the run. `events` returns
+`events`, `next_cursor` and `has_more`; each event has `cursor`, `timestamp`,
+`run_id`, `event` and phase or message details. A UI stores the last cursor,
+requests `after` it and drains while `has_more`. Restarting the server
+preserves history. A journal holds at most 10,000 events; past that,
+transitions still apply but the event is refused with an error and canonical
+state stays authoritative. Events record service-controlled transitions and
+explicit host hooks, never direct CLI or worker writes; `status` reads the
+canonical files on every request, so clients reconcile external changes. There
+is no filesystem watcher, callback URL, notification scheduler or MCP Tasks
+requirement: the host owns polling and display, and after an interruption
+reconciles against state and delivery checks, never the last notification.
 
 ## Native consumers
 
-`codebase_map_context` writes a bounded evidence packet and resumable checkpoint
-for a bound run. It returns compact paths and cost, with no implicit index refresh
-or inference. See `context.md` for recipient units, base-run binding, path confinement
-and the required dispatch check when the recipient tokenizer is unavailable.
-
-`MapService(project_root, store=None)` exposes the same methods as the tool suffixes and
-contains no SDK imports. A native backend can call it directly while its agents
-use MCP; both share the same run store and checks. Service mutations serialize
-through the project lock, and registry/publication retain
-their own canonical lock, an OS lock that a crashed holder releases. Run
-creation builds its snapshot before taking the project lock and removes its own
-run directory if preparation fails. Concurrent calls may receive the existing bounded project-lock retry error
-while another operation owns that project. Other agent tools remain subject to
-their host's permissions and ownership rules.
+`MapService(project_root, store=None)` exposes the tool suffixes as methods and
+imports no SDK, so a native backend calls it directly while its agents use MCP
+over the same run store and checks. Mutations serialize through the project
+lock; registry and publication keep their own canonical OS lock, released by a
+crashed holder. Run creation builds its snapshot before taking the project lock
+and removes its own run directory if preparation fails. A concurrent call may
+receive the bounded project-lock retry error while another operation owns the
+project. Other agent tools stay subject to their host's permissions.
 
 The host owns its UI, worker lifetime, models, routing and permissions. It may
 bind a custom store inside the project; that changes only where the run store

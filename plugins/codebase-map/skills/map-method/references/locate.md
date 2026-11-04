@@ -1,16 +1,14 @@
 # Locating code for a change
 
-The measured loop for finding the code a request is about, before any edit.
-On 23 private tasks it solved as many as any other access path and cost the
-least per solved task (map plus lexical search 21, hybrid search 19, a pre-built
-packet 19; the differences are within noise), and search results are leads:
-`codebase_map_read` verifies the bytes you act on.
+The loop for finding the code a request is about, before any edit. Its
+measurement is in `docs/research/context-building-benchmarks.md`. Search
+results are leads: `codebase_map_read` verifies the bytes you act on.
 
 ## The loop
 
 1. **Names first.** Pull every concrete name out of the request: identifiers,
    file names, error text, traceback frames, the domain nouns it uses. Keep
-   them as one list; the failures of the measurement were half-read requests.
+   them as one list.
 2. **Search by name group.** `codebase_map_search(run_id, query)`; without an
    MCP server, `snapshot.py search MANIFEST --query Q`. An exact symbol
    (`path::Name` or a bare identifier) and a traceback frame rank first; other
@@ -30,21 +28,13 @@ packet 19; the differences are within noise), and search results are leads:
 6. **Reproduce, then fix.** Before the first edit, write one test that fails for
    the reason the request states. Edit, run the tests, stop.
 
-## Budgets from the measurement
+## Budgets
 
 - About 6 searches and 10 symbol reads per task; more usually means the names
-  came from the wrong half of the request.
+  came from the wrong half of the request, so reread it.
 - An empty search is reworded once (synonym, the file name, a caller's name);
   the second time, reread the request.
 - `grep` over the tree only when no map exists, or to confirm a string literal.
 - A search costs no model tokens; its results do enter the context, so keep
   `limit` at 20 and read the top hits rather than widening the list.
 
-## Perimeter
-
-Measured on Python projects, a strong model and precise requests, one
-replicate. Vague requests, weak models, large repositories and other languages
-are unmeasured; the index covers every parsed language, since subtokens are
-language-agnostic. One hypothesis, untested: listing every requirement of the
-request before the first edit, and reproducing each, since 9 of the 10 measured
-failures had the right file open and did half of the request.

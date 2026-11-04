@@ -39,8 +39,8 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phase-0.md` | all | phase-0 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | section: Phase 1: Structure Extraction | phase-1 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | section: Phase 2: Interface Analysis | phase-2 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | section: Phase 3: Flow Tracing; section: AI-Powered Semantic Analysis; section: Analysis Loop Workflow; section: The Semantic Analysis Mandate | phase-3 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | section: Phase 4: Semantic Understanding; section: AI-Powered Semantic Analysis; section: Analysis Loop Workflow; section: The Semantic Analysis Mandate | phase-4 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | section: Phase 3: Flow Tracing | phase-3 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | section: Phase 4: Semantic Understanding | phase-4 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify | phase-5 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | phase-6 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | from: Maintained documentation | phase-6 |

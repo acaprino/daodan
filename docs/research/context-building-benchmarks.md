@@ -512,4 +512,8 @@ This is a **proposed sequence**, not a measured result.
   21 tasks both arms judged, 19 against 19 (one gained, one lost); 0.34 against 0.25 USD
   per run; the list appeared before the first edit in only 6 of 23 runs. Inconclusive
   under the rule fixed beforehand; the requirement-list line stays a hypothesis.
+  2026-11-04: the measurement narrative left `locate.md`, which keeps the loop and
+  budgets only. Its perimeter: Python projects, a strong model, precise requests,
+  one replicate; vague requests, weak models, large repositories and other
+  languages are unmeasured, while the index covers every parsed language.
 - **2026-10-26:** consolidation into this single canonical diary.

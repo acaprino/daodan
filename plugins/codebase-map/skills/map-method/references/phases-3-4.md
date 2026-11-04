@@ -65,14 +65,26 @@ Diagram guidelines:
 
 ## Phase 4: Semantic Understanding
 
-This is the AI-powered phase -- understand the **WHY** behind the code:
+Scripts extract structure; this phase explains the **WHY** behind the code
+and never stops at structure:
 
 - Business purpose of each module
 - Design decisions and trade-offs (inferred from code patterns)
 - Historical context (from git blame and commit messages)
 - Assumptions embedded in the code
 - Implicit contracts not documented anywhere
+- Triggers, lifecycle and concurrency; side effects and failure modes
 - Architecture Decision Records (ADRs) -- document rejected alternatives and WHY they were rejected, so future developers don't reintroduce failed approaches
+- The pattern a module implements, when one applies, with what the pattern
+  commits to: architectural (repository, service, CQRS, event-driven:
+  responsibilities and boundaries), behavioral (state machine, strategy,
+  observer, chain: transitions and variations), resilience (circuit breaker,
+  retry, bulkhead, timeout: thresholds and fallbacks), data (DTO, value
+  object, aggregate: invariants and relationships), concurrency
+  (producer-consumer, worker pool: thread safety and backpressure)
+
+Classify each file first (`evidence.md` File Classification Criteria) and
+trace every call path a Critical or High-Complexity claim depends on.
 
 **Output file:** `$RUN_DIR/04-semantics.md`
 
@@ -110,58 +122,6 @@ WHY alternatives were rejected.
 
 ## Source reading
 [Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
-```
-
-## AI-Powered Semantic Analysis
-
-### Five Layers of Understanding
-
-| Layer | What | Who Does It |
-|-------|------|-------------|
-| **1. WHAT** | Classes, functions, imports | Scripts (AST) |
-| **2. HOW** | Algorithm details, data flow | Semantic source reading |
-| **3. WHY** | Business purpose, design decisions | Evidence-backed interpretation |
-| **4. WHEN** | Triggers, lifecycle, concurrency | Behavioral tracing |
-| **5. CONSEQUENCES** | Side effects, failure modes | Cross-module reasoning |
-
-### Pattern Recognition
-
-| Pattern Type | Examples | Documentation Focus |
-|-------------|----------|---------------------|
-| **Architectural** | Repository, Service, CQRS, Event-Driven | Responsibilities, boundaries |
-| **Behavioral** | State Machine, Strategy, Observer, Chain | Transitions, variations |
-| **Resilience** | Circuit Breaker, Retry, Bulkhead, Timeout | Thresholds, fallbacks |
-| **Data** | DTO, Value Object, Aggregate | Invariants, relationships |
-| **Concurrency** | Producer-Consumer, Worker Pool | Thread safety, backpressure |
-
-### AI Analysis Workflow
-
-```
-1. STRUCTURE FIRST -> bound snapshot outline; classification and usages when needed
-2. ANALYZE -> Read source, apply semantic questions, recognize patterns, identify red flags
-3. DOCUMENT -> Use template, explain WHY not just WHAT, document contracts
-4. VERIFY -> Re-trace the code path end to end; accept runtime evidence only when the user supplies it
-```
-
-## Analysis Loop Workflow
-
-```
-1. CLASSIFY -> LOC, dependencies, critical patterns, assign classification
-2. READ & MAP -> AST structure, classes, functions, constants, state mutations
-3. DEPENDENCY CHECK -> Internal imports, external imports, external calls
-4. CONTEXT ANALYSIS -> Symbol usages, importing modules, message flows
-5. CODE-PATH VERIFICATION (Critical/High-Complexity) -> Trace every call path the claim depends on; runtime logs or traces count only when the user supplies them, and are never invented
-6. DOCUMENTATION -> Write the phase output file into the active run directory
-```
-
-## The Semantic Analysis Mandate
-
-```
-Scripts extract STRUCTURE:  "class Foo with method bar()"
-Claude extracts MEANING:    "Foo implements Repository pattern for
-                             caching user sessions with TTL expiration"
-
-NEVER stop at structure. ALWAYS pursue understanding.
 ```
 
 ## Team mode
