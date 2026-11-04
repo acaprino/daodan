@@ -4,29 +4,58 @@
   <img src="docs/assets/branding/daodan-logo-xenotron-glow.png" alt="Daodan logo" width="560">
 </p>
 
-Una nuova base dedicata soltanto a **Codebase Map** e **senior-review**.
+<p align="center">
+  <strong>Plugin harness for LLM coding agents: a verifiable map of the code and a composed, evidence-bound review.</strong>
+</p>
 
-- [Codebase Map](plugins/codebase-map/README.md) comprende il codice e fornisce contesto verificabile.
-- [senior-review](plugins/senior-review/README.md) sceglie i controlli pertinenti e compone la revisione.
-- [Disegno comune](docs/specs/2026-11-03-semantic-review-foundation.md)
-- [Documentazione storica di Codebase Map](docs/plugins/codebase-map.md)
-- [Ricerca sul contesto](docs/research/context-building-research.md)
+Daodan gives a coding agent two things it cannot get from a prompt: a local,
+refreshable understanding of the repository, and a review whose findings cite
+source and survive independent verification. Everything is static analysis
+plus instructions; sources remain the authority and runtime behavior needs the
+project's tests.
 
-Il percorso proposto è: **codice e richiesta → comportamenti coinvolti → domande da verificare → micro skill pertinenti → reviewer necessari**.
+## Plugins
 
-## Stato
+| Plugin | Responsibility | Entry |
+|---|---|---|
+| [Codebase Map](plugins/codebase-map/README.md) | Inventory, symbols, relationships, semantic descriptions with provenance, build units and modules, served to the agent on demand | `skills/map-method`, MCP tools `codebase_map_*` |
+| [senior-review](plugins/senior-review/README.md) | Review of a change, branch, PR, plan or document: measured roster, focused auditors composed per review, evidenced findings, adversarial verification, coverage gaps | `skills/review-method` |
 
-Il 3 novembre 2026 l'utente ha richiesto di archiviare l'intero progetto precedente, ripartire da zero con questi due soli proprietari e azzerare la storia Git locale.
+senior-review depends on Codebase Map; Codebase Map stands alone.
 
-I kernel sorgente di **Codebase Map 1.0.1** e **senior-review 1.0.1** sono stati importati dal backup come baseline. I manifest sono stati adattati alla nuova architettura:
+## How it works
 
-- Codebase Map non dichiara più `report-rendering`; il server MCP è ora una capability opzionale con binding storico da adattare.
-- senior-review dichiara soltanto `codebase-map`.
-- Il membro esterno `testing:test-reliability-auditor` è stato rimosso dalla composizione `code-auditor`.
-- Le istruzioni obbligatorie che caricavano plugin assenti sono state rimosse o trasformate in lacune esplicite.
+1. **Map.** `snapshot.py write` records files, symbols, imports, calls and
+   manifests in a local SQLite snapshot and derives the module graph; semantic
+   cards and the interconnect map are produced by the map method and bound to the
+   snapshot digest, so a stale description is detectable.
+2. **Ask.** The agent queries the map through the MCP tools (`codebase_map_search`,
+   `_outline`, `_read`, `_edit_impact`, `_modules`, …) or `snapshot.py` instead of
+   reading the tree; results carry `file:line` and status.
+3. **Review.** `review_roster.py` computes shape and roster from diff and impact
+   signals; `composition.py` binds the roster into isolated jobs made of focused
+   role files; each finding declares premise, provenance, trigger and evidence
+   class; a verification panel tries to falsify it; the report lists findings,
+   questions for the author and coverage gaps.
 
-I plugin **non sono ancora installabili, integrati o validati**. Il reviewer catalog compilato di senior-review è un artefatto di export host e non è presente nel kernel sorgente. I percorsi `${CLAUDE_PLUGIN_ROOT}`, gli export per host e i comandi `/daodan:*` restano riferimenti storici: vanno adattati al nuovo host prima dell'attivazione. La copertura di React, TypeScript, Tauri/platform, testing, abstraction e workspace hygiene non è più fornita da plugin esterni: resta una lacuna dichiarata finché senior-review non possiederà micro skill equivalenti.
+Roles cover one defect class each (authorization, transaction integrity,
+temporal resilience, …) and are composed into larger reviewers in
+`plugins/senior-review/plugin.toml`; no generalist reviewer exists.
 
-Efficacia, portabilità e risparmio di token non sono ancora misurati.
+## Requirements
 
-La vecchia implementazione, i suoi esperimenti e la storia Git sono conservati fuori dal progetto in `D:/Backups/daodan-as-is-2026-11-03T1310`. Il backup è una cartella completa, non un archivio compresso. Il vecchio marketplace e le sue dipendenze non sono la struttura del nuovo prodotto.
+- Python ≥ 3.12, standard library only; `tree-sitter`, `sqlglot`, `scip`/`jedi`
+  optional for higher-fidelity parsing and resolution.
+- A host that can run shell commands and dispatch isolated agent contexts.
+  Plugin content is host-generic; command and worker bindings come from the host.
+
+## Documentation
+
+- [Design of the two-owner base](docs/specs/2026-11-03-semantic-review-foundation.md)
+- [Codebase Map reference](docs/plugins/codebase-map.md)
+- [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
+- [Working rules for agents in this repository](AGENTS.md)
+
+## License
+
+[MIT](LICENSE)
