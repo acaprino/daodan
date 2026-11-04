@@ -70,10 +70,7 @@ and deliver the upsert result; the steps below are for analysis runs.
    coordinator already carried the parent before preparing delivery. Re-derive
    only declared produced phases; do not reread unaffected inherited phases.
    A stop leaves later marked claims pending for resume.
-4. Lite phases are those the brief selected. In Phase 5 omit detailed state
-   machine/flow diagrams for non-critical files. The condensed Phase 7 covers
-   structure, interfaces and risks; omit Critical Paths, Design Insights, Key
-   Process Diagrams and Documentation vs Reality. Keep all three coverage figures.
+4. Lite follows `SKILL.md` Depth over the phases the brief selected.
 5. With comments, full depth and selected Phase 6, write `comment_health.md` and record the
    proposed changes in `06-documentation.md`. Applying them belongs to a separately
    authorized development or readability task.

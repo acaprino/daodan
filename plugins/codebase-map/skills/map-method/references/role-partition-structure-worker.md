@@ -19,36 +19,13 @@ The spawn prompt gives you:
 - You DO NOT touch any other file under `.codebase-map/` (other runs may be in progress concurrently).
 - You DO NOT update `<run_dir>/state.json` — that is the orchestrator's job.
 
-## FORBIDDEN FILES
+## FORBIDDEN FILES AND PERIMETER
 
-NEVER read or include contents from:
-- `.env`, `.env.*` — environment variables with secrets
-- `credentials.*`, `secrets.*`, `*secret*`, `*credential*`
-- `*.pem`, `*.key`, `*.p12`, `*.pfx` — certificates and private keys
-- `id_rsa*`, `id_ed25519*` — SSH keys
-- `.npmrc`, `.pypirc`, `.netrc` — auth tokens
-- `*service-account*.json`, `*kubeconfig*`, `*.tfstate`, `*.tfstate.*`, `*.keystore`, `*.jks` — cloud credentials, infrastructure state and keystores
-- Any file that appears to contain API keys, passwords, or tokens
+`references/evidence.md ## Forbidden Files` (note presence only, never quote) and `references/run.md ## Perimeter` apply inside `partition_path`: a path the run's snapshot left out is not opened, globbed or cited.
 
-If encountered: note file existence only (`".env present — contains environment config"`). NEVER quote contents.
+## SOURCE READING
 
-## PERIMETER
-
-Inside `partition_path`, never analyze what Git ignores, any directory whose name starts with a dot, or dependency and build output. The scripts apply the rule; reading by hand follows it. A path the run's snapshot left out is not opened, globbed or cited. The canonical statement is `## Perimeter` in the `codebase-map:map-method` skill's `references/run.md`.
-
-## TOOL USAGE
-
-Load `codebase-map:map-method` and follow `references/evidence.md`. Query
-`source_reader.py graph` on `source_manifest` with exact inventoried files below
-`partition_path`, retaining whole-run cross-partition edges. Read requests through
-`source_reader.py read`; outlines locate definitions. Narrow truncated queries.
-
-Read source for entry points, exports and interface claims, expanding to needed
-registration, types, configuration and callers. Graph resolution does not verify
-contracts; record unresolved/AST coverage gaps. Search supplements uncovered cases, while
-`ast_parser.py` handles only missing details and `classifier.py` triage. Never
-reparse recorded structure. Source/parser mismatch requires orchestrator refresh;
-metadata is not deep reading.
+Follow `references/evidence.md ## Source reading` on `source_manifest`, seeding the graph with exact inventoried files below `partition_path` and retaining whole-run cross-partition edges. Read source for entry points, exports and interface claims, expanding to registration, types, configuration and callers. A source or parser mismatch is reported to the orchestrator, which refreshes the manifest.
 
 ## Method loads
 
@@ -70,9 +47,6 @@ Use the Team mode rules for partition scope and declared extensions.
 
 ## COMPLETION
 
-Include `## Source reading` in each owned file: exact manifest binding, graph
-seeds/hops, truncation and coverage gaps, actual files/ranges, parser/fallback
-diagnostics. Inventory/graph/outline metadata is not deep reading; runtime
-exercise is none. Inventory alone does not require reading every file.
+Each owned file ends with the `## Source reading` ledger of `evidence.md`.
 
 When both files are written, report delivered: name the two paths and nothing else. If you could not write them, report failed with the reason. Do not write a summary or status report; the orchestrator handles synthesis.

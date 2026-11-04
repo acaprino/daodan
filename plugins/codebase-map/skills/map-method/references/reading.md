@@ -7,19 +7,10 @@ cards use `deepen.md`. Bounded, resumable LLM input: `context.md`. Preserve prov
 
 ## Task views
 
-| Task | Start | Also |
-|------|------------|------------|
-| Onboarding | 07-final-report, 01-structure | 04-semantics |
-| Feature | 01-structure, 02-interfaces | 04-semantics |
-| Bug | 03-flows, 05-risks | 01-structure |
-| Refactoring | 01-structure, 04-semantics, 05-risks | 03-flows |
-| Review | 02-interfaces, 05-risks | 06-documentation |
-| Documentation | 06-documentation, 04-semantics | 02-interfaces |
-| Concepts | knowledge/documentation-leads.md | knowledge/navigation.md |
-| Locating code for a change | `locate.md` (search, outline, graph, read) | 03-flows |
-
-Phase 0's `knowledge/` holds unverified leads; Phase 1d joins
-`knowledge/documentation-leads.md` with independent discovery.
+The report's `Quick Reference: Which File to Consult` table (skeleton in
+`phase-7.md`) names the files to start with per task. Phase 0's `knowledge/`
+holds unverified leads: `documentation-leads.md` for concepts, `navigation.md`
+for the project's own indexes. To locate the code of a change follow `locate.md`.
 
 ## Method loads
 

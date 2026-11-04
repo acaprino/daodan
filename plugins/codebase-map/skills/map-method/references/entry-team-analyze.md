@@ -46,7 +46,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
    - `<target>`: directory to analyze (default: cwd)
    - `--critical`: prioritize auth/payment/persistence in Phase 3-4
    - `--comments`: activate comment audit in Phase 6
-   - `--depth=lite|full`: lite skips Phases 3, 4, and 6 (behavior workers not spawned; quality workers write only 05-risks.md; synthesizer skips 03/04/06)
+   - `--depth=lite|full` (`SKILL.md` Depth)
    - `--partition <path>`: manual partition (repeatable; overrides auto-detect)
    - `--partition-name <name>`: symbolic name for the N-th manual partition (1-indexed; optional)
    - `--skip-interconnect`: skip Phase 3
@@ -227,13 +227,8 @@ When a same-target candidate parent exists, add
 `--reuse "$parent_manifest"` after resolving the parent to the write,
 including when full analysis was selected. Bytes and parser identity are checked
 before retaining structure; the inventory is still scanned and hashed.
-Do not skip this current write after a verified diff because the recommendation
-is `none` or every partition's normalized claims can be copied. Diff normalizes
-line endings; a reader of current blocks needs exact byte identity even for
-LF/CRLF-only differences. Parent analysis/provenance and its manifest remain
-intact. Returning supported parent analysis without any source-reading phase
-does not oblige a new full analysis; a later block reader still obtains its own
-current snapshot before reading.
+Never skip this write after a verified diff, whatever the recommendation
+(`references/snapshot.md`, Diff and carry).
 
 Before dispatch, invoke `prepare $RUN_DIR` from `references/snapshot.md` with
 the accepted team mode/flags. Keep its produced/inherited/skipped declarations,
@@ -243,14 +238,7 @@ change declarations to turn a failed worker or missing map into a skipped phase.
 
 Every source reader receives `source_manifest` from `snapshot.py resolve $RUN_DIR`.
 This alias names the declared snapshot; it is never a second index. Pass that exact current path to both worker waves and the mapper.
-Before structure/call/flow mapping, workers query `source_reader.py graph` with
-exact-file seeds, never partition directories, and read question-relevant candidate requests with
-`source_reader.py read`. Outline supplies exact recorded definitions. Preserve
-graph binding/query, unresolved coverage, truncation and parser/fallback diagnostics.
-Extra parsing supplies only required missing details or single-file diagnosis.
-Selection follows flows, gates, invariants, configuration and effective styles,
-including implicit and cross-partition relationships beyond import edges.
-Keep the whole-target cascade scan and mandatory entry-gating paths. A stale
+Workers read as `references/evidence.md ## Source reading` directs; a stale
 manifest is refreshed by the orchestrator before source reading continues.
 
 ## Phase 1: Partition Workers (2 waves)
@@ -284,13 +272,6 @@ Sibling partitions (for cross-partition citation lookup if needed):
 Required reads before writing:
   - <resolved source_manifest>: inventory/import metadata for <P_i.path>
   - Follow the assigned role's Method loads; never load every method unit.
-First query source_reader.py graph on the current source manifest, with exact
-inventoried file seeds below the partition, never a directory. Read question-relevant candidate requests
-through source_reader.py read; use outline for exact definitions. Expand evidence
-as needed, without reparsing or reading every file for inventory. Record graph
-seeds/hops, binding, coverage/truncation, parser fallback and actual files/ranges
-in each output's ## Source reading. Resolution alone never verifies a contract.
-
 Completion: when both owned files are written, report delivered and name them. If you could not write them, report failed and say why.
 ```
 
@@ -333,14 +314,6 @@ Required reads before writing:
   - <resolved source_manifest>: current source index
   - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
   - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)
-
-First query source_reader.py graph on the current source manifest, seeding exact
-files from Wave 1 leads with 2-3 hops. Read question-relevant candidate requests through read; use
-outline for exact symbols. Expand to callers/callees, gates, invariants,
-configuration and relevant CSS/markup beyond graph/import edges. Preserve
-whole-target cascade scans and mandatory entry-gating paths. Record graph
-binding/query, gaps/truncation, parser fallback and actual files/ranges in
-## Source reading. Metadata is not deep reading or contract verification.
 
 Cross-partition citations: when you find an outgoing call/import that leaves
 your partition, cite it as <other-partition>::<symbol>.
@@ -410,20 +383,13 @@ Current source manifest: `<resolved source_manifest>` (read-only).
 Scope: the cross-partition surface only. Read `<RUN_DIR>/02-interfaces.md ## Cross-Partition Exports`,
 `<RUN_DIR>/03-flows.md ## Cross-Partition Flows`, `<RUN_DIR>/04-semantics.md ## Hidden Contracts (cross-partition)`
 and `<RUN_DIR>/05-risks.md ## Cross-Partition Risk Attribution` (whichever exist at this depth), then the
-source files those sections cite. First query source_reader.py graph from that
-manifest with exact-file seeds and 2-3 hops; read question-relevant candidate requests with read and
-use outline for exact definitions. Expand evidence for callers/callees, gates, invariants,
-configuration and styles beyond import edges. Partition-internal contracts are already in the partition outputs;
+source files those sections cite. Partition-internal contracts are already in the partition outputs;
 do not re-derive them here.
 Output path: `<RUN_DIR>/08-interconnect-map.md`
 
 Produce the full structured map following your agent definition: Call Graph limited to the symbols that cross a partition boundary (2-3 hops out from each crossing, cross-partition edges marked), Contracts (formal / structural / implicit), Invariants, Domain Rules, Assumptions (verified / documented / unverified / disputed), Integration Hot-Spots, Change Impact Radius, Reviewer Hints.
 
-Every claim must cite file:line. Call rows retain graph identities, callsite and
-declaration evidence, resolution/reason and a separate evidence status. Record
-graph query/binding, unresolved coverage, truncation and parser fallback; usage
-search only supplements ambiguous/dynamic/uncovered cases. No recommendations,
-no fixes. Empty sections are acceptable. Scale with cross-partition edges.
+Scale with cross-partition edges; your role states the rest of the contract.
 ```
 
 Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On failure:

@@ -90,9 +90,8 @@ and count), ignored paths and ignore status (`applied` or `unavailable`). A user
 can name an excluded directory as a target.
 
 Fresh choices are full analysis, one phase, quick scan (`--stop-after 2`), lite
-or cancel. Full selects 0 through 7; lite selects 0, 1, 2, 5 and condensed 7.
-Docs-only selects 0 and 6. Single-phase selects 0 and N. The delivery helper,
-not a second prompt table, decides produced/inherited/skipped artifacts. For a
+(`SKILL.md` Depth) or cancel. Docs-only selects 0 and 6; single-phase 0 and N.
+The delivery helper, not a second prompt table, decides produced/inherited/skipped artifacts. For a
 large, multi-language or multi-workspace scope recommend the team entry before
 dispatch and resolve that choice. A classic run stays one isolated context.
 

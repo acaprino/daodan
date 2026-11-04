@@ -68,6 +68,7 @@ reading nor runtime evidence.
 | Updating documentation | 06-documentation, 04-semantics | 02-interfaces |
 | Creating report/presentation | 07-final-report, 01-structure | 04-semantics |
 | Finding doc vs code discrepancies | 06-documentation | 03-flows, 05-risks |
+| Concepts and where the project documents them | knowledge/documentation-leads | knowledge/navigation |
 
 ## Analysis Metadata
 - Mode: classic

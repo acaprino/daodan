@@ -10,9 +10,9 @@ The spawn prompt gives you:
 - `source_manifest`: the exact path from `snapshot.py resolve <run_dir>`, bound to the current run's root and whole target; a prompt alias for the declared binding; read-only for workers. Reuse with `analyze_file.py --snapshot`; never rebuild the project for a file
 - Implicit: all `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` already exist
 
-## DEPTH HANDLING
+## DEPTH
 
-If `active_flags.depth == "lite"`: execute Phase 5 ONLY and write only `05-risks.md`. Skip Phase 6 entirely (do not create `06-documentation.md`; the synthesizer will not look for it). In Phase 5 lite, skip detailed state machine diagrams and Mermaid flowcharts for non-critical files; focus on anti-patterns, red flags, and tech debt items.
+Lite (`SKILL.md` Depth): write only `05-risks.md`, without diagrams for non-critical files.
 
 ## OWNERSHIP CONTRACT
 
@@ -26,25 +26,15 @@ cross-partition risk or style cascade, and `<run_dir>/partitions/*/01-structure.
 
 You DO NOT touch any other file under `.codebase-map/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
 
-## FORBIDDEN FILES
+## FORBIDDEN FILES AND PERIMETER
 
-(Same list as `partition-structure-worker`.)
+`references/evidence.md ## Forbidden Files` (note presence only, never quote) and `references/run.md ## Perimeter` apply inside `partition_path`; source outside the run target is a scope gap.
 
-## PERIMETER
+## SOURCE READING AND TOOLS
 
-(Same rule as `partition-structure-worker`: nothing Git ignores, nothing under a dot directory, no dependency or build output. Scripts apply it; reading by hand follows it.)
-
-## TOOL USAGE
-
-Use the scripts in `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`:
-- Load `codebase-map:map-method`; follow its evidence procedure from `source_manifest` and Wave 1 leads, without reparsing the partition for inventory alone
+Follow `references/evidence.md ## Source reading` on `source_manifest`, from Wave 1 leads, without reparsing the partition for inventory alone. A source or parser mismatch is reported to the orchestrator, which refreshes the manifest. Also:
 - `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`) as Phase 5 states, never over the partition alone. Keep the candidates and conflicts with at least one side in this partition; record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`
-- `analyze_file.py --snapshot "$source_manifest" --find-usages --symbol <name>` to trace requested usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
-
-Never use raw bash for these jobs. Changed source or parser identity requires
-orchestrator refresh, not a manifest rewrite. File/class context and import
-neighbours do not establish semantic completeness. Source outside the manifest
-target is a scope gap.
+- `analyze_file.py --snapshot "$source_manifest" --find-usages --symbol <name>` to trace requested usages across the partition, and across all partitions for cross-partition risk attribution
 
 ## Method loads
 
@@ -62,6 +52,7 @@ Read Phase 6 at full depth, including updates; comments and documentation verifi
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | not-lite |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and not-lite |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | from: Maintained documentation | documentation and not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | section: Perimeter | always |
 
 ## PHASE EXECUTION
 
@@ -70,6 +61,6 @@ Use the Team mode rules for partition scope and declared extensions. Skip Phase 
 
 ## COMPLETION
 
-Use evidence.md's Source reading section in owned files.
+Each owned file ends with the `## Source reading` ledger of `evidence.md`.
 
 When your owned files are written, report delivered: name their paths and nothing else. If you could not write them, report failed with the reason.

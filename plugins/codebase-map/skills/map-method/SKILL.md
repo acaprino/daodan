@@ -57,6 +57,16 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | `references/phases-5-6.md` | Phase 5 patterns and risks, Phase 6 documentation health | phase 5 and 6 workers |
 | `references/phase-7.md` | Phase 7 final report | analyst and synthesizer |
 
+## Depth
+
+Full runs phases 0 to 7. Lite runs 0, 1, 2 and 5, omits `03`, `04` and `06`,
+omits the diagrams of non-critical files in Phase 5, and condenses `07` to
+structure, interfaces and risks: no Critical Paths, Design Insights, Key
+Process Diagrams or Documentation vs Reality, with the three coverage lines
+kept. In team mode lite spawns no behavior worker and the quality worker writes
+only `05-risks.md`. `snapshot.py prepare` declares the artifacts; no unit
+repeats this table.
+
 ## Consumer map
 
 - Every map consumer, including analyze and composed workflows: `references/standalone.md` and `references/reading.md` section `Task views`. Ordinary standalone source reads add `references/evidence.md` sections `CRITICAL PRINCIPLE: EVIDENCE-ANCHORED OUTPUT` and `Forbidden Files`; composed consumers keep their own authorized evidence and producer procedures.

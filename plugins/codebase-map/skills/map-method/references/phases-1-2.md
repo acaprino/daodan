@@ -10,10 +10,8 @@ absent from every derived count; state that limit in the final report. The
 manifest's `scope` declares perimeter exclusions: Git-ignored paths and dot
 directories never enter inventory.
 
-First query `source_reader.py graph` on `source_manifest` for the mapped files
-(exact-file seeds, never directories; omit seeds for whole scope). Consume its
-imports/calls; read question-relevant candidate requests before claims. Preserve unresolved edges,
-AST coverage gaps and truncation; supplement with usage search only where needed.
+Read as `references/evidence.md ## Source reading` directs, seeding the graph
+with the mapped files.
 
 A minified stylesheet has any line over 10,000 characters. Configuration/documentation entries have no symbols; presentation formats include HTML, HTM, Vue, Svelte and indented Sass. Forbidden files never enter the manifest, even as hashes.
 

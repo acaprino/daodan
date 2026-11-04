@@ -21,11 +21,9 @@ with reasons: too much changed, no parent manifest, incomplete parent or changed
 flags. The current tree is authoritative, never a Git range; git is metadata.
 The blast radius never exceeds one hop.
 
-Diff normalizes line endings even with `--verify`: `none` can support parent claims
-despite LF/CRLF byte changes. Before source reading after a verified diff, write or
-obtain a current owned manifest with `snapshot.py write --reuse <previous-manifest>`.
-Readers check exact bytes. Preserve parent evidence, provenance and manifest;
-never infer byte freshness from unchanged normalized claims.
+Before source reading after a verified diff, obtain a current manifest with
+`snapshot.py write --reuse` (`references/snapshot.md`, Diff and carry): readers
+check exact bytes, which supported normalized claims do not prove.
 
 `snapshot.py carry` copies parent phase files except the final report, renumbers
 surviving-symbol citations and marks affected claims with

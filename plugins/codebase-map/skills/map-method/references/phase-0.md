@@ -48,4 +48,4 @@ Discover how the repository documents itself to guide phases; leave accuracy eva
 [List scoped concepts with no document, which downstream consumers must discover independently.]
 ```
 
-This unit is Phase 0's only copy. `team-review` reaches it through `references/entry-analyze.md`; Phase 1d consumes `knowledge/documentation-leads.md` from whichever path produced the run.
+This unit is Phase 0's only copy; senior-review's branch review consumes `knowledge/documentation-leads.md` from whichever entry produced the run.

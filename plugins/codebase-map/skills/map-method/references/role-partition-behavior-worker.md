@@ -23,28 +23,15 @@ You read freely from:
 
 You DO NOT touch any other file under `.codebase-map/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
 
-## FORBIDDEN FILES
+## FORBIDDEN FILES AND PERIMETER
 
-(Same list as `partition-structure-worker`: `.env`, credentials, keys, tokens. Note presence only, never quote contents.)
+`references/evidence.md ## Forbidden Files` (note presence only, never quote) and `references/run.md ## Perimeter` apply inside `partition_path`; source outside the run target is a scope gap.
 
-## PERIMETER
+## SOURCE READING AND CROSS-PARTITION CITATIONS
 
-(Same rule as `partition-structure-worker`: nothing Git ignores, nothing under a dot directory, no dependency or build output. Scripts apply it; reading by hand follows it.)
+Follow `references/evidence.md ## Source reading` on `source_manifest`, seeding the graph with exact Wave 1 files and 2-3 hops and expanding to the callers, callees, validators, types, configuration and presentation each flow needs. A source or parser mismatch is reported to the orchestrator, which refreshes the manifest.
 
-## CROSS-PARTITION CITATION CONTRACT
-
-Load `codebase-map:map-method` and follow `references/evidence.md`. Query
-`source_reader.py graph` on `source_manifest` with exact Wave 1 files and 2-3
-hops; read requests through `source_reader.py read`. Expand to callers, callees, validators,
-types, configuration and presentation needed for each flow. Static edges do not
-verify contracts or completeness. Search only covers ambiguous or uncovered
-cases; use `ast_parser.py` only for missing details. Record truncation and
-unresolved/AST coverage gaps. Changed/deleted source requires orchestrator refresh; source outside
-the target is a scope gap.
-
-When you encounter an outgoing call/import in your partition that resolves to another partition, cite it as `<other-partition>::<symbol>` instead of `external`. Use the cross-partition imports already documented in `01-structure.md` to disambiguate.
-
-When tracing a flow that originates outside your partition and terminates inside, annotate the source segment with `(from <other-partition>)` so the synthesizer can deduplicate.
+When an outgoing call or import in your partition resolves to another partition, cite it as `<other-partition>::<symbol>` instead of `external`; the cross-partition imports in `01-structure.md` disambiguate. When a flow originates outside your partition and terminates inside, annotate the source segment `(from <other-partition>)` so the synthesizer can deduplicate.
 
 ## Method loads
 
@@ -57,6 +44,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | before: Team mode; section: Partition worker | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | section: Perimeter | always |
 
 ## PHASE EXECUTION
 
@@ -65,8 +53,6 @@ Use the Team mode rules for partition scope and declared extensions.
 
 ## COMPLETION
 
-Include `## Source reading` in each owned file: manifest binding, seeds/hops,
-truncation and coverage gaps, parser diagnostics. Keep inventory,
-deep reading and runtime evidence distinct; metadata is not deep reading.
+Each owned file ends with the `## Source reading` ledger of `evidence.md`.
 
 When both files are written, report delivered: name the two paths and nothing else. If you could not write them, report failed with the reason.

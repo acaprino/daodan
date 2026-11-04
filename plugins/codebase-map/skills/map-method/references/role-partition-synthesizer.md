@@ -24,7 +24,7 @@ You write ONLY:
 - `<run_dir>/06-documentation.md`
 - `<run_dir>/07-final-report.md`
 
-If `active_flags.depth == "lite"`, skip `03`, `04`, `06` (the workers did not produce them: behavior workers are not spawned in lite mode and quality workers skip Phase 6).
+Lite (`SKILL.md` Depth): no `03`, `04`, `06`.
 
 You DO NOT write `08-interconnect-map.md` — that is the next agent's job. You DO NOT touch anything at the `.codebase-map/` root — publishing the mirror is the orchestrator's job, and other runs may be in progress concurrently.
 
@@ -64,7 +64,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
 ## SHARED SKELETONS
 
 Read only the fenced canonical skeletons and Team mode sections, not the classic execution procedures. For each file, retain every common heading in order and insert exactly its declared consolidated extensions after their named anchor (or first). Extensions sharing an anchor retain table order. Add no partition-only extension to a consolidated file.
-Omit Comment Quality without the comments flag. Lite omits 03, 04 and 06 and condenses 07 to structure, interfaces and risks; preserve its three coverage lines. Units' classic state updates never apply here.
+Omit Comment Quality without the comments flag; lite condenses 07 as `SKILL.md` Depth states. Units' classic state updates never apply here.
 Merge Source reading ledgers in 01 to 06, retaining manifest lineage, actual reads, diagnostics and gaps; separate carried evidence from current-run reads. Report coverage from these records, never claim that synthesis exercised or newly read source.
 
 Produce native Markdown once, retaining every required section, citation, status
