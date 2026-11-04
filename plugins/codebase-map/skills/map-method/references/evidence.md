@@ -77,7 +77,7 @@ transitive importers and PageRank guide reading, not criticality or incremental
 invalidation. Usage search/Grep supplements dynamic, uncovered or ambiguous
 cases; it never replaces a successful graph query.
 
-### 1. Analyze Single File
+### Analyze Single File
 
 ```bash
 # Python
@@ -94,7 +94,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
 - `--snapshot`: exact current run snapshot; workflow analysis reuses extraction and semantic bindings. Missing/stale evidence needs the owner's refresh.
 - `--find-usages` / `-u`: Find all usages of exported symbols - default: false
 
-### 2. Find Usages of One Symbol
+### Find Usages of One Symbol
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
@@ -104,7 +104,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
 
 `--symbol` restricts the usage search to a single exported symbol; the script errors cleanly if the symbol is not exported by the file.
 
-### 3. Structural Parse Only
+### Structural Parse Only
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/ast_parser.py" src/services/auth.ts

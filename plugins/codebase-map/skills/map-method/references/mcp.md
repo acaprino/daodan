@@ -64,9 +64,8 @@ marker. The canonical `.codebase-map/` mirror and
 its consumers do not see runs in a custom store: the starting host owns that
 choice and points its own consumers at the store.
 
-The compiler supplies automatic manifests or host-specific registration notes.
-Verify the active host's connection before calling these tools. A shell workflow
-uses its existing commands and needs no MCP connection.
+The host registers the server. Verify its connection before calling these
+tools; a shell workflow uses its existing commands and needs no MCP connection.
 
 ## Tools
 
@@ -250,7 +249,6 @@ run directory if preparation fails. Concurrent calls may receive the existing bo
 while another operation owns that project. Other agent tools remain subject to
 their host's permissions and ownership rules.
 
-Tri-Tech Code owns its UI, worker lifetime, Gateway models, routing and app
-permissions. It may bind a custom store inside the project; that changes only
-where the canonical run store lives, and the analysis, gates and commands stay
-the same. The interface supplies no application-specific fork of the analysis.
+The host owns its UI, worker lifetime, models, routing and permissions. It may
+bind a custom store inside the project; that changes only where the run store
+lives, never the analysis, gates or commands.

@@ -4,7 +4,7 @@
 
 Tools for this phase:
 
-- **Phase 5 (Usability-blocking):** Run `cascade_scan.py <client root>` (add `--json` to consume it) before reading any stylesheet by hand. It lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, with the class, id and attribute rules each one can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order), screen-level rules first: a fixed or sticky position, a scroll container, a viewport height. Tailwind `@apply` utilities count as the declarations they inline, and when a stylesheet uses Tailwind, screen-level utilities in string-literal `class` and `className` attributes count as conflicts. Its output is leads, never verdicts.
+- **Phase 5 (Usability-blocking):** Run `cascade_scan.py` over the run's whole target (add `--json` to consume it), never over a partition or a stylesheet directory alone, before reading any stylesheet by hand. It lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, with the class, id and attribute rules each one can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order), screen-level rules first: a fixed or sticky position, a scroll container, a viewport height. Tailwind `@apply` utilities count as the declarations they inline, and when a stylesheet uses Tailwind, screen-level utilities in string-literal `class` and `className` attributes count as conflicts. Its output is leads, never verdicts.
 
 Scan for anti-patterns, red flags, and technical debt:
 
@@ -96,28 +96,28 @@ SECURITY:
 
 ## Documentation Diagnosis Commands (Phase 6)
 
-### 4. Scan Documentation Health
+### Scan Documentation Health
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/doc_review.py" scan \
   --path docs/ --output <run-dir>/doc_health_report.json
 ```
 
-### 5. Validate Links
+### Validate Links
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/doc_review.py" validate-links \
   --path docs/
 ```
 
-### 6. Verify Against Source Code
+### Verify Against Source Code
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/doc_review.py" verify \
   --doc docs/agents/lifecycle.md --source src/agents/lifecycle.py
 ```
 
-### 7. Documentation changes
+### Documentation changes
 
 Report stale indexes, broken links and obsolete claims with evidence. Do not run
 update-indexes or auto-fix maintenance during analysis. Durable document edits
@@ -127,44 +127,38 @@ belong to a separately authorized knowledge operation.
 
 ## Comment Quality Commands (Antirez Standards)
 
-### 9. Analyze Comment Quality
+### Analyze Comment Quality
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" analyze \
   src/main.py --report
 ```
 
-### 10. Scan Directory for Comment Issues
+### Scan Directory for Comment Issues
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" scan \
   src/ --recursive --issues-only
 ```
 
-### 11. Generate Comment Health Report
+### Generate Comment Health Report
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" report \
   src/ --output <run-dir>/comment_health.md
 ```
 
-### 12. Comment remediation boundary
+### Comment remediation boundary
 
 The utility library retains rewriting support for separately scoped callers.
 Codebase Map uses only analyze, scan and report; it never applies rewrites, type edits
 or source fixes. Record proposals in the run for the development/readability owner.
 
-### 13. View Standards Reference
+### View Standards Reference
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" standards
 ```
-
-### Documentation Maintenance (Phase 6)
-1. Run scan first to understand current state
-2. Fix links before content - broken links indicate structural issues
-3. Verify against code before updating documentation
-4. Update indexes last to reflect final state
 
 ## Comment Type Classification
 

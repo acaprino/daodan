@@ -38,7 +38,7 @@ You DO NOT touch any other file under `.codebase-map/` (other runs may be in pro
 
 Use the scripts in `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`:
 - Load `codebase-map:map-method`; follow its evidence procedure from `source_manifest` and Wave 1 leads, without reparsing the partition for inventory alone
-- `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, for the usability-blocking check: a global rule meets its victim wherever the victim's stylesheet or markup lives. It lists every rule whose selector reaches the document root or its untargeted children and sets a layout property, with the rules and Tailwind utilities it can override, screen-level ones first. Keep the candidates and conflicts with at least one side in this partition, and record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`. Leads, never verdicts
+- `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`) as Phase 5 states, never over the partition alone. Keep the candidates and conflicts with at least one side in this partition; record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`
 - `analyze_file.py --snapshot "$source_manifest" --find-usages --symbol <name>` to trace requested usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
 
 Never use raw bash for these jobs. Changed source or parser identity requires

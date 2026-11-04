@@ -9,7 +9,7 @@ preflight lineage; copy this snapshot's own `git` into state through the resolve
 
 ## Incremental Update Commands
 
-### 14. Count scope and write
+### Count scope and write
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" scope <target>
@@ -64,7 +64,7 @@ Bind root, target and run. Reuse hashes every inventoried file regardless of
 size/mtime and retains structure only for matching bytes/parser identity.
 Root/target/fingerprint mismatch rebuilds; malformed input preserves the output.
 
-### 15. Diff and carry
+### Diff and carry
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" diff \
@@ -83,7 +83,7 @@ records source/copied hashes and provenance. A caller-bound classic
 `--stop-after 4` child may set `parent_phases: [1,2,3,4]` to carry only those files
 from a verified partial/team parent. Classic never carries team `08`.
 
-### 16. Prepare, check and publish
+### Prepare, check and publish
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" register $RUN_DIR
