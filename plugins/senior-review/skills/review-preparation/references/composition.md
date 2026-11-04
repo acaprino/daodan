@@ -21,12 +21,13 @@ offline conflict policy requires transaction integrity; client-declared authorit
 requires authoritative authorization and any implicated domain invariant. A note
 without the receiving obligation and its source/policy cannot close coverage.
 
-Use the compiled `reviewer-catalog.json` from this installed skill and the
-candidate-bound context supplied to `review_roster.py`. Include that catalog in
-the context. Resolve every required member through the verified installed
-provider inventory. Missing providers, changed files, unknown applicability or
-unmet prerequisites remain explicit failures or gaps. A preset expands its
-canonical members; a method binding also retains its audit-only method task.
+The reviewer catalog is `plugin.toml`: `[components].roles` are the identities,
+`[reviewers.compositions]` the members. `scripts/composition.py catalog` writes
+it as `CATALOG.json`; include it in the context supplied to `review_roster.py`.
+A composition expands to its leaf roles; a method binding, when a host supplies
+one, also retains its audit-only method task. An identity absent from the
+catalog, a missing role file, unknown applicability or an unmet prerequisite
+remains an explicit failure or gap.
 
 Satisfy the expanded members' prerequisites before binding jobs. The former
 testing provider is not part of the new two-owner base; if a testing member is
@@ -35,34 +36,38 @@ and leave the coverage gap explicit. Reuse settled D1/D9 evidence once; record
 missing inputs and stale/unmeasured metrics. This prepares inputs without another
 reviewer, standalone workflow or repeated settled checks.
 
-Build one bindings object from verified values:
+Build one `BINDINGS.json` from verified values:
 
-- `host`, `candidate`: the catalog host and exact roster grounding candidate.
-- `knowledge_selection`: fingerprint of the once-prepared selection, including an
+- `candidate`: the exact roster grounding candidate; a different value is an error.
+- `knowledge_selection`: fingerprint of the once-prepared selection, `""` for an
   explicit empty selection. Changes invalidate the job; do not select again per member.
-- `common`: file and SHA-256 pairs for `reviewer-common.md` of
-  `senior-review:review-quality-gates` and the brief's working discipline.
-- `roles`: keyed by required canonical ID. Copy `provider`, `provider_version`,
-  `source_hashes` and `host_binding.file` from the verified catalog entry; `root`
-  is that installed provider's actual path. Method bindings also carry `skills`.
-  Do not copy role prose into this object. Different content requires a new
-  catalog binding, never a caller-supplied replacement digest.
-- `scopes`: keyed by `scope_id`. Supply `input_mode`, the actual scoped
-  `permissions` grant and `output_dir` relative to the owned run. Modes and grants
-  must agree with the member brief. Independent modes never share a job.
-- Optional `max_body_chars`: measured context limit, not permission to drop checks.
+- `output_dir`: job report directory inside the owned run; `input_mode` (default
+  `independent`).
+- Optional `scopes`, keyed by `scope_id`, each with its own `input_mode`,
+  `permissions` and `output_dir`. Modes and grants must agree with the member
+  brief. Independent modes never share a job.
 
-The helper reads the installed bodies, checks their fingerprints, preserves each
-member's operation restrictions and supplies common instructions once per job.
-Session permissions and the read-only review contract still govern every operation.
+The helper makes one job per roster identity (support roles are not jobs),
+expands compositions to leaf role files, adds one job per required specialist
+not already covered on its scope (light folds them into its single job), and
+records for each job `job_id`, `role`, `specialist_ids`, `scope_id`,
+`input_mode`, `permissions`, `candidate`, `knowledge_selection`,
+`source_bindings` (role file and SHA-256 per member), `body_sha256` (members'
+digests plus `reviewer-common.md`), `output_path` and `status`. Role prose is
+never copied: a worker receives the files the bindings name. Session
+permissions and the read-only review contract still govern every operation.
 
 With `SENIOR_ROOT` the verified installed senior-review provider:
 
 ```text
-python "${SENIOR_ROOT}/skills/review-preparation/scripts/composition.py" --roster ROSTER.json --catalog CATALOG.json --bindings BINDINGS.json --out PREPARED-REVIEW.json
+python "${SENIOR_ROOT}/skills/review-preparation/scripts/composition.py" catalog --out CATALOG.json
+python "${SENIOR_ROOT}/skills/review-preparation/scripts/composition.py" bind --roster ROSTER.json --bindings BINDINGS.json --out PREPARED-REVIEW.json
 ```
 
-The result preserves the roster and adds validated `jobs`. Validate before
+An `unbound` job (identity or role file missing) leaves the exit status non-zero
+and its gap in `gaps`; do not dispatch such a plan.
+
+The result preserves the roster and adds `jobs`, `common` and `catalog_sha256`. Validate before
 dispatch and append that complete review to the run's immutable `reviews`; an
 empty raw `jobs` list from the roster is not an executable plan. Record pending
 deliveries with the review ID, job ID, role and assigned path. Keep one canonical

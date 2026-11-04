@@ -117,8 +117,8 @@ method's separate context and verification workers. Neither this reference nor
 an example below adds an always-on reviewer, lowers a floor or creates a support
 task merely because its role is allowed. The light shape uses its own method.
 
-Resolve every selected identity through the compiled `reviewer-catalog.json` in
-this skill. Bind its canonical role or declared method, prerequisites, scope,
+Resolve every selected identity through the catalog `scripts/composition.py
+catalog` writes from `plugin.toml`. Bind its canonical role or declared method, prerequisites, scope,
 snapshot, knowledge assignments and intermediate report path. Include the stack
 bindings from `references/stack-dimensions.md` in the same selection and ledger.
 A missing binding or prerequisite is a coverage gap or failed delivery, never

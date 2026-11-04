@@ -48,7 +48,7 @@ Every role context receives 2 and 3 together (role loads 1-hop `reviewer-common`
 
 ## D. Static load per executor (words, whole files, upper bound)
 - Single role: 830–975 (no taxonomy) or 2 036–2 990 (role + common 576 + one taxonomy file 895–1 774); `logic-integrity` 4 128. "Load only applicable sections" of taxonomy is not enforceable statically; whole-file figure is the bound.
-- Compositions: `security` 10 roles 3 505; `code-auditor` 29 leaf roles 11 735 + common; the rest 653–2 437.
+- Compositions: `security` 10 roles 3 505; `code-auditor` 26 leaf roles 11 735 + common; the rest 653–2 437.
 - Coordinator: `light` 2 853; `pr-review` 3 711; `code-review` 5 492; `team-review` 8 092 (SKILL.md of 4 skills + variant files), before Codebase Map output and project instructions.
 
 ## E. Wording
