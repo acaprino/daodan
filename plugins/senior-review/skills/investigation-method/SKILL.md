@@ -1,0 +1,89 @@
+---
+name: investigation-method
+description: >
+  Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection.
+  TRIGGER WHEN: the user reports an error, regression or strange behavior whose cause is unknown and wants it investigated, a coordinator investigates a problem, or a bug fix starts without a known cause.
+  DO NOT TRIGGER WHEN: assessing a change or artifact for defects (use review-method), or the root cause is already established with evidence.
+---
+
+# Investigation
+
+Trace an observed defect to its causal code/change; never edit product code.
+Use the host run-record mechanism for operation `investigate` when available,
+writing only inside the run and the reproduction test; if absent, declare the
+missing run record and keep the same write confinement.
+
+## 1. Facts
+
+From the failing environment (run's `environment`), collect exact message,
+stack trace, logs/durations, triggering input/steps and last known good
+commit/release/date. Read available logs first; otherwise a local rerun counts
+only with the same symptom. Repeated round durations (30.0x s) suggest a
+configured timeout; record its location. Ask for missing facts one question at
+a time, or record them with work-record's `ask` and close the turn. Mark facts
+`observed` (user, log, run) or `derived`.
+
+## 2. Perimeter
+
+From the stack and the named symbols, load `codebase-map:map-method`, locate
+the symbols through its `references/locate.md` (`codebase_map_search` or
+`snapshot.py search` with the names in the report and the traceback frames;
+exact symbol and traceback matches rank first), then take `snapshot.py
+edit-impact` for each. The suspects are the commits that touched
+the perimeter after the last known good
+(`git log --format='%h %an %ad %s' GOOD..HEAD -- PATHS`), or its last twenty
+without one. Without a map, a recorded gap, the perimeter comes from the stack
+and a search.
+
+## 3. Hypotheses
+
+At most three, each with its mechanism (how this code produces the observed
+fact), trigger, refuting counterevidence, suspect commit and evidence class.
+Each goes to one isolated verifier, blind to the others, with only the facts,
+the perimeter and its own hypothesis:
+
+| Mechanism | Verifier |
+|---|---|
+| Timers, retries, scheduling, clocks | `senior-review:temporal-resilience-auditor` |
+| Persistence, transactions, caches | `senior-review:data-integrity-auditor` |
+| Statement cost, data volume, timeouts | `senior-review:sql-efficiency-auditor` |
+| Initialization order, startup | `senior-review:chicken-egg-detector` |
+| UI timing, layout, focus, scroll | `senior-review:ui-race-auditor` |
+| Handles, connections, locks, threads | `senior-review:resource-lifecycle-auditor` |
+| Calls and messages across services | `senior-review:distributed-flow-auditor` |
+| State, ordering, invariants | `senior-review:logic-integrity-auditor` |
+| Anything else | `senior-review:code-auditor` |
+
+The verifier's mandate is the hypothesis, not a hunt: `CONFIRMED` with the
+`file:line` chain from trigger to symptom, `REFUTED` with the contradicting
+`file:line`, or `UNCERTAIN` with what would settle it. A sharper hypothesis it
+proposes gets one more round, two at most.
+
+## 4. Reproduction
+
+For the strongest surviving hypothesis, use the host's test-writing capability
+when available; otherwise declare the reproduction test unavailable and leave the
+hypothesis open. Require one minimal test that fails on the current code for the
+reason the hypothesis states, with the observed symptom (message, exception,
+timeout bound) at the data volume that decides it. A different failure on smaller or cached data is
+a second defect, not the reproduction. It sits where the fix will keep it,
+uncommitted and recorded in the run. With a suspect commit, it must pass on its parent,
+checked in a disposable worktree under the run. Without one the cause stays a
+hypothesis.
+
+## 5. Bisection and runtime evidence
+
+With a last known good and no confirmed suspect, run `git bisect run` with
+the reproduction test in a disposable worktree under the run, never in the
+user's checkout. Execute only there or through the project's own runner: most
+verbose logging, temporary tracing, a test repeated a hundred times for a
+suspected race. No interactive debugger. Record every command with its output.
+
+## 6. Verdict
+
+Write `investigation.md` in the run: facts, perimeter, each hypothesis with
+its verdict and evidence, the reproduction test with its failing output, the
+first bad commit, and one conclusion. `demonstrated`: confirmed and
+reproduced. `probable`: confirmed, not reproduced. `open`: the surviving
+hypotheses and what would decide each. Never a fix: a correction goes through
+the task cycle, with the reproduction test as its oracle.

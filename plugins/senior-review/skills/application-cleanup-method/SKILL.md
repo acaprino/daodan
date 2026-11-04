@@ -1,0 +1,22 @@
+---
+name: application-cleanup-method
+description: >
+  Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load from the host cleanup entry point, code-review Step 7c or lifecycle cleanup.
+---
+
+# Application cleanup
+
+Input: accepted cleanup findings and severities, target, explicit scope, output
+root, exclusively owned isolated workspace, clean tree, targeted-fix delivery,
+commit authorization and required build/test commands. Output: phase ledger with
+pre-phase SHA, candidate snapshot, gate evidence, commit or verified recovery.
+
+Use the host run-record mechanism for execution preflight and the canonical
+gate/recovery procedure. If absent, declare preflight and recovery unavailable.
+Reuse recorded authorization; ask only for missing choices.
+Read `references/application-cleanup.md` inside this skill. Its subtraction method
+is promoted from Step 7c without adding a new auditor or a semantic refactor engine.
+Inputs can come from a review or an identified lifecycle plan. When targeted fixes
+were unnecessary, record 7b as not applicable; otherwise its accepted changes must
+be delivered and committed before subtraction. A `fix` grant without `commit` leaves
+this commit-only action open and explains the missing capability before execution.

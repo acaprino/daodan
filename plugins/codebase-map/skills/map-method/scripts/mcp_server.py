@@ -1,0 +1,238 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["mcp>=2.0.0,<3", "tree-sitter>=0.23", "tree-sitter-language-pack>=1.0"]
+# ///
+"""Local stdio access to the project-bound Codebase Map service.
+
+The host owns LLM workers and continuation. This transport exposes deterministic
+operations, persisted run events and request-scoped progress, without a scheduler.
+"""
+
+from __future__ import annotations
+
+import argparse
+from functools import partial
+import json
+from pathlib import Path
+from typing import Literal
+
+import anyio
+from mcp.server import MCPServer
+from mcp.server.mcpserver import Context
+from mcp.server.mcpserver.exceptions import ToolError
+from mcp.types import ToolAnnotations
+
+from mcp_service import MapService
+
+
+async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
+    """Report operation milestones; let an in-flight atomic mutation finish."""
+    await ctx.report_progress(0, message=f"Starting {operation.__name__}")
+    try:
+        result = await anyio.to_thread.run_sync(partial(operation, *args, **kwargs))
+    except (ValueError, OSError, TypeError, KeyError) as error:
+        raise ToolError(str(error)) from error
+    except Exception as error:
+        # Any other failure is still a tool result the client can read, never
+        # a protocol fault that ends the session.
+        raise ToolError(f"internal error in {operation.__name__}: {type(error).__name__}: {error}") from error
+    await ctx.report_progress(1, message=f"Finished {operation.__name__}")
+    return result
+
+
+def create_server(project: str | Path, store: str | None = None) -> MCPServer:
+    service = MapService(project, store)
+    server = MCPServer("codebase-map")
+    read_only = ToolAnnotations(read_only_hint=True, open_world_hint=False)
+    writes = ToolAnnotations(read_only_hint=False, open_world_hint=False)
+
+    def publish(run_id: str) -> dict:
+        result = service.publish(run_id)
+        if not result.get("published"):
+            raise ValueError("Publication refused: " + json.dumps(result, sort_keys=True))
+        return result
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_scope(ctx: Context, target: str = ".") -> dict:
+        """Count the target inventory and exclusions without starting an analysis."""
+        return await _invoke(ctx, service.scope, target)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_create_run(
+        ctx: Context, target: str, run_id: str,
+        depth: Literal["full", "lite"] = "full", critical: bool = False,
+        comments: bool = False, docs_only: bool = False,
+        phase: int | None = None, stop_after: int | None = None,
+        format: Literal["sqlite", "json"] = "sqlite",
+    ) -> dict:
+        """Prepare a classic run and snapshot. The host must dispatch its analysis workers."""
+        return await _invoke(ctx, service.create_run, target, run_id, depth=depth,
+                             critical=critical, comments=comments, docs_only=docs_only,
+                             phase=phase, stop_after=stop_after, format=format)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_runs(ctx: Context) -> dict:
+        """List this project's canonical analysis runs and active registry."""
+        return await _invoke(ctx, service.runs)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_status(ctx: Context, run_id: str) -> dict:
+        """Read canonical state and actual delivery gaps, including direct worker changes."""
+        return await _invoke(ctx, service.status, run_id)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_outline(
+        ctx: Context, run_id: str, path: str | None = None,
+        pattern: str | None = None, limit: int = 100,
+    ) -> dict:
+        """Navigate the bound snapshot's symbol metadata; this is not a source read."""
+        return await _invoke(ctx, service.outline, run_id, path=path, pattern=pattern, limit=limit)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_graph(
+        ctx: Context, run_id: str, paths: list[str] | None = None,
+        hops: int = 2, limit: int = 100, engine_store: str | None = None,
+    ) -> dict:
+        """Query verified static links and diagnostics for a run's source manifest."""
+        return await _invoke(ctx, service.graph, run_id, paths=paths, hops=hops, limit=limit,
+                             engine_store=engine_store)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_modules(
+        ctx: Context, run_id: str, query: str | None = None, refresh: bool = False, brief: bool = False,
+        limit: int = 10, proposals: list[dict] | None = None, replace_proposals: bool = False,
+    ) -> dict:
+        """Modules of the bound run: build units read from manifests (npm, pnpm, uv, Cargo, Go, Maven, Gradle, .NET, Composer, Gems, pub, Swift, Mix, Deno, Nx, Lerna, CMake, Cabal, Stack, sbt, Terraform, Zig, Julia, dune), modules declared by the project in codebase-modules.json, and modules a model proposed. Without arguments: the summary with every module's provenance, status, paths and edges (declares, contains, imports, calls). query: the candidates for a name, alias or path with paths, files, members, relations as read scope, evidence and gaps; status resolved, needs_clarification, incomplete or unknown, never promoting an inferred module. brief: what a model needs before proposing (modules so far, symbols per file, member format, rule). proposals: records {name, responsibility, members: [path::Symbol | path], evidence: [path#heading]} beside the snapshot, verifies every member and rebuilds; a proposal stays inferred until the project declares it. refresh rebuilds a missing or stale graph."""
+        return await _invoke(ctx, service.modules, run_id, query=query, refresh=refresh, brief=brief, limit=limit,
+                             proposals=proposals, replace_proposals=replace_proposals)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_search(
+        ctx: Context, run_id: str, query: str, anchors: list[dict] | None = None, limit: int = 20,
+    ) -> dict:
+        """Rank the bound run's lexical index for a query: exact symbol or traceback anchors first, then subtoken matches. Returns entity ids, kinds, paths, line spans, signatures and scores, never source; read hits with codebase_map_read. A missing, stale or corrupt index is a gap naming codebase_map_index."""
+        return await _invoke(ctx, service.search, run_id, query, anchors=anchors, limit=limit)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_index(ctx: Context, run_id: str, check: bool = False, break_lock: bool = False) -> dict:
+        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind."""
+        return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_read(ctx: Context, run_id: str, requests: list[dict]) -> dict:
+        """Read hash-verified source blocks using path, symbols, ranges or full_file requests."""
+        return await _invoke(ctx, service.read, run_id, requests)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_context(
+        ctx: Context, run_id: str, request: dict, recipient: dict,
+        out: str = 'context', cursor: str | None = None, base_run_id: str | None = None,
+        embedding_result: str | None = None,
+    ) -> dict:
+        """Write bounded static evidence and a resumable cursor. Returns compact paths; no implicit index refresh or model startup."""
+        return await _invoke(ctx, service.context, run_id, request, recipient, out=out,
+                             cursor=cursor, base_run_id=base_run_id, embedding_result=embedding_result)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_edit_impact(
+        ctx: Context, run_id: str, targets: list[str], neighbors: int = 20,
+        history: int = 5, include_source: bool = True, hops: int = 1,
+        include_neighbor_source: bool = False, include_slices: bool = False,
+        budget_chars: int = 120000, engine_store: str | None = None,
+    ) -> dict:
+        """Before editing symbols: digests, signatures, cards, L1/L2 neighbours, optional verified neighbour source and lazy slices."""
+        return await _invoke(ctx, service.edit_impact, run_id, targets, neighbors=neighbors,
+                             history=history, include_source=include_source, hops=hops,
+                             include_neighbor_source=include_neighbor_source,
+                             include_slices=include_slices, budget_chars=budget_chars,
+                             engine_store=engine_store)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_symbols_at(
+        ctx: Context, run_id: str, requests: list[dict] | None = None,
+        base_run_id: str | None = None, diff: str | None = None,
+    ) -> dict:
+        """Map line ranges, or a unified diff between two runs, to symbols and declared gaps."""
+        return await _invoke(ctx, service.symbols_at, run_id, requests=requests,
+                             base_run_id=base_run_id, diff=diff)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_stale_callers(
+        ctx: Context, run_id: str, base_run_id: str, limit: int = 100,
+        base_engine_store: str | None = None, candidate_engine_store: str | None = None,
+    ) -> dict:
+        """Classify candidate callers of symbols changed since a base run by edit impact, validation impact and GREEN stop."""
+        return await _invoke(ctx, service.stale_callers, run_id, base_run_id, limit=limit,
+                             base_engine_store=base_engine_store, candidate_engine_store=candidate_engine_store)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_meta_query(
+        ctx: Context, run_id: str, paths: list[str] | None = None, symbol: str | None = None,
+        freshness: str | None = None, include_history: bool = True, limit: int = 100,
+    ) -> dict:
+        """Query Meta-Code symbols, their card freshness and the bounded changeset history."""
+        return await _invoke(ctx, service.meta_query, run_id, paths=paths, symbol=symbol,
+                             freshness=freshness, include_history=include_history, limit=limit)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_diff(ctx: Context, run_id: str) -> dict:
+        """Compare the bound snapshot to current source without changing the run."""
+        return await _invoke(ctx, service.diff, run_id)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_artifact(ctx: Context, run_id: str, name: str) -> dict:
+        """Read one declared analysis artifact with its digest from the exact run."""
+        return await _invoke(ctx, service.artifact, run_id, name)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_checkpoint(
+        ctx: Context, run_id: str, phase: int,
+        event: Literal["phase_started", "phase_completed", "blocked"], message: str = "",
+    ) -> dict:
+        """Record a host phase hook. Completion requires the phase's actual declared outputs."""
+        return await _invoke(ctx, service.checkpoint, run_id, phase, event, message=message)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_events(
+        ctx: Context, run_id: str, after: int = 0, limit: int = 100,
+    ) -> dict:
+        """Replay persistent service events after a cursor; canonical status owns completeness."""
+        return await _invoke(ctx, service.events, run_id, after=after, limit=limit)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_resume(ctx: Context, run_id: str, phase: int | None = None) -> dict:
+        """Prepare the exact unchanged run for host continuation; start no workers."""
+        return await _invoke(ctx, service.resume, run_id, phase=phase)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_stop(ctx: Context, run_id: str, reason: str) -> dict:
+        """Record a partial run after the host has stopped its workers; does not terminate agents."""
+        return await _invoke(ctx, service.stop, run_id, reason)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_publish(ctx: Context, run_id: str) -> dict:
+        """Publish through canonical freshness/delivery gates after the host verifies requested views."""
+        return await _invoke(ctx, publish, run_id)
+
+    return server
+
+
+def main(argv: list[str] | None = None) -> None:
+    from languages.python import require_minimum_interpreter
+    require_minimum_interpreter("the Codebase Map MCP server")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--project", type=Path, default=Path.cwd(),
+                        help="project binding, fixed for the lifetime of this server")
+    parser.add_argument("--store", default=None,
+                        help="project-relative analysis store beginning with a dot directory; "
+                             "default .codebase-map, fixed for the lifetime of this server")
+    args = parser.parse_args(argv)
+    try:
+        server = create_server(args.project, args.store)
+    except ValueError as exc:
+        parser.error(str(exc))
+    server.run(transport="stdio")
+
+
+if __name__ == "__main__":
+    main()

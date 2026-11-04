@@ -1,0 +1,7 @@
+.codebase-map/
+.senior-review/
+.venv/
+__pycache__/
+*.py[cod]
+.jcode/local/
+.daodan/

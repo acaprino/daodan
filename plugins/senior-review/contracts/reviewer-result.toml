@@ -1,0 +1,39 @@
+schema = "daodan/record/v1"
+name = "reviewer-result"
+required = ["dimension", "reviewer", "status", "findings", "gaps", "output_path", "knowledge_usage"]
+
+[fields.status]
+type = "enum"
+values = ["delivered", "failed"]
+
+[fields.findings]
+type = "array"
+items = "contract:evidenced-finding"
+
+[fields.knowledge_usage]
+type = "array"
+items = "contract:knowledge-usage"
+
+[fields.declined]
+type = "array"
+items = "object"
+# Optional. Candidate findings a discovery member declined because their premise is the same as
+# the premise of a learned fact in its dispatch prompt: fact_id, file, line, premise.
+
+[fields.job_id]
+type = "string"
+[fields.specialist_ids]
+type = "array"
+items = "string"
+[fields.scope_id]
+type = "string"
+[fields.body_sha256]
+type = "string"
+[fields.candidate]
+type = "object"
+[fields.member_results]
+type = "array"
+items = "object"
+# Exactly one per assigned specialist: specialist_id, delivered|failed status,
+# complete|incomplete coverage, findings (canonical finding IDs), gaps.
+# A failed member can satisfy the delivery barrier, never required coverage.

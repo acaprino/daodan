@@ -1,0 +1,28 @@
+schema = "daodan/v1"
+name = "codebase-map"
+version = "1.0.1"
+description = "Multi-language codebase mapping baseline imported from Daodan 1.0.1. It analyzes architecture, traces data flows, detects anti-patterns and supplies verifiable source context for senior-review. It does not select reviewers or emit correctness verdicts. Legacy host commands, export bindings and documentation-generator integrations remain in the imported method but are inactive until adapted to the new two-owner base."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
+optional = ["execution.parallel", "mcp.servers"]
+
+[dependencies]
+required = []
+
+[components]
+skills = ["map-method"]
+roles = ["map-analyst", "partition-behavior-worker", "partition-quality-worker", "partition-structure-worker", "partition-synthesizer", "semantic-interconnect-mapper"]
+workflows = []
+policies = ["write-confinement"]
+
+[contracts]
+exports = ["contracts/context.toml"]
+
+[[mcp.servers]]
+# Historical host binding. `${CLAUDE_PLUGIN_ROOT}` must be adapted before this
+# optional MCP server is activated on a new host.
+name = "codebase-map"
+command = "uv"
+args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py"]
