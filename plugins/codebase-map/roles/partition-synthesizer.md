@@ -2,7 +2,7 @@
 name: partition-synthesizer
 description: >
   Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report.
-  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its consolidation phase.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its consolidation phase.
   DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.
 tools: Read, Glob, Grep, Write
 model: inherit
@@ -66,11 +66,11 @@ Read named core sections by locating headings or fenced skeletons before bounded
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | skeletons; section: Team extensions; section: Consolidation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | skeletons; section: Team extensions; section: Consolidation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | skeletons; section: Team extensions; section: Consolidation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phase-7.md` | skeletons; section: Team extensions; section: Consolidation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-1-2.md` | skeletons; section: Team extensions; section: Consolidation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-3-4.md` | skeletons; section: Team extensions; section: Consolidation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | skeletons; section: Team extensions; section: Consolidation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phase-7.md` | skeletons; section: Team extensions; section: Consolidation | always |
 
 ## SHARED SKELETONS
 

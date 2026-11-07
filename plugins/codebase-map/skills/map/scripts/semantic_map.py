@@ -211,7 +211,7 @@ def _render(report):
     for orphan in report["orphans"]:
         lines.append("- " + _text(orphan["entity_id"]) + ": orphan; no current source anchor.")
     lines.extend(["", "## Reading needed", "",
-                  "Use map-method's existing deepen method for the listed entities in the selected area. "
+                  "Use the map skill's existing deepen method for the listed entities in the selected area. "
                   "Reuse complete fresh cards; fill partial cards through source reading. This renderer dispatches no analyst.", ""])
     for request in report["reading_requests"]:
         lines.append("- " + _text(request["entity_id"]) + ": " + request["freshness"] + "; missing: "

@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SNAPSHOT = REPO_ROOT / "plugins/codebase-map/skills/map-method/scripts/snapshot.py"
+SNAPSHOT = REPO_ROOT / "plugins/codebase-map/skills/map/scripts/snapshot.py"
 
 
 class IndexCliTests(unittest.TestCase):

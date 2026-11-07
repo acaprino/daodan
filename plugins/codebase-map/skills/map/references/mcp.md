@@ -5,7 +5,7 @@
 The declared `codebase-map` server runs over stdio:
 
 ```text
-uv run --no-config --no-project --script <installed-plugin-root>/skills/map-method/scripts/mcp_server.py --project <project-root>
+uv run --no-config --no-project --script <installed-plugin-root>/skills/map/scripts/mcp_server.py --project <project-root>
 ```
 
 `--no-config --no-project` keep `uv` from reading the analyzed project's

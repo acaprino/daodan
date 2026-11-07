@@ -11,7 +11,7 @@ import traceback
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SCRIPTS = HERE.parents[1] / "plugins" / "codebase-map" / "skills" / "map-method" / "scripts"
+SCRIPTS = HERE.parents[1] / "plugins" / "codebase-map" / "skills" / "map" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from mcp_service import MapService  # noqa: E402

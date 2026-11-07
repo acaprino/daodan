@@ -2,7 +2,7 @@
 name: partition-behavior-worker
 description: >
   Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory.
-  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its second wave.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave.
 tools: Read, Glob, Grep, Bash, Write
 model: inherit
 color: cyan
@@ -49,12 +49,12 @@ Read named core sections by locating headings or fenced skeletons before bounded
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | before: Team mode; section: Partition worker | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | section: Perimeter | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/standalone.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/reading.md` | section: Task views | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-3-4.md` | before: Team mode; section: Partition worker | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/run.md` | section: Perimeter | always |
 
 ## PHASE EXECUTION
 

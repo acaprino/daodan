@@ -42,7 +42,7 @@ If encountered: note file existence only ("`.env` present - contains environment
 ## Source reading
 
 The one procedure for every claim about source, in every phase and for every
-consumer. Scripts live in `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`.
+consumer. Scripts live in `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/`.
 The current owned manifest is the only index: inventory, graph discovery and
 source reading all come from it, and no standalone command creates another.
 
@@ -65,7 +65,7 @@ creating an unowned index; a worker reports the gap to its coordinator.
    structure, call or flow claim:
 
    ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" graph \
+   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/source_reader.py" graph \
      "<source_manifest>" --path src/service.py --hops 3 --limit 100
    ```
 
@@ -88,17 +88,17 @@ creating an unowned index; a worker reports the gap to its coordinator.
    returns them (`Class.method`):
 
    ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" outline \
+   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/source_reader.py" outline \
      "$source_manifest" --path src/service.py --pattern 'Service|validate' --limit 40
 
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
+   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/source_reader.py" read \
      "$source_manifest" --path src/service.py \
      --symbol Service.validate --symbol load_config --lines 1:20
 
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
+   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/source_reader.py" read \
      "$source_manifest" --path src/service.py --full
 
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
+   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/source_reader.py" read \
      "$source_manifest" --requests <run-dir>/source-requests.json
    ```
 
@@ -137,15 +137,15 @@ creating an unowned index; a worker reports the gap to its coordinator.
 ## Other scripts
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/analyze_file.py" \
   --snapshot "$source_manifest" --project-root "<bound-project-root>" \
   --file src/utils/circuit_breaker.py --output-format markdown
 
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/analyze_file.py" \
   --snapshot "$source_manifest" --project-root "<bound-project-root>" \
   --file src/utils/circuit_breaker.py --find-usages --symbol CircuitBreaker
 
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/ast_parser.py" src/services/auth.ts
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/ast_parser.py" src/services/auth.ts
 ```
 
 `analyze_file.py` takes `--file` (required, any supported extension),

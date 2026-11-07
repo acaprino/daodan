@@ -116,7 +116,7 @@ analysis does not establish this prerequisite.
 ### Request to files
 
 Translate the request into the files to review. Which tool answers which
-question: `references/tools-guide.md` of `codebase-map:map-method`.
+question: `references/tools-guide.md` of `codebase-map:map`.
 
 1. **Find.** Take the names from the request: files, functions, modules,
    errors, terms. For each, the cheapest tool: explicit file → none; module →
@@ -251,7 +251,7 @@ interconnect-map dispatch. Preserve the blind derivation's input isolation.
 
 ### Phase 1a: Codebase Map Analysis
 
-The review coordinator executes the `codebase-map:map-method` analyze entry's preflight, checkpoints, delivery check and publication decision, and dispatches `codebase-map:map-analyst` in one isolated context for the phases. Loading a method or role body runs nothing. Phase 1c, Phase 1b and every reviewer keep their own isolated contexts.
+The review coordinator executes the `codebase-map:map` analyze entry's preflight, checkpoints, delivery check and publication decision, and dispatches `codebase-map:map-analyst` in one isolated context for the phases. Loading a method or role body runs nothing. Phase 1c, Phase 1b and every reviewer keep their own isolated contexts.
 
 1. Execute that entry's preflight and coordinator-owned delivery/publication steps against the target. Dispatch `codebase-map:map-analyst` in an isolated context for its requested phases, preserving the canonical scope checkpoints, run binding, output and completion gates:
    - Default mode: `--depth=lite` (structure + interfaces + risks only)

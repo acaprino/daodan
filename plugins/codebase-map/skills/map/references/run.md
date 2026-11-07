@@ -39,7 +39,7 @@ Classic `references/entry-analyze.md` delegates declared phases to one isolated 
 
 ```text
 # host map entry point
-codebase-map:map-method <target>
+codebase-map:map <target>
 ```
 
 The team entry:

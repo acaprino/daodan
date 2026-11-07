@@ -71,7 +71,7 @@ illustrative; use the caller-bound run and an explicitly prepared model folder.
 Run with the map interpreter:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/embedding_worker.py" \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/embedding_worker.py" \
   --request REQUEST.json --runtime-python /explicit/optional-environment/python \
   --report-out SNAPSHOT_DIRECTORY/embedding-report.json
 ```

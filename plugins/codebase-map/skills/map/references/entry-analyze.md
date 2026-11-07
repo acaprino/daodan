@@ -17,9 +17,9 @@ The analyst has its own load contract; do not load its phase units here.
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | before: Method loads; section: Resources | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | before: Method loads; section: Resources | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/run.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/snapshot.md` | before: Prerequisites | always |
 
 ## Preflight
 

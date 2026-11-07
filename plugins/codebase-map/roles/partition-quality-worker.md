@@ -2,7 +2,7 @@
 name: partition-quality-worker
 description: >
   Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode).
-  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its second wave.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave.
 tools: Read, Glob, Grep, Bash, Write
 model: inherit
 color: cyan
@@ -54,15 +54,15 @@ Read Phase 6 at full depth, including updates; comments and documentation verifi
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify; section: Partition worker; section: Team extensions | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | not-lite |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and not-lite |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | from: Maintained documentation | documentation and not-lite |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | section: Perimeter | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/standalone.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/reading.md` | section: Task views | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify; section: Partition worker; section: Team extensions | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | from: Maintained documentation | documentation and not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/run.md` | section: Perimeter | always |
 
 ## PHASE EXECUTION
 

@@ -36,7 +36,7 @@ the actual candidate and leave any gate needing that comparison unavailable.
 
 Execute preparation once under the computed roster and support requirements.
 For team review Phase 1a, when selected, the
-coordinator executes the `codebase-map:map-method` analyze entry's preflight,
+coordinator executes the `codebase-map:map` analyze entry's preflight,
 answerable checkpoints, delivery check and publication decision, dispatching
 `codebase-map:map-analyst` in one isolated context through the consuming
 workflow's declared host harness. Loading either body alone executes nothing;

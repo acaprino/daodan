@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'plugins/codebase-map/skills/map-method/scripts'))
+sys.path.insert(0, str(ROOT / 'plugins/codebase-map/skills/map/scripts'))
 import context_packet
 import scope_planner
 import snapshot

@@ -24,10 +24,10 @@ Read named core sections by locating headings or fenced skeletons before bounded
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/snapshot.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phase-0.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/run.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/snapshot.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phase-0.md` | all | always |
 
 ## CRITICAL RULES
 
@@ -56,7 +56,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
    - `--update`: require an update base; error out if no usable parent team run exists (execution mode is still resolved at the checkpoint)
    - `--no-update`: skip parent detection and run every partition fresh
    - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `references/entry-analyze.md`)
-3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-map:map-method` skill's `references/run.md`):
+3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-map:map` skill's `references/run.md`):
    - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
    - Set `RUN_DIR = .codebase-map/runs/<run-id>`
    - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-map/runs/legacy-<date>/` first
@@ -64,7 +64,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
 4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and its snapshot resolves through `snapshot.py resolve <parent-run-dir>`. With a candidate, run the change set once over the whole target:
 
    ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" diff \
+   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" diff \
      .codebase-map/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
    ```
 
@@ -121,7 +121,7 @@ Runs once for the whole run, inline in the orchestrating context, before partiti
 **Output file:** `$RUN_DIR/knowledge/navigation.md`
 **Output file:** `$RUN_DIR/knowledge/documentation-leads.md`
 
-See the `codebase-map:map-method` skill's `references/phase-0.md` for the full output templates.
+See the `codebase-map:map` skill's `references/phase-0.md` for the full output templates.
 
 ### Run partition detection algorithm
 
@@ -143,12 +143,12 @@ Otherwise, run the detection chain (first rule that matches wins):
 3. **Layer split:**
    - `src/{backend,frontend}`, `src/{api,web}`, `src/{server,client}`, or root-level `backend/` + `frontend/`
 4. **Language split:**
-   - Use `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/classifier.py` to count files per language
+   - Use `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/classifier.py` to count files per language
    - If ≥2 languages with ≥20 files each: partition per language (`*.py` -> "python", `*.ts/*.tsx` -> "typescript")
    - Stylesheets (`css` in the classifier's counts) never form a language partition and never count toward the two languages: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side
 5. **Fallback:** single partition wrapping the entire target, name = `root`
 
-**Always outside every partition:** whatever the perimeter leaves out (see `## Perimeter` in the `codebase-map:map-method` skill's `references/run.md`): what Git ignores, every directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). A partition path the user names is analyzed as given.
+**Always outside every partition:** whatever the perimeter leaves out (see `## Perimeter` in the `codebase-map:map` skill's `references/run.md`): what Git ignores, every directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). A partition path the user names is analyzed as given.
 
 **Partition naming rules:**
 1. From workspace path -> basename
@@ -217,7 +217,7 @@ Keep storage separate from flags; resume preserves the recorded selection.
 Immediately after the scope is settled, either by existing authorization or by an answer, write this run's snapshot over the whole target, before any worker is dispatched:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write \
   <target> --format "$snapshot_format" --out "$source_manifest"
 ```
 

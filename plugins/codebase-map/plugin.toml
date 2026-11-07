@@ -12,7 +12,7 @@ optional = ["execution.parallel", "mcp.servers"]
 required = []
 
 [components]
-skills = ["map-method"]
+skills = ["map"]
 roles = ["map-analyst", "partition-behavior-worker", "partition-quality-worker", "partition-structure-worker", "partition-synthesizer", "semantic-interconnect-mapper"]
 workflows = []
 policies = ["write-confinement"]
@@ -25,4 +25,4 @@ exports = ["contracts/context.toml"]
 # optional MCP server is activated on a new host.
 name = "codebase-map"
 command = "uv"
-args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py"]
+args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py"]

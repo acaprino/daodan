@@ -2,7 +2,7 @@
 name: partition-structure-worker
 description: >
   Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory.
-  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its first wave.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its first wave.
   DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.
 tools: Read, Glob, Grep, Bash, Write
 model: inherit
@@ -44,12 +44,12 @@ Read named core sections by locating headings or fenced skeletons before bounded
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | before: Team mode; section: Partition worker; section: Team extensions | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/run.md` | section: Perimeter | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/standalone.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/reading.md` | section: Task views | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-1-2.md` | before: Team mode; section: Partition worker; section: Team extensions | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/run.md` | section: Perimeter | always |
 
 ## PHASE EXECUTION
 

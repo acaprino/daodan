@@ -99,21 +99,21 @@ SECURITY:
 ### Scan Documentation Health
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/doc_review.py" scan \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/doc_review.py" scan \
   --path docs/ --output <run-dir>/doc_health_report.json
 ```
 
 ### Validate Links
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/doc_review.py" validate-links \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/doc_review.py" validate-links \
   --path docs/
 ```
 
 ### Verify Against Source Code
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/doc_review.py" verify \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/doc_review.py" verify \
   --doc docs/agents/lifecycle.md --source src/agents/lifecycle.py
 ```
 
@@ -130,21 +130,21 @@ belong to a separately authorized knowledge operation.
 ### Analyze Comment Quality
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" analyze \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/rewrite_comments.py" analyze \
   src/main.py --report
 ```
 
 ### Scan Directory for Comment Issues
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" scan \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/rewrite_comments.py" scan \
   src/ --recursive --issues-only
 ```
 
 ### Generate Comment Health Report
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" report \
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/rewrite_comments.py" report \
   src/ --output <run-dir>/comment_health.md
 ```
 
@@ -157,7 +157,7 @@ or source fixes. Record proposals in the run for the development/readability own
 ### View Standards Reference
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/rewrite_comments.py" standards
+python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/rewrite_comments.py" standards
 ```
 
 ## Comment Type Classification

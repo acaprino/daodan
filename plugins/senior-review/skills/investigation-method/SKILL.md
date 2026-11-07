@@ -25,7 +25,7 @@ a time, or record them with work-record's `ask` and close the turn. Mark facts
 
 ## 2. Perimeter
 
-From the stack and the named symbols, load `codebase-map:map-method`, locate
+From the stack and the named symbols, load `codebase-map:map`, locate
 the symbols through its `references/locate.md` (`codebase_map_search` or
 `snapshot.py search` with the names in the report and the traceback frames;
 exact symbol and traceback matches rank first), then take `snapshot.py

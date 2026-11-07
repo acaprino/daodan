@@ -31,23 +31,23 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/standalone.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | section: Task views | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phase-0.md` | all | phase-0 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | section: Phase 1: Structure Extraction | phase-1 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-1-2.md` | section: Phase 2: Interface Analysis | phase-2 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | section: Phase 3: Flow Tracing | phase-3 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-3-4.md` | section: Phase 4: Semantic Understanding | phase-4 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify | phase-5 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | phase-6 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | from: Maintained documentation | phase-6 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and phase-6 and not-lite |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/phase-7.md` | before: Team mode | phase-7 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/update.md` | all | update |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/deepen.md` | section: Analyst in cards mode | cards |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/standalone.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/reading.md` | section: Task views | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/snapshot.md` | before: Prerequisites | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phase-0.md` | all | phase-0 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-1-2.md` | section: Phase 1: Structure Extraction | phase-1 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-1-2.md` | section: Phase 2: Interface Analysis | phase-2 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-3-4.md` | section: Phase 3: Flow Tracing | phase-3 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-3-4.md` | section: Phase 4: Semantic Understanding | phase-4 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify | phase-5 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | phase-6 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | from: Maintained documentation | phase-6 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and phase-6 and not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/phase-7.md` | before: Team mode | phase-7 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/update.md` | all | update |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/deepen.md` | section: Analyst in cards mode | cards |
 
 ## Execute the prepared brief
 

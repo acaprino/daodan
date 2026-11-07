@@ -19,7 +19,7 @@ the entire project's map must already be complete.
 `team-review`, or `pr-review` for a pull request, through these steps.
 
 Do not delegate execution to another workflow or nested lifecycle scheduler.
-For team-review Phase 1a, the coordinator executes `codebase-map:map-method`
+For team-review Phase 1a, the coordinator executes `codebase-map:map`
 analyze preflight, answerable checkpoints, delivery check and publication decision.
 Its `codebase-map:map-analyst` executes requested phases in one isolated context
 through the declared host harness. Loading a method executes no phase; the analyst

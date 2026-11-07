@@ -46,7 +46,7 @@ with `snapshot.py write --reuse` before passing it to source readers, even for
 its recorded bytes differ from current source. Returning that analysis without
 source reading does not require a new full run.
 
-Load `codebase-map:map-method` for exact `source_reader.py outline` and `read`
+Load `codebase-map:map` for exact `source_reader.py outline` and `read`
 commands. Outline lists metadata to help choose paths and exact qualified
 symbols; it does not validate current source or establish deep reading. Read
 checks the requested file's content and parser identity, then emits selected
@@ -108,7 +108,7 @@ Context-builder that produces a structured map of a codebase's contracts, invari
 
 | Pipeline | Phase | Artifact produced |
 |---|---|---|
-| The team entry of `codebase-map:map-method` | Phase 3 | `08-interconnect-map.md`, the global cross-partition view |
+| The team entry of `codebase-map:map` | Phase 3 | `08-interconnect-map.md`, the global cross-partition view |
 | The host branch-review entry (the team-review variant of `senior-review:review-method`) | Phase 1b | `.team-review/02-interconnect.md`, which every reviewer reads and which `logic-integrity-auditor` requires |
 | A host documentation workflow, when one is explicitly adapted | Guide preparation, when needed by the file/audience plan | The owned run's interconnect report, cited by the assigned writers and guide reviewer |
 
@@ -122,13 +122,13 @@ Input source differs per pipeline: Codebase Map output for `team-review`, the co
 
 ## Skills
 
-### `map-method`
+### `map`
 
 The method itself: structure extraction fused with semantic reading, the concurrent runs model, Phase 0, and the multi-language script suite (Python stdlib-only; optional tree-sitter for Java/JS/TS/Rust/Go fidelity; a stdlib tokenizer for CSS/SCSS/LESS; Python >= 3.12, a declared floor the entry scripts enforce because the `ast` grammar is the running interpreter's), including `source_reader.py` for validated source blocks and `cascade_scan.py`, which lists the stylesheet rules with global reach that can break a screen. Named `analyze` until plugin 3.0.0, when it shared its name with the command and the command shadowed it on any host that lists both under one identifier.
 
 | | |
 |---|---|
-| **Load as** | `codebase-map:map-method`; the team entry's workers read it directly, and a host map entry point applies it |
+| **Load as** | `codebase-map:map`; the team entry's workers read it directly, and a host map entry point applies it |
 | **Use for** | Codebase understanding, architecture mapping, onboarding, evidence for a subsequent review |
 
 **Capabilities:**
@@ -147,13 +147,13 @@ remain with their separately authorized owners.
 
 #### Parser implementation layout
 
-Within the plugin, `skills/map-method/scripts/languages/` holds the adapters. `base.py` defines shared dataclasses and the `LanguageAdapter` protocol; `__init__.py` provides extension dispatch through `detect_language` and `get_adapter`; `comments.py` contains the per-language comment lexer and rustdoc postprocessor; `_treesitter.py` loads optional tree-sitter with fallbacks; `semantic.py` extracts the binding and reference evidence the resolver consumes, per language. Language modules are `python.py`, `java.py`, `javascript.py`, `typescript.py`, `sql.py`, `plsql.py`, `rust.py`, `go.py` and `stylesheet.py`.
+Within the plugin, `skills/map/scripts/languages/` holds the adapters. `base.py` defines shared dataclasses and the `LanguageAdapter` protocol; `__init__.py` provides extension dispatch through `detect_language` and `get_adapter`; `comments.py` contains the per-language comment lexer and rustdoc postprocessor; `_treesitter.py` loads optional tree-sitter with fallbacks; `semantic.py` extracts the binding and reference evidence the resolver consumes, per language. Language modules are `python.py`, `java.py`, `javascript.py`, `typescript.py`, `sql.py`, `plsql.py`, `rust.py`, `go.py` and `stylesheet.py`.
 
 ---
 
 ## Shared and standalone model consumption
 
-`map-method` is also the standalone consumer entry for an LLM working without the
+`map` is also the standalone consumer entry for an LLM working without the
 `daodan` entry plugin or its workflows. Its discovery description covers ordinary
 project questions, debugging, feature work, refactoring, reviews and documentation.
 The same `references/standalone.md` navigation unit is loaded by classic analysis,
@@ -178,7 +178,7 @@ or scheduler.
 
 ## Entry and methods
 
-The plugin has no command of its own. A host map entry point loads `codebase-map:map-method`: without a complete analysis of the project it runs the analyze entry (`references/entry-analyze.md`) at lite depth, and for a large, multi-language or multi-workspace scope it recommends the team entry (`references/entry-team-analyze.md`) and the user chooses. With an analysis it updates it incrementally when stale, then deepens the area named, or the whole target, as `references/deepen.md` directs. Senior-review runs the same entries as a composed caller; former abstraction-audit and lifecycle callers are inactive in the new base.
+The plugin has no command of its own. A host map entry point loads `codebase-map:map`: without a complete analysis of the project it runs the analyze entry (`references/entry-analyze.md`) at lite depth, and for a large, multi-language or multi-workspace scope it recommends the team entry (`references/entry-team-analyze.md`) and the user chooses. With an analysis it updates it incrementally when stale, then deepens the area named, or the whole target, as `references/deepen.md` directs. Senior-review runs the same entries as a composed caller; former abstraction-audit and lifecycle callers are inactive in the new base.
 
 ### Analyze entry
 
@@ -300,7 +300,7 @@ may bind a custom project-relative store with `--store`; it carries a
 in it bind the same project. Shell workflows keep
 naming `.codebase-map/`, which stays the default.
 
-See the [MCP contract](../../plugins/codebase-map/skills/map-method/references/mcp.md)
+See the [MCP contract](../../plugins/codebase-map/skills/map/references/mcp.md)
 for startup, tool schemas, event cursors, how to prepare and call
 `codebase_map_context` and the Tri-Tech Code integration boundary. Register the
 server on a host without automatic registration; the historical host reference
@@ -367,7 +367,7 @@ failing test, and the fix passed the hidden tests of the real commit. The whole
 task used 6 searches and 9 reads.
 
 The guide that states this loop, with its budgets, is
-[`locate.md`](../../plugins/codebase-map/skills/map-method/references/locate.md).
+[`locate.md`](../../plugins/codebase-map/skills/map/references/locate.md).
 The implementer's brief in project-delivery and the investigation method in
 senior-review point to it, so the agents that change code receive it.
 
@@ -458,13 +458,13 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `codebase-map:map-method` | Static mapping and standalone navigation of existing map evidence. TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps. DO NOT TRIGGER WHEN: no project code or documentation. | [map-method](<../../plugins/codebase-map/skills/map-method/SKILL.md>) |
+| Skill | `codebase-map:map` | Static mapping and standalone navigation of existing map evidence. TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps. DO NOT TRIGGER WHEN: no project code or documentation. | [map](<../../plugins/codebase-map/skills/map/SKILL.md>) |
 | Role | `codebase-map:map-analyst` | Owns the declared classic Codebase Map phases in one isolated context, reading the bound snapshot and writing only its run's analysis artifacts. TRIGGER WHEN: dispatched by an analysis coordinator with a prepared classic run and resolved scope. | [map-analyst](<../../plugins/codebase-map/roles/map-analyst.md>) |
-| Role | `codebase-map:partition-behavior-worker` | Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its second wave. | [partition-behavior-worker](<../../plugins/codebase-map/roles/partition-behavior-worker.md>) |
-| Role | `codebase-map:partition-quality-worker` | Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its second wave. | [partition-quality-worker](<../../plugins/codebase-map/roles/partition-quality-worker.md>) |
-| Role | `codebase-map:partition-structure-worker` | Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-structure-worker](<../../plugins/codebase-map/roles/partition-structure-worker.md>) |
-| Role | `codebase-map:partition-synthesizer` | Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method through the host map entry point in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-synthesizer](<../../plugins/codebase-map/roles/partition-synthesizer.md>) |
-| Role | `codebase-map:semantic-interconnect-mapper` | Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and adapted documentation workflows. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-review's branch review, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
+| Role | `codebase-map:partition-behavior-worker` | Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave. | [partition-behavior-worker](<../../plugins/codebase-map/roles/partition-behavior-worker.md>) |
+| Role | `codebase-map:partition-quality-worker` | Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave. | [partition-quality-worker](<../../plugins/codebase-map/roles/partition-quality-worker.md>) |
+| Role | `codebase-map:partition-structure-worker` | Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-structure-worker](<../../plugins/codebase-map/roles/partition-structure-worker.md>) |
+| Role | `codebase-map:partition-synthesizer` | Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-synthesizer](<../../plugins/codebase-map/roles/partition-synthesizer.md>) |
+| Role | `codebase-map:semantic-interconnect-mapper` | Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and adapted documentation workflows. TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by senior-review's branch review, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
 
 ### Host exports
 
@@ -487,7 +487,7 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 - Exported shared contract: [contracts/context.toml](<../../plugins/codebase-map/contracts/context.toml>).
 - Neutral policy: [write-confinement](<../../plugins/codebase-map/policies/write-confinement.toml>). Enforcement is documented in the policy and host reference.
-- MCP server `codebase-map`: `uv`, `run`, `--no-config`, `--no-project`, `--script`, `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py`. Host registration differs; see the host reference.
+- MCP server `codebase-map`: `uv`, `run`, `--no-config`, `--no-project`, `--script`, `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py`. Host registration differs; see the host reference.
 
 <!-- daodan:reference:end -->
 
@@ -508,7 +508,7 @@ not a live-run cost or an installed-host execution claim.
 
 ---
 
-## Static analysis engine (`skills/map-method/scripts/`)
+## Static analysis engine (`skills/map/scripts/`)
 
 The helpers extract structure, resolve internal imports, distinguish static
 references from candidates and classify files. They perform static analysis only.
@@ -563,7 +563,7 @@ projects that floor resolves 9.7% and 13.0% of call references, so
 
 ```bash
 uv run --with jedi --no-config --no-project --script \
-  "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/resolve_edges.py" \
+  "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/resolve_edges.py" \
   <run-dir>/snapshot/manifest.sqlite --engine jedi --environment <venv-or-site-packages>
 ```
 
@@ -731,7 +731,7 @@ Invalid input preserves the prior generation. Handled replacement errors restore
 previous bytes; digest validation rejects an interrupted pair. Card text
 and names are escaped as data. The renderer makes no LLM or network calls;
 existing card-generation cost is unknown unless its owning run recorded it.
-Unread or stale areas return to `map-method`'s existing deepening procedure,
+Unread or stale areas return to `map`'s existing deepening procedure,
 which reuses fresh cards and records observed LLM cost separately.
 
 ### Module graph (`modules.py`)
@@ -756,7 +756,7 @@ responsibility modules never share an edge, a module's query lists the build
 units holding its files as read scope. The graph binds the snapshot digest and
 the proposals ledger; a rebuild re-verifies everything and reports what
 changed. The contract is in
-[modules.md](../../plugins/codebase-map/skills/map-method/references/modules.md);
+[modules.md](../../plugins/codebase-map/skills/map/references/modules.md);
 tests are in `scripts/tests/test_modules.py`.
 
 ### Code context: scope, packets and consumers

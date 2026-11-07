@@ -18,7 +18,7 @@ project's tests.
 
 | Plugin | Responsibility | Entry |
 |---|---|---|
-| [Codebase Map](plugins/codebase-map/README.md) | Inventory, symbols, relationships, semantic descriptions with provenance, build units and modules, served to the agent on demand | `skills/map-method`, MCP tools `codebase_map_*` |
+| [Codebase Map](plugins/codebase-map/README.md) | Inventory, symbols, relationships, semantic descriptions with provenance, build units and modules, served to the agent on demand | `skills/map`, MCP tools `codebase_map_*` |
 | [senior-review](plugins/senior-review/README.md) | Review of a change, branch, PR, plan or document: measured roster, focused auditors composed per review, evidenced findings, adversarial verification, coverage gaps | `skills/review-method` |
 
 senior-review depends on Codebase Map; Codebase Map stands alone.
@@ -52,7 +52,7 @@ claude plugin install senior-review@daodan
 ```
 
 From a checkout, `claude plugin marketplace add <path>` registers the folder
-instead. The map entry is the skill `/codebase-map:map-method <request>`; the
+instead. The map entry is the skill `/codebase-map:map <request>`; the
 `codebase-map` MCP server starts with the plugin under `uv`. `/reload-plugins`
 re-reads the plugin files but does not restart that server.
 

@@ -1,5 +1,5 @@
 ---
-name: map-method
+name: map
 description: >
   Static mapping and standalone navigation of existing map evidence.
   TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps.
@@ -32,7 +32,7 @@ description: >
 `references/entry-analyze.md` dispatches isolated `codebase-map:map-analyst`;
 `references/entry-team-analyze.md` uses isolated partition workers. Entries own
 `.codebase-map/` publication (`references/run.md`).
-Loading `codebase-map:map-method` starts no analysis or run.
+Loading `codebase-map:map` starts no analysis or run.
 
 ## Load map
 
@@ -81,7 +81,7 @@ Use canonical skeletons in owned output. Put partition identity below titles, ne
 
 ## Resources
 
-Python >= 3.12 scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`.
+Python >= 3.12 scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/`.
 Language Support above applies throughout. These are the entry points; the
 other modules beside them are libraries they import.
 

@@ -2,7 +2,7 @@
 name: semantic-interconnect-mapper
 description: >
   Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers.
-  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-review's branch review, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by senior-review's branch review, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries.
   DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first).
 tools: Read, Write, Glob, Grep, Bash
 model: inherit
@@ -39,9 +39,9 @@ violations against. You do not review code. A vague map yields vague findings.
 
 | Resource | Sections | When |
 |---|---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/SKILL.md` | all | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/map-method/references/reading.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/map/references/reading.md` | all | always |
 
 Read source as `references/evidence.md ## Source reading` directs: graph first, exact reads before any contract claim, expansion to callers, gates, types, configuration and presentation, every binding, range and gap recorded.
 

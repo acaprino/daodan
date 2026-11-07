@@ -13,7 +13,7 @@ Scope: 7 skills, 33 references, 42 role files, 8 compositions, 7 contracts, `plu
 | Cross-skill `references/*.md` mentions | all name the owning skill in the same or previous line |
 | `## Section` of file references | all found |
 | `references/reviewer-catalog.json` (review-preparation SKILL.md:34) | **absent**; README.md:21 already declares it a generated export artifact |
-| `references/locate.md` (investigation-method SKILL.md:29) | resolves to `codebase-map:map-method` |
+| `references/locate.md` (investigation-method SKILL.md:29) | resolves to `codebase-map:map` |
 
 ## B. Roles
 

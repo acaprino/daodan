@@ -13,7 +13,7 @@ Richiesta + Codebase Map → file da rivedere → contesto → review
 
 ## Phase 0 — Cosa rivedere
 
-Traduce la richiesta nei file da rivedere. Prerequisito: la mappa completa del progetto esiste già; se manca, prima Codebase Map. Quale strumento risponde a quale domanda: `plugins/codebase-map/skills/map-method/references/tools-guide.md`.
+Traduce la richiesta nei file da rivedere. Prerequisito: la mappa completa del progetto esiste già; se manca, prima Codebase Map. Quale strumento risponde a quale domanda: `plugins/codebase-map/skills/map/references/tools-guide.md`.
 
 1. **Trova.** Dalla richiesta prendi i nomi: file, funzioni, moduli, errori, termini. Per ognuno lo strumento più economico: file esplicito → nessuno; modulo → `codebase_map_modules`; nome o parola → `codebase_map_search`; flusso → `codebase_map_graph`, un hop alla volta dai file già confermati. Una ricerca vuota si riprova una volta con un sinonimo; un indice mancante o stale non è una ricerca vuota, è un prerequisito mancante.
 2. **Conferma.** Rispetta i limiti espliciti («solo questo file», un diff); altrimenti i nomi sono punti di partenza e includi solo i file pertinenti alla richiesta, con la riga che lo dimostra: `codebase_map_outline` per i simboli, `codebase_map_read` solo del pezzo che decide. Una richiesta su una modifica include i chiamanti che la modifica coinvolge (`codebase_map_edit_impact`). Il grafo non vede collegamenti dinamici né copie: non inventarli, cercali per nome e leggi; se non si confermano, dillo.

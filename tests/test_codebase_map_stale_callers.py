@@ -13,7 +13,7 @@ import unittest
 from contextlib import closing
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map-method/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
 sys.path.insert(0, str(SCRIPTS))
 import mcp_service
 import semantic_store

@@ -7,7 +7,7 @@
         "--no-config",
         "--no-project",
         "--script",
-        "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py"
+        "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py"
       ]
     }
   }

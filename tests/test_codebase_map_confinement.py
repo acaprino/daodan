@@ -17,7 +17,7 @@ from unittest import mock
 HELPER = Path(os.environ.get(
     "CODEBASE_MAP_CONFINEMENT_HELPER",
     Path(__file__).resolve().parents[1]
-    / "plugins/codebase-map/skills/map-method/scripts/confinement.py",
+    / "plugins/codebase-map/skills/map/scripts/confinement.py",
 ))
 SPEC = importlib.util.spec_from_file_location("codebase_map_confinement", HELPER)
 assert SPEC and SPEC.loader
