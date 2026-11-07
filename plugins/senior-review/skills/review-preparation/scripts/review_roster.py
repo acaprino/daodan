@@ -82,6 +82,8 @@ LANGUAGE_BY_SUFFIX = {
     ".rs": "rust", ".go": "go", ".java": "java", ".kt": "kotlin", ".sql": "sql",
     ".css": "stylesheet", ".scss": "stylesheet", ".less": "stylesheet",
 }
+# A JSX file is React code as well as its language.
+FRAMEWORK_BY_SUFFIX = {".tsx": "react", ".jsx": "react"}
 
 KINDS = ("changeset", "plan", "spec", "doc")
 
@@ -95,6 +97,7 @@ CODE_FLOOR = [f"senior-review:{name}" for name in (
     "input-validation-auditor", "resource-lifecycle-auditor", "algorithmic-cost-auditor",
     "security-auditor", "data-integrity-auditor", "chicken-egg-detector",
     "temporal-resilience-auditor", "distributed-flow-auditor", "api-contract-auditor",
+    "logic-integrity-auditor",
 )]
 DEEP_ROSTER = STANDARD_ROSTER + [
     "senior-review:logic-integrity-auditor",
@@ -102,6 +105,7 @@ DEEP_ROSTER = STANDARD_ROSTER + [
     "senior-review:security-auditor",
     "senior-review:data-integrity-auditor",
     "senior-review:cleanup-auditor",
+    "senior-review:boundary-auditor",
 ]
 # The fixed set of a plan, a specification or a document under a branch review.
 KIND_ROSTER = {
@@ -116,9 +120,10 @@ KIND_ROSTER = {
 # supplied by the consuming host, not hardcoded here.
 SUPPORT = ["senior-review:premise-auditor"]
 # Signal-activated specialists, added at any branch rigor when the signal is present.
-# Stack specialists owned by former marketplace plugins are not selected until
-# equivalent senior-review micro skills exist.
-LANGUAGE_ROLE: dict[str, str] = {}
+LANGUAGE_ROLE = {
+    "typescript": "senior-review:typescript-auditor",
+    "react": "senior-review:react-auditor",
+}
 SIGNAL_ROLE = {
     "accessibility": "senior-review:accessibility-auditor",
     "performance": "senior-review:performance-auditor",
@@ -555,7 +560,8 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     kinds = {row["path"]: classify_path(row["path"]) for row in rows}
     production = [p for p, k in kinds.items() if k == "production"]
     modules = sorted({Path(p).parts[0] if len(Path(p).parts) > 1 else "." for p in production})
-    languages = sorted({LANGUAGE_BY_SUFFIX[Path(p).suffix] for p in production if Path(p).suffix in LANGUAGE_BY_SUFFIX})
+    languages = sorted({LANGUAGE_BY_SUFFIX[Path(p).suffix] for p in production if Path(p).suffix in LANGUAGE_BY_SUFFIX}
+                       | {FRAMEWORK_BY_SUFFIX[Path(p).suffix] for p in production if Path(p).suffix in FRAMEWORK_BY_SUFFIX})
     lines = sum((row["added"] or 0) + (row["removed"] or 0) for row in rows)
     interfaces = interface_changes(diff) if basis == "changeset" else []
     map_signals = impact_signals(impact, context, conclusion_paths if basis == "changeset" else [])

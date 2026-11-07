@@ -13,7 +13,7 @@ required = ["codebase-map"]
 
 [components]
 skills = ["defect-taxonomy", "review-quality-gates", "review-method", "review-preparation", "review-consolidation", "application-cleanup-method", "investigation-method"]
-roles = ["accessibility-auditor", "api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "operability-auditor", "performance-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor", "authorization-auditor", "session-delegation-auditor", "secret-exposure-auditor", "input-validation-auditor", "untrusted-resource-auditor", "browser-security-auditor", "callback-authenticity-auditor", "ai-boundary-auditor", "audit-trail-auditor", "transaction-integrity-auditor", "schema-coherence-auditor", "cache-consistency-auditor", "data-representation-auditor", "data-retention-auditor", "message-delivery-auditor", "remote-effect-auditor", "service-resilience-auditor", "sql-efficiency-auditor", "algorithmic-cost-auditor", "asset-delivery-auditor", "capacity-quota-auditor", "runtime-cost-auditor", "observability-auditor", "service-health-auditor", "release-compatibility-auditor", "environment-binding-auditor", "feature-flag-auditor", "recovery-auditor", "accessible-navigation-auditor", "accessible-perception-auditor", "local-correctness-auditor", "local-concurrency-auditor", "application-reachability-auditor", "dependency-auditor", "dependency-usage-auditor", "dependency-provenance-auditor", "artifact-lifecycle-auditor"]
+roles = ["accessibility-auditor", "api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "operability-auditor", "performance-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor", "authorization-auditor", "session-delegation-auditor", "secret-exposure-auditor", "input-validation-auditor", "untrusted-resource-auditor", "browser-security-auditor", "callback-authenticity-auditor", "ai-boundary-auditor", "audit-trail-auditor", "transaction-integrity-auditor", "schema-coherence-auditor", "cache-consistency-auditor", "data-representation-auditor", "data-retention-auditor", "message-delivery-auditor", "remote-effect-auditor", "service-resilience-auditor", "sql-efficiency-auditor", "algorithmic-cost-auditor", "asset-delivery-auditor", "capacity-quota-auditor", "runtime-cost-auditor", "observability-auditor", "service-health-auditor", "release-compatibility-auditor", "environment-binding-auditor", "feature-flag-auditor", "recovery-auditor", "accessible-navigation-auditor", "accessible-perception-auditor", "local-correctness-auditor", "local-concurrency-auditor", "application-reachability-auditor", "dependency-auditor", "dependency-usage-auditor", "dependency-provenance-auditor", "artifact-lifecycle-auditor", "storage-durability-auditor", "boundary-auditor", "responsiveness-auditor", "react-auditor", "typescript-auditor"]
 workflows = []
 policies = []
 
@@ -47,6 +47,7 @@ members = [
   "senior-review:cache-consistency-auditor",
   "senior-review:data-representation-auditor",
   "senior-review:data-retention-auditor",
+  "senior-review:storage-durability-auditor",
 ]
 
 [reviewers.compositions.distributed-flow-auditor]
@@ -66,6 +67,7 @@ members = [
   "senior-review:capacity-quota-auditor",
   "senior-review:runtime-cost-auditor",
   "senior-review:resource-lifecycle-auditor",
+  "senior-review:responsiveness-auditor",
 ]
 
 [reviewers.compositions.operability-auditor]
@@ -106,4 +108,5 @@ members = [
   "senior-review:temporal-resilience-auditor",
   "senior-review:distributed-flow-auditor",
   "senior-review:api-contract-auditor",
+  "senior-review:logic-integrity-auditor",
 ]

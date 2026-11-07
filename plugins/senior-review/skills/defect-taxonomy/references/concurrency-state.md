@@ -62,6 +62,24 @@ Reference for defect taxonomy categories 1 and 2.
 - **Difficulty**: Medium
 - **Signature**: Lock on local variable, lock on mutable field, DCL without `volatile`
 
+### 1.8a ABA Problem
+- **Pattern**: Compare-and-swap sees the same value and assumes nothing changed, but the slot was freed and reused in between
+- **Detection**: Lock-free stacks/queues, pointer CAS without a version tag
+- **Fix**: Tagged pointers or version counters, hazard pointers, epoch reclamation
+- **Difficulty**: Hard
+
+### 1.8b Priority Inversion and Lock Convoy
+- **Pattern**: A low-priority holder blocks a high-priority waiter while medium-priority work preempts the holder; or equal-priority threads hand a lock around with a context switch each time
+- **Detection**: Lock held across scheduling points, long critical sections on hot locks, real-time or UI threads waiting on worker locks
+- **Fix**: Priority inheritance, shorter critical sections, precompute outside the lock, lock-free or per-thread state
+- **Difficulty**: Medium
+
+### 1.8c False Sharing
+- **Pattern**: Independent hot variables on one cache line written from different cores
+- **Detection**: Perf counters for cache-line contention, adjacent counters in a struct updated by different threads
+- **Fix**: Padding/alignment to the cache line, per-thread counters aggregated later
+- **Difficulty**: Medium
+
 ### 1.8 Volatile / Memory Ordering Errors
 - **CWE**: 667
 - **Pattern**: C++ `volatile` != atomicity, wrong `memory_order` on atomics, JVM field visibility

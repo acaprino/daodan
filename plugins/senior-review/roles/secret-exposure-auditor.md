@@ -27,6 +27,7 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 - Inspect security-sensitive comparisons for an attacker-observable timing oracle. Establish repeated access, signal and protocol consequence before claiming exploitable prefix leakage; an equality operator alone is insufficient.
 - Trace authenticated encryption, nonce/IV generation and uniqueness under each key, tag verification before plaintext use, key derivation and algorithm mode against the required guarantee. Show a reachable reuse, malleability or loss of confidentiality, using applicable library/provider behavior.
 - Follow key selection, distribution, rotation, revocation and old-key acceptance across readers/writers and caches. Check whether exposed or retired material retains authority beyond policy; an unused secret reference is not automatically a live credential.
+- Treat certificates, domains, signing keys and tokens with an expiry as scheduled failures: trace who renews them, what verifies the renewal before the deadline and what the service does on the day they lapse.
 - Preserve source and secret bytes. Record location, type, exposure path and affected authority with redaction; do not contact a live provider merely to test a suspected credential.
 
 ## Counterevidence

@@ -46,6 +46,7 @@ The question is whether required work progresses or reaches an honest, recoverab
 - Determine whether retries repeat non-resumable downloads, scans, writes or user notifications; trace resumability and retained progress.
 - Check that retry state and the operation's state agree after a partial failure. Re-entry must not skip required work or repeat an acknowledged local effect.
 - Verify that continuous retry, fixed delay or immediate retry is consistent with load, recovery and signal requirements. Exponential backoff and a finite attempt count are not universal obligations.
+- Check what ends the loop once the trigger is gone: retries at more than one layer, queues that keep growing and clients that re-add load on recovery can sustain the degradation after its cause has cleared. Show the feedback path and the absence of load shedding or a single retry layer.
 - Trace notification deduplication, suppression and recovery announcements. Suppression must not hide a new actionable state; repeated noise must not overwhelm the required channel.
 - Route remote duplicate effects and retries multiplied across services to distributed flow with the local timeline.
 

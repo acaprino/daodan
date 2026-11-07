@@ -26,6 +26,7 @@ Read environment requirements, pipeline/promotion, precedence and interpolation 
 
 - Follow artifact promotion and selection to actual endpoints, datasets, secret references and service identities. Check accidental production/staging crossover and intended differences.
 - Resolve missing variables, key typos, unresolved placeholders, defaults and override precedence to the actual consumer or explicit fail-fast behavior.
+- Follow generated or aggregated configuration (feature lists, routing tables, allowlists) to the hard limits of its consumer: size, count, line length, parse time. A file that grows past a limit must degrade to the last good version, not take the consumer down.
 - Check locale, timezone and URL assumptions against the configured environment and permitted inputs; distinguish environment interpretation from persistent data representation.
 - Follow sidecar/mesh routing and target selection through effective rules. Record unavailable deployment values as gaps rather than guessing them.
 - Inspect procedure permissions and asset availability by reference; never expose secret values or deploy to verify a binding.

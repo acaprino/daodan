@@ -7,14 +7,15 @@ one dispatch round and ledger, no extra roles or clean skips for unknown signals
 
 | Dimension ID | Automatic activation evidence | Role to dispatch |
 |---|---|---|
-| react | React in the relevant package and target includes JSX/TSX or affected React runtime | unavailable in the imported two-owner baseline until senior-review owns equivalent React micro skills; record activation evidence and leave the specialist coverage as a declared gap |
-| typescript | Relevant TypeScript configuration and target includes TS/TSX/type contracts | unavailable in the imported two-owner baseline until senior-review owns equivalent TypeScript micro skills; record activation evidence and leave the specialist coverage as a declared gap |
+| react | Target includes JSX/TSX (`FRAMEWORK_BY_SUFFIX` in `review_roster.py`) or affected React runtime | `senior-review:react-auditor` |
+| typescript | Target includes TS/TSX | `senior-review:typescript-auditor` |
 | platform | Roster evidence for browser/PWA storage, service workers, client security policy, mobile capabilities or Electron/Tauri shell integration | unavailable in the imported two-owner baseline until senior-review owns equivalent platform/Tauri micro skills; record activation evidence and leave the specialist coverage as a declared gap |
 | python | Target includes `.py` or `.pyi` files, or the relevant package declares `pyproject.toml`, `setup.py`, `uv.lock` or `requirements*.txt` | `senior-review:code-auditor` through the host isolated-worker binding when Python-specific evidence is needed; former python-development methods are unavailable and remain declared gaps |
 | dependencies | The candidate changes a manifest or lockfile: `pyproject.toml`, `uv.lock`, `poetry.lock`, `requirements*.txt`, `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `Cargo.toml`, `Cargo.lock`, `go.mod`, `go.sum`, `Gemfile.lock`, `composer.lock`, `pom.xml`, `build.gradle*`, `*.csproj` | `senior-review:dependency-auditor` (usage and provenance members); license tooling remains a declared gap |
 
-Dependencies bind through `senior-review:dependency-auditor`. Python and
-any future stack specialist use the host isolated-worker binding when available.
+Dependencies bind through `senior-review:dependency-auditor`; TypeScript and React
+through `LANGUAGE_ROLE` in `review_roster.py`. Python and any future stack
+specialist use the host isolated-worker binding when available.
 Carry skill identities, audit-only mode, evidence-pack paths and the report
 path in its brief, as for other inline lenses.
 
@@ -33,7 +34,7 @@ Record explicit specialist requests and compare them with the computed roster;
 requests cannot remove its floor or bypass allowed dispatch. Normalize legacy
 `react-perf`/`react-performance` to `react` and `ts-safety`/`type-safety` to
 `typescript`. General performance belongs to `senior-review:performance-auditor`,
-including query and algorithm cost in a React application. React's optimizer
+including query and algorithm cost in a React application. `senior-review:react-auditor`
 retains component/render work; both may run when each is selected. Platform
 reviews client capabilities and cross-platform behavior. Service operation,
 deployment and recovery belong to `senior-review:operability-auditor`.

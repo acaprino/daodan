@@ -27,6 +27,7 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 - For templates, code evaluation and deserialization, distinguish data from executable template/source/object construction; trace available capabilities and allowed types. Unsafe syntax or a library name alone does not establish code execution.
 - For regex/parser/decompression/allocation and recursive structures, establish input size/depth/repetition, amplification, work on rejection and effective pre-sink bounds. A compressed-byte limit may not bound expansion; check expanded work.
 - Inspect normalization and alternate encodings when they bypass accepted types/ranges, and follow rejected values to ensure they cannot continue to the sink.
+- Where a value is an identity (username, email, path, slug), check that comparison and storage use one canonical form: Unicode normalization (NFC/NFKC), case folding, confusable characters, zero-width and bidirectional controls can make two inputs collide or one input render as another.
 
 ## Counterevidence
 

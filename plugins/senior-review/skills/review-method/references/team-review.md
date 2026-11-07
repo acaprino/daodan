@@ -35,8 +35,8 @@
 | API contracts | `senior-review:api-contract-auditor` |
 | Migration data validity | `senior-review:data-integrity-auditor` (same delivery as data integrity) |
 | Premise discovery or document claim check | `senior-review:premise-auditor` (declared mode) |
-| React rendering | unavailable until senior-review owns equivalent React micro skills; record activation evidence and declare the gap |
-| TypeScript/type contracts | unavailable until senior-review owns equivalent TypeScript micro skills; record activation evidence and declare the gap |
+| React rendering | `senior-review:react-auditor` |
+| TypeScript/type contracts | `senior-review:typescript-auditor` |
 | Browser, mobile and desktop compatibility | unavailable until senior-review owns equivalent platform/Tauri micro skills; record activation evidence and declare the gap |
 | Python / dependencies | `senior-review:dependency-auditor` for manifests/lockfiles; Python-specific former methods are unavailable and remain declared gaps |
 

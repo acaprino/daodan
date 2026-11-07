@@ -47,14 +47,14 @@ this table. An absent example row cannot suppress a selected reviewer.
 | F | Test protection and suite quality | unavailable in the new two-owner base unless the host supplies an adapted testing specialist; otherwise a declared gap |
 | G | API contracts | `senior-review:api-contract-auditor` |
 | H / M | Migration data validity and persistent-state integrity | `senior-review:data-integrity-auditor`, one delivery |
-| J | Concept ownership, prior art and abstraction | unavailable in the new two-owner base unless the host supplies an adapted abstraction specialist; otherwise a declared gap |
+| J | Declared architectural boundaries | `senior-review:boundary-auditor`, deep rigor; concept ownership and prior art remain a declared gap |
 | L | Temporal resilience | `senior-review:temporal-resilience-auditor` |
 | N | Resource ownership and release | `senior-review:resource-lifecycle-auditor` |
 | O | Accessibility and usable interaction paths | `senior-review:accessibility-auditor` |
 | P | General performance, queries and cost | `senior-review:performance-auditor` |
 | Q | Operability, rollout and recovery | `senior-review:operability-auditor` |
 | Other selected roles | Startup cycles, distributed flows, logic and premises | Their registered `senior-review` bodies |
-| Stack bindings | React, TypeScript, client platforms, Python and dependencies | Preparation's `references/stack-dimensions.md` |
+| Stack bindings | React, TypeScript, client platforms, Python and dependencies | Preparation's `references/stack-dimensions.md`; React and TypeScript have their own `senior-review` bodies |
 
 The code auditor retains the generalist floor and its canonical local correctness
 checks. Specialist selection adds focused inspection; it does not paste the
