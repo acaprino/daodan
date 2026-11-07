@@ -5,3 +5,4 @@ __pycache__/
 *.py[cod]
 .jcode/local/
 .daodan/
+effectiveness-metrics.json*

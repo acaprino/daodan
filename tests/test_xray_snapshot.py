@@ -204,6 +204,16 @@ class ManifestTests(unittest.TestCase):
         service = next(v for k, v in files.items() if k.endswith("orders/service.py"))
         self.assertIn("orders.models", service["imports"])
 
+    def test_a_bare_import_resolves_to_a_sibling_before_the_root(self):
+        # A flat directory of scripts imports its neighbours by bare name, as
+        # Python does when the importer runs as a script (sys.path[0]).
+        write(self.src, "tools/store.py", "def open_store():\n    return 1\n")
+        write(self.src, "tools/cli.py", "from store import open_store\nimport orders.service\n")
+        import snapshot
+        resolved = snapshot.resolved_imports(snapshot.build_manifest(self.src))
+        self.assertEqual(resolved["tools/cli.py"]["store"], ["tools/store.py"])
+        self.assertEqual(resolved["tools/cli.py"]["orders.service"], ["orders/service.py"])
+
     def test_overloaded_methods_share_a_widened_span(self):
         source = textwrap.dedent(
             """

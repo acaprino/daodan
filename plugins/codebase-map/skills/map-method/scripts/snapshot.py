@@ -1604,8 +1604,10 @@ def _python_module_candidates(module: str, home: Path, target: Path) -> list[str
             base = base.parent
         return [(base / module[level:].replace(".", "/")).as_posix()]
     base = target if target.is_dir() else target.parent
+    # The importer's directory comes first: it is sys.path[0] when the file
+    # runs as a script, and flat script directories import siblings by bare name.
     return [(directory / module.replace(".", "/")).as_posix()
-            for directory in (base, base / "src")]
+            for directory in dict.fromkeys((home, base, base / "src"))]
 
 
 def resolved_imports(manifest: dict, config: dict | None = None, *,
@@ -1620,8 +1622,9 @@ def iter_resolved_imports(manifest: dict, config: dict | None = None, *,
     """Resolve each manifest specifier once, keeping its binding provenance.
 
     JS/TS paths match only explicit relative, configured or workspace targets.
-    Python absolute modules use the analyzed root and its conventional src
-    directory; relative Python modules start at the importing package.
+    Python absolute modules use the importer's directory, then the analyzed
+    root and its conventional src directory; relative Python modules start at
+    the importing package.
     """
     root = Path(manifest.get("root") or ".").resolve()
     target = (root / (manifest.get("target") or ".")).resolve()

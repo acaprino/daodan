@@ -1,0 +1,17 @@
+{
+  "name": "codebase-map",
+  "version": "1.0.1",
+  "description": "Inventory, symbols, relationships, modules and semantic descriptions of a repository, served to the agent on demand. It does not select reviewers or emit correctness verdicts.",
+  "author": {
+    "name": "Alfio Caprino"
+  },
+  "license": "MIT",
+  "agents": [
+    "./roles/map-analyst.md",
+    "./roles/partition-behavior-worker.md",
+    "./roles/partition-quality-worker.md",
+    "./roles/partition-structure-worker.md",
+    "./roles/partition-synthesizer.md",
+    "./roles/semantic-interconnect-mapper.md"
+  ]
+}

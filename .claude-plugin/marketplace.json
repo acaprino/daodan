@@ -1,0 +1,21 @@
+{
+  "name": "daodan",
+  "owner": {
+    "name": "Alfio Caprino"
+  },
+  "metadata": {
+    "description": "A verifiable map of the code and a composed, evidence-bound review."
+  },
+  "plugins": [
+    {
+      "name": "codebase-map",
+      "source": "./plugins/codebase-map",
+      "description": "Inventory, symbols, relationships, modules and semantic descriptions of a repository, served to the agent on demand."
+    },
+    {
+      "name": "senior-review",
+      "source": "./plugins/senior-review",
+      "description": "Review of a change, branch, PR, plan or document: focused auditors composed per review, evidenced findings, adversarial verification, coverage gaps."
+    }
+  ]
+}
