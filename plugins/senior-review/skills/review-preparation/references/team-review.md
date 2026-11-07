@@ -19,7 +19,7 @@ verification never share discovery contexts or peer results.
 | Phase | Work | Output |
 |---|---|---|
 | 0 | Resolve the target (0), detect dimensions (0b) | `.team-review/00-scope.md` |
-| 1 | Understand the review object within the resolved scope and choose suitable reviewers with clear assignments | `01-context.md`, `02-selection.md` |
+| 1 | Understand the review object within the resolved scope and choose suitable reviewers | `01-context.md`, `02-selection.md` |
 | 2 | One isolated worker per validated job, with canonical member checks; every finding declares its load-bearing premise and provenance | assigned job reports |
 | 3 | Delivery barrier: every job and member delivers findings or an explicit no-findings result | ledger |
 | 4 | Consolidation weighted by provenance, verification panel (4b), completeness critic (4c) | `99-consolidated.md` |
@@ -196,8 +196,8 @@ The coordinator prepares the review within Phase 0's scope:
 
 1. Read the scoped material and the context needed to understand its purpose, how it works and what matters for the requested review. Use the existing map's tools to locate relevant source, contracts and tests.
 2. Consult the available reviewers' mandates and choose the competencies pertinent to that object and intent. Catalog descriptions shortlist candidates; read those candidates' bodies. Languages and extensions guide the choice but do not decide it alone.
-3. Give each selected reviewer a clear assignment: what to examine and which parts of the scope to cover, ready to run together in Phase 2. Each assignment names the reference in `01-context.md` (path, lines, version) that motivates it, so a finding can be traced back to it. State any needed competence that is unavailable, including the baseline of a stack the object touches.
+3. Prepare the selected reviewers to start together in Phase 2, each on the whole scope with its own mandate and the context of step 1. State any needed competence that is unavailable, including the baseline of a stack the object touches.
 
 Stop when it is clear what is being reviewed and who should review it; defect analysis belongs to the reviewers.
 
-Keep a short description and relevant source references in `01-context.md`, and the selected reviewers and assignments in `02-selection.md`. Finalize and bind that selection through `references/composition.md`. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.
+Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each in `02-selection.md`. Finalize and bind that selection through `references/composition.md`. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.

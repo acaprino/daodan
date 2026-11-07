@@ -60,7 +60,7 @@ declaring the requested output complete.
    ## Code Review Report: {target}
 
    Session: .team-review/
-   Context: Codebase Map run {run id}; review object in 01-context.md, assignments in 02-selection.md
+   Context: Codebase Map run {run id}; review object in 01-context.md, selected reviewers in 02-selection.md
    Reviewed by: {dimensions} ({N} reviewers)
    Files reviewed: {count}
    Verification: {verified} verified, {filtered} false positives, {contested} contested, {premise_refuted} premise-refuted, {premise_contested} premise-contested{cost_guard_note}

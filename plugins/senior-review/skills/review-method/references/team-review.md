@@ -8,7 +8,7 @@
    when a future registered identity has no example row here. A missing binding
    is a failed delivery, never permission to omit that reviewer.
 3. The jobs come from Phase 1 (`.team-review/02-selection.md`): each job
-   carries its selected reviewers and scoped assignments. The mapping below
+   carries its selected reviewer and covers the whole scope. The mapping below
    names dimension owners; it adds no job to that selection. Premise verification
    happens per finding, in Phase 4b, with its own inputs and contexts.
 
@@ -65,7 +65,7 @@ You are reviewing for the {dimension} dimension.
 
 ## Context files (read these before analyzing code)
 - Context: .team-review/01-context.md (review object and relevant source references)
-- Selection: .team-review/02-selection.md (your job's reviewers and scoped assignments)
+- Selection: .team-review/02-selection.md (the selected reviewers and why)
 - Codebase Map: the complete run named in the context; query its tools for anything the context does not cover
 
 ### Epistemic status of the shared context
@@ -82,8 +82,7 @@ one upstream observer.
 - Silence in the context is not evidence of absence. A concern the map does not
   mention may still be real; look anyway.
 
-Review the assigned aspects and report findings, completed checks and gaps:
-{assignment for this job in 02-selection.md}
+Review the whole scope under your mandate and report findings, completed checks and gaps.
 
 ## Instructions
 Follow your agent definition's analysis phases, knowledge-base loading, output format, and severity classification. Cite file:line for every finding.
@@ -128,7 +127,7 @@ Dispatch each job with:
 
 - name: the prepared job ID
 - agent: the job's bound worker role, resolved through the active host mechanism
-- task: the prepared job body once, with the scoped template inputs above and each member's assigned anchors
+- task: the prepared job body once, with the scoped template inputs above
 
 The validated jobs and their member/scope obligations are the expected set that
 Phase 3's delivery barrier waits on. Record each expected job and assigned output before dispatch. A dispatch
