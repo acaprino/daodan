@@ -135,6 +135,7 @@ SIGNAL_ROLE = {
     "distributed": "senior-review:distributed-flow-auditor",
     "contract": "senior-review:api-contract-auditor",
     "manifest": "senior-review:dependency-auditor",
+    "irreversible": "senior-review:irreversible-action-auditor",
     "storage": "senior-review:storage-durability-auditor",
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
@@ -178,6 +179,9 @@ SIGNAL_PATTERNS = {
     "ui": re.compile(r"\b(useEffect|useLayoutEffect|requestAnimationFrame|scrollTo|focus\(\)|ResizeObserver|IntersectionObserver)\b"),
     "startup": re.compile(r"\b(__main__|bootstrap|on_startup|lifespan|init_app|configure\(|register\()"),
     "distributed": re.compile(r"\b(requests\.|httpx\.|fetch\(|grpc|kafka|rabbit|celery|sqs|pubsub|publish\(|consume\()"),
+    "irreversible": re.compile(r"\b(?:Remove-Item|rm -r|rm -f|rmdir|del |unlink|rmtree|os\.remove|os\.unlink|fs\.rm|"
+                               r"unlinkSync|DROP (?:TABLE|DATABASE|INDEX)|TRUNCATE|DELETE FROM|purge|"
+                               r"push --force|--force-with-lease|-Force\b|--force\b|\.delete\(|deleteMany|destroy\()"),
     "storage": re.compile(r"\b(?:fsync|fdatasync|os\.(?:replace|rename|link|WriteFile|Create)|rename(?:Sync)?\(|"
                           r"writeFile(?:Sync)?|createWriteStream|NamedTemporaryFile|mkstemp|shutil\.move|"
                           r"flock|lockf|fcntl\.|O_CREAT|O_APPEND|File::create|std::fs::write)\b"),

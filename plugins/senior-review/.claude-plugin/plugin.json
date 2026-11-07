@@ -19,6 +19,7 @@
     "./roles/responsiveness-auditor.md",
     "./roles/react-auditor.md",
     "./roles/typescript-auditor.md",
+    "./roles/irreversible-action-auditor.md",
     "./roles/asset-delivery-auditor.md",
     "./roles/audit-trail-auditor.md",
     "./roles/authorization-auditor.md",
