@@ -51,6 +51,8 @@ LEDGER_FILE = "proposals.json"
 DECLARED_FILE = "codebase-modules.json"
 PROVENANCES = ("build", "declared", "proposed")
 STATUSES = ("confirmed", "inferred", "incomplete")
+MODULE_KINDS = ("component", "feature")
+LOCATIONS = ("internal", "external")
 MAX_MEMBERS = 500
 MAX_MODULES = 500
 MAX_EDGE_EVIDENCE = 20
@@ -680,23 +682,34 @@ def _read_units(inventory: _Inventory) -> tuple[list[dict], list[dict]]:
 def validate_module(record: object) -> dict:
     if not isinstance(record, dict):
         raise ValueError("a module must be an object")
-    unknown = set(record) - {"name", "responsibility", "members", "evidence"}
+    unknown = set(record) - {"name", "kind", "location", "responsibility", "members", "evidence"}
     if unknown:
         raise ValueError("unknown module fields: " + ", ".join(sorted(unknown)))
     name = record.get("name")
     if not isinstance(name, str) or not name.strip() or len(name) > 100:
         raise ValueError("module name must be a short text")
+    kind = record.get("kind")
+    if kind not in MODULE_KINDS:
+        raise ValueError(f"module {name}: kind is required, one of " + ", ".join(MODULE_KINDS))
+    location = record.get("location", LOCATIONS[0])
+    if location not in LOCATIONS:
+        raise ValueError(f"module {name}: location must be one of " + ", ".join(LOCATIONS))
+    if kind == "feature" and location == "external":
+        raise ValueError(f"module {name}: a feature is a highlight over internal members, it has no external location")
     responsibility = record.get("responsibility", "")
     if not isinstance(responsibility, str) or len(responsibility) > 1000:
         raise ValueError(f"module {name}: responsibility must be text of at most 1000 characters")
-    members = record.get("members")
-    if (not isinstance(members, list) or not members or len(members) > MAX_MEMBERS
+    members = record.get("members") or []
+    if location == "external":
+        if members:
+            raise ValueError(f"module {name}: an external module has no members; cite the files that bind to it as evidence")
+    elif (not isinstance(members, list) or not members or len(members) > MAX_MEMBERS
             or any(not isinstance(m, str) or not m.strip() or len(m) > 1000 for m in members)):
         raise ValueError(f"module {name}: members must be 1 to {MAX_MEMBERS} entity ids or paths")
     evidence = record.get("evidence", [])
     if not isinstance(evidence, list) or any(not isinstance(e, str) or not e.strip() or len(e) > 1000 for e in evidence):
         raise ValueError(f"module {name}: evidence must be a list of path or path#heading references")
-    return {"name": name.strip(), "responsibility": responsibility.strip(),
+    return {"name": name.strip(), "kind": kind, "location": location, "responsibility": responsibility.strip(),
             "members": list(dict.fromkeys(m.strip() for m in members)),
             "evidence": list(dict.fromkeys(e.strip() for e in evidence))}
 
@@ -884,7 +897,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
         modules.append({
             "id": "", "name": name, "aliases": sorted(dict.fromkeys(merged["aliases"])), "provenance": "build",
             "kind": sorted(set(merged["kinds"]))[0] if len(set(merged["kinds"])) == 1 else "+".join(sorted(set(merged["kinds"]))),
-            "ecosystems": sorted(set(merged["ecosystems"])), "description": merged["description"],
+            "location": "internal", "ecosystems": sorted(set(merged["ecosystems"])), "description": merged["description"],
             "responsibility": "", "members": [{"id": merged["directory"], "kind": "directory",
                                                "path": merged["directory"], "resolved": True}],
             "excluded": excluded, "manifests": sorted(merged["manifests"]),
@@ -912,16 +925,19 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
             evidence = [_evidence(inventory, text) for text in record["evidence"]]
             module_gaps = [{"kind": "member_missing", "detail": f"{m['id']}: {m['reason']}"} for m in members if not m["resolved"]]
             module_gaps.extend({"kind": "evidence_missing", "detail": f"{e['path']}: {e['reason']}"} for e in evidence if not e["resolved"])
-            resolved = sum(1 for m in members if m["resolved"])
-            if resolved == 0:
+            if not evidence:
+                module_gaps.append({"kind": "evidence_missing", "detail": "no evidence cited"})
+            # What anchors the module to the snapshot: its members, or for an external one the files binding to it.
+            anchors = evidence if record["location"] == "external" else members
+            if not evidence or not any(a["resolved"] for a in anchors):
                 status = "incomplete"
             elif provenance == "declared":
-                status = "confirmed" if resolved == len(members) else "incomplete"
+                status = "confirmed" if all(a["resolved"] for a in anchors) else "incomplete"
             else:
                 status = "inferred"
             modules.append({
-                "id": "", "name": record["name"], "aliases": [], "provenance": provenance, "kind": "responsibility",
-                "ecosystems": [], "description": None, "responsibility": record["responsibility"],
+                "id": "", "name": record["name"], "aliases": [], "provenance": provenance, "kind": record["kind"],
+                "location": record["location"], "ecosystems": [], "description": None, "responsibility": record["responsibility"],
                 "members": members, "excluded": [], "manifests": [DECLARED_FILE] if provenance == "declared" else [],
                 "registered_by": [], "evidence": evidence, "dependencies": [], "path_dependencies": [],
                 "conflicts": [], "gaps": module_gaps, "status": status,
@@ -998,7 +1014,8 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
     def edge(kind, source, target, status, evidence):
         # Build units and responsibility modules are two layers: a build unit
         # holds a module's files (`owned_by` in the query), it does not call it.
-        if (by_id[source]["provenance"] == "build") != (by_id[target]["provenance"] == "build"):
+        # An external module sits outside both layers, so `uses` reaches it from either.
+        if kind != "uses" and (by_id[source]["provenance"] == "build") != (by_id[target]["provenance"] == "build"):
             return
         key = f"{kind}:{source}->{target}"
         record = edges.setdefault(key, {"id": key, "kind": kind, "source": source, "target": target,
@@ -1069,6 +1086,16 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
                      {"path": call["path"], "line": call["line"], "caller": call["caller"], "callee": call["callee"]})
         except ValueError as error:
             gaps.append({"kind": "calls_unavailable", "detail": str(error)})
+    for module in modules:
+        if module["location"] != "external":
+            continue
+        for site in module["evidence"]:
+            if not site["resolved"]:
+                continue
+            for owner in modules:
+                if owner["id"] != module["id"] and site["path"] in owner["files"]:
+                    status = "confirmed" if owner["status"] == module["status"] == "confirmed" else "inferred"
+                    edge("uses", owner["id"], module["id"], status, {"path": site["path"], "line": site["line"]})
 
     modules.sort(key=lambda m: m["id"])
     edge_list = [edges[k] for k in sorted(edges)]
@@ -1083,7 +1110,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
         "coverage": {"files": len(inventory.files), "ecosystems": ECOSYSTEMS,
                      "modules": {p: sum(1 for m in modules if m["provenance"] == p) for p in PROVENANCES},
                      "statuses": {s: sum(1 for m in modules if m["status"] == s) for s in STATUSES},
-                     "edges": {k: sum(1 for e in edge_list if e["kind"] == k) for k in ("declares", "contains", "imports", "calls")}},
+                     "edges": {k: sum(1 for e in edge_list if e["kind"] == k) for k in ("declares", "contains", "imports", "calls", "uses")}},
         "gaps": gaps,
         "notes": [
             "Build units come from manifests only; declared modules from codebase-modules.json; proposed modules from "
@@ -1248,7 +1275,7 @@ def query(graph: dict, name: str, *, state: str = "unverified", limit: int = 10)
             for owner in sorted({_owner_of(graph, rel) for rel in module["files"]} - {None}):
                 scope.append({"module": owner, "name": by_id[owner]["name"], "relation": "owned_by", "direction": "outgoing",
                               "status": by_id[owner]["status"], "paths": by_id[owner]["paths"], "excluded": by_id[owner]["excluded"]})
-        candidates.append({**{k: module[k] for k in ("id", "name", "aliases", "provenance", "kind", "description",
+        candidates.append({**{k: module[k] for k in ("id", "name", "aliases", "provenance", "kind", "location", "description",
                                                       "responsibility", "status", "paths", "excluded", "files", "members",
                                                       "manifests", "evidence", "conflicts", "gaps", "coverage")},
                            "match": kind, "relations": relations,
@@ -1295,7 +1322,7 @@ def propose(manifest: Path, value: object, *, replace: bool = False) -> dict:
     write_ledger(manifest, records, replace=replace)
     graph = write_graph(manifest)
     names = {slug(r["name"]) for r in records}
-    keys = ("id", "name", "status", "provenance", "paths", "files", "coverage", "gaps", "conflicts")
+    keys = ("id", "name", "kind", "location", "status", "provenance", "paths", "files", "coverage", "gaps", "conflicts")
     return {"schema": LEDGER_SCHEMA, "manifest": str(manifest), "accepted": len(records),
             "modules": [{k: m[k] for k in keys} for m in graph["modules"] if slug(m["name"]) in names],
             "graph": graph_state(manifest), "changes": graph["changes"]}
@@ -1324,7 +1351,7 @@ def brief(manifest: Path, *, symbol_limit: int = MAX_BRIEF_SYMBOLS) -> dict:
             break
         symbols[path] = names
         kept += len(names)
-    keys = ("id", "name", "provenance", "kind", "responsibility", "status", "paths", "excluded", "coverage", "gaps")
+    keys = ("id", "name", "provenance", "kind", "location", "responsibility", "status", "paths", "excluded", "coverage", "gaps")
     return {"schema": "daodan/modules-brief/v1", "graph_state": state["state"],
             "modules": [{k: m[k] for k in keys} | {"members": [x["id"] for x in m["members"]]} for m in graph["modules"]],
             "symbols": symbols, "symbols_omitted": total - kept,
@@ -1332,8 +1359,24 @@ def brief(manifest: Path, *, symbol_limit: int = MAX_BRIEF_SYMBOLS) -> dict:
                if total > kept else {}),
             "member_format": "path::Symbol for a snapshot symbol, a file path, or a directory path; evidence as path or path#heading",
             "declared_file": DECLARED_FILE,
-            "rule": "a proposal becomes an inferred module after every member is verified; only the project's "
-                    f"{DECLARED_FILE} confirms a module; group by responsibility, not by directory"}
+            "rule": (
+                "Propose responsibility modules from an already inventoried snapshot: components, macro-features and "
+                "other parts of the system, also when they cut across directories and build units. Do not recreate "
+                "build units: manifests already define them. Group by responsibility, not by directory or folder name. "
+                "For each candidate, identify the design decision, protocol, feature or domain state it hides and what "
+                "could change independently. Include a member only when imports, calls, routes, naming or project "
+                "documents connect it to the others, and cite the supporting paths in evidence: at least one, or the "
+                "module stays incomplete. In responsibility, use one plain sentence, then "
+                "name the incoming contract (symbols used from outside) and exclusions with reasons. When a member "
+                "is shared by two modules, list it in the members of both instead of forcing one owner. Do not propose "
+                "physical nodes from this brief: it contains no deployment evidence. Return records with exactly the fields "
+                "name, kind, location, responsibility, members, evidence. kind is required: component (a part with its "
+                "own boundary, a node of the map) or feature (a macro-feature across components, a highlight on the "
+                "map, not a node). location is internal (default) or external (a service, database or device outside "
+                "the repository: a component with no members, its evidence are the files that bind to it, each giving "
+                "a uses edge from the module owning that file). List "
+                "unassigned files and reasons separately from the proposal array. A proposal becomes an inferred module "
+                f"after every member is verified; only the project's {DECLARED_FILE} confirms a module")}
 
 
 # ----------------------------------------------------------------- view
@@ -1360,14 +1403,14 @@ def render(graph: dict) -> str:
     for m in graph["modules"]:
         lines.extend(["", f"## {_code(m['id'])}", "", f"- Name: {_text(m['name'])}"
                       + (f"; aliases: {', '.join(_text(a) for a in m['aliases'])}" if m["aliases"] else "")
-                      + f"; {m['provenance']}, {m['kind']}, {m['status']}"])
+                      + f"; {m['provenance']}, {m['kind']}, {m['location']}, {m['status']}"])
         if m["description"] or m["responsibility"]:
             lines.append(f"- {_text(m['description'] or m['responsibility'])}")
         lines.append(f"- Paths: {', '.join(_code(p) for p in m['paths']) or 'none'}"
                      + (f"; excluded: {', '.join(_code(p) for p in m['excluded'])}" if m["excluded"] else "")
                      + f"; {m['coverage']['files']} files")
         if m["provenance"] != "build":
-            lines.append("- Members: " + ", ".join(_code(x["id"]) + ("" if x["resolved"] else " (unresolved)") for x in m["members"]))
+            lines.append("- Members: " + (", ".join(_code(x["id"]) + ("" if x["resolved"] else " (unresolved)") for x in m["members"]) or "none"))
         if m["evidence"]:
             lines.append("- Evidence: " + ", ".join(_code(e["path"] + (f":{e['line']}" if e.get("line") else "")) for e in m["evidence"]))
         for item in m["conflicts"]:

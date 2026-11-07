@@ -13,12 +13,19 @@ say, and stops there.
 | Provenance | Source | Status |
 |---|---|---|
 | `build` | the manifests below, read programmatically | `confirmed` |
-| `declared` | `codebase-modules.json` at the project root (`{"schema": "daodan/declared-modules/v1", "modules": [...]}`) | `confirmed` when every member resolves, else `incomplete` |
-| `proposed` | `proposals.json` beside the manifest, written from a model's answer by `modules.py propose MANIFEST FILE` or `codebase_map_modules(proposals=[...])` | `inferred`, never more; `incomplete` when no member resolves |
+| `declared` | `codebase-modules.json` at the project root (`{"schema": "daodan/declared-modules/v1", "modules": [...]}`) | `confirmed` when every member resolves and evidence is cited, else `incomplete` |
+| `proposed` | `proposals.json` beside the manifest, written from a model's answer by `modules.py propose MANIFEST FILE` or `codebase_map_modules(proposals=[...])` | `inferred`, never more; `incomplete` when no member resolves or no evidence is cited |
 
-A declared or proposed record is `{"name", "responsibility", "members", "evidence"}`.
-Members are `path::Symbol` (a symbol of the snapshot, exact name), a file or
-a directory. Evidence is `path` or `path#heading`. A proposal with the name of
+A declared or proposed record is `{"name", "kind", "location", "responsibility", "members", "evidence"}`.
+`kind` is required: `component` (a part with its own boundary, a node of the
+graphic map) or `feature` (a macro-feature across components, a highlight on
+the map, not a node). `location` is `internal` (default) or `external` (a
+service, database or device outside the repository: a component with no
+members, anchored by its evidence, the files that bind to it; a feature is
+never external). Members are `path::Symbol` (a symbol of the snapshot, exact
+name), a file or a directory. Evidence is `path` or `path#heading`, at least
+one; an external module resolves through its evidence as an internal one does
+through its members. A proposal with the name of
 a declared module is superseded (graph gap `proposal_superseded`); the ledger
 keeps it. Promotion is a human copying the record into
 `codebase-modules.json`.
@@ -84,14 +91,14 @@ the project or `proposed` by a model and verified member by member.
 |---|---|
 | `id` | the name's slug when unique, otherwise `slug@directory` or `slug@provenance` |
 | `name`, `aliases`, `description` | as declared; the description only when a manifest states one |
-| `provenance`, `kind`, `ecosystems` | `build`, `declared` or `proposed`; the manifest kind (`npm-workspace`, `cargo-crate`, `maven-aggregator`, `workspace-member`...) or `responsibility` |
+| `provenance`, `kind`, `location`, `ecosystems` | `build`, `declared` or `proposed`; the manifest kind (`npm-workspace`, `cargo-crate`, `maven-aggregator`, `workspace-member`...), `component` or `feature`; `internal` (every build unit) or `external` |
 | `responsibility` | the declared or proposed text |
 | `members` | each with `kind` (`symbol`, `file`, `directory`), `resolved` and, unresolved, the `reason`: absent from the tree, ignored by Git, inside a dot or dependency directory, a file type the map does not inventory, a symbol not in the snapshot of its file |
 | `paths`, `excluded`, `files` | the paths to review and every inventoried file the module owns; for a declared or proposed module a directory enters `paths` only when every inventoried file in it is a member |
 | `manifests`, `registered_by`, `evidence` | manifests read, workspace roots listing the unit, cited sites `{path, line}` |
 | `dependencies`, `external` | declared names, and those matching no unit |
 | `conflicts` | `shared_member`: a member two declared or proposed modules claim |
-| `gaps` | `member_missing`, `evidence_missing`, `dependency_unresolved` |
+| `gaps` | `member_missing`, `evidence_missing` (a cited path unresolved, or none cited), `dependency_unresolved` |
 | `status`, `coverage`, `members_digest` | `confirmed`, `inferred`, `incomplete`; counts; what `changes` compares |
 
 ## Edges
@@ -100,8 +107,10 @@ the project or `proposed` by a model and verified member by member.
 `contains` (workspace registration), `imports` (resolved static import: the
 importing file's owner to the imported file's owner, or to the module owning
 the exact symbol the statement names), `calls` (resolved call references
-between members, from the semantic store). Build units and responsibility
-modules are two layers: edges never cross them; a module's `read_scope` lists
+between members, from the semantic store), `uses` (from every module owning a
+file an external module cites as evidence to that module). Build units and
+responsibility modules are two layers: edges other than `uses` never cross
+them; a module's `read_scope` lists
 the build units holding its files as `owned_by`. Status `confirmed` between
 two confirmed modules, else `inferred`. Each edge keeps up to 20 cited sites.
 A missing call edge proves no independence: the lexical resolver does not see
@@ -137,4 +146,9 @@ then whole files omitted with a hint; a 500-file project needs
 `--symbol-limit 6000`, about 190 KB), member format and rule. The model
 answers with proposals; `propose` validates them (fields, names, members),
 records them and rebuilds; the report says what resolved. Group by
-responsibility, not by directory: a build unit already covers the directory.
+responsibility (components, macro-features, parts across build units), not by
+directory: a build unit already covers the directory.
+The brief's `rule` also asks for kind and location, the hidden design decision, at
+least one evidence, incoming contract and exclusions, shared members listed in
+both modules and unassigned files. It does not infer physical nodes without
+deployment evidence, and proposals keep the record contract above.

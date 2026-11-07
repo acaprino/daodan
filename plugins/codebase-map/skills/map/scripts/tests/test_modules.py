@@ -62,7 +62,7 @@ def assert_no_invented_paths(graph: dict, manifest: Path) -> None:
         for member in module["members"]:
             assert member["path"] in known or not member["resolved"], (module["id"], member)
         for item in module["evidence"]:
-            assert item["path"] in files, (module["id"], item)
+            assert item["path"] in files or not item["resolved"], (module["id"], item)
     for edge in graph["edges"]:
         for item in edge["evidence"]:
             assert item["path"] in files, edge["id"]
@@ -283,7 +283,7 @@ def test_build_unit_details(tmp_path):
 
 SESSIONS = {
     "codebase-modules.json": json.dumps({"schema": "daodan/declared-modules/v1", "modules": [
-        {"name": "Session management", "responsibility": "Create, validate and revoke user sessions",
+        {"name": "Session management", "kind": "component", "responsibility": "Create, validate and revoke user sessions",
          "members": ["src/auth/session.py::create_session", "src/auth/session.py::revoke_session",
                      "src/api/session_routes.py", "src/api/health.py", "tests/auth"],
          "evidence": ["docs/architecture.md#Autenticazione"]}]}, indent=1) + "\n",
@@ -307,7 +307,8 @@ def test_declared_and_proposed_modules(tmp_path):
     project = tmp_path / "proj"
     manifest, graph = build(tmp_path, SESSIONS)
     sessions = by_id(graph)["session-management"]
-    assert sessions["provenance"] == "declared" and sessions["status"] == "confirmed" and sessions["kind"] == "responsibility"
+    assert sessions["provenance"] == "declared" and sessions["status"] == "confirmed"
+    assert sessions["kind"] == "component" and sessions["location"] == "internal"
     members = {m["id"]: m for m in sessions["members"]}
     assert members["src/auth/session.py::create_session"]["kind"] == "symbol"
     assert members["src/auth/session.py::create_session"]["start_line"] == 4 and members["src/auth/session.py::create_session"]["hash"]
@@ -320,13 +321,15 @@ def test_declared_and_proposed_modules(tmp_path):
     assert_no_invented_paths(graph, manifest)
 
     proposals = [
-        {"name": "Persistence", "responsibility": "Store values",
+        {"name": "Persistence", "kind": "component", "responsibility": "Store values",
          "members": ["src/storage/store.py::save", "src/storage/missing.py", "src/api/facade.py::Facade.storage"],
          "evidence": ["docs/architecture.md#Storage"]},
-        {"name": "Login", "members": ["src/auth/session.py::create_session"]},
+        {"name": "Login", "kind": "feature", "members": ["src/auth/session.py::create_session"]},
+        {"name": "Value store service", "kind": "component", "location": "external", "responsibility": "Hosted key-value store",
+         "evidence": ["src/storage/store.py", "docs/deploy.md"]},
     ]
     report = modules.propose(manifest, proposals)
-    assert report["accepted"] == 2 and report["graph"]["state"] == "fresh"
+    assert report["accepted"] == 3 and report["graph"]["state"] == "fresh"
     graph = modules.load_graph(modules.graph_name(manifest))
     persistence = by_id(graph)["persistence"]
     assert persistence["provenance"] == "proposed" and persistence["status"] == "inferred"
@@ -334,7 +337,18 @@ def test_declared_and_proposed_modules(tmp_path):
         "src/storage/missing.py: absent from the tree", "docs/architecture.md: heading #Storage not found in docs/architecture.md"]
     assert persistence["paths"] == ["src/api/facade.py", "src/storage/store.py"]
     login = by_id(graph)["login"]
+    assert login["kind"] == "feature" and persistence["kind"] == "component"
+    # No evidence cited keeps a module incomplete, whatever its provenance.
+    assert login["status"] == "incomplete" and login["gaps"] == [{"kind": "evidence_missing", "detail": "no evidence cited"}]
     assert login["conflicts"] == [{"kind": "shared_member", "member": "src/auth/session.py::create_session", "others": ["session-management"]}]
+    # An external module has no members: its evidence anchors it, and every owner of a cited file uses it.
+    service = by_id(graph)["value-store-service"]
+    assert service["kind"] == "component" and service["location"] == "external" and service["status"] == "inferred"
+    assert service["members"] == [] and service["files"] == []
+    assert service["gaps"] == [{"kind": "evidence_missing", "detail": "docs/deploy.md: absent from the tree"}]
+    uses = {(e["source"], e["target"]): e for e in graph["edges"] if e["kind"] == "uses"}
+    assert set(uses) == {("persistence", "value-store-service"), ("sessions", "value-store-service")}
+    assert uses[("sessions", "value-store-service")]["evidence"] == [{"path": "src/storage/store.py", "line": None}]
     assert by_id(graph)["session-management"]["conflicts"][0]["others"] == ["login"]
     calls = {(e["source"], e["target"]): e for e in graph["edges"] if e["kind"] == "calls"}
     assert set(calls) >= {("session-management", "persistence"), ("login", "persistence")}
@@ -371,7 +385,8 @@ def test_declared_and_proposed_modules(tmp_path):
 
     # Promotion is explicit: the project declares the proposal, which is then confirmed and supersedes it.
     declared = json.loads((project / "codebase-modules.json").read_text(encoding="utf-8"))
-    declared["modules"].append({"name": "Persistence", "responsibility": "Store values", "members": ["src/storage/store.py::save"]})
+    declared["modules"].append({"name": "Persistence", "kind": "component", "responsibility": "Store values",
+                                "members": ["src/storage/store.py::save"], "evidence": ["src/storage/store.py"]})
     (project / "codebase-modules.json").write_text(json.dumps(declared), encoding="utf-8")
     third = snap(project, tmp_path / "out" / "manifest.sqlite", previous=second)
     modules.ensure_graph(third)
@@ -384,6 +399,9 @@ def test_declared_and_proposed_modules(tmp_path):
     assert {m["id"] for m in the_brief["modules"]} == {"persistence", "session-management", "sessions"}
     assert the_brief["symbols"]["src/auth/session.py"] == ["create_session", "revoke_session", "unrelated"]
     assert the_brief["symbols_omitted"] == 0 and "symbols_hint" not in the_brief
+    for guidance in ("design decision", "incoming contract", "shared", "physical nodes", "at least one",
+                     "name, kind, location, responsibility, members, evidence", "component", "feature", "external", "unassigned"):
+        assert guidance in the_brief["rule"]
     small = modules.brief(third, symbol_limit=3)
     assert small["symbols"] == {"src/api/facade.py": ["Facade", "Facade.sessions", "Facade.storage"]} and small["symbols_hint"]
 
@@ -396,8 +414,9 @@ def test_absence_reasons_and_validation(tmp_path):
     manifest = snap(project, tmp_path / "out" / "manifest.sqlite")
     modules.write_graph(manifest)
     report = modules.propose(manifest, [
-        {"name": "Persistence", "members": ["src/storage/store.py::save", ".hidden/tool.py", "src/storage/store.py::load",
-                                            "docs/storage.md", "node_modules/x/index.js"],
+        {"name": "Persistence", "kind": "component",
+         "members": ["src/storage/store.py::save", ".hidden/tool.py", "src/storage/store.py::load",
+                     "docs/storage.md", "node_modules/x/index.js"],
          "evidence": ["NOTES.md#Storage"]}])
     assert {g["detail"] for g in report["modules"][0]["gaps"]} == {
         ".hidden/tool.py: inside a dot directory, outside the map perimeter",
@@ -405,8 +424,13 @@ def test_absence_reasons_and_validation(tmp_path):
         "docs/storage.md: absent from the tree",
         "node_modules/x/index.js: inside a dependency or build directory, outside the map perimeter",
         "NOTES.md: ignored by Git, outside the map perimeter"}
-    for bad in ([{"name": "x", "members": []}], [{"name": "x", "members": ["a"], "extra": 1}],
-                [{"name": "", "members": ["a"]}], [{"name": "A", "members": ["a"]}, {"name": "a", "members": ["b"]}]):
+    component = {"kind": "component"}
+    for bad in ([{"name": "x", "members": ["a"]}], [{"name": "x", "members": [], **component}],
+                [{"name": "x", "members": ["a"], "extra": 1, **component}], [{"name": "x", "members": ["a"], "kind": "service"}],
+                [{"name": "x", "members": ["a"], "location": "external", **component}],
+                [{"name": "x", "kind": "feature", "location": "external", "evidence": ["a"]}],
+                [{"name": "x", "members": ["a"], "location": "cloud", **component}], [{"name": "", "members": ["a"], **component}],
+                [{"name": "A", "members": ["a"], **component}, {"name": "a", "members": ["b"], **component}]):
         with pytest.raises(ValueError):
             modules.propose(manifest, bad)
     (project / "codebase-modules.json").write_text("{not json", encoding="utf-8")
@@ -452,7 +476,8 @@ def test_cli_and_service(tmp_path):
     service.create_run(".", "run-a")
     summary = service.modules("run-a")
     assert summary["graph_state"] == "fresh" and {m["id"] for m in summary["modules"]} == {"session-management", "sessions"}
-    report = service.modules("run-a", proposals=[{"name": "Persistence", "members": ["src/storage/store.py::save"]}])
+    report = service.modules("run-a", proposals=[{"name": "Persistence", "kind": "component", "members": ["src/storage/store.py::save"],
+                                                  "evidence": ["src/storage/store.py"]}])
     assert report["accepted"] == 1 and report["modules"][0]["status"] == "inferred"
     assert service.modules("run-a", query="persistence")["status"] == "incomplete"
     assert "src/storage/store.py" in service.modules("run-a", brief=True)["symbols"]

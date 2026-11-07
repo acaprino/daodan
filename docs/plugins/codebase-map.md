@@ -744,14 +744,17 @@ Maven, Gradle, .NET, Composer, Bundler and RubyGems, pub and melos, Swift,
 Mix, CMake, Cabal and Stack, sbt, Terraform, Zig, Julia, dune) with their
 workspace members, dependencies and nested roots; they are `confirmed`.
 `declared` modules come from `codebase-modules.json` at the project root:
-name, responsibility and members (`path::Symbol`, files, directories), each
-verified against the snapshot. `proposed` modules come from a model, through
+name, kind (`component` or `feature`), location (`internal` or `external`),
+responsibility, members (`path::Symbol`, files, directories) and evidence,
+each verified against the snapshot; an external module has no members and is
+anchored by the files it cites as evidence. `proposed` modules come from a model, through
 `modules.py propose` or `codebase_map_modules(proposals=...)` after the brief
 that `modules.py brief` prints; verified the same way, they stay `inferred`
 until the project declares them. No Markdown is interpreted.
 
 Edges are declared dependencies and workspace containment between build
-units, and resolved imports and calls between members; build units and
+units, resolved imports and calls between members, and `uses` from a file's
+owners to the external module citing it; apart from `uses`, build units and
 responsibility modules never share an edge, a module's query lists the build
 units holding its files as read scope. The graph binds the snapshot digest and
 the proposals ledger; a rebuild re-verifies everything and reports what
