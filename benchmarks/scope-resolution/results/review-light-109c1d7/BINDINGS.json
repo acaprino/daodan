@@ -1,0 +1,16 @@
+{
+  "candidate": {
+    "locator": "git",
+    "root": "/home/user/daodan",
+    "target": "benchmarks/scope-resolution/app",
+    "repo_revision": "109c1d7e07b5e594a1bc3310f14f20df8f926b92",
+    "ref": "HEAD (branch bench-light-27)",
+    "worktree": "clean"
+  },
+  "knowledge_selection": "",
+  "output_dir": "jobs",
+  "input_mode": "independent",
+  "scopes": {
+    "light-109c1d7": {"input_mode": "independent", "permissions": "read-only", "output_dir": "jobs"}
+  }
+}

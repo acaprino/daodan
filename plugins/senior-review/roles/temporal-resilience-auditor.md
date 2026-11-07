@@ -46,6 +46,7 @@ The question is whether required work progresses or reaches an honest, recoverab
 - Determine whether retries repeat non-resumable downloads, scans, writes or user notifications; trace resumability and retained progress.
 - Check that retry state and the operation's state agree after a partial failure. Re-entry must not skip required work or repeat an acknowledged local effect.
 - Verify that continuous retry, fixed delay or immediate retry is consistent with load, recovery and signal requirements. Exponential backoff and a finite attempt count are not universal obligations.
+- Check what ends the loop once the trigger is gone: retries at more than one layer, queues that keep growing and clients that re-add load on recovery can sustain the degradation after its cause has cleared. Show the feedback path and the absence of load shedding or a single retry layer.
 - Trace notification deduplication, suppression and recovery announcements. Suppression must not hide a new actionable state; repeated noise must not overwhelm the required channel.
 - Route remote duplicate effects and retries multiplied across services to distributed flow with the local timeline.
 
@@ -53,6 +54,7 @@ The question is whether required work progresses or reaches an honest, recoverab
 
 - Inspect scheduler ownership, concurrent instances, overlap, shutdown, resume and the meaning of completion. Check that a successful scheduler tick means the intended job outcome rather than merely task launch.
 - Trace persisted and volatile progress, leases/guards and retry state through process restart. Detect stale flags, vanished schedules, duplicate execution and work stranded after takeover.
+- Follow work the process has accepted but not yet made durable (in-memory queues, buffered writes, in-flight requests, a response sent before the write) through SIGTERM, grace-period expiry and crash. Show the accepted item that no restart recovers; an acknowledged loss contract is counterevidence.
 - Account for intentional best-effort or process-lifetime jobs; absence of durable scheduling is a defect only when the task requires survival.
 - Check recovery/escalation for the specific job, including exhausted retries and cancelled work; use the actual requirement for who must be informed and when.
 

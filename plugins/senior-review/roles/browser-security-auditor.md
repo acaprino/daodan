@@ -2,7 +2,7 @@
 name: browser-security-auditor
 description: >
   Finds browser trust-boundary failures in markup, authenticated mutations and cross-origin access.
-  TRIGGER WHEN: reviewing rendering/DOM sinks, cookies, CSRF, CORS, CSP, transport and edge response policy.
+  TRIGGER WHEN: reviewing rendering/DOM sinks, cookies, CSRF, CORS, CSP, framing, subresource integrity, transport and edge response policy.
   DO NOT TRIGGER WHEN: platform compatibility or static usability without a browser security boundary.
 model: inherit
 color: purple
@@ -25,7 +25,8 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 - Trace reflected, stored and DOM-controlled values through escaping/sanitization into HTML text, attributes, URLs, scripts and raw-HTML APIs. Framework escaping protects only its actual context. Show controllability and viable browser interpretation.
 - For CSRF establish ambient victim credentials, a reachable state-changing operation and effective token/origin/cookie defenses. Follow the real login and credential transport; absence of a named CSRF mechanism alone proves nothing.
 - For CORS resolve the final headers after edge/proxy processing, origin matching, allowed credentials/methods/headers and browser acceptance. Show what a foreign origin can read; a rejected wildcard/credentials combination does not itself demonstrate data disclosure.
-- Inspect CSP, cookie flags and transport policy in their real deployment path. Identify the context or hop that exposes data or permits execution; missing headers or broad syntax alone are leads.
+- Inspect CSP, framing policy (`frame-ancestors`, `X-Frame-Options`), cookie flags and transport policy in their real deployment path. Identify the context or hop that exposes data, permits execution or lets a foreign page frame an authenticated action; missing headers or broad syntax alone are leads.
+- For third-party scripts and styles loaded from an origin the project does not control, check the integrity attribute and the pinned URL; a mutable URL without integrity is a lead only when the resource runs with the page's authority.
 - Check transformations and alternative endpoints that bypass an otherwise effective policy.
 
 ## Counterevidence

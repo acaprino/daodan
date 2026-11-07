@@ -54,6 +54,10 @@ documentation. Do not invent interleavings the runtime prevents.
 7. **Cross-runtime events.** For native widgets, workers, WebViews and desktop IPC,
    trace thread/event-loop delivery, queued callbacks and destroyed views. Verify
    the relevant binding before applying web framework assumptions.
+8. **Input preservation.** Follow user-entered state through failed submit, remount,
+   route change, reload, offline/online transition and rollback of an optimistic
+   update. Show the path on which the entered value is discarded without a warning,
+   a draft or a retry that carries it; a documented ephemeral field is counterevidence.
 
 ## Evidence and boundaries
 

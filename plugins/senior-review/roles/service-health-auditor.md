@@ -26,6 +26,7 @@ Read effective probes, their orchestrator/load-balancer/watchdog consumers, loca
 
 - Trace each health response into the action taken by its consumer; distinguish readiness/admission from liveness/restart.
 - Check normal, degraded, external-outage and recovered states against actual permitted service. A passing probe with unusable required work or a restart loop that destroys useful work needs a concrete path.
+- Compare what the probe measures with what a client needs: a probe that checks the process while clients fail on a dependency, a slow node reported healthy, or health judged from one vantage point only, leaves the failure visible to users and invisible to routing.
 - Verify recovery of health/routing after the dependency returns; inspect stale probe state and equivalent local guarantees.
 - Distinguish intentional downtime or unsupported operations from a continuity breach; do not invent availability objectives.
 

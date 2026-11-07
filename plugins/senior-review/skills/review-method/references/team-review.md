@@ -38,7 +38,7 @@
 | React rendering | unavailable until senior-review owns equivalent React micro skills; record activation evidence and declare the gap |
 | TypeScript/type contracts | unavailable until senior-review owns equivalent TypeScript micro skills; record activation evidence and declare the gap |
 | Browser, mobile and desktop compatibility | unavailable until senior-review owns equivalent platform/Tauri micro skills; record activation evidence and declare the gap |
-| Python / dependencies | `senior-review:dependency-usage-auditor` for manifests/lockfiles; no Python-specific specialist exists; a declared gap |
+| Python / dependencies | `senior-review:dependency-auditor` for manifests/lockfiles; no Python-specific specialist exists; a declared gap |
 
 ### Reviewer prompt template (context-aware)
 

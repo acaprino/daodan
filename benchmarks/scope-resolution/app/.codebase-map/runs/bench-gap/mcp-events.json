@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "cursor": 1,
+      "event": "run_created",
+      "message": "",
+      "run_id": "bench-gap",
+      "timestamp": "2026-11-07T21:03:37Z"
+    }
+  ],
+  "schema": 1
+}

@@ -1,0 +1,9 @@
+command: python3 -B -m pytest -q -p no:cacheprovider
+cwd: /home/user/daodan/benchmarks/scope-resolution
+candidate: 109c1d7e07b5e594a1bc3310f14f20df8f926b92 (HEAD, clean tree)
+pytest: pytest 9.2.0
+python: Python 3.13.18
+---- output
+...........x...................................                          [100%]
+46 passed, 1 xfailed in 5.28s
+exit: 0

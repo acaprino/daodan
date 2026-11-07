@@ -82,6 +82,8 @@ LANGUAGE_BY_SUFFIX = {
     ".rs": "rust", ".go": "go", ".java": "java", ".kt": "kotlin", ".sql": "sql",
     ".css": "stylesheet", ".scss": "stylesheet", ".less": "stylesheet",
 }
+# A JSX file is React code as well as its language.
+FRAMEWORK_BY_SUFFIX = {".tsx": "react", ".jsx": "react"}
 
 KINDS = ("changeset", "plan", "spec", "doc")
 
@@ -95,6 +97,7 @@ CODE_FLOOR = [f"senior-review:{name}" for name in (
     "input-validation-auditor", "resource-lifecycle-auditor", "algorithmic-cost-auditor",
     "security-auditor", "data-integrity-auditor", "chicken-egg-detector",
     "temporal-resilience-auditor", "distributed-flow-auditor", "api-contract-auditor",
+    "logic-integrity-auditor",
 )]
 DEEP_ROSTER = STANDARD_ROSTER + [
     "senior-review:logic-integrity-auditor",
@@ -102,6 +105,7 @@ DEEP_ROSTER = STANDARD_ROSTER + [
     "senior-review:security-auditor",
     "senior-review:data-integrity-auditor",
     "senior-review:cleanup-auditor",
+    "senior-review:boundary-auditor",
 ]
 # The fixed set of a plan, a specification or a document under a branch review.
 KIND_ROSTER = {
@@ -116,8 +120,10 @@ KIND_ROSTER = {
 # supplied by the consuming host, not hardcoded here.
 SUPPORT = ["senior-review:premise-auditor"]
 # Signal-activated specialists, added at any branch rigor when the signal is present.
-# No stack specialist is selected until senior-review owns equivalent micro skills.
-LANGUAGE_ROLE: dict[str, str] = {}
+LANGUAGE_ROLE = {
+    "typescript": "senior-review:typescript-auditor",
+    "react": "senior-review:react-auditor",
+}
 SIGNAL_ROLE = {
     "accessibility": "senior-review:accessibility-auditor",
     "performance": "senior-review:performance-auditor",
@@ -128,7 +134,9 @@ SIGNAL_ROLE = {
     "startup": "senior-review:chicken-egg-detector",
     "distributed": "senior-review:distributed-flow-auditor",
     "contract": "senior-review:api-contract-auditor",
-    "manifest": "senior-review:dependency-usage-auditor",
+    "manifest": "senior-review:dependency-auditor",
+    "irreversible": "senior-review:irreversible-action-auditor",
+    "storage": "senior-review:storage-durability-auditor",
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
 }
@@ -171,6 +179,12 @@ SIGNAL_PATTERNS = {
     "ui": re.compile(r"\b(useEffect|useLayoutEffect|requestAnimationFrame|scrollTo|focus\(\)|ResizeObserver|IntersectionObserver)\b"),
     "startup": re.compile(r"\b(__main__|bootstrap|on_startup|lifespan|init_app|configure\(|register\()"),
     "distributed": re.compile(r"\b(requests\.|httpx\.|fetch\(|grpc|kafka|rabbit|celery|sqs|pubsub|publish\(|consume\()"),
+    "irreversible": re.compile(r"\b(?:Remove-Item|rm -r|rm -f|rmdir|del |unlink|rmtree|os\.remove|os\.unlink|fs\.rm|"
+                               r"unlinkSync|DROP (?:TABLE|DATABASE|INDEX)|TRUNCATE|DELETE FROM|purge|"
+                               r"push --force|--force-with-lease|-Force\b|--force\b|\.delete\(|deleteMany|destroy\()"),
+    "storage": re.compile(r"\b(?:fsync|fdatasync|os\.(?:replace|rename|link|WriteFile|Create)|rename(?:Sync)?\(|"
+                          r"writeFile(?:Sync)?|createWriteStream|NamedTemporaryFile|mkstemp|shutil\.move|"
+                          r"flock|lockf|fcntl\.|O_CREAT|O_APPEND|File::create|std::fs::write)\b"),
     "persistence": re.compile(r"\b(SELECT|INSERT INTO|DELETE FROM|CREATE TABLE|ALTER TABLE|transaction|"
                               r"rollback|bulk_create|session\.add|migrations?)\b"),
     "trust": re.compile(r"\b(authentication|authorization|credentials?|passwords?|tokens?|permissions?|"
@@ -554,7 +568,8 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     kinds = {row["path"]: classify_path(row["path"]) for row in rows}
     production = [p for p, k in kinds.items() if k == "production"]
     modules = sorted({Path(p).parts[0] if len(Path(p).parts) > 1 else "." for p in production})
-    languages = sorted({LANGUAGE_BY_SUFFIX[Path(p).suffix] for p in production if Path(p).suffix in LANGUAGE_BY_SUFFIX})
+    languages = sorted({LANGUAGE_BY_SUFFIX[Path(p).suffix] for p in production if Path(p).suffix in LANGUAGE_BY_SUFFIX}
+                       | {FRAMEWORK_BY_SUFFIX[Path(p).suffix] for p in production if Path(p).suffix in FRAMEWORK_BY_SUFFIX})
     lines = sum((row["added"] or 0) + (row["removed"] or 0) for row in rows)
     interfaces = interface_changes(diff) if basis == "changeset" else []
     map_signals = impact_signals(impact, context, conclusion_paths if basis == "changeset" else [])

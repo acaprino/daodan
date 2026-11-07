@@ -44,7 +44,7 @@ class CatalogTest(unittest.TestCase):
     def test_catalog_matches_plugin_toml_and_feeds_review_roster(self):
         catalog = composition.load_catalog(PLUGIN_ROOT)
         entries = {row["id"]: row for row in catalog["entries"]}
-        self.assertEqual(len(entries), 50)
+        self.assertEqual(len(entries), 58)
         self.assertEqual(entries["senior-review:accessibility-auditor"]["members"],
                          ["senior-review:accessible-navigation-auditor", "senior-review:accessible-perception-auditor"])
         self.assertEqual(entries["senior-review:authorization-auditor"]["file"], "roles/authorization-auditor.md")
@@ -64,7 +64,7 @@ class BindTest(unittest.TestCase):
         self.assertEqual(len(prepared["jobs"]), 1)
         job = prepared["jobs"][0]
         self.assertEqual(job["status"], "bound")
-        self.assertEqual(len(job["specialist_ids"]), 26)
+        self.assertEqual(len(job["specialist_ids"]), 27)
         self.assertNotIn("senior-review:security-auditor", job["specialist_ids"])
         self.assertIn("senior-review:authorization-auditor", job["specialist_ids"])
         self.assertEqual(set(job["source_bindings"]), set(job["specialist_ids"]))
@@ -165,7 +165,7 @@ class SelectionTest(unittest.TestCase):
     def test_automatic_keeps_the_computed_roster(self):
         prepared = composition.bind(roster(["senior-review:code-auditor"]), BINDINGS, PLUGIN_ROOT)
         self.assertEqual(prepared["roster"], ["senior-review:code-auditor"])
-        self.assertEqual(len(prepared["jobs"][0]["specialist_ids"]), 26)
+        self.assertEqual(len(prepared["jobs"][0]["specialist_ids"]), 27)
         self.assertNotIn("selection", prepared)
 
     def test_empty_or_malformed_selection_is_an_error(self):
@@ -207,7 +207,7 @@ class CliTest(unittest.TestCase):
             cat = subprocess.run([sys.executable, str(SCRIPTS / "composition.py"), "catalog", "--out", str(root / "catalog.json")],
                                  capture_output=True, text=True)
             self.assertEqual(cat.returncode, 0, cat.stderr)
-            self.assertEqual(json.loads(cat.stdout)["entries"], 50)
+            self.assertEqual(json.loads(cat.stdout)["entries"], 58)
 
 
 if __name__ == "__main__":

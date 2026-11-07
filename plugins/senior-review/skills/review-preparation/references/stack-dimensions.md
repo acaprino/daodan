@@ -7,11 +7,11 @@ one dispatch round and ledger, no extra roles or clean skips for unknown signals
 
 | Dimension ID | Automatic activation evidence | Role to dispatch |
 |---|---|---|
-| react | React in the relevant package and target includes JSX/TSX or affected React runtime | none until senior-review owns equivalent React micro skills; record activation evidence and leave the specialist coverage as a declared gap |
-| typescript | Relevant TypeScript configuration and target includes TS/TSX/type contracts | none until senior-review owns equivalent TypeScript micro skills; record activation evidence and leave the specialist coverage as a declared gap |
+| react | Target includes JSX/TSX (`FRAMEWORK_BY_SUFFIX` in `review_roster.py`) or affected React runtime | `senior-review:react-auditor` |
+| typescript | Target includes TS/TSX | `senior-review:typescript-auditor` |
 | platform | Roster evidence for browser/PWA storage, service workers, client security policy, mobile capabilities or Electron/Tauri shell integration | none until senior-review owns equivalent platform/Tauri micro skills; record activation evidence and leave the specialist coverage as a declared gap |
 | python | Target includes `.py` or `.pyi` files, or the relevant package declares `pyproject.toml`, `setup.py`, `uv.lock` or `requirements*.txt` | `senior-review:code-auditor` through the host isolated-worker binding when Python-specific evidence is needed; no Python-specific specialist exists; a declared gap |
-| dependencies | The candidate changes a manifest or lockfile: `pyproject.toml`, `uv.lock`, `poetry.lock`, `requirements*.txt`, `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `Cargo.toml`, `Cargo.lock`, `go.mod`, `go.sum`, `Gemfile.lock`, `composer.lock`, `pom.xml`, `build.gradle*`, `*.csproj` | `senior-review:dependency-usage-auditor`; ecosystem-specific audit tooling does not exist and remains a declared gap |
+| dependencies | The candidate changes a manifest or lockfile: `pyproject.toml`, `uv.lock`, `poetry.lock`, `requirements*.txt`, `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `Cargo.toml`, `Cargo.lock`, `go.mod`, `go.sum`, `Gemfile.lock`, `composer.lock`, `pom.xml`, `build.gradle*`, `*.csproj` | `senior-review:dependency-auditor` (usage and provenance members); license tooling does not exist and remains a declared gap |
 
 Dependencies bind through `senior-review:dependency-usage-auditor`. Python and
 any future stack specialist use the host isolated-worker binding when available.

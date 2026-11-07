@@ -141,7 +141,7 @@ generalist's boundary floor survives opaque calls and unavailable graph packets.
 
 | Kind | Roles and their question |
 |---|---|
-| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. Stack specialists do not exist until senior-review owns equivalent micro skills; dependency changes use `senior-review:dependency-usage-auditor`. |
+| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. React and TypeScript bind through `LANGUAGE_ROLE`; other stack specialists do not exist until senior-review owns equivalent micro skills; dependency changes use `senior-review:dependency-auditor`. |
 | `plan` | `premise-auditor`, claim check: every cited path, symbol and caller exists; `chicken-egg-detector`: initialization order and wave dependencies. Testing and abstraction specialists do not exist; leave their questions as declared gaps unless the host supplies them. |
 | `spec` | `premise-auditor`, claim check: every statement about existing code; `logic-integrity-auditor`: state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared superseded. Trust boundaries, persistence, contracts and cross-service flows in the text add their senior-review auditors. Testing and abstraction specialists remain declared gaps unless the host supplies them. |
 | `doc` | `premise-auditor`, claim check: every statement about the code against the source and the map. This review reports drift; documentation rewriting belongs to an explicitly authorized host workflow, not to senior-review. |

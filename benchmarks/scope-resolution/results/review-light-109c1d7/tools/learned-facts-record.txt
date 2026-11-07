@@ -1,0 +1,2 @@
+error: the project home has no .daodan with a .daodan-root sentinel
+exit: 1

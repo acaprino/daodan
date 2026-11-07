@@ -1,8 +1,8 @@
 ---
 name: secret-exposure-auditor
 description: >
-  Finds disclosure of usable secrets and failures of cryptographic confidentiality or key lifetime.
-  TRIGGER WHEN: reviewing credentials, key management, encryption, sensitive comparisons, source/configuration, bundles, logs, errors and build artifacts.
+  Finds disclosure of usable secrets or internal state and failures of cryptographic confidentiality or key lifetime.
+  TRIGGER WHEN: reviewing credentials, key management, encryption, sensitive comparisons, source/configuration, bundles, logs, error responses, debug/development flags and build artifacts.
   DO NOT TRIGGER WHEN: public identifiers, placeholders or numeric precision without protected data or cryptographic guarantees.
 model: inherit
 color: purple
@@ -23,9 +23,11 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 ## Causal checks
 
 - Trace secrets through source, configuration, generated/client bundles, logs, errors, artifacts and image/build layers. Deleting a final file does not remove earlier published layers. Distinguish usable authority and sensitive data from placeholders, identifiers and indirect references.
+- Trace error handling and debug/development switches to the client-visible response in the deployed configuration. Stack traces, queries, internal paths, hostnames or a debug console reachable by an unauthorized caller are disclosures; a verbose log that stays server-side is not.
 - Inspect security-sensitive comparisons for an attacker-observable timing oracle. Establish repeated access, signal and protocol consequence before claiming exploitable prefix leakage; an equality operator alone is insufficient.
 - Trace authenticated encryption, nonce/IV generation and uniqueness under each key, tag verification before plaintext use, key derivation and algorithm mode against the required guarantee. Show a reachable reuse, malleability or loss of confidentiality, using applicable library/provider behavior.
 - Follow key selection, distribution, rotation, revocation and old-key acceptance across readers/writers and caches. Check whether exposed or retired material retains authority beyond policy; an unused secret reference is not automatically a live credential.
+- Treat certificates, domains, signing keys and tokens with an expiry as scheduled failures: trace who renews them, what verifies the renewal before the deadline and what the service does on the day they lapse.
 - Preserve source and secret bytes. Record location, type, exposure path and affected authority with redaction; do not contact a live provider merely to test a suspected credential.
 
 ## Counterevidence
