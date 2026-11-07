@@ -96,7 +96,7 @@ Each partition worker owns only its listed output files and never touches anothe
 
 ### `semantic-interconnect-mapper`
 
-Context-builder that produces a structured map of a codebase's contracts, invariants, domain rules, assumptions, integration hot-spots, and call graph. Unlike the partition workers, it is shared across the whole marketplace: it serves three pipelines and is the reason this plugin sits at the root of the dependency graph. It lived in `senior-review` until plugin 2.1.0 (marketplace 16.0.0).
+Context-builder that produces a structured map of a codebase's contracts, invariants, domain rules, assumptions, integration hot-spots, and call graph. Unlike the partition workers, it serves two pipelines: the team entry of this plugin and an adapted documentation workflow. senior-review's branch review no longer dispatches it: its Phase 1 reads the complete run through the map tools. It lived in `senior-review` until plugin 2.1.0 (marketplace 16.0.0).
 
 | | |
 |---|---|
@@ -109,14 +109,13 @@ Context-builder that produces a structured map of a codebase's contracts, invari
 | Pipeline | Phase | Artifact produced |
 |---|---|---|
 | The team entry of `codebase-map:map` | Phase 3 | `08-interconnect-map.md`, the global cross-partition view |
-| The host branch-review entry (the team-review variant of `senior-review:review-method`) | Phase 1b | `.team-review/02-interconnect.md`, which every reviewer reads and which `logic-integrity-auditor` requires |
 | A host documentation workflow, when one is explicitly adapted | Guide preparation, when needed by the file/audience plan | The owned run's interconnect report, cited by the assigned writers and guide reviewer |
 
 **Output sections:** `## Target scope`, `## Call Graph`, `## Contracts` (formal, structural and implicit), `## Invariants` (temporal + structural), `## Domain Rules`, `## Assumptions`, `## Integration Hot-Spots` (HTTP, queue, IPC, env/config), `## Change Impact Radius`, `## Reviewer Hints`. Each section is self-contained so consumers can Grep a single heading and get full context.
 
 Every row carries one of four statuses: `verified` (enforced in code), `documented` (a comment, docstring or project document declares it), `unverified` (the code relies on it but nothing enforces or documents it) or `disputed` (an independent derivation contradicts it, both sides cited). The map opens by declaring itself a **fallible hypothesis index, not ground truth**: a row marked `documented`, `unverified` or `disputed` must be re-derived before it becomes the premise of a finding, and an absent row is not evidence of absence.
 
-Input source differs per pipeline: Codebase Map output for `team-review`, the consolidated partition set for `team-analyze`, and a caller-supplied context brief for an adapted host documentation workflow. It never proposes fixes; every claim carries a `file:line` citation.
+Input source differs per pipeline: the consolidated partition set for the team entry, and a caller-supplied context brief for an adapted host documentation workflow. It never proposes fixes; every claim carries a `file:line` citation.
 
 ---
 
@@ -256,7 +255,7 @@ Multi-agent variant of the analyze entry for large or partitioned codebases: aut
 2. **Wave 1** (parallel): one `partition-structure-worker` per partition writes structure and interfaces.
 3. **Wave 2** (parallel): `partition-behavior-worker` and `partition-quality-worker` per partition write flows/semantics and risks/documentation, each citing sibling partitions' Wave 1 output for cross-partition calls. Under `--depth=lite` the behavior workers are not spawned and quality workers write risks only.
 4. **Synthesis**: `partition-synthesizer` consolidates every partition's output into the standard `01-structure.md` through `07-final-report.md` files inside the run directory, flagging any failed partition inline.
-5. **Interconnect map**: `codebase-map:semantic-interconnect-mapper` reads the consolidated output and produces `08-interconnect-map.md`, the global cross-partition contract/invariant map that senior-review's branch review reuses directly.
+5. **Interconnect map**: `codebase-map:semantic-interconnect-mapper` reads the consolidated output and produces `08-interconnect-map.md`, the global cross-partition contract/invariant map, a team-only artifact. senior-review's branch review reads the run through the map tools instead.
 6. **Publish**: the coordinator requires every worker's accounted delivery, a gate result with `complete` and `may_publish`, and every requested view before replacing the root mirror with the declared consolidated set. Failed or missing partition or worker delivery prevents publication even if synthesis wrote warning reports; those reports stay in the run. `--skip-interconnect` omits 08 by declaration, while `--skip-synthesis` also skips interconnect and keeps all results run-local.
 
 Typical resolutions: auto-detected partitions at full depth; `--depth=lite` for fewer agents; manual partitions such as `packages/api` and `packages/web` with the recommended scope accepted; a second run on the same target, where partitions that did not change are copied, not re-run; `--update`, which requires a usable team parent, none being a hard stop.
@@ -368,8 +367,8 @@ task used 6 searches and 9 reads.
 
 The guide that states this loop, with its budgets, is
 [`locate.md`](../../plugins/codebase-map/skills/map/references/locate.md).
-The implementer's brief in project-delivery and the investigation method in
-senior-review point to it, so the agents that change code receive it.
+The investigation method in senior-review (`skills/investigation-method/SKILL.md`)
+points to it; the former project-delivery plugin is not part of the two-owner base.
 
 ### What a search returns
 
@@ -464,7 +463,7 @@ The source links carry the complete instructions and accepted arguments.
 | Role | `codebase-map:partition-quality-worker` | Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave. | [partition-quality-worker](<../../plugins/codebase-map/roles/partition-quality-worker.md>) |
 | Role | `codebase-map:partition-structure-worker` | Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-structure-worker](<../../plugins/codebase-map/roles/partition-structure-worker.md>) |
 | Role | `codebase-map:partition-synthesizer` | Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-synthesizer](<../../plugins/codebase-map/roles/partition-synthesizer.md>) |
-| Role | `codebase-map:semantic-interconnect-mapper` | Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and adapted documentation workflows. TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by senior-review's branch review, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
+| Role | `codebase-map:semantic-interconnect-mapper` | Context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and adapted documentation workflows. TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
 
 ### Host exports
 
