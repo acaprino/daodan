@@ -1,0 +1,13 @@
+{
+  "review_id": "light-109c1d7",
+  "roles": ["senior-review:code-auditor", "senior-review:premise-auditor"],
+  "critic": false,
+  "jobs": [
+    {"job_id": "job-01", "role": "senior-review:code-auditor", "brief": "jobs/job-01.brief.md", "output_path": "jobs/job-01.md",
+     "status": "not dispatched", "reason": "no isolated-worker binding: the coordinator's host exposes no Agent/Task tool (ToolSearch 'select:Agent,Task' found none); running the job in the coordinator's shared context is forbidden by light.md section 4 and composition.md"}
+  ],
+  "checks": [
+    {"lens": 0, "role": "senior-review:premise-auditor", "mode": 2, "status": "not dispatched", "reason": "no delivered finding to challenge; isolated binding also unavailable"},
+    {"lens": 1, "role": "host isolated-worker (panel-and-critic-prompts section 2)", "status": "unavailable", "reason": "no isolated-worker binding in this host"}
+  ]
+}

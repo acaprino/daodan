@@ -1,0 +1,424 @@
+{
+  "schema": "daodan/review-context/light",
+  "review_basis": "changeset",
+  "scope_id": "light-109c1d7",
+  "intent": "Commit 109c1d7 changes compute_total in pricing.py so that compute_discount(order) is subtracted twice from the net before VAT; the commit message ('benchmark: aggiorna il calcolo in pricing.py') states no reason.",
+  "candidate": {
+    "locator": "git",
+    "root": "/home/user/daodan",
+    "target": "benchmarks/scope-resolution/app",
+    "repo_revision": "109c1d7e07b5e594a1bc3310f14f20df8f926b92",
+    "ref": "HEAD (branch bench-light-27)",
+    "worktree": "clean"
+  },
+  "base": {
+    "locator": "git",
+    "root": "/home/user/daodan",
+    "target": "benchmarks/scope-resolution/app",
+    "repo_revision": "2889c58ebb08bb047077a01ac97f0f686fac3dab",
+    "ref": "parent of candidate"
+  },
+  "policy": {
+    "source": "git show 2889c58ebb08bb047077a01ac97f0f686fac3dab:AGENTS.md",
+    "nested_instruction_files": []
+  },
+  "conclusion_paths": [
+    "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+  ],
+  "read_scope": [
+    "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+    "benchmarks/scope-resolution/app/packages/orders/service.py",
+    "benchmarks/scope-resolution/test_app_structures.py",
+    "benchmarks/scope-resolution/app/pyproject.toml"
+  ],
+  "sources": [
+    {
+      "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "status": "available",
+      "scope_id": "light-109c1d7",
+      "text": "\"\"\"Prezzi: totale ordine, sconto cliente e IVA (VAT).\"\"\"\n\nVAT_RATE = 0.22  # aliquota IVA ordinaria\n\n\ndef vat_amount(net):\n    \"\"\"IVA (VAT) dovuta sul netto.\"\"\"\n    return round(net * VAT_RATE, 2)\n\n\ndef compute_discount(order):\n    \"\"\"Sconto cliente: percentuale di fedeltà applicata al netto.\"\"\"\n    loyalty = order.get(\"loyalty_percent\", 0)\n    return round(order.get(\"net\", 0) * loyalty / 100, 2)\n\n\ndef compute_total(order):\n    \"\"\"Totale ordine: netto - sconto cliente + IVA (VAT).\"\"\"\n    net = order.get(\"net\", 0) - compute_discount(order) - compute_discount(order)\n    return round(net + vat_amount(net), 2)\n",
+      "base_text": "\"\"\"Prezzi: totale ordine, sconto cliente e IVA (VAT).\"\"\"\n\nVAT_RATE = 0.22  # aliquota IVA ordinaria\n\n\ndef vat_amount(net):\n    \"\"\"IVA (VAT) dovuta sul netto.\"\"\"\n    return round(net * VAT_RATE, 2)\n\n\ndef compute_discount(order):\n    \"\"\"Sconto cliente: percentuale di fedeltà applicata al netto.\"\"\"\n    loyalty = order.get(\"loyalty_percent\", 0)\n    return round(order.get(\"net\", 0) * loyalty / 100, 2)\n\n\ndef compute_total(order):\n    \"\"\"Totale ordine: netto - sconto cliente + IVA (VAT).\"\"\"\n    net = order.get(\"net\", 0) - compute_discount(order)\n    return round(net + vat_amount(net), 2)\n"
+    },
+    {
+      "path": "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "status": "available",
+      "scope_id": "light-109c1d7",
+      "role": "one-hop caller of compute_total (service.py:26), found by git grep",
+      "text": "\"\"\"Servizio ordini: orchestrazione checkout e richieste di rimborso.\n\nOgni totale include l'IVA (VAT). La pipeline di validazione è\nconfigurabile: il costruttore accetta una classe alternativa.\nIl default esegue una sola fase.\n\"\"\"\nfrom . import inventory, ledger, notifications, pricing\n\n\nclass DefaultPipeline:\n    \"\"\"Pipeline di validazione di default (una sola fase).\"\"\"\n\n    def step(self, order):\n        order[\"validated\"] = True\n        return order\n\n\nclass OrderService:\n    def __init__(self, pipeline_cls=None):\n        # pipeline_cls permette di sostituire la validazione\n        setattr(self, \"_pipeline\", (pipeline_cls or DefaultPipeline)())\n\n    def checkout(self, order):\n        \"\"\"Percorso completo: scorte, totale con IVA (VAT), ledger, notifica.\"\"\"\n        inventory.reserve_stock(order[\"sku\"], order[\"qty\"])\n        total = pricing.compute_total(order)\n        self._pipeline.step(order)\n        ledger.record(order, total)\n        notifications.send_via(order.get(\"channel\", \"email_receipt\"), order)\n        return total\n\n    def refund_request(self, order):\n        \"\"\"Registra una richiesta di rimborso (storno IVA/VAT).\"\"\"\n        return ledger.record_refund(order)\n"
+    }
+  ],
+  "configurations": [
+    {
+      "path": "benchmarks/scope-resolution/app/pyproject.toml",
+      "status": "available",
+      "text": "[project]\nname = \"orders-demo\"\nversion = \"0.1.0\"\ndescription = \"Mini-app dimostrativa per il benchmark di scope resolution (solo stdlib).\"\n\n[tool.uv.workspace]\nmembers = [\"packages/*\"]\n",
+      "note": "no lint, format, type or pytest configuration"
+    }
+  ],
+  "requirements": [],
+  "inventory": [],
+  "applicability": [],
+  "required_specialists": [],
+  "catalog": {
+    "entries": [
+      {
+        "id": "senior-review:accessibility-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:accessible-navigation-auditor",
+          "senior-review:accessible-perception-auditor"
+        ]
+      },
+      {
+        "file": "roles/api-contract-auditor.md",
+        "id": "senior-review:api-contract-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/chicken-egg-detector.md",
+        "id": "senior-review:chicken-egg-detector",
+        "kind": "role"
+      },
+      {
+        "id": "senior-review:cleanup-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:application-reachability-auditor",
+          "senior-review:dependency-usage-auditor",
+          "senior-review:artifact-lifecycle-auditor",
+          "senior-review:asset-delivery-auditor",
+          "senior-review:secret-exposure-auditor"
+        ]
+      },
+      {
+        "id": "senior-review:code-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:local-correctness-auditor",
+          "senior-review:local-concurrency-auditor",
+          "senior-review:input-validation-auditor",
+          "senior-review:resource-lifecycle-auditor",
+          "senior-review:algorithmic-cost-auditor",
+          "senior-review:security-auditor",
+          "senior-review:data-integrity-auditor",
+          "senior-review:chicken-egg-detector",
+          "senior-review:temporal-resilience-auditor",
+          "senior-review:distributed-flow-auditor",
+          "senior-review:api-contract-auditor",
+          "senior-review:logic-integrity-auditor"
+        ]
+      },
+      {
+        "id": "senior-review:data-integrity-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:transaction-integrity-auditor",
+          "senior-review:schema-coherence-auditor",
+          "senior-review:cache-consistency-auditor",
+          "senior-review:data-representation-auditor",
+          "senior-review:data-retention-auditor"
+        ]
+      },
+      {
+        "id": "senior-review:distributed-flow-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:message-delivery-auditor",
+          "senior-review:remote-effect-auditor",
+          "senior-review:service-resilience-auditor",
+          "senior-review:session-delegation-auditor",
+          "senior-review:environment-binding-auditor"
+        ]
+      },
+      {
+        "file": "roles/logic-integrity-auditor.md",
+        "id": "senior-review:logic-integrity-auditor",
+        "kind": "role"
+      },
+      {
+        "id": "senior-review:operability-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:observability-auditor",
+          "senior-review:service-health-auditor",
+          "senior-review:release-compatibility-auditor",
+          "senior-review:environment-binding-auditor",
+          "senior-review:feature-flag-auditor",
+          "senior-review:recovery-auditor"
+        ]
+      },
+      {
+        "id": "senior-review:performance-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:sql-efficiency-auditor",
+          "senior-review:algorithmic-cost-auditor",
+          "senior-review:asset-delivery-auditor",
+          "senior-review:capacity-quota-auditor",
+          "senior-review:runtime-cost-auditor",
+          "senior-review:resource-lifecycle-auditor",
+          "senior-review:responsiveness-auditor"
+        ]
+      },
+      {
+        "file": "roles/premise-auditor.md",
+        "id": "senior-review:premise-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/resource-lifecycle-auditor.md",
+        "id": "senior-review:resource-lifecycle-auditor",
+        "kind": "role"
+      },
+      {
+        "id": "senior-review:security-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:authorization-auditor",
+          "senior-review:session-delegation-auditor",
+          "senior-review:secret-exposure-auditor",
+          "senior-review:input-validation-auditor",
+          "senior-review:untrusted-resource-auditor",
+          "senior-review:browser-security-auditor",
+          "senior-review:callback-authenticity-auditor",
+          "senior-review:ai-boundary-auditor",
+          "senior-review:audit-trail-auditor",
+          "senior-review:capacity-quota-auditor"
+        ]
+      },
+      {
+        "file": "roles/temporal-resilience-auditor.md",
+        "id": "senior-review:temporal-resilience-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/ui-race-auditor.md",
+        "id": "senior-review:ui-race-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/authorization-auditor.md",
+        "id": "senior-review:authorization-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/session-delegation-auditor.md",
+        "id": "senior-review:session-delegation-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/secret-exposure-auditor.md",
+        "id": "senior-review:secret-exposure-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/input-validation-auditor.md",
+        "id": "senior-review:input-validation-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/untrusted-resource-auditor.md",
+        "id": "senior-review:untrusted-resource-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/browser-security-auditor.md",
+        "id": "senior-review:browser-security-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/callback-authenticity-auditor.md",
+        "id": "senior-review:callback-authenticity-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/ai-boundary-auditor.md",
+        "id": "senior-review:ai-boundary-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/audit-trail-auditor.md",
+        "id": "senior-review:audit-trail-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/transaction-integrity-auditor.md",
+        "id": "senior-review:transaction-integrity-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/schema-coherence-auditor.md",
+        "id": "senior-review:schema-coherence-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/cache-consistency-auditor.md",
+        "id": "senior-review:cache-consistency-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/data-representation-auditor.md",
+        "id": "senior-review:data-representation-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/data-retention-auditor.md",
+        "id": "senior-review:data-retention-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/message-delivery-auditor.md",
+        "id": "senior-review:message-delivery-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/remote-effect-auditor.md",
+        "id": "senior-review:remote-effect-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/service-resilience-auditor.md",
+        "id": "senior-review:service-resilience-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/sql-efficiency-auditor.md",
+        "id": "senior-review:sql-efficiency-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/algorithmic-cost-auditor.md",
+        "id": "senior-review:algorithmic-cost-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/asset-delivery-auditor.md",
+        "id": "senior-review:asset-delivery-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/capacity-quota-auditor.md",
+        "id": "senior-review:capacity-quota-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/runtime-cost-auditor.md",
+        "id": "senior-review:runtime-cost-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/observability-auditor.md",
+        "id": "senior-review:observability-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/service-health-auditor.md",
+        "id": "senior-review:service-health-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/release-compatibility-auditor.md",
+        "id": "senior-review:release-compatibility-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/environment-binding-auditor.md",
+        "id": "senior-review:environment-binding-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/feature-flag-auditor.md",
+        "id": "senior-review:feature-flag-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/recovery-auditor.md",
+        "id": "senior-review:recovery-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/accessible-navigation-auditor.md",
+        "id": "senior-review:accessible-navigation-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/accessible-perception-auditor.md",
+        "id": "senior-review:accessible-perception-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/local-correctness-auditor.md",
+        "id": "senior-review:local-correctness-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/local-concurrency-auditor.md",
+        "id": "senior-review:local-concurrency-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/application-reachability-auditor.md",
+        "id": "senior-review:application-reachability-auditor",
+        "kind": "role"
+      },
+      {
+        "id": "senior-review:dependency-auditor",
+        "kind": "composition",
+        "members": [
+          "senior-review:dependency-usage-auditor",
+          "senior-review:dependency-provenance-auditor"
+        ]
+      },
+      {
+        "file": "roles/dependency-usage-auditor.md",
+        "id": "senior-review:dependency-usage-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/dependency-provenance-auditor.md",
+        "id": "senior-review:dependency-provenance-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/artifact-lifecycle-auditor.md",
+        "id": "senior-review:artifact-lifecycle-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/storage-durability-auditor.md",
+        "id": "senior-review:storage-durability-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/boundary-auditor.md",
+        "id": "senior-review:boundary-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/responsiveness-auditor.md",
+        "id": "senior-review:responsiveness-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/react-auditor.md",
+        "id": "senior-review:react-auditor",
+        "kind": "role"
+      },
+      {
+        "file": "roles/typescript-auditor.md",
+        "id": "senior-review:typescript-auditor",
+        "kind": "role"
+      }
+    ],
+    "plugin": "senior-review",
+    "schema": "daodan/reviewer-catalog/v1"
+  },
+  "graph": {
+    "codebase_map": "unavailable: no map run, no MCP server, no codebase_map_* tools in this environment",
+    "symbols-at": "unavailable",
+    "edit-impact": "unavailable",
+    "stale-callers": "unavailable",
+    "fallback": "git grep and reading",
+    "touched_symbol_note": "the hunk header names compute_discount (context line 16); the changed line 19 is inside compute_total (pricing.py:17-20), read from the diff"
+  }
+}
