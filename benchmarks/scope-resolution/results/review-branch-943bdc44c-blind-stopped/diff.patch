@@ -1,0 +1,11 @@
+diff --git a/benchmarks/scope-resolution/app/packages/orders/pricing.py b/benchmarks/scope-resolution/app/packages/orders/pricing.py
+index d80681908..40863111a 100644
+--- a/benchmarks/scope-resolution/app/packages/orders/pricing.py
++++ b/benchmarks/scope-resolution/app/packages/orders/pricing.py
+@@ -16,5 +16,5 @@ def compute_discount(order):
+ 
+ def compute_total(order):
+     """Totale ordine: netto - sconto cliente + IVA (VAT)."""
+-    net = order.get("net", 0) - compute_discount(order)
++    net = order.get("net", 0) - compute_discount(order) - compute_discount(order)
+     return round(net + vat_amount(net), 2)

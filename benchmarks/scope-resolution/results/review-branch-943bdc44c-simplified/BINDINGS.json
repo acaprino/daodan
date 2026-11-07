@@ -1,0 +1,14 @@
+{
+  "candidate": {
+    "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+    "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+  },
+  "selection": [
+    "senior-review:local-correctness-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:artifact-lifecycle-auditor"
+  ],
+  "knowledge_selection": "",
+  "output_dir": "jobs",
+  "input_mode": "independent"
+}

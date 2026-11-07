@@ -1,0 +1,375 @@
+{
+  "advice": [],
+  "catalog_sha256": "761565841a6c86708c788c54e9d2a355ea8765b8965334ae54f38547e11af53d",
+  "common": {
+    "path": "skills/review-quality-gates/references/reviewer-common.md",
+    "sha256": "67ee0a0efa2513d11fcbc1d1a100700f5df5fd45aaf937d620d07a95fb51dabc"
+  },
+  "critic": false,
+  "gaps": [
+    "edit-impact.edge_view.coverage.status: missing_store",
+    "edit-impact.targets[0].blind_spots: {\"listed\": [{\"count\": 1, \"name\": \"order.get\", \"reason\": \"unknown-receiver\"}], \"total\": 1, \"unbound_names\": 1}",
+    "edit-impact.targets[0].blind_spots.unbound_names: 1",
+    "edit-impact.targets[0].l4.do_not_touch.status: unavailable",
+    "stale-callers schema or base/candidate snapshot binding unavailable or mismatched",
+    "edit-impact targets lack candidate delta digest binding: benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total",
+    "unmatched content signals have unknown applicability; preparation must ground skip decisions"
+  ],
+  "grounding": {
+    "applicability": [],
+    "base": {
+      "repo_revision": "6dd2c2bbfff3750e66639bb5961e7dcb63df4757",
+      "root": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c",
+      "target": "."
+    },
+    "candidate": {
+      "repo_revision": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "root": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c",
+      "target": "."
+    },
+    "changes": [
+      {
+        "added": 1,
+        "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "removed": 1
+      }
+    ],
+    "conclusion_paths": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+    ],
+    "graph": {
+      "bound_targets": [],
+      "delta": {},
+      "freshness_basis": {
+        "delta": null,
+        "impact": "lexical"
+      },
+      "history": {
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total": []
+      },
+      "targets": [
+        {
+          "blind_spots": {
+            "listed": [
+              {
+                "count": 1,
+                "name": "order.get",
+                "reason": "unknown-receiver"
+              }
+            ],
+            "total": 1,
+            "unbound_names": 1
+          },
+          "body_hash": "sha256:409ad5cbd18ea5dc",
+          "callees": {
+            "listed": [
+              {
+                "edges": [
+                  {
+                    "count": 1,
+                    "kind": "call",
+                    "sites": [
+                      {
+                        "end_column": 48,
+                        "end_line": 19,
+                        "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                        "kind": "call",
+                        "provenance": [
+                          "builtin-lexical"
+                        ],
+                        "resolver": "builtin-lexical",
+                        "start_column": 32,
+                        "start_line": 19,
+                        "target_kind": "concrete"
+                      }
+                    ]
+                  }
+                ],
+                "end": 14,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "kind": "function",
+                "name": "compute_discount",
+                "references": 1,
+                "start": 11,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount"
+              },
+              {
+                "edges": [
+                  {
+                    "count": 1,
+                    "kind": "call",
+                    "sites": [
+                      {
+                        "end_column": 33,
+                        "end_line": 20,
+                        "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                        "kind": "call",
+                        "provenance": [
+                          "builtin-lexical"
+                        ],
+                        "resolver": "builtin-lexical",
+                        "start_column": 23,
+                        "start_line": 20,
+                        "target_kind": "concrete"
+                      }
+                    ]
+                  }
+                ],
+                "end": 8,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "kind": "function",
+                "name": "vat_amount",
+                "references": 1,
+                "start": 6,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::vat_amount"
+              }
+            ],
+            "total": 2
+          },
+          "callers": {
+            "listed": [
+              {
+                "body_hash": "sha256:88dfc51b0305bf43",
+                "card": null,
+                "edges": [
+                  {
+                    "count": 1,
+                    "kind": "call",
+                    "sites": [
+                      {
+                        "end_column": 37,
+                        "end_line": 26,
+                        "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+                        "kind": "call",
+                        "provenance": [
+                          "builtin-lexical"
+                        ],
+                        "resolver": "builtin-lexical",
+                        "start_column": 16,
+                        "start_line": 26,
+                        "target_kind": "concrete"
+                      }
+                    ]
+                  }
+                ],
+                "effects_hash": "899d8d5cb5b8587f",
+                "end": 30,
+                "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+                "interface_hash": "v2:b5790d4e25e95c83",
+                "kind": "method",
+                "name": "OrderService.checkout",
+                "references": 1,
+                "start": 23,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService.checkout"
+              }
+            ],
+            "total": 1
+          },
+          "card": null,
+          "effects_hash": "93bdcf484e440d98",
+          "end": 20,
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "interface_hash": "v2:de7d91eea8a9e6a6",
+          "kind": "function",
+          "l4": {
+            "do_not_touch": {
+              "reason": "requires a base/candidate fingerprint delta; use stale-callers",
+              "status": "unavailable",
+              "symbols": []
+            },
+            "obligations": [
+              {
+                "count": 1,
+                "kind": "inspect-callers"
+              },
+              {
+                "count": 2,
+                "kind": "inspect-callees"
+              },
+              {
+                "count": 1,
+                "kind": "resolve-blind-spots"
+              }
+            ],
+            "related_tests": [],
+            "related_tests_total": 0
+          },
+          "name": "compute_total",
+          "recent_changes": [],
+          "second_hop": {
+            "listed": [
+              {
+                "end": 24,
+                "file": "benchmarks/scope-resolution/app/packages/orders/inventory.py",
+                "kind": "function",
+                "name": "reserve_stock",
+                "start": 17,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/inventory.py::reserve_stock"
+              },
+              {
+                "end": 22,
+                "file": "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+                "kind": "function",
+                "name": "record",
+                "start": 13,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/ledger.py::record"
+              },
+              {
+                "end": 21,
+                "file": "benchmarks/scope-resolution/app/packages/orders/notifications.py",
+                "kind": "function",
+                "name": "send_via",
+                "start": 18,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/notifications.py::send_via"
+              }
+            ],
+            "omitted_by_budget": 0,
+            "omitted_by_cap": 0,
+            "total": 3
+          },
+          "start": 17,
+          "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total"
+        }
+      ]
+    },
+    "read_scope": [
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/app/packages/payments/gateway.py",
+      "benchmarks/scope-resolution/test_app_structures.py"
+    ],
+    "requirements": [],
+    "scope_id": "branch-943bdc44c-simplified"
+  },
+  "id": "branch-943bdc44c-simplified",
+  "jobs": [
+    {
+      "body_sha256": "1284b7ba7593477acd493f6fcb611414ec927978938f3bbcef5e698edb900c80",
+      "candidate": {
+        "repo_revision": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+        "root": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c",
+        "target": "."
+      },
+      "input_mode": "independent",
+      "job_id": "job-01",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-01.md",
+      "permissions": "read-only",
+      "role": "senior-review:local-correctness-auditor",
+      "scope_id": "branch-943bdc44c-simplified",
+      "source_bindings": {
+        "senior-review:local-correctness-auditor": {
+          "path": "roles/local-correctness-auditor.md",
+          "sha256": "4fd495dcbc019bfe7a73b12766ad4e8ab6754b1491ee7f60bc64b88cdb61eb1b"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:local-correctness-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "beda2809d9580b89e7ee803cc528f81f7d666784214c5bc630884221acc1ee67",
+      "candidate": {
+        "repo_revision": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+        "root": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c",
+        "target": "."
+      },
+      "input_mode": "independent",
+      "job_id": "job-02",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-02.md",
+      "permissions": "read-only",
+      "role": "senior-review:logic-integrity-auditor",
+      "scope_id": "branch-943bdc44c-simplified",
+      "source_bindings": {
+        "senior-review:logic-integrity-auditor": {
+          "path": "roles/logic-integrity-auditor.md",
+          "sha256": "a5c490226d5e8a15f9397e2e38b0014f3bc48f96fc265a7b824d218d6c51ad39"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    }
+  ],
+  "kind": "changeset",
+  "reasons": [
+    "no raising signal"
+  ],
+  "required_specialists": [],
+  "review_basis": "changeset",
+  "roster": [
+    "senior-review:local-correctness-auditor",
+    "senior-review:logic-integrity-auditor"
+  ],
+  "roster_schema": "daodan/review-roster/v1",
+  "schema": "daodan/prepared-review/v1",
+  "selection": {
+    "reviewers": [
+      "senior-review:local-correctness-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "superseded": [
+      "senior-review:code-auditor"
+    ]
+  },
+  "shape": "branch",
+  "signals": {
+    "applicability": {
+      "accessibility": "unknown",
+      "distributed": "unknown",
+      "operability": "unknown",
+      "performance": "unknown",
+      "persistence": "unknown",
+      "resources": "unknown",
+      "startup": "unknown",
+      "timers": "unknown",
+      "trust": "unknown",
+      "ui": "unknown"
+    },
+    "content": {
+      "accessibility": false,
+      "distributed": false,
+      "operability": false,
+      "performance": false,
+      "persistence": false,
+      "resources": false,
+      "startup": false,
+      "timers": false,
+      "trust": false,
+      "ui": false
+    },
+    "contract": [],
+    "effects_changed": [],
+    "files": 1,
+    "interface_changed": [],
+    "languages": [
+      "python"
+    ],
+    "lines": 2,
+    "manifest": [],
+    "map_available": false,
+    "max_callers": 0,
+    "modules": [
+      "benchmarks"
+    ],
+    "production_files": 1,
+    "sensitive_paths": [],
+    "symbols": [
+      "compute_discount"
+    ]
+  },
+  "stage": "standalone",
+  "support": [
+    "senior-review:premise-auditor"
+  ],
+  "tier": "small",
+  "verification": "critical-high"
+}

@@ -1,76 +1,84 @@
-"""Token accounting of a Claude Code review run from the session transcripts.
+"""Token accounting of one review run from the Claude Code session transcripts.
 
-Usage: python -I tokens.py SESSION_ID ROOT_AGENT_PREFIX
-Prints, per agent in the tree rooted at the coordinator: turns, output tokens,
-cache-creation (new input) tokens, max context, final context, and totals.
-Formulas:
-  final context = input + cache_read + cache_creation of the last turn, + its output
-  new tokens    = sum over turns of input + cache_creation + output
+Usage:
+    python -I tokens.py SESSION                  # a fresh process: its transcript and all sub-agents
+    python -I tokens.py SESSION ROOT_PREFIX      # a coordinator sub-agent and its descendants
+
+A request occupies several transcript lines, one per content block, each repeating
+its usage: count one per request (message id), keeping the last.
+
+- final: input + cache read + cache write of the last request, plus its output.
+- new: sum per request of input + cache write + output. It counts cache rewrites, so
+  it grows with waiting time; rewr is the number of requests that wrote more than half
+  of their context again. Compare runs on final and output.
+- leak: context records (attachment, user, system) that carry the seed words.
 """
 import glob
 import json
 import os
+import re
 import sys
 
 BASE = os.path.expanduser("~/.claude/projects/D--Projects-daodan")
+SEED = re.compile(r"seeded defect|review-light-943bdc44c")
 
 
-def tally(path):
-    t = {"turns": 0, "out": 0, "cc": 0, "inp": 0, "maxctx": 0, "final": 0}
-    with open(path, encoding="utf-8", errors="replace") as f:
-        for line in f:
-            try:
-                o = json.loads(line)
-            except ValueError:
-                continue
-            m = o.get("message") or {}
-            u = m.get("usage") if isinstance(m, dict) else None
-            if not u:
-                continue
-            t["turns"] += 1
-            inp = u.get("input_tokens", 0)
-            cc = u.get("cache_creation_input_tokens", 0)
-            cr = u.get("cache_read_input_tokens", 0)
-            out = u.get("output_tokens", 0)
-            t["out"] += out
-            t["cc"] += cc
-            t["inp"] += inp
-            ctx = inp + cr + cc
-            t["maxctx"] = max(t["maxctx"], ctx)
-            t["final"] = ctx + out
-    t["new"] = t["inp"] + t["cc"] + t["out"]
-    return t
+def scan(path):
+    last = {}
+    leak = 0
+    for line in open(path, encoding="utf-8", errors="replace"):
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+        if record.get("type") in ("attachment", "user", "system") and SEED.search(line):
+            leak += 1
+        message = record.get("message")
+        usage = message.get("usage") if isinstance(message, dict) else None
+        if usage:
+            last[message.get("id") or record.get("requestId") or record.get("uuid")] = usage
+    row = dict(requests=len(last), out=0, new=0, rewr=0, final=0, leak=leak)
+    for usage in last.values():
+        inp, cc = usage.get("input_tokens", 0), usage.get("cache_creation_input_tokens", 0)
+        ctx = inp + cc + usage.get("cache_read_input_tokens", 0)
+        out = usage.get("output_tokens", 0)
+        row["out"] += out
+        row["new"] += inp + cc + out
+        row["rewr"] += ctx > 20000 and cc > ctx / 2
+        row["final"] = ctx + out
+    return row
 
 
-def main(session, root_prefix):
+def main(session, prefix=None):
     subdir = os.path.join(BASE, session, "subagents")
     metas = {}
-    for mp in glob.glob(os.path.join(subdir, "*.meta.json")):
-        aid = os.path.basename(mp)[len("agent-"):-len(".meta.json")]
-        with open(mp, encoding="utf-8") as f:
-            metas[aid] = json.load(f)
-    roots = [a for a in metas if a.startswith(root_prefix)]
-    if len(roots) != 1:
-        sys.exit(f"root agent prefix {root_prefix!r} matches {roots}")
-    root = roots[0]
-    tree = [root]
-    changed = True
-    while changed:
-        changed = False
-        for aid, m in metas.items():
-            if aid not in tree and m.get("parentAgentId") in tree:
-                tree.append(aid)
-                changed = True
-    totals = {"turns": 0, "out": 0, "cc": 0, "inp": 0, "new": 0}
-    print(f"{'agent':20} {'type':34} {'description':46} {'turns':>5} {'out':>7} {'new':>8} {'maxctx':>8} {'final':>8}")
-    for aid in tree:
-        m = metas[aid]
-        t = tally(os.path.join(subdir, f"agent-{aid}.jsonl"))
-        for k in totals:
-            totals[k] += t[k]
-        print(f"{aid[:20]:20} {m.get('agentType','')[:34]:34} {m.get('description','')[:46]:46} {t['turns']:5} {t['out']:7} {t['new']:8} {t['maxctx']:8} {t['final']:8}")
-    print("totals", totals)
+    for path in glob.glob(os.path.join(subdir, "*.meta.json")):
+        metas[os.path.basename(path)[len("agent-"):-len(".meta.json")]] = json.load(open(path, encoding="utf-8"))
+    rows = []
+    if prefix is None:
+        rows.append(("coordinator", scan(os.path.join(BASE, session + ".jsonl"))))
+        tree = list(metas)
+    else:
+        roots = [a for a in metas if a.startswith(prefix)]
+        if len(roots) != 1:
+            sys.exit(f"prefix {prefix!r} matches {roots}")
+        tree, grew = roots, True
+        while grew:
+            grew = False
+            for agent, meta in metas.items():
+                if agent not in tree and meta.get("parentAgentId") in tree:
+                    tree.append(agent)
+                    grew = True
+    for agent in tree:
+        rows.append((metas[agent].get("description", agent), scan(os.path.join(subdir, f"agent-{agent}.jsonl"))))
+    print(f"{'agent':46} {'req':>4} {'out':>7} {'new':>8} {'rewr':>4} {'final':>7} {'leak':>4}")
+    total = dict(requests=0, out=0, new=0)
+    for name, row in rows:
+        for key in total:
+            total[key] += row[key]
+        print(f"{name[:46]:46} {row['requests']:4} {row['out']:7} {row['new']:8} {row['rewr']:4} {row['final']:7} {row['leak']:4}")
+    print("totals", total)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(*sys.argv[1:3])

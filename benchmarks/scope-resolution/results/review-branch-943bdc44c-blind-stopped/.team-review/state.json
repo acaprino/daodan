@@ -1,0 +1,20 @@
+{
+  "target": "6dd2c2bbf..943bdc44c",
+  "status": "in_progress",
+  "flags": {"reviewers": "auto", "all": false, "deep": false, "no_context": false, "fast": false, "rigorous": false},
+  "current_phase": 1,
+  "phases": {
+    "phase_0_resolution": "complete",
+    "phase_0b_policy": "pending",
+    "phase_1_context": "pending",
+    "phase_1_selection": "pending",
+    "phase_2_review": "pending",
+    "phase_3_consolidation": "pending",
+    "phase_4b_verification": "pending",
+    "phase_4c_critic": "pending",
+    "phase_4_report": "pending"
+  },
+  "files_created": [".team-review/00-scope.md"],
+  "xray": {"run_id": "daodan-lite-20261107-2", "run_dir": null, "target": ".", "depth": "lite"},
+  "started_at": "2026-11-07T18:53:00Z"
+}

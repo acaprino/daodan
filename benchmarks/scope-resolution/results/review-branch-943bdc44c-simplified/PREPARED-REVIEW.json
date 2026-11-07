@@ -1,0 +1,295 @@
+{
+  "advice": [],
+  "catalog_sha256": "761565841a6c86708c788c54e9d2a355ea8765b8965334ae54f38547e11af53d",
+  "common": {
+    "path": "skills/review-quality-gates/references/reviewer-common.md",
+    "sha256": "67ee0a0efa2513d11fcbc1d1a100700f5df5fd45aaf937d620d07a95fb51dabc"
+  },
+  "critic": false,
+  "gaps": [
+    "edit-impact.targets[0].blind_spots: {\"listed\": [{\"count\": 1, \"name\": \"order.get\", \"reason\": \"unknown-receiver\"}], \"total\": 1}",
+    "stale-callers schema or base/candidate snapshot binding unavailable or mismatched",
+    "edit-impact targets lack candidate delta digest binding: benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total, benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount",
+    "unmatched content signals have unknown applicability; preparation must ground skip decisions"
+  ],
+  "grounding": {
+    "applicability": [],
+    "base": {
+      "commit": "6dd2c2bbf"
+    },
+    "candidate": {
+      "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+    },
+    "changes": [
+      {
+        "added": 1,
+        "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "removed": 1
+      }
+    ],
+    "conclusion_paths": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+    ],
+    "graph": {
+      "bound_targets": [],
+      "delta": {},
+      "freshness_basis": {
+        "delta": null,
+        "impact": "lexical"
+      },
+      "history": {
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount": [],
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total": []
+      },
+      "targets": [
+        {
+          "blind_spots": {
+            "listed": [
+              {
+                "count": 1,
+                "name": "order.get",
+                "reason": "unknown-receiver"
+              }
+            ],
+            "total": 1
+          },
+          "body_hash": "sha256:409ad5cbd18ea5dc",
+          "callees": {
+            "listed": [
+              {
+                "end": 14,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "start": 11,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount"
+              },
+              {
+                "end": 8,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "start": 6,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::vat_amount"
+              }
+            ],
+            "total": 2
+          },
+          "callers": {
+            "listed": [
+              {
+                "end": 30,
+                "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+                "start": 23,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService.checkout"
+              }
+            ],
+            "total": 1
+          },
+          "effects_hash": "93bdcf484e440d98",
+          "end": 20,
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "interface_hash": "v2:de7d91eea8a9e6a6",
+          "kind": "function",
+          "l4": {
+            "related_tests_total": 0
+          },
+          "name": "compute_total",
+          "start": 17,
+          "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total"
+        },
+        {
+          "body_hash": "sha256:3427f7ab0d3ca287",
+          "callees": {
+            "listed": [],
+            "total": 0
+          },
+          "callers": {
+            "listed": [
+              {
+                "end": 20,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "start": 17,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total"
+              }
+            ],
+            "total": 1
+          },
+          "effects_hash": "1291906b41f68f32",
+          "end": 14,
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "interface_hash": "v2:e8ac1ab5410ca6c1",
+          "kind": "function",
+          "l4": {
+            "related_tests_total": 0
+          },
+          "name": "compute_discount",
+          "start": 11,
+          "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount"
+        }
+      ]
+    },
+    "read_scope": [
+      "benchmarks/scope-resolution/README.md",
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/app/packages/payments/refunds.py",
+      "benchmarks/scope-resolution/ground_truth.json",
+      "benchmarks/scope-resolution/test_app_structures.py"
+    ],
+    "requirements": [],
+    "scope_id": "branch-943bdc44c-simplified"
+  },
+  "id": "branch-943bdc44c-simplified",
+  "jobs": [
+    {
+      "body_sha256": "1284b7ba7593477acd493f6fcb611414ec927978938f3bbcef5e698edb900c80",
+      "candidate": {
+        "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+        "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+      },
+      "input_mode": "independent",
+      "job_id": "job-01",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-01.md",
+      "permissions": "read-only",
+      "role": "senior-review:local-correctness-auditor",
+      "scope_id": "branch-943bdc44c-simplified",
+      "source_bindings": {
+        "senior-review:local-correctness-auditor": {
+          "path": "roles/local-correctness-auditor.md",
+          "sha256": "4fd495dcbc019bfe7a73b12766ad4e8ab6754b1491ee7f60bc64b88cdb61eb1b"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:local-correctness-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "beda2809d9580b89e7ee803cc528f81f7d666784214c5bc630884221acc1ee67",
+      "candidate": {
+        "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+        "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+      },
+      "input_mode": "independent",
+      "job_id": "job-02",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-02.md",
+      "permissions": "read-only",
+      "role": "senior-review:logic-integrity-auditor",
+      "scope_id": "branch-943bdc44c-simplified",
+      "source_bindings": {
+        "senior-review:logic-integrity-auditor": {
+          "path": "roles/logic-integrity-auditor.md",
+          "sha256": "a5c490226d5e8a15f9397e2e38b0014f3bc48f96fc265a7b824d218d6c51ad39"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "c637d185fc4391953ef88f73307e8e46d20b1c5fe6b79187f7aedd60a055b4cb",
+      "candidate": {
+        "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+        "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+      },
+      "input_mode": "independent",
+      "job_id": "job-03",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-03.md",
+      "permissions": "read-only",
+      "role": "senior-review:artifact-lifecycle-auditor",
+      "scope_id": "branch-943bdc44c-simplified",
+      "source_bindings": {
+        "senior-review:artifact-lifecycle-auditor": {
+          "path": "roles/artifact-lifecycle-auditor.md",
+          "sha256": "9ef2abc0c2ea4c12fdbc9bde414898791acb46ed576afb7aa4f8a625d09a140e"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:artifact-lifecycle-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    }
+  ],
+  "kind": "changeset",
+  "reasons": [
+    "no raising signal"
+  ],
+  "required_specialists": [],
+  "review_basis": "changeset",
+  "roster": [
+    "senior-review:local-correctness-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:artifact-lifecycle-auditor"
+  ],
+  "roster_schema": "daodan/review-roster/v1",
+  "schema": "daodan/prepared-review/v1",
+  "selection": {
+    "reviewers": [
+      "senior-review:local-correctness-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:artifact-lifecycle-auditor"
+    ],
+    "superseded": [
+      "senior-review:code-auditor"
+    ]
+  },
+  "shape": "branch",
+  "signals": {
+    "applicability": {
+      "accessibility": "unknown",
+      "distributed": "unknown",
+      "operability": "unknown",
+      "performance": "unknown",
+      "persistence": "unknown",
+      "resources": "unknown",
+      "startup": "unknown",
+      "timers": "unknown",
+      "trust": "unknown",
+      "ui": "unknown"
+    },
+    "content": {
+      "accessibility": false,
+      "distributed": false,
+      "operability": false,
+      "performance": false,
+      "persistence": false,
+      "resources": false,
+      "startup": false,
+      "timers": false,
+      "trust": false,
+      "ui": false
+    },
+    "contract": [],
+    "effects_changed": [],
+    "files": 1,
+    "interface_changed": [],
+    "languages": [
+      "python"
+    ],
+    "lines": 2,
+    "manifest": [],
+    "map_available": false,
+    "max_callers": 0,
+    "modules": [
+      "benchmarks"
+    ],
+    "production_files": 1,
+    "sensitive_paths": [],
+    "symbols": [
+      "compute_discount"
+    ]
+  },
+  "stage": "standalone",
+  "support": [
+    "senior-review:premise-auditor"
+  ],
+  "tier": "small",
+  "verification": "critical-high"
+}

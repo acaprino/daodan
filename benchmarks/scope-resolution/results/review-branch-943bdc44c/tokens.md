@@ -1,35 +1,22 @@
-# Token count: review `branch` vs `light` on commit 943bdc44c
+# Token count: reviews of commit 943bdc44c
 
-Source: the Claude Code session transcripts (`~/.claude/projects/D--Projects-daodan/<session>/subagents/*.jsonl`), summed by `tokens.py` in this folder (`python -I tokens.py SESSION ROOT_AGENT_PREFIX`). Both reviews were run by an Opus coordinator agent that dispatched its workers as sub-agents.
+Source: the Claude Code session transcripts, summed by `tokens.py` in this folder. A request occupies several transcript lines that repeat its usage: count one per request. An earlier version of this file summed every line and overstated output and new tokens; the numbers below replace it.
 
-Formulas:
+- **Coordinator context**: input + cache read + cache write of its last request, plus that request's output.
+- **Output**: output tokens of all agents, thinking included.
+- **New**: sum per request of input + cache write + output, for all agents. It counts cache rewrites, so it grows with waiting time.
 
-- **final context** of an agent: `input + cache_read + cache_creation` of its last turn, plus that turn's output. The 217K quoted for the `light` is this number for its coordinator.
-- **new tokens**: sum over every turn of `input + cache_creation + output` (tokens processed for the first time; cache reads excluded). Cache reads are the bulk of the bill in both runs and are not compared here.
+| Review | Blind | Reviewers | Agents | Coordinator context | Output | New | Minutes | Defect |
+|---|---|---|---|---|---|---|---|---|
+| `light` (`../review-light-943bdc44c/`) | yes | composition of 26 members | 4 | 216,901 | 62,238 | 637,173 | 14 | found, reproduced |
+| `branch`, Phase 1 with questions (this folder) | no | composition of 26 members | 10 | 366,414 | 190,890 | 1,579,281 | 36 | found, reproduced |
+| `branch`, simplified Phase 1 (`../review-branch-943bdc44c-simplified/`) | no | 3 chosen roles | 6 | 328,842 | 175,680 | 1,170,141 | 30 | found, reproduced |
+| `branch`, simplified Phase 1 (`../review-branch-943bdc44c-blind-stopped/`) | yes | 2 chosen roles | 4 so far | 292,043 | 89,013 | 769,896 | 14, then stopped | found by both reviewers; not reproduced |
 
-| Review | Agents | Coordinator turns | Coordinator final context | New tokens, all agents | Output tokens, all agents |
-|---|---|---|---|---|---|
-| `light` (session c0d0b1dd, agent a92b4ccf) | 4: coordinator, job-01, Lens 0, Lens 1 | 94 | 216,901 | 1,199,929 | 116,595 |
-| `branch` (session ffc3cc44, agent branch-review-coordinator) | 10: coordinator, job-01, Lens 0-3 for two findings | 181 | 366,414 | 3,239,815 | 400,957 |
+**Not blind.** Two runs were executed as sub-agents of a session whose cached memory index said a seeded defect existed in this commit, and all their agents received that line. `leak_check.py` shows it in their `attachment` records. Rewriting the index on disk did not help, because a session caches it at start. Their costs stand; "found" does not count as a blind result. The `light` ran before that line existed.
 
-Per agent, `branch`:
+**Blind run.** A fresh Claude Code process, with the index rewritten and the two `review-light-*` folders hidden from `git status` for the run. The seed words are absent from every agent's context records, and `01-context.md` does not name the defect. The system stopped the run for low memory during Lens 0: no Lens 1, no final report. The process was the coordinator, not a sub-agent as in the other runs.
 
-| Agent | Turns | Output | New tokens | Max context |
-|---|---|---|---|---|
-| coordinator (Phase 0, 1, 3, 4, 5 in its own context) | 181 | 251,495 | 1,529,727 | 365,070 |
-| job-01 code-auditor discovery | 40 | 61,322 | 610,193 | 222,593 |
-| Lens 0 J01-F1 / J01-F2 (premise-auditor) | 25 / 14 | 18,052 / 25,480 | 107,784 / 89,322 | 45,934 / 41,919 |
-| Lens 1 J01-F1 / J01-F2 | 15 / 12 | 10,161 / 12,657 | 334,151 / 114,357 | 170,469 / 167,629 |
-| Lens 2 J01-F1 / J01-F2 | 7 / 7 | 6,246 / 6,836 | 103,707 / 103,713 | 164,601 / 164,414 |
-| Lens 3 J01-F1 / J01-F2 | 5 / 7 | 3,646 / 5,062 | 92,698 / 154,163 | 160,293 / 160,322 |
+**Where the cost is.** A `general-purpose` agent starts near 155K of context in this environment (skill list, tool schemas): Lens 3 ended at 160K after 3 requests. A role agent with a short tool list starts near 40K. So `light`, with its coordinator and its reviewer on `general-purpose`, carries that base twice; the chosen roles do not. The coordinator is the largest share in every `branch` run: it reads about 43K of method text and writes the phase files.
 
-Per agent, `light`:
-
-| Agent | Turns | Output | New tokens | Max context |
-|---|---|---|---|---|
-| coordinator | 94 | 59,500 | 662,546 | 215,677 |
-| job-01 code-auditor | 42 | 41,978 | 180,859 | 175,272 |
-| Lens 0 F1 (premise-auditor) | 13 | 8,345 | 78,757 | 35,822 |
-| Lens 1 F1 | 10 | 6,772 | 277,767 | 142,057 |
-
-Where the difference comes from: the `branch` coordinator runs Phase 0-1 (scope, evidence pack, context, questions, selection) and the consolidation in its own context (251K output tokens against 60K), and the team-review panel runs four lenses per finding on two findings (eight workers) where the `light` runs two lenses on one finding. The Codebase Map MCP tools were not exposed to the coordinator agent, which called the same backend through `python -B` scripts: same evidence, more tool-call text.
+Limits: the fixture and the seed come from the same model family; the map run is older than the candidate; `search` through the MCP server reports a stale index (`binding differs: sqlite_version`); the commit subjects in `git status` mention this measurement.

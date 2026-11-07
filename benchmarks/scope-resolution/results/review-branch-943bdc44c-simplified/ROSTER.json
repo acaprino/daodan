@@ -1,0 +1,558 @@
+{
+  "advice": [],
+  "critic": false,
+  "gaps": [
+    "edit-impact.targets[0].blind_spots: {\"listed\": [{\"count\": 1, \"name\": \"order.get\", \"reason\": \"unknown-receiver\"}], \"total\": 1}",
+    "stale-callers schema or base/candidate snapshot binding unavailable or mismatched",
+    "edit-impact targets lack candidate delta digest binding: benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total, benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount",
+    "unmatched content signals have unknown applicability; preparation must ground skip decisions"
+  ],
+  "grounding": {
+    "applicability": [],
+    "base": {
+      "commit": "6dd2c2bbf"
+    },
+    "candidate": {
+      "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+    },
+    "changes": [
+      {
+        "added": 1,
+        "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "removed": 1
+      }
+    ],
+    "conclusion_paths": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+    ],
+    "graph": {
+      "bound_targets": [],
+      "delta": {},
+      "freshness_basis": {
+        "delta": null,
+        "impact": "lexical"
+      },
+      "history": {
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount": [],
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total": []
+      },
+      "targets": [
+        {
+          "blind_spots": {
+            "listed": [
+              {
+                "count": 1,
+                "name": "order.get",
+                "reason": "unknown-receiver"
+              }
+            ],
+            "total": 1
+          },
+          "body_hash": "sha256:409ad5cbd18ea5dc",
+          "callees": {
+            "listed": [
+              {
+                "end": 14,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "start": 11,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount"
+              },
+              {
+                "end": 8,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "start": 6,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::vat_amount"
+              }
+            ],
+            "total": 2
+          },
+          "callers": {
+            "listed": [
+              {
+                "end": 30,
+                "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+                "start": 23,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService.checkout"
+              }
+            ],
+            "total": 1
+          },
+          "effects_hash": "93bdcf484e440d98",
+          "end": 20,
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "interface_hash": "v2:de7d91eea8a9e6a6",
+          "kind": "function",
+          "l4": {
+            "related_tests_total": 0
+          },
+          "name": "compute_total",
+          "start": 17,
+          "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total"
+        },
+        {
+          "body_hash": "sha256:3427f7ab0d3ca287",
+          "callees": {
+            "listed": [],
+            "total": 0
+          },
+          "callers": {
+            "listed": [
+              {
+                "end": 20,
+                "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+                "start": 17,
+                "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total"
+              }
+            ],
+            "total": 1
+          },
+          "effects_hash": "1291906b41f68f32",
+          "end": 14,
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "interface_hash": "v2:e8ac1ab5410ca6c1",
+          "kind": "function",
+          "l4": {
+            "related_tests_total": 0
+          },
+          "name": "compute_discount",
+          "start": 11,
+          "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount"
+        }
+      ]
+    },
+    "read_scope": [
+      "benchmarks/scope-resolution/README.md",
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/app/packages/payments/refunds.py",
+      "benchmarks/scope-resolution/ground_truth.json",
+      "benchmarks/scope-resolution/test_app_structures.py"
+    ],
+    "requirements": [],
+    "scope_id": "branch-943bdc44c-simplified"
+  },
+  "id": "branch-943bdc44c-simplified",
+  "jobs": [],
+  "kind": "changeset",
+  "reasons": [
+    "no raising signal"
+  ],
+  "required_specialists": [
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:local-correctness-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:local-concurrency-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:input-validation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:resource-lifecycle-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:algorithmic-cost-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:authorization-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:session-delegation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:secret-exposure-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:untrusted-resource-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:browser-security-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:callback-authenticity-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:ai-boundary-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:audit-trail-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:capacity-quota-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:transaction-integrity-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:schema-coherence-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:cache-consistency-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:data-representation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:data-retention-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:chicken-egg-detector"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:temporal-resilience-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:message-delivery-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:remote-effect-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:service-resilience-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:environment-binding-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "branch-943bdc44c-simplified",
+      "specialist_id": "senior-review:api-contract-auditor"
+    }
+  ],
+  "review_basis": "changeset",
+  "roster": [
+    "senior-review:code-auditor"
+  ],
+  "schema": "daodan/review-roster/v1",
+  "shape": "branch",
+  "signals": {
+    "applicability": {
+      "accessibility": "unknown",
+      "distributed": "unknown",
+      "operability": "unknown",
+      "performance": "unknown",
+      "persistence": "unknown",
+      "resources": "unknown",
+      "startup": "unknown",
+      "timers": "unknown",
+      "trust": "unknown",
+      "ui": "unknown"
+    },
+    "content": {
+      "accessibility": false,
+      "distributed": false,
+      "operability": false,
+      "performance": false,
+      "persistence": false,
+      "resources": false,
+      "startup": false,
+      "timers": false,
+      "trust": false,
+      "ui": false
+    },
+    "contract": [],
+    "effects_changed": [],
+    "files": 1,
+    "interface_changed": [],
+    "languages": [
+      "python"
+    ],
+    "lines": 2,
+    "manifest": [],
+    "map_available": false,
+    "max_callers": 0,
+    "modules": [
+      "benchmarks"
+    ],
+    "production_files": 1,
+    "sensitive_paths": [],
+    "symbols": [
+      "compute_discount"
+    ]
+  },
+  "stage": "standalone",
+  "support": [
+    "senior-review:premise-auditor"
+  ],
+  "tier": "small",
+  "verification": "critical-high"
+}

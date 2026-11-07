@@ -1,0 +1,14 @@
+{
+  "candidate": {
+    "repo_revision": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+    "root": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c",
+    "target": "."
+  },
+  "input_mode": "independent",
+  "knowledge_selection": "",
+  "output_dir": "jobs",
+  "selection": [
+    "senior-review:local-correctness-auditor",
+    "senior-review:logic-integrity-auditor"
+  ]
+}

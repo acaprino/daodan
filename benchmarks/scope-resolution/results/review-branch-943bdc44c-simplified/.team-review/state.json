@@ -1,0 +1,43 @@
+{
+  "target": "6dd2c2bbf..943bdc44c",
+  "status": "complete",
+  "flags": {
+    "reviewers": "auto",
+    "all": false,
+    "deep": false,
+    "no_context": false,
+    "fast": false,
+    "rigorous": false
+  },
+  "current_phase": 5,
+  "phases": {
+    "phase_0_resolution": "complete",
+    "phase_0b_policy": "complete",
+    "phase_1_context": "complete",
+    "phase_1_selection": "complete",
+    "phase_2_review": "complete",
+    "phase_3_consolidation": "complete",
+    "phase_4b_verification": "complete",
+    "phase_4c_critic": "skipped: not in tier",
+    "phase_4_report": "complete"
+  },
+  "files_created": [
+    ".team-review/00-scope.md",
+    ".team-review/01-context.md",
+    ".team-review/02-selection.md",
+    ".team-review/98-verification.md",
+    ".team-review/99-consolidated.md",
+    "jobs/job-01.md",
+    "jobs/job-02.md",
+    "jobs/job-03.md",
+    "verification/F1-lens0.md",
+    "verification/F1-lens1.md",
+    "review-branch-943bdc44c-simplified.md"
+  ],
+  "xray": {
+    "run_id": "daodan-lite-20261107-2",
+    "run_dir": null,
+    "target": ".",
+    "depth": "lite"
+  }
+}
