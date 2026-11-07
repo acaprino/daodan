@@ -5,7 +5,9 @@ review_roster.py; a composition expands to leaf roles without copying prose;
 digests are stable and change with a role file; uncovered required specialists
 get their own job except in light, which folds them into its single job; an
 identity absent from the catalog leaves the job unbound and the exit non-zero;
-a cycle, a foreign candidate or a second light job is an error.
+a cycle, a foreign candidate or a second light job is an error. A branch bind
+states its selection: the reviewers Phase 1 chose replace the automatic roster and
+its floor, source obligations stay, and a dispatch validates against that result.
 """
 
 import json
@@ -35,7 +37,7 @@ def roster(roles, shape="branch", required=(), scope_id="candidate"):
     }
 
 
-BINDINGS = {"candidate": CANDIDATE, "knowledge_selection": "", "output_dir": ".team-review/jobs"}
+BINDINGS = {"candidate": CANDIDATE, "knowledge_selection": "", "output_dir": ".team-review/jobs", "selection": "automatic"}
 
 
 class CatalogTest(unittest.TestCase):
@@ -124,6 +126,69 @@ class BindTest(unittest.TestCase):
                    "senior-review:y": {"id": "senior-review:y", "kind": "composition", "members": ["senior-review:x"]}}
         with self.assertRaises(ValueError):
             composition.leaf_roles("senior-review:x", entries)
+
+
+class SelectionTest(unittest.TestCase):
+    AUTOMATIC = [
+        {"specialist_id": "senior-review:authorization-auditor", "scope_id": "candidate",
+         "evidence": [{"source": "computed-roster", "role": "senior-review:code-auditor"},
+                      {"source": "code-review-floor", "reason": "no evidenced candidate/scope exclusion"}]},
+    ]
+    FROM_SOURCE = [
+        {"specialist_id": "senior-review:ui-race-auditor", "scope_id": "candidate",
+         "evidence": [{"source": "computed-roster", "role": "senior-review:code-auditor"},
+                      {"source": "requirements", "id": "R1"}]},
+    ]
+
+    def bind_selected(self, selection, required=()):
+        return composition.bind(roster(["senior-review:code-auditor"], required=required),
+                                {**BINDINGS, "selection": selection}, PLUGIN_ROOT)
+
+    def test_selection_replaces_the_automatic_roster_and_its_floor(self):
+        chosen = ["senior-review:local-correctness-auditor", "senior-review:logic-integrity-auditor"]
+        prepared = self.bind_selected(chosen, self.AUTOMATIC)
+        self.assertEqual(prepared["roster"], chosen)
+        self.assertEqual(prepared["required_specialists"], [])
+        self.assertEqual([job["specialist_ids"] for job in prepared["jobs"]], [[c] for c in chosen])
+        self.assertEqual(prepared["selection"], {"reviewers": chosen, "superseded": ["senior-review:code-auditor"]})
+
+    def test_selection_keeps_an_obligation_with_its_own_source(self):
+        prepared = self.bind_selected(["senior-review:local-correctness-auditor"], self.FROM_SOURCE)
+        self.assertEqual([job["role"] for job in prepared["jobs"]],
+                         ["senior-review:local-correctness-auditor", "senior-review:ui-race-auditor"])
+
+    def test_branch_without_a_stated_selection_is_an_error(self):
+        bindings = {key: value for key, value in BINDINGS.items() if key != "selection"}
+        with self.assertRaises(ValueError):
+            composition.bind(roster(["senior-review:code-auditor"]), bindings, PLUGIN_ROOT)
+
+    def test_automatic_keeps_the_computed_roster(self):
+        prepared = composition.bind(roster(["senior-review:code-auditor"]), BINDINGS, PLUGIN_ROOT)
+        self.assertEqual(prepared["roster"], ["senior-review:code-auditor"])
+        self.assertEqual(len(prepared["jobs"][0]["specialist_ids"]), 26)
+        self.assertNotIn("selection", prepared)
+
+    def test_empty_or_malformed_selection_is_an_error(self):
+        for bad in ([], [""], "local-correctness", [1]):
+            with self.assertRaises(ValueError, msg=repr(bad)):
+                self.bind_selected(bad)
+
+    def test_light_needs_no_selection_and_refuses_one(self):
+        light = roster(["senior-review:code-auditor"], shape="light")
+        bindings = {key: value for key, value in BINDINGS.items() if key != "selection"}
+        self.assertEqual(len(composition.bind(light, bindings, PLUGIN_ROOT)["jobs"]), 1)
+        with self.assertRaises(ValueError):
+            composition.bind(light, {**BINDINGS, "selection": ["senior-review:ui-race-auditor"]}, PLUGIN_ROOT)
+
+    def test_dispatch_validates_against_the_prepared_review(self):
+        prepared = self.bind_selected(["senior-review:local-correctness-auditor"], self.FROM_SOURCE)
+        roles = [job["role"] for job in prepared["jobs"]] + ["senior-review:premise-auditor"]
+        self.assertEqual(review_roster.check(prepared, {"roles": roles, "critic": False}), [])
+        self.assertTrue(review_roster.check(prepared, {"roles": ["senior-review:code-auditor"], "critic": False}))
+
+    def test_small_tier_verifies_like_light(self):
+        self.assertEqual(review_roster.VERIFICATION["small"], review_roster.VERIFICATION["light"])
+        self.assertEqual(review_roster.VERIFICATION["light"], "critical-high")
 
 
 class CliTest(unittest.TestCase):

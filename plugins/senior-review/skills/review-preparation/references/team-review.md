@@ -18,7 +18,7 @@ verification never share discovery contexts or peer results.
 
 | Phase | Work | Output |
 |---|---|---|
-| 0 | Resolve the target (0), detect dimensions (0b) | `.team-review/00-scope.md` |
+| 0 | Resolve the target (0), compute tier and policy (0b) | `.team-review/00-scope.md` |
 | 1 | Understand the review object within the resolved scope and choose suitable reviewers | `01-context.md`, `02-selection.md` |
 | 2 | One isolated worker per validated job, with canonical member checks; every finding declares its load-bearing premise and provenance | assigned job reports |
 | 3 | Delivery barrier: every job and member delivers findings or an explicit no-findings result | ledger |
@@ -34,7 +34,7 @@ the review as incomplete instead of silently dropping that reviewer.
 ## Skills to Load
 
 Before starting, invoke these skills to inform the review process:
-- `senior-review:review-quality-gates`: provenance rule and reviewer conventions in its core; its `references/context-sharing.md` for anchor routing before dispatch
+- `senior-review:review-quality-gates`: provenance rule and reviewer conventions in its core
 - `senior-review:defect-taxonomy`: 140+ defect subcategories with CWE/OWASP mappings (includes `logic-integrity.md`)
 
 ## Pre-flight Checks
@@ -73,7 +73,7 @@ no phase of this pipeline analyzes the project to establish the prerequisite.
      "current_phase": 0,
      "phases": {
        "phase_0_resolution": "pending",
-       "phase_0b_detection": "pending",
+       "phase_0b_policy": "pending",
        "phase_1_context": "pending",
        "phase_1_selection": "pending",
        "phase_2_review": "pending",
@@ -141,54 +141,11 @@ The scope is what the review judges; what it reads to judge is Phase 1 context.
 Use the run's indexes and source only. Everything else is the reviewer's
 judgment, stated.
 
-## Phase 0b: Bind the computed reviewer selection
+## Phase 0b: Compute tier and policy
 
-Use the roster produced by `references/candidate-grounding.md` for this exact
-candidate. Its `roster` supplies required coverage; validated `jobs` from
-`references/composition.md` are the dispatch units. `support` permits the
-method's separate context and verification workers. Neither this reference nor
-an example below adds an always-on reviewer, lowers a floor or creates a support
-task merely because its role is allowed. The light shape uses its own method.
+Run the roster of `references/candidate-grounding.md` for this exact candidate. It fixes the tier, the verification level and the critic; nothing lowers them. Its `roster` and signals are leads for Phase 1, which chooses the reviewers. `--reviewers` and `--all` are recorded as caller requests for Phase 1. A document kind keeps its fixed set (`selection: "automatic"`). The light shape uses its own method.
 
-Resolve every selected identity through the catalog `scripts/composition.py
-catalog` writes from `plugin.toml`. Bind its canonical role or declared method, prerequisites, scope,
-snapshot, knowledge assignments and intermediate report path. Include the stack
-bindings from `references/stack-dimensions.md` in the same selection and ledger.
-A missing binding or prerequisite is a coverage gap or failed delivery, never
-permission to omit the selected reviewer or substitute a generalist.
-
-The helper owns automatic activation, including additions and removals. These
-boundaries explain the new specialist signals; they are not a second selector:
-
-| Signal in the computed roster | Canonical reviewer | Boundary |
-|---|---|---|
-| `accessibility` | `senior-review:accessibility-auditor` | Markup, effective styles, keyboard/assistive access and blocked interaction paths, including static CSS changes |
-| `performance` | `senior-review:performance-auditor` | Query/index, algorithm, cache, batch, rate-limit and capacity costs; measured claims need actual measurements |
-| `operability` | `senior-review:operability-auditor` | Health, telemetry, deployment, flags, mixed-version rollout and recovery |
-| `platform` | `platform-engineering:platform-reviewer` | Browser/PWA, mobile and desktop client capabilities, storage and sandbox boundaries |
-
-UI timing stays with `ui-race-auditor`; startup prerequisite cycles stay with
-`chicken-egg-detector`; persistent-state validity stays with
-`data-integrity-auditor`. A migration may activate several owners because data
-validity, startup order, query cost and rollout compatibility are different
-questions. Each executes its canonical mandate once in its assigned job.
-
-Inspect the helper's evidence against the actual target. A confirmed relevant
-specialist absent from the roster is a selection gap: preserve its source anchor
-and report the unmet requested coverage. Do not silently append an unauthorized
-role or turn the omission into an inapplicability claim. Legacy `--reviewers` and
-`--all` requests are recorded and compared with the computed set; they cannot
-remove its floor or bypass the run's allowed dispatch. Apply a caller-supplied
-valid selection through the existing preparation contract, not an invented
-roster schema or a second selection engine.
-
-Show one compact plan: target and snapshot, roster ID/tier, jobs and member identities
-with activation evidence, required support work, skip reasons and gaps, and the
-verification level. Context and blind-derivation phases appear only when required
-by that plan. Missing providers and dispatch failures are failed deliveries;
-unknown applicability is a gap. No install failure is a clean skip.
-
-Mark `phase_0b_detection` complete in `state.json`.
+Mark `phase_0b_policy` complete in `state.json`.
 
 ## Phase 1: Understand the object and select reviewers
 
@@ -200,4 +157,4 @@ The coordinator prepares the review within Phase 0's scope:
 
 Stop when it is clear what is being reviewed and who should review it; defect analysis belongs to the reviewers.
 
-Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each in `02-selection.md`. Finalize and bind that selection through `references/composition.md`. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.
+Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each in `02-selection.md`. Pass the chosen catalog identities to `composition.py bind` as `selection` (`references/composition.md`), with the stack bindings of `references/stack-dimensions.md`. Before dispatch show one compact plan: target and snapshot, tier, selected reviewers and why, verification level, gaps. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.

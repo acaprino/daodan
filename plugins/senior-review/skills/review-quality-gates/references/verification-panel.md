@@ -45,13 +45,23 @@ explicit user request and supported host binding, never invented aliases.
 
 ### Selection and Cost Guard
 
-- **Normal:** every deduplicated finding with confidence >= 50%.
+The roster's `verification` sets the work per finding:
+
+| `verification` | Tier | Findings | Lenses |
+|---|---|---|---|
+| `critical-high` | light, branch small | Critical and High with confidence >= 50% | Lens 0 and Lens 1 |
+| `all-above-floor` | branch medium, large | Every deduplicated finding with confidence >= 50% | Lens 0 when eligible, Lenses 1 and 2, Lens 3 after survival |
+
+Under `critical-high`, a refuted premise or `FALSE_POSITIVE` filters the finding,
+uncertainty keeps it `contested`, severity stays the reviewer's, and lower severities
+are reported `unverified (tier)`.
+
 - **Cost guard:** > 25 survivors without `--rigorous`. Preserve required
   verification; optional selection retains Critical/High, Medium/Low at 50-75%
   confidence or conflicting severity. Label omitted optional findings
   `unverified (cost-guard)`; disclose narrowing. Count proxies token spend.
-- **`--rigorous`:** all above the floor. **`--fast`:** optional panel/critic
-  only; never waives required checks or Lens 0 eligibility.
+- **`--rigorous`:** all above the floor with all lenses, at any tier. **`--fast`:**
+  optional panel/critic only; never waives required checks or Lens 0 eligibility.
 
 ## Completeness Critic
 

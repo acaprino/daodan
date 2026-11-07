@@ -1,7 +1,8 @@
 """Bind the computed roster into dispatchable jobs, so the roles stay small and the review is composed.
 
-``review_roster.py`` decides who reviews; this helper decides how those identities
-become isolated jobs. Each roster identity becomes one job; a composition from
+``review_roster.py`` computes the tier and an automatic roster; team-review's Phase 1
+replaces that roster with the reviewers it chose (``selection`` in the bindings). This
+helper decides how those identities become isolated jobs. Each roster identity becomes one job; a composition from
 ``plugin.toml`` expands to its leaf roles, so a tailored reviewer is a list of
 focused role files plus the shared conventions, never a merged body. The output
 names files and SHA-256 digests only: role prose is never copied into the plan.
@@ -14,7 +15,8 @@ Two commands:
 - ``bind``: ``ROSTER.json`` + ``BINDINGS.json`` -> ``PREPARED-REVIEW.json`` with
   ``jobs``, ``common`` and ``gaps``. An identity absent from the catalog or a
   missing role file leaves its job ``unbound`` and the exit status non-zero, so
-  the dispatch step refuses an incomplete plan.
+  the dispatch step refuses an incomplete plan. A branch bind must state its
+  ``selection``, so skipping the choice is an error and not 26 silent members.
 
 Usage:
 
@@ -36,6 +38,7 @@ SCHEMA = "daodan/prepared-review/v1"
 PLUGIN = "senior-review"
 COMMON = Path("skills/review-quality-gates/references/reviewer-common.md")
 DEFAULT_ROOT = Path(__file__).resolve().parents[3]
+AUTOMATIC_SOURCES = {"computed-roster", "code-review-floor"}
 
 
 def sha256(path: Path) -> str:
@@ -72,9 +75,29 @@ def leaf_roles(identity: str, entries: dict, trail: tuple = ()) -> list[str]:
     return leaves
 
 
+def apply_selection(roster: dict, selection) -> dict:
+    """Make Phase 1's choice the roster; only obligations with a source of their own survive it."""
+    branch = roster.get("shape") == "branch"
+    if selection is None and branch:
+        raise ValueError('bindings.selection is required for branch: the reviewers Phase 1 chose, '
+                         'or "automatic" for a variant or document kind without that choice')
+    if selection is None or selection == "automatic":
+        return roster
+    if not branch:
+        raise ValueError("only a branch review takes a selection")
+    if not isinstance(selection, list) or not selection or not all(isinstance(r, str) and r for r in selection):
+        raise ValueError('bindings.selection must be a non-empty list of catalog identities or "automatic"')
+    kept = [item for item in roster.get("required_specialists", [])
+            if not all(isinstance(e, dict) and e.get("source") in AUTOMATIC_SOURCES for e in item.get("evidence", []))]
+    return {**roster, "roster": list(selection), "required_specialists": kept,
+            "selection": {"reviewers": list(selection),
+                          "superseded": [r for r in roster.get("roster", []) if r not in selection]}}
+
+
 def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
     if roster.get("schema") != ROSTER_SCHEMA:
         raise ValueError("roster schema is not " + ROSTER_SCHEMA)
+    roster = apply_selection(roster, bindings.get("selection"))
     grounding = roster.get("grounding", {})
     candidate = bindings.get("candidate")
     if candidate is None or (grounding.get("candidate") and grounding["candidate"] != candidate):

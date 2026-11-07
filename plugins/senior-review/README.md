@@ -2,7 +2,7 @@
 
 **Responsabilità:** ricavare dal contesto le domande di correttezza da verificare, selezionare i controlli applicabili e comporre il minimo lavoro di review giustificato dalle evidenze.
 
-Nella nuova base l'unica dipendenza di prodotto è **Codebase Map**. Le micro skill e i controlli restano di proprietà di senior-review; un reviewer è un incarico temporaneo composto da domanda, sorgenti pertinenti, istruzioni selezionate e risultato atteso. Una skill non implica un agente separato.
+Nella nuova base l'unica dipendenza di prodotto è **Codebase Map**. Le micro skill e i controlli restano di proprietà di senior-review; un reviewer è un incarico temporaneo sull'intero perimetro, composto da mandato, contesto, istruzioni selezionate e risultato atteso. Una skill non implica un agente separato.
 
 Il risultato distingue difetti dimostrati, verifiche svolte e lacune. Nessuna selezione semantica garantisce di individuare tutti i difetti.
 
@@ -28,6 +28,6 @@ Installazione: `claude plugin install senior-review@daodan` (marketplace `acapri
 
 Le istruzioni obbligatorie che caricavano work-controller, skill-catalog, report-rendering, testing o altri plugin assenti sono state rese host-generiche o trasformate in lacune esplicite. I riferimenti storici residui sono solo documentali. Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. La copertura di React, TypeScript, Tauri/platform, testing, abstraction e workspace hygiene non è più fornita da plugin esterni: resta una lacuna dichiarata finché senior-review non possiederà micro skill equivalenti.
 
-La Phase 1 di `team-review` comprende l'oggetto nel perimetro già risolto, sceglie i reviewer adatti leggendo i loro mandati. La selezione finalizza il roster usato dal binder; i reviewer scelti partono insieme nella Phase 2, ciascuno sull'intero perimetro. Testo operativo: `skills/review-preparation/references/team-review.md`.
+La Phase 1 di `team-review` comprende l'oggetto nel perimetro già risolto, sceglie i reviewer adatti leggendo i loro mandati. `composition.py bind` riceve la scelta e senza di essa si ferma; i reviewer scelti partono insieme nella Phase 2, ciascuno sull'intero perimetro. La verifica dipende dal tier: al tier small Critical e High con Lens 0 e Lens 1, come la `light`. Testo operativo: `skills/review-preparation/references/team-review.md`.
 
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md)

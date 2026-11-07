@@ -47,6 +47,7 @@ import sys
 from pathlib import Path
 
 SCHEMA = "daodan/review-roster/v1"
+PREPARED_SCHEMA = "daodan/prepared-review/v1"
 
 # Thresholds. Tuned on the probe of 2026-10-19 (humanize #379: 2 files, 9 hunks,
 # 1 function, 0 production callers, no interface change -> small).
@@ -138,7 +139,7 @@ SIGNAL_ROLE = {
 # A trust word in prose is a specification touching a boundary; in code it is
 # everywhere, and code reaches the security auditor through sensitive paths.
 PROSE_ONLY_SIGNALS = {"trust"}
-VERIFICATION = {"light": "critical-high", "small": "high-and-above", "medium": "all-above-floor", "large": "all-above-floor"}
+VERIFICATION = {"light": "critical-high", "small": "critical-high", "medium": "all-above-floor", "large": "all-above-floor"}
 
 CHANGED_LINE = re.compile(r"^[+-](?![+-]{2})")
 HUNK = re.compile(r"^@@ .* @@\s*(.*)$")
@@ -676,16 +677,17 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
 
 
 def check(roster: dict, dispatch: dict) -> list[str]:
-    """Return the reasons a dispatch exceeds the roster; empty when it conforms."""
+    """Return the reasons a dispatch exceeds the roster or prepared review; empty when it conforms."""
     problems = []
-    allowed = set(roster.get("roster", [])) | set(roster.get("support", []))
+    allowed = (set(roster.get("roster", [])) | set(roster.get("support", []))
+               | {job["role"] for job in roster.get("jobs", [])})
     requested = dispatch.get("roles", [])
     extra = sorted(set(requested) - allowed)
     if extra:
         problems.append("roles outside the computed roster: " + ", ".join(extra))
     if dispatch.get("critic") and not roster.get("critic"):
         problems.append("the completeness critic is not in this tier")
-    if roster.get("schema") != SCHEMA:
+    if roster.get("schema") not in (SCHEMA, PREPARED_SCHEMA):
         problems.append("roster schema is not " + SCHEMA)
     return problems
 

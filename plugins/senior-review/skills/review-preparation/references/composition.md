@@ -5,13 +5,12 @@ does not select another roster, run a worker or replace the native review method
 
 ## Prepare once
 
-For **team-review**, Phase 1 finalizes the provisional automatic selection before
-binding: put its chosen catalog identities in the existing `roster` field and
-remove `required_specialists` entries supported only by the superseded automatic
-roster or code floor. Retain caller/source-required obligations and their evidence,
-as well as the computed tier, verification policy, critic, scope and candidate.
-Bind this finalized roster once; it is also the roster used to validate dispatch.
-The automatic floor and exclusions below govern the other review variants.
+For **team-review**, Phase 1 chooses the reviewers and `bind` receives them as
+`selection`. They become the roster; `required_specialists` supported only by the
+automatic roster or code floor drop, caller/source-required obligations stay, and
+tier, verification level, critic, scope and candidate do not change. Validate the
+dispatch with `review_roster.py check --roster PREPARED-REVIEW.json`. The automatic
+floor and exclusions below govern the other review variants.
 
 Preserve the generalist's boundary floor through canonical members. To narrow a
 computed family, preparation records `applicability` rows: `specialist_id`,
@@ -47,6 +46,9 @@ reviewer, standalone workflow or repeated settled checks.
 Build one `BINDINGS.json` from verified values:
 
 - `candidate`: the exact roster grounding candidate; a different value is an error.
+- `selection`: required for a branch bind. The catalog identities Phase 1 of
+  team-review chose, or `"automatic"` for code review, PR review and document
+  kinds, which keep the computed roster. A missing value is an error.
 - `knowledge_selection`: fingerprint of the once-prepared selection, `""` for an
   explicit empty selection. Changes invalidate the job; do not select again per member.
 - `output_dir`: job report directory inside the owned run; `input_mode` (default

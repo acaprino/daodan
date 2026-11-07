@@ -44,7 +44,7 @@ in their run root. Record the same
 snapshot and run identity. Return missing evidence as degraded coverage.
 
 Read `references/stack-dimensions.md` to include React, TypeScript and platform
-bindings in the same reviewer selection. For team review this is part of Phase 0b,
+bindings in the same reviewer selection. For team review this is part of Phase 1,
 before presenting the plan; for code and PR review it follows scope resolution.
 Preparation never dispatches. Record the activation
 evidence or skip reason for each dimension, then pass the complete selection to

@@ -44,11 +44,11 @@ merely because its evidence line is unchanged or `introduced_by_candidate` is fa
 
 ## Step 4b: Adversarial Verification Panel
 
-Preserve the bound roster and run's required verification level. `--fast` and cost guard may omit only additional optional work; missing required checks leave the review incomplete. Verify findings with the panel defined in the `senior-review:review-quality-gates` skill, file `references/verification-panel.md` (resolve it inside that skill's installed directory), section `## Adversarial Verification Panel`. This replaces the former single-validator step: four independent lenses (premise veto, reachability/correctness, false-positive causes, severity) catch more failure modes than one judge, and the scope widens from Critical/High only to every finding above the confidence floor.
+Preserve the bound roster and run's required verification level. `--fast` and cost guard may omit only additional optional work; missing required checks leave the review incomplete. Verify findings with the panel defined in the `senior-review:review-quality-gates` skill, file `references/verification-panel.md` (resolve it inside that skill's installed directory), section `## Adversarial Verification Panel`. The lenses (premise veto, reachability/correctness, false-positive causes, severity) depend on the roster's `verification` level.
 
 ### Selection
 
-- **Default:** every finding with confidence `>= 50%` that survived Step 4b deduplication, regardless of severity.
+- **Default:** the roster's `verification` level from the skill's section `### Selection and Cost Guard`. Under `critical-high` (small tier) Critical and High get Lens 0 and Lens 1 and skip the panel below; lower severities are `unverified (tier)`.
 - **Cost guard** (more than 25 surviving findings AND `--rigorous` not set): preserve every required verification; narrow only additional optional findings to Critical/High plus Medium/Low in the 50-75% confidence band or with conflicting reviewer severity. Tag omitted optional findings `unverified (cost-guard)` and note the narrowing.
 - **`--rigorous`:** verify everything above the floor, ignoring the cap.
 
@@ -66,9 +66,7 @@ A finding discarded by Lens 0 never reaches this rule. Otherwise apply the skill
 
 **After the panel completes:**
 - Drop `filtered` findings; apply recalibrated severities; tag `contested`, `premise-contested`, and `unverified (cost-guard)` findings.
-- Add to the report: `Verification: X of Y (4-lens panel), Z false positives, W contested, V premise-refuted, U premise-contested`.
-
-Medium and Low findings are no longer skipped by default: they enter the panel like any other finding above the floor (subject to the cost guard).
+- Add to the report: `Verification: X of Y, Z false positives, W contested, V premise-refuted, U premise-contested`.
 
 ## Step 4c: Completeness Critic
 
