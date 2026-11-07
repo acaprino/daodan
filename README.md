@@ -40,12 +40,27 @@ senior-review depends on Codebase Map; Codebase Map stands alone.
 
 Roles cover one defect class each (authorization, transaction integrity,
 temporal resilience, …) and are composed into larger reviewers in
-`plugins/senior-review/plugin.toml`; no generalist reviewer exists.
+`plugins/senior-review/plugin.toml`; the light review and small rosters use the
+`code-auditor` composition.
+
+## Install
+
+```text
+claude plugin marketplace add acaprino/daodan
+claude plugin install codebase-map@daodan
+claude plugin install senior-review@daodan
+```
+
+From a checkout, `claude plugin marketplace add <path>` registers the folder
+instead. The map entry is the skill `/codebase-map:map-method <request>`; the
+`codebase-map` MCP server starts with the plugin under `uv`. `/reload-plugins`
+re-reads the plugin files but does not restart that server.
 
 ## Requirements
 
-- Python ≥ 3.12, standard library only; `tree-sitter`, `sqlglot`, `scip`/`jedi`
-  optional for higher-fidelity parsing and resolution.
+- Python ≥ 3.12, standard library for the scripts; the MCP server runs under
+  `uv`, which provisions `mcp`. `tree-sitter`, `sqlglot`, `scip`/`jedi` optional
+  for higher-fidelity parsing and resolution.
 - A host that can run shell commands and dispatch isolated agent contexts.
   Plugin content is host-generic; command and worker bindings come from the host.
 
