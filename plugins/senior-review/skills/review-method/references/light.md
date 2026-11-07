@@ -9,7 +9,10 @@ references and consolidation are separate methods.
 Preserve caller-bound baseline, candidate and scoped untracked content. Standalone,
 a named path/directory/project reviews content unless changes are requested.
 A commit reviews that commit; no argument reviews staged/unstaged/untracked
-changes, else the last commit. Branches/PRs require branch review. State target/basis and the intent in one
+changes, else the last commit. Branches/PRs require branch review. A request in
+words (a module, feature, function, error or domain term) becomes files through
+"Request to files" in `references/team-review.md` of `senior-review:review-preparation`;
+`clarify` asks before dispatch, a `partial` gap goes in the report. State target/basis and the intent in one
 sentence (what the candidate changes and why), from the task, the user's words
 or the commit messages; unable to state it, ask before dispatch.
 

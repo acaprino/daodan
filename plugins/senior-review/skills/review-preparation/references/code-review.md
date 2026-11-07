@@ -1,6 +1,6 @@
 # Code Review
 
-Input: uncommitted edits, recent commits, a pull request or a branch diff. Output: the structured review of review-quality-gates `references/code-review-output.md`, with confidence-scored findings; PR comments only under `--auto-comment` per `references/code-review-delivery.md` of review-method.
+Input: uncommitted edits, recent commits, a pull request, a branch diff, or a request in words. Output: the structured review of review-quality-gates `references/code-review-output.md`, with confidence-scored findings; PR comments only under `--auto-comment` per `references/code-review-delivery.md` of review-method.
 
 ## CRITICAL RULES
 
@@ -54,6 +54,13 @@ the supplied target and its evidence, without running Cases A-E below.
 
 For standalone calls without a caller-bound candidate, determine what to review
 from `$ARGUMENTS` using this priority:
+
+**Case W -- `$ARGUMENTS` is a request in words** (a module, feature, function,
+error or domain term, not a path, PR, branch or flag): resolve it to files with
+"Request to files" in `references/team-review.md` of this skill. `clarify` asks
+before anything else runs; `partial` continues with the files found and keeps the
+gap for the report. The files are reviewed as current content (Step 1b takes the
+intent from the request itself); Cases A-E do not apply.
 
 **Case A -- Uncommitted/staged changes exist** (no explicit PR or branch arg):
 

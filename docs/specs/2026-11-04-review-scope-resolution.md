@@ -4,7 +4,7 @@ Data: 4 novembre 2026, ridotta il 7 novembre 2026.
 
 **Stato:** applicata nel testo di `team-review.md`, non ancora eseguita in una review completa. Provata su `benchmarks/scope-resolution/`: una esecuzione per caso, risultati e limiti nel suo README.
 
-**Collocazione:** Phase 0 "Target Resolution" di `plugins/senior-review/skills/review-preparation/references/team-review.md`. Aggiunge alla Phase 0 le richieste a parole: modulo, feature, funzione, errore, termine di dominio. La Phase 1 "Context Building" resta invariata.
+**Collocazione:** Phase 0 "Target Resolution" di `plugins/senior-review/skills/review-preparation/references/team-review.md`, sezione "Request to files"; la review leggera vi rimanda da `review-method/references/light.md` e da `review-preparation/references/code-review.md` (caso W). Aggiunge alla Phase 0 le richieste a parole: modulo, feature, funzione, errore, termine di dominio. La Phase 1 "Context Building" resta invariata.
 
 ```text
 Richiesta + Codebase Map → file da rivedere → contesto → review
