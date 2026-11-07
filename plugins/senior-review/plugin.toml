@@ -47,7 +47,6 @@ members = [
   "senior-review:cache-consistency-auditor",
   "senior-review:data-representation-auditor",
   "senior-review:data-retention-auditor",
-  "senior-review:storage-durability-auditor",
 ]
 
 [reviewers.compositions.distributed-flow-auditor]

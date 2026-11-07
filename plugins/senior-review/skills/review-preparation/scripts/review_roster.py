@@ -135,6 +135,7 @@ SIGNAL_ROLE = {
     "distributed": "senior-review:distributed-flow-auditor",
     "contract": "senior-review:api-contract-auditor",
     "manifest": "senior-review:dependency-auditor",
+    "storage": "senior-review:storage-durability-auditor",
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
 }
@@ -177,6 +178,9 @@ SIGNAL_PATTERNS = {
     "ui": re.compile(r"\b(useEffect|useLayoutEffect|requestAnimationFrame|scrollTo|focus\(\)|ResizeObserver|IntersectionObserver)\b"),
     "startup": re.compile(r"\b(__main__|bootstrap|on_startup|lifespan|init_app|configure\(|register\()"),
     "distributed": re.compile(r"\b(requests\.|httpx\.|fetch\(|grpc|kafka|rabbit|celery|sqs|pubsub|publish\(|consume\()"),
+    "storage": re.compile(r"\b(?:fsync|fdatasync|os\.(?:replace|rename|link|WriteFile|Create)|rename(?:Sync)?\(|"
+                          r"writeFile(?:Sync)?|createWriteStream|NamedTemporaryFile|mkstemp|shutil\.move|"
+                          r"flock|lockf|fcntl\.|O_CREAT|O_APPEND|File::create|std::fs::write)\b"),
     "persistence": re.compile(r"\b(SELECT|INSERT INTO|DELETE FROM|CREATE TABLE|ALTER TABLE|transaction|"
                               r"rollback|bulk_create|session\.add|migrations?)\b"),
     "trust": re.compile(r"\b(authentication|authorization|credentials?|passwords?|tokens?|permissions?|"

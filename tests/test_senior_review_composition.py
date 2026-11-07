@@ -64,7 +64,7 @@ class BindTest(unittest.TestCase):
         self.assertEqual(len(prepared["jobs"]), 1)
         job = prepared["jobs"][0]
         self.assertEqual(job["status"], "bound")
-        self.assertEqual(len(job["specialist_ids"]), 28)
+        self.assertEqual(len(job["specialist_ids"]), 27)
         self.assertNotIn("senior-review:security-auditor", job["specialist_ids"])
         self.assertIn("senior-review:authorization-auditor", job["specialist_ids"])
         self.assertEqual(set(job["source_bindings"]), set(job["specialist_ids"]))
@@ -165,7 +165,7 @@ class SelectionTest(unittest.TestCase):
     def test_automatic_keeps_the_computed_roster(self):
         prepared = composition.bind(roster(["senior-review:code-auditor"]), BINDINGS, PLUGIN_ROOT)
         self.assertEqual(prepared["roster"], ["senior-review:code-auditor"])
-        self.assertEqual(len(prepared["jobs"][0]["specialist_ids"]), 28)
+        self.assertEqual(len(prepared["jobs"][0]["specialist_ids"]), 27)
         self.assertNotIn("selection", prepared)
 
     def test_empty_or_malformed_selection_is_an_error(self):
