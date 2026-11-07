@@ -31,14 +31,13 @@ the actual candidate and leave any gate needing that comparison unavailable.
 | Always, before the variant | `references/candidate-grounding.md`: target kind/basis, governing snapshot policy, ground-truth gate, evidence pack, budget and roster by kind |
 | Then | `references/<variant>.md` |
 | Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
-| Reviewer catalog | `plugin.toml` (`[components].roles`, `[reviewers.compositions]`) read by `scripts/composition.py catalog`, which writes `CATALOG.json`; triggers in the roles' descriptions shortlist candidates; Phase 1, Step 3 reads the bodies of the shortlisted candidates only, never the whole catalog |
+| Reviewer catalog | `plugin.toml` (`[components].roles`, `[reviewers.compositions]`) read by `scripts/composition.py catalog`, which writes `CATALOG.json`; descriptions shortlist candidates; Phase 1 reads their mandates to choose suitable reviewers |
 | Always, after the roster | `references/composition.md`: bind and validate specialist jobs before recording the complete review or dispatching |
 
-Execute preparation once under the computed roster and support requirements.
-Team review Phase 1 (context, questions, selection) runs in the coordinator's
-context on the complete run resolved from runs.json; it dispatches nothing and
-never substitutes a mirror for a missing run. The members it selects are bound
-with `scripts/composition.py bind`. Required workers retain isolated contexts.
+Execute preparation once. Team review Phase 1 understands the scoped object
+and selects suitable reviewers in the coordinator's context, using the complete
+run resolved from runs.json. It finalizes the roster through
+`references/composition.md`; Phase 2 dispatches the bound jobs in isolated contexts.
 
 Reports use the explicit review output root; lifecycle runs keep scratch/context
 in their run root. Record the same

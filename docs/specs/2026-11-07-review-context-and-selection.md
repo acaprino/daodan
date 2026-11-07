@@ -12,15 +12,15 @@ Prova del 2026-11-07 (`benchmarks/scope-resolution/results/review-light-943bdc44
 
 La Phase 1 diventa tre passi del coordinatore, nel suo contesto, senza dispatch.
 
-1. **Contesto.** Dalla richiesta e dal diff, o dal perimetro di Phase 0, con i tool della mappa completa: simboli toccati (`symbols_at`), chiamanti e vicini (`edit_impact`, `graph`; se falliscono, ricerca testuale dichiarata come fallback), contratti e test pertinenti (`search`, `read`). Ogni riferimento ha percorso, righe e versione. Tre classi separate: fatti statici, descrizioni supportate dal codice, ipotesi. Output `.team-review/01-context.md`.
-2. **Domande.** Una per ogni comportamento che la modifica può rompere, con la ragione legata a un riferimento del contesto. Linguaggio e framework orientano la ricerca; da soli non attivano nulla.
-3. **Selezione e composizione.** Candidati: i ruoli del catalogo (`plugin.toml` via `composition.py catalog`); le micro skill quando esisteranno. La baseline di ogni stack coinvolto è obbligatoria; se manca, lacuna dichiarata. Il coordinatore legge il corpo dei candidati prima di decidere: applicabile, non applicabile, evidenza insufficiente. Una domanda senza controllo resta esplicita con un incarico specifico. Un solo job finché il contesto è condiviso; un reviewer in più solo per contesto separato, competenza non coperta o verifica indipendente motivata. Output `.team-review/02-selection.md` (domande, controlli, job), letto da Phase 2 al posto di `02-interconnect.md` e `01-knowledge-provenance.md`.
+1. **Comprendere l'oggetto nel perimetro.** Dal perimetro di Phase 0, con i tool della mappa completa: sorgenti, contratti e test pertinenti allo scopo della review. Ogni riferimento ha percorso, righe e versione. Output `.team-review/01-context.md`.
+2. **Scegliere i reviewer pertinenti.** Candidati: i ruoli del catalogo (`plugin.toml` via `composition.py catalog`); le micro skill quando esisteranno. Le descrizioni selezionano i candidati, il coordinatore ne legge i mandati prima di decidere. Linguaggi ed estensioni orientano la scelta, non la determinano. La selezione finalizza il campo `roster` che `composition.py bind` lega.
+3. **Assegnare gli incarichi.** A ciascun reviewer cosa verificare e su quali parti del perimetro; ogni incarico cita il riferimento di `01-context.md` che lo motiva. Una competenza necessaria ma non disponibile, inclusa la baseline di uno stack toccato, è una lacuna dichiarata. Output `.team-review/02-selection.md`, letto da Phase 2 al posto di `02-interconnect.md` e `01-knowledge-provenance.md`. I reviewer partono insieme in Phase 2.
 
-Cade 1a perché la mappa completa è prerequisito e una nuova analisi parziale la duplica. Cade 1b perché il contesto del passo 1 ne prende il posto. Cadono 1c e 1d perché la verifica delle premesse resta per finding (Lens 0 in `light.md`), dove costa in proporzione ai finding e non a priori; le contraddizioni fra fonti diventano ipotesi del passo 1. `review_roster.py compute` resta per tier e verifica; la scelta dei membri passa dal passo 3.
+Cade 1a perché la mappa completa è prerequisito e una nuova analisi parziale la duplica. Cade 1b perché il contesto del passo 1 ne prende il posto. Cadono 1c e 1d perché la verifica delle premesse resta per finding (Lens 0 in `light.md`), dove costa in proporzione ai finding e non a priori. Cade 0c (leads immutabili) perché alimentava solo la derivazione cieca 1c. `review_roster.py compute` resta per tier e verifica; la scelta dei membri passa dal passo 2.
 
 ## Criterio
 
-Su una modifica con un difetto verificabile e noto indipendentemente, la review `branch` lo trova con una domanda tracciabile a un riferimento del contesto, costa meno token della Phase 1 e Phase 2 attuali, e dichiara le baseline mancanti. Misura in `benchmarks/scope-resolution` sul commit `943bdc44c` (oracolo nel commit successivo `f52f7352c`), confronto con la `light` con tool. È il caso di costruzione: prima di dichiarare il metodo valido servono casi non usati nella costruzione.
+Su una modifica con un difetto verificabile e noto indipendentemente, la review `branch` lo trova con un incarico tracciabile a un riferimento del contesto, costa meno token della Phase 1 e Phase 2 attuali, e dichiara le baseline mancanti. Misura in `benchmarks/scope-resolution` sul commit `943bdc44c` (oracolo nel commit successivo `f52f7352c`), confronto con la `light` con tool. È il caso di costruzione: prima di dichiarare il metodo valido servono casi non usati nella costruzione.
 
 ## Gap
 
@@ -30,7 +30,7 @@ Su una modifica con un difetto verificabile e noto indipendentemente, la review 
 
 ## Interventi
 
-1. `review-preparation/references/team-review.md`: la sezione Phase 1 diventa i tre passi.
+1. `review-preparation/references/team-review.md`: la sezione Phase 1 diventa i tre passi; via la Phase 0c. `references/composition.md`: la selezione finalizza il `roster` prima di `bind`. `roles/premise-auditor.md`: il Mode 1 non legge più `01a-review-knowledge-leads.md`.
 2. `review-method/references/team-review.md`: Phase 2 legge `02-selection.md`; il prompt del reviewer elenca i nuovi file di contesto; via il riferimento a 1c.
 3. `review-method/SKILL.md`, `review-preparation/SKILL.md`, `README.md` del plugin: via le istruzioni su Phase 1a; la riga sul selettore descrive il passo 3.
 4. `roles/premise-auditor.md`: Mode 1 resta disponibile su richiesta esplicita, fuori dal flusso.

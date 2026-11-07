@@ -16,7 +16,7 @@ You have three modes. The prompt that spawns you names which one. They have diff
 
 ## Mode 1: Independent derivation (on explicit request only; not part of the branch review flow)
 
-**Inputs:** the diff and scope, `.team-review/01a-review-knowledge-leads.md`, the repository, and any test or document you reach on your own.
+**Inputs:** the diff and scope, the repository, and any test or document you reach on your own.
 
 **Forbidden inputs.** Do not read, and do not accept in your prompt:
 

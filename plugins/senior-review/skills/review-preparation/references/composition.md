@@ -5,6 +5,14 @@ does not select another roster, run a worker or replace the native review method
 
 ## Prepare once
 
+For **team-review**, Phase 1 finalizes the provisional automatic selection before
+binding: put its chosen catalog identities in the existing `roster` field and
+remove `required_specialists` entries supported only by the superseded automatic
+roster or code floor. Retain caller/source-required obligations and their evidence,
+as well as the computed tier, verification policy, critic, scope and candidate.
+Bind this finalized roster once; it is also the roster used to validate dispatch.
+The automatic floor and exclusions below govern the other review variants.
+
 Preserve the generalist's boundary floor through canonical members. To narrow a
 computed family, preparation records `applicability` rows: `specialist_id`,
 `scope_id`, exact `candidate`, `status: not-applicable`, and `evidence` entries

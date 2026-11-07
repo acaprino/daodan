@@ -7,10 +7,9 @@
    below names owners, not extra activation rules. Resolve catalog entries even
    when a future registered identity has no example row here. A missing binding
    is a failed delivery, never permission to omit that reviewer.
-3. The jobs come from Phase 1, Step 3 (`.team-review/02-selection.md`): each job
-   carries its questions, the controls found applicable and the reason for a
-   separate job. The mapping below names owners for dimensions a question falls
-   under; it adds no job the selection did not compose. Premise verification
+3. The jobs come from Phase 1 (`.team-review/02-selection.md`): each job
+   carries its selected reviewers and scoped assignments. The mapping below
+   names dimension owners; it adds no job to that selection. Premise verification
    happens per finding, in Phase 4b, with its own inputs and contexts.
 
 ### Dimension-to-agent mapping
@@ -65,8 +64,8 @@ You are reviewing for the {dimension} dimension.
 {diff content}
 
 ## Context files (read these before analyzing code)
-- Context: .team-review/01-context.md (static facts, supported descriptions, hypotheses, questions)
-- Selection: .team-review/02-selection.md (your job's questions and controls)
+- Context: .team-review/01-context.md (review object and relevant source references)
+- Selection: .team-review/02-selection.md (your job's reviewers and scoped assignments)
 - Codebase Map: the complete run named in the context; query its tools for anything the context does not cover
 
 ### Epistemic status of the shared context
@@ -74,17 +73,17 @@ You are reviewing for the {dimension} dimension.
 The shared context is NOT ground truth. It is an index of hypotheses produced by
 one upstream observer.
 
-- Static facts guide source reading; confirm the premise against current source
+- References guide source reading; confirm any premise against current source
   before using it in a finding.
-- Supported descriptions and hypotheses are not facts. You MUST independently
-  re-derive any of them before using it as the premise of a finding.
+- Descriptions and hypotheses are not ground truth. Independently re-derive them
+  before using them as a finding's premise.
 - Actively search for code paths, tests or documents that contradict the context.
   Finding one is a result, not a failure.
 - Silence in the context is not evidence of absence. A concern the map does not
   mention may still be real; look anyway.
 
-Answer these questions first; each one cites the context reference that raised it:
-{questions assigned to this job in 02-selection.md}
+Review the assigned aspects and report findings, completed checks and gaps:
+{assignment for this job in 02-selection.md}
 
 ## Instructions
 Follow your agent definition's analysis phases, knowledge-base loading, output format, and severity classification. Cite file:line for every finding.

@@ -18,8 +18,8 @@ verification never share discovery contexts or peer results.
 
 | Phase | Work | Output |
 |---|---|---|
-| 0 | Resolve the target (0), detect dimensions (0b), discover source-derived evidence without consuming Codebase Map analyses or knowledge leads (0c) | `.team-review/00-scope.md`, `01a-review-knowledge-leads.md` |
-| 1 | Context from the complete map's tools, questions the change raises, selection of controls and composition of jobs | `01-context.md`, `02-selection.md` |
+| 0 | Resolve the target (0), detect dimensions (0b) | `.team-review/00-scope.md` |
+| 1 | Understand the review object within the resolved scope and choose suitable reviewers with clear assignments | `01-context.md`, `02-selection.md` |
 | 2 | One isolated worker per validated job, with canonical member checks; every finding declares its load-bearing premise and provenance | assigned job reports |
 | 3 | Delivery barrier: every job and member delivers findings or an explicit no-findings result | ledger |
 | 4 | Consolidation weighted by provenance, verification panel (4b), completeness critic (4c) | `99-consolidated.md` |
@@ -74,9 +74,7 @@ no phase of this pipeline analyzes the project to establish the prerequisite.
      "phases": {
        "phase_0_resolution": "pending",
        "phase_0b_detection": "pending",
-       "phase_0c_evidence_discovery": "pending",
        "phase_1_context": "pending",
-       "phase_1_questions": "pending",
        "phase_1_selection": "pending",
        "phase_2_review": "pending",
        "phase_3_consolidation": "pending",
@@ -140,8 +138,7 @@ question: `references/tools-guide.md` of `codebase-map:map`.
 any dispatch; without an answer nothing is dispatched.
 
 The scope is what the review judges; what it reads to judge is Phase 1 context.
-Use the run's indexes and source only: the coordinator reads no Codebase Map
-analysis artifacts before Phase 0c completes. Everything else is the reviewer's
+Use the run's indexes and source only. Everything else is the reviewer's
 judgment, stated.
 
 ## Phase 0b: Bind the computed reviewer selection
@@ -193,82 +190,14 @@ unknown applicability is a gap. No install failure is a clean skip.
 
 Mark `phase_0b_detection` complete in `state.json`.
 
-## Phase 0c: Review Evidence Discovery
+## Phase 1: Understand the object and select reviewers
 
-Runs inline before required blind derivation or context work. It collects source-derived leads even when shared analytical context is withheld. Structural indexes used for target resolution may locate source; module descriptions and proposals are locating hints, never behavioral premises or evidence for a lead. This phase derives its leads by reading repository sources, tests and documents.
+The coordinator prepares the review within Phase 0's scope:
 
-**The coordinator must not read Codebase Map analysis artifacts (`01..07.md`), semantic cards or generated knowledge leads before Phase 0c completes**, including mirrors and earlier runs. Codebase Map's knowledge leads enter in Phase 1, Step 1, as supported descriptions or hypotheses, and nowhere earlier. This permits index-based localization in Phase 0 without treating shared analysis as independent discovery.
+1. Read the scoped material and the context needed to understand its purpose, how it works and what matters for the requested review. Use the existing map's tools to locate relevant source, contracts and tests.
+2. Consult the available reviewers' mandates and choose the competencies pertinent to that object and intent. Catalog descriptions shortlist candidates; read those candidates' bodies. Languages and extensions guide the choice but do not decide it alone.
+3. Give each selected reviewer a clear assignment: what to examine and which parts of the scope to cover, ready to run together in Phase 2. Each assignment names the reference in `01-context.md` (path, lines, version) that motivates it, so a finding can be traced back to it. State any needed competence that is unavailable, including the baseline of a stack the object touches.
 
-1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior Codebase Map run.
-2. Extract the concepts, domains and symbols the diff touches. Names of changed functions, classes, modules and config keys are the starting set; add the domain nouns that appear in the diff's own strings and comments.
-3. For each concept, search the project's indexes and documentation for a relevant entry, and search the tests for behaviour that encodes it.
-4. Collect runtime evidence the user or the run supplies: session logs, timing breakdowns, traces and metrics named in the request or the run record. Record their paths in the evidence pack and route latency/cost hypotheses to performance, failure-over-time hypotheses to temporal resilience, and service diagnosis/recovery hypotheses to operability when those roles are selected, with the artifacts as declared inputs. Runtime evidence never enters by inference: an artifact nobody supplied is a recorded gap, and an assertion about observed runtime behaviour or a runtime value without one stays a gap rather than becoming a finding. A mechanism demonstrated statically from the code in scope, with its trigger and quantities labelled `derived`, remains reportable without runtime artifacts; the two evidence classes never substitute for each other. When the request is an observed runtime symptom with logs and no change to assess, stop preparation and route the work to the investigation method instead of reviewing a diff that does not carry the defect.
-5. Write `.team-review/01a-review-knowledge-leads.md`.
+Stop when it is clear what is being reviewed and who should review it; defect analysis belongs to the reviewers.
 
-**This file is immutable once written.** No later phase appends to it: Phase 1 cites its rows and records in `01-context.md` what Codebase Map's own leads add or contradict.
-
-**Output:** `.team-review/01a-review-knowledge-leads.md`
-
-```markdown
-# Review Knowledge Leads
-
-> Leads, not truth. Immutable once written.
-> Source-derived pointers, not inherited Codebase Map knowledge leads or analytical conclusions.
-
-## Navigation rules followed
-| Source | Rule |
-|--------|------|
-
-## Concepts touched by this diff
-| Concept | Where it appears in the diff |
-|---------|------------------------------|
-
-## Leads
-| Concept | Document / test | Anchor | Status |
-|---------|-----------------|--------|--------|
-
-## Concepts with no lead found
-[One line each. This list is the honest statement of what nobody documented.]
-```
-
-Mark `phase_0c_evidence_discovery` complete in `state.json`.
-
-## Phase 1: Context, Questions, Selection
-
-The coordinator runs the three steps below in its own context, with the Codebase Map tools of the complete run resolved by the prerequisite. Nothing is dispatched in this phase. Record each output path in `state.json` and mark `phase_1_context`, `phase_1_questions` and `phase_1_selection` complete. Phase 2 reads `01-context.md` and `02-selection.md`; `02-interconnect.md` and `01-knowledge-provenance.md` are no longer produced and must not be required.
-
-### Step 1: Context
-
-Output: `.team-review/01-context.md`. Start from the request and the diff, or from the Phase 0 perimeter when there is no diff.
-
-1. Touched symbols: `codebase_map_symbols_at` on the changed ranges.
-2. Callers and neighbours: `codebase_map_edit_impact` (one hop) and `codebase_map_graph` on the touched symbols. When a tool fails, use text search (`codebase_map_search`, `git grep`) and write `fallback: text search` beside every reference it produced.
-3. Contracts and tests: `codebase_map_search` and `codebase_map_read` for the callers' expectations, the docstrings, and the tests that exercise the touched symbols. Write `no test exercises <symbol>` when that is the case.
-
-Every reference carries path, line range and content version (run id or commit). Keep three sections apart: `## Static facts` (tool-reported), `## Supported descriptions` (behaviour the cited code shows), `## Hypotheses` (including contradictions between sources, both sides cited). Do not expand the whole graph: stop once the callers that depend on the change and their tests are covered, and list what was left out under `## Not covered`.
-
-### Step 2: Questions
-
-Append `## Questions` to `01-context.md`: one question per behaviour the change can break, each with the context reference that motivates it. Language and framework steer the search; alone they raise no question and no reviewer. A change with no question is recorded as such, with the reason.
-
-### Step 3: Selection and composition
-
-Output: `.team-review/02-selection.md`.
-
-1. Candidates are the catalog roles (`composition.py catalog`, members in `CATALOG.json`); micro skills join them when they exist. The baseline of every stack the change touches is mandatory: when the catalog has none, write `baseline missing: <stack>` as a declared gap.
-2. Read each candidate's role body before deciding. Record per candidate: `applicable` (to which question), `not applicable`, or `insufficient evidence` (what is missing). Names and tags decide nothing.
-3. A question with no applicable control stays listed, with a specific assignment for the reviewer.
-4. Compose jobs: one job while the questions share the context. Add a reviewer only for a separate context, an uncovered competence, or a justified independent verification, and write the reason. The number of controls never sets the number of agents. `review_roster.py compute` still provides the tier and the verification policy; the members come from this step and are bound with `composition.py bind`.
-
-```markdown
-# Selection
-
-## Questions
-| Id | Question | Reference | Control | Status |
-
-## Baselines
-| Stack | Control | Status |
-
-## Jobs
-| Job | Questions | Reviewer | Reason for a separate job |
-```
+Keep a short description and relevant source references in `01-context.md`, and the selected reviewers and assignments in `02-selection.md`. Finalize and bind that selection through `references/composition.md`. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.
