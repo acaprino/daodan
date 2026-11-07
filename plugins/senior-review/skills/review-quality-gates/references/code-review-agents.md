@@ -42,19 +42,19 @@ this table. An absent example row cannot suppress a selected reviewer.
 |---|---|---|
 | A | General correctness and local design | `senior-review:code-auditor` |
 | B | Application security | `senior-review:security-auditor` |
-| B2 | Source cleanup | `senior-review:cleanup-auditor`, only when selected; workspace hygiene has no specialist and remains a declared gap |
+| B2 | Source and workspace cleanup | `senior-review:cleanup-auditor`, only when selected; its `workspace-hygiene-auditor` member owns filesystem/git facts |
 | C | UI timing and races | `senior-review:ui-race-auditor` |
-| F | Test protection and suite quality | no testing specialist exists; a declared gap unless the host supplies one |
+| F | Test protection and suite quality | `senior-review:testing-auditor` |
 | G | API contracts | `senior-review:api-contract-auditor` |
 | H / M | Migration data validity and persistent-state integrity | `senior-review:data-integrity-auditor`, one delivery |
-| J | Declared architectural boundaries | `senior-review:boundary-auditor`, deep rigor; concept ownership and prior art have no specialist and remain a declared gap |
+| J | Declared architectural boundaries, concept ownership and prior art | `senior-review:boundary-auditor` and `senior-review:prior-art-auditor`, deep rigor |
 | L | Temporal resilience | `senior-review:temporal-resilience-auditor` |
 | N | Resource ownership and release | `senior-review:resource-lifecycle-auditor` |
 | O | Accessibility and usable interaction paths | `senior-review:accessibility-auditor` |
 | P | General performance, queries and cost | `senior-review:performance-auditor` |
 | Q | Operability, rollout and recovery | `senior-review:operability-auditor` |
 | Other selected roles | Startup cycles, distributed flows, logic and premises | Their registered `senior-review` bodies |
-| Stack bindings | React, TypeScript, client platforms, Python and dependencies | Preparation's `references/stack-dimensions.md`; React and TypeScript have their own `senior-review` bodies |
+| Stack bindings | React, TypeScript, Tauri, other client platforms, Python and dependencies | Preparation's `references/stack-dimensions.md`; React, TypeScript and Tauri have their own `senior-review` bodies |
 
 The code auditor retains the generalist floor and its canonical local correctness
 checks. Specialist selection adds focused inspection; it does not paste the
@@ -67,24 +67,24 @@ and owner; do not create another worker or claim that owner completed a review.
 ## Required input adaptations
 
 **Testing (F).** Supply affected source modules and their tests, not only changed
-test files. Use no-run semantics in this review: D2 to D8 cover tests owned by
-those modules, while D1/D9 statistics remain suite-wide context. Reuse provided
-CI or runtime evidence at its recorded snapshot and mark unmeasured facts. Include
-the selected testing members within their validated job; keep product, oracle, environment
-and flaky failures distinct. Missing protection is reviewable even if no test
-file changed.
+test files, plus the runner configuration. Use no-run semantics in this review:
+protection, oracle, mock and determinism checks cover tests owned by those
+modules, while suite inventory remains suite-wide context. Reuse provided CI or
+runtime evidence at its recorded snapshot and mark unmeasured facts. Keep product,
+oracle, environment and flaky failures distinct. Missing protection is reviewable
+even if no test file changed.
 
-**Abstraction (J).** Include the selected abstraction members within their validated
-job. Supply `mode: diff`, `codebase_path`, the resolved map run
-or `xray_path: none`, `concept_index_path`, `changed_files`, `report_path: job.output_path` and the
-review's severity floor. Its prior-art search may read the whole codebase; the
-diff anchors findings rather than confining that search to changed files. Its
-canonical role governs absent/stale map and concept-index evidence. Do not use
-the `.daodan/map/` root as an invented run locator.
+**Prior art (J).** Supply the diff, the changed files, the resolved complete map
+run and the review's severity floor. The prior-art search reads the whole
+codebase through the map; the diff anchors findings rather than confining that
+search to changed files. An absent or stale map run is a declared gap of this
+reviewer, never a reason to read the tree by hand. Do not use the `.daodan/map/`
+root as an invented run locator.
 
-**Cleanup and workspace (B2).** Supply the prepared review perimeter. Source
-cleanup uses `cleanup-auditor`'s canonical method. No workspace-hygiene specialist exists; filesystem/git workspace facts are
-unavailable unless the host supplies one, and their absence remains a declared gap. Code-review's lite perimeter stays diff-scoped:
+**Cleanup and workspace (B2).** Supply the prepared review perimeter, the tracked
+file list, the effective ignore rules and the pre-review work tree. Source
+cleanup uses `cleanup-auditor`'s canonical method; its `workspace-hygiene-auditor`
+member decides filesystem/git facts. Code-review's lite perimeter stays diff-scoped:
 source D1 and applicable VCS checks on added files. Team-review's full audit does
 not become an implicit extra pass here.
 Preserve introduced, exposed and preexisting classifications from the native

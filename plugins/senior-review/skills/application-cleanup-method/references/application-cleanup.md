@@ -1,6 +1,6 @@
 ### 7c. Cleanup Phases
 
-Run this sub-step only when the accepted findings include codebase-hygiene items (dead code, orphan assets, unused or phantom deps, stale docs). Skip it entirely otherwise. Workspace hygiene that the filesystem and git decide alone (generated artifacts tracked in VCS, `.gitignore`, scratch directories, git auxiliary state) is not handled here: declare such work unavailable unless the host supplies a workspace-hygiene method. This is the only place in senior-review that performs bulk removal of application code. Test-file bulk removal has no method here; declare it as a coverage gap. Detection lives in `senior-review:cleanup-auditor` and in Agent B2 above, and neither deletes anything.
+Run this sub-step only when the accepted findings include codebase-hygiene items (dead code, orphan assets, unused or phantom deps, stale docs). Skip it entirely otherwise. Workspace hygiene that the filesystem and git decide alone (generated artifacts tracked in VCS, `.gitignore`, scratch directories, git auxiliary state) is detected by `senior-review:workspace-hygiene-auditor` and not applied here: declare its application unavailable unless the host supplies a workspace-hygiene method. This is the only place in senior-review that performs bulk removal of application code. Test-file bulk removal has no method here; declare it as a coverage gap. Detection lives in `senior-review:cleanup-auditor` and in Agent B2 above, and neither deletes anything.
 
 #### Critical rules
 
@@ -52,6 +52,6 @@ Highest false-positive rate of the five, so removal is opt-in and gated per item
 
 After the last phase, or at the first gate failure, present one row per phase with status, items removed, and the commit sha, plus the behavior/failure-mode gate evidence and descriptive before-and-after test counts and the reverted phase if any. Then run the alignment check: Grep the removed symbols, paths, and dependency names against `CLAUDE.md` and propose updates for any hit, since a cleanup that leaves the project instructions describing deleted code has only moved the problem.
 
-`garbage`, `gitignore`, `scratch` and `git-state` are filesystem/git-only checks, outside this source-comprehension loop because the build-and-test gate above protects nothing there. A hygiene finding naming one of them is not this loop's to apply and remains a declared gap unless the host supplies a workspace-hygiene method.
+`garbage`, `gitignore`, `scratch` and `git-state` are filesystem/git-only checks, outside this source-comprehension loop because the build-and-test gate above protects nothing there. A `workspace-hygiene-auditor` finding naming one of them is not this loop's to apply and remains a declared gap unless the host supplies a workspace-hygiene method.
 
 This step is pure subtraction. It does not refactor architecture, does not touch test files unless they reference removed symbols, and does not run a bundle analyzer.
