@@ -54,6 +54,7 @@ The question is whether required work progresses or reaches an honest, recoverab
 
 - Inspect scheduler ownership, concurrent instances, overlap, shutdown, resume and the meaning of completion. Check that a successful scheduler tick means the intended job outcome rather than merely task launch.
 - Trace persisted and volatile progress, leases/guards and retry state through process restart. Detect stale flags, vanished schedules, duplicate execution and work stranded after takeover.
+- Follow work the process has accepted but not yet made durable (in-memory queues, buffered writes, in-flight requests, a response sent before the write) through SIGTERM, grace-period expiry and crash. Show the accepted item that no restart recovers; an acknowledged loss contract is counterevidence.
 - Account for intentional best-effort or process-lifetime jobs; absence of durable scheduling is a defect only when the task requires survival.
 - Check recovery/escalation for the specific job, including exhausted retries and cancelled work; use the actual requirement for who must be informed and when.
 
