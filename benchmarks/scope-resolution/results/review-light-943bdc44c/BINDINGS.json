@@ -1,0 +1,9 @@
+{
+  "candidate": {
+    "repo_revision": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+    "root": "D:/Projects/daodan/.claude/worktrees/seed-blind",
+    "target": "."
+  },
+  "knowledge_selection": "",
+  "output_dir": "D:/Projects/daodan/benchmarks/scope-resolution/results/review-light-943bdc44c/jobs"
+}

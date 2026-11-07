@@ -1,0 +1,52 @@
+diff --git a/benchmarks/scope-resolution/README.md b/benchmarks/scope-resolution/README.md
+index 0e870dcdd..5e01ac40e 100644
+--- a/benchmarks/scope-resolution/README.md
++++ b/benchmarks/scope-resolution/README.md
+@@ -21,6 +21,12 @@ python -B model_eval.py SESSION C4                      # valuta la sessione con
+ Tre misure per caso: file indispensabili mancanti (`required`), file che è un errore includere (`forbidden`), violazioni
+ di protocollo. Precision e recall sono riportate ma non asserite: oltre i file indispensabili decide il reviewer, motivando.
+ 
++## Difetto seminato (review di prova)
++
++`app/packages/orders/pricing.py`, `compute_total`: lo sconto cliente è sottratto due volte (`compute_discount` chiamata due volte).
++Oracolo: `test_pricing_oracle.py`, atteso 109.8, ottenuto 97.6. Il test è rosso su questo commit: `python -B -m pytest -q` resta rosso finché il difetto non è corretto.
++Misura: se la review trova il difetto nel diff. Il test dice solo se il difetto c'è, non sostituisce la review.
++
+ ## Parametri da provare
+ 
+ | Parametro | Dove | Valori provati | Risultato misurato |
+diff --git a/benchmarks/scope-resolution/app/packages/orders/pricing.py b/benchmarks/scope-resolution/app/packages/orders/pricing.py
+index d80681908..40863111a 100644
+--- a/benchmarks/scope-resolution/app/packages/orders/pricing.py
++++ b/benchmarks/scope-resolution/app/packages/orders/pricing.py
+@@ -16,5 +16,5 @@ def compute_discount(order):
+ 
+ def compute_total(order):
+     """Totale ordine: netto - sconto cliente + IVA (VAT)."""
+-    net = order.get("net", 0) - compute_discount(order)
++    net = order.get("net", 0) - compute_discount(order) - compute_discount(order)
+     return round(net + vat_amount(net), 2)
+diff --git a/benchmarks/scope-resolution/test_pricing_oracle.py b/benchmarks/scope-resolution/test_pricing_oracle.py
+new file mode 100644
+index 000000000..7abc6ed61
+--- /dev/null
++++ b/benchmarks/scope-resolution/test_pricing_oracle.py
+@@ -0,0 +1,18 @@
++"""Oracolo del difetto seminato: il totale ordine applica lo sconto cliente una volta sola.
++
++Rosso di proposito sul commit del seme: compute_total sottrae compute_discount due volte.
++Atteso: netto 100, fedeltà 10% -> sconto 10, netto 90, IVA 22% -> totale 109.8.
++"""
++import sys
++from pathlib import Path
++
++PACKAGES = Path(__file__).resolve().parent / "app" / "packages"
++
++
++def test_total_applies_loyalty_discount_once():
++    sys.path.insert(0, str(PACKAGES))
++    try:
++        from orders import pricing
++    finally:
++        sys.path.remove(str(PACKAGES))
++    assert pricing.compute_total({"net": 100, "loyalty_percent": 10}) == 109.8

@@ -1,0 +1,13 @@
+- premise_verdict: HOLDS
+- premise_form: compliant
+- reason: The only statement of compute_total's rule, the docstring at app/packages/orders/pricing.py:18 ("netto - sconto cliente + IVA (VAT)"), and the base implementation at 6dd2c2bbf:app/packages/orders/pricing.py:19 (one `- compute_discount(order)`) both subtract the loyalty discount once. No path, test, spec or commit text in scope defines a second reduction, so pricing.py:19 in the candidate departs from the one stated rule.
+
+## Checks made (worktree at 943bdc44c, paths relative to benchmarks/scope-resolution/)
+
+- Scope of premise: every computation of the order total. `git grep compute_total|compute_discount` over the worktree (results/ excluded) finds one definition (app/packages/orders/pricing.py:17) and one caller (app/packages/orders/service.py:26). No alternate total path: app/packages/orders/api.py:34-39 reaches it only through OrderService.checkout; app/packages/orders/reporting.py:11 uses only pricing.VAT_RATE; app/packages/payments/gateway.py:10,15 read a precomputed order["total"]; app/packages/shipping/rates.py:15-27 is a separate volume discount, not applied to orders.
+- Mutation between calls: compute_discount (app/packages/orders/pricing.py:11-14) reads order["net"] and order["loyalty_percent"] without writing, and nothing between the two calls changes order. Both calls return the same amount, so the candidate really subtracts it twice; no caller hands in a pre-discounted net that the second call would offset.
+- Documents: docs/specs/2026-11-04-benchmark-subproject-scope-resolution.md:45,50 and docs/specs/2026-11-04-review-scope-resolution.md:31,35 describe a single customer discount (compute_discount); CASES.md:7 and ground_truth.json:3,15 speak of "modifica dello sconto cliente" (a change to the customer discount) and describe the call chain only, with no second-reduction rule. A search for doppi|due volte|twice|double|secondo sconto|second discount|fedelt finds no such rule.
+- Tests: test_app_structures.py:70-72 asserts only that compute_discount exists. No test asserts any compute_total value, either a single or a double discount.
+- Commit intent: 943bdc44c message "benchmark: aggiorna il calcolo in pricing.py" ("update the calculation in pricing.py") states no new rule, and the candidate leaves the docstring at pricing.py:18 unchanged.
+- Codebase Map tools were not needed. Text search (git grep) covered callers and consumers. edit_impact/graph were not called.
+- Attempted counterexamples (none found): a second discount rule, a test or document requiring a double reduction, a caller that relies on the extra subtraction.

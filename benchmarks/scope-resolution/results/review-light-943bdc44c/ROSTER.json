@@ -1,0 +1,489 @@
+{
+  "advice": [
+    "required specialist obligations must fit the single discovery; otherwise review-branch is required"
+  ],
+  "blind_derivation": false,
+  "critic": false,
+  "gaps": [
+    "no Codebase Map impact packet: callers and digest changes unknown",
+    "stale-callers schema or base/candidate snapshot binding unavailable or mismatched",
+    "unmatched content signals have unknown applicability; preparation must ground skip decisions"
+  ],
+  "grounding": {
+    "applicability": [],
+    "base": {
+      "map_run": "daodan-lite-20261107-2",
+      "map_snapshot": {
+        "created_at": "2026-11-07T11:59:11Z",
+        "parser_fingerprint": "bbbd90a8a20505e5aef2b7f904e595d77562d6d5666db144b711ab759229c9e8",
+        "repo_revision": "7bd0ff186c50",
+        "root": "D:/Projects/daodan",
+        "target": "."
+      },
+      "repo_revision": "6dd2c2bbfff3750e66639bb5961e7dcb63df4757",
+      "root": "D:/Projects/daodan/.claude/worktrees/seed-blind",
+      "target": "."
+    },
+    "candidate": {
+      "repo_revision": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "root": "D:/Projects/daodan/.claude/worktrees/seed-blind",
+      "target": "."
+    },
+    "changes": [
+      {
+        "added": 1,
+        "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "removed": 1
+      }
+    ],
+    "conclusion_paths": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+    ],
+    "graph": {
+      "bound_targets": [],
+      "delta": {},
+      "freshness_basis": {
+        "delta": null,
+        "impact": null
+      },
+      "history": {},
+      "targets": []
+    },
+    "read_scope": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py"
+    ],
+    "requirements": [
+      {
+        "source": "user request (verbatim)",
+        "text": "Rivedi il commit 943bdc44c del benchmark scope-resolution: verifica la modifica e i suoi effetti."
+      },
+      {
+        "source": "commit message 943bdc44c",
+        "text": "benchmark: aggiorna il calcolo in pricing.py"
+      }
+    ],
+    "scope_id": "light-943bdc44c"
+  },
+  "id": "light-943bdc44c",
+  "jobs": [],
+  "kind": "changeset",
+  "reasons": [
+    "no raising signal"
+  ],
+  "required_specialists": [
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:local-correctness-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:local-concurrency-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:input-validation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:resource-lifecycle-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:algorithmic-cost-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:authorization-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:session-delegation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:secret-exposure-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:untrusted-resource-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:browser-security-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:callback-authenticity-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:ai-boundary-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:audit-trail-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:capacity-quota-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:transaction-integrity-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:schema-coherence-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:cache-consistency-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:data-representation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:data-retention-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:chicken-egg-detector"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:temporal-resilience-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:message-delivery-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:remote-effect-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:service-resilience-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:environment-binding-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "light-943bdc44c",
+      "specialist_id": "senior-review:api-contract-auditor"
+    }
+  ],
+  "review_basis": "changeset",
+  "roster": [
+    "senior-review:code-auditor"
+  ],
+  "schema": "daodan/review-roster/v1",
+  "shape": "light",
+  "signals": {
+    "applicability": {
+      "accessibility": "unknown",
+      "distributed": "unknown",
+      "operability": "unknown",
+      "performance": "unknown",
+      "persistence": "unknown",
+      "resources": "unknown",
+      "startup": "unknown",
+      "timers": "unknown",
+      "trust": "unknown",
+      "ui": "unknown"
+    },
+    "content": {
+      "accessibility": false,
+      "distributed": false,
+      "operability": false,
+      "performance": false,
+      "persistence": false,
+      "resources": false,
+      "startup": false,
+      "timers": false,
+      "trust": false,
+      "ui": false
+    },
+    "contract": [],
+    "effects_changed": [],
+    "files": 1,
+    "interface_changed": [],
+    "languages": [
+      "python"
+    ],
+    "lines": 2,
+    "manifest": [],
+    "map_available": false,
+    "max_callers": 0,
+    "modules": [
+      "benchmarks"
+    ],
+    "production_files": 1,
+    "sensitive_paths": [],
+    "symbols": [
+      "compute_discount"
+    ]
+  },
+  "stage": "light",
+  "support": [
+    "senior-review:premise-auditor"
+  ],
+  "tier": "light",
+  "verification": "critical-high"
+}

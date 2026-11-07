@@ -1,0 +1,653 @@
+{
+  "advice": [
+    "required specialist obligations must fit the single discovery; otherwise review-branch is required"
+  ],
+  "blind_derivation": false,
+  "catalog_sha256": "761565841a6c86708c788c54e9d2a355ea8765b8965334ae54f38547e11af53d",
+  "common": {
+    "path": "skills/review-quality-gates/references/reviewer-common.md",
+    "sha256": "67ee0a0efa2513d11fcbc1d1a100700f5df5fd45aaf937d620d07a95fb51dabc"
+  },
+  "critic": false,
+  "gaps": [
+    "no Codebase Map impact packet: callers and digest changes unknown",
+    "stale-callers schema or base/candidate snapshot binding unavailable or mismatched",
+    "unmatched content signals have unknown applicability; preparation must ground skip decisions"
+  ],
+  "grounding": {
+    "applicability": [],
+    "base": {
+      "repo_revision": "6dd2c2bbf",
+      "root": "D:/Projects/daodan-seed",
+      "target": "."
+    },
+    "candidate": {
+      "repo_revision": "f38ceeb9f3b74b4fefe6979275976b989777c598",
+      "root": "D:/Projects/daodan-seed",
+      "target": "."
+    },
+    "changes": [
+      {
+        "added": 6,
+        "path": "benchmarks/scope-resolution/README.md",
+        "removed": 0
+      },
+      {
+        "added": 1,
+        "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "removed": 1
+      },
+      {
+        "added": 18,
+        "path": "benchmarks/scope-resolution/test_pricing_oracle.py",
+        "removed": 0
+      }
+    ],
+    "conclusion_paths": [
+      "benchmarks/scope-resolution/README.md",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/test_pricing_oracle.py"
+    ],
+    "graph": {
+      "bound_targets": [],
+      "delta": {},
+      "freshness_basis": {
+        "delta": null,
+        "impact": null
+      },
+      "history": {},
+      "targets": []
+    },
+    "read_scope": [
+      "benchmarks/scope-resolution/README.md",
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/test_app_structures.py",
+      "benchmarks/scope-resolution/test_pricing_oracle.py",
+      "benchmarks/scope-resolution/test_resolver.py"
+    ],
+    "requirements": [
+      {
+        "path": "(user request)",
+        "text": "Rivedi l'ultimo commit (f38ceeb9f) del benchmark scope-resolution: verifica la modifica e i suoi effetti sul calcolo del totale ordine."
+      }
+    ],
+    "scope_id": "f38ceeb9f"
+  },
+  "id": "rev-light-f38ceeb9f",
+  "jobs": [
+    {
+      "body_sha256": "afcda6f14b8471f3f1c38cda61c350403dbce52c10bef2abbbfc733a773d2fa8",
+      "candidate": {
+        "repo_revision": "f38ceeb9f3b74b4fefe6979275976b989777c598",
+        "root": "D:/Projects/daodan-seed",
+        "target": "."
+      },
+      "input_mode": "independent",
+      "job_id": "job-01",
+      "knowledge_selection": "",
+      "output_path": "D:/Projects/_review-tmp/review-light-f38ceeb9f/jobs/job-01.md",
+      "permissions": "read-only",
+      "role": "senior-review:code-auditor",
+      "scope_id": "f38ceeb9f",
+      "source_bindings": {
+        "senior-review:ai-boundary-auditor": {
+          "path": "roles/ai-boundary-auditor.md",
+          "sha256": "56178edb6a820d2566483e4ea02c93654c6fc53306234c559413509c94f47ffc"
+        },
+        "senior-review:algorithmic-cost-auditor": {
+          "path": "roles/algorithmic-cost-auditor.md",
+          "sha256": "d7c887d8fa0dc461fde9a5de937515fd165f9218b8acd61ec7cb72774b71d6a5"
+        },
+        "senior-review:api-contract-auditor": {
+          "path": "roles/api-contract-auditor.md",
+          "sha256": "c19071a9908b17e85174e63a4533509764d5afd3d5a42a608d9b12d787e91755"
+        },
+        "senior-review:audit-trail-auditor": {
+          "path": "roles/audit-trail-auditor.md",
+          "sha256": "66b340deaafa3656d540e2f3af95148852c1232dd1b4361c77ea3e017f059200"
+        },
+        "senior-review:authorization-auditor": {
+          "path": "roles/authorization-auditor.md",
+          "sha256": "43e8e20b046cce8c1930e78dc5c8a9848e8e9aa6113ceab27dbfaec405c14c10"
+        },
+        "senior-review:browser-security-auditor": {
+          "path": "roles/browser-security-auditor.md",
+          "sha256": "4309279094b2e065b7a79e9477099ce14bcda031b55d892a58009d69589ef54c"
+        },
+        "senior-review:cache-consistency-auditor": {
+          "path": "roles/cache-consistency-auditor.md",
+          "sha256": "e93c6f1364e50067ae9b09bcac0cd3b929cf6736c20a8f9780bffbe07d8177f8"
+        },
+        "senior-review:callback-authenticity-auditor": {
+          "path": "roles/callback-authenticity-auditor.md",
+          "sha256": "10cda0fcf1d949391ccca08e4bc9aa2a8b8dc1d1e4869672094e3e2871768ea3"
+        },
+        "senior-review:capacity-quota-auditor": {
+          "path": "roles/capacity-quota-auditor.md",
+          "sha256": "4877e87955ed8b11983f033d448fe4bccb3feb12a11026be3b061560e6e4f2db"
+        },
+        "senior-review:chicken-egg-detector": {
+          "path": "roles/chicken-egg-detector.md",
+          "sha256": "2a583a177d2c0777dce06add611f3e4095351c2b1f7f70a82bce807782f3b929"
+        },
+        "senior-review:data-representation-auditor": {
+          "path": "roles/data-representation-auditor.md",
+          "sha256": "e1f10691c22dff52b2c5d0895601e2976a35a582f2faf6ac733a0e80c85e02ed"
+        },
+        "senior-review:data-retention-auditor": {
+          "path": "roles/data-retention-auditor.md",
+          "sha256": "3f2cc2045c8fcc6abc696f36ee14989247724b5e5427d9b12950150987c6f43c"
+        },
+        "senior-review:environment-binding-auditor": {
+          "path": "roles/environment-binding-auditor.md",
+          "sha256": "391c756023a025afacef23a5c85a52ac28fc6db4fc8265427121a727e67f7e33"
+        },
+        "senior-review:input-validation-auditor": {
+          "path": "roles/input-validation-auditor.md",
+          "sha256": "b6f1c0205d1e355b3a7a6b9694329fcce5c757ed107c65cc6539beb26e6a9c4c"
+        },
+        "senior-review:local-concurrency-auditor": {
+          "path": "roles/local-concurrency-auditor.md",
+          "sha256": "7f8e5a4929f5c7179c4f206722588953c420eeb26804370d9032b1a3a94e2894"
+        },
+        "senior-review:local-correctness-auditor": {
+          "path": "roles/local-correctness-auditor.md",
+          "sha256": "4fd495dcbc019bfe7a73b12766ad4e8ab6754b1491ee7f60bc64b88cdb61eb1b"
+        },
+        "senior-review:message-delivery-auditor": {
+          "path": "roles/message-delivery-auditor.md",
+          "sha256": "134bdb12e7decddf186867c643103f153c0004f3c07af76be2031fe95230913e"
+        },
+        "senior-review:remote-effect-auditor": {
+          "path": "roles/remote-effect-auditor.md",
+          "sha256": "f607e2d1224b140163f48ed5310c31d1f492da859a2f2f7927b1cba3b9955253"
+        },
+        "senior-review:resource-lifecycle-auditor": {
+          "path": "roles/resource-lifecycle-auditor.md",
+          "sha256": "8e02c111e95e5d9c3ad6113af1f71e15d780246586f398f7ff21fe16c21f3ce7"
+        },
+        "senior-review:schema-coherence-auditor": {
+          "path": "roles/schema-coherence-auditor.md",
+          "sha256": "96ac69618e42c65eaf3f77272d23f78758866205011d00fef23e7815b4f38c32"
+        },
+        "senior-review:secret-exposure-auditor": {
+          "path": "roles/secret-exposure-auditor.md",
+          "sha256": "a3a66f6d737b8727a57290f50b086d1017a96ce23216ecc3717ee90b008c8663"
+        },
+        "senior-review:service-resilience-auditor": {
+          "path": "roles/service-resilience-auditor.md",
+          "sha256": "f0104fd9fc685c651925a40826fe765dd12bc5e7609755d3fc929d9d6cb23392"
+        },
+        "senior-review:session-delegation-auditor": {
+          "path": "roles/session-delegation-auditor.md",
+          "sha256": "8dbbf3ef4228c90feafa822aca2b185e74ffe7f50d082f2566128ade0ca90a04"
+        },
+        "senior-review:temporal-resilience-auditor": {
+          "path": "roles/temporal-resilience-auditor.md",
+          "sha256": "2f4bf0061b92a1db1598e1ba9f9677558c13b92a4d4b0fc6b6e9e69295c1efc4"
+        },
+        "senior-review:transaction-integrity-auditor": {
+          "path": "roles/transaction-integrity-auditor.md",
+          "sha256": "f6bf40375e03842ef33bc1616a9bc6474831406f67af1a67e4766fb861010143"
+        },
+        "senior-review:untrusted-resource-auditor": {
+          "path": "roles/untrusted-resource-auditor.md",
+          "sha256": "1e9a3547e1cd5baee9f99aab5f65d982fd54f7a8259b40b265f2ea120e8514db"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:local-correctness-auditor",
+        "senior-review:local-concurrency-auditor",
+        "senior-review:input-validation-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:algorithmic-cost-auditor",
+        "senior-review:authorization-auditor",
+        "senior-review:session-delegation-auditor",
+        "senior-review:secret-exposure-auditor",
+        "senior-review:untrusted-resource-auditor",
+        "senior-review:browser-security-auditor",
+        "senior-review:callback-authenticity-auditor",
+        "senior-review:ai-boundary-auditor",
+        "senior-review:audit-trail-auditor",
+        "senior-review:capacity-quota-auditor",
+        "senior-review:transaction-integrity-auditor",
+        "senior-review:schema-coherence-auditor",
+        "senior-review:cache-consistency-auditor",
+        "senior-review:data-representation-auditor",
+        "senior-review:data-retention-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:message-delivery-auditor",
+        "senior-review:remote-effect-auditor",
+        "senior-review:service-resilience-auditor",
+        "senior-review:environment-binding-auditor",
+        "senior-review:api-contract-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    }
+  ],
+  "kind": "changeset",
+  "reasons": [
+    "no raising signal"
+  ],
+  "required_specialists": [
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:local-correctness-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:local-concurrency-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:input-validation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:resource-lifecycle-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:algorithmic-cost-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:authorization-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:session-delegation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:secret-exposure-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:untrusted-resource-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:browser-security-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:callback-authenticity-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:ai-boundary-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:audit-trail-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:capacity-quota-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:transaction-integrity-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:schema-coherence-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:cache-consistency-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:data-representation-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:data-retention-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:chicken-egg-detector"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:temporal-resilience-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:message-delivery-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:remote-effect-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:service-resilience-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:environment-binding-auditor"
+    },
+    {
+      "evidence": [
+        {
+          "role": "senior-review:code-auditor",
+          "source": "computed-roster"
+        },
+        {
+          "reason": "no evidenced candidate/scope exclusion",
+          "source": "code-review-floor"
+        }
+      ],
+      "scope_id": "f38ceeb9f",
+      "specialist_id": "senior-review:api-contract-auditor"
+    }
+  ],
+  "review_basis": "changeset",
+  "roster": [
+    "senior-review:code-auditor"
+  ],
+  "roster_schema": "daodan/review-roster/v1",
+  "schema": "daodan/prepared-review/v1",
+  "shape": "light",
+  "signals": {
+    "applicability": {
+      "accessibility": "unknown",
+      "distributed": "unknown",
+      "operability": "unknown",
+      "performance": "unknown",
+      "persistence": "unknown",
+      "resources": "unknown",
+      "startup": "unknown",
+      "timers": "unknown",
+      "trust": "unknown",
+      "ui": "unknown"
+    },
+    "content": {
+      "accessibility": false,
+      "distributed": false,
+      "operability": false,
+      "performance": false,
+      "persistence": false,
+      "resources": false,
+      "startup": false,
+      "timers": false,
+      "trust": false,
+      "ui": false
+    },
+    "contract": [],
+    "effects_changed": [],
+    "files": 3,
+    "interface_changed": [],
+    "languages": [
+      "python"
+    ],
+    "lines": 26,
+    "manifest": [],
+    "map_available": false,
+    "max_callers": 0,
+    "modules": [
+      "benchmarks"
+    ],
+    "production_files": 1,
+    "sensitive_paths": [],
+    "symbols": [
+      "compute_discount"
+    ]
+  },
+  "stage": "standalone",
+  "support": [
+    "senior-review:premise-auditor"
+  ],
+  "tier": "light",
+  "verification": "critical-high"
+}

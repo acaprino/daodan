@@ -1,0 +1,314 @@
+{
+  "entries": [
+    {
+      "id": "senior-review:accessibility-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:accessible-navigation-auditor",
+        "senior-review:accessible-perception-auditor"
+      ]
+    },
+    {
+      "file": "roles/api-contract-auditor.md",
+      "id": "senior-review:api-contract-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/chicken-egg-detector.md",
+      "id": "senior-review:chicken-egg-detector",
+      "kind": "role"
+    },
+    {
+      "id": "senior-review:cleanup-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:application-reachability-auditor",
+        "senior-review:dependency-usage-auditor",
+        "senior-review:artifact-lifecycle-auditor",
+        "senior-review:asset-delivery-auditor",
+        "senior-review:secret-exposure-auditor"
+      ]
+    },
+    {
+      "id": "senior-review:code-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:local-correctness-auditor",
+        "senior-review:local-concurrency-auditor",
+        "senior-review:input-validation-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:algorithmic-cost-auditor",
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:api-contract-auditor"
+      ]
+    },
+    {
+      "id": "senior-review:data-integrity-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:transaction-integrity-auditor",
+        "senior-review:schema-coherence-auditor",
+        "senior-review:cache-consistency-auditor",
+        "senior-review:data-representation-auditor",
+        "senior-review:data-retention-auditor"
+      ]
+    },
+    {
+      "id": "senior-review:distributed-flow-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:message-delivery-auditor",
+        "senior-review:remote-effect-auditor",
+        "senior-review:service-resilience-auditor",
+        "senior-review:session-delegation-auditor",
+        "senior-review:environment-binding-auditor"
+      ]
+    },
+    {
+      "file": "roles/logic-integrity-auditor.md",
+      "id": "senior-review:logic-integrity-auditor",
+      "kind": "role"
+    },
+    {
+      "id": "senior-review:operability-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:observability-auditor",
+        "senior-review:service-health-auditor",
+        "senior-review:release-compatibility-auditor",
+        "senior-review:environment-binding-auditor",
+        "senior-review:feature-flag-auditor",
+        "senior-review:recovery-auditor"
+      ]
+    },
+    {
+      "id": "senior-review:performance-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:sql-efficiency-auditor",
+        "senior-review:algorithmic-cost-auditor",
+        "senior-review:asset-delivery-auditor",
+        "senior-review:capacity-quota-auditor",
+        "senior-review:runtime-cost-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ]
+    },
+    {
+      "file": "roles/premise-auditor.md",
+      "id": "senior-review:premise-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/resource-lifecycle-auditor.md",
+      "id": "senior-review:resource-lifecycle-auditor",
+      "kind": "role"
+    },
+    {
+      "id": "senior-review:security-auditor",
+      "kind": "composition",
+      "members": [
+        "senior-review:authorization-auditor",
+        "senior-review:session-delegation-auditor",
+        "senior-review:secret-exposure-auditor",
+        "senior-review:input-validation-auditor",
+        "senior-review:untrusted-resource-auditor",
+        "senior-review:browser-security-auditor",
+        "senior-review:callback-authenticity-auditor",
+        "senior-review:ai-boundary-auditor",
+        "senior-review:audit-trail-auditor",
+        "senior-review:capacity-quota-auditor"
+      ]
+    },
+    {
+      "file": "roles/temporal-resilience-auditor.md",
+      "id": "senior-review:temporal-resilience-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/ui-race-auditor.md",
+      "id": "senior-review:ui-race-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/authorization-auditor.md",
+      "id": "senior-review:authorization-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/session-delegation-auditor.md",
+      "id": "senior-review:session-delegation-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/secret-exposure-auditor.md",
+      "id": "senior-review:secret-exposure-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/input-validation-auditor.md",
+      "id": "senior-review:input-validation-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/untrusted-resource-auditor.md",
+      "id": "senior-review:untrusted-resource-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/browser-security-auditor.md",
+      "id": "senior-review:browser-security-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/callback-authenticity-auditor.md",
+      "id": "senior-review:callback-authenticity-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/ai-boundary-auditor.md",
+      "id": "senior-review:ai-boundary-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/audit-trail-auditor.md",
+      "id": "senior-review:audit-trail-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/transaction-integrity-auditor.md",
+      "id": "senior-review:transaction-integrity-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/schema-coherence-auditor.md",
+      "id": "senior-review:schema-coherence-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/cache-consistency-auditor.md",
+      "id": "senior-review:cache-consistency-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/data-representation-auditor.md",
+      "id": "senior-review:data-representation-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/data-retention-auditor.md",
+      "id": "senior-review:data-retention-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/message-delivery-auditor.md",
+      "id": "senior-review:message-delivery-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/remote-effect-auditor.md",
+      "id": "senior-review:remote-effect-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/service-resilience-auditor.md",
+      "id": "senior-review:service-resilience-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/sql-efficiency-auditor.md",
+      "id": "senior-review:sql-efficiency-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/algorithmic-cost-auditor.md",
+      "id": "senior-review:algorithmic-cost-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/asset-delivery-auditor.md",
+      "id": "senior-review:asset-delivery-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/capacity-quota-auditor.md",
+      "id": "senior-review:capacity-quota-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/runtime-cost-auditor.md",
+      "id": "senior-review:runtime-cost-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/observability-auditor.md",
+      "id": "senior-review:observability-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/service-health-auditor.md",
+      "id": "senior-review:service-health-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/release-compatibility-auditor.md",
+      "id": "senior-review:release-compatibility-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/environment-binding-auditor.md",
+      "id": "senior-review:environment-binding-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/feature-flag-auditor.md",
+      "id": "senior-review:feature-flag-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/recovery-auditor.md",
+      "id": "senior-review:recovery-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/accessible-navigation-auditor.md",
+      "id": "senior-review:accessible-navigation-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/accessible-perception-auditor.md",
+      "id": "senior-review:accessible-perception-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/local-correctness-auditor.md",
+      "id": "senior-review:local-correctness-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/local-concurrency-auditor.md",
+      "id": "senior-review:local-concurrency-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/application-reachability-auditor.md",
+      "id": "senior-review:application-reachability-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/dependency-usage-auditor.md",
+      "id": "senior-review:dependency-usage-auditor",
+      "kind": "role"
+    },
+    {
+      "file": "roles/artifact-lifecycle-auditor.md",
+      "id": "senior-review:artifact-lifecycle-auditor",
+      "kind": "role"
+    }
+  ],
+  "plugin": "senior-review",
+  "schema": "daodan/reviewer-catalog/v1"
+}

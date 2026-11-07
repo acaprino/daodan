@@ -1,0 +1,10 @@
+{
+  "candidate": {
+    "root": "D:/Projects/daodan-seed",
+    "target": ".",
+    "repo_revision": "f38ceeb9f3b74b4fefe6979275976b989777c598"
+  },
+  "knowledge_selection": "",
+  "output_dir": "D:/Projects/_review-tmp/review-light-f38ceeb9f/jobs",
+  "input_mode": "independent"
+}

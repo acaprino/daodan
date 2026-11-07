@@ -1,0 +1,3 @@
+6	0	benchmarks/scope-resolution/README.md
+1	1	benchmarks/scope-resolution/app/packages/orders/pricing.py
+18	0	benchmarks/scope-resolution/test_pricing_oracle.py

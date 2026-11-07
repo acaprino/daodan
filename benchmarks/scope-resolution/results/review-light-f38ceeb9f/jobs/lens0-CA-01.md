@@ -1,0 +1,4 @@
+- premise_verdict: HOLDS
+- counterexample: none
+- premise_form: compliant
+- reason: No path pre-discounts `net` or expects a double discount. The only caller is service.py:26, reached via api.py:37, and it passes the raw order. compute_discount (pricing.py:11-14) is pure. The contract text agrees on a single discount: docstring pricing.py:18, base 6dd2c2bbf pricing.py:19, the oracle test_pricing_oracle.py:18 (109.8), and README.md:26, which calls the double subtraction a seeded defect.
