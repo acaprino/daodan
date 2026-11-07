@@ -77,7 +77,7 @@ the candidate; use a disposable workspace for candidates outside the working tre
 |---|---|
 | Python | `ruff check` and `ruff format --check`; `mypy` or `pyright`; `vulture --min-confidence 80`; `complexipy` or `radon cc`; `pytest` on the tests that import the changed modules |
 | TypeScript, JavaScript | `tsc --noEmit`; `eslint`; `knip`; the configured test runner on the affected packages |
-| Manifests and lockfiles | The ecosystem audit, outdated and license tools named by `dependency-audit:dependency-audit` |
+| Manifests and lockfiles | The ecosystem audit and outdated tools (`npm audit`, `pip-audit`, `cargo audit`, `govulncheck`, …); their output feeds `senior-review:dependency-provenance-auditor` |
 | Any | The project's declared build, lint and test commands; secret detection on the diff when a scanner is configured |
 
 Record `tool`, `version`, `command`, exit status, output path and exercised
@@ -141,7 +141,7 @@ generalist's boundary floor survives opaque calls and unavailable graph packets.
 
 | Kind | Roles and their question |
 |---|---|
-| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. Former marketplace stack specialists are unavailable until equivalent senior-review micro skills exist; dependency changes use `senior-review:dependency-usage-auditor`. |
+| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. Former marketplace stack specialists are unavailable until equivalent senior-review micro skills exist; dependency changes use `senior-review:dependency-auditor`. |
 | `plan` | `premise-auditor`, claim check: every cited path, symbol and caller exists; `chicken-egg-detector`: initialization order and wave dependencies. Testing and abstraction specialists are unavailable in the new two-owner base; leave their questions as declared gaps unless the host supplies adapted equivalents. |
 | `spec` | `premise-auditor`, claim check: every statement about existing code; `logic-integrity-auditor`: state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared superseded. Trust boundaries, persistence, contracts and cross-service flows in the text add their senior-review auditors. Testing and abstraction specialists remain declared gaps unless adapted. |
 | `doc` | `premise-auditor`, claim check: every statement about the code against the source and the map. This review reports drift; documentation rewriting belongs to an explicitly authorized host workflow, not to senior-review. |

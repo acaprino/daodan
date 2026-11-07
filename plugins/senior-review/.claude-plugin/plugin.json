@@ -25,6 +25,7 @@
     "./roles/data-representation-auditor.md",
     "./roles/data-retention-auditor.md",
     "./roles/dependency-usage-auditor.md",
+    "./roles/dependency-provenance-auditor.md",
     "./roles/environment-binding-auditor.md",
     "./roles/feature-flag-auditor.md",
     "./roles/input-validation-auditor.md",

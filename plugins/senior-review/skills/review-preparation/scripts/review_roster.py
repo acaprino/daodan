@@ -129,7 +129,7 @@ SIGNAL_ROLE = {
     "startup": "senior-review:chicken-egg-detector",
     "distributed": "senior-review:distributed-flow-auditor",
     "contract": "senior-review:api-contract-auditor",
-    "manifest": "senior-review:dependency-usage-auditor",
+    "manifest": "senior-review:dependency-auditor",
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
 }

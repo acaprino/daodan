@@ -36,6 +36,6 @@ Workspace installation guarantees, explicit peer/optional arrangements, build sc
 
 ## Boundaries and output
 
-Vulnerabilities, licenses and version support belong to dependency audit; eager bundle cost to asset delivery. No package installation, upgrade or removal during this review.
+Vulnerabilities, package origin and version provenance belong to dependency-provenance; licenses remain a declared gap; eager bundle cost to asset delivery. No package installation, upgrade or removal during this review.
 
 Report consuming package, declaration owner, install boundary and missing/unused evidence. Keep runtime and development findings distinct and route remediation through the existing application cleanup method.
