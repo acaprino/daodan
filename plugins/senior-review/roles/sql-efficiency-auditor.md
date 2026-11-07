@@ -28,6 +28,7 @@ Read callers, ORM/resolver/serializer callbacks and the applicable operation con
 - Match predicates, joins, ordering and pagination to compound index order, partial predicates, expressions, collation and sort support. A matching column name alone proves no useful access path.
 - Trace join multiplication, redundant materialization, overfetching and growing offsets to the required result. Preserve requested ordering and pagination semantics.
 - Compare scans with actual table size and frequency; compare proposed indexes with selectivity, duplicate indexes, existing constraints and added write cost.
+- Check that the referencing side of each foreign key has a usable index where the engine does not create one; without it, every DELETE or key UPDATE on the parent scans the child table and holds its locks for the scan.
 - Trace bulk DELETE/UPDATE and purge statements as engine work: their cost follows the bytes touched (out-of-line large values, indexes, WAL, cascades, triggers), not the row count. Compare the volume one entity can accumulate with the caller's effective statement or command timeout. When no retention or size bound limits that volume, the work is unbounded by construction: report the missing bound, not an invented size.
 - Read existing execution plans. Live queries or EXPLAIN ANALYZE require separate authorization; source counts are derivations, not latency measurements.
 
