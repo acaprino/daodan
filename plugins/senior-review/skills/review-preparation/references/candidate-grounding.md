@@ -93,8 +93,7 @@ The caller supplies shape; the helper computes rigor.
   `senior-review:review-method`, its distinct preparation and this skill's
   composition step; do not enter branch preparation.
 - `branch`: whole candidate from `base_sha` before merging. Changesets get
-  `small`/`medium`/`large`; large requires blind derivation, interconnect map,
-  panel and critic. Document kinds keep their fixed sets.
+  `small`/`medium`/`large`; large requires panel and critic. Document kinds keep their fixed sets.
 
 Before any dispatch:
 

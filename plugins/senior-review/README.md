@@ -8,7 +8,7 @@ Il risultato distingue difetti dimostrati, verifiche svolte e lacune. Nessuna se
 
 ## Prerequisito
 
-Prima di avviare una review, **Codebase Map deve aver già completato la mappatura dell'intero progetto**. La Phase 0 usa gli indici di quel run esistente; l'eventuale analisi mirata della Phase 1a costruisce il contesto della review e non sostituisce questo prerequisito. Se la mappa completa manca, eseguire prima Codebase Map.
+Prima di avviare una review, **Codebase Map deve aver già completato la mappatura dell'intero progetto**. La Phase 0 e la Phase 1 usano gli indici e i tool di quel run esistente; nessuna fase della review analizza il progetto al suo posto. Se la mappa completa manca, eseguire prima Codebase Map.
 
 ## Phase 0: cosa rivedere
 
@@ -28,6 +28,6 @@ Installazione: `claude plugin install senior-review@daodan` (marketplace `acapri
 
 Le istruzioni obbligatorie che caricavano work-controller, skill-catalog, report-rendering, testing o altri plugin assenti sono state rese host-generiche o trasformate in lacune esplicite. I riferimenti storici residui sono solo documentali. Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. La copertura di React, TypeScript, Tauri/platform, testing, abstraction e workspace hygiene non è più fornita da plugin esterni: resta una lacuna dichiarata finché senior-review non possiederà micro skill equivalenti.
 
-Il nuovo selettore minimale descritto nel disegno comune non è ancora implementato.
+Il selettore minimale del disegno comune è la Phase 1 della review `branch` ([spec](../../docs/specs/2026-11-07-review-context-and-selection.md)): contesto dai tool della mappa, domande, selezione dei controlli leggendo i candidati, un solo job finché il contesto è condiviso. Non ancora misurato sul benchmark.
 
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md)

@@ -101,8 +101,6 @@ Discovery jobs with compatible scope, mode and permissions may unite members;
 the same member on different scopes remains distinct. Premise derivation,
 verification lenses and critic keep independent contexts, inputs, delivery IDs
 and output files. A discovery delivery cannot also satisfy a verification check.
-Reusing same-candidate blind derivation is allowed only under its existing method
-contract, without supplying peer conclusions to it.
 
 Light requires exactly one discovery job. An insufficient budget fails or asks
 the caller to use branch review; no silent member omission or hidden fan-out.

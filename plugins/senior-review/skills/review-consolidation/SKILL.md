@@ -21,7 +21,7 @@ native severity, premise and evidence provenance in one ledger. Failed or missin
 required coverage prevents completion; never merge failure into success.
 A single final writer emits the report.
 
-Account separately for blind derivation, critic and eligible verification lenses
+Account separately for the critic and eligible verification lenses
 under the host isolation/run-record mechanism; discovery cannot satisfy a check
 through its job ID, file or context. Historical records retain their original
 contract.

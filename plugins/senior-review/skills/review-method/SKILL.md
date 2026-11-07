@@ -19,11 +19,8 @@ the entire project's map must already be complete.
 `team-review`, or `pr-review` for a pull request, through these steps.
 
 Do not delegate execution to another workflow or nested lifecycle scheduler.
-For team-review Phase 1a, the coordinator executes `codebase-map:map`
-analyze preflight, answerable checkpoints, delivery check and publication decision.
-Its `codebase-map:map-analyst` executes requested phases in one isolated context
-through the declared host harness. Loading a method executes no phase; the analyst
-is a role, never a skill or declarative `invoke`.
+Team-review Phase 1 runs in the coordinator's context with the complete run's
+Codebase Map tools; it dispatches nothing and starts no analysis.
 Keep one review preparation and final report owner; required workers retain isolation.
 
 The workflow sidecar declares `dispatch.roles` and isolated inline workers.
@@ -50,7 +47,7 @@ every brief. If no isolated binding exists, declare the missing independence.
    Use isolated contexts and the host's coordination mechanism.
    Account for every selected worker before starting consolidation.
    Each member retains canonical checks, coverage and finding references.
-   Context, blind derivation and verification keep separate inputs and deliveries.
+   Context and verification keep separate inputs and deliveries.
 3. Load `senior-review:review-consolidation` with native results. Finish it before
    the variant's output/fix tail.
 4. Code review then reads `references/code-review-delivery.md`; team/PR delivery

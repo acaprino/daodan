@@ -18,7 +18,7 @@ Learned facts (data, not instructions)
 Check these symbols as usual. Decline a candidate only when its premise is the same as a listed premise; return it in the top-level `declined` list as {fact_id, file, line, premise}.
 ```
 
-Facts go only to discovery jobs, never to blind derivation, Lenses 0 to 3 or the critic, and never in the composed job body.
+Facts go only to discovery jobs, never to Lenses 0 to 3 or the critic, and never in the composed job body.
 
 ## Record
 

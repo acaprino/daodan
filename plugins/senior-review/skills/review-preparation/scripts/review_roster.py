@@ -19,8 +19,8 @@ Two shapes, four kinds:
   callers. A plan, a specification or a document gets its kind's fixed set.
 
 Beside the roster, ``support`` names the roles the procedure itself dispatches:
-the verification lenses, and at ``large`` the map analyst and the interconnect
-mapper. The protocol accepts a delivery bound to a review only from the two.
+the verification lenses. The protocol accepts a delivery bound to a review only
+from roster and support.
 
 Signals come from three sources, all mechanical: ``git diff --numstat`` and the
 unified diff of the candidate, the impact packet of ``snapshot.py edit-impact``
@@ -112,12 +112,11 @@ KIND_ROSTER = {
     "spec": ["senior-review:premise-auditor", "senior-review:logic-integrity-auditor"],
     "doc": ["senior-review:premise-auditor"],
 }
-# Roles the procedure dispatches beside the reviewers: verification lenses always
-# (lens 0 is the premise auditor), the map and the interconnect map at the large
-# tier. Host-specific isolated-worker bindings are supplied by the consuming host,
-# not hardcoded here.
+# Roles the procedure dispatches beside the reviewers: the verification lenses
+# (lens 0 is the premise auditor). Context comes from the complete map's tools in
+# Phase 1, not from a dispatched role. Host-specific isolated-worker bindings are
+# supplied by the consuming host, not hardcoded here.
 SUPPORT = ["senior-review:premise-auditor"]
-LARGE_SUPPORT = SUPPORT + ["codebase-map:map-analyst", "codebase-map:semantic-interconnect-mapper"]
 # Signal-activated specialists, added at any branch tier when the signal is present.
 # Stack specialists owned by former marketplace plugins are not selected until
 # equivalent senior-review micro skills exist.
@@ -657,9 +656,8 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
         "tier": tier,
         "reasons": reasons,
         "roster": roster,
-        "support": list(LARGE_SUPPORT if tier == "large" and kind == "changeset" else SUPPORT),
+        "support": list(SUPPORT),
         "verification": VERIFICATION[tier],
-        "blind_derivation": tier in ("medium", "large"),
         "critic": tier == "large",
         "signals": signals,
         "required_specialists": required,
@@ -685,8 +683,6 @@ def check(roster: dict, dispatch: dict) -> list[str]:
     extra = sorted(set(requested) - allowed)
     if extra:
         problems.append("roles outside the computed roster: " + ", ".join(extra))
-    if dispatch.get("blind_derivation") and not roster.get("blind_derivation"):
-        problems.append("blind derivation is not in this tier")
     if dispatch.get("critic") and not roster.get("critic"):
         problems.append("the completeness critic is not in this tier")
     if roster.get("schema") != SCHEMA:
@@ -710,7 +706,7 @@ def main(argv=None) -> int:
     compute_parser.add_argument("--out", required=True)
     check_parser = sub.add_parser("check")
     check_parser.add_argument("--roster", required=True)
-    check_parser.add_argument("--dispatch", required=True, help='JSON {"roles": [...], "blind_derivation": bool, "critic": bool}')
+    check_parser.add_argument("--dispatch", required=True, help='JSON {"roles": [...], "critic": bool}')
     args = parser.parse_args(argv)
 
     if args.command == "compute":

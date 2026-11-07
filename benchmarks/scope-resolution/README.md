@@ -26,6 +26,7 @@ di protocollo. Precision e recall sono riportate ma non asserite: oltre i file i
 | Parametro | Dove | Valori provati | Risultato misurato |
 |---|---|---|---|
 | Modello | sessioni | Haiku, Opus | Esito 7/9 e 9/9; file indispensabili 9/9 per entrambi; precision 0.82 e 0.90 |
+| Phase 1 della review `branch` | `review-preparation/references/team-review.md` | attuale (1a-1d, quattro dispatch), ridisegnata (contesto, domande, selezione; [spec](../../docs/specs/2026-11-07-review-context-and-selection.md)) | Riferimento: review `light` con i tool della mappa sul commit `943bdc44c` (sconto sottratto due volte, oracolo in `f52f7352c`): difetto trovato e riprodotto, 217K token con due verifiche (`results/review-light-943bdc44c/`). Branch attuale e ridisegnata: non misurate |
 | Budget | testo, `POLICY` | circa 6 query, 10 letture | Query medie: Haiku 5.7, Opus 8.4 (massimo 13). Opus supera 6 query in 7 casi su 9. Costo da valutare |
 | Frase sui chiamanti di una modifica | testo | senza, con | C1 su Opus: `service.py` mancante in 2 prove su 2, presente con la frase (n=1) |
 | Formulazione di `partial` | testo | «what is missing», «what the request still needs» | Nessun effetto: Haiku resta `partial` su C2 e C3b |

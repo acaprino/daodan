@@ -9,7 +9,7 @@ Apply these deduplication and calibration rules:
    - Findings that agree and are all `independent`, or whose load-bearing premises are disjoint: **corroborated**. Report as a likely-real root cause.
    - Findings that agree and share the same `shared-context` premise: **echo**. Report under the finding as `Echo: N dimensions agreed from the shared premise "[premise text]"`. This raises no confidence and no severity, and it is not evidence that the finding is real.
    - Mixed sets: corroboration counts only the independent members.
-5. **Collect `[MAP-GAP]` findings**: any logic-integrity finding carrying the `[MAP-GAP]` marker is also listed in the report as an interconnect-map coverage gap, so the mapper's blind spot is recorded alongside the defect it hid.
+5. **Collect `[MAP-GAP]` findings**: any logic-integrity finding carrying the `[MAP-GAP]` marker is also listed in the report as a context coverage gap, so what `01-context.md` missed is recorded alongside the defect it hid.
 6. **Organize by severity**: Critical, High, Medium, Low.
 
 Write `.team-review/99-consolidated.md`. Mark `phase_3_consolidation` complete.
@@ -60,7 +60,7 @@ declaring the requested output complete.
    ## Code Review Report: {target}
 
    Session: .team-review/
-   Context: Codebase Map ({lite|full}) + interconnect map ({anchor count} anchors)
+   Context: Codebase Map run {run id} + {N} questions in 02-selection.md
    Reviewed by: {dimensions} ({N} reviewers)
    Files reviewed: {count}
    Verification: {verified} verified, {filtered} false positives, {contested} contested, {premise_refuted} premise-refuted, {premise_contested} premise-contested{cost_guard_note}

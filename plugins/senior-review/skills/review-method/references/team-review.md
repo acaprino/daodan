@@ -7,9 +7,11 @@
    below names owners, not extra activation rules. Resolve catalog entries even
    when a future registered identity has no example row here. A missing binding
    is a failed delivery, never permission to omit that reviewer.
-3. Account for Phase 1c's same-snapshot blind premise report as the selected premise
-   discovery delivery, rather than launching a second discovery pass. Later
-   verification tasks keep their separate inputs, contexts and delivery records.
+3. The jobs come from Phase 1, Step 3 (`.team-review/02-selection.md`): each job
+   carries its questions, the controls found applicable and the reason for a
+   separate job. The mapping below names owners for dimensions a question falls
+   under; it adds no job the selection did not compose. Premise verification
+   happens per finding, in Phase 4b, with its own inputs and contexts.
 
 ### Dimension-to-agent mapping
 
@@ -63,26 +65,26 @@ You are reviewing for the {dimension} dimension.
 {diff content}
 
 ## Context files (read these before analyzing code)
-- Codebase Map output: $XRAY_RUN_DIR (see 01-structure.md, 02-interfaces.md, 05-risks.md)
-- Interconnect map: .team-review/02-interconnect.md
-- Knowledge provenance: .team-review/01-knowledge-provenance.md
+- Context: .team-review/01-context.md (static facts, supported descriptions, hypotheses, questions)
+- Selection: .team-review/02-selection.md (your job's questions and controls)
+- Codebase Map: the complete run named in the context; query its tools for anything the context does not cover
 
 ### Epistemic status of the shared context
 
 The shared context is NOT ground truth. It is an index of hypotheses produced by
 one upstream observer.
 
-- Claims marked `verified` guide source reading; confirm the premise against
-  current source before using it in a finding.
-- Claims marked `documented`, `unverified` or `disputed` are hypotheses. You MUST
-  independently re-derive any such claim before using it as the premise of a finding.
+- Static facts guide source reading; confirm the premise against current source
+  before using it in a finding.
+- Supported descriptions and hypotheses are not facts. You MUST independently
+  re-derive any of them before using it as the premise of a finding.
 - Actively search for code paths, tests or documents that contradict the context.
   Finding one is a result, not a failure.
 - Silence in the context is not evidence of absence. A concern the map does not
   mention may still be real; look anyway.
 
-Per `## Reviewer Hints` in the interconnect map, focus your reading on these anchors:
-{anchors-for-this-dimension from the map's Reviewer Hints section}
+Answer these questions first; each one cites the context reference that raised it:
+{questions assigned to this job in 02-selection.md}
 
 ## Instructions
 Follow your agent definition's analysis phases, knowledge-base loading, output format, and severity classification. Cite file:line for every finding.
@@ -154,5 +156,3 @@ than being labelled independent by a flag. Missing required inputs or blocked
 support work leave the affected coverage incomplete. Preserve the same report
 and delivery contracts. The light shape remains the single-reviewer method in
 `references/light.md`; file size alone never selects or removes reviewers.
-
-`--skip-interconnect` was removed in senior-review 9.0.0.

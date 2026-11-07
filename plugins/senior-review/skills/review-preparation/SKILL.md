@@ -31,19 +31,14 @@ the actual candidate and leave any gate needing that comparison unavailable.
 | Always, before the variant | `references/candidate-grounding.md`: target kind/basis, governing snapshot policy, ground-truth gate, evidence pack, budget and roster by kind |
 | Then | `references/<variant>.md` |
 | Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
-| Reviewer catalog | `plugin.toml` (`[components].roles`, `[reviewers.compositions]`) read by `scripts/composition.py catalog`, which writes `CATALOG.json`; triggers live in the roles' descriptions, host bindings in the host. Never scan role kernels at runtime |
+| Reviewer catalog | `plugin.toml` (`[components].roles`, `[reviewers.compositions]`) read by `scripts/composition.py catalog`, which writes `CATALOG.json`; triggers in the roles' descriptions shortlist candidates; Phase 1, Step 3 reads the bodies of the shortlisted candidates only, never the whole catalog |
 | Always, after the roster | `references/composition.md`: bind and validate specialist jobs before recording the complete review or dispatching |
 
 Execute preparation once under the computed roster and support requirements.
-For team review Phase 1a, when selected, the
-coordinator executes the `codebase-map:map` analyze entry's preflight,
-answerable checkpoints, delivery check and publication decision, dispatching
-`codebase-map:map-analyst` in one isolated context through the consuming
-workflow's declared host harness. Loading either body alone executes nothing;
-the analyst is a role, while analyze remains the entry. This step introduces no
-second review preparation or final report owner. Required workers retain
-isolated contexts. Resolve the exact run in runs.json and never
-substitute a mirror for a missing run.
+Team review Phase 1 (context, questions, selection) runs in the coordinator's
+context on the complete run resolved from runs.json; it dispatches nothing and
+never substitutes a mirror for a missing run. The members it selects are bound
+with `scripts/composition.py bind`. Required workers retain isolated contexts.
 
 Reports use the explicit review output root; lifecycle runs keep scratch/context
 in their run root. Record the same

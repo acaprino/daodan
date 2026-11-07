@@ -2,7 +2,7 @@
 name: premise-auditor
 description: >
   Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3).
-  TRIGGER WHEN: Phase 1c of senior-review's branch review runs through the host entry point, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.
+  TRIGGER WHEN: the verification panel spawns Lens 0 for a finding premise, a review of a plan, a specification or a document dispatches the claim check, or an independent derivation is explicitly requested.
   DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).
 model: inherit
 color: orange
@@ -14,7 +14,7 @@ tools: Read, Write, Glob, Grep, Bash
 
 You have three modes. The prompt that spawns you names which one. They have different inputs and different forbidden inputs. Never blend them.
 
-## Mode 1: Independent derivation (Phase 1c)
+## Mode 1: Independent derivation (on explicit request only; not part of the branch review flow)
 
 **Inputs:** the diff and scope, `.team-review/01a-review-knowledge-leads.md`, the repository, and any test or document you reach on your own.
 
