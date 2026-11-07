@@ -73,8 +73,8 @@ Prompt: `references/panel-and-critic-prompts.md`, Section 3.
 Emit `## Coverage Gaps` for:
 1. Warranted dimensions not run.
 2. Unexamined scoped files; no citation alone does not prove omission.
-3. Unverified interconnect assumptions.
-4. Unexamined high-risk hot-spots (`05-risks.md`/Integration Hot-Spots); zero findings alone is not a gap.
+3. Hypotheses of `01-context.md` left unverified.
+4. Unexamined high-risk scoped files; zero findings alone is not a gap.
 5. Findings accepted on derived metrics alone or without user-visible consequences.
 
 For high-risk uncovered scope, allow one targeted follow-up round with an

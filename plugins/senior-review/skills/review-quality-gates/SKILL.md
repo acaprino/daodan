@@ -14,7 +14,7 @@ Shared obligations below; load step-specific procedures only when needed.
 | Step | Read inside this skill |
 |---|---|
 | Any review | this file: provenance, conventions, evidence, delivery |
-| Shared-context preparation/dispatch | `references/context-sharing.md`: artifacts, anchors, metrics, raw mode |
+| Shared-context preparation/dispatch | `references/context-sharing.md`: artifacts, metrics, raw mode |
 | Consolidation | `references/verification-panel.md`: lenses, gating, cost guard, critic |
 | Lens, critic or reviewer briefs | `references/panel-and-critic-prompts.md` |
 | code-review dispatch and map injection | `references/code-review-agents.md` |
@@ -48,7 +48,7 @@ reviewers receive these conventions through their briefs:
 - **No-findings protocol**: "examined X, Y, Z: no issues" is valid Phase 3 input.
 - **Cross-Reviewer Notes**: route other dimensions' observations through
   `## Cross-Reviewer Notes` in Phase 3.
-- **Interconnect anchor citation**: cite applicable anchors. Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal.
+- **Context citation**: cite the `01-context.md` reference a finding relies on, if any.
   Quality metrics: `references/context-sharing.md`, `### Metrics`.
 
 ## Evidence Classes

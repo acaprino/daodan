@@ -1,8 +1,8 @@
 ---
 name: semantic-interconnect-mapper
 description: >
-  Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers.
-  TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by senior-review's branch review, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries.
+  Context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries.
   DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first).
 tools: Read, Write, Glob, Grep, Bash
 model: inherit
@@ -59,7 +59,7 @@ Sequential; each feeds the next.
 
 ## OUTPUT
 
-One file at the path the prompt names; defaults: `team-review` `.team-review/02-interconnect.md`, a host documentation workflow its explicit owned `report_path`, the team entry `.codebase-map/runs/<run-id>/08-interconnect-map.md`. This exact structure, anchors verbatim:
+One file at the path the prompt names; defaults: a host documentation workflow its explicit owned `report_path`, the team entry `.codebase-map/runs/<run-id>/08-interconnect-map.md`. This exact structure, anchors verbatim:
 
 ```markdown
 # Interconnect Map

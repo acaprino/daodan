@@ -32,16 +32,19 @@ senior-review depends on Codebase Map; Codebase Map stands alone.
 2. **Ask.** The agent queries the map through the MCP tools (`codebase_map_search`,
    `_outline`, `_read`, `_edit_impact`, `_modules`, …) or `snapshot.py` instead of
    reading the tree; results carry `file:line` and status.
-3. **Review.** `review_roster.py` computes shape and roster from diff and impact
-   signals; `composition.py` binds the roster into isolated jobs made of focused
-   role files; each finding declares premise, provenance, trigger and evidence
-   class; a verification panel tries to falsify it; the report lists findings,
-   questions for the author and coverage gaps.
+3. **Review.** The model reads the request and decides the rigor (`quick`,
+   `standard`, `deep`); `review_roster.py` adds a floor from risk signals and fixes
+   the verification level. The coordinator understands the object and chooses the
+   reviewers by reading their mandates; `composition.py` binds the chosen reviewers
+   into isolated jobs made of focused role files; each finding declares premise,
+   provenance, trigger and evidence class; a verification panel scaled to the rigor
+   tries to falsify it; the report lists findings, questions for the author and
+   coverage gaps.
 
 Roles cover one defect class each (authorization, transaction integrity,
 temporal resilience, …) and are composed into larger reviewers in
-`plugins/senior-review/plugin.toml`; the light review and small rosters use the
-`code-auditor` composition.
+`plugins/senior-review/plugin.toml`; the light review and the quick and standard
+automatic rosters use the `code-auditor` composition.
 
 ## Install
 

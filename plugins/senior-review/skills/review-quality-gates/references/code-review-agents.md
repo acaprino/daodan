@@ -93,8 +93,8 @@ Preserve introduced, exposed and preexisting classifications from the native
 variant; an unchanged evidence line does not alone make an exposed defect
 ineligible. Never remove artifacts during review.
 
-**Premises.** Supply the declared mode. Blind derivation receives no map or peer
-conclusions. Its existing same-snapshot discovery delivery is accounted once;
+**Premises.** Supply the declared mode. Blind derivation, only on explicit request,
+receives no map or peer conclusions and is accounted once;
 verification lenses receive only their explicitly assigned claims in fresh
 contexts. A worker's mode is not inferred from a legacy letter.
 

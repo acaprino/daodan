@@ -58,9 +58,8 @@ inline checklists. Stack and method bindings come from preparation's
 `references/stack-dimensions.md`.
 
 Record each expected job, its member identities, scope, snapshot and assigned intermediate output
-before dispatch. Reuse Phase 1c's same-snapshot blind premise delivery when it is
-the selected premise discovery result; later verification remains separate.
-Preserve required isolation and omit peer findings from independent discovery.
+before dispatch. Premise verification stays per finding, in the verification
+panel, with its own inputs. Preserve required isolation and omit peer findings from independent discovery.
 A missing catalog binding, prerequisite or delivery remains a failed or incomplete
 review, never an omitted dimension or a clean result. Account for every expected
 job and member before consolidation. The coordinator alone writes the native final report.

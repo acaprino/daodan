@@ -14,9 +14,9 @@ You are reviewing for the {dimension} dimension.
 [...]
 
 ## Context files
-- Codebase Map output: $XRAY_RUN_DIR
-- Interconnect map: .team-review/02-interconnect.md
-- Knowledge provenance: .team-review/01-knowledge-provenance.md
+- Context: .team-review/01-context.md
+- Selection: .team-review/02-selection.md
+- Codebase Map: the complete run named in the context; query its tools
 
 ### Epistemic status of the shared context
 
@@ -32,23 +32,19 @@ one upstream observer.
 - Silence in the context is not evidence of absence. A concern the map does not
   mention may still be real; look anyway.
 
-Per `## Reviewer Hints` in the interconnect map, focus your reading on these anchors:
-{anchors-for-this-dimension}
-
 ## Evidence pack
 [tool, version, command, exit status and output path for each deterministic check run on the candidate]
 
 ## Instructions
 Follow your agent definition's phases and output format. Cite file:line for every finding.
-Every finding that relates to a contract/invariant/assumption in the interconnect map should
-also cite the map anchor that surfaced the concern. Give every finding its trigger, the
+Give every finding its trigger, the
 counterevidence you checked, introduced_by_candidate and evidence_class. Do not restate a
 tool line from the evidence pack; report what tools cannot see.
 
 Write the one report to the prepared job.output_path, preserving each assigned member's findings and coverage.
 ```
 
-**Path substitution:** In `team-review`, the Codebase Map line resolves to `$XRAY_RUN_DIR` (the immutable directory of the run Phase 1a started; never the `.codebase-map/` mirror). `code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.codebase-map/` mirror when consuming a pre-existing analysis.
+**Path substitution:** In `team-review`, the Codebase Map line is the complete run's tools, never a new analysis. `code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.codebase-map/` mirror when consuming a pre-existing analysis.
 
 ---
 
@@ -76,9 +72,8 @@ Mode 2: adversarial premise challenge.
 [the finding's Load-bearing premise field verbatim, or "none declared"]
 
 ## Context available
-- Interconnect map: .team-review/02-interconnect.md
-- Knowledge provenance: .team-review/01-knowledge-provenance.md
-- Codebase Map: $XRAY_RUN_DIR
+- Context: .team-review/01-context.md
+- Codebase Map: the complete run named in the context
 
 ## Instructions
 Follow mode 2 of your agent definition. Attack the premise, not the finding.
@@ -87,7 +82,7 @@ Decide and state whether the counterexample falsifies the PREMISE itself or only
 a piece of shared SUPPORT.
 ```
 
-*(In `code-review`, Codebase Map resolves to `.codebase-map/`, and interconnect/provenance lines are omitted.)*
+*(In `code-review`, Codebase Map resolves to `.codebase-map/` and the context line is omitted.)*
 
 ### Lens 1 Prompt (Reachability / Correctness)
 
@@ -209,14 +204,14 @@ to find new bugs directly. It is to find what the review did not examine.
 [reviewer report paths: completed checks, no-findings results and declared gaps]
 
 ## Context available
-[Codebase Map paths and interconnect map path, or "none"]
+[Codebase Map run and `01-context.md` path, or "none"]
 
 ## Instructions
 Produce a "## Coverage Gaps" list across these categories, each item actionable and specific:
 1. Dimensions warranted by the scope but not run
 2. In-scope files not examined; absence of finding citations alone proves no gap
-3. Interconnect assumptions left unverified after the reported checks
-4. High-risk hot-spots with missing checks, not merely zero findings
+3. Hypotheses of the context left unverified after the reported checks
+4. High-risk scoped files with missing checks, not merely zero findings
 5. Findings closed as acceptable on a metric alone: for each, ask "what does the
    user see when this happens?" -- if the answer is missing or is "nothing, silently",
    re-open it as a gap; also flag any quantitative closure whose number is derived

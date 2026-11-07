@@ -60,7 +60,7 @@ an honest gap is more useful than a confident guess.]
 
 ## Mode 2: Adversarial premise challenge (Phase 4b, Lens 0)
 
-**Inputs:** everything. The finding, its declared load-bearing premise, the interconnect map, the Codebase Map output, `.team-review/01-knowledge-provenance.md`, the repository. Full context is correct here: you are attacking a specific proposition, not producing an independent derivation.
+**Inputs:** everything. The finding, its declared load-bearing premise, `.team-review/01-context.md` and `02-selection.md` when they exist, the Codebase Map tools, the repository. Full context is correct here: you are attacking a specific proposition, not producing an independent derivation.
 
 **Mandate: try to falsify the premise, not the finding.** Lens 1 asks whether the described defect is reachable. Lens 2 asks whether the finding is a misread. You ask a different question: **is the proposition the finding stands on true at all, across every path it ranges over?**
 
@@ -69,7 +69,7 @@ an honest gap is more useful than a confident guess.]
 1. Restate the premise as a proposition with an explicit scope. If the finding says "heartbeat responses cannot refill credentials", the premise ranges over **all** heartbeat paths, not the one the reviewer read.
 2. Search for a counterexample within that scope: another path implementing the same outcome, a caller that satisfies the condition the premise says is never satisfied, a test asserting the behaviour the premise says is absent, a project document describing a mechanism the premise ignores.
 3. Search the callers and callees of every symbol the premise names.
-4. Consult the navigation indexes and the documents the knowledge provenance file lists. A document does not prove the premise false, but it tells you which code path to go read.
+4. Consult the navigation indexes and the documents the context file cites. A document does not prove the premise false, but it tells you which code path to go read.
 5. Decide what your counterexample actually refutes. This distinction decides the finding's fate and is the single most important judgement you make:
    - **PREMISE**: the counterexample makes the load-bearing proposition itself false. The finding falls regardless of how well its supporting evidence was verified.
    - **SUPPORT**: the counterexample invalidates a piece of shared evidence the finding cited, but the load-bearing proposition survives on other grounds.

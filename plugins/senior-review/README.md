@@ -1,6 +1,6 @@
 # senior-review
 
-**Responsabilità:** ricavare dal contesto le domande di correttezza da verificare, selezionare i controlli applicabili e comporre il minimo lavoro di review giustificato dalle evidenze.
+**Responsabilità:** comprendere l'oggetto da rivedere, scegliere i reviewer pertinenti leggendo i loro mandati e comporre il minimo lavoro di review giustificato dalle evidenze.
 
 Nella nuova base l'unica dipendenza di prodotto è **Codebase Map**. Le micro skill e i controlli restano di proprietà di senior-review; un reviewer è un incarico temporaneo sull'intero perimetro, composto da mandato, contesto, istruzioni selezionate e risultato atteso. Una skill non implica un agente separato.
 
@@ -24,7 +24,7 @@ Baseline sorgente **1.0.1** importata dal backup integrale del precedente Daodan
 - rimosso il membro esterno `testing:test-reliability-auditor` dalla composizione `code-auditor`;
 - i ruoli compositi dichiarati restano validi perché definiti in `[reviewers.compositions]`, non come file ruolo individuali.
 
-Installazione: `claude plugin install senior-review@daodan` (marketplace `acaprino/daodan`; richiede `codebase-map`). Ingresso: la skill `/senior-review:review-method`. Una review completa non è ancora stata eseguita. Il catalogo dei reviewer è `plugin.toml`: `skills/review-preparation/scripts/composition.py catalog` lo legge e scrive `CATALOG.json`; `bind` lega il roster ai job.
+Installazione: `claude plugin install senior-review@daodan` (marketplace `acaprino/daodan`; richiede `codebase-map`). Ingresso: la skill `/senior-review:review-method`. Le review eseguite sul benchmark `benchmarks/scope-resolution/` e i loro costi sono registrati nel suo README: il criterio di costo non è ancora raggiunto. Il catalogo dei reviewer è `plugin.toml`: `skills/review-preparation/scripts/composition.py catalog` lo legge e scrive `CATALOG.json`; `bind` lega il roster ai job.
 
 Le istruzioni obbligatorie che caricavano work-controller, skill-catalog, report-rendering, testing o altri plugin assenti sono state rese host-generiche o trasformate in lacune esplicite. I riferimenti storici residui sono solo documentali. Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. La copertura di React, TypeScript, Tauri/platform, testing, abstraction e workspace hygiene non è più fornita da plugin esterni: resta una lacuna dichiarata finché senior-review non possiederà micro skill equivalenti.
 

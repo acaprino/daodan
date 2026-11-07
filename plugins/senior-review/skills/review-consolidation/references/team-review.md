@@ -22,7 +22,7 @@ Run the panel to at least the bound roster and run's required verification level
 2. Apply the roster's `verification` level from the skill's section `### Selection and Cost Guard`. Under `critical-high` (standard rigor) keep only Critical and High, give each Lens 0 and then Lens 1; under `critical` (quick) keep only Critical and give each Lens 1; both skip steps 3-5: filtered, `contested` and `unverified (rigor)` follow that section. Under `all-above-floor`:
    - If `--rigorous`, or 25 or fewer findings survive: verify all selected findings.
    - Otherwise (more than 25 findings, no `--rigorous`): preserve every required verification and narrow only additional optional findings to the skill's stakes + uncertainty band. Record those omitted as `unverified (cost-guard)`.
-3. **Lens 0 first.** For each finding to verify whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, spawn lens 0 (`senior-review:premise-auditor`, mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the Codebase Map line resolved to `$XRAY_RUN_DIR`. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
+3. **Lens 0 first.** For each finding to verify whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, spawn lens 0 (`senior-review:premise-auditor`, mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the Codebase Map line naming the complete run. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
 4. For each finding that reaches this step, dispatch lenses 1 and 2 independently through the declared host isolated-worker binding using the skill's complete briefs, owned scope, authorization, budget and expected report paths, then dispatch lens 3 through that same binding only for findings that survive them. If the host supplies no isolated binding, declare those lenses unavailable rather than sharing one context. All lenses inherit the session model and use the host harness's supported topology, per the skill's gated-lens rule. Substitute the finding, diff, and full file content into each prompt.
 5. Apply the survival rule from the skill: survive if `>= 2` of lenses 1-2 vote REAL; discard (`filtered`) if `>= 2` vote FALSE_POSITIVE; tie or fewer-than-2-verdicts means survive and mark `contested`. Final severity is the lens-3 vote when confirmed real, else the original.
 6. Write `.team-review/98-verification.md`: one row per verified finding with the per-lens verdicts (including, for findings that reached lens 0, its verdict, refutation target, and counterexample), final severity, and flag (`verified` / `contested` / `filtered: premise-refuted` / `filtered`), plus a trailing count of `unverified (cost-guard)` and `unverified (rigor)` findings.
@@ -66,7 +66,7 @@ declaring the requested output complete.
    Verification: {verified} verified, {filtered} false positives, {contested} contested, {premise_refuted} premise-refuted, {premise_contested} premise-contested, {unverified_rigor} unverified (rigor){cost_guard_note}
 
    ### Critical ({count})
-   [findings with file:line + category + map anchor where applicable]
+   [findings with file:line + category]
 
    ### High ({count})
    [findings...]
@@ -80,7 +80,6 @@ declaring the requested output complete.
    ### Summary
    Total findings: {count} (Critical: N, High: N, Medium: N, Low: N)
    Coverage gaps: see .team-review/97-coverage-gaps.md ({gap_count} gaps, {followup} follow-up round)
-   Map utilization: {count} findings cite an anchor ({pct}%, operational)
    Independent premise reconstruction: {ipr_count} findings ({ipr_pct}%)
    Premise challenge: {pc_count} of {eligible} eligible premises attacked by Lens 0
    Corroborated findings: {n_corroborated} (independent agreement)

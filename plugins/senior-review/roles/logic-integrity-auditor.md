@@ -2,8 +2,8 @@
 name: logic-integrity-auditor
 description: >
   Cross-component reviewer for domain invariants, ordering, idempotency and terminal states.
-  TRIGGER WHEN: branch review supplies an interconnect map, a review supplies scoped semantic context, or a domain contract/invariant audit is requested.
-  DO NOT TRIGGER WHEN: neither an interconnect map nor scoped semantic context is supplied; report that missing prerequisite.
+  TRIGGER WHEN: a review supplies scoped semantic context (the branch review's `01-context.md`, Code Graph rows or an interconnect map), or a domain contract/invariant audit is requested.
+  DO NOT TRIGGER WHEN: no scoped semantic context is supplied; report that missing prerequisite.
 model: inherit
 color: purple
 tools: Read, Write, Glob, Grep, Bash
@@ -20,7 +20,7 @@ Taxonomy patterns and suggested fixes are leads; common evidence rules govern ap
 ## Mandate and inputs
 
 Find violations of domain rules across components, callers and state transitions.
-Require an interconnect map or the prepared scoped semantic context: snapshot-bound
+Require the prepared scoped semantic context or an interconnect map: snapshot-bound
 symbol/call evidence, active decision records, requirements and semantic cards
 with provenance. If neither identifies a contract, rule, invariant or assumption
 for this scope, return the missing prerequisite. Do not silently remove the lens.

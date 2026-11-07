@@ -20,7 +20,7 @@ Traduce la richiesta nei file da rivedere. Prerequisito: la mappa completa del p
 3. **Fermati** quando le evidenze bastano, quando non ci sono più piste, o a circa 6 interrogazioni e 10 letture. Di' sempre perché.
 4. **Rispondi** con uno di tre esiti: `resolved` (i file, ciascuno con la sua evidenza); `partial` (i file trovati, cosa serve ancora alla richiesta e perché); `clarify` (la richiesta può voler dire due cose diverse: i candidati e la domanda).
 
-Il perimetro è ciò che la review giudica; ciò che legge per giudicarlo è contesto di Phase 1. Il coordinatore non legge gli artefatti di analisi di Codebase Map prima della discovery indipendente: regola e motivo nel contratto del coordinatore (`team-review.md`, Phase 0c). Tutto il resto è giudizio del reviewer, motivato.
+Il perimetro è ciò che la review giudica; ciò che legge per giudicarlo è contesto di Phase 1. Il coordinatore usa solo gli indici e i sorgenti del run. Tutto il resto è giudizio del reviewer, motivato.
 
 **Per modificare questa spec:** una regola in più solo per un requisito obbligatorio scoperto o un errore riproducibile; prima prova a correggere una regola esistente. Un'ambiguità segnalata da un modello non è un errore.
 
