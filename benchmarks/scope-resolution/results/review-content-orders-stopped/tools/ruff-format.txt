@@ -1,0 +1,8 @@
+Would reformat: benchmarks\scope-resolution\app\packages\orders\api.py
+Would reformat: benchmarks\scope-resolution\app\packages\orders\big_module.py
+Would reformat: benchmarks\scope-resolution\app\packages\orders\inventory.py
+Would reformat: benchmarks\scope-resolution\app\packages\orders\ledger.py
+Would reformat: benchmarks\scope-resolution\app\packages\orders\notifications.py
+Would reformat: benchmarks\scope-resolution\app\packages\orders\reporting.py
+Would reformat: benchmarks\scope-resolution\app\packages\orders\service.py
+7 files would be reformatted, 2 files already formatted

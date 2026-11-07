@@ -1,0 +1,10 @@
+{"roles": [
+  "senior-review:local-correctness-auditor",
+  "senior-review:logic-integrity-auditor",
+  "senior-review:local-concurrency-auditor",
+  "senior-review:resource-lifecycle-auditor",
+  "senior-review:transaction-integrity-auditor",
+  "senior-review:data-representation-auditor",
+  "senior-review:input-validation-auditor",
+  "senior-review:premise-auditor"
+], "critic": false}

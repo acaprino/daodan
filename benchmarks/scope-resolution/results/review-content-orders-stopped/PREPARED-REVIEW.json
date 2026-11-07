@@ -1,0 +1,298 @@
+{
+  "advice": [],
+  "catalog_sha256": "761565841a6c86708c788c54e9d2a355ea8765b8965334ae54f38547e11af53d",
+  "common": {
+    "path": "skills/review-quality-gates/references/reviewer-common.md",
+    "sha256": "67ee0a0efa2513d11fcbc1d1a100700f5df5fd45aaf937d620d07a95fb51dabc"
+  },
+  "critic": false,
+  "gaps": [
+    "no Codebase Map impact packet: callers and digest changes unknown",
+    "stale-callers schema or base/candidate snapshot binding unavailable or mismatched",
+    "unmatched content signals have unknown applicability; preparation must ground skip decisions"
+  ],
+  "grounding": {
+    "applicability": [],
+    "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+    "changes": [],
+    "conclusion_paths": [
+      "benchmarks/scope-resolution/app/packages/orders/__init__.py",
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+      "benchmarks/scope-resolution/app/packages/orders/inventory.py",
+      "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+      "benchmarks/scope-resolution/app/packages/orders/notifications.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py"
+    ],
+    "graph": {
+      "bound_targets": [],
+      "delta": {},
+      "freshness_basis": {
+        "delta": null,
+        "impact": null
+      },
+      "history": {},
+      "targets": []
+    },
+    "read_scope": [
+      "benchmarks/scope-resolution/app/packages/orders/__init__.py",
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+      "benchmarks/scope-resolution/app/packages/orders/inventory.py",
+      "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+      "benchmarks/scope-resolution/app/packages/orders/notifications.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/app/packages/payments/gateway.py",
+      "benchmarks/scope-resolution/app/packages/payments/refunds.py",
+      "benchmarks/scope-resolution/app/packages/shipping/rates.py",
+      "benchmarks/scope-resolution/app/pyproject.toml",
+      "benchmarks/scope-resolution/test_app_structures.py"
+    ],
+    "requirements": [],
+    "scope_id": "orders-module"
+  },
+  "id": "content-orders",
+  "jobs": [
+    {
+      "body_sha256": "1284b7ba7593477acd493f6fcb611414ec927978938f3bbcef5e698edb900c80",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-01",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-01.md",
+      "permissions": "read-only",
+      "role": "senior-review:local-correctness-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:local-correctness-auditor": {
+          "path": "roles/local-correctness-auditor.md",
+          "sha256": "4fd495dcbc019bfe7a73b12766ad4e8ab6754b1491ee7f60bc64b88cdb61eb1b"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:local-correctness-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "beda2809d9580b89e7ee803cc528f81f7d666784214c5bc630884221acc1ee67",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-02",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-02.md",
+      "permissions": "read-only",
+      "role": "senior-review:logic-integrity-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:logic-integrity-auditor": {
+          "path": "roles/logic-integrity-auditor.md",
+          "sha256": "a5c490226d5e8a15f9397e2e38b0014f3bc48f96fc265a7b824d218d6c51ad39"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "a5bca62579145b80e82f421d504579c9655205f7101aae497856a533536e0ab4",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-03",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-03.md",
+      "permissions": "read-only",
+      "role": "senior-review:local-concurrency-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:local-concurrency-auditor": {
+          "path": "roles/local-concurrency-auditor.md",
+          "sha256": "7f8e5a4929f5c7179c4f206722588953c420eeb26804370d9032b1a3a94e2894"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:local-concurrency-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "ee9dc6d6abe457b3c59507bb9853d634b21504c825a630e999f82e425603dc3c",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-04",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-04.md",
+      "permissions": "read-only",
+      "role": "senior-review:resource-lifecycle-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:resource-lifecycle-auditor": {
+          "path": "roles/resource-lifecycle-auditor.md",
+          "sha256": "8e02c111e95e5d9c3ad6113af1f71e15d780246586f398f7ff21fe16c21f3ce7"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "ee74a3ab8781f796c25898a5ca7f3e1d54f3cc0825123937a7ce13aeda8b4d3f",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-05",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-05.md",
+      "permissions": "read-only",
+      "role": "senior-review:transaction-integrity-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:transaction-integrity-auditor": {
+          "path": "roles/transaction-integrity-auditor.md",
+          "sha256": "f6bf40375e03842ef33bc1616a9bc6474831406f67af1a67e4766fb861010143"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:transaction-integrity-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "e1706fc20ff239deddb253534e59f82ce25c678955d3404ac38e439d63bb1334",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-06",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-06.md",
+      "permissions": "read-only",
+      "role": "senior-review:data-representation-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:data-representation-auditor": {
+          "path": "roles/data-representation-auditor.md",
+          "sha256": "e1f10691c22dff52b2c5d0895601e2976a35a582f2faf6ac733a0e80c85e02ed"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:data-representation-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    },
+    {
+      "body_sha256": "5463cd41d99b4caa1e3bbe0b777913c86436cc95e24ac94643ba02ad56f09bb5",
+      "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+      "input_mode": "independent",
+      "job_id": "job-07",
+      "knowledge_selection": "",
+      "output_path": "jobs/job-07.md",
+      "permissions": "read-only",
+      "role": "senior-review:input-validation-auditor",
+      "scope_id": "orders-module",
+      "source_bindings": {
+        "senior-review:input-validation-auditor": {
+          "path": "roles/input-validation-auditor.md",
+          "sha256": "b6f1c0205d1e355b3a7a6b9694329fcce5c757ed107c65cc6539beb26e6a9c4c"
+        }
+      },
+      "specialist_ids": [
+        "senior-review:input-validation-auditor"
+      ],
+      "status": "bound",
+      "unbound": []
+    }
+  ],
+  "kind": "changeset",
+  "reasons": [
+    "9 production files changed"
+  ],
+  "required_specialists": [],
+  "review_basis": "content",
+  "roster": [
+    "senior-review:local-correctness-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:local-concurrency-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:transaction-integrity-auditor",
+    "senior-review:data-representation-auditor",
+    "senior-review:input-validation-auditor"
+  ],
+  "roster_schema": "daodan/review-roster/v1",
+  "schema": "daodan/prepared-review/v1",
+  "selection": {
+    "reviewers": [
+      "senior-review:local-correctness-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:local-concurrency-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:transaction-integrity-auditor",
+      "senior-review:data-representation-auditor",
+      "senior-review:input-validation-auditor"
+    ],
+    "superseded": [
+      "senior-review:code-auditor",
+      "senior-review:premise-auditor",
+      "senior-review:performance-auditor"
+    ]
+  },
+  "shape": "branch",
+  "signals": {
+    "applicability": {
+      "accessibility": "unknown",
+      "distributed": "unknown",
+      "operability": "unknown",
+      "performance": "yes",
+      "persistence": "unknown",
+      "resources": "yes",
+      "startup": "unknown",
+      "timers": "unknown",
+      "trust": "unknown",
+      "ui": "unknown"
+    },
+    "content": {
+      "accessibility": false,
+      "distributed": false,
+      "operability": false,
+      "performance": true,
+      "persistence": false,
+      "resources": true,
+      "startup": false,
+      "timers": false,
+      "trust": false,
+      "ui": false
+    },
+    "contract": [],
+    "effects_changed": [],
+    "files": 9,
+    "interface_changed": [],
+    "languages": [
+      "python"
+    ],
+    "lines": 0,
+    "manifest": [],
+    "map_available": false,
+    "max_callers": 0,
+    "modules": [
+      "benchmarks"
+    ],
+    "production_files": 9,
+    "sensitive_paths": [],
+    "symbols": []
+  },
+  "stage": "standalone",
+  "support": [
+    "senior-review:premise-auditor"
+  ],
+  "tier": "medium",
+  "verification": "all-above-floor"
+}

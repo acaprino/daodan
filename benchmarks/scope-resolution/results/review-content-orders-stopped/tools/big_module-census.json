@@ -1,0 +1,76 @@
+{
+  "file": "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+  "top_level_functions": 105,
+  "distinct_normalized_bodies": 1,
+  "cluster_sizes": [
+    105
+  ],
+  "other_top_level": [
+    {
+      "type": "Expr",
+      "line": 1,
+      "end": 4
+    },
+    {
+      "type": "Import",
+      "line": 5,
+      "end": 5
+    },
+    {
+      "type": "Assign",
+      "line": 7,
+      "end": 7
+    }
+  ],
+  "small_clusters": {},
+  "labels": [
+    [
+      "courier",
+      9
+    ],
+    [
+      "customs",
+      9
+    ],
+    [
+      "invoice",
+      9
+    ],
+    [
+      "ledger",
+      9
+    ],
+    [
+      "mandate",
+      8
+    ],
+    [
+      "order",
+      9
+    ],
+    [
+      "parcel",
+      9
+    ],
+    [
+      "receipt",
+      8
+    ],
+    [
+      "refund",
+      9
+    ],
+    [
+      "shipment",
+      9
+    ],
+    [
+      "surcharge",
+      8
+    ],
+    [
+      "vat",
+      9
+    ]
+  ]
+}
