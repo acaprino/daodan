@@ -1,0 +1,6 @@
+## radon cc -s benchmarks/scope-resolution/app/packages/orders/pricing.py
+benchmarks/scope-resolution/app/packages/orders/pricing.py
+    F 6:0 vat_amount - A (1)
+    F 11:0 compute_discount - A (1)
+    F 17:0 compute_total - A (1)
+exit=0

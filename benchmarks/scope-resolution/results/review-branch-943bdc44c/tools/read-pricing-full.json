@@ -1,0 +1,59 @@
+{
+ "schema": "xray/source-reading/v1",
+ "root": "D:/Projects/daodan",
+ "target": ".",
+ "scope": {
+  "git_ignore": "applied",
+  "skipped": {
+   "dot_directories": [
+    ".claude",
+    ".claude-plugin",
+    ".daodan",
+    ".jcode",
+    ".pytest_cache",
+    ".ruff_cache",
+    "plugins/codebase-map/.claude-plugin",
+    "plugins/codebase-map/skills/map-method/scripts/.pytest_cache",
+    "plugins/codebase-map/skills/map-method/scripts/.ruff_cache",
+    "plugins/senior-review/.claude-plugin"
+   ],
+   "git_ignored": 1
+  }
+ },
+ "inventory": {
+  "files": 339,
+  "schema": 1,
+  "created_at": "2026-11-07T11:59:11Z",
+  "parser_fingerprint": "bbbd90a8a20505e5aef2b7f904e595d77562d6d5666db144b711ab759229c9e8"
+ },
+ "files": [
+  {
+   "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+   "raw_hash": "d656c18b842129acf7ecaf166987a556d95775dd53f0d427605cb0a8e369ad44",
+   "hash": "sha256:d656c18b842129ac",
+   "status": "parsed",
+   "parser_profile": {
+    "language": "python",
+    "backend": "stdlib-ast"
+   },
+   "parser_notes": [
+    "parser=stdlib-ast"
+   ],
+   "notes": [],
+   "blocks": [
+    {
+     "start": 1,
+     "end": 21,
+     "reason": "full-file",
+     "source": "1: \"\"\"Prezzi: totale ordine, sconto cliente e IVA (VAT).\"\"\"\n2: \n3: VAT_RATE = 0.22  # aliquota IVA ordinaria\n4: \n5: \n6: def vat_amount(net):\n7:     \"\"\"IVA (VAT) dovuta sul netto.\"\"\"\n8:     return round(net * VAT_RATE, 2)\n9: \n10: \n11: def compute_discount(order):\n12:     \"\"\"Sconto cliente: percentuale di fedeltà applicata al netto.\"\"\"\n13:     loyalty = order.get(\"loyalty_percent\", 0)\n14:     return round(order.get(\"net\", 0) * loyalty / 100, 2)\n15: \n16: \n17: def compute_total(order):\n18:     \"\"\"Totale ordine: netto - sconto cliente + IVA (VAT).\"\"\"\n19:     net = order.get(\"net\", 0) - compute_discount(order)\n20:     return round(net + vat_amount(net), 2)\n21: \n"
+    }
+   ]
+  }
+ ],
+ "metrics": {
+  "source_bytes_read": 589,
+  "source_lines_emitted": 21,
+  "source_characters_emitted": 589
+ },
+ "run_id": "daodan-lite-20261107-2"
+}

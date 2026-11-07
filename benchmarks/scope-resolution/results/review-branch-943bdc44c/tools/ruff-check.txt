@@ -1,0 +1,3 @@
+## ruff check --no-cache benchmarks/scope-resolution/app/packages/orders/pricing.py
+All checks passed!
+exit=0

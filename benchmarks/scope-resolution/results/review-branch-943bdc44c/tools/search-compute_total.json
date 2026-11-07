@@ -1,0 +1,275 @@
+{
+ "schema": "daodan/retrieval-result/v1",
+ "document_digest": "29a4f004ed0592b5ceaec9b5999529971193caacbb3a187f526d6704b6437ca8",
+ "exact": [
+  "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total"
+ ],
+ "exact_total": 1,
+ "exact_truncated": 0,
+ "ambiguous": [],
+ "matched": 193,
+ "returned": 15,
+ "truncated": 178,
+ "limit": 15,
+ "gaps": [],
+ "ranking_policy": "exact-fts5-bm25-v1",
+ "capabilities": {
+  "exact": true,
+  "fts5": true,
+  "embedding": "unavailable"
+ },
+ "results": [
+  {
+   "entity_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total",
+   "kind": "function",
+   "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+   "start_line": 17,
+   "end_line": 20,
+   "signatures": [
+    {
+     "fields": [
+      "annotations",
+      "async",
+      "decorators",
+      "defaults",
+      "generator",
+      "parameter_kinds",
+      "parameters",
+      "returns"
+     ],
+     "params": [
+      {
+       "name": "order"
+      }
+     ],
+     "visibility": "public"
+    }
+   ],
+   "provenance": [
+    "exact",
+    "fts5"
+   ],
+   "score": 0.0
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5h-C1/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5h-C1/final.json",
+   "start_line": 1,
+   "end_line": 26,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -12.642576254760982
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m6h-C1/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m6h-C1/final.json",
+   "start_line": 1,
+   "end_line": 19,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -12.520242140192261
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5o-C4/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5o-C4/final.json",
+   "start_line": 1,
+   "end_line": 26,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -12.367996895195805
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5h-C4/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5h-C4/final.json",
+   "start_line": 1,
+   "end_line": 22,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -11.419033521463595
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService.checkout",
+   "kind": "method",
+   "path": "benchmarks/scope-resolution/app/packages/orders/service.py",
+   "start_line": 23,
+   "end_line": 30,
+   "signatures": [
+    {
+     "fields": [
+      "annotations",
+      "async",
+      "decorators",
+      "defaults",
+      "generator",
+      "parameter_kinds",
+      "parameters",
+      "returns"
+     ],
+     "params": [
+      {
+       "name": "self"
+      },
+      {
+       "name": "order"
+      }
+     ],
+     "visibility": "public"
+    }
+   ],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -11.201693276368985
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5o-C1/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5o-C1/final.json",
+   "start_line": 1,
+   "end_line": 43,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -11.112905495871367
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService",
+   "kind": "class",
+   "path": "benchmarks/scope-resolution/app/packages/orders/service.py",
+   "start_line": 18,
+   "end_line": 34,
+   "signatures": [
+    {
+     "fields": [
+      "attributes",
+      "bases",
+      "decorators"
+     ],
+     "visibility": "public"
+    }
+   ],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -10.7125833329767
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m6o-C1/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m6o-C1/final.json",
+   "start_line": 1,
+   "end_line": 61,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -10.692213943372321
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5o-C5/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5o-C5/final.json",
+   "start_line": 1,
+   "end_line": 28,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -10.59920109331198
+  },
+  {
+   "entity_id": "plugins/codebase-map/skills/map-method/references/tools-guide.md::@file",
+   "kind": "file",
+   "path": "plugins/codebase-map/skills/map-method/references/tools-guide.md",
+   "start_line": 1,
+   "end_line": 29,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -10.59523560195848
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5h-C5/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5h-C5/final.json",
+   "start_line": 1,
+   "end_line": 27,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -10.128257416831413
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5h-C1/eval.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5h-C1/eval.json",
+   "start_line": 1,
+   "end_line": 33,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -9.83366698691121
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/results/model-runs/m5h-C8/final.json::@file",
+   "kind": "file",
+   "path": "benchmarks/scope-resolution/results/model-runs/m5h-C8/final.json",
+   "start_line": 1,
+   "end_line": 26,
+   "signatures": [],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -8.81404783927959
+  },
+  {
+   "entity_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount",
+   "kind": "function",
+   "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+   "start_line": 11,
+   "end_line": 14,
+   "signatures": [
+    {
+     "fields": [
+      "annotations",
+      "async",
+      "decorators",
+      "defaults",
+      "generator",
+      "parameter_kinds",
+      "parameters",
+      "returns"
+     ],
+     "params": [
+      {
+       "name": "order"
+      }
+     ],
+     "visibility": "public"
+    }
+   ],
+   "provenance": [
+    "fts5"
+   ],
+   "score": -8.421570984646255
+  }
+ ],
+ "run_id": "daodan-lite-20261107-2",
+ "index_state": "fresh"
+}

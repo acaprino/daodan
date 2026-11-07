@@ -1,0 +1,2 @@
+## python -B -m vulture --min-confidence 80 benchmarks/scope-resolution/app/packages/orders/pricing.py
+exit=0

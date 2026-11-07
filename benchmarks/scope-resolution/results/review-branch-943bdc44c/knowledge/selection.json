@@ -1,0 +1,61 @@
+{
+  "schema": "senior-review/knowledge-selection/v1 (written directly: no host catalog preparation mechanism)",
+  "candidate": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+  "inventory": {
+    "source": "installed Daodan providers D:/Projects/daodan/plugins (senior-review, codebase-map) with daodan/skill-metadata/v1 SKILL.toml",
+    "knowledge_kind": [
+      "senior-review:defect-taxonomy"
+    ],
+    "gaps": [
+      "host-level skills listed in the session (superpowers, developer-essentials, mattpocock-skills, ...) carry no daodan skill metadata: unclassified; none names Python arithmetic/pricing review knowledge, so no relevant unclassified match was found"
+    ]
+  },
+  "scopes": [
+    {
+      "scope_id": "branch-943bdc44c",
+      "paths": [
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+      ],
+      "languages": [
+        "python"
+      ],
+      "frameworks": [],
+      "topics": [
+        "pricing arithmetic",
+        "discount",
+        "VAT"
+      ],
+      "activation_evidence": "pricing.py:19 @943bdc44c arithmetic change; .py file; app/pyproject.toml stdlib only",
+      "dimension_workers": {
+        "correctness": "job-01",
+        "security": "job-01"
+      },
+      "knowledge_ids": [
+        "senior-review:defect-taxonomy"
+      ]
+    }
+  ],
+  "selected": [
+    {
+      "knowledge_id": "senior-review:defect-taxonomy",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "load": [
+        "D:/Projects/daodan/plugins/senior-review/skills/defect-taxonomy/SKILL.md",
+        "D:/Projects/daodan/plugins/senior-review/skills/defect-taxonomy/SKILL.toml",
+        "D:/Projects/daodan/plugins/senior-review/skills/defect-taxonomy/references/review-frameworks.md",
+        "D:/Projects/daodan/plugins/senior-review/skills/defect-taxonomy/references/logic-types.md"
+      ],
+      "sha256": {
+        "SKILL.md": "92c07a4ec219d5c2a3ae0c29fa699a8b15f453f833116cf912095716faeba514",
+        "SKILL.toml": "877fe2575eab9d0e4719b4a04b202575431cf8a07311132d2777104f74bc21dc",
+        "references/review-frameworks.md": "a482e0daeb031e76a954805ef58ad8efd508652e3015a0ef2350692d18829de5",
+        "references/logic-types.md": "9667a3fcb39031a376c4087f05e46b1536e3c8c25da2ddbde5ae590fd89865d2"
+      },
+      "references_reason": "Python weighting names logic-types.md; review-frameworks.md always for code-auditor; security.md/memory-resources.md not loaded: no input sink, resource or memory construct in the changed lines"
+    }
+  ],
+  "fingerprint": "af96a6fdd282cd2ad38586a7a9c30fafbe748ec8f0df4238c5dbd5cf0a38a97c"
+}

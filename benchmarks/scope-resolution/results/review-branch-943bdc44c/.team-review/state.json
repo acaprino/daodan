@@ -1,0 +1,148 @@
+{
+  "target": "git diff 6dd2c2bbf..943bdc44c (commit 943bdc44c66dfd9782f6d38c82922a1f08783653)",
+  "review_id": "branch-943bdc44c",
+  "shape": "branch",
+  "variant": "team-review",
+  "target_kind": "changeset",
+  "status": "complete-with-declared-gaps",
+  "flags": {
+    "reviewers": "auto",
+    "all": false,
+    "deep": false,
+    "no_context": false,
+    "fast": false,
+    "rigorous": false
+  },
+  "current_phase": "5",
+  "phases": {
+    "phase_0_resolution": "complete",
+    "phase_0b_detection": "complete",
+    "phase_0c_evidence_discovery": "complete",
+    "phase_1_context": "complete",
+    "phase_1_questions": "complete",
+    "phase_1_selection": "complete",
+    "phase_2_review": "complete",
+    "phase_3_consolidation": "complete",
+    "phase_4b_verification": "complete",
+    "phase_4c_critic": "skipped",
+    "phase_4_report": "complete"
+  },
+  "files_created": [
+    ".team-review/00-scope.md",
+    "diff.patch",
+    "CATALOG.json",
+    "CONTEXT.json",
+    "ROSTER.json",
+    "knowledge/selection.json",
+    "tools/*",
+    ".team-review/01a-review-knowledge-leads.md",
+    ".team-review/01-context.md",
+    ".team-review/02-selection.md",
+    "BINDINGS.json",
+    "PREPARED-REVIEW.json",
+    "DISPATCH.json",
+    "FACTS.json",
+    "jobs/job-01.md",
+    ".team-review/99-consolidated.md",
+    ".team-review/98-verification.md",
+    "verification/",
+    "review-branch-943bdc44c.md",
+    "tools/experience-record.txt"
+  ],
+  "xray": {
+    "run_id": "daodan-lite-20261107-2",
+    "run_dir": "D:/Projects/daodan/.codebase-map/runs/daodan-lite-20261107-2",
+    "target": ".",
+    "depth": "lite"
+  },
+  "run_record": "absent: standalone review, no protocol run record exists",
+  "started_at": "2026-11-07T15:18:53Z",
+  "deliveries": {
+    "job-01": {
+      "review_id": "branch-943bdc44c",
+      "role": "senior-review:code-auditor",
+      "worker_binding": "general-purpose (host isolated-worker binding)",
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/jobs/job-01.md",
+      "status": "delivered",
+      "member_results": "26/26 accounted: local-correctness complete; 25 not-applicable per 02-selection.md",
+      "findings": [
+        {
+          "id": "J01-F1",
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "line": 19,
+          "introduced_by_candidate": true,
+          "premise": "for an order with net ≠ 0 and loyalty_percent ≠ 0, compute_total @943bdc44c computes its taxable net as net − 2·compute_discount(order), and no repository source specifies more than the single \"sconto cliente\" term of pricing.py:18"
+        },
+        {
+          "id": "J01-F2",
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "line": 19,
+          "introduced_by_candidate": true,
+          "premise": "with net > 0 and 50 < loyalty_percent ≤ 100, compute_total @943bdc44c returns a negative value, and no code between Dispatcher.handle and ledger.record rejects or clamps it"
+        }
+      ],
+      "declined": []
+    },
+    "J01-F1-lens0": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F1-lens0.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F1-lens1": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F1-lens1.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F1-lens2": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F1-lens2.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F1-lens3": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F1-lens3.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F2-lens0": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F2-lens0.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F2-lens1": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F2-lens1.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F2-lens2": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F2-lens2.md",
+      "status": "delivered",
+      "check": true
+    },
+    "J01-F2-lens3": {
+      "output_path": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/verification/J01-F2-lens3.md",
+      "status": "delivered",
+      "check": true
+    }
+  },
+  "learned_facts": {
+    "brief_exit": 0,
+    "facts": 0,
+    "gap": "no discovery job in the prepared roster",
+    "record_exit": 1,
+    "record_error": "error: Cannot read the run record of run branch-943bdc44c"
+  },
+  "verification_plan": {
+    "level": "high-and-above (roster); 2 findings <= 25 above floor 50: verify all",
+    "lens0": [
+      "J01-F1 (negative quantifier: no)",
+      "J01-F2 (negative quantifier: no)"
+    ],
+    "lenses": [
+      "lens1",
+      "lens2",
+      "lens3 after survival"
+    ],
+    "binding": "lens0 senior-review:premise-auditor mode 2; lenses 1-3 general-purpose"
+  },
+  "final_report": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/review-branch-943bdc44c.md"
+}

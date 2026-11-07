@@ -1,0 +1,82 @@
+{
+ "schema": "daodan/symbols-at/v1",
+ "mode": "ranges",
+ "candidate": {
+  "root": "D:/Projects/daodan",
+  "target": ".",
+  "created_at": "2026-11-07T11:59:11Z",
+  "repo_revision": "7bd0ff186c50",
+  "parser_fingerprint": "bbbd90a8a20505e5aef2b7f904e595d77562d6d5666db144b711ab759229c9e8"
+ },
+ "results": [
+  {
+   "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+   "language": "python",
+   "status": "parsed",
+   "ranges": [
+    {
+     "start": 16,
+     "end": 20,
+     "symbols": [
+      {
+       "entity_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total",
+       "entity_key": {
+        "repo": "D:/Projects/daodan",
+        "language": "python",
+        "chain": [
+         "benchmarks/scope-resolution/app/packages/orders/pricing.py"
+        ],
+        "kind": "function",
+        "name": "compute_total",
+        "overload": null
+       },
+       "anchor": {
+        "repo_revision": "7bd0ff186c50",
+        "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "start_line": 17,
+        "end_line": 20,
+        "start_byte": null,
+        "end_byte": null,
+        "byte_precision": "unavailable",
+        "ast_anchor": {
+         "kind": "function",
+         "start": 17,
+         "end": 20,
+         "span_precision": "exact"
+        }
+       },
+       "body_hash": "sha256:409ad5cbd18ea5dc",
+       "signatures": [
+        {
+         "params": [
+          {
+           "name": "order"
+          }
+         ],
+         "visibility": "public",
+         "fields": [
+          "annotations",
+          "async",
+          "decorators",
+          "defaults",
+          "generator",
+          "parameter_kinds",
+          "parameters",
+          "returns"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "gaps": []
+  }
+ ],
+ "summary": {
+  "requests": 1,
+  "symbols": 1,
+  "gaps": 0
+ },
+ "run_id": "daodan-lite-20261107-2"
+}

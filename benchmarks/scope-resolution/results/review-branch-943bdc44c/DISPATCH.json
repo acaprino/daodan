@@ -1,0 +1,1 @@
+{"roles": ["senior-review:code-auditor", "senior-review:premise-auditor"], "critic": false, "jobs": ["job-01"], "note": "premise-auditor only as support (Lens 0) if eligible; lenses 1-3 via host isolated-worker binding (general-purpose)"}

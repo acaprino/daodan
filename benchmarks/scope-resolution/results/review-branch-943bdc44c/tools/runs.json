@@ -1,0 +1,298 @@
+{
+ "runs": [
+  {
+   "run_id": "daodan-lite-20261107",
+   "project_root": "D:/Projects/daodan",
+   "state": {
+    "completed_at": "2026-11-07T10:47:08Z",
+    "completed_phases": [
+     0,
+     1,
+     2,
+     5,
+     7
+    ],
+    "current_phase": 7,
+    "delivery": {
+     "artifacts": {
+      "01-structure.md": {
+       "phase": 1,
+       "status": "produced"
+      },
+      "02-interfaces.md": {
+       "phase": 2,
+       "status": "produced"
+      },
+      "03-flows.md": {
+       "phase": 3,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "04-semantics.md": {
+       "phase": 4,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "05-risks.md": {
+       "phase": 5,
+       "status": "produced"
+      },
+      "06-documentation.md": {
+       "phase": 6,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "07-final-report.md": {
+       "phase": 7,
+       "status": "produced"
+      },
+      "08-interconnect-map.md": {
+       "phase": 8,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "knowledge/": {
+       "phase": 0,
+       "status": "produced"
+      }
+     },
+     "binding": {
+      "incremental": false,
+      "parent_phases": null,
+      "parent_run": null,
+      "project": "D:/Projects/daodan",
+      "target": "."
+     },
+     "flags": {
+      "comments": false,
+      "critical": false,
+      "depth": "lite",
+      "docs_only": false,
+      "phase": null,
+      "skip_interconnect": false,
+      "skip_synthesis": false
+     },
+     "mode": "classic",
+     "resume_from": null,
+     "run_phases": [
+      0,
+      1,
+      2,
+      5,
+      7
+     ],
+     "schema": 1,
+     "stop_after": null
+    },
+    "files_created": [
+     "knowledge/navigation.md",
+     "knowledge/documentation-leads.md",
+     "01-structure.md",
+     "02-interfaces.md",
+     "05-risks.md",
+     "07-final-report.md"
+    ],
+    "flags": {
+     "comments": false,
+     "critical": false,
+     "depth": "lite",
+     "docs_only": false,
+     "phase": null
+    },
+    "git": {
+     "branch": "main",
+     "commit": "cb85772320af",
+     "dirty": true
+    },
+    "incremental": null,
+    "mode": "classic",
+    "parent_run": null,
+    "reading_ledger": {
+     "configuration_documentation": 221,
+     "inventory_files": 336,
+     "ledgers": [
+      "01-structure.md",
+      "02-interfaces.md",
+      "05-risks.md"
+     ],
+     "parsed_source": 115,
+     "presentation": 0,
+     "read_in_depth": 45,
+     "read_in_depth_other": 21,
+     "read_in_depth_python": 24,
+     "runtime": "none"
+    },
+    "run_id": "daodan-lite-20261107",
+    "snapshot": {
+     "format": "sqlite",
+     "path": "snapshot/manifest.sqlite",
+     "storage_version": 1
+    },
+    "started_at": "2026-11-07T10:08:00Z",
+    "status": "complete",
+    "target": ".",
+    "updated_at": "2026-11-07T10:28:28Z"
+   },
+   "check": {
+    "missing": [],
+    "empty": [],
+    "unexpected": [],
+    "invalid_inherited": [],
+    "stale": [],
+    "undocumented_added": [],
+    "not_yet_produced": [],
+    "coverage_gaps": [],
+    "first_incomplete_phase": null,
+    "run_id": "daodan-lite-20261107",
+    "mode": "classic",
+    "invocation_complete": true,
+    "complete": true,
+    "may_publish": true
+   },
+   "source_available": true,
+   "readable": true
+  },
+  {
+   "run_id": "daodan-lite-20261107-2",
+   "project_root": "D:/Projects/daodan",
+   "state": {
+    "completed_at": "2026-11-07T12:21:08Z",
+    "completed_phases": [
+     0,
+     1,
+     2,
+     5,
+     7
+    ],
+    "current_phase": 7,
+    "delivery": {
+     "artifacts": {
+      "01-structure.md": {
+       "phase": 1,
+       "status": "produced"
+      },
+      "02-interfaces.md": {
+       "phase": 2,
+       "status": "produced"
+      },
+      "03-flows.md": {
+       "phase": 3,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "04-semantics.md": {
+       "phase": 4,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "05-risks.md": {
+       "phase": 5,
+       "status": "produced"
+      },
+      "06-documentation.md": {
+       "phase": 6,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "07-final-report.md": {
+       "phase": 7,
+       "status": "produced"
+      },
+      "08-interconnect-map.md": {
+       "phase": 8,
+       "reason": "not selected by the run's mode and flags",
+       "status": "skipped"
+      },
+      "knowledge/": {
+       "phase": 0,
+       "status": "produced"
+      }
+     },
+     "binding": {
+      "incremental": false,
+      "parent_phases": null,
+      "parent_run": null,
+      "project": "D:/Projects/daodan",
+      "target": "."
+     },
+     "flags": {
+      "comments": false,
+      "critical": false,
+      "depth": "lite",
+      "docs_only": false,
+      "phase": null,
+      "skip_interconnect": false,
+      "skip_synthesis": false
+     },
+     "mode": "classic",
+     "resume_from": null,
+     "run_phases": [
+      0,
+      1,
+      2,
+      5,
+      7
+     ],
+     "schema": 1,
+     "stop_after": null
+    },
+    "files_created": [
+     "knowledge/navigation.md",
+     "knowledge/documentation-leads.md",
+     "01-structure.md",
+     "02-interfaces.md",
+     "05-risks.md",
+     "07-final-report.md"
+    ],
+    "flags": {
+     "comments": false,
+     "critical": false,
+     "depth": "lite",
+     "docs_only": false,
+     "phase": null
+    },
+    "git": {
+     "branch": "main",
+     "commit": "7bd0ff186c50",
+     "dirty": true
+    },
+    "incremental": null,
+    "mode": "classic",
+    "parent_run": null,
+    "run_id": "daodan-lite-20261107-2",
+    "snapshot": {
+     "format": "sqlite",
+     "path": "snapshot/manifest.sqlite",
+     "storage_version": 1
+    },
+    "started_at": "2026-11-07T11:58:28Z",
+    "status": "complete",
+    "target": ".",
+    "updated_at": "2026-11-07T12:20:01Z"
+   },
+   "check": {
+    "missing": [],
+    "empty": [],
+    "unexpected": [],
+    "invalid_inherited": [],
+    "stale": [],
+    "undocumented_added": [],
+    "not_yet_produced": [],
+    "coverage_gaps": [],
+    "first_incomplete_phase": null,
+    "run_id": "daodan-lite-20261107-2",
+    "mode": "classic",
+    "invocation_complete": true,
+    "complete": true,
+    "may_publish": true
+   },
+   "source_available": true,
+   "readable": true
+  }
+ ],
+ "registry": {
+  "active": [],
+  "latest_completed": "daodan-lite-20261107-2",
+  "schema": 2
+ }
+}

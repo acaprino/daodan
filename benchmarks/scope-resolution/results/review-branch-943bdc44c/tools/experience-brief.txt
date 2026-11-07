@@ -1,0 +1,2 @@
+{"facts": 0, "gaps": ["no discovery job in the prepared roster"]}
+exit=0

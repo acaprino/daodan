@@ -1,0 +1,229 @@
+{
+ "schema": "daodan/module-query/v1",
+ "query": "orders",
+ "status": "resolved",
+ "reason": "one confirmed module matches the name",
+ "candidates": [
+  {
+   "id": "orders",
+   "name": "orders",
+   "aliases": [],
+   "provenance": "build",
+   "kind": "workspace-member",
+   "description": null,
+   "responsibility": "",
+   "status": "confirmed",
+   "paths": [
+    "benchmarks/scope-resolution/app/packages/orders"
+   ],
+   "excluded": [],
+   "files": [
+    "benchmarks/scope-resolution/app/packages/orders/__init__.py",
+    "benchmarks/scope-resolution/app/packages/orders/api.py",
+    "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+    "benchmarks/scope-resolution/app/packages/orders/inventory.py",
+    "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+    "benchmarks/scope-resolution/app/packages/orders/notifications.py",
+    "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+    "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+    "benchmarks/scope-resolution/app/packages/orders/service.py"
+   ],
+   "members": [
+    {
+     "id": "benchmarks/scope-resolution/app/packages/orders",
+     "kind": "directory",
+     "path": "benchmarks/scope-resolution/app/packages/orders",
+     "resolved": true
+    }
+   ],
+   "manifests": [],
+   "evidence": [
+    {
+     "line": 7,
+     "path": "benchmarks/scope-resolution/app/pyproject.toml"
+    }
+   ],
+   "conflicts": [],
+   "gaps": [],
+   "coverage": {
+    "files": 9,
+    "members": 1,
+    "resolved": 1,
+    "source_files": 9
+   },
+   "match": "exact",
+   "relations": [
+    {
+     "kind": "contains",
+     "direction": "incoming",
+     "module": "orders-demo",
+     "status": "confirmed",
+     "evidence": [
+      {
+       "line": 7,
+       "path": "benchmarks/scope-resolution/app/pyproject.toml"
+      }
+     ],
+     "evidence_total": 1
+    }
+   ],
+   "read_scope": [
+    {
+     "module": "orders-demo",
+     "name": "orders-demo",
+     "relation": "contains",
+     "direction": "incoming",
+     "status": "confirmed",
+     "paths": [
+      "benchmarks/scope-resolution/app"
+     ],
+     "excluded": [
+      "benchmarks/scope-resolution/app/packages/orders",
+      "benchmarks/scope-resolution/app/packages/payments",
+      "benchmarks/scope-resolution/app/packages/shipping"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "orders-demo",
+   "name": "orders-demo",
+   "aliases": [
+    "app"
+   ],
+   "provenance": "build",
+   "kind": "uv-workspace",
+   "description": "Mini-app dimostrativa per il benchmark di scope resolution (solo stdlib).",
+   "responsibility": "",
+   "status": "confirmed",
+   "paths": [
+    "benchmarks/scope-resolution/app"
+   ],
+   "excluded": [
+    "benchmarks/scope-resolution/app/packages/orders",
+    "benchmarks/scope-resolution/app/packages/payments",
+    "benchmarks/scope-resolution/app/packages/shipping"
+   ],
+   "files": [
+    "benchmarks/scope-resolution/app/pyproject.toml"
+   ],
+   "members": [
+    {
+     "id": "benchmarks/scope-resolution/app",
+     "kind": "directory",
+     "path": "benchmarks/scope-resolution/app",
+     "resolved": true
+    }
+   ],
+   "manifests": [
+    "benchmarks/scope-resolution/app/pyproject.toml"
+   ],
+   "evidence": [
+    {
+     "line": 2,
+     "path": "benchmarks/scope-resolution/app/pyproject.toml"
+    }
+   ],
+   "conflicts": [],
+   "gaps": [],
+   "coverage": {
+    "files": 1,
+    "members": 1,
+    "resolved": 1,
+    "source_files": 0
+   },
+   "match": "partial",
+   "relations": [
+    {
+     "kind": "contains",
+     "direction": "outgoing",
+     "module": "orders",
+     "status": "confirmed",
+     "evidence": [
+      {
+       "line": 7,
+       "path": "benchmarks/scope-resolution/app/pyproject.toml"
+      }
+     ],
+     "evidence_total": 1
+    },
+    {
+     "kind": "contains",
+     "direction": "outgoing",
+     "module": "payments",
+     "status": "confirmed",
+     "evidence": [
+      {
+       "line": 7,
+       "path": "benchmarks/scope-resolution/app/pyproject.toml"
+      }
+     ],
+     "evidence_total": 1
+    },
+    {
+     "kind": "contains",
+     "direction": "outgoing",
+     "module": "shipping",
+     "status": "confirmed",
+     "evidence": [
+      {
+       "line": 7,
+       "path": "benchmarks/scope-resolution/app/pyproject.toml"
+      }
+     ],
+     "evidence_total": 1
+    }
+   ],
+   "read_scope": [
+    {
+     "module": "orders",
+     "name": "orders",
+     "relation": "contains",
+     "direction": "outgoing",
+     "status": "confirmed",
+     "paths": [
+      "benchmarks/scope-resolution/app/packages/orders"
+     ],
+     "excluded": []
+    },
+    {
+     "module": "payments",
+     "name": "payments",
+     "relation": "contains",
+     "direction": "outgoing",
+     "status": "confirmed",
+     "paths": [
+      "benchmarks/scope-resolution/app/packages/payments"
+     ],
+     "excluded": []
+    },
+    {
+     "module": "shipping",
+     "name": "shipping",
+     "relation": "contains",
+     "direction": "outgoing",
+     "status": "confirmed",
+     "paths": [
+      "benchmarks/scope-resolution/app/packages/shipping"
+     ],
+     "excluded": []
+    }
+   ]
+  }
+ ],
+ "total_matches": 2,
+ "gaps": [],
+ "graph_state": "fresh",
+ "binding": {
+  "git": {
+   "branch": "main",
+   "commit": "7bd0ff186c50",
+   "dirty": true
+  },
+  "logical_digest": "c6fca2559e534ea93da9fc26911722d2bca1892c6289f06424714ddf5cbda1cc",
+  "manifest": "D:\\Projects\\daodan\\.codebase-map\\runs\\daodan-lite-20261107-2\\snapshot\\manifest.sqlite",
+  "root": "D:/Projects/daodan",
+  "target": "."
+ },
+ "run_id": "daodan-lite-20261107-2"
+}

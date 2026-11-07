@@ -1,0 +1,10 @@
+{
+  "candidate": {
+    "commit": "943bdc44c66dfd9782f6d38c82922a1f08783653",
+    "note": "no Codebase Map snapshot of the candidate exists; starting one is not authorized",
+    "worktree": "D:/Projects/daodan/.claude/worktrees/bench-branch-943bdc44c"
+  },
+  "knowledge_selection": "af96a6fdd282cd2ad38586a7a9c30fafbe748ec8f0df4238c5dbd5cf0a38a97c",
+  "output_dir": "D:/Projects/horness-launcher/sidecar/runs/musashi-terminal-21468-15616718-0-134385288314645589-0/tmp/claude/97ac78b7f1ca461f/ffc3cc44-fa2a-4b57-a36e-c0ffb6e3d931/scratchpad/review-branch-943bdc44c/jobs",
+  "input_mode": "independent"
+}

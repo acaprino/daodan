@@ -1,0 +1,77 @@
+{
+ "schema": "xray/source-reading/v1",
+ "root": "D:/Projects/daodan",
+ "target": ".",
+ "scope": {
+  "git_ignore": "applied",
+  "skipped": {
+   "dot_directories": [
+    ".claude",
+    ".claude-plugin",
+    ".daodan",
+    ".jcode",
+    ".pytest_cache",
+    ".ruff_cache",
+    "plugins/codebase-map/.claude-plugin",
+    "plugins/codebase-map/skills/map-method/scripts/.pytest_cache",
+    "plugins/codebase-map/skills/map-method/scripts/.ruff_cache",
+    "plugins/senior-review/.claude-plugin"
+   ],
+   "git_ignored": 1
+  }
+ },
+ "inventory": {
+  "files": 339,
+  "schema": 1,
+  "created_at": "2026-11-07T11:59:11Z",
+  "parser_fingerprint": "bbbd90a8a20505e5aef2b7f904e595d77562d6d5666db144b711ab759229c9e8"
+ },
+ "files": [
+  {
+   "path": "benchmarks/scope-resolution/app/packages/orders/service.py",
+   "raw_hash": "3d75edaff842000b52172199afeefdf722b2bf0f024bd1eb741e4685fdb4c5a3",
+   "hash": "sha256:3d75edaff842000b",
+   "status": "parsed",
+   "parser_profile": {
+    "language": "python",
+    "backend": "stdlib-ast"
+   },
+   "parser_notes": [
+    "parser=stdlib-ast"
+   ],
+   "notes": [],
+   "blocks": [
+    {
+     "start": 1,
+     "end": 12,
+     "reason": "context-and-selection",
+     "source": "1: \"\"\"Servizio ordini: orchestrazione checkout e richieste di rimborso.\n2: \n3: Ogni totale include l'IVA (VAT). La pipeline di validazione è\n4: configurabile: il costruttore accetta una classe alternativa.\n5: Il default esegue una sola fase.\n6: \"\"\"\n7: from . import inventory, ledger, notifications, pricing\n8: \n9: \n10: class DefaultPipeline:\n11:     \"\"\"Pipeline di validazione di default (una sola fase).\"\"\"\n12: \n"
+    },
+    {
+     "start": 16,
+     "end": 18,
+     "reason": "context-and-selection",
+     "source": "16: \n17: \n18: class OrderService:\n"
+    },
+    {
+     "start": 22,
+     "end": 31,
+     "reason": "context-and-selection",
+     "source": "22: \n23:     def checkout(self, order):\n24:         \"\"\"Percorso completo: scorte, totale con IVA (VAT), ledger, notifica.\"\"\"\n25:         inventory.reserve_stock(order[\"sku\"], order[\"qty\"])\n26:         total = pricing.compute_total(order)\n27:         self._pipeline.step(order)\n28:         ledger.record(order, total)\n29:         notifications.send_via(order.get(\"channel\", \"email_receipt\"), order)\n30:         return total\n31: \n"
+    },
+    {
+     "start": 35,
+     "end": 35,
+     "reason": "context-and-selection",
+     "source": "35: \n"
+    }
+   ]
+  }
+ ],
+ "metrics": {
+  "source_bytes_read": 1191,
+  "source_lines_emitted": 26,
+  "source_characters_emitted": 786
+ },
+ "run_id": "daodan-lite-20261107-2"
+}

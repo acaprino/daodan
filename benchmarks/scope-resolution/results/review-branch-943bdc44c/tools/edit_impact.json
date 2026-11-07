@@ -1,0 +1,334 @@
+{
+ "schema": "daodan/edit-impact/v2",
+ "edge_view": {
+  "schema": "daodan/edge-view/v1",
+  "version": 1,
+  "profile": {
+   "lexical_resolver": "builtin-lexical",
+   "engine": null,
+   "engine_available": false,
+   "engine_store": null
+  },
+  "coverage": {
+   "status": "missing_store",
+   "sampled": false,
+   "population": 0,
+   "selected": 0,
+   "asked": 0,
+   "stride": 1,
+   "confirmed": 0,
+   "candidates": 0,
+   "no_edges_reason": null
+  },
+  "gaps": [],
+  "candidates": {
+   "items": [],
+   "total": 0,
+   "truncated": 0
+  },
+  "conflicts": {
+   "items": [],
+   "total": 0,
+   "truncated": 0
+  }
+ },
+ "freshness_basis": "lexical",
+ "root": "D:/Projects/daodan",
+ "target": ".",
+ "targets": [
+  {
+   "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total",
+   "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+   "name": "compute_total",
+   "kind": "function",
+   "start": 17,
+   "end": 20,
+   "body_hash": "sha256:409ad5cbd18ea5dc",
+   "interface_hash": "v2:de7d91eea8a9e6a6",
+   "effects_hash": "93bdcf484e440d98",
+   "signatures": [
+    {
+     "params": [
+      {
+       "name": "order"
+      }
+     ],
+     "visibility": "public",
+     "fields": [
+      "annotations",
+      "async",
+      "decorators",
+      "defaults",
+      "generator",
+      "parameter_kinds",
+      "parameters",
+      "returns"
+     ]
+    }
+   ],
+   "card": null,
+   "callers": {
+    "total": 1,
+    "listed": [
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService.checkout",
+      "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "name": "OrderService.checkout",
+      "kind": "method",
+      "start": 23,
+      "end": 30,
+      "body_hash": "sha256:88dfc51b0305bf43",
+      "interface_hash": "v2:b5790d4e25e95c83",
+      "effects_hash": "899d8d5cb5b8587f",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "self"
+         },
+         {
+          "name": "order"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+          "kind": "call",
+          "start_line": 26,
+          "start_column": 16,
+          "end_line": 26,
+          "end_column": 37,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     }
+    ]
+   },
+   "callees": {
+    "total": 2,
+    "listed": [
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_discount",
+      "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "name": "compute_discount",
+      "kind": "function",
+      "start": 11,
+      "end": 14,
+      "body_hash": "sha256:3427f7ab0d3ca287",
+      "interface_hash": "v2:e8ac1ab5410ca6c1",
+      "effects_hash": "1291906b41f68f32",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "order"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "kind": "call",
+          "start_line": 19,
+          "start_column": 32,
+          "end_line": 19,
+          "end_column": 48,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     },
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::vat_amount",
+      "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "name": "vat_amount",
+      "kind": "function",
+      "start": 6,
+      "end": 8,
+      "body_hash": "sha256:b342abfdaec52234",
+      "interface_hash": "v2:e2f010193b6de251",
+      "effects_hash": "b5d61aea8282017f",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "net"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+          "kind": "call",
+          "start_line": 20,
+          "start_column": 23,
+          "end_line": 20,
+          "end_column": 33,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     }
+    ]
+   },
+   "blind_spots": {
+    "total": 1,
+    "listed": [
+     {
+      "name": "order.get",
+      "reason": "unknown-receiver",
+      "count": 1
+     }
+    ],
+    "unbound_names": 1
+   },
+   "l4": {
+    "related_tests": [],
+    "related_tests_total": 0,
+    "obligations": [
+     {
+      "kind": "inspect-callers",
+      "count": 1
+     },
+     {
+      "kind": "inspect-callees",
+      "count": 2
+     },
+     {
+      "kind": "resolve-blind-spots",
+      "count": 1
+     }
+    ],
+    "do_not_touch": {
+     "status": "unavailable",
+     "reason": "requires a base/candidate fingerprint delta; use stale-callers",
+     "symbols": []
+    }
+   },
+   "recent_changes": []
+  }
+ ],
+ "unknown_targets": [],
+ "truncated_targets": 0,
+ "disclosure": {
+  "L0": "source: verified target source, when requested",
+  "L1": "targets[].callers and targets[].callees: signatures, cards and reference sites",
+  "L2": "targets[].second_hop: signatures and structural summaries, when hops=2",
+  "L3": "targets[].slice: lazy Python backward slice, when requested",
+  "L4": "targets[].l4: related tests, obligations and DO NOT TOUCH status"
+ },
+ "source": {
+  "files": [
+   {
+    "path": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+    "status": "parsed",
+    "notes": [],
+    "blocks": [
+     {
+      "start": 1,
+      "end": 5,
+      "reason": "context-and-selection",
+      "source": "1: \"\"\"Prezzi: totale ordine, sconto cliente e IVA (VAT).\"\"\"\n2: \n3: VAT_RATE = 0.22  # aliquota IVA ordinaria\n4: \n5: \n"
+     },
+     {
+      "start": 9,
+      "end": 10,
+      "reason": "context-and-selection",
+      "source": "9: \n10: \n"
+     },
+     {
+      "start": 15,
+      "end": 21,
+      "reason": "context-and-selection",
+      "source": "15: \n16: \n17: def compute_total(order):\n18:     \"\"\"Totale ordine: netto - sconto cliente + IVA (VAT).\"\"\"\n19:     net = order.get(\"net\", 0) - compute_discount(order)\n20:     return round(net + vat_amount(net), 2)\n21: \n"
+     }
+    ]
+   }
+  ],
+  "metrics": {
+   "source_bytes_read": 589,
+   "source_lines_emitted": 14,
+   "source_characters_emitted": 293
+  }
+ },
+ "budget": {
+  "max_chars": 120000,
+  "final_bytes": 5251,
+  "exceeded": false,
+  "second_hop_omitted": 0,
+  "neighbor_source_omitted": 0
+ },
+ "bytes": 5368,
+ "run_id": "daodan-lite-20261107-2"
+}

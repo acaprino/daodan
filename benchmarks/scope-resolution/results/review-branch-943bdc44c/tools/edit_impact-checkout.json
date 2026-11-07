@@ -1,0 +1,363 @@
+{
+ "schema": "daodan/edit-impact/v2",
+ "edge_view": {
+  "schema": "daodan/edge-view/v1",
+  "version": 1,
+  "profile": {
+   "lexical_resolver": "builtin-lexical",
+   "engine": null,
+   "engine_available": false,
+   "engine_store": null
+  },
+  "coverage": {
+   "status": "missing_store",
+   "sampled": false,
+   "population": 0,
+   "selected": 0,
+   "asked": 0,
+   "stride": 1,
+   "confirmed": 0,
+   "candidates": 0,
+   "no_edges_reason": null
+  },
+  "gaps": [],
+  "candidates": {
+   "items": [],
+   "total": 0,
+   "truncated": 0
+  },
+  "conflicts": {
+   "items": [],
+   "total": 0,
+   "truncated": 0
+  }
+ },
+ "freshness_basis": "lexical",
+ "root": "D:/Projects/daodan",
+ "target": ".",
+ "targets": [
+  {
+   "symbol_id": "benchmarks/scope-resolution/app/packages/orders/service.py::OrderService.checkout",
+   "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+   "name": "OrderService.checkout",
+   "kind": "method",
+   "start": 23,
+   "end": 30,
+   "body_hash": "sha256:88dfc51b0305bf43",
+   "interface_hash": "v2:b5790d4e25e95c83",
+   "effects_hash": "899d8d5cb5b8587f",
+   "signatures": [
+    {
+     "params": [
+      {
+       "name": "self"
+      },
+      {
+       "name": "order"
+      }
+     ],
+     "visibility": "public",
+     "fields": [
+      "annotations",
+      "async",
+      "decorators",
+      "defaults",
+      "generator",
+      "parameter_kinds",
+      "parameters",
+      "returns"
+     ]
+    }
+   ],
+   "card": null,
+   "callers": {
+    "total": 0,
+    "listed": []
+   },
+   "callees": {
+    "total": 4,
+    "listed": [
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/inventory.py::reserve_stock",
+      "file": "benchmarks/scope-resolution/app/packages/orders/inventory.py",
+      "name": "reserve_stock",
+      "kind": "function",
+      "start": 17,
+      "end": 24,
+      "body_hash": "sha256:60a890942deef42a",
+      "interface_hash": "v2:0ecc15f846125bd0",
+      "effects_hash": "60e0396fa19a226c",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "sku"
+         },
+         {
+          "name": "qty"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+          "kind": "call",
+          "start_line": 25,
+          "start_column": 8,
+          "end_line": 25,
+          "end_column": 31,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     },
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/ledger.py::record",
+      "file": "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+      "name": "record",
+      "kind": "function",
+      "start": 13,
+      "end": 22,
+      "body_hash": "sha256:4e1347c7133eeb4e",
+      "interface_hash": "v2:42c6616a9517b143",
+      "effects_hash": "4e6004ffe31c7b24",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "order"
+         },
+         {
+          "name": "total"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+          "kind": "call",
+          "start_line": 28,
+          "start_column": 8,
+          "end_line": 28,
+          "end_column": 21,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     },
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/notifications.py::send_via",
+      "file": "benchmarks/scope-resolution/app/packages/orders/notifications.py",
+      "name": "send_via",
+      "kind": "function",
+      "start": 18,
+      "end": 21,
+      "body_hash": "sha256:8b45689d0bdf2d34",
+      "interface_hash": "v2:c69598c9884a7272",
+      "effects_hash": "515f7caaad16e8bb",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "channel"
+         },
+         {
+          "name": "order"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+          "kind": "call",
+          "start_line": 29,
+          "start_column": 8,
+          "end_line": 29,
+          "end_column": 30,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     },
+     {
+      "symbol_id": "benchmarks/scope-resolution/app/packages/orders/pricing.py::compute_total",
+      "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "name": "compute_total",
+      "kind": "function",
+      "start": 17,
+      "end": 20,
+      "body_hash": "sha256:409ad5cbd18ea5dc",
+      "interface_hash": "v2:de7d91eea8a9e6a6",
+      "effects_hash": "93bdcf484e440d98",
+      "signatures": [
+       {
+        "params": [
+         {
+          "name": "order"
+         }
+        ],
+        "visibility": "public",
+        "fields": [
+         "annotations",
+         "async",
+         "decorators",
+         "defaults",
+         "generator",
+         "parameter_kinds",
+         "parameters",
+         "returns"
+        ]
+       }
+      ],
+      "references": 1,
+      "edges": [
+       {
+        "kind": "call",
+        "count": 1,
+        "sites": [
+         {
+          "file": "benchmarks/scope-resolution/app/packages/orders/service.py",
+          "kind": "call",
+          "start_line": 26,
+          "start_column": 16,
+          "end_line": 26,
+          "end_column": 37,
+          "resolver": "builtin-lexical",
+          "provenance": [
+           "builtin-lexical"
+          ],
+          "target_kind": "concrete"
+         }
+        ]
+       }
+      ],
+      "card": null
+     }
+    ]
+   },
+   "blind_spots": {
+    "total": 2,
+    "listed": [
+     {
+      "name": "order.get",
+      "reason": "unknown-receiver",
+      "count": 1
+     },
+     {
+      "name": "self._pipeline.step",
+      "reason": "unknown-receiver",
+      "count": 1
+     }
+    ],
+    "unbound_names": 0
+   },
+   "l4": {
+    "related_tests": [],
+    "related_tests_total": 0,
+    "obligations": [
+     {
+      "kind": "inspect-callees",
+      "count": 4
+     },
+     {
+      "kind": "resolve-blind-spots",
+      "count": 2
+     }
+    ],
+    "do_not_touch": {
+     "status": "unavailable",
+     "reason": "requires a base/candidate fingerprint delta; use stale-callers",
+     "symbols": []
+    }
+   },
+   "recent_changes": []
+  }
+ ],
+ "unknown_targets": [],
+ "truncated_targets": 0,
+ "disclosure": {
+  "L0": "source: verified target source, when requested",
+  "L1": "targets[].callers and targets[].callees: signatures, cards and reference sites",
+  "L2": "targets[].second_hop: signatures and structural summaries, when hops=2",
+  "L3": "targets[].slice: lazy Python backward slice, when requested",
+  "L4": "targets[].l4: related tests, obligations and DO NOT TOUCH status"
+ },
+ "budget": {
+  "max_chars": 120000,
+  "final_bytes": 5345,
+  "exceeded": false,
+  "second_hop_omitted": 0,
+  "neighbor_source_omitted": 0
+ },
+ "bytes": 5462,
+ "run_id": "daodan-lite-20261107-2"
+}
