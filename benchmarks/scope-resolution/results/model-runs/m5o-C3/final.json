@@ -1,0 +1,29 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Evidenza sufficiente: un solo modulo confermato con il nome richiesto, due file, e le ricerche per nome e sinonimo non trovano copie fuori dal modulo; limite di 6 query raggiunto.",
+  "perimeter": [
+    {
+      "path": "packages/shipping/rates.py",
+      "why": "Elencato da codebase_map_modules per il modulo shipping; riga 1 'Tariffe di spedizione e sconto volume'; simboli shipping_rate (9-12), volume_discount (15-21), quote (24-27)."
+    },
+    {
+      "path": "packages/shipping/__init__.py",
+      "why": "Elencato da codebase_map_modules per il modulo shipping; contiene solo la riga 1 vuota, nessun codice né riesportazione. Incluso per mia scelta perché appartiene al modulo nominato."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/pricing.py",
+      "why": "Modulo orders, non shipping. Compare nella ricerca di volume_discount solo per la parola discount: compute_discount (riga 12) è lo sconto fedeltà cliente, non una copia dello sconto volume. VAT_RATE (riga 3) può servire come contesto per la nota IVA in rates.py riga 3, ma non è oggetto della revisione."
+    }
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/shipping/rates.py::shipping_rate", "callee": "ZONES.get", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::shipping_rate", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::shipping_rate", "callee": "max", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::quote", "callee": "round", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": []
+}

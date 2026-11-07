@@ -1,0 +1,22 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Il nome 'shipping' corrisponde a un solo modulo con due file; il codice sta in rates.py, il grafo non mostra altri file con cui legarlo e non restano piste nel modulo.",
+  "perimeter": [
+    {"path": "packages/shipping/rates.py", "why": "Contiene i tre simboli del modulo: shipping_rate (righe 9-12), volume_discount (righe 15-21) e quote (righe 24-27); quote chiama shipping_rate e volume_discount (archi risolti dal grafo, righe 24 -> 9 e 24 -> 15)."}
+  ],
+  "exclusions": [
+    {"path": "packages/shipping/__init__.py", "why": "Il file contiene solo una riga vuota (read, riga 1); nessun simbolo nell'outline e nessuna logica o re-export da rivedere."}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/shipping/rates.py::shipping_rate", "callee": "ZONES.get", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::shipping_rate", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::shipping_rate", "callee": "max", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::quote", "callee": "round", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Consumatori del modulo fuori da packages/shipping: il grafo riporta imports vuoti per rates.py e non li ho cercati; il grafo non vede link dinamici o copie.",
+    "ZONES: non compare nell'outline di rates.py (che elenca solo funzioni); non ho letto il punto in cui è definito, quindi non lo confermo come simbolo del modulo."
+  ]
+}

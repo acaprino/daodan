@@ -1,0 +1,36 @@
+{
+ "session": "m5h-C8",
+ "case": "C8",
+ "outcome": "partial",
+ "stop_reason": "I punti con aliquota sono stati letti, ma la ricerca VAT e troncata (20 di 130 risultati) e big_module.py non e stata verificata funzione per funzione: l'insieme completo non e confermato.",
+ "metrics": {
+  "perimeter": 4,
+  "required": 2,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+   "benchmarks/scope-resolution/app/packages/shipping/rates.py"
+  ],
+  "no_evidence": [],
+  "precision": 0.5,
+  "recall": 1.0,
+  "queries": 7,
+  "reads": 5
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (I punti con aliquota sono stati letti, ma la ricerca VAT e troncata (20 di 130 risultati) e big_module.py non e stata verificata funzione per funzione: l'insieme completo non e confermato.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 7/6, letture 5/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/service.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

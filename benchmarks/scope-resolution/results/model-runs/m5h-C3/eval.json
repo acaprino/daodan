@@ -1,0 +1,23 @@
+{
+ "session": "m5h-C3",
+ "case": "C3",
+ "outcome": "resolved",
+ "stop_reason": "Il nome 'shipping' corrisponde a un solo modulo con due file; il codice sta in rates.py, il grafo non mostra altri file con cui legarlo e non restano piste nel modulo.",
+ "metrics": {
+  "perimeter": 1,
+  "required": 1,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 4,
+  "reads": 1
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

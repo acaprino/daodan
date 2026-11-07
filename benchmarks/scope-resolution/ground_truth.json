@@ -1,0 +1,137 @@
+{
+  "C1": {
+    "intent": "Rivedi packages/orders/pricing.py: modifica dello sconto cliente.",
+    "anchors": [
+      "packages/orders/pricing.py"
+    ],
+    "outcome": "resolved",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py"
+    ],
+    "forbidden": [
+      "benchmarks/scope-resolution/app/packages/orders/reporting.py"
+    ],
+    "rationale": "Path con modifica («modifica dello sconto cliente»): il file è un punto di partenza, non un limite. compute_discount (pricing.py:11) è chiamata da compute_total (pricing.py:19), chiamata da OrderService.checkout (service.py:26): service.py dipende dalla modifica ed entra. reporting.py usa solo pricing.VAT_RATE (reporting.py:11): non dipende dallo sconto, quindi è vietato. Attesa decisa dall'utente il 2026-11-07."
+  },
+  "C2": {
+    "intent": "In produzione il dispatch dell'evento di pagamento ha sollevato KeyError: 'pay_online'. Rivedi la registrazione degli eventi e l'addebito online.",
+    "anchors": [
+      "pay_online",
+      "KeyError",
+      "registrazione eventi"
+    ],
+    "outcome": "resolved",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/payments/gateway.py"
+    ],
+    "forbidden": [],
+    "rationale": "Il letterale 'pay_online' è in gateway.py:8, :19, :26 (funzione, REGISTRY, alias handler). Il KeyError nasce in Dispatcher._invoke (api.py:26), che legge EVENT_REGISTRY, e register_defaults non registra quell'evento. La richiesta nomina sia la registrazione degli eventi (api.py) sia l'addebito online (gateway.py)."
+  },
+  "C3": {
+    "intent": "Rivedi il modulo shipping.",
+    "anchors": [
+      "shipping"
+    ],
+    "outcome": "resolved",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/shipping/rates.py"
+    ],
+    "forbidden": [],
+    "rationale": "modules(query='shipping') restituisce status resolved con i file membri (results/probe-graph.md). Required: solo rates.py, perché __init__.py è vuoto e includerlo è neutro. Corretto dopo la prima sessione col modello (finding 27)."
+  },
+  "C3b": {
+    "intent": "Feature rimborsi: come è calcolato lo storno dell'IVA sui rimborsi emessi?",
+    "anchors": [
+      "rimborsi",
+      "refund",
+      "storno IVA"
+    ],
+    "outcome": "resolved",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/payments/refunds.py"
+    ],
+    "forbidden": [],
+    "rationale": "refunds.py contiene 'rimborsi' (docstring righe 1-6), issue_refund (refunds.py:15) e vat_portion (refunds.py:10). Altre occorrenze di 'refund' (service.py refund_request, ledger.py record_refund) sono prenotazione e scrittura contabile, non calcolo dello storno: permesse ma non richieste."
+  },
+  "C4": {
+    "intent": "C'è un bug nello sconto: rivedi lo sconto.",
+    "anchors": [
+      "sconto",
+      "discount"
+    ],
+    "outcome": "clarify",
+    "required": [],
+    "forbidden": [],
+    "rationale": "Due target materialmente diversi per lo stesso termine: sconto cliente (pricing.py:11) e sconto volume (rates.py:15). La spec: 'Se restano due target materialmente diversi, chiede quale rivedere'; l'intent non dà segnali disambiguanti. Schema dei candidati e stringa stop_reason sono convenzioni del benchmark.",
+    "candidates": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/shipping/rates.py"
+    ]
+  },
+  "C5": {
+    "intent": "Rivedi la catena del checkout: come arriva il totale ordine dalla callback registrata in api fino alla scrittura a ledger?",
+    "anchors": [
+      "checkout",
+      "ledger",
+      "totale ordine"
+    ],
+    "outcome": "resolved",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/orders/api.py",
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/orders/ledger.py"
+    ],
+    "forbidden": [
+      "benchmarks/scope-resolution/app/packages/orders/reporting.py"
+    ],
+    "rationale": "Catena: register_defaults registra on_event('checkout', service.checkout) (api.py:34-39), Dispatcher._invoke (api.py:25) instrada, OrderService.checkout (service.py:23) chiama pricing.compute_total e ledger.record (ledger.py:13); archi relativi confermati resolved dalla probe (results/probe-graph.md). reporting.py importa pricing solo per formattare l'header con pricing.VAT_RATE (reporting.py:6, :11): dipendenza accessoria fuori dal percorso comportamentale richiesto. Chiamate irrisolte non necessarie (handler callback, _pipeline.step, sender) non bloccano l'esito. La regola generale 'accessorio' non è decidibile dalla spec: annotata come spec gap, qui vale la fixture costruita."
+  },
+  "C6": {
+    "intent": "Rivedi come viene notificato il cliente dopo il checkout: quale funzione invia davvero sul canale configurato?",
+    "anchors": [
+      "notifica",
+      "send_via",
+      "canale"
+    ],
+    "outcome": "partial",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/orders/service.py",
+      "benchmarks/scope-resolution/app/packages/orders/notifications.py"
+    ],
+    "forbidden": [],
+    "rationale": "checkout chiama notifications.send_via (service.py:29); send_via legge il gestore da ORDER_NOTIFY_HANDLERS (os.environ) e lo carica con importlib: la destinazione non è nei sorgenti e sender(order) resta unresolved. La richiesta chiede proprio quale funzione invia, quindi l'esito è partial. Fixture corretta dopo la prima sessione col modello: la versione con globals() e due destinatari nello stesso file era confermabile per lettura (finding 26)."
+  },
+  "C7": {
+    "intent": "Elenca e rivedi i simboli di formattazione audit in packages/orders/big_module.py.",
+    "anchors": [
+      "packages/orders/big_module.py",
+      "format audit"
+    ],
+    "outcome": "resolved",
+    "required": [
+      "benchmarks/scope-resolution/app/packages/orders/big_module.py"
+    ],
+    "forbidden": [],
+    "rationale": "big_module.py ha 105 funzioni (2108 righe) ed è indicato esplicitamente: è il perimetro. L'outline al limit predefinito (100) è troncato, quindi non prova che l'elenco sia completo."
+  },
+  "C8": {
+    "intent": "Rivedi ogni punto che tocca l'IVA/VAT: per ciascuno verifica che l'aliquota sia allineata a pricing.VAT_RATE.",
+    "anchors": [
+      "IVA",
+      "VAT"
+    ],
+    "outcome": [
+      "resolved",
+      "partial"
+    ],
+    "required": [
+      "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "benchmarks/scope-resolution/app/packages/payments/refunds.py"
+    ],
+    "forbidden": [],
+    "rationale": "pricing.py definisce VAT_RATE (pricing.py:3); refunds.py ne ha una copia locale (refunds.py:7) che il grafo non collega: la trova la ricerca per nome e, riguardando il valore, entra. reporting.py usa pricing.VAT_RATE: ammesso, non richiesto. Valgono entrambi gli esiti: la richiesta dice «ogni punto» e la ricerca è troncata, quindi partial è onesto; resolved è difendibile se i file con IVA solo nei docstring non contano. Conta trovare la copia in refunds.py. Attesa allargata dopo aver visto le sessioni (partial in 5 su 7, m3-m6): non è un'attesa indipendente dal modello."
+  }
+}

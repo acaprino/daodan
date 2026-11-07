@@ -1,0 +1,28 @@
+{
+ "session": "m5o-C3b",
+ "case": "C3b",
+ "outcome": "resolved",
+ "stop_reason": "Evidenza sufficiente: l'unico calcolo della quota IVA sui rimborsi trovato è vat_portion, usato da issue_refund, e ho esaurito le 6 query del limite.",
+ "metrics": {
+  "perimeter": 1,
+  "required": 1,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 6,
+  "reads": 8
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/gateway.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

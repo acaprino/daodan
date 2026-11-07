@@ -1,0 +1,32 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Raggiunto il budget di circa 6 query: VAT_RATE è confermata in pricing.py, ma l'uso dell'aliquota non è letto nei file di perimetro e il valore 0.22 non è stato cercato.",
+  "perimeter": [
+    {"path": "packages/orders/pricing.py", "why": "riga 3 definisce VAT_RATE = 0.22 (riferimento); riga 8 vat_amount la usa; riga 20 compute_total somma l'IVA"},
+    {"path": "packages/orders/service.py", "why": "grafo a 1 hop: il simbolo a riga 23, dentro OrderService, chiama pricing.compute_total (totale con IVA)"},
+    {"path": "packages/payments/refunds.py", "why": "vat_portion (righe 10-12) ha nome IVA; issue_refund (righe 15-21) la chiama (grafo); aliquota non letta"},
+    {"path": "packages/orders/reporting.py", "why": "format_daily_summary (righe 9-15) compare tra i primi risultati di VAT_RATE; importa packages/orders/pricing.py (grafo); non letto"},
+    {"path": "packages/shipping/rates.py", "why": "quote (righe 24-27) è il primo risultato di VAT_RATE per punteggio; IVA solo da ricerca, non letto"},
+    {"path": "packages/orders/big_module.py", "why": "circa cento funzioni format_vat_entry_NNN (es. righe 90-108, format_vat_entry_004); non lette; sono la maggior parte dei 129 match di VAT"}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/ledger.py", "why": "solo match di file su VAT e IVA; nessun simbolo o riga con IVA; è chiamato da service.py ma non dimostrato per l'IVA"},
+    {"path": "packages/orders/inventory.py", "why": "solo match di file su IVA, senza simboli o righe IVA"},
+    {"path": "packages/orders/notifications.py", "why": "solo match di file su IVA, senza simboli o righe IVA"},
+    {"path": "packages/payments/gateway.py", "why": "solo match di file su IVA, senza simboli o righe IVA"},
+    {"path": "packages/orders/api.py", "why": "solo match di file su IVA; importa service.py senza simboli IVA"},
+    {"path": "packages/payments/__init__.py", "why": "solo match di file su VAT e IVA; file di due righe senza simboli"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/reporting.py::format_daily_summary", "callee": "?", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Non letto: se refunds.py, reporting.py, shipping/rates.py, service.py e big_module.py usano VAT_RATE o un'aliquota scritta a mano; serve lettura mirata delle righe.",
+    "Il valore 0.22 non è stato cercato: copie hardcoded dell'aliquota non sono ancora escluse.",
+    "Il grafo non vede link dinamici né copie: il legame con VAT_RATE per i file citati è per nome e non confermato.",
+    "La chiamata non risolta '?' dentro format_daily_summary non è stata identificata.",
+    "ledger.py resta da verificare: chiamato da service.py, ma senza IVA visto."
+  ]
+}

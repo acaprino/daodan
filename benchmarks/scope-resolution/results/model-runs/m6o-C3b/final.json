@@ -1,0 +1,56 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Evidenza sufficiente: l'unico calcolo dello storno IVA letto è vat_portion in refunds.py; mi sono fermato a 8 query e 8 letture, oltre le circa 6 query previste.",
+  "perimeter": [
+    {
+      "path": "packages/payments/refunds.py",
+      "why": "vat_portion riga 12: round(amount - amount / (1 + VAT_RATE), 2), con VAT_RATE = 0.22 alla riga 7; issue_refund riga 20 mette il risultato nella voce di rimborso emessa."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/ledger.py",
+      "why": "record_refund riga 30 scrive solo id e REFUND: nessun calcolo IVA, anche se il docstring alla riga 26 cita la quota IVA/VAT."
+    },
+    {
+      "path": "packages/orders/service.py",
+      "why": "OrderService.refund_request riga 34 delega a ledger.record_refund; non calcola nulla."
+    },
+    {
+      "path": "packages/orders/api.py",
+      "why": "register_defaults riga 38 registra solo il callback refund_request."
+    },
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "format_refund_entry_003 (righe 70-88) formatta i campi di audit e non calcola l'IVA; gli altri 8 format_refund_entry_* non sono stati aperti: stessa lunghezza e stesso punteggio di ricerca, quindi l'esclusione per loro è un'inferenza."
+    },
+    {
+      "path": "packages/orders/pricing.py",
+      "why": "vat_amount riga 8 calcola l'IVA dovuta sul netto, non lo storno; il grafo di refunds.py non mostra import da questo file."
+    },
+    {
+      "path": "packages/payments/__init__.py",
+      "why": "Contiene solo il docstring del pacchetto (riga 1)."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/payments/refunds.py::vat_portion",
+      "callee": "round",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/payments/refunds.py::issue_refund",
+      "callee": "order.get",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Chiamanti di issue_refund non confermati: il grafo a 1 hop mostra solo la chiamata interna a vat_portion, e impact non è stato lanciato su issue_refund; eventuali collegamenti dinamici non sono verificabili.",
+    "Il percorso ordini letto (refund_request -> record_refund) non raggiunge payments.refunds e non registra la quota IVA: va letto come contesto, non è nel perimetro.",
+    "VAT_RATE = 0.22 compare sia in refunds.py riga 7 sia in pricing.py riga 3: due costanti separate, non un riferimento condiviso.",
+    "La ricerca IVA ha 129 risultati, di cui 109 troncati; gli altri file emersi (reporting, gateway, shipping, notifications, inventory) non sono stati aperti e non compaiono nelle ricerche rimborsi, storno e refund."
+  ]
+}

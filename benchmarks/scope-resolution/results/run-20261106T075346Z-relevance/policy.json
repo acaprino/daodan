@@ -1,0 +1,58 @@
+{
+  "version": 2,
+  "max_queries": 6,
+  "max_reads": 10,
+  "top_files": 5,
+  "exhaustive_limit": 100,
+  "relevance": "anchor-in-read",
+  "exhaustive_words": [
+    "ogni",
+    "tutti",
+    "ciascuno",
+    "ognuno",
+    "ciascun",
+    "every",
+    "all"
+  ],
+  "behavior_words": [
+    "catena",
+    "come arriva",
+    "come viene",
+    "come si arriva",
+    "quale funzione",
+    "percorso",
+    "flusso",
+    "dispatch",
+    "chain",
+    "flow",
+    "path from"
+  ],
+  "required_dest_words": [
+    "quale funzione",
+    "chi esegue",
+    "chi invia",
+    "destinazione",
+    "davvero",
+    "effettivamente",
+    "which function",
+    "actually"
+  ],
+  "impact_words": [
+    "chi usa",
+    "impatto",
+    "importa",
+    "chi chiama",
+    "who uses",
+    "impact"
+  ],
+  "reword_lexicon": {
+    "sconto": "discount",
+    "discount": "sconto",
+    "rimborsi": "refund",
+    "refund": "rimborsi",
+    "notifica": "notification",
+    "canale": "channel",
+    "iva": "vat",
+    "vat": "iva"
+  }
+}

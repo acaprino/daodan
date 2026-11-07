@@ -1,0 +1,50 @@
+{
+ "session": "m6h-C2",
+ "case": "C2",
+ "outcome": "partial",
+ "stop_reason": "Superato il budget di circa 6 query (8 comandi di ricerca, grafo, outline e lettura); il chiamante che emette l'evento 'pay_online' verso Dispatcher.handle non e' confermato dalla mappa.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [
+   "benchmarks/scope-resolution/app/packages/payments/gateway.py"
+  ],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 7,
+  "reads": 1
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Superato il budget di circa 6 query (8 comandi di ricerca, grafo, outline e lettura); il chiamante che emette l'evento 'pay_online' verso Dispatcher.handle non e' confermato dalla mappa.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 7/6, letture 1/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/benchmarks/scope-resolution/app escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/gateway.py::pay_on_delivery escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/shipping escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "modules-index-before-lexical: indice dei moduli dopo la prima ricerca lessicale"
+  }
+ ]
+}

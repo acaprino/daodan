@@ -1,0 +1,18 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Il file esplicito e confermato e tutti i 105 simboli sono elencati (outline con limite 200); la richiesta limita il perimetro al file, quindi non ho interrogato il grafo.",
+  "perimeter": [
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "Righe 1-4: docstring 'Formattazione delle voci di audit'; riga 7: AUDIT_SCHEMA = 'audit/v1'; righe 10-28: format_order_entry_000 serializza la voce con AUDIT_SCHEMA; outline: 105 funzioni format_<famiglia>_entry_NNN (12 famiglie), righe 10-2108."
+    }
+  ],
+  "exclusions": [],
+  "unresolved_calls": [],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Chiamanti e usi esterni delle 105 funzioni non verificati: il grafo non e stato interrogato perche la richiesta limita il perimetro al file.",
+    "Il corpo di 104 delle 105 funzioni non e stato letto; le funzioni sono distanziate di 20 righe e seguono il modello di format_order_entry_000, da verificare nella revisione."
+  ]
+}

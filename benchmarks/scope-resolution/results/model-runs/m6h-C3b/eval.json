@@ -1,0 +1,43 @@
+{
+ "session": "m6h-C3b",
+ "case": "C3b",
+ "outcome": "partial",
+ "stop_reason": "Fermato al limite di 6 query: il calcolo IVA e il flusso di storno sono confermati, ma il grafo e la ricerca per nome non dimostrano se issue_refund e' chiamato nel flusso di emissione.",
+ "metrics": {
+  "perimeter": 5,
+  "required": 1,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/orders/api.py",
+   "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+   "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+   "benchmarks/scope-resolution/app/packages/orders/service.py"
+  ],
+  "no_evidence": [],
+  "precision": 0.2,
+  "recall": 1.0,
+  "queries": 6,
+  "reads": 5
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Fermato al limite di 6 query: il calcolo IVA e il flusso di storno sono confermati, ma il grafo e la ricerca per nome non dimostrano se issue_refund e' chiamato nel flusso di emissione.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/big_module.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/reporting.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/gateway.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

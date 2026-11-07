@@ -1,0 +1,25 @@
+{
+  "outcome": "partial",
+  "stop_reason": "I punti con aliquota sono stati letti, ma la ricerca VAT e troncata (20 di 130 risultati) e big_module.py non e stata verificata funzione per funzione: l'insieme completo non e confermato.",
+  "perimeter": [
+    {"path": "packages/orders/pricing.py", "why": "riga 3: VAT_RATE = 0.22 (fonte dell'aliquota); riga 8: vat_amount usa VAT_RATE; riga 20: compute_total somma l'IVA"},
+    {"path": "packages/payments/refunds.py", "why": "riga 7: VAT_RATE = 0.22 come copia locale, non importata da pricing; riga 12: vat_portion la usa per lo storno"},
+    {"path": "packages/orders/reporting.py", "why": "riga 11: l'intestazione legge pricing.VAT_RATE (accesso di attributo, non visibile al grafo)"},
+    {"path": "packages/shipping/rates.py", "why": "righe 3 e 25 (docstring): la regola dichiara che l'IVA sulla spedizione segue l'aliquota del bene; nel file non c'e nessuna aliquota"}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/big_module.py", "why": "riga 92 e docstring 91: 'vat' compare solo come etichetta di formattazione; format_vat_entry_004 (righe 90-108) non calcola nessuna aliquota. Escluso dal perimetro dell'allineamento, ma le altre funzioni format_vat_entry_* non sono verificate"},
+    {"path": "packages/orders/service.py", "why": "dal grafo: la riga 23 chiama pricing.compute_total (totale con IVA); non letto, nessuna aliquota visibile"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/reporting.py::format_daily_summary", "callee": "pricing.VAT_RATE", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Ricerca 'VAT' troncata: 110 risultati non mostrati; altri file con IVA possono esistere",
+    "big_module.py: verificata 1 delle circa 100 funzioni format_vat_entry_*; le altre solo per nome",
+    "codebase_map_modules non trova il modulo pricing (status unknown con 'pricing' e 'prezzi'): usata la ricerca per nome",
+    "Il valore 0.22 di refunds.py coincide con pricing.VAT_RATE: l'allineamento osservato, non giudicato (compito della review)"
+  ]
+}

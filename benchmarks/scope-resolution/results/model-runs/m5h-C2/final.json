@@ -1,0 +1,22 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Sei query e due letture: il punto del KeyError, il registro eventi e la definizione di pay_online sono confermati; il chiamante che passa il nome 'pay_online' a Dispatcher.handle non risulta dal grafo (handler dinamico) e non l'ho trovato con la ricerca.",
+  "perimeter": [
+    {"path": "packages/orders/api.py", "why": "riga 26 in Dispatcher._invoke: EVENT_REGISTRY[name] solleva KeyError; righe 37-38 in register_defaults registrano solo checkout e refund_request"},
+    {"path": "packages/payments/gateway.py", "why": "righe 8-10 pay_online (addebito online); riga 20 lo registra in REGISTRY dei metodi di pagamento, non in EVENT_REGISTRY; righe 24-27 charge lo invoca per nome"}
+  ],
+  "exclusions": [
+    {"path": "packages/payments/refunds.py", "why": "compare nell'elenco del modulo payments ma non nella ricerca di pay_online; non letto"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/api.py::Dispatcher._invoke", "callee": "handler", "resolution": "unresolved"},
+    {"caller": "packages/payments/gateway.py::charge", "callee": "handler", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Chi chiama Dispatcher.handle con il nome 'pay_online': non confermato, il grafo non ha arco e la ricerca 'dispatch' non mostra chiamate",
+    "packages/orders/service.py: OrderService.checkout e refund_request sono i soli handler registrati; non verificato se checkout raggiunge charge",
+    "Ricerca 'on_event' non eseguita: l'assenza di una registrazione di pay_online si basa solo sulla ricerca per nome 'pay_online'"
+  ]
+}

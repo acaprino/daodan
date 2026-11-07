@@ -1,0 +1,25 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Ho superato il budget (circa 8 comandi contro circa 6) e il vero invio è caricato da una variabile d'ambiente che la mappa non vede: la ricerca per 'email_receipt' non l'ho fatta.",
+  "perimeter": [
+    {"path": "packages/orders/service.py", "why": "OrderService.checkout (righe 23-30) alla riga 29 chiama notifications.send_via(order.get(\"channel\", \"email_receipt\"), order) dopo ledger.record: è il punto da cui parte la notifica."},
+    {"path": "packages/orders/notifications.py", "why": "send_via (righe 18-21) fa sender = _handler_for(channel) e return sender(order); _handler_for (righe 11-15) risolve 'modulo:funzione' dalla variabile d'ambiente ORDER_NOTIFY_HANDLERS con importlib."}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/inventory.py", "why": "chiamato da checkout alla riga 25 per le scorte, non invia notifiche."},
+    {"path": "packages/orders/pricing.py", "why": "chiamato da checkout alla riga 26 per il totale, non invia notifiche."},
+    {"path": "packages/orders/ledger.py", "why": "chiamato da checkout alla riga 28 per registrare l'ordine, non invia notifiche."},
+    {"path": "packages/orders/big_module.py", "why": "comparso nella ricerca ORDER_NOTIFY_HANDLERS solo con funzioni format_order_entry_NNN, nessun legame con la notifica."}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/notifications.py::send_via", "callee": "sender", "resolution": "unresolved"},
+    {"caller": "packages/orders/notifications.py::_handler_for", "callee": "importlib.import_module", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Il valore di ORDER_NOTIFY_HANDLERS non è nella mappa: non so quale modulo:funzione riceve il canale 'email_receipt' (default di checkout), quindi non so chi invia davvero la mail.",
+    "La ricerca ORDER_NOTIFY_HANDLERS ha restituito 28 risultati, 8 troncati e non visti; nessun file di configurazione o scrittore della variabile è confermato.",
+    "Ricerca 'email_receipt' non eseguita per superamento del budget: è il passo successivo per trovare il gestore reale."
+  ]
+}

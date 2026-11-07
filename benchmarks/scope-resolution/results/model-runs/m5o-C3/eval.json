@@ -1,0 +1,30 @@
+{
+ "session": "m5o-C3",
+ "case": "C3",
+ "outcome": "resolved",
+ "stop_reason": "Evidenza sufficiente: un solo modulo confermato con il nome richiesto, due file, e le ricerche per nome e sinonimo non trovano copie fuori dal modulo; limite di 6 query raggiunto.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 1,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/shipping/__init__.py"
+  ],
+  "no_evidence": [],
+  "precision": 0.5,
+  "recall": 1.0,
+  "queries": 8,
+  "reads": 3
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 8/6, letture 3/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "modules-index-before-lexical: indice dei moduli dopo la prima ricerca lessicale"
+  }
+ ]
+}

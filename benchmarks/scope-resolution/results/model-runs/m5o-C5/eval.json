@@ -1,0 +1,33 @@
+{
+ "session": "m5o-C5",
+ "case": "C5",
+ "outcome": "resolved",
+ "stop_reason": "La catena e' confermata riga per riga dalla callback al ledger, record ha un solo chiamante e i restanti indizi per nome si sono rivelati fuori catena; budget di query raggiunto.",
+ "metrics": {
+  "perimeter": 4,
+  "required": 4,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 9,
+  "reads": 8
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 9/6, letture 8/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/notifications.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

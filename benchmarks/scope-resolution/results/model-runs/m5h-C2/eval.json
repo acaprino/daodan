@@ -1,0 +1,28 @@
+{
+ "session": "m5h-C2",
+ "case": "C2",
+ "outcome": "partial",
+ "stop_reason": "Sei query e due letture: il punto del KeyError, il registro eventi e la definizione di pay_online sono confermati; il chiamante che passa il nome 'pay_online' a Dispatcher.handle non risulta dal grafo (handler dinamico) e non l'ho trovato con la ricerca.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 6,
+  "reads": 2
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Sei query e due letture: il punto del KeyError, il registro eventi e la definizione di pay_online sono confermati; il chiamante che passa il nome 'pay_online' a Dispatcher.handle non risulta dal grafo (handler dinamico) e non l'ho trovato con la ricerca.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/refunds.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

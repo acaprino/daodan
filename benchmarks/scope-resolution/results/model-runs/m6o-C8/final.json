@@ -1,0 +1,30 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Soglia raggiunta e di poco superata (7 query, 11 letture) e piste esaurite: resta solo il gestore dinamico della ricevuta, che il codice non permette di determinare.",
+  "perimeter": [
+    {"path": "packages/orders/pricing.py", "why": "Riga 3 definisce VAT_RATE = 0.22, il riferimento della richiesta; vat_amount (riga 8) lo applica e compute_total (riga 20) lo usa tramite vat_amount."},
+    {"path": "packages/payments/refunds.py", "why": "Riga 7 definisce una propria VAT_RATE = 0.22 senza importare pricing; vat_portion (riga 12) usa questa copia e issue_refund (riga 20) ne riporta il risultato."},
+    {"path": "packages/orders/reporting.py", "why": "format_daily_summary (riga 11) stampa pricing.VAT_RATE nell'intestazione del riepilogo."}
+  ],
+  "exclusions": [
+    {"path": "packages/shipping/rates.py", "why": "Solo testo: riga 3 dice che l'IVA segue l'aliquota del bene e quote (riga 25) la lascia a parte; nessuna aliquota nel codice. I risultati su 'rate' sono tariffe di spedizione."},
+    {"path": "packages/orders/big_module.py", "why": "format_vat_entry_* formatta voci di audit; letta solo la 004 (righe 90-108), senza aliquota. Le ricerche VAT_RATE e '0.22 aliquota' non danno nel modulo nessun risultato su rate, aliquota o 0.22; le altre otto funzioni vat non sono state lette."},
+    {"path": "packages/orders/ledger.py", "why": "record (riga 18) scrive un totale gia' calcolato e record_refund (riga 30) scrive solo REFUND; nessuna aliquota."},
+    {"path": "packages/orders/service.py", "why": "checkout delega a pricing.compute_total (riga 26); nel file l'IVA compare solo nel testo."},
+    {"path": "packages/payments/gateway.py", "why": "Gli importi includono gia' l'IVA (righe 4 e 9); addebita order total senza aliquota."},
+    {"path": "packages/payments/__init__.py", "why": "Solo la docstring cita l'IVA."},
+    {"path": "packages/orders/notifications.py", "why": "Nessuna aliquota nel file; riga 5 dice che la ricevuta riporta l'IVA, ma il gestore e' esterno al file: vedi unresolved_calls e residual."},
+    {"path": "packages/orders/inventory.py", "why": "Non letto: le funzioni compaiono solo con punteggio basso su '0.22 aliquota', compatibile con il solo token 0; assenza di aliquota non confermata dalla lettura."},
+    {"path": "packages/orders/api.py", "why": "Non letto: importa service.py e non compare tra i risultati su '0.22 aliquota'; assenza di aliquota non confermata dalla lettura."},
+    {"path": "pyproject.toml", "why": "Letto: il risultato su '0.22 aliquota' viene dalla versione 0.1.0; nessuna aliquota ne' configurazione dei gestori."}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/notifications.py::send_via", "callee": "sender, risolto da _handler_for con importlib da ORDER_NOTIFY_HANDLERS (canale predefinito email_receipt)", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Serve il valore di ORDER_NOTIFY_HANDLERS: la ricevuta dichiara di riportare l'IVA, ma il modulo del gestore e' scelto a runtime e la ricerca di email_receipt non trova alcuna definizione nel progetto, quindi non si puo' dire se contenga un'aliquota.",
+    "Scelta mia: il perimetro comprende solo i punti con un'aliquota da confrontare; i punti che citano l'IVA senza aliquota sono nelle esclusioni. Se la richiesta li vuole tutti, vanno riaggiunti."
+  ]
+}

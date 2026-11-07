@@ -1,0 +1,60 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Le prove bastano per il file esplicito e per il chiamante coinvolto, il budget di query e letture è superato e resta aperto solo il gestore notifiche, legato a runtime da una variabile d'ambiente.",
+  "perimeter": [
+    {
+      "path": "packages/orders/pricing.py",
+      "why": "File esplicito: compute_discount (righe 11-14) è lo sconto cliente secondo il suo docstring; compute_total alla riga 19 lo sottrae dal netto prima dell'IVA."
+    },
+    {
+      "path": "packages/orders/service.py",
+      "why": "OrderService.checkout, unico chiamante di compute_total per edit_impact: riga 26 calcola il totale, riga 28 lo passa a ledger.record, riga 30 lo restituisce."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/api.py",
+      "why": "Il legame dinamico esiste, on_event(\"checkout\", service.checkout) alla riga 37, ma Dispatcher._invoke (riga 27) restituisce il valore senza leggerlo: contesto, non oggetto di giudizio."
+    },
+    {
+      "path": "packages/orders/ledger.py",
+      "why": "record (righe 13-18) scrive il totale ricevuto senza calcolarlo: contesto per giudicare checkout."
+    },
+    {
+      "path": "packages/orders/notifications.py",
+      "why": "send_via (righe 18-21) inoltra order a un gestore configurato e non calcola sconti; il gestore resta irrisolto."
+    },
+    {
+      "path": "packages/orders/reporting.py",
+      "why": "format_daily_summary usa solo pricing.VAT_RATE (riga 11) e righe già formattate dal chiamante; non tocca lo sconto."
+    },
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "Comparso per la parola receipt; il campione format_receipt_entry_010 formatta voci di audit senza calcolare sconti. Letto un solo elemento della famiglia."
+    },
+    {
+      "path": "packages/shipping/rates.py",
+      "why": "volume_discount (righe 15-21) è lo sconto per volume di spedizioni: concetto diverso dallo sconto cliente, stessa parola."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/orders/notifications.py::send_via",
+      "callee": "sender",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/orders/service.py::OrderService.checkout",
+      "callee": "self._pipeline.step",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "La richiesta nomina una modifica ma non fornisce il diff: il perimetro è per file e ho assunto che riguardi compute_discount.",
+    "Il gestore del canale (default email_receipt) è letto da ORDER_NOTIFY_HANDLERS a runtime e la ricerca non trova la sua definizione nel codice indicizzato: non posso confermare se la ricevuta, che riceve order e non il totale, ricalcola sconto o IVA.",
+    "edit_impact riporta tests vuoto per compute_discount, compute_total e checkout; non ho cercato test per nome.",
+    "Non verificati: chi consuma il valore restituito da Dispatcher.handle, OrderService.refund_request (service.py:32-34) e packages/payments/refunds.py::issue_refund, comparso in ricerca solo per la parola order."
+  ]
+}

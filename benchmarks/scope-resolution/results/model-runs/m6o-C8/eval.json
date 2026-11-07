@@ -1,0 +1,40 @@
+{
+ "session": "m6o-C8",
+ "case": "C8",
+ "outcome": "partial",
+ "stop_reason": "Soglia raggiunta e di poco superata (7 query, 11 letture) e piste esaurite: resta solo il gestore dinamico della ricevuta, che il codice non permette di determinare.",
+ "metrics": {
+  "perimeter": 3,
+  "required": 2,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/orders/reporting.py"
+  ],
+  "no_evidence": [],
+  "precision": 0.67,
+  "recall": 1.0,
+  "queries": 7,
+  "reads": 11
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Soglia raggiunta e di poco superata (7 query, 11 letture) e piste esaurite: resta solo il gestore dinamico della ricevuta, che il codice non permette di determinare.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 7/6, letture 11/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/api.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/inventory.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

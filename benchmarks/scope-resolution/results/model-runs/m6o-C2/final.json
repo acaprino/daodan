@@ -1,0 +1,45 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Le due aree nominate dalla richiesta sono confermate dalle righe decisive e non restano piste: pay_online compare solo in gateway.py e on_event ha un solo chiamante; 9 query contro le circa 6 indicate, per il retry previsto e il controllo di on_event.",
+  "perimeter": [
+    {
+      "path": "packages/orders/api.py",
+      "why": "Registrazione e dispatch: Dispatcher._invoke:26 fa EVENT_REGISTRY[name], il docstring:3 dice che il dispatcher solleva KeyError col nome dell'evento se manca la registrazione, register_defaults:37-38 registra solo checkout e refund_request."
+    },
+    {
+      "path": "packages/payments/gateway.py",
+      "why": "Addebito online: pay_online:8-10 e charge:24-27; pay_online sta in REGISTRY:18-21, un registro distinto da EVENT_REGISTRY."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/service.py",
+      "why": "Visto solo nel grafo come fornitore di OrderService e nessun risultato per pay_online: le sue callback sono contesto successivo, non oggetto della richiesta. Non letto."
+    },
+    {
+      "path": "packages/payments/refunds.py",
+      "why": "Visto solo nell'elenco del modulo payments, nessun risultato per pay_online e la richiesta non riguarda i rimborsi. Non letto."
+    },
+    {
+      "path": "packages/orders/pricing.py",
+      "why": "Visto solo tra gli import; l'IVA citata nel docstring di api.py non riguarda il KeyError ne' l'addebito richiesto. Non letto."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/orders/api.py::Dispatcher._invoke",
+      "callee": "handler",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/payments/gateway.py::charge",
+      "callee": "handler",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Non ho trovato chi emette l'evento pay_online: il nome compare solo in gateway.py e pay_online ha 0 chiamanti statici; i chiamanti di Dispatcher.handle non sono stati interrogati."
+  ]
+}

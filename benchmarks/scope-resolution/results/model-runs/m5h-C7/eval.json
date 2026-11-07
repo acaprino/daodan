@@ -1,0 +1,23 @@
+{
+ "session": "m5h-C7",
+ "case": "C7",
+ "outcome": "resolved",
+ "stop_reason": "Il file esplicito e confermato e tutti i 105 simboli sono elencati (outline con limite 200); la richiesta limita il perimetro al file, quindi non ho interrogato il grafo.",
+ "metrics": {
+  "perimeter": 1,
+  "required": 1,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 3,
+  "reads": 1
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

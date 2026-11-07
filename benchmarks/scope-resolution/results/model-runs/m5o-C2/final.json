@@ -1,0 +1,53 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "I due file richiesti sono confermati da lettura diretta e le ricerche per nome non danno altre piste; budget di query superato (9 contro circa 6) per cercare copie del dispatch e il KeyError nominato.",
+  "perimeter": [
+    {
+      "path": "packages/orders/api.py",
+      "why": "Registrazione e dispatch degli eventi: on_event (righe 13-16), register_defaults registra solo checkout e refund_request (righe 37-38), Dispatcher._invoke fa EVENT_REGISTRY[name] (riga 26) e il docstring dichiara il KeyError col nome dell'evento (riga 3)."
+    },
+    {
+      "path": "packages/payments/gateway.py",
+      "why": "Addebito online: pay_online (righe 8-10), REGISTRY con la chiave pay_online (righe 18-21), charge risolve REGISTRY['pay_online'] e lo invoca (righe 24-27)."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/service.py",
+      "why": "Righe 1-34 lette: checkout e refund_request sono le callback registrate, nessun riferimento a payments o pay_online; utile come contesto, non da giudicare."
+    },
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "Match di KeyError nelle funzioni format_*_entry_*: formattazione delle voci di audit. Letto un campione (format_courier_entry_006, righe 130-148): entry[key] itera su sorted(entry), senza eventi né pagamenti. Giudizio esteso agli altri match per analogia dei nomi, non letti."
+    },
+    {
+      "path": "packages/payments/__init__.py",
+      "why": "Contiene solo il docstring (riga 1)."
+    },
+    {
+      "path": "packages/payments/refunds.py",
+      "why": "Visto solo nell'elenco del modulo payments, non letto: la richiesta riguarda l'addebito online, non i rimborsi."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/orders/api.py::Dispatcher._invoke",
+      "callee": "handler",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/payments/gateway.py::charge",
+      "callee": "handler",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Nessun file registra pay_online come evento: on_event ha solo le chiamate in register_defaults e il nome pay_online compare solo in gateway.py.",
+    "Non è confermato alcun collegamento tra orders/api.py e payments/gateway.py: il grafo a un salto non mostra import tra i due e charge ha zero chiamanti; un legame dinamico non è escluso.",
+    "Non è stato trovato il punto che emette l'evento pay_online: Dispatcher.handle risulta senza chiamanti nel grafo a un salto.",
+    "Dei 106 match di KeyError ne sono stati restituiti 20: gli 86 troncati non sono stati visti.",
+    "Le due chiamate order.get non resolved di gateway.py sono omesse da unresolved_calls: per mio giudizio sono metodi di dict, non piste."
+  ]
+}

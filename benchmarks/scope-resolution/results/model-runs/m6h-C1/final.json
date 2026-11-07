@@ -1,0 +1,18 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Il simbolo modificato ha un chiamante di primo salto confermato e le ricerche per nome non trovano altre fonti di sconto cliente; mi fermo dopo sei query e due letture, nel limite del brief.",
+  "perimeter": [
+    {"path": "packages/orders/pricing.py", "why": "File esplicito della richiesta. compute_discount (righe 11-14) calcola lo sconto cliente come net * order['loyalty_percent'] / 100; compute_total (riga 19) lo sottrae dal netto."},
+    {"path": "packages/orders/service.py", "why": "impact di compute_total: OrderService.checkout chiama compute_total alla riga 26, quindi il totale scontato cambia per il checkout."}
+  ],
+  "exclusions": [
+    {"path": "packages/shipping/rates.py", "why": "Trovato per nome: volume_discount (righe 15-21) e' lo sconto spedizione per volume mensile, non lo sconto cliente. L'impact di compute_discount e compute_total non elenca alcun chiamante da questo file."}
+  ],
+  "unresolved_calls": [],
+  "candidates": [],
+  "question": null,
+  "residual": [
+    "Non ho trovato chi valorizza order['loyalty_percent']: il grafo non vede le chiavi di dizionario e le ricerche 'customer' e 'client' non hanno trovato nulla. Va verificato in service.py o nella sorgente dell'ordine.",
+    "I chiamanti di OrderService.checkout oltre il primo salto non sono stati esplorati."
+  ]
+}

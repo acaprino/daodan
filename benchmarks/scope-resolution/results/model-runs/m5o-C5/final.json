@@ -1,0 +1,27 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "La catena e' confermata riga per riga dalla callback al ledger, record ha un solo chiamante e i restanti indizi per nome si sono rivelati fuori catena; budget di query raggiunto.",
+  "perimeter": [
+    {"path": "packages/orders/api.py", "why": "register_defaults registra la callback (riga 37: on_event(\"checkout\", service.checkout)); Dispatcher._invoke la invoca (righe 26-27)"},
+    {"path": "packages/orders/service.py", "why": "OrderService.checkout: riga 26 total = pricing.compute_total(order), riga 28 ledger.record(order, total)"},
+    {"path": "packages/orders/pricing.py", "why": "compute_total (righe 17-20) produce il totale: netto - sconto + IVA, con compute_discount e vat_amount"},
+    {"path": "packages/orders/ledger.py", "why": "record (righe 13-22): riga 18 scrive id e totale in ledger.log sotto lockfile"}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/inventory.py", "why": "reserve_stock (righe 17-24) cambia solo STOCK e riceve sku e qty: non tocca ne' order ne' il totale"},
+    {"path": "packages/orders/notifications.py", "why": "send_via viene chiamato a service.py:29, dopo la scrittura a ledger, e non riceve total; file non letto, solo visto nel grafo"},
+    {"path": "packages/orders/big_module.py", "why": "format_ledger_entry_* sono omonimi: formattano voci di audit e restituiscono JSON (riga 128), senza scrivere a ledger; assente dagli import della catena nel grafo"},
+    {"path": "packages/orders/reporting.py", "why": "format_daily_summary usa solo pricing.VAT_RATE (riga 11) e righe gia' formattate: non e' nel percorso verso il ledger"},
+    {"path": "packages/payments/gateway.py", "why": "pay_online e pay_on_delivery leggono order.get(\"total\") (righe 10, 15) e non scrivono a ledger; nessun import dalla catena nel grafo; trovato solo per somiglianza di parole"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/api.py::Dispatcher._invoke", "callee": "handler", "resolution": "dinamica, confermata leggendo: EVENT_REGISTRY[name] (riga 26) vale service.checkout per \"checkout\" (riga 37)"},
+    {"caller": "packages/orders/service.py::OrderService.checkout", "callee": "self._pipeline.step", "resolution": "dinamica, confermata leggendo: register_defaults crea OrderService() senza pipeline_cls (api.py:36), quindi DefaultPipeline.step (service.py:13-15), che non tocca total; la ricerca di pipeline_cls non mostra altre classi"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Non ho cercato scritture dirette in EVENT_REGISTRY fuori da on_event: la ricerca di on_event mostra una sola registrazione di checkout, ma un'altra via resta non esclusa.",
+    "Nessun test collegato a ledger.record secondo impact (tests vuoto)."
+  ]
+}

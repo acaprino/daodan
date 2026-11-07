@@ -10,6 +10,12 @@ Il risultato distingue difetti dimostrati, verifiche svolte e lacune. Nessuna se
 
 Prima di avviare una review, **Codebase Map deve aver già completato la mappatura dell'intero progetto**. La Phase 0 usa gli indici di quel run esistente; l'eventuale analisi mirata della Phase 1a costruisce il contesto della review e non sostituisce questo prerequisito. Se la mappa completa manca, eseguire prima Codebase Map.
 
+## Phase 0: cosa rivedere
+
+La richiesta («rivedi X») diventa l'elenco dei file da rivedere, in quattro passi: trova i nomi con lo strumento più economico; conferma ogni file con la riga che dimostra la pertinenza, rispettando i limiti espliciti e trattando gli altri nomi come punti di partenza e includendo i chiamanti coinvolti se la richiesta riguarda una modifica; fermati quando le evidenze bastano o a circa 6 interrogazioni e 10 letture, dicendo perché; rispondi con uno di tre esiti, `resolved`, `partial` o `clarify`. Il perimetro è ciò che la review giudica; ciò che legge per giudicarlo è contesto di Phase 1. Tutto il resto è giudizio del reviewer, motivato.
+
+Spec: [`docs/specs/2026-11-04-review-scope-resolution.md`](../../docs/specs/2026-11-04-review-scope-resolution.md). Strumenti di Codebase Map, una riga ciascuno: `plugins/codebase-map/skills/map-method/references/tools-guide.md`. Testo operativo: `skills/review-preparation/references/team-review.md`, sezione "Request to files". Prova: `benchmarks/scope-resolution/`, su 9 casi, una esecuzione per caso: i file indispensabili ci sono sempre, sia su Haiku sia su Opus; l'esito coincide con l'atteso in 7 casi su Haiku e 9 su Opus. Una review completa con questa Phase 0 non è ancora stata eseguita, e la review leggera non la usa.
+
 ## Stato
 
 Baseline sorgente **1.0.1** importata dal backup integrale del precedente Daodan. Il manifest è stato adattato alla nuova architettura:

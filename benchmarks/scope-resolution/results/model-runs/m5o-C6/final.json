@@ -1,0 +1,47 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Il percorso statico finisce in send_via, che chiama un gestore caricato a runtime da ORDER_NOTIFY_HANDLERS; il valore di quella variabile non si vede con gli strumenti e le ricerche per nome non danno altre piste, con 8 query (oltre il limite di circa 6) e 4 letture.",
+  "perimeter": [
+    {
+      "path": "packages/orders/notifications.py",
+      "why": "send_via (righe 18-21) risolve il gestore con _handler_for e lo chiama con sender(order); _handler_for (righe 11-15) legge ORDER_NOTIFY_HANDLERS e carica modulo:funzione con importlib."
+    },
+    {
+      "path": "packages/orders/service.py",
+      "why": "OrderService.checkout, riga 29: notifications.send_via(order.get(\"channel\", \"email_receipt\"), order) è il punto in cui il checkout notifica il cliente e sceglie il canale di default."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "Risulta per email_receipt, ma format_receipt_entry_010 formatta in JSON una voce di audit e non invia nulla. Letta solo questa voce: le altre format_receipt_entry_* sono escluse per nome e per la docstring del modulo."
+    },
+    {
+      "path": "packages/orders/api.py",
+      "why": "register_defaults (riga 37) registra service.checkout come callback dell'evento: nessuna logica di notifica nelle parti lette."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/orders/notifications.py::send_via",
+      "callee": "sender",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/orders/notifications.py::_handler_for",
+      "callee": "importlib.import_module",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/orders/notifications.py::_handler_for",
+      "callee": "getattr",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "La funzione che invia davvero: è il modulo:funzione assegnato al canale in ORDER_NOTIFY_HANDLERS, valore d'ambiente non visibile. Nessun gestore concreto confermato per email_receipt o per altri canali.",
+    "La ricerca di ORDER_NOTIFY_HANDLERS ha restituito 20 risultati su 28: gli 8 troncati non sono stati visti. Quelli visti oltre notifications.py hanno punteggio molto più basso e non sono stati aperti tutti."
+  ]
+}

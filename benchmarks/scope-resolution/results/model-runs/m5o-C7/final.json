@@ -1,0 +1,19 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "La richiesta nomina un solo file e l'evidenza basta: il docstring di modulo e l'outline completo (5 interrogazioni, nessuna oltre il limite) mostrano che i simboli richiesti stanno tutti lì.",
+  "perimeter": [
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "Riga 1 \"Formattazione delle voci di audit.\", riga 7 AUDIT_SCHEMA = \"audit/v1\"; 105 funzioni format_<famiglia>_entry_NNN (righe 10-2108, 12 famiglie: order, invoice, shipment, refund, vat, ledger, courier, parcel, customs, surcharge, receipt, mandate). Riga 11: \"Formatta una voce di audit order (riga 000)\"."
+    }
+  ],
+  "exclusions": [],
+  "unresolved_calls": [],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Che tutte le 105 funzioni siano di audit è inferito: search \"audit\" dà 106 risultati (compatibili con @file + 105 funzioni) ma ne mostra 20; ho letto i corpi di format_order_entry_000 e format_vat_entry_004, più la coda di format_customs_entry_104.",
+    "search \"audit format\" dà 107 risultati, uno in più di \"audit\": il risultato in più non è stato identificato, perché la lista è troncata a 20 e il brief non documenta una paginazione.",
+    "Chiamanti del modulo non esaminati: il grafo non è stato interrogato perché la richiesta limita i simboli a questo file."
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Budget raggiunto (10 read, 8 query e 2 outline contro circa 6 query) con una pista aperta: il gestore dinamico della ricevuta non è confermabile dai nomi cercati.",
+  "perimeter": [
+    {"path": "packages/orders/pricing.py", "why": "riga 3 VAT_RATE = 0.22, la fonte; vat_amount (riga 8) la applica e compute_total (riga 20) passa da vat_amount"},
+    {"path": "packages/payments/refunds.py", "why": "riga 7 VAT_RATE = 0.22, copia locale non importata da pricing; vat_portion (riga 12) calcola con la copia"},
+    {"path": "packages/orders/reporting.py", "why": "riga 6 importa pricing; riga 11 format_daily_summary stampa pricing.VAT_RATE nell'intestazione"}
+  ],
+  "exclusions": [
+    {"path": "packages/shipping/rates.py", "why": "nessuna aliquota in codice: riga 3 è solo docstring ('segue l'aliquota del bene trasportato'), quote (riga 25) lascia l'IVA a parte; 'rate' qui è la tariffa di spedizione"},
+    {"path": "packages/orders/service.py", "why": "nessuna aliquota propria: riga 26 delega a pricing.compute_total"},
+    {"path": "packages/orders/ledger.py", "why": "nessuna aliquota: record (riga 18) scrive il totale ricevuto, record_refund (riga 30) scrive solo REFUND; IVA solo nelle docstring"},
+    {"path": "packages/payments/gateway.py", "why": "nessuna aliquota: righe 10 e 15 passano order.total, che include già l'IVA secondo la docstring"},
+    {"path": "packages/orders/inventory.py", "why": "solo scorte; riga 3 dice che i movimenti non alterano l'IVA"},
+    {"path": "packages/orders/notifications.py", "why": "nessuna aliquota nel file; riga 5 cita l'IVA della ricevuta, ma il gestore che la produce è dinamico (vedi unresolved_calls)"},
+    {"path": "packages/orders/big_module.py", "why": "formatter generici: format_vat_entry_004 (righe 90-108) formatta i campi ricevuti senza aliquota; fuori dai simboli importa solo json; nessun risultato per 0.22 o 1.22"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/notifications.py::send_via", "callee": "sender (da _handler_for: importlib su ORDER_NOTIFY_HANDLERS, canale email_receipt)", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Gestore del canale email_receipt: definito fuori dal codice via variabile d'ambiente, nessuna definizione trovata cercando email_receipt; la ricevuta riporta l'IVA e potrebbe avere una propria aliquota. ORDER_NOTIFY_HANDLERS non cercato per budget.",
+    "packages/orders/api.py: visto solo l'outline, corpo non letto; compare nella ricerca IVA, nessun risultato per 0.22 o 1.22.",
+    "packages/payments/__init__.py: outline senza simboli, file non letto; compare nella ricerca IVA, nessun risultato per 0.22 o 1.22.",
+    "packages/orders/big_module.py: letta una sola funzione come campione; le altre format_vat_entry_* e format_receipt_entry_* sono escluse per il solo esito delle ricerche.",
+    "Le ricerche di 0.22 e 1.22 non trovano una copia con valore diverso (per esempio 0.20) nei file non letti per intero.",
+    "Modulo orders-demo (benchmarks/scope-resolution/app) elencato da modules ma non ispezionato.",
+    "Ricerche VAT_RATE, IVA e VAT troncate a 20 risultati su 129-130: gli altri non sono stati visti singolarmente."
+  ]
+}

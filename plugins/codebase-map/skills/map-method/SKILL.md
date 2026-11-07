@@ -51,6 +51,7 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | `references/context.md` | bounded context packets from a scope plan (`snapshot.py context`) | whoever prepares a recipient's input |
 | `references/embeddings.md` | optional local embeddings, opt-in only | whoever explicitly selects the embedding provider |
 | `references/mcp.md` | the MCP server, its tools and events | whoever runs or calls the server |
+| `references/tools-guide.md` | which tool answers which question, with one example each | whoever has to choose a tool on a bound run, including review scope resolution |
 | `references/phase-0.md` | Phase 0 knowledge discovery | analyst and team entry |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
 | `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |

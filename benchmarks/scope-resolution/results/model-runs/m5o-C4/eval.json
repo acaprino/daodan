@@ -1,0 +1,28 @@
+{
+ "session": "m5o-C4",
+ "case": "C4",
+ "outcome": "clarify",
+ "stop_reason": "La richiesta non dà sintomo né modulo e 'sconto' indica due regole indipendenti in due package, confermate leggendole; nessun altro file compare nelle ricerche e altre query non possono scegliere al posto dell'utente.",
+ "metrics": {
+  "perimeter": 0,
+  "required": 0,
+  "extra": [],
+  "no_evidence": [],
+  "precision": null,
+  "recall": null,
+  "queries": 4,
+  "reads": 2
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/reporting.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/service.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

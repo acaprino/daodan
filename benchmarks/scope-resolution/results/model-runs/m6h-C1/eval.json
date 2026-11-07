@@ -1,0 +1,25 @@
+{
+ "session": "m6h-C1",
+ "case": "C1",
+ "outcome": "resolved",
+ "stop_reason": "Il simbolo modificato ha un chiamante di primo salto confermato e le ricerche per nome non trovano altre fonti di sconto cliente; mi fermo dopo sei query e due letture, nel limite del brief.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [
+   "benchmarks/scope-resolution/app/packages/orders/service.py"
+  ],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 6,
+  "reads": 2
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

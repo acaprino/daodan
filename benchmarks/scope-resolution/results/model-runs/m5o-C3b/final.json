@@ -1,0 +1,64 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Evidenza sufficiente: l'unico calcolo della quota IVA sui rimborsi trovato è vat_portion, usato da issue_refund, e ho esaurito le 6 query del limite.",
+  "perimeter": [
+    {
+      "path": "packages/payments/refunds.py",
+      "why": "vat_portion riga 12: round(amount - amount / (1 + VAT_RATE), 2); issue_refund riga 15 ('Emette un rimborso') riga 20: \"vat\": vat_portion(amount); VAT_RATE riga 7."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/ledger.py",
+      "why": "record_refund riga 30 scrive solo id e REFUND: nessun calcolo IVA, nonostante la docstring riga 26 citi la quota IVA/VAT."
+    },
+    {
+      "path": "packages/orders/service.py",
+      "why": "refund_request riga 34 delega a ledger.record_refund e riguarda la richiesta, non il rimborso emesso; gli import riga 7 non includono payments."
+    },
+    {
+      "path": "packages/orders/pricing.py",
+      "why": "vat_amount riga 8 calcola l'IVA sul netto per compute_total; refunds.py non lo importa e ha un proprio VAT_RATE."
+    },
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "format_refund_entry_003 e format_vat_entry_004 formattano solo voci di audit (righe 70-88, 90-108); le altre 16 funzioni analoghe trovate dalla ricerca non sono state lette."
+    },
+    {
+      "path": "packages/orders/api.py",
+      "why": "register_defaults righe 37-38 registra checkout e refund_request, non issue_refund; nessun calcolo IVA."
+    },
+    {
+      "path": "packages/orders/reporting.py",
+      "why": "format_daily_summary riga 11 stampa solo pricing.VAT_RATE nell'intestazione."
+    },
+    {
+      "path": "packages/payments/__init__.py",
+      "why": "Contiene solo la docstring riga 1."
+    },
+    {
+      "path": "packages/payments/gateway.py",
+      "why": "Non letto: compare nella ricerca 'storno IVA', ma non nelle ricerche complete 'rimborso' (6 su 6) e 'issue_refund' (14 su 14)."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/payments/refunds.py::vat_portion",
+      "callee": "round",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/payments/refunds.py::issue_refund",
+      "callee": "order.get",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Nessun chiamante verificato di issue_refund: il grafo a un hop mostra solo issue_refund -> vat_portion e register_defaults non lo registra; una registrazione dinamica altrove non è esclusa.",
+    "Giudizio mio: 'rimborsi emessi' indica issue_refund. Se la richiesta intende anche lo storno registrato a libro, ledger.py e service.py entrano nel perimetro, perché le loro docstring dichiarano una quota IVA che record_refund non scrive.",
+    "Copie del calcolo sotto altro nome non confermate: la ricerca 'vat_portion' ha restituito 20 risultati su 129 e 16 funzioni di big_module.py non sono state lette.",
+    "Non letti e visti solo nelle ricerche sul termine IVA: packages/orders/inventory.py, packages/orders/notifications.py, packages/shipping/rates.py."
+  ]
+}

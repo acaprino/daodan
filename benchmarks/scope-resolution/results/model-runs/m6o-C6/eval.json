@@ -1,0 +1,28 @@
+{
+ "session": "m6o-C6",
+ "case": "C6",
+ "outcome": "partial",
+ "stop_reason": "Mi sono fermato oltre il budget (12 interrogazioni contro circa 6, 6 letture): il mittente reale si risolve a runtime da ORDER_NOTIFY_HANDLERS, nessuna ricerca per nome mostra il valore della variabile o una funzione del canale email_receipt, e non restano piste.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 12,
+  "reads": 5
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 12/6, letture 5/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "modules-index-before-lexical: indice dei moduli dopo la prima ricerca lessicale"
+  }
+ ]
+}

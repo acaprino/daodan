@@ -1,0 +1,35 @@
+{
+ "session": "m5o-C8",
+ "case": "C8",
+ "outcome": "partial",
+ "stop_reason": "Budget raggiunto (10 read, 8 query e 2 outline contro circa 6 query) con una pista aperta: il gestore dinamico della ricevuta non è confermabile dai nomi cercati.",
+ "metrics": {
+  "perimeter": 3,
+  "required": 2,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/orders/reporting.py"
+  ],
+  "no_evidence": [],
+  "precision": 0.67,
+  "recall": 1.0,
+  "queries": 10,
+  "reads": 10
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Budget raggiunto (10 read, 8 query e 2 outline contro circa 6 query) con una pista aperta: il gestore dinamico della ricevuta non è confermabile dai nomi cercati.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 10/6, letture 10/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "modules-index-before-lexical: indice dei moduli dopo la prima ricerca lessicale"
+  }
+ ]
+}

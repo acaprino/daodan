@@ -1,0 +1,42 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Il file è esplicito e lo sconto cliente è confermato in compute_discount; loyalty_percent compare solo lì, l'unico chiamante è nello stesso file e non restano piste sul nome.",
+  "perimeter": [
+    {
+      "path": "packages/orders/pricing.py",
+      "why": "Riga 12, compute_discount: 'Sconto cliente: percentuale di fedeltà applicata al netto'; riga 19, compute_total lo sottrae dal netto ed è il suo unico chiamante."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/shipping/rates.py",
+      "why": "Riga 16, volume_discount è lo sconto per volume di spedizioni mensili: stessa parola, altro concetto, nessun legame trovato con compute_discount."
+    },
+    {
+      "path": "packages/orders/service.py",
+      "why": "Riga 26, checkout chiama pricing.compute_total: è un chiamante indiretto, utile come contesto della review ma non oggetto del giudizio."
+    },
+    {
+      "path": "packages/orders/notifications.py",
+      "why": "Righe 1-21: solo risoluzione e invio del canale di notifica, nessuna logica di sconto; la corrispondenza nella ricerca è testuale."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/orders/notifications.py::send_via",
+      "callee": "sender",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/orders/service.py::OrderService.checkout",
+      "callee": "self._pipeline.step",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Il diff della modifica non è visibile con gli strumenti: il perimetro è il file, non le righe cambiate.",
+    "I gestori di notifica caricati da ORDER_NOTIFY_HANDLERS non sono confermabili: una loro copia dello sconto sotto altro nome non è esclusa, anche se loyalty_percent compare solo in pricing.py."
+  ]
+}

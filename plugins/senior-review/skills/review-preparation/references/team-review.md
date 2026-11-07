@@ -45,7 +45,7 @@ analysis does not establish this prerequisite.
 
 1. Confirm the harness can dispatch isolated reviewers; stop if it cannot.
 2. Parse `$ARGUMENTS`:
-   - `<target>`: file path, directory, git diff range (e.g., `main...HEAD`), or PR number (e.g., `#123`)
+   - `<target>`: file path, directory, git diff range (e.g., `main...HEAD`), PR number (e.g., `#123`), or a request in words (e.g., `the checkout flow`)
    - `--reviewers`: comma-separated dimensions OR `auto` (default: `auto`)
    - `--base-branch`: base branch for diff comparison (default: `main`)
    - `--all`: record a request for all dimensions; reconcile it with the computed roster before dispatch
@@ -100,17 +100,51 @@ analysis does not establish this prerequisite.
 ## Phase 0: Target Resolution
 
 1. Determine target type, after `references/candidate-grounding.md` has fixed the target kind:
-   - **File/Directory**: use as-is for review scope
+   - **File/Directory given as the target**: use as-is for review scope
    - **Git diff range**: `git diff {range} --name-only` to get changed files
    - **PR number**: `gh pr diff {number} --name-only` to get changed files
    - **Plan, specification or document**: the paths, symbols and contracts it names, resolved against the current tree, are the review scope; the file itself is the artifact under review
+   - **A request in words** (a module, feature, function, error, domain term, or a sentence that names files): follow "Request to files" below; the resulting files are judged as current content unless the request names a comparison
 2. Collect the actual diff when the target has a comparison. For a file/directory
    target retain the named contents and scope; never manufacture a diff, silently
    replace it with uncommitted changes, or claim an empty diff covers the target.
    Missing comparison or unsupported roster preparation remains an explicit gap.
 3. Collect the list of changed file paths and extensions for Phase 0b.
 4. State the candidate's intent in one sentence (what it changes and why), from the task, the PR description or the commit messages; if no source supports one, ask the caller before any dispatch and record `intent: unknown` when none comes. That sentence is the intent every worker prompt pastes.
-5. Write `.team-review/00-scope.md` with target, intent, files, flags. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
+5. Write `.team-review/00-scope.md` with target, intent, files, flags and, for a request in words, its outcome, the `file:line` that shows each file and any gap. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
+
+### Request to files
+
+Translate the request into the files to review. Which tool answers which
+question: `references/tools-guide.md` of `codebase-map:map-method`.
+
+1. **Find.** Take the names from the request: files, functions, modules,
+   errors, terms. For each, the cheapest tool: explicit file → none; module →
+   `codebase_map_modules`; name or word → `codebase_map_search`; flow →
+   `codebase_map_graph`, one hop at a time from files already confirmed. Retry
+   an empty search once with a synonym; a missing or stale index is not an
+   empty search, it is a missing prerequisite.
+2. **Confirm.** Respect explicit limits ("only this file", a diff); otherwise
+   names are starting points and include only files pertinent to the request,
+   with the line that shows it: `codebase_map_outline` for symbols,
+   `codebase_map_read` only the part that decides. A request about a change
+   includes the callers it affects (`codebase_map_edit_impact`). The graph does
+   not see dynamic links or copies: do not invent them, search by name and read;
+   if they cannot be confirmed, say so.
+3. **Stop** when evidence suffices, when no leads remain, or at about 6
+   queries and 10 reads. Always say why.
+4. **Answer** with one of three outcomes: `resolved` (the files, each with its
+   evidence); `partial` (the files found, what the request still needs and why); `clarify`
+   (the request may mean two different things: the candidates and the question).
+
+`resolved` and `partial` continue with the files found; a `partial` gap stays in
+`00-scope.md` and in the final report's coverage. `clarify` asks the caller before
+any dispatch; without an answer nothing is dispatched.
+
+The scope is what the review judges; what it reads to judge is Phase 1 context.
+Use the run's indexes and source only: the coordinator reads no Codebase Map
+analysis artifacts before Phase 0c completes. Everything else is the reviewer's
+judgment, stated.
 
 ## Phase 0b: Bind the computed reviewer selection
 

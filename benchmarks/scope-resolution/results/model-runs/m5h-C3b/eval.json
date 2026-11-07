@@ -1,0 +1,26 @@
+{
+ "session": "m5h-C3b",
+ "case": "C3b",
+ "outcome": "partial",
+ "stop_reason": "Raggiunto il budget di 6 query e 5 letture: il calcolo IVA dello storno e confermato, ma il collegamento tra la richiesta di rimborso e issue_refund non e stato trovato.",
+ "metrics": {
+  "perimeter": 3,
+  "required": 1,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+   "benchmarks/scope-resolution/app/packages/orders/service.py"
+  ],
+  "no_evidence": [],
+  "precision": 0.33,
+  "recall": 1.0,
+  "queries": 6,
+  "reads": 4
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Raggiunto il budget di 6 query e 5 letture: il calcolo IVA dello storno e confermato, ma il collegamento tra la richiesta di rimborso e issue_refund non e stato trovato.)"
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+[project]
+name = "orders-demo"
+version = "0.1.0"
+description = "Mini-app dimostrativa per il benchmark di scope resolution (solo stdlib)."
+
+[tool.uv.workspace]
+members = ["packages/*"]

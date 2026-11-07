@@ -10,6 +10,7 @@
 - Prima di modificare, riassumi in una frase cosa chiede la richiesta e perché; se non riesci, chiedi.
 - Stile e formato sono del linter o formatter configurato, non delle review.
 - Ogni regola di questo file è verificabile e vale per ogni compito; il resto vive nel metodo che lo usa.
+- Le spec si mettono alla prova in `benchmarks/`: ogni benchmark dichiara nel suo README i parametri da provare e i risultati misurati.
 
 ## Come rispondere
 

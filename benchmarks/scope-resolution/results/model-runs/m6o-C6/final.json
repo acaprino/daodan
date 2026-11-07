@@ -1,0 +1,53 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Mi sono fermato oltre il budget (12 interrogazioni contro circa 6, 6 letture): il mittente reale si risolve a runtime da ORDER_NOTIFY_HANDLERS, nessuna ricerca per nome mostra il valore della variabile o una funzione del canale email_receipt, e non restano piste.",
+  "perimeter": [
+    {
+      "path": "packages/orders/notifications.py",
+      "why": "send_via (18-21) chiama sender = _handler_for(channel) e poi sender(order); _handler_for (11-15) legge ORDER_NOTIFY_HANDLERS e carica modulo:funzione con importlib: e il punto di invio conosciuto, ma delega a una funzione che i documenti non nominano."
+    },
+    {
+      "path": "packages/orders/service.py",
+      "why": "OrderService.checkout riga 29: notifications.send_via(order.get('channel', 'email_receipt'), order); unico chiamante di send_via secondo impact, e sceglie il canale con il suo default."
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "packages/orders/api.py",
+      "why": "register_defaults riga 37 registra service.checkout come callback dell'evento: e l'ingresso del flusso, non decide canale ne invio."
+    },
+    {
+      "path": "packages/orders/big_module.py",
+      "why": "Formattazione di voci di audit: format_receipt_entry_010 (210-228) restituisce json.dumps e non invia. Letta solo questa funzione; le altre format_receipt_entry_* sono escluse per nome e punteggio uguali, non lette."
+    },
+    {
+      "path": "pyproject.toml",
+      "why": "Otto righe di metadati e workspace uv: non dichiara ORDER_NOTIFY_HANDLERS ne gestori."
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "caller": "packages/orders/notifications.py::send_via",
+      "callee": "sender",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/orders/notifications.py::_handler_for",
+      "callee": "importlib.import_module",
+      "resolution": "unresolved"
+    },
+    {
+      "caller": "packages/orders/notifications.py::_handler_for",
+      "callee": "getattr",
+      "resolution": "unresolved"
+    }
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "La funzione che invia davvero non e confermata: serve il valore di ORDER_NOTIFY_HANDLERS per il canale email_receipt (formato canale=modulo:funzione), che gli strumenti non mostrano.",
+    "Non posso distinguere un gestore fuori dal repository da uno nel repository con un nome diverso: non so se file di ambiente o di deploy sono indicizzati.",
+    "La ricerca ORDER_NOTIFY_HANDLERS ha 8 risultati troncati e non visti; tra i 20 visti, quelli fuori da notifications.py e service.py non sono stati letti e li ritengo rumore da sottotermine, senza conferma.",
+    "packages/payments e packages/shipping non sono stati aperti: nessuna ricerca li collega alla notifica; il canale puo anche cambiare per ordine tramite order['channel']."
+  ]
+}

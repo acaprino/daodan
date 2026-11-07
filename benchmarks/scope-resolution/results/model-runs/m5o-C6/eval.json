@@ -1,0 +1,23 @@
+{
+ "session": "m5o-C6",
+ "case": "C6",
+ "outcome": "partial",
+ "stop_reason": "Il percorso statico finisce in send_via, che chiama un gestore caricato a runtime da ORDER_NOTIFY_HANDLERS; il valore di quella variabile non si vede con gli strumenti e le ricerche per nome non danno altre piste, con 8 query (oltre il limite di circa 6) e 4 letture.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 8,
+  "reads": 4
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 8/6, letture 4/10"
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+{
+  "outcome": "clarify",
+  "stop_reason": "Il termine 'sconto' indica due meccanismi diversi (sconto cliente sul totale ordine e sconto volume sulla spedizione) e la richiesta non dice quale dei due.",
+  "perimeter": [],
+  "exclusions": [],
+  "unresolved_calls": [
+    {"caller": "packages/orders/pricing.py::compute_discount", "callee": "order.get", "resolution": "unresolved"},
+    {"caller": "packages/orders/pricing.py::compute_discount", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::quote", "callee": "round", "resolution": "unresolved"}
+  ],
+  "candidates": [
+    {"target": "packages/orders/pricing.py", "why": "compute_discount (righe 11-14) applica la percentuale fedelta' al netto; compute_total (righe 17-20) la sottrae prima dell'IVA; packages/orders/service.py riga 26 (checkout) chiama pricing.compute_total"},
+    {"target": "packages/shipping/rates.py", "why": "volume_discount (righe 15-21) applica il 5% da 30 spedizioni mensili e il 10% da 100; quote (righe 24-27) la applica alla tariffa di spedizione"}
+  ],
+  "question": "Quale sconto intendi: (a) lo sconto cliente fedelta' sul totale ordine (pricing.py, usato al checkout), oppure (b) lo sconto volume sulle tariffe di spedizione (rates.py)?",
+  "residual": [
+    "Chiamanti di rates.quote fuori dai file letti: il grafo a un salto non ne mostra; non cercati per nome.",
+    "packages/orders/reporting.py importa pricing.py: l'uso di compute_discount non e' confermato.",
+    "packages/orders/service.py usa una pipeline configurabile (pipeline_cls): eventuali chiamate dinamiche non sono visibili al grafo e non sono state inventate."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+ "session": "m5h-C6",
+ "case": "C6",
+ "outcome": "partial",
+ "stop_reason": "Ho superato il budget (circa 8 comandi contro circa 6) e il vero invio è caricato da una variabile d'ambiente che la mappa non vede: la ricerca per 'email_receipt' non l'ho fatta.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 5,
+  "reads": 2
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/big_module.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/inventory.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/ledger.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/pricing.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

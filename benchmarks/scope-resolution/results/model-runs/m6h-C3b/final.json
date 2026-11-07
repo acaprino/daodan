@@ -1,0 +1,28 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Fermato al limite di 6 query: il calcolo IVA e il flusso di storno sono confermati, ma il grafo e la ricerca per nome non dimostrano se issue_refund e' chiamato nel flusso di emissione.",
+  "perimeter": [
+    {"path": "packages/payments/refunds.py", "why": "vat_portion (righe 10-12) estrae l'IVA dall'importo lordo: amount - amount/(1+VAT_RATE), arrotondato a 2 decimali; issue_refund (righe 15-21) mette questo valore nel campo vat; VAT_RATE = 0.22 (riga 7)."},
+    {"path": "packages/orders/service.py", "why": "refund_request (righe 32-34) chiama solo ledger.record_refund (riga 34), confermato dall'arco del grafo; non chiama issue_refund."},
+    {"path": "packages/orders/ledger.py", "why": "record_refund (righe 25-34) scrive nel registro solo 'id TAB REFUND'; nessun importo IVA, anche se la docstring (riga 26) dice 'con la quota IVA/VAT'."},
+    {"path": "packages/orders/api.py", "why": "register_defaults (righe 34-39) collega l'evento 'refund_request' a service.refund_request: e' l'ingresso del flusso di storno."},
+    {"path": "packages/orders/pricing.py", "why": "vat_amount (righe 6-8) calcola l'IVA come netto * VAT_RATE; VAT_RATE = 0.22 (riga 3) e' duplicato rispetto a refunds.py, con formula diversa (sul netto, non dal lordo)."}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/big_module.py", "why": "solo corrispondenze per nome (format_refund_entry_*, format_vat_entry_*), nessun arco nel grafo verso il flusso di rimborso; non letto."},
+    {"path": "packages/orders/reporting.py", "why": "importa pricing (grafo), ma nei risultati non compaiono simboli di rimborso o storno; non letto."},
+    {"path": "packages/payments/gateway.py", "why": "solo corrispondenza debole (pay_online) sulla ricerca dello storno IVA; nessun legame con i rimborsi."}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/payments/refunds.py::issue_refund", "callee": "order.get", "resolution": "unresolved"},
+    {"caller": "packages/payments/refunds.py::vat_portion", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/orders/ledger.py::record_refund", "callee": "LEDGER_PATH.open", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Chi chiama issue_refund: il grafo non mostra archi; la ricerca per nome trova solo corrispondenze testuali (service.py, ledger.py, api.py, big_module.py). Non confermato: va verificato fuori dalla mappa.",
+    "Il dispatch degli eventi (api.py, Dispatcher) e' dinamico e il grafo non lo segue: non e' dimostrato che un evento di rimborso arrivi a issue_refund.",
+    "Retry con sinonimo di 'modules --query rimborsi' (nessuna corrispondenza) non eseguito: budget di 6 query esaurito."
+  ]
+}

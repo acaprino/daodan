@@ -1,0 +1,28 @@
+{
+ "session": "m6o-C3b",
+ "case": "C3b",
+ "outcome": "resolved",
+ "stop_reason": "Evidenza sufficiente: l'unico calcolo dello storno IVA letto è vat_portion in refunds.py; mi sono fermato a 8 query e 8 letture, oltre le circa 6 query previste.",
+ "metrics": {
+  "perimeter": 1,
+  "required": 1,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 9,
+  "reads": 7
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 9/6, letture 7/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

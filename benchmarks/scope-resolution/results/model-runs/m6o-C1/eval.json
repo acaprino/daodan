@@ -1,0 +1,28 @@
+{
+ "session": "m6o-C1",
+ "case": "C1",
+ "outcome": "resolved",
+ "stop_reason": "Le prove bastano per il file esplicito e per il chiamante coinvolto, il budget di query e letture è superato e resta aperto solo il gestore notifiche, legato a runtime da una variabile d'ambiente.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 13,
+  "reads": 8
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 13/6, letture 8/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

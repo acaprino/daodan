@@ -1,0 +1,26 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Catena completa letta dalla registrazione in api fino alla scrittura in ledger; fermato al sesto comando del budget senza trovare il chiamante di Dispatcher.handle.",
+  "perimeter": [
+    {"path": "packages/orders/api.py", "why": "righe 34-39 register_defaults registra on_event(\"checkout\", service.checkout); righe 25-31 Dispatcher._invoke e handle invocano EVENT_REGISTRY[name](payload)"},
+    {"path": "packages/orders/service.py", "why": "righe 23-30 OrderService.checkout: riga 26 total = pricing.compute_total(order); riga 28 ledger.record(order, total); riga 30 return total"},
+    {"path": "packages/orders/pricing.py", "why": "righe 17-20 compute_total = netto - sconto cliente + vat_amount(netto); righe 6-8 vat_amount con VAT_RATE 0.22"},
+    {"path": "packages/orders/ledger.py", "why": "righe 13-22 record(order, total) prende il lock (righe 9-10) e scrive id e total in ledger.log"}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/inventory.py", "why": "riga 25 reserve_stock avviene prima del calcolo; dal grafo non alimenta il totale (arco service 23 -> inventory 17)"},
+    {"path": "packages/orders/notifications.py", "why": "riga 29 send_via avviene dopo ledger.record e il suo esito non entra nel totale restituito"},
+    {"path": "packages/payments/gateway.py", "why": "comparso solo per nome nella ricerca register_defaults; nessun arco verso la catena checkout; non letto"},
+    {"path": "packages/payments/refunds.py", "why": "comparso solo per nome nella ricerca; il grafo non lo collega a refund_request o a checkout; non letto"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/api.py::Dispatcher._invoke", "callee": "handler", "resolution": "unresolved"},
+    {"caller": "packages/orders/service.py::OrderService.checkout", "callee": "self._pipeline.step", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Chi invoca Dispatcher.handle o register_defaults (per esempio handle(\"checkout\", order)) non e' confermato: la ricerca register_defaults ha 134 match, 114 troncati, nessun chiamante nei primi 20.",
+    "self._pipeline.step e' una chiamata dinamica (pipeline_cls): non risolta dal grafo e la pipeline sostituita non e' letta. Il totale e' gia' calcolato alla riga 26, prima dello step alla riga 27, quindi non ne cambia il valore passato a ledger."
+  ]
+}

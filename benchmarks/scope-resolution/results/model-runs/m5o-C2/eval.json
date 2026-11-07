@@ -1,0 +1,33 @@
+{
+ "session": "m5o-C2",
+ "case": "C2",
+ "outcome": "resolved",
+ "stop_reason": "I due file richiesti sono confermati da lettura diretta e le ricerche per nome non danno altre piste; budget di query superato (9 contro circa 6) per cercare copie del dispatch e il KeyError nominato.",
+ "metrics": {
+  "perimeter": 2,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 1.0,
+  "queries": 10,
+  "reads": 5
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 10/6, letture 5/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/refunds.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

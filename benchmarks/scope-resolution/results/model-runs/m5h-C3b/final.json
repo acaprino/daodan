@@ -1,0 +1,24 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Raggiunto il budget di 6 query e 5 letture: il calcolo IVA dello storno e confermato, ma il collegamento tra la richiesta di rimborso e issue_refund non e stato trovato.",
+  "perimeter": [
+    {"path": "packages/payments/refunds.py", "why": "VAT_RATE = 0.22 (riga 7); vat_portion (righe 10-12) calcola amount - amount/(1+VAT_RATE) arrotondato a 2 decimali; issue_refund (righe 15-21) imposta vat = vat_portion(amount)"},
+    {"path": "packages/orders/ledger.py", "why": "record_refund (righe 25-34) scrive nel registro solo id e REFUND, nessun importo IVA, pur con docstring che dichiara la quota IVA"},
+    {"path": "packages/orders/service.py", "why": "OrderService.refund_request (righe 32-34) chiama ledger.record_refund e non issue_refund"}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/big_module.py", "why": "format_refund_entry_003 (righe 70-88) solo formatta una voce in JSON senza calcolare IVA; le altre format_refund_entry_NNN sono match lessicali sul nome, non letti"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/payments/refunds.py::vat_portion", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/payments/refunds.py::issue_refund", "callee": "order.get", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "Chiamanti di issue_refund non confermati: la ricerca per nome non ha trovato chiamanti fuori dalla sua definizione, quindi il flusso che emette lo storno non e dimostrato",
+    "packages/orders/api.py:34-39 register_defaults compare nella ricerca di issue_refund ma non e stato letto: possibile punto di collegamento da verificare",
+    "packages/orders/pricing.py:6-8 vat_amount compare nella ricerca IVA ma non e stato letto: non e dimostrato che non partecipi allo storno",
+    "Le altre funzioni format_refund_entry_NNN di packages/orders/big_module.py non sono state lette individualmente"
+  ]
+}

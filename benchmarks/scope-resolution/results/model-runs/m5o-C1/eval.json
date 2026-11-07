@@ -1,0 +1,33 @@
+{
+ "session": "m5o-C1",
+ "case": "C1",
+ "outcome": "resolved",
+ "stop_reason": "Il file è esplicito e lo sconto cliente è confermato in compute_discount; loyalty_percent compare solo lì, l'unico chiamante è nello stesso file e non restano piste sul nome.",
+ "metrics": {
+  "perimeter": 1,
+  "required": 2,
+  "extra": [],
+  "no_evidence": [],
+  "precision": 1.0,
+  "recall": 0.5,
+  "queries": 7,
+  "reads": 4
+ },
+ "failures": [
+  {
+   "assert": "required",
+   "layer": "fixture",
+   "detail": "manca benchmarks/scope-resolution/app/packages/orders/service.py"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 7/6, letture 4/10"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "resolved-residual-empty: resolved con residuo non vuoto"
+  }
+ ]
+}

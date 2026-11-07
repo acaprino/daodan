@@ -1,0 +1,64 @@
+{
+ "session": "m6h-C8",
+ "case": "C8",
+ "outcome": "partial",
+ "stop_reason": "Raggiunto il budget di circa 6 query: VAT_RATE è confermata in pricing.py, ma l'uso dell'aliquota non è letto nei file di perimetro e il valore 0.22 non è stato cercato.",
+ "metrics": {
+  "perimeter": 6,
+  "required": 2,
+  "extra": [
+   "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+   "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+   "benchmarks/scope-resolution/app/packages/orders/service.py",
+   "benchmarks/scope-resolution/app/packages/shipping/rates.py"
+  ],
+  "no_evidence": [
+   "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+   "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+   "benchmarks/scope-resolution/app/packages/orders/service.py",
+   "benchmarks/scope-resolution/app/packages/payments/refunds.py",
+   "benchmarks/scope-resolution/app/packages/shipping/rates.py"
+  ],
+  "precision": 0.33,
+  "recall": 1.0,
+  "queries": 5,
+  "reads": 1
+ },
+ "failures": [
+  {
+   "assert": "outcome",
+   "layer": "spec",
+   "detail": "atteso resolved, ottenuto partial (Raggiunto il budget di circa 6 query: VAT_RATE è confermata in pricing.py, ma l'uso dell'aliquota non è letto nei file di perimetro e il valore 0.22 non è stato cercato.)"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/api.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/inventory.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/ledger.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/orders/notifications.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/__init__.py escluso senza una lettura che lo motivi"
+  },
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "exclusion-needs-read: benchmarks/scope-resolution/app/packages/payments/gateway.py escluso senza una lettura che lo motivi"
+  }
+ ]
+}

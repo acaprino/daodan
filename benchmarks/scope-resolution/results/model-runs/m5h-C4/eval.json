@@ -1,0 +1,23 @@
+{
+ "session": "m5h-C4",
+ "case": "C4",
+ "outcome": "clarify",
+ "stop_reason": "Il termine 'sconto' indica due meccanismi diversi (sconto cliente sul totale ordine e sconto volume sulla spedizione) e la richiesta non dice quale dei due.",
+ "metrics": {
+  "perimeter": 0,
+  "required": 0,
+  "extra": [],
+  "no_evidence": [],
+  "precision": null,
+  "recall": null,
+  "queries": 7,
+  "reads": 3
+ },
+ "failures": [
+  {
+   "assert": "protocol",
+   "layer": "reference_policy",
+   "detail": "budget-cap: queries 7/6, letture 3/10"
+  }
+ ]
+}

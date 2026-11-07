@@ -1,0 +1,25 @@
+{
+  "outcome": "resolved",
+  "stop_reason": "Il perimetro è chiuso: compute_discount è l'unica definizione dello sconto cliente, loyalty_percent è letto solo lì, il totale passa da compute_total chiamato da OrderService.checkout, e reporting.py usa solo VAT_RATE.",
+  "perimeter": [
+    {"path": "packages/orders/pricing.py", "why": "compute_discount (righe 11-14) calcola lo sconto cliente da loyalty_percent sul netto; compute_total (righe 17-20) lo sottrae prima dell'IVA"},
+    {"path": "packages/orders/service.py", "why": "OrderService.checkout (riga 26) chiama pricing.compute_total(order): lo sconto entra nel totale del checkout"}
+  ],
+  "exclusions": [
+    {"path": "packages/orders/reporting.py", "why": "importa pricing ma format_daily_summary (righe 9-15) usa solo pricing.VAT_RATE; nessuna chiamata a compute_discount o compute_total"},
+    {"path": "packages/shipping/rates.py", "why": "volume_discount è uno sconto sul volume di spedizione, concetto diverso dallo sconto cliente; esclusione dal nome, file non letto"},
+    {"path": "packages/orders/notifications.py", "why": "comparso nella ricerca 'sconto cliente' solo a livello di file, senza simboli né arco del grafo verso pricing; non letto"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/service.py::OrderService.checkout", "callee": "self._pipeline.step", "resolution": "unresolved"},
+    {"caller": "packages/orders/pricing.py::compute_discount", "callee": "order.get", "resolution": "unresolved"},
+    {"caller": "packages/orders/pricing.py::compute_discount", "callee": "round", "resolution": "unresolved"}
+  ],
+  "candidates": null,
+  "question": null,
+  "residual": [
+    "La pipeline iniettata in OrderService (self._pipeline.step) non è risolta dal grafo e le sue implementazioni non sono state lette: non confermo se modificano lo sconto.",
+    "ledger.record(order, total) e notifications.send_via(...) ricevono il totale o l'ordine: non letti, non confermo se ricalcolano lo sconto.",
+    "Test non cercati per nome: non rientrano nei passi della procedura."
+  ]
+}

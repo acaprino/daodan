@@ -1,0 +1,26 @@
+{
+  "outcome": "partial",
+  "stop_reason": "Superato il budget di circa 6 query (8 comandi di ricerca, grafo, outline e lettura); il chiamante che emette l'evento 'pay_online' verso Dispatcher.handle non e' confermato dalla mappa.",
+  "perimeter": [
+    {"path": "packages/orders/api.py", "why": "_invoke (righe 25-27) fa EVENT_REGISTRY[name], origine del KeyError; register_defaults (righe 37-38) registra solo 'checkout' e 'refund_request', non 'pay_online'"},
+    {"path": "packages/payments/gateway.py", "why": "pay_online definita alle righe 8-10 (nome dell'evento nel KeyError) e charge alle righe 24-27 (candidata per l'addebito online); il collegamento dispatch-addebito non e' confermato"}
+  ],
+  "exclusions": [
+    {"path": "packages/shipping", "why": "modulo spedizioni: nessun nome o collegamento con pay_online, dispatch o registrazione"},
+    {"path": "benchmarks/scope-resolution/app", "why": "modulo orders-demo: non compare nelle ricerche di pay_online, dispatch o register"},
+    {"path": "packages/payments/gateway.py::pay_on_delivery", "why": "pagamento alla consegna, nome diverso dall'evento; non e' l'addebito online (righe 13-15, non letta)"}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/api.py::Dispatcher._invoke", "callee": "handler", "resolution": "unresolved"},
+    {"caller": "packages/payments/gateway.py::pay_online", "callee": "order.get", "resolution": "unresolved"},
+    {"caller": "packages/payments/gateway.py::charge", "callee": "handler", "resolution": "unresolved"}
+  ],
+  "candidates": [],
+  "question": null,
+  "residual": [
+    "Chi chiama Dispatcher.handle con 'pay_online': la ricerca per nome trova la stringa solo in gateway.py:8-10 e non in api.py; il grafo non vede il chiamante (collegamento dinamico), quindi non confermato",
+    "Non confermato che charge (gateway.py:24-27) sia il percorso di addebito online eseguito dal dispatch: il suo handler e' irrisolto",
+    "Corpo di pay_online e charge non letto (solo nomi e righe dalla ricerca)",
+    "packages/orders/service.py non letto: le callback checkout e refund_request e OrderService restano fuori verifica"
+  ]
+}

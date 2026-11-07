@@ -1,0 +1,25 @@
+{
+  "outcome": "clarify",
+  "stop_reason": "La richiesta non dà sintomo né modulo e 'sconto' indica due regole indipendenti in due package, confermate leggendole; nessun altro file compare nelle ricerche e altre query non possono scegliere al posto dell'utente.",
+  "perimeter": [],
+  "exclusions": [
+    {"path": "packages/orders/service.py", "why": "Nel grafo chiama solo compute_total (function@23:4); non compare nelle ricerche di sconto/discount: contesto del candidato orders, non perimetro."},
+    {"path": "packages/orders/reporting.py", "why": "Nel grafo importa pricing, ma non compare nelle ricerche di sconto/discount; non letto."}
+  ],
+  "unresolved_calls": [
+    {"caller": "packages/orders/pricing.py::compute_discount", "callee": "order.get", "resolution": "unresolved"},
+    {"caller": "packages/orders/pricing.py::compute_discount", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/orders/pricing.py::compute_total", "callee": "order.get", "resolution": "unresolved"},
+    {"caller": "packages/orders/pricing.py::compute_total", "callee": "round", "resolution": "unresolved"},
+    {"caller": "packages/shipping/rates.py::quote", "callee": "round", "resolution": "unresolved"}
+  ],
+  "candidates": [
+    {"target": "packages/orders/pricing.py", "why": "Riga 11 compute_discount, riga 12 'Sconto cliente: percentuale di fedeltà applicata al netto'; usato da compute_total alla riga 19."},
+    {"target": "packages/shipping/rates.py", "why": "Riga 15 volume_discount, riga 16 'Sconto per volume di spedizioni mensili'; usato da quote alla riga 27."}
+  ],
+  "question": "Quale sconto ha il bug: quello cliente di fedeltà sugli ordini (compute_discount in packages/orders/pricing.py) o quello per volume sulle spedizioni (volume_discount in packages/shipping/rates.py)?",
+  "residual": [
+    "Manca il sintomo del bug: la review può partire solo dopo la scelta del candidato.",
+    "Il grafo a 1 hop non mostra chiamanti di quote; non cercati, perché il candidato non è ancora scelto."
+  ]
+}
