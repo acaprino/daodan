@@ -62,8 +62,8 @@ illustrative; use the caller-bound run and an explicitly prepared model folder.
 {
   "schema": "daodan/embedding-request/v1",
   "operation": "index",
-  "manifest": "/project/.codebase-map/runs/run-id/snapshot/manifest.sqlite",
-  "index": "/project/.codebase-map/runs/run-id/snapshot/embeddings.sqlite",
+  "manifest": "/project/.daodan/map/runs/run-id/snapshot/manifest.sqlite",
+  "index": "/project/.daodan/map/runs/run-id/snapshot/embeddings.sqlite",
   "model_dir": "/prepared-models/EmbeddingGemma2"
 }
 ```

@@ -16,7 +16,7 @@ You execute Phase 5 (Pattern & Risk Detection) and Phase 6 (Documentation Health
 
 The spawn prompt gives you:
 - `partition_name`, `partition_path`, `active_flags` (you respect `comments` and `depth`)
-- `run_dir`: the run directory for this analysis (e.g. `.codebase-map/runs/<run-id>`)
+- `run_dir`: the run directory for this analysis (e.g. `.daodan/map/runs/<run-id>`)
 - `source_manifest`: the exact path from `snapshot.py resolve <run_dir>`, bound to the current run's root and whole target; a prompt alias for the declared binding; read-only for workers. Reuse with `analyze_file.py --snapshot`; never rebuild the project for a file
 - Implicit: all `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` already exist
 
@@ -34,7 +34,7 @@ You read freely from `partition_path`, other inventoried source needed for a
 cross-partition risk or style cascade, and `<run_dir>/partitions/*/01-structure.md`
 + `02-interfaces.md`.
 
-You DO NOT touch any other file under `.codebase-map/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
+You DO NOT touch any other file under `.daodan/map/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
 
 ## FORBIDDEN FILES AND PERIMETER
 

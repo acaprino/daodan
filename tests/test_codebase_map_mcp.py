@@ -117,7 +117,7 @@ class MapServiceTests(unittest.TestCase):
         request.update(query='selected', anchors=[], read_boundary=['src'])
         service = mcp_service.MapService(self.source)
         service.create_run('.', 'subproject')
-        manifest = self.source / '.codebase-map/runs/subproject/snapshot/manifest.sqlite'
+        manifest = self.source / '.daodan/map/runs/subproject/snapshot/manifest.sqlite'
         retrieval.refresh_index(manifest, manifest.parent / 'retrieval.sqlite')
         recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 1000,
                      'max_chars': 100000, 'max_evaluations': 200}
@@ -163,7 +163,7 @@ class MapServiceTests(unittest.TestCase):
 
     @property
     def run_dir(self):
-        return self.project / ".codebase-map/runs/example"
+        return self.project / ".daodan/map/runs/example"
 
     def write(self, name, value="# Read and cited evidence\n"):
         path = self.run_dir / name
@@ -186,7 +186,7 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(result["state"]["snapshot"]["format"], "sqlite")
         with open_snapshot(resolve_run_snapshot(self.run_dir, result["state"])) as manifest:
             self.assertEqual(manifest.file_count, 1)
-        registry = json.loads((self.project / ".codebase-map/runs.json").read_text())
+        registry = json.loads((self.project / ".daodan/map/runs.json").read_text())
         self.assertEqual(registry["active"][0]["run_id"], "example")
         self.assertFalse((self.run_dir / "01-structure.md").exists())
 
@@ -217,13 +217,13 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(self.service.scope(".github")["files"], 1)
 
     def test_invalid_target_and_run_identity_make_no_output(self):
-        for target in ("../outside", str(self.source), "src/../src", "src\\module.py", ".codebase-map"):
+        for target in ("../outside", str(self.source), "src/../src", "src\\module.py", ".daodan/map"):
             with self.subTest(target=target), self.assertRaises(ValueError):
                 self.service.create_run(target, "example")
         for run_id in ("..", "../foreign", "a/b", "A", "con", "a:b", ""):
             with self.subTest(run_id=run_id), self.assertRaises(ValueError):
                 self.service.create_run("src", run_id)
-        self.assertFalse((self.project / ".codebase-map").exists())
+        self.assertFalse((self.project / ".daodan/map").exists())
 
     def test_flag_validation_and_collision_preserve_existing_run(self):
         for options in ({"depth": "huge"}, {"critical": 1}, {"comments": "yes"},
@@ -501,7 +501,7 @@ class MapServiceTests(unittest.TestCase):
     def test_publish_requires_real_delivery_and_rejects_changed_source(self):
         self.create()
         self.assertFalse(self.service.publish("example")["published"])
-        self.assertFalse((self.project / ".codebase-map/07-final-report.md").exists())
+        self.assertFalse((self.project / ".daodan/map/07-final-report.md").exists())
         self.deliver(1, 2, 3, 4, 5, 6, 7)
         self.assertTrue(self.service.publish("example")["published"])
         self.assertEqual(self.service.status("example")["state"]["status"], "complete")
@@ -626,7 +626,7 @@ class MapServiceTests(unittest.TestCase):
 
     def test_runs_lists_a_damaged_run_without_hiding_the_others(self):
         self.create()
-        damaged = self.project / ".codebase-map/runs/damaged"
+        damaged = self.project / ".daodan/map/runs/damaged"
         damaged.mkdir()
         (damaged / "state.json").write_text("{not json", encoding="utf-8")
         listed = {item["run_id"]: item for item in self.service.runs()["runs"]}
@@ -699,7 +699,7 @@ class MapServiceTests(unittest.TestCase):
 
     def test_registry_lock_left_by_a_crashed_holder_does_not_block(self):
         self.create()
-        (self.project / ".codebase-map/.registry.lock").write_text("stale", encoding="utf-8")
+        (self.project / ".daodan/map/.registry.lock").write_text("stale", encoding="utf-8")
         self.service.stop("example", "Workers stopped")
         self.assertEqual(self.service.runs()["registry"]["active"], [])
 
@@ -792,7 +792,7 @@ class CustomStoreTests(unittest.TestCase):
         self.assertTrue(self.service.publish("example")["published"])
         self.assertTrue((self.store / "07-final-report.md").is_file())
         self.assertEqual(self.service.runs()["registry"]["latest_completed"], "example")
-        self.assertFalse((self.project / ".codebase-map").exists())
+        self.assertFalse((self.project / ".daodan/map").exists())
         reopened = mcp_service.MapService(self.project, self.STORE)
         self.assertEqual(reopened.status("example")["state"]["status"], "complete")
         self.assertEqual(mcp_service.MapService(self.project).runs(), {"runs": [], "registry": None})
@@ -844,7 +844,7 @@ class CustomStoreTests(unittest.TestCase):
 
     def test_invalid_store_paths_are_refused_at_binding(self):
         for store in ("", ".", "..", "../outside", "app/map", "/abs", "C:/map", ".app\\map",
-                      ".app/../map", ".app//map", ".codebase-map",
+                      ".app/../map", ".app//map", ".daodan/map",
                       ".git/map", ".app/con", ".app/map.", ".app/ map", ".app/CONIN$",
                       ".app/com\u00b9", ".app/m?p", ".app/m\x01p", 7):
             with self.subTest(store=store), self.assertRaises(ValueError):
@@ -855,7 +855,7 @@ class CustomStoreTests(unittest.TestCase):
         for target in (".app", ".APP/codebase-map", ".app/codebase-map/runs/example"):
             with self.subTest(target=target), self.assertRaisesRegex(ValueError, "analysis output"):
                 self.service.scope(target)
-        self.assertFalse((self.project / ".codebase-map").exists())
+        self.assertFalse((self.project / ".daodan/map").exists())
 
 
 if __name__ == "__main__":

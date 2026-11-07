@@ -58,14 +58,14 @@ Read named core sections by locating headings or fenced skeletons before bounded
    - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `references/entry-analyze.md`)
 3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-map:map` skill's `references/run.md`):
    - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
-   - Set `RUN_DIR = .codebase-map/runs/<run-id>`
-   - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-map/runs/legacy-<date>/` first
+   - Set `RUN_DIR = .daodan/map/runs/<run-id>`
+   - Read `.daodan/map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside.
    - Register through `snapshot.py register $RUN_DIR` after initializing state below; never write `runs.json` directly
 4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and its snapshot resolves through `snapshot.py resolve <parent-run-dir>`. With a candidate, run the change set once over the whole target:
 
    ```bash
    python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" diff \
-     .codebase-map/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
+     .daodan/map/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
    ```
 
    Hold `changes.json` for the partition checkpoint. With `--update` and no candidate, stop and say which condition failed (no completed run for this target, a completed run that is not team mode, or a parent with no manifest), and that a full run is the way to create one. Never fabricate a parent. With a candidate present, `--update` requires that base but does not choose the execution mode: resolve that choice at the checkpoint using the user's request, earlier answers or `--yes`; ask only if it remains unsettled.
@@ -168,7 +168,7 @@ Available only when pre-flight point 4 found a candidate parent and its change s
 
 1. **The partition set must match.** The names this detection produced must be the same set as the parent's `state.json -> partitions`. Any difference means a full run, with the difference named at the checkpoint. A partition that appeared, vanished or was renamed changes what every other partition's boundaries mean.
 2. **Assign the affected files.** For each partition, its affected files are the `affected_files` of the change set that fall under its path. Record `partitions[i].update` as `"copied"` when that list is empty and `"re-analyzed"` (with the affected-file count) otherwise, before either branch below runs: the completion summary in Phase 4 and the `## Partitions` table both read this field, and neither can be reconstructed later, since `partitions[i].status` ends at `"done"` for both outcomes.
-3. **A partition with no affected file is copied**, whole, from `.codebase-map/runs/<parent-id>/partitions/<name>/` into `$RUN_DIR/partitions/<name>/`, once the checkpoint's update option is accepted. Mark its `partitions[i].status` as `"done"` directly. Phase 1's Wave 1 loop and its post-barrier status update both exclude a partition already `"done"`, so no worker is ever dispatched for it in either wave, and Wave 2's `structure_done` gate excludes it too since its status never changes from `"done"`.
+3. **A partition with no affected file is copied**, whole, from `.daodan/map/runs/<parent-id>/partitions/<name>/` into `$RUN_DIR/partitions/<name>/`, once the checkpoint's update option is accepted. Mark its `partitions[i].status` as `"done"` directly. Phase 1's Wave 1 loop and its post-barrier status update both exclude a partition already `"done"`, so no worker is ever dispatched for it in either wave, and Wave 2's `structure_done` gate excludes it too since its status never changes from `"done"`.
 4. **A partition with at least one affected file is re-analyzed**, both waves, exactly as in a fresh run. Its workers receive their normal prompts and never see the change set.
 5. **Synthesis and the interconnect map always run**, over the mix of copied and fresh partition output. Both are cross-partition by construction, so neither can be carried.
 6. **`changes.md` holds the change set's three mechanical sections plus a `## Partitions` table** naming each partition as copied or re-analyzed, read from `partitions[i].update`.
@@ -261,7 +261,7 @@ Current source manifest: <resolved source_manifest> (read-only)
 Owned files:
   - <RUN_DIR>/partitions/<P_i.name>/01-structure.md
   - <RUN_DIR>/partitions/<P_i.name>/02-interfaces.md
-DO NOT touch any other file under .codebase-map/.
+DO NOT touch any other file under .daodan/map/.
 
 Target path for this partition: <P_i.path>
 Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
@@ -302,7 +302,7 @@ Current source manifest: <resolved source_manifest> (read-only)
 Owned files:
   - <RUN_DIR>/partitions/<P_i.name>/03-flows.md
   - <RUN_DIR>/partitions/<P_i.name>/04-semantics.md
-DO NOT touch any other file under .codebase-map/.
+DO NOT touch any other file under .daodan/map/.
 
 Target path for this partition: <P_i.path>
 Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
@@ -345,7 +345,7 @@ You are partition-synthesizer.
 Identity: SYNTH
 Run directory: <RUN_DIR>
 Owned files: <RUN_DIR>/01-structure.md through <RUN_DIR>/07-final-report.md (skip 03, 04, 06 if depth=lite).
-DO NOT touch <RUN_DIR>/08-interconnect-map.md, any partition file, or anything at the .codebase-map/ root.
+DO NOT touch <RUN_DIR>/08-interconnect-map.md, any partition file, or anything at the .daodan/map/ root.
 
 Active flags: <flags from state.json>
 
@@ -419,17 +419,17 @@ Workers never load presentation instructions.
 
 ```
 Codebase Map (team mode) complete for: <target>
-Run: <run-id> (<published to .codebase-map/ root | partial, run only>)
+Run: <run-id> (<published to .daodan/map/ root | partial, run only>)
 Parent: <parent-id or "none (full run)">
 
 Partitions: <N> (<list of names + status>)
 
 Output Files:
-  Knowledge discovery:      .codebase-map/runs/<run-id>/knowledge/navigation.md, documentation-leads.md (Phase 0)
-  Per-partition reports:    .codebase-map/runs/<run-id>/partitions/*/01..06.md
-  Consolidated reports:     .codebase-map/runs/<run-id>/01-structure.md .. 07-final-report.md
-  Interconnect map:         .codebase-map/runs/<run-id>/08-interconnect-map.md (if Phase 3 ran)
-  Root mirror:              .codebase-map/01..08.md (for downstream consumers)
+  Knowledge discovery:      .daodan/map/runs/<run-id>/knowledge/navigation.md, documentation-leads.md (Phase 0)
+  Per-partition reports:    .daodan/map/runs/<run-id>/partitions/*/01..06.md
+  Consolidated reports:     .daodan/map/runs/<run-id>/01-structure.md .. 07-final-report.md
+  Interconnect map:         .daodan/map/runs/<run-id>/08-interconnect-map.md (if Phase 3 ran)
+  Root mirror:              .daodan/map/01..08.md (for downstream consumers)
 
 Summary:
   - Files in inventory: <count>  |  Read in depth: <count>  |  Exercised at runtime: none
@@ -438,7 +438,7 @@ Summary:
   - Cross-partition flows: <count>
 ```
 
-On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.codebase-map/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
+On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.daodan/map/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
 
 5. Present independent next-step suggestions, with the exact run directory and
 source snapshot attached. A host documentation workflow may create or fix

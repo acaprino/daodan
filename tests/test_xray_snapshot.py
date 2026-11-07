@@ -930,7 +930,7 @@ class _DiffFixture(unittest.TestCase):
         write(self.src, "reports/weekly.py", "def summarize():\n    return 2\n")
         write(self.src, "util/text.py", "def normalize(s):\n    return s.strip()\n")
         write(self.src, "util/dates.py", "def today():\n    return None\n")
-        self.parent = self.tmp / ".codebase-map/runs/src-20260901-101200"
+        self.parent = self.tmp / ".daodan/map/runs/src-20260901-101200"
         self.parent.mkdir(parents=True)
         (self.parent / "state.json").write_text(json.dumps(PARENT_STATE), encoding="utf-8")
         import snapshot
@@ -952,7 +952,7 @@ class _DiffFixture(unittest.TestCase):
             "- The retry budget is set in `src/orders/service.py::retry_policy`.\n"
             "- The HTTP entry point is `src/api/routes.py::handler`.\n",
         )
-        self.run_dir = self.tmp / ".codebase-map/runs/src-20260903-101500"
+        self.run_dir = self.tmp / ".daodan/map/runs/src-20260903-101500"
 
     def diff(self, *extra):
         code, out, err = run_script(

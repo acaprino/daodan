@@ -11,7 +11,7 @@ Discover how the repository documents itself to guide phases; leave accuracy eva
 3. For every scoped concept, symbol and subsystem, search those documents; record the concept, document and matching anchor or heading.
 4. Write both files below. Every row is a `documented` or `unverified` lead, never `verified`; this phase reads no code.
 
-`$RUN_DIR` is the active `.codebase-map/runs/<run-id>/` directory, per the Concurrent Runs Model in `references/run.md`.
+`$RUN_DIR` is the active `.daodan/map/runs/<run-id>/` directory, per the Concurrent Runs Model in `references/run.md`.
 
 **Output file:** `$RUN_DIR/knowledge/navigation.md`
 

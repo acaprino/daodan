@@ -8,18 +8,9 @@ reference. Confidence describes support for the finding, not impact or priority;
 include the evidence supporting that assessment. Never derive confidence from a
 specialist's priority label.
 
-Normalize severity into the existing review vocabulary before filtering, sorting
-or applying gates. These defaults reflect the canonical roles' declared meanings;
-they are provisional until evidence-based severity calibration:
-
-| Provider | Native severity | Review severity |
-|---|---|---|
-| react-development | CRITICAL (immediate performance issue) | High |
-| react-development | IMPORTANT (before-production improvement) | Medium |
-| react-development | IMPROVEMENT (optional optimization) | Low |
-| platform-engineering | Critical, High, Medium or Low (caller severity vocabulary) | Same severity |
-| platform-engineering | Warning (legacy native report) | Medium, subject to impact calibration |
-| typescript-development | Critical, High, Medium or Low | Same severity |
+Normalize severity into the review vocabulary (Critical, High, Medium, Low) before
+filtering, sorting or applying gates. No stack specialist exists yet; when one is
+added, declare its native labels and their mapping here before its first dispatch.
 
 Preserve the original label in native_severity when the mapping changes it. A
 reviewer can justify a different review severity with concrete user impact and the

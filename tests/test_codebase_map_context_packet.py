@@ -132,8 +132,8 @@ class ProjectPacketTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name).resolve()
         (self.root / 'core.py').write_bytes(b'OFFSET = 1\n\ndef helper(value):\n    return value + OFFSET\n\ndef run(value):\n    return helper(value)\n')
-        out = self.root / '.codebase-map'
-        out.mkdir()
+        out = self.root / '.daodan/map'
+        out.mkdir(parents=True)
         self.manifest = out / 'snapshot.sqlite'
         snapshot.write_snapshot(self.root, self.manifest)
         self.authority = {'root': str(self.root), 'read_boundary': ['.'], 'write_boundary': ['core.py']}

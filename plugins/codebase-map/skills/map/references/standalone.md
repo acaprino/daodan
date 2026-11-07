@@ -6,7 +6,7 @@ card deepening or publication. Standalone consumers never perform them; composed
 workflows require their method's authorization.
 
 1. **Locate evidence.** Call `codebase_map_runs`, then `codebase_map_status` on
-   a completed run. Without MCP inspect `.codebase-map/runs.json`, published
+   a completed run. Without MCP inspect `.daodan/map/runs.json`, published
    `state.json` and root mirror. Latest-state questions may use mirrors;
    invocation-bound work keeps its exact run directory. Exclude partial runs.
 2. **Navigate before scanning.** Use `reading.md`'s `Task views`; follow

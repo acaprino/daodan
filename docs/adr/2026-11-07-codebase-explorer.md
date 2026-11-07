@@ -57,7 +57,7 @@ Prima di fissare il renderer, la stessa piccola fixture del FRD verrà proiettat
 
 **Stato attuale:** Daodan ha snapshot, moduli e schede; la fase 3 prescrive flussi in `03-flows.md`. Non è verificata l'esistenza di un dataset di flussi adatto alla UI. Non si interpreta Mermaid per ricostruire fatti o ordine di esecuzione.
 
-**Intervento proposto:** la stessa fase 3 produce anche `03-flows.json`, con passi e transizioni strutturati sostenuti dalle medesime evidenze. Il report Markdown viene prodotto dagli stessi dati più la spiegazione narrativa, evitando due raccolte indipendenti. Un run storico privo del JSON conserva navigazione architetturale e report, ma non riceve percorsi sintetizzati silenziosamente. Il nuovo artefatto resta run-local; nessuna modifica automatica al mirror o al registro dei run.
+**Intervento proposto:** la stessa fase 3 produce anche `03-flows.json`, con passi e transizioni strutturati sostenuti dalle medesime evidenze. Il report Markdown viene prodotto dagli stessi dati più la spiegazione narrativa, evitando due raccolte indipendenti. Un run privo del JSON conserva navigazione architetturale e report, ma non riceve percorsi sintetizzati silenziosamente. Il nuovo artefatto resta run-local; nessuna modifica automatica al mirror o al registro dei run.
 
 L'exporter Python usa le API interne di snapshot/moduli/schede, senza leggere direttamente tabelle SQLite sparse nel frontend e senza richiedere un server MCP. Percorsi proposti: `plugins/codebase-map/skills/map-method/scripts/visual.py` per export/serve; `plugins/codebase-map/viewer/` per sorgenti frontend; asset distribuiti sotto `plugins/codebase-map/assets/viewer/`. Non sono file già implementati.
 
@@ -78,7 +78,7 @@ Non si crea una seconda tassonomia degli stati: i nomi e significati di provenie
 
 I riferimenti multipli producono occorrenze visuali, non nuove entità. ID dell'occorrenza = funzione del riferimento canonico e del contenitore della vista; esiste solo nella UI. Counts e risultati di ricerca deduplicano per identità canonica. I parent React Flow organizzano le occorrenze, non definiscono i proprietari del codice. Gli archi aggregati conservano l'elenco dei riferimenti alle relazioni sottostanti; gli archi interni a un gruppo collassato diventano un conteggio consultabile, non false dipendenze esterne.
 
-L'export viene scritto in una directory derivata per run/digest, esterna agli input immutabili: destinazione proposta `.codebase-map/views/<run-id>/<export-digest>/`. Si valida prima di pubblicare la directory completa; errori non sovrascrivono l'export precedente. Il digest include anche le schede effettivamente lette: il loro store è aggiornabile separatamente, perciò la lettura deve acquisire una vista coerente o rifiutare un cambiamento concorrente.
+L'export viene scritto in una directory derivata per run/digest, esterna agli input immutabili: destinazione proposta `.daodan/map/views/<run-id>/<export-digest>/`. Si valida prima di pubblicare la directory completa; errori non sovrascrivono l'export precedente. Il digest include anche le schede effettivamente lette: il loro store è aggiornabile separatamente, perciò la lettura deve acquisire una vista coerente o rifiutare un cambiamento concorrente.
 
 ## 4. Esecuzione, UI e failure mode
 

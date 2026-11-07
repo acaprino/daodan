@@ -48,8 +48,8 @@ class MinimumCoreTests(unittest.TestCase):
             b'OFFSET = 1\n\ndef helper(value):\n    return value + OFFSET\n\ndef run(value):\n    return helper(value)\n')
         (self.root / 'leads.py').write_text('LEAD_HEADER = 1\n\n' + ''.join(LEAD.format(i=i) for i in range(30)),
                                             encoding='utf8')
-        out = self.root / '.codebase-map'
-        out.mkdir()
+        out = self.root / '.daodan/map'
+        out.mkdir(parents=True)
         self.manifest = out / 'snapshot.sqlite'
         snapshot.write_snapshot(self.root, self.manifest)
         self.index = out / 'retrieval.sqlite'

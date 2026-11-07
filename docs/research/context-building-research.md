@@ -2,7 +2,7 @@
 
 # Code-context retrieval: scientific research and findings
 
-> **Status in the new two-owner base (2026-11-03):** historical research imported from the previous Daodan backup. Embeddings remain excluded from the MVP because the local package-building experiments did not improve candidate retrieval; the cited papers have not been independently re-verified here.
+> Research notes behind the context-building work. Embeddings stay opt-in because the local experiments did not improve candidate retrieval; the cited papers have not been independently re-verified here.
 
 [Used by Codebase Map](../plugins/codebase-map.md) · [Test diary](context-building-benchmarks.md)
 
@@ -15,7 +15,7 @@
 
 ## Why we conducted the research
 
-1. **Failure of the legacy static-packet approach:** The previous Codebase Map context path (scope planner + static packet) yielded 72 refusals out of 72 attempts. Even after two redesign phases, it delivered only 21/38/46% of required code on Starlette compared to 31/47/52% for plain BM25 lexical search.
+1. **Failure of the static-packet approach:** The earlier Codebase Map context path (scope planner + static packet) yielded 72 refusals out of 72 attempts. Even after two redesign phases, it delivered only 21/38/46% of required code on Starlette compared to 31/47/52% for plain BM25 lexical search.
 2. **Unsustainable cost of unguided autonomous exploration:** A generalist Sonnet agent exploring the codebase independently achieves 92% at 24k characters but consumes roughly 825,000 tokens per single request. A targeted pipeline was needed to supply relevant code using under 11,000 total tokens.
 3. **Risk of hallucination and drift:** Naive query expansion or hypothetical code generation (stubs) invents non-existent symbols (up to 134 hallucinated names on private codebases), degrading correct rankings. Literature verification was required to identify repository-level code search architectures backed by empirical evidence.
 

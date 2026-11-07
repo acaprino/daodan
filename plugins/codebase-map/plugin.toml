@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "codebase-map"
 version = "1.0.1"
-description = "Multi-language codebase mapping baseline imported from Daodan 1.0.1. It analyzes architecture, traces data flows, detects anti-patterns and supplies verifiable source context for senior-review. It does not select reviewers or emit correctness verdicts. Legacy host commands, export bindings and documentation-generator integrations remain in the imported method but are inactive until adapted to the new two-owner base."
+description = "Multi-language codebase mapping: inventory, symbols, relationships, modules and semantic descriptions of a repository, served to the agent on demand with verifiable source references. It analyzes architecture, traces data flows and detects anti-patterns. It does not select reviewers or emit correctness verdicts."
 license = "MIT"
 
 [capabilities]
@@ -21,8 +21,7 @@ policies = ["write-confinement"]
 exports = ["contracts/context.toml"]
 
 [[mcp.servers]]
-# Historical host binding. `${CLAUDE_PLUGIN_ROOT}` must be adapted before this
-# optional MCP server is activated on a new host.
+# `${CLAUDE_PLUGIN_ROOT}` is the installed plugin root, expanded by the host (see .mcp.json).
 name = "codebase-map"
 command = "uv"
 args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py"]

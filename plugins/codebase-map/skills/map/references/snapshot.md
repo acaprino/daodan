@@ -37,7 +37,7 @@ its SQLite version and parser fingerprint, so another Python reads it as `stale`
 Choose one file per run. After writing, set `state.json -> snapshot`:
 `{"format":"sqlite","path":"snapshot/manifest.sqlite","storage_version":1}`,
 or format `json` with `snapshot/manifest.json`.
-Legacy runs without this record are JSON only; never rewrite them.
+Runs without this record are JSON only; never rewrite them.
 
 Use `snapshot.py resolve` for current, existing and parent runs:
 

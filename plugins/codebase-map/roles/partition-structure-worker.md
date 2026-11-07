@@ -18,7 +18,7 @@ You execute Phase 1 (Structure Extraction) and Phase 2 (Interface Analysis) of C
 The spawn prompt gives you:
 - `partition_name`: kebab-case identifier (e.g. `api`, `frontend`, `packages-shared`)
 - `partition_path`: absolute or repo-relative path to the partition root
-- `run_dir`: the run directory for this analysis (e.g. `.codebase-map/runs/<run-id>`). All your output paths are relative to it.
+- `run_dir`: the run directory for this analysis (e.g. `.daodan/map/runs/<run-id>`). All your output paths are relative to it.
 - `source_manifest`: the exact path from `snapshot.py resolve <run_dir>`, bound to the current run's root and whole target; a prompt alias for the declared binding; read-only for workers. Reuse with `analyze_file.py --snapshot`; never rebuild the project for a file
 - `active_flags`: object with `critical`, `comments`, `depth` (you only use `depth` -- if `lite`, your output is identical to full because Phase 1+2 always run)
 
@@ -27,7 +27,7 @@ The spawn prompt gives you:
 - You write ONLY:
   - `<run_dir>/partitions/<partition_name>/01-structure.md`
   - `<run_dir>/partitions/<partition_name>/02-interfaces.md`
-- You DO NOT touch any other file under `.codebase-map/` (other runs may be in progress concurrently).
+- You DO NOT touch any other file under `.daodan/map/` (other runs may be in progress concurrently).
 - You DO NOT update `<run_dir>/state.json` — that is the orchestrator's job.
 
 ## FORBIDDEN FILES AND PERIMETER

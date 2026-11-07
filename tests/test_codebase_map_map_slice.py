@@ -25,7 +25,7 @@ class MapSliceTests(unittest.TestCase):
         self.root = Path(temporary.name).resolve()
         (self.root / 'service.py').write_bytes(b'def calculate(value):\n    return value + 1\n')
         (self.root / 'client.py').write_bytes(b'from service import calculate\n\ndef run(value):\n    return calculate(value)\n')
-        out = self.root / '.codebase-map/run-one'
+        out = self.root / '.daodan/map/run-one'
         out.mkdir(parents=True)
         self.manifest = out / 'snapshot.sqlite'
         snapshot.write_snapshot(self.root, self.manifest)
@@ -138,7 +138,7 @@ class MapSliceTests(unittest.TestCase):
         (root / 'a.py').write_bytes(b'from b import target\n\ndef one():\n    return target()\n\n'
                                      b'def two():\n    return target()\n\ndef three():\n    return target()\n')
         (root / 'c.py').write_bytes(b'from d import other\n\ndef run():\n    return other()\n')
-        out = root / '.codebase-map/run'
+        out = root / '.daodan/map/run'
         out.mkdir(parents=True)
         manifest = out / 'snapshot.sqlite'
         snapshot.write_snapshot(root, manifest)

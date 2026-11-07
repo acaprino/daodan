@@ -29,7 +29,7 @@ class SnapshotStorageTests(unittest.TestCase):
         return importlib.import_module("snapshot_store")
 
     def out(self, name="manifest.sqlite"):
-        return self.root / ".codebase-map" / name
+        return self.root / ".daodan/map" / name
 
     def test_default_is_sqlite(self):
         storage = self.api()
@@ -92,7 +92,7 @@ class SnapshotStorageTests(unittest.TestCase):
 
     def test_unrecognized_header_and_schema_refused(self):
         storage = self.api()
-        self.out().parent.mkdir()
+        self.out().parent.mkdir(parents=True, exist_ok=True)
         self.out().write_bytes(b"not a snapshot")
         with self.assertRaises(ValueError):
             storage.open_snapshot(self.out())
@@ -213,7 +213,7 @@ class SnapshotStorageTests(unittest.TestCase):
         import json_snapshot
         (self.root / "caf\u00e9.py").write_text("def caf\u00e9():\n    return '\u4e2d\U0001f600'\n", encoding="utf-8")
         value = snapshot.build_manifest(self.root)
-        self.out().parent.mkdir()
+        self.out().parent.mkdir(parents=True, exist_ok=True)
         self.out("unicode.json").write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
         with mock.patch.object(json_snapshot, "CHUNK_BYTES", 13):
             with storage.open_snapshot(self.out("unicode.json")) as store:
@@ -227,7 +227,7 @@ class SnapshotStorageTests(unittest.TestCase):
         storage = self.api()
         import json_snapshot
         prefix = b'{"files":{},"schema":1,"root":".","target":".","score":'
-        self.out().parent.mkdir()
+        self.out().parent.mkdir(parents=True, exist_ok=True)
         path = self.out("numbers.json")
         for token in (b"1e3", b"1.25", b"-12.5e-2", b"123E+4"):
             for split in range(1, len(token)):
@@ -239,7 +239,7 @@ class SnapshotStorageTests(unittest.TestCase):
 
     def test_nonfinite_overflow_is_rejected_in_json_and_sqlite_records(self):
         storage = self.api()
-        self.out().parent.mkdir()
+        self.out().parent.mkdir(parents=True, exist_ok=True)
         for number in (b"1e400", b"-1e400", b"NaN", b"Infinity", b"-Infinity"):
             with self.subTest(number=number):
                 path = self.out("invalid.json")
@@ -277,7 +277,7 @@ class SnapshotStorageTests(unittest.TestCase):
         import card_store
         import semantic_store
         from snapshot_store import artifact_digest
-        store_root = self.root / ".codebase-map"
+        store_root = self.root / ".daodan/map"
         run = store_root / "runs" / "example"
         (run / "snapshot").mkdir(parents=True)
         (run / "state.json").write_text("{}", encoding="utf-8")

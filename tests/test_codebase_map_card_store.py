@@ -62,12 +62,12 @@ class CardStoreTests(unittest.TestCase):
                 card_store.validate_card(card)
 
     def test_a_run_snapshot_uses_the_analysis_root_and_any_other_keeps_its_own_directory(self):
-        run = self.root / ".codebase-map" / "runs" / "example"
+        run = self.root / ".daodan/map" / "runs" / "example"
         (run / "snapshot").mkdir(parents=True)
         (run / "state.json").write_text("{}", encoding="utf-8")
 
         self.assertEqual(card_store.default_cards_path(run / "snapshot/manifest.sqlite"),
-                         self.root / ".codebase-map" / "cards.sqlite")
+                         self.root / ".daodan/map" / "cards.sqlite")
         self.assertEqual(card_store.default_cards_path(self.root / "loose/manifest.sqlite"),
                          self.root / "loose" / "cards.sqlite")
         # a directory named `snapshot` without a run beside it is not a run
@@ -133,8 +133,8 @@ class CardLifecycleTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         write_project(self.root)
-        self.out = self.root / ".codebase-map" / "manifest.sqlite"
-        self.cards = self.root / ".codebase-map" / "cards.sqlite"
+        self.out = self.root / ".daodan/map" / "manifest.sqlite"
+        self.cards = self.root / ".daodan/map" / "cards.sqlite"
         snapshot.write_snapshot(self.root, self.out)
 
     def refresh(self):
@@ -251,7 +251,7 @@ class CardLifecycleTests(unittest.TestCase):
 
     def test_cards_follow_the_root_across_a_different_snapshot_file(self):
         self.seed()
-        other = self.root / ".codebase-map" / "runs" / "other" / "snapshot" / "manifest.sqlite"
+        other = self.root / ".daodan/map" / "runs" / "other" / "snapshot" / "manifest.sqlite"
         other.parent.mkdir(parents=True)
         (other.parent.parent / "state.json").write_text("{}", encoding="utf-8")
         snapshot.write_snapshot(self.root, other)

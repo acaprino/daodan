@@ -96,7 +96,7 @@ class MapService:
         self.project_root = confinement.bind_project(project_root)
         self.store = None if store is None else snapshot.validate_store(store)
         self.root = self.project_root / (self.store or snapshot.CANONICAL_STORE)
-        self._outputs = {".codebase-map"}
+        self._outputs = {snapshot.CANONICAL_STORE.split("/")[0]}
         if self.store is not None:
             self._outputs.add(self.store.split("/")[0])
 

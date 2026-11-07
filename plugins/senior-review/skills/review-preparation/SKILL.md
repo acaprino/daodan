@@ -50,8 +50,7 @@ Preparation never dispatches. Record the activation
 evidence or skip reason for each dimension, then pass the complete selection to
 review-method. A prepared bundle cannot imply that any selected reviewer ran.
 
-Use the skill inventory actually available in the host; the legacy skill-catalog
-plugin is not part of the new base. Read `references/knowledge-bindings.md`
+Use the skill inventory actually available in the host. Read `references/knowledge-bindings.md`
 inside this skill after resolving scope and the native reviewer selection. Prepare
 one `knowledge_selection` against the same candidate snapshot and actual available
 skill inventory. Add scope/lens assignments and content fingerprints to this brief;

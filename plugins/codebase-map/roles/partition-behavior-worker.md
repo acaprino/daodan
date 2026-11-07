@@ -16,7 +16,7 @@ You execute Phase 3 (Flow Tracing) and Phase 4 (Semantic Understanding) of Codeb
 
 The spawn prompt gives you:
 - `partition_name`, `partition_path`, `active_flags` (you respect `critical`)
-- `run_dir`: the run directory for this analysis (e.g. `.codebase-map/runs/<run-id>`)
+- `run_dir`: the run directory for this analysis (e.g. `.daodan/map/runs/<run-id>`)
 - `source_manifest`: the exact path from `snapshot.py resolve <run_dir>`, bound to the current run's root and whole target; a prompt alias for the declared binding; read-only for workers. Reuse with `analyze_file.py --snapshot`; never rebuild the project for a file
 - Implicit: all `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` already exist (Wave 1 barrier has closed)
 
@@ -31,7 +31,7 @@ You read freely from:
 - Other inventoried source required to trace a boundary, invariant, configuration or effective style cascade
 - `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` (all partitions)
 
-You DO NOT touch any other file under `.codebase-map/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
+You DO NOT touch any other file under `.daodan/map/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
 
 ## FORBIDDEN FILES AND PERIMETER
 

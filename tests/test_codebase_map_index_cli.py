@@ -18,7 +18,7 @@ class IndexCliTests(unittest.TestCase):
         (self.root / "billing.py").write_text(
             "def invoiceTotal(items):\n    tax_adjustment = 7\n    return sum(items) + tax_adjustment\n", encoding="utf-8")
         (self.root / "other.py").write_text("def invoiceTotal(items):\n    return 0\n", encoding="utf-8")
-        self.manifest = self.root / ".codebase-map/manifest.sqlite"
+        self.manifest = self.root / ".daodan/map/manifest.sqlite"
         self.index = self.manifest.with_name("retrieval.sqlite")
 
     def run_cli(self, *arguments):

@@ -31,7 +31,7 @@ class BinaryRunTests(unittest.TestCase):
         self.assertIn("format", inspect.signature(self.service.create_run).parameters)
 
     def run_dir(self, run_id):
-        return self.root / ".codebase-map/runs" / run_id
+        return self.root / ".daodan/map/runs" / run_id
 
     def write(self, run_id, name, value="# Evidence\n"):
         path = self.run_dir(run_id) / name
@@ -109,7 +109,7 @@ class BinaryRunTests(unittest.TestCase):
         self.assertTrue(self.service.status("legacy")["source_available"])
         with mock.patch.object(snapshot, "parser_fingerprint", return_value="changed"):
             with self.assertRaisesRegex(snapshot.RunControlError, "parser"):
-                snapshot._bound_manifest(self.run_dir("legacy"), self.root / ".codebase-map", state, fresh=True)
+                snapshot._bound_manifest(self.run_dir("legacy"), self.root / ".daodan/map", state, fresh=True)
         self.assertEqual((self.run_dir("legacy") / "snapshot/manifest.json").read_bytes(), before)
 
     def test_ambiguous_or_misdeclared_snapshot_rejected(self):

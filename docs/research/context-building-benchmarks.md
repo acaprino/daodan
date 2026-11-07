@@ -2,7 +2,7 @@
 
 # Code-context benchmark and test diary
 
-> **Status in the new two-owner base (2026-11-03):** historical test diary imported from the previous Daodan backup. Linked evals and auxiliary research documents that were not imported remain in `D:/Backups/daodan-as-is-2026-11-03T1310`.
+> Test diary of the context-building work. Raw evaluation files and private holdouts stay outside this repository.
 
 [Back to Context-building research](context-building-research.md) · [Used by Codebase Map](../plugins/codebase-map.md)
 
@@ -155,17 +155,14 @@ packets can refuse with explicit reasons, preserve obligations and run in
 seconds rather than about 95 seconds per packet. They did not beat plain text on
 coverage.
 
-Evidence: historical raw context-scope results at
-`D:/Backups/daodan-as-is-2026-11-03T1310/evals/codebase-map/context-scope/RESULTS.md`
-(not imported) and decision specification.
+Evidence: the raw context-scope results are not in this repository; the figures above are what this diary recorded.
 
 <a id="embedding-benchmark"></a>
 
 ### 2026-10-23 to 2026-10-26: embedder selection
 
 The comparison used the same projects, queries, gold and whole-entity delivery
-rule. EmbeddingGemma 2 q4 replaced CodeRankEmbed in commit `9adf340dd`,
-codebase-map 8.10.0, marketplace 41.3.0.
+rule. EmbeddingGemma 2 q4 replaced CodeRankEmbed.
 
 | Artifact or cost | CodeRankEmbed | EmbeddingGemma 2 q4 |
 |---|---|---|
@@ -300,8 +297,7 @@ Interpretation:
 
 ### 2026-10-26: EmbeddingGemma indexing and runtime validation
 
-Detailed claims are consolidated in the historical `local-embedding-model.md`,
-which was not imported into the new base.
+The detailed model card is not in this repository; `plugins/codebase-map/skills/map/references/embeddings.md` holds what the plugin relies on.
 
 | Check | Result | Decision or caveat |
 |---|---|---|
@@ -478,12 +474,7 @@ This is a **proposed sequence**, not a measured result.
 | Evidence | Role |
 |---|---|
 | [Context-building research](context-building-research.md) | Papers, primary sources and literature-derived hypotheses; no local test diary |
-| `evals/codebase-map/context-scope/RESULTS.md` (historical, not imported) | Early text/graph/packet baselines, refusal and packing evidence, impact and lifecycle checks |
-| `evals/codebase-map/context-scope/README.md` (historical, not imported) | Corpus, freezing, metrics and harness rules |
-| `local-embedding-model.md` (historical, not imported) | Model card, prompts, MRL, vendor guides, CPU and reliability probes |
-| `prompt-engineering-and-brevity.md` (historical, not imported) | Evaluation methodology, independent verification and prompt/agent literature |
-| `.daodan/runs/20261025-context-redesign/REPORT-ricerca-del-codice.md` | Archived narrative of the 2026-10-23 to 2026-10-26 research run; not the current tracker |
-| `.daodan/runs/20261025-context-redesign/private-holdouts/` | Local-only private candidates, requests, verdicts, frozen questions and raw results; not for public release |
+| [Prompt design and brevity](prompt-engineering-and-brevity.md) | Evaluation methodology, independent verification and prompt/agent literature |
 | `.daodan/runs/20261025-context-redesign/worktree/evals/codebase-map/context-scope/harness/` | Research harness on local branch `context-ablation`; experiment code, not shipped product |
 | `.daodan/runs/20261025-context-redesign/logs/` and `vectors/` | Frozen run scripts, logs, cached vectors and manifests |
 | `.daodan/runs/20261026-code-context-e2e-gate/` | Local-only end-to-end gate of 2026-10-27: protocol, harness, frozen private tasks, 69 Modal runs, `REPORT.md` (Italian), `results/summary-modal.json`; not for public release |
@@ -496,10 +487,9 @@ This is a **proposed sequence**, not a measured result.
   and evidence location; snapshot date moved to 2026-10-27. Later the same day:
   the one run where the gold change was absent from every search result was
   traced to an empty gold list (module-level dict change), not to retrieval.
-  Evening: the result became product in codebase-map 8.12.0 (`codebase_map_search`,
+  Evening: the result became product (`codebase_map_search`,
   `codebase_map_index`, the lexical index built with every snapshot, the
-  `locate.md` guide, bindings in project-delivery and senior-review; spec
-  the code access design of 2026-10-27 (deleted 2026-11-01), run `.daodan/runs/20261027-code-access`);
+  `locate.md` guide, bindings in senior-review);
   parity replay 136 of 137 recorded searches identical through the new path.
   2026-10-28 morning: acceptance 7 (instrumented consumer gate, run
   `.daodan/runs/20261027-acceptance7`): with the worker brief's `locate:` line and the

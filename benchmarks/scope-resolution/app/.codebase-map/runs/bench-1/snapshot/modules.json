@@ -1,0 +1,343 @@
+{
+  "binding": {
+    "git": {
+      "branch": "bench-light-27",
+      "commit": "109c1d7e07b5",
+      "dirty": true
+    },
+    "logical_digest": "60f8c8a168e8ac9fba0640898cd325b079c326b20814fe3be9065bc93a974541",
+    "manifest": "/home/user/daodan/benchmarks/scope-resolution/app/.codebase-map/runs/bench-1/snapshot/manifest.sqlite",
+    "root": "/home/user/daodan",
+    "target": "benchmarks/scope-resolution/app"
+  },
+  "changes": {
+    "added": [
+      "orders",
+      "orders-demo",
+      "payments",
+      "shipping"
+    ],
+    "changed": [],
+    "removed": [],
+    "unchanged": []
+  },
+  "coverage": {
+    "ecosystems": [
+      "bundler",
+      "cabal",
+      "cargo",
+      "cmake",
+      "composer",
+      "daodan",
+      "deno",
+      "dotnet",
+      "dune",
+      "go",
+      "gradle",
+      "julia",
+      "lerna",
+      "maven",
+      "melos",
+      "mix",
+      "npm",
+      "nx",
+      "pnpm",
+      "pub",
+      "python",
+      "rubygems",
+      "sbt",
+      "stack",
+      "swiftpm",
+      "terraform",
+      "zig"
+    ],
+    "edges": {
+      "calls": 0,
+      "contains": 3,
+      "declares": 0,
+      "imports": 0,
+      "uses": 0
+    },
+    "files": 15,
+    "modules": {
+      "build": 4,
+      "declared": 0,
+      "proposed": 0
+    },
+    "statuses": {
+      "confirmed": 4,
+      "incomplete": 0,
+      "inferred": 0
+    }
+  },
+  "edges": [
+    {
+      "evidence": [
+        {
+          "line": 7,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "evidence_total": 1,
+      "id": "contains:orders-demo->orders",
+      "kind": "contains",
+      "source": "orders-demo",
+      "status": "confirmed",
+      "target": "orders"
+    },
+    {
+      "evidence": [
+        {
+          "line": 7,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "evidence_total": 1,
+      "id": "contains:orders-demo->payments",
+      "kind": "contains",
+      "source": "orders-demo",
+      "status": "confirmed",
+      "target": "payments"
+    },
+    {
+      "evidence": [
+        {
+          "line": 7,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "evidence_total": 1,
+      "id": "contains:orders-demo->shipping",
+      "kind": "contains",
+      "source": "orders-demo",
+      "status": "confirmed",
+      "target": "shipping"
+    }
+  ],
+  "gaps": [],
+  "inputs_digest": "9eee31882239e7f092b500d0c260b4123cd802537b962712ed1b3d9b5af098b3",
+  "modules": [
+    {
+      "aliases": [],
+      "conflicts": [],
+      "coverage": {
+        "files": 9,
+        "members": 1,
+        "resolved": 1,
+        "source_files": 9
+      },
+      "dependencies": [],
+      "description": null,
+      "ecosystems": [
+        "python"
+      ],
+      "evidence": [
+        {
+          "line": 7,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "excluded": [],
+      "external": [],
+      "files": [
+        "benchmarks/scope-resolution/app/packages/orders/__init__.py",
+        "benchmarks/scope-resolution/app/packages/orders/api.py",
+        "benchmarks/scope-resolution/app/packages/orders/big_module.py",
+        "benchmarks/scope-resolution/app/packages/orders/inventory.py",
+        "benchmarks/scope-resolution/app/packages/orders/ledger.py",
+        "benchmarks/scope-resolution/app/packages/orders/notifications.py",
+        "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+        "benchmarks/scope-resolution/app/packages/orders/reporting.py",
+        "benchmarks/scope-resolution/app/packages/orders/service.py"
+      ],
+      "gaps": [],
+      "id": "orders",
+      "kind": "workspace-member",
+      "location": "internal",
+      "manifests": [],
+      "members": [
+        {
+          "id": "benchmarks/scope-resolution/app/packages/orders",
+          "kind": "directory",
+          "path": "benchmarks/scope-resolution/app/packages/orders",
+          "resolved": true
+        }
+      ],
+      "members_digest": "5c24df4d92298a0709fc073a00993b26beef960c6315753a1dcf1360ffa8083e",
+      "name": "orders",
+      "paths": [
+        "benchmarks/scope-resolution/app/packages/orders"
+      ],
+      "provenance": "build",
+      "registered_by": [
+        "benchmarks/scope-resolution/app"
+      ],
+      "responsibility": "",
+      "status": "confirmed"
+    },
+    {
+      "aliases": [
+        "app"
+      ],
+      "conflicts": [],
+      "coverage": {
+        "files": 1,
+        "members": 1,
+        "resolved": 1,
+        "source_files": 0
+      },
+      "dependencies": [],
+      "description": "Mini-app dimostrativa per il benchmark di scope resolution (solo stdlib).",
+      "ecosystems": [
+        "python"
+      ],
+      "evidence": [
+        {
+          "line": 2,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "excluded": [
+        "benchmarks/scope-resolution/app/packages/orders",
+        "benchmarks/scope-resolution/app/packages/payments",
+        "benchmarks/scope-resolution/app/packages/shipping"
+      ],
+      "external": [],
+      "files": [
+        "benchmarks/scope-resolution/app/pyproject.toml"
+      ],
+      "gaps": [],
+      "id": "orders-demo",
+      "kind": "uv-workspace",
+      "location": "internal",
+      "manifests": [
+        "benchmarks/scope-resolution/app/pyproject.toml"
+      ],
+      "members": [
+        {
+          "id": "benchmarks/scope-resolution/app",
+          "kind": "directory",
+          "path": "benchmarks/scope-resolution/app",
+          "resolved": true
+        }
+      ],
+      "members_digest": "53129a9d61c9ebe49007980b5a8b0218359d6a804bbe634c25090e42e2b84d6a",
+      "name": "orders-demo",
+      "paths": [
+        "benchmarks/scope-resolution/app"
+      ],
+      "provenance": "build",
+      "registered_by": [],
+      "responsibility": "",
+      "status": "confirmed"
+    },
+    {
+      "aliases": [],
+      "conflicts": [],
+      "coverage": {
+        "files": 3,
+        "members": 1,
+        "resolved": 1,
+        "source_files": 3
+      },
+      "dependencies": [],
+      "description": null,
+      "ecosystems": [
+        "python"
+      ],
+      "evidence": [
+        {
+          "line": 7,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "excluded": [],
+      "external": [],
+      "files": [
+        "benchmarks/scope-resolution/app/packages/payments/__init__.py",
+        "benchmarks/scope-resolution/app/packages/payments/gateway.py",
+        "benchmarks/scope-resolution/app/packages/payments/refunds.py"
+      ],
+      "gaps": [],
+      "id": "payments",
+      "kind": "workspace-member",
+      "location": "internal",
+      "manifests": [],
+      "members": [
+        {
+          "id": "benchmarks/scope-resolution/app/packages/payments",
+          "kind": "directory",
+          "path": "benchmarks/scope-resolution/app/packages/payments",
+          "resolved": true
+        }
+      ],
+      "members_digest": "68f298e2c250c7e4499d083505681605597425e86ca32925abd5706c9e26d3aa",
+      "name": "payments",
+      "paths": [
+        "benchmarks/scope-resolution/app/packages/payments"
+      ],
+      "provenance": "build",
+      "registered_by": [
+        "benchmarks/scope-resolution/app"
+      ],
+      "responsibility": "",
+      "status": "confirmed"
+    },
+    {
+      "aliases": [],
+      "conflicts": [],
+      "coverage": {
+        "files": 2,
+        "members": 1,
+        "resolved": 1,
+        "source_files": 2
+      },
+      "dependencies": [],
+      "description": null,
+      "ecosystems": [
+        "python"
+      ],
+      "evidence": [
+        {
+          "line": 7,
+          "path": "benchmarks/scope-resolution/app/pyproject.toml"
+        }
+      ],
+      "excluded": [],
+      "external": [],
+      "files": [
+        "benchmarks/scope-resolution/app/packages/shipping/__init__.py",
+        "benchmarks/scope-resolution/app/packages/shipping/rates.py"
+      ],
+      "gaps": [],
+      "id": "shipping",
+      "kind": "workspace-member",
+      "location": "internal",
+      "manifests": [],
+      "members": [
+        {
+          "id": "benchmarks/scope-resolution/app/packages/shipping",
+          "kind": "directory",
+          "path": "benchmarks/scope-resolution/app/packages/shipping",
+          "resolved": true
+        }
+      ],
+      "members_digest": "a8646ce643e33b5412d8aac9710ef5b009b81440f004629b581872c1bd3decc1",
+      "name": "shipping",
+      "paths": [
+        "benchmarks/scope-resolution/app/packages/shipping"
+      ],
+      "provenance": "build",
+      "registered_by": [
+        "benchmarks/scope-resolution/app"
+      ],
+      "responsibility": "",
+      "status": "confirmed"
+    }
+  ],
+  "notes": [
+    "Build units come from manifests only; declared modules from codebase-modules.json; proposed modules from the ledger beside the snapshot and stay inferred until declared. No Markdown is interpreted here.",
+    "Static edges prove no runtime behavior; a missing call edge proves no independence (lexical resolver)."
+  ],
+  "schema": "daodan/module-graph/v1"
+}

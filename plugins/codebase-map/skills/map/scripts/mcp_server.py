@@ -225,7 +225,7 @@ def main(argv: list[str] | None = None) -> None:
                         help="project binding, fixed for the lifetime of this server")
     parser.add_argument("--store", default=None,
                         help="project-relative analysis store beginning with a dot directory; "
-                             "default .codebase-map, fixed for the lifetime of this server")
+                             "default .daodan/map, fixed for the lifetime of this server")
     args = parser.parse_args(argv)
     try:
         server = create_server(args.project, args.store)

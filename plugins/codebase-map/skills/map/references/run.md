@@ -4,7 +4,7 @@
 
 Runs are isolated; targets and sessions may overlap.
 
-Within `.codebase-map/`:
+Within `.daodan/map/`:
 - `runs.json`: active-run registry and latest completed run.
 - `runs/<run-id>/`: isolated analysis directory containing:
   - `state.json`: phase tracking, flags and lineage.
@@ -16,11 +16,11 @@ Within `.codebase-map/`:
 - `state.json`, `01-structure.md` through `08-*.md`: latest published mirror.
 
 1. **Identity.** `run-id` is the target-path slug + `-YYYYMMDD-HHMMSS`, or `--run-name <name>` normalized to `[a-z0-9-]`; append `-2`, `-3`, ... on collision.
-2. **Isolation.** Write only inside `.codebase-map/runs/<run-id>/` while in progress. Concurrent runs never share files.
+2. **Isolation.** Write only inside `.daodan/map/runs/<run-id>/` while in progress. Concurrent runs never share files.
 3. **Registry.** `runs.json` holds `{"schema": 2, "active": [{run_id, target, mode, started_at}], "latest_completed": "<run-id>"}`. Invoke `snapshot.py register $RUN_DIR` after state initialization or lineage changes; `snapshot.py unregister $RUN_DIR` on cancellation, partial delivery or failure. These commands and publication share one registry lock. Never write the registry directly or remove another run's entry.
 4. **Publish.** Only the entry publishes after `snapshot.py check` reports `complete` and `may_publish` and every requested view is delivered. Its `publish` helper replaces the whole mirror of known phase files and `state.json`, then sets `latest_completed`, with locked rollback-protected replacement. Lite removes older `03`, `04`, `06`; classic removes an older team's `08-interconnect-map.md`. Partial, docs-only, single-phase and stopped runs never publish. Concurrent publishers preserve both archives; the last successful publisher owns the mirror.
-5. **Resume.** `--resume-from [N] --run-name <exact-id>` selects the interrupted directory without collision suffixes. Keep mode and flags; a different mode requires a new run. The gate confirms earlier artifacts with same-run provenance, selects the first incomplete produced phase when N is omitted, and drops the invocation's stop. Interrupted/stopped runs retain recoverable state and never alter `latest_completed`. Root `state.json` with `current_phase` but no `runs.json` is pre-runs layout: offer migration into `runs/legacy-<date>/`.
-6. **Consumers.** A workflow consuming a specific invocation must retain and propagate its immutable `.codebase-map/runs/<run-id>/`, never the mutable `.codebase-map/` mirror. The mirror serves latest-state consumers, including one-shot requests for the most recent published analysis.
+5. **Resume.** `--resume-from [N] --run-name <exact-id>` selects the interrupted directory without collision suffixes. Keep mode and flags; a different mode requires a new run. The gate confirms earlier artifacts with same-run provenance, selects the first incomplete produced phase when N is omitted, and drops the invocation's stop. Interrupted/stopped runs retain recoverable state and never alter `latest_completed`.
+6. **Consumers.** A workflow consuming a specific invocation must retain and propagate its immutable `.daodan/map/runs/<run-id>/`, never the mutable `.daodan/map/` mirror. The mirror serves latest-state consumers, including one-shot requests for the most recent published analysis.
 7. **Lineage.** Each run's declared snapshot makes it a possible parent. Incremental runs record the parent in `state.json -> parent_run` and their `runs.json` entry; this chain alone is the analysis history. `snapshot/`, `changes.json` and `changes.md` stay run-local and never publish to the root.
 
 ## Perimeter

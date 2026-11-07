@@ -28,7 +28,7 @@ class StorageQueryTests(unittest.TestCase):
         self.assertIsNotNone(importlib.util.find_spec("semantic_store"), "persistent semantic query owner is required")
 
     def write(self, format="sqlite"):
-        out = self.root / ".codebase-map" / ("manifest." + format)
+        out = self.root / ".daodan/map" / ("manifest." + format)
         snapshot.write_snapshot(self.root, out, format=format)
         return out
 
@@ -136,7 +136,7 @@ class StorageQueryTests(unittest.TestCase):
         self.api()
         first = self.write()
         (self.root / "a.py").write_text("def replacement():\n    return 8\n")
-        second = self.root / ".codebase-map/second.sqlite"
+        second = self.root / ".daodan/map/second.sqlite"
         with open_snapshot(first) as previous:
             result = snapshot.write_snapshot(self.root, second, previous=previous)
         self.assertEqual(result["metrics"]["cache_hits"], 2)
