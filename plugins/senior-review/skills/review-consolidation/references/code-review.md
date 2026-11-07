@@ -48,7 +48,7 @@ Preserve the bound roster and run's required verification level. `--fast` and co
 
 ### Selection
 
-- **Default:** the roster's `verification` level from the skill's section `### Selection and Cost Guard`. Under `critical-high` (small tier) Critical and High get Lens 0 and Lens 1 and skip the panel below; lower severities are `unverified (tier)`.
+- **Default:** the roster's `verification` level from the skill's section `### Selection and Cost Guard`. Under `critical-high` (standard rigor) Critical and High get Lens 0 and Lens 1, and under `critical` (quick) Critical gets Lens 1; both skip the panel below, and the findings left out are `unverified (rigor)`.
 - **Cost guard** (more than 25 surviving findings AND `--rigorous` not set): preserve every required verification; narrow only additional optional findings to Critical/High plus Medium/Low in the 50-75% confidence band or with conflicting reviewer severity. Tag omitted optional findings `unverified (cost-guard)` and note the narrowing.
 - **`--rigorous`:** verify everything above the floor, ignoring the cap.
 

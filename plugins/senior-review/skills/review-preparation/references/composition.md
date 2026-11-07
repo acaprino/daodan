@@ -8,7 +8,7 @@ does not select another roster, run a worker or replace the native review method
 For **team-review**, Phase 1 chooses the reviewers and `bind` receives them as
 `selection`. They become the roster; `required_specialists` supported only by the
 automatic roster or code floor drop, caller/source-required obligations stay, and
-tier, verification level, critic, scope and candidate do not change. Validate the
+rigor, verification level, critic, scope and candidate do not change. Validate the
 dispatch with `review_roster.py check --roster PREPARED-REVIEW.json`. The automatic
 floor and exclusions below govern the other review variants.
 

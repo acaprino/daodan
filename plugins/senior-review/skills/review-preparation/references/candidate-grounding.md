@@ -92,21 +92,23 @@ The caller supplies shape; the helper computes rigor.
 - `light`: use `references/light.md` of
   `senior-review:review-method`, its distinct preparation and this skill's
   composition step; do not enter branch preparation.
-- `branch`: whole candidate from `base_sha` before merging. Changesets get
-  `small`/`medium`/`large`; large requires panel and critic. Document kinds keep their fixed sets.
+- `branch`: whole candidate from `base_sha` before merging. The rigor is `quick`,
+  `standard` or `deep`: you read the request in the user's language and decide how
+  much scrutiny it asks for, without matching words; `standard` when it asks for none.
+  `deep` requires the full panel and the critic. Document kinds keep their fixed sets.
 
 Before any dispatch:
 
 ```text
-python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--deeper] --id ID --stage STAGE --out ROSTER.json
+python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
 Complete the roster through
 `references/composition.md` before appending the validated review to `reviews`;
 bind deliveries to its `id`. The protocol refuses roles outside `roster` and
 `support`. Changed public interfaces, sensitive paths, manifests/contracts or
-many callers force large; several modules/files or changed effects give medium.
-`--deeper` raises one tier in a new entry; nothing lowers rigor. Report red baselines.
+many callers force `deep`, even when `quick` was asked; size alone raises nothing.
+`--deeper` raises one rigor in a new entry; nothing lowers it. Report red baselines.
 
 The technical context carries the prepared `review_basis`
 (`changeset`, `content`, or `claims`), `scope_id`, `conclusion_paths`,
@@ -139,7 +141,7 @@ generalist's boundary floor survives opaque calls and unavailable graph packets.
 
 | Kind | Roles and their question |
 |---|---|
-| `changeset` | The tier's set and the stack and content signals, which team review treats as leads for Phase 1. Former marketplace stack specialists are unavailable until equivalent senior-review micro skills exist; dependency changes use `senior-review:dependency-usage-auditor`. |
+| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. Former marketplace stack specialists are unavailable until equivalent senior-review micro skills exist; dependency changes use `senior-review:dependency-usage-auditor`. |
 | `plan` | `premise-auditor`, claim check: every cited path, symbol and caller exists; `chicken-egg-detector`: initialization order and wave dependencies. Testing and abstraction specialists are unavailable in the new two-owner base; leave their questions as declared gaps unless the host supplies adapted equivalents. |
 | `spec` | `premise-auditor`, claim check: every statement about existing code; `logic-integrity-auditor`: state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared superseded. Trust boundaries, persistence, contracts and cross-service flows in the text add their senior-review auditors. Testing and abstraction specialists remain declared gaps unless adapted. |
 | `doc` | `premise-auditor`, claim check: every statement about the code against the source and the map. This review reports drift; documentation rewriting belongs to an explicitly authorized host workflow, not to senior-review. |

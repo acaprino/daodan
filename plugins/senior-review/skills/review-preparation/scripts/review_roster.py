@@ -5,7 +5,7 @@ security auditor and a Git-history pass among them, for a change inside one
 function: 40 minutes and 30.90 USD. The method said "proportionate to risk"
 and the model, reading it, did everything. This helper turns that sentence into
 data: it reads a diff and, when available, the Codebase Map's impact packet,
-decides the tier and the roster, and writes them so the protocol can refuse a
+decides the rigor and the roster, and writes them so the protocol can refuse a
 dispatch the roster does not contain.
 
 Two shapes, four kinds:
@@ -13,10 +13,11 @@ Two shapes, four kinds:
 - ``light``: the review before each commit, and of a decision record or a plan
   inside the cycle. Project tools, then one reviewer: the generalist for code,
   the premise auditor's claim check for a plan, a specification or a document.
-- ``branch``: the review before a merge. A changeset gets a tier, ``small``,
-  ``medium`` or ``large``; ``large`` is forced by a changed public interface, a
-  sensitive path or a changed manifest, and ``medium`` by several modules or many
-  callers. A plan, a specification or a document gets its kind's fixed set.
+- ``branch``: the review before a merge. The rigor is ``quick``, ``standard`` or
+  ``deep``. The model reads the request and passes it (``--rigor``); this helper
+  matches no words. ``deep`` is also forced by a changed public interface, a
+  sensitive path, a changed manifest or many callers, and nothing lowers it. A plan,
+  a specification or a document gets its kind's fixed set.
 
 Beside the roster, ``support`` names the roles the procedure itself dispatches:
 the verification lenses. The protocol accepts a delivery bound to a review only
@@ -25,7 +26,7 @@ from roster and support.
 Signals come from three sources, all mechanical: ``git diff --numstat`` and the
 unified diff of the candidate, the impact packet of ``snapshot.py edit-impact``
 when a map exists, and path patterns. A missing map is recorded as a gap and
-never raises or lowers the tier by itself.
+never raises or lowers the rigor by itself.
 
 Standard library only. Thresholds live in one place at the top and are tuned
 on probes; every change to them is recorded with the probe that motivated it.
@@ -49,12 +50,10 @@ from pathlib import Path
 SCHEMA = "daodan/review-roster/v1"
 PREPARED_SCHEMA = "daodan/prepared-review/v1"
 
-# Thresholds. Tuned on the probe of 2026-10-19 (humanize #379: 2 files, 9 hunks,
-# 1 function, 0 production callers, no interface change -> small).
-MEDIUM_MODULES = 3          # distinct top-level source directories touched
-MEDIUM_CALLERS = 5          # one-hop callers of any changed symbol, from the map
-MEDIUM_FILES = 6            # production files changed
-LARGE_CALLERS = 20
+# Risk floor. This many one-hop callers of a changed symbol force the deep rigor.
+# Size alone (files, modules) never raises it: the request does, as the model read it.
+DEEP_CALLERS = 20
+RIGOR = ("quick", "standard", "deep")
 
 SENSITIVE_PATH = re.compile(
     r"(^|/)(auth|authn|authz|authentication|authorization|oauth|session|login|"
@@ -86,10 +85,10 @@ LANGUAGE_BY_SUFFIX = {
 
 KINDS = ("changeset", "plan", "spec", "doc")
 
-# Roles by tier. The light shape has one reviewer by decision of 2026-10-19.
+# Roles by rigor. The light shape has one reviewer by decision of 2026-10-19.
 LIGHT_ROSTER = {"changeset": ["senior-review:code-auditor"]}
 LIGHT_ROSTER.update({kind: ["senior-review:premise-auditor"] for kind in ("plan", "spec", "doc")})
-SMALL_ROSTER = ["senior-review:code-auditor"]
+STANDARD_ROSTER = ["senior-review:code-auditor"]
 # A generated generalist must preserve the former body's boundary checks.
 # Preparation may exclude a family only with candidate/scope-bound source evidence.
 CODE_FLOOR = [f"senior-review:{name}" for name in (
@@ -97,11 +96,9 @@ CODE_FLOOR = [f"senior-review:{name}" for name in (
     "security-auditor", "data-integrity-auditor", "chicken-egg-detector",
     "temporal-resilience-auditor", "distributed-flow-auditor", "api-contract-auditor",
 )]
-MEDIUM_ROSTER = SMALL_ROSTER + [
+DEEP_ROSTER = STANDARD_ROSTER + [
     "senior-review:logic-integrity-auditor",
     "senior-review:premise-auditor",
-]
-LARGE_ROSTER = MEDIUM_ROSTER + [
     "senior-review:security-auditor",
     "senior-review:data-integrity-auditor",
     "senior-review:cleanup-auditor",
@@ -118,7 +115,7 @@ KIND_ROSTER = {
 # Phase 1, not from a dispatched role. Host-specific isolated-worker bindings are
 # supplied by the consuming host, not hardcoded here.
 SUPPORT = ["senior-review:premise-auditor"]
-# Signal-activated specialists, added at any branch tier when the signal is present.
+# Signal-activated specialists, added at any branch rigor when the signal is present.
 # Stack specialists owned by former marketplace plugins are not selected until
 # equivalent senior-review micro skills exist.
 LANGUAGE_ROLE: dict[str, str] = {}
@@ -139,7 +136,7 @@ SIGNAL_ROLE = {
 # A trust word in prose is a specification touching a boundary; in code it is
 # everywhere, and code reaches the security auditor through sensitive paths.
 PROSE_ONLY_SIGNALS = {"trust"}
-VERIFICATION = {"light": "critical-high", "small": "critical-high", "medium": "all-above-floor", "large": "all-above-floor"}
+VERIFICATION = {"quick": "critical", "standard": "critical-high", "deep": "all-above-floor"}
 
 CHANGED_LINE = re.compile(r"^[+-](?![+-]{2})")
 HUNK = re.compile(r"^@@ .* @@\s*(.*)$")
@@ -528,9 +525,11 @@ def signal_roles(signals: dict, kind: str, roster: list[str]) -> list[str]:
 
 def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | None, deeper: bool,
             kind: str = "changeset", review_id: str | None = None, stage: str | None = None,
-            *, context: dict | None = None) -> dict:
+            *, context: dict | None = None, rigor: str | None = None) -> dict:
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {', '.join(KINDS)}")
+    if rigor is not None and rigor not in RIGOR:
+        raise ValueError(f"rigor must be one of {', '.join(RIGOR)}")
     context = context or {}
     basis = context.get("review_basis", "changeset" if kind == "changeset" else "claims")
     if basis not in {"changeset", "content", "claims"}:
@@ -597,48 +596,42 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
 
     reasons: list[str] = []
     advice: list[str] = []
+    level = rigor or "standard"
+    if deeper and level != "deep":
+        level = RIGOR[RIGOR.index(level) + 1]
+        reasons.append("caller asked for one rigor more")
     if shape == "light":
-        tier = "light"
         roster = list(LIGHT_ROSTER[kind])
         if signals["interface_changed"] or signals["sensitive_paths"] or signals["manifest"] or signals["contract"]:
             advice.append("strong signals: run review-branch before merging")
-        if deeper:
-            advice.append("a deeper review is review-branch; the light review has one reviewer")
+        if level == "deep":
+            level = "standard"
+            advice.append("a deep review is review-branch; the light review has one reviewer")
     elif kind != "changeset":
-        tier = "small"
         reasons.append(f"fixed set of a {kind}")
         roster = list(KIND_ROSTER[kind])
         roster += signal_roles(signals, kind, roster)
-        if deeper:
-            advice.append(f"a {kind} has one fixed set and no deeper tier")
     else:
-        tier = "small"
+        floor: list[str] = []
         if signals["interface_changed"]:
-            tier, reasons = "large", reasons + [f"public interface changed: {', '.join(signals['interface_changed'])}"]
+            floor.append(f"public interface changed: {', '.join(signals['interface_changed'])}")
         if signals["sensitive_paths"]:
-            tier, reasons = "large", reasons + [f"sensitive paths: {', '.join(signals['sensitive_paths'])}"]
+            floor.append(f"sensitive paths: {', '.join(signals['sensitive_paths'])}")
         if signals["manifest"] or signals["contract"]:
-            tier, reasons = "large", reasons + [f"manifest or contract changed: {', '.join(signals['manifest'] + signals['contract'])}"]
-        if signals["max_callers"] >= LARGE_CALLERS:
-            tier, reasons = "large", reasons + [f"{signals['max_callers']} callers of a changed symbol"]
-        if tier != "large":
-            if len(modules) >= MEDIUM_MODULES:
-                tier, reasons = "medium", reasons + [f"{len(modules)} modules touched"]
-            if signals["max_callers"] >= MEDIUM_CALLERS:
-                tier, reasons = "medium", reasons + [f"{signals['max_callers']} callers of a changed symbol"]
-            if len(production) >= MEDIUM_FILES:
-                tier, reasons = "medium", reasons + [f"{len(production)} production files changed"]
-            if signals["effects_changed"]:
-                tier, reasons = "medium", reasons + [f"effects changed: {', '.join(signals['effects_changed'])}"]
-        if deeper and tier != "large":
-            tier = {"small": "medium", "medium": "large"}[tier]
-            reasons.append("caller asked for a deeper review")
-        roster = list({"small": SMALL_ROSTER, "medium": MEDIUM_ROSTER, "large": LARGE_ROSTER}[tier])
+            floor.append(f"manifest or contract changed: {', '.join(signals['manifest'] + signals['contract'])}")
+        if signals["max_callers"] >= DEEP_CALLERS:
+            floor.append(f"{signals['max_callers']} callers of a changed symbol")
+        if floor and level != "deep":
+            if rigor == "quick":
+                reasons.append("risk signals override the requested quick rigor")
+            level = "deep"
+        reasons += floor
+        roster = list(DEEP_ROSTER if level == "deep" else STANDARD_ROSTER)
         roster += signal_roles(signals, kind, roster)
     obligation_roles = list(roster)
     if shape == "light" and kind == "changeset":
         # The one discovery job retains applicable domain checks after splitting
-        # its former generalist. This never widens the dispatch count or tier.
+        # its former generalist. This never widens the dispatch count or rigor.
         obligation_roles += signal_roles(signals, kind, obligation_roles)
         if signals["sensitive_paths"] and "senior-review:security-auditor" not in obligation_roles:
             obligation_roles.append("senior-review:security-auditor")
@@ -654,12 +647,12 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
         "shape": shape,
         "kind": kind,
         "review_basis": basis,
-        "tier": tier,
+        "rigor": level,
         "reasons": reasons,
         "roster": roster,
         "support": list(SUPPORT),
-        "verification": VERIFICATION[tier],
-        "critic": tier == "large",
+        "verification": VERIFICATION[level],
+        "critic": level == "deep" and shape == "branch",
         "signals": signals,
         "required_specialists": required,
         "jobs": [],
@@ -686,7 +679,7 @@ def check(roster: dict, dispatch: dict) -> list[str]:
     if extra:
         problems.append("roles outside the computed roster: " + ", ".join(extra))
     if dispatch.get("critic") and not roster.get("critic"):
-        problems.append("the completeness critic is not in this tier")
+        problems.append("the completeness critic is not in this rigor")
     if roster.get("schema") not in (SCHEMA, PREPARED_SCHEMA):
         problems.append("roster schema is not " + SCHEMA)
     return problems
@@ -704,7 +697,8 @@ def main(argv=None) -> int:
     compute_parser.add_argument("--numstat", help="git diff --numstat output; derived from the diff when absent")
     compute_parser.add_argument("--impact", help="snapshot.py edit-impact JSON for the changed symbols")
     compute_parser.add_argument("--context", help="prepared review basis, scope, snapshot locators and evidence JSON")
-    compute_parser.add_argument("--deeper", action="store_true", help="the caller asked for one tier more")
+    compute_parser.add_argument("--rigor", choices=RIGOR, help="how much scrutiny the request asks for, as the model read it; default standard")
+    compute_parser.add_argument("--deeper", action="store_true", help="the caller asked for one rigor more")
     compute_parser.add_argument("--out", required=True)
     check_parser = sub.add_parser("check")
     check_parser.add_argument("--roster", required=True)
@@ -716,9 +710,10 @@ def main(argv=None) -> int:
         numstat = read_numstat(Path(args.numstat).read_text(encoding="utf-8")) if args.numstat else None
         impact = json.loads(Path(args.impact).read_text(encoding="utf-8")) if args.impact else None
         context = json.loads(Path(args.context).read_text(encoding="utf-8")) if args.context else None
-        result = compute(args.shape, diff, numstat, impact, args.deeper, args.kind, args.review_id, args.stage, context=context)
+        result = compute(args.shape, diff, numstat, impact, args.deeper, args.kind, args.review_id, args.stage,
+                         context=context, rigor=args.rigor)
         Path(args.out).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(json.dumps({"tier": result["tier"], "roster": result["roster"], "reasons": result["reasons"], "gaps": result["gaps"]}))
+        print(json.dumps({"rigor": result["rigor"], "roster": result["roster"], "reasons": result["reasons"], "gaps": result["gaps"]}))
         return 0
     roster = json.loads(Path(args.roster).read_text(encoding="utf-8"))
     dispatch = json.loads(Path(args.dispatch).read_text(encoding="utf-8"))

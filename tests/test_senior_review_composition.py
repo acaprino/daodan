@@ -186,10 +186,6 @@ class SelectionTest(unittest.TestCase):
         self.assertEqual(review_roster.check(prepared, {"roles": roles, "critic": False}), [])
         self.assertTrue(review_roster.check(prepared, {"roles": ["senior-review:code-auditor"], "critic": False}))
 
-    def test_small_tier_verifies_like_light(self):
-        self.assertEqual(review_roster.VERIFICATION["small"], review_roster.VERIFICATION["light"])
-        self.assertEqual(review_roster.VERIFICATION["light"], "critical-high")
-
 
 class CliTest(unittest.TestCase):
     def test_cli_exit_codes(self):

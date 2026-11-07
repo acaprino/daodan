@@ -1,6 +1,6 @@
 """Bind the computed roster into dispatchable jobs, so the roles stay small and the review is composed.
 
-``review_roster.py`` computes the tier and an automatic roster; team-review's Phase 1
+``review_roster.py`` computes the rigor and an automatic roster; team-review's Phase 1
 replaces that roster with the reviewers it chose (``selection`` in the bindings). This
 helper decides how those identities become isolated jobs. Each roster identity becomes one job; a composition from
 ``plugin.toml`` expands to its leaf roles, so a tailored reviewer is a list of

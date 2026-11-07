@@ -18,7 +18,7 @@ verification never share discovery contexts or peer results.
 
 | Phase | Work | Output |
 |---|---|---|
-| 0 | Resolve the target (0), compute tier and policy (0b) | `.team-review/00-scope.md` |
+| 0 | Resolve the target (0), decide rigor and policy (0b) | `.team-review/00-scope.md` |
 | 1 | Understand the review object within the resolved scope and choose suitable reviewers | `01-context.md`, `02-selection.md` |
 | 2 | One isolated worker per validated job, with canonical member checks; every finding declares its load-bearing premise and provenance | assigned job reports |
 | 3 | Delivery barrier: every job and member delivers findings or an explicit no-findings result | ledger |
@@ -141,9 +141,9 @@ The scope is what the review judges; what it reads to judge is Phase 1 context.
 Use the run's indexes and source only. Everything else is the reviewer's
 judgment, stated.
 
-## Phase 0b: Compute tier and policy
+## Phase 0b: Decide the rigor and compute the policy
 
-Run the roster of `references/candidate-grounding.md` for this exact candidate. It fixes the tier, the verification level and the critic; nothing lowers them. Its `roster` and signals are leads for Phase 1, which chooses the reviewers. `--reviewers` and `--all` are recorded as caller requests for Phase 1. A document kind keeps its fixed set (`selection: "automatic"`). The light shape uses its own method.
+Read the whole request and decide how much scrutiny it asks for: a quick look, a normal review or a deep audit. This is your reading of what the user wants, in their language, not a match on words; `standard` when the request gives no sign. Write it in `00-scope.md` with one sentence of why. Pass it to the roster of `references/candidate-grounding.md` as `--rigor` for this exact candidate. The helper adds a floor from risk signals and fixes the verification level and the critic; nothing lowers them. Its `roster` and signals are leads for Phase 1, which chooses the reviewers. `--reviewers` and `--all` are recorded as caller requests for Phase 1. A document kind keeps its fixed set (`selection: "automatic"`). The light shape uses its own method.
 
 Mark `phase_0b_policy` complete in `state.json`.
 
@@ -157,4 +157,4 @@ The coordinator prepares the review within Phase 0's scope:
 
 Stop when it is clear what is being reviewed and who should review it; defect analysis belongs to the reviewers.
 
-Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each in `02-selection.md`. Pass the chosen catalog identities to `composition.py bind` as `selection` (`references/composition.md`), with the stack bindings of `references/stack-dimensions.md`. Before dispatch show one compact plan: target and snapshot, tier, selected reviewers and why, verification level, gaps. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.
+Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each in `02-selection.md`. Pass the chosen catalog identities to `composition.py bind` as `selection` (`references/composition.md`), with the stack bindings of `references/stack-dimensions.md`. Before dispatch show one compact plan: target and snapshot, rigor and why, selected reviewers and why, verification level, gaps. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.
