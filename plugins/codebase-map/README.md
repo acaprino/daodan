@@ -20,4 +20,4 @@ Installazione: `claude plugin install codebase-map@daodan` (marketplace `acaprin
 - `tree-sitter` e `tree-sitter-language-pack` restano opzionali per il parsing ad alta fedeltà.
 - La vista HTML storica non è disponibile: senza un renderer adattato, il report Markdown resta autoritativo.
 
-[Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md) · [Documentazione storica](../../docs/plugins/codebase-map.md)
+[Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md) · [Riferimento del plugin](../../docs/plugins/codebase-map.md)

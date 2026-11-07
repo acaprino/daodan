@@ -1,1195 +1,162 @@
-# Codebase Map Plugin
+# Codebase Map: riferimento
 
-> **Status in the new two-owner base (2026-11-03):** historical documentation for the source kernel imported from `D:/Backups/daodan-as-is-2026-11-03T1310`. The manifest has been adapted to the two-owner architecture and no longer depends on `report-rendering`. References to old hosts, `/daodan:*` commands, exports, evals and former marketplace plugins are inactive until adapted or removed.
+Codebase Map legge un repository con analisi statica e ne serve all'agente inventario, simboli, relazioni, moduli e descrizioni semantiche, con riferimenti verificabili alle sorgenti. Non esegue il programma: la copertura a runtime è sempre nulla, salvo evidenza fornita dall'utente. Non seleziona reviewer e non emette verdetti di correttezza: quello è senior-review, che ne usa i tool. Versione del plugin `1.0.1` (`plugins/codebase-map/plugin.toml`); nessuna dipendenza da altri plugin.
 
-> Understand any codebase in minutes through static source analysis. Eight-phase static analysis discovers how the project documents itself, maps structure, traces flows, identifies risks, and documents the WHY behind the code, not just what it does, without executing the application; runtime evidence counts only when supplied by the user. Renamed from `deep-dive-analysis` in plugin 2.0.0 (marketplace 14.0.0); its output artifact directory followed in plugin 4.0.0 and is now `.codebase-map/`.
+Ogni affermazione di questo documento rimanda a un file del plugin. Il testo operativo che il modello esegue è `skills/map/SKILL.md` con i suoi `references/`; questo documento lo descrive e non lo sostituisce.
 
-Command examples and named tools in this guide use Claude notation. For other
-hosts, use the entry points and bindings in the source-derived reference below.
-The historical `docs/hosts.md` document was not imported into the new base.
+## Perimetro
 
-## Concurrent runs
+Sotto il target, la mappa non analizza ciò che Git ignora, le directory il cui nome inizia con un punto e le directory di dipendenze e build (`__pycache__`, `build`, `dist`, `node_modules`, `target`, `vendor`, `venv`). La regola ha un solo proprietario, `scripts/tree_scope.py`, e la applica ogni script che percorre l'albero: snapshot, scansione del cascade, ricerca degli usi, scansione dei commenti e revisione della documentazione.
 
-Every analysis is an isolated run under `.codebase-map/runs/<run-id>/` with its own `state.json`, registered in `.codebase-map/runs.json`. Multiple analyses can proceed at the same time (different targets, different sessions, or a re-analysis alongside an older one) without touching each other's files. Use `--run-name <name>` for explicit run identity; otherwise the run-id derives from the target slug plus a timestamp.
+Il target è analizzato com'è dato: `.github/` come target è il modo di mappare la CI, e un dot file accanto al codice (`.eslintrc.json`) non è una directory e resta. Un target che il suo repository ignora è analizzato intero come radice propria, senza prendere commit o branch dal repository che lo ignora. L'esclusione è dichiarata: `snapshot.py scope <target>` la stampa, il blocco `scope` del manifest la conserva (`git_ignore` vale `applied` o `unavailable`) e il rapporto finale la ripete. Un file tracciato da Git non è mai ignorato.
 
-Only an eligible completed run is **published**: the coordinator requires `complete` and `may_publish` from the delivery gate and every requested view before replacing the whole known phase-file mirror and `state.json` at `.codebase-map/`. The mirror contains the files declared for that mode, including `08-interconnect-map.md` only when a team run produces it; older files outside that set are removed. Partial, stopped, docs-only and single-phase runs stay in their own directory. Downstream workflows consuming a specific invocation retain that run directory and snapshot; the mutable root mirror serves latest-state consumers.
+Riferimenti: `references/run.md` sezione Perimeter; docstring di `tree_scope.py`.
 
-By default, every run also records the tree it analyzed as `snapshot/manifest.sqlite`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry belongs to the analyze entry only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. The team entry updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
+## Run e snapshot
 
-## Reading source from a snapshot
+Ogni analisi è un run isolato in `.codebase-map/runs/<run-id>/`, registrato in `.codebase-map/runs.json` (`schema` 2: `active` e `latest_completed`). Il run-id è lo slug del target più `-YYYYMMDD-HHMMSS`, oppure `--run-name` normalizzato a `[a-z0-9-]`, con suffisso `-2`, `-3` in caso di collisione. Più run possono procedere insieme senza condividere file.
 
-New runs default to SQLite. `--format json` (CLI or workflow) and MCP
-`format="json"` select the upstream compatibility format explicitly.
-`state.json -> snapshot` binds format/path/storage version; `snapshot.py resolve
-<run-dir>` returns the exact path and small metadata. Parent runs keep their
-original bytes and format, including legacy JSON without the binding. Formats
-may differ across a parent/child pair; ambiguous or mismatched files fail.
-Indexed semantic facts and graph diagnostics remain static, source-bound evidence.
-Workflow per-file analysis uses `analyze_file.py --snapshot <resolved-path>`;
-bounded packets retain full counts, explicit truncation and coverage. Binary
-storage is local: the model receives targeted text, never database/base64 bytes.
-No percentage of token savings is inferred from disk size. Format selection is
-independent of full/lite depth and the filename extension. State, events and
-protocol responses remain JSON; reports remain Markdown. SQLite indexes may use
-more disk space than a compact JSON manifest. See the 35.0.0 verification record for executed checks and limits.
+Il run contiene `state.json`, `snapshot/manifest.sqlite` (o `manifest.json` con `--format json`), `changes.json` e `changes.md` per gli aggiornamenti, `knowledge/` della Phase 0 e i file di fase `01-structure.md` fino a `07-final-report.md`; in modalità team anche `partitions/<nome>/` e `08-interconnect-map.md`. La radice `.codebase-map/` è lo specchio dell'ultimo run pubblicato: lo sostituisce intero solo `snapshot.py publish`, dopo che `snapshot.py check` riporta `complete` e `may_publish`. Run parziali, a fase singola, solo documentazione o fermati non pubblicano mai. Chi consuma un run preciso conserva la sua directory; lo specchio serve a chi vuole l'ultimo stato.
 
-The resolved snapshot is the single structural index for a bound run.
-`snapshot.py write <target> --out <new-manifest> --reuse <previous-manifest>`
-checks current file hashes and root/target plus helper/runtime and effective
-parser identity before reusing unchanged parsed structure. It still walks the
-perimeter and hashes the files; legacy or mismatched identity rebuilds structure.
-Keep the parent snapshot and write the current one into the owned run. Use
-`snapshot.py diff --verify` for analysis changes; its hashes normalize line
-endings. After every such diff, always write or obtain a current owned manifest
-with `snapshot.py write --reuse` before passing it to source readers, even for
-`none` or LF/CRLF-only differences. Parent analysis can remain supported while
-its recorded bytes differ from current source. Returning that analysis without
-source reading does not require a new full run.
+Lo snapshot registra ogni file con dimensione, mtime e hash del contenuto, ogni simbolo con intervallo di righe e hash del corpo. L'inventario ha tre insiemi: sorgenti nei linguaggi analizzati, configurazione e documentazione, presentazione senza simboli (markup, template e Sass indentato: `PRESENTATION_EXTENSIONS` in `snapshot.py`). Un foglio di stile con una riga oltre 10.000 caratteri resta a livello di file (`MAX_STYLESHEET_LINE`). I file vietati (`.env`, credenziali, chiavi: lista in `references/evidence.md`) non entrano nel manifest nemmeno come hash. SQLite è il formato predefinito; `snapshot.py resolve <run-dir>` restituisce percorso e formato dichiarati dallo stato. `snapshot.py write` costruisce accanto al manifest anche l'indice lessicale `retrieval.sqlite` e il grafo dei moduli `modules.json` (`--no-index`, `--no-modules` li saltano).
 
-Load `codebase-map:map` for exact `source_reader.py outline` and `read`
-commands. Outline lists metadata to help choose paths and exact qualified
-symbols; it does not validate current source or establish deep reading. Read
-checks the requested file's content and parser identity, then emits selected
-definitions or line ranges with shared file/class context outside function and
-method intervals, plus start/end lines of Java/JavaScript/TypeScript/Rust
-callables to retain globals or fields sharing those boundary lines. Legacy or
-unreliable spans fall back to the whole file, including single-line, overlapping
-or class-boundary spans and long lines.
-Minified or shared-line definitions may also need whole-file fallback despite
-exact end lines, keeping class declarations and static fields on those lines.
+Un secondo run sullo stesso target confronta lo snapshot del genitore con il worktree (`snapshot.py diff --verify`, che calcola gli hash di ogni file) senza spendere token del modello: file e simboli cambiati, raggio di impatto a un salto di import, affermazioni delle fasi che citano simboli cambiati. L'ingresso classico porta avanti le affermazioni non toccate riga per riga (`snapshot.py carry`) e ri-deriva solo quelle marcate stale; un gate meccanico rifiuta la pubblicazione finché una marca resta. L'ingresso team aggiorna a grana di partizione: una partizione senza file toccati è copiata intera, una con un file toccato è rianalizzata per intero. Oltre il 40% di file toccati (`--threshold`) la raccomandazione è un run completo. `--update` esige un genitore utilizzabile e si ferma senza; `--no-update` salta il rilevamento.
 
-The agent chooses symbols from the question and expands to callers, callees,
-invariants, configuration and applicable CSS/markup until the evidence is
-sufficient. Context retained around a block cannot establish that omitted
-function bodies or implicit relationships are irrelevant. A changed or deleted
-source file or changed parser identity requires a current manifest. Record the
-exact run and manifest downstream, and distinguish inventoried files, source
-read in depth and runtime evidence. The feature does not establish model
-latency or installed-host loading.
+Riferimenti: `references/run.md`, `references/snapshot.md`, `references/update.md`.
 
-## Perimeter
+## Ingressi
 
-Below its target the Codebase Map never analyzes what Git ignores, any directory whose name starts with a dot, or dependency and build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). The rule has one owner, `tree_scope.py`, and every script that walks a tree applies it: the snapshot, the cascade scan, the usage search, the comment scan and the documentation review. No script reads more than the snapshot records.
+Il plugin non ha comandi propri: un entry point dell'host carica `codebase-map:map` e sceglie fra due ingressi.
 
-The rule dates from plugin 5.1.0. Tools write beside the code they work on: a lifecycle campaign left its run records under `.daodan/` and its review under `.team-review/`, the next snapshot counted them as project files, and an incremental update of an untouched project asked for a full analysis. A list of known tool directories would have let the next tool's output in, so the rule is general. A parent run recorded before this rule holds paths the perimeter now leaves out. Its first update reports them as removed and retires the claims that cite them: they left the inventory, whether or not they left the disk.
+**Analyze** (`references/entry-analyze.md`). Il coordinatore risolve scope e flag, scrive lo snapshot iniziale, prepara il run (`snapshot.py prepare`) e dispaccia un solo `codebase-map:map-analyst` isolato, che esegue le fasi dichiarate e scrive gli artefatti. Il coordinatore non legge le sorgenti; verifica la consegna con `snapshot.py check` e pubblica. Controlli: `--critical` (priorità ad autenticazione, pagamenti e persistenza nelle fasi 3 e 4), `--format sqlite|json`, `--run-name`, `--update`, `--no-update`, `--comments` (audit dei commenti in fase 6), `--docs-only` (fasi 0 e 6), `--phase N` con N da 1 a 6 (fasi 0 e N; 0 e 7 rifiutate), `--stop-after N` e `--resume-from [N]` con `--run-name` esatto.
 
-Two properties keep it from hiding anything. The target is analyzed as given: a run whose target is `.github/` is how a project's CI gets a Codebase Map, and a dot file beside analyzed source (`.eslintrc.json`) is not a directory and stays. A target that a repository ignores, itself or through a directory above it, is not that repository's: it is analyzed whole as its own root, its paths start at the target, and no commit, branch or dirty flag is borrowed from the repository that ignores it. A snapshot recorded for such a target before codebase-map 7.0.1 is bound to the enclosing repository, so an incremental update refuses it ("snapshot root differs from the target's repository binding") and a full analysis replaces it. And the exclusion is declared: `snapshot.py scope <target>` prints it for the scope confirmation, the manifest's `scope` block keeps it (`git_ignore` is `unavailable` when no work tree holds the target, in which case no ignore rule was applied), and the final report's inventory line repeats it. A file Git tracks is never ignored, whatever pattern it matches.
+**Team** (`references/entry-team-analyze.md`), per monorepo, repository multilinguaggio e target oltre un contesto. Dopo la Phase 0 globale, rileva le partizioni: manifest di workspace (pnpm, npm, Lerna, Nx, Turbo, Cargo, uv), layout per convenzione (`apps/`, `packages/`, `services/`), divisione per layer (`backend`/`frontend`), divisione per linguaggio (almeno due linguaggi con almeno 20 file; i fogli di stile non formano mai una partizione), altrimenti una partizione `root`. Mostra l'anteprima dello scope con il conteggio reale di worker e procede se la scelta è già autorizzata. Onda 1: uno `partition-structure-worker` per partizione. Onda 2: `partition-behavior-worker` e `partition-quality-worker` per partizione, che leggono l'output dell'onda 1 di tutte le partizioni per citare i confini incrociati. Poi `partition-synthesizer` consolida in `01..07.md` e `semantic-interconnect-mapper` scrive `08-interconnect-map.md` sulla superficie fra partizioni. Controlli in più: `--depth=lite|full`, `--partition <path>` e `--partition-name`, `--skip-interconnect`, `--skip-synthesis`, `--yes`; `--phase` e `--docs-only` sono rifiutati.
 
-## Agents
+**Fasi.** La Phase 0 legge le istruzioni del progetto (`CLAUDE.md`, `AGENTS.md`) e gli indici di documentazione e scrive `knowledge/navigation.md` e `knowledge/documentation-leads.md`: indizi `documented` o `unverified`, mai `verified`, perché non legge codice. Le fasi 1 a 7: struttura, interfacce, flussi, semantica, pattern e rischi, salute della documentazione, rapporto finale. I percorsi che danno accesso al prodotto (autenticazione, onboarding, consenso, primo avvio) sono percorsi critici obbligatori in fase 3 e una categoria `Usability-blocking` in fase 5; per il codice client la traccia include il cascade degli stili, con `cascade_scan.py` eseguito sull'intero target. La profondità `lite` esegue 0, 1, 2 e 5 e condensa 7; in team non dispaccia i worker di comportamento e il worker di qualità scrive solo `05-risks.md` (`SKILL.md`, sezione Depth). Ogni file di fase termina con il registro `## Source reading`: manifest, seed del grafo, file e intervalli letti, diagnostica dei parser, lacune. Il rapporto finale dichiara tre coperture distinte: file in inventario, file letti in profondità, file esercitati a runtime.
 
-### `map-analyst`
+Il rapporto `07-final-report.md` è la vista per le persone: nessun renderer HTML è adattato in questa base.
 
-The coordinator of the classic analyze entry dispatches one isolated `codebase-map:map-analyst` after resolving scope and preparing the run and current snapshot. The analyst reads source, loads only the selected phase procedures and writes its run's declared analysis artifacts. It asks no questions, never edits analyzed source and never publishes. The coordinator owns choices, delivery verification, requested views and publication. Required context isolation is a capability gate; an unavailable binding stops the run.
+## Ruoli
 
-### Partition workers
+| Ruolo | Modello, strumenti | Chi lo dispaccia | Scrive |
+|---|---|---|---|
+| `map-analyst` | inherit; Read, Glob, Grep, Bash, Write | il coordinatore dell'ingresso analyze | gli artefatti del proprio run; in modalità `cards` le schede di un'area |
+| `partition-structure-worker` | inherit; Read, Glob, Grep, Bash, Write | ingresso team, onda 1 | `partitions/<nome>/01-structure.md`, `02-interfaces.md` |
+| `partition-behavior-worker` | inherit; Read, Glob, Grep, Bash, Write | ingresso team, onda 2 (non in lite) | `partitions/<nome>/03-flows.md`, `04-semantics.md` |
+| `partition-quality-worker` | inherit; Read, Glob, Grep, Bash, Write | ingresso team, onda 2 | `partitions/<nome>/05-risks.md`, `06-documentation.md` (solo 05 in lite) |
+| `partition-synthesizer` | inherit; Read, Glob, Grep, Write | ingresso team, dopo l'onda 2 | `01-structure.md` fino a `07-final-report.md` del run |
+| `semantic-interconnect-mapper` | inherit; Read, Write, Glob, Grep, Bash | ingresso team dopo la sintesi, o un workflow di documentazione adattato | `08-interconnect-map.md`, o il percorso che il prompt nomina |
 
-These four agents serve the team entry below. The classic analyze entry uses `map-analyst` instead; it does not dispatch these partition roles.
+Ogni ruolo dichiara una tabella `Method loads`: quali sezioni dei riferimenti legge e quando. I worker scrivono solo i file che possiedono e non toccano `state.json` né la radice `.codebase-map/`; l'analista non pubblica e non pone domande. Il mapper produce una mappa di contratti, invarianti, regole di dominio, assunzioni e punti di integrazione, ogni riga con `file:line` e uno stato (`verified`, `documented`, `unverified`, `disputed`), e si dichiara un indice di ipotesi fallibile. senior-review non lo dispaccia più: la sua Phase 1 legge il run completo con i tool della mappa.
 
-| Agent | Model | Runs during | Produces (inside the run directory) |
-|-------|-------|--------------|----------|
-| `partition-structure-worker` | `inherit` | Phase 1 Wave 1: Structure + Interfaces | `partitions/<name>/01-structure.md`, `02-interfaces.md` |
-| `partition-behavior-worker` | `inherit` | Phase 1 Wave 2: Flows + Semantics (skipped under `--depth=lite`) | `partitions/<name>/03-flows.md`, `04-semantics.md` |
-| `partition-quality-worker` | `inherit` | Phase 1 Wave 2: Risks + Documentation | `partitions/<name>/05-risks.md`, `06-documentation.md` (05 only under `--depth=lite`) |
-| `partition-synthesizer` | `inherit` | Phase 2: Consolidation | `01-structure.md` through `07-final-report.md` (consolidated across partitions) |
+## Linguaggi e parser
 
-Each partition worker owns only its listed output files and never touches another partition's files, the consolidated output, or the `.codebase-map/` root (other runs may be in flight). The synthesizer owns the consolidated files inside the run and leaves publication to the coordinator. Cross-partition references use `<other-partition>::<symbol>` citation notation.
+Tredici linguaggi e 32 estensioni (`SUPPORTED_EXTENSIONS` in `scripts/languages/__init__.py`):
 
-### `semantic-interconnect-mapper`
-
-Context-builder that produces a structured map of a codebase's contracts, invariants, domain rules, assumptions, integration hot-spots, and call graph. Unlike the partition workers, it serves two pipelines: the team entry of this plugin and an adapted documentation workflow. senior-review's branch review no longer dispatches it: its Phase 1 reads the complete run through the map tools. It lived in `senior-review` until plugin 2.1.0 (marketplace 16.0.0).
-
-| | |
-|---|---|
-| **Model** | `inherit` |
-| **Tools** | Read, Write, Glob, Grep, Bash |
-| **Use for** | Building the structured-facts artifact that downstream reviewers and writers cite instead of paraphrasing code |
-
-**Consumers:**
-
-| Pipeline | Phase | Artifact produced |
+| Linguaggio | Estensioni | Estrazione |
 |---|---|---|
-| The team entry of `codebase-map:map` | Phase 3 | `08-interconnect-map.md`, the global cross-partition view |
-| A host documentation workflow, when one is explicitly adapted | Guide preparation, when needed by the file/audience plan | The owned run's interconnect report, cited by the assigned writers and guide reviewer |
+| Python | `.py`, `.pyi` | `ast` della libreria standard |
+| Java | `.java` | tree-sitter, altrimenti regex |
+| JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | tree-sitter, altrimenti regex |
+| TypeScript | `.ts`, `.tsx`, `.mts`, `.cts` | tree-sitter, altrimenti regex; interfacce, enum, alias di tipo |
+| SQL | `.sql`, `.ddl`, `.dml` | DDL e grafo di riferimento tabelle e viste; `sqlglot` opzionale |
+| PL/SQL | `.pks`, `.pkb`, `.plsql`, `.pls`, `.pck`, `.prc`, `.fnc`, `.trg` | regex: package, body, cursori, eccezioni, `%TYPE` e `%ROWTYPE` |
+| Rust | `.rs` | tree-sitter, altrimenti regex; `impl Trait for Type`, `#[tauri::command]` |
+| Go | `.go` | tree-sitter, altrimenti regex; i metodi sono funzioni `Receiver.Method` |
+| Kotlin | `.kt`, `.kts` | tree-sitter, altrimenti regex |
+| C# | `.cs` | tree-sitter, altrimenti regex |
+| Vue, Svelte | `.vue`, `.svelte` | blocco `<script>` estratto e passato agli adattatori JS/TS |
+| CSS, SCSS, LESS | `.css`, `.scss`, `.less` | tokenizer della libreria standard; un simbolo per regola applicata; `@apply` di Tailwind espanso |
 
-**Output sections:** `## Target scope`, `## Call Graph`, `## Contracts` (formal, structural and implicit), `## Invariants` (temporal + structural), `## Domain Rules`, `## Assumptions`, `## Integration Hot-Spots` (HTTP, queue, IPC, env/config), `## Change Impact Radius`, `## Reviewer Hints`. Each section is self-contained so consumers can Grep a single heading and get full context.
+Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script lo dichiarano nell'intestazione PEP 723 e si rifiutano sotto, perché la grammatica di `ast` è quella dell'interprete in esecuzione. `tree-sitter` e `tree-sitter-language-pack` (`scripts/requirements.txt`) sono opzionali: senza, Java, JavaScript, TypeScript, Rust e Go usano regex e il parser lo scrive nelle note. La risoluzione lessicale dei riferimenti (`resolution.py`, `semantic_index.py`) lega solo funzioni e classi con binding unico e import interni diretti; ricevitori dinamici, proprietà calcolate e import solo di tipo restano riferimenti non risolti con la ragione. Un elenco di chiamanti vuoto non prova che un simbolo sia inutilizzato.
 
-Every row carries one of four statuses: `verified` (enforced in code), `documented` (a comment, docstring or project document declares it), `unverified` (the code relies on it but nothing enforces or documents it) or `disputed` (an independent derivation contradicts it, both sides cited). The map opens by declaring itself a **fallible hypothesis index, not ground truth**: a row marked `documented`, `unverified` or `disputed` must be re-derived before it becomes the premise of a finding, and an absent row is not evidence of absence.
+## Script
 
-Input source differs per pipeline: the consolidated partition set for the team entry, and a caller-supplied context brief for an adapted host documentation workflow. It never proposes fixes; every claim carries a `file:line` citation.
+In `skills/map/scripts/`, Python con sola libreria standard salvo gli opzionali detti. Punti d'ingresso (`SKILL.md`, sezione Resources):
 
----
+- `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`.
+- `source_reader.py`: `outline` (metadati dei simboli), `graph` (chiamanti e chiamati dal manifest, 1-3 salti), `read` (blocchi di sorgente verificati per simbolo, intervallo o file intero).
+- `modules.py`: `build`, `query`, `brief`, `propose`.
+- `resolve_edges.py`: risoluzione opzionale delle chiamate con `--engine jedi` o `--engine scip`, in `engine-edges.sqlite`.
+- `semantic_map.py`: vista `semantic-map.md` delle schede di un'area.
+- `embedding_worker.py`: embedding locali opzionali, su richiesta esplicita.
+- `analyze_file.py`, `ast_parser.py`, `classifier.py`, `usage_finder.py`: analisi di un file, estrazione grezza, criticità, usi di un simbolo.
+- `cascade_scan.py`: regole di stile con portata globale che possono rompere una schermata (fase 5).
+- `doc_review.py`, `rewrite_comments.py`, `comment_rewriter.py`: salute della documentazione e qualità dei commenti (fase 6); Codebase Map usa solo analisi e rapporto, mai la riscrittura.
+- `confinement.py`, `tree_scope.py`: binding al progetto con rifiuto dei link e lock per progetto; perimetro.
+- `mcp_server.py` su `mcp_service.py`: il server MCP.
 
-## Skills
+Gli altri moduli sono librerie: `snapshot_store.py` e `semantic_store.py` (storage SQLite e binding semantici), `retrieval.py` (indice FTS5), `edge_view.py` (vista unita di riferimenti lessicali e archi del motore), `scope_planner.py`, `context_packet.py` e `map_slice.py` (contesto delimitato), `card_store.py` (schede), `dependency_graph.py` e `store_graph*.py` (grafo di import e metriche), `languages/` (adattatori per linguaggio).
 
-### `map`
+## Server MCP
 
-The method itself: structure extraction fused with semantic reading, the concurrent runs model, Phase 0, and the multi-language script suite (Python stdlib-only; optional tree-sitter for Java/JS/TS/Rust/Go fidelity; a stdlib tokenizer for CSS/SCSS/LESS; Python >= 3.12, a declared floor the entry scripts enforce because the `ast` grammar is the running interpreter's), including `source_reader.py` for validated source blocks and `cascade_scan.py`, which lists the stylesheet rules with global reach that can break a screen. Named `analyze` until plugin 3.0.0, when it shared its name with the command and the command shadowed it on any host that lists both under one identifier.
+`uv run --no-config --no-project --script <plugin>/skills/map/scripts/mcp_server.py --project <radice>` (`.mcp.json`). I due flag impediscono che il progetto analizzato scelga interprete o indice dei pacchetti del proprio analizzatore. Il progetto è fissato all'avvio; ogni target è relativo, ogni run-id seleziona esattamente `.codebase-map/runs/<run-id>/`; percorsi esterni, traversal, symlink e junction sono rifiutati. `--store <percorso>` sposta l'intero store in una dot directory del progetto, marcata da `.codebase-map-store.json`. La mappa va costruita con lo stesso runtime che la serve: l'indice lessicale registra versione di SQLite e impronta dei parser, e una mappa scritta da un altro Python risulta `stale` (`codebase_map_index` ricostruisce l'indice).
 
-| | |
+Ventidue tool, tutti con risposta JSON (`references/mcp.md` ha i parametri completi):
+
+| Gruppo | Tool |
 |---|---|
-| **Load as** | `codebase-map:map`; the team entry's workers read it directly, and a host map entry point applies it |
-| **Use for** | Codebase understanding, architecture mapping, onboarding, evidence for a subsequent review |
+| Run | `codebase_map_scope`, `codebase_map_create_run`, `codebase_map_runs`, `codebase_map_status`, `codebase_map_diff`, `codebase_map_artifact` |
+| Navigazione | `codebase_map_search`, `codebase_map_index`, `codebase_map_outline`, `codebase_map_graph`, `codebase_map_read`, `codebase_map_modules` |
+| Impatto | `codebase_map_edit_impact`, `codebase_map_symbols_at`, `codebase_map_stale_callers`, `codebase_map_meta_query`, `codebase_map_context` |
+| Ciclo di vita | `codebase_map_checkpoint`, `codebase_map_events`, `codebase_map_resume`, `codebase_map_stop`, `codebase_map_publish` |
 
-**Capabilities:**
-- Extract code structure (classes, functions, imports)
-- Map internal/external dependencies
-- Recognize architectural patterns
-- Identify anti-patterns and red flags
-- Trace data and control flows
+Limiti nel codice (`mcp_service.py`): una lettura oltre 4.000.000 caratteri è rifiutata e va divisa; un artefatto si ferma a 2.000.000 byte con `truncated: true`; il giornale `mcp-events.json` tiene al massimo 10.000 eventi. Il server non avvia modelli, non ha scheduler e non cancella analisi: l'host dispaccia i worker e, per fermare un run, ferma prima i propri worker e poi chiama `stop`. `MapService(project_root, store)` espone le stesse operazioni a un backend nativo senza SDK.
 
-The semantic phases also document contracts and invariants and assess quality and
-maintainability. Phase 6 diagnoses documentation drift, broken links, stale indexes
-and references, and comment quality; it records proposals without applying them.
-These outputs support understanding unfamiliar code, onboarding, review context
-and explanations of why code works. Human-facing documentation and remediation
-remain with their separately authorized owners.
+## Trovare il codice di una richiesta
 
-#### Parser implementation layout
+Il ciclo misurato è in `references/locate.md`; la scelta del tool per domanda in `references/tools-guide.md`.
 
-Within the plugin, `skills/map/scripts/languages/` holds the adapters. `base.py` defines shared dataclasses and the `LanguageAdapter` protocol; `__init__.py` provides extension dispatch through `detect_language` and `get_adapter`; `comments.py` contains the per-language comment lexer and rustdoc postprocessor; `_treesitter.py` loads optional tree-sitter with fallbacks; `semantic.py` extracts the binding and reference evidence the resolver consumes, per language. Language modules are `python.py`, `java.py`, `javascript.py`, `typescript.py`, `sql.py`, `plsql.py`, `rust.py`, `go.py` and `stylesheet.py`.
+1. Estrarre dalla richiesta i nomi concreti: identificatori, file, testo di errore, frame di traceback, termini di dominio.
+2. `codebase_map_search` per gruppo di nomi: simbolo esatto e frame di traceback prima, poi corrispondenze per sottotoken (`InvoiceTotal` trova `invoice_total`). Pesi BM25 0/10/5/3/1 su id, nome, percorso, firma e corpo (`retrieval.py`). La ricerca non rilegge l'albero: un indice mancante o stale è una voce `gaps` che nomina `codebase_map_index`, non un risultato vuoto.
+3. `codebase_map_outline` sul file del risultato e `codebase_map_graph` a un salto per vicini, chiamanti e chiamati.
+4. `codebase_map_read` sui simboli tenuti: verifica i byte contro lo snapshot e fallisce con «source changed; refresh the manifest» su un file modificato.
+5. `codebase_map_edit_impact` sui simboli da cambiare; poi riprodurre con un test e correggere.
 
----
+Budget: circa 6 ricerche e 10 letture per compito; una ricerca vuota si riformula una volta. Misura del 2026-10-27 su 23 compiti reali con test nascosti (`docs/research/context-building-benchmarks.md`): 21 risolti con ricerca lessicale, 19 con ricerca ibrida, 19 con pacchetto statico senza ricerca; per questo la ricerca lessicale è il percorso predefinito e gli embedding restano opzionali.
 
-## Shared and standalone model consumption
+## Grafo, risoluzione e moduli
 
-`map` is also the standalone consumer entry for an LLM working without the
-`daodan` entry plugin or its workflows. Its discovery description covers ordinary
-project questions, debugging, feature work, refactoring, reviews and documentation.
-The same `references/standalone.md` navigation unit is loaded by classic analysis,
-source-reading team workers and bound consumers, so analyze and composed workflows share the
-standalone path instead of maintaining a competing discovery procedure.
-It directs the model to
-find a completed run, use outline, graph, cards and artifacts before broad source
-exploration, inspect edit impact before changes and verify material claims against
-current source. Missing, incomplete or drifting evidence produces a declared gap
-and ordinary repository exploration, never an implicit analysis, refresh or card
-deepening. Composed producers retain their authorized recovery procedures;
-artifact-only synthesis stays within its partition inputs.
+`source_reader.py graph` interroga i binding statici del manifest senza rianalizzare: gli archi risolti si espandono verso chiamanti e chiamati, le chiamate non risolte non guidano l'espansione. `dependency_graph.py` aggiunge cicli di import, importatori transitivi e PageRank (damping 0,85, tolleranza 1e-10, 100 iterazioni al massimo) come aiuto alla lettura, non come prova di propagazione a runtime. Il classificatore considera alta complessità un file oltre 300 righe e hub un file con almeno 8 importatori, critico con 15 (`classifier.py`).
 
-This is a portable discovery and consumption contract, not proof of unconditional
-activation on every host. The host must expose the skill and, for MCP queries,
-register and connect the server. Without MCP, the model can still read the
-published Markdown and run artifacts through ordinary file tools. The host remains
-responsible for model choice and tool invocation; the map service supplies no LLM
-or scheduler.
+`resolve_edges.py` attacca un motore opzionale, Jedi su un ambiente del progetto o un indice SCIP, alle chiamate che il risolutore lessicale non prova; sui due progetti misurati nella docstring il livello lessicale risolve il 9,7% e il 13,0% dei riferimenti. Ogni arco nomina il proprio risolutore (`builtin-lexical` o `<engine>@<versione>`) e la confidenza (`confirmed`, `candidate`); gli archi vivono in `engine-edges.sqlite`, legato al digest dello snapshot, e `edge_view.py` li unisce ai riferimenti lessicali tenendo questi ultimi come autorità e mostrando le divergenze in `conflicts`. Un motore assente è una degradazione dichiarata che non scrive nulla.
 
----
+`modules.py` deriva il grafo dei moduli accanto al manifest (`daodan/module-graph/v1`). Tre provenienze: `build`, letta dai manifest di 27 ecosistemi e 32 manifest (npm, pnpm, Lerna, Deno, Nx, Python, Cargo, Go, Maven, Gradle, .NET, Composer, RubyGems, Bundler, pub, melos, Swift, Mix, CMake, Cabal, Stack, sbt, Terraform, Zig, Julia, dune, plugin Daodan), stato `confirmed`; `declared`, da `codebase-modules.json` alla radice (`daodan/declared-modules/v1`), con `kind` `component` o `feature`, `location` `internal` o `external`, membri `path::Symbol`, file o directory ed evidenza, verificati sullo snapshot; `proposed`, da un modello attraverso `modules.py propose` o `codebase_map_modules(proposals=...)` dopo il `brief`, verificati allo stesso modo e mai oltre `inferred`. Nessuna directory diventa modulo per il nome. La query (`daodan/module-query/v1`) risponde `resolved`, `needs_clarification`, `incomplete` o `unknown` e non promuove mai un candidato. Contratto completo in `references/modules.md`.
 
-## Entry and methods
+## Digest, schede e impatto
 
-The plugin has no command of its own. A host map entry point loads `codebase-map:map`: without a complete analysis of the project it runs the analyze entry (`references/entry-analyze.md`) at lite depth, and for a large, multi-language or multi-workspace scope it recommends the team entry (`references/entry-team-analyze.md`) and the user chooses. With an analysis it updates it incrementally when stale, then deepens the area named, or the whole target, as `references/deepen.md` directs. Senior-review runs the same entries as a composed caller; former abstraction-audit and lifecycle callers are inactive in the new base.
+Ogni simbolo di uno snapshot SQLite ha tre digest (`semantic_store.py`): `body_hash` sul testo dell'intervallo, `interface_hash` su genere, nome, esportazione, parametri e firme (prefisso `v2:`), `effects_hash` sulle chiamate e i riferimenti esterni risolti dentro l'intervallo, nominati per file e nome qualificato e non per posizione. Fra due refresh, `meta_changesets` registra i delta (`added`, `removed`, `body_only`, `effects_changed`, `interface_changed`) in un buffer di 16 changeset e 4 MB.
 
-### Analyze entry
+Una scheda è la lettura di un simbolo da parte di un modello: `purpose`, `preconditions`, `postconditions`, `invariants`, `side_effects`, `failure_modes`, `notes`, `confidence`. Le schede sopravvivono ai run e vivono in `.codebase-map/cards.sqlite`, con i digest del simbolo al momento della scrittura; la freschezza si calcola a ogni lettura: `fresh`, `stale_body`, `stale_interface`, `stale_callee`, `orphan`, e `uncovered` per un simbolo senza scheda. `snapshot.py meta-upsert` le scrive, `meta-query` e `codebase_map_meta_query` le leggono; il server MCP non scrive mai schede. Le scrive l'approfondimento di un'area (`references/deepen.md`): il coordinatore elenca i simboli senza scheda fresca con `semantic_map.py` e dispaccia `map-analyst` in modalità `cards`, a lotti di al massimo 100 simboli.
 
-8-phase systematic codebase analysis with per-run state management, output files, and phased execution: project knowledge discovery -> structure -> interfaces -> flows -> semantics -> risks -> documentation -> report.
+`snapshot.py edit-impact --target <simbolo o file>` e `codebase_map_edit_impact` (`daodan/edit-impact/v2`) rispondono a cosa sapere prima di modificare: digest, firme e scheda del target, chiamanti e chiamati a un salto con i siti di riferimento esatti, riferimenti non risolti, cambiamenti recenti, sorgente verificata. Livelli di `disclosure`: L0 sorgente del target, L1 vicini a un salto, L2 con `--hops 2`, L3 con `--slices` (slice Python all'indietro), L4 test correlati, obblighi e stato DO NOT TOUCH, che resta `unavailable` senza un confronto fra due snapshot. Default: 20 vicini, 5 cambiamenti, budget 120.000 caratteri; le omissioni per budget sono dichiarate. Un linguaggio senza fatti semantici (SQL, PL/SQL, fallback regex) non produce chiamanti.
 
-**Phase 0 (Project Knowledge Discovery)** starts every fresh run, including `--depth=lite`, `--phase N` and `--docs-only`; a resume can inherit its confirmed knowledge files. The isolated analyst owns it in classic mode, and the team entry runs it once for team mode. It is a preamble rather than a selectable analysis phase. Phases 1 to 7 keep their numbers: `--phase N` accepts 1 through 6 and selects Phase 0 plus N only; `--phase 0` and `--phase 7` are refused. `--docs-only` selects Phase 0 plus 6.
+`snapshot.py symbols-at` e `codebase_map_symbols_at` portano intervalli di righe, o un diff unificato con lo snapshot base, ai simboli che li contengono, separando l'identità stabile dall'ancora di revisione. `snapshot.py stale-callers <candidato> --base <base>` e `codebase_map_stale_callers` confrontano i digest di due snapshot e classificano i chiamanti dei simboli cambiati: `edit_impact` (RED, da ispezionare o modificare), `validation_impact` (GREEN, da rieseguire i test), `do_not_touch`; la classificazione non legge schede.
 
-Phase 0 reads the project's own instruction files and indexes and records where the project claims each concept lives, writing `knowledge/navigation.md` and `knowledge/documentation-leads.md`. Both hold **leads, never verified facts**: the phase reads no code, so every row is `documented` or `unverified`. This is the cheap discovery pass, kept deliberately apart from Phase 6, which is the expensive audit of whether those documents are accurate. Conflating the two is what once made lite mode blind to a project's own documentation. The branch review's Phase 1d consumes `knowledge/documentation-leads.md` as one half of its knowledge-provenance join.
+## Contesto delimitato
 
-**Entry-gating paths** (authentication, onboarding, consent or policy acceptance, first-run setup) are mandatory critical paths in Phase 3 and a `Usability-blocking` category in Phase 5 and in the final risk matrix, since plugin 4.1.0. For client code the trace includes the effective style cascade over the screen, because a global selector that overrode a consent screen's positioning is what once made it impossible to complete on mobile in dark theme, with the component sitting in the inventory the whole time. Since plugin 4.2.0 `cascade_scan.py` does the mechanical half of that cascade reading: it lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, together with the class, id and attribute rules it can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order). Conflicts that define a screen, a fixed or sticky position, a scroll container or a viewport height, come first. When a stylesheet uses Tailwind, the screen-level utilities written in string-literal `class` and `className` attributes count as conflicts too, from Tailwind's `utilities` layer. A rule on the root or mount element itself is reported without overrides, to limit noise, and the report says so rather than implying there are none. Tailwind `@apply` layout utilities count as the declarations they inline, and that is not a detail: on the Phazly stylesheets at commit `d8efc74e147c`, the Codebase Map's reference, 90% of the applied rules used `@apply` (2,643 of 2,938), all 44 rules of the consent modal's own stylesheet among them, and before the expansion the scan found the dark-theme rule and missed the modal. With it, and with the screen-level utilities read from markup, the same tree reports `.dark #root > div:first-child` beating `.terms-acceptance-modal` on specificity as one of 23 screen-level conflicts, two of them overlays written as `className="fixed ..."` in components, and the tree at the fix commit no longer reports the rule. Whether a candidate and its conflict match the same element depends on the rendered tree, so Phase 5 confirms each one by reading. The Codebase Map stays static: it names those paths and reports them as not exercised. Exercising them in a browser belongs to the project's own tests or to `frontend-review`, never to this plugin.
+`scope_planner.py` seleziona l'evidenza di un intervento da snapshot, archi e indice (`daodan/scope-plan/v1`, stati `incomplete`, `needs_localization`, `needs_split`, `ready_for_attempt`); `context_packet.py` la impacchetta per un destinatario (`daodan/context-packet/v1`, stati `ready`, `incomplete`, `needs_split` con `status_reason` `missing_support`, `core_too_large`, `core_conflict`, `projection_limit`, `work_limit`, `not_localized`, `empty_core`); `map_slice.py` proietta la stessa evidenza per i pianificatori (`daodan/map-slice/v1`). Ingressi: `snapshot.py context` e `codebase_map_context`. Tutto è lavoro di macchina: nessuna chiamata a un modello, nessun refresh implicito di indici. Un pacchetto è evidenza per un tentativo: non autorizza scritture, non completa compiti, non supera gate. I quattro contratti sono in `contracts/context.toml`; il testo in `references/scope.md` e `references/context.md`. Nella misura del 2026-10-27 il pacchetto statico è stato il percorso più costoso e non è il default.
 
-The entry's controls keep their former flag names. The coordinator resolves them from the request and the user's answers, and a composed caller binds them:
+## Embedding opzionali
 
-- `--critical`: prioritize authentication, payment and persistence in Phases 3 and 4
-- `--format sqlite|json`: SQLite is the default; JSON is the upstream compatibility format
-- `--run-name <name>`: a named run, safe to run others concurrently
-- `--update`: require an update base; no usable parent is a hard stop. Without it, a second run on the same target offers an incremental update
-- `--no-update`: skip detection and run a full analysis
-- `--comments`: include the comment quality audit in Phase 6
-- `--docs-only`: documentation health only (Phase 6, after Phase 0)
-- `--phase N`: Phase 0 plus that phase only, for example 5 for pattern and risk detection
-- `--stop-after N` and `--resume-from [N]`: stop a named run after a phase, and resume it
+`embedding_worker.py` indicizza e interroga con EmbeddingGemma 2 in ONNX q4 (circa 206 MB, pesi condivisi per utente), in un interprete separato scelto esplicitamente, senza scaricare nulla durante una query. `retrieval.search` li fonde per rango reciproco (`exact-rrf75-25-k60-v1`: 0,75 denso, 0,25 lessicale, k 60), sempre sotto le ancore esatte. La misura del 2026-10-27 non ha trovato un compito in cui battessero l'indice lessicale, quindi restano disattivati per default (`references/embeddings.md`).
 
-**Output:** `.codebase-map/runs/<run-id>/` holds the selected phases, Phase 0's `knowledge/` directory and a current `snapshot/manifest.sqlite` by default (`snapshot/manifest.json` for explicit JSON). A full run produces `01-structure.md` through `06-documentation.md` and `07-final-report.md`. Lite selects 0, 1, 2, 5 and a condensed 7, omitting 03, 04 and 06. Single-phase and docs-only runs produce no final report and never publish. A classic run never writes `08-interconnect-map.md`. Only eligible complete full or lite delivery replaces the root mirror; snapshots, and an update's `changes.json` and `changes.md`, stay in the run directory.
+## Consumo della mappa
 
-`--stop-after N` accepts 1 through 6 and stops that invocation while retaining the selected mode's later obligations as pending. It cannot combine with single-phase or docs-only controls. Resume uses `--resume-from [N] --run-name <exact-id>` on the same interrupted run, with unchanged mode, flags, target and verified source binding. N accepts 1 through 7; omitting it selects the first incomplete produced phase. Resume drops the invocation's stop, preserves confirmed earlier and inherited artifacts, and re-executes declared produced work from the selected phase onward.
+`references/standalone.md` è il contratto di lettura per ogni consumatore, ingressi inclusi: trovare un run completo (`codebase_map_runs`, `codebase_map_status`), navigare prima di leggere a tappeto, verificare l'impatto prima di modificare, dichiarare evidenza assente o alla deriva (`codebase_map_diff`) e proseguire con l'esplorazione ordinaria, senza avviare analisi, aggiornamenti o approfondimenti implicitamente. Senza MCP valgono i Markdown pubblicati e gli script.
 
-#### Incremental updates
+senior-review esige una mappa completa dell'intero progetto prima di una review: la sua Phase 0 e la sua Phase 1 usano `search`, `outline`, `graph`, `read`, `edit_impact`, `symbols_at` e `modules` del run esistente, e nessuna fase della review analizza il progetto al suo posto (`plugins/senior-review/README.md`, sezione Prerequisito).
 
-A full classic run writes the snapshot that makes a later update possible. Unless `--no-update`, resume, docs-only or single-phase controls apply, the coordinator looks for a completed same-target classic run with a usable manifest and diffs that snapshot against the current worktree. The diff is mechanical and spends no model tokens: its default content check trusts equal size and mtime, while `--verify` hashes every file and is required for evidence freshness. Parser identity changes invalidate cached structure. A changed symbol is found by comparing the hash of its definition. The scope checkpoint then shows the result before semantic reading:
+## Policy e contratti
 
-```
-Codebase Map target: src
-Run: src-20260904-101500   parent: src-20260901-101200 (d5a11cef, 3 days ago)
-Since parent: 2 modified, 1 added, 0 removed files; 3 symbols changed, 1 added, 0 removed
-Blast radius: 2 importing files
-Affected claims: 11 (03-flows: 5, 02-interfaces: 4, 05-risks: 2)
-Files affected: 5 of 41
-Not analyzed: 1 dot directories (src/.storybook), 3 paths Git ignores (ignore rules: applied)
+`policies/write-confinement.toml`: ogni scrittore della mappa crea file solo nella directory del proprio run, più lo store delle schede; gli indici derivati (`retrieval.sqlite`, `engine-edges.sqlite`, `embeddings.sqlite`) stanno accanto al manifest sotto `snapshot/`. L'enforcement è a livello di prompt e di contratto di proprietà nei ruoli: un hook di plugin sarebbe globale alla sessione e un hook per agente non è provato funzionante da un plugin installato (`mechanical_wired = false`).
 
-1. Incremental update from src-20260901-101200 (5 affected files)
-2. Full analysis (41 inventoried files; source reading follows the claims)
-3. Cancel
-```
+`contracts/context.toml` esporta i quattro record del contesto delimitato: richiesta, piano di scope, pacchetto e map slice.
 
-Accepting the update carries every claim the change set did not touch forward byte for byte, with `file:line` citations renumbered where lines shifted, and re-derives only the claims that cite a changed symbol, a changed file, or a file that imports one. New symbols get new claims, removed symbols lose theirs, and the final report is regenerated from the phase files. A mechanical gate then refuses to publish while any re-derivation is still marked pending, so an incremental result is either finished or not published. `changes.md` in the run directory records what changed in the code and what happened to each affected claim, and `state.json` names the parent run, so the chain of runs under `.codebase-map/runs/` is the analysis history.
+## Test
 
-Change detection follows the current worktree because re-analysis often targets
-dirty files and sometimes directories outside Git. A commit records lineage
-without defining the changed source. The one-hop limit bounds re-derivation work:
-an import graph's transitive closure can span the whole target.
+In `tests/` alla radice del repository: 22 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, 884 test in tutto, più `skills/map/scripts/tests/test_modules.py` (6 test). Esecuzione: `python -B -m pytest -q tests` dalla radice.
 
-The verified diff recommends a full run with reasons, including when more than 40% of files are affected. A recommendation is advice: with an eligible parent, the coordinator resolves update versus full from the request or earlier answers and asks only when undecided. The scope preview remains visible with `--update` and `--no-update`; it does not require repeated approval when authorization already settles the choice. `--update` makes a missing or unusable parent a hard stop. Ordinary parent selection requires a completed classic run for the same target with a manifest.
+## Non in questa base
 
-A composed caller may bind a partial or team parent for a bounded classic `--stop-after 4` child only when the gate verifies the parent's declared 01 through 04 deliveries, project, target, common flags and snapshot. That child carries only 01 through 04 into a new classic run, never a team's 08 or a changed-mode resume. Ordinary classic updates still require a completed classic parent; the team entry has its separate partition-level update path below.
-
----
-
-### Team entry
-
-Multi-agent variant of the analyze entry for large or partitioned codebases: auto-detects partitions, runs the structural/behavioral/quality phases in parallel per partition across two waves, then consolidates into the same `01..07.md` layout plus a global cross-partition interconnect map, all inside an isolated run directory.
-
-**Prerequisites:** no external plugin dependency in the adapted two-owner manifest. Worker dispatch, context isolation and the delivery barrier come from the host harness; no separate team runtime is required. The historical optional HTML renderer is unavailable until adapted. The kernel bodies name no host coordination primitive.
-
-| | |
-|---|---|
-| **Controls** | `[--format sqlite\|json] [--critical] [--comments] [--depth=lite\|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]`, resolved by the coordinator like the analyze entry's |
-
-`--partition-name <name>` gives the N-th manual `--partition` a symbolic name; without it the name derives from the path basename. `--phase N` and `--docs-only` are rejected with an explicit error that points to the analyze entry.
-
-**Pipeline:**
-
-0. **Project knowledge discovery**: the same Phase 0 as the analyze entry, run once inline for the whole run before partition detection. It is global, not per partition, and no worker owns any of its output: `knowledge/navigation.md` and `knowledge/documentation-leads.md`.
-1. **Partition detection** (its own Phase 0): explicit workspace manifests (pnpm/npm workspaces, Lerna, Nx, Turbo, Cargo, uv) -> convention-based monorepo layout (`apps/`, `packages/`, `services/`) -> frontend/backend layer split -> language-cluster split -> single-partition fallback. Stylesheets never form a language partition: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side. Shows the concrete partitions, mode and actual worker count before dispatch. A fresh run proceeds on the invocation's authorization, without requiring `--yes`. An unresolved choice or an explicit request to approve the plan gets a concrete question through a permitted input tool or ordinary chat; normal replies can accept or change the plan. There is no team-creation step: the host harness dispatches each worker and records it as delivered or failed.
-2. **Wave 1** (parallel): one `partition-structure-worker` per partition writes structure and interfaces.
-3. **Wave 2** (parallel): `partition-behavior-worker` and `partition-quality-worker` per partition write flows/semantics and risks/documentation, each citing sibling partitions' Wave 1 output for cross-partition calls. Under `--depth=lite` the behavior workers are not spawned and quality workers write risks only.
-4. **Synthesis**: `partition-synthesizer` consolidates every partition's output into the standard `01-structure.md` through `07-final-report.md` files inside the run directory, flagging any failed partition inline.
-5. **Interconnect map**: `codebase-map:semantic-interconnect-mapper` reads the consolidated output and produces `08-interconnect-map.md`, the global cross-partition contract/invariant map, a team-only artifact. senior-review's branch review reads the run through the map tools instead.
-6. **Publish**: the coordinator requires every worker's accounted delivery, a gate result with `complete` and `may_publish`, and every requested view before replacing the root mirror with the declared consolidated set. Failed or missing partition or worker delivery prevents publication even if synthesis wrote warning reports; those reports stay in the run. `--skip-interconnect` omits 08 by declaration, while `--skip-synthesis` also skips interconnect and keeps all results run-local.
-
-Typical resolutions: auto-detected partitions at full depth; `--depth=lite` for fewer agents; manual partitions such as `packages/api` and `packages/web` with the recommended scope accepted; a second run on the same target, where partitions that did not change are copied, not re-run; `--update`, which requires a usable team parent, none being a hard stop.
-
-**Incremental updates at partition granularity.** A second team run on the same target diffs the last completed team run's snapshot against the worktree, once for the whole tree, and assigns each affected file to its partition. A partition with no affected file is copied whole from the parent run and gets no worker; a partition with at least one is re-analyzed through both waves exactly as in a fresh run. Synthesis and the interconnect map always run, because both are cross-partition by construction. The partition checkpoint labels each partition `unchanged (copied)` or `re-analyzed (N affected files)` before anything is dispatched, and the completion output repeats that split with a pointer to the `## Partitions` table in `changes.md`. The parent's partition set must match this run's exactly; a partition that appeared, vanished or was renamed forces a full run, with the reason named. The scope preview is always shown; choosing update versus full analysis waits only when the request or earlier answers have not settled it. `--yes` or an ordinary-language instruction to follow the recommendation selects the recommended eligible mode. `--update` still requires a usable parent and stops if none exists.
-
-Resume-safe: re-running against an in-progress run in `runs.json` re-spawns only the missing workers for the phase that stopped.
-
----
-
-**Related:** [senior-review](../../plugins/senior-review/README.md) (code review agents that run after the Codebase Map). The former `project-knowledge` plugin is not part of the new two-owner base.
-
-## Atomic method and output contracts
-
-Each phase has one canonical skeleton. Team workers use the same common headings and only the extensions declared for their writer; synthesis follows their placement and aggregation. Classic and partition state ownership remain distinct.
-
-Method loads tables describe bounded reads by role and mode. A path mentioned for provenance or in a worker brief is not a coordinator load. Static budgets measure declared instructions, not runtime enforcement or billed tokens.
-
-Optional methodology, patterns and comment taxonomy have declared on-demand reads, including nested reading guidance. The guard checks every combination, deduplicating shared sections. It reports unchanged core caps separately from the frozen optional baselines of the pre-refactor resources; those optional loads existed before this guard measured them.
-
-### Runtime rationale
-
-Classic analysis keeps its selected phases together in one isolated `map-analyst` context. The coordinator presents scope, resolves mode and flags, prepares the run and initial current snapshot, then dispatches the analyst. It does not read analyzed source or execute phase procedures. The analyst follows the declared phase loads in order and owns snapshot refresh during analysis; the coordinator checks the resulting artifacts, recovers incomplete produced work, verifies requested views and publishes only eligible delivery. An empty response or stopped worker is not a delivery.
-
-The invocation and prior answers supply authorization. Present the scope without pausing merely because a checkpoint exists; ask only for an unresolved material choice or an explicitly requested approval. For a large, multi-language or multi-workspace target, recommend the team entry before dispatch and resolve the mode choice from that authorization or an answer. Classic remains one isolated analysis context; missing required isolation is a concrete capability gap.
-
-The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path. The inventory line names what the perimeter left out for the same reason: `.github/` or a generated client is exactly what a reader assumes was read.
-
-## Local MCP integration
-
-The bundled `codebase-map` server exposes 22 tools for project-bound snapshots,
-verified source reads, ranked lexical search (`codebase_map_search`) and the
-index that serves it (`codebase_map_index`), the module graph
-(`codebase_map_modules`), edit impact and stale-caller
-classification, bounded context packets (`codebase_map_context`), run
-checkpoints, persistent events, resume, stop and publication. Request progress reports deterministic operations. The host owns
-analysis workers, their lifetime and continuation. Existing shell workflows remain
-available independently of the MCP connection. The process that starts the server
-may bind a custom project-relative store with `--store`; it carries a
-`.codebase-map-store.json` marker so `snapshot.py` commands given a run directory
-in it bind the same project. Shell workflows keep
-naming `.codebase-map/`, which stays the default.
-
-See the [MCP contract](../../plugins/codebase-map/skills/map/references/mcp.md)
-for startup, tool schemas, event cursors, how to prepare and call
-`codebase_map_context` and the Tri-Tech Code integration boundary. Register the
-server on a host without automatic registration; the historical host reference
-was not imported. Keep `--no-config --no-project` in any custom `uv run` command.
-
-## Code access: how an agent finds the code it must change
-
-Since plugin 8.12.0 the map carries its own search engine and a guide that tells
-an agent how to use it. This section explains the mechanism in plain terms, with
-examples, and says where the design comes from.
-
-### The three things, and what each one is for
-
-```mermaid
-flowchart LR
-    A[Source tree] -->|snapshot.py write<br/>codebase_map_create_run| M[(Map<br/>manifest.sqlite)]
-    M -->|built with the map| I[(Lexical index<br/>retrieval.sqlite)]
-    M -->|optional, per project| E[(Dense index<br/>EmbeddingGemma)]
-    I --> S[codebase_map_search]
-    M --> O[codebase_map_outline<br/>codebase_map_graph]
-    M --> R[codebase_map_read<br/>hash-verified]
-```
-
-- **The map** is the inventory: every file, every symbol with its line span,
-  signature and digests, who calls whom. Every agent needs it, and every tool
-  below reads it.
-- **The lexical index** is a full-text index (SQLite FTS5) over the map's
-  symbols: name, path, signature and body, split into subtokens so that
-  `InvoiceTotal`, `invoice_total` and `invoice total` all meet. It is built
-  together with the map, in about a fifth of the map's own build time, and
-  repaired with one call when it is missing, stale or corrupt.
-- **The dense index** (semantic embeddings) is optional and off by default. It
-  ranks by meaning instead of by words. The measurement below did not find a
-  task where it beat the lexical index, so it stays an opt-in per project.
-
-### The loop an agent follows
-
-```mermaid
-sequenceDiagram
-    participant Req as Request
-    participant Ag as Agent
-    participant S as search
-    participant M as outline / graph
-    participant R as read
-    participant T as tests
-    Req->>Ag: "signals stay open until restart; expire them on every candle"
-    Ag->>S: query: "expire signals EXPIRED startup"
-    S-->>Ag: 20 ranked entities (ids, paths, lines, signatures)
-    Ag->>M: outline of the hit's file, graph one hop
-    M-->>Ag: siblings, callers, callees
-    Ag->>R: read the 3 symbols kept
-    R-->>Ag: verified source
-    Ag->>T: write one test that fails for the stated reason
-    Ag->>Ag: edit, run the tests, stop
-```
-
-Worked example from the measurement (a private trading project): the request
-said that open signals were only expired at startup. The agent searched
-`expire signals EXPIRED startup`, the first hit was
-`agent_strategy_adrastea.py::AdrasteaSignalGeneratorAgent._cleanup_expired_signals`,
-the second the repository method that marks them. One outline call showed the
-candle handler next to it, one read of three symbols was enough to write the
-failing test, and the fix passed the hidden tests of the real commit. The whole
-task used 6 searches and 9 reads.
-
-The guide that states this loop, with its budgets, is
-[`locate.md`](../../plugins/codebase-map/skills/map/references/locate.md).
-The investigation method in senior-review (`skills/investigation-method/SKILL.md`)
-points to it; the former project-delivery plugin is not part of the two-owner base.
-
-### What a search returns
-
-```json
-{"results": [
-  {"entity_id": "app/services/food_pool.py::filter_dietary_substitutes",
-   "kind": "function", "path": "app/services/food_pool.py",
-   "start_line": 212, "end_line": 240,
-   "signatures": ["def filter_dietary_substitutes(pool, profile)"],
-   "provenance": ["fts5"], "score": -4.21}],
- "exact": [], "gaps": [], "ranking_policy": "exact-fts5-bm25-v1", "index_state": "fresh"}
-```
-
-Never source text: the agent reads the entities it keeps with
-`codebase_map_read`, which verifies the bytes against the snapshot. A search
-does not reread the tree (that read cost 2 to 5 seconds per call on a 500-file
-project against 0.3 seconds for the ranking itself), so a symbol that moved
-since the snapshot is reported at the read, one call later. A missing or stale
-index is a `gaps` entry naming `codebase_map_index`, never an error.
-
-Build the map with the runtime that serves it, usually `codebase_map_create_run`
-on the server itself. The index records the SQLite version and the parser
-fingerprint of the interpreter that built it, so a map written by another
-Python reads as `stale`. The instrumented consumer gate of 2026-10-28 hit
-exactly this when a map built outside the server came back stale on the
-first search.
-
-### Where this comes from
-
-An end-to-end experiment on 2026-10-27 (run
-`.daodan/runs/20261026-code-context-e2e-gate`, the diary
-[`context-building-benchmarks.md`](../research/context-building-benchmarks.md))
-gave a coding agent 23 real bugs from two private projects, judged by the hidden
-tests of the real fixes, under three access paths:
-
-| Access path | Solved | Cost per solved task | One search |
-|---|---|---|---|
-| map + lexical search + reproduce-then-fix | 21 of 23 | 0.27 USD | 1.2 s |
-| map + hybrid search (embeddings + lexical) | 19 of 23 | 0.31 USD | 1.6 s |
-| pre-built static packet, no search | 19 of 23 | 0.34 USD | none |
-
-Retrieval was a tie: read per file, both search paths surfaced the right code
-in every task. The differences in solved tasks are within noise for 23 tasks;
-the cost difference is not. Nine of the ten failures had the right file open and
-did half of the request, which is why the loop ends with "reproduce, then fix"
-and why the guide asks for the names of the whole request. The static packet
-was dropped: it cost the most and, without a search, the agent edited the wrong
-file once. The embedding index stayed optional by the owner's decision. The
-measurement covers Python, a strong model and precise requests, one replicate;
-the specification that turned it into these tools is
-the code access design of 2026-10-27 (deleted 2026-11-01, in Git history before `2b98e15a7`).
-
-<!-- daodan:reference:start -->
-## Source-derived reference
-
-Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
-this block; keep explanations above it. `--check` detects stale references.
-
-**Version:** `1.0.1`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
-
-### Required dependencies
-
-Every listed plugin dependency is mandatory. Transitive requirements remain
-mandatory when using this plugin alone. The local closure includes this plugin.
-
-| Requirement | Plugins |
-|---|---|
-| Direct local | None in the new two-owner base |
-| Direct external | None |
-| Local closure (1) | [codebase-map](<codebase-map.md>) |
-| External closure (0) | None |
-
-The historical `report-rendering` dependency has been removed from the adapted
-manifest. External bundles are separate upstream installations, not copied local
-skills. The historical host-setup document was not imported.
-
-**Required capabilities:** `repository.read`, `shell.execute`, `repository.write`, `contexts.isolate`, `roles.dispatch`.
-**Optional capabilities:** `execution.parallel`, `mcp.servers`.
-Optional capabilities are host mechanisms, not optional local plugin dependencies.
-
-### Registered components
-
-Names below are kernel IDs. Host entry points and paths followed the historical
-adapter mapping, which was not imported into the new base.
-The source links carry the complete instructions and accepted arguments.
-
-| Kind | ID | Purpose and trigger | Source |
-|---|---|---|---|
-| Skill | `codebase-map:map` | Static mapping and standalone navigation of existing map evidence. TRIGGER WHEN: project questions, unfamiliar code, debugging, feature work, refactors, reviews or documentation. Consult map evidence before broad exploration. Loading the skill starts no analysis or refresh. Verify claims against source; search the repository without usable maps. DO NOT TRIGGER WHEN: no project code or documentation. | [map](<../../plugins/codebase-map/skills/map/SKILL.md>) |
-| Role | `codebase-map:map-analyst` | Owns the declared classic Codebase Map phases in one isolated context, reading the bound snapshot and writing only its run's analysis artifacts. TRIGGER WHEN: dispatched by an analysis coordinator with a prepared classic run and resolved scope. | [map-analyst](<../../plugins/codebase-map/roles/map-analyst.md>) |
-| Role | `codebase-map:partition-behavior-worker` | Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave. | [partition-behavior-worker](<../../plugins/codebase-map/roles/partition-behavior-worker.md>) |
-| Role | `codebase-map:partition-quality-worker` | Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its second wave. | [partition-quality-worker](<../../plugins/codebase-map/roles/partition-quality-worker.md>) |
-| Role | `codebase-map:partition-structure-worker` | Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-structure-worker](<../../plugins/codebase-map/roles/partition-structure-worker.md>) |
-| Role | `codebase-map:partition-synthesizer` | Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map through the host map entry point in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-synthesizer](<../../plugins/codebase-map/roles/partition-synthesizer.md>) |
-| Role | `codebase-map:semantic-interconnect-mapper` | Context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and adapted documentation workflows. TRIGGER WHEN: dispatched by the team entry of codebase-map:map, by a host documentation workflow, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run the host map entry point or an existing context explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
-
-### Host exports
-
-Package paths and coordination are derived from the host adapters. `native`
-and `adapted` describe bindings, not successful installed-host execution.
-
-The selected strategy is an adapter binding even for a flat workflow body.
-A dispatch harness is rendered only for declared method workers, task-specific
-workers or phase fan-out; the host reference explains the entry artifacts.
-
-| Host | Package | Binding | Selected workflow strategy |
-|---|---|---|---|
-| claude | `exports/claude/plugins/codebase-map` (historical, not imported) | `native` | No workflow entry points |
-| copilot | `exports/copilot/plugins/codebase-map` (historical, not imported) | `adapted` | No workflow entry points |
-| codex | `exports/codex/plugins/codebase-map` (historical, not imported) | `adapted` | No workflow entry points |
-| pi | `exports/pi/plugins/codebase-map` (historical, not imported) | `adapted` | No workflow entry points |
-| opencode | `exports/opencode/plugins/codebase-map` (historical, not imported) | `adapted` | No workflow entry points |
-
-### Additional shipped contracts and mechanisms
-
-- Exported shared contract: [contracts/context.toml](<../../plugins/codebase-map/contracts/context.toml>).
-- Neutral policy: [write-confinement](<../../plugins/codebase-map/policies/write-confinement.toml>). Enforcement is documented in the policy and host reference.
-- MCP server `codebase-map`: `uv`, `run`, `--no-config`, `--no-project`, `--script`, `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py`. Host registration differs; see the host reference.
-
-<!-- daodan:reference:end -->
-
-## Role-local method reads
-
-Partition workers load common evidence and their owned phase unit. Quality reads
-Phase 6 at full depth and comment commands only when that phase runs with comments;
-lite retains the risk taxonomy without loading documentation procedures. The mapper
-loads evidence and bound-analysis reading, while snapshot refresh remains with its
-caller. Tests protect each role's core/optional resource closure and required
-sections, and reject invalid conditions or missing resources even on inactive paths.
-
-Step 3 measures source words, not runtime tokens: structure 4,691, behavior 4,846,
-quality 4,694 at full depth without comment/document verification and 4,422 in lite,
-mapper 5,795. Core caps are 4,691 / 4,846 / 5,635 / 5,795 respectively;
-optional allowances remain separately measured. These are static load measurements,
-not a live-run cost or an installed-host execution claim.
-
----
-
-## Static analysis engine (`skills/map/scripts/`)
-
-The helpers extract structure, resolve internal imports, distinguish static
-references from candidates and classify files. They perform static analysis only.
-Parser availability, source freshness and unresolved bindings limit what the
-resulting graph can say. An empty caller list does not establish that a symbol
-is unused.
-
-### Parsing and structural detail
-
-Python uses the standard library AST, whose grammar is the running interpreter's:
-3.12 is the declared floor and the entry scripts refuse an older one. Its adapter
-records every definition, not only the top-level ones: a nested function or class,
-a definition inside `if`/`try`/`with`/`for`/`while`/`match` at module or class
-level, and a PEP 695 `type` alias, each under the name its enclosing chain
-qualifies it with (`Outer.inner`, `Outer.Inner.method`). A file the interpreter
-rejects keeps the definitions its longest parseable prefix closes, and stays a
-parse error. Java, JavaScript, TypeScript/TSX, Rust and Go
-use Tree-sitter when their grammar is available and identify regex fallback in
-`ParseResult.notes` otherwise. SQL and PL/SQL use lexical masking and structural
-patterns. CSS, SCSS and LESS retain their stylesheet parser and cascade scanner,
-including Tailwind `@apply` expansion.
-
-Optional Tree-sitter changes structural fidelity as follows; its availability is
-reported separately from installation:
-
-| Language | Higher-fidelity examples | Regex fallback retains |
-|---|---|---|
-| Java | Nested classes, generic parameters, annotations and multiline declarations | Top-level classes, methods, imports and constants |
-| JavaScript / TypeScript | Arrow functions in object/class properties, decorators, template literals and JSX | Top-level declarations, ES6 import/export and CommonJS require |
-| Rust | Lifetimes, generic where bounds, trait-bounded impl blocks and attribute macros | Top-level fns, structs/enums/traits/impls/mods, use declarations and UPPER_CASE constants |
-| Go | Exact end lines, grouped `type ( ... )` declarations, embedded fields and generic receivers | Functions, methods, types and imports by start line only (spans inferred, so reads use the whole file) |
-
-Go records a method as a function named `Receiver.Method`, because Go declares it
-outside its type and often in another file. An interface lists its methods without
-recording them as callables, since a bodiless signature would be read as an elidable
-body. Go resolves no cross-file import edges because its imports name packages that
-resolve through `go.mod`, which the adapter does not read; intra-file semantic
-scopes, declarations and call references are extracted when the Tree-sitter
-grammar is available.
-
-A grammar pack may be installed yet unavailable after a failed download or version
-mismatch. The active-backend notes identify the fallback rather than treating
-installation as evidence of a working parser.
-
-### Optional resolution engine (`resolve_edges.py`)
-
-The lexical resolver in `resolution.py` is the floor: it resolves a unique lexical
-binding, a method reached through a project class's MRO, and a callable reached as an
-attribute of an imported module, and nothing it cannot prove. Measured on two real
-projects that floor resolves 9.7% and 13.0% of call references, so
-`resolve_edges.py` attaches an optional engine, probed and never assumed:
-
-```bash
-uv run --with jedi --no-config --no-project --script \
-  "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/resolve_edges.py" \
-  <run-dir>/snapshot/manifest.sqlite --engine jedi --environment <venv-or-site-packages>
-```
-
-It asks the engine about the snapshot's unresolved call references, minus the
-builtins the lexical resolver declines to model, and grades each answer by whether it
-lands on a declaration this snapshot holds: a target file outside the inventory is
-`external-definition`, a name inside it that is no declaration is a `candidate`, and
-only the exact function or class name position becomes a `confirmed` edge. Multiple
-answers must converge on that declaration; divergent targets stay candidates.
-The callee's own column is probed, including Unicode and multiline expressions,
-and an unverifiable span is skipped as `position-unverified`.
-
-Before inference and again before publication, every inventoried file must match
-its snapshot hash. A changed, missing or unsafe source path refuses the pass and
-preserves any prior output. The output path cannot overwrite the manifest or an
-inventoried source file, including aliases. Temporary output uses a unique sibling
-file and replaces an earlier derived store only after a successful write.
-
-Three properties keep its output from being mistaken for the lexical graph's. Edges
-live in a **derived store** (`engine-edges.sqlite`, or `--out`) bound to the snapshot
-by its logical digest, parser fingerprint and `resolver_version`, because a snapshot is
-evidence and is never rewritten: `read_edge_store` validates that binding and every
-confirmed target's membership in `sem_declarations`, returning the reason rather than
-the rows on any mismatch. Valid passes that produce zero edges still persist the bound
-store with `no_edges_reason` (`no-unresolved-calls`, `not-sampled`, `no-project-targets`),
-so consumers distinguish an empty pass from a missing store. Every reference names its
-`resolver`, `builtin-lexical` or `<engine>@<version>`, so edges of two resolvers are
-never counted together. And coverage and cost are declared: `--limit` and `--stride`
-bound a pass, `--report-out <path>` writes the full report to disk, and `--compact`
-emits only the bounded summary on stdout. The report distinguishes selected references
-from actual engine requests against the Python population, records probe/init,
-inference and total elapsed time, mean and p95 request latency, and an inference-only
-extrapolation with its deterministic sampling bias and assumptions. The Python delivery verification records the measured local pass separately from the original campaign. An absent or
-unready engine is a declared degradation that writes nothing and names its recovery
-command; `--dry-run` grades without writing.
-
-Offered environments expose their interpreter, direct importable package count and
-inference mode. A populated environment takes priority over an installer-only stub;
-serving scope then chooses among the populated offers. Fallback adds only the
-selected environment's site-packages. Each file names the offer and selection rule,
-so package count is visible evidence rather than an assumed environment health check.
-
-An engine's answer can land on a contract rather than an implementation, verified on
-this repository: `adapter.parse(...)` infers to the `LanguageAdapter.parse` protocol
-declaration. `edge_view.py` (`load_edge_view`, schema `daodan/edge-view/v1`) merges
-the snapshot's lexical call references with the bound `engine-edges.sqlite` store
-without running an engine at query time: it keeps lexical bindings authoritative,
-surfaces divergent engine targets in `conflicts`, keeps candidate inferences in
-`candidates` outside confirmed edges, records coverage (`missing_store`,
-`rejected_store`, `completed_empty`, `sampled`, `complete`) and classifies each
-target's `target_kind` as `protocol`, `interface` or `concrete`.
-
-Graph, file analysis, references and edit-impact read this view through temporary
-SQL tables. Querying never runs Jedi or changes the snapshot. `--engine-store`
-selects a bound sidecar for graph and edit-impact; MCP paths are relative to the
-owning run (default `snapshot/engine-edges.sqlite`) and reject links or escapes.
-Packets preserve resolver, target kind, exact callsite, coverage and bounded
-candidates/conflicts. Stored card freshness remains `freshness_basis="lexical"`.
-
-Tree-sitter grammars are shared across threads; mutable parsers and queries are
-cached per thread. `get_parser.cache_clear()` invalidates existing thread caches.
-TypeScript extends JavaScript extraction from the same parsed root, avoiding a
-second parse of TS/TSX files.
-
-Types and their members use the existing `ClassInfo`, `FunctionInfo`, `bases` and
-`class_variables` fields. This includes TypeScript interfaces, type aliases,
-enums, namespaces, abstract classes and heritage; Java records, annotations,
-nested types and enum members; and Rust modules, fields, variants, implementations,
-traits, constants, aliases and macros. Recognized JavaScript component wrappers
-retain their callable binding; a callback passed to an ordinary collection
-operation does not turn its result into a function.
-
-Syntax errors remain explicit. An intact declaration in a damaged source file
-can remain in the manifest, with `status = "parse-error"`; source reading still
-returns the full file rather than trusting a partial selection.
-
-`FunctionInfo.calls_made` contains distinct outgoing call names in source order.
-Native AST queries cover JavaScript/TypeScript, Java and Rust, including
-construction and Rust macro calls. Nested callable bodies are attributed to their
-own callable. File-level `external_calls` use actual call nodes when a native
-parse is available, excluding call-like text in comments and string literals.
-These are syntactic call names, not dynamically resolved runtime targets.
-
-### Local retrieval (`retrieval.py`)
-
-`refresh_index(manifest, index_path)` builds a derived SQLite FTS5 index beside
-the snapshot. Documents include qualified names, paths, signatures and verified
-source bodies. A file context document also indexes imports, configuration and
-other source outside named declarations without duplicating their bodies. Every
-refresh enumerates the inventory again, hashes all document
-inputs, reuses unchanged rows and removes deleted or renamed entities. Added
-exports and previously empty files are observed on the next snapshot refresh.
-An index generation is published atomically under a writer lock; failures retain
-the previous generation. Snapshot evidence is never rewritten.
-
-`search(index_path, query, anchors=[], limit=100)` verifies snapshot, parser,
-scope, inventory and source freshness before returning results. It prioritizes
-exact entity, path, range and traceback anchors, then case-sensitive symbol
-anchors and subtokenized FTS5 matches. Homonyms remain explicit ambiguous
-candidates. Results carry entity identity, revision anchors, provenance, matched
-and returned counts and truncation. The BM25 weights are 0/10/5/3/1 for the
-unindexed ID, name, path, signature and body columns. Missing FTS5 or index errors
-raise an error; they never masquerade as no matches. Inferred traceback frames
-outside the inventory are reported as gaps while valid project frames remain
-usable; explicit anchors remain strict.
-
-This API performs local machine work with no LLM or network calls. Its freshness
-checks read and hash every inventoried source file, so query latency includes
-that work. Search verifies the whole inventory in one reader pass, and index
-construction batches document reads the same way: Git-backed perimeter setup is
-not repeated for every file. Dense ranking is opt-in: `embedding_worker.py`
-(EmbeddingGemma 2 q4, see
-`references/embeddings.md`) produces a result bound to the index, and `search`
-then ranks below the exact anchors by reciprocal rank, 0.75 dense and 0.25
-lexical with k 60 (`exact-rrf75-25-k60-v1`). A stale result is reported as a gap;
-an unsupported one fails explicitly. Context selection and packet assembly are
-the later stages described below. `contracts/context.toml` exports their four
-declarative payload contracts, including the existing I1 map-slice fields.
-
-### Research basis for code search
-
-The search-first direction under evaluation uses the specification's
-context-packet record
-and the benchmark harness to test grounded rewriting, whole-entity ranking and
-budgeted delivery. The shipped retrieval core documented above is FTS5 plus
-optional EmbeddingGemma 2; harness-only rewrite and fusion variants are not
-described as shipped without an executable binding. Literature and findings live
-in [Context-building research](../research/context-building-research.md). Local
-outcomes, rejected paths and the current candidate live in the
-[context-building benchmark and test diary](../research/context-building-benchmarks.md).
-
-- Query rewriting: Gao et al., [HyDE](https://arxiv.org/abs/2212.10496) (ACL 2023);
-  Li et al., [ReCo](https://arxiv.org/abs/2401.04514) (ACL 2024); Gurioli et al.,
-  [Rewriting strategies for code retrieval](https://arxiv.org/abs/2605.08299) (2026);
-  Song and Zheng, [Survey of query optimization in LLMs](https://arxiv.org/abs/2412.17558);
-  Rudenko, [LLM query expansion made our code search worse](https://madappgang.com/blog/llm-query-expansion-made-our-code-search-worse.-he/).
-- Repository structure: Ouyang et al., [RepoGraph](https://arxiv.org/abs/2410.14684)
-  (ICLR 2025); Liu et al., [Beyond Function-Level Search](https://aclanthology.org/2025.findings-emnlp.1147/)
-  (Findings of EMNLP 2025).
-- Evaluation: Li et al., [CoIR](https://arxiv.org/abs/2407.02883) (ACL 2025);
-  Gandhi et al., [Repository-level code search with neural retrieval methods](https://arxiv.org/abs/2502.07067) (2025).
-
-### Generated semantic map (`semantic_map.py`)
-
-`render_map(manifest, cards_path=..., paths=[...], out=...)` projects canonical
-cards and verified static graph evidence into deterministic Markdown with a JSON
-provenance manifest. The CLI `semantic_map.py MANIFEST --path AREA` writes
-`semantic-map.md` and `semantic-map.json` beside the analysis root's card store;
-stdout contains only paths and coverage counts. Repeated `--path` arguments
-select files or directory prefixes. The API also accepts an optional verified
-engine store and a `semantic-map-<name>.md` destination in the same directory.
-
-The view groups files by directory and links entity identities, revision/line
-anchors, contracts, effects and call evidence. Fresh cards supply semantic text;
-unread, stale and orphaned cards remain explicit gaps with their provenance.
-Missing fields are declared even in a fresh partial card. Graph inference and
-conflicts retain their status; card freshness remains lexical. Inventory,
-selected symbols, semantic coverage and runtime coverage are separate counts.
-Runtime coverage is always zero for this static view.
-
-Rendering validates inventory and source bindings, preserves source, snapshots,
-cards and completed phase reports, and publishes a generated pair under a writer
-lock. The JSON binds the Markdown digest; consumers verify it before reuse.
-Invalid input preserves the prior generation. Handled replacement errors restore
-previous bytes; digest validation rejects an interrupted pair. Card text
-and names are escaped as data. The renderer makes no LLM or network calls;
-existing card-generation cost is unknown unless its owning run recorded it.
-Unread or stale areas return to `map`'s existing deepening procedure,
-which reuses fresh cards and records observed LLM cost separately.
-
-### Module graph (`modules.py`)
-
-`snapshot.py write` and `codebase_map_create_run` derive `modules.json`
-(`daodan/module-graph/v1`) and its `modules.md` view beside the manifest.
-A module has one of three provenances. `build` units are read from the
-manifests of 26 ecosystems (npm, pnpm, Lerna, Deno, Nx, Python, Cargo, Go,
-Maven, Gradle, .NET, Composer, Bundler and RubyGems, pub and melos, Swift,
-Mix, CMake, Cabal and Stack, sbt, Terraform, Zig, Julia, dune) with their
-workspace members, dependencies and nested roots; they are `confirmed`.
-`declared` modules come from `codebase-modules.json` at the project root:
-name, kind (`component` or `feature`), location (`internal` or `external`),
-responsibility, members (`path::Symbol`, files, directories) and evidence,
-each verified against the snapshot; an external module has no members and is
-anchored by the files it cites as evidence. `proposed` modules come from a model, through
-`modules.py propose` or `codebase_map_modules(proposals=...)` after the brief
-that `modules.py brief` prints; verified the same way, they stay `inferred`
-until the project declares them. No Markdown is interpreted.
-
-Edges are declared dependencies and workspace containment between build
-units, resolved imports and calls between members, and `uses` from a file's
-owners to the external module citing it; apart from `uses`, build units and
-responsibility modules never share an edge, a module's query lists the build
-units holding its files as read scope. The graph binds the snapshot digest and
-the proposals ledger; a rebuild re-verifies everything and reports what
-changed. The contract is in
-[modules.md](../../plugins/codebase-map/skills/map/references/modules.md);
-tests are in `scripts/tests/test_modules.py`.
-
-### Code context: scope, packets and consumers
-
-The context path is machine work end to end. Each stage reads the previous
-stage's verified artifact and makes no LLM call; a coordinator spends model
-tokens only on the packet it sends and on cards it asks an analyst to write.
-Cost of those cards is recorded by the run that spent it, and is `unavailable`
-when the host exposes no usage.
-
-| Stage | Component | Artifact | Reference |
-|---|---|---|---|
-| Locate | `retrieval.py` (FTS5, exact anchors); optional `embedding_worker.py`, opt-in | `retrieval.sqlite`, bound to the snapshot | `references/embeddings.md` |
-| Scope | `scope_planner.py` | `daodan/scope-plan/v1`: analysis, edit candidates, potential impact, validation obligations, deferred, unresolved, outside boundary | `references/scope.md` |
-| Packet | `context_packet.py`; `snapshot.py context`; MCP `codebase_map_context` | `daodan/context-packet/v1` and `daodan/map-slice/v1` (I1), with a resumable cursor | `references/context.md` |
-| Lifecycle | `cycle_packets.py` | `daodan/cycle-context/v1` receipt bound to one record revision | `lifecycle-method/references/context-cycle.md` |
-
-A packet is evidence for an attempt. It authorizes no write, completes no task
-and passes no validation. Every consumer below keeps its own method, authorizations
-and delivery accounting; the receipt supplies inputs and open obligations only.
-
-### Using the context path
-
-Prepare once per manifest, then ask. Every command runs on the machine; none calls
-a model.
-
-1. **Map.** Write the snapshot as for any run (`snapshot.py write`, or the MCP tool
-   `codebase_map_create_run`).
-2. **Retrieval index.** `retrieval.refresh_index(manifest, manifest directory /
-   "retrieval.sqlite")` from `scripts/retrieval.py`. No command-line entry or MCP
-   tool builds it yet, so call the function.
-3. **Python edges** (recommended). `resolve_edges.py MANIFEST --environment VENV
-   --compact` writes `engine-edges.sqlite` beside the manifest. Pass the
-   environment that holds the analyzed project's dependencies and Jedi.
-4. **Ask.** Command line: `snapshot.py context MANIFEST --request REQUEST.json
-   --recipient RECIPIENT.json --authority AUTHORITY.json --out DIR --indexes
-   INDEXES.json`. MCP: `codebase_map_context` with `run_id`, `request` and
-   `recipient`, which derives the authority and indexes from the bound run.
-   Inside a lifecycle task the historical adapter built the same request; the
-   the former project-lifecycle plugin was not imported. The request,
-   recipient and result are described in `references/context.md`; a complete MCP
-   example is in `references/mcp.md`.
-5. **Read the status.** `ready` carries a packet whose mandatory core (requirement
-   targets and anchors) is complete. `incomplete` carries leads without a
-   localized core (`status_reason: not_localized`). `needs_split` carries no input
-   and names why: `core_too_large` (the core does not fit the recipient),
-   `missing_support`, `projection_limit`, `core_conflict` or `work_limit`. It
-   never drops mandatory source to make it fit.
-6. **After an edit.** Write a new manifest (a manifest refreshed in place is
-   refused), rebuild its retrieval index and edges, and prepare the next stage
-   against it. An index built for another manifest is refused with `retrieval
-   index belongs to a different candidate`.
-
-Limits that shape use today:
-
-- **A query alone does not localize.** Retrieval hits are leads: the packet
-  delivers them as far as the budget allows and stays `incomplete`. Give an
-  accepted target (`anchors`, a `diff` or `proposed_edits`) or a requirement for a
-  `ready` packet, and keep `read_boundary` to the area of the task.
-- **The packet trails plain text retrieval.** The input is a JSON header of about
-  2 000 characters (digests, coverage, gaps, obligations) followed by raw source,
-  so at 6 000 characters about 57% of it is source and at 24 000 about 83%. On the
-  Starlette holdout a packet delivered 21%, 38% and 46% of the wanted bodies at
-  6 000, 12 000 and 24 000 characters against 31%, 47% and 52% for plain text
-  retrieval; see `evals/codebase-map/context-scope/RESULTS.md`.
-- **Time.** Planning and packing for a 669-entity package take about 8 seconds.
-  The lifecycle adapter lets the provider run for the request's `max_seconds`, at
-  least 120.
-- **Decorated callables.** The Python edge pass can show no callers for a callable
-  whose decorator resolves into a stub (`@contextmanager`, `@asynccontextmanager`),
-  and reports no gap. Confirm removals and signature changes of decorated
-  functions by reading.
-- **Characters, not tokens.** Only a dispatch owner that supplies a tokenizer can
-  verify model capacity. Embeddings are opt-in and off by default.
-
-The historical context-scope results at
-`D:/Backups/daodan-as-is-2026-11-03T1310/evals/codebase-map/context-scope/RESULTS.md`
-hold the measurements behind these limits, and the
-[embedder benchmark](../research/context-building-benchmarks.md#embedding-benchmark) the comparison of local embedders.
-
-### Context consumers
-
-The former marketplace commands (`new-feature`, `fix-bug`, `refactor-code`,
-`continue-task`, `finish-task`, `write-docs`, `write-tests`, `review-changes`,
-`review-branch` and `map-code`) are historical and inactive in the new two-owner
-base. The intended consumer is `senior-review`; any other consumer requires an
-explicit host workflow adapted to the current contract.
-
-### Source-bound references and callsites
-
-`ParseResult.semantic` is optional additive metadata, extracted from the existing
-Python AST or native Tree-sitter tree (JavaScript, TypeScript, TSX, Java, Rust
-and Go). It contains version,
-backend, status, notes, scopes, declarations, imports, exports and references.
-Regex fallback and damaged native syntax leave this payload absent; other
-language adapters retain their existing structural extraction.
-
-Reference spans are `[start_line, start_column, end_line, end_column]`: lines are
-one-based, columns are zero-based UTF-8 byte offsets, and ends are exclusive. A
-callsite spans its callee expression and records its closest callable owner.
-Repeated calls retain separate locations. Comments and literal text are excluded;
-formatted-string and template substitutions remain code. Source-local declaration
-IDs are qualified as `file::source_id` in the project index. These IDs identify
-one snapshot, not a declaration across revisions.
-
-Storage-backed semantic resolution follows the same conservative binding rules
-as the explicit in-memory `semantic_index.build_semantic_index` API.
-Only unique lexical function/class bindings and direct internal named, default
-or namespace imports receive declaration targets. Parameters, assignments and
-other binding sites prevent lookup from bypassing shadowing or rebinding.
-Uncertain scopes, dynamic receivers, computed properties, type-only imports,
-constants, unsupported export chains and ambiguous declarations retain explicit
-unresolved reasons. This is a bounded binding layer, without compiler type
-inference or project execution.
-
-The snapshot stores semantic payloads beside `raw_hash` under its parser/helper
-fingerprint. Production extraction uses `write_snapshot` and an explicit
-`SnapshotStore`: derived facts and hashes are persisted, then observed source
-bytes and parse payloads are released. Semantic bindings and graph indexes are
-derived in the owned staging store.
-Queries validate permitted live sources, hashes, fingerprint, payload shape,
-scope links and spans. Stale, excluded, malformed or unbound entries cannot supply
-resolved references. Unavailable backends retain explicitly lexical candidates.
-
-`build_manifest(..., source_observations=...)` remains an explicit in-memory API
-for legacy callers and fixtures; the progressive writer does not call it.
-Its optional observations bind one operation's bytes, not later filesystem
-freshness. An old parser snapshot can remain historical evidence without
-qualifying current-source queries or incremental reuse.
-
-`analyze_file.py` exposes `semantic_analysis` even without `--find-usages`. Its
-public view contains declarations, outgoing `callsites`, resolved `incoming_calls`,
-the target's source identity, coverage status and project coverage counts.
-`counts` separates total, resolved and unresolved callsites, incoming calls and
-project unresolved calls. Optional symbol lookup inspects all permitted semantic
-references, including aliases whose callsites omit the original spelling.
-`resolved_count`, `ast_candidate_count` and `lexical_candidate_count` remain
-separate; the legacy usage total includes candidates. Per-location `precision`,
-`span`, `caller`, `target_id` and `reason` expose the supporting fact. Neither AST
-candidates nor lexical matches assert a declaration target or runtime execution.
-
-### Graph-guided mapping from the current snapshot
-
-`source_reader.py graph <source_manifest> --path src/service.py --hops 3 --limit 100`
-queries the supplied snapshot without reparsing or creating another authoritative
-index. Repeat exact-file seeds, or omit `--path` for the inventoried scope. Resolved
-symbol edges expand toward both callers and callees; unresolved calls never drive
-expansion. Imports, cycles, reverse reachability and PageRank remain separate
-reading aids. Queries verify source hashes, parser identity and the current
-perimeter; stale or malformed evidence requires a caller-owned snapshot refresh.
-Unavailable semantic backends remain explicit coverage gaps.
-
-The `xray/source-graph/v1` packet binds the canonical manifest digest and query,
-returns callsite/declaration identities and spans, and exposes section totals and
-truncation. Its `requests` can feed `source_reader.py read --requests` when saved
-at an owned run-artifact path. Select the evidence relevant to the phase question;
-the packet does not require reading every returned file. Graph/outline metadata
-does not count as deep reading, and resolved links do not verify contracts.
-
-Mapping instructions require this query before structural, call and flow mapping,
-including partition workers and the semantic interconnect mapper. Usage search
-supplements dynamic, uncovered or ambiguous cases. Phase reports retain graph
-coverage and actual source-reading provenance separately. This is a tested
-instruction contract; no installed-host execution enforcement is asserted.
-
-### Import graph and classification
-
-`ts_path_config(target)` reads bounded JSONC configuration, including relative
-`extends`, `baseUrl`, `paths`, package-local configurations and workspace package
-entry points. Configuration outside the selected target, ignored content and
-excluded directories cannot expand the analysis perimeter. Package-based external
-`extends` and runtime bundler hooks are not executed.
-
-`module_targets(manifest, config=None)` returns resolved internal target paths
-for every importing file. It shares resolution between incremental blast radius,
-usage discovery and fan-in. Relative imports, configured aliases and workspace
-exports resolve against files actually present in the manifest. An unresolved
-external package does not become an internal dependency merely because a source
-file has the same basename.
-
-`compute_fan_in(target_dir, perimeter=None, manifest=None)` counts distinct
-importing files, excluding self-imports. `classify_directory` shares one graph
-across its files. Classification retains its existing categories: at eight
-importers a small hub requires high-complexity verification; at fifteen it is
-critical. `imported_by_count` is the observed count, not a numeric importance
-score. Existing critical-pattern rules still apply.
-
-`analyze_file.py` reports fan-in even without `--find-usages`, independently of
-which exported symbols the optional usage query selects. JSON adds
-`imported_by_count` and callable `calls_made` without removing existing fields.
-The target's bytes and parse feed the same manifest through `parse_results`;
-classification and optional batched usage discovery reuse that manifest.
-
-### Transitive import diagnostics
-
-`dependency_graph.dependency_graph_metrics` consumes the existing confined graph,
-with edges from importing file to dependency. It returns sorted nodes/edges,
-`import_cycles` as strongly connected components (including self-imports), and
-PageRank. Cycle traversal is iterative, so long import chains do not consume the
-Python call stack. The module performs no source reads.
-
-`transitive_importers(reverse_index, seeds)` returns records shaped as
-`{file, depth, via, seed}`. `depth` is the shortest hop count; `via` is the immediate
-predecessor and `seed` the originating changed file, allowing a witness path to be
-reconstructed. Sorted seeds and neighbors make equal-length choices deterministic.
-Seeds are excluded from results, and missing files receive no invented edges.
-
-File analysis adds a `dependency_graph` view with graph counts, target cycle
-components, project cycle count, transitive importers and target PageRank. Change
-reports add `import_cycles`, `transitive_importers`, `transitive_seeds` and graph
-metadata. Existing one-hop `importers`, `affected_files`, claim invalidation and
-update recommendations retain their behavior; transitive diagnostics do not
-silently broaden them.
-
-PageRank uses uniform teleportation by default (or seed-weighted Personalized
-PageRank when `personalization` is supplied to `dependency_graph_metrics`),
-distributes dangling-node mass, and defaults
-to damping `0.85`, L1 tolerance `1e-10` and at most `100` iterations. The returned
-`pagerank_converged`, `pagerank_iterations`, `pagerank_damping`,
-`pagerank_tolerance` and `pagerank_max_iterations` describe the final iterate,
-including non-convergence. Rank is an aid to choosing what to read, not a new
-criticality threshold or evidence that a change propagates at runtime.
-
-### Bounded work and performance
-
-The writer still inventories and hashes its target. Unchanged entries reuse
-structure only after source and parser checks. Production storage writes one
-file record at a time and releases its parse; readers use explicit iterators,
-lookups and operation-owned connections instead of rebuilding a global manifest.
-The in-memory compatibility API is a separate path, not the production memory
-contract.
-
-Semantic lookup and graph queries use persisted facts and indexes. JSON readers
-build an operation-owned temporary semantic index when needed and remove it on
-close. Bounded responses expose exact totals and truncation; lexical fallback
-reads one permitted file at a time. Separate lexical search helpers retain their
-ripgrep/grep/Python backends. Multiple symbol requests reuse the bound store,
-not a new project parse or a retained collection of every source text.
-
-Semantic extraction enriches eligible snapshots by default. It avoids another
-parse but adds traversal time and payload size. The following historical
-per-file adapter sample predates the SQLite storage change; it does not measure
-SQLite extraction, refresh, query latency or database size. The Windows sample used
-Python 3.13.14, Tree-sitter 0.26.0 and language-pack 1.13.5, warm grammars and nine
-repetitions per mode. Medians compare the same adapter with and without its
-semantic hook; they measure added extraction cost, not a speedup:
-
-| Input | Source bytes | Compact UTF-8 metadata bytes | Parse with metadata, ms | Without semantic hook, ms |
-|---|---:|---:|---:|---:|
-| Python adapter source, 466 lines | 15,953 | 87,907 | 34.543 | 26.961 |
-| Generated JS, 200 exported functions | 19,730 | 219,339 | 51.149 | 33.862 |
-| Equivalent TS with string annotations | 22,930 | 220,139 | 62.344 | 37.549 |
-
-The JS/TS workload imports `save as persist` and repeats functions that assign a
-local parameter value and call `persist` directly and inside a template
-substitution. These samples show a material size and time cost for richer static
-evidence; they do not establish performance for other projects. Tests distinguish
-read/parse reuse from elapsed-time or token savings. Application runtime coverage
-remains none; semantic embeddings, new language backends and host-native graph
-integration are outside this increment.
-
-### Incremental SQLite reuse, triple-hash symbols and Meta-Code cards
-
-SQLite is the default snapshot format and JSON (`--format json`) is the explicit
-compatibility alternative. Everything in this section exists only for SQLite
-snapshots: against a JSON snapshot the Meta-Code commands and tools refuse with an
-error instead of answering empty.
-
-SQLite snapshots (`snapshot_store.py` and `semantic_store.py`) cache serialized
-file JSON in `file_json_cache` guarded by SQLite triggers (`trg_files_tamper_*`,
-`trg_symbols_tamper_*`, `trg_facts_tamper_*`). Any direct insert, update or
-delete on `files`, `symbols` or `facts` invalidates the affected row's cache so
-`logical_digest` recomputes from unpacked rows. During incremental refresh,
-`SnapshotWriter.bulk_copy_from_sqlite` copies verified unchanged file records,
-symbols, facts and JSON caches inside SQLite, while `build_semantic_store`
-recomputes reference resolution only for changed files and their 1-hop
-importers.
-
-Each symbol in `meta_symbols` stores three separate digests alongside the
-existing `symbols` manifest entry:
-
-- `body_hash`: digest of the full symbol text span (`lines[start - 1:end]`).
-- `interface_hash`: digest of the symbol's kind, name and export status, the
-  parameter names its semantic declarations bind and its signature records
-  (below); a class adds the signatures of its members. A symbol with neither
-  semantic declarations nor an exhaustive signature (SQL, PL/SQL, a regex
-  fallback) falls back to its body, so any edit of it counts as an interface
-  change. The digest carries its algorithm as a `v<N>:` prefix, `v2:` for the
-  current one; an unprefixed digest is version 1, which hashed parameter names
-  only. A digest computed by another algorithm is told apart, never compared
-  as if the difference were an edit.
-- `effects_hash`: digest of resolved outgoing calls and external references
-  inside the symbol span, excluding local variable or parameter references
-  (`known_unrelated = 1`) and intra-symbol declarations. A resolved target is
-  named by its file and qualified name, never by its position, so a callee that
-  only moves down the file does not change its callers' digests.
-
-Each manifest symbol a parser describes carries `signatures`: one record per
-declaration in source order, several when overloads or redefinitions share the
-name. A record holds `params` (each with its `name` and, when known, `kind`,
-`annotation` and `default`), `returns`, `async`, `generator`, `static`,
-`decorators` and `visibility`, and for a class `bases` and `attributes`. A key
-appears only with a value, no position enters a record, and a value longer than
-200 characters keeps its head and a digest of the whole. `fields` lists what the
-parser extracts exhaustively: a listed field whose key is absent is absent from
-the source, while an unlisted one may only be missing from the extraction.
-Python lists every field: parameter kinds (`positional_only`, `var_positional`,
-`keyword_only`, `var_keyword`; none for an ordinary parameter), annotations,
-defaults, return annotation, async and generator flags, decorators, and a
-class's bases (header keywords such as `metaclass=` included), decorators and
-attributes. The Tree-sitter parsers contribute what they extract (parameter
-types and defaults, return types, async, visibility, Java annotations and
-varargs, TypeScript optional parameters) without declaring it exhaustive.
-JavaScript and TypeScript decorators are not extracted yet. Since a Python span
-starts at its `def` line, a decorator edit leaves `body_hash` alone: it shows in
-`interface_hash`, and `snapshot.py diff` reports the symbol as changed because
-its signatures differ.
-
-Across refreshes, `meta_changesets` and `meta_changeset_deltas` record symbol
-deltas (`added`, `removed`, `body_only`, `effects_changed`, `interface_changed`)
-in a bounded ring buffer capped at 16 changesets and 4 MB of delta payload. The
-snapshot file itself is rewritten on every refresh, so it does not accumulate
-free pages.
-
-#### Cards
-
-A card is a model's reading of one symbol: `purpose`, `preconditions`,
-`postconditions`, `invariants`, `side_effects`, `failure_modes`, `notes` and
-`confidence`, each a short text or list of texts, validated and size-bounded.
-Unknown fields are refused instead of dropped. Cards are the one artifact that must
-outlive a run, and a run's snapshot is immutable evidence (inherited artifacts and
-child runs are bound to the digest of its bytes), so cards are not stored in any
-snapshot. They live in one SQLite file, `cards.sqlite`, in the analysis root beside
-`runs/` (or beside a standalone snapshot), keyed by project root and symbol id.
-
-Each card keeps the body, interface and effects digests of its symbol, and a digest
-of its callees' interfaces, as they were when it was written. Freshness is computed
-whenever a card is read, by comparing those digests with the snapshot being queried:
-`fresh`; `stale_body` (the body or the effects changed); `stale_interface` (the
-signature changed, reason `symbol-interface-changed`, or the card was written
-under another interface-digest algorithm, reason `digest-version-changed`: the
-two digests do not compare, so the card is re-read rather than reported as an
-edit, and rewriting it binds it to the current algorithm); `stale_callee` (a
-callee's interface changed); `orphan` (the symbol no longer exists). Nothing is
-carried forward, so a card is fresh in any snapshot, of any run, whose symbol has
-the digests it was written against, and a card goes back to `fresh` when the code
-returns to what it described. A body-only edit leaves callers' cards fresh.
-
-`snapshot.py meta-upsert <snapshot> --input cards.json` writes cards bound to that
-snapshot's digests (`--cards` overrides the store path), `snapshot.py meta-query`
-lists symbols with their signatures, cards and freshness (`--freshness` takes the
-states above or `uncovered` for a symbol with no card; `orphan` lists cards whose
-symbol is gone).
-`--input -` reads the cards from standard input. Writing never opens a snapshot
-for writing. The write-confinement policy names the card store as a legitimate
-target beside the run directory.
-
-Cards are written by deepening an area (`references/deepen.md`, since 7.3.0): the
-coordinator lists the area's symbols without a fresh card and dispatches the
-analyst in `cards` mode, which reads each symbol's verified source and neighbours
-and upserts one card per symbol. A task's area is the symbols it names and their
-one-hop neighbours, so the map deepens where work happens, and a card still fresh
-is never written again. Before 7.3.0 no method step wrote cards, and every reader
-of `edit-impact` received none.
-
-`snapshot.py edit-impact <snapshot> --target <symbol id or file>` (and the MCP tools
-`codebase_map_edit_impact` and `codebase_map_meta_query`, which take a `run_id` and
-read the analysis root's card store; MCP never writes cards)
-answers what to know before editing: for each target its three digests, signature
-records and card, its resolved one-hop callers and callees with their signatures
-and cards, the references static analysis could not resolve, its recent changes
-and its verified source. Names that
-no scope binds (builtins, undeclared globals) are counted, not listed. The packet
-is bounded by `neighbors` and `history`, reports totals beyond the cap, and
-requires a SQLite snapshot. It is evidence and leads: callers and callees come only
-from resolved references, so a language without semantic facts (SQL/PL-SQL or regex
-fallback) yields none,
-and a dynamic call appears as a blind spot rather than as an edge.
-
-The packet schema is `daodan/edit-impact/v2`. Its `disclosure` field maps the
-progressive levels: L0 is the verified target source; L1 contains one-hop
-callers and callees with signatures, cards and exact reference sites; L2, with
-`--hops 2`, contains selected two-hop neighbours with signatures and structural
-edge summaries only; L3, with `--slices`, contains a lazy conservative Python
-backward def-use slice for each target; L4 contains related test callers,
-impact obligations and the DO NOT TOUCH status. DO NOT TOUCH remains
-`unavailable` in a single-snapshot packet because GREEN requires a
-base/candidate fingerprint delta from `stale-callers`. `--neighbor-source`
-adds hash-verified source for listed L1 neighbours. `--budget-chars` bounds
-the JSON packet: neighbour files that do not fit are omitted with a reason,
-L2 entries are removed from lowest relevance first, and `budget` reports the
-cap, final size, excess and omission counts. A core packet larger than the
-budget is reported as exceeded rather than silently truncated.
-
-`snapshot.py symbols-at <candidate> --request PATH:START:END` maps explicit line
-ranges to every overlapping symbol in one snapshot. With `--base <snapshot>` and
-`--diff <file>` (or `-` for standard input), it maps removed lines in the base
-snapshot and added lines in the candidate; renames keep both paths. The MCP tool
-`codebase_map_symbols_at` takes the same ranges, or `base_run_id` with a unified
-diff. Each result separates a stable `entity_id` and structured `entity_key`
-(recorded root, language, file and enclosing-symbol chain, kind, declared name
-and merged-overload marker) from its revision `anchor` (repository revision,
-file, line span, span precision and body hash; byte offsets are declared
-unavailable because snapshots record line spans). Files that are not inventoried
-or parsed, ranges outside every symbol, added files and removed files are
-reported as gaps with a reason. No symbol is invented for an unplaced range.
-
-`snapshot.py stale-callers <candidate> --base <base>` compares the Meta-Code
-digests of two SQLite snapshots and classifies candidate callers of changed
-symbols. Interface or effects changes produce `edit_impact` (RED: inspect or
-edit the caller); body-only changes produce transitive `validation_impact`
-(GREEN for editing: rerun tests, do not rewrite). Edit propagation stops at a
-caller whose own interface and effects are unchanged, and that caller's
-callers join `do_not_touch` together with the validation set. The result also
-lists changed and added or removed symbols, digest-version incompatibilities,
-and strongly connected components of the impacted candidate graph in
-callees-before-callers order; a cyclic component is one atomic unit. Edges use
-resolved base and candidate references (`CALLS`, `READS`) and containment; `OVERRIDES`,
-`INHERITS` and `IMPORTS` are declared unavailable because the resolver does
-not emit them as symbol edges. The MCP tool is `codebase_map_stale_callers`
-with `run_id`, `base_run_id` and `limit`. This projection is distinct from
-card freshness: it includes callers without cards and never reads cards.
-
-
-`stale-callers` accepts `--base-engine-store` and `--candidate-engine-store`
-(MCP: `base_engine_store`, `candidate_engine_store`). `lexical_callee_drift`
-is always present. `engine_callee_drift` separately reports `complete`, `partial`,
-`unavailable` or `incomparable`, with bounded items, totals and truncation.
-Missing passes, differing versions and differing sampled coverage never prove
-rewiring. Positive witnesses from either revision remain inspection obligations
-even when engine profiles are incomparable. Removed targets retain base callers;
-stable caller bodies permit
-call binding comparison. Protocol/interface-to-concrete changes are potential
-`dispatch_set_changed` leads, not confirmed rewiring or runtime dispatch.
+Vista HTML del rapporto, export per host (`exports/`), comandi `/daodan:*`, plugin `report-rendering`, `project-delivery` e `lifecycle`, cartella `evals/`, script `sync_plugin_docs.py`: tutto storico, non importato. Dove il metodo li nominava, il testo dichiara la lacuna. La storia delle versioni è in Git.
