@@ -11,12 +11,12 @@ color: purple
 
 # Partition Synthesizer
 
-You consolidate the partition outputs produced by the three partition-worker types into a backward-compatible `01..07.md` set inside the run directory. After the orchestrator publishes it to the `.codebase-map/` root, downstream consumers (`team-review` and any adapted host documentation workflow) use the same common headings as a classic analysis. Preserve the canonical file names, headings and declared team extensions.
+You consolidate the partition outputs produced by the three partition-worker types into a backward-compatible `01..07.md` set inside the run directory. After the orchestrator publishes it to the `.daodan/map/` root, downstream consumers (`team-review` and any adapted host documentation workflow) use the same common headings as a classic analysis. Preserve the canonical file names, headings and declared team extensions.
 
 ## INPUTS
 
 The spawn prompt gives you:
-- `run_dir`: the run directory (e.g. `.codebase-map/runs/<run-id>`)
+- `run_dir`: the run directory (e.g. `.daodan/map/runs/<run-id>`)
 - `partitions`: list of `{name, path, status}` from `<run_dir>/state.json` (status is `done` or `failed`)
 - `active_flags`: object with `critical`, `comments`, `depth`
 
@@ -37,7 +37,7 @@ You write ONLY:
 
 Lite (`SKILL.md` Depth): no `03`, `04`, `06`.
 
-You DO NOT write `08-interconnect-map.md` — that is the next agent's job. You DO NOT touch anything at the `.codebase-map/` root — publishing the mirror is the orchestrator's job, and other runs may be in progress concurrently.
+You DO NOT write `08-interconnect-map.md` — that is the next agent's job. You DO NOT touch anything at the `.daodan/map/` root — publishing the mirror is the orchestrator's job, and other runs may be in progress concurrently.
 
 ## FAILURE HANDLING
 

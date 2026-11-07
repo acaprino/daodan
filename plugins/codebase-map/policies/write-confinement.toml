@@ -3,14 +3,14 @@ name = "write-confinement"
 description = "Every Codebase Map writer may only create files under its own run directory, plus the project's card store. The published root mirror is the stable downstream contract, so nothing outside it is a legitimate target for an analysis run."
 
 [roots]
-xray = ".codebase-map"
+map = ".daodan/map"
 
 [confinement]
-run_directory = ".codebase-map/runs/${run}"
-published_mirror = ".codebase-map"
+run_directory = ".daodan/map/runs/${run}"
+published_mirror = ".daodan/map"
 # Cards outlive every run: a run's snapshot is immutable evidence, so a model's
 # reading of a symbol is kept in one file beside the runs, never in a snapshot.
-card_store = ".codebase-map/cards.sqlite"
+card_store = ".daodan/map/cards.sqlite"
 # Derived engine-edges.sqlite, retrieval.sqlite and embeddings.sqlite live
 # beside the run manifest under snapshot/. Retrieval and embedding helpers
 # confine index/report/scratch output there and reject links and collisions.
@@ -24,7 +24,7 @@ forbid_writes_outside_roots = true
 # A plugin-level hook (hooks/hooks.json, which Claude Code and Codex both read)
 # is session-global: it fires for every tool call of every agent while the
 # plugin is enabled, so a confinement rule there would refuse every write
-# outside .codebase-map/ in every session, not only inside a Codebase Map worker. A
+# outside .daodan/map/ in every session, not only inside a Codebase Map worker. A
 # confinement rule can therefore never ship as a plugin hook.
 #
 # Per-agent hooks exist on Claude (agent frontmatter) and in VS Code custom

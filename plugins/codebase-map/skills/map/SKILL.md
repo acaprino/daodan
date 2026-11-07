@@ -31,7 +31,7 @@ description: >
 
 `references/entry-analyze.md` dispatches isolated `codebase-map:map-analyst`;
 `references/entry-team-analyze.md` uses isolated partition workers. Entries own
-`.codebase-map/` publication (`references/run.md`).
+`.daodan/map/` publication (`references/run.md`).
 Loading `codebase-map:map` starts no analysis or run.
 
 ## Load map

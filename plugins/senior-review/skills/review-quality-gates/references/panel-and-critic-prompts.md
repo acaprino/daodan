@@ -44,7 +44,7 @@ tool line from the evidence pack; report what tools cannot see.
 Write the one report to the prepared job.output_path, preserving each assigned member's findings and coverage.
 ```
 
-**Path substitution:** In `team-review`, the Codebase Map line is the complete run's tools, never a new analysis. `code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.codebase-map/` mirror when consuming a pre-existing analysis.
+**Path substitution:** In `team-review`, the Codebase Map line is the complete run's tools, never a new analysis. `code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.daodan/map/` mirror when consuming a pre-existing analysis.
 
 ---
 
@@ -82,7 +82,7 @@ Decide and state whether the counterexample falsifies the PREMISE itself or only
 a piece of shared SUPPORT.
 ```
 
-*(In `code-review`, Codebase Map resolves to `.codebase-map/` and the context line is omitted.)*
+*(In `code-review`, Codebase Map resolves to `.daodan/map/` and the context line is omitted.)*
 
 ### Lens 1 Prompt (Reachability / Correctness)
 

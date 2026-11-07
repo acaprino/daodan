@@ -40,7 +40,7 @@ class SymbolsAtTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         write_project(self.root)
-        self.out = self.root / ".codebase-map" / "manifest.sqlite"
+        self.out = self.root / ".daodan/map" / "manifest.sqlite"
         snapshot.write_snapshot(self.root, self.out)
 
     def at(self, requests, **kwargs):

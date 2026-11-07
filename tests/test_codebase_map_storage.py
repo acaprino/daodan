@@ -29,7 +29,7 @@ class SnapshotStorageTests(unittest.TestCase):
         return importlib.import_module("snapshot_store")
 
     def out(self, name="manifest.sqlite"):
-        return self.root / ".codebase-map" / name
+        return self.root / ".daodan/map" / name
 
     def test_default_is_sqlite(self):
         storage = self.api()
@@ -277,7 +277,7 @@ class SnapshotStorageTests(unittest.TestCase):
         import card_store
         import semantic_store
         from snapshot_store import artifact_digest
-        store_root = self.root / ".codebase-map"
+        store_root = self.root / ".daodan/map"
         run = store_root / "runs" / "example"
         (run / "snapshot").mkdir(parents=True)
         (run / "state.json").write_text("{}", encoding="utf-8")

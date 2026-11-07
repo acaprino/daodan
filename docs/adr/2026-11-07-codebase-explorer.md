@@ -78,7 +78,7 @@ Non si crea una seconda tassonomia degli stati: i nomi e significati di provenie
 
 I riferimenti multipli producono occorrenze visuali, non nuove entità. ID dell'occorrenza = funzione del riferimento canonico e del contenitore della vista; esiste solo nella UI. Counts e risultati di ricerca deduplicano per identità canonica. I parent React Flow organizzano le occorrenze, non definiscono i proprietari del codice. Gli archi aggregati conservano l'elenco dei riferimenti alle relazioni sottostanti; gli archi interni a un gruppo collassato diventano un conteggio consultabile, non false dipendenze esterne.
 
-L'export viene scritto in una directory derivata per run/digest, esterna agli input immutabili: destinazione proposta `.codebase-map/views/<run-id>/<export-digest>/`. Si valida prima di pubblicare la directory completa; errori non sovrascrivono l'export precedente. Il digest include anche le schede effettivamente lette: il loro store è aggiornabile separatamente, perciò la lettura deve acquisire una vista coerente o rifiutare un cambiamento concorrente.
+L'export viene scritto in una directory derivata per run/digest, esterna agli input immutabili: destinazione proposta `.daodan/map/views/<run-id>/<export-digest>/`. Si valida prima di pubblicare la directory completa; errori non sovrascrivono l'export precedente. Il digest include anche le schede effettivamente lette: il loro store è aggiornabile separatamente, perciò la lettura deve acquisire una vista coerente o rifiutare un cambiamento concorrente.
 
 ## 4. Esecuzione, UI e failure mode
 

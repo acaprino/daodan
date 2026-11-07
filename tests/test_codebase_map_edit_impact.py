@@ -47,7 +47,7 @@ class EngineImpactTests(unittest.TestCase):
             "entry.py": "def top(obj):\n    return obj.middle()\n",
         }.items():
             (self.root / name).write_text(body, encoding="utf-8")
-        self.manifest = self.root / ".codebase-map/manifest.sqlite"
+        self.manifest = self.root / ".daodan/map/manifest.sqlite"
         self.edges = self.manifest.with_name("engine-edges.sqlite")
         snapshot.write_snapshot(self.root, self.manifest)
         self.before = artifact_digest(self.manifest)
@@ -109,8 +109,8 @@ class EditImpactTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         write_project(self.root)
-        self.out = self.root / ".codebase-map" / "manifest.sqlite"
-        self.cards = self.root / ".codebase-map" / "cards.sqlite"
+        self.out = self.root / ".daodan/map" / "manifest.sqlite"
+        self.cards = self.root / ".daodan/map" / "cards.sqlite"
         snapshot.write_snapshot(self.root, self.out)
 
     def impact(self, targets, **options):
@@ -305,7 +305,7 @@ class EditImpactTests(unittest.TestCase):
                         {"include_neighbor_source": "yes"}, {"include_slices": 1}):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 self.impact(["pkg/b.py::helper"], **options)
-        legacy = self.root / ".codebase-map" / "manifest.json"
+        legacy = self.root / ".daodan/map" / "manifest.json"
         snapshot.write_snapshot(self.root, legacy, format="json")
         with open_snapshot(legacy) as store, self.assertRaisesRegex(ValueError, "SQLite"):
             semantic_store.build_edit_impact(store, ["pkg/b.py::helper"])

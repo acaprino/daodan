@@ -137,7 +137,7 @@ def test_graph_paths_never_symbol_form(run):
 
 def test_index_gap_is_prerequisite_failure():
     service, gap_run = ensure_run(HERE, "bench-gap")
-    index_file = HERE / "app" / ".codebase-map" / "runs" / gap_run / "snapshot" / "retrieval.sqlite"
+    index_file = HERE / "app" / ".daodan" / "map" / "runs" / gap_run / "snapshot" / "retrieval.sqlite"
     service.index(gap_run)  # ripara l'indice se una sessione precedente lo ha rimosso
     assert index_file.exists(), f"indice atteso in {index_file}"
     index_file.unlink()

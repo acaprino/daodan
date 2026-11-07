@@ -233,7 +233,7 @@ class CodebaseMapWireTests(unittest.TestCase):
         publication = self.call("codebase_map_publish", {"run_id": "partial"})
         self.assertTrue(publication.get("isError"), publication)
         self.assertIn("Publication refused", publication["content"][0]["text"])
-        self.assertFalse((self.project / ".codebase-map/07-final-report.md").exists())
+        self.assertFalse((self.project / ".daodan/map/07-final-report.md").exists())
 
     def test_changed_source_is_rejected_through_actual_transport(self):
         self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "changed"}))
@@ -254,7 +254,7 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.start("--store", ".app/codebase-map")
         self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "stored"}))
         self.assertTrue((self.project / ".app/codebase-map/runs/stored/state.json").is_file())
-        self.assertFalse((self.project / ".codebase-map").exists())
+        self.assertFalse((self.project / ".daodan/map").exists())
         refused = self.call("codebase_map_scope", {"target": ".app"})
         self.assertTrue(refused.get("isError"), refused)
         self.assertIn("analysis output", refused["content"][0]["text"])

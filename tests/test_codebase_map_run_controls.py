@@ -22,7 +22,7 @@ class RunControlsTests(unittest.TestCase):
         self.project = Path(tempfile.mkdtemp(prefix="map-controls-"))
         self.addCleanup(shutil.rmtree, self.project, True)
         (self.project / "src").mkdir()
-        self.root = self.project / ".codebase-map"
+        self.root = self.project / ".daodan/map"
         self.run = self.root / "runs/current"
         self.run.mkdir(parents=True)
         self.state = {

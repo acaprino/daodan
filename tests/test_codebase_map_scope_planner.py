@@ -42,8 +42,8 @@ class ScopePlannerTests(unittest.TestCase):
             path = self.root / rel
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding='utf8')
-        self.out = self.root / '.codebase-map'
-        self.out.mkdir()
+        self.out = self.root / '.daodan/map'
+        self.out.mkdir(parents=True)
         self.base = self.out / 'base.sqlite'
         snapshot.write_snapshot(self.root, self.base)
         self.current = self.out / 'candidate.sqlite'
@@ -119,8 +119,8 @@ class ScopePlannerTests(unittest.TestCase):
     def test_git_source_coordinates_keep_reads_inside_subproject(self):
         subprocess.run(['git', 'init', str(self.root)], capture_output=True, check=True)
         project = self.root / 'pkg'
-        out = project / '.codebase-map'
-        out.mkdir()
+        out = project / '.daodan/map'
+        out.mkdir(parents=True)
         manifest = out / 'candidate.sqlite'
         request = self.request(None, base=None, candidate={'manifest': str(manifest)},
             read_boundary=['pkg'], write_boundary=[], anchors=[], proposed_edits=[],
@@ -411,7 +411,7 @@ class ScopePlannerTests(unittest.TestCase):
         other = self.root / '.foreign-project'
         other.mkdir()
         (other / 'foreign.py').write_text('def external():\n    return 7\n', encoding='utf8')
-        manifest = other / '.codebase-map/map.sqlite'
+        manifest = other / '.daodan/map/map.sqlite'
         snapshot.write_snapshot(other, manifest)
         index = manifest.with_name('retrieval.sqlite')
         retrieval.refresh_index(manifest, index)

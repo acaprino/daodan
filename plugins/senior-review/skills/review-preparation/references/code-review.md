@@ -151,14 +151,14 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments --jq '.[].path' | sort -u
 
 5. **Read CLAUDE.md** if it exists -- note project conventions, naming rules, patterns
 
-6. **Check for Codebase Map context** (optional -- requires `codebase-map` plugin) -- if `.codebase-map/` exists and contains completed analysis files:
-   - Read `.codebase-map/01-structure.md` for structural context
-   - Read `.codebase-map/03-flows.md` for execution flow context
-   - Read `.codebase-map/04-semantics.md` for design decision context
-   - Read `.codebase-map/05-risks.md` for known risk context
+6. **Check for Codebase Map context** (optional -- requires `codebase-map` plugin) -- if `.daodan/map/` exists and contains completed analysis files:
+   - Read `.daodan/map/01-structure.md` for structural context
+   - Read `.daodan/map/03-flows.md` for execution flow context
+   - Read `.daodan/map/04-semantics.md` for design decision context
+   - Read `.daodan/map/05-risks.md` for known risk context
    - Include an "Codebase Map Context" section in each agent's prompt (see template below)
    - Note in the review output that Codebase Map context was used
-   - If `.codebase-map/` does not exist or is incomplete, proceed normally without it -- this is expected behavior when the Codebase Map has not been run for this project yet
+   - If `.daodan/map/` does not exist or is incomplete, proceed normally without it -- this is expected behavior when the Codebase Map has not been run for this project yet
    - This is a deliberate classification, not an oversight: `code-review` consumes a pre-existing analysis rather than starting a run, so per the Codebase Map Concurrent Runs Model the mirror is the correct contract for it. If this command is ever changed to invoke the Codebase Map skill itself, it moves to the immutable run directory (`$XRAY_RUN_DIR`) at that point
 
 ### Codebase Map Context Template

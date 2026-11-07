@@ -714,7 +714,7 @@ class SemanticResolverTests(unittest.TestCase):
             usages = usage_finder.find_all_usages_batch(["save"], core, self.root, manifest=m_arg)
             self.assertEqual(usages["save"].resolved_count, 2)
             self.assertEqual(usages["save"].importing_modules, ["src/main.rs", "src/sub/child.rs"])
-        db_path = self.root / ".codebase-map/manifest.sqlite"
+        db_path = self.root / ".daodan/map/manifest.sqlite"
         snapshot.write_snapshot(self.root, db_path)
         with open_snapshot(db_path) as store1:
             meta1 = {s["name"]: s for s in semantic_store.query_meta_code(store1)["symbols"] if s["file"] == "src/core.rs"}
@@ -724,7 +724,7 @@ class SemanticResolverTests(unittest.TestCase):
             "pub(crate) fn save<T>(x: T) { helper(1); }\nfn helper(z: i32) {}\npub struct Store { pub helper: i32 }\nimpl Store { pub fn method(&self) { let changed = 99; helper(changed); } }\npub mod inner { pub fn sub_fn() {} }\n",
             encoding="utf-8",
         )
-        db_path2 = self.root / ".codebase-map/manifest2.sqlite"
+        db_path2 = self.root / ".daodan/map/manifest2.sqlite"
         with open_snapshot(db_path) as store1:
             snapshot.write_snapshot(self.root, db_path2, previous=store1)
         with open_snapshot(db_path2) as store2:

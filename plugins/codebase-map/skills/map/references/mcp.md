@@ -28,7 +28,7 @@ The project is fixed at startup: `--project`, or the working directory when
 omitted, so a consumer that controls the launch passes it explicitly. `scope`
 and `status` (hence `runs`) return the bound `project_root`; verify it before
 creating a run. Every target is relative to the project; every run ID selects
-exactly `.codebase-map/runs/<run-id>/` (or `<store>/runs/<run-id>/`). Foreign
+exactly `.daodan/map/runs/<run-id>/` (or `<store>/runs/<run-id>/`). Foreign
 paths, traversal, symlinks and Windows junctions are rejected; clients supply no
 executable, output root or manifest path. Helper subprocesses run from the helper
 directory and resolve `git` from absolute `PATH` entries only.
@@ -38,15 +38,15 @@ directory and resolve `git` from absolute `PATH` entries only.
 `--store <project-relative-path>` (or `MapService(project_root, store)`), fixed
 for the server's lifetime, moves the whole store: runs, registry, locks and the
 published mirror. The path is exact POSIX, starts with a dot directory so every
-perimeter already excludes it, and may not reuse `.codebase-map`, `.git` or a
+perimeter already excludes it, and may not be `.daodan/map`, reuse `.git` or a
 device name; a target inside it is refused. The first write creates the marker
-`.codebase-map-store.json`, `{"schema": "daodan/codebase-map-store/v1",
+`.daodan-map-store.json`, `{"schema": "daodan/codebase-map-store/v1",
 "store": "<path>"}`, which binds the store to its project: `snapshot.py`
 commands accept a run directory in such a store and derive the project from
 it. A non-empty directory without the marker is refused, a marker naming another
 path invalidates every run in the store, and a lost marker is recovered by
 rewriting that exact marker. Shell workflows and worker roles name
-`.codebase-map/`, so they use a custom store only when the host hands them the
+`.daodan/map/`, so they use a custom store only when the host hands them the
 exact run directory; the canonical mirror and its consumers do not see such
 runs. The host registers the server. Verify its connection before calling these
 tools; a shell workflow uses its existing commands and needs no MCP connection.

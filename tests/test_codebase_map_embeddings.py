@@ -44,7 +44,7 @@ class EmbeddingTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
-        self.manifest = self.root / '.codebase-map/manifest.sqlite'
+        self.manifest = self.root / '.daodan/map/manifest.sqlite'
         self.index = self.manifest.with_name('embeddings.sqlite')
         self.lexical = self.manifest.with_name('retrieval.sqlite')
         self.provider = LocalEncoder()

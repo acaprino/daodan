@@ -80,7 +80,7 @@ or `xray_path: none`, `concept_index_path`, `changed_files`, `report_path: job.o
 review's severity floor. Its prior-art search may read the whole codebase; the
 diff anchors findings rather than confining that search to changed files. Its
 canonical role governs absent/stale map and concept-index evidence. Do not use
-the `.codebase-map/` root as an invented run locator.
+the `.daodan/map/` root as an invented run locator.
 
 **Cleanup and workspace (B2).** Supply the prepared review perimeter. Source
 cleanup uses `cleanup-auditor`'s canonical method. No workspace-hygiene specialist exists; filesystem/git workspace facts are

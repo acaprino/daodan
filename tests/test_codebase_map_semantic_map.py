@@ -26,7 +26,7 @@ class SemanticMapTests(unittest.TestCase):
         self.write("pkg/__init__.py", "")
         self.write("pkg/a.py", "from .b import helper\n\ndef run(x):\n    return helper(x)\n")
         self.write("pkg/b.py", "def helper(value):\n    return value + 1\n\ndef unused():\n    return 0\n")
-        self.manifest = self.root / ".codebase-map/manifest.sqlite"
+        self.manifest = self.root / ".daodan/map/manifest.sqlite"
         self.cards = self.manifest.with_name("cards.sqlite")
         self.output = self.manifest.with_name("semantic-map.md")
         self.refresh()

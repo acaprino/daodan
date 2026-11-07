@@ -2471,10 +2471,9 @@ def _reject_links(path: Path) -> None:
             raise RunControlError(f"linked path is not a run-owned regular path: {part}")
 
 
-CANONICAL_STORE = ".codebase-map"
-STORE_MARKER = ".codebase-map-store.json"
+CANONICAL_STORE = ".daodan/map"
+STORE_MARKER = ".daodan-map-store.json"
 STORE_SCHEMA = "daodan/codebase-map-store/v1"
-_STORE_RESERVED = {CANONICAL_STORE, ".git"}
 _DEVICE_NAMES = frozenset({"con", "prn", "aux", "nul", "conin$", "conout$",
                            *(f"{port}{i}" for port in ("com", "lpt")
                              for i in (*range(1, 10), "\u00b9", "\u00b2", "\u00b3"))})
@@ -2485,8 +2484,8 @@ def validate_store(value) -> str:
     """Return a project-relative custom store path, or raise RunControlError.
 
     A custom store starts with a dot directory, so every perimeter already
-    leaves it out of the analyzed sources, and never reuses a canonical or
-    legacy store name, which identify their project by position alone.
+    leaves it out of the analyzed sources, and never reuses the canonical
+    store path, which identifies its project by position alone.
     """
     if (not isinstance(value, str) or not value or len(value) > 255 or value.startswith("/")
             or _STORE_FORBIDDEN.search(value)):
@@ -2496,21 +2495,23 @@ def validate_store(value) -> str:
         raise RunControlError("analysis store must be an exact project-relative POSIX path")
     if not parts[0].startswith("."):
         raise RunControlError("analysis store must begin with a dot directory outside the analyzed sources")
-    if any(part.casefold() in _STORE_RESERVED or part.casefold().lstrip(".").split(".")[0] in _DEVICE_NAMES
-           for part in parts):
-        raise RunControlError("analysis store must not reuse a canonical, legacy, git or device name")
+    if value.casefold() == CANONICAL_STORE or any(
+            part.casefold() == ".git" or part.casefold().lstrip(".").split(".")[0] in _DEVICE_NAMES
+            for part in parts):
+        raise RunControlError("analysis store must not reuse the canonical, git or device name")
     return value
 
 
 def store_project(root: Path) -> Path:
     """Project bound by an analysis store.
 
-    The canonical store is the project's `.codebase-map`. A custom store
+    The canonical store is the project's `.daodan/map`. A custom store
     records its own project-relative path in a marker; the project is the
     ancestor that path names, and the marker must resolve back to the store.
     """
-    if root.name == CANONICAL_STORE:
-        return root.parent
+    canonical = CANONICAL_STORE.split("/")
+    if list(root.parts[-len(canonical):]) == canonical:
+        return root.parents[len(canonical) - 1]
     marker = root / STORE_MARKER
     _reject_links(marker)
     if not marker.is_file():

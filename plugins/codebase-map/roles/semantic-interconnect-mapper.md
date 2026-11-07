@@ -27,7 +27,7 @@ violations against. You do not review code. A vague map yields vague findings.
 ## INPUTS
 
 1. **Primary context source** (required; the prompt names which):
-   - **a.** A Codebase Map run directory, `.codebase-map/runs/<run-id>/`, or the `.codebase-map/` mirror for a one-shot request wanting the latest published run: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and at full depth `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
+   - **a.** A Codebase Map run directory, `.daodan/map/runs/<run-id>/`, or the `.daodan/map/` mirror for a one-shot request wanting the latest published run: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and at full depth `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
    - **b.** A context brief, the scoped `context_path` a host documentation workflow produced inside its owned run.
    Neither available: stop and report the missing prerequisite.
 2. **Target files.** A review's declared diff or file set; a knowledge guide's requested document or project scope, never an automatic whole-project sweep. The team entry's scope is the cross-partition surface only: `02-interfaces.md ## Cross-Partition Exports`, `03-flows.md ## Cross-Partition Flows`, `04-semantics.md ## Hidden Contracts (cross-partition)`, `05-risks.md ## Cross-Partition Risk Attribution` and the source they cite; partition-internal contracts belong to the partition workers.
@@ -59,7 +59,7 @@ Sequential; each feeds the next.
 
 ## OUTPUT
 
-One file at the path the prompt names; defaults: a host documentation workflow its explicit owned `report_path`, the team entry `.codebase-map/runs/<run-id>/08-interconnect-map.md`. This exact structure, anchors verbatim:
+One file at the path the prompt names; defaults: a host documentation workflow its explicit owned `report_path`, the team entry `.daodan/map/runs/<run-id>/08-interconnect-map.md`. This exact structure, anchors verbatim:
 
 ```markdown
 # Interconnect Map
