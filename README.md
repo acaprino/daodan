@@ -69,7 +69,7 @@ re-reads the plugin files but does not restart that server.
 
 ## Documentation
 
-- [Design of the two-owner base](docs/specs/2026-11-03-semantic-review-foundation.md)
+- [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md)
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
 - [Working rules for agents in this repository](AGENTS.md)

@@ -39,8 +39,7 @@ merely because its evidence line is unchanged or `introduced_by_candidate` is fa
 
 - Sort by severity (Critical first) -> confidence (descending) -> file path -> line number
 - Include a score only when the caller requested a defined scoring method and the
-  delivered evidence supports it. Otherwise report score as unavailable where a
-  legacy view has a score field; do not manufacture one from finding counts.
+  delivered evidence supports it. Otherwise report score as unavailable; do not manufacture one from finding counts.
 
 ## Step 4b: Adversarial Verification Panel
 

@@ -2,7 +2,7 @@
 
 **Responsabilità:** comprendere l'oggetto da rivedere, scegliere i reviewer pertinenti leggendo i loro mandati e comporre il minimo lavoro di review giustificato dalle evidenze.
 
-Nella nuova base l'unica dipendenza di prodotto è **Codebase Map**. Le micro skill e i controlli restano di proprietà di senior-review; un reviewer è un incarico temporaneo sull'intero perimetro, composto da mandato, contesto, istruzioni selezionate e risultato atteso. Una skill non implica un agente separato.
+L'unica dipendenza di prodotto è **Codebase Map**. Le micro skill e i controlli restano di proprietà di senior-review; un reviewer è un incarico temporaneo sull'intero perimetro, composto da mandato, contesto, istruzioni selezionate e risultato atteso. Una skill non implica un agente separato.
 
 Il risultato distingue difetti dimostrati, verifiche svolte e lacune. Nessuna selezione semantica garantisce di individuare tutti i difetti.
 
@@ -18,15 +18,11 @@ Spec: [`docs/specs/2026-11-04-review-scope-resolution.md`](../../docs/specs/2026
 
 ## Stato
 
-Baseline sorgente **1.0.1** importata dal backup integrale del precedente Daodan. Il manifest è stato adattato alla nuova architettura:
-
-- dipendenze richieste: solo `codebase-map`;
-- rimosso il membro esterno `testing:test-reliability-auditor` dalla composizione `code-auditor`;
-- i ruoli compositi dichiarati restano validi perché definiti in `[reviewers.compositions]`, non come file ruolo individuali.
+Versione **1.0.1**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi sono definiti in `[reviewers.compositions]` di `plugin.toml`, non come file ruolo.
 
 Installazione: `claude plugin install senior-review@daodan` (marketplace `acaprino/daodan`; richiede `codebase-map`). Ingresso: la skill `/senior-review:review-method`. Le review eseguite sul benchmark `benchmarks/scope-resolution/` e i loro costi sono registrati nel suo README: il criterio di costo non è ancora raggiunto. Il catalogo dei reviewer è `plugin.toml`: `skills/review-preparation/scripts/composition.py catalog` lo legge e scrive `CATALOG.json`; `bind` lega il roster ai job.
 
-Le istruzioni obbligatorie che caricavano work-controller, skill-catalog, report-rendering, testing o altri plugin assenti sono state rese host-generiche o trasformate in lacune esplicite. I riferimenti storici residui sono solo documentali. Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. La copertura di React, TypeScript, Tauri/platform, testing, abstraction e workspace hygiene non è più fornita da plugin esterni: resta una lacuna dichiarata finché senior-review non possiederà micro skill equivalenti.
+Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. React, TypeScript, Tauri/platform, testing, abstraction e workspace hygiene non hanno un reviewer: restano lacune dichiarate finché senior-review non possiederà micro skill equivalenti.
 
 La Phase 1 di `team-review` comprende l'oggetto nel perimetro già risolto, sceglie i reviewer adatti leggendo i loro mandati. `composition.py bind` riceve la scelta e senza di essa si ferma; i reviewer scelti partono insieme nella Phase 2, ciascuno sull'intero perimetro. Il rigor (`quick`, `standard`, `deep`) lo decide il modello leggendo la richiesta, `standard` se non dice nulla: stabilisce la verifica, da solo Critical a tutti i finding con il critico. I segnali di rischio lo portano a `deep`. Testo operativo: `skills/review-preparation/references/team-review.md`.
 

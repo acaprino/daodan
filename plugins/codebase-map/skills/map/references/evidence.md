@@ -51,7 +51,7 @@ source reading all come from it, and no standalone command creates another.
 Resolve `source_manifest` with `snapshot.py resolve $RUN_DIR` (or take the
 exact current path a caller supplies). Never infer its extension, load the
 database as text or dump the manifest into model context; binary bytes never
-reach the model. SQLite is the default; explicit JSON and legacy parents keep
+reach the model. SQLite is the default; explicit JSON parents keep
 their actual path. A latest mirror identifies no snapshot. After a verified
 diff the owner obtains a current manifest with `snapshot.py write --reuse`
 before any read, whatever the recommendation (`references/snapshot.md`, Diff

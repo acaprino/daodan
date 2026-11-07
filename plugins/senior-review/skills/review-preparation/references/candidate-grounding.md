@@ -61,8 +61,8 @@ Before dispatch, for every kind:
    in plans/specifications/documents produce `tool-reported` findings naming
    the failed resolution.
 3. **Ownership/decisions.** Bind `.abstraction-architect/concept-index.json`
-   when a historical index is present; the former abstraction-architect provider
-   is not part of the new two-owner base and must not be assumed available. The
+   when the project has one; no abstraction specialist exists, so it is a lead
+   only. The
    caller supplies resolved records (identity, version, title, scope, digest);
    re-derive before use. With `docs/adr/README.md`, missing input is a gap, never
    empty.
@@ -141,9 +141,9 @@ generalist's boundary floor survives opaque calls and unavailable graph packets.
 
 | Kind | Roles and their question |
 |---|---|
-| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. Former marketplace stack specialists are unavailable until equivalent senior-review micro skills exist; dependency changes use `senior-review:dependency-usage-auditor`. |
-| `plan` | `premise-auditor`, claim check: every cited path, symbol and caller exists; `chicken-egg-detector`: initialization order and wave dependencies. Testing and abstraction specialists are unavailable in the new two-owner base; leave their questions as declared gaps unless the host supplies adapted equivalents. |
-| `spec` | `premise-auditor`, claim check: every statement about existing code; `logic-integrity-auditor`: state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared superseded. Trust boundaries, persistence, contracts and cross-service flows in the text add their senior-review auditors. Testing and abstraction specialists remain declared gaps unless adapted. |
+| `changeset` | The rigor's set and the stack and content signals, which team review treats as leads for Phase 1. Stack specialists do not exist until senior-review owns equivalent micro skills; dependency changes use `senior-review:dependency-usage-auditor`. |
+| `plan` | `premise-auditor`, claim check: every cited path, symbol and caller exists; `chicken-egg-detector`: initialization order and wave dependencies. Testing and abstraction specialists do not exist; leave their questions as declared gaps unless the host supplies them. |
+| `spec` | `premise-auditor`, claim check: every statement about existing code; `logic-integrity-auditor`: state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared superseded. Trust boundaries, persistence, contracts and cross-service flows in the text add their senior-review auditors. Testing and abstraction specialists remain declared gaps unless the host supplies them. |
 | `doc` | `premise-auditor`, claim check: every statement about the code against the source and the map. This review reports drift; documentation rewriting belongs to an explicitly authorized host workflow, not to senior-review. |
 
 Selected dimensions, skip reasons and gaps are shown in one plan before

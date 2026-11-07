@@ -98,7 +98,7 @@ supplied it.
 
 Creation defaults to SQLite, separately from analysis flags; state declares
 `snapshot.format`, `snapshot.path` and `snapshot.storage_version`, existing and
-parent runs keep their binding, legacy runs without it are JSON only, ambiguous
+parent runs keep their binding, runs without it are JSON only, ambiguous
 or mismatched files fail, and readers close after each operation. Creation
 covers classic full, lite, docs-only and single-phase runs with their stop
 limits, always with a full new snapshot: `diff` detects change, and the CLI

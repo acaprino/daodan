@@ -89,7 +89,7 @@ KINDS = ("changeset", "plan", "spec", "doc")
 LIGHT_ROSTER = {"changeset": ["senior-review:code-auditor"]}
 LIGHT_ROSTER.update({kind: ["senior-review:premise-auditor"] for kind in ("plan", "spec", "doc")})
 STANDARD_ROSTER = ["senior-review:code-auditor"]
-# A generated generalist must preserve the former body's boundary checks.
+# The generalist keeps these boundary checks as its floor.
 # Preparation may exclude a family only with candidate/scope-bound source evidence.
 CODE_FLOOR = [f"senior-review:{name}" for name in (
     "input-validation-auditor", "resource-lifecycle-auditor", "algorithmic-cost-auditor",
@@ -116,8 +116,7 @@ KIND_ROSTER = {
 # supplied by the consuming host, not hardcoded here.
 SUPPORT = ["senior-review:premise-auditor"]
 # Signal-activated specialists, added at any branch rigor when the signal is present.
-# Stack specialists owned by former marketplace plugins are not selected until
-# equivalent senior-review micro skills exist.
+# No stack specialist is selected until senior-review owns equivalent micro skills.
 LANGUAGE_ROLE: dict[str, str] = {}
 SIGNAL_ROLE = {
     "accessibility": "senior-review:accessibility-auditor",
@@ -474,7 +473,7 @@ def specialist_obligations(roster: list[str], context: dict, scope_id: str,
 
     methods = {row.get("dimension"): row["id"] for row in entries.values()
                if row.get("kind") == "method-binding"}
-    # Calls without prepared context keep the historical roster-only shape.
+    # Calls without prepared context keep the roster-only shape.
     for role in (roster if context else ()):
         identity = methods.get(role.partition("#")[2], role) if "#" in role else role
         # Missing catalog metadata is not permission to shrink the required set.
@@ -630,8 +629,8 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
         roster += signal_roles(signals, kind, roster)
     obligation_roles = list(roster)
     if shape == "light" and kind == "changeset":
-        # The one discovery job retains applicable domain checks after splitting
-        # its former generalist. This never widens the dispatch count or rigor.
+        # The one discovery job retains applicable domain checks beside the
+        # generalist. This never widens the dispatch count or rigor.
         obligation_roles += signal_roles(signals, kind, obligation_roles)
         if signals["sensitive_paths"] and "senior-review:security-auditor" not in obligation_roles:
             obligation_roles.append("senior-review:security-auditor")

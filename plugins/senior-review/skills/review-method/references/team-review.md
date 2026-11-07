@@ -19,9 +19,9 @@
 | Security | `senior-review:security-auditor` |
 | General correctness and local design | `senior-review:code-auditor` |
 | **Logic integrity (contracts/invariants/domain rules)** | `senior-review:logic-integrity-auditor` |
-| **Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness)** | unavailable in the new two-owner base unless the host supplies an adapted abstraction specialist; otherwise a declared gap |
+| **Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness)** | no abstraction specialist exists; a declared gap unless the host supplies one |
 | Codebase hygiene (full pass: dead code, assets, deps, docs, lifecycle archaeology) | `senior-review:cleanup-auditor` |
-| Workspace hygiene (garbage, tracked build output, .gitignore, scratch, doc-assets, git state) | unavailable in the new two-owner base unless the host supplies an adapted workspace-hygiene specialist; otherwise a declared gap |
+| Workspace hygiene (garbage, tracked build output, .gitignore, scratch, doc-assets, git state) | no workspace-hygiene specialist exists; a declared gap unless the host supplies one |
 | UI race conditions | `senior-review:ui-race-auditor` |
 | Accessibility and usable interaction paths | `senior-review:accessibility-auditor` |
 | General performance and cost | `senior-review:performance-auditor` |
@@ -31,14 +31,14 @@
 | Temporal resilience (failure-over-time) | `senior-review:temporal-resilience-auditor` |
 | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` |
 | Resource lifecycle (ownership and release) | `senior-review:resource-lifecycle-auditor` |
-| Testing quality | unavailable in the new two-owner base unless the host supplies an adapted testing specialist; otherwise a declared gap |
+| Testing quality | no testing specialist exists; a declared gap unless the host supplies one |
 | API contracts | `senior-review:api-contract-auditor` |
 | Migration data validity | `senior-review:data-integrity-auditor` (same delivery as data integrity) |
 | Premise discovery or document claim check | `senior-review:premise-auditor` (declared mode) |
 | React rendering | unavailable until senior-review owns equivalent React micro skills; record activation evidence and declare the gap |
 | TypeScript/type contracts | unavailable until senior-review owns equivalent TypeScript micro skills; record activation evidence and declare the gap |
 | Browser, mobile and desktop compatibility | unavailable until senior-review owns equivalent platform/Tauri micro skills; record activation evidence and declare the gap |
-| Python / dependencies | `senior-review:dependency-usage-auditor` for manifests/lockfiles; Python-specific former methods are unavailable and remain declared gaps |
+| Python / dependencies | `senior-review:dependency-usage-auditor` for manifests/lockfiles; no Python-specific specialist exists; a declared gap |
 
 ### Reviewer prompt template (context-aware)
 
@@ -100,17 +100,17 @@ Keep the required roster and provide source-derived scoped semantic context to a
 selected logic reviewer. Missing required inputs remain an explicit incomplete
 delivery; they do not authorize dropping that role.
 
-**Structural entropy dimension addendum.** The former abstraction-architect provider is not part of the new two-owner base. Do not dispatch it. When structural-entropy signals are present, record them and declare the specialist coverage unavailable. If a historical `.abstraction-architect/concept-index.json` exists, it may be used only as an unverified lead; the reviewer must re-derive every claim from source and declare missing or stale index coverage. No adapted abstraction reviewer may be invented.
+**Structural entropy dimension addendum.** No abstraction specialist exists. When structural-entropy signals are present, record them and declare the specialist coverage unavailable. If the project has a `.abstraction-architect/concept-index.json`, it may be used only as an unverified lead; the reviewer must re-derive every claim from source and declare missing or stale index coverage. No abstraction reviewer may be invented.
 
-**Testing dimension addendum.** The former `testing:test-suite-auditor` is not available in the new two-owner base. Do not dispatch it. Record testing-suite coverage as a declared gap unless the host supplies an explicitly adapted equivalent; in that case bind its scope, report path and no-run semantics before dispatch.
+**Testing dimension addendum.** No testing specialist exists. Record testing-suite coverage as a declared gap unless the host supplies one; in that case bind its scope, report path and no-run semantics before dispatch.
 
 Two notes on why: a review is diff-anchored, so a whole-suite execution would dominate the phase's wall clock for findings mostly outside the diff; and suite-wide inventory statistics still matter because parallel-file and cross-layer-duplicate findings are invisible when only the changed test file is read.
 
 ### The workspace-hygiene dimension
 
-The former `repo-hygiene:workspace-auditor` is not part of the new two-owner base.
-Do not dispatch it. When workspace-hygiene signals are present, record them and
-declare the dimension unavailable unless the host supplies an explicitly adapted
+No workspace-hygiene specialist exists. When workspace-hygiene signals are
+present, record them and declare the dimension unavailable unless the host
+supplies an explicitly adapted
 specialist. Source-comprehensible cleanup remains owned by
 `senior-review:cleanup-auditor`; filesystem/git-only checks are not silently
 transferred to it.

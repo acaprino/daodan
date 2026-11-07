@@ -59,7 +59,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
 3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-map:map` skill's `references/run.md`):
    - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
    - Set `RUN_DIR = .codebase-map/runs/<run-id>`
-   - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-map/runs/legacy-<date>/` first
+   - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside.
    - Register through `snapshot.py register $RUN_DIR` after initializing state below; never write `runs.json` directly
 4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and its snapshot resolves through `snapshot.py resolve <parent-run-dir>`. With a candidate, run the change set once over the whole target:
 

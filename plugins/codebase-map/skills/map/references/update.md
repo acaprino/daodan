@@ -8,7 +8,7 @@ file-level formats and exclusions.
 
 `snapshot.py write --reuse` still walks the current perimeter and hashes every
 inventoried file. Structural reuse requires matching content, recorded root/target,
-helper/runtime fingerprint and effective parser profile; missing legacy identity
+helper/runtime fingerprint and effective parser profile; missing identity
 or a mismatch reparses. Reuse proves neither model reading nor understanding.
 
 `changes.json`, from `snapshot.py diff`, compares the parent manifest with the

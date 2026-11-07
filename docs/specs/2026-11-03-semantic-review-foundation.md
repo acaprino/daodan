@@ -2,9 +2,9 @@
 
 Data: 3 novembre 2026.
 
-**Perimetro richiesto dall'utente:** backup integrale del precedente Daodan, ripartenza da zero, due soli proprietari — Codebase Map e senior-review — e nessuna storia Git precedente nel nuovo repository locale. Semplicità, portabilità e riduzione dei token sono obiettivi da misurare.
+**Perimetro:** due soli proprietari, Codebase Map e senior-review. Semplicità, portabilità e riduzione dei token sono obiettivi da misurare.
 
-**Stato tecnico:** i kernel sorgente di Codebase Map 1.0.1 e senior-review 1.0.1 sono stati importati dal backup come baseline e i loro manifest sono stati adattati alla base a due proprietari. Nessun selettore qui descritto è già implementato o validato; i plugin importati non sono installabili, integrati o validati. I metodi legacy possono conservare riferimenti storici a host, comandi o plugin precedenti, quarantenati e inattivi finché non vengono adattati o rimossi. La ripartenza autorizzata non equivale all'approvazione di ogni scelta tecnica sotto.
+**Stato:** i due plugin sono installabili; la mappa completa di questo repository esiste; la selezione descritta sotto è attuata nella Phase 1 della review `branch` e misurata (`2026-11-07-review-context-and-selection.md`, `benchmarks/scope-resolution/README.md`). Nessuna scelta tecnica sotto è approvata per il solo fatto di essere scritta.
 
 ## Struttura
 
@@ -15,7 +15,7 @@ Daodan
          └── usa codebase-map
 ```
 
-Codebase Map funziona da solo. senior-review usa la mappa e possiede direttamente le proprie micro skill: nessun skill-catalog, work-controller o router dei modelli come dipendenza. I manifest importati rispettano ora questo vincolo; le istruzioni obbligatorie verso plugin assenti sono state rimosse o trasformate in lacune esplicite, mentre i riferimenti storici residui non sono dipendenze attive. Strumenti, modello e capacità di esecuzione appartengono all'host. Un'integrazione futura deve dimostrare la compatibilità sul relativo host; il testo portabile di un metodo non la prova.
+Codebase Map funziona da solo. senior-review usa la mappa e possiede direttamente le proprie micro skill: nessun altro plugin come dipendenza. Strumenti, modello e capacità di esecuzione appartengono all'host. Un'integrazione futura deve dimostrare la compatibilità sul relativo host; il testo portabile di un metodo non la prova.
 
 ## Come si compone una review
 

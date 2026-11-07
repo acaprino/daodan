@@ -34,7 +34,7 @@ Il plugin non ha comandi propri: un entry point dell'host carica `codebase-map:m
 
 **Fasi.** La Phase 0 legge le istruzioni del progetto (`CLAUDE.md`, `AGENTS.md`) e gli indici di documentazione e scrive `knowledge/navigation.md` e `knowledge/documentation-leads.md`: indizi `documented` o `unverified`, mai `verified`, perché non legge codice. Le fasi 1 a 7: struttura, interfacce, flussi, semantica, pattern e rischi, salute della documentazione, rapporto finale. I percorsi che danno accesso al prodotto (autenticazione, onboarding, consenso, primo avvio) sono percorsi critici obbligatori in fase 3 e una categoria `Usability-blocking` in fase 5; per il codice client la traccia include il cascade degli stili, con `cascade_scan.py` eseguito sull'intero target. La profondità `lite` esegue 0, 1, 2 e 5 e condensa 7; in team non dispaccia i worker di comportamento e il worker di qualità scrive solo `05-risks.md` (`SKILL.md`, sezione Depth). Ogni file di fase termina con il registro `## Source reading`: manifest, seed del grafo, file e intervalli letti, diagnostica dei parser, lacune. Il rapporto finale dichiara tre coperture distinte: file in inventario, file letti in profondità, file esercitati a runtime.
 
-Il rapporto `07-final-report.md` è la vista per le persone: nessun renderer HTML è adattato in questa base.
+Il rapporto `07-final-report.md` è la vista per le persone: non esiste un renderer HTML.
 
 ## Ruoli
 
@@ -45,9 +45,9 @@ Il rapporto `07-final-report.md` è la vista per le persone: nessun renderer HTM
 | `partition-behavior-worker` | inherit; Read, Glob, Grep, Bash, Write | ingresso team, onda 2 (non in lite) | `partitions/<nome>/03-flows.md`, `04-semantics.md` |
 | `partition-quality-worker` | inherit; Read, Glob, Grep, Bash, Write | ingresso team, onda 2 | `partitions/<nome>/05-risks.md`, `06-documentation.md` (solo 05 in lite) |
 | `partition-synthesizer` | inherit; Read, Glob, Grep, Write | ingresso team, dopo l'onda 2 | `01-structure.md` fino a `07-final-report.md` del run |
-| `semantic-interconnect-mapper` | inherit; Read, Write, Glob, Grep, Bash | ingresso team dopo la sintesi, o un workflow di documentazione adattato | `08-interconnect-map.md`, o il percorso che il prompt nomina |
+| `semantic-interconnect-mapper` | inherit; Read, Write, Glob, Grep, Bash | ingresso team dopo la sintesi, o un workflow di documentazione dell'host | `08-interconnect-map.md`, o il percorso che il prompt nomina |
 
-Ogni ruolo dichiara una tabella `Method loads`: quali sezioni dei riferimenti legge e quando. I worker scrivono solo i file che possiedono e non toccano `state.json` né la radice `.codebase-map/`; l'analista non pubblica e non pone domande. Il mapper produce una mappa di contratti, invarianti, regole di dominio, assunzioni e punti di integrazione, ogni riga con `file:line` e uno stato (`verified`, `documented`, `unverified`, `disputed`), e si dichiara un indice di ipotesi fallibile. senior-review non lo dispaccia più: la sua Phase 1 legge il run completo con i tool della mappa.
+Ogni ruolo dichiara una tabella `Method loads`: quali sezioni dei riferimenti legge e quando. I worker scrivono solo i file che possiedono e non toccano `state.json` né la radice `.codebase-map/`; l'analista non pubblica e non pone domande. Il mapper produce una mappa di contratti, invarianti, regole di dominio, assunzioni e punti di integrazione, ogni riga con `file:line` e uno stato (`verified`, `documented`, `unverified`, `disputed`), e si dichiara un indice di ipotesi fallibile. senior-review non lo dispaccia: la sua Phase 1 legge il run completo con i tool della mappa.
 
 ## Linguaggi e parser
 
@@ -156,7 +156,3 @@ senior-review esige una mappa completa dell'intero progetto prima di una review:
 ## Test
 
 In `tests/` alla radice del repository: 22 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, 884 test in tutto, più `skills/map/scripts/tests/test_modules.py` (6 test). Esecuzione: `python -B -m pytest -q tests` dalla radice.
-
-## Non in questa base
-
-Vista HTML del rapporto, export per host (`exports/`), comandi `/daodan:*`, plugin `report-rendering`, `project-delivery` e `lifecycle`, cartella `evals/`, script `sync_plugin_docs.py`: tutto storico, non importato. Dove il metodo li nominava, il testo dichiara la lacuna. La storia delle versioni è in Git.

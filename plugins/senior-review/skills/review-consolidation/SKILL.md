@@ -23,12 +23,10 @@ A single final writer emits the report.
 
 Account separately for the critic and eligible verification lenses
 under the host isolation/run-record mechanism; discovery cannot satisfy a check
-through its job ID, file or context. Historical records retain their original
-contract.
+through its job ID, file or context.
 
 Validate knowledge usage against the prepared `knowledge_selection` and worker
-`knowledge_usage` using the skill inventory actually available in the host; the
-legacy skill-catalog plugin is not part of the new base. Verify assigned
+`knowledge_usage` using the skill inventory actually available in the host. Verify assigned
 scope/worker, selection/body fingerprints and used references. Failed/stale/missing
 selected knowledge fails delivery coverage and leaves required candidate gates
 unsatisfied. If no host inventory is available, record knowledge validation as a
@@ -55,9 +53,8 @@ using the caller's path or variant filename. Link native details with verdict,
 material findings and gaps; include full text when requested or needed for approval.
 Workers deliver native reports, never separate UI or another final synthesis.
 
-The historical `report-rendering` provider is not part of the new two-owner base.
-Until a renderer is explicitly adapted, keep the saved native Markdown report as
-the authoritative `output_path` and declare HTML/navigation/filter rendering
+No HTML renderer exists: keep the saved native Markdown report as the
+authoritative `output_path` and declare HTML/navigation/filter rendering
 unavailable. Do not generate a separate UI or add analysis, findings or schema.
 
 Preserve native sections/fields, roles/severities, evidence/confidence, premises/

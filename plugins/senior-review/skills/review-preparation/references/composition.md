@@ -36,9 +36,9 @@ one, also retains its audit-only method task. An identity absent from the
 catalog, a missing role file, unknown applicability or an unmet prerequisite
 remains an explicit failure or gap.
 
-Satisfy the expanded members' prerequisites before binding jobs. The former
-testing provider is not part of the new two-owner base; if a testing member is
-requested and no adapted host equivalent exists, record the missing preparation
+Satisfy the expanded members' prerequisites before binding jobs. No testing
+specialist exists; if a testing member is requested and the host supplies none,
+record the missing preparation
 and leave the coverage gap explicit. Reuse settled D1/D9 evidence once; record
 missing inputs and stale/unmeasured metrics. This prepares inputs without another
 reviewer, standalone workflow or repeated settled checks.
@@ -81,8 +81,7 @@ The result preserves the roster and adds `jobs`, `common` and `catalog_sha256`. 
 dispatch and append that complete review to the run's immutable `reviews`; an
 empty raw `jobs` list from the roster is not an executable plan. Record pending
 deliveries with the review ID, job ID, role and assigned path. Keep one canonical
-body artifact; plans, selection tables and logs reference its binding. Historical
-records retain their original contract. Continuing a stale/unprepared review
+body artifact; plans, selection tables and logs reference its binding. Continuing a stale/unprepared review
 requires a fresh prepared entry, never mutation of the immutable old entry.
 
 ## Execute and account

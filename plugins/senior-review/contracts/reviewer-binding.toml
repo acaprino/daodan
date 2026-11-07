@@ -6,7 +6,7 @@ required = ["dimension", "role", "activation_evidence", "knowledge_ids"]
 type = "array"
 items = "string"
 
-# Optional for historical records; composition binds these before dispatch.
+# Optional; composition binds these before dispatch.
 [fields.job_id]
 type = "string"
 [fields.specialist_ids]

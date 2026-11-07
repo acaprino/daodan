@@ -34,7 +34,7 @@ consolidated report and any PR description. No application edits are authorized.
 
 ## Canonical owners
 
-Legacy letters are labels for existing consumers, never run conditions. Resolve
+Letters are labels, never run conditions. Resolve
 every roster identity through the compiled catalog, including entries beyond
 this table. An absent example row cannot suppress a selected reviewer.
 
@@ -42,12 +42,12 @@ this table. An absent example row cannot suppress a selected reviewer.
 |---|---|---|
 | A | General correctness and local design | `senior-review:code-auditor` |
 | B | Application security | `senior-review:security-auditor` |
-| B2 | Source cleanup | `senior-review:cleanup-auditor`, only when selected; workspace hygiene from the former repo-hygiene provider is unavailable and remains a declared gap |
+| B2 | Source cleanup | `senior-review:cleanup-auditor`, only when selected; workspace hygiene has no specialist and remains a declared gap |
 | C | UI timing and races | `senior-review:ui-race-auditor` |
-| F | Test protection and suite quality | unavailable in the new two-owner base unless the host supplies an adapted testing specialist; otherwise a declared gap |
+| F | Test protection and suite quality | no testing specialist exists; a declared gap unless the host supplies one |
 | G | API contracts | `senior-review:api-contract-auditor` |
 | H / M | Migration data validity and persistent-state integrity | `senior-review:data-integrity-auditor`, one delivery |
-| J | Concept ownership, prior art and abstraction | unavailable in the new two-owner base unless the host supplies an adapted abstraction specialist; otherwise a declared gap |
+| J | Concept ownership, prior art and abstraction | no abstraction specialist exists; a declared gap unless the host supplies one |
 | L | Temporal resilience | `senior-review:temporal-resilience-auditor` |
 | N | Resource ownership and release | `senior-review:resource-lifecycle-auditor` |
 | O | Accessibility and usable interaction paths | `senior-review:accessibility-auditor` |
@@ -83,10 +83,8 @@ canonical role governs absent/stale map and concept-index evidence. Do not use
 the `.codebase-map/` root as an invented run locator.
 
 **Cleanup and workspace (B2).** Supply the prepared review perimeter. Source
-cleanup uses `cleanup-auditor`'s canonical method. The former repo-hygiene
-provider is not part of the new two-owner base; filesystem/git workspace facts are
-therefore unavailable unless the host supplies an adapted equivalent, and their
-absence remains a declared gap. Code-review's lite perimeter stays diff-scoped:
+cleanup uses `cleanup-auditor`'s canonical method. No workspace-hygiene specialist exists; filesystem/git workspace facts are
+unavailable unless the host supplies one, and their absence remains a declared gap. Code-review's lite perimeter stays diff-scoped:
 source D1 and applicable VCS checks on added files. Team-review's full audit does
 not become an implicit extra pass here.
 Preserve introduced, exposed and preexisting classifications from the native
@@ -96,7 +94,7 @@ ineligible. Never remove artifacts during review.
 **Premises.** Supply the declared mode. Blind derivation, only on explicit request,
 receives no map or peer conclusions and is accounted once;
 verification lenses receive only their explicitly assigned claims in fresh
-contexts. A worker's mode is not inferred from a legacy letter.
+contexts. A worker's mode is not inferred from a letter.
 
 ## Explicit support work
 
@@ -106,7 +104,7 @@ the enclosing method's declared verification/critic work. Being present in
 host supplies no isolated-worker binding, declare independent verification and
 critic coverage unavailable.
 
-If the enclosing method explicitly needs history analysis (legacy E), assign
+If the enclosing method explicitly needs history analysis (letter E), assign
 bounded paths/hunks and one output to that worker. Inspect the relevant commits
 and regressions, reuse preparation's history, and prove how the candidate
 reintroduces or contradicts a prior behavior. Age, churn and author count alone

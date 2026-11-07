@@ -43,8 +43,7 @@ Use `references/run.md` for registration and collision handling. On resume selec
 that existing directory without a collision suffix; require classic mode,
 matching normalized project/target, state and manifest. Do not overwrite its
 state or silently choose another active run. Show other active runs and start
-alongside when the user requested a new run. Offer legacy-layout migration when
-the run reference identifies it. Cancel leaves the shared mirror untouched.
+alongside when the user requested a new run. Cancel leaves the shared mirror untouched.
 
 Storage is separate from analysis flags. Resume retains its recorded format;
 refuse a conflicting explicit selection. For a fresh run initialize `state.json` with run id, normalized target,

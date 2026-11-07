@@ -113,11 +113,11 @@ class BindTest(unittest.TestCase):
                              BINDINGS, PLUGIN_ROOT)
 
     def test_unknown_identity_leaves_job_unbound_with_gap(self):
-        prepared = composition.bind(roster(["senior-review:security-auditor", "testing:test-suite-auditor"]), BINDINGS, PLUGIN_ROOT)
+        prepared = composition.bind(roster(["senior-review:security-auditor", "nobody:test-auditor"]), BINDINGS, PLUGIN_ROOT)
         statuses = {job["role"]: job["status"] for job in prepared["jobs"]}
-        self.assertEqual(statuses["testing:test-suite-auditor"], "unbound")
+        self.assertEqual(statuses["nobody:test-auditor"], "unbound")
         self.assertEqual(statuses["senior-review:security-auditor"], "bound")
-        self.assertTrue(any("testing:test-suite-auditor" in gap for gap in prepared["gaps"]))
+        self.assertTrue(any("nobody:test-auditor" in gap for gap in prepared["gaps"]))
 
     def test_candidate_mismatch_and_cycle_are_errors(self):
         with self.assertRaises(ValueError):

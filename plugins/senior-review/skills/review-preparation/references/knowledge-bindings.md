@@ -1,7 +1,6 @@
 # Knowledge bindings
 
-Use the skill inventory actually available in the host; the legacy skill-catalog
-plugin is not part of the new two-owner base. Keep the same candidate snapshot,
+Use the skill inventory actually available in the host. Keep the same candidate snapshot,
 project/worktree and run identity. A generated registry is not installation
 evidence. Normalize the actual host/project inventory and preserve its
 availability provenance. If no inventory mechanism exists, declare knowledge
@@ -43,8 +42,7 @@ selected once, with one or more scoped worker assignments. Preparation hashing
 does not prove worker reading. Do not create one reviewer per skill, repeat
 preparation or run specialist workflows.
 
-The React/TypeScript/platform specialists from the former marketplace are not
-available in the imported two-owner baseline. Record their activation signals and
+No React, TypeScript or platform specialist exists. Record their activation signals and
 leave the missing specialist coverage explicit until senior-review owns equivalent
 micro skills. General review lenses may still inspect the same evidence, but they
 cannot silently replace a missing specialist. Keep automatic activation, explicit

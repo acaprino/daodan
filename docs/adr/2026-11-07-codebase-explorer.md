@@ -57,7 +57,7 @@ Prima di fissare il renderer, la stessa piccola fixture del FRD verrà proiettat
 
 **Stato attuale:** Daodan ha snapshot, moduli e schede; la fase 3 prescrive flussi in `03-flows.md`. Non è verificata l'esistenza di un dataset di flussi adatto alla UI. Non si interpreta Mermaid per ricostruire fatti o ordine di esecuzione.
 
-**Intervento proposto:** la stessa fase 3 produce anche `03-flows.json`, con passi e transizioni strutturati sostenuti dalle medesime evidenze. Il report Markdown viene prodotto dagli stessi dati più la spiegazione narrativa, evitando due raccolte indipendenti. Un run storico privo del JSON conserva navigazione architetturale e report, ma non riceve percorsi sintetizzati silenziosamente. Il nuovo artefatto resta run-local; nessuna modifica automatica al mirror o al registro dei run.
+**Intervento proposto:** la stessa fase 3 produce anche `03-flows.json`, con passi e transizioni strutturati sostenuti dalle medesime evidenze. Il report Markdown viene prodotto dagli stessi dati più la spiegazione narrativa, evitando due raccolte indipendenti. Un run privo del JSON conserva navigazione architetturale e report, ma non riceve percorsi sintetizzati silenziosamente. Il nuovo artefatto resta run-local; nessuna modifica automatica al mirror o al registro dei run.
 
 L'exporter Python usa le API interne di snapshot/moduli/schede, senza leggere direttamente tabelle SQLite sparse nel frontend e senza richiedere un server MCP. Percorsi proposti: `plugins/codebase-map/skills/map-method/scripts/visual.py` per export/serve; `plugins/codebase-map/viewer/` per sorgenti frontend; asset distribuiti sotto `plugins/codebase-map/assets/viewer/`. Non sono file già implementati.
 

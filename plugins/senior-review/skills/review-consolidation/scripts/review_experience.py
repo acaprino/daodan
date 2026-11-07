@@ -73,7 +73,6 @@ COUNTEREXAMPLE = re.compile(r".+:\d+")  # run_state.py:821
 UNIVERSAL = re.compile(r"\b(no|never|cannot|always|only)\b", re.IGNORECASE)  # run_state.py:818
 LENS_VERDICTS = {0: ("HOLDS", "REFUTED", "UNCERTAIN"), 1: ("REAL", "FALSE_POSITIVE", "UNCERTAIN"),
                  2: ("REAL", "FALSE_POSITIVE", "UNCERTAIN"), 3: ("REAL",)}  # run_state.py:731-733
-LEGACY_WORKER = "project-protocol:isolated-worker"
 
 
 class ExperienceError(ValueError):
@@ -478,9 +477,7 @@ def lens_check(review, deliveries, target, lens):
         roles = [
             role for role in _list(review.get("support"))
             if isinstance(role, str) and role.endswith(":isolated-worker")
-        ] or ["work-controller:isolated-worker"]
-        if LEGACY_WORKER not in roles:
-            roles.append(LEGACY_WORKER)
+        ] or ["general-purpose"]
     accepted = (result.get("role") in roles and result.get("status") == "delivered"
                 and result.get("coverage") == "complete" and not required_gaps(result.get("gaps", []))
                 and result.get("candidate") == _dict(review.get("grounding")).get("candidate")

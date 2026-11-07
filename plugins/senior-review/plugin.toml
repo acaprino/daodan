@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "senior-review"
 version = "1.0.1"
-description = "Evidence-aware review baseline imported from Daodan 1.0.1. It prepares review context, selects auditors, consolidates evidenced findings and reports coverage gaps. In the new two-owner base its only product dependency is codebase-map. Legacy marketplace providers, host commands and export artifacts remain referenced by the imported method but are inactive until adapted."
+description = "Evidence-aware review: it understands the object under review, selects auditors by their mandates, consolidates evidenced findings and reports coverage gaps. Its only product dependency is codebase-map."
 license = "MIT"
 
 [capabilities]
