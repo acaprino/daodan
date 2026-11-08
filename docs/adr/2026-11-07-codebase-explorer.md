@@ -1,6 +1,6 @@
 # ADR: visualizzazione originale per Codebase Map
 
-**Stato:** proposta tecnica da approvare. **Data:** 7 novembre 2026.
+**Stato:** approvata l'8 novembre 2026. **Data:** 7 novembre 2026.
 **Requisiti:** [FRD](../frd/2026-11-07-codebase-explorer.md). **Proprietario:** `codebase-map`.
 
 ## 1. Contesto e decisione proposta
@@ -94,4 +94,4 @@ Fonti consultate: [README](../../README.md), [moduli](../../plugins/codebase-map
 
 Test futuri: unitari del mapping/aggregazione e delle transizioni di stato; fixture export con digest discordanti; browser desktop e viewport stretta, tastiera e reduced motion; server confinato; caricamento offline senza richieste esterne; compatibilità della distribuzione precompilata e licenze del lock. I benchmark e i criteri osservabili sono nel FRD. Una libreria accessibile non rende automaticamente accessibile il grafo finito.
 
-**Da approvare:** questo design e i target provvisori del FRD, prima del piano di implementazione. **Da verificare durante la prima prova:** fedeltà/costo React Flow contro LikeC4, compatibilità delle versioni, effettiva disponibilità degli input e prestazioni. La proposta non dichiara integrazione completata né attribuisce i precedenti test di Floorplan a Daodan.
+**Approvati l'8 novembre 2026:** questo design e i target provvisori del FRD. Segue il piano di implementazione. **Da verificare durante la prima prova:** fedeltà/costo React Flow contro LikeC4, compatibilità delle versioni, effettiva disponibilità degli input e prestazioni. L'approvazione non dichiara integrazione completata né attribuisce i precedenti test di Floorplan a Daodan.

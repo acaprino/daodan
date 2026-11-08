@@ -1,6 +1,6 @@
 # Esploratore visuale della codebase
 
-**Stato:** proposta da approvare; nessuna implementazione. **Data:** 7 novembre 2026.
+**Stato:** approvato l'8 novembre 2026; implementazione non iniziata. **Data:** 7 novembre 2026.
 **Scelta acquisita:** UI Daodan originale, ispirata alle idee di esplorazione di Floorplan, costruita con librerie esistenti. Dinamico significa interattivo, non monitoraggio runtime.
 **Decisioni tecniche e fonti:** [ADR](../adr/2026-11-07-codebase-explorer.md).
 
