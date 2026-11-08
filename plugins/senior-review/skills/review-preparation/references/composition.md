@@ -57,6 +57,19 @@ Build one `BINDINGS.json` from verified values:
 - Optional `scopes`, keyed by `scope_id`, each with its own `input_mode`,
   `permissions` and `output_dir`. Modes and grants must agree with the member
   brief. Independent modes never share a job.
+- `coverage`, bound by every branch review on content basis and by no other:
+  `{"files": "FILES.json", "root": ".", "budget": 120000}`. `budget` defaults
+  to `GROUP_BYTES`; a budget the caller states replaces it. Without a usable map
+  run, bind without `coverage` and declare the gap. `FILES.json` is
+  `snapshot.py files` on the bound run after the map-freshness gate of
+  `references/candidate-grounding.md`; give `compute` only the perimeter's
+  inventory, so `conclusion_paths` stays the resolved perimeter. Each perimeter
+  file gets one cell per planned reviewer of the default scope, and each such
+  job becomes one job per group of its open files under `budget` bytes, with
+  `paths` and one JSON result at `output_path`. A stack reviewer skips only a
+  file that clearly lacks its stack; a requested file missing from the inventory
+  stays open without a job until the map lists it; a reviewer with no open file
+  has no job.
 
 The helper makes one job per roster identity (support roles are not jobs),
 expands compositions to leaf role files, adds one job per required specialist
@@ -114,7 +127,8 @@ and output files. A discovery delivery cannot also satisfy a verification check.
 
 Light requires exactly one discovery job. An insufficient budget fails or asks
 the caller to use branch review; no silent member omission or hidden fan-out.
-Budget splitting in branch review retains every obligation and its evidence.
+Budget splitting in branch review is `coverage`'s groups: every group keeps its
+job's members, obligations and evidence.
 
 At delivery, bind job ID, role, members, scope, candidate and body digest. Each
 `member_results` row declares specialist ID, delivered/failed status,
@@ -122,6 +136,13 @@ complete/incomplete coverage, canonical finding IDs and gaps. Write a finding
 once and reference it from all relevant members. A clean member still reports
 completed checks; silence, an empty file or a worker stopping is not delivery.
 Failed mandatory coverage prevents completion even when all workers have stopped.
+
+With `coverage`, after the delivery barrier and before consolidation, run once
+`composition.py account --prepared PREPARED-REVIEW.json --out .team-review/coverage.json`.
+A cell is `covered` only when its job's result is bound to the job, delivered,
+complete for every member, and lists the file in `read` and not in `partial`;
+the other assigned cells stay `open` with the reason. Exit 0 means the count
+succeeded, not that the review is complete. No job closes another job's cells.
 
 The coordinator checks expected jobs and member outcomes, then the native
 blind/critic/verification requirements through the host isolation/run-record

@@ -57,9 +57,9 @@ from `$ARGUMENTS` using this priority:
 
 **Case W -- `$ARGUMENTS` is a request in words** (a module, feature, function,
 error or domain term, not a path, PR, branch or flag): resolve it to files with
-"Request to files" in `references/team-review.md` of this skill. `clarify` asks
-before anything else runs; `partial` continues with the files found and keeps the
-gap for the report. The files are reviewed as current content (Step 1b takes the
+"Request to files" in `references/team-review.md` of this skill. `clarify` holds
+only the part that depends on its question while the clear part runs; `partial`
+continues with the files found and keeps the gap for the report. The files are reviewed as current content (Step 1b takes the
 intent from the request itself); Cases A-E do not apply.
 
 **Case A -- Uncommitted/staged changes exist** (no explicit PR or branch arg):

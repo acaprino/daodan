@@ -201,7 +201,7 @@ to find new bugs directly. It is to find what the review did not examine.
 [list]
 
 ## Examined coverage
-[reviewer report paths: completed checks, no-findings results and declared gaps]
+[reviewer report paths: completed checks, no-findings results and declared gaps; with cells, the summary `account` printed: totals per reviewer, the first 20 open cells with their reason and the path of the full register]
 
 ## Context available
 [Codebase Map run and `01-context.md` path, or "none"]

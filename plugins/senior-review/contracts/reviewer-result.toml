@@ -37,3 +37,12 @@ items = "object"
 # Exactly one per assigned specialist: specialist_id, delivered|failed status,
 # complete|incomplete coverage, findings (canonical finding IDs), gaps.
 # A failed member can satisfy the delivery barrier, never required coverage.
+[fields.read]
+type = "array"
+items = "string"
+[fields.partial]
+type = "object"
+# read and partial are required for a job with paths: read lists the assigned files
+# read in full; partial maps a file to why its reading or checks are incomplete.
+# They add to status and member_results and never replace them: a file in partial
+# neither fails the result nor makes a member incomplete.

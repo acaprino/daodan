@@ -59,7 +59,9 @@ Before dispatch, for every kind:
    leads and replaces no source reading.
 2. **Live source.** Read every scoped path/symbol from disk. Missing references
    in plans/specifications/documents produce `tool-reported` findings naming
-   the failed resolution.
+   the failed resolution. A branch review on content basis with `coverage`
+   leaves the full reading to its jobs: preparation keeps the freshness check,
+   the requirements and the perimeter, and reads only what orientation needs.
 3. **Ownership/decisions.** Prior art and concept ownership are
    `prior-art-auditor`'s, from the complete map run. The
    caller supplies resolved records (identity, version, title, scope, digest);

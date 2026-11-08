@@ -107,7 +107,7 @@ no phase of this pipeline analyzes the project to establish the prerequisite.
    Missing comparison or unsupported roster preparation remains an explicit gap.
 3. Collect the list of changed file paths and extensions for Phase 0b.
 4. State the candidate's intent in one sentence (what it changes and why), from the task, the PR description or the commit messages; if no source supports one, ask the caller before any dispatch and record `intent: unknown` when none comes. That sentence is the intent every worker prompt pastes.
-5. Write `.team-review/00-scope.md` with target, intent, files, flags and, for a request in words, its outcome, the `file:line` that shows each file and any gap. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
+5. Write `.team-review/00-scope.md` with target, intent, files, flags and, for a request in words, its outcome and assumptions, the `file:line` that shows each file and any gap. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
 
 ### Request to files
 
@@ -131,11 +131,15 @@ question: `references/tools-guide.md` of `codebase-map:map`.
    queries and 10 reads. Always say why.
 4. **Answer** with one of three outcomes: `resolved` (the files, each with its
    evidence); `partial` (the files found, what the request still needs and why); `clarify`
-   (the request may mean two different things: the candidates and the question).
+   (a reading that changes correctness, breadth or cost substantially and that the
+   project's evidence does not settle: the candidates and one targeted question).
 
-`resolved` and `partial` continue with the files found; a `partial` gap stays in
-`00-scope.md` and in the final report's coverage. `clarify` asks the caller before
-any dispatch; without an answer nothing is dispatched.
+An ambiguity the request and the project's evidence settle is `resolved`, with the
+assumption in `00-scope.md`. `resolved` and `partial` continue with the files found;
+a `partial` gap stays in `00-scope.md` and in the final report's coverage. `clarify`
+holds only the part that depends on the answer: the parts already clear proceed, and
+the report lists the held part as open, never as a complete review. Do not widen to
+the whole project or to every reviewer out of caution.
 
 The scope is what the review judges; what it reads to judge is Phase 1 context.
 Use the run's indexes and source only. Everything else is the reviewer's
@@ -151,10 +155,10 @@ Mark `phase_0b_policy` complete in `state.json`.
 
 The coordinator prepares the review within Phase 0's scope:
 
-1. Read the scoped material and the context needed to understand its purpose, how it works and what matters for the requested review. Use the existing map's tools to locate relevant source, contracts and tests.
-2. Consult the available reviewers' mandates and choose the competencies pertinent to that object and intent. Catalog descriptions shortlist candidates; read those candidates' bodies. Languages and extensions guide the choice but do not decide it alone.
-3. Prepare the selected reviewers to start together in Phase 2, each on the whole scope with its own mandate and the context of step 1. State any needed competence that is unavailable, including the baseline of a stack the object touches.
+1. Read the scoped material and the context needed to understand its purpose, how it works and what matters for the requested review. Use the existing map's tools to locate relevant source, contracts and tests. On content basis with `coverage`, orient with the map's modules, outlines and search instead of reading every file: each job reads its own files in full.
+2. Consult the available reviewers' mandates and choose, from the request and the project's evidence, the competencies pertinent to that object and intent, keeping any reviewer or limit the request names. Catalog descriptions shortlist candidates; read those candidates' bodies. Languages and extensions guide the choice but do not decide it alone.
+3. Prepare the selected reviewers to start together in Phase 2, each on the whole scope, or on content basis with `coverage` on its groups of files (`references/composition.md`), with its own mandate and the context of step 1. State any needed competence that is unavailable, including the baseline of a stack the object touches.
 
 Stop when it is clear what is being reviewed and who should review it; defect analysis belongs to the reviewers.
 
-Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each in `02-selection.md`. Pass the chosen catalog identities to `composition.py bind` as `selection` (`references/composition.md`), with the stack bindings of `references/stack-dimensions.md`. Before dispatch show one compact plan: target and snapshot, rigor and why, selected reviewers and why, verification level, gaps. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.
+Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each and the assumptions behind the choice in `02-selection.md`. Pass the chosen catalog identities to `composition.py bind` as `selection` (`references/composition.md`), with the stack bindings of `references/stack-dimensions.md` and, on content basis, `coverage` from `snapshot.py files` on the bound run. Before dispatch show one compact plan: target and snapshot, rigor and why, selected reviewers and why, verification level, gaps. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.

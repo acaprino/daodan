@@ -8,7 +8,8 @@
    when a future registered identity has no example row here. A missing binding
    is a failed delivery, never permission to omit that reviewer.
 3. The jobs come from Phase 1 (`.team-review/02-selection.md`): each job
-   carries its selected reviewer and covers the whole scope. The mapping below
+   carries its selected reviewer and covers the whole scope, or its `paths` when
+   `coverage` splits the scope into groups. The mapping below
    names dimension owners; it adds no job to that selection. Premise verification
    happens per finding, in Phase 4b, with its own inputs and contexts.
 
@@ -83,7 +84,7 @@ one upstream observer.
 - Silence in the context is not evidence of absence. A concern the map does not
   mention may still be real; look anyway.
 
-Review the whole scope under your mandate and report findings, completed checks and gaps.
+Your perimeter is the whole scope or, for a job with paths, `Assigned files: {job.paths}`: conclude on those files under your mandate and read whatever else they need. Report findings, completed checks and gaps.
 
 ## Instructions
 Follow your agent definition's analysis phases, knowledge-base loading, output format, and severity classification. Cite file:line for every finding.
@@ -93,7 +94,7 @@ Follow your agent definition's analysis phases, knowledge-base loading, output f
 Use the fields and definitions of `## Deliver once` in the specialist review
 conventions (`reviewer-common.md`) delivered with this job's `common` binding.
 
-Write the one report to the prepared job.output_path using the native structured format, retaining every assigned member's findings and coverage.
+Write the one report to the prepared job.output_path using the native structured format, retaining every assigned member's findings and coverage. A job with paths writes it as the JSON reviewer-result of `## Deliver once`, with `read` and `partial`.
 ```
 
 If `--no-context` was set, omit shared analytical context and reviewer hints.
@@ -131,7 +132,7 @@ Mark `phase_2_review` as `in_progress`.
 ## Phase 3: Monitor and Collect
 
 1. Hold the delivery barrier: wait until every dispatched reviewer is recorded `delivered` or `failed`.
-2. As each job delivers, verify its assigned report exists and accounts for every expected member. If a worker returned the complete report without saving it, preserve that exact output at the assigned path; missing member coverage still fails the delivery gate.
+2. As each job delivers, verify its assigned report (the JSON result for a job with paths) exists and accounts for every expected member. If a worker returned the complete report without saving it, preserve that exact output at the assigned path; missing member coverage still fails the delivery gate.
 3. Track progress: "{completed}/{total} reviews complete".
 4. **Delivery gate** (per the `senior-review:review-quality-gates` skill, section `## Delivery Gate`): consolidation does not start until every spawned reviewer has either delivered its findings file or delivered an explicit no-findings report. A reviewer that has not delivered by a reasonable deadline gets one reminder, through whatever channel the host offers to a running worker. If it stays silent, record it `failed`, take whatever output it returned, save it to the findings path marked `[undelivered -- collected by orchestrator]`, and record the dimension as degraded in the report. A silently missing dimension is never presented as a clean one.
 5. Mark `phase_2_review` complete, `phase_3_consolidation` in_progress.

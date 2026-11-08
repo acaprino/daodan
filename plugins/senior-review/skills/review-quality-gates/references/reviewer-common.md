@@ -52,6 +52,15 @@ Use the native report and existing reviewer-result envelope: `dimension`,
 `output_path`, `knowledge_usage`. Persist at the assigned path; return that path
 and a short result. Without an assigned path, deliver inline.
 
+A job with `paths` concludes on those files and reads whatever else they need.
+Its one result is the JSON reviewer-result at `output_path`: the fields above,
+the job's `job_id`, `reviewer` (its role), `specialist_ids`, `scope_id`,
+`candidate` and `body_sha256`, `member_results`, `read` (assigned files read in
+full) and `partial` (file → why its reading or checks are incomplete, even after
+a full reading). A file in `partial` neither fails the result nor makes a member
+incomplete; `failed` and `incomplete` mean the job or member could not conclude
+its other assigned files. Write no second report.
+
 A finding is a hypothesis the verification panel tries to falsify. Each supplies
 `file`, `line`, `evidence`, `severity`, numeric `confidence` (0-100: support by
 evidence, not impact or measured probability; keep native strength labels
@@ -79,7 +88,7 @@ separately), a concrete fix direction and:
 
 Report examined scope, completed applicable checks and gaps compactly. A complete
 no-findings result has `findings: []` and that coverage account; silence is missing
-delivery. A missing required input or unfinished required check makes the assignment failed (`status: failed`); preserve
+delivery. A missing required input or unfinished required check outside `partial` makes the assignment failed (`status: failed`); preserve
 partial findings and name the missing evidence/check. The coordinator checks
 coverage before acceptance. Apply the working discipline supplied in the required brief. These are agent obligations; only exercised gates
 prove mechanical enforcement.

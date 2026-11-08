@@ -1,6 +1,6 @@
 ## Phase 4: Consolidation
 
-Apply these deduplication and calibration rules:
+Read each job's findings and gaps from its one result at `job.output_path` (JSON for a job with paths), then apply these deduplication and calibration rules:
 
 1. **Deduplicate**: merge findings that reference the same `file:line` + same issue. Credit all reviewers.
 2. **Co-locate**: same `file:line` but different issues -> keep separate, tag as co-located.
@@ -34,7 +34,7 @@ Run the panel to at least the bound roster and run's required verification level
 Run the critic whenever the bound roster or run requires it. Mark this phase skipped only when it is optional and omitted by the prepared plan or `--fast`. An unavailable required critic remains incomplete. Drive the critic per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md`, section `## Completeness Critic`.
 
 1. Dispatch one isolated host critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. If no isolated binding exists, declare the critic unavailable. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings (post-4b), `.team-review/00-scope.md`, the dimensions that ran, and only the actual bound context paths admitted to that task. Record missing context and prior worker exposure; `--no-context` does not relabel findings as independent.
-2. Supply reviewer report paths with completed checks, no-findings results and gaps. Write the critic output to `.team-review/97-coverage-gaps.md`.
+2. Supply reviewer report paths with completed checks, no-findings results and gaps, and with cells the summary `account` printed. Write the critic output to `.team-review/97-coverage-gaps.md`.
 3. If the critic names a single high-risk uncovered area under `## Recommended follow-up`, dispatch at most one targeted round through a permitted roster role, scoped to the named files. Route its findings through Phase 4 (dedup) and required Phase 4b verification. A needed role outside the roster is a selection gap, not an implicit dispatch authorization.
 4. Cost guard or `--fast` may omit optional follow-up: preserve `97-coverage-gaps.md` and note that omission. Report-only handling does not satisfy an unmet required check or delivery; keep that coverage incomplete.
 5. Mark `phase_4c_critic` complete.
@@ -84,6 +84,9 @@ declaring the requested output complete.
    Corroborated findings: {n_corroborated} (independent agreement)
    Echoes: {n_echo} (agreement inherited from a shared premise, not corroboration)
    Pipeline time: Phase 1: {t1}, Phase 2: {t2}, total: {total}
+
+   ### Examined coverage
+   [with cells: covered / open / not-applicable per reviewer from `account`, the first 20 open cells with their reason, and .team-review/coverage.json for the rest. Covered means the check concluded, not that the file is free of defects]
 
    ### Coverage Gaps
    [paste the ## Coverage Gaps list from .team-review/97-coverage-gaps.md]
