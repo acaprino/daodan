@@ -27,7 +27,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "plugins/senior-rev
 from composition import relative  # noqa: E402
 
 TOKENS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
-JOB_ID = re.compile(r"\bjob-\d{2,}\b")
+# A job ID standing alone; finding IDs such as F-job-02-1 embed one and must not bind a lens to the job.
+JOB_ID = re.compile(r"(?<![\w-])job-\d{2,}(?![\w-])")
 NUMBERED = re.compile(r"^\s*(\d+)\t", re.MULTILINE)
 
 
@@ -74,7 +75,7 @@ def spans_all(ranges: list[tuple[int, int]], lines: int) -> bool:
 
 
 def analyze(events: list[dict], cells: list[dict], root: str) -> dict:
-    uses, results, messages, final = {}, {}, {}, None
+    uses, results, messages, notices, final = {}, {}, {}, {}, None
     for event in events:
         kind, parent = event.get("type"), event.get("parent_tool_use_id")
         message = event.get("message") if isinstance(event.get("message"), dict) else {}
@@ -92,14 +93,16 @@ def analyze(events: list[dict], cells: list[dict], root: str) -> dict:
                                                          bool(block.get("is_error")))
         elif kind == "result":
             final = event
+        elif kind == "system" and event.get("subtype") == "task_notification" and event.get("usage"):
+            notices[event.get("tool_use_id")] = event["usage"]
 
     job_ids = {item["job_id"] for item in cells if item.get("job_id")}
     agents = {}
     for use, (name, tool_input, _) in uses.items():
         if name in ("Agent", "Task"):
             named = tool_input.get("name")
-            found = [named] if named in job_ids else [job for job in JOB_ID.findall(str(tool_input.get("prompt", "")))
-                                                       if job in job_ids]
+            first = str(tool_input.get("prompt", "")).lstrip().split("\n", 1)[0]
+            found = [named] if named in job_ids else [job for job in JOB_ID.findall(first) if job in job_ids]
             if found:
                 agents[use] = found[0]
 
@@ -158,13 +161,23 @@ def analyze(events: list[dict], cells: list[dict], root: str) -> dict:
         by_job[agents.get(parent) or ("coordinator" if parent is None else "other-workers")].append(usage)
     tokens = {"total": total([usage for usage, _ in messages.values()]),
               "by_job": {job: total(rows) for job, rows in sorted(by_job.items())}}
+    # A worker's own tokens reach the stream only in its task notification, keyed by its dispatch.
+    workers = {"by_job": {}, "other": {"total_tokens": 0, "duration_ms": 0, "count": 0}}
+    for use, usage in notices.items():
+        row = {"total_tokens": int(usage.get("total_tokens") or 0), "duration_ms": int(usage.get("duration_ms") or 0)}
+        if agents.get(use) in job_ids:
+            workers["by_job"][agents[use]] = row
+        else:
+            for key, value in row.items():
+                workers["other"][key] += value
+            workers["other"]["count"] += 1
     new_cells = counts["covered"] - counts["reused"]
-    review = sum(sum(row.values()) for job, row in tokens["by_job"].items() if job in job_ids)
-    tokens["review_per_new_cell"] = round(review / new_cells) if new_cells else None
+    review = sum(row["total_tokens"] for row in workers["by_job"].values())
+    workers["review_per_new_cell"] = round(review / new_cells) if new_cells else None
     run = ({key: final.get(key) for key in ("duration_ms", "duration_api_ms", "total_cost_usd", "num_turns",
                                              "usage", "is_error")} if final else None)
     return {"cells": counts, "violations": violations, "unverified": unverified,
-            "unverifiable_reads": unverifiable, "tokens": tokens, "run": run}
+            "unverifiable_reads": unverifiable, "tokens": tokens, "workers": workers, "run": run}
 
 
 def main(argv=None) -> int:

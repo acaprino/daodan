@@ -148,6 +148,26 @@ class CheckRunTest(unittest.TestCase):
         self.run_.read(agent, "a.py", 1, 10)
         self.assertEqual(self.analyze([cell("a.py")])["cells"]["verified"], 1)
 
+    def test_finding_ids_do_not_bind_a_worker_to_a_job(self):
+        self.run_.dispatch("job-01")
+        use = "lens1"
+        self.run_.assistant([{"type": "tool_use", "id": use, "name": "Agent",
+                              "input": {"prompt": "Lens: F-job-01-1-lens1\nVerify finding F-job-01-1"}}])
+        self.run_.result(use, None, "done")
+        self.run_.read(use, "a.py", 1, 10)
+        report = self.analyze([cell("a.py")])
+        self.assertEqual(report["cells"]["verified"], 0)
+
+    def test_worker_tokens_come_from_task_notifications(self):
+        agent = self.run_.dispatch("job-01")
+        lens = self.run_.dispatch("lens-x")
+        for use, tokens in ((agent, 1000), (lens, 300)):
+            self.run_.events.append({"type": "system", "subtype": "task_notification", "tool_use_id": use,
+                                     "usage": {"total_tokens": tokens, "duration_ms": 5000}})
+        workers = self.analyze([cell("a.py", status="open")])["workers"]
+        self.assertEqual(workers["by_job"], {"job-01": {"total_tokens": 1000, "duration_ms": 5000}})
+        self.assertEqual(workers["other"], {"total_tokens": 300, "duration_ms": 5000, "count": 1})
+
     def test_tokens_count_each_message_once(self):
         agent = self.run_.dispatch("job-01")
         usage = {"input_tokens": 100, "output_tokens": 7, "cache_read_input_tokens": 50}
