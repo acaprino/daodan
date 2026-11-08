@@ -8,8 +8,11 @@ identity absent from the catalog leaves the job unbound and the exit non-zero;
 a cycle, a foreign candidate or a second light job is an error. A branch bind
 states its selection: the reviewers Phase 1 chose replace the automatic roster and
 its floor, source obligations stay, and a dispatch validates against that result.
+A branch bind on content basis with `coverage` gives every perimeter file one cell
+per planned reviewer and splits each default-scope job into groups under a byte budget.
 """
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -208,6 +211,286 @@ class CliTest(unittest.TestCase):
                                  capture_output=True, text=True)
             self.assertEqual(cat.returncode, 0, cat.stderr)
             self.assertEqual(json.loads(cat.stdout)["entries"], 66)
+
+
+CODE = "senior-review:code-auditor"
+TYPESCRIPT = "senior-review:typescript-auditor"
+TAURI = "senior-review:tauri-auditor"
+TESTING = "senior-review:testing-auditor"
+FIXTURE = [("app/a.py", "python", 50000), ("app/b.py", "python", 50000),
+           ("docs/d.md", None, 1000), ("web/c.ts", "typescript", 30000)]
+
+
+class CoverageCase(unittest.TestCase):
+    """A temporary root holding the inventoried files at their sizes, and their FILES.json."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="review-coverage-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.files = self.root / "FILES.json"
+        self.inventory(FIXTURE)
+
+    def inventory(self, specs, contents=None):
+        rows = []
+        for path, language, size in specs:
+            data = (contents or {}).get(path, b"x" * size)
+            target = self.root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+            rows.append({"path": path, "sha256": hashlib.sha256(data).hexdigest(), "size": len(data),
+                         "lines": 1, "language": language})
+        self.paths = [row["path"] for row in rows]
+        self.files.write_text(json.dumps({"schema": "codebase-map/files/v1", "manifest": "manifest.sqlite",
+                                          "files": rows}), encoding="utf-8")
+
+    def bind(self, roles, paths=None, required=(), shape="branch", basis="content", **coverage):
+        review = roster(roles, shape=shape, required=required)
+        review["review_basis"] = basis
+        review["grounding"]["conclusion_paths"] = self.paths if paths is None else paths
+        coverage = {"files": str(self.files), "root": str(self.root), **coverage}
+        return composition.bind(review, {**BINDINGS, "coverage": coverage}, PLUGIN_ROOT)
+
+    @staticmethod
+    def cells(prepared, reviewer):
+        return {cell["path"]: cell for cell in prepared["coverage"]["cells"] if cell["reviewer"] == reviewer}
+
+    @staticmethod
+    def groups(prepared, role):
+        return [job["paths"] for job in prepared["jobs"] if job["role"] == role]
+
+
+class CoverageBindTest(CoverageCase):
+    def test_every_file_has_one_cell_per_reviewer(self):
+        prepared = self.bind([CODE, TYPESCRIPT])
+        pairs = [(cell["path"], cell["reviewer"]) for cell in prepared["coverage"]["cells"]]
+        self.assertEqual(len(pairs), 8)
+        self.assertEqual(len(set(pairs)), 8)
+        self.assertEqual(set(prepared["coverage"]["reviewers"]), {CODE, TYPESCRIPT})
+        for job in prepared["jobs"]:
+            self.assertEqual(prepared["coverage"]["reviewers"][job["role"]], job["body_sha256"])
+
+    def test_open_cells_belong_to_exactly_one_job(self):
+        required = [{"specialist_id": TESTING, "scope_id": "candidate",
+                     "evidence": [{"source": "requirements", "path": "app/a.py", "reason": "tests are in scope"}]}]
+        prepared = self.bind([CODE], paths=[*self.paths, "app/missing.py"], required=required, budget=60000)
+        self.assertEqual(prepared["required_specialists"], required)
+        jobs = {job["job_id"]: job for job in prepared["jobs"]}
+        self.assertEqual({job["scope_id"] for job in jobs.values()}, {"candidate"})
+        self.assertEqual({cell["reviewer"] for cell in prepared["coverage"]["cells"]}, {CODE, TESTING})
+        for cell in prepared["coverage"]["cells"]:
+            if cell["sha256"] is None:
+                self.assertEqual((cell["path"], cell["status"], cell["job_id"], cell["note"]),
+                                 ("app/missing.py", "open", None, "missing from map inventory"))
+                continue
+            holders = [job_id for job_id, job in jobs.items()
+                       if job["role"] == cell["reviewer"] and cell["path"] in job["paths"]]
+            self.assertEqual(holders, [cell["job_id"]], cell)
+
+    def test_groups_respect_budget(self):
+        prepared = self.bind([CODE], budget=60000)
+        self.assertEqual(self.groups(prepared, CODE), [["app/a.py"], ["app/b.py", "docs/d.md"], ["web/c.ts"]])
+        self.assertEqual([job["bytes"] for job in prepared["jobs"]], [50000, 51000, 30000])
+        prepared = self.bind([CODE], budget=40000)
+        self.assertEqual((prepared["jobs"][0]["paths"], prepared["jobs"][0]["bytes"]), (["app/a.py"], 50000))
+        for job in prepared["jobs"]:
+            self.assertTrue(job["bytes"] <= 40000 or len(job["paths"]) == 1, job)
+
+    def test_typescript_reviewer_skips_known_other_languages(self):
+        cells = self.cells(self.bind([TYPESCRIPT]), TYPESCRIPT)
+        self.assertEqual({path: cell["status"] for path, cell in cells.items()},
+                         {"app/a.py": "not-applicable", "app/b.py": "not-applicable",
+                          "docs/d.md": "open", "web/c.ts": "open"})
+        self.assertIsNone(cells["app/a.py"]["job_id"])
+        self.assertIn("typescript", cells["app/a.py"]["note"])
+
+    def test_configuration_and_explicit_obligations_stay_open(self):
+        self.inventory([("app/a.py", "python", 10), ("package.json", "json", 10), ("scripts/settings.py", "python", 10),
+                        ("tools/gen.py", "python", 10), ("tsconfig.json", "json", 10)])
+        required = [
+            {"specialist_id": "senior-review:input-validation-auditor", "scope_id": "candidate",
+             "evidence": [{"source": "configurations", "path": "scripts/settings.py"}]},
+            {"specialist_id": TYPESCRIPT, "scope_id": "candidate",
+             "evidence": [{"source": "caller", "path": "tools/gen.py", "reason": "generates the typed client"}]},
+        ]
+        cells = self.cells(self.bind([CODE, TYPESCRIPT], required=required), TYPESCRIPT)
+        self.assertEqual({path for path, cell in cells.items() if cell["status"] == "open"},
+                         {"package.json", "scripts/settings.py", "tools/gen.py", "tsconfig.json"})
+        self.assertEqual(cells["app/a.py"]["status"], "not-applicable")
+
+    def test_directory_scope_and_missing_map_paths(self):
+        prepared = self.bind([CODE], paths=["app/", "web/c.ts", "lib/gone.py"])
+        cells = self.cells(prepared, CODE)
+        self.assertEqual(sorted(cells), ["app/a.py", "app/b.py", "lib/gone.py", "web/c.ts"])
+        self.assertEqual((cells["lib/gone.py"]["status"], cells["lib/gone.py"]["job_id"], cells["lib/gone.py"]["note"]),
+                         ("open", None, "missing from map inventory"))
+        self.assertEqual(sorted(path for job in prepared["jobs"] for path in job["paths"]),
+                         ["app/a.py", "app/b.py", "web/c.ts"])
+        empty = self.bind([CODE], paths=[])
+        self.assertEqual((empty["coverage"]["cells"], empty["jobs"]), ([], []))
+        review = roster([CODE])
+        review["review_basis"] = "content"
+        with self.assertRaises(ValueError):
+            composition.bind(review, {**BINDINGS, "coverage": {"files": str(self.files), "root": str(self.root)}},
+                             PLUGIN_ROOT)
+
+    def test_tauri_needs_path_or_api(self):
+        self.inventory([("src-tauri/src/main.rs", "rust", 0), ("web/api.ts", "typescript", 0),
+                        ("web/view.ts", "typescript", 0)],
+                       contents={"src-tauri/src/main.rs": b"fn main() {}\n",
+                                 "web/api.ts": b'import { invoke } from "@tauri-apps/api/core";\n',
+                                 "web/view.ts": b"export const view = 1;\n"})
+        cells = self.cells(self.bind([TAURI]), TAURI)
+        self.assertEqual({path: cell["status"] for path, cell in cells.items()},
+                         {"src-tauri/src/main.rs": "open", "web/api.ts": "open", "web/view.ts": "not-applicable"})
+
+    def test_reviewer_with_no_open_cell_has_no_job(self):
+        self.inventory([("app/a.py", "python", 100), ("app/b.py", "python", 100)])
+        prepared = self.bind([CODE, TYPESCRIPT])
+        self.assertEqual({job["role"] for job in prepared["jobs"]}, {CODE})
+        self.assertEqual({cell["status"] for cell in self.cells(prepared, TYPESCRIPT).values()}, {"not-applicable"})
+        self.assertIn(TYPESCRIPT, prepared["coverage"]["reviewers"])
+
+    def test_missing_inventory_file_fails(self):
+        (self.root / "app/b.py").unlink()
+        with self.assertRaisesRegex(ValueError, "refresh the map"):
+            self.bind([CODE])
+
+    def test_invalid_basis_or_shape_rejects_coverage(self):
+        for shape, basis in (("light", "content"), ("branch", "changeset"), ("branch", "claims")):
+            with self.assertRaises(ValueError, msg=(shape, basis)):
+                self.bind([CODE], shape=shape, basis=basis)
+
+    def test_group_output_is_single_json_result(self):
+        prepared = self.bind([CODE, TYPESCRIPT], budget=60000)
+        outputs = [job["output_path"] for job in prepared["jobs"]]
+        self.assertTrue(outputs and all(path.endswith(".json") for path in outputs))
+        self.assertEqual(len(set(outputs)), len(outputs))
+        plain = composition.bind(roster([CODE, TYPESCRIPT]), BINDINGS, PLUGIN_ROOT)
+        self.assertNotIn("coverage", plain)
+        self.assertEqual([job["output_path"] for job in plain["jobs"]],
+                         [".team-review/jobs/job-01.md", ".team-review/jobs/job-02.md"])
+        self.assertTrue(all("paths" not in job for job in plain["jobs"]))
+        for budget in (0, -1, True, "60000"):
+            with self.assertRaises(ValueError, msg=repr(budget)):
+                self.bind([CODE], budget=budget)
+
+
+def result(job, read=(), partial=None, status="delivered", member_status="delivered", member_coverage="complete"):
+    """A group job's single reviewer-result, bound to its job."""
+    return {"dimension": "correctness", "reviewer": job["role"], "status": status, "findings": [], "gaps": [],
+            "output_path": job["output_path"], "knowledge_usage": [], "job_id": job["job_id"],
+            "specialist_ids": job["specialist_ids"], "scope_id": job["scope_id"], "candidate": job["candidate"],
+            "body_sha256": job["body_sha256"], "read": list(read), "partial": {} if partial is None else partial,
+            "member_results": [{"specialist_id": member, "status": member_status, "coverage": member_coverage,
+                                "findings": [], "gaps": []} for member in job["specialist_ids"]]}
+
+
+class CoverageAccountTest(CoverageCase):
+    def account(self, prepared, deliveries):
+        report = composition.account(prepared, deliveries, self.root)
+        return {(cell["path"], cell["reviewer"]): cell for cell in report["cells"]}, report
+
+    def test_read_files_with_completed_checks_are_covered(self):
+        prepared = self.bind([CODE], budget=60000)
+        first, second, _ = prepared["jobs"]
+        cells, _ = self.account(prepared, {first["job_id"]: result(first, read=["app/a.py"]),
+                                           second["job_id"]: result(second, read=["app/b.py", "docs/d.md"])})
+        self.assertEqual({path: cell["status"] for (path, _), cell in cells.items()},
+                         {"app/a.py": "covered", "app/b.py": "covered", "docs/d.md": "covered", "web/c.ts": "open"})
+
+    def test_read_but_failed_or_incomplete_result_stays_open(self):
+        prepared = self.bind([CODE], budget=60000)
+        job = prepared["jobs"][1]
+        read = ["app/b.py", "docs/d.md"]
+        missing_member = result(job, read=read)
+        missing_member["member_results"] = missing_member["member_results"][1:]
+        for delivery in (result(job, read=read, status="failed"), missing_member,
+                         result(job, read=read, member_status="failed"),
+                         result(job, read=read, member_coverage="incomplete")):
+            cells, _ = self.account(prepared, {job["job_id"]: delivery})
+            for path in read:
+                self.assertEqual(cells[(path, CODE)]["status"], "open")
+                self.assertTrue(cells[(path, CODE)]["note"])
+
+    def test_foreign_or_malformed_result_stays_open(self):
+        prepared = self.bind([CODE], budget=60000)
+        job = prepared["jobs"][0]
+        variants = [{"job_id": "job-99"}, {"candidate": {"ref": "other"}}, {"reviewer": TYPESCRIPT},
+                    {"specialist_ids": job["specialist_ids"][:1]}, {"scope_id": "elsewhere"}, {"body_sha256": "0" * 64},
+                    {"read": "app/a.py"}, {"read": [1]}, {"partial": ["app/a.py"]}, {"partial": {"app/a.py": 3}}]
+        for change in variants:
+            cells, _ = self.account(prepared, {job["job_id"]: {**result(job, read=["app/a.py"]), **change}})
+            self.assertEqual(cells[("app/a.py", CODE)]["status"], "open", change)
+            self.assertIn("invalid result", cells[("app/a.py", CODE)]["note"], change)
+        cells, _ = self.account(prepared, {job["job_id"]: ["not", "an", "object"]})
+        self.assertEqual(cells[("app/a.py", CODE)]["note"], "invalid result: not a JSON object")
+
+    def test_partial_stays_open_with_reason(self):
+        prepared = self.bind([CODE], budget=60000)
+        job = prepared["jobs"][1]
+        cells, _ = self.account(prepared, {job["job_id"]: result(
+            job, read=["app/b.py", "docs/d.md"], partial={"docs/d.md": "checks after line 40 not done"})})
+        self.assertEqual(cells[("app/b.py", CODE)]["status"], "covered")
+        self.assertEqual(cells[("docs/d.md", CODE)]["status"], "open")
+        self.assertIn("checks after line 40 not done", cells[("docs/d.md", CODE)]["note"])
+
+    def test_missing_delivery_leaves_cells_open(self):
+        prepared = self.bind([CODE], budget=60000)
+        for deliveries in ({}, {job["job_id"]: None for job in prepared["jobs"]}):
+            cells, _ = self.account(prepared, deliveries)
+            self.assertEqual({(cell["status"], cell["note"]) for cell in cells.values()}, {("open", "no result file")})
+
+    def test_unassigned_and_directory_paths_do_not_count(self):
+        prepared = self.bind([CODE], budget=60000)
+        job = prepared["jobs"][0]
+        cells, _ = self.account(prepared, {job["job_id"]: result(job, read=["web/", "web/c.ts", "app/"])})
+        self.assertEqual((cells[("app/a.py", CODE)]["status"], cells[("app/a.py", CODE)]["note"]), ("open", "not read"))
+        self.assertEqual((cells[("web/c.ts", CODE)]["status"], cells[("web/c.ts", CODE)]["note"]),
+                         ("open", "no result file"))
+
+    def test_windows_and_absolute_paths_normalize(self):
+        prepared = self.bind([CODE])
+        job = prepared["jobs"][0]
+        self.assertEqual(job["paths"], ["app/a.py", "app/b.py", "docs/d.md"])
+        cells, _ = self.account(prepared, {job["job_id"]: result(
+            job, read=["app\\a.py", str(self.root / "app/b.py"), "./docs/d.md"])})
+        for path in job["paths"]:
+            self.assertEqual(cells[(path, CODE)]["status"], "covered", path)
+
+    def test_summary_counts(self):
+        prepared = self.bind([CODE, TYPESCRIPT], paths=[*self.paths, "lib/gone.py"], budget=60000)
+        deliveries = {job["job_id"]: result(job, read=job["paths"]) for job in prepared["jobs"] if job["role"] == CODE}
+        _, report = self.account(prepared, deliveries)
+        self.assertEqual(report["schema"], "daodan/review-coverage/v1")
+        self.assertEqual(report["summary"], {CODE: {"covered": 4, "open": 1, "not-applicable": 0},
+                                             TYPESCRIPT: {"covered": 0, "open": 3, "not-applicable": 2}})
+
+    def test_account_cli_uses_prepared_root(self):
+        prepared = self.bind([CODE], budget=60000)
+        first, second, _ = prepared["jobs"]
+        target = self.root / first["output_path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(result(first, read=["app/a.py"])), encoding="utf-8")
+        (self.root / second["output_path"]).write_text("{not json", encoding="utf-8")
+        prepared_path = self.root / "PREPARED-REVIEW.json"
+        prepared_path.write_text(json.dumps(prepared), encoding="utf-8")
+        outputs = []
+        with tempfile.TemporaryDirectory() as elsewhere:
+            for cwd in (self.root, Path(elsewhere)):
+                out = Path(elsewhere) / f"coverage-{len(outputs)}.json"
+                run = subprocess.run([sys.executable, str(SCRIPTS / "composition.py"), "account",
+                                      "--prepared", str(prepared_path), "--out", str(out)],
+                                     capture_output=True, text=True, cwd=cwd)
+                self.assertEqual(run.returncode, 0, run.stderr)
+                outputs.append(json.loads(run.stdout))
+                self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["schema"], "daodan/review-coverage/v1")
+        self.assertEqual(outputs[0], outputs[1])
+        self.assertEqual(outputs[0]["summary"], {CODE: {"covered": 1, "open": 3, "not-applicable": 0}})
+        self.assertEqual(outputs[0]["open_total"], 3)
+        notes = {cell["path"]: cell["note"] for cell in outputs[0]["open"]}
+        self.assertEqual(notes["web/c.ts"], "no result file")
+        self.assertIn("invalid result", notes["app/b.py"])
 
 
 if __name__ == "__main__":
