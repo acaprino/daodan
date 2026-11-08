@@ -26,4 +26,22 @@ Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bas
 
 La Phase 1 di `team-review` comprende l'oggetto nel perimetro già risolto, sceglie i reviewer adatti leggendo i loro mandati. `composition.py bind` riceve la scelta e senza di essa si ferma; i reviewer scelti partono insieme nella Phase 2, ciascuno sull'intero perimetro. Il rigor (`quick`, `standard`, `deep`) lo decide il modello leggendo la richiesta, `standard` se non dice nulla: stabilisce la verifica, da solo Critical a tutti i finding con il critico. I segnali di rischio lo portano a `deep`. Testo operativo: `skills/review-preparation/references/team-review.md`.
 
+## Non indirizzato
+
+Temi che la review non giudica perché richiedono esecuzione, infrastruttura esterna al repository o processo organizzativo. Dove indicato, un auditor verifica i presupposti nel codice; il tema in sé resta fuori perimetro.
+
+| Tema | Perché fuori perimetro | Presupposti statici |
+|---|---|---|
+| Latenza, throughput, P99/tail latency | misura runtime | `algorithmic-cost`, `responsiveness`, `sql-efficiency` |
+| Comportamento del garbage collector | misura runtime | `resource-lifecycle` |
+| Chaos engineering, esecuzione dei test | richiedono di eseguire il sistema; "testing" è lacuna dichiarata in § Stato | — |
+| Cold start reali, limiti serverless | vincoli di piattaforma | `chicken-egg-detector`, `responsiveness` |
+| WAF, protezione DDoS | controlli perimetrali esterni | `capacity-quota` (backpressure applicativo) |
+| Autoscaling, scaling orizzontale/verticale, multi-region | policy di piattaforma | `capacity-quota`, `recovery` |
+| Load balancer, reverse proxy, API gateway, DNS, CDN | infrastruttura esterna; se la configurazione è nel repository la giudicano `environment-binding` e `asset-delivery` | `environment-binding`, `asset-delivery` |
+| Build caching | pipeline di build, fuori dal sorgente applicativo | — |
+| SLO, SLI, error budget | definizione di processo | `observability` (i segnali esistono e raggiungono il destinatario) |
+| On-call, production incident, postmortem | processo organizzativo; un documento di postmortem è rivedibile (`premise-auditor`, Mode 3) | — |
+| Rotazione o revoca di chiavi trapelate | rimedio operativo | `secret-exposure` (rileva l'esposizione) |
+
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md)
