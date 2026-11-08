@@ -22,8 +22,26 @@ Versione **1.0.1**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi
 
 Installazione: `claude plugin install senior-review@daodan` (marketplace `acaprino/daodan`; richiede `codebase-map`). Ingresso: la skill `/senior-review:review-method`. Le review eseguite sul benchmark `benchmarks/scope-resolution/` e i loro costi sono registrati nel suo README: il criterio di costo non è ancora raggiunto. Il catalogo dei reviewer è `plugin.toml`: `skills/review-preparation/scripts/composition.py catalog` lo legge e scrive `CATALOG.json`; `bind` lega il roster ai job.
 
-Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. React, TypeScript e i confini architetturali dichiarati hanno ruoli propri (`react-auditor`, `typescript-auditor`, `boundary-auditor`). Tauri/platform, testing, prior art e workspace hygiene non hanno un reviewer: restano lacune dichiarate.
+Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill. I ruoli compositi (`code-auditor`, `security-auditor`, …) non hanno un file agente: `composition.py` li espande nei membri, mentre chi li nomina come agente da dispacciare (`investigation-method`) non li trova. React, TypeScript e i confini architetturali dichiarati hanno ruoli propri (`react-auditor`, `typescript-auditor`, `boundary-auditor`). Tauri/platform, testing, prior art e workspace hygiene non hanno un reviewer: restano lacune dichiarate. I temi fuori dalla portata dell'analisi statica sono in [Non indirizzato](#non-indirizzato).
 
 La Phase 1 di `team-review` comprende l'oggetto nel perimetro già risolto, sceglie i reviewer adatti leggendo i loro mandati. `composition.py bind` riceve la scelta e senza di essa si ferma; i reviewer scelti partono insieme nella Phase 2, ciascuno sull'intero perimetro. Il rigor (`quick`, `standard`, `deep`) lo decide il modello leggendo la richiesta, `standard` se non dice nulla: stabilisce la verifica, da solo Critical a tutti i finding con il critico. I segnali di rischio lo portano a `deep`. Testo operativo: `skills/review-preparation/references/team-review.md`.
+
+## Non indirizzato
+
+Temi che la review non giudica perché richiedono esecuzione, infrastruttura esterna al repository o processo organizzativo. Dove indicato, un auditor verifica i presupposti nel codice; il tema in sé resta fuori perimetro.
+
+| Tema | Perché fuori perimetro | Presupposti statici |
+|---|---|---|
+| Latenza, throughput, P99/tail latency | misura runtime | `algorithmic-cost`, `responsiveness`, `sql-efficiency` |
+| Comportamento del garbage collector | misura runtime | `resource-lifecycle` |
+| Chaos engineering, esecuzione dei test | richiedono di eseguire il sistema; "testing" è lacuna dichiarata in § Stato | — |
+| Cold start reali, limiti serverless | vincoli di piattaforma | `chicken-egg-detector`, `responsiveness` |
+| WAF, protezione DDoS | controlli perimetrali esterni | `capacity-quota` (backpressure applicativo) |
+| Autoscaling, scaling orizzontale/verticale, multi-region | policy di piattaforma | `capacity-quota`, `recovery` |
+| Load balancer, reverse proxy, API gateway, DNS, CDN | infrastruttura esterna; se la configurazione è nel repository la giudicano `environment-binding` e `asset-delivery` | `environment-binding`, `asset-delivery` |
+| Build caching | pipeline di build, fuori dal sorgente applicativo | — |
+| SLO, SLI, error budget | definizione di processo | `observability` (i segnali esistono e raggiungono il destinatario) |
+| On-call, production incident, postmortem | processo organizzativo; un documento di postmortem è rivedibile (`premise-auditor`, Mode 3) | — |
+| Rotazione o revoca di chiavi trapelate | rimedio operativo | `secret-exposure` (rileva l'esposizione) |
 
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md)
