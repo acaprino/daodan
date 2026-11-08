@@ -15,6 +15,8 @@ it.
 Subcommands:
     scope <target>
         Count what a run would analyze and name what its perimeter leaves out. Parses nothing.
+    files <manifest> --out <FILES.json>
+        List the snapshot inventory: path, sha256 of the bytes, size, lines, language.
     write <target> --out <manifest.json> [--reuse <previous.json>]
         Write a structural snapshot; reuse parses only after checking file bytes.
         Also builds the lexical index and the module graph beside it
@@ -3125,6 +3127,27 @@ def cmd_publish(args: argparse.Namespace) -> int:
         return 2
 
 
+def inventory_rows(manifest: Path) -> list[dict]:
+    """Every snapshot file with the identity of its bytes, sorted by path: the inventory a review splits."""
+    with open_snapshot(Path(manifest)) as store:
+        rows = [{"path": path, "sha256": entry["raw_hash"], "size": entry["size"],
+                 "lines": entry.get("lines"), "language": entry.get("language")}
+                for path, entry in store.iter_file_headers_only()]
+    return sorted(rows, key=lambda row: row["path"])
+
+
+def cmd_files(args: argparse.Namespace) -> int:
+    try:
+        rows = inventory_rows(Path(args.manifest))
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+    payload = {"schema": "codebase-map/files/v1", "manifest": Path(args.manifest).resolve().as_posix(), "files": rows}
+    Path(args.out).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({"files": len(rows)}))
+    return 0
+
+
 def cmd_scope(args: argparse.Namespace) -> int:
     """
     The figures a scope confirmation shows, from the same walk the manifest
@@ -3447,6 +3470,11 @@ def main(argv: list[str] | None = None) -> int:
     scope_parser = sub.add_parser("scope", help="count what a run would analyze and what its perimeter leaves out")
     scope_parser.add_argument("target")
     scope_parser.set_defaults(func=cmd_scope)
+
+    files_parser = sub.add_parser("files", help="list the snapshot inventory: path, sha256, size, lines, language")
+    files_parser.add_argument("manifest")
+    files_parser.add_argument("--out", required=True)
+    files_parser.set_defaults(func=cmd_files)
 
     write_parser = sub.add_parser("write", help="write a manifest for a target tree")
     write_parser.add_argument("target")
