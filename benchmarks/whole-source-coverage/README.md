@@ -59,6 +59,7 @@ Run del 2026-11-08. Modello `claude-sonnet-5-5` per mappa e review; reviewer `se
 |---|---|---|---|---|---|---|---|---|
 | attuale | 4 | 1 | 0 | – | 197.549 (1 job) | 2.577.572 (19 worker) | 9,48 | 1.991 s |
 | a gruppi | 4 | 1 | 0 | 8 / 4 | 671.404 (4 job) | 2.707.009 (21 worker) | 13,42 | 2.817 s |
+| a gruppi, aiutante leggero e ondate | 4 | 2 | 0 | 10 / 2 | 240.866 (4 job) | 649.692 (25 worker) | 6,49 | 909 s |
 
 - Entrambe trovano tutti i semi, compreso quello tra gruppi: nel metodo a gruppi lo trova il job del file che valida (`storage.py`), non quello del file chiamante. Il comportamento reale in più è lo stesso.
 - Severità: il metodo a gruppi abbassa un seme da High a Medium (voto di Lens 3) e ne lascia uno `contested` (Lens 1 e 2 in disaccordo); il metodo attuale li conferma.
@@ -67,11 +68,26 @@ Run del 2026-11-08. Modello `claude-sonnet-5-5` per mappa e review; reviewer `se
 - Strumenti della mappa assenti in entrambe le sessioni `claude -p` (ToolSearch non attivo); i coordinatori hanno usato `MapService` via Python.
 - Preparazione con tre richieste: non eseguita.
 
-Esito: su una fixture che un solo job legge per intero, i gruppi non trovano più difetti e costano di più. Il vantaggio misurato è la copertura per file verificabile; il risparmio resta da provare su un perimetro che un solo job non riesce a leggere.
+Terza run, stesso giorno, plugin al commit `0ead554c3`: job, lenti 1-3 e critico su `senior-review:isolated-worker`, chiamate a ondate. Mappa nuova sullo stesso commit della fixture, 345 s e 2,61 USD, completa ma non pubblicata («snapshot parser identity changed»), come la precedente leggibile da `MapService`.
+
+| Misura, token equivalenti ai prezzi Sonnet | attuale | a gruppi | a gruppi, leggero e ondate |
+|---|---|---|---|
+| Coordinatore | 2,48 M, 67 turni | 3,82 M, 103 turni | 2,11 M, 56 turni |
+| Job di review | 0,69 M | 1,67 M | 0,70 M |
+| Lenti | 2,26 M | 2,88 M | 0,88 M |
+| Critico | 0,57 M | 0,50 M | 0,13 M |
+| Totale | 6,00 M | 8,87 M | 3,82 M |
+| Contesto iniziale di un worker | 121.000 | 111.000 | 18.000 |
+
+- Tutti i semi trovati e confermati: nessuna severità abbassata, nessun `contested`. In più C2 (`auth.py:29`) e un limite mancante sul numero di note per utente (`storage.py:30`), reale: esiste solo il limite per nota.
+- Le 10 celle coperte hanno tutte una lettura integrale nel job assegnato (`check_run.py`: 10 verificate, nessuna violazione). Le 2 aperte (`server/routes.py`, `server/storage.py`) restano aperte perché il membro `browser-security-auditor` di job-04 ha dichiarato `incomplete` per i file `client/`, assegnati a job-01: un'etichetta sbagliata, non una lettura mancata.
+- Rispetto al metodo a gruppi precedente: −52% in USD, −68% in tempo, −57% in token. Rispetto al metodo attuale: −32% in USD e −54% in tempo, con la copertura per file in più.
+
+Esito delle prime due run: su una fixture che un solo job legge per intero, i gruppi non trovano più difetti e costano di più. Con l'aiutante leggero e le ondate costano meno del metodo attuale. Il vantaggio misurato è la copertura per file verificabile; il risparmio resta da provare su un perimetro che un solo job non riesce a leggere.
 
 ## Limiti
 
 - La fixture è piccola: il metodo attuale la legge in un solo job. Il confronto misura la divisione, non il caso in cui un job non basta.
 - La lettura integrale si verifica solo per `Read` e `codebase_map_read`; altre letture risultano non verificabili. Il troncamento di righe molto lunghe da parte di `Read` non è rilevato.
 - Il metodo attuale non ha celle: per lui «Controlli aperti» non si applica.
-- Un solo campione per metodo: nessuna stima di varianza.
+- Un solo campione per metodo: nessuna stima di varianza. La terza run usa una mappa nuova, non la stessa delle prime due.

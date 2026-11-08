@@ -57,7 +57,7 @@ ogni aiutante parte da ~111.000 token      ogni aiutante parte da ~20.000 token
 - **Prima.** Ognuno dei 25 aiutanti rilegge circa 111.000 token a ogni passo, per leggere circa 3.000 token di codice. Il coordinatore spende 52 turni solo per chiamare e attendere.
 - **Ora.** Ogni aiutante rilegge circa 20.000 token a ogni passo. Il coordinatore chiama in 5 ondate, una per passo.
 
-Stima ricavata dalle trascrizioni di quella run: circa un terzo in meno, da 8,9 a circa 5,7 milioni di token equivalenti. Non è ancora misurata da una run nuova.
+Misurato con una run nuova sulla stessa fixture: da 8,87 a 3,82 milioni di token equivalenti, da 13,42 a 6,49 USD, da 2.817 a 909 s, con gli stessi difetti trovati. Dettagli nel README del benchmark.
 
 **Nessun ripiego.** L'aiutante generico dell'host non sostituisce `isolated-worker`. Se l'host non ha caricato il ruolo, la review dichiara non disponibili job, lenti e critico e resta incompleta: l'aiutante generico costerebbe circa sei volte tanto, e il costo deve restare una scelta, non un effetto nascosto.
 
