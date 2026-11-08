@@ -244,11 +244,11 @@ class StaleCallersTests(unittest.TestCase):
         project = self.root / "project"
         write_files(project / "src", BASE_FILES)
         service = mcp_service.MapService(project)
-        service.create_run("src", "base-run", depth="lite")
+        service.create_run("src", "base-run", depth="lite", engine=False)
         write_files(project / "src", {
             "pkg/b.py": "def helper(value, offset=1):\n    return value + offset\n\ndef extra():\n    return 10\n",
         })
-        service.create_run("src", "candidate-run", depth="lite")
+        service.create_run("src", "candidate-run", depth="lite", engine=False)
 
         result = service.stale_callers("candidate-run", "base-run")
 

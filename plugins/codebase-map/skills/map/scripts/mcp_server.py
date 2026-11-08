@@ -63,12 +63,12 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         depth: Literal["full", "lite"] = "full", critical: bool = False,
         comments: bool = False, docs_only: bool = False,
         phase: int | None = None, stop_after: int | None = None,
-        format: Literal["sqlite", "json"] = "sqlite",
+        format: Literal["sqlite", "json"] = "sqlite", engine: bool = True,
     ) -> dict:
-        """Prepare a classic run and snapshot. The host must dispatch its analysis workers."""
+        """Prepare a classic run and snapshot, and start the call-resolution engine pass beside it in the background (engine=false skips it); the result's engine reports its state and resolved over resolvable calls. The host must dispatch its analysis workers."""
         return await _invoke(ctx, service.create_run, target, run_id, depth=depth,
                              critical=critical, comments=comments, docs_only=docs_only,
-                             phase=phase, stop_after=stop_after, format=format)
+                             phase=phase, stop_after=stop_after, format=format, engine=engine)
 
     @server.tool(annotations=read_only)
     async def codebase_map_runs(ctx: Context) -> dict:
@@ -77,7 +77,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=read_only)
     async def codebase_map_status(ctx: Context, run_id: str) -> dict:
-        """Read canonical state and actual delivery gaps, including direct worker changes."""
+        """Read canonical state and actual delivery gaps, including direct worker changes, and the call-resolution engine state with resolved over resolvable calls."""
         return await _invoke(ctx, service.status, run_id)
 
     @server.tool(annotations=read_only)
@@ -115,7 +115,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=writes)
     async def codebase_map_index(ctx: Context, run_id: str, check: bool = False, break_lock: bool = False) -> dict:
-        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind."""
+        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind. Also reports the call-resolution engine store (fresh, sampled, running, missing, stale, failed, unavailable) and, unless check is true, restarts its pass when it is not fresh or running."""
         return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock)
 
     @server.tool(annotations=read_only)
@@ -206,7 +206,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=writes)
     async def codebase_map_stop(ctx: Context, run_id: str, reason: str) -> dict:
-        """Record a partial run after the host has stopped its workers; does not terminate agents."""
+        """Record a partial run after the host has stopped its workers; does not terminate agents, but ends the run's call-resolution engine pass, which then stays stopped."""
         return await _invoke(ctx, service.stop, run_id, reason)
 
     @server.tool(annotations=writes)

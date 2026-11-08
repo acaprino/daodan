@@ -80,7 +80,8 @@ class EdgeViewTests(unittest.TestCase):
             "    b = proto_runner.run()\n"
             "    c = abs_runner.execute()\n"
             "    d = concrete_runner.run()\n"
-            "    e = mystery.unknown()\n"
+            # Named after a project method, so the engine is asked and answers ambiguously.
+            "    e = mystery.run()\n"
             "    return a + b + c + d + e\n"
         ),
     }

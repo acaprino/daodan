@@ -360,7 +360,7 @@ class CardEntryPointTests(unittest.TestCase):
 
     def test_a_run_reads_the_analysis_root_cards_and_its_snapshot_never_changes(self):
         service = mcp_service.MapService(self.project)
-        service.create_run("src", "carded", depth="lite")
+        service.create_run("src", "carded", depth="lite", engine=False)
         run_snapshot = service.root / "runs" / "carded" / "snapshot" / "manifest.sqlite"
         before = artifact_digest(run_snapshot)
 

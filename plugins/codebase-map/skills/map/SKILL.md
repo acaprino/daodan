@@ -97,7 +97,7 @@ other modules beside them are libraries they import.
 - `snapshot.py`: scope, SQLite snapshots (explicit JSON), run resolution, incremental changes.
 - `modules.py`: module graph beside a snapshot (`modules.json`/`.md`): `build`, `query`, `brief` for a model, `propose` to record its verified proposals.
 - `source_reader.py`: manifest graphs, outlines and validated source blocks.
-- `resolve_edges.py`: optional `--engine scip` or `--engine jedi` call resolution into `engine-edges.sqlite`.
+- `resolve_edges.py`: engine call resolution into `engine-edges.sqlite` (`--engine jedi` by default, or `--engine scip`); `snapshot.py write` and run creation start it in the background.
 - `semantic_map.py`: `semantic-map.md` view of an area's cards (`references/deepen.md`).
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
 - `cascade_scan.py`: global stylesheet layout risks, cascade overrides and screen rules (Phase 5).

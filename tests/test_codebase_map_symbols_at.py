@@ -193,7 +193,7 @@ class SymbolsAtDiffTests(unittest.TestCase):
         project = self.root / "project"
         write_project(project / "src")
         service = mcp_service.MapService(project)
-        service.create_run("src", "symbols", depth="lite")
+        service.create_run("src", "symbols", depth="lite", engine=False)
 
         result = service.symbols_at(
             "symbols", requests=[{"path": "pkg/a.py", "ranges": [{"start": 2, "end": 2}]}])

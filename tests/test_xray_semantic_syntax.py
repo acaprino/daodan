@@ -63,7 +63,8 @@ class PythonSemanticTests(unittest.TestCase):
     def test_dynamic_receivers_and_assignment_bindings_do_not_guess(self):
         semantic = self.parse('from core import save\nsave = other\ndef use():\n    (factory()).save()\n    values[index]()\n    for save in values: save()\n')
         calls = [r for r in semantic["references"] if r["kind"] == "call"]
-        self.assertEqual(sum(not r["parts"] for r in calls), 2)
+        # A computed receiver keeps only its member's name, never a guessed binding.
+        self.assertEqual([r["parts"] for r in calls if r.get("reason") == "dynamic-callee"], [["(expr)", "save"], []])
         self.assertTrue(any(d["name"] == "save" and d["kind"] == "binding" for d in semantic["declarations"]))
 
     def test_reuses_the_python_ast(self):

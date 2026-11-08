@@ -34,6 +34,11 @@ class StorageQueryTests(unittest.TestCase):
 
     def assert_graph_parity(self, actual, reference, *, format="sqlite", enriched=True):
         """Preserve every lexical field and verify the additive engine-view contract."""
+        if format == "sqlite":
+            actual = copy.deepcopy(actual)
+            resolution = actual["edge_view"]["coverage"].pop("resolution")
+            self.assertEqual(resolution["resolvable"], resolution["calls"] - resolution["external"])
+            self.assertEqual(resolution["resolved"], resolution["lexical_resolved"] + resolution["engine_confirmed"])
         expected = copy.deepcopy(reference)
         sqlite = format == "sqlite"
         expected["edge_view"] = {
@@ -45,6 +50,7 @@ class StorageQueryTests(unittest.TestCase):
                 "sampled": False, "population": 0, "selected": 0, "asked": 0,
                 "stride": 1, "confirmed": 0, "candidates": 0,
                 "no_edges_reason": None if sqlite else "json-manifest",
+                **({"engine_pass": None} if sqlite else {}),
             },
             "gaps": [] if sqlite else ["JSON snapshot holds no semantic reference table"],
             "candidates": {"items": [], "total": 0, "truncated": 0},

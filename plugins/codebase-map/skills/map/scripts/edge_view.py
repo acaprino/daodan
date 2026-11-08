@@ -187,8 +187,13 @@ def load_edge_view(
         engine_edges: list[dict] = []
         binding: dict | None = None
 
+        engine_pass = None
         if not edge_path.is_file():
             coverage_status = "missing_store"
+            engine_pass = resolve_edges.pass_state(store.path)
+            if engine_pass is not None and engine_pass["state"] != "finished":
+                gaps.append(f"engine pass {engine_pass['state']}: "
+                            + (engine_pass.get("reason") or f"started {engine_pass.get('started_at')}"))
         else:
             loaded_edges, binding, reason = resolve_edges.read_edge_store(edge_path, store)
             if reason is not None or loaded_edges is None:
@@ -221,6 +226,8 @@ def load_edge_view(
             "SELECT id, file, caller, target_id, resolution, payload FROM sem_references "
             "WHERE kind='call' ORDER BY file, l0, c0, id"
         ).fetchall()
+        counter = resolve_edges.ResolutionCounter(resolve_edges.project_callee_names(sem_db))
+        languages = dict(sem_db.execute("SELECT file, language FROM sem_coverage"))
 
         for ref_id, file_rel, caller, target_id, res_state, blob in rows:
             payload = _unpack(blob)
@@ -290,6 +297,8 @@ def load_edge_view(
                         record["engine_candidate"] = candidate_entry
                         candidates.append(candidate_entry)
 
+            counter.add(languages.get(file_rel), res_state, payload,
+                        engine_resolved=record["resolution"] == "resolved")
             references.append(record)
 
         population = int(binding.get("population", 0)) if binding else 0
@@ -323,6 +332,8 @@ def load_edge_view(
                 "confirmed": confirmed,
                 "candidates": cand_count,
                 "no_edges_reason": no_edges_reason,
+                "engine_pass": engine_pass,
+                "resolution": counter.summary(None if coverage_status == "rejected_store" else binding),
             },
             "references": references,
             "candidates": candidates,

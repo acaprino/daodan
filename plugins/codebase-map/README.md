@@ -16,6 +16,7 @@ Installazione: `claude plugin install codebase-map@daodan` (marketplace `acaprin
 
 - Grafo dei moduli: `skills/map/scripts/modules.py`, contratto in `skills/map/references/modules.md`. Unità di build lette dai manifest di 27 ecosistemi, moduli dichiarati dal progetto in `codebase-modules.json`, moduli proposti da un modello e verificati sullo snapshot; derivato accanto allo snapshot da `snapshot.py write` e interrogabile per nome.
 - Linguaggi supportati (13 canonici, 32 estensioni): Python, Java, JavaScript, TypeScript, SQL (con grafo semantico tabellare e `sqlglot` opzionale), PL/SQL, Rust, Go, Kotlin (`.kt`, `.kts`), C# (`.cs`), Vue (`.vue`), Svelte (`.svelte`) e CSS/SCSS/LESS, più ponte cross-linguaggio Tauri (`invoke` ↔ `#[tauri::command]`) e risoluzione simboli opzionale `--engine scip` o `--engine jedi` in `resolve_edges.py`.
+- Risoluzione delle chiamate: risolutore lessicale più un motore che parte con ogni snapshot (Jedi per Python); il rapporto si legge come risolte su risolvibili ([Risolvibilità](../../docs/plugins/codebase-map.md#risolvibilità)).
 - Python richiesto: **>= 3.12**.
 - `tree-sitter` e `tree-sitter-language-pack` restano opzionali per il parsing ad alta fedeltà.
 - Non esiste una vista HTML: il rapporto Markdown è la vista per le persone.

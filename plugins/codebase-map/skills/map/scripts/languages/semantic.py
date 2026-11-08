@@ -282,8 +282,13 @@ class _PythonEvidence(ast.NodeVisitor, _Evidence):
                 self.scope_by_id[scope].update(unresolved=True, reason="exec may introduce or mutate lexical bindings")
                 scope = self.scope_by_id[scope]["parent"]
             self.note("exec may introduce or mutate lexical bindings")
-        self.reference(parts, "call", _py_span(node.func), None if parts else "dynamic-callee")
-        if not parts:
+        if parts:
+            self.reference(parts, "call", _py_span(node.func))
+        else:
+            # A member of a computed receiver keeps its name, as the tree-sitter
+            # adapters record it, so an engine can still be asked about it.
+            member = node.func.attr if isinstance(node.func, ast.Attribute) else None
+            self.reference(["(expr)", member] if member else [], "call", _py_span(node.func), "dynamic-callee")
             self.visit(node.func)
         for value in [*node.args, *[keyword.value for keyword in node.keywords]]:
             self.visit(value)

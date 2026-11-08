@@ -597,10 +597,11 @@ class SourceReaderTests(unittest.TestCase):
 
     def test_write_reuse_and_read_cli_share_one_manifest_contract(self):
         manifest_path = self.tmp / "manifest.json"
-        initial = self.run_cli("snapshot.py", "write", self.src, "--out", manifest_path)
+        initial = self.run_cli("snapshot.py", "write", self.src, "--out", manifest_path, "--no-engine")
         self.assertEqual(initial.returncode, 0, initial.stderr)
 
-        reused = self.run_cli("snapshot.py", "write", self.src, "--out", manifest_path, "--reuse", manifest_path)
+        reused = self.run_cli("snapshot.py", "write", self.src, "--out", manifest_path, "--reuse", manifest_path,
+                              "--no-engine")
         selected = self.run_cli("source_reader.py", "read", manifest_path, "--path", self.key, "--symbol", "Consumer.selected")
 
         self.assertEqual(reused.returncode, 0, reused.stderr)

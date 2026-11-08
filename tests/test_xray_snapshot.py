@@ -415,7 +415,8 @@ class ParseReuseTests(unittest.TestCase):
                 previous.write_text(content, encoding="utf-8")
                 output.write_bytes(b"existing snapshot bytes\n")
 
-                code, out, err = run_script("write", self.src, "--out", output, "--reuse", previous)
+                code, out, err = run_script("write", self.src, "--out", output, "--reuse", previous,
+                                            "--no-engine")
 
                 self.assertEqual(code, 2, err + out)
                 self.assertEqual(output.read_bytes(), b"existing snapshot bytes\n")
@@ -428,7 +429,7 @@ class ParseReuseTests(unittest.TestCase):
         output = self.tmp / "manifest.json"
         output.write_bytes(b"existing snapshot bytes\n")
 
-        code, out, err = run_script("write", self.src, "--out", output, "--reuse", previous)
+        code, out, err = run_script("write", self.src, "--out", output, "--reuse", previous, "--no-engine")
 
         self.assertEqual(code, 2, err + out)
         self.assertEqual(output.read_bytes(), b"existing snapshot bytes\n")

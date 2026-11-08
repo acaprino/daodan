@@ -2,7 +2,7 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Resolve a snapshot's unresolved call references with an optional, probed engine.
+"""Resolve a snapshot's unresolved call references with a probed engine.
 
 The lexical resolver in `resolution.py` is the floor: it resolves a unique lexical
 binding and nothing it cannot prove. Measured on two real projects it resolved 9.7%
@@ -50,18 +50,23 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import io
 import json
 import math
 import os
+import shutil
+import signal
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import time
 import tokenize
 import unicodedata
 from datetime import datetime, timezone
-from pathlib import Path
+from importlib import metadata
+from pathlib import Path, PurePosixPath
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -74,8 +79,15 @@ from source_reader import _binding, _no_links, _source_path  # noqa: E402
 from snapshot_store import _pack, _unpack, logical_digest, open_snapshot  # noqa: E402
 
 # The population an engine is asked about: the snapshot's own unresolved call
-# references, minus the builtins the lexical resolver declines to model.
+# references, minus the builtins the lexical resolver declines to model and minus
+# the callees no project declaration is named after (`classify_reference`).
 EXCLUDED_REASONS = frozenset({"unbound-name"})
+# Files the derived pass leaves beside the edge store.
+REPORT_NAME = "engine-report.json"
+RUNNING_NAME = "engine-pass.running"
+LOG_NAME = "engine-pass.log"
+ENGINE_INSTALL = ("install uv, which gives the pass jedi and the snapshot's parser packages, "
+                  "or install jedi in the interpreter that writes the snapshot")
 ENGINE_RESOLVER_PREFIX = "engine"
 CANDIDATE_REASONS = {
     "project-not-a-symbol": "engine-project-not-a-symbol",
@@ -162,6 +174,8 @@ class JediEngine:
         self.version: str | None = None
         self.plain_project = None
         self.default_environment = None
+        # Directories the project puts on sys.path at runtime (`runtime_import_roots`).
+        self.import_roots: list[Path] = []
 
     def scope_of(self, root: Path) -> Path:
         """The source subtree an environment serves.
@@ -212,8 +226,10 @@ class JediEngine:
             return False, f"jedi has no environment API: {error}"
         try:
             self.default_environment = get_default_environment()
-            self.plain_project = jedi.Project(path=str(self.project_root),
-                                              added_sys_path=[str(self.project_root)])
+            roots = [str(self.project_root), *map(str, self.import_roots)]
+            # Jedi appends added paths after the environment's, so a standard or
+            # installed module still wins over a project script of the same name.
+            self.plain_project = jedi.Project(path=str(self.project_root), added_sys_path=roots)
             for request in self.requests:
                 entry = {"path": request.as_posix(), "scope": self.scope_of(request).as_posix(),
                          "environment": None, "mode": None, "site_packages": None,
@@ -257,7 +273,7 @@ class JediEngine:
                         # Pooling all candidates silently gives a file packages
                         # from unrelated projects and misstates its provenance.
                         project = jedi.Project(path=str(self.project_root),
-                                               added_sys_path=[str(self.project_root), str(packages)])
+                                               added_sys_path=[*roots, str(packages)])
                 self.built.append(entry)
                 self._per_root[request] = (environment, project, entry)
             # Positional, because jedi 0.20 renamed the keyword `source` to `code`.
@@ -319,6 +335,7 @@ class JediEngine:
 
     def report(self) -> dict:
         return {"environments": self.built, "unusable_environments": self.unusable,
+                "import_roots": [path.relative_to(self.project_root).as_posix() for path in self.import_roots],
                 "inference_modes": dict(sorted(self.modes.items())),
                 "file_environments": dict(sorted(self.file_environments.items()))}
 
@@ -673,12 +690,183 @@ def grade_all(definitions, inventory: set[str], tables: dict, root: Path,
     return "ambiguous-target", None
 
 
-def verify_sources(store) -> tuple[Path, dict[str, Path]]:
-    """Check the complete inventory, including dependencies inferred indirectly."""
+def runtime_import_roots(connection) -> list[str]:
+    """Directories the project puts on sys.path at runtime, as its own imports show.
+
+    A bare `import snapshot` the snapshot could not place is how a test or a
+    script reaches a tool after inserting the tool's directory into sys.path.
+    When exactly one inventoried Python module has that name, its directory is
+    such a root. Standard-library names never make one. Returns paths relative
+    to the snapshot root, sorted.
+    """
+    placed = {(row[0], row[1]) for row in connection.execute("SELECT file, module FROM sem_modules")}
+    wanted = set()
+    for file, blob in connection.execute("SELECT file, payload FROM sem_bindings WHERE kind='import'"):
+        module = (_unpack(blob) or {}).get("module") or ""
+        head = module.split(".")[0]
+        if head and not module.startswith(".") and (file, module) not in placed \
+                and head not in sys.stdlib_module_names:
+            wanted.add(head)
+    directories: dict[str, set[str]] = {}
+    for (rel,) in connection.execute("SELECT file FROM sem_coverage WHERE language='python'"):
+        path = PurePosixPath(rel)
+        package = path.name == "__init__.py"
+        name = path.parent.name if package else path.stem
+        if name in wanted:
+            directories.setdefault(name, set()).add((path.parent.parent if package else path.parent).as_posix())
+    return sorted({next(iter(found)) for found in directories.values() if len(found) == 1})
+
+
+def project_callee_names(connection) -> set[str]:
+    """Every name an engine edge can arrive at: declarations and import aliases.
+
+    `grade` accepts only a declaration of this inventory whose name equals the
+    engine's answer, so a call whose last name is none of these yields no edge
+    whatever the engine infers. Import aliases are kept because `from m import f
+    as g; g()` arrives at `f` under the name `g`.
+    """
+    names = {unicodedata.normalize("NFKC", row[0]) for row in connection.execute(
+        "SELECT DISTINCT name FROM sem_declarations WHERE kind IN ('function','method','class')")}
+    names |= {unicodedata.normalize("NFKC", row[0]) for row in connection.execute(
+        "SELECT DISTINCT name FROM sem_bindings WHERE kind='import'")}
+    return names
+
+
+def classify_reference(payload: dict, names: set[str]) -> str:
+    """One unresolved call: `builtin`, `dynamic`, `no-project-name` or `askable`.
+
+    The first two repeat what the lexical resolver recorded; the third is the
+    exact-name filter of `project_callee_names`; only `askable` positions are
+    worth an inference. Shared by the pass and by the edge view, so the
+    population the engine was asked about and the denominator a consumer reads
+    never differ.
+    """
+    parts = payload.get("parts") or []
+    if payload.get("reason") in EXCLUDED_REASONS:
+        return "builtin"
+    if not parts:
+        return "dynamic"
+    if unicodedata.normalize("NFKC", parts[-1]) not in names:
+        return "no-project-name"
+    return "askable"
+
+
+REFERENCE_CLASSES = ("builtin", "dynamic", "no-project-name", "askable")
+
+
+class ResolutionCounter:
+    """Per-language counts of a snapshot's calls, fed one reference at a time."""
+
+    def __init__(self, names: set[str]):
+        self.names = names
+        self.languages: dict[str, dict] = {}
+
+    def add(self, language: str | None, res_state: str, payload: dict, *, engine_resolved: bool = False) -> None:
+        counts = self.languages.setdefault(language or "unknown", {
+            "calls": 0, "lexical_resolved": 0, "engine_confirmed": 0, **dict.fromkeys(REFERENCE_CLASSES, 0)})
+        counts["calls"] += 1
+        if res_state == "resolved":
+            counts["lexical_resolved"] += 1
+            return
+        counts["engine_confirmed"] += int(engine_resolved)
+        counts[classify_reference(payload, self.names)] += 1
+
+    def summary(self, binding: dict | None) -> dict:
+        """Resolved over resolvable, overall and per language.
+
+        `external` counts the calls that cannot arrive at a project symbol under
+        their own name: builtins, callees named after no project function, class
+        or import, and the positions the engine inferred to a definition outside
+        the inventory. `resolvable` is every other call, dynamic callees included;
+        `unasked` is the askable remainder no engine pass has inferred. A
+        language's `engine` is None when no engine pass covers it.
+        """
+        binding = binding or {}
+        verdicts = dict(binding.get("verdicts") or {})
+        engine_external = int(verdicts.get("external-definition", 0))
+        covered = binding.get("population_language")
+        total = {"calls": 0, "lexical_resolved": 0, "engine_confirmed": 0, **dict.fromkeys(REFERENCE_CLASSES, 0)}
+        by_language = {}
+        for language, counts in sorted(self.languages.items()):
+            for key, value in counts.items():
+                total[key] += value
+            engine = binding.get("engine") if covered in (language, "multi") else None
+            external = counts["builtin"] + counts["no-project-name"] + (engine_external if covered == language else 0)
+            resolvable = counts["calls"] - external
+            resolved = counts["lexical_resolved"] + counts["engine_confirmed"]
+            by_language[language] = {"calls": counts["calls"], "resolved": resolved, "resolvable": resolvable,
+                                     "resolved_ratio": round(resolved / resolvable, 3) if resolvable else None,
+                                     "engine": engine}
+        external = total["builtin"] + total["no-project-name"] + engine_external
+        resolvable = total["calls"] - external
+        resolved = total["lexical_resolved"] + total["engine_confirmed"]
+        return {
+            "calls": total["calls"],
+            "resolved": resolved,
+            "lexical_resolved": total["lexical_resolved"],
+            "engine_confirmed": total["engine_confirmed"],
+            "external": external,
+            "external_by_class": {"builtin": total["builtin"], "no-project-name": total["no-project-name"],
+                                  "engine-external-definition": engine_external},
+            "resolvable": resolvable,
+            "resolved_ratio": round(resolved / resolvable, 3) if resolvable else None,
+            "dynamic": total["dynamic"],
+            "askable": total["askable"],
+            "unasked": max(total["askable"] - int(binding.get("asked", 0)), 0),
+            "engine_unresolved": sum(int(verdicts.get(key, 0)) for key in
+                                     ("unresolved", "ambiguous-target", "project-not-a-symbol")),
+            "by_language": by_language,
+            "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+        }
+
+
+def resolution_summary(connection, binding: dict | None) -> dict:
+    """Resolved over resolvable for a snapshot's call references and a bound edge store."""
+    counter = ResolutionCounter(project_callee_names(connection))
+    for res_state, blob, language in connection.execute(
+            "SELECT r.resolution, r.payload, c.language FROM sem_references r "
+            "LEFT JOIN sem_coverage c ON c.file=r.file WHERE r.kind='call'"):
+        counter.add(language, res_state, _unpack(blob))
+    summary = counter.summary(binding)
+    if binding:
+        # The store's confirmed edges belong to its own population language.
+        engine_confirmed = int(binding.get("confirmed", 0))
+        summary["engine_confirmed"] = engine_confirmed
+        summary["resolved"] += engine_confirmed
+        summary["resolved_ratio"] = (round(summary["resolved"] / summary["resolvable"], 3)
+                                     if summary["resolvable"] else None)
+        covered = binding.get("population_language")
+        language = summary["by_language"].get(covered)
+        if language is not None:
+            language["resolved"] += engine_confirmed
+            language["resolved_ratio"] = (round(language["resolved"] / language["resolvable"], 3)
+                                          if language["resolvable"] else None)
+    return summary
+
+
+def verify_sources(store, languages=None) -> tuple[Path, dict[str, Path], int]:
+    """Check the sources an engine can read, including dependencies inferred indirectly.
+
+    Every inventoried file keeps its confined path, so no output can replace one.
+    The bytes are hashed for the files of the engine's languages, or for every
+    file when `languages` is None: a changed document cannot alter an inference,
+    a changed source of the engine's language can, wherever it sits. Returns the
+    root, the paths and how many files were hashed.
+    """
     root, target, perimeter = _binding(store)
     paths = {}
+    verified = 0
     for rel, entry in store.iter_file_headers_only():
-        path = _source_path(rel, root, target, perimeter)
+        checked = languages is None or entry.get("language") in languages
+        try:
+            path = _source_path(rel, root, target, perimeter)
+        except ValueError:
+            if checked:
+                raise
+            continue
+        paths[rel] = path
+        if not checked:
+            continue
         expected = entry.get("raw_hash")
         digest = hashlib.sha256()
         with path.open("rb") as source:
@@ -686,8 +874,8 @@ def verify_sources(store) -> tuple[Path, dict[str, Path]]:
                 digest.update(chunk)
         if not isinstance(expected, str) or digest.hexdigest() != expected:
             raise ValueError(f"source differs from snapshot: {rel}; refresh the snapshot")
-        paths[rel] = path
-    return root, paths
+        verified += 1
+    return root, paths, verified
 
 
 def edge_destination(out: Path, manifest: Path, sources: dict[str, Path]) -> Path:
@@ -835,12 +1023,15 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             return {"engine": engine.name, "available": False,
                     "reason": "the snapshot's parser fingerprint is not the current one; "
                               "write a current snapshot before attaching an engine"}
+        engine_langs = getattr(engine, "languages", ("python",))
         try:
-            store_root, source_paths = verify_sources(store)
+            store_root, source_paths, verified_before = verify_sources(store, engine_langs)
             destination = edge_destination(out or default_edge_store(manifest), manifest, source_paths)
         except (OSError, ValueError) as error:
             return {"engine": engine.name, "available": False,
                     "reason": str(error), "stage": "before-inference", "edges_store": None}
+        if hasattr(engine, "import_roots"):
+            engine.import_roots = [store_root / rel for rel in runtime_import_roots(connection)]
         probe_started = time.perf_counter()
         ready, reason = engine.probe()
         probe_elapsed = time.perf_counter() - probe_started
@@ -853,7 +1044,6 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             return {"engine": engine.name, "available": False, "reason": reason,
                     "install": install_hint}
         inventory = inventory_files(connection)
-        engine_langs = getattr(engine, "languages", ("python",))
         if engine_langs is None:
             rows = connection.execute(
                 "SELECT r.id, r.file, r.payload, r.l0, r.c0, r.l1, r.c1 FROM sem_references r "
@@ -871,8 +1061,15 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                 tuple(engine_langs),
             ).fetchall()
             pop_lang = engine_langs[0] if len(engine_langs) == 1 else "multi"
-        population = [row for row in rows
-                      if _unpack(row[2]).get("reason") not in EXCLUDED_REASONS]
+        callee_names = project_callee_names(connection)
+        excluded_classes: dict[str, int] = {}
+        population = []
+        for row in rows:
+            reference_class = classify_reference(_unpack(row[2]), callee_names)
+            if reference_class in ("askable", "dynamic"):
+                population.append(row)
+            else:
+                excluded_classes[reference_class] = excluded_classes.get(reference_class, 0) + 1
         selected = population[::stride] if stride > 1 else population
         if limit is not None:
             selected = selected[:limit]
@@ -955,7 +1152,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                             "confidence": confidence, "reason": f"engine-{verdict}"},
             })
         try:
-            verify_sources(store)
+            _root, _paths, verified_after = verify_sources(store, engine_langs)
             destination = edge_destination(destination, manifest, source_paths)
         except (OSError, ValueError) as error:
             return {"engine": engine.identity(), "available": False,
@@ -984,10 +1181,13 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             "confirmed": written,
             "candidates": candidates,
             "no_edges_reason": no_edges_reason,
-            "source_verification": {"before_inference": len(source_paths),
-                                    "after_inference": len(source_paths)},
+            "verdicts": dict(sorted(verdicts.items())),
+            "excluded_classes": dict(sorted(excluded_classes.items())),
+            "source_verification": {"before_inference": verified_before,
+                                    "after_inference": verified_after},
             "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
+        summary = resolution_summary(connection, binding)
     latencies.sort()
     written_path = None
     if not dry_run:
@@ -1016,6 +1216,8 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         "candidates": candidates,
         "no_edges_reason": no_edges_reason,
         "position_unverified": skipped_position,
+        "excluded_classes": excluded_classes,
+        "resolution": summary,
         "source_verification": binding["source_verification"],
         "verdicts": verdicts,
         "probe_init_elapsed_ms": round(1000 * probe_elapsed, 1),
@@ -1041,6 +1243,250 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
     }
 
 
+def default_environments(project_root: Path) -> list[Path]:
+    """The analyzed project's own environments, when it has one where projects keep it."""
+    found = []
+    for candidate in (project_root / ".venv", project_root / "venv"):
+        if (candidate / "pyvenv.cfg").is_file():
+            found.append(candidate)
+    active = os.environ.get("VIRTUAL_ENV")
+    if active and (Path(active) / "pyvenv.cfg").is_file() and Path(active) not in found:
+        found.append(Path(active))
+    return found
+
+
+def _process_alive(pid: int) -> bool:
+    if type(pid) is not int or pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return False
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def pass_state(manifest: Path) -> dict | None:
+    """The pass in flight or the last one finished beside the manifest, without opening it.
+
+    `running` while the recorded process lives; `finished` after a pass that
+    reported; `stopped` after `stop_pass`; `unavailable` when it found no engine;
+    `failed` when it ended without a store, with the reason it gave. None when no
+    pass ever started.
+    """
+    manifest = Path(manifest)
+    running = manifest.with_name(RUNNING_NAME)
+    report = manifest.with_name(REPORT_NAME)
+    if running.is_file():
+        try:
+            marker = json.loads(running.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            marker = {}
+        if _process_alive(marker.get("pid")):
+            return {"state": "running", "pid": marker.get("pid"), "started_at": marker.get("started_at")}
+    if report.is_file():
+        try:
+            last = json.loads(report.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            last = {}
+        if last.get("available"):
+            return {"state": "finished", "engine": last.get("engine")}
+        if last.get("stopped"):
+            return {"state": "stopped", "engine": last.get("engine"), "reason": last.get("reason")}
+        return {"state": "unavailable" if last.get("install") else "failed", "engine": last.get("engine"),
+                "reason": last.get("reason"), "install": last.get("install")}
+    if running.is_file():
+        return {"state": "failed", "reason": "the engine pass ended without a report; see " + LOG_NAME}
+    return None
+
+
+def edge_state(manifest: Path) -> dict:
+    """Report the derived edge store without touching it.
+
+    `fresh`: bound to this snapshot and covering its whole population. `sampled`:
+    bound, from a partial pass. `running`: a pass is in flight. `stopped`: a pass
+    was stopped and stays so. `unavailable`: the last pass found no engine.
+    `failed`: the last pass ended without a store.
+    `stale`: bound to another revision. `missing`: no pass has run. Every state
+    carries `resolution`, resolved over resolvable with the edges it holds.
+    """
+    manifest = Path(manifest)
+    store_path = default_edge_store(manifest)
+    base = {"edges_store": store_path.as_posix()}
+    with open_snapshot(manifest) as store:
+        if store.format != "sqlite" or store.connection is None:
+            return {**base, "state": "unavailable", "format": store.format,
+                    "reason": "a JSON manifest holds no reference table"}
+        binding = None
+        if store_path.is_file():
+            _edges, loaded, reason = read_edge_store(store_path, store)
+            if reason is None:
+                binding = loaded
+                population = int(binding.get("population", 0))
+                sampled = int(binding.get("selected", 0)) < population or int(binding.get("stride", 1)) > 1
+                result = {**base, "state": "sampled" if sampled else "fresh", "engine": binding.get("engine"),
+                          "created_at": binding.get("created_at")}
+            else:
+                result = {**base, "state": "stale", "reason": reason}
+        else:
+            result = {**base, "state": "missing", "reason": "no engine pass has run for this snapshot"}
+        if binding is None:
+            last = pass_state(manifest)
+            if last is not None and last["state"] != "finished":
+                result = {**base, **last}
+        result["resolution"] = resolution_summary(store.connection, binding)
+        return result
+
+
+def engine_command(manifest: Path, report_path: Path, environments: list[Path]) -> list[str] | None:
+    """The command that runs the Python pass with the snapshot's parser set.
+
+    uv gives the pass an environment with jedi plus this interpreter's Python
+    minor and exact parser packages, so the pass reproduces the parser
+    fingerprint of the snapshot whichever environment wrote it, and the
+    environment lives exactly as long as the pass. Without uv, this interpreter
+    runs the pass when it can import jedi. None when neither can.
+    """
+    import snapshot
+    script = [str(Path(__file__).resolve()), str(manifest), "--engine", "jedi", "--compact",
+              "--report-out", str(report_path)]
+    for path in environments:
+        script.extend(["--environment", str(path)])
+    uv = shutil.which("uv")
+    if uv:
+        pins = []
+        for package in snapshot.PARSER_PACKAGES:
+            try:
+                pins.extend(["--with", f"{package}=={metadata.version(package)}"])
+            except metadata.PackageNotFoundError:
+                continue
+        return [uv, "run", "--quiet", "--no-config", "--no-project",
+                "--python", f"{sys.version_info[0]}.{sys.version_info[1]}",
+                "--with", "jedi>=0.19", *pins, "python", "-B", "-X", "faulthandler", *script]
+    if importlib.util.find_spec("jedi") is not None:
+        # faulthandler puts a hard crash's traceback in the pass log.
+        return [sys.executable, "-B", "-X", "faulthandler", *script]
+    return None
+
+
+def _spawn_detached(command: list[str], log) -> subprocess.Popen:
+    options = {"stdin": subprocess.DEVNULL, "stdout": log, "stderr": log, "cwd": str(SCRIPT_DIR),
+               "close_fds": True}
+    if os.name != "nt":
+        return subprocess.Popen(command, start_new_session=True, **options)
+    detached = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    try:
+        # Outlive a host that closes its job object when the calling command ends.
+        return subprocess.Popen(command, creationflags=detached | 0x01000000, **options)
+    except OSError:
+        # The job forbids breaking away: the pass lives as long as the host.
+        return subprocess.Popen(command, creationflags=detached, **options)
+
+
+def _terminate_tree(pid: int) -> None:
+    """End the pass and the interpreter it started, which a plain kill would orphan."""
+    if os.name == "nt":
+        result = subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True, text=True)
+        if result.returncode and _process_alive(pid):
+            raise OSError(result.stderr.strip() or result.stdout.strip())
+        return
+    os.killpg(pid, signal.SIGTERM)
+
+
+def _write_report(path: Path, report: dict) -> None:
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def ensure_edges(manifest: Path, *, check: bool = False, environments: list[Path] | None = None) -> dict:
+    """Start the pass unless `check`, when the store is not fresh and no pass runs or was stopped.
+
+    The pass is a detached child (`engine_command`) that writes the store, its
+    report and a log beside the manifest, so a run is usable at once and its
+    graph gains the engine edges when the store lands. Returns the state plus
+    `action`: `none`, `reported` or `started`.
+    """
+    manifest = Path(manifest).resolve()
+    before = edge_state(manifest)
+    # A stopped pass stays stopped: only a new snapshot starts another one.
+    if before["state"] in ("fresh", "running", "stopped") or before.get("format") == "json":
+        return {**before, "action": "none"}
+    if check:
+        return {**before, "action": "reported"}
+    with open_snapshot(manifest) as store:
+        project_root = (Path(store["root"]) / store["target"]).resolve()
+    if project_root.is_file():
+        project_root = project_root.parent
+    environments = list(environments) if environments is not None else default_environments(project_root)
+    report_path = manifest.with_name(REPORT_NAME)
+    running_path = manifest.with_name(RUNNING_NAME)
+    for leftover in (report_path, running_path):
+        leftover.unlink(missing_ok=True)
+    command = engine_command(manifest, report_path, environments)
+    if command is None:
+        _write_report(report_path, {"engine": "jedi", "available": False, "install": ENGINE_INSTALL,
+                                    "reason": f"neither uv nor jedi is available to {sys.executable}"})
+        return {**edge_state(manifest), "action": "none"}
+    with manifest.with_name(LOG_NAME).open("ab") as log:
+        try:
+            child = _spawn_detached(command, log)
+        except OSError as error:
+            _write_report(report_path, {"engine": "jedi", "available": False,
+                                        "reason": f"could not start the engine pass: {error}"})
+            return {**edge_state(manifest), "action": "none"}
+    started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    running_path.write_text(json.dumps({"pid": child.pid, "started_at": started}) + "\n", encoding="utf-8")
+    return {**edge_state(manifest), "action": "started"}
+
+
+def reset_pass(manifest: Path) -> dict | None:
+    """Clear the previous revision's pass before a snapshot replaces its manifest.
+
+    A running pass holds the manifest open, which on Windows refuses the
+    replacement, and its result would describe the old revision anyway. Ends it,
+    removes its marker, report and partial store, and returns what it found.
+    """
+    manifest = Path(manifest)
+    last = pass_state(manifest)
+    if last is not None and last["state"] == "running":
+        _terminate_tree(last["pid"])
+    for name in (RUNNING_NAME, REPORT_NAME):
+        manifest.with_name(name).unlink(missing_ok=True)
+    for partial in manifest.parent.glob(f".{default_edge_store(manifest).name}.*.partial"):
+        partial.unlink(missing_ok=True)
+    return last
+
+
+def stop_pass(manifest: Path, reason: str) -> dict:
+    """End a running pass and record it as stopped, so no repair restarts it."""
+    manifest = Path(manifest).resolve()
+    last = pass_state(manifest)
+    if last is None or last["state"] != "running":
+        return {"stopped": False, "state": (last or {}).get("state", "missing")}
+    try:
+        _terminate_tree(last["pid"])
+    except OSError as error:
+        return {"stopped": False, "state": "running", "reason": f"could not stop pid {last['pid']}: {error}"}
+    _write_report(manifest.with_name(REPORT_NAME),
+                  {"engine": "jedi", "available": False, "stopped": True, "reason": f"stopped: {reason}"})
+    # The report is the record now; a dying process must not read as running.
+    manifest.with_name(RUNNING_NAME).unlink(missing_ok=True)
+    return {"stopped": True, "state": "stopped", "pid": last["pid"]}
+
+
 def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
     """Bounded summary for CLI/coordinator callers when the full report is on disk."""
     summary = {
@@ -1049,6 +1495,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
             "engine", "available", "reason", "stage", "install", "project_root",
             "population", "population_language", "selected", "asked", "stride",
             "confirmed_edges", "candidates", "no_edges_reason", "position_unverified",
+            "excluded_classes", "resolution", "verdicts",
             "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
             "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
             "edges_store", "coverage",
@@ -1072,7 +1519,8 @@ def main(argv: list[str] | None = None) -> int:
                              "turned into a real Jedi environment; a bare site-packages "
                              "directory also works, in added_sys_path mode. Repeatable; "
                              "populated environments beat empty stubs, then the "
-                             "nearest serving scope wins per file")
+                             "nearest serving scope wins per file. Default: the project's "
+                             ".venv or venv, or VIRTUAL_ENV")
     parser.add_argument("--limit", type=int, default=None,
                         help="ask about at most this many positions")
     parser.add_argument("--stride", type=int, default=1,
@@ -1103,7 +1551,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.engine == "scip":
         engine = ScipEngine(project_root, [path.resolve() for path in args.scip_index])
     else:
-        engine = JediEngine(project_root, [path.resolve() for path in args.environment])
+        environments = args.environment or default_environments(project_root)
+        engine = JediEngine(project_root, [path.resolve() for path in environments])
     report = resolve_edges(manifest, engine=engine, limit=args.limit,
                            stride=args.stride, dry_run=args.dry_run, out=args.out)
     report_out = None

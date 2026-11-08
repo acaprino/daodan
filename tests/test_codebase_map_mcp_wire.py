@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 
@@ -150,7 +151,7 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertTrue({'run_id', 'request', 'recipient'} <= set(context['inputSchema']['required']))
 
     def test_context_writes_bounded_packet_over_real_transport(self):
-        self.data(self.call('codebase_map_create_run', {'target': 'src', 'run_id': 'context-wire'}))
+        self.data(self.call('codebase_map_create_run', {'target': 'src', 'run_id': 'context-wire', 'engine': False}))
         request = {'schema': 'daodan/context-request/v1', 'task_id': 'wire-context',
             'intent': 'analysis', 'query': '', 'read_boundary': ['.'], 'write_boundary': [],
             'anchors': [{'entity_id': 'service.py::greet'}], 'base': None, 'candidate': None,
@@ -169,13 +170,13 @@ class CodebaseMapWireTests(unittest.TestCase):
 
     def test_json_requires_explicit_format_and_invalid_format_is_a_tool_error(self):
         run = self.data(self.call("codebase_map_create_run",
-                                 {"target": "src", "run_id": "explicit-json", "format": "json"}))
+                                 {"target": "src", "run_id": "explicit-json", "format": "json", "engine": False}))
         self.assertEqual(run["state"]["snapshot"]["format"], "json")
         self.assertTrue(self.call("codebase_map_create_run",
                                  {"target": "src", "run_id": "invalid", "format": "pickle"}).get("isError"))
 
     def test_engine_parameters_and_coverage_cross_the_real_transport(self):
-        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "engine-wire"}))
+        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "engine-wire", "engine": False}))
         graph = self.data(self.call("codebase_map_graph", {
             "run_id": "engine-wire", "engine_store": "snapshot/engine-edges.sqlite"}))
         self.assertEqual(graph["edge_view"]["coverage"]["status"], "missing_store")
@@ -191,6 +192,18 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertTrue(self.call("codebase_map_graph", {
             "run_id": "engine-wire", "engine_store": "../escape.sqlite"}).get("isError"))
 
+    def test_run_creation_starts_the_engine_pass_through_actual_transport(self):
+        created = self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "engine-live"}))
+        state = created["engine"]
+        self.assertIn(state["state"], {"running", "unavailable", "fresh"}, state)
+        # Wait for the pass so no child still holds the run when the test cleans up.
+        deadline = time.monotonic() + 120
+        while state["state"] == "running" and time.monotonic() < deadline:
+            time.sleep(1)
+            state = self.data(self.call("codebase_map_status", {"run_id": "engine-live"}))["engine"]
+        self.assertIn(state["state"], {"fresh", "unavailable"}, state)
+        self.assertIn("resolved_ratio", state["resolution"])
+
     def test_scope_streams_monotonic_request_progress_and_structured_result(self):
         result = self.data(self.call("codebase_map_scope", {"target": "src"}, token="scope-1"))
         self.assertEqual(result["files"], 1)
@@ -202,7 +215,7 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertTrue(all(left < right for left, right in zip(values, values[1:])), values)
 
     def test_run_queries_checkpoint_and_event_replay_survive_server_restart(self):
-        prepared = self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "wire-run"}))
+        prepared = self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "wire-run", "engine": False}))
         self.assertEqual(prepared["run_id"], "wire-run")
         outline = self.data(self.call("codebase_map_outline", {"run_id": "wire-run"}))
         path = outline["items"][0]["path"]
@@ -229,14 +242,14 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertIn("repository-relative", escaped["content"][0]["text"])
         malformed = self.call("codebase_map_status", {"run_id": "../foreign"})
         self.assertTrue(malformed.get("isError"), malformed)
-        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "partial"}))
+        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "partial", "engine": False}))
         publication = self.call("codebase_map_publish", {"run_id": "partial"})
         self.assertTrue(publication.get("isError"), publication)
         self.assertIn("Publication refused", publication["content"][0]["text"])
         self.assertFalse((self.project / ".daodan/map/07-final-report.md").exists())
 
     def test_changed_source_is_rejected_through_actual_transport(self):
-        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "changed"}))
+        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "changed", "engine": False}))
         outline = self.data(self.call("codebase_map_outline", {"run_id": "changed"}))
         path = outline["items"][0]["path"]
         self.data(self.call("codebase_map_read", {
@@ -252,7 +265,7 @@ class CodebaseMapWireTests(unittest.TestCase):
     def test_store_option_binds_the_custom_store_through_actual_transport(self):
         self.close()
         self.start("--store", ".app/codebase-map")
-        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "stored"}))
+        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "stored", "engine": False}))
         self.assertTrue((self.project / ".app/codebase-map/runs/stored/state.json").is_file())
         self.assertFalse((self.project / ".daodan/map").exists())
         refused = self.call("codebase_map_scope", {"target": ".app"})

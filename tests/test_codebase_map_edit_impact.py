@@ -338,7 +338,7 @@ class EditImpactEntryPointTests(unittest.TestCase):
         self.assertIn("neighbors", failed.stderr)
 
     def test_service_and_cli_accept_progressive_options(self):
-        self.service.create_run("src", "progressive", depth="lite")
+        self.service.create_run("src", "progressive", depth="lite", engine=False)
 
         packet = self.service.edit_impact(
             "progressive", ["pkg/b.py::helper"], hops=2,
@@ -358,7 +358,7 @@ class EditImpactEntryPointTests(unittest.TestCase):
         self.assertEqual(json.loads(done.stdout)["schema"], "daodan/edit-impact/v2")
 
     def test_service_serves_the_packet_and_meta_query_for_a_run(self):
-        self.service.create_run("src", "impact", depth="lite")
+        self.service.create_run("src", "impact", depth="lite", engine=False)
 
         symbols = {item["symbol_id"] for item in self.service.meta_query("impact")["symbols"]}
         self.assertIn("pkg/b.py::helper", symbols)

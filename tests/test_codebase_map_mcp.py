@@ -32,7 +32,49 @@ class MapServiceTests(unittest.TestCase):
         self.service = mcp_service.MapService(self.project)
 
     def create(self, **options):
+        # The engine pass has its own tests below; elsewhere it would add an
+        # event and a background process to every run these tests create.
+        options.setdefault("engine", False)
         return self.service.create_run("src", "example", **options)
+
+    def test_run_creation_starts_the_engine_pass_and_status_reports_it(self):
+        import resolve_edges
+        child = mock.Mock(pid=os.getpid())
+        with mock.patch.object(resolve_edges, "engine_command", return_value=["engine"]), \
+                mock.patch.object(resolve_edges, "_spawn_detached", return_value=child):
+            created = self.create(engine=True)
+        self.assertEqual(created["engine"]["state"], "running")
+        self.assertIn("resolved_ratio", created["engine"]["resolution"])
+        events = [item["event"] for item in self.service.events("example")["events"]]
+        self.assertIn("engine_started", events)
+        self.assertEqual(self.service.status("example")["engine"]["state"], "running")
+
+    def test_stopping_a_run_ends_its_engine_pass_and_keeps_it_stopped(self):
+        import resolve_edges
+        child = mock.Mock(pid=4242)
+        with mock.patch.object(resolve_edges, "engine_command", return_value=["engine"]), \
+                mock.patch.object(resolve_edges, "_spawn_detached", return_value=child), \
+                mock.patch.object(resolve_edges, "_process_alive", return_value=True):
+            self.create(engine=True)
+            with mock.patch.object(resolve_edges, "_terminate_tree") as terminate:
+                stopped = self.service.stop("example", "owner stopped the run")
+            terminate.assert_called_once_with(4242)
+        self.assertEqual(stopped["engine"]["state"], "stopped")
+        events = [item["event"] for item in self.service.events("example")["events"]]
+        self.assertIn("engine_stopped", events)
+        with mock.patch.object(resolve_edges, "_spawn_detached") as spawn:
+            repaired = self.service.index("example")
+        spawn.assert_not_called()
+        self.assertEqual((repaired["engine"]["state"], repaired["engine"]["action"]), ("stopped", "none"))
+
+    def test_a_missing_engine_is_an_event_and_a_state_never_a_failed_run(self):
+        import resolve_edges
+        with mock.patch.object(resolve_edges, "engine_command", return_value=None):
+            created = self.create(engine=True)
+        self.assertEqual(created["engine"]["state"], "unavailable")
+        events = [item["event"] for item in self.service.events("example")["events"]]
+        self.assertIn("engine_unavailable", events)
+        self.assertEqual(self.service.index("example", check=True)["engine"]["state"], "unavailable")
 
     def context_request(self):
         from snapshot_store import open_snapshot
@@ -77,7 +119,7 @@ class MapServiceTests(unittest.TestCase):
 
     def test_context_base_is_resolved_by_run_identity(self):
         self.create()
-        self.service.create_run('src', 'candidate')
+        self.service.create_run('src', 'candidate', engine=False)
         recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 0,
                      'max_chars': 100000, 'max_evaluations': 100}
         result = self.service.context('candidate', self.context_request(), recipient, base_run_id='example')
@@ -116,7 +158,7 @@ class MapServiceTests(unittest.TestCase):
         request = self.context_request()
         request.update(query='selected', anchors=[], read_boundary=['src'])
         service = mcp_service.MapService(self.source)
-        service.create_run('.', 'subproject')
+        service.create_run('.', 'subproject', engine=False)
         manifest = self.source / '.daodan/map/runs/subproject/snapshot/manifest.sqlite'
         retrieval.refresh_index(manifest, manifest.parent / 'retrieval.sqlite')
         recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 1000,
@@ -219,10 +261,10 @@ class MapServiceTests(unittest.TestCase):
     def test_invalid_target_and_run_identity_make_no_output(self):
         for target in ("../outside", str(self.source), "src/../src", "src\\module.py", ".daodan/map"):
             with self.subTest(target=target), self.assertRaises(ValueError):
-                self.service.create_run(target, "example")
+                self.service.create_run(target, "example", engine=False)
         for run_id in ("..", "../foreign", "a/b", "A", "con", "a:b", ""):
             with self.subTest(run_id=run_id), self.assertRaises(ValueError):
-                self.service.create_run("src", run_id)
+                self.service.create_run("src", run_id, engine=False)
         self.assertFalse((self.project / ".daodan/map").exists())
 
     def test_flag_validation_and_collision_preserve_existing_run(self):
@@ -423,7 +465,7 @@ class MapServiceTests(unittest.TestCase):
         directory = self.project / "secret-service"
         directory.mkdir()
         (directory / "module.py").write_text("def selected():\n    return 1\n")
-        self.service.create_run("secret-service", "example")
+        self.service.create_run("secret-service", "example", engine=False)
         recorded = self.service.events("example")
         directory.rename(self.project / "renamed-service")
         self.assertFalse(self.service.status("example")["source_available"])
@@ -454,7 +496,7 @@ class MapServiceTests(unittest.TestCase):
                 target = f"{run_id}/module.py" if kind == "file" else run_id
                 with self.subTest(mode=mode, kind=kind), mock.patch.dict(
                         os.environ, {"GIT_CEILING_DIRECTORIES": str(self.project.parent)}):
-                    self.service.create_run(target, run_id)
+                    self.service.create_run(target, run_id, engine=False)
                     source.unlink() if kind == "file" else shutil.rmtree(directory)
                     result = self.service.status(run_id)
                     self.assertFalse(result["source_available"])
@@ -479,7 +521,7 @@ class MapServiceTests(unittest.TestCase):
             self.assertEqual(result["state"]["target"], str(self.source))
             self.assertEqual(self.service.runs()["runs"][0]["run_id"], "example")
         for operation in (lambda: self.service.scope(str(self.source)),
-                          lambda: self.service.create_run(str(self.source), "foreign")):
+                          lambda: self.service.create_run(str(self.source), "foreign", engine=False)):
             with self.assertRaises(ValueError):
                 operation()
         state = json.loads((self.run_dir / "state.json").read_text())
@@ -783,7 +825,7 @@ class CustomStoreTests(unittest.TestCase):
     def test_custom_store_runs_the_canonical_lifecycle_without_the_default_root(self):
         self.assertEqual(self.service.runs(), {"runs": [], "registry": None})
         self.assertFalse(self.store.exists())
-        self.service.create_run("src", "example")
+        self.service.create_run("src", "example", engine=False)
         self.assertEqual(json.loads((self.store / snapshot.STORE_MARKER).read_text()),
                          {"schema": snapshot.STORE_SCHEMA, "store": self.STORE})
         self.assertEqual(self.service.status("example")["state"]["delivery"]["binding"]["project"],
@@ -798,7 +840,7 @@ class CustomStoreTests(unittest.TestCase):
         self.assertEqual(mcp_service.MapService(self.project).runs(), {"runs": [], "registry": None})
 
     def test_standalone_cli_binds_the_custom_store_through_its_marker(self):
-        self.service.create_run("src", "example")
+        self.service.create_run("src", "example", engine=False)
         self.deliver(1)
         proc = subprocess.run([sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "check",
                                str(self.run_dir), "--json"], capture_output=True, text=True,
@@ -810,7 +852,7 @@ class CustomStoreTests(unittest.TestCase):
     def test_store_inside_an_occupied_dot_directory_and_bom_marker_bind_the_project(self):
         (self.project / ".app").mkdir()
         (self.project / ".app/settings.json").write_text("{}")
-        self.service.create_run("src", "example")
+        self.service.create_run("src", "example", engine=False)
         marker = self.store / snapshot.STORE_MARKER
         marker.write_text(marker.read_text(encoding="utf-8"), encoding="utf-8-sig")
         _, root, _ = snapshot._run_context(self.run_dir)
@@ -823,7 +865,7 @@ class CustomStoreTests(unittest.TestCase):
         self.assertTrue((self.project / ".app/settings.json").is_file())
 
     def test_unmarked_or_foreign_marked_store_is_refused(self):
-        self.service.create_run("src", "example")
+        self.service.create_run("src", "example", engine=False)
         marker = self.store / snapshot.STORE_MARKER
         marker.write_text(json.dumps({"schema": snapshot.STORE_SCHEMA, "store": ".other/codebase-map"}))
         with self.assertRaises(ValueError):
@@ -839,7 +881,7 @@ class CustomStoreTests(unittest.TestCase):
         occupied.mkdir()
         (occupied / "notes.txt").write_text("someone else's directory")
         with self.assertRaisesRegex(ValueError, "without its marker"):
-            mcp_service.MapService(self.project, ".occupied").create_run("src", "example")
+            mcp_service.MapService(self.project, ".occupied").create_run("src", "example", engine=False)
         self.assertEqual(sorted(path.name for path in occupied.iterdir()), ["notes.txt"])
 
     def test_invalid_store_paths_are_refused_at_binding(self):
@@ -851,7 +893,7 @@ class CustomStoreTests(unittest.TestCase):
                 mcp_service.MapService(self.project, store)
 
     def test_store_cannot_be_a_source_target(self):
-        self.service.create_run("src", "example")
+        self.service.create_run("src", "example", engine=False)
         for target in (".app", ".APP/codebase-map", ".app/codebase-map/runs/example"):
             with self.subTest(target=target), self.assertRaisesRegex(ValueError, "analysis output"):
                 self.service.scope(target)

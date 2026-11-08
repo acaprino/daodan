@@ -30,9 +30,12 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write <target> \
 it; `snapshot.py search MANIFEST --query Q` ranks it, see `locate.md`) and the
 module graph `modules.json` with its `modules.md` view (`--no-modules` skips
 it; `modules.py build MANIFEST [--check]` repairs or reports it;
-`modules.py query MANIFEST NAME` resolves a module name, see `modules.md`). Run
-`write` with the interpreter that will serve the map: the index binding records
-its SQLite version and parser fingerprint, so another Python reads it as `stale`.
+`modules.py query MANIFEST NAME` resolves a module name, see `modules.md`), then
+starts the call-resolution engine pass in the background (`--no-engine` skips
+it): `engine-edges.sqlite`, `engine-report.json` and `engine-pass.log` land beside
+the manifest when it ends. Run `write` with the interpreter that will serve the
+map: the index binding records its SQLite version and parser fingerprint, so
+another Python reads it as `stale`.
 
 Choose one file per run. After writing, set `state.json -> snapshot`:
 `{"format":"sqlite","path":"snapshot/manifest.sqlite","storage_version":1}`,
@@ -138,8 +141,9 @@ Python uses stdlib `ast`, SQL/PL-SQL regex DDL, CSS/SCSS/LESS the tokenizer.
 Parser notes name the engine or fallback; missing grammars report
 `tree-sitter unavailable: <error>`. For optional offline embedding, read
 `references/embeddings.md` before invoking `embedding_worker.py`.
-Python engine passes write `<run-dir>/snapshot/engine-edges.sqlite` via
-`resolve_edges.py <manifest> --compact --report-out <report.json>`, read by `edge_view.py`.
+The engine pass writes `<run-dir>/snapshot/engine-edges.sqlite`, read by
+`edge_view.py`; `resolve_edges.py <manifest> --compact --report-out <report.json>`
+runs it in the foreground.
 
 Tree-sitter supplies definition ends; regex ends at the next symbol. Shared
 lines can require whole-file reading. Diagnosis never applies changes.

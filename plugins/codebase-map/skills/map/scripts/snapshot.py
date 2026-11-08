@@ -20,7 +20,9 @@ Subcommands:
     write <target> --out <manifest.json> [--reuse <previous.json>]
         Write a structural snapshot; reuse parses only after checking file bytes.
         Also builds the lexical index and the module graph beside it
-        (`--no-index`, `--no-modules` skip them; `modules.py` owns the graph).
+        (`--no-index`, `--no-modules` skip them; `modules.py` owns the graph), then
+        starts the call-resolution engine pass in the background (`--no-engine`
+        skips it; `resolve_edges.py` owns it).
     diff <parent_run> <target> --out <run_dir>
         Diff a parent run's snapshot against the worktree; write changes.json/changes.md.
     carry <parent_run> <run_dir>
@@ -223,6 +225,13 @@ def repo_root(target: Path) -> Path:
     return work_tree(base) or base
 
 
+# Parser packages whose installed versions enter the parser fingerprint; the
+# call-resolution pass runs with exactly these versions (`resolve_edges.py`).
+PARSER_PACKAGES = ("tree-sitter", "tree-sitter-language-pack", "tree-sitter-java",
+                   "tree-sitter-javascript", "tree-sitter-typescript", "tree-sitter-rust",
+                   "tree-sitter-go")
+
+
 def parser_fingerprint() -> str:
     """Identity of the structural helpers and installed parser versions.
 
@@ -242,11 +251,8 @@ def parser_fingerprint() -> str:
             digest.update(helper.relative_to(SCRIPT_DIR).as_posix().encode("utf-8") + b"\0")
             digest.update(helper.read_bytes())
             digest.update(b"\0")
-    packages = ("tree-sitter", "tree-sitter-language-pack", "tree-sitter-java",
-                "tree-sitter-javascript", "tree-sitter-typescript", "tree-sitter-rust",
-                "tree-sitter-go")
     versions = {}
-    for package in packages:
+    for package in PARSER_PACKAGES:
         try:
             versions[package] = metadata.version(package)
         except metadata.PackageNotFoundError:
@@ -3253,6 +3259,13 @@ def cmd_resolve(args: argparse.Namespace) -> int:
 
 
 def cmd_write(args: argparse.Namespace) -> int:
+    import resolve_edges
+    try:
+        # A pass over the manifest being replaced holds it open and is stale.
+        resolve_edges.reset_pass(Path(args.out))
+    except OSError as error:
+        print(f"snapshot: cannot stop the engine pass of {args.out}: {error}", file=sys.stderr)
+        return 2
     try:
         with ExitStack() as stack:
             previous = stack.enter_context(open_snapshot(Path(args.reuse))) if args.reuse else None
@@ -3279,6 +3292,14 @@ def cmd_write(args: argparse.Namespace) -> int:
             status = 1
         else:
             print(f"modules: {graph['action']} -> {graph['graph']} ({graph['modules']} modules)")
+    if not getattr(args, "no_engine", False):
+        engine = resolve_edges.ensure_edges(Path(args.out))
+        if engine["state"] in ("running", "fresh"):
+            print(f"engine: {engine['state']} -> {engine['edges_store']}")
+        else:
+            print(f"engine: {engine['state']}: {engine.get('reason', '')}", file=sys.stderr)
+            if engine["state"] == "failed":
+                status = 1
     return status
 
 
@@ -3485,6 +3506,8 @@ def main(argv: list[str] | None = None) -> int:
                               help="skip the lexical index that write builds beside the manifest")
     write_parser.add_argument("--no-modules", action="store_true",
                               help="skip the module graph (modules.json/.md) that write derives beside the manifest")
+    write_parser.add_argument("--no-engine", action="store_true",
+                              help="skip the call-resolution engine pass that write starts in the background")
     write_parser.set_defaults(func=cmd_write)
 
     index_parser = sub.add_parser("index", help="build or repair the lexical index beside a manifest")

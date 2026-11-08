@@ -23,6 +23,7 @@ import sys
 import card_store
 import confinement
 import modules as module_graph
+import resolve_edges
 import retrieval
 import semantic_store
 import snapshot
@@ -240,6 +241,7 @@ class MapService:
         # Include optional inputs and possible unexpected phase files as well.
         names = {*snapshot.PHASE_FILES, "knowledge/navigation.md", "knowledge/documentation-leads.md",
                  "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
+                 "snapshot/engine-report.json", "snapshot/engine-pass.running", "snapshot/engine-pass.log",
                  "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json", "snapshot/context",
                  "cards.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
@@ -256,16 +258,26 @@ class MapService:
         for name in names:
             confinement.reject_link_chain(run / name)
 
-    def _status(self, run_id):
-        run, state, _, target = self._bound_run(run_id)
+    def _status(self, run_id, *, engine=False):
+        run, state, manifest, target = self._bound_run(run_id)
         project = self.project_root.as_posix()
         if not target.exists():
             return {"run_id": run_id, "project_root": project, "state": state, "check": None,
                     "source_available": False,
                     "check_unavailable": "source target is missing; canonical delivery/freshness check is unavailable"}
         checked = snapshot.check_delivery(run) if state.get("delivery") is not None else None
-        return {"run_id": run_id, "project_root": project, "state": state, "check": checked,
-                "source_available": True}
+        result = {"run_id": run_id, "project_root": project, "state": state, "check": checked,
+                  "source_available": True}
+        if engine:
+            result["engine"] = self._engine(state, manifest.path, repair=False)
+        return result
+
+    def _engine(self, state, manifest, *, repair):
+        """The run's engine store, repaired when asked, unless the run declined the pass."""
+        if state.get("engine", True) is False:
+            return {"state": "off", "action": "none", "reason": "the run was created with engine=false",
+                    "resolution": resolve_edges.edge_state(manifest).get("resolution")}
+        return resolve_edges.ensure_edges(manifest) if repair else resolve_edges.edge_state(manifest)
 
     def _update_state(self, run, updates, *, remove=()):
         # Workers write state.json outside the service lock. Re-read just
@@ -331,9 +343,11 @@ class MapService:
             return dict(self._command("scope", bound), project_root=self.project_root.as_posix())
 
     def create_run(self, target, run_id, depth="full", critical=False, comments=False,
-                   docs_only=False, phase=None, stop_after=None, format="sqlite"):
+                   docs_only=False, phase=None, stop_after=None, format="sqlite", engine=True):
         _run_id(run_id)
         validate_format(format)
+        if type(engine) is not bool:
+            raise ValueError("engine must be a boolean")
         flags = {"depth": depth, "critical": critical, "comments": comments,
                  "docs_only": docs_only, "phase": phase}
         snapshot._effective_flags(flags)
@@ -364,7 +378,7 @@ class MapService:
                          "mode": "classic", "status": "in_progress", "flags": flags,
                          "started_at": _now(), "updated_at": _now(), "parent_run": None,
                          "incremental": None, "current_phase": 0, "completed_phases": [],
-                         "files_created": [], "git": metadata.get("git"),
+                         "files_created": [], "git": metadata.get("git"), "engine": engine,
                          "snapshot": {"format": format, "path": f"snapshot/manifest.{format}",
                                       "storage_version": 1}}
                 run.mkdir(parents=True)
@@ -391,13 +405,22 @@ class MapService:
                     # Likewise without its module graph: module queries report the
                     # gap and codebase_map_modules(refresh=true) rebuilds it.
                     self._event(run, "modules_failed", message=f"{graph['state']}: {graph.get('reason', '')}")
-                return self._status(run_id)
+                # The call-resolution pass runs beside the run, never inside it:
+                # consumers read its store as soon as it lands.
+                self._engine_event(run, self._engine(state, run / state["snapshot"]["path"], repair=True))
+                return self._status(run_id, engine=True)
         finally:
             temporary.unlink(missing_ok=True)
 
     def status(self, run_id):
         with self._operation():
-            return self._status(run_id)
+            return self._status(run_id, engine=True)
+
+    def _engine_event(self, run, result):
+        if result.get("action") == "started":
+            self._event(run, "engine_started", message=f"pid {result.get('pid')}")
+        elif result.get("state") in ("unavailable", "failed"):
+            self._event(run, f"engine_{result['state']}", message=str(result.get("reason") or "")[:MAX_MESSAGE])
 
     def runs(self):
         with self._operation():
@@ -443,11 +466,14 @@ class MapService:
         if not isinstance(check, bool) or not isinstance(break_lock, bool):
             raise ValueError("check and break_lock must be booleans")
         with self._operation(write=not check):
-            run, _, manifest, _ = self._bound_run(run_id)
+            run, state, manifest, _ = self._bound_run(run_id)
             result = retrieval.ensure_index(manifest.path, check=check, break_lock=break_lock)
             if not check and result.get("action") in ("rebuilt", "refreshed"):
                 self._event(run, "index_refreshed", message=result["action"])
-            return {**result, "run_id": run_id}
+            engine = self._engine(state, manifest.path, repair=not check)
+            if not check:
+                self._engine_event(run, engine)
+            return {**result, "engine": engine, "run_id": run_id}
 
     def modules(self, run_id, query=None, refresh=False, brief=False, limit=10, proposals=None, replace_proposals=False):
         """Modules of the bound run: summary, the candidates for a name, the brief for a model, or proposals.
@@ -800,7 +826,10 @@ class MapService:
             self._update_state(run, {"status": "partial", "blocker": reason, "updated_at": _now()})
             snapshot.update_registration(run, active=False)
             self._event(run, "run_stopped", message=reason)
-            return self._status(run_id)
+            engine = resolve_edges.stop_pass(run / state["snapshot"]["path"], reason)
+            if engine["stopped"]:
+                self._event(run, "engine_stopped", message=f"pid {engine['pid']}")
+            return self._status(run_id, engine=True)
 
     def publish(self, run_id):
         with self._operation(write=True):

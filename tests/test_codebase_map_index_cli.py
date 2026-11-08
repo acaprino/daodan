@@ -27,7 +27,7 @@ class IndexCliTests(unittest.TestCase):
         return completed.returncode, completed.stdout, completed.stderr
 
     def write(self, *extra):
-        return self.run_cli("write", str(self.root), "--out", str(self.manifest), *extra)
+        return self.run_cli("write", str(self.root), "--out", str(self.manifest), "--no-engine", *extra)
 
     def test_write_builds_the_index_and_no_index_skips_it(self):
         code, out, err = self.write("--no-index")

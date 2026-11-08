@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import os
+import subprocess
 import sys
 import tempfile
 import types
@@ -398,7 +399,9 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(report["verdicts"], {"infer-error:RuntimeError": 1})
 
     def test_invalid_positions_are_selected_but_never_counted_as_asked(self):
-        source = "def use(helper):\n    helper.K()\n"
+        # `K` is declared, so the callee is named after a project declaration
+        # and stays in the population the engine is asked about.
+        source = "def K():\n    return 1\n\n\ndef use(helper):\n    helper.K()\n"
         (self.root / "app/use.py").write_text(source, encoding="utf-8")
         snapshot.write_snapshot(self.root, self.manifest)
         # AST normalizes this identifier to K. A position that cannot be
@@ -550,6 +553,195 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertTrue(conflict["engine_target_id"].startswith("app/tool.py::function@2:4"))
         ref_by_id = {item["id"]: item for item in view["references"]}
         self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
+
+
+class ResolvabilityTests(unittest.TestCase):
+    """Resolved over resolvable, the engine kept on project names, and the store lifecycle."""
+
+    SOURCES = {
+        # One call of each kind: a builtin, a callee named after nothing the
+        # project declares, and an unknown receiver whose method the project has.
+        "app/use.py": ("class User:\n    def go(self, helper):\n"
+                       "        helper.append(len(helper))\n        return helper.run()\n"),
+        "app/tool.py": "class Tool:\n    def run(self):\n        return 1\n",
+        "notes.md": "# Notes\n",
+    }
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        for rel, text in self.SOURCES.items():
+            path = self.root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        self.manifest = self.root.parent / "manifest.sqlite"
+        snapshot.write_snapshot(self.root, self.manifest)
+
+    def run_line(self):
+        return self.SOURCES["app/use.py"].split("\n").index("        return helper.run()") + 1
+
+    def confirming_engine(self):
+        return StubEngine(answers={("use.py", self.run_line()): Definition(self.root / "app/tool.py", "run")})
+
+    def run_pass(self, engine=None):
+        return resolve_edges.resolve_edges(self.manifest, engine=engine or self.confirming_engine(),
+                                           limit=None, stride=1)
+
+    def test_calls_that_cannot_reach_the_project_leave_the_denominator(self):
+        with open_snapshot(self.manifest) as store:
+            summary = resolve_edges.resolution_summary(store.connection, None)
+        self.assertEqual((summary["calls"], summary["resolved"], summary["external"], summary["resolvable"]),
+                         (3, 0, 2, 1))
+        self.assertEqual(summary["external_by_class"],
+                         {"builtin": 1, "no-project-name": 1, "engine-external-definition": 0})
+        self.assertEqual((summary["askable"], summary["unasked"], summary["resolved_ratio"]), (1, 1, 0.0))
+
+    def test_the_engine_is_asked_only_about_callees_the_project_declares(self):
+        engine = self.confirming_engine()
+        report = self.run_pass(engine)
+        self.assertTrue(report["available"], report)
+        self.assertEqual([line for _name, line, _column in engine.asked], [self.run_line()])
+        self.assertEqual(report["excluded_classes"], {"builtin": 1, "no-project-name": 1})
+        resolution = report["resolution"]
+        self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["resolved_ratio"]),
+                         (1, 1, 1.0))
+
+    def test_each_language_says_whether_an_engine_covers_it(self):
+        (self.root / "app/use.ts").write_text(
+            "function use(helper) { return helper.run(); }\n", encoding="utf-8")
+        snapshot.write_snapshot(self.root, self.manifest)
+        by_language = self.run_pass()["resolution"]["by_language"]
+        self.assertEqual((by_language["python"]["engine"], by_language["python"]["resolved"]), ("stub@1.0", 1))
+        self.assertEqual(by_language["typescript"],
+                         {"calls": 1, "resolved": 0, "resolvable": 1, "resolved_ratio": 0.0, "engine": None})
+
+    def test_the_engine_sees_the_directories_the_project_puts_on_sys_path(self):
+        (self.root / "tools").mkdir()
+        (self.root / "tools/helper.py").write_text("def assist():\n    return 1\n", encoding="utf-8")
+        (self.root / "tests").mkdir()
+        (self.root / "tests/test_tool.py").write_text(
+            "import json\nimport sys\nsys.path.insert(0, 'tools')\nimport helper\nhelper.assist()\n",
+            encoding="utf-8")
+        snapshot.write_snapshot(self.root, self.manifest)
+        with open_snapshot(self.manifest) as store:
+            self.assertEqual(resolve_edges.runtime_import_roots(store.connection), ["tools"])
+        engine = self.confirming_engine()
+        engine.import_roots = []
+        self.run_pass(engine)
+        self.assertEqual(engine.import_roots, [self.root / "tools"])
+
+    def test_a_changed_document_does_not_refuse_a_python_pass(self):
+        (self.root / "notes.md").write_text("# Notes, edited during the pass\n", encoding="utf-8")
+        report = self.run_pass()
+        self.assertTrue(report["available"], report)
+        self.assertEqual(report["source_verification"], {"before_inference": 2, "after_inference": 2})
+
+    def test_the_store_state_follows_the_pass_and_the_snapshot(self):
+        self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "missing")
+        self.run_pass()
+        state = resolve_edges.edge_state(self.manifest)
+        self.assertEqual(state["state"], "fresh")
+        self.assertEqual(state["resolution"]["resolved"], 1)
+        (self.root / "app/tool.py").write_text("class Tool:\n    def run(self):\n        return 2\n",
+                                                encoding="utf-8")
+        snapshot.write_snapshot(self.root, self.manifest)
+        self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "stale")
+
+    def test_a_missing_engine_is_unavailable_and_starts_no_process(self):
+        with mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
+                mock.patch.object(resolve_edges.importlib.util, "find_spec", return_value=None), \
+                mock.patch.object(resolve_edges, "_spawn_detached") as spawn:
+            result = resolve_edges.ensure_edges(self.manifest)
+        spawn.assert_not_called()
+        self.assertEqual((result["state"], result["action"]), ("unavailable", "none"))
+        self.assertIn("uv", result["install"])
+        self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "unavailable")
+
+    def test_the_pass_runs_under_uv_with_the_snapshots_parser_set(self):
+        report = self.manifest.with_name(resolve_edges.REPORT_NAME)
+
+        def version(name):
+            if name == "tree-sitter":
+                return "0.25.2"
+            raise resolve_edges.metadata.PackageNotFoundError(name)
+
+        with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"), \
+                mock.patch.object(resolve_edges.metadata, "version", side_effect=version):
+            command = resolve_edges.engine_command(self.manifest, report, [])
+        python = f"{sys.version_info[0]}.{sys.version_info[1]}"
+        self.assertEqual(command[:7], ["uv", "run", "--quiet", "--no-config", "--no-project", "--python", python])
+        self.assertEqual(command[7:11], ["--with", "jedi>=0.19", "--with", "tree-sitter==0.25.2"])
+        self.assertEqual(command[11:15], ["python", "-B", "-X", "faulthandler"])
+        self.assertIn(str(report), command)
+        with mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
+                mock.patch.object(resolve_edges.importlib.util, "find_spec", return_value=object()):
+            self.assertEqual(resolve_edges.engine_command(self.manifest, report, [])[:4],
+                             [sys.executable, "-B", "-X", "faulthandler"])
+
+    def test_a_background_pass_is_running_while_its_process_lives(self):
+        child = mock.Mock(pid=os.getpid())
+        with mock.patch.object(resolve_edges, "engine_command", return_value=["engine"]), \
+                mock.patch.object(resolve_edges, "_spawn_detached", return_value=child) as spawn:
+            started = resolve_edges.ensure_edges(self.manifest)
+            again = resolve_edges.ensure_edges(self.manifest)
+        self.assertEqual((started["state"], started["action"]), ("running", "started"))
+        self.assertEqual((again["state"], again["action"]), ("running", "none"))
+        spawn.assert_called_once()
+        self.assertEqual(spawn.call_args.args[0], ["engine"])
+        ended = subprocess.Popen([sys.executable, "-c", "pass"])
+        ended.wait()
+        self.manifest.with_name(resolve_edges.RUNNING_NAME).write_text(
+            json.dumps({"pid": ended.pid}), encoding="utf-8")
+        state = resolve_edges.edge_state(self.manifest)
+        self.assertEqual(state["state"], "failed")
+        self.assertIn(resolve_edges.LOG_NAME, state["reason"])
+
+    def test_the_edge_view_carries_resolution_and_names_a_running_pass(self):
+        import edge_view
+        self.manifest.with_name(resolve_edges.RUNNING_NAME).write_text(
+            json.dumps({"pid": os.getpid(), "started_at": "2026-11-08T00:00:00Z"}), encoding="utf-8")
+        view = edge_view.load_edge_view(self.manifest)
+        self.assertEqual(view["coverage"]["status"], "missing_store")
+        self.assertEqual(view["coverage"]["engine_pass"]["state"], "running")
+        self.assertTrue(any(gap.startswith("engine pass running") for gap in view["gaps"]), view["gaps"])
+        resolution = view["coverage"]["resolution"]
+        self.assertEqual((resolution["resolvable"], resolution["resolved"]), (1, 0))
+
+    def test_rewriting_a_manifest_first_ends_the_pass_over_its_old_revision(self):
+        import contextlib
+        import io
+        running = self.manifest.with_name(resolve_edges.RUNNING_NAME)
+        running.write_text(json.dumps({"pid": 4242}), encoding="utf-8")
+        partial = self.manifest.with_name(".engine-edges.sqlite.abc.partial")
+        partial.write_bytes(b"half a store")
+        with mock.patch.object(resolve_edges, "_process_alive", return_value=True), \
+                mock.patch.object(resolve_edges, "_terminate_tree") as terminate, \
+                mock.patch.object(resolve_edges, "ensure_edges",
+                                  return_value={"state": "running", "edges_store": "x"}), \
+                contextlib.redirect_stdout(io.StringIO()):
+            code = snapshot.main(["write", str(self.root), "--out", str(self.manifest), "--no-index",
+                                  "--no-modules"])
+        self.assertEqual(code, 0)
+        terminate.assert_called_once_with(4242)
+        self.assertFalse(running.exists())
+        self.assertFalse(partial.exists())
+
+    def test_snapshot_write_starts_the_pass_unless_told_not_to(self):
+        import contextlib
+        import io
+        out = self.root.parent / "written.sqlite"
+        for options, calls in (([], 1), (["--no-engine"], 0)):
+            with self.subTest(options=options), \
+                    mock.patch.object(resolve_edges, "ensure_edges",
+                                      return_value={"state": "running", "edges_store": "x"}) as ensure, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                code = snapshot.main(["write", str(self.root), "--out", str(out), "--no-index",
+                                      "--no-modules", *options])
+            self.assertEqual(code, 0)
+            self.assertEqual(ensure.call_count, calls)
+            if calls:
+                self.assertEqual(ensure.call_args.args, (out,))
 
 
 class CalleePositionTests(unittest.TestCase):

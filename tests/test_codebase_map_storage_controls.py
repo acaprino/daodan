@@ -51,7 +51,7 @@ class BinaryRunTests(unittest.TestCase):
         self.assertTrue(hasattr(snapshot, "cmd_resolve"), "run snapshot resolver must be available to shell workflows")
         for format in ("sqlite", "json"):
             with self.subTest(format=format):
-                self.service.create_run("src", format, format=format)
+                self.service.create_run("src", format, format=format, engine=False)
                 output = io.StringIO()
                 with redirect_stdout(output):
                     code = snapshot.cmd_resolve(SimpleNamespace(run_dir=str(self.run_dir(format))))
@@ -64,7 +64,7 @@ class BinaryRunTests(unittest.TestCase):
                 self.assertIn("git", value["metadata"])
 
     def test_create_run_defaults_to_sqlite_and_format_is_not_analysis_flag(self):
-        value = self.service.create_run("src", "example", depth="lite")
+        value = self.service.create_run("src", "example", depth="lite", engine=False)
         self.assertEqual(value["state"].get("snapshot", {}).get("format"), "sqlite")
         self.assertNotIn("format", value["state"]["flags"])
         self.assertTrue((self.run_dir("example") / "snapshot/manifest.sqlite").is_file())
@@ -77,11 +77,11 @@ class BinaryRunTests(unittest.TestCase):
                 with self.subTest(parent=parent_format, child=child_format):
                     suffix = parent_format + "-" + child_format
                     parent, child = "parent-" + suffix, "child-" + suffix
-                    self.service.create_run("src", parent, depth="lite", format=parent_format)
+                    self.service.create_run("src", parent, depth="lite", format=parent_format, engine=False)
                     self.complete(parent)
                     parent_file = self.run_dir(parent) / ("snapshot/manifest." + parent_format)
                     before = hashlib.sha256(parent_file.read_bytes()).hexdigest()
-                    self.service.create_run("src", child, depth="lite", format=child_format)
+                    self.service.create_run("src", child, depth="lite", format=child_format, engine=False)
                     state_path = self.run_dir(child) / "state.json"
                     state = json.loads(state_path.read_text())
                     state.pop("delivery")
@@ -100,7 +100,7 @@ class BinaryRunTests(unittest.TestCase):
 
     def test_legacy_json_readable_but_changed_fingerprint_cannot_resume(self):
         self.api()
-        self.service.create_run("src", "legacy", depth="lite", format="json")
+        self.service.create_run("src", "legacy", depth="lite", format="json", engine=False)
         path = self.run_dir("legacy") / "state.json"
         state = json.loads(path.read_text())
         state.pop("snapshot")
@@ -114,7 +114,7 @@ class BinaryRunTests(unittest.TestCase):
 
     def test_ambiguous_or_misdeclared_snapshot_rejected(self):
         self.api()
-        self.service.create_run("src", "ambiguous", depth="lite")
+        self.service.create_run("src", "ambiguous", depth="lite", engine=False)
         self.write("ambiguous", "snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.source)))
         with self.assertRaisesRegex(ValueError, "ambiguous"):
             self.service.status("ambiguous")
@@ -129,7 +129,7 @@ class BinaryRunTests(unittest.TestCase):
     def test_invalid_format_creates_no_run(self):
         self.api()
         with self.assertRaises(ValueError):
-            self.service.create_run("src", "invalid", format="pickle")
+            self.service.create_run("src", "invalid", format="pickle", engine=False)
         self.assertFalse(self.run_dir("invalid").exists())
 
 

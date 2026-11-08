@@ -77,7 +77,7 @@ In `skills/map/scripts/`, Python con sola libreria standard salvo gli opzionali 
 - `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`.
 - `source_reader.py`: `outline` (metadati dei simboli), `graph` (chiamanti e chiamati dal manifest, 1-3 salti), `read` (blocchi di sorgente verificati per simbolo, intervallo o file intero).
 - `modules.py`: `build`, `query`, `brief`, `propose`.
-- `resolve_edges.py`: risoluzione opzionale delle chiamate con `--engine jedi` o `--engine scip`, in `engine-edges.sqlite`.
+- `resolve_edges.py`: risoluzione delle chiamate con un motore (`--engine jedi`, predefinito, o `--engine scip`) in `engine-edges.sqlite`; la avviano `snapshot.py write` e `codebase_map_create_run`.
 - `semantic_map.py`: vista `semantic-map.md` delle schede di un'area.
 - `embedding_worker.py`: embedding locali opzionali, su richiesta esplicita.
 - `analyze_file.py`, `ast_parser.py`, `classifier.py`, `usage_finder.py`: analisi di un file, estrazione grezza, criticità, usi di un simbolo.
@@ -119,7 +119,28 @@ Budget: circa 6 ricerche e 10 letture per compito; una ricerca vuota si riformul
 
 `source_reader.py graph` interroga i binding statici del manifest senza rianalizzare: gli archi risolti si espandono verso chiamanti e chiamati, le chiamate non risolte non guidano l'espansione. `dependency_graph.py` aggiunge cicli di import, importatori transitivi e PageRank (damping 0,85, tolleranza 1e-10, 100 iterazioni al massimo) come aiuto alla lettura, non come prova di propagazione a runtime. Il classificatore considera alta complessità un file oltre 300 righe e hub un file con almeno 8 importatori, critico con 15 (`classifier.py`).
 
-`resolve_edges.py` attacca un motore opzionale, Jedi su un ambiente del progetto o un indice SCIP, alle chiamate che il risolutore lessicale non prova; sui due progetti misurati nella docstring il livello lessicale risolve il 9,7% e il 13,0% dei riferimenti. Ogni arco nomina il proprio risolutore (`builtin-lexical` o `<engine>@<versione>`) e la confidenza (`confirmed`, `candidate`); gli archi vivono in `engine-edges.sqlite`, legato al digest dello snapshot, e `edge_view.py` li unisce ai riferimenti lessicali tenendo questi ultimi come autorità e mostrando le divergenze in `conflicts`. Un motore assente è una degradazione dichiarata che non scrive nulla.
+Il risolutore lessicale (`resolution.py`) lega solo un binding unico e non inferisce tipi. Il resto lo risolve un motore: `resolve_edges.py` con Jedi per Python, o un indice SCIP. Il passaggio motore è uno store derivato dello snapshot come l'indice lessicale: `snapshot.py write` e `codebase_map_create_run` lo avviano in background (`--no-engine`, `engine=false` per saltarlo), `codebase_map_status` ne riporta lo stato (`running`, `fresh`, `sampled`, `stale`, `failed`, `unavailable`, `stopped`, `off`) e `codebase_map_index` lo riavvia se non è fresco. Il processo usa `uv` con Jedi e gli stessi pacchetti di parsing dello snapshot, così l'impronta del parser coincide; senza `uv` usa l'interprete corrente se ha Jedi; altrimenti lo stato è `unavailable` con l'istruzione di installazione. L'ambiente del progetto (`.venv`, `venv` o `VIRTUAL_ENV`) entra da solo nell'inferenza, insieme alle cartelle che il progetto mette su `sys.path` a runtime: un modulo importato per nome nudo che lo snapshot non colloca e che nell'inventario ha un solo file. Ogni arco nomina il proprio risolutore (`builtin-lexical` o `<engine>@<versione>`) e la confidenza (`confirmed`, `candidate`); `edge_view.py` unisce gli archi ai riferimenti lessicali tenendo questi ultimi come autorità e mostrando le divergenze in `conflicts`.
+
+### Risolvibilità
+
+Il rapporto delle chiamate si legge come **risolte su risolvibili**, in `edge_view.coverage.resolution` di ogni pacchetto del grafo e nello stato del motore. Una chiamata è esterna, quindi fuori dal denominatore, quando non può arrivare a un simbolo del progetto: un builtin, un nome che nessuna funzione, classe o import del progetto porta, una definizione che il motore trova fuori dall'inventario. Al motore si chiedono solo le chiamate con un nome del progetto: sul campione misurato le altre producono un arco ogni mille, e chiederle costerebbe circa 14 minuti per passaggio su Daodan.
+
+Misura su Daodan dell'8 novembre 2026, 27.187 chiamate, solo risolutore lessicale:
+
+| Insieme | Chiamate | Esempio | Come si risolve |
+|---|---|---|---|
+| Builtin | 4.926 | `len`, `isinstance`, `sorted` | esterna |
+| Metodi di `unittest.TestCase` | 3.113 | `self.assertEqual` | esterna |
+| Moduli stdlib e terzi | 2.663 | `json.dumps`, `re.compile`, `Path` | esterna |
+| Metodo senza omonimi nel progetto su un ricevitore di tipo ignoto | 3.529 | `fields.append`, `db.execute` | esterna |
+| Callee dinamico | 2.154 | `handler()`, `callbacks[k]()` | non risolvibile staticamente |
+| `self.metodo()` in una classe con base esterna | 1.612 | `self._parts` in un `ast.NodeVisitor` | motore |
+| Import di uno script del progetto via `sys.path` | 594 | `snapshot.write_snapshot` nei test | motore |
+| Metodo con omonimi nel progetto su un ricevitore di tipo ignoto | 2.528 | `store.get_file` | motore |
+| Altro: binding ambigui, catene `self.a.b` | 2.141 | `res.get` | motore, in parte |
+| Risolte dal risolutore lessicale | 3.927 | `helper()` importato | lessicale |
+
+Con il criterio applicato, sullo snapshot di HEAD (27.586 chiamate): 3.968 risolte su 11.753 risolvibili con il solo risolutore lessicale (33,8%), 7.399 su 9.083 con Jedi e le cartelle di `sys.path` (81,5%). Il motore sposta anche 2.670 chiamate fra le esterne, perché le trova definite fuori dal progetto. Il passaggio dura circa 13 minuti in background. Spec e misura: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
 
 `modules.py` deriva il grafo dei moduli accanto al manifest (`daodan/module-graph/v1`). Tre provenienze: `build`, letta dai manifest di 27 ecosistemi e 32 manifest (npm, pnpm, Lerna, Deno, Nx, Python, Cargo, Go, Maven, Gradle, .NET, Composer, RubyGems, Bundler, pub, melos, Swift, Mix, CMake, Cabal, Stack, sbt, Terraform, Zig, Julia, dune, plugin Daodan), stato `confirmed`; `declared`, da `codebase-modules.json` alla radice (`daodan/declared-modules/v1`), con `kind` `component` o `feature`, `location` `internal` o `external`, membri `path::Symbol`, file o directory ed evidenza, verificati sullo snapshot; `proposed`, da un modello attraverso `modules.py propose` o `codebase_map_modules(proposals=...)` dopo il `brief`, verificati allo stesso modo e mai oltre `inferred`. Nessuna directory diventa modulo per il nome. La query (`daodan/module-query/v1`) risponde `resolved`, `needs_clarification`, `incomplete` o `unknown` e non promuove mai un candidato. Contratto completo in `references/modules.md`.
 
@@ -149,7 +170,7 @@ senior-review esige una mappa completa dell'intero progetto prima di una review:
 
 ## Policy e contratti
 
-`policies/write-confinement.toml`: ogni scrittore della mappa crea file solo nella directory del proprio run, più lo store delle schede; gli indici derivati (`retrieval.sqlite`, `engine-edges.sqlite`, `embeddings.sqlite`) stanno accanto al manifest sotto `snapshot/`. L'enforcement è a livello di prompt e di contratto di proprietà nei ruoli: un hook di plugin sarebbe globale alla sessione e un hook per agente non è provato funzionante da un plugin installato (`mechanical_wired = false`).
+`policies/write-confinement.toml`: ogni scrittore della mappa crea file solo nella directory del proprio run, più lo store delle schede; gli indici derivati (`retrieval.sqlite`, `engine-edges.sqlite` con `engine-report.json`, `engine-pass.running` e `engine-pass.log`, `embeddings.sqlite`) stanno accanto al manifest sotto `snapshot/`. L'enforcement è a livello di prompt e di contratto di proprietà nei ruoli: un hook di plugin sarebbe globale alla sessione e un hook per agente non è provato funzionante da un plugin installato (`mechanical_wired = false`).
 
 `contracts/context.toml` esporta i quattro record del contesto delimitato: richiesta, piano di scope, pacchetto e map slice.
 
