@@ -36,6 +36,6 @@ Additive schemas, compatible readers, explicit maintenance downtime, online oper
 
 ## Boundaries and output
 
-Startup prerequisite order belongs to chicken-egg, steady-state probes to service health, transformation correctness to data owners, disaster restoration to recovery and native platform support to platform.
+Startup prerequisite order belongs to chicken-egg, steady-state probes to service health, transformation correctness to data owners, disaster restoration to recovery and native desktop support to tauri.
 
 Add the phase/version compatibility timeline, active consumers, violated continuity requirement and existing guard to the common report.

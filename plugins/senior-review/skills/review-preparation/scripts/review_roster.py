@@ -106,6 +106,8 @@ DEEP_ROSTER = STANDARD_ROSTER + [
     "senior-review:data-integrity-auditor",
     "senior-review:cleanup-auditor",
     "senior-review:boundary-auditor",
+    "senior-review:testing-auditor",
+    "senior-review:prior-art-auditor",
 ]
 # The fixed set of a plan, a specification or a document under a branch review.
 KIND_ROSTER = {
@@ -139,6 +141,9 @@ SIGNAL_ROLE = {
     "storage": "senior-review:storage-durability-auditor",
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
+    "tauri": "senior-review:tauri-auditor",
+    "workspace": "senior-review:workspace-hygiene-auditor",
+    "testing": "senior-review:testing-auditor",
 }
 # A trust word in prose is a specification touching a boundary; in code it is
 # everywhere, and code reaches the security auditor through sensitive paths.
@@ -189,6 +194,11 @@ SIGNAL_PATTERNS = {
                               r"rollback|bulk_create|session\.add|migrations?)\b"),
     "trust": re.compile(r"\b(authentication|authorization|credentials?|passwords?|tokens?|permissions?|"
                         r"encrypt\w*|trust boundary)\b", re.IGNORECASE),
+    "tauri": re.compile(r"tauri::|#\[tauri|@tauri-apps/|\btauri\.conf\.json\b|\bwithGlobalTauri\b|"
+                        r"\b(?:register_uri_scheme_protocol|dangerousRemoteDomainIpcAccess|"
+                        r"dangerousDisableAssetCspModification|assetProtocol|externalBin)\b"),
+    # Conflict markers; the bare `=======` line alone is also a setext underline.
+    "workspace": re.compile(r"^(?:<<<<<<< |>>>>>>> )", re.MULTILINE),
 }
 
 # A changed presentation or deployment file is evidence even when its diff has
@@ -200,6 +210,11 @@ SIGNAL_PATHS = {
         r"(?:^|/)(?:\.github/workflows|deploy(?:ment)?|infra(?:structure)?|k8s|kubernetes|helm|"
         r"migrations?|backup|restore)(?:/|\.|$)|(?:^|/)(?:Dockerfile(?:\.[^/]+)?|"
         r"(?:docker-)?compose[^/]*\.ya?ml)$|\.(?:tf|tfvars)$", re.IGNORECASE),
+    "tauri": re.compile(r"(?:^|/)src-tauri/|(?:^|/)tauri(?:\.[^/]+)?\.conf\.json$|(?:^|/)capabilities/[^/]+\.json$"),
+    "workspace": re.compile(
+        r"(?:^|/)\.git(?:ignore|attributes|modules)$|(?:^|/)(?:dist|build|out|target|__pycache__|coverage|"
+        r"node_modules|\.cache|\.pytest_cache|\.mypy_cache|\.idea|\.vscode)/|"
+        r"(?:^|/)(?:\.DS_Store|Thumbs\.db|desktop\.ini)$|\.(?:pyc|orig|rej|swp|swo|log|tmp|bak)$|~$", re.IGNORECASE),
 }
 
 
@@ -574,6 +589,7 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     interfaces = interface_changes(diff) if basis == "changeset" else []
     map_signals = impact_signals(impact, context, conclusion_paths if basis == "changeset" else [])
     content = content_signals(diff) if basis != "content" else {name: False for name in SIGNAL_PATTERNS}
+    content["testing"] = False
     text = "\n".join(item.get("text", "") for key in ("requirements", "sources", "configurations")
                      for item in context.get(key, []))
     for name, pattern in SIGNAL_PATTERNS.items():
@@ -584,6 +600,10 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     changed_paths += [row["old_path"] for row in rows if row.get("old_path") and classify_path(row["old_path"]) == "production"]
     for name, pattern in SIGNAL_PATHS.items():
         content[name] = content[name] or any(pattern.search(path) for path in changed_paths)
+    all_paths = [row["path"] for row in rows] + [row["old_path"] for row in rows if row.get("old_path")]
+    for name in ("tauri", "workspace"):
+        content[name] = content[name] or any(SIGNAL_PATHS[name].search(path) for path in all_paths)
+    content["testing"] = any(kind == "test" for kind in kinds.values())
     signals = {
         "files": len(rows),
         "production_files": len(production),

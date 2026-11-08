@@ -36,12 +36,13 @@ one, also retains its audit-only method task. An identity absent from the
 catalog, a missing role file, unknown applicability or an unmet prerequisite
 remains an explicit failure or gap.
 
-Satisfy the expanded members' prerequisites before binding jobs. No testing
-specialist exists; if a testing member is requested and the host supplies none,
-record the missing preparation
-and leave the coverage gap explicit. Reuse settled D1/D9 evidence once; record
-missing inputs and stale/unmeasured metrics. This prepares inputs without another
-reviewer, standalone workflow or repeated settled checks.
+Satisfy the expanded members' prerequisites before binding jobs: for
+`testing-auditor` the affected modules with their tests and the runner
+configuration, for `workspace-hygiene-auditor` the tracked file list and ignore
+rules, for `prior-art-auditor` and `tauri-auditor` the complete map run. Reuse
+recorded run or coverage evidence once; record missing inputs and stale/unmeasured
+metrics. This prepares inputs without another reviewer, standalone workflow or
+repeated settled checks.
 
 Build one `BINDINGS.json` from verified values:
 

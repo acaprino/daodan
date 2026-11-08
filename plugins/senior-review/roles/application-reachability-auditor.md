@@ -37,6 +37,6 @@ Dynamic consumers, external public API, framework discovery and side-effect impo
 
 ## Boundaries and output
 
-Dependency ownership belongs to dependency usage, emitted bundle costs to asset delivery, filesystem/Git artifacts to workspace, suite retirement to testing, historical intent to artifact lifecycle.
+Dependency ownership belongs to dependency usage, emitted bundle costs to asset delivery, filesystem/Git artifacts to workspace-hygiene, suite retirement to testing, historical intent to artifact lifecycle.
 
 Add consumer search scope, dynamic/registration guards checked and a bounded removal candidate/fix direction to the common report; retain unresolved candidates as gaps, never delete.

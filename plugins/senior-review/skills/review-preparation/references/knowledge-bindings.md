@@ -42,10 +42,10 @@ selected once, with one or more scoped worker assignments. Preparation hashing
 does not prove worker reading. Do not create one reviewer per skill, repeat
 preparation or run specialist workflows.
 
-No React, TypeScript or platform specialist exists. Record their activation signals and
-leave the missing specialist coverage explicit until senior-review owns equivalent
-micro skills. General review lenses may still inspect the same evidence, but they
-cannot silently replace a missing specialist. Keep automatic activation, explicit
+React, TypeScript and Tauri have their specialists; no other platform specialist
+exists. Record its activation signals and leave the missing coverage explicit.
+General review lenses may still inspect the same evidence, but they cannot
+silently replace a missing specialist. Keep automatic activation, explicit
 overrides, independent inputs and report rules.
 
 Before dispatch, validate target and knowledge bindings together. A selected load

@@ -19,9 +19,9 @@
 | Security | `senior-review:security-auditor` |
 | General correctness and local design | `senior-review:code-auditor` |
 | **Logic integrity (contracts/invariants/domain rules)** | `senior-review:logic-integrity-auditor` |
-| **Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness)** | no abstraction specialist exists; a declared gap unless the host supplies one |
+| **Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness)** | `senior-review:prior-art-auditor` |
 | Codebase hygiene (full pass: dead code, assets, deps, docs, lifecycle archaeology) | `senior-review:cleanup-auditor` |
-| Workspace hygiene (garbage, tracked build output, .gitignore, scratch, doc-assets, git state) | no workspace-hygiene specialist exists; a declared gap unless the host supplies one |
+| Workspace hygiene (garbage, tracked build output, .gitignore, scratch, doc-assets, git state) | `senior-review:workspace-hygiene-auditor`, also a member of `cleanup-auditor` |
 | UI race conditions | `senior-review:ui-race-auditor` |
 | Accessibility and usable interaction paths | `senior-review:accessibility-auditor` |
 | General performance and cost | `senior-review:performance-auditor` |
@@ -31,13 +31,14 @@
 | Temporal resilience (failure-over-time) | `senior-review:temporal-resilience-auditor` |
 | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` |
 | Resource lifecycle (ownership and release) | `senior-review:resource-lifecycle-auditor` |
-| Testing quality | no testing specialist exists; a declared gap unless the host supplies one |
+| Testing quality | `senior-review:testing-auditor` |
 | API contracts | `senior-review:api-contract-auditor` |
 | Migration data validity | `senior-review:data-integrity-auditor` (same delivery as data integrity) |
 | Premise discovery or document claim check | `senior-review:premise-auditor` (declared mode) |
-| React rendering | unavailable until senior-review owns equivalent React micro skills; record activation evidence and declare the gap |
-| TypeScript/type contracts | unavailable until senior-review owns equivalent TypeScript micro skills; record activation evidence and declare the gap |
-| Browser, mobile and desktop compatibility | unavailable until senior-review owns equivalent platform/Tauri micro skills; record activation evidence and declare the gap |
+| React rendering | `senior-review:react-auditor` |
+| TypeScript/type contracts | `senior-review:typescript-auditor` |
+| Tauri desktop shell | `senior-review:tauri-auditor` |
+| Browser, PWA and mobile compatibility | no platform specialist beyond Tauri exists; record activation evidence and declare the gap |
 | Python / dependencies | `senior-review:dependency-auditor` for manifests/lockfiles; no Python-specific specialist exists; a declared gap |
 
 ### Reviewer prompt template (context-aware)
@@ -100,20 +101,11 @@ Keep the required roster and provide source-derived scoped semantic context to a
 selected logic reviewer. Missing required inputs remain an explicit incomplete
 delivery; they do not authorize dropping that role.
 
-**Structural entropy dimension addendum.** No abstraction specialist exists. When structural-entropy signals are present, record them and declare the specialist coverage unavailable. If the project has a `.abstraction-architect/concept-index.json`, it may be used only as an unverified lead; the reviewer must re-derive every claim from source and declare missing or stale index coverage. No abstraction reviewer may be invented.
+**Structural entropy addendum.** `prior-art-auditor` searches the whole codebase through the complete map run and anchors findings to the diff; supply the run, not an index of concepts.
 
-**Testing dimension addendum.** No testing specialist exists. Record testing-suite coverage as a declared gap unless the host supplies one; in that case bind its scope, report path and no-run semantics before dispatch.
+**Testing addendum.** `testing-auditor` works with no-run semantics: supply the affected source modules with their tests, the runner configuration and any recorded run or coverage evidence at its snapshot. A review is diff-anchored, so a whole-suite execution would dominate the phase for findings mostly outside the diff; suite-wide inventory still matters because duplicate test files and uncollected tests are invisible when only the changed test file is read.
 
-Two notes on why: a review is diff-anchored, so a whole-suite execution would dominate the phase's wall clock for findings mostly outside the diff; and suite-wide inventory statistics still matter because parallel-file and cross-layer-duplicate findings are invisible when only the changed test file is read.
-
-### The workspace-hygiene dimension
-
-No workspace-hygiene specialist exists. When workspace-hygiene signals are
-present, record them and declare the dimension unavailable unless the host
-supplies an explicitly adapted
-specialist. Source-comprehensible cleanup remains owned by
-`senior-review:cleanup-auditor`; filesystem/git-only checks are not silently
-transferred to it.
+**Workspace hygiene addendum.** `workspace-hygiene-auditor` decides only what the filesystem and git decide; supply the tracked file list, the effective ignore rules and the pre-review work tree from `.team-review/00-scope.md`. Source-comprehensible cleanup stays with `senior-review:cleanup-auditor`.
 
 ### Dispatch
 

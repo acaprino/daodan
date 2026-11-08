@@ -70,6 +70,26 @@ class RigorTest(unittest.TestCase):
         self.assertEqual(compute(rigor="quick", deeper=True)["rigor"], "standard")
         self.assertEqual(compute(rigor="deep", deeper=True)["rigor"], "deep")
 
+    def test_a_tauri_test_or_workspace_path_adds_its_specialist(self):
+        tauri = compute(diff_of("src-tauri/src/commands.rs"))
+        self.assertIn("senior-review:tauri-auditor", tauri["roster"])
+        self.assertTrue(tauri["signals"]["content"]["tauri"])
+        self.assertIn("senior-review:tauri-auditor", compute(diff_of("src/App.tsx").replace("+x = 2", "+import { invoke } from '@tauri-apps/api/core'"))["roster"])
+        testing = compute(diff_of("tests/test_pricing.py"))
+        self.assertIn("senior-review:testing-auditor", testing["roster"])
+        self.assertNotIn("senior-review:tauri-auditor", testing["roster"])
+        self.assertIn("senior-review:workspace-hygiene-auditor", compute(diff_of(".gitignore"))["roster"])
+        self.assertIn("senior-review:workspace-hygiene-auditor", compute(diff_of("dist/app.js"))["roster"])
+        self.assertIn("senior-review:workspace-hygiene-auditor",
+                      compute(PLAIN.replace("+x = 2", "+<<<<<<< HEAD"))["roster"])
+        self.assertEqual(compute()["roster"], review_roster.STANDARD_ROSTER)
+
+    def test_deep_adds_testing_and_prior_art(self):
+        deep = compute(rigor="deep")["roster"]
+        self.assertIn("senior-review:testing-auditor", deep)
+        self.assertIn("senior-review:prior-art-auditor", deep)
+        self.assertNotIn("senior-review:testing-auditor", compute()["roster"])
+
     def test_an_unknown_rigor_is_an_error(self):
         with self.assertRaises(ValueError):
             compute(rigor="medium")
