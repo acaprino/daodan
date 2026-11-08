@@ -12,8 +12,9 @@ leaves the run incomplete.
 
 For each selected deduplicated finding, dispatch isolated lenses through the
 consuming workflow's host harness: Lens 0 uses declared
-`senior-review:premise-auditor`; lenses 1-3 use the host's isolated-worker
-binding. If no such binding exists, declare lenses 1-3 unavailable rather than
+`senior-review:premise-auditor`; lenses 1-3 use the isolated-worker binding,
+`senior-review:isolated-worker`. Each stage below is one wave across all selected
+findings: every Lens 0 in one turn, then every Lens 1 and 2, then every Lens 3. If no such binding exists, declare lenses 1-3 unavailable rather than
 running them in a shared context. Briefs carry owned scope, authorization, budget,
 inputs and report path. Ledger delivered/failed outcomes. Lenses receive no peer
 findings before independent delivery. Inherit session model; overrides require

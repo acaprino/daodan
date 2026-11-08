@@ -23,9 +23,13 @@ Team-review Phase 1 runs in the coordinator's context with the complete run's
 Codebase Map tools; it dispatches nothing and starts no analysis.
 Keep one review preparation and final report owner; required workers retain isolation.
 
-The workflow sidecar declares `dispatch.roles` and isolated inline workers.
-Inline lens, critic, history, hygiene and minimal-fix briefs use the host's
-isolated-worker binding through that sidecar, never an invented generic role.
+The isolated-worker binding is `senior-review:isolated-worker`, five tools and no
+host extras: jobs, lenses 1-3, critic, history, hygiene and minimal-fix briefs run
+on it. Where the host has not registered it, use the host's own isolated binding and
+record which one ran; never an invented role.
+Dispatch in waves: every worker of one step that depends on no other goes out in a
+single turn, and the coordinator waits for that wave's results without spending a
+turn per worker. The README section "Esecuzione" gives the reason and an example.
 Bind scope, authorization, budget, report path and delivered/failed outcome for
 every brief. If no isolated binding exists, declare the missing independence.
 
@@ -34,7 +38,7 @@ every brief. If no isolated binding exists, declare the missing independence.
    delivery IDs and applicable activation evidence or skip/gap reason. Reprepare
    stale or incomplete bindings against this candidate, without another run or
    duplicate dispatch.
-2. Read `references/<variant>.md`. Dispatch validated `jobs` once each under
+2. Read `references/<variant>.md`. Dispatch validated `jobs` once each, in one wave, under
    preparation's `references/composition.md`, including stack members. The roster
    supplies coverage obligations, never another dispatch list. Core inputs remain
    canonical in `senior-review:review-quality-gates`; stack members use their

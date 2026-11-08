@@ -58,7 +58,9 @@ a finding as preexisting. Keep these inputs with the assigned finding and output
 
 Dispatch one isolated worker per lens per finding through the consuming workflow's host harness:
 - **Lens 0:** `senior-review:premise-auditor` in Mode 2.
-- **Lenses 1-3:** the host's isolated-worker binding with the lens-specific briefs below.
+- **Lenses 1-3:** `senior-review:isolated-worker` with the lens-specific briefs below.
+
+Each lens stage is one wave: all findings' briefs for that lens in a single turn.
 
 ### Lens 0 Prompt (Premise Challenge)
 

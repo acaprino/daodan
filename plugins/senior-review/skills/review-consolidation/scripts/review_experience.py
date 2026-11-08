@@ -477,7 +477,7 @@ def lens_check(review, deliveries, target, lens):
         roles = [
             role for role in _list(review.get("support"))
             if isinstance(role, str) and role.endswith(":isolated-worker")
-        ] or ["general-purpose"]
+        ] + ["general-purpose"]
     accepted = (result.get("role") in roles and result.get("status") == "delivered"
                 and result.get("coverage") == "complete" and not required_gaps(result.get("gaps", []))
                 and result.get("candidate") == _dict(review.get("grounding")).get("candidate")

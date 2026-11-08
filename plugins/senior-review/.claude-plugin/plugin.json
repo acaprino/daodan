@@ -41,6 +41,7 @@
     "./roles/message-delivery-auditor.md",
     "./roles/observability-auditor.md",
     "./roles/premise-auditor.md",
+    "./roles/isolated-worker.md",
     "./roles/recovery-auditor.md",
     "./roles/release-compatibility-auditor.md",
     "./roles/remote-effect-auditor.md",

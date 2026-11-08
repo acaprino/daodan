@@ -116,11 +116,10 @@ KIND_ROSTER = {
     "spec": ["senior-review:premise-auditor", "senior-review:logic-integrity-auditor"],
     "doc": ["senior-review:premise-auditor"],
 }
-# Roles the procedure dispatches beside the reviewers: the verification lenses
-# (lens 0 is the premise auditor). Context comes from the complete map's tools in
-# Phase 1, not from a dispatched role. Host-specific isolated-worker bindings are
-# supplied by the consuming host, not hardcoded here.
-SUPPORT = ["senior-review:premise-auditor"]
+# Roles the procedure dispatches beside the reviewers: lens 0 is the premise
+# auditor; jobs, lenses 1-3 and the critic run on the plugin's isolated worker.
+# Context comes from the complete map's tools in Phase 1, not from a dispatched role.
+SUPPORT = ["senior-review:premise-auditor", "senior-review:isolated-worker"]
 # Signal-activated specialists, added at any branch rigor when the signal is present.
 LANGUAGE_ROLE = {
     "typescript": "senior-review:typescript-auditor",

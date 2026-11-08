@@ -16,6 +16,51 @@ La richiesta («rivedi X») diventa l'elenco dei file da rivedere, in quattro pa
 
 Spec: [`docs/specs/2026-11-04-review-scope-resolution.md`](../../docs/specs/2026-11-04-review-scope-resolution.md). Strumenti di Codebase Map, una riga ciascuno: `plugins/codebase-map/skills/map/references/tools-guide.md`. Testo operativo: `skills/review-preparation/references/team-review.md`, sezione "Request to files". Prova: `benchmarks/scope-resolution/`, su 9 casi, una esecuzione per caso: i file indispensabili ci sono sempre, sia su Haiku sia su Opus; l'esito coincide con l'atteso in 7 casi su Haiku e 9 su Opus. Vale per la review di branch (`team-review.md`) e per quella leggera (`light.md`, `code-review.md` caso W). Una review completa con questa Phase 0 non è ancora stata eseguita.
 
+## Esecuzione: aiutante leggero, chiamate a ondate
+
+**Regola.** Job, lenti 1-3 e critico girano su `senior-review:isolated-worker` (`roles/isolated-worker.md`), che ha solo cinque strumenti: Read, Write, Glob, Grep, Bash. La Lens 0 resta su `premise-auditor`. Il coordinatore chiama gli aiutanti a ondate: ogni passo che non dipende da un altro parte in un solo turno. I passi sono: tutti i job, poi le Lens 0, poi le lenti 1 e 2 di tutti i finding, poi la Lens 3 dei finding sopravvissuti, infine il critico.
+
+**Perché.** Il costo di una review dipende poco dal codice letto. Dipende soprattutto da quanto contesto il modello rilegge a ogni passo:
+
+- **Contesto iniziale.** Un aiutante, prima di fare qualcosa, carica il proprio contesto iniziale e lo rilegge a ogni passo. L'aiutante generico dell'host porta le definizioni di tutti gli strumenti installati e l'elenco di tutte le skill. A un job di review servono cinque strumenti.
+- **Turni del coordinatore.** Anche il coordinatore rilegge tutto il proprio contesto a ogni turno. Chiamando un aiutante per turno, più un turno di attesa, le riletture si moltiplicano.
+
+Misure del 2026-11-08, modello Sonnet 5.5, run del benchmark [`whole-source-coverage`](../../benchmarks/whole-source-coverage/README.md):
+
+| Misura | Valore |
+|---|---|
+| Contesto iniziale dell'aiutante generico | 128.300 token |
+| Contesto iniziale di `isolated-worker` | 20.400 token |
+| Codice letto da un job di gruppo | circa 3.000 token |
+| Turni del coordinatore, metodo a gruppi | 103, di cui 26 chiamate una per turno e 26 di attesa |
+| Contesto riletto dal coordinatore a ogni turno | circa 270.000 token |
+
+I due valori iniziali vengono da una prova a parte, in cui ogni aiutante risponde «OK» senza usare strumenti.
+
+**Schema.**
+
+```
+Prima: un aiutante per turno               Ora: un'ondata per passo
+
+coordinatore                               coordinatore
+ ├─ chiama job-01, attende                  ├─ chiama job-01…04, attende tutti
+ ├─ chiama job-02, attende                  ├─ chiama Lens 0 di F1…F5, attende
+ ├─ chiama job-03, attende                  ├─ chiama Lens 1 e 2 di F1…F5, attende
+ ├─ …                                       ├─ chiama Lens 3 dei sopravvissuti, attende
+ └─ 26 chiamate = 52 turni                  └─ chiama il critico, attende
+
+ogni aiutante parte da ~111.000 token      ogni aiutante parte da ~20.000 token
+```
+
+**Esempio.** Review di sicurezza di un servizio di note di 12 file, in 4 gruppi, con 5 finding da verificare. Il lavoro resta lo stesso: 4 job, 20 lenti e 1 critico, cioè 25 aiutanti.
+
+- **Prima.** Ognuno dei 25 aiutanti rilegge circa 111.000 token a ogni passo, per leggere circa 3.000 token di codice. Il coordinatore spende 52 turni solo per chiamare e attendere.
+- **Ora.** Ogni aiutante rilegge circa 20.000 token a ogni passo. Il coordinatore chiama in 5 ondate, una per passo.
+
+Stima ricavata dalle trascrizioni di quella run: circa un terzo in meno, da 8,9 a circa 5,7 milioni di token equivalenti. Non è ancora misurata da una run nuova.
+
+Se l'host non ha registrato l'agente, il coordinatore usa l'aiutante isolato dell'host e lo scrive nello stato della run. Succede per esempio in una copia `git worktree` senza `.claude/settings.local.json`. La review resta valida, ma costa di più. Le chiamate restano isolate in entrambi i casi: nessun aiutante vede i finding degli altri prima di consegnare.
+
 ## Stato
 
 Versione **1.1.0**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi sono definiti in `[reviewers.compositions]` di `plugin.toml`, non come file ruolo.
