@@ -1,0 +1,7 @@
+{
+  "data_dir": "data",
+  "token_secret_env": "NOTES_TOKEN_SECRET",
+  "token_ttl_seconds": 3600,
+  "max_note_bytes": 65536,
+  "allowed_origins": ["http://localhost:5173"]
+}
