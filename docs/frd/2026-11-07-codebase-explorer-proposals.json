@@ -1,0 +1,230 @@
+{
+  "modules": [
+    {
+      "name": "Snapshot e inventario",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Legge l'albero del progetto entro il perimetro Git e scrive lo snapshot SQLite con file, simboli e fatti. Contratto in ingresso: snapshot.py write/resolve/update e snapshot_store. Esclusi: parsing per linguaggio (Adattatori dei linguaggi) e indice semantico.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/snapshot.py",
+        "plugins/codebase-map/skills/map/scripts/snapshot_store.py",
+        "plugins/codebase-map/skills/map/scripts/json_snapshot.py",
+        "plugins/codebase-map/skills/map/scripts/tree_scope.py",
+        "plugins/codebase-map/skills/map/scripts/dependency_graph.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/snapshot.md", "plugins/codebase-map/skills/map/references/run.md"]
+    },
+    {
+      "name": "Adattatori dei linguaggi",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Estrae simboli, import e commenti da ogni linguaggio supportato, con tree-sitter quando disponibile e regex altrimenti. Contratto in ingresso: languages.get_adapter e ast_parser. Esclusa la risoluzione dei riferimenti tra file.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/languages",
+        "plugins/codebase-map/skills/map/scripts/ast_parser.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/SKILL.md"]
+    },
+    {
+      "name": "Indice semantico",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Risolve dichiarazioni e riferimenti in archi di chiamata e import, calcola cicli, centralità e impatto delle modifiche. Contratto in ingresso: semantic_store.build_edit_impact e build_stale_callers. Esclusa la lettura delle sorgenti (Lettore delle sorgenti).",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/semantic_store.py",
+        "plugins/codebase-map/skills/map/scripts/semantic_index.py",
+        "plugins/codebase-map/skills/map/scripts/resolution.py",
+        "plugins/codebase-map/skills/map/scripts/store_graph.py",
+        "plugins/codebase-map/skills/map/scripts/store_graph_metrics.py",
+        "plugins/codebase-map/skills/map/scripts/store_consumers.py",
+        "plugins/codebase-map/skills/map/scripts/usage_finder.py",
+        "plugins/codebase-map/skills/map/scripts/edge_view.py",
+        "plugins/codebase-map/skills/map/scripts/resolve_edges.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/mcp.md"]
+    },
+    {
+      "name": "Schede semantiche",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Conserva le schede descrittive dei simboli e ne giudica la freschezza rispetto allo snapshot. Contratto in ingresso: card_store e semantic_map. Esclusa la generazione del testo, che fanno gli agenti.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/card_store.py",
+        "plugins/codebase-map/skills/map/scripts/semantic_map.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/deepen.md"]
+    },
+    {
+      "name": "Lettore delle sorgenti",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Restituisce outline, grafo statico e blocchi di sorgente verificati contro lo snapshot. Contratto in ingresso: outline_manifest, graph_packet, read_packet. Escluso il ranking della ricerca.",
+      "members": ["plugins/codebase-map/skills/map/scripts/source_reader.py"],
+      "evidence": ["plugins/codebase-map/skills/map/references/tools-guide.md"]
+    },
+    {
+      "name": "Grafo dei moduli",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Ricava i moduli dai manifest di build, dai moduli dichiarati e dalle proposte di un modello, e ne verifica membri ed evidenze. Contratto in ingresso: modules.py build/query/brief/propose. Esclusa l'inferenza di moduli dai nomi delle cartelle.",
+      "members": ["plugins/codebase-map/skills/map/scripts/modules.py"],
+      "evidence": ["plugins/codebase-map/skills/map/references/modules.md"]
+    },
+    {
+      "name": "Ricerca",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Costruisce e interroga l'indice lessicale FTS5 e, solo su richiesta, gli embedding locali. Contratto in ingresso: retrieval.search e snapshot.py index. Esclusa la lettura delle sorgenti trovate.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/retrieval.py",
+        "plugins/codebase-map/skills/map/scripts/embedding_worker.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/locate.md", "plugins/codebase-map/skills/map/references/embeddings.md"]
+    },
+    {
+      "name": "Scope e contesto",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Sceglie le evidenze per un compito e le impacchetta entro un budget per il destinatario. Contratto in ingresso: context_packet.create_context. Esclusa la decisione su cosa modificare.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/scope_planner.py",
+        "plugins/codebase-map/skills/map/scripts/map_slice.py",
+        "plugins/codebase-map/skills/map/scripts/context_packet.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/scope.md", "plugins/codebase-map/skills/map/references/context.md"]
+    },
+    {
+      "name": "Servizio MCP",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Espone la mappa agli agenti come strumenti MCP vincolati a un progetto e a un run. Contratto in ingresso: i tool codebase_map_* e MapService. Esclusi analisi, scelta dei modelli e scheduling, che restano all'host.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/mcp_server.py",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/mcp.md"]
+    },
+    {
+      "name": "Confinamento del progetto",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Lega ogni operazione alla radice del progetto, rifiuta link e percorsi esterni e serializza le scritture con un lock. Contratto in ingresso: confinement.reject_link_chain e il lock di progetto. Escluso il perimetro dei file, che è di Snapshot e inventario.",
+      "members": ["plugins/codebase-map/skills/map/scripts/confinement.py"],
+      "evidence": ["plugins/codebase-map/policies/write-confinement.toml"]
+    },
+    {
+      "name": "Strumenti di analisi",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "CLI di supporto alle fasi di analisi: classificazione dei file, commenti, documentazione e cascata dei fogli di stile. Contratto in ingresso: le CLI analyze_file, classifier, cascade_scan, doc_review, rewrite_comments. Escluso lo snapshot.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/analyze_file.py",
+        "plugins/codebase-map/skills/map/scripts/classifier.py",
+        "plugins/codebase-map/skills/map/scripts/cascade_scan.py",
+        "plugins/codebase-map/skills/map/scripts/doc_review.py",
+        "plugins/codebase-map/skills/map/scripts/comment_rewriter.py",
+        "plugins/codebase-map/skills/map/scripts/rewrite_comments.py"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/phases-5-6.md"]
+    },
+    {
+      "name": "Metodo di analisi",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Istruzioni che gli agenti eseguono per produrre i report 01-07 di un run. Contratto in ingresso: la skill map e i ruoli dichiarati. Escluso il codice: le istruzioni non hanno import, quindi la mappa non ne vede gli archi.",
+      "members": [
+        "plugins/codebase-map/roles",
+        "plugins/codebase-map/skills/map/references",
+        "plugins/codebase-map/skills/map/SKILL.md"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/SKILL.md"]
+    },
+    {
+      "name": "Selezione dei revisori",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Sceglie e compone gli auditor di una review a partire da diff, segnali e pacchetto d'impatto. Contratto in ingresso: review_roster.py e composition.py. Esclusa l'esecuzione delle review.",
+      "members": [
+        "plugins/senior-review/skills/review-preparation/scripts/review_roster.py",
+        "plugins/senior-review/skills/review-preparation/scripts/composition.py"
+      ],
+      "evidence": ["plugins/senior-review/skills/review-preparation/SKILL.md"]
+    },
+    {
+      "name": "Registro dell'esperienza",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Registra gli esiti delle review per riusarli nelle successive. Contratto in ingresso: review_experience.py. Esclusa la selezione dei revisori.",
+      "members": ["plugins/senior-review/skills/review-consolidation/scripts/review_experience.py"],
+      "evidence": ["plugins/senior-review/skills/review-consolidation/SKILL.md"]
+    },
+    {
+      "name": "Auditor e metodo di review",
+      "kind": "component",
+      "location": "internal",
+      "responsibility": "Ruoli degli auditor e istruzioni del metodo di review, eseguiti dagli agenti. Contratto in ingresso: i ruoli senior-review e le skill di review. Escluso il codice di selezione; le istruzioni non hanno import.",
+      "members": [
+        "plugins/senior-review/roles",
+        "plugins/senior-review/skills/review-method",
+        "plugins/senior-review/skills/investigation-method",
+        "plugins/senior-review/skills/application-cleanup-method",
+        "plugins/senior-review/skills/defect-taxonomy",
+        "plugins/senior-review/skills/review-quality-gates"
+      ],
+      "evidence": ["plugins/senior-review/README.md"]
+    },
+    {
+      "name": "Git",
+      "kind": "component",
+      "location": "external",
+      "responsibility": "CLI di Git usata per il perimetro dei file e i metadati del commit. Contratto: git invocato come processo da percorsi assoluti del PATH.",
+      "members": [],
+      "evidence": ["plugins/codebase-map/skills/map/scripts/tree_scope.py"]
+    },
+    {
+      "name": "Host dell'agente",
+      "kind": "component",
+      "location": "external",
+      "responsibility": "Client MCP che lancia il server, chiama gli strumenti e gestisce agenti, modelli e UI. Contratto: trasporto stdio dell'SDK MCP.",
+      "members": [],
+      "evidence": ["plugins/codebase-map/skills/map/scripts/mcp_server.py"]
+    },
+    {
+      "name": "Modello di embedding",
+      "kind": "component",
+      "location": "external",
+      "responsibility": "Modello ONNX locale scaricato una volta, usato solo se l'utente sceglie gli embedding. Contratto: onnxruntime.",
+      "members": [],
+      "evidence": ["plugins/codebase-map/skills/map/scripts/embedding_worker.py"]
+    },
+    {
+      "name": "Analisi d'impatto",
+      "kind": "feature",
+      "location": "internal",
+      "responsibility": "Dato un simbolo da modificare, trova chiamanti, test e chiamanti da rivalidare; la review lo usa per scegliere gli auditor.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/semantic_store.py::build_edit_impact",
+        "plugins/codebase-map/skills/map/scripts/semantic_store.py::build_stale_callers",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py::MapService.edit_impact",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py::MapService.stale_callers",
+        "plugins/senior-review/skills/review-preparation/scripts/review_roster.py::impact_signals"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/tools-guide.md"]
+    },
+    {
+      "name": "Ricerca del codice per un agente",
+      "kind": "feature",
+      "location": "internal",
+      "responsibility": "Il ciclo cerca, espandi, leggi: ricerca lessicale, outline e grafo, poi lettura verificata del sorgente.",
+      "members": [
+        "plugins/codebase-map/skills/map/scripts/retrieval.py",
+        "plugins/codebase-map/skills/map/scripts/source_reader.py",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py::MapService.search",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py::MapService.outline",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py::MapService.graph",
+        "plugins/codebase-map/skills/map/scripts/mcp_service.py::MapService.read"
+      ],
+      "evidence": ["plugins/codebase-map/skills/map/references/locate.md"]
+    }
+  ]
+}
