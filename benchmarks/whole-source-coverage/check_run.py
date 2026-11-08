@@ -3,7 +3,9 @@
 Every cell the run newly covered must have been read in full by the job holding it:
 successful Read or codebase_map_read results whose line ranges, merged, span every
 line of the file. A call without a result, a search, an error or a short result does
-not count, and the job's own dispatch must have ended without error. Events belong to
+not count, and the job's own dispatch must exist and must not have failed; the job's
+delivered and complete outcome comes from the register, which account derives from the
+job's result. Events belong to
 a job through its Agent dispatch (the job ID as dispatch name or in the prompt) and
 the parent_tool_use_id of the worker's events. A reused cell (no job) needs its
 provenance and no new read. Tokens count once per assistant message; the final
@@ -108,7 +110,10 @@ def analyze(events: list[dict], cells: list[dict], root: str) -> dict:
             continue
         ranges = read_ranges(name, tool_input, results[use][0], results[use][1], root)
         if ranges is None:
-            unverifiable.append({"job_id": job, "tool": name, "input": tool_input})
+            targets = [tool_input.get("file_path", "")] + [request.get("path", "") for request in
+                                                           tool_input.get("requests", []) if isinstance(request, dict)]
+            unverifiable.append({"job_id": job, "tool": name, "input": tool_input,
+                                 "paths": [relative(str(target), root) for target in targets if target]})
             continue
         for path, start, end in ranges:
             reads[(job, path)].append((start, end))
@@ -131,14 +136,16 @@ def analyze(events: list[dict], cells: list[dict], root: str) -> dict:
             violations.append({**where, "problem": "job without a successful result in the transcript"})
             continue
         try:
-            lines = len((Path(root) / item["path"]).read_text(encoding="utf-8", errors="replace").splitlines())
+            text = (Path(root) / item["path"]).read_bytes().decode("utf-8", errors="replace")
+            # Count newline-separated lines only, as Read numbers them; splitlines also splits on \x0c and others.
+            lines = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
         except OSError:
             unverified.append({**where, "problem": "file not on disk"})
             continue
         ranges = reads[(item["job_id"], item["path"])]
         if spans_all(ranges, lines):
             counts["verified"] += 1
-        elif any(read["job_id"] == item["job_id"] for read in unverifiable):
+        elif any(read["job_id"] == item["job_id"] and item["path"] in read["paths"] for read in unverifiable):
             unverified.append({**where, "problem": "read in a format this checker cannot verify"})
         else:
             violations.append({**where, "problem": f"not read in full: {sorted(ranges)} of {lines} lines"})

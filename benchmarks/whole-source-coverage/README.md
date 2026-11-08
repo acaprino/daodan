@@ -65,5 +65,6 @@ Il dato secondario è il numero di token per cella coperta.
 ## Limiti
 
 - La fixture è piccola: il metodo attuale la legge in un solo job. Il confronto misura la divisione, non il caso in cui un job non basta.
-- La lettura integrale si verifica solo per `Read` e `codebase_map_read`; altre letture risultano non verificabili.
+- La lettura integrale si verifica solo per `Read` e `codebase_map_read`; altre letture risultano non verificabili. Il troncamento di righe molto lunghe da parte di `Read` non è rilevato.
+- Il metodo attuale non ha celle: per lui «Controlli aperti» non si applica.
 - Un solo campione per metodo: nessuna stima di varianza.

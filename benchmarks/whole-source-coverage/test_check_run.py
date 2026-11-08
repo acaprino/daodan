@@ -133,6 +133,21 @@ class CheckRunTest(unittest.TestCase):
         report = self.analyze([cell("a.py")])
         self.assertEqual((report["violations"], len(report["unverified"])), ([], 1))
 
+    def test_unverifiable_read_marks_only_its_own_file(self):
+        agent = self.run_.dispatch("job-01")
+        self.run_.assistant([{"type": "tool_use", "id": "r9", "name": "Read",
+                              "input": {"file_path": str(self.root / "a.py")}}], agent)
+        self.run_.result("r9", agent, "content without line numbers")
+        report = self.analyze([cell("a.py"), cell("b.py")])
+        self.assertEqual([item["path"] for item in report["unverified"]], ["a.py"])
+        self.assertEqual([item["path"] for item in report["violations"]], ["b.py"])
+
+    def test_lines_count_newlines_only(self):
+        (self.root / "a.py").write_text(TEN_LINES.replace("line 3", "line\x0c3"), encoding="utf-8", newline="\n")
+        agent = self.run_.dispatch("job-01")
+        self.run_.read(agent, "a.py", 1, 10)
+        self.assertEqual(self.analyze([cell("a.py")])["cells"]["verified"], 1)
+
     def test_tokens_count_each_message_once(self):
         agent = self.run_.dispatch("job-01")
         usage = {"input_tokens": 100, "output_tokens": 7, "cache_read_input_tokens": 50}
