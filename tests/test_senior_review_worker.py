@@ -2,8 +2,8 @@
 
 Pinned: the worker is a registered agent with five tools, so it starts without the
 host's full tool set; it is support, never a reviewer the catalog offers; the roster
-lets the coordinator dispatch it; a lens it delivers counts like one from the host's
-generic worker.
+lets the coordinator dispatch it; only a lens it delivers counts, never one from the
+host's generic worker.
 """
 
 import json
@@ -57,16 +57,16 @@ class IsolatedWorkerTest(unittest.TestCase):
         roster = {"schema": review_roster.SCHEMA, "roster": [], "support": list(review_roster.SUPPORT), "jobs": []}
         self.assertEqual(review_roster.check(roster, {"roles": [WORKER]}), [])
 
-    def test_lens_from_either_worker_counts(self):
+    def test_only_the_plugin_worker_counts_for_a_lens(self):
         review = {"id": "r1", "support": list(review_roster.SUPPORT), "grounding": {"candidate": "c1"}}
-        for role in (WORKER, "general-purpose"):
+        for role, counted in ((WORKER, True), ("general-purpose", False)):
             delivery = {"review": "r1", "role": role, "status": "delivered", "coverage": "complete",
                         "gaps": [], "candidate": "c1",
                         "check": {"kind": "verification", "lens": 1, "targets": ["F1"],
                                   "input_mode": "verification", "independent": True,
                                   "evidence": ["a.py:3"], "verdict": "REAL"}}
             check = review_experience.lens_check(review, {"d1": delivery}, "F1", 1)
-            self.assertIsNotNone(check, role)
+            self.assertEqual(check is not None, counted, role)
 
 
 if __name__ == "__main__":

@@ -22,8 +22,8 @@ Shared obligations below; load step-specific procedures only when needed.
 | code-review `fix`/`commit` remediation | `references/code-review-fix-loop.md` |
 
 Lens 0 uses declared `senior-review:premise-auditor`. Lenses 1-3, critic and
-inline briefs use the isolated-worker binding, `senior-review:isolated-worker`
-(the host's own where it is absent), inheriting the session model. If the host provides no such
+inline briefs use the isolated-worker binding, `senior-review:isolated-worker`,
+inheriting the session model. If the host provides no such
 binding, declare independent verification unavailable instead of inventing one.
 
 ## Shared-Context Provenance Rule

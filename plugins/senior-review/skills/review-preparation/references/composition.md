@@ -103,7 +103,7 @@ requires a fresh prepared entry, never mutation of the immutable old entry.
 Each job carries its role, canonical `specialist_ids`, scope, input mode,
 candidate, knowledge and source fingerprints, body digest and output path.
 Dispatch every job in one wave on the isolated-worker binding,
-`senior-review:isolated-worker` (the host's own where it is absent), with the complete actual worker role and exact
+`senior-review:isolated-worker`, with the complete actual worker role and exact
 job body supplied once through the active host mechanism, plus the native variant's
 prepared inputs. If the host supplies no isolated binding, declare the job
 unavailable instead of running it in a shared context. Supply body-free job metadata for accounting; do not make a worker

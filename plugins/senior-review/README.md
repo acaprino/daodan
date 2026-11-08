@@ -59,7 +59,9 @@ ogni aiutante parte da ~111.000 token      ogni aiutante parte da ~20.000 token
 
 Stima ricavata dalle trascrizioni di quella run: circa un terzo in meno, da 8,9 a circa 5,7 milioni di token equivalenti. Non è ancora misurata da una run nuova.
 
-Se l'host non ha registrato l'agente, il coordinatore usa l'aiutante isolato dell'host e lo scrive nello stato della run. Succede per esempio in una copia `git worktree` senza `.claude/settings.local.json`. La review resta valida, ma costa di più. Le chiamate restano isolate in entrambi i casi: nessun aiutante vede i finding degli altri prima di consegnare.
+**Nessun ripiego.** L'aiutante generico dell'host (in Claude Code `general-purpose`) non sostituisce `isolated-worker`. Se il plugin non è caricato, la review dichiara non disponibili job, lenti e critico e resta incompleta: costerebbe sei volte tanto per aiutante, e il costo deve restare una scelta, non un effetto nascosto. Succede per esempio in una copia `git worktree` senza `.claude/settings.local.json`: prima di una review lì, copiare quel file.
+
+Le chiamate a ondate restano isolate: nessun aiutante vede i finding degli altri prima di consegnare.
 
 ## Stato
 

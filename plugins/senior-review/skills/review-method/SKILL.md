@@ -25,8 +25,8 @@ Keep one review preparation and final report owner; required workers retain isol
 
 The isolated-worker binding is `senior-review:isolated-worker`, five tools and no
 host extras: jobs, lenses 1-3, critic, history, hygiene and minimal-fix briefs run
-on it. Where the host has not registered it, use the host's own isolated binding and
-record which one ran; never an invented role.
+on it. Where the host has not registered it, declare those workers unavailable
+and the review incomplete; never substitute the host's generic worker or invent a role.
 Dispatch in waves: every worker of one step that depends on no other goes out in a
 single turn, and the coordinator waits for that wave's results without spending a
 turn per worker. The README section "Esecuzione" gives the reason and an example.
