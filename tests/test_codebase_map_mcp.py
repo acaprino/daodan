@@ -69,8 +69,9 @@ class MapServiceTests(unittest.TestCase):
 
     def test_a_missing_engine_is_an_event_and_a_state_never_a_failed_run(self):
         import resolve_edges
-        with mock.patch.object(resolve_edges, "engine_command", return_value=None):
+        with mock.patch.object(resolve_edges, "stage_command", return_value=None),                 mock.patch.object(resolve_edges, "_spawn_detached") as spawn:
             created = self.create(engine=True)
+        spawn.assert_not_called()
         self.assertEqual(created["engine"]["state"], "unavailable")
         events = [item["event"] for item in self.service.events("example")["events"]]
         self.assertIn("engine_unavailable", events)

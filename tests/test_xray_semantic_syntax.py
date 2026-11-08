@@ -155,7 +155,9 @@ class JavaScriptSemanticTests(unittest.TestCase):
         semantic = self.parse('const é = 1; save(); save(); obj[key](); factory().save();')
         calls = [r for r in semantic["references"] if r["kind"] == "call"]
         self.assertEqual([r["span"] for r in calls[:2]], [[1, 14, 1, 18], [1, 22, 1, 26]])
-        self.assertEqual(sum(not r["parts"] for r in calls), 2)
+        # A member of a computed value keeps its name; a computed member has none.
+        dynamic = [r["parts"] for r in calls if r.get("reason") == "dynamic-callee"]
+        self.assertEqual(dynamic, [[], ["(expr)", "save"]])
 
     def test_for_bindings_and_var_arrow_capture_keep_lexical_scope(self):
         semantic = self.parse('import {save} from "./core"; function run(){\n'
@@ -251,6 +253,35 @@ class JavaScriptSemanticTests(unittest.TestCase):
         with mock.patch.object(typescript, "get_parser", return_value=(counted, language)):
             self.parse('export const save = () => 1; save();', typescript.adapter, "ts")
         self.assertEqual(counted.parse.call_count, 1)
+
+
+class CalleeSpanTests(unittest.TestCase):
+    """A call's span ends on the callee's name, where an engine is asked."""
+
+    def parse(self, source, language, suffix):
+        from languages import get_adapter
+        semantic = getattr(get_adapter(language).parse(source, f"Sample.{suffix}"), "semantic", None)
+        if semantic is None:
+            self.skipTest(f"no {language} grammar")
+        return semantic
+
+    def callee_text(self, source, reference):
+        line = source.splitlines()[reference["span"][2] - 1].encode("utf-8")
+        start = reference["span"][1] if reference["span"][0] == reference["span"][2] else 0
+        return line[start:reference["span"][3]].decode("utf-8")
+
+    def test_a_method_call_ends_on_the_method_not_the_arguments(self):
+        source = "\n".join(["class A {", "  void run(B b) {", "    b.go(b.go(1));",
+                            "    new java.util.ArrayList<String>();", "    helper(2);", "  }", "}", ""])
+        calls = [r for r in self.parse(source, "java", "java")["references"] if r["kind"] == "call"]
+        self.assertEqual(sorted(self.callee_text(source, r) for r in calls),
+                         ["b.go", "b.go", "helper", "java.util.ArrayList"])
+
+    def test_declarations_record_where_they_are_named(self):
+        source = "\n".join(["class Box {", "  Box() {}", "  int open(int x) { return x; }", "}", ""])
+        declarations = {(d["name"], d["kind"]): d for d in self.parse(source, "java", "java")["declarations"]}
+        self.assertEqual(declarations[("Box", "class")]["name_span"][:2], [1, 6])
+        self.assertEqual(declarations[("open", "function")]["name_span"][:2], [3, 6])
 
 
 if __name__ == "__main__":

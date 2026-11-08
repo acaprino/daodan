@@ -76,7 +76,8 @@ creating an unowned index; a worker reports the gap to its coordinator.
    query, declarations, callsite spans, target identities, resolution and
    reasons, imports, coverage and diagnostics. Report call coverage as
    `edge_view.coverage.resolution`: resolved over resolvable, never resolved over
-   all calls, and name the engine state when its pass is still running. Narrow or split a `truncated`
+   all calls, per language from `by_language`, and name the engine state of a
+   language whose stage is still running or unavailable. Narrow or split a `truncated`
    query before raising its limit; retain gaps. Static resolution does not cover
    dynamic dispatch or arbitrary receiver types, and a resolved edge verifies no
    contract. Cycles, transitive importers and PageRank guide reading, never

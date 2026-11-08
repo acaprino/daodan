@@ -60,7 +60,7 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | `codebase_map_scope` | `target="."`: inventory counts, languages and declared exclusions; starts no analysis |
 | `codebase_map_create_run` | `target`, exact `run_id`, optional `depth="full"` or `"lite"`, `critical`, `comments`, `docs_only`, `phase`, `stop_after`, `format="sqlite"` (or explicit `"json"`), `engine=true`: snapshot and prepared classic run, and the call-resolution engine pass started in the background beside the snapshot (`engine_started`, or `engine_unavailable` with its install line); `engine=false` skips it for this run, and its repairs too |
 | `codebase_map_runs` | canonical runs and active registry in this project; an unreadable run is listed with `readable: false` and its `error` |
-| `codebase_map_status` | `run_id`: current `state` and canonical delivery `check`; missing-source diagnostics keep history observable; `engine`: the engine store state (`running`, `fresh`, `sampled`, `stale`, `failed`, `unavailable`, `stopped`, `off`) and `resolution`, resolved over resolvable calls |
+| `codebase_map_status` | `run_id`: current `state` and canonical delivery `check`; missing-source diagnostics keep history observable; `engine`: the engine store state (`running`, `fresh`, `sampled`, `stale`, `failed`, `unavailable`, `stopped`, `off`), the same per language in `languages` (`answered` of `population` while a stage publishes; an `unavailable` language carries its `install` line), and `resolution`, resolved over resolvable calls with `by_language` |
 | `codebase_map_outline` | `run_id`, optional `path`, `pattern` (literal case-insensitive substrings separated by `\|`, never a regular expression), `limit=100`: bound symbol metadata |
 | `codebase_map_graph` | `run_id`, optional `paths`, `hops=2`, `limit=100`: verified static graph and diagnostics |
 | `codebase_map_read` | `run_id`, `requests`: verified source blocks; a result above 4,000,000 characters is refused, so split the request |
@@ -116,7 +116,8 @@ belongs to a different candidate`:
    repaired by `codebase_map_index` or `snapshot.py index MANIFEST`
    (`--check` reports without writing). Missing, it stays a bound missing input.
 2. Engine call edges: `engine-edges.sqlite`, written beside the manifest by the
-   pass that run creation starts; while it runs, or when it is unavailable,
+   pass that run creation starts, one entry per language as each engine's stage
+   ends; while a language's stage runs, or when its engine is unavailable, its
    callers come from the lexical edges alone and the edge view says so.
 3. Cards (optional): the project card store; only fresh cards enter a packet.
 

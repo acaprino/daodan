@@ -50,14 +50,19 @@ MAX_TOKENS = 2048
 DIMENSIONS = 768
 
 
-def default_model_dir():
-    """One read-only model location per user/revision, shared across projects."""
+def shared_cache_dir():
+    """The per-user directory Daodan shares across projects: models and language engines."""
     windows = platform.system() == 'Windows'
     fallback = Path.home() / ('AppData/Local' if windows else '.cache')
     base = Path(os.environ.get('LOCALAPPDATA' if windows else 'XDG_CACHE_HOME') or fallback)
     if not base.is_absolute():
-        raise ValueError('shared model cache must be an absolute path')
-    return base / ('Daodan' if windows else 'daodan') / 'models' / MODEL_NAME / MODEL_REVISION
+        raise ValueError('shared cache must be an absolute path')
+    return base / ('Daodan' if windows else 'daodan')
+
+
+def default_model_dir():
+    """One read-only model location per user/revision, shared across projects."""
+    return shared_cache_dir() / 'models' / MODEL_NAME / MODEL_REVISION
 
 
 class StaleEmbedding(ValueError):
@@ -114,7 +119,7 @@ def _profile(provider):
 
 def _destination(manifest, index):
     manifest, index = retrieval._destination(manifest, index)
-    if index.name in {'cards.sqlite', 'retrieval.sqlite', 'engine-edges.sqlite'}:
+    if index.name in {'cards.sqlite', 'retrieval.sqlite', 'engine-edges.sqlite', 'engine-answers.sqlite'}:
         raise ValueError('embedding destination would replace another evidence store')
     return manifest, index
 

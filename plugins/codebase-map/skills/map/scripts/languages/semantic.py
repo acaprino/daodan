@@ -410,6 +410,8 @@ class _JavaScriptEvidence(_Evidence):
         self.tauri_invoke_locals = set()
         self.tauri_namespaces = set()
         self.tauri_commands_bound = set()
+        # Overload signatures by (scope, name), waiting for the declaration that implements them.
+        self.signatures: dict[tuple[str, str], list] = {}
 
     def extract(self, root):
         self.scope_by_id["module"]["strict"] = any(n.type in ("import_statement", "export_statement") for n in root.named_children)
@@ -563,7 +565,7 @@ class _JavaScriptEvidence(_Evidence):
             self.note("wildcard/namespace export is unresolved")
         self.walk(declaration)
 
-    def function(self, node, assigned=None, binding_scope=None):
+    def function(self, node, assigned=None, binding_scope=None, assigned_node=None):
         name = node.child_by_field_name("name")
         defining_scope = self.scope
         if name is not None and name.type == "computed_property_name":
@@ -577,7 +579,16 @@ class _JavaScriptEvidence(_Evidence):
         # Method property names are not lexical bindings in the surrounding
         # scope. Their IDs still own calls made by the method body.
         kind = "method" if node.type == "method_definition" else "function"
-        identity = self.declaration(assigned or self.text(name) or "(anonymous)", kind, self.span(node), binding_scope)
+        # Where an engine says this function is declared: the bound variable, else its own name.
+        named = assigned_node if assigned is not None else name
+        extra = {"name_span": self.span(named)} if named is not None and named.type in (
+            "identifier", "property_identifier", "private_property_identifier") else None
+        overloads = self.signatures.pop((binding_scope or self.scope, self.text(named)), None) if extra else None
+        if overloads:
+            # An engine may answer at an overload signature; the runtime target is this body.
+            extra["signature_spans"] = overloads
+        identity = self.declaration(assigned or self.text(name) or "(anonymous)", kind, self.span(node), binding_scope,
+                                    extra)
         if kind == "method" or (assigned is None and node.type in (
                 "function_expression", "function", "generator_function", "arrow_function")):
             self.data["declarations"][-1]["lexical"] = False
@@ -655,9 +666,15 @@ class _JavaScriptEvidence(_Evidence):
                  "generator_function", "arrow_function", "method_definition"):
             self.function(node)
             return
+        if t == "method_signature":
+            name = node.child_by_field_name("name")
+            if name is not None:
+                self.signatures.setdefault((self.scope, self.text(name)), []).append(self.span(name))
+            return
         if t == "function_signature":
             name = node.child_by_field_name("name")
             if name is not None:
+                self.signatures.setdefault((self.scope, self.text(name)), []).append(self.span(name))
                 self.declaration(self.text(name), "unknown", self.span(node))
                 self.note("overload/ambient function signature has no unique runtime target")
             return
@@ -674,7 +691,8 @@ class _JavaScriptEvidence(_Evidence):
         if t in ("class_declaration", "class", "abstract_class_declaration"):
             name = node.child_by_field_name("name")
             if name is not None:
-                identity = self.declaration(self.text(name), "class", self.span(node))
+                identity = self.declaration(self.text(name), "class", self.span(node),
+                                            extra={"name_span": self.span(name)})
                 if t == "class":
                     self.data["declarations"][-1]["lexical"] = False
             else:
@@ -725,7 +743,7 @@ class _JavaScriptEvidence(_Evidence):
                 value = item.child_by_field_name("value")
                 if name is not None and name.type == "identifier" and value is not None and value.type in (
                         "arrow_function", "function_expression", "function", "generator_function"):
-                    self.function(value, self.text(name), scope)
+                    self.function(value, self.text(name), scope, name)
                 else:
                     self.binding(name, "binding", scope)
                     self.walk(value)
@@ -786,9 +804,15 @@ class _JavaScriptEvidence(_Evidence):
                                     "span": self.span(first_arg),
                                 })
                             call_parts = [synth_local]
-                self.reference(call_parts, "call", self.span(function), None if call_parts else "dynamic-callee")
+                if not call_parts and function.type == "member_expression":
+                    # A member of a computed value keeps its name, so the call can be classified and asked.
+                    prop = function.child_by_field_name("property")
+                    if prop is not None and prop.type in ("property_identifier", "private_property_identifier"):
+                        call_parts = ["(expr)", self.text(prop)]
+                self.reference(call_parts, "call", self.span(function),
+                               "dynamic-callee" if not call_parts or call_parts[0] == "(expr)" else None)
                 if not parts:
-                    self.walk(function)
+                    self.walk(function.child_by_field_name("object") if call_parts else function)
                 if parts == ["eval"]:
                     scope = self.scope
                     while scope is not None:
@@ -886,6 +910,10 @@ _TS_MEMBER_NODES = frozenset({
 })
 
 
+_CALLEE_NAME_NODES = frozenset({"identifier", "type_identifier", "field_identifier", "simple_identifier",
+                                 "property_identifier", "name"})
+
+
 class _TreeSitterEvidence(_Evidence):
     """Unified Tree-sitter semantic extractor backed by ._treesitter helpers and tags.scm."""
 
@@ -955,6 +983,17 @@ class _TreeSitterEvidence(_Evidence):
             if prefix and field is not None and field.type in ("identifier", "type_identifier", "field_identifier", "simple_identifier"):
                 return prefix + [self.text(field)]
         return []
+
+    def last_name(self, node, name):
+        """The rightmost identifier under `node` spelled `name`, where a callee's name ends."""
+        found, stack = None, [node]
+        while stack:
+            item = stack.pop()
+            if item.type in _CALLEE_NAME_NODES and self.text(item) == name and (
+                    found is None or item.end_byte > found.end_byte):
+                found = item
+            stack.extend(item.named_children)
+        return found
 
     def _is_exported(self, node, name):
         if self.scope != "module" or not name:
@@ -1222,7 +1261,7 @@ class _TreeSitterEvidence(_Evidence):
                     name_node = spec.child_by_field_name("name")
                     if name_node is not None:
                         name = self.text(name_node)
-                        self.declaration(name, "class", self.span(spec))
+                        self.declaration(name, "class", self.span(spec), extra={"name_span": self.span(name_node)})
                         if self._is_exported(spec, name):
                             self.data["exports"].append({"exported": name, "local": name})
             return
@@ -1232,7 +1271,8 @@ class _TreeSitterEvidence(_Evidence):
                 None,
             )
             name = self.text(name_node) if name_node is not None else None
-            identity = self.declaration(name, "class", self.span(node)) if name else None
+            identity = self.declaration(name, "class", self.span(node),
+                                        extra={"name_span": self.span(name_node)}) if name else None
             if self._is_exported(node, name):
                 self.data["exports"].append({"exported": name, "local": name})
             body = node.child_by_field_name("body") or next(
@@ -1308,7 +1348,9 @@ class _TreeSitterEvidence(_Evidence):
             non_lexical = bool(anon or receiver is not None or (
                 self.language == "rust" and self.scope_by_id[self.scope]["kind"] == "class"
             ))
-            identity = self.declaration(name, "function", self.span(node))
+            # Where an engine names this callable; an anonymous one has no name to answer with.
+            named = {"name_span": self.span(name_node)} if name_node is not None and not anon else None
+            identity = self.declaration(name, "function", self.span(node), extra=named)
             if non_lexical:
                 self.data["declarations"][-1]["lexical"] = False
             if not anon and (receiver is not None or not non_lexical) and self._is_exported(node, name):
@@ -1462,11 +1504,15 @@ class _TreeSitterEvidence(_Evidence):
                 else:
                     parts = []
                 target_node = name if obj is None and name is not None else node
+                # The callee runs from the receiver to the method name, never over the arguments.
+                callee_span = [obj.start_point[0] + 1, obj.start_point[1], name.end_point[0] + 1,
+                               name.end_point[1]] if obj is not None and name is not None else None
                 if obj is not None and not obj_parts:
                     self.walk(obj)
             elif t == "object_creation_expression":
                 target_node = node.child_by_field_name("type") or node
                 parts = self.parts(node.child_by_field_name("type"))
+                callee_span = None
             else:
                 target_node = (
                     node.child_by_field_name("function")
@@ -1474,12 +1520,19 @@ class _TreeSitterEvidence(_Evidence):
                     or node
                 )
                 parts = self.parts(target_node)
+                callee_span = None
                 if target_node is not node and not parts:
                     self.walk(target_node)
+            if callee_span is None:
+                callee_span = self.span(target_node)
+                named = self.last_name(target_node, parts[-1]) if parts else None
+                if named is not None:
+                    # Type arguments after the name (`List<T>`, `foo::<T>`) are not part of the callee.
+                    callee_span = callee_span[:2] + [named.end_point[0] + 1, named.end_point[1]]
             self.reference(
                 parts,
                 "call",
-                self.span(target_node),
+                callee_span,
                 "dynamic-callee" if (not parts or parts[0] == "(expr)") else None,
             )
             args_node = node.child_by_field_name("arguments") or next(

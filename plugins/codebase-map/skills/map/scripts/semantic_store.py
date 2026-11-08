@@ -1000,7 +1000,7 @@ def install_edge_view(db, store, *, engine_store=None, limit=100):
         db.execute("UPDATE effective_references SET target_id=?,resolution=?,payload=? WHERE id=?",
                    (ref["target_id"], ref["resolution"], _pack(ref), ref["id"]))
     summary = {key: view[key] for key in ("schema", "version", "profile", "coverage", "gaps")}
-    summary["profile"] = {key: value for key, value in view["profile"].items() if key != "engine_report"}
+    summary["profile"] = {key: value for key, value in view["profile"].items() if key != "engine_reports"}
     for key in ("candidates", "conflicts"):
         summary[key] = {"items": view[key][:limit], "total": len(view[key]),
                         "truncated": max(0, len(view[key]) - limit)}

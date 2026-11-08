@@ -23,7 +23,10 @@ from snapshot_store import _unpack, open_snapshot
 
 
 class Definition:
-    """The path, name, kind and exact position exposed by Jedi's answer."""
+    """An engine's answer: a path and the exact position of a name, in UTF-8 bytes.
+
+    Name and kind mirror what Jedi also reports; grading reads only the position.
+    """
 
     def __init__(self, module_path, name, *, kind="function", line=2, column=8):
         self.module_path = module_path
@@ -217,7 +220,8 @@ class ResolveEdgesTests(unittest.TestCase):
         _identity, before = self.unresolved_run_reference()
         for definition in (Definition(self.root / "app/tool.py", "run", line=3),
                            Definition(self.root / "app/tool.py", "run", column=4),
-                           Definition(self.root / "app/tool.py", "run", kind="instance")):
+                           # An answer that names no declaration, as Jedi's instances do.
+                           Definition(self.root / "app/tool.py", "run", column=None)):
             with self.subTest(definition=vars(definition)):
                 report = self.run_engine(StubEngine({("use.py", before["span"][0]): definition}))
                 self.assertEqual((report["confirmed_edges"], report["candidates"]), (0, 1))
@@ -260,7 +264,7 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIsNone(reason)
         self.assertEqual(edges[0]["target_id"], "app/tool.py::function@10:4")
 
-    def test_unicode_before_the_callee_uses_character_columns(self):
+    def test_unicode_before_the_callee_is_counted_in_bytes_at_the_engine_boundary(self):
         source = 'class User:\n    def go(self, helper):\n        marker = "é"; return helper.run()\n'
         (self.root / "app/use.py").write_text(source, encoding="utf-8")
         snapshot.write_snapshot(self.root, self.manifest)
@@ -269,7 +273,8 @@ class ResolveEdgesTests(unittest.TestCase):
                              Definition(self.root / "app/tool.py", "run")})
         report = self.run_engine(engine)
         self.assertEqual(report["confirmed_edges"], 1, report)
-        self.assertEqual(engine.asked[0][2], source.splitlines()[2].index("run"))
+        line = source.splitlines()[2]
+        self.assertEqual(engine.asked[0][2], len(line[:line.index("run")].encode("utf-8")))
 
     def test_a_multiline_callee_is_probed_on_its_final_line(self):
         source = "class User:\n    def go(self, helper):\n        return (helper\n                .run)()\n"
@@ -337,8 +342,9 @@ class ResolveEdgesTests(unittest.TestCase):
 
     def test_a_project_name_that_is_no_symbol_stays_a_candidate(self):
         _identity, before = self.unresolved_run_reference()
+        # `1` in `return 1`: a project position that names no declaration.
         engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "not_a_symbol")})
+                                     Definition(self.root / "app/tool.py", "not_a_symbol", line=3, column=15)})
         report = self.run_engine(engine)
         self.assertEqual(report["verdicts"].get("project-not-a-symbol"), 1)
         self.assertEqual((report["candidates"], report["confirmed_edges"]), (1, 0))
@@ -426,9 +432,21 @@ class ResolveEdgesTests(unittest.TestCase):
         (self.root / "app/use.py").write_text(
             "def use(helper):\n    helper.run()\n    helper.free()\n", encoding="utf-8")
         snapshot.write_snapshot(self.root, self.manifest)
-        with mock.patch.object(resolve_edges.time, "perf_counter",
-                               side_effect=[0, 1, 1.01, 2, 2.1, 3, 3.2, 4]):
-            report = self.run_engine(StubEngine())
+        # A clock that only the engine advances: 10 ms to start, then 100 and 200 ms per answer.
+        clock = [0.0]
+        steps = iter([0.01, 0.1, 0.2])
+
+        class TimedEngine(StubEngine):
+            def probe(self):
+                clock[0] += next(steps)
+                return super().probe()
+
+            def definitions(self, path, line, column):
+                clock[0] += next(steps)
+                return super().definitions(path, line, column)
+
+        with mock.patch.object(resolve_edges.time, "perf_counter", side_effect=lambda: clock[0]):
+            report = self.run_engine(TimedEngine())
         self.assertEqual(report["asked"], 2)
         self.assertEqual(report["latency_mean_ms"], 150)
         self.assertEqual(report["latency_p95_ms"], 200)
@@ -437,7 +455,7 @@ class ResolveEdgesTests(unittest.TestCase):
             self.assertGreaterEqual(report[field], 0)
         self.assertEqual(report["probe_init_elapsed_ms"], 10)
         self.assertEqual(report["inference_elapsed_ms"], 300)
-        self.assertEqual(report["total_elapsed_ms"], 4000)
+        self.assertEqual(report["total_elapsed_ms"], 310)
         estimate = report["inference_only_extrapolation"]
         self.assertEqual((estimate["asked"], estimate["selected"], estimate["population"], estimate["stride"]),
                          (report["asked"], report["selected"], report["population"], report["stride"]))
@@ -668,7 +686,7 @@ class ResolvabilityTests(unittest.TestCase):
 
         with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"), \
                 mock.patch.object(resolve_edges.metadata, "version", side_effect=version):
-            command = resolve_edges.engine_command(self.manifest, report, [])
+            command = resolve_edges.stage_command(resolve_edges.ENGINES[0], self.manifest, report, [])
         python = f"{sys.version_info[0]}.{sys.version_info[1]}"
         self.assertEqual(command[:7], ["uv", "run", "--quiet", "--no-config", "--no-project", "--python", python])
         self.assertEqual(command[7:11], ["--with", "jedi>=0.19", "--with", "tree-sitter==0.25.2"])
@@ -676,8 +694,11 @@ class ResolvabilityTests(unittest.TestCase):
         self.assertIn(str(report), command)
         with mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
                 mock.patch.object(resolve_edges.importlib.util, "find_spec", return_value=object()):
-            self.assertEqual(resolve_edges.engine_command(self.manifest, report, [])[:4],
+            self.assertEqual(resolve_edges.stage_command(resolve_edges.ENGINES[0], self.manifest, report, [])[:4],
                              [sys.executable, "-B", "-X", "faulthandler"])
+        # The detached pass itself needs nothing beyond this interpreter.
+        self.assertEqual(resolve_edges.engine_command(self.manifest, report, [])[-3:],
+                         ["--pass", "--report-out", str(report)])
 
     def test_a_background_pass_is_running_while_its_process_lives(self):
         child = mock.Mock(pid=os.getpid())
@@ -742,6 +763,305 @@ class ResolvabilityTests(unittest.TestCase):
             self.assertEqual(ensure.call_count, calls)
             if calls:
                 self.assertEqual(ensure.call_args.args, (out,))
+
+
+class MultiLanguageTests(unittest.TestCase):
+    """One store with one entry per language, written by one engine at a time."""
+
+    SOURCES = {
+        "app/use.py": "class User:\n    def go(self, helper):\n        return helper.run()\n",
+        "app/tool.py": "class Tool:\n    def run(self):\n        return 1\n",
+        "web/tool.ts": ("export class Tool {\n  run(): number { return 1; }\n}\n"
+                        "export function make(a: string): Tool;\nexport function make(a: number): Tool;\n"
+                        "export function make(a: any): Tool { return new Tool(); }\n"),
+        "web/use.ts": ("import { Tool } from './tool';\nexport function go(tool: Tool) {\n  return tool.run();\n}\n"
+                       "const twice = (t: Tool) => t.run();\nfoo().bar();\n"),
+    }
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        for rel, text in self.SOURCES.items():
+            path = self.root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        self.manifest = self.root.parent / "manifest.sqlite"
+        snapshot.write_snapshot(self.root, self.manifest)
+
+    def declarations(self, rel):
+        with open_snapshot(self.manifest) as store:
+            return {(row[0], row[1]): _unpack(row[2]) for row in store.connection.execute(
+                "SELECT name, kind, payload FROM sem_declarations WHERE file=? AND kind IN "
+                "('function','method','class')", (rel,))}
+
+    def python_engine(self):
+        return StubEngine({("use.py", 3): Definition(self.root / "app/tool.py", "run")})
+
+    def typescript_engine(self):
+        engine = StubEngine({("use.ts", 3): Definition(self.root / "web/tool.ts", "run", line=2, column=2)})
+        engine.languages = ("typescript",)
+        engine.identity = lambda: "tsstub@1.0"
+        return engine
+
+    def test_tree_sitter_declarations_record_where_an_engine_names_them(self):
+        tool = self.declarations("web/tool.ts")
+        self.assertEqual(tool[("Tool", "class")]["name_span"][:2], [1, 13])
+        self.assertEqual(tool[("run", "method")]["name_span"][:2], [2, 2])
+        make = tool[("make", "function")]
+        self.assertEqual(make["name_span"][:2], [6, 16])
+        self.assertEqual([span[:2] for span in make["signature_spans"]], [[4, 16], [5, 16]])
+        # An arrow function is named where its variable is.
+        self.assertEqual(self.declarations("web/use.ts")[("twice", "function")]["name_span"][:2], [5, 6])
+
+    def test_a_call_on_a_computed_value_keeps_its_member_name(self):
+        with open_snapshot(self.manifest) as store:
+            calls = [_unpack(row[0]) for row in store.connection.execute(
+                "SELECT payload FROM sem_references WHERE file='web/use.ts' AND kind='call'")]
+        bar = next(call for call in calls if call["parts"][-1:] == ["bar"])
+        self.assertEqual((bar["parts"], bar["reason"]), (["(expr)", "bar"], "dynamic-callee"))
+
+    def test_an_overload_signature_names_its_implementation(self):
+        with open_snapshot(self.manifest) as store:
+            table, ambiguous = resolve_edges.symbol_table(
+                store.connection, "web/tool.ts", self.SOURCES["web/tool.ts"])
+        implementation = table[(6, 16)]
+        self.assertEqual(implementation[1], "function")
+        self.assertEqual((table[(4, 16)], table[(5, 16)]), (implementation, implementation))
+        self.assertEqual(ambiguous, set())
+
+    def test_each_engine_keeps_the_entries_of_the_other_languages(self):
+        for engine in (self.python_engine(), self.typescript_engine(), self.python_engine()):
+            report = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1)
+            self.assertTrue(report["available"], report)
+        with open_snapshot(self.manifest) as store:
+            edges, binding, reason = resolve_edges.read_edge_store(
+                resolve_edges.default_edge_store(self.manifest), store)
+        self.assertIsNone(reason, reason)
+        self.assertEqual({edge["language"]: edge["resolver"] for edge in edges},
+                         {"python": "stub@1.0", "typescript": "tsstub@1.0"})
+        self.assertEqual({language: entry["engine"] for language, entry in binding["languages"].items()},
+                         {"python": "stub@1.0", "typescript": "tsstub@1.0"})
+        by_language = resolve_edges.edge_state(self.manifest)["resolution"]["by_language"]
+        self.assertEqual((by_language["typescript"]["engine"], by_language["python"]["engine"]),
+                         ("tsstub@1.0", "stub@1.0"))
+
+    def stage_runner(self, outcomes, calls):
+        """A fake `subprocess.run` writing each stage's report as the stage would."""
+        def run(command, **_options):
+            name, report = command[0], Path(command[1])
+            calls.append(name)
+            if outcomes[name] is not None:
+                report.write_text(json.dumps(outcomes[name]), encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0 if outcomes[name] else 1)
+        return run
+
+    def run_whole_pass(self, outcomes, free=8 * 2**30):
+        calls = []
+        report = self.manifest.with_name(resolve_edges.REPORT_NAME)
+        with mock.patch.object(resolve_edges, "stage_command",
+                               side_effect=lambda spec, manifest, path, environments: [spec.name, str(path)]), \
+                mock.patch.object(resolve_edges.subprocess, "run", side_effect=self.stage_runner(outcomes, calls)), \
+                mock.patch.object(resolve_edges, "free_memory", return_value=free):
+            result = resolve_edges.run_pass(self.manifest, report, [])
+        return result, calls
+
+    def test_the_pass_runs_one_engine_at_a_time_and_records_each_language(self):
+        result, calls = self.run_whole_pass({
+            "jedi": {"available": True, "engine": "jedi@0.20.1", "languages": {"python": {"state": "fresh"}}},
+            "typescript": {"available": False, "reason": "node and npm are needed",
+                           "install": "install Node.js 18 or later with npm (https://nodejs.org)"}})
+        self.assertEqual(calls, ["jedi", "typescript"])
+        self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "jedi@0.20.1"})
+        self.assertEqual(result["languages"]["typescript"]["state"], "unavailable")
+        self.assertIn("Node.js", result["languages"]["typescript"]["install"])
+        state = resolve_edges.edge_state(self.manifest)
+        self.assertEqual(state["languages"]["typescript"]["state"], "unavailable")
+        # No store was written by the fake stages, so Python reads as not yet passed.
+        self.assertEqual(state["state"], "missing")
+
+    def test_an_engine_that_runs_out_of_memory_starts_no_other(self):
+        result, calls = self.run_whole_pass({
+            "jedi": {"available": False, "reason": "MemoryError during inference", "memory_exhausted": True},
+            "typescript": {"available": True}})
+        self.assertEqual(calls, ["jedi"])
+        self.assertEqual(result["languages"]["python"]["state"], "failed")
+        self.assertEqual(result["languages"]["typescript"],
+                         {"state": "failed", "engine": "typescript",
+                          "reason": "not started: the jedi engine ran out of memory"})
+
+    def test_an_engine_waits_for_free_memory(self):
+        result, calls = self.run_whole_pass({"jedi": None, "typescript": None}, free=2**30)
+        self.assertEqual(calls, [])
+        self.assertTrue(all(outcome["state"] == "failed" and "GB of memory free" in outcome["reason"]
+                            for outcome in result["languages"].values()), result)
+        self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "failed")
+
+    def test_a_stage_without_a_report_failed_and_says_where_to_look(self):
+        result, _calls = self.run_whole_pass({"jedi": None, "typescript": {"available": True}})
+        self.assertEqual(result["languages"]["python"]["state"], "failed")
+        self.assertIn(resolve_edges.LOG_NAME, result["languages"]["python"]["reason"])
+
+
+class DistributionTests(unittest.TestCase):
+    """Work goes where it is worth most: reuse what cannot have changed, edited files first, publish as it goes."""
+
+    SOURCES = {
+        "lib.py": "def helper():\n    return 1\n\n\nclass Box:\n    def open(self):\n        return 2\n",
+        "mid.py": "import lib\n\n\ndef middle(box):\n    return box.open()\n",
+        "top.py": "from mid import middle\n\n\ndef run(box):\n    return box.open()\n",
+        "other.py": "def alone(box):\n    return box.open()\n",
+    }
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        self.root.mkdir()
+        for rel, text in self.SOURCES.items():
+            (self.root / rel).write_text(text, encoding="utf-8")
+        self.manifest = self.root.parent / "manifest.sqlite"
+        snapshot.write_snapshot(self.root, self.manifest)
+
+    def engine(self, context="ctx-1", fail_after=None):
+        owner = self
+
+        class CachingEngine(StubEngine):
+            """Every `open` call lands on `Box.open`; the context makes its answers reusable."""
+            probes = 0
+
+            def context(self):
+                return context
+
+            def probe(self):
+                CachingEngine.probes += 1
+                return super().probe()
+
+            def definitions(self, path, line, column):
+                if fail_after is not None and len(self.asked) >= fail_after:
+                    raise resolve_edges.EngineFailure("the server exited")
+                self.asked.append((Path(path).name, line, column))
+                return [Definition(owner.root / "lib.py", "open", line=6, column=8)]
+
+        return CachingEngine()
+
+    def run_engine(self, engine):
+        return resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1)
+
+    def edit(self, rel, text):
+        (self.root / rel).write_text(text, encoding="utf-8")
+        snapshot.write_snapshot(self.root, self.manifest)
+
+    def test_an_unchanged_snapshot_reuses_every_answer_without_starting_the_engine(self):
+        first = self.run_engine(self.engine())
+        self.assertEqual((first["asked"], first["reused"], first["confirmed_edges"]), (3, 0, 3))
+        again = self.engine()
+        second = self.run_engine(again)
+        self.assertEqual((second["asked"], second["reused"], second["confirmed_edges"]), (0, 3, 3))
+        self.assertEqual((again.asked, type(again).probes), ([], 0))
+        self.assertEqual(second["languages"]["python"]["state"], "fresh")
+        self.assertEqual(Path(second["answer_cache"]).name, resolve_edges.ANSWERS_NAME)
+        self.assertEqual(second["resolution"]["unasked"], 0)
+
+    def test_an_edit_reasks_its_file_and_every_file_that_imports_it(self):
+        self.run_engine(self.engine())
+        # Every answer lands in lib.py, so editing lib.py would re-ask all of them.
+        self.edit("mid.py", self.SOURCES["mid.py"] + "\n\ndef extra():\n    return 3\n")
+        engine = self.engine()
+        report = self.run_engine(engine)
+        self.assertEqual(sorted(name for name, _line, _column in engine.asked), ["mid.py", "top.py"])
+        self.assertEqual((report["reused"], report["confirmed_edges"]), (1, 3))
+
+    def test_edited_files_are_asked_before_files_whose_imports_changed(self):
+        self.run_engine(self.engine())
+        (self.root / "lib.py").write_text(self.SOURCES["lib.py"] + "\n# edited\n", encoding="utf-8")
+        self.edit("other.py", "# edited\n" + self.SOURCES["other.py"])
+        engine = self.engine()
+        self.run_engine(engine)
+        self.assertEqual([name for name, _line, _column in engine.asked][0], "other.py")
+        self.assertEqual(len(engine.asked), 3)
+
+    def test_the_reusable_part_of_the_graph_is_published_before_the_engine_starts(self):
+        self.run_engine(self.engine())
+        self.edit("mid.py", self.SOURCES["mid.py"] + "\n\ndef extra():\n    return 3\n")
+        engine, seen = self.engine(), []
+        start = engine.probe
+
+        def probe():
+            with open_snapshot(self.manifest) as store:
+                edges, binding, reason = resolve_edges.read_edge_store(
+                    resolve_edges.default_edge_store(self.manifest), store)
+            seen.append((reason, len(edges or ()), (binding or {}).get("languages", {}).get("python", {}).get("state")))
+            return start()
+
+        engine.probe = probe
+        self.run_engine(engine)
+        self.assertEqual(seen, [(None, 1, "partial")])
+
+    def test_another_engine_context_reuses_nothing(self):
+        self.run_engine(self.engine())
+        engine = self.engine(context="ctx-2")
+        report = self.run_engine(engine)
+        self.assertEqual((report["asked"], report["reused"]), (3, 0))
+
+    def test_a_failed_pass_keeps_what_it_proved_and_the_next_one_resumes(self):
+        with mock.patch.object(resolve_edges, "PUBLISH_SECONDS", 0):
+            failed = self.run_engine(self.engine(fail_after=2))
+        self.assertFalse(failed["available"])
+        with open_snapshot(self.manifest) as store:
+            edges, binding, reason = resolve_edges.read_edge_store(
+                resolve_edges.default_edge_store(self.manifest), store)
+        self.assertIsNone(reason, reason)
+        self.assertEqual((len(edges), binding["languages"]["python"]["state"]), (2, "partial"))
+        self.assertEqual(resolve_edges.edge_state(self.manifest)["languages"]["python"]["state"], "sampled")
+        engine = self.engine()
+        resumed = self.run_engine(engine)
+        self.assertEqual((resumed["asked"], resumed["reused"], resumed["confirmed_edges"]), (1, 2, 3))
+        self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "fresh")
+
+    def test_a_dry_run_asks_everything_and_writes_no_answer(self):
+        self.run_engine(self.engine())
+        engine = self.engine()
+        report = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1, dry_run=True)
+        self.assertEqual((report["asked"], report["reused"], report["answer_cache"]), (3, 0, None))
+
+    def test_digests_follow_imports_and_cycles(self):
+        hashes = {"a": "1", "b": "2", "c": "3", "d": "4"}
+        dependencies = {"a": {"b"}, "b": {"a", "c"}, "d": set()}
+        before = resolve_edges.dependency_digests(hashes, dependencies)
+        self.assertEqual(before["a"], before["b"])
+        after = resolve_edges.dependency_digests({**hashes, "c": "changed"}, dependencies)
+        self.assertNotEqual(after["a"], before["a"])
+        self.assertNotEqual(after["c"], before["c"])
+        self.assertEqual(after["d"], before["d"])
+
+
+class JavaEngineTests(unittest.TestCase):
+    def test_the_java_server_builds_nothing_downloads_nothing_and_writes_outside_the_project(self):
+        with tempfile.TemporaryDirectory() as temp:
+            engine = resolve_edges.JavaEngine(Path(temp), install_dir=Path(temp) / "engines")
+            engine.jre_home = Path(temp) / "jre"
+            java = engine.settings()["java"]
+            self.assertEqual((java["autobuild"]["enabled"], java["import"]["maven"]["enabled"],
+                              java["import"]["gradle"]["enabled"]), (False, False, False))
+            options = engine.initialization_options()
+            self.assertEqual(options["bundles"], [])
+            # Library definitions come back as class-file locations, which grade as external.
+            self.assertTrue(options["extendedClientCapabilities"]["classFileContentsSupport"])
+            self.assertEqual(engine.definitions.__func__, resolve_edges.LspEngine.definitions)
+
+
+class PositionUnitTests(unittest.TestCase):
+    def test_positions_convert_explicitly_between_units(self):
+        line = 'x = "é😀"; run()'
+        byte = len(line[:line.index("run")].encode("utf-8"))
+        self.assertEqual(resolve_edges.byte_to_char(line, byte), line.index("run"))
+        self.assertEqual(resolve_edges.byte_to_utf16(line, byte), line.index("run") + 1)
+        self.assertEqual(resolve_edges.utf16_to_byte(line, line.index("run") + 1), byte)
+        self.assertEqual(resolve_edges.char_to_byte(line, line.index("run")), byte)
+        # A byte inside a character and a unit inside a surrogate pair name no position.
+        self.assertIsNone(resolve_edges.byte_to_char(line, line.index("é") + 1))
+        self.assertIsNone(resolve_edges.utf16_to_byte(line, line.index("😀") + 1))
 
 
 class CalleePositionTests(unittest.TestCase):
@@ -926,18 +1246,17 @@ class CommandLineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve() / "proj"
             root.mkdir()
-            (root / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+            (root / "a.py").write_text("def f(x):\n    return x.f()\n", encoding="utf-8")
             manifest = Path(temp).resolve() / "manifest.sqlite"
             snapshot.write_snapshot(root, manifest)
-            engine = StubEngine(ready=False, reason="jedi is not installed")
             stdout = io.StringIO()
-            with mock.patch.object(resolve_edges, "JediEngine", return_value=engine):
-                with contextlib.redirect_stdout(stdout):
-                    code = resolve_edges.main([str(manifest), "--engine", "jedi"])
+            with mock.patch.dict(sys.modules, {"jedi": None}), contextlib.redirect_stdout(stdout):
+                code = resolve_edges.main([str(manifest), "--engine", "jedi"])
         self.assertEqual(code, 1)
         payload = json.loads(stdout.getvalue())
         self.assertFalse(payload["available"])
-        self.assertIn("uv run --with jedi", payload["install"])
+        self.assertIn("uv run --with jedi", payload["reason"])
+        self.assertEqual(payload["install"], resolve_edges.ENGINE_INSTALL)
 
 
 if __name__ == "__main__":

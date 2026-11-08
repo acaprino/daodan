@@ -536,7 +536,7 @@ class MapService:
         name = "snapshot/engine-edges.sqlite" if value is None else value
         _relative(name)
         path = run / name
-        if path.suffix != ".sqlite" or path.name in {"manifest.sqlite", "cards.sqlite", "retrieval.sqlite"}:
+        if path.suffix != ".sqlite" or path.name in {"manifest.sqlite", "cards.sqlite", "retrieval.sqlite", "engine-answers.sqlite"}:
             raise ValueError("engine_store must name an engine SQLite artifact within its run")
         confinement.reject_link_chain(path)
         if not path.resolve().is_relative_to(run.resolve()):

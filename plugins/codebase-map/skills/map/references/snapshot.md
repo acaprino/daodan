@@ -142,8 +142,13 @@ Parser notes name the engine or fallback; missing grammars report
 `tree-sitter unavailable: <error>`. For optional offline embedding, read
 `references/embeddings.md` before invoking `embedding_worker.py`.
 The engine pass writes `<run-dir>/snapshot/engine-edges.sqlite`, read by
-`edge_view.py`; `resolve_edges.py <manifest> --compact --report-out <report.json>`
-runs it in the foreground.
+`edge_view.py`: one stage per language engine, one at a time (Jedi for Python,
+typescript-language-server for TypeScript, JavaScript, Vue and Svelte), each
+installed on first use under the shared Daodan directory. Answers whose file,
+imports and target are unchanged come from `engine-answers.sqlite`, beside the
+card store; the store is published at once with them, then every 30 seconds. `resolve_edges.py
+<manifest> --pass` runs the whole pass in the foreground; `--engine <name>
+--compact --report-out <report.json>` runs one stage.
 
 Tree-sitter supplies definition ends; regex ends at the next symbol. Shared
 lines can require whole-file reading. Diagnosis never applies changes.

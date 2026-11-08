@@ -140,7 +140,18 @@ Misura su Daodan dell'8 novembre 2026, 27.187 chiamate, solo risolutore lessical
 | Altro: binding ambigui, catene `self.a.b` | 2.141 | `res.get` | motore, in parte |
 | Risolte dal risolutore lessicale | 3.927 | `helper()` importato | lessicale |
 
-Con il criterio applicato, sullo snapshot di HEAD (27.586 chiamate): 3.968 risolte su 11.753 risolvibili con il solo risolutore lessicale (33,8%), 7.399 su 9.083 con Jedi e le cartelle di `sys.path` (81,5%). Il motore sposta anche 2.670 chiamate fra le esterne, perché le trova definite fuori dal progetto. Il passaggio dura circa 13 minuti in background. Spec e misura: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
+Con il criterio applicato, sullo snapshot di HEAD (27.586 chiamate): 3.968 risolte su 11.753 risolvibili con il solo risolutore lessicale (33,8%), 7.399 su 9.083 con Jedi e le cartelle di `sys.path` (81,5%). Il motore sposta anche 2.670 chiamate fra le esterne, perché le trova definite fuori dal progetto. Il passaggio dura circa 13 minuti in background.
+
+Ogni linguaggio ha il suo motore, eseguito uno alla volta nello stesso passaggio e installato al primo uso nella cartella condivisa di Daodan. TypeScript, JavaScript, Vue e Svelte usano typescript-language-server, senza compilare né installare dipendenze:
+
+| Progetto | Solo lessicale | Con il motore | Durata | RAM di picco |
+|---|---|---|---|---|
+| ky (TypeScript) | 12,9% (791 su 6.113) | 43,3% (1.631 su 3.769) | 52 s | 1,3 GB |
+| express (JavaScript) | 7,2% (207 su 2.877) | 13,4% (385 su 2.867) | 24 s | 0,7 GB |
+
+Su express il resto sono metodi di `req`, `res` e `app`, che Express costruisce a runtime.
+
+Il passaggio chiede al motore solo ciò che può essere cambiato: una risposta si riusa finché non cambiano il suo file, i file che importa e il file in cui punta. Le risposte stanno in `engine-answers.sqlite`, accanto alle schede. Prima vengono i file modificati, poi quelli di rango più alto, e lo store esce subito con le risposte riusate e poi ogni 30 secondi. Su ky uno snapshot invariato richiede 2 secondi senza avviare il motore, la modifica di un test 8 secondi, quella di un file importato quasi ovunque 38 secondi contro i 50 del primo passaggio. Spec e misura: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
 
 `modules.py` deriva il grafo dei moduli accanto al manifest (`daodan/module-graph/v1`). Tre provenienze: `build`, letta dai manifest di 27 ecosistemi e 32 manifest (npm, pnpm, Lerna, Deno, Nx, Python, Cargo, Go, Maven, Gradle, .NET, Composer, RubyGems, Bundler, pub, melos, Swift, Mix, CMake, Cabal, Stack, sbt, Terraform, Zig, Julia, dune, plugin Daodan), stato `confirmed`; `declared`, da `codebase-modules.json` alla radice (`daodan/declared-modules/v1`), con `kind` `component` o `feature`, `location` `internal` o `external`, membri `path::Symbol`, file o directory ed evidenza, verificati sullo snapshot; `proposed`, da un modello attraverso `modules.py propose` o `codebase_map_modules(proposals=...)` dopo il `brief`, verificati allo stesso modo e mai oltre `inferred`. Nessuna directory diventa modulo per il nome. La query (`daodan/module-query/v1`) risponde `resolved`, `needs_clarification`, `incomplete` o `unknown` e non promuove mai un candidato. Contratto completo in `references/modules.md`.
 

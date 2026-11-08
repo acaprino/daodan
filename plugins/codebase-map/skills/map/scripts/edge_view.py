@@ -205,11 +205,11 @@ def load_edge_view(
                 selected = int(binding.get("selected", 0))
                 asked = int(binding.get("asked", 0))
                 stride = int(binding.get("stride", 1))
-                sampled = (selected < population) or (stride > 1)
+                sampled = selected < population
                 if sampled:
                     coverage_status = "sampled"
                     gaps.append(
-                        f"engine pass sampled {selected} of {population} unresolved Python call references (stride={stride})"
+                        f"engine pass sampled {selected} of {population} unresolved call references (stride={stride})"
                     )
                 elif not engine_edges:
                     coverage_status = "completed_empty"
@@ -320,7 +320,7 @@ def load_edge_view(
                 "engine": binding.get("engine") if binding else None,
                 "engine_available": coverage_status in {"complete", "sampled", "completed_empty"},
                 "engine_store": edge_path.as_posix() if edge_path.is_file() else None,
-                "engine_report": binding.get("engine_report", {}) if binding else {},
+                "engine_reports": binding.get("engine_reports", {}) if binding else {},
             },
             "coverage": {
                 "status": coverage_status,

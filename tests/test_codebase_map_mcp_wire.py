@@ -204,6 +204,48 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertIn(state["state"], {"fresh", "unavailable"}, state)
         self.assertIn("resolved_ratio", state["resolution"])
 
+    def test_a_typescript_pass_resolves_what_the_lexical_resolver_cannot(self):
+        (self.project / "web").mkdir()
+        (self.project / "web/tool.ts").write_text(
+            "export class Tool {\n  run(): number { return 1; }\n}\n", encoding="utf-8")
+        (self.project / "web/use.ts").write_text(
+            "import { Tool } from './tool';\nexport function go(tool: Tool) {\n  return tool.run();\n}\n",
+            encoding="utf-8")
+        state = self.data(self.call("codebase_map_create_run", {"target": "web", "run_id": "ts-live"}))["engine"]
+        # The first pass on a machine installs typescript-language-server.
+        deadline = time.monotonic() + 300
+        while state["state"] == "running" and time.monotonic() < deadline:
+            time.sleep(1)
+            state = self.data(self.call("codebase_map_status", {"run_id": "ts-live"}))["engine"]
+        language = state["languages"]["typescript"]
+        if language["state"] == "unavailable":
+            self.skipTest(language.get("install"))
+        self.assertEqual(language["state"], "fresh", state)
+        self.assertTrue(language["engine"].startswith("typescript-language-server@"), language)
+        typescript = state["resolution"]["by_language"]["typescript"]
+        self.assertEqual((typescript["resolved"], typescript["resolvable"]), (1, 1), typescript)
+
+    def test_a_java_pass_resolves_a_method_on_a_typed_receiver(self):
+        package = self.project / "jvm/src/main/java/demo"
+        package.mkdir(parents=True)
+        (package / "Tool.java").write_text(
+            "package demo;\n\npublic class Tool {\n  public int run() { return 1; }\n}\n", encoding="utf-8")
+        (package / "Use.java").write_text(
+            "package demo;\n\npublic class Use {\n  int go(Tool tool) { return tool.run(); }\n}\n", encoding="utf-8")
+        state = self.data(self.call("codebase_map_create_run", {"target": "jvm", "run_id": "java-live"}))["engine"]
+        # The first pass on a machine installs Eclipse JDT LS with its Java runtime.
+        deadline = time.monotonic() + 420
+        while state["state"] == "running" and time.monotonic() < deadline:
+            time.sleep(1)
+            state = self.data(self.call("codebase_map_status", {"run_id": "java-live"}))["engine"]
+        language = state["languages"]["java"]
+        if language["state"] == "unavailable":
+            self.skipTest(language.get("install"))
+        self.assertEqual(language["state"], "fresh", state)
+        self.assertTrue(language["engine"].startswith("eclipse-jdtls@"), language)
+        java = state["resolution"]["by_language"]["java"]
+        self.assertEqual((java["resolved"], java["resolvable"]), (1, 1), java)
+
     def test_scope_streams_monotonic_request_progress_and_structured_result(self):
         result = self.data(self.call("codebase_map_scope", {"target": "src"}, token="scope-1"))
         self.assertEqual(result["files"], 1)
