@@ -1,62 +1,103 @@
-# Fase 1: mappa aggiornata a ogni modifica e quattro correzioni al metodo di review
+# Fase 1: mappa sempre aggiornata e quattro regole per la review
 
 **Stato:** proposta rifinita, da approvare. **Data:** 9 novembre 2026. Fase 1 di 3: [fase 2](2026-11-09-flow-model.md), [fase 3](2026-11-09-flows-in-review.md).
 
-Contiene solo ciò che usa meccanismi già esistenti e misurati: l'aggiornamento incrementale dello snapshot e quattro regole di testo nel metodo di review. Nessun modello nuovo dei dati.
+Due interventi che usano solo meccanismi già presenti e misurati:
 
-## A. Run di lavoro aggiornato a ogni modifica
+- **A.** Dopo ogni modifica al codice la mappa si aggiorna da sola, nella parte che una macchina può ricalcolare.
+- **B.** La review riceve quattro regole che chiudono errori visti nei test.
 
-### Comportamento attuale
+## Parole
 
-- Dopo una modifica al codice la mappa resta quella dell'ultimo run: `codebase_map_read` fallisce con «source changed; refresh the manifest» sul file toccato, ricerca e grafo rispondono sullo stato vecchio.
-- Aggiornare richiede un run nuovo dall'ingresso della mappa. Un run è evidenza immutabile: gli artefatti di fase legano il digest del proprio manifest (`snapshot.py`, `manifest_sha256`), quindi il manifest di un run con fasi non si può riscrivere.
-- Ogni strumento MCP riceve un `run_id` esplicito; `_bound_run` accetta un run senza dichiarazione di consegna (`delivery` assente).
-- `snapshot.py write --reuse` riusa la struttura dei file invariati e rifà indice lessicale, moduli e archi del motore. Misura su questo repository (569 file, 3.205 simboli): 15,7 s da zero, 3,4 s senza modifiche, 3,6 s con un file modificato, 4,4 s con il motore. Il manifest pesa 127 MB qui e 20 MB sul run di `react-app` di phazly-app: un run nuovo per ogni modifica non è sostenibile.
-- Un hook `PostToolUse` con `async: true` parte dopo `Write` in `claude` 2.1.319 e riceve `tool_name`, `tool_input.file_path`, `cwd` e `CLAUDE_PROJECT_DIR` (prova del 9 novembre). Un hook di plugin vale per ogni sessione e ogni agente (`policies/write-confinement.toml`), e non tutti gli host eseguono gli hook di plugin.
+| Parola | Significato |
+| --- | --- |
+| Run | Una mappa del progetto fatta in un certo momento: lo snapshot dei file più i documenti di analisi |
+| Run pubblicato | L'ultimo run completo. Non cambia più: è la prova su cui poggiano analisi e review |
+| Run di lavoro | Un solo run, chiamato `working`, che segue il codice mentre cambia. Non contiene documenti di analisi |
+| Incarico | Il lavoro affidato a un revisore: un elenco di file e una richiesta |
+| Segnalazione | Un difetto descritto da un revisore, con file e riga |
+
+Le altre parole sono definite nella fase 2.
+
+## A. La mappa si aggiorna dopo ogni modifica
+
+### Oggi
+
+- Dopo una modifica la mappa resta ferma all'ultimo run. La ricerca risponde sul codice vecchio e la lettura del file modificato fallisce con «source changed; refresh the manifest».
+- Per aggiornarla bisogna rifare un run a mano.
+- Un run con i documenti di analisi non si può riscrivere: ogni documento è legato all'impronta del proprio snapshot.
+- Creare un run nuovo a ogni modifica costa troppo spazio: lo snapshot pesa 127 MB su questo repository e 20 MB su `react-app` di phazly-app.
 
 ### Proposta
 
-1. **Un solo run mutabile, dichiarato: `working`.** Vive in `.daodan/map/runs/working/` con `state.json` e `snapshot/`, senza dichiarazione di consegna e senza file di fase: non si prepara, non si registra come attivo e non si può pubblicare. `parent_run` è l'ultimo run pubblicato, di cui eredita target e formato. Senza un run pubblicato non nasce: la mappa si crea solo su richiesta.
-2. **Un comando, `snapshot.py refresh`.** Scrive il manifest nuovo riusando quello di lavoro (o del genitore alla prima volta), lo sostituisce in modo atomico, poi assicura indice lessicale, grafo dei moduli e archi del motore accanto. Scrive `refresh.json` con ora, file e simboli cambiati e, da `snapshot.py diff` contro il genitore, le affermazioni delle fasi pubblicate che citano simboli cambiati. È l'unico scrittore del run di lavoro; lo specchio pubblicato e gli altri run non si toccano.
-3. **Livello che richiede il modello: solo segnato.** Schede, documenti di fase e mappa di interconnessione non si rigenerano. La freschezza delle schede si calcola già a ogni lettura contro i digest correnti; le affermazioni di fase stantie stanno in `refresh.json`.
-4. **L'hook è solo il grilletto.** `plugins/codebase-map/hooks/hooks.json`: `PostToolUse`, matcher `Edit|Write|NotebookEdit|Bash`, `async: true`. Lo script esce subito se il progetto non ha un run pubblicato o se il file toccato sta fuori dal perimetro dello snapshot, sotto `.daodan/` o sotto `.team-review/`. Gli host senza hook chiamano `snapshot.py refresh` dall'ingresso della mappa.
-5. **Una passata alla volta.** Un lock accanto al run; una richiesta arrivata durante una passata lascia un segno, e la passata in corso ne esegue un'altra alla fine. Oltre il 40% di file cambiati rispetto al genitore il comando non aggiorna e scrive in `refresh.json` che serve un run completo, come la soglia dell'aggiornamento attuale.
-6. **Chi legge cosa.** Ricerca, outline, grafo, lettura e impatto usano `working` quando esiste; documenti di fase e pubblicazione restano sul run pubblicato. Una review non si lega mai a `working`: lega un run immutabile, creato dall'ingresso con riuso.
+1. **Il run di lavoro nasce dal run pubblicato.** Sta in `.daodan/map/runs/working/`, con lo stesso perimetro. Senza un run pubblicato non nasce: la prima mappa si fa sempre su richiesta.
+2. **Un comando lo aggiorna: `snapshot.py refresh`.** In fila:
+   1. rilegge solo i file cambiati;
+   2. sostituisce lo snapshot del run di lavoro;
+   3. rifà l'indice di ricerca, i moduli e i collegamenti `chiama`;
+   4. scrive `refresh.json`: quando, quali file e simboli sono cambiati, quali frasi dei documenti pubblicati citano simboli cambiati.
+3. **Un hook lancia il comando dopo ogni modifica.** In `plugins/codebase-map/hooks/hooks.json`: evento `PostToolUse`, strumenti `Edit`, `Write`, `NotebookEdit`, `Bash`, in background. Non parte se il progetto non ha un run pubblicato, o se il file modificato sta fuori dal perimetro, sotto `.daodan/` o sotto `.team-review/`. Dove gli hook non esistono, lo stesso comando si lancia a mano o dall'ingresso della mappa.
+4. **Un aggiornamento alla volta.** Se arriva una modifica mentre un aggiornamento è in corso, alla fine ne parte un altro. Mai due insieme.
+5. **Troppe modifiche, nessun aggiornamento.** Se è cambiato più del 40% dei file rispetto al run pubblicato, il comando non aggiorna e scrive in `refresh.json` che serve un run completo.
 
-Fuori da questa fase: avvisare l'agente con `asyncRewake`; un `write` che ricalcola l'hash dei soli percorsi indicati, da fare se una passata supera 10 s su un progetto reale.
+**Cosa non fa.** Schede e documenti di analisi li scrive un modello: il comando non li rigenera, segnala soltanto quali non sono più validi.
+
+**Quale run si usa.**
+
+| Per | Run |
+| --- | --- |
+| Cercare, leggere, vedere chi chiama chi, valutare l'impatto di una modifica | Run di lavoro, se esiste |
+| Leggere i documenti di analisi | Run pubblicato |
+| Fare una review | Mai il run di lavoro: un run che non cambia, creato per quella review |
+
+### Misure già fatte
+
+| Operazione su questo repository (569 file) | Tempo |
+| --- | --- |
+| Snapshot da zero | 15,7 s |
+| Aggiornamento senza modifiche | 3,4 s |
+| Aggiornamento con un file modificato | 3,6 s |
+| Aggiornamento con i collegamenti `chiama` | 4,4 s |
+
+Un hook `PostToolUse` in background parte davvero dopo una scrittura e riceve il percorso del file (prova del 9 novembre, `claude` 2.1.319).
 
 ### Prova, senza modello
 
-Test in `tests/` su un progetto temporaneo con un run pubblicato:
+Test su un progetto temporaneo con un run pubblicato:
 
-- dopo la modifica di un file e `refresh`, il simbolo nuovo esce da `search` e `outline` su `working`, e `read` non fallisce;
-- byte dello specchio pubblicato e del run genitore invariati;
-- due `refresh` sovrapposti: una passata più una ripetizione, nessun manifest corrotto;
-- oltre la soglia: nessun aggiornamento e avviso in `refresh.json`;
-- filtro dell'hook: un file sotto `.team-review/` o fuori perimetro non avvia nulla; nessun run pubblicato, uscita immediata.
+1. modifico un file e lancio `refresh`: il simbolo nuovo si trova con la ricerca nel run di lavoro, e la lettura del file non fallisce;
+2. il run pubblicato è identico byte per byte;
+3. due `refresh` insieme: un aggiornamento più uno successivo, snapshot integro;
+4. oltre il 40%: nessun aggiornamento, avviso in `refresh.json`;
+5. l'hook non parte per un file sotto `.team-review/`, fuori perimetro, o senza run pubblicato.
 
-Misure da registrare: tempo di una passata su questo repository e sul run completo di phazly-app.
+Da registrare: il tempo di un aggiornamento su questo repository e su phazly-app.
 
-## B. Quattro correzioni al metodo di review
+### Fuori da questa fase
 
-Ogni punto nasce da una run di [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md).
+Avvisare l'agente a ogni aggiornamento. Rileggere solo i file indicati dall'hook invece di controllarli tutti: si fa se un aggiornamento supera 10 s su un progetto reale.
 
-| # | Dove | Oggi | Evidenza | Regola |
-| --- | --- | --- | --- | --- |
-| 1 | `review-method/SKILL.md`, in testa | La sequenza (preparazione, job isolati, consolidamento) è descritta, non imposta | Run A: il modello revisiona da solo e lo dichiara alla fine | La prima azione di una review è caricare la preparazione, o `references/light.md` per la forma leggera. Chi non può seguire il metodo lo dice nella prima riga e si ferma: nessun rapporto prodotto fuori dal metodo esce sotto questa skill |
-| 2 | `review-preparation/references/team-review.md`, Phase 1 | `01-context.md` è «a short description and relevant source references» | Run B: «nessun tipo planned», vero per il record dello slot e falso per le sue aggiunte, ereditato da 49 job | Un'affermazione sul modello dei dati nomina il tipo e il livello per cui vale e cita `file:line`. Una negazione cita la ricerca che la sostiene su tutti i tipi del perimetro, oppure si scrive come non nota |
-| 3 | `review-quality-gates/references/reviewer-common.md`, «Calibrate severity to impact» | Nessun criterio per ciò che l'utente vede | Run A3 e A3b: «piatto non mangiato mostrato Completato, e il bottone per registrarlo sparisce» valutato Low | Un'affermazione falsa mostrata all'utente o un'azione resa indisponibile su un percorso richiesto vale almeno Medium |
-| 4 | `review-consolidation/references/team-review.md`, regole 1 e 2 | «same `file:line` + same issue» si fonde; «different issues» resta separato | Run A3: «pasto saltato» e «cibo estraneo» sulla stessa riga fusi in un cluster, il secondo sparito dal titolo | Stesso problema significa stesso meccanismo e stesso trigger. Trigger diversi sulla stessa ancora restano righe separate, co-locate; un trigger consegnato da un job non sparisce dal rapporto |
+## B. Quattro regole per la review
+
+Ogni regola chiude un errore visto in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md).
+
+| # | Regola | Errore visto | File da modificare |
+| --- | --- | --- | --- |
+| 1 | La prima azione di una review è caricare la preparazione. Chi non può seguire il metodo lo dice nella prima riga e si ferma | Run A: il modello ha fatto la review da solo e l'ha detto solo alla fine | `review-method/SKILL.md` |
+| 2 | Ogni frase sul modello dei dati dice a quale tipo e a quale granularità si riferisce, con `file:line`. Una negazione («non esiste X») cita la ricerca che la sostiene, altrimenti si scrive «non noto» | Run B: «non esiste un tipo planned», vero per il record dello slot, falso per le sue aggiunte; 49 incarichi l'hanno ereditato | `review-preparation/references/team-review.md` |
+| 3 | Un'informazione falsa mostrata all'utente, o un'azione che l'utente non può più fare, vale almeno Medium | Run A3: «piatto non mangiato mostrato come Completato, bottone per registrarlo sparito» valutato Low | `review-quality-gates/references/reviewer-common.md` |
+| 4 | Due segnalazioni sono lo stesso problema solo se hanno la stessa causa e la stessa situazione che lo fa scattare. Situazioni diverse sulla stessa riga restano segnalazioni distinte nel rapporto | Run A3: «pasto saltato» e «cibo estraneo» fusi in una voce; la seconda, il difetto vero, sparita | `review-consolidation/references/team-review.md` |
 
 ### Prova
 
-- **Regola 1, con modello, economica.** La richiesta A in cinque sessioni nuove, fermate dopo i primi turni: la prima azione è il caricamento della preparazione in cinque su cinque. La run A2 fermata al prerequisito è costata 0,34 USD.
-- **Regola 4, con modello, senza reviewer.** Il consolidamento rieseguito sui dodici risultati di job già salvati della run A3: il trigger «cibo estraneo» di `job-03-F4` compare nel rapporto come riga propria.
-- **Regole 2 e 3.** Si misurano nella fase 3, con le run complete.
+1. **Regola 1.** La stessa richiesta della run A in cinque sessioni nuove, fermate ai primi turni. Riesce se la prima azione è il caricamento della preparazione in cinque su cinque. Costo atteso: circa 0,3 USD a sessione.
+2. **Regola 4.** Il solo consolidamento rieseguito sui dodici risultati salvati della run A3. Riesce se «cibo estraneo» (`job-03-F4`) compare nel rapporto come segnalazione distinta.
+3. **Regole 2 e 3.** Si misurano nella fase 3, con le review complete.
 
-## Ordine
+## Ordine di lavoro
 
-1. `snapshot.py refresh` e i suoi test.
-2. Hook e filtro.
-3. Regole 1 e 4 con le loro prove; regole 2 e 3 come testo.
-4. Versioni dei due plugin e riga in `tools-guide.md` su `working`.
+1. `snapshot.py refresh` con i suoi test.
+2. Hook.
+3. Regole 1 e 4 con le loro prove.
+4. Regole 2 e 3 come testo.
+5. Versioni dei due plugin e una riga in `tools-guide.md` sul run di lavoro.

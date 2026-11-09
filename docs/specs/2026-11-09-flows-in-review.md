@@ -1,50 +1,53 @@
-# Fase 3: unità e flussi aiutano l'analisi?
+# Fase 3: unità e flussi aiutano la review?
 
 **Stato:** abbozzo, da rifinire dopo le fasi [1](2026-11-09-working-run-and-review-fixes.md) e [2](2026-11-09-flow-model.md). **Data:** 9 novembre 2026. Fase 3 di 3.
 
-Decide con misure se la review deve usare le unità costruite sul grafo e le catene dei flussi. Le unità e i flussi restano comunque per l'esploratore e la mappa funzionale: qui si decide solo il loro posto nell'analisi.
+Una domanda sola: la review trova più difetti se riceve le unità e i flussi della fase 2? Si risponde con una misura. Unità e flussi restano comunque utili all'esploratore e alla mappa funzionale: qui si decide solo se entrano nella review. Le parole sono quelle definite nelle fasi 1 e 2.
 
-## Cosa si sa già
+## Cosa sappiamo
 
-Da [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md), con gruppi per percorso:
+Dalle run di [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md), fatte con i gruppi per percorso:
 
-- il difetto `G1` è descritto esattamente in una run su tre con il metodo completo; il roster e i gruppi cambiano da una run all'altra;
-- file legati nello stesso job non bastano (A3b: lettore e helper insieme, nessun finding) e non sono necessari (B: due scrittori in job diversi, difetto trovato da cinque ruoli);
-- il brief dà ai job l'intento in una frase e una lista di file: nessuna domanda sul dato;
-- la mappa di quelle run non aveva il grafo delle chiamate TypeScript: la Phase 0 disponeva solo di simboli, import e ricerca.
+- Il difetto `G1` è descritto esattamente in una run su tre con il metodo completo.
+- I revisori scelti e i gruppi di file cambiano da una run all'altra.
+- Avere i file giusti nello stesso incarico non basta: in A3b lettore e helper erano insieme e il difetto non è uscito.
+- E non è necessario: in B due scrittori erano in incarichi diversi e cinque revisori hanno trovato il difetto.
+- Ogni incarico riceve la richiesta in una frase e un elenco di file. Nessuna domanda sul dato.
+- La mappa di quelle run non aveva i collegamenti `chiama` per TypeScript.
 
-Dalla [rassegna](../research/2026-11-09-flow-reconstruction-literature.md): dividere per relazioni del grafo è misurato sulle modifiche da rivedere (circa il 42% dei changeset di un grande prodotto è decomponibile, e i collegamenti che sfuggono sono proprio quelli indiretti), non sul numero di difetti trovati; la coerenza di significato fra scrittore e lettore non ha strumenti valutati. Le ipotesi 1 e 2 sono quindi domande aperte anche fuori da qui, e il rischio che nessun braccio superi A è reale.
+Dalla [rassegna della letteratura](../research/2026-11-09-flow-reconstruction-literature.md): dividere il lavoro seguendo i collegamenti è misurato sulle modifiche da rivedere, non sul numero di difetti trovati; confrontare il significato fra chi scrive e chi legge un dato non ha strumenti valutati. La risposta può quindi essere «non aiuta».
 
-## Ipotesi da provare
+## Le tre prove
 
-1. Un job che riceve un'unità costruita sul grafo trova più difetti di provenienza di un job che riceve un gruppo per percorso.
-2. La sola catena nel contesto (chi scrive, chi legge, a quale livello), senza cambiare il taglio, ottiene lo stesso effetto a costo minore.
-3. Le regole 2 e 3 della fase 1 (livello nel contesto, gravità) cambiano l'esito anche senza unità né catena.
-4. Schede ed etichette indicizzate in un canale di testo separato dal sorgente portano ai simboli giusti le richieste in parole di dominio.
+Stessa richiesta, stessa mappa, stessi revisori. Cambia solo ciò che il revisore riceve.
 
-## Disegno
-
-| Braccio | Taglio | Contesto |
+| Prova | File affidati | In più nel contesto |
 | --- | --- | --- |
-| A | Gruppi per percorso | Come oggi, con le regole della fase 1 |
-| B | Unità sul grafo | Come A |
-| C | Gruppi per percorso | Come A, più la catena del dato richiesto |
+| A | Gruppi per percorso, come oggi | Niente |
+| B | Unità | Niente |
+| C | Gruppi per percorso, come oggi | Il flusso del dato richiesto: chi lo scrive, chi lo legge, con quale granularità |
 
-- Mappa: con il grafo delle chiamate TypeScript e la copertura registrata, uguale per i tre bracci.
-- La catena del braccio C è compatta: scrittori, lettori e livello del dato richiesto, non il vicinato intero.
-- Richiesta: i widget della home di phazly-app al commit prima della correzione; roster fissato a mano, uguale per i tre bracci; due run per braccio. La richiesta su inserimento e scansione solo se la prima mostra un effetto.
-- Difetti attesi: `G1`, `G2` e lo scrittore divergente dello stato «saltato». Misure: difetti attesi nel rapporto finale e non solo in un job, altri difetti reali, segnalazioni errate, costo, tempo.
-- Ricerca: dieci richieste in parole di dominio sugli stessi simboli; posizione con il solo indice lessicale, con il canale di schede ed etichette, con gli embedding sul canale.
-- Costo atteso dalle run già fatte: 15-21 USD per run sui widget, circa 110 USD per i tre bracci.
+- **Richiesta:** la logica dei widget della home di phazly-app, al commit prima della correzione.
+- **Difetti attesi:** `G1`, `G2` e lo scrittore che lascia lo stato «saltato».
+- **Mappa:** completa dei collegamenti `chiama` per TypeScript.
+- **Revisori:** scelti a mano una volta, uguali per le tre prove.
+- **Ripetizioni:** due run per prova.
+- **Regole della fase 1:** attive in tutte e tre.
+- **Costo atteso:** 15-21 USD a run, circa 110 USD in tutto.
 
-## Decisione
+Si conta, per ogni run: difetti attesi presenti nel rapporto finale (non solo in un incarico), altri difetti reali, segnalazioni sbagliate, costo, tempo.
 
-Criteri da fissare nel README prima delle run. Proposta di partenza:
+## La prova sulla ricerca
 
-- un braccio resta se porta nel rapporto finale, in entrambe le run, almeno un difetto atteso che A non porta, a costo entro due volte;
-- fra B e C a pari esito resta il meno costoso;
-- il canale di testo resta se porta nei primi cinque almeno tre simboli che il solo lessicale non porta, senza far scendere le richieste per identificatore.
+Dieci domande scritte con le parole del dominio («dove si decide che un piatto è stato mangiato») sugli stessi simboli. Si confronta la posizione del simbolo giusto in tre casi: indice lessicale da solo; con un campo di testo separato che contiene schede ed etichette; con gli embedding su quel campo.
 
-Se nessun braccio supera A, la review resta com'è e lo si scrive nel README con i numeri.
+## Come si decide
 
-**Da decidere alla rifinitura:** come passare un'unità a `composition.py bind`; forma della catena in `01-context.md`; se due run per braccio bastano, vista la variabilità misurata.
+Le soglie si scrivono nel README del benchmark prima delle run. Proposta di partenza:
+
+1. B o C vince se porta nel rapporto finale, in entrambe le run, almeno un difetto atteso che A non porta, spendendo al massimo il doppio.
+2. Se B e C danno lo stesso esito, resta la meno costosa.
+3. Il campo di testo resta se porta nei primi cinque risultati almeno tre simboli che l'indice lessicale da solo non porta, senza peggiorare le ricerche per nome.
+4. Se né B né C superano A, la review resta com'è, e lo si scrive con i numeri.
+
+**Da decidere alla rifinitura:** come passare un'unità a `composition.py bind`; come scrivere il flusso in `01-context.md`; se due run per prova bastano, vista la variabilità misurata.

@@ -1,106 +1,102 @@
-# Fase 2: flussi e unità di lavoro ricavati dal grafo
+# Fase 2: flussi e unità ricavati dal grafo
 
-**Stato:** abbozzo, da rifinire dopo l'implementazione della [fase 1](2026-11-09-working-run-and-review-fixes.md). **Data:** 9 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
+**Stato:** abbozzo, da rifinire dopo la [fase 1](2026-11-09-working-run-and-review-fixes.md). **Data:** 9 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
 
-Codebase Map deve rispondere a due domande che oggi non sa trattare: «chi scrive il dato che questa schermata mostra, e con quale significato?» e «cosa succede, passo per passo, quando l'utente fa questo?». La risposta è un solo modello, i flussi, con tre consumatori: la review, l'esploratore visuale e la mappa funzionale dell'applicativo per chi non legge il codice. Riapre l'esclusione dei flussi nel [FRD](../frd/2026-11-07-codebase-explorer.md) e nell'[ADR](../adr/2026-11-07-codebase-explorer.md) dell'esploratore, che la rimandavano a una scelta dell'utente.
+Codebase Map deve saper rispondere a due domande: «chi scrive il dato che questa schermata mostra, e cosa significa?» e «cosa succede quando l'utente fa questa azione?». Riapre l'esclusione dei flussi nel [FRD](../frd/2026-11-07-codebase-explorer.md) e nell'[ADR](../adr/2026-11-07-codebase-explorer.md) dell'esploratore.
+
+## Parole
+
+Ogni parola ha un solo significato in queste tre spec.
+
+| Parola | Significato |
+| --- | --- |
+| Collegamento | Da un simbolo a un altro, con tipo e `file:line`. **Diretto** se sta nel codice (chiamata, import). **Dedotto** se si ricava accoppiando nomi: stesso store, stessa rotta, stessa collezione |
+| Tipo di collegamento | `chiama`, `scrive`, `legge`, `attiva` (un'azione dell'utente attiva il suo handler) |
+| Flusso | Sequenza ordinata di collegamenti, da un punto d'ingresso a un fatto mostrato |
+| Punto d'ingresso | Dove un flusso comincia: rotta, comando, azione dell'utente, job |
+| Store | Dove un dato vive: stato globale, tabella o collezione, file, cache |
+| Fatto mostrato | Un valore o un testo che l'applicativo mostra o restituisce |
+| Granularità | L'unità a cui un dato si riferisce: uno slot, un singolo alimento, un utente |
+| Significato | Una frase: cosa afferma quel dato |
+| Strato | Interfaccia, servizio, dati |
+| Unità | I file affidati a un revisore in un solo incarico |
+| Punto di partenza | Ciò che la richiesta nomina e da cui si comincia a seguire i collegamenti |
+| Revisore | Chi esamina un incarico seguendo un mandato: logica, sicurezza, e così via |
+| Regola di collegamento | Come, in questo progetto, si riconosce chi offre e chi usa uno store o una rotta |
+
+Un flusso non è un'entità nuova: usa i simboli che la mappa e l'esploratore hanno già, con gli stessi riferimenti.
 
 ## Comportamento attuale
 
-- La Phase 3 produce `03-flows.md`: percorsi critici, data flow ed end-to-end in prosa e Mermaid, al massimo cinque diagrammi per categoria, per partizione. Non è interrogabile e non ha un'unità ripetibile.
-- La Phase 0 della review risolve la richiesta in una lista di file (`codebase_map_graph` un salto alla volta). `03-flows.md` entra solo nel contesto della review leggera.
-- Nessuno strumento risponde a «chi scrive questo dato» o «cosa deve reagire a questa azione». I link dinamici (provider, DI, registri) il grafo non li vede.
-- Esito misurato in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md): un bug reale di provenienza (un record di slot letto come «piatto mangiato») è sfuggito alla review per area in quattro run su cinque, perché nessuno vedeva insieme scrittori e lettori dello stesso dato.
+- `03-flows.md` descrive i flussi in prosa e diagrammi, al massimo cinque per categoria. Non si può interrogare e la review non lo legge.
+- La review divide i file con `pack()`: ordine per percorso, un gruppo ogni 120.000 byte. Nelle run di [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md) chi scrive, chi legge e chi mostra lo stesso dato sono finiti in tre incarichi diversi.
+- Nessuno strumento risponde a «chi scrive questo dato». Due simboli che usano lo stesso store non si chiamano, quindi il grafo non li collega.
+- La [rassegna della letteratura](../research/2026-11-09-flow-reconstruction-literature.md) riporta tre fatti utili: i collegamenti dedotti si ottengono elencando chi offre e chi usa e accoppiandoli per nome (in un caso misurato, 135 trovati su 153); la qualità dei collegamenti conta più del modo di raggrupparli; dare al modello tutto il vicinato a due salti fa peggio che non darlo. Nessun lavoro verificato unisce i tre strati in un grafo né confronta il significato fra chi scrive e chi legge.
 
-## Cosa dice la letteratura
+## Proposta
 
-Dalla [rassegna del 9 novembre](../research/2026-11-09-flow-reconstruction-literature.md), che distingue ciò che i lavori misurano da ciò che deduce:
+### 1. Collegamenti dedotti
 
-- **I collegamenti indiretti si risolvono con un modello dell'aggancio, uno per tipo.** Lo schema che ricorre ha due passi: estrarre chi offre (rotte, bean, filtri) e chi consuma (chiamate client, punti di iniezione), poi accoppiarli per stringa, tipo o firma. Nei microservizi l'accoppiamento statico trova 135 connessioni su 153.
-- **La qualità degli archi conta più dell'algoritmo che raggruppa.** Prima il grafo, poi le unità.
-- **Il modello linguistico rende quando scrive le specifiche o naviga il grafo, non quando traccia i percorsi.** Scrivere sorgenti e sink per un analizzatore statico raddoppia i difetti trovati in un benchmark Java; l'analisi dei dati fatta tutta dal modello soffre di allucinazioni.
-- **Più contesto dal grafo non è sempre meglio.** In un lavoro il vicinato a due salti dato per intero fa peggio che non darlo.
-- **Nessun lavoro verificato** unisce in un grafo interfaccia, servizio e dati, né misura la coerenza di significato fra chi scrive e chi legge un dato: è il caso phazly. Non esiste un benchmark; le misure di questa spec lo costruiscono.
+1. Il modello legge il progetto una volta e scrive le regole di collegamento. Esempi: «lo stato globale si legge con `useAppStore`», «le chiamate al servizio passano da `apiPostUnwrap` con gli URL di `config/api.ts`».
+2. La macchina applica le regole a tutto il sorgente: elenca chi offre e chi usa, e li accoppia per nome.
+3. Ogni coppia diventa un collegamento dedotto, con la sua evidenza. Ciò che resta spaiato è contato e dichiarato.
 
-## Il modello
+Le regole sono legate ai digest dei file che citano: se quei file cambiano, vanno rilette.
 
-**Un flusso è un cammino su entità già esistenti, non un'entità nuova.** Usa gli stessi riferimenti canonici di snapshot, moduli e schede, e quindi di `daodan/visual@1` dell'esploratore: lo stesso nodo resta riconoscibile fra le viste.
+### 2. Granularità e significato
 
-| Elemento | Contenuto minimo |
-| --- | --- |
-| Passo | Coppia ordinata di riferimenti canonici, tipo, `file:line`, digest dei due capi, stato |
-| Tipo di passo | `chiama`, `scrive`, `legge`, `invia`, `riceve`, `naviga` (azione dell'utente verso una schermata) |
-| Ingresso | Un simbolo o file che avvia un flusso: rotta, comando, schermata o azione dell'interfaccia, job, consumer di coda |
-| Store | Dove un dato vive: tabella o collezione, stato globale, file, cache, topic |
-| Fatto | Un valore o testo che l'applicativo mostra o emette, con il simbolo che lo calcola |
-| Livello (su `scrive` e `legge`) | L'unità del dato: per esempio slot, singolo alimento, utente |
-| Significato (su `scrive` e `legge`) | Una frase: cosa afferma il record o il valore |
+Su richiesta, il modello legge un collegamento `scrive` o `legge` e ne scrive granularità e significato. Sono legati ai digest dei due simboli e seguono la freschezza delle schede: se chi scrive cambia, l'etichetta di chi legge risulta da rileggere. Senza etichetta il campo resta vuoto: non si deduce.
 
-`livello` e `significato` sono ciò che mancava nel caso phazly: lo scrittore registra un fatto di livello slot, il lettore lo usa come fatto di livello alimento. Senza etichetta il campo resta `non letto`: mai dedotto.
+Nel caso phazly chi scrive registra un fatto per slot e chi legge lo usa come fatto per singolo alimento: due granularità diverse sullo stesso store.
 
-**Una famiglia, una struttura.** Il flusso tecnico (richiesta e risposta), quello dei dati (provenienza e consumo di uno store) e il percorso dell'utente (azioni verso un obiettivo) sono lo stesso grafo di passi. La famiglia è l'etichetta della radice: un ingresso, uno store o un obiettivo funzionale.
+### 3. Unità
 
-## Unità di lavoro
+1. **Il modello legge la richiesta** e dichiara in `00-scope.md` che cosa è nominato e i punti di partenza. Chiede solo se due letture cambiano correttezza o costo.
 
-Il lavoro di analisi si taglia attraversando il grafo, non ordinando i file. Oggi `pack()` della review ordina per percorso e chiude un gruppo a 120.000 byte, e la mappa a team divide per manifest, layer o linguaggio: nelle run di `benchmarks/phazly-flow` chi scrive, chi legge e chi mostra lo stesso dato sono finiti in tre job diversi.
+   | La richiesta nomina | Punti di partenza | Come si forma l'unità |
+   | --- | --- | --- |
+   | Una cartella o un modulo | I suoi file | Per percorso, come oggi |
+   | Una funzione | La funzione | Con chi la chiama e chi chiama |
+   | Un componente dell'interfaccia | Il componente | Dal fatto mostrato a chi lo scrive; dalle azioni a chi reagisce |
+   | Una funzionalità | I suoi punti d'ingresso | Seguendo i collegamenti, anche fra strati |
+   | Un flusso di dati | Lo store o il fatto mostrato | Chi scrive e chi legge, anche fra strati |
+   | Un aspetto (sicurezza, prestazioni, stabilità, concorrenza, leggerezza) | L'aspetto sceglie i revisori, non i file | Dai punti d'ingresso se l'aspetto segue il dato, altrimenti per percorso |
 
-- **Il modello inferisce il perimetro, la macchina lo costruisce.** Dalla richiesta e dal contesto del progetto il modello ricava che cosa è nominato e da quali semi partire, lo dichiara in `00-scope.md` con l'evidenza e procede; chiede solo se due letture cambiano correttezza o costo, come già nella Phase 0.
+2. **La macchina segue i collegamenti** dai punti di partenza: un salto lungo `chiama`; senza limite di salti lungo `scrive`, `legge` e `attiva`.
+3. **Si ferma a un limite di byte.** I file che non entrano sono elencati con il motivo.
+4. **L'unità va a chi la usa:** il revisore, l'esploratore, la mappa funzionale.
 
-  | La richiesta nomina | Semi | Taglio |
-  | --- | --- | --- |
-  | Una cartella o un modulo | I suoi file | Per percorso |
-  | Una funzione o un simbolo | Il simbolo | Il simbolo con chiamanti e chiamati |
-  | Un componente dell'interfaccia | Il componente | Ciò che mostra fino a chi lo scrive, e le sue interazioni fino a chi reagisce |
-  | Una funzionalità | I suoi ingressi | Attraversamento, anche fra livelli |
-  | Un flusso di dati | Lo store o il fatto | Catena di scrittori e lettori, anche fra livelli |
-  | Un aspetto (sicurezza, prestazioni, stabilità, concorrenza, leggerezza) | L'aspetto sceglie i reviewer, non i file | Dagli ingressi quando l'aspetto segue il dato, altrimenti per percorso |
+Un flusso fra strati richiede la mappa di tutti gli strati che attraversa, con i collegamenti `chiama` presenti per i loro linguaggi. Nel run di phazly usato dal benchmark i 412 file TypeScript non ne avevano, perché nell'ambiente mancava `tree-sitter`.
 
-  Una richiesta può nominare più righe insieme: «la sicurezza del flusso di registrazione» è un aspetto su un flusso.
-- **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si seguono due percorsi insieme. Il **dato**: chi lo scrive, dove passa di livello, chi lo legge, cosa mostra. L'**interazione**: l'azione dell'utente, il suo handler, gli effetti che produce, le schermate che devono reagire.
-- **Archi attraversati.** Chiamate e import; legame fra un evento dell'interfaccia e il suo handler; stato condiviso, perché scrittore e lettore dello stesso store non si chiamano; collegamenti fra livelli accoppiati per nome (rotta HTTP, collezione, schema condiviso), sempre `inferito`.
-- **Profondità.** Un salto dai semi lungo le chiamate; oltre, solo lungo gli archi del dato e dell'interazione.
-- **Tetto.** Un'unità ha un limite di byte. Ciò che resta oltre il limite è la sua frontiera, dichiarata con il motivo: mai omessa in silenzio.
-- **Prerequisito.** Una catena fra livelli richiede la mappa di tutti i livelli che attraversa, con il grafo delle chiamate presente per i loro linguaggi e la copertura dichiarata. Nel run di `react-app` di phazly-app usato dal benchmark i 412 file TypeScript avevano simboli e import ma nessuna chiamata, perché nell'ambiente mancava `tree-sitter`: su quel run un'unità non si può costruire.
+### 4. Interrogazione
 
-Le unità sono un'opzione accanto a `pack()`; servono anche alle partizioni della mappa e all'esploratore.
+`codebase_map_flows` con una di tre domande: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un simbolo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti o dedotti, con granularità, significato, freschezza e ciò che è rimasto fuori.
 
-## Derivazione
+### 5. Chi usa flussi e unità
 
-1. **Struttura, senza modello.** Dallo snapshot: chiamate, import, riferimenti esterni risolti. Per ogni tipo di aggancio indiretto, due passi: elenco di chi offre (store, rotte, collezioni, eventi) e di chi consuma (letture e scritture dello store, chiamate client, handler), poi accoppiamento per nome, tipo o firma. Un arco accoppiato resta `inferito` con la sua evidenza: mai certo.
-   **Specifiche di aggancio scritte dal modello, applicate dalla macchina.** Invece di codificare ogni framework, il modello legge il progetto una volta e dichiara come si riconoscono offerta e consumo («lo stato globale si legge con `useAppStore`», «le chiamate al servizio passano da `apiPostUnwrap` con gli URL di `config/api.ts`»); la macchina le applica a tutto il sorgente e conta ciò che non accoppia. Le specifiche sono legate ai digest dei file che citano, come le schede. Da misurare contro pattern scritti a mano.
-2. **Significato, con il modello, a richiesta.** Un worker legge un arco e scrive livello e significato, legati ai digest dei simboli ai capi. Si rietichettano a lotti solo gli archi non più freschi, come per le schede.
-3. **Freschezza.** Calcolata a ogni lettura, mai ricontrollata a tappeto: `fresh`, `stale_body`, `stale_callee`, `orphan`, `uncovered`. Un flusso è fresco se tutti i suoi archi lo sono; altrimenti la risposta segna quelli stantii. Un cambio di scrittore cambia il digest dei suoi effetti e rende `stale_callee` l'etichetta del lettore: è il segnale della deriva dopo un refactor che oggi non esiste.
-4. **Aggiornamento.** Il livello macchina si ricalcola con `snapshot.py refresh` sul run di lavoro della fase 1. Il livello semantico non si rigenera da solo.
+- **Esploratore:** un flusso scelto evidenzia i suoi simboli; un simbolo elenca i flussi che lo attraversano. `daodan/visual@1` ottiene un elenco `flows`.
+- **Mappa funzionale:** l'elenco delle funzionalità con i loro flussi, per chi non legge il codice. `03-flows.md` si genera da qui.
+- **Review:** si decide nella fase 3.
 
-## Consumatori
+## Limiti
 
-- **Review.** Riceve unità e catene; se e come usarle è l'oggetto della fase 3.
-- **Esploratore.** Una terza prospettiva, «Flusso», o una sovrapposizione sulla vista logica e su quella fisica: scegliere un flusso evidenzia i suoi nodi e archi; un nodo elenca i flussi che lo attraversano. I riferimenti multipli sono occorrenze visuali, come già nell'ADR. L'envelope `daodan/visual@1` ottiene un elenco `flows` di passi che riferiscono entità e relazioni esistenti; nessuna seconda tassonomia di stati.
-- **Mappa funzionale.** L'elenco dei percorsi dell'utente e delle funzionalità, ciascuno con i flussi che lo realizzano e i dati che consuma, leggibile da chi non legge il codice. `03-flows.md` si genera dalla struttura invece che dalla prosa libera, così il racconto non diverge dal dato.
-
-## Interrogazione
-
-`codebase_map_flows`: `from` un ingresso o un'azione (in avanti: cosa deve reagire), `to` un fatto o uno store (all'indietro: chi lo scrive e con quale significato), `through` un nodo (quali flussi lo attraversano). La risposta porta passi, livello, significato, stato di freschezza, lacune e omissioni per budget dichiarate.
-
-## Limiti dichiarati
-
-Analisi statica: un cammino non prova il comportamento a runtime, e la strumentazione runtime resta un requisito distinto. I linguaggi senza fatti semantici non producono archi di chiamata. Le relazioni mancanti restano lacune. Il costo del livello semantico è per richiesta e non copre l'intero progetto.
+Analisi statica: un flusso dice cosa il codice rende possibile, non cosa avviene in esecuzione. Granularità e significato sono affermazioni del modello, da verificare sul sorgente. La parte calcolata dalla macchina si aggiorna con `snapshot.py refresh` della fase 1; quella scritta dal modello no.
 
 ## Prova
 
-Benchmark `benchmarks/flow-model/`, soglie dichiarate nel README prima di ogni misura. Tutto senza modello, tranne le etichette.
+Benchmark `benchmarks/flow-model/`, soglie scritte nel README prima di ogni misura. Senza modello, tranne il punto 4.
 
-1. **Insiemi noti di phazly-app.** I file di `G1` (lettore, helper, sanitizer, riga mostrata), di `G2` e i due scrittori dello stato «saltato»: in quanti job li mette `pack()` e in quante unità il pianificatore. Oggi `G1` è su tre job.
-2. **Fixture** di 8-10 moduli su due livelli, con collegamenti via registro, stato condiviso e una rotta HTTP; catena attesa scritta a parte. Richiamo e precisione degli archi, con gli `inferito` contati a parte.
-3. **Caso reale fra livelli.** Dalla riga «Completato» della home di phazly-app la catena arriva alla collezione `diaryDays` passando per `/getDiaryDays`; richiede la mappa di `react-app`, `functions-python` e `shared`.
-4. **Etichette.** Livello e significato su un campione di archi, confrontati con una lettura manuale; costo per arco.
+1. **File noti di phazly-app.** In quanti incarichi `pack()` mette i file di `G1`, di `G2` e dei due scrittori dello stato «saltato», e in quante unità li mette la proposta. Oggi `G1` è in tre incarichi.
+2. **Fixture** di 8-10 moduli su due strati, con uno store condiviso e una rotta HTTP. Collegamenti trovati contro quelli attesi, con i dedotti contati a parte.
+3. **Caso reale fra strati.** Dalla riga «Completato» della home di phazly-app il flusso arriva alla collezione `diaryDays` passando per `/getDiaryDays`.
+4. **Etichette.** Granularità e significato su un campione di collegamenti, contro una lettura manuale; costo per collegamento.
 
 ## Ordine di lavoro
 
-0. Grafo delle chiamate TypeScript nell'ambiente di prova, con la copertura risolte su risolvibili registrata.
-1. Archi di stato condiviso e legame evento-handler, con le specifiche di aggancio.
-2. Pianificatore di unità con tetto e frontiera; misura 1.
-3. Archi fra livelli per nome; misure 2 e 3.
-4. `codebase_map_flows`.
-5. Etichette semantiche con freschezza; misura 4.
+1. Collegamenti `chiama` per TypeScript nell'ambiente di prova, con il conteggio di quelli risolti.
+2. Regole di collegamento e collegamenti dedotti per store e azioni dell'utente.
+3. Unità con limite ed elenco degli esclusi; misura 1.
+4. Collegamenti dedotti fra strati; misure 2 e 3.
+5. `codebase_map_flows`, poi le etichette; misura 4.
 
-**Da decidere alla rifinitura:** primo framework da riconoscere (proposta: React con store Zustand, rotte FastAPI); tetto di un'unità; se «Flusso» nell'esploratore è una terza prospettiva o una sovrapposizione; se il pianificatore estende `scope_planner.py` o nasce accanto.
+**Da decidere alla rifinitura:** il limite di un'unità; se l'esploratore mostra i flussi come vista propria o sopra le viste esistenti; se le unità estendono `scope_planner.py` o nascono accanto.

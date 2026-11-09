@@ -72,6 +72,7 @@ re-reads the plugin files but does not restart that server.
 - [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md)
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
+- Flows, in three phases: [1, working run and review rules](docs/specs/2026-11-09-working-run-and-review-fixes.md) · [2, flows and units](docs/specs/2026-11-09-flow-model.md) · [3, do they help review](docs/specs/2026-11-09-flows-in-review.md) · [literature](docs/research/2026-11-09-flow-reconstruction-literature.md)
 - [Working rules for agents in this repository](AGENTS.md)
 
 ## License
