@@ -21,13 +21,13 @@ Prova se senior-review trova, in una review per area e non per commit, un bug re
 | A | widget della home, in parole | saltato: il modello revisiona da solo e lo dichiara solo alla fine | 0 | no | no | 1,04 USD | 207 s |
 | A2 | A, con il metodo nominato | si ferma sul prerequisito della mappa dell'intero progetto e propone due strade | 0 | – | – | 0,34 USD | 37 s |
 | A3 | A2, con la deroga: solo `react-app` | completo, 12 job, 81 finding, 21 cluster | 12 | parziale | fuori perimetro | 15,09 USD | 981 s |
-| B | inserimento e scansione, metodo e deroga | completo, 49 job | 49 | no | no | 26,16 USD | 772 s |
+| B | inserimento e scansione, metodo e deroga | completo, 49 job, 29 dei quali dispacciati due volte per il tetto di 20 sotto-agenti dell'host | 49 | no | no | 26,16 USD | 772 s |
 
 - A: il revisore legge per intero il file di G1 e scrive che i tombstone sono esclusi in modo uniforme; il difetto non compare.
-- A3: il job `logic-integrity` descrive G1 esattamente («uno slot che contiene solo un alimento estraneo è annunciato come completato e il piatto del piano non si può più registrare»). Il consolidamento lo fonde nel cluster L2 «un pasto saltato è mostrato Completato», Low, con altri cinque finding sulla stessa ancora: il caso del cibo estraneo sparisce dal rapporto. Con rigor standard nessun Low è verificato. `QuickAddSheet` non entra nel perimetro dei widget.
-- B: `QuickAddSheet` e `useDayProgress` sono nel perimetro. `01-context.md` del coordinatore afferma che non esiste un tipo «planned»: vero per il record dello slot, falso per le sue aggiunte, che hanno `type: 'planned'`. Il job che legge la riga di G2 la descrive come comportamento voluto.
+- A3: il job `logic-integrity` descrive G1 esattamente («uno slot che contiene solo un alimento estraneo è annunciato come completato e il piatto del piano non si può più registrare»). Il job stesso lo classifica Low. Il consolidamento lo fonde nel cluster L2 «un pasto saltato è mostrato Completato», Low, con altri cinque finding sulla stessa ancora: il caso del cibo estraneo resta tracciato in `99-consolidated.md` ma sparisce dal titolo e dal rapporto. Con rigor standard nessun Low è verificato. `QuickAddSheet` non entra nel perimetro dei widget.
+- B: `QuickAddSheet` e `useDayProgress` sono nel perimetro. `01-context.md` del coordinatore afferma che non esiste un tipo «planned»: vero per il record dello slot, falso per le sue aggiunte, che hanno `type: 'planned'`. Il job che legge la riga di G2 la descrive («nasconde il tile quando lo slot ha un record») senza segnalarla.
 - In A3 un job segnala lo stesso schema in `useDayLogSlots.ts` (proposta del piano solo su uno slot senza record), ancora presente nell'HEAD di phazly-app dopo le fix: da verificare con l'autore.
-- Rifiuti di strumenti: 17 nella mappa, 30 in A3, 64 in B, quasi tutti comandi Bash fuori lista; due job di A3 non hanno letto il file del proprio ruolo.
+- Risultati di strumento in errore: 17 nella mappa (7 per permessi), 30 in A3 (16 per permessi), 64 in B (20 per permessi); il resto sono errori ordinari dei comandi. Il coordinatore di A3 dichiara che due job non hanno letto il file del proprio ruolo.
 
 ## Diagnosi
 
@@ -35,7 +35,7 @@ I reviewer vedono il difetto quando leggono chi scrive il fatto e cosa afferma l
 
 1. **Ingresso.** Una richiesta in parole può saltare l'intero metodo senza dichiararlo all'inizio (A).
 2. **Contesto.** Un'affermazione sul modello dei dati senza livello («nessun tipo planned») si propaga a tutti i worker (B).
-3. **Consolidamento.** Il raggruppamento per ancora fonde finding con la stessa riga e trigger diversi; il trigger più grave sparisce dal titolo (A3).
+3. **Gravità e consolidamento.** Il reviewer valuta Low un fatto mostrato falso che blocca un'azione; il raggruppamento per ancora fonde finding con la stessa riga e trigger diversi, e il trigger più grave sparisce dal titolo (A3). Con rigor standard il risultato è lo stesso anche senza la fusione: nessuna verifica.
 4. **Perimetro.** I lettori dello stesso fatto in altre aree restano fuori (G2 in A3).
 
 Limite: una run per richiesta, un modello, permessi ristretti.
