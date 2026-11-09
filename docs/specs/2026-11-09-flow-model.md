@@ -34,7 +34,8 @@ Codebase Map deve rispondere a due domande che oggi non sa trattare: «chi scriv
 Il lavoro di analisi si taglia attraversando il grafo, non ordinando i file. Oggi `pack()` della review ordina per percorso e chiude un gruppo a 120.000 byte, e la mappa a team divide per manifest, layer o linguaggio: nelle run di `benchmarks/phazly-flow` chi scrive, chi legge e chi mostra lo stesso dato sono finiti in tre job diversi.
 
 - **La richiesta decide il taglio.** Una cartella o un modulo nominati esplicitamente restano il perimetro, tagliato per percorso. Una richiesta su un flusso, un fatto o un'azione ha come perimetro la catena, trasversale a moduli e livelli (interfaccia, servizio, dati).
-- **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si attraversano tre tipi di arco: chiamate e import; stato condiviso, perché scrittore e lettore dello stesso store non si chiamano; collegamenti fra livelli accoppiati per nome (rotta HTTP, collezione, schema condiviso), sempre `inferito`.
+- **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si seguono due percorsi insieme. Il **dato**: chi lo scrive, dove passa di livello, chi lo legge, cosa mostra. L'**interazione**: l'azione dell'utente, il suo handler, gli effetti che produce, le schermate che devono reagire.
+- **Archi attraversati.** Chiamate e import; legame fra un evento dell'interfaccia e il suo handler; stato condiviso, perché scrittore e lettore dello stesso store non si chiamano; collegamenti fra livelli accoppiati per nome (rotta HTTP, collezione, schema condiviso), sempre `inferito`.
 - **Tetto.** Un'unità ha un limite di byte. Ciò che resta oltre il limite è la sua frontiera, dichiarata con il motivo: mai omessa in silenzio.
 - **Prerequisito.** Una catena fra livelli richiede la mappa di tutti i livelli che attraversa.
 
