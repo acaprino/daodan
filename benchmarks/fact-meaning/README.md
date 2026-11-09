@@ -42,4 +42,8 @@ I due flussi si capiscono solo dal codice: store separati, scritture separate (`
 
 Esche: `today.slot_kcal` somma le kcal del diario per slot (domanda sullo slot) e `diary.log_planned` è l'aggancio legittimo per valore.
 
-Giro 2: run in corso.
+Giro 2 del 2026-11-09, ruolo al commit `4ac9475`: Q1 e Q2 trovati in un solo finding, con il meccanismo esatto (`type` e `dish_id` esistono per separare piatto pianificato e cibo libero, nessun lettore li usa); esche non segnalate. Altri plausibili: `log_planned` non idempotente, un doppio tocco raddoppia le kcal; una modifica del piano lascia nel diario riferimenti orfani. Nessuna modifica al ruolo.
+
+Run 1: 82.888 token, 6 strumenti, 41 s.
+
+Limite: fixture piccole e un solo modello; il caso reale ha più codice tra i due flussi e la review completa diluisce il ruolo nella composizione `code-auditor`.
