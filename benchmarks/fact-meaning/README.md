@@ -29,4 +29,17 @@ Esche: `slot_badge` usa `states_nothing` per una domanda sullo slot, e `ring` so
 
 ## Misure
 
-Run in corso.
+Giro 1 del 2026-11-09, ruolo al commit `4ac9475`: P1 e P2 trovati, 1 altro reale (`ring` divide per zero con obiettivo 0). `slot_badge` è segnalato con confidenza bassa come accoppiamento per `meal_id`: l'esca era mal costruita, perché l'ADR scritto per la fixture vieta ogni accoppiamento per slot e quindi anche quello. Nessuna modifica al ruolo. Il risultato sovrastima il caso reale: l'ADR sta accanto al codice e dice proprio la regola violata.
+
+## Giro 2: `app2/`, senza ADR
+
+I due flussi si capiscono solo dal codice: store separati, scritture separate (`add_food` dalla ricerca, `log_planned` dal piano), un solo aggancio per valore (`type == "planned"` con `dish_id`). Criterio, dichiarato prima della run: se il ruolo non trova Q1 e Q2 si aggiunge il controllo esplicito sul flusso e sul livello del fatto mostrato.
+
+| Seme | Dove | Difetto |
+|---|---|---|
+| Q1 | `today.rows` | La spunta di un piatto del piano viene da `is_logged(meal_id)`: qualunque alimento aggiunto al pranzo spunta i piatti del pranzo |
+| Q2 | `week.adherence` | L'aderenza al piano conta gli slot con una voce di diario, comprese le aggiunte libere, invece dei piatti del piano registrati |
+
+Esche: `today.slot_kcal` somma le kcal del diario per slot (domanda sullo slot) e `diary.log_planned` è l'aggancio legittimo per valore.
+
+Giro 2: run in corso.
