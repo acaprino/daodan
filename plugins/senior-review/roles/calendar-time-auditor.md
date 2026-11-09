@@ -21,6 +21,7 @@ For each date or time value establish its intended meaning from the requirement:
 ## Causal checks
 
 - Trace every conversion between local time and instant to one declared policy for nonexistent (spring-forward gap) and repeated (fall-back fold) local times. Show two paths that resolve the same occurrence differently.
+- For each occurrence compare the wall-clock time the user is shown with the one that fires: on gap and fold days, after a zone change and after each recurrence step. A display that formats the stored wall-clock time without the conversion is a separate resolution.
 - Follow a recurrence's anchor (instant, zone-bound or floating) through expansion across transitions, month ends and leap days. Adding a fixed duration to the previous instant moves the wall-clock time at each transition and ignores a zone change.
 - Follow a zone change (travel, user setting, OS update) between planning and firing: which component learns of it, whether instants already scheduled in the OS or on a server are recomputed, and what fires before they are.
 - Check sequence across a zone change: no occurrence skipped or fired twice. Completion and deduplication keyed on the occurrence's local date, not on the instant's date in another zone.
