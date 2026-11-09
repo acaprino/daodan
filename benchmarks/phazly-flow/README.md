@@ -21,6 +21,7 @@ Prova se senior-review trova, in una review per area e non per commit, un bug re
 | A | widget della home, in parole | saltato: il modello revisiona da solo e lo dichiara solo alla fine | 0 | no | no | 1,04 USD | 207 s |
 | A2 | A, con il metodo nominato | si ferma sul prerequisito della mappa dell'intero progetto e propone due strade | 0 | – | – | 0,34 USD | 37 s |
 | A3 | A2, con la deroga: solo `react-app` | completo, 12 job, 81 finding, 21 cluster | 12 | parziale | fuori perimetro | 15,09 USD | 981 s |
+| A3b | A3 ripetuta sulla stessa copia | completo, 30 job (6 ruoli su 5 gruppi; A3 ne aveva 12) | 30 | un job, solo il caso «saltato» | fuori perimetro | 20,82 USD | 781 s |
 | B | inserimento e scansione, metodo e deroga | completo, 49 job, 29 dei quali dispacciati due volte per il tetto di 20 sotto-agenti dell'host | 49 | no | no | 26,16 USD | 772 s |
 
 - A: il revisore legge per intero il file di G1 e scrive che i tombstone sono esclusi in modo uniforme; il difetto non compare.
@@ -28,6 +29,12 @@ Prova se senior-review trova, in una review per area e non per commit, un bug re
 - B: `QuickAddSheet` e `useDayProgress` sono nel perimetro. `01-context.md` del coordinatore afferma che non esiste un tipo «planned»: vero per il record dello slot, falso per le sue aggiunte, che hanno `type: 'planned'`. Il job che legge la riga di G2 la descrive («nasconde il tile quando lo slot ha un record») senza segnalarla.
 - In A3 un job segnala lo stesso schema in `useDayLogSlots.ts` (proposta del piano solo su uno slot senza record), ancora presente nell'HEAD di phazly-app dopo le fix: da verificare con l'autore.
 - Risultati di strumento in errore: 17 nella mappa (7 per permessi), 30 in A3 (16 per permessi), 64 in B (20 per permessi); il resto sono errori ordinari dei comandi. Il coordinatore di A3 dichiara che due job non hanno letto il file del proprio ruolo.
+
+## Ripetizione di A3 (A3b)
+
+- **Contaminata.** La cartella `.team-review/` di B era rimasta nella copia cieca: A3b l'ha letta (stato, binding, scope e un brief di job) e ha lavorato in una sottocartella. Ha ereditato il formato dei job, non risulta aver letto `01-context.md` con l'affermazione errata su `planned`. Il confronto con A3 è indicativo, non pulito.
+- **Variabilità alta.** Stesso prompt, stessa mappa: roster diverso (A3b aggiunge `ui-race`, toglie `cache-consistency`) e gruppi diversi, 30 job contro 12. Un solo job su 30 tocca `useDayProgress.ts:190`, `job-01-F4`, Low, e descrive solo il caso «pasto saltato»: il caso «cibo estraneo» che A3 aveva trovato non compare. G1 non è nel rapporto.
+- Una descrizione esatta di G1 su due run, in un job su 12 e 0 su 30: con questi numeri il ruolo non la trova in modo affidabile, né la perde in modo affidabile.
 
 ## Diagnosi
 
@@ -38,4 +45,4 @@ I reviewer vedono il difetto quando leggono chi scrive il fatto e cosa afferma l
 3. **Gravità e consolidamento.** Il reviewer valuta Low un fatto mostrato falso che blocca un'azione; il raggruppamento per ancora fonde finding con la stessa riga e trigger diversi, e il trigger più grave sparisce dal titolo (A3). Con rigor standard il risultato è lo stesso anche senza la fusione: nessuna verifica.
 4. **Perimetro.** I lettori dello stesso fatto in altre aree restano fuori (G2 in A3).
 
-Limite: una run per richiesta, un modello, permessi ristretti.
+Limite: due run per A, una per B, un modello, permessi ristretti. Dopo A3b il problema di partenza è la variabilità del reviewer su un difetto sottile, prima ancora del consolidamento: la correzione del punto 3 non basta se il reviewer non scrive il trigger.
