@@ -6,7 +6,7 @@
 
 ## 1. Obiettivo e contenuti
 
-Consentire a sviluppatori, consulenti e interlocutori di progetto di capire un sistema passando dalla panoramica alle sorgenti. I flussi (percorsi tecnici, dati, user journey) sono fuori dal perimetro di Daodan per ora. La stessa entità deve rimanere riconoscibile fra le viste.
+Consentire a sviluppatori, consulenti e interlocutori di progetto di capire un sistema passando dalla panoramica alle sorgenti. I flussi (percorsi tecnici, dati, user journey) sono cammini sulle stesse entità, riaperti il 9 novembre 2026: li definisce la [spec dei flussi](../specs/2026-11-09-flow-model.md). La stessa entità deve rimanere riconoscibile fra le viste.
 
 | Vista | Domanda a cui risponde | Contenuti |
 | --- | --- | --- |
@@ -62,4 +62,4 @@ La scelta dell'utente sostituisce l'ipotesi precedente di adattare il viewer Flo
 
 Componenti proposti per Daodan stesso, usati dalla prima preview: [proposte](2026-11-07-codebase-explorer-proposals.json), da caricare con `modules.py propose`. Restano inferiti finché il progetto non li copia in `codebase-modules.json`.
 
-La proposta comprende le due prospettive logica e fisica; l'ordine di implementazione non riduce l'obiettivo a una mappa dei file. I flussi sono fuori perimetro finché l'utente non li riapre. L'eventuale strumentazione runtime è un requisito distinto e non è stata richiesta. Aspetto finale, spaziature e shortcut precisi restano al design UI; non sono state approvate schermate o installate librerie.
+La proposta comprende le due prospettive logica e fisica; l'ordine di implementazione non riduce l'obiettivo a una mappa dei file. I flussi sono stati riaperti il 9 novembre 2026 e hanno una spec propria; non cambiano l'implementazione già approvata finché il modello non è misurato. L'eventuale strumentazione runtime è un requisito distinto e non è stata richiesta. Aspetto finale, spaziature e shortcut precisi restano al design UI; non sono state approvate schermate o installate librerie.

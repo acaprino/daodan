@@ -25,7 +25,7 @@ flowchart LR
   R <--> I
 ```
 
-I flussi sono fuori dal perimetro di Daodan per ora: nessun artefatto, campo o vista di flusso.
+I flussi sono stati riaperti il 9 novembre 2026 ([spec](../specs/2026-11-09-flow-model.md)): `daodan/visual@1` li porterà come elenco `flows` di riferimenti a entità e relazioni esistenti, senza nuove entità; fino alla misura del modello nessun campo o vista di flusso è implementato.
 
 ## 2. Librerie, alternative e ricerca
 
