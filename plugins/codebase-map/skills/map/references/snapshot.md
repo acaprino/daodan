@@ -145,7 +145,8 @@ Parser notes name the engine or fallback; missing grammars report
 The engine pass writes `<run-dir>/snapshot/engine-edges.sqlite`, read by
 `edge_view.py`: one stage per language engine, one at a time (Jedi for Python,
 typescript-language-server for TypeScript, JavaScript, Vue and Svelte,
-Eclipse JDT LS for Java, the Kotlin Analysis API for Kotlin), each
+Eclipse JDT LS for Java, the Kotlin Analysis API for Kotlin, rust-analyzer for Rust,
+gopls for Go), each
 installed on first use under the shared Daodan directory. Answers whose file,
 imports and target are unchanged come from `engine-answers.sqlite`, beside the
 card store; the store is published at once with them, then every 30 seconds. `resolve_edges.py

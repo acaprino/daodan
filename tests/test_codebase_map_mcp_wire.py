@@ -246,6 +246,47 @@ class CodebaseMapWireTests(unittest.TestCase):
         java = state["resolution"]["by_language"]["java"]
         self.assertEqual((java["resolved"], java["resolvable"]), (1, 1), java)
 
+    def pass_state(self, run_id, language, seconds):
+        state = self.data(self.call("codebase_map_status", {"run_id": run_id}))["engine"]
+        deadline = time.monotonic() + seconds
+        while state["state"] == "running" and time.monotonic() < deadline:
+            time.sleep(1)
+            state = self.data(self.call("codebase_map_status", {"run_id": run_id}))["engine"]
+        entry = state["languages"][language]
+        if entry["state"] == "unavailable":
+            self.skipTest(entry.get("install"))
+        self.assertEqual(entry["state"], "fresh", state)
+        return entry, state["resolution"]["by_language"][language]
+
+    def test_a_go_pass_resolves_a_method_on_a_typed_receiver(self):
+        (self.project / "mod").mkdir()
+        (self.project / "mod/go.mod").write_text("module demo\n\ngo 1.22\n", encoding="utf-8")
+        (self.project / "mod/tool.go").write_text(
+            "package demo\n\ntype Tool struct{}\n\nfunc (t Tool) Run() int { return 1 }\n\ntype Other struct{}\n\n"
+            "func (o Other) Run() int { return 2 }\n", encoding="utf-8")
+        (self.project / "mod/use.go").write_text(
+            "package demo\n\nfunc Make() Tool { return Tool{} }\n\nfunc Go() int {\n\treturn Make().Run()\n}\n",
+            encoding="utf-8")
+        self.call("codebase_map_create_run", {"target": "mod", "run_id": "go-live"})
+        # The first pass on a machine installs Go and builds gopls.
+        entry, go = self.pass_state("go-live", "go", 420)
+        self.assertTrue(entry["engine"].startswith("gopls@"), entry)
+        # `Make()` is lexical; `Make().Run()` is the engine's, and `Other.Run` shares its name.
+        self.assertEqual((go["resolved"], go["resolvable"]), (2, 2), go)
+
+    def test_a_rust_pass_resolves_a_method_on_a_typed_receiver(self):
+        (self.project / "crate/src").mkdir(parents=True)
+        (self.project / "crate/Cargo.toml").write_text(
+            '[package]\nname = "demo"\nversion = "0.1.0"\nedition = "2021"\n', encoding="utf-8")
+        (self.project / "crate/src/lib.rs").write_text(
+            "pub struct Tool;\n\nimpl Tool {\n    pub fn run(&self) -> u32 { 1 }\n}\n\n"
+            "pub fn go(tool: &Tool) -> u32 {\n    tool.run()\n}\n", encoding="utf-8")
+        self.call("codebase_map_create_run", {"target": "crate", "run_id": "rust-live"})
+        # The first pass on a machine installs rust-analyzer and, without one on PATH, a Rust toolchain.
+        entry, rust = self.pass_state("rust-live", "rust", 480)
+        self.assertTrue(entry["engine"].startswith("rust-analyzer@"), entry)
+        self.assertEqual((rust["resolved"], rust["resolvable"]), (1, 1), rust)
+
     def test_scope_streams_monotonic_request_progress_and_structured_result(self):
         result = self.data(self.call("codebase_map_scope", {"target": "src"}, token="scope-1"))
         self.assertEqual(result["files"], 1)

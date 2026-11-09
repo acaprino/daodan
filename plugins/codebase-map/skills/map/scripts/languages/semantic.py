@@ -1149,6 +1149,15 @@ class _TreeSitterEvidence(_Evidence):
         else:
             self.walk(node)
 
+    def _contract(self, owner: str, item) -> None:
+        """Declare an interface or trait method that has no body, so an engine's answer can land on it."""
+        name = item.child_by_field_name("name")
+        if name is None:
+            return
+        member = self.text(name)
+        self.declaration(member, "method", self.span(item), extra={
+            "name_span": self.span(name), "contract": True, "lexical": False, "qualified_name": f"{owner}.{member}"})
+
     def _bind_params(self, params):
         if params is None:
             return
@@ -1341,6 +1350,15 @@ class _TreeSitterEvidence(_Evidence):
                         self.declaration(name, "class", self.span(spec), extra={"name_span": self.span(name_node)})
                         if self._is_exported(spec, name):
                             self.data["exports"].append({"exported": name, "local": name})
+                        interface = spec.child_by_field_name("type")
+                        for member in interface.named_children if interface is not None and                                 interface.type == "interface_type" else ():
+                            if member.type in ("method_elem", "method_spec"):
+                                self._contract(name, member)
+            return
+        if t == "function_signature_item":
+            # A trait's method without a body: the call goes through it, as through an interface method.
+            owner = node.parent.parent.child_by_field_name("name") if node.parent is not None and                 node.parent.parent is not None else None
+            self._contract(self.text(owner) if owner is not None else "(trait)", node)
             return
         if t in _TS_CLASS_NODES:
             name_node = node.child_by_field_name("name") or next(
@@ -1356,6 +1374,14 @@ class _TreeSitterEvidence(_Evidence):
                 (c for c in node.named_children if c.type in ("class_body", "enum_class_body", "declaration_list")),
                 None,
             )
+            if t == "enum_item" and body is not None:
+                # `Variant(x)` is a call that builds the variant: an engine answers on the variant's name.
+                for variant in body.named_children:
+                    variant_name = variant.child_by_field_name("name") if variant.type == "enum_variant" else None
+                    if variant_name is not None:
+                        self.declaration(self.text(variant_name), "method", self.span(variant), extra={
+                            "name_span": self.span(variant_name), "contract": True, "lexical": False,
+                            "qualified_name": f"{name}::{self.text(variant_name)}"})
             if body is not None and (self.language in ("java", "kotlin", "csharp") or t == "trait_item"):
                 scope = self.new_scope("class", self.span(node))
                 if identity is not None:

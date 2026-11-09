@@ -919,7 +919,353 @@ def remove_mirror(root: Path) -> None:
     root.rmdir()
 
 
-class TypeScriptEngine(LspEngine):
+RUST_ANALYZER_RELEASE = "2026-11-09"
+# The release's own checksums, per platform key of `_platform()`: (asset, sha256).
+RUST_ANALYZER_ASSETS = {
+    "win-x64": ("x86_64-pc-windows-msvc.zip", "973ab11e84955a7f8e3cf01ccd98a33f3ecbd6d4a14bf59bb164aa9e831c6fef"),
+    "win-arm64": ("aarch64-pc-windows-msvc.zip", "ca0770b76d3881642221d0437f7535e324f22a9499bcd00bbebeb0228617249e"),
+    "linux-x64": ("x86_64-unknown-linux-gnu.gz", "8c039b25cb338b3970c731646677a4c9d4e9dd7a92c9ab9ae459c71467fbf4a9"),
+    "linux-arm64": ("aarch64-unknown-linux-gnu.gz", "813ca3cec78ac6dab99c7bc9d51e63578f6d401b994ecf29cc0dcad86f9b2cd4"),
+    "osx-x64": ("x86_64-apple-darwin.gz", "abf410a54e33e9f8b2d37f76dde8884db86a030d6a9cc70c0e3f87a77c084c5c"),
+    "osx-arm64": ("aarch64-apple-darwin.gz", "e43a65008f8f4291320f33c0545dd577ad7623a7407b584a27155833d3722dfb"),
+}
+GO_VERSION = "1.27.3"
+GO_ASSETS = {
+    "win-x64": ("go1.27.3.windows-amd64.zip", "f26081f438319757f8a1b46d7d0b2c5ec7583d4038e485e0aa725cfde7885fff"),
+    "win-arm64": ("go1.27.3.windows-arm64.zip", "c507872ff21f8a7cd3c1c217b059c6f7271a4a9d8e692810ef9dd3e1f601197c"),
+    "linux-x64": ("go1.27.3.linux-amd64.tar.gz", "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"),
+    "linux-arm64": ("go1.27.3.linux-arm64.tar.gz", "a06e99309dbcbdca1a8ccd2282c3ee146e55930886e26b4f1193269587165f49"),
+    "osx-x64": ("go1.27.3.darwin-amd64.tar.gz", "b6f8e931e4ab497fcde6da8ae4499a58f9d258e55c8a80824a516eae5950a750"),
+    "osx-arm64": ("go1.27.3.darwin-arm64.tar.gz", "dd3908cf20959d798c1e06ebe5b72213f0505ce01373b40ce3110975a6cd99c2"),
+}
+GOPLS_VERSION = "v0.24.0"
+
+
+def unpack(archive: Path, destination: Path) -> None:
+    """Extract a zip or a gzip tarball into `destination`."""
+    if archive.name.endswith(".zip"):
+        import zipfile
+        with zipfile.ZipFile(archive) as bundle:
+            bundle.extractall(destination)
+    else:
+        import tarfile
+        with tarfile.open(archive) as bundle:
+            bundle.extractall(destination, filter="data")
+
+
+def executable_name(name: str) -> str:
+    return name + (".exe" if os.name == "nt" else "")
+
+
+def go_toolchain() -> Path:
+    """The Go release Daodan pins, unpacked once into the shared directory: its GOROOT."""
+    home = shared_engine_dir("go") / GO_VERSION
+    root = home / "go"
+    if (root / "bin" / executable_name("go")).is_file():
+        return root
+    asset, digest = GO_ASSETS[_platform()]
+    print(f"installing Go {GO_VERSION} into {home} (first use)", flush=True)
+    partial = home.with_name(f".{GO_VERSION}.partial")
+    shutil.rmtree(partial, ignore_errors=True)
+    partial.mkdir(parents=True)
+    archive = download(f"https://go.dev/dl/{asset}", partial / asset, sha256=digest)
+    unpack(archive, partial)
+    archive.unlink()
+    shutil.rmtree(home, ignore_errors=True)
+    os.replace(partial, home)
+    return root
+
+
+RUST_VERSION = "1.99.1"
+RUST_TARGETS = {"win-x64": "x86_64-pc-windows-msvc", "win-arm64": "aarch64-pc-windows-msvc",
+                "linux-x64": "x86_64-unknown-linux-gnu", "linux-arm64": "aarch64-unknown-linux-gnu",
+                "osx-x64": "x86_64-apple-darwin", "osx-arm64": "aarch64-apple-darwin"}
+
+
+def rust_toolchain() -> Path | None:
+    """The directory whose `bin` holds cargo and rustc and whose sysroot holds the standard library's sources.
+
+    The toolchain on PATH when it is complete; otherwise cargo, rustc and rust-src
+    at the pinned release, downloaded from static.rust-lang.org into the shared
+    directory and checked against the sha256 of the release manifest. Without the
+    standard library's sources every call into `std` stays unresolved (semver:
+    88.8% instead of 97.7%). None when the download fails.
+    """
+    cargo, rustc = shutil.which("cargo"), shutil.which("rustc")
+    if cargo and rustc:
+        try:
+            sysroot = subprocess.run([rustc, "--print", "sysroot"], capture_output=True, text=True, timeout=60,
+                                     stdin=subprocess.DEVNULL).stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            sysroot = ""
+        if sysroot and (Path(sysroot) / "lib" / "rustlib" / "src" / "rust" / "library").is_dir():
+            return Path(cargo).parent.parent
+    home = shared_engine_dir("rust") / RUST_VERSION
+    if (home / ".installed").is_file():
+        return home
+    import tomllib
+    import urllib.request
+    import lzma
+    import tarfile
+    print(f"installing Rust {RUST_VERSION} (cargo, rustc, rust-src) into {home} (first use)", flush=True)
+    partial = home.with_name(f".{RUST_VERSION}.partial")
+    shutil.rmtree(partial, ignore_errors=True)
+    partial.mkdir(parents=True)
+    try:
+        with urllib.request.urlopen(f"https://static.rust-lang.org/dist/channel-rust-{RUST_VERSION}.toml",
+                                    timeout=120) as response:
+            packages = tomllib.loads(response.read().decode("utf-8"))["pkg"]
+        target = RUST_TARGETS[_platform()]
+        for component in ("rustc", "cargo", "rust-src"):
+            entry = packages[component]["target"]
+            entry = entry.get(target) or entry["*"]
+            archive = download(entry["xz_url"], partial / f"{component}.tar.xz", sha256=entry["xz_hash"])
+            unpacked = partial / f"unpack-{component}"
+            with tarfile.open(archive, "r:xz") as bundle:
+                bundle.extractall(unpacked, filter="data")
+            archive.unlink()
+            top = next(child for child in unpacked.iterdir() if child.is_dir())
+            shutil.copytree(top / component, partial, dirs_exist_ok=True)
+            shutil.rmtree(unpacked, ignore_errors=True)
+        (partial / ".installed").write_text(RUST_VERSION, encoding="utf-8")
+        shutil.rmtree(home, ignore_errors=True)
+        os.replace(partial, home)
+    except Exception as error:
+        print(f"the Rust toolchain was not installed: {type(error).__name__}: {error}", flush=True)
+        shutil.rmtree(partial, ignore_errors=True)
+        return None
+    return home
+
+
+class MirroredEngine(LspEngine):
+    """An engine whose server works in a mirror of the project, so what its tools write never lands in the project.
+
+    A package manager asked to read the project's crates or modules may write a
+    lock file or a checksum file beside the manifest. The mirror holds a link per
+    top-level directory and a copy of each top-level file, so such a write lands in
+    the copy; answers are mapped back to the project's files. Removing the mirror
+    never enters a link.
+    """
+
+    mirror: Path | None = None
+    mirror_skip = (".git",)
+
+    def build_mirror(self, links: dict | None = None) -> Path:
+        mirror = Path(tempfile.mkdtemp(prefix=f"daodan-{self.name}-")) / self.project_root.name
+        mirror.mkdir()
+        for entry in self.project_root.iterdir():
+            if entry.name in self.mirror_skip:
+                continue
+            if entry.is_dir():
+                link_directory(mirror / entry.name, entry)
+            elif entry.is_file():
+                shutil.copyfile(entry, mirror / entry.name)
+        for name, target in (links or {}).items():
+            link_directory(mirror / name, target)
+        return mirror
+
+    def workspace_root(self) -> Path:
+        return self.mirror or self.project_root
+
+    def served_text(self, path: Path) -> tuple[Path, str]:
+        with path.open(encoding="utf-8", newline="") as handle:
+            text = handle.read()
+        return self.workspace_root() / path.relative_to(self.project_root), text
+
+    def cleanup(self) -> None:
+        if self.mirror is not None:
+            remove_mirror(self.mirror)
+            self.mirror.parent.rmdir()
+            self.mirror = None
+
+
+class RustEngine(MirroredEngine):
+    """Rust through rust-analyzer, from the release Daodan pins.
+
+    The project is read by `cargo metadata`, which needs cargo (and the Rust sources
+    of the standard library for calls into `std`). Build scripts and procedural macros
+    stay off, so no project code runs; what a macro generates is not seen. The server
+    works in a mirror of the project (`MirroredEngine`) with its target directory in
+    a temporary folder, so a missing `Cargo.lock` is written in the mirror and never
+    in the project.
+    """
+
+    name = "rust"
+    server_name = "rust-analyzer"
+    languages = ("rust",)
+    language_ids = {".rs": "rust"}
+    source_languages = ("rust",)
+    quiescent_seconds = LSP_START_TIMEOUT - 10
+
+    def __init__(self, project_root: Path, install_dir: Path | None = None):
+        super().__init__(project_root, install_dir)
+        self.target_dir: Path | None = None
+        self.toolchain: Path | None = None
+        self.status: dict = {}
+        self.quiet = threading.Event()
+
+    def pinned(self) -> dict:
+        return {"version": RUST_ANALYZER_RELEASE}
+
+    def prepare(self, home: Path) -> tuple[bool, str]:
+        self.toolchain = rust_toolchain()
+        if self.toolchain is None:
+            self.install = "check the network: Daodan downloads cargo, rustc and rust-src from static.rust-lang.org"
+            return False, "no Rust toolchain could be installed"
+
+        def fill(partial):
+            asset, digest = RUST_ANALYZER_ASSETS[_platform()]
+            archive = download("https://github.com/rust-lang/rust-analyzer/releases/download/"
+                               f"{RUST_ANALYZER_RELEASE}/rust-analyzer-{asset}", partial / asset, sha256=digest)
+            binary = partial / executable_name("rust-analyzer")
+            if archive.suffix == ".zip":
+                unpack(archive, partial)
+            else:
+                import gzip
+                with gzip.open(archive) as source, binary.open("wb") as target:
+                    shutil.copyfileobj(source, target)
+                binary.chmod(0o755)
+            archive.unlink()
+
+        self._install(home, fill)
+        return True, ""
+
+    def command(self, home: Path) -> tuple[list[str], dict]:
+        # Crates the project depends on land in the shared directory, not in the user's cargo home.
+        return [str(home / executable_name("rust-analyzer"))], {
+            "PATH": str(self.toolchain / "bin") + os.pathsep + os.environ.get("PATH", ""),
+            "CARGO_HOME": str(shared_cache_dir() / "cargo"), "CARGO_TARGET_DIR": str(self.target_dir)}
+
+    def initialization_options(self) -> dict:
+        return {"cargo": {"buildScripts": {"enable": False}, "features": "all", "targetDir": str(self.target_dir)},
+                "procMacro": {"enable": False}, "checkOnSave": False, "cachePriming": {"enable": False},
+                "numThreads": ENGINE_THREADS, "diagnostics": {"enable": False}}
+
+    def initialize_params(self) -> dict:
+        params = super().initialize_params()
+        params["capabilities"]["experimental"] = {"serverStatusNotification": True}
+        return params
+
+    def notifications(self) -> dict:
+        async def server_status(params):
+            self.status = params or {}
+            if self.status.get("quiescent"):
+                self.quiet.set()
+            else:
+                self.quiet.clear()
+        return {"experimental/serverStatus": server_status}
+
+    async def wait_ready(self) -> None:
+        deadline = time.monotonic() + self.quiescent_seconds
+        while time.monotonic() < deadline:
+            if self.quiet.is_set():
+                await asyncio.sleep(2)
+                if self.quiet.is_set():
+                    return
+            await asyncio.sleep(1)
+
+    def readiness_probe(self):
+        # A virtual file belongs to no crate; the quiescent status is the readiness signal.
+        return None
+
+    def probe(self) -> tuple[bool, str]:
+        self.target_dir = Path(tempfile.mkdtemp(prefix="daodan-rust-target-"))
+        self.mirror = self.build_mirror()
+        return super().probe()
+
+    def cleanup(self) -> None:
+        super().cleanup()
+        if self.target_dir is not None:
+            shutil.rmtree(self.target_dir, ignore_errors=True)
+            self.target_dir = None
+
+    def context(self) -> str | None:
+        """The server release, the compiler and the manifests, which decide what is external."""
+        if self.version is None:
+            return None
+        manifests = hashlib.sha256()
+        for path in sorted(self.project_root.rglob("Cargo.*")):
+            if path.is_file() and "target" not in path.relative_to(self.project_root).parts:
+                manifests.update(path.relative_to(self.project_root).as_posix().encode() + b"\0" + path.read_bytes())
+        return f"{self.identity()}|cargo={manifests.hexdigest()[:16]}"
+
+    def report(self) -> dict:
+        return {**super().report(), "status": self.status.get("health"), "message": self.status.get("message")}
+
+
+class GoEngine(MirroredEngine):
+    """Go through gopls, built once from the release Daodan pins with the Go toolchain Daodan pins.
+
+    gopls reads the project through the `go` command, so the toolchain is part of the
+    engine. Modules are fetched into the shared directory by `go mod download` in the
+    mirror, so a missing checksum is written in the mirror and never in the project;
+    no project code runs, since `go list` and the type checker only read it.
+    """
+
+    name = "go"
+    server_name = "gopls"
+    languages = ("go",)
+    language_ids = {".go": "go"}
+    source_languages = ("go",)
+
+    def pinned(self) -> dict:
+        return {"version": GOPLS_VERSION}
+
+    def go_environment(self) -> dict:
+        root = go_toolchain()
+        cache = shared_cache_dir() / "go"
+        return {"GOROOT": str(root), "GOPATH": str(cache / "path"), "GOCACHE": str(cache / "build"),
+                "GOTOOLCHAIN": "local", "GOFLAGS": "-mod=readonly", "GOTELEMETRY": "off",
+                "PATH": str(root / "bin") + os.pathsep + os.environ.get("PATH", "")}
+
+    def prepare(self, home: Path) -> tuple[bool, str]:
+        environment = self.go_environment()
+
+        def fill(partial):
+            scratch = Path(tempfile.mkdtemp(prefix="daodan-gopls-"))
+            try:
+                build = {**os.environ, **environment, "GOBIN": str(partial), "GOPATH": str(scratch / "path"),
+                         "GOCACHE": str(scratch / "cache"), "GOFLAGS": ""}
+                subprocess.run([str(go_toolchain() / "bin" / executable_name("go")), "install",
+                                f"golang.org/x/tools/gopls@{GOPLS_VERSION}"], check=True, env=build,
+                               stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=1800)
+            finally:
+                # The module and build caches of gopls's own sources are not needed again; Go makes them read-only.
+                shutil.rmtree(scratch, onexc=lambda function, path, _error: (os.chmod(path, 0o700), function(path)))
+
+        self._install(home, fill)
+        return True, ""
+
+    def command(self, home: Path) -> tuple[list[str], dict]:
+        return [str(home / executable_name("gopls")), "serve"], self.go_environment()
+
+    def settings(self) -> dict:
+        return {"gopls": {"usePlaceholders": False, "staticcheck": False, "analyses": {}, "diagnosticsDelay": "1h",
+                          "build": {"directoryFilters": ["-node_modules", "-vendor"]}}}
+
+    def readiness_probe(self):
+        # A virtual file belongs to no package; gopls loads the workspace on its first request.
+        return None
+
+    def probe(self) -> tuple[bool, str]:
+        self.mirror = self.build_mirror()
+        environment = {**os.environ, **self.go_environment()}
+        if (self.mirror / "go.mod").is_file():
+            subprocess.run([str(go_toolchain() / "bin" / executable_name("go")), "mod", "download"], cwd=self.mirror,
+                           env=environment, stdin=subprocess.DEVNULL, capture_output=True, timeout=1800)
+        return super().probe()
+
+    def context(self) -> str | None:
+        if self.version is None:
+            return None
+        modules = hashlib.sha256()
+        for path in sorted(self.project_root.rglob("go.*")):
+            if path.is_file() and path.name in ("go.mod", "go.sum", "go.work"):
+                modules.update(path.relative_to(self.project_root).as_posix().encode() + b"\0" + path.read_bytes())
+        return f"{self.identity()}|go={GO_VERSION}|{modules.hexdigest()[:16]}"
+
+
+class TypeScriptEngine(MirroredEngine):
     """TypeScript and JavaScript through typescript-language-server.
 
     The server needs no build and no installed dependencies: a file outside every
@@ -977,6 +1323,8 @@ class TypeScriptEngine(LspEngine):
     def readiness_probe(self):
         return "__daodan_engine_probe__.ts", "function probe() {}\nprobe();\n", 1, 0
 
+    mirror_skip = (".git", "node_modules")
+
     def probe(self) -> tuple[bool, str]:
         self.mirror = None
         if not (self.project_root / "node_modules").is_dir():
@@ -989,38 +1337,16 @@ class TypeScriptEngine(LspEngine):
                 self.mirror = self.build_mirror(modules)
         return super().probe()
 
-    def build_mirror(self, modules: Path) -> Path:
-        mirror = Path(tempfile.mkdtemp(prefix="daodan-ts-")) / self.project_root.name
-        mirror.mkdir()
-        for entry in self.project_root.iterdir():
-            if entry.name in ("node_modules", ".git"):
-                continue
-            if entry.is_dir():
-                link_directory(mirror / entry.name, entry)
-            elif entry.is_file():
-                shutil.copyfile(entry, mirror / entry.name)
-        link_directory(mirror / "node_modules", modules)
-        return mirror
-
-    def workspace_root(self) -> Path:
-        return getattr(self, "mirror", None) or self.project_root
+    def build_mirror(self, modules: Path | None = None) -> Path:
+        return super().build_mirror({"node_modules": modules} if modules is not None else None)
 
     def served_text(self, path: Path) -> tuple[Path, str]:
-        with path.open(encoding="utf-8", newline="") as handle:
-            text = handle.read()
-        served = self.workspace_root() / path.relative_to(self.project_root)
+        served, text = super().served_text(path)
         if path.suffix.lower() not in (".vue", ".svelte"):
             return served, text
         from languages.sfc import mask_non_script
         text, typed, _has_script = mask_non_script(text)
         return served.with_name(served.name + (".ts" if typed else ".js")), text
-
-    def cleanup(self) -> None:
-        mirror = getattr(self, "mirror", None)
-        if mirror is not None:
-            remove_mirror(mirror)
-            mirror.parent.rmdir()
-            self.mirror = None
 
     def context(self) -> str | None:
         """The server version and the project's packages, which decide what is external."""
@@ -1033,7 +1359,7 @@ class TypeScriptEngine(LspEngine):
     def report(self) -> dict:
         return {**super().report(), "max_server_memory_mb": SERVER_MEMORY_MB,
                 "packages": "project" if (self.project_root / "node_modules").is_dir() else
-                "shared" if getattr(self, "mirror", None) else None}
+                "shared" if self.mirror else None}
 
 
 class JavaEngine(LspEngine):
@@ -1872,6 +2198,15 @@ class ScipEngine:
                                 sym = o_val.decode("utf-8", errors="replace")
                             elif of_no == 3 and o_wt == 0:
                                 roles = int(o_val)
+                            elif of_no in (8, 9) and o_wt == 2:
+                                # The typed range of the current schema; a zero field is not written.
+                                fields = {number: int(value) for number, wire, value in _pb_iter_fields(o_val)
+                                          if wire == 0}
+                                if of_no == 8:
+                                    line = fields.get(1, 0)
+                                    rng = [line, fields.get(2, 0), line, fields.get(3, 0)]
+                                else:
+                                    rng = [fields.get(1, 0), fields.get(2, 0), fields.get(3, 0), fields.get(4, 0)]
                         occurrences.append((rng, sym, roles))
                 self._document(rel_path, occurrences, encoding)
 
@@ -2130,6 +2465,8 @@ def project_callee_names(connection) -> set[str]:
     """
     names = {unicodedata.normalize("NFKC", row[0]) for row in connection.execute(
         "SELECT DISTINCT name FROM sem_declarations WHERE kind IN ('function','method','class')")}
+    # A Go method is declared as `Type.Method`; a call names it by the last segment.
+    names |= {name.rsplit(".", 1)[-1] for name in names if "." in name}
     names |= {unicodedata.normalize("NFKC", row[0]) for row in connection.execute(
         "SELECT DISTINCT name FROM sem_bindings WHERE kind='import'")}
     return names
@@ -3120,6 +3457,10 @@ ENGINES = (
                "install uv, which gives the pass multilspy and its pinned Eclipse JDT LS", {}),
     # Kotlin needs nothing in Python: its engine is a JVM process that installs itself.
     EngineSpec("kotlin", ("kotlin",), (), "json", "install uv, which runs the pass", {}),
+    EngineSpec("rust", ("rust",), ("multilspy==0.1.1",), "multilspy",
+               "install uv, which gives the pass multilspy; rust-analyzer installs itself", {}),
+    EngineSpec("go", ("go",), ("multilspy==0.1.1",), "multilspy",
+               "install uv, which gives the pass multilspy; Go and gopls install themselves", {}),
 )
 ENGINE_LANGUAGES = {language: spec for spec in ENGINES for language in spec.languages}
 # One engine runs at a time, and only with this much memory free.
@@ -3135,6 +3476,10 @@ def build_engine(name: str, project_root: Path, environments: list[Path], scip_i
         return JavaEngine(project_root)
     if name == "kotlin":
         return KotlinEngine(project_root)
+    if name == "rust":
+        return RustEngine(project_root)
+    if name == "go":
+        return GoEngine(project_root)
     return JediEngine(project_root, environments)
 
 
@@ -3436,7 +3781,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pass", dest="whole_pass", action="store_true",
                         help="run every engine the snapshot's languages need, one after another, as the "
                              "detached pass does")
-    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "kotlin", "scip"), default="jedi")
+    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "kotlin", "rust", "go", "scip"), default="jedi")
     parser.add_argument("--scip-index", action="append", default=[], type=Path,
                         help="path to a precomputed SCIP index file (index.scip Protobuf or JSON) when --engine scip is used")
     parser.add_argument("--environment", action="append", default=[], type=Path,

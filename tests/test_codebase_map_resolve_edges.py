@@ -1347,6 +1347,187 @@ class KotlinEngineTests(unittest.TestCase):
         self.assertEqual(seen, [["Help.java", "Tool.kt"]])
 
 
+class RustGoContractTests(unittest.TestCase):
+    """A method with no body, an interface's or a trait's, is a contract; an enum variant builds through its name."""
+
+    def table(self, name, source):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "proj"
+            root.mkdir()
+            (root / name).write_text(source, encoding="utf-8")
+            manifest = Path(temp) / "manifest.sqlite"
+            snapshot.write_snapshot(root, manifest)
+            with open_snapshot(manifest) as store:
+                return resolve_edges.symbol_table(store.connection, name, source)
+
+    def test_go_interface_methods_are_contracts(self):
+        source = "package demo\n\ntype Router interface {\n\tRoute(pattern string)\n\tRoutes() []string\n}\n"
+        table, ambiguous = self.table("demo.go", source)
+        self.assertEqual(ambiguous, set())
+        self.assertEqual(table[(4, source.split("\n")[3].index("Route"))][1], "function")
+        self.assertEqual(table[(5, source.split("\n")[4].index("Routes"))][1], "function")
+
+    def test_rust_trait_signatures_and_enum_variants_are_contracts(self):
+        source = ("pub trait Tool {\n    fn run(&self) -> u32;\n    fn name(&self) -> u32 { 1 }\n}\n\n"
+                  "pub enum Code {\n    Message(String),\n    Eof,\n}\n")
+        lines = source.split("\n")
+        table, ambiguous = self.table("lib.rs", source)
+        self.assertEqual(ambiguous, set())
+        for line, text in ((2, "run"), (3, "name"), (7, "Message")):
+            with self.subTest(text=text):
+                self.assertEqual(table[(line, lines[line - 1].index(text))][1], "function")
+
+
+class NativeToolchainTests(unittest.TestCase):
+    def test_a_toolchain_on_the_path_is_used_when_it_holds_the_standard_library_sources(self):
+        with tempfile.TemporaryDirectory() as temp:
+            sysroot = Path(temp) / "sysroot"
+            (sysroot / "lib/rustlib/src/rust/library").mkdir(parents=True)
+            (sysroot / "bin").mkdir()
+            fake = lambda name: str(sysroot / "bin" / name)
+            with mock.patch.object(resolve_edges.shutil, "which", side_effect=fake), \
+                    mock.patch.object(resolve_edges.subprocess, "run", return_value=subprocess.CompletedProcess(
+                        [], 0, stdout=str(sysroot) + "\n", stderr="")), \
+                    mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+                self.assertEqual(resolve_edges.rust_toolchain(), sysroot)
+            self.assertFalse((Path(temp) / "cache").exists())
+
+    def test_without_sources_cargo_rustc_and_rust_src_come_from_the_release_and_are_verified(self):
+        import io
+        import tarfile
+        import lzma
+
+        def archive(component):
+            buffer = io.BytesIO()
+            with tarfile.open(fileobj=buffer, mode="w:xz") as bundle:
+                payload = component.encode()
+                member = tarfile.TarInfo(f"{component}-1/{component}/bin/{component}")
+                member.size = len(payload)
+                bundle.addfile(member, io.BytesIO(payload))
+            return buffer.getvalue()
+
+        archives = {component: archive(component) for component in ("rustc", "cargo", "rust-src")}
+        manifest = "\n".join(
+            f'[pkg.{name}.target.x86_64-pc-windows-msvc]\nxz_url = "https://static.rust-lang.org/{name}.tar.xz"\n'
+            f'xz_hash = "{hashlib.sha256(data).hexdigest()}"\n' for name, data in archives.items())
+
+        def answer(url, timeout=None):
+            url = url if isinstance(url, str) else url.full_url
+            if url.endswith(".toml"):
+                return io.BytesIO(manifest.encode())
+            return io.BytesIO(archives[Path(url).name.removesuffix(".tar.xz")])
+
+        with tempfile.TemporaryDirectory() as temp, \
+                mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
+                mock.patch.object(resolve_edges, "_platform", return_value="win-x64"), \
+                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"), \
+                mock.patch("urllib.request.urlopen", side_effect=answer):
+            home = resolve_edges.rust_toolchain()
+            self.assertEqual(home.name, resolve_edges.RUST_VERSION)
+            for component in ("rustc", "cargo", "rust-src"):
+                self.assertTrue((home / "bin" / component).is_file())
+            self.assertTrue((home / ".installed").is_file())
+            # The second call installs nothing.
+            with mock.patch("urllib.request.urlopen", side_effect=AssertionError("downloaded again")):
+                self.assertEqual(resolve_edges.rust_toolchain(), home)
+
+    def test_a_download_that_fails_its_checksum_leaves_no_toolchain(self):
+        import io
+        manifest = ('[pkg.rustc.target.x86_64-pc-windows-msvc]\nxz_url = "https://static.rust-lang.org/rustc.tar.xz"\n'
+                    'xz_hash = "' + "0" * 64 + '"\n')
+        with tempfile.TemporaryDirectory() as temp, \
+                mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
+                mock.patch.object(resolve_edges, "_platform", return_value="win-x64"), \
+                mock.patch.object(resolve_edges.time, "sleep"), \
+                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"), \
+                mock.patch("urllib.request.urlopen", side_effect=lambda url, timeout=None: io.BytesIO(
+                    manifest.encode() if str(url).endswith(".toml") else b"not the archive")):
+            self.assertIsNone(resolve_edges.rust_toolchain())
+            self.assertEqual([path.name for path in (Path(temp) / "cache/engines/rust").iterdir()], [])
+
+    def test_the_go_toolchain_is_unpacked_once_and_checked(self):
+        import zipfile
+        with tempfile.TemporaryDirectory() as temp:
+            bundle = Path(temp) / "go.zip"
+            with zipfile.ZipFile(bundle, "w") as archive:
+                archive.writestr("go/bin/" + resolve_edges.executable_name("go"), "binary")
+            payload = bundle.read_bytes()
+            assets = {"win-x64": ("go.zip", hashlib.sha256(payload).hexdigest())}
+            calls = []
+
+            def fetch(url, target, **options):
+                calls.append(url)
+                target.write_bytes(payload)
+                return target
+
+            with mock.patch.object(resolve_edges, "GO_ASSETS", assets), \
+                    mock.patch.object(resolve_edges, "_platform", return_value="win-x64"), \
+                    mock.patch.object(resolve_edges, "download", side_effect=fetch), \
+                    mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+                root = resolve_edges.go_toolchain()
+                self.assertTrue((root / "bin" / resolve_edges.executable_name("go")).is_file())
+                self.assertEqual(resolve_edges.go_toolchain(), root)
+            self.assertEqual(len(calls), 1)
+
+    def test_a_mirror_keeps_what_the_server_writes_out_of_the_project(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "proj"
+            (root / "src").mkdir(parents=True)
+            (root / "src/lib.rs").write_bytes(b"pub fn a() {}\n")
+            (root / "Cargo.toml").write_text('[package]\nname = "demo"\n', encoding="utf-8")
+            (root / ".git").mkdir()
+            engine = resolve_edges.RustEngine(root, install_dir=Path(temp) / "engines")
+            engine.mirror = engine.build_mirror()
+            mirror = engine.workspace_root()
+            self.assertFalse((mirror / ".git").exists())
+            (mirror / "Cargo.lock").write_text("lock", encoding="utf-8")
+            served, text = engine.served_text(root / "src/lib.rs")
+            self.assertEqual((served.resolve(), text), ((root / "src/lib.rs").resolve(), "pub fn a() {}\n"))
+            engine.cleanup()
+            self.assertFalse(mirror.exists())
+            self.assertEqual(sorted(path.name for path in root.iterdir()), [".git", "Cargo.toml", "src"])
+            self.assertTrue((root / "src/lib.rs").is_file())
+
+
+class ScipTypedRangeTests(unittest.TestCase):
+    """The current SCIP schema writes an occurrence's range as a message, with zero fields left out."""
+
+    @staticmethod
+    def varint(value):
+        out = bytearray()
+        while True:
+            byte = value & 0x7F
+            value >>= 7
+            out.append(byte | (0x80 if value else 0))
+            if not value:
+                return bytes(out)
+
+    def field(self, number, payload):
+        if isinstance(payload, int):
+            return self.varint(number << 3) + self.varint(payload)
+        return self.varint(number << 3 | 2) + self.varint(len(payload)) + payload
+
+    def occurrence(self, symbol, roles, *range_fields):
+        single = b"".join(self.field(number, value) for number, value in range_fields if value)
+        return self.field(2, self.field(8, single) + self.field(2, symbol.encode()) + self.field(3, roles))
+
+    def test_single_line_ranges_are_read_without_their_zero_fields(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            (root / "a.go").write_text("package a\n\nfunc Run() {}\n\nfunc Go() { Run() }\n", encoding="utf-8")
+            symbol = "scip-go gomod demo . `demo`/Run()."
+            document = (self.field(1, b"a.go")
+                        + self.occurrence(symbol, 1, (1, 2), (2, 5), (3, 8))
+                        + self.occurrence(symbol, 0, (1, 4), (2, 13), (3, 16))
+                        + self.occurrence("local 0", 1, (2, 1), (3, 2)))
+            index = root / "index.scip"
+            index.write_bytes(self.field(2, document))
+            engine = resolve_edges.ScipEngine(root, [index])
+            self.assertEqual(engine.probe(), (True, ""))
+            found = engine.definitions(root / "a.go", 5, 13)
+        self.assertEqual([(location.line, location.column) for location in found], [(3, 5)])
+
+
 class PositionUnitTests(unittest.TestCase):
     def test_positions_convert_explicitly_between_units(self):
         line = 'x = "é😀"; run()'
