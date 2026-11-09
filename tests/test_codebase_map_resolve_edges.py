@@ -860,7 +860,9 @@ class MultiLanguageTests(unittest.TestCase):
         calls = []
         report = self.manifest.with_name(resolve_edges.REPORT_NAME)
         with mock.patch.object(resolve_edges, "stage_command",
-                               side_effect=lambda spec, manifest, path, environments: [spec.name, str(path)]), \
+                               side_effect=lambda spec, manifest, path, environments, offline=False:
+                               [spec.name, str(path)]), \
+                mock.patch.object(resolve_edges, "cached_offline", return_value=False), \
                 mock.patch.object(resolve_edges.subprocess, "run", side_effect=self.stage_runner(outcomes, calls)), \
                 mock.patch.object(resolve_edges, "free_memory", return_value=free):
             result = resolve_edges.run_pass(self.manifest, report, [])
@@ -1036,6 +1038,80 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(after["d"], before["d"])
 
 
+class ContractTests(unittest.TestCase):
+    """Calls that go through a type's contract arrive at it; a value holder is never a target."""
+
+    TYPES = "\n".join([
+        "export interface Client {",
+        "  get(url: string): string;",
+        "  post: (url: string) => string;",
+        "  json: { <T>(): T; raw(): string };",
+        "  timeout: number;",
+        "}",
+        "export type Factory = {",
+        "  (base: string): Client;",
+        "};",
+        "export class Box {",
+        "  constructor(size: number) {}",
+        "}",
+        "export const box = new Box(1);",
+        "",
+    ])
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        self.root.mkdir()
+        (self.root / "types.ts").write_text(self.TYPES, encoding="utf-8")
+        self.manifest = self.root.parent / "manifest.sqlite"
+        snapshot.write_snapshot(self.root, self.manifest)
+        self.lines = self.TYPES.split("\n")
+
+    def at(self, line, text, offset=0):
+        return line, self.lines[line - 1].index(text) + offset
+
+    def table(self):
+        with open_snapshot(self.manifest) as store:
+            return resolve_edges.symbol_table(store.connection, "types.ts", self.TYPES)
+
+    def grade(self, *positions):
+        definitions = [Definition(self.root / "types.ts", "?", line=line, column=column) for line, column in positions]
+        with open_snapshot(self.manifest) as store:
+            inventory = resolve_edges.inventory_files(store.connection)
+            return resolve_edges.grade_all(definitions, inventory, {}, self.root, lambda rel: resolve_edges.symbol_table(
+                store.connection, rel, self.TYPES))
+
+    def test_callable_members_of_interfaces_and_types_are_contracts(self):
+        table, ambiguous = self.table()
+        self.assertEqual(ambiguous, set())
+        for position in (self.at(2, "get"), self.at(3, "post"), self.at(4, "raw"), self.at(8, "(")):
+            with self.subTest(position=position):
+                self.assertEqual(table[position][1], "function")
+        # A property's own call signature names the property.
+        self.assertEqual(table[self.at(4, "<")], table[self.at(4, "json")])
+        self.assertEqual(table[self.at(5, "timeout")][1], "binding")
+
+    def test_a_constructor_names_its_class(self):
+        table, _ambiguous = self.table()
+        self.assertEqual(table[self.at(11, "constructor")], table[self.at(10, "Box")])
+        verdict, target = self.grade(self.at(10, "Box"), self.at(11, "constructor"))
+        self.assertEqual((verdict, target["kind"]), ("edge-instantiation", "class"))
+
+    def test_the_value_holder_beside_a_callable_is_not_a_target(self):
+        self.assertEqual(self.grade(self.at(13, "box"), self.at(2, "get"))[0], "edge-call")
+        self.assertEqual(self.grade(self.at(5, "timeout")), ("project-not-a-symbol", None))
+
+    def test_contracts_are_never_lexical_bindings(self):
+        with open_snapshot(self.manifest) as store:
+            rows = [_unpack(row[0]) for row in store.connection.execute(
+                "SELECT payload FROM sem_declarations WHERE kind IN ('method','property')")]
+        contracts = [row for row in rows if row.get("contract") or row["kind"] == "property"]
+        self.assertTrue(contracts)
+        self.assertTrue(all(row.get("lexical") is False for row in contracts), contracts)
+        self.assertIn("Client.get", {row["qualified_name"] for row in contracts})
+
+
 class JavaEngineTests(unittest.TestCase):
     def test_the_java_server_builds_nothing_downloads_nothing_and_writes_outside_the_project(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -1049,6 +1125,226 @@ class JavaEngineTests(unittest.TestCase):
             # Library definitions come back as class-file locations, which grade as external.
             self.assertTrue(options["extendedClientCapabilities"]["classFileContentsSupport"])
             self.assertEqual(engine.definitions.__func__, resolve_edges.LspEngine.definitions)
+
+    def test_the_java_server_finds_the_gradle_release_list_locally(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp) / "home"
+            plugins = home / "extension" / "server" / "plugins"
+            plugins.mkdir(parents=True)
+            (plugins / "org.eclipse.equinox.launcher_1.jar").write_bytes(b"")
+            for name in ("config_win", "config_linux", "config_mac"):
+                (home / "extension" / "server" / name).mkdir()
+            engine = resolve_edges.JavaEngine(Path(temp), install_dir=Path(temp) / "engines")
+            engine.jre_home = Path(temp) / "jre"
+            with mock.patch.object(resolve_edges.JavaEngine, "pinned",
+                                   return_value={"version": "1", "jre_path": "jre/bin/java"}):
+                _command, environment = engine.command(home)
+            versions = Path(environment["XDG_CACHE_HOME"]) / "tooling" / "gradle" / "versions.json"
+            self.assertEqual(versions.read_text(encoding="utf-8"), "[]")
+            engine.cleanup()
+            self.assertFalse(versions.exists())
+
+
+class OfflineStageTests(unittest.TestCase):
+    def test_a_cached_stage_runs_uv_offline(self):
+        with tempfile.TemporaryDirectory() as temp:
+            manifest, report = Path(temp) / "manifest.sqlite", Path(temp) / "report.json"
+            spec = resolve_edges.ENGINES[1]
+            with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"):
+                online = resolve_edges.stage_command(spec, manifest, report, [])
+                offline = resolve_edges.stage_command(spec, manifest, report, [], offline=True)
+            self.assertNotIn("--offline", online)
+            self.assertEqual(offline[:6], ["uv", "run", "--quiet", "--no-config", "--no-project", "--offline"])
+
+
+class JvmLibraryTests(unittest.TestCase):
+    """The project's libraries are read from its build files, never by running them, and resolved once."""
+
+    POM = """<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <parent><groupId>org.demo</groupId><artifactId>parent</artifactId><version>3</version></parent>
+  <groupId>org.demo</groupId><artifactId>app</artifactId><version>1.0</version>
+  <properties><guava.version>33.0-jre</guava.version></properties>
+  <dependencyManagement><dependencies>
+    <dependency><groupId>org.demo</groupId><artifactId>bom</artifactId><version>2</version>
+      <type>pom</type><scope>import</scope></dependency>
+    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.13.2</version></dependency>
+  </dependencies></dependencyManagement>
+  <dependencies>
+    <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>${guava.version}</version></dependency>
+    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></dependency>
+  </dependencies>
+  <build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><dependencies>
+    <dependency><groupId>org.tool</groupId><artifactId>only-for-the-build</artifactId><version>1</version></dependency>
+  </dependencies></plugin></plugins></build>
+</project>
+"""
+
+    def test_coordinates_come_from_poms_gradle_files_and_catalogs(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "pom.xml").write_text(self.POM, encoding="utf-8")
+            (root / "lib").mkdir()
+            (root / "lib/build.gradle.kts").write_text(
+                'plugins { kotlin("jvm") version "2.0.0" }\n'
+                'dependencies {\n  implementation("com.squareup.okio:okio:3.9.0")\n'
+                '  implementation(kotlin("reflect"))\n  implementation(project(":app"))\n}\n', encoding="utf-8")
+            (root / "gradle").mkdir()
+            (root / "gradle/libs.versions.toml").write_text(
+                '[versions]\nktor = "2.3.0"\n[libraries]\n'
+                'ktor = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }\n', encoding="utf-8")
+            coordinates, boms = resolve_edges.jvm_coordinates(root)
+        self.assertEqual(coordinates, [
+            "com.google.guava:guava:33.0-jre", "com.squareup.okio:okio:3.9.0", "io.ktor:ktor-client-core:2.3.0",
+            "junit:junit:4.13.2", "org.jetbrains.kotlin:kotlin-reflect:2.0.0", "org.slf4j:slf4j-api"])
+        self.assertEqual(boms, ["org.demo:bom:2", "org.demo:parent:3"])
+
+    def test_the_classpath_is_resolved_once_with_versions_left_to_boms_or_the_latest_stable(self):
+        with tempfile.TemporaryDirectory() as temp, \
+                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+            root = Path(temp) / "proj"
+            root.mkdir()
+            jar = Path(temp) / "guava.jar"
+            jar.write_bytes(b"jar")
+            calls = []
+
+            def run(command, **_options):
+                calls.append(command)
+                return subprocess.CompletedProcess(command, 0, stdout=f"{jar}\n", stderr="")
+
+            with mock.patch.object(resolve_edges, "jvm_coordinates",
+                                   return_value=(["com.google.guava:guava", "junit:junit:4.13.2"], [])), \
+                    mock.patch.object(resolve_edges, "java_runtime", return_value=Path("java")), \
+                    mock.patch.object(resolve_edges, "coursier_jar", return_value=Path("coursier.jar")), \
+                    mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+                first = resolve_edges.jvm_classpath(root)
+                again = resolve_edges.jvm_classpath(root)
+        self.assertEqual((first, again), ([jar], [jar]))
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][-2:], ["com.google.guava:guava:latest.stable", "junit:junit:4.13.2"])
+        self.assertNotIn("m2Local", calls[0])
+
+    def test_the_java_server_opens_an_eclipse_project_kept_outside_the_repository(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "proj"
+            (root / "src/main/java/org/demo").mkdir(parents=True)
+            (root / "src/main/java/org/demo/App.java").write_text("package org.demo;\nclass App {}\n", encoding="utf-8")
+            (root / "pom.xml").write_text(self.POM, encoding="utf-8")
+            engine = resolve_edges.JavaEngine(root, install_dir=Path(temp) / "engines")
+            engine.sources = [root / "src/main/java/org/demo/App.java"]
+            engine.workspace = Path(temp) / "workspace"
+            engine.workspace.mkdir()
+            with mock.patch.object(resolve_edges, "jvm_classpath", return_value=[Path(temp) / "guava.jar"]):
+                engine.describe_project()
+            project = engine.workspace_root()
+            description = (project / ".project").read_text(encoding="utf-8")
+            classpath = (project / ".classpath").read_text(encoding="utf-8")
+            self.assertIn((root / "src/main/java").as_posix(), description)
+            self.assertIn("kind='src' path='source0'", classpath)
+            self.assertIn((Path(temp) / "guava.jar").as_posix(), classpath)
+            self.assertEqual(sorted(path.name for path in root.iterdir()), ["pom.xml", "src"])
+
+    def test_a_language_server_is_given_the_files_exact_line_endings(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp) / "App.java"
+            source.write_bytes(b"class App {\r\n  void run() {}\r\n}\r\n")
+            _served, text = resolve_edges.LspEngine(Path(temp)).served_text(source)
+        self.assertEqual(text.count("\r\n"), 3)
+
+
+class TypeScriptMirrorTests(unittest.TestCase):
+    def test_the_mirror_links_the_project_and_its_removal_leaves_every_target_intact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "proj"
+            (root / "src/deep").mkdir(parents=True)
+            (root / "src/deep/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
+            (root / "package.json").write_text('{"name": "demo"}', encoding="utf-8")
+            modules = Path(temp) / "shared/node_modules/pkg"
+            modules.mkdir(parents=True)
+            (modules / "index.d.ts").write_text("export declare const p: number;\n", encoding="utf-8")
+            engine = resolve_edges.TypeScriptEngine(root, install_dir=Path(temp) / "engines")
+            engine.mirror = engine.build_mirror(modules.parent)
+            mirror = engine.workspace_root()
+            self.assertEqual((mirror / "src/deep/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
+            self.assertTrue((mirror / "node_modules/pkg/index.d.ts").is_file())
+            served, _text = engine.served_text(root / "src/deep/a.ts")
+            self.assertEqual(served.resolve(), (root / "src/deep/a.ts").resolve())
+            engine.cleanup()
+            self.assertFalse(mirror.exists())
+            self.assertTrue((root / "src/deep/a.ts").is_file())
+            self.assertTrue((modules / "index.d.ts").is_file())
+            self.assertEqual(sorted(path.name for path in root.iterdir()), ["package.json", "src"])
+
+    def test_only_the_manifests_reach_npm_and_scripts_never_run(self):
+        with tempfile.TemporaryDirectory() as temp, \
+                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+            root = Path(temp) / "proj"
+            (root / "src").mkdir(parents=True)
+            (root / "src/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
+            (root / "package.json").write_text('{"name": "demo", "devDependencies": {"ava": "^6"}}',
+                                               encoding="utf-8")
+            seen = []
+
+            def run(command, cwd, **_options):
+                seen.append((command, sorted(path.name for path in Path(cwd).iterdir())))
+                (Path(cwd) / "node_modules").mkdir()
+                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+            with mock.patch.object(resolve_edges.shutil, "which", return_value="npm"), \
+                    mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+                first = resolve_edges.npm_modules(root)
+                again = resolve_edges.npm_modules(root)
+        self.assertEqual(first, again)
+        self.assertEqual(len(seen), 1)
+        command, files = seen[0]
+        self.assertEqual(files, ["package.json"])
+        self.assertIn("--ignore-scripts", command)
+
+
+class KotlinEngineTests(unittest.TestCase):
+    def test_a_maven_jar_on_disk_is_reused_and_a_download_is_verified(self):
+        import io
+        payload = b"jar bytes"
+        with tempfile.TemporaryDirectory() as temp,                 mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"),                 mock.patch.object(resolve_edges.Path, "home", return_value=Path(temp) / "home"):
+            local = Path(temp) / "home/.m2/repository/org/demo/lib/1.0/lib-1.0.jar"
+            local.parent.mkdir(parents=True)
+            local.write_bytes(payload)
+            with mock.patch("urllib.request.urlopen") as urlopen:
+                self.assertEqual(resolve_edges.maven_artifact("org.demo:lib:1.0"), local)
+            urlopen.assert_not_called()
+
+            def answer(url, timeout):
+                digest = hashlib.sha1(payload).hexdigest().encode()
+                return io.BytesIO(digest if url.endswith(".sha1") else payload)
+
+            with mock.patch("urllib.request.urlopen", side_effect=answer):
+                fetched = resolve_edges.maven_artifact("org.demo:other:2.0")
+            self.assertEqual(fetched, resolve_edges.maven_central_dir() / "org/demo/other/2.0/other-2.0.jar")
+            self.assertEqual(fetched.read_bytes(), payload)
+            with mock.patch("urllib.request.urlopen", side_effect=lambda url, timeout: io.BytesIO(
+                    b"0" * 40 if url.endswith(".sha1") else payload)),                     mock.patch.object(resolve_edges.time, "sleep"):
+                with self.assertRaises(ValueError):
+                    resolve_edges.maven_artifact("org.demo:broken:3.0")
+            self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/broken/3.0/broken-3.0.jar").exists())
+
+    def test_the_kotlin_engine_loads_the_snapshots_kotlin_and_java_files_only(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "proj"
+            (root / "src").mkdir(parents=True)
+            # `make().run()` needs a type the lexical resolver does not infer, so the engine is started.
+            (root / "src/Tool.kt").write_text(
+                "class Tool {\n    fun run(): Int = 1\n}\n\nfun make(): Tool = Tool()\n\nfun go(): Int = make().run()\n",
+                encoding="utf-8")
+            (root / "src/Help.java").write_text("class Help { int go() { return 1; } }\n", encoding="utf-8")
+            (root / "notes.md").write_text("# notes\n", encoding="utf-8")
+            manifest = Path(temp) / "manifest.sqlite"
+            snapshot.write_snapshot(root, manifest)
+            engine = resolve_edges.KotlinEngine(root)
+            seen = []
+            engine.probe = lambda: (seen.append(sorted(path.name for path in engine.sources)), (False, "stopped"))[1]
+            report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)
+        self.assertFalse(report["available"])
+        self.assertEqual(seen, [["Help.java", "Tool.kt"]])
 
 
 class PositionUnitTests(unittest.TestCase):

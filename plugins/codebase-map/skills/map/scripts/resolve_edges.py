@@ -577,11 +577,16 @@ class LspEngine:
         shutil.rmtree(home, ignore_errors=True)
         os.replace(partial, home)
 
+    def workspace_root(self) -> Path:
+        """The folder the server opens as its workspace: the project, unless the engine describes one elsewhere."""
+        return self.project_root
+
     def initialize_params(self) -> dict:
-        uri = self.project_root.as_uri()
+        folder = self.workspace_root()
+        uri = folder.as_uri()
         return {
-            "processId": os.getpid(), "rootPath": str(self.project_root), "rootUri": uri,
-            "workspaceFolders": [{"uri": uri, "name": self.project_root.name}],
+            "processId": os.getpid(), "rootPath": str(folder), "rootUri": uri,
+            "workspaceFolders": [{"uri": uri, "name": folder.name}],
             "capabilities": {
                 "general": {"positionEncodings": ["utf-16"]},
                 "workspace": {"configuration": True, "workspaceFolders": True,
@@ -617,10 +622,14 @@ class LspEngine:
         async def answer_none(_params):
             return None
 
+        def section(path):
+            value = self.settings()
+            for key in filter(None, (path or "").split(".")):
+                value = value.get(key) if isinstance(value, dict) else None
+            return value
+
         async def configuration(params):
-            settings = self.settings()
-            return [settings.get((item.get("section") or "").split(".")[0], {}) if settings else None
-                    for item in params.get("items", ())]
+            return [section(item.get("section")) for item in params.get("items", ())]
 
         async def ignore(_params):
             return None
@@ -652,9 +661,14 @@ class LspEngine:
             probe = self.readiness_probe()
             if probe is not None:
                 name, text, line, character = probe
-                uri = (self.project_root / name).as_uri()
+                uri = (self.workspace_root() / name).as_uri()
                 self._open(uri, self.language_ids.get(Path(name).suffix, self.name), text)
+                # A server that indexes after starting answers once its index is usable.
+                deadline = time.monotonic() + LSP_START_TIMEOUT
                 answer = self._ask(uri, line, character)
+                while not any(row == 0 for _uri, row, _units in answer) and time.monotonic() < deadline:
+                    time.sleep(2)
+                    answer = self._ask(uri, line, character)
                 self._close(uri)
                 if not any(row == 0 for _uri, row, _units in answer):
                     return False, f"{self.server_name} answered no definition for its readiness probe"
@@ -702,14 +716,20 @@ class LspEngine:
         return found
 
     def served_text(self, path: Path) -> tuple[Path, str]:
-        """The document the server is given for a source file: the file itself by default."""
-        return path, path.read_text(encoding="utf-8")
+        """The document the server is given for a source file: the file itself, line endings included.
+
+        A server that reads a closed file from disk and an open one from this text must
+        see the same characters, or every CRLF line shifts its answers by one more.
+        """
+        with path.open(encoding="utf-8", newline="") as handle:
+            return path, handle.read()
 
     def _document(self, path: Path) -> tuple[str, list[str]]:
         if path not in self.served:
             served, text = self.served_text(path)
-            if served != path:
-                self.virtual[served] = path
+            if served.resolve() != path:
+                # Answers come back resolved: a link inside the served path leads to the real file.
+                self.virtual[served.resolve()] = path
             self.served[path] = (served.as_uri(), text.split("\n"))
         uri, lines = self.served[path]
         if uri not in self.open:
@@ -748,6 +768,8 @@ class LspEngine:
                 continue
             target = Path(url2pathname(unquote(urlparse(target_uri).path))).resolve()
             target = self.virtual.get(target, target)
+            if self.workspace_root() != self.project_root and target.is_relative_to(self.workspace_root()):
+                target = self.project_root / target.relative_to(self.workspace_root())
             if target in self.served:
                 served_lines = self.served[target][1]
                 name_line = served_lines[row] if 0 <= row < len(served_lines) else None
@@ -793,8 +815,108 @@ def _multilspy_pins(server: str) -> dict:
 
 
 def _platform() -> str:
-    from multilspy.multilspy_utils import PlatformUtils
-    return PlatformUtils.get_platform_id().value
+    """The platform key multilspy uses in its pins: `win-x64`, `linux-arm64`, `osx-x64` and so on."""
+    import platform
+    system = {"Windows": "win", "Linux": "linux", "Darwin": "osx"}.get(platform.system(), platform.system().lower())
+    machine = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"
+    return f"{system}-{machine}"
+
+
+def npm_manifests(root: Path) -> list[Path]:
+    """The files that decide a JavaScript project's packages: root manifest, lockfile, workspace manifests."""
+    root = Path(root)
+    package = root / "package.json"
+    if not package.is_file():
+        return []
+    found = [package, *[root / name for name in ("package-lock.json", "npm-shrinkwrap.json") if (root / name).is_file()]]
+    try:
+        workspaces = json.loads(package.read_text(encoding="utf-8")).get("workspaces") or []
+    except (OSError, ValueError):
+        workspaces = []
+    if isinstance(workspaces, dict):
+        workspaces = workspaces.get("packages") or []
+    for pattern in workspaces if isinstance(workspaces, list) else []:
+        for directory in root.glob(str(pattern)):
+            manifest = directory / "package.json"
+            if manifest.is_file() and "node_modules" not in manifest.relative_to(root).parts:
+                found.append(manifest)
+    return sorted(set(found))
+
+
+def npm_key(root: Path) -> str | None:
+    manifests = npm_manifests(root)
+    if not manifests:
+        return None
+    digest = hashlib.sha256()
+    for manifest in manifests:
+        digest.update(manifest.relative_to(root).as_posix().encode("utf-8") + b"\0" + manifest.read_bytes() + b"\0")
+    return digest.hexdigest()[:16]
+
+
+def npm_modules(root: Path) -> Path | None:
+    """The project's packages installed once into the shared directory, without running any package script.
+
+    Only the manifests are copied there, so npm never sees the project's code; the
+    lockfile is honoured when there is one. Every project with the same manifests
+    shares the installation, and npm's own cache spares repeated downloads. None
+    when the project has no package.json, npm is missing or the install fails.
+    """
+    root = Path(root).resolve()
+    key, npm = npm_key(root), shutil.which("npm")
+    if key is None or npm is None:
+        return None
+    destination = shared_cache_dir() / "npm" / key
+    if (destination / "daodan-modules.json").is_file():
+        return destination / "node_modules"
+    print(f"installing the project's JavaScript packages into {destination} (first use)", flush=True)
+    partial = destination.with_name(f".{key}.partial")
+    shutil.rmtree(partial, ignore_errors=True)
+    manifests = npm_manifests(root)
+    for manifest in manifests:
+        target = partial / manifest.relative_to(root)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(manifest, target)
+    locked = any(manifest.name in ("package-lock.json", "npm-shrinkwrap.json") for manifest in manifests)
+    command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
+               "--loglevel=error", *([] if locked else ["--package-lock=false"])]
+    completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                               timeout=1800, shell=os.name == "nt")
+    if completed.returncode != 0 and locked:
+        # A lockfile out of step with its manifest still leaves the manifest to install from.
+        command = [npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"]
+        completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                                   timeout=1800, shell=os.name == "nt")
+    if completed.returncode != 0 or not (partial / "node_modules").is_dir():
+        print(f"the project's JavaScript packages were not installed: {(completed.stderr or '')[-300:]}", flush=True)
+        shutil.rmtree(partial, ignore_errors=True)
+        return None
+    (partial / "daodan-modules.json").write_text(json.dumps({"manifests": [m.relative_to(root).as_posix()
+                                                                           for m in manifests]}), encoding="utf-8")
+    shutil.rmtree(destination, ignore_errors=True)
+    os.replace(partial, destination)
+    return destination / "node_modules"
+
+
+def link_directory(link: Path, target: Path) -> None:
+    """A directory link: a junction on Windows, which needs no privilege, a symbolic link elsewhere."""
+    if os.name == "nt":
+        import _winapi
+        _winapi.CreateJunction(str(target), str(link))
+    else:
+        os.symlink(target, link, target_is_directory=True)
+
+
+def remove_mirror(root: Path) -> None:
+    """Remove a mirror's links and copies without ever entering a link, so no target file is touched."""
+    root = Path(root)
+    if not root.is_dir() or root.is_symlink() or os.path.isjunction(root):
+        return
+    for entry in root.iterdir():
+        if os.path.isjunction(entry):
+            os.rmdir(entry)
+        elif entry.is_symlink() or entry.is_file():
+            entry.unlink()
+    root.rmdir()
 
 
 class TypeScriptEngine(LspEngine):
@@ -808,6 +930,13 @@ class TypeScriptEngine(LspEngine):
     Vue and Svelte files are served as a virtual `.ts` or `.js` document holding
     only their script blocks at the snapshot's byte offsets, so a position means the
     same in both. Automatic type acquisition is off, so the server never downloads.
+
+    Without the project's packages a library call is unresolved instead of external
+    (ky: 59.1% instead of 90.9%). A project without `node_modules` gets its packages
+    installed once into the shared directory (`npm_modules`), and the server opens a
+    mirror of the project in a temporary directory: a link per top-level directory,
+    a copy of each top-level file and `node_modules` linked to the shared install,
+    since TypeScript looks for packages only in the folders above a file.
     """
 
     name = "typescript"
@@ -848,39 +977,82 @@ class TypeScriptEngine(LspEngine):
     def readiness_probe(self):
         return "__daodan_engine_probe__.ts", "function probe() {}\nprobe();\n", 1, 0
 
+    def probe(self) -> tuple[bool, str]:
+        self.mirror = None
+        if not (self.project_root / "node_modules").is_dir():
+            try:
+                modules = npm_modules(self.project_root)
+            except (OSError, subprocess.SubprocessError) as error:
+                print(f"the project's JavaScript packages were not installed: {error}", flush=True)
+                modules = None
+            if modules is not None:
+                self.mirror = self.build_mirror(modules)
+        return super().probe()
+
+    def build_mirror(self, modules: Path) -> Path:
+        mirror = Path(tempfile.mkdtemp(prefix="daodan-ts-")) / self.project_root.name
+        mirror.mkdir()
+        for entry in self.project_root.iterdir():
+            if entry.name in ("node_modules", ".git"):
+                continue
+            if entry.is_dir():
+                link_directory(mirror / entry.name, entry)
+            elif entry.is_file():
+                shutil.copyfile(entry, mirror / entry.name)
+        link_directory(mirror / "node_modules", modules)
+        return mirror
+
+    def workspace_root(self) -> Path:
+        return getattr(self, "mirror", None) or self.project_root
+
     def served_text(self, path: Path) -> tuple[Path, str]:
-        text = path.read_text(encoding="utf-8")
+        with path.open(encoding="utf-8", newline="") as handle:
+            text = handle.read()
+        served = self.workspace_root() / path.relative_to(self.project_root)
         if path.suffix.lower() not in (".vue", ".svelte"):
-            return path, text
+            return served, text
         from languages.sfc import mask_non_script
         text, typed, _has_script = mask_non_script(text)
-        return path.with_name(path.name + (".ts" if typed else ".js")), text
+        return served.with_name(served.name + (".ts" if typed else ".js")), text
+
+    def cleanup(self) -> None:
+        mirror = getattr(self, "mirror", None)
+        if mirror is not None:
+            remove_mirror(mirror)
+            mirror.parent.rmdir()
+            self.mirror = None
 
     def context(self) -> str | None:
-        """The server version and the project's installed packages, which decide what is external."""
+        """The server version and the project's packages, which decide what is external."""
         if self.version is None:
             return None
         modules = self.project_root / "node_modules"
-        return f"{self.identity()}|node_modules={modules.stat().st_mtime_ns if modules.is_dir() else None}"
+        packages = f"node_modules={modules.stat().st_mtime_ns}" if modules.is_dir() else f"npm={npm_key(self.project_root)}"
+        return f"{self.identity()}|{packages}"
 
     def report(self) -> dict:
-        return {**super().report(), "max_server_memory_mb": SERVER_MEMORY_MB}
+        return {**super().report(), "max_server_memory_mb": SERVER_MEMORY_MB,
+                "packages": "project" if (self.project_root / "node_modules").is_dir() else
+                "shared" if getattr(self, "mirror", None) else None}
 
 
 class JavaEngine(LspEngine):
     """Java through Eclipse JDT LS, with the Java runtime its release bundles.
 
-    No build runs: automatic building and the Maven and Gradle imports are off, so
-    nothing is downloaded or compiled, and every file joins an invisible project
-    whose source folders come from its package declaration. An offline Maven import
-    was measured to leave the project without source folders, so no position answered. The workspace lives in a temporary directory and no
-    metadata is written into the project. Memory and processors are capped for the
-    JVM; the index of the runtime library is shared across passes.
+    The server never sees the build: its workspace is an Eclipse project that Daodan
+    writes in a temporary directory, with the project's package roots as linked
+    source folders and its libraries, resolved into the shared store by
+    `jvm_classpath`, as jars. JDT LS refuses an invisible project beside a pom.xml
+    or a Gradle build, and an offline Maven import was measured to answer no
+    position, so neither is used; automatic building and both imports stay off.
+    Nothing is compiled and nothing is written into the project. Memory and
+    processors are capped for the JVM; the runtime library's index is shared.
     """
 
     name = "java"
     server_name = "eclipse-jdtls"
     languages = ("java",)
+    source_languages = ("java",)
     language_ids = {".java": "java"}
 
     def __init__(self, project_root: Path, install_dir: Path | None = None):
@@ -889,6 +1061,40 @@ class JavaEngine(LspEngine):
         self.ready_event = None
         self.service_ready = False
         self.jre_home = None
+        self.sources: list[Path] = []
+        self.libraries: list[Path] = []
+        self.source_roots: list[Path] = []
+
+    def workspace_root(self) -> Path:
+        return self.workspace / "project" if self.workspace is not None else self.project_root
+
+    def describe_project(self) -> None:
+        """Write the Eclipse project the server opens: linked package roots and library jars."""
+        from xml.sax.saxutils import quoteattr
+        sources = self.sources or sorted(self.project_root.rglob("*.java"))
+        self.source_roots = java_source_roots(sources)
+        try:
+            self.libraries = jvm_classpath(self.project_root)
+        except Exception as error:
+            # Without its libraries the engine still answers for the project's own code.
+            print(f"the project's libraries were not resolved: {type(error).__name__}: {error}", flush=True)
+            self.libraries = []
+        project = self.workspace / "project"
+        project.mkdir()
+        links = "".join(f"<link><name>source{index}</name><type>2</type><location>{path.as_posix()}</location></link>"
+                        for index, path in enumerate(self.source_roots))
+        (project / ".project").write_text(
+            "<?xml version='1.0' encoding='UTF-8'?><projectDescription><name>daodan-sources</name><comment/>"
+            "<projects/><buildSpec/><natures><nature>org.eclipse.jdt.core.javanature</nature></natures>"
+            f"<linkedResources>{links}</linkedResources></projectDescription>", encoding="utf-8")
+        entries = "".join(f"<classpathentry kind='src' path='source{index}'/>"
+                          for index in range(len(self.source_roots)))
+        entries += "".join(f"<classpathentry kind='lib' path={quoteattr(path.as_posix())}/>" for path in self.libraries)
+        (project / ".classpath").write_text(
+            "<?xml version='1.0' encoding='UTF-8'?><classpath>" + entries
+            + "<classpathentry kind='con' path='org.eclipse.jdt.launching.JRE_CONTAINER'/>"
+            "<classpathentry kind='output' path='bin'/></classpath>", encoding="utf-8")
+
 
     def pinned(self) -> dict:
         entry = _multilspy_pins("eclipse_jdtls")["vscode-java"][_platform()]
@@ -919,6 +1125,12 @@ class JavaEngine(LspEngine):
             config = server / f"config_{family}"
         self.workspace = Path(tempfile.mkdtemp(prefix="daodan-jdtls-"))
         shutil.copytree(config, self.workspace / "config")
+        # Buildship, which the server starts even with the Gradle import off, downloads the list of
+        # Gradle releases unless a cache younger than a day exists. A fresh empty list keeps it local.
+        versions = self.workspace / "xdg" / "tooling" / "gradle" / "versions.json"
+        versions.parent.mkdir(parents=True)
+        versions.write_text("[]", encoding="utf-8")
+        self.describe_project()
         lombok = sorted((home / "extension" / "lombok").glob("lombok-*.jar"))
         shared_index = self.install_root / "shared-index"
         command = [str(home / pins["jre_path"]), "--add-modules=ALL-SYSTEM",
@@ -934,12 +1146,14 @@ class JavaEngine(LspEngine):
                    f"-Djdt.core.sharedIndexLocation={shared_index}",
                    "-jar", str(launcher), "-configuration", str(self.workspace / "config"),
                    "-data", str(self.workspace / "data")]
-        return command, {"syntaxserver": "false", "JAVA_HOME": str(self.jre_home)}
+        return command, {"syntaxserver": "false", "JAVA_HOME": str(self.jre_home),
+                         "XDG_CACHE_HOME": str(self.workspace / "xdg")}
 
     def settings(self) -> dict:
         return {"java": {
             "autobuild": {"enabled": False}, "maxConcurrentBuilds": 1,
-            "import": {"gradle": {"enabled": False}, "maven": {"enabled": False},
+            # The Gradle wrapper check fetches services.gradle.org even with the import off.
+            "import": {"gradle": {"enabled": False, "wrapper": {"enabled": False}}, "maven": {"enabled": False},
                        "exclusions": ["**/node_modules/**", "**/.metadata/**", "**/archetype-resources/**",
                                       "**/META-INF/maven/**"]},
             "configuration": {"updateBuildConfiguration": "disabled",
@@ -949,7 +1163,7 @@ class JavaEngine(LspEngine):
         }}
 
     def initialization_options(self) -> dict:
-        return {"bundles": [], "workspaceFolders": [self.project_root.as_uri()], "settings": self.settings(),
+        return {"bundles": [], "workspaceFolders": [self.workspace_root().as_uri()], "settings": self.settings(),
                 "extendedClientCapabilities": {"classFileContentsSupport": True}}
 
     def notifications(self) -> dict:
@@ -978,10 +1192,550 @@ class JavaEngine(LspEngine):
     def context(self) -> str | None:
         if self.version is None:
             return None
-        return self.identity()
+        return f"{self.identity()}|libraries={coordinates_digest(self.project_root)}"
 
     def report(self) -> dict:
-        return {**super().report(), "max_heap_mb": JVM_MEMORY_MB, "processors": ENGINE_THREADS}
+        return {**super().report(), "max_heap_mb": JVM_MEMORY_MB, "processors": ENGINE_THREADS,
+                "source_roots": [path.as_posix() for path in self.source_roots], "libraries": len(self.libraries)}
+
+
+# The Kotlin Analysis API in standalone mode with the platform it runs on, as KSP publishes it on
+# Maven Central, and the compiler that builds the resolver against it once.
+KOTLIN_ANALYSIS = "com.google.devtools.ksp:symbol-processing-aa:2.3.13"
+KOTLIN_RUNTIME = ("com.google.devtools.ksp:symbol-processing-common-deps:2.3.13",
+                  "org.jetbrains.kotlin:kotlin-stdlib:2.4.21",
+                  "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2")
+KOTLIN_COMPILER = ("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.4.21",
+                   "org.jetbrains.kotlin:kotlin-build-tools-api:2.4.21",
+                   "org.jetbrains.kotlin:kotlin-stdlib:2.4.21",
+                   "org.jetbrains.kotlin:kotlin-script-runtime:2.4.21",
+                   "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
+                   "org.jetbrains.kotlin:kotlin-daemon-embeddable:2.4.21",
+                   "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0",
+                   "org.jetbrains:annotations:13.0")
+KOTLIN_OPT_INS = ("KaExperimentalApi", "KaPlatformInterface", "KaImplementationDetail", "KaIdeApi")
+KOTLIN_MEMORY_MB = 1536
+JAVA_MINIMUM = 17
+TEMURIN_JRE = "https://api.adoptium.net/v3/binary/latest/21/ga/{os}/{arch}/jre/hotspot/normal/eclipse"
+
+
+MAVEN_CENTRAL = "https://repo1.maven.org/maven2"
+# Coursier resolves Maven coordinates with their transitive dependencies, without running a build.
+COURSIER = {"version": "2.1.24", "sha256": "8c724dc204534353ea8263ba0af624979658f7ab62395f35b04f03ce5714f330",
+            "url": "https://github.com/coursier/coursier/releases/download/v2.1.24/coursier.jar"}
+BUILD_SKIP = frozenset({"node_modules", "target", "build", "out", "bin", "dist"})
+GRADLE_COORDINATE = re.compile(r"""["']([A-Za-z0-9_.\-]+):([A-Za-z0-9_.\-]+):([A-Za-z0-9_.\-+\[\],()]+)["']""")
+GRADLE_KOTLIN_MODULE = re.compile(r"""\bkotlin\(\s*["']([A-Za-z0-9_.\-]+)["']\s*(?:,\s*["']([^"']+)["'])?\s*\)""")
+GRADLE_KOTLIN_PLUGIN = re.compile(r"""kotlin\(\s*["'](?:jvm|multiplatform|android)["']\s*\)\s*version\s*["']([^"']+)["']"""
+                                  r"""|org\.jetbrains\.kotlin\.(?:jvm|multiplatform|android)["']\)?\s*version\s*["']([^"']+)["']""")
+
+
+def maven_central_dir() -> Path:
+    """The shared Maven-layout store: Coursier's cache of Maven Central, also where Daodan puts its own jars."""
+    return shared_cache_dir() / "coursier" / "https" / "repo1.maven.org" / "maven2"
+
+
+def download(url: str, target: Path, *, sha256: str | None = None, sha1_url: str | None = None) -> Path:
+    """Fetch a file into the shared directory through a partial file, verified, with three attempts."""
+    import urllib.request
+    target.parent.mkdir(parents=True, exist_ok=True)
+    partial = target.with_name(target.name + ".partial")
+    last = None
+    for attempt in range(3):
+        try:
+            expected = sha256
+            if sha1_url:
+                with urllib.request.urlopen(sha1_url, timeout=60) as response:
+                    expected = response.read().decode("ascii", "replace").split()[0].lower()
+            digest = hashlib.sha1() if sha1_url else hashlib.sha256()
+            with urllib.request.urlopen(url, timeout=600) as response, partial.open("wb") as handle:
+                for chunk in iter(lambda: response.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                    handle.write(chunk)
+            if expected and digest.hexdigest() != expected:
+                raise ValueError(f"checksum mismatch for {url}")
+            os.replace(partial, target)
+            return target
+        except (OSError, ValueError) as error:
+            last = error
+            partial.unlink(missing_ok=True)
+            time.sleep(2 * (attempt + 1))
+    raise last
+
+
+def maven_artifact(coordinate: str) -> Path:
+    """A Maven artifact's jar: the local Maven repository first, then the shared store, else Maven Central."""
+    group, artifact, version = coordinate.split(":")
+    relative = Path(*group.split("."), artifact, version, f"{artifact}-{version}.jar")
+    for repository in (Path.home() / ".m2" / "repository", maven_central_dir()):
+        if (repository / relative).is_file():
+            return repository / relative
+    target = maven_central_dir() / relative
+    print(f"downloading {coordinate} into {target.parent}", flush=True)
+    url = f"{MAVEN_CENTRAL}/{relative.as_posix()}"
+    return download(url, target, sha1_url=url + ".sha1")
+
+
+def build_files(root: Path, names: tuple[str, ...]) -> list[Path]:
+    """Build files under the project, outside dot directories and build outputs."""
+    found, stack = [], [Path(root)]
+    while stack:
+        directory = stack.pop()
+        try:
+            entries = sorted(directory.iterdir())
+        except OSError:
+            continue
+        for entry in entries:
+            if entry.is_dir():
+                if not entry.name.startswith(".") and entry.name not in BUILD_SKIP and not entry.is_symlink():
+                    stack.append(entry)
+            elif entry.name in names:
+                found.append(entry)
+    return found
+
+
+def _pom(path: Path, local: dict, depth: int = 0) -> dict:
+    """A pom's properties, managed versions, dependencies, BOMs and remote parent, local parents merged in."""
+    import xml.etree.ElementTree as ElementTree
+    empty = {"properties": {}, "managed": {}, "dependencies": [], "boms": []}
+    try:
+        project = ElementTree.parse(path).getroot()
+    except (OSError, ElementTree.ParseError):
+        return empty
+    parent = project.find("{*}parent")
+    inherited = empty
+    boms = []
+    if parent is not None and depth < 5:
+        coordinate = tuple(parent.findtext(f"{{*}}{key}") or "" for key in ("groupId", "artifactId", "version"))
+        relative = parent.findtext("{*}relativePath")
+        candidate = (path.parent / (relative if relative is not None else "../pom.xml")).resolve()
+        if candidate.is_dir():
+            candidate = candidate / "pom.xml"
+        if candidate.is_file() and candidate.resolve() in local:
+            inherited = _pom(candidate, local, depth + 1)
+        elif all(coordinate):
+            # A parent outside the project manages versions the way a BOM does.
+            boms.append(":".join(coordinate))
+    properties = dict(inherited["properties"])
+    for key in ("groupId", "version"):
+        value = project.findtext(f"{{*}}{key}") or (parent.findtext(f"{{*}}{key}") if parent is not None else None)
+        if value:
+            properties[f"project.{key}"] = properties[f"pom.{key}"] = value
+    for item in project.findall("{*}properties/*"):
+        properties[item.tag.split("}")[-1]] = (item.text or "").strip()
+
+    def resolve(value):
+        for _ in range(5):
+            if not value or "${" not in value:
+                break
+            value = re.sub(r"\$\{([^}]+)\}", lambda match: properties.get(match.group(1), match.group(0)), value)
+        return None if not value or "${" in value else value.strip()
+
+    def entries(xpath):
+        for dependency in project.findall(xpath):
+            group = resolve(dependency.findtext("{*}groupId"))
+            artifact = resolve(dependency.findtext("{*}artifactId"))
+            if group and artifact:
+                yield (group, artifact, resolve(dependency.findtext("{*}version")),
+                       (dependency.findtext("{*}scope") or "").strip(), (dependency.findtext("{*}type") or "").strip())
+
+    managed = dict(inherited["managed"])
+    boms.extend(inherited["boms"])
+    for group, artifact, version, scope, kind in entries("{*}dependencyManagement/{*}dependencies/{*}dependency"):
+        if scope == "import" and kind == "pom" and version:
+            boms.append(f"{group}:{artifact}:{version}")
+        elif version:
+            managed[(group, artifact)] = version
+    dependencies = list(inherited["dependencies"])
+    for xpath in ("{*}dependencies/{*}dependency", "{*}profiles/{*}profile/{*}dependencies/{*}dependency"):
+        for group, artifact, version, scope, _kind in entries(xpath):
+            if scope != "system":
+                dependencies.append((group, artifact, version or managed.get((group, artifact))))
+    return {"properties": properties, "managed": managed, "dependencies": dependencies, "boms": boms}
+
+
+def jvm_coordinates(root: Path) -> tuple[list[str], list[str]]:
+    """The project's library coordinates and BOMs, read from its build files without running any of them.
+
+    Maven poms with their properties, managed versions, BOM imports and parents
+    inside the project; a parent outside it is used as a BOM. Gradle build files
+    and version catalogs give the coordinates they spell out, and `kotlin("x")`
+    the Kotlin module at the Kotlin plugin's version. Dependencies a build script
+    computes are invisible here, which is the price of not running it.
+    """
+    import tomllib
+    poms = build_files(root, ("pom.xml",))
+    local = {path.resolve() for path in poms}
+    dependencies: set[str] = set()
+    boms: set[str] = set()
+    for pom in poms:
+        description = _pom(pom, local)
+        boms.update(description["boms"])
+        for group, artifact, version in description["dependencies"]:
+            dependencies.add(f"{group}:{artifact}:{version}" if version else f"{group}:{artifact}")
+    import xml.etree.ElementTree as ElementTree
+    project_modules = set()
+    for pom in poms:
+        try:
+            project = ElementTree.parse(pom).getroot()
+        except (OSError, ElementTree.ParseError):
+            continue
+        group = project.findtext("{*}groupId") or project.findtext("{*}parent/{*}groupId")
+        artifact = project.findtext("{*}artifactId")
+        if group and artifact:
+            project_modules.add(f"{group}:{artifact}")
+    gradle = build_files(root, ("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"))
+    kotlin_version = None
+    for build in gradle:
+        try:
+            text = build.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for match in GRADLE_KOTLIN_PLUGIN.finditer(text):
+            kotlin_version = kotlin_version or match.group(1) or match.group(2)
+        dependencies.update(":".join(parts) for parts in GRADLE_COORDINATE.findall(text))
+    for catalog in build_files(root, ("libs.versions.toml",)):
+        try:
+            data = tomllib.loads(catalog.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        versions = data.get("versions") or {}
+        kotlin_version = kotlin_version or (versions.get("kotlin") if isinstance(versions.get("kotlin"), str) else None)
+        for entry in (data.get("libraries") or {}).values():
+            if isinstance(entry, str):
+                parts = entry.split(":")
+                if len(parts) >= 2:
+                    dependencies.add(":".join(parts[:3]))
+                continue
+            if not isinstance(entry, dict):
+                continue
+            module = entry.get("module") or f"{entry.get('group', '')}:{entry.get('name', '')}"
+            version = entry.get("version")
+            if isinstance(version, dict):
+                version = versions.get(version["ref"]) if "ref" in version else (
+                    version.get("strictly") or version.get("require") or version.get("prefer"))
+            version = version or versions.get(entry.get("version.ref") or "")
+            if module.count(":") == 1 and not module.startswith(":"):
+                dependencies.add(f"{module}:{version}" if isinstance(version, str) else module)
+    for build in gradle:
+        try:
+            text = build.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for name, version in GRADLE_KOTLIN_MODULE.findall(text):
+            if name not in ("jvm", "multiplatform", "android", "kapt", "plugin.serialization", "plugin.spring"):
+                version = version or kotlin_version
+                dependencies.add(f"org.jetbrains.kotlin:kotlin-{name}" + (f":{version}" if version else ""))
+    # The project's own modules are sources, not libraries.
+    dependencies = {item for item in dependencies if ":".join(item.split(":")[:2]) not in project_modules}
+    return sorted(dependencies), sorted(boms)
+
+
+def coursier_jar() -> Path:
+    target = shared_engine_dir("coursier") / COURSIER["version"] / "coursier.jar"
+    if not target.is_file():
+        print(f"installing coursier {COURSIER['version']} into {target.parent} (first use)", flush=True)
+        download(COURSIER["url"], target, sha256=COURSIER["sha256"])
+    return target
+
+
+def jvm_classpath(root: Path) -> list[Path]:
+    """The jars of the project's libraries with their dependencies, resolved once into the shared store.
+
+    Coursier fetches from Maven Central into the shared store, so each library is fetched
+    once for every project on the machine. The resolved list is recorded per set
+    of coordinates, so a later pass reads it without starting Coursier. A version
+    the build leaves to a BOM or a parent comes from it; a version it does not
+    spell out at all is the latest stable one, since a library call needs only to
+    be recognized as a library's. A coordinate that does not resolve is left out;
+    the rest still counts.
+    """
+    coordinates, boms = jvm_coordinates(root)
+    if not coordinates:
+        return []
+    key = hashlib.sha256(json.dumps([coordinates, boms]).encode("utf-8")).hexdigest()[:16]
+    record = shared_cache_dir() / "classpaths" / f"{key}.json"
+    try:
+        recorded = json.loads(record.read_text(encoding="utf-8"))
+        known = [Path(item) for item in recorded["jars"]]
+        # A coordinate that did not resolve is tried again a day later, not at every pass.
+        settled = not recorded["unresolved"] or time.time() - record.stat().st_mtime < 86400
+        if settled and all(path.is_file() for path in known):
+            return known
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    print(f"resolving {len(coordinates)} libraries of the project into {maven_central_dir().parents[2]} "
+          "(first use)", flush=True)
+    base = [str(java_runtime()), "-Xmx512m", "-jar", str(coursier_jar()), "fetch", "--quiet",
+            # Not the user's own repository: one there with a pom and no jar fails the whole resolution.
+            "--cache", str(maven_central_dir().parents[2]), "--no-default", "-r", "central",
+            *[item for bom in boms for item in ("--bom", bom)]]
+
+    def fetch(items):
+        completed = subprocess.run([*base, *items], stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                                   timeout=1200)
+        paths = [Path(row.strip()) for row in completed.stdout.splitlines() if row.strip().endswith(".jar")]
+        return completed.returncode == 0, [path for path in paths if path.is_file()]
+
+    def spelled(coordinate, fallback=False):
+        if coordinate.count(":") >= 2:
+            return coordinate
+        # Coursier takes an empty version from the BOMs.
+        return f"{coordinate}:" if boms and not fallback else f"{coordinate}:latest.stable"
+
+    ok, jars = fetch([spelled(item) for item in coordinates])
+    unresolved = []
+    if not ok:
+        found: dict[Path, None] = {}
+        for coordinate in coordinates:
+            single_ok, single = fetch([spelled(coordinate)])
+            if not single_ok and coordinate.count(":") == 1 and boms:
+                single_ok, single = fetch([spelled(coordinate, fallback=True)])
+            found.update(dict.fromkeys(single))
+            if not single_ok:
+                unresolved.append(coordinate)
+        jars = list(found)
+    record.parent.mkdir(parents=True, exist_ok=True)
+    record.write_text(json.dumps({"coordinates": coordinates, "boms": boms, "unresolved": unresolved,
+                                  "jars": [str(path) for path in jars]}, indent=1), encoding="utf-8")
+    return jars
+
+
+def coordinates_digest(root: Path) -> str:
+    return hashlib.sha256(json.dumps(jvm_coordinates(root)).encode("utf-8")).hexdigest()[:16]
+
+
+def java_source_roots(sources: list[Path]) -> list[Path]:
+    """Where the package hierarchy of each Java file begins: its directory minus its package path."""
+    roots: dict[Path, None] = {}
+    for source in sources:
+        try:
+            with source.open(encoding="utf-8", errors="replace") as handle:
+                head = handle.read(8192)
+        except OSError:
+            continue
+        match = re.search(r"^\s*package\s+([\w.]+)\s*;", head, re.MULTILINE)
+        directory = source.parent
+        for _ in range(len(match.group(1).split(".")) if match else 0):
+            directory = directory.parent
+        roots[directory] = None
+    return sorted(roots)
+
+
+def java_runtime() -> Path:
+    """A Java runtime of at least version 17: the one on PATH, else Temurin 21 in the shared directory."""
+    import platform
+    java = shutil.which("java")
+    if java:
+        try:
+            probe = subprocess.run([java, "-XshowSettings:properties", "-version"], capture_output=True,
+                                   text=True, timeout=60)
+            match = re.search(r"java\.specification\.version = (\d+)", probe.stderr)
+            if match and int(match.group(1)) >= JAVA_MINIMUM:
+                return Path(java)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    home = shared_engine_dir("jre") / "21"
+    executable = home / "bin" / ("java.exe" if os.name == "nt" else "java")
+    if executable.is_file():
+        return executable
+    system = {"Windows": "windows", "Linux": "linux", "Darwin": "mac"}[platform.system()]
+    arch = "aarch64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"
+    print(f"installing a Java 21 runtime into {home} (first use)", flush=True)
+    import urllib.request
+    partial = home.with_name(".21.partial")
+    shutil.rmtree(partial, ignore_errors=True)
+    partial.mkdir(parents=True)
+    archive = partial / ("jre.zip" if system == "windows" else "jre.tar.gz")
+    with urllib.request.urlopen(TEMURIN_JRE.format(os=system, arch=arch), timeout=600) as response, \
+            archive.open("wb") as handle:
+        shutil.copyfileobj(response, handle)
+    if archive.suffix == ".zip":
+        import zipfile
+        with zipfile.ZipFile(archive) as bundle:
+            bundle.extractall(partial)
+    else:
+        import tarfile
+        with tarfile.open(archive) as bundle:
+            bundle.extractall(partial, filter="data")
+    archive.unlink()
+    top = next(child for child in partial.iterdir() if child.is_dir())
+    bin_parent = top / "Contents" / "Home" if (top / "Contents" / "Home").is_dir() else top
+    shutil.rmtree(home, ignore_errors=True)
+    os.replace(bin_parent, home)
+    shutil.rmtree(partial, ignore_errors=True)
+    return executable
+
+
+class KotlinEngine:
+    """Kotlin through the Kotlin Analysis API in standalone mode: a local library, no server, no license.
+
+    On first use Daodan downloads the Analysis API as KSP publishes it on Maven Central,
+    a Java runtime when none of version 17 or later is installed, and the Kotlin
+    compiler, and compiles `engines/KotlinResolver.kt` against it once, all into the
+    shared directory. The resolver runs as one JVM process with a capped heap: it
+    builds a standalone session over the snapshot's Kotlin and Java files, with the
+    runtime's JDK and the Kotlin standard library as dependencies, and answers one
+    position per line. Nothing is built, imported or downloaded for the project, and
+    nothing is written into it. The Analysis API's standalone mode is not stable, so
+    its version is pinned.
+    """
+
+    name = "kotlin"
+    languages = ("kotlin",)
+    # Java files are loaded too, so a Kotlin call into Java code arrives at its declaration.
+    source_languages = ("kotlin", "java")
+
+    def __init__(self, project_root: Path, install_dir: Path | None = None):
+        self.project_root = Path(project_root).resolve()
+        self.install_root = Path(install_dir) if install_dir else shared_engine_dir("kotlin-analysis-api")
+        self.sources: list[Path] = []
+        self.install = None
+        self.installed_now = False
+        self.process = None
+        self.answers = None
+        self.config = None
+        self.lines = SourceLines()
+        self.files = 0
+        self.timeouts = 0
+        self.libraries: list[Path] = []
+
+    @property
+    def version(self) -> str:
+        return KOTLIN_ANALYSIS.rsplit(":", 1)[1]
+
+    def source(self) -> Path:
+        return SCRIPT_DIR / "engines" / "KotlinResolver.kt"
+
+    def resolver(self) -> Path:
+        digest = hashlib.sha256(self.source().read_bytes()).hexdigest()[:12]
+        return self.install_root / f"{self.version}-{digest}" / "resolver.jar"
+
+    def build(self, java: Path) -> Path:
+        jar = self.resolver()
+        if jar.is_file():
+            return jar
+        self.installed_now = True
+        print(f"compiling the Kotlin resolver into {jar.parent} (first use)", flush=True)
+        compiler = os.pathsep.join(str(maven_artifact(item)) for item in KOTLIN_COMPILER)
+        classpath = os.pathsep.join(str(path) for path in self.runtime_classpath()[1:])
+        jar.parent.mkdir(parents=True, exist_ok=True)
+        partial = jar.with_name("resolver.partial.jar")
+        command = [str(java), "-Xmx768m", f"-XX:ActiveProcessorCount={ENGINE_THREADS}", "-cp", compiler,
+                   "org.jetbrains.kotlin.cli.jvm.K2JVMCompiler", str(self.source()), "-classpath", classpath,
+                   "-d", str(partial), "-jvm-target", "17", "-no-stdlib", "-no-reflect", "-Xskip-prerelease-check",
+                   *[f"-opt-in=org.jetbrains.kotlin.analysis.api.{name}" for name in KOTLIN_OPT_INS]]
+        completed = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
+        if completed.returncode != 0 or not partial.is_file():
+            partial.unlink(missing_ok=True)
+            raise RuntimeError("the Kotlin resolver did not compile: " + (completed.stderr or completed.stdout)[-600:])
+        os.replace(partial, jar)
+        return jar
+
+    def runtime_classpath(self) -> list[Path]:
+        return [self.resolver(), maven_artifact(KOTLIN_ANALYSIS), *(maven_artifact(item) for item in KOTLIN_RUNTIME)]
+
+    def probe(self) -> tuple[bool, str]:
+        import queue
+        try:
+            java = java_runtime()
+            self.build(java)
+            classpath = self.runtime_classpath()
+        except Exception as error:
+            return False, f"could not install the Kotlin Analysis API: {type(error).__name__}: {error}"
+        try:
+            project_libraries = jvm_classpath(self.project_root)
+        except Exception as error:
+            print(f"the project's libraries were not resolved: {type(error).__name__}: {error}", flush=True)
+            project_libraries = []
+        self.libraries = [maven_artifact("org.jetbrains.kotlin:kotlin-stdlib:2.4.21"), *project_libraries]
+        descriptor, name = tempfile.mkstemp(prefix="daodan-kotlin-", suffix=".txt")
+        os.close(descriptor)
+        self.config = Path(name)
+        self.config.write_text("".join(f"root={path}\n" for path in self.sources)
+                               + "".join(f"library={path}\n" for path in self.libraries), encoding="utf-8")
+        command = [str(java), f"-Xmx{KOTLIN_MEMORY_MB}m", f"-XX:ActiveProcessorCount={ENGINE_THREADS}",
+                   "-Djava.awt.headless=true", "-cp", os.pathsep.join(map(str, classpath)),
+                   "daodan.KotlinResolverKt", str(self.config)]
+        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        stderr=subprocess.DEVNULL, text=True, encoding="utf-8", bufsize=1)
+        self.answers = queue.Queue()
+
+        def read():
+            for row in self.process.stdout:
+                self.answers.put(row.rstrip("\n"))
+            self.answers.put(None)
+
+        threading.Thread(target=read, daemon=True).start()
+        try:
+            ready = self.answers.get(timeout=LSP_START_TIMEOUT)
+        except queue.Empty:
+            return False, "the Kotlin Analysis API did not start in time"
+        if not ready or not ready.startswith("READY"):
+            return False, f"the Kotlin Analysis API did not start: {ready or 'the process exited'}"
+        self.files = int(ready.split("\t")[1])
+        return True, ""
+
+    def definitions(self, path: Path, line: int, column: int) -> list[Location]:
+        """Ask at a UTF-8 byte column; the resolver counts UTF-16 units, as PSI does."""
+        import queue
+        path = Path(path).resolve()
+        text = self.lines.get(path, line)
+        units = byte_to_utf16(text, column) if text is not None else None
+        if units is None:
+            raise ValueError(f"no character starts at byte {column} of {path}:{line}")
+        if self.process.poll() is not None:
+            raise EngineFailure(f"the Kotlin resolver exited with code {self.process.returncode}")
+        self.process.stdin.write(f"{path}\t{line}\t{units}\n")
+        self.process.stdin.flush()
+        try:
+            answer = self.answers.get(timeout=LSP_REQUEST_TIMEOUT)
+        except queue.Empty:
+            self.timeouts += 1
+            if self.timeouts >= 3:
+                raise EngineFailure("the Kotlin resolver timed out three times in a row") from None
+            raise TimeoutError("the Kotlin resolver did not answer in time") from None
+        self.timeouts = 0
+        if answer is None:
+            raise EngineFailure("the Kotlin resolver exited")
+        fields = answer.split("\t")
+        if fields[0] != "OK":
+            raise RuntimeError(" ".join(fields[1:]) or "the Kotlin resolver failed")
+        found = []
+        for index in range(1, len(fields) - 2, 3):
+            target, row, units = fields[index], int(fields[index + 1]), int(fields[index + 2])
+            if target == "-":
+                found.append(Location(None, None, None))
+                continue
+            target_path = Path(target).resolve()
+            name_line = self.lines.get(target_path, row) if target_path.is_relative_to(self.project_root) else None
+            found.append(Location(target_path, row, utf16_to_byte(name_line, units) if name_line is not None else None))
+        return found
+
+    def close(self) -> None:
+        if self.process is not None:
+            try:
+                self.process.stdin.close()
+                self.process.wait(timeout=30)
+            except (OSError, subprocess.TimeoutExpired):
+                self.process.kill()
+            self.process = None
+        if self.config is not None:
+            self.config.unlink(missing_ok=True)
+            self.config = None
+
+    def identity(self) -> str:
+        return f"kotlin-analysis-api@{self.version}"
+
+    def context(self) -> str:
+        source = hashlib.sha256(self.source().read_bytes()).hexdigest()[:12]
+        return f"{self.identity()}|resolver={source}|libraries={coordinates_digest(self.project_root)}"
+
+    def report(self) -> dict:
+        return {"engine": self.identity(), "install_dir": self.install_root.as_posix(),
+                "installed_now": self.installed_now, "files": self.files, "max_heap_mb": KOTLIN_MEMORY_MB,
+                "processors": ENGINE_THREADS, "libraries": len(self.libraries),
+                "position_encoding": "utf-16"}
 
 
 def _pb_read_varint(buf: bytes, pos: int) -> tuple[int, int]:
@@ -1233,6 +1987,11 @@ def symbol_table(connection, rel: str, source: str) -> tuple[dict, set]:
     python_names = _python_name_positions(source) if python else {}
     table: dict = {}
     ambiguous: set = set()
+    # A value binding is where a callable is held, not what is called: it never
+    # becomes a target, and a callable named at the same position wins.
+    bindings = {(line, column): (identity, "binding") for identity, line, column in connection.execute(
+        "SELECT id, l0, c0 FROM sem_declarations WHERE file=? AND kind IN ('binding','parameter','property')",
+        (rel,))}
     for identity, name, kind, line, column, blob in connection.execute(
             "SELECT id, name, kind, l0, c0, payload FROM sem_declarations "
             "WHERE file=? AND kind IN ('function','method','class') ORDER BY l0,c0", (rel,)):
@@ -1246,12 +2005,16 @@ def symbol_table(connection, rel: str, source: str) -> tuple[dict, set]:
             payload = _unpack(blob) or {}
             if not payload.get("name_span"):
                 continue
+            if payload.get("constructs"):
+                identity, kind = f"{rel}::{payload['constructs']}", "class"
             # Overload signatures name the same body as the implementation's own name.
             keys = [(span[0], span[1]) for span in (payload["name_span"], *payload.get("signature_spans", ()))]
         for key in keys:
             if key in table and table[key][0] != identity:
                 ambiguous.add(key)
             table.setdefault(key, (identity, kind))
+    for key, value in bindings.items():
+        table.setdefault(key, value)
     return table, ambiguous
 
 
@@ -1265,7 +2028,8 @@ def grade(definition, inventory: set[str], tables: dict, root: Path,
     """One engine answer, graded by what this snapshot declares at that position.
 
     Returns `(verdict, target)` where verdict is `edge-call`, `edge-instantiation`,
-    `external-definition`, `project-not-a-symbol`, `ambiguous-target` or `unresolved`,
+    `external-definition`, `project-not-a-symbol`, `ambiguous-target`, `unresolved`
+    or `binding` (a value binding, which `grade_all` never keeps as a target),
     and target carries the declaration identity an edge arrives at. The kind comes
     from the snapshot's declaration, never from the engine.
     """
@@ -1297,6 +2061,8 @@ def grade(definition, inventory: set[str], tables: dict, root: Path,
     if found is None:
         return "project-not-a-symbol", None
     identity, kind = found
+    if kind == "binding":
+        return "binding", None
     verdict = "edge-instantiation" if kind == "class" else "edge-call"
     return verdict, {"id": identity, "file": relative, "kind": kind}
 
@@ -1307,6 +2073,11 @@ def grade_all(definitions, inventory: set[str], tables: dict, root: Path,
     if not definitions:
         return "unresolved", None
     answers = [grade(item, inventory, tables, root, table_for) for item in definitions]
+    # The variable that holds a callable is answered beside the callable itself.
+    held = [answer for answer in answers if answer[0] != "binding"]
+    if not held:
+        return "project-not-a-symbol", None
+    answers = held
     first_verdict, first_target = answers[0]
     if all(answer == answers[0] for answer in answers):
         return first_verdict, first_target
@@ -1868,6 +2639,11 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                     "reason": str(error), "stage": "before-inference", "edges_store": None}
         if hasattr(engine, "import_roots"):
             engine.import_roots = [store_root / rel for rel in runtime_import_roots(connection)]
+        if hasattr(engine, "sources"):
+            # An engine that loads the sources itself gets the snapshot's perimeter, never the directory.
+            wanted = set(engine.source_languages)
+            engine.sources = sorted(source_paths[rel] for rel, language in connection.execute(
+                "SELECT file, language FROM sem_coverage") if language in wanted and rel in source_paths)
         inventory = inventory_files(connection)
         hashes = {rel: entry.get("raw_hash") for rel, entry in store.iter_file_headers_only()}
         placeholders = ",".join("?" for _ in languages)
@@ -2342,6 +3118,8 @@ ENGINES = (
                "install uv, which gives the pass multilspy and its pinned typescript-language-server", {}),
     EngineSpec("java", ("java",), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy and its pinned Eclipse JDT LS", {}),
+    # Kotlin needs nothing in Python: its engine is a JVM process that installs itself.
+    EngineSpec("kotlin", ("kotlin",), (), "json", "install uv, which runs the pass", {}),
 )
 ENGINE_LANGUAGES = {language: spec for spec in ENGINES for language in spec.languages}
 # One engine runs at a time, and only with this much memory free.
@@ -2355,16 +3133,20 @@ def build_engine(name: str, project_root: Path, environments: list[Path], scip_i
         return TypeScriptEngine(project_root)
     if name == "java":
         return JavaEngine(project_root)
+    if name == "kotlin":
+        return KotlinEngine(project_root)
     return JediEngine(project_root, environments)
 
 
-def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, environments: list[Path]) -> list[str] | None:
+def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, environments: list[Path],
+                  *, offline: bool = False) -> list[str] | None:
     """The command that runs one engine's stage with the snapshot's parser set.
 
     uv gives the stage an environment with the engine's requirements plus this
     interpreter's Python minor and exact parser packages, so the stage reproduces
     the parser fingerprint of the snapshot whichever environment wrote it, and the
-    environment lives exactly as long as the stage. Without uv, this interpreter
+    environment lives exactly as long as the stage. `offline` keeps uv from the
+    network, for an environment already in its cache. Without uv, this interpreter
     runs the stage when it can import the engine. None when neither can.
     """
     import snapshot
@@ -2382,13 +3164,29 @@ def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, environme
             except metadata.PackageNotFoundError:
                 continue
         requirements = [item for requirement in spec.requirements for item in ("--with", requirement)]
-        return [uv, "run", "--quiet", "--no-config", "--no-project",
+        return [uv, "run", "--quiet", "--no-config", "--no-project", *(["--offline"] if offline else []),
                 "--python", f"{sys.version_info[0]}.{sys.version_info[1]}",
                 *requirements, *pins, "python", "-B", "-X", "faulthandler", *script]
     if importlib.util.find_spec(spec.module) is not None:
         # faulthandler puts a hard crash's traceback in the pass log.
         return [sys.executable, "-B", "-X", "faulthandler", *script]
     return None
+
+
+def cached_offline(spec: EngineSpec, manifest: Path, report_path: Path, environments: list[Path]) -> bool:
+    """Whether the stage's environment is already in uv's cache, so the stage runs with no network at all.
+
+    Only the first stage of an engine on a machine reaches the package index.
+    """
+    command = stage_command(spec, manifest, report_path, environments, offline=True)
+    if not command or "--offline" not in command:
+        return False
+    head = command[:command.index("python") + 1]
+    try:
+        return subprocess.run([*head, "-c", f"import {spec.module}"], stdin=subprocess.DEVNULL,
+                              capture_output=True, timeout=120).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
 
 
 def engine_command(manifest: Path, report_path: Path, environments: list[Path]) -> list[str]:
@@ -2442,7 +3240,8 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
         else:
             stage_report = manifest.with_name(f".engine-stage-{spec.name}.json")
             stage_report.unlink(missing_ok=True)
-            command = stage_command(spec, manifest, stage_report, environments)
+            command = stage_command(spec, manifest, stage_report, environments,
+                                    offline=cached_offline(spec, manifest, stage_report, environments))
             if command is None:
                 reason, state, install = f"neither uv nor {spec.module} is available to {sys.executable}", \
                     "unavailable", spec.install
@@ -2633,11 +3432,11 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
 def main(argv: list[str] | None = None) -> int:
     require_minimum_interpreter("resolve_edges.py")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("manifest", type=Path, help="a snapshot's manifest.sqlite")
+    parser.add_argument("manifest", type=Path, nargs="?", help="a snapshot's manifest.sqlite")
     parser.add_argument("--pass", dest="whole_pass", action="store_true",
                         help="run every engine the snapshot's languages need, one after another, as the "
                              "detached pass does")
-    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "scip"), default="jedi")
+    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "kotlin", "scip"), default="jedi")
     parser.add_argument("--scip-index", action="append", default=[], type=Path,
                         help="path to a precomputed SCIP index file (index.scip Protobuf or JSON) when --engine scip is used")
     parser.add_argument("--environment", action="append", default=[], type=Path,
@@ -2661,6 +3460,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--compact", action="store_true",
                         help="emit a compact summary on stdout instead of the full report")
     args = parser.parse_args(argv)
+    if args.manifest is None:
+        parser.error("a manifest is required")
     if args.limit is not None and args.limit < 0:
         parser.error("--limit must be nonnegative")
     if args.stride < 1:
