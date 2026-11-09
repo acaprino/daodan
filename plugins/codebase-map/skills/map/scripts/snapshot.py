@@ -229,7 +229,7 @@ def repo_root(target: Path) -> Path:
 # call-resolution pass runs with exactly these versions (`resolve_edges.py`).
 PARSER_PACKAGES = ("tree-sitter", "tree-sitter-language-pack", "tree-sitter-java",
                    "tree-sitter-javascript", "tree-sitter-typescript", "tree-sitter-rust",
-                   "tree-sitter-go")
+                   "tree-sitter-go", "sqlglot")
 
 
 def parser_fingerprint() -> str:

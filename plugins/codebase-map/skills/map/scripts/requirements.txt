@@ -31,3 +31,8 @@ tree-sitter>=0.23
 # >=1.0 is the Rust-core rewrite. The loader only calls get_parser(), which is
 # stable across the rewrite (get_language()'s return type changed in 1.9).
 tree-sitter-language-pack>=1.0
+
+# SQL: CTE names a regex misses (recursive, quoted) are not taken for table
+# references. Measured: `WITH RECURSIVE tree(...)` and `"Quoted Cte"` stop
+# appearing as tables.
+sqlglot>=30

@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["mcp>=2.0.0,<3", "tree-sitter>=0.23", "tree-sitter-language-pack>=1.0"]
+# dependencies = ["mcp>=2.0.0,<3", "tree-sitter>=0.23", "tree-sitter-language-pack>=1.0", "sqlglot>=30"]
 # ///
 """Local stdio access to the project-bound Codebase Map service.
 

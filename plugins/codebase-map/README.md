@@ -15,10 +15,10 @@ Versione **1.0.1**. Il manifest non dichiara dipendenze da altri plugin.
 Installazione: `claude plugin install codebase-map@daodan` (marketplace `acaprino/daodan`). Ingresso: la skill `/codebase-map:map <richiesta>`; il server MCP `codebase-map` parte col plugin tramite `uv` (`.mcp.json`). Prima mappa completa di questo repository: 7 novembre 2026, profondità lite. Nei testi `${CLAUDE_PLUGIN_ROOT}` indica la radice del plugin installato; in Bash la variabile non è impostata e il percorso si ricava dalla directory della skill.
 
 - Grafo dei moduli: `skills/map/scripts/modules.py`, contratto in `skills/map/references/modules.md`. Unità di build lette dai manifest di 27 ecosistemi, moduli dichiarati dal progetto in `codebase-modules.json`, moduli proposti da un modello e verificati sullo snapshot; derivato accanto allo snapshot da `snapshot.py write` e interrogabile per nome.
-- Linguaggi supportati (13 canonici, 32 estensioni): Python, Java, JavaScript, TypeScript, SQL (con grafo semantico tabellare e `sqlglot` opzionale), PL/SQL, Rust, Go, Kotlin (`.kt`, `.kts`), C# (`.cs`), Vue (`.vue`), Svelte (`.svelte`) e CSS/SCSS/LESS, più ponte cross-linguaggio Tauri (`invoke` ↔ `#[tauri::command]`) e risoluzione simboli opzionale `--engine scip` o `--engine jedi` in `resolve_edges.py`.
+- Linguaggi supportati (13 canonici, 32 estensioni): Python, Java, JavaScript, TypeScript, SQL (con grafo semantico tabellare e `sqlglot`), PL/SQL, Rust, Go, Kotlin (`.kt`, `.kts`), C# (`.cs`), Vue (`.vue`), Svelte (`.svelte`) e CSS/SCSS/LESS, più ponte cross-linguaggio Tauri (`invoke` ↔ `#[tauri::command]`) e risoluzione simboli opzionale `--engine scip` o `--engine jedi` in `resolve_edges.py`.
 - Risoluzione delle chiamate: risolutore lessicale più un motore che parte con ogni snapshot (Jedi per Python); il rapporto si legge come risolte su risolvibili ([Risolvibilità](../../docs/plugins/codebase-map.md#risolvibilità)).
 - Python richiesto: **>= 3.12**.
-- `tree-sitter` e `tree-sitter-language-pack` restano opzionali per il parsing ad alta fedeltà.
+- `tree-sitter`, `tree-sitter-language-pack` e `sqlglot` li installa il server MCP; uno snapshot da shell li usa se installati.
 - Non esiste una vista HTML: il rapporto Markdown è la vista per le persone.
 
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md) · [Riferimento del plugin](../../docs/plugins/codebase-map.md)

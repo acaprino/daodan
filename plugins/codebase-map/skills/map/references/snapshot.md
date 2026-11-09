@@ -129,7 +129,8 @@ preserves archives/unrelated files. Never hand-copy partial output.
 ## Prerequisites
 
 Python >= 3.12 and stdlib suffice; below it the entry scripts refuse, because `ast`
-parses with the running grammar. Optional Java/JS/TS/Rust/Go Tree-sitter parsers:
+parses with the running grammar. The MCP server installs the parsers itself (tree-sitter,
+tree-sitter-language-pack, sqlglot) through `uv`; a shell snapshot uses them when installed:
 
 ```bash
 pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/requirements.txt"

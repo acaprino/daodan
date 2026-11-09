@@ -142,16 +142,7 @@ Misura su Daodan dell'8 novembre 2026, 27.187 chiamate, solo risolutore lessical
 
 Con il criterio applicato, sullo snapshot di HEAD (27.586 chiamate): 3.968 risolte su 11.753 risolvibili con il solo risolutore lessicale (33,8%), 7.399 su 9.083 con Jedi e le cartelle di `sys.path` (81,5%). Il motore sposta anche 2.670 chiamate fra le esterne, perché le trova definite fuori dal progetto. Il passaggio dura circa 13 minuti in background.
 
-Ogni linguaggio ha il suo motore, eseguito uno alla volta nello stesso passaggio e installato al primo uso nella cartella condivisa di Daodan. TypeScript, JavaScript, Vue e Svelte usano typescript-language-server, Java Eclipse JDT LS, Kotlin la Kotlin Analysis API. Nessuno compila o importa la build; Daodan legge le librerie dai file di build (Java e Kotlin) o dai manifest npm (TypeScript e JavaScript) e le scarica una volta nella sua cartella condivisa, senza eseguire script:
-
-| Progetto | Solo lessicale | Con il motore | Durata | RAM di picco |
-|---|---|---|---|---|
-| ky (TypeScript) | 12,9% (791 su 6.113) | 90,9% (3.911 su 4.302) | 45 s | 1,3 GB |
-| express (JavaScript) | 7,2% (207 su 2.877) | 13,4% (385 su 2.867) | 24 s | 0,7 GB |
-| javapoet (Java, Eclipse JDT LS) | 7,3% (289 su 3.972) | 99,7% (2.864 su 2.874) | 107 s | 1,1 GB |
-| klaxon (Kotlin, Analysis API) | 25,1% (311 su 1.241) | 89,6% (812 su 906) | 45 s | 0,6 GB |
-
-Su ky contano i contratti: un metodo o una proprietà funzione di un'interfaccia o di un tipo è una dichiarazione, quindi una chiamata che passa da lì diventa un arco. Su express il resto sono metodi di `req`, `res` e `app`, che Express costruisce a runtime; su klaxon sono le librerie che gli script Gradle calcolano e che senza eseguirli non si vedono.
+Ogni linguaggio ha il suo motore, eseguito uno alla volta nello stesso passaggio e installato al primo uso nella cartella condivisa di Daodan, con le librerie del progetto lette dai file di build senza eseguirli. Linguaggi, motori, versioni, licenze e copertura misurata: `docs/plugins/codebase-map-linguaggi.md`.
 
 Il passaggio chiede al motore solo ciò che può essere cambiato: una risposta si riusa finché non cambiano il suo file, i file che importa e il file in cui punta. Le risposte stanno in `engine-answers.sqlite`, accanto alle schede. Prima vengono i file modificati, poi quelli di rango più alto, e lo store esce subito con le risposte riusate e poi ogni 30 secondi. Su ky uno snapshot invariato richiede 2 secondi senza avviare il motore, la modifica di un test 8 secondi, quella di un file importato quasi ovunque 38 secondi contro i 50 del primo passaggio. Spec e misura: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
 

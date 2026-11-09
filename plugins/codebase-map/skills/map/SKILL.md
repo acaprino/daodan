@@ -102,4 +102,4 @@ other modules beside them are libraries they import.
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
 - `cascade_scan.py`: global stylesheet layout risks, cascade overrides and screen rules (Phase 5).
 - `languages/`: per-language adapters listed above.
-- `requirements.txt`: optional tree-sitter and tree-sitter-language-pack dependencies.
+- `requirements.txt`: tree-sitter, tree-sitter-language-pack and sqlglot, which the MCP server installs itself.
