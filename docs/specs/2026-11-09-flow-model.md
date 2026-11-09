@@ -29,6 +29,17 @@ Codebase Map deve rispondere a due domande che oggi non sa trattare: «chi scriv
 
 **Una famiglia, una struttura.** Il flusso tecnico (richiesta e risposta), quello dei dati (provenienza e consumo di uno store) e il percorso dell'utente (azioni verso un obiettivo) sono lo stesso grafo di passi. La famiglia è l'etichetta della radice: un ingresso, uno store o un obiettivo funzionale.
 
+## Unità di lavoro
+
+Il lavoro di analisi si taglia attraversando il grafo, non ordinando i file. Oggi `pack()` della review ordina per percorso e chiude un gruppo a 120.000 byte, e la mappa a team divide per manifest, layer o linguaggio: nelle run di `benchmarks/phazly-flow` chi scrive, chi legge e chi mostra lo stesso dato sono finiti in tre job diversi.
+
+- **La richiesta decide il taglio.** Una cartella o un modulo nominati esplicitamente restano il perimetro, tagliato per percorso. Una richiesta su un flusso, un fatto o un'azione ha come perimetro la catena, trasversale a moduli e livelli (interfaccia, servizio, dati).
+- **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si attraversano tre tipi di arco: chiamate e import; stato condiviso, perché scrittore e lettore dello stesso store non si chiamano; collegamenti fra livelli accoppiati per nome (rotta HTTP, collezione, schema condiviso), sempre `inferito`.
+- **Tetto.** Un'unità ha un limite di byte. Ciò che resta oltre il limite è la sua frontiera, dichiarata con il motivo: mai omessa in silenzio.
+- **Prerequisito.** Una catena fra livelli richiede la mappa di tutti i livelli che attraversa.
+
+Le unità sono un'opzione accanto a `pack()`; servono anche alle partizioni della mappa e all'esploratore.
+
 ## Derivazione
 
 1. **Struttura, senza modello.** Dallo snapshot: chiamate, import, riferimenti esterni risolti, più i pattern di framework che riconoscono ingressi e store (rotte, hook di stato, collezioni, schermate). I collegamenti dinamici che il grafo non vede si cercano per nome e restano `inferito` con la loro evidenza: mai un arco certo.
@@ -61,10 +72,8 @@ Benchmark `benchmarks/flow-model/`, criterio dichiarato prima della run.
 
 ## Ordine di lavoro
 
-1. Spec e correzione dell'esclusione in FRD e ADR (questo documento).
-2. Benchmark `flow-model`: fixture, catena attesa, test senza modello.
-3. Derivazione strutturale e `codebase_map_flows`, provate sul benchmark.
-4. Etichette semantiche con freschezza.
-5. Consumo da parte della Phase 0 della review e dell'esploratore.
+1. **Ciò che è deciso e usa meccanismi esistenti.** Hook `PostToolUse` che aggiorna il livello macchina in un run dedicato; quattro correzioni al metodo di review emerse da `benchmarks/phazly-flow` (ingresso, livello nel contesto, gravità, cluster per ancora e trigger).
+2. **Identificare i pezzi dal grafo e dall'analisi semantica.** Archi di stato condiviso e fra livelli, pianificatore di unità, etichette di livello e significato. Prima misura, senza modello: in quante unità finiscono gli insiemi noti di phazly-app, con `pack()` e con le unità. Poi `codebase_map_flows`.
+3. **Decidere se aiutano l'analisi.** La stessa review in tre versioni, con roster fisso e due run ciascuna: gruppi per percorso, unità sul grafo, gruppi per percorso con la catena nel contesto. Qui si misurano anche le correzioni del punto 1 e il canale testuale di schede ed etichette nell'indice.
 
 **Da decidere:** quali framework riconoscere per primi (React e hook di stato, rotte HTTP Python e TypeScript); se «Flusso» è una terza prospettiva o una sovrapposizione.
