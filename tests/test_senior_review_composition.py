@@ -47,7 +47,7 @@ class CatalogTest(unittest.TestCase):
     def test_catalog_matches_plugin_toml_and_feeds_review_roster(self):
         catalog = composition.load_catalog(PLUGIN_ROOT)
         entries = {row["id"]: row for row in catalog["entries"]}
-        self.assertEqual(len(entries), 66)
+        self.assertEqual(len(entries), 67)
         self.assertEqual(entries["senior-review:accessibility-auditor"]["members"],
                          ["senior-review:accessible-navigation-auditor", "senior-review:accessible-perception-auditor"])
         self.assertEqual(entries["senior-review:authorization-auditor"]["file"], "roles/authorization-auditor.md")
@@ -210,7 +210,7 @@ class CliTest(unittest.TestCase):
             cat = subprocess.run([sys.executable, str(SCRIPTS / "composition.py"), "catalog", "--out", str(root / "catalog.json")],
                                  capture_output=True, text=True)
             self.assertEqual(cat.returncode, 0, cat.stderr)
-            self.assertEqual(json.loads(cat.stdout)["entries"], 66)
+            self.assertEqual(json.loads(cat.stdout)["entries"], 67)
 
 
 CODE = "senior-review:code-auditor"

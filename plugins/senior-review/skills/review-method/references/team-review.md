@@ -30,6 +30,7 @@
 | Distributed flows | `senior-review:distributed-flow-auditor` |
 | Circular dependencies | `senior-review:chicken-egg-detector` |
 | Temporal resilience (failure-over-time) | `senior-review:temporal-resilience-auditor` |
+| Calendar time (zones, DST, recurrences, floating wall-clock times) | `senior-review:calendar-time-auditor` |
 | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` |
 | Resource lifecycle (ownership and release) | `senior-review:resource-lifecycle-auditor` |
 | Testing quality | `senior-review:testing-auditor` |

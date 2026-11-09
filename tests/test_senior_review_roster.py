@@ -84,6 +84,16 @@ class RigorTest(unittest.TestCase):
                       compute(PLAIN.replace("+x = 2", "+<<<<<<< HEAD"))["roster"])
         self.assertEqual(compute()["roster"], review_roster.STANDARD_ROSTER)
 
+    def test_zone_aware_code_or_prose_adds_the_calendar_specialist(self):
+        role = "senior-review:calendar-time-auditor"
+        zoned = compute(PLAIN.replace("+x = 2", "+due = local.astimezone(ZoneInfo(user.zone))"))
+        self.assertIn(role, zoned["roster"])
+        self.assertEqual(zoned["rigor"], "standard")
+        self.assertIn(role, compute(diff_of("docs/reminders.md").replace("+x = 2", "+Il promemoria segue il fuso orario corrente."),
+                                    kind="spec")["roster"])
+        for line in ("+stamp = datetime.now(timezone.utc)", "+shutil.copy(src, dst)"):
+            self.assertNotIn(role, compute(PLAIN.replace("+x = 2", line))["roster"])
+
     def test_deep_adds_testing_and_prior_art(self):
         deep = compute(rigor="deep")["roster"]
         self.assertIn("senior-review:testing-auditor", deep)

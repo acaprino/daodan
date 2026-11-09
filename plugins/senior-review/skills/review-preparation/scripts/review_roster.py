@@ -130,6 +130,7 @@ SIGNAL_ROLE = {
     "performance": "senior-review:performance-auditor",
     "operability": "senior-review:operability-auditor",
     "timers": "senior-review:temporal-resilience-auditor",
+    "calendar": "senior-review:calendar-time-auditor",
     "resources": "senior-review:resource-lifecycle-auditor",
     "ui": "senior-review:ui-race-auditor",
     "startup": "senior-review:chicken-egg-detector",
@@ -179,6 +180,12 @@ SIGNAL_PATTERNS = {
         re.IGNORECASE,
     ),
     "timers": re.compile(r"\b(setTimeout|setInterval|time\.sleep|asyncio\.sleep|retry|backoff|cron|schedule|threading\.Timer)\b"),
+    # Zone-aware date APIs and zone/DST prose; bare `timezone.utc` and a `dst` variable are not signals.
+    "calendar": re.compile(r"\b(?:ZoneInfo|zoneinfo|pytz|tzlocal|astimezone|rrule|RRule|RRULE|ZoneId|ZonedDateTime|"
+                           r"OffsetDateTime|chrono_tz|UNCalendarNotificationTrigger|ACTION_TIMEZONE_CHANGED|"
+                           r"NSSystemTimeZoneDidChange|DST|getTimezoneOffset|luxon|date-fns-tz|moment-timezone)\b|"
+                           r"\bTemporal\.|\bIntl\.DateTimeFormat\b|"
+                           r"(?i:\btime ?zones?\b(?!\.utc)|daylight.saving|\bfus[oi] orari|\bora legale\b)"),
     "resources": re.compile(r"\b(open\(|socket\.|subprocess\.|Popen|connect\(|ThreadPool|ProcessPool|acquire\(|release\(|close\(\))"),
     "ui": re.compile(r"\b(useEffect|useLayoutEffect|requestAnimationFrame|scrollTo|focus\(\)|ResizeObserver|IntersectionObserver)\b"),
     "startup": re.compile(r"\b(__main__|bootstrap|on_startup|lifespan|init_app|configure\(|register\()"),
