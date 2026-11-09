@@ -42,7 +42,7 @@ Il lavoro di analisi si taglia attraversando il grafo, non ordinando i file. Ogg
   | Un componente dell'interfaccia | Il componente | Ciò che mostra fino a chi lo scrive, e le sue interazioni fino a chi reagisce |
   | Una funzionalità | I suoi ingressi | Attraversamento, anche fra livelli |
   | Un flusso di dati | Lo store o il fatto | Catena di scrittori e lettori, anche fra livelli |
-  | Un aspetto (sicurezza, prestazioni) | L'aspetto sceglie i reviewer, non i file | Dagli ingressi quando l'aspetto segue il dato, altrimenti per percorso |
+  | Un aspetto (sicurezza, prestazioni, stabilità, concorrenza, leggerezza) | L'aspetto sceglie i reviewer, non i file | Dagli ingressi quando l'aspetto segue il dato, altrimenti per percorso |
 
   Una richiesta può nominare più righe insieme: «la sicurezza del flusso di registrazione» è un aspetto su un flusso.
 - **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si seguono due percorsi insieme. Il **dato**: chi lo scrive, dove passa di livello, chi lo legge, cosa mostra. L'**interazione**: l'azione dell'utente, il suo handler, gli effetti che produce, le schermate che devono reagire.
