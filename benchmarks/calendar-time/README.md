@@ -1,6 +1,6 @@
 # Benchmark: promemoria con orario fluttuante
 
-Prova il ruolo `senior-review:calendar-time-auditor`: deve trovare dove un orario civile viene calcolato, mostrato o fatto suonare in modo incoerente tra fusi orari, ora legale, ricorrenze e cambi di fuso.
+Ha provato il ruolo `senior-review:calendar-time-auditor`, rimosso dopo il giro 2 perché non ha trovato nulla che i ruoli esistenti non trovino. Il ruolo doveva trovare dove un orario civile viene calcolato, mostrato o fatto suonare in modo incoerente tra fusi orari, ora legale, ricorrenze e cambi di fuso.
 
 ## Parametri
 
@@ -19,7 +19,7 @@ Criterio, uguale per ogni giro e dichiarato prima della run: il ruolo resta se t
 
 `python -B -m pytest -q benchmarks/calendar-time`
 
-`test_fixture.py` e `test_fixture2.py` dimostrano ogni seme e ogni esca: i test passano sulla fixture così com'è.
+`test_app.py` e `test_app2.py` dimostrano ogni seme e ogni esca: i test passano sulla fixture così com'è.
 
 ## Run con il modello
 
@@ -66,4 +66,14 @@ Esche: `next_occurrence` avanza per giorno locale e poi converte, quindi non spo
 
 Decisione dichiarata prima della run: se il criterio non è raggiunto neanche qui, il ruolo e il segnale `calendar` si rimuovono e restano solo le pulizie dei confini e della tassonomia.
 
-Run: da eseguire.
+Run del 2026-11-09, ruolo al commit `187b25f`.
+
+| Configurazione | R1 | R2 | R3 | R4 | Altri reali | Esca segnalata | Token | Strumenti | Tempo |
+|---|---|---|---|---|---|---|---|---|---|
+| `calendar-time-auditor` | sì | sì | sì | sì | 0 | no | 76.088 | 7 | 59 s |
+| confronto | sì | sì | sì | sì | 2 | no | 83.656 | 6 | 82 s |
+
+- Entrambe le configurazioni trovano i quattro semi; R3 è segnalato da entrambe con il dubbio su quale data conti, che il contratto lascia aperto.
+- Altri reali del confronto: una regola senza giorni fa sollevare `next_occurrence` e blocca `tick` per le regole successive; un cambio di fuso sovrascrive un suono già dovuto e non ancora inviato.
+- Il confronto ha scritto uno script fuori dalla copia, senza leggere nulla fuori: isolamento violato solo in scrittura.
+- Criterio non raggiunto. Come dichiarato, ruolo e segnale `calendar` sono rimossi; restano la correzione della tassonomia 15.2 (UTC per gli istanti, identificatore di fuso o orario locale fluttuante per gli orari civili) e questa fixture per provare modifiche future.

@@ -23,7 +23,7 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 ## Causal checks
 
 - Trace numeric range, precision, money/currency and rounding through write/read/serialization. Show a value whose meaning changes; a float/type preference alone is not corruption.
-- Check that the stored form keeps a date or time's meaning through write and reconstruction: an instant, a wall-clock time in a zone (zone identifier, not a fixed offset) or a floating wall-clock time. Show the stored value that reconstructs to another meaning.
+- Follow instants, calendar dates, timezone/offset and DST ambiguity through storage and reconstruction. Establish the intended meaning before imposing UTC or another representation.
 - Compare NULL, missing values, defaults, enum/JSON shape and old persisted versions to every relevant reader. Compile-time types do not validate data already stored; distinguish deliberate tolerance from silently wrong meaning.
 - Check pagination ordering, tie breakers, cursor predicates and concurrent mutation against promised completeness and stability. Construct the skipped/duplicated row or wrong boundary.
 - For migrations/backfills trace conversion loss, required defaults, existing rows, duplicates and affected readers. Check restart checkpoints, idempotence, partial completion and reconciliation with writes arriving during conversion.
@@ -35,5 +35,5 @@ Intentional lossy conversion within an approved contract, validated ranges, expl
 
 ## Boundaries and output
 
-Wire compatibility belongs to api-contract, domain interpretation to logic-integrity, zone, DST and recurrence arithmetic to calendar-time, mutation atomicity to transaction-integrity and mixed-version deployment to release-compatibility; startup prerequisites remain chicken-egg.
+Wire compatibility belongs to api-contract, domain interpretation to logic-integrity, mutation atomicity to transaction-integrity and mixed-version deployment to release-compatibility; startup prerequisites remain chicken-egg.
 Add original value/row/version, transformation, reader interpretation and lost meaning or omitted row. Separate derived examples from supplied or exercised runtime data.

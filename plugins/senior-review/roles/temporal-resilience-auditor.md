@@ -61,7 +61,7 @@ The question is whether required work progresses or reaches an honest, recoverab
 ## Clock and environment
 
 - Distinguish elapsed-time budgets from calendar deadlines. Verify the chosen clock and scheduler semantics under wall-clock changes, sleep/resume and hidden/background throttling.
-- Where zone, daylight-saving or recurrence arithmetic decides the next run, record the lead for calendar-time with the scheduling path that consumes it.
+- Trace timezone, daylight-saving transitions, midnight boundaries and missed or repeated calendar occurrences where they affect the schedule.
 - Check long waits against resume/restart behavior rather than assuming wall-clock or monotonic time universally solves suspension.
 - Follow environmental changes such as network loss/reconnect and dependency recovery into the next scheduling decision.
 
@@ -79,6 +79,6 @@ A code-derived estimate is never presented as runtime evidence, and a cost estim
 ## Boundaries and evidence
 
 Startup and migration prerequisites belong to chicken-egg; cross-service deadline chains, saga and broker delivery to distributed flow.
-Zone, DST, recurrence and day-boundary arithmetic belongs to calendar-time; resource ownership/release to resource lifecycle; event/render ordering to UI race; service-wide observability and recovery to the operational reviewer.
+Resource ownership/release belongs to resource lifecycle; event/render ordering to UI race; service-wide observability and recovery to the operational reviewer.
 For each finding add mechanism, three-horizon failure chain, relevant state transitions, evidence for failed recovery and the user/operator consequence.
 Keep the common finding fields and coverage gaps; avoid duplicating a complete machinery inventory in multiple output sections.

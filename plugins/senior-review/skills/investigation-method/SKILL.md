@@ -45,7 +45,6 @@ the perimeter and its own hypothesis:
 | Mechanism | Verifier |
 |---|---|
 | Timers, retries, scheduling, clocks | `senior-review:temporal-resilience-auditor` |
-| Zones, DST, recurrences, day boundaries | `senior-review:calendar-time-auditor` |
 | Persistence, transactions, caches | `senior-review:data-integrity-auditor` |
 | Statement cost, data volume, timeouts | `senior-review:sql-efficiency-auditor` |
 | Initialization order, startup | `senior-review:chicken-egg-detector` |

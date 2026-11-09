@@ -25,7 +25,6 @@
     "./roles/authorization-auditor.md",
     "./roles/browser-security-auditor.md",
     "./roles/cache-consistency-auditor.md",
-    "./roles/calendar-time-auditor.md",
     "./roles/callback-authenticity-auditor.md",
     "./roles/capacity-quota-auditor.md",
     "./roles/chicken-egg-detector.md",

@@ -37,6 +37,6 @@ Intentional environment differences, explicit locale/timezone, validation before
 
 ## Boundaries and output
 
-Authentication/mTLS identity security belongs to session delegation; retries to service resilience; stored date semantics to data representation; zone and DST arithmetic to calendar-time.
+Authentication/mTLS identity security belongs to session delegation; retries to service resilience; stored date semantics to data representation.
 
 Report selection, resolved value/reference, consumer and unintended resource consequence; name unknown layers.
