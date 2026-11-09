@@ -33,7 +33,18 @@ Codebase Map deve rispondere a due domande che oggi non sa trattare: «chi scriv
 
 Il lavoro di analisi si taglia attraversando il grafo, non ordinando i file. Oggi `pack()` della review ordina per percorso e chiude un gruppo a 120.000 byte, e la mappa a team divide per manifest, layer o linguaggio: nelle run di `benchmarks/phazly-flow` chi scrive, chi legge e chi mostra lo stesso dato sono finiti in tre job diversi.
 
-- **La richiesta decide il taglio.** Una cartella o un modulo nominati esplicitamente restano il perimetro, tagliato per percorso. Una richiesta su un flusso, un fatto o un'azione ha come perimetro la catena, trasversale a moduli e livelli (interfaccia, servizio, dati).
+- **Il modello inferisce il perimetro, la macchina lo costruisce.** Dalla richiesta e dal contesto del progetto il modello ricava che cosa è nominato e da quali semi partire, lo dichiara in `00-scope.md` con l'evidenza e procede; chiede solo se due letture cambiano correttezza o costo, come già nella Phase 0.
+
+  | La richiesta nomina | Semi | Taglio |
+  | --- | --- | --- |
+  | Una cartella o un modulo | I suoi file | Per percorso |
+  | Una funzione o un simbolo | Il simbolo | Il simbolo con chiamanti e chiamati |
+  | Un componente dell'interfaccia | Il componente | Ciò che mostra fino a chi lo scrive, e le sue interazioni fino a chi reagisce |
+  | Una funzionalità | I suoi ingressi | Attraversamento, anche fra livelli |
+  | Un flusso di dati | Lo store o il fatto | Catena di scrittori e lettori, anche fra livelli |
+  | Un aspetto (sicurezza, prestazioni) | L'aspetto sceglie i reviewer, non i file | Dagli ingressi quando l'aspetto segue il dato, altrimenti per percorso |
+
+  Una richiesta può nominare più righe insieme: «la sicurezza del flusso di registrazione» è un aspetto su un flusso.
 - **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si seguono due percorsi insieme. Il **dato**: chi lo scrive, dove passa di livello, chi lo legge, cosa mostra. L'**interazione**: l'azione dell'utente, il suo handler, gli effetti che produce, le schermate che devono reagire.
 - **Archi attraversati.** Chiamate e import; legame fra un evento dell'interfaccia e il suo handler; stato condiviso, perché scrittore e lettore dello stesso store non si chiamano; collegamenti fra livelli accoppiati per nome (rotta HTTP, collezione, schema condiviso), sempre `inferito`.
 - **Tetto.** Un'unità ha un limite di byte. Ciò che resta oltre il limite è la sua frontiera, dichiarata con il motivo: mai omessa in silenzio.
