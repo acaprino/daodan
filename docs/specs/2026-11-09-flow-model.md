@@ -13,7 +13,7 @@ Ogni parola ha un solo significato in queste tre spec.
 | Collegamento | Da un simbolo a un altro, con tipo e `file:line`. **Diretto** se sta nel codice (chiamata, import). **Dedotto** se si ricava accoppiando nomi: stesso store, stessa rotta, stessa collezione |
 | Tipo di collegamento | `chiama`, `scrive`, `legge`, `attiva` (un'azione dell'utente attiva il suo handler) |
 | Flusso | Sequenza ordinata di collegamenti, da un punto d'ingresso a un fatto mostrato |
-| Punto d'ingresso | Dove un flusso comincia: rotta, comando, azione dell'utente, job |
+| Punto d'ingresso | Dove un flusso comincia: rotta, comando, azione dell'utente, lavoro pianificato |
 | Store | Dove un dato vive: stato globale, tabella o collezione, file, cache |
 | Fatto mostrato | Un valore o un testo che l'applicativo mostra o restituisce |
 | Granularità | L'unità a cui un dato si riferisce: uno slot, un singolo alimento, un utente |
