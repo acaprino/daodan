@@ -565,6 +565,64 @@ class _JavaScriptEvidence(_Evidence):
             self.note("wildcard/namespace export is unresolved")
         self.walk(declaration)
 
+    def contracts(self, node):
+        """Declare the callable members of an interface or a type alias, which an engine can answer with.
+
+        A method signature, a property typed as a function or as an object with call
+        signatures, and a call or construct signature are contracts: the call goes
+        through them, as a Python call goes through a Protocol method. A property's
+        own call signatures name the property. Any other property holds a value and
+        is declared as a `property`, which an edge never arrives at. All are named
+        after the owning type and none is a lexical binding.
+        """
+        owner = self.text(node.child_by_field_name("name")) or "(type)"
+        stack = [node.child_by_field_name("body") or node.child_by_field_name("value")]
+        owned: set[int] = set()
+        while stack:
+            item = stack.pop()
+            if item is None:
+                continue
+            name = item.child_by_field_name("name")
+            named = name is not None and name.type in ("property_identifier", "private_property_identifier")
+            if item.type == "method_signature" and named:
+                self.contract(owner, name, item)
+            elif item.type == "property_signature" and named:
+                kind, signatures = self.callable_type(item)
+                if kind is None:
+                    self.declaration(self.text(name), "property", self.span(name), extra={
+                        "lexical": False, "qualified_name": f"{owner}.{self.text(name)}"})
+                else:
+                    owned.update(signature.id for signature in signatures)
+                    self.contract(owner, name, item, [self.span(signature) for signature in signatures])
+            elif item.type in ("call_signature", "construct_signature") and item.id not in owned:
+                # A signature has no name: an engine answers at its first character.
+                self.declaration(owner, "method", self.span(item), extra={
+                    "name_span": self.span(item), "contract": True, "lexical": False,
+                    "qualified_name": f"{owner}.({'new' if item.type == 'construct_signature' else 'call'})"})
+            stack.extend(reversed(item.named_children))
+
+    def contract(self, owner, name, item, signature_spans=None):
+        member = self.text(name)
+        extra = {"name_span": self.span(name), "contract": True, "lexical": False,
+                 "qualified_name": f"{owner}.{member}"}
+        if signature_spans:
+            extra["signature_spans"] = signature_spans
+        self.declaration(member, "method", self.span(item), extra=extra)
+
+    @staticmethod
+    def callable_type(signature):
+        """`("function", [])`, `("signatures", [call signatures])` or `(None, [])` for a property's type."""
+        annotation = next((child for child in signature.named_children if child.type == "type_annotation"), None)
+        for child in annotation.named_children if annotation is not None else ():
+            if child.type in ("function_type", "constructor_type"):
+                return "function", []
+            if child.type == "object_type":
+                signatures = [member for member in child.named_children
+                              if member.type in ("call_signature", "construct_signature")]
+                if signatures:
+                    return "signatures", signatures
+        return None, []
+
     def function(self, node, assigned=None, binding_scope=None, assigned_node=None):
         name = node.child_by_field_name("name")
         defining_scope = self.scope
@@ -584,6 +642,11 @@ class _JavaScriptEvidence(_Evidence):
         extra = {"name_span": self.span(named)} if named is not None and named.type in (
             "identifier", "property_identifier", "private_property_identifier") else None
         overloads = self.signatures.pop((binding_scope or self.scope, self.text(named)), None) if extra else None
+        if extra and kind == "method" and self.text(named) == "constructor":
+            # `new C()` is answered at the class and at its constructor: both name the class.
+            owner = self.scope_by_id[self.scope].get("declaration")
+            if owner is not None:
+                extra["constructs"] = owner
         if overloads:
             # An engine may answer at an overload signature; the runtime target is this body.
             extra["signature_spans"] = overloads
@@ -636,8 +699,11 @@ class _JavaScriptEvidence(_Evidence):
         if node is None:
             return
         t = node.type
+        if t in ("interface_declaration", "type_alias_declaration"):
+            self.contracts(node)
+            return
         if t in ("comment", "string", "regex", "string_fragment", "escape_sequence", "type_annotation",
-                 "type_arguments", "type_parameters", "interface_declaration", "type_alias_declaration"):
+                 "type_arguments", "type_parameters"):
             return
         if t == "jsx_closing_element":
             return
@@ -984,6 +1050,17 @@ class _TreeSitterEvidence(_Evidence):
                 return prefix + [self.text(field)]
         return []
 
+    def member_name(self, node):
+        """The name a member access ends with (`x.f`, `x->f`, `x?.f`), or None for any other callee."""
+        if node is None or node.type not in _TS_MEMBER_NODES:
+            return None
+        field = node.child_by_field_name("field") or node.child_by_field_name("name")
+        if field is None and node.named_children:
+            field = node.named_children[-1]
+            if field.type == "navigation_suffix":
+                field = next((c for c in field.named_children if c.type in _CALLEE_NAME_NODES), None)
+        return field if field is not None and field.type in _CALLEE_NAME_NODES else None
+
     def last_name(self, node, name):
         """The rightmost identifier under `node` spelled `name`, where a callee's name ends."""
         found, stack = None, [node]
@@ -1071,6 +1148,15 @@ class _TreeSitterEvidence(_Evidence):
                 self._write_binding(child)
         else:
             self.walk(node)
+
+    def _contract(self, owner: str, item) -> None:
+        """Declare an interface or trait method that has no body, so an engine's answer can land on it."""
+        name = item.child_by_field_name("name")
+        if name is None:
+            return
+        member = self.text(name)
+        self.declaration(member, "method", self.span(item), extra={
+            "name_span": self.span(name), "contract": True, "lexical": False, "qualified_name": f"{owner}.{member}"})
 
     def _bind_params(self, params):
         if params is None:
@@ -1264,6 +1350,15 @@ class _TreeSitterEvidence(_Evidence):
                         self.declaration(name, "class", self.span(spec), extra={"name_span": self.span(name_node)})
                         if self._is_exported(spec, name):
                             self.data["exports"].append({"exported": name, "local": name})
+                        interface = spec.child_by_field_name("type")
+                        for member in interface.named_children if interface is not None and                                 interface.type == "interface_type" else ():
+                            if member.type in ("method_elem", "method_spec"):
+                                self._contract(name, member)
+            return
+        if t == "function_signature_item":
+            # A trait's method without a body: the call goes through it, as through an interface method.
+            owner = node.parent.parent.child_by_field_name("name") if node.parent is not None and                 node.parent.parent is not None else None
+            self._contract(self.text(owner) if owner is not None else "(trait)", node)
             return
         if t in _TS_CLASS_NODES:
             name_node = node.child_by_field_name("name") or next(
@@ -1279,6 +1374,14 @@ class _TreeSitterEvidence(_Evidence):
                 (c for c in node.named_children if c.type in ("class_body", "enum_class_body", "declaration_list")),
                 None,
             )
+            if t == "enum_item" and body is not None:
+                # `Variant(x)` is a call that builds the variant: an engine answers on the variant's name.
+                for variant in body.named_children:
+                    variant_name = variant.child_by_field_name("name") if variant.type == "enum_variant" else None
+                    if variant_name is not None:
+                        self.declaration(self.text(variant_name), "method", self.span(variant), extra={
+                            "name_span": self.span(variant_name), "contract": True, "lexical": False,
+                            "qualified_name": f"{name}::{self.text(variant_name)}"})
             if body is not None and (self.language in ("java", "kotlin", "csharp") or t == "trait_item"):
                 scope = self.new_scope("class", self.span(node))
                 if identity is not None:
@@ -1521,7 +1624,15 @@ class _TreeSitterEvidence(_Evidence):
                 )
                 parts = self.parts(target_node)
                 callee_span = None
-                if target_node is not node and not parts:
+                member = self.member_name(target_node) if not parts else None
+                if member is not None:
+                    # A member of a computed value keeps its name, so the call can be classified and asked.
+                    parts = ["(expr)", self.text(member)]
+                    receiver = target_node.child_by_field_name("object") or target_node.child_by_field_name(
+                        "expression") or target_node.child_by_field_name("operand") or target_node.child_by_field_name(
+                        "value") or (target_node.named_children[0] if target_node.named_children else None)
+                    self.walk(receiver)
+                elif target_node is not node and not parts:
                     self.walk(target_node)
             if callee_span is None:
                 callee_span = self.span(target_node)

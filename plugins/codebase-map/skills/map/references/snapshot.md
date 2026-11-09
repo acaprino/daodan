@@ -129,7 +129,8 @@ preserves archives/unrelated files. Never hand-copy partial output.
 ## Prerequisites
 
 Python >= 3.12 and stdlib suffice; below it the entry scripts refuse, because `ast`
-parses with the running grammar. Optional Java/JS/TS/Rust/Go Tree-sitter parsers:
+parses with the running grammar. The MCP server installs the parsers itself (tree-sitter,
+tree-sitter-language-pack, sqlglot) through `uv`; a shell snapshot uses them when installed:
 
 ```bash
 pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/requirements.txt"
@@ -143,7 +144,9 @@ Parser notes name the engine or fallback; missing grammars report
 `references/embeddings.md` before invoking `embedding_worker.py`.
 The engine pass writes `<run-dir>/snapshot/engine-edges.sqlite`, read by
 `edge_view.py`: one stage per language engine, one at a time (Jedi for Python,
-typescript-language-server for TypeScript, JavaScript, Vue and Svelte), each
+typescript-language-server for TypeScript, JavaScript, Vue and Svelte,
+Eclipse JDT LS for Java, the Kotlin Analysis API for Kotlin, rust-analyzer for Rust,
+gopls for Go), each
 installed on first use under the shared Daodan directory. Answers whose file,
 imports and target are unchanged come from `engine-answers.sqlite`, beside the
 card store; the store is published at once with them, then every 30 seconds. `resolve_edges.py

@@ -277,6 +277,21 @@ class CalleeSpanTests(unittest.TestCase):
         self.assertEqual(sorted(self.callee_text(source, r) for r in calls),
                          ["b.go", "b.go", "helper", "java.util.ArrayList"])
 
+    def test_a_member_of_a_computed_value_keeps_its_name_in_every_language(self):
+        cases = {"kotlin": ("kt", "\n".join(["class T {", "    fun run(): Int = 1", "}", "",
+                                             "fun go(): Int = make().run()", ""])),
+                 "rust": ("rs", "fn go() -> i32 { make().run() }\n"),
+                 "go": ("go", "package a\nfunc Go() int { return Make().Run() }\n"),
+                 "csharp": ("cs", "class U { int Go() => Make().Run(); }\n"),
+                 "java": ("java", "class U { int go() { return make().run(); } }\n")}
+        for language, (suffix, source) in cases.items():
+            with self.subTest(language=language):
+                calls = [r for r in self.parse(source, language, suffix)["references"] if r["kind"] == "call"]
+                member = [r for r in calls if r["parts"][:1] == ["(expr)"]]
+                self.assertEqual(len(member), 1, calls)
+                self.assertEqual(member[0]["parts"][1].lower(), "run")
+                self.assertEqual(self.callee_text(source, member[0]).split(".")[-1].lower(), "run")
+
     def test_declarations_record_where_they_are_named(self):
         source = "\n".join(["class Box {", "  Box() {}", "  int open(int x) { return x; }", "}", ""])
         declarations = {(d["name"], d["kind"]): d for d in self.parse(source, "java", "java")["declarations"]}
