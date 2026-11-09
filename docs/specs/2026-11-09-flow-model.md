@@ -1,6 +1,6 @@
-# Flussi nella mappa: dati, attività e percorsi dell'utente
+# Fase 2: flussi e unità di lavoro ricavati dal grafo
 
-**Stato:** proposta, da approvare. **Data:** 9 novembre 2026.
+**Stato:** abbozzo, da rifinire dopo l'implementazione della [fase 1](2026-11-09-working-run-and-review-fixes.md). **Data:** 9 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
 
 Codebase Map deve rispondere a due domande che oggi non sa trattare: «chi scrive il dato che questa schermata mostra, e con quale significato?» e «cosa succede, passo per passo, quando l'utente fa questo?». La risposta è un solo modello, i flussi, con tre consumatori: la review, l'esploratore visuale e la mappa funzionale dell'applicativo per chi non legge il codice. Riapre l'esclusione dei flussi nel [FRD](../frd/2026-11-07-codebase-explorer.md) e nell'[ADR](../adr/2026-11-07-codebase-explorer.md) dell'esploratore, che la rimandavano a una scelta dell'utente.
 
@@ -57,11 +57,11 @@ Le unità sono un'opzione accanto a `pack()`; servono anche alle partizioni dell
 1. **Struttura, senza modello.** Dallo snapshot: chiamate, import, riferimenti esterni risolti, più i pattern di framework che riconoscono ingressi e store (rotte, hook di stato, collezioni, schermate). I collegamenti dinamici che il grafo non vede si cercano per nome e restano `inferito` con la loro evidenza: mai un arco certo.
 2. **Significato, con il modello, a richiesta.** Un worker legge un arco e scrive livello e significato, legati ai digest dei simboli ai capi. Si rietichettano a lotti solo gli archi non più freschi, come per le schede.
 3. **Freschezza.** Calcolata a ogni lettura, mai ricontrollata a tappeto: `fresh`, `stale_body`, `stale_callee`, `orphan`, `uncovered`. Un flusso è fresco se tutti i suoi archi lo sono; altrimenti la risposta segna quelli stantii. Un cambio di scrittore cambia il digest dei suoi effetti e rende `stale_callee` l'etichetta del lettore: è il segnale della deriva dopo un refactor che oggi non esiste.
-4. **Aggiornamento.** Il livello macchina si ricalcola con lo snapshot incrementale (`write --reuse`), dal comando o dall'hook `PostToolUse` descritto a parte. Il livello semantico non si rigenera da solo.
+4. **Aggiornamento.** Il livello macchina si ricalcola con `snapshot.py refresh` sul run di lavoro della fase 1. Il livello semantico non si rigenera da solo.
 
 ## Consumatori
 
-- **Review.** Per una richiesta su un fatto o un'azione la Phase 0 produce, oltre ai file, la catena: store, scrittori, lettori, livello. La catena entra in `01-context.md` come invarianti da verificare, con il livello dichiarato: nessuna affermazione sul modello dei dati senza il suo livello. I lettori dello stesso store fuori dal perimetro entrano nel contesto e nel perimetro come lettori da giudicare. `logic-integrity` resta il reviewer.
+- **Review.** Riceve unità e catene; se e come usarle è l'oggetto della fase 3.
 - **Esploratore.** Una terza prospettiva, «Flusso», o una sovrapposizione sulla vista logica e su quella fisica: scegliere un flusso evidenzia i suoi nodi e archi; un nodo elenca i flussi che lo attraversano. I riferimenti multipli sono occorrenze visuali, come già nell'ADR. L'envelope `daodan/visual@1` ottiene un elenco `flows` di passi che riferiscono entità e relazioni esistenti; nessuna seconda tassonomia di stati.
 - **Mappa funzionale.** L'elenco dei percorsi dell'utente e delle funzionalità, ciascuno con i flussi che lo realizzano e i dati che consuma, leggibile da chi non legge il codice. `03-flows.md` si genera dalla struttura invece che dalla prosa libera, così il racconto non diverge dal dato.
 
@@ -75,17 +75,19 @@ Analisi statica: un cammino non prova il comportamento a runtime, e la strumenta
 
 ## Prova
 
-Benchmark `benchmarks/flow-model/`, criterio dichiarato prima della run.
+Benchmark `benchmarks/flow-model/`, soglie dichiarate nel README prima di ogni misura. Tutto senza modello, tranne le etichette.
 
-1. **Fixture** di 8-10 moduli con collegamenti via registro o iniezione, non per import diretto; due semi: un lettore con livello sbagliato (il caso phazly) e un'azione che non invalida un suo lettore. Catena attesa scritta a parte.
-2. **Derivazione.** Archi ricostruiti contro la catena attesa: richiamo e precisione, collegamenti dinamici segnati `inferito`. Costo della derivazione strutturale e di quella semantica.
-3. **Review.** Stessa richiesta con e senza catena, due run ciascuna: la catena resta se fa trovare almeno un seme che il metodo attuale non trova, a costo entro due volte.
-4. **Caso reale.** La catena dello store del diario di phazly-app al commit prima della correzione contiene i due lettori `G1` e `G2` di `benchmarks/phazly-flow`.
+1. **Insiemi noti di phazly-app.** I file di `G1` (lettore, helper, sanitizer, riga mostrata), di `G2` e i due scrittori dello stato «saltato»: in quanti job li mette `pack()` e in quante unità il pianificatore. Oggi `G1` è su tre job.
+2. **Fixture** di 8-10 moduli su due livelli, con collegamenti via registro, stato condiviso e una rotta HTTP; catena attesa scritta a parte. Richiamo e precisione degli archi, con gli `inferito` contati a parte.
+3. **Caso reale fra livelli.** Dalla riga «Completato» della home di phazly-app la catena arriva alla collezione `diaryDays` passando per `/getDiaryDays`; richiede la mappa di `react-app`, `functions-python` e `shared`.
+4. **Etichette.** Livello e significato su un campione di archi, confrontati con una lettura manuale; costo per arco.
 
 ## Ordine di lavoro
 
-1. **Ciò che è deciso e usa meccanismi esistenti.** Hook `PostToolUse` che aggiorna il livello macchina in un run dedicato; quattro correzioni al metodo di review emerse da `benchmarks/phazly-flow` (ingresso, livello nel contesto, gravità, cluster per ancora e trigger).
-2. **Identificare i pezzi dal grafo e dall'analisi semantica.** Archi di stato condiviso e fra livelli, pianificatore di unità, etichette di livello e significato. Prima misura, senza modello: in quante unità finiscono gli insiemi noti di phazly-app, con `pack()` e con le unità. Poi `codebase_map_flows`.
-3. **Decidere se aiutano l'analisi.** La stessa review in tre versioni, con roster fisso e due run ciascuna: gruppi per percorso, unità sul grafo, gruppi per percorso con la catena nel contesto. Qui si misurano anche le correzioni del punto 1 e il canale testuale di schede ed etichette nell'indice.
+1. Archi di stato condiviso e legame evento-handler per il primo framework.
+2. Pianificatore di unità con tetto e frontiera; misura 1.
+3. Archi fra livelli per nome; misure 2 e 3.
+4. `codebase_map_flows`.
+5. Etichette semantiche con freschezza; misura 4.
 
-**Da decidere:** quali framework riconoscere per primi (React e hook di stato, rotte HTTP Python e TypeScript); se «Flusso» è una terza prospettiva o una sovrapposizione.
+**Da decidere alla rifinitura:** primo framework da riconoscere (proposta: React con store Zustand, rotte FastAPI); tetto di un'unità; se «Flusso» nell'esploratore è una terza prospettiva o una sovrapposizione; se il pianificatore estende `scope_planner.py` o nasce accanto.
