@@ -91,7 +91,9 @@ class RigorTest(unittest.TestCase):
         self.assertEqual(zoned["rigor"], "standard")
         self.assertIn(role, compute(diff_of("docs/reminders.md").replace("+x = 2", "+Il promemoria segue il fuso orario corrente."),
                                     kind="spec")["roster"])
-        for line in ("+stamp = datetime.now(timezone.utc)", "+shutil.copy(src, dst)"):
+        self.assertIn(role, compute(PLAIN.replace("+x = 2", "+val ring = LocalTime.of(9, 0)"))["roster"])
+        for line in ("+stamp = datetime.now(timezone.utc)", "+from datetime import datetime, timezone",
+                     "+shutil.copy(src, dst)"):
             self.assertNotIn(role, compute(PLAIN.replace("+x = 2", line))["roster"])
 
     def test_deep_adds_testing_and_prior_art(self):

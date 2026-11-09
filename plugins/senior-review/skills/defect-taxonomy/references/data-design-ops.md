@@ -128,7 +128,7 @@ Reference for defect taxonomy categories 12, 14, 15, and 16.
 - **CWE**: N/A
 - **Pattern**: Hardcoded URLs, locale assumptions (`MM/dd` vs `dd/MM`), timezone assumptions (server local time)
 - **Detection**: Config audit, grep for hardcoded URLs/IPs, locale-sensitive test failures
-- **Fix**: 12-factor app, externalized config, explicit `Locale`/`TimeZone` parameters, UTC internally
+- **Fix**: 12-factor app, externalized config, explicit `Locale`/`TimeZone` parameters, UTC for instants and a zone identifier or floating local time for civil times
 - **Difficulty**: Easy
 
 ### 15.3 Feature Flag Stale States
