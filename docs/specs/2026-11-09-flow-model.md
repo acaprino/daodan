@@ -11,6 +11,16 @@ Codebase Map deve rispondere a due domande che oggi non sa trattare: «chi scriv
 - Nessuno strumento risponde a «chi scrive questo dato» o «cosa deve reagire a questa azione». I link dinamici (provider, DI, registri) il grafo non li vede.
 - Esito misurato in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md): un bug reale di provenienza (un record di slot letto come «piatto mangiato») è sfuggito alla review per area in quattro run su cinque, perché nessuno vedeva insieme scrittori e lettori dello stesso dato.
 
+## Cosa dice la letteratura
+
+Dalla [rassegna del 9 novembre](../research/2026-11-09-flow-reconstruction-literature.md), che distingue ciò che i lavori misurano da ciò che deduce:
+
+- **I collegamenti indiretti si risolvono con un modello dell'aggancio, uno per tipo.** Lo schema che ricorre ha due passi: estrarre chi offre (rotte, bean, filtri) e chi consuma (chiamate client, punti di iniezione), poi accoppiarli per stringa, tipo o firma. Nei microservizi l'accoppiamento statico trova 135 connessioni su 153.
+- **La qualità degli archi conta più dell'algoritmo che raggruppa.** Prima il grafo, poi le unità.
+- **Il modello linguistico rende quando scrive le specifiche o naviga il grafo, non quando traccia i percorsi.** Scrivere sorgenti e sink per un analizzatore statico raddoppia i difetti trovati in un benchmark Java; l'analisi dei dati fatta tutta dal modello soffre di allucinazioni.
+- **Più contesto dal grafo non è sempre meglio.** In un lavoro il vicinato a due salti dato per intero fa peggio che non darlo.
+- **Nessun lavoro verificato** unisce in un grafo interfaccia, servizio e dati, né misura la coerenza di significato fra chi scrive e chi legge un dato: è il caso phazly. Non esiste un benchmark; le misure di questa spec lo costruiscono.
+
 ## Il modello
 
 **Un flusso è un cammino su entità già esistenti, non un'entità nuova.** Usa gli stessi riferimenti canonici di snapshot, moduli e schede, e quindi di `daodan/visual@1` dell'esploratore: lo stesso nodo resta riconoscibile fra le viste.
@@ -47,14 +57,16 @@ Il lavoro di analisi si taglia attraversando il grafo, non ordinando i file. Ogg
   Una richiesta può nominare più righe insieme: «la sicurezza del flusso di registrazione» è un aspetto su un flusso.
 - **Costruzione.** Dai semi nominati nella richiesta (ingresso, store o fatto) si seguono due percorsi insieme. Il **dato**: chi lo scrive, dove passa di livello, chi lo legge, cosa mostra. L'**interazione**: l'azione dell'utente, il suo handler, gli effetti che produce, le schermate che devono reagire.
 - **Archi attraversati.** Chiamate e import; legame fra un evento dell'interfaccia e il suo handler; stato condiviso, perché scrittore e lettore dello stesso store non si chiamano; collegamenti fra livelli accoppiati per nome (rotta HTTP, collezione, schema condiviso), sempre `inferito`.
+- **Profondità.** Un salto dai semi lungo le chiamate; oltre, solo lungo gli archi del dato e dell'interazione.
 - **Tetto.** Un'unità ha un limite di byte. Ciò che resta oltre il limite è la sua frontiera, dichiarata con il motivo: mai omessa in silenzio.
-- **Prerequisito.** Una catena fra livelli richiede la mappa di tutti i livelli che attraversa.
+- **Prerequisito.** Una catena fra livelli richiede la mappa di tutti i livelli che attraversa, con il grafo delle chiamate presente per i loro linguaggi e la copertura dichiarata. Nel run di `react-app` di phazly-app usato dal benchmark i 412 file TypeScript avevano simboli e import ma nessuna chiamata, perché nell'ambiente mancava `tree-sitter`: su quel run un'unità non si può costruire.
 
 Le unità sono un'opzione accanto a `pack()`; servono anche alle partizioni della mappa e all'esploratore.
 
 ## Derivazione
 
-1. **Struttura, senza modello.** Dallo snapshot: chiamate, import, riferimenti esterni risolti, più i pattern di framework che riconoscono ingressi e store (rotte, hook di stato, collezioni, schermate). I collegamenti dinamici che il grafo non vede si cercano per nome e restano `inferito` con la loro evidenza: mai un arco certo.
+1. **Struttura, senza modello.** Dallo snapshot: chiamate, import, riferimenti esterni risolti. Per ogni tipo di aggancio indiretto, due passi: elenco di chi offre (store, rotte, collezioni, eventi) e di chi consuma (letture e scritture dello store, chiamate client, handler), poi accoppiamento per nome, tipo o firma. Un arco accoppiato resta `inferito` con la sua evidenza: mai certo.
+   **Specifiche di aggancio scritte dal modello, applicate dalla macchina.** Invece di codificare ogni framework, il modello legge il progetto una volta e dichiara come si riconoscono offerta e consumo («lo stato globale si legge con `useAppStore`», «le chiamate al servizio passano da `apiPostUnwrap` con gli URL di `config/api.ts`»); la macchina le applica a tutto il sorgente e conta ciò che non accoppia. Le specifiche sono legate ai digest dei file che citano, come le schede. Da misurare contro pattern scritti a mano.
 2. **Significato, con il modello, a richiesta.** Un worker legge un arco e scrive livello e significato, legati ai digest dei simboli ai capi. Si rietichettano a lotti solo gli archi non più freschi, come per le schede.
 3. **Freschezza.** Calcolata a ogni lettura, mai ricontrollata a tappeto: `fresh`, `stale_body`, `stale_callee`, `orphan`, `uncovered`. Un flusso è fresco se tutti i suoi archi lo sono; altrimenti la risposta segna quelli stantii. Un cambio di scrittore cambia il digest dei suoi effetti e rende `stale_callee` l'etichetta del lettore: è il segnale della deriva dopo un refactor che oggi non esiste.
 4. **Aggiornamento.** Il livello macchina si ricalcola con `snapshot.py refresh` sul run di lavoro della fase 1. Il livello semantico non si rigenera da solo.
@@ -84,7 +96,8 @@ Benchmark `benchmarks/flow-model/`, soglie dichiarate nel README prima di ogni m
 
 ## Ordine di lavoro
 
-1. Archi di stato condiviso e legame evento-handler per il primo framework.
+0. Grafo delle chiamate TypeScript nell'ambiente di prova, con la copertura risolte su risolvibili registrata.
+1. Archi di stato condiviso e legame evento-handler, con le specifiche di aggancio.
 2. Pianificatore di unità con tetto e frontiera; misura 1.
 3. Archi fra livelli per nome; misure 2 e 3.
 4. `codebase_map_flows`.

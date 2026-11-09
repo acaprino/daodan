@@ -10,7 +10,10 @@ Da [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md), con grupp
 
 - il difetto `G1` è descritto esattamente in una run su tre con il metodo completo; il roster e i gruppi cambiano da una run all'altra;
 - file legati nello stesso job non bastano (A3b: lettore e helper insieme, nessun finding) e non sono necessari (B: due scrittori in job diversi, difetto trovato da cinque ruoli);
-- il brief dà ai job l'intento in una frase e una lista di file: nessuna domanda sul dato.
+- il brief dà ai job l'intento in una frase e una lista di file: nessuna domanda sul dato;
+- la mappa di quelle run non aveva il grafo delle chiamate TypeScript: la Phase 0 disponeva solo di simboli, import e ricerca.
+
+Dalla [rassegna](../research/2026-11-09-flow-reconstruction-literature.md): dividere per relazioni del grafo è misurato sulle modifiche da rivedere (circa il 42% dei changeset di un grande prodotto è decomponibile, e i collegamenti che sfuggono sono proprio quelli indiretti), non sul numero di difetti trovati; la coerenza di significato fra scrittore e lettore non ha strumenti valutati. Le ipotesi 1 e 2 sono quindi domande aperte anche fuori da qui, e il rischio che nessun braccio superi A è reale.
 
 ## Ipotesi da provare
 
@@ -27,6 +30,8 @@ Da [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md), con grupp
 | B | Unità sul grafo | Come A |
 | C | Gruppi per percorso | Come A, più la catena del dato richiesto |
 
+- Mappa: con il grafo delle chiamate TypeScript e la copertura registrata, uguale per i tre bracci.
+- La catena del braccio C è compatta: scrittori, lettori e livello del dato richiesto, non il vicinato intero.
 - Richiesta: i widget della home di phazly-app al commit prima della correzione; roster fissato a mano, uguale per i tre bracci; due run per braccio. La richiesta su inserimento e scansione solo se la prima mostra un effetto.
 - Difetti attesi: `G1`, `G2` e lo scrittore divergente dello stato «saltato». Misure: difetti attesi nel rapporto finale e non solo in un job, altri difetti reali, segnalazioni errate, costo, tempo.
 - Ricerca: dieci richieste in parole di dominio sugli stessi simboli; posizione con il solo indice lessicale, con il canale di schede ed etichette, con gli embedding sul canale.
