@@ -954,6 +954,61 @@ class ProvenanceGradingTests(unittest.TestCase):
         self.assertLessEqual(len(asked), 64)
 
 
+class PreparedEnvironmentTests(unittest.TestCase):
+    """The project's declared packages, read from its manifests and installed outside it, from wheels only."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        (self.root / "api").mkdir(parents=True)
+        (self.root / "pyproject.toml").write_text(
+            '[project]\nname = "proj"\ndependencies = ["httpx>=0.27"]\n'
+            '[project.optional-dependencies]\ndev = ["pytest"]\n[dependency-groups]\nlint = ["ruff==0.6.0"]\n',
+            encoding="utf-8")
+        (self.root / "api/requirements.txt").write_text(
+            "fastapi==0.115.0  # web\n-e .\n./local\n-r other.txt\ngit+https://example.org/x.git\n"
+            "tool @ file:///tmp/tool\n\n# note\n", encoding="utf-8")
+        self.names = ["pyproject.toml", "api/requirements.txt", "api/app.py"]
+        self.cache = Path(self.temp.name).resolve() / "cache"
+        self.commands = []
+
+    def run_uv(self, command, **_kwargs):
+        self.commands.append(command[1:])
+        if command[1] == "venv":
+            Path(command[2]).mkdir(parents=True)
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    def prepare(self):
+        with mock.patch.object(resolve_edges, "shared_cache_dir", return_value=self.cache), \
+                mock.patch.object(resolve_edges.shutil, "which", return_value="uv"), \
+                mock.patch.object(resolve_edges.subprocess, "run", side_effect=self.run_uv):
+            return resolve_edges.python_environment(self.root, self.names)
+
+    def test_only_package_lines_are_declared_requirements(self):
+        manifests = resolve_edges.python_manifests(self.root, self.names)
+        self.assertEqual(manifests, ["api/requirements.txt", "pyproject.toml"])
+        self.assertEqual(resolve_edges._declared_requirements(self.root, manifests, "uv"),
+                         ["fastapi==0.115.0", "httpx>=0.27", "pytest", "ruff==0.6.0"])
+
+    def test_the_environment_is_built_once_outside_the_project_from_wheels(self):
+        before = sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*"))
+        first = self.prepare()
+        self.assertTrue(first.is_relative_to(self.cache / "python"))
+        install = next(command for command in self.commands if command[:2] == ["pip", "install"])
+        self.assertIn("--only-binary", install)
+        self.assertEqual(sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*")), before)
+        count = len(self.commands)
+        self.assertEqual(self.prepare(), first)
+        self.assertEqual(len(self.commands), count)
+
+    def test_changed_manifests_build_another_environment_and_none_declared_builds_none(self):
+        first = self.prepare()
+        (self.root / "api/requirements.txt").write_text("fastapi==0.116.0\n", encoding="utf-8")
+        self.assertNotEqual(self.prepare(), first)
+        self.assertIsNone(resolve_edges.python_environment(self.root, ["api/app.py"]))
+
+
 class MultiLanguageTests(unittest.TestCase):
     """One store with one entry per language, written by one engine at a time."""
 
@@ -1452,7 +1507,7 @@ class TypeScriptMirrorTests(unittest.TestCase):
             modules.mkdir(parents=True)
             (modules / "index.d.ts").write_text("export declare const p: number;\n", encoding="utf-8")
             engine = resolve_edges.TypeScriptEngine(root, install_dir=Path(temp) / "engines")
-            engine.mirror = engine.build_mirror(modules.parent)
+            engine.mirror = engine.build_mirror({"node_modules": modules.parent})
             mirror = engine.workspace_root()
             self.assertEqual((mirror / "src/deep/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
             self.assertTrue((mirror / "node_modules/pkg/index.d.ts").is_file())
@@ -1488,6 +1543,67 @@ class TypeScriptMirrorTests(unittest.TestCase):
         command, files = seen[0]
         self.assertEqual(files, ["package.json"])
         self.assertIn("--ignore-scripts", command)
+
+
+class NestedPackageTests(unittest.TestCase):
+    """A project whose packages are declared below its root, one of them taken from a local path."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        (self.root / "web/src").mkdir(parents=True)
+        (self.root / "web/src/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
+        (self.root / "web/package.json").write_text(json.dumps({
+            "name": "web", "dependencies": {"left": "^1", "kit": "file:../vendor/kit", "ui": "workspace:*"}}),
+            encoding="utf-8")
+        (self.root / "web/package-lock.json").write_text("{}", encoding="utf-8")
+        (self.root / "vendor/kit").mkdir(parents=True)
+        (self.root / "vendor/kit/package.json").write_text('{"name": "kit"}', encoding="utf-8")
+        (self.root / "docs").mkdir()
+        (self.root / "docs/readme.md").write_text("# Docs\n", encoding="utf-8")
+
+    def test_package_directories_are_found_below_the_root(self):
+        found = [path.relative_to(self.root).as_posix() for path in resolve_edges.package_directories(self.root)]
+        self.assertEqual(found, ["web", "vendor/kit"])
+        (self.root / "web/node_modules").mkdir()
+        found = [path.relative_to(self.root).as_posix() for path in resolve_edges.package_directories(self.root)]
+        self.assertEqual(found, ["vendor/kit"])
+
+    def test_local_packages_are_left_out_of_the_install_and_the_project_is_untouched(self):
+        seen = []
+
+        def run(command, cwd, **_options):
+            seen.append((command, json.loads((Path(cwd) / "package.json").read_text(encoding="utf-8"))))
+            (Path(cwd) / "node_modules").mkdir()
+            return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+        before = (self.root / "web/package.json").read_text(encoding="utf-8")
+        with mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
+                mock.patch.object(resolve_edges.shutil, "which", return_value="npm"), \
+                mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+            modules = resolve_edges.npm_modules(self.root / "web")
+        self.assertIsNotNone(modules)
+        command, manifest = seen[0]
+        self.assertEqual(manifest["dependencies"], {"left": "^1"})
+        self.assertEqual(command[1], "install")
+        self.assertEqual((self.root / "web/package.json").read_text(encoding="utf-8"), before)
+
+    def test_a_mirror_links_packages_below_the_root_without_writing_into_the_project(self):
+        modules = Path(self.temp.name).resolve() / "shared/node_modules"
+        (modules / "left").mkdir(parents=True)
+        (modules / "left/index.d.ts").write_text("export declare const l: number;\n", encoding="utf-8")
+        engine = resolve_edges.TypeScriptEngine(self.root, install_dir=Path(self.temp.name) / "engines")
+        engine.mirror = engine.build_mirror({"web/node_modules": modules})
+        mirror = engine.workspace_root()
+        self.assertTrue((mirror / "web/node_modules/left/index.d.ts").is_file())
+        self.assertEqual((mirror / "web/src/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
+        self.assertTrue((mirror / "docs/readme.md").is_file())
+        self.assertFalse((self.root / "web/node_modules").exists())
+        engine.cleanup()
+        self.assertFalse(mirror.exists())
+        self.assertTrue((self.root / "web/src/a.ts").is_file())
+        self.assertTrue((modules / "left/index.d.ts").is_file())
 
 
 class KotlinEngineTests(unittest.TestCase):

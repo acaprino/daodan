@@ -853,6 +853,46 @@ def npm_key(root: Path) -> str | None:
     return digest.hexdigest()[:16]
 
 
+def _without_local_packages(manifest: Path) -> str | None:
+    """A package.json without the packages it takes from a local path, or None when it has none.
+
+    `file:`, `link:`, `workspace:` and bare paths point at the project's own code, which
+    the manifest-only copy does not hold: npm would fail on every other package too.
+    """
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    dropped = False
+    for table in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
+        packages = data.get(table)
+        if not isinstance(packages, dict):
+            continue
+        for name, spec in list(packages.items()):
+            if isinstance(spec, str) and spec.startswith(("file:", "link:", "workspace:", ".", "/", "~/")):
+                del packages[name]
+                dropped = True
+    return json.dumps(data, indent=2) + "\n" if dropped else None
+
+
+def package_directories(root: Path, limit: int = 8) -> list[Path]:
+    """Directories of the project with their own package.json and no installed packages, nearest first.
+
+    The members of a workspace are served by its root, and a directory under an
+    installed `node_modules` by that installation.
+    """
+    root = Path(root).resolve()
+    served = {manifest.parent.resolve() for manifest in npm_manifests(root)} - {root}
+    found = []
+    for current, directories, files in os.walk(root):
+        here = Path(current)
+        directories[:] = sorted(name for name in directories if name != "node_modules" and not name.startswith("."))
+        if "package.json" in files and here.resolve() not in served and not (here / "node_modules").is_dir():
+            found.append(here)
+            served |= {manifest.parent.resolve() for manifest in npm_manifests(here)}
+    return sorted(found, key=lambda path: (len(path.relative_to(root).parts), path.as_posix()))[:limit]
+
+
 def npm_modules(root: Path) -> Path | None:
     """The project's packages installed once into the shared directory, without running any package script.
 
@@ -872,11 +912,18 @@ def npm_modules(root: Path) -> Path | None:
     partial = destination.with_name(f".{key}.partial")
     shutil.rmtree(partial, ignore_errors=True)
     manifests = npm_manifests(root)
+    local = False
     for manifest in manifests:
         target = partial / manifest.relative_to(root)
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(manifest, target)
-    locked = any(manifest.name in ("package-lock.json", "npm-shrinkwrap.json") for manifest in manifests)
+        text = _without_local_packages(manifest) if manifest.name == "package.json" else None
+        if text is None:
+            shutil.copyfile(manifest, target)
+        else:
+            target.write_text(text, encoding="utf-8")
+            local = True
+    # A lockfile that still names the local packages cannot be honoured to the letter.
+    locked = not local and any(manifest.name in ("package-lock.json", "npm-shrinkwrap.json") for manifest in manifests)
     command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
                "--loglevel=error", *([] if locked else ["--package-lock=false"])]
     completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
@@ -916,6 +963,8 @@ def remove_mirror(root: Path) -> None:
             os.rmdir(entry)
         elif entry.is_symlink() or entry.is_file():
             entry.unlink()
+        elif entry.is_dir():
+            remove_mirror(entry)
     root.rmdir()
 
 
@@ -1053,13 +1102,23 @@ class MirroredEngine(LspEngine):
     def build_mirror(self, links: dict | None = None) -> Path:
         mirror = Path(tempfile.mkdtemp(prefix=f"daodan-{self.name}-")) / self.project_root.name
         mirror.mkdir()
-        for entry in self.project_root.iterdir():
-            if entry.name in self.mirror_skip:
-                continue
-            if entry.is_dir():
-                link_directory(mirror / entry.name, entry)
-            elif entry.is_file():
-                shutil.copyfile(entry, mirror / entry.name)
+        # A directory that receives a link is a real directory of the mirror, one link per child.
+        real = {parent.as_posix() for name in links or {} for parent in PurePosixPath(name).parents} - {"."}
+
+        def fill(source: Path, target: Path, relative: PurePosixPath) -> None:
+            for entry in source.iterdir():
+                if entry.name in self.mirror_skip:
+                    continue
+                if entry.is_dir():
+                    if (relative / entry.name).as_posix() in real:
+                        (target / entry.name).mkdir()
+                        fill(entry, target / entry.name, relative / entry.name)
+                    else:
+                        link_directory(target / entry.name, entry)
+                elif entry.is_file():
+                    shutil.copyfile(entry, target / entry.name)
+
+        fill(self.project_root, mirror, PurePosixPath(""))
         for name, target in (links or {}).items():
             link_directory(mirror / name, target)
         return mirror
@@ -1327,18 +1386,18 @@ class TypeScriptEngine(MirroredEngine):
 
     def probe(self) -> tuple[bool, str]:
         self.mirror = None
-        if not (self.project_root / "node_modules").is_dir():
+        links = {}
+        for directory in package_directories(self.project_root):
             try:
-                modules = npm_modules(self.project_root)
+                modules = npm_modules(directory)
             except (OSError, subprocess.SubprocessError) as error:
                 print(f"the project's JavaScript packages were not installed: {error}", flush=True)
                 modules = None
             if modules is not None:
-                self.mirror = self.build_mirror(modules)
+                links[(PurePosixPath(directory.relative_to(self.project_root).as_posix()) / "node_modules").as_posix()] = modules
+        if links:
+            self.mirror = self.build_mirror(links)
         return super().probe()
-
-    def build_mirror(self, modules: Path | None = None) -> Path:
-        return super().build_mirror({"node_modules": modules} if modules is not None else None)
 
     def served_text(self, path: Path) -> tuple[Path, str]:
         served, text = super().served_text(path)
@@ -1353,7 +1412,8 @@ class TypeScriptEngine(MirroredEngine):
         if self.version is None:
             return None
         modules = self.project_root / "node_modules"
-        packages = f"node_modules={modules.stat().st_mtime_ns}" if modules.is_dir() else f"npm={npm_key(self.project_root)}"
+        packages = f"node_modules={modules.stat().st_mtime_ns}" if modules.is_dir() else \
+            "npm=" + ",".join(str(npm_key(directory)) for directory in package_directories(self.project_root))
         return f"{self.identity()}|{packages}"
 
     def report(self) -> dict:
@@ -3323,6 +3383,127 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
     }
 
 
+ENVIRONMENT_MIN_FREE = 3 * 2**30
+_REQUIREMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*(\[[^\]]*\])?\s*([<>=!~].*)?$")
+
+
+def python_manifests(project_root: Path, names) -> list[str]:
+    """The snapshot's files that declare Python packages: lockfiles, pyproject and requirements files."""
+    found = []
+    for name in names:
+        base = PurePosixPath(name).name
+        if base in ("pyproject.toml", "uv.lock") or (base.startswith("requirements") and base.endswith(".txt")):
+            if (project_root / name).is_file():
+                found.append(name)
+    return sorted(found)
+
+
+def _declared_requirements(project_root: Path, manifests: list[str], uv: str) -> list[str]:
+    """Requirement lines the manifests declare, read without running anything of the project.
+
+    A lockfile is exported from a copy of its two files; a pyproject without one gives
+    its dependency tables; a requirements file gives its package lines. Editable
+    installs, local paths, URLs and includes are left out: they are project code or
+    need it.
+    """
+    import tomllib
+    lines: list[str] = []
+    for name in manifests:
+        path, base = project_root / name, PurePosixPath(name).name
+        if base == "uv.lock":
+            continue
+        if base == "pyproject.toml":
+            exported = None
+            if (path.parent / "uv.lock").is_file():
+                with tempfile.TemporaryDirectory(prefix="daodan-lock-") as copy:
+                    for item in ("pyproject.toml", "uv.lock"):
+                        shutil.copyfile(path.parent / item, Path(copy) / item)
+                    done = subprocess.run(
+                        [uv, "export", "--frozen", "--no-emit-project", "--no-emit-workspace", "--all-groups",
+                         "--all-extras", "--no-hashes", "--no-header", "--format", "requirements-txt"],
+                        cwd=copy, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
+                    exported = done.stdout.splitlines() if done.returncode == 0 else None
+            if exported is None:
+                try:
+                    data = tomllib.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    data = {}
+                project = data.get("project") or {}
+                exported = list(project.get("dependencies") or [])
+                for table in (project.get("optional-dependencies") or {}, data.get("dependency-groups") or {}):
+                    for values in table.values():
+                        exported += [value for value in values if isinstance(value, str)]
+                poetry = ((data.get("tool") or {}).get("poetry") or {}).get("dependencies") or {}
+                exported += [package for package in poetry if package.lower() != "python"]
+            lines += exported
+        else:
+            try:
+                lines += path.read_text(encoding="utf-8", errors="replace").splitlines()
+            except OSError:
+                pass
+    kept = []
+    for line in lines:
+        line = line.split(" #")[0].strip()
+        if line and not line.startswith(("#", "-", ".", "/")) and "://" not in line and " @ " not in line \
+                and _REQUIREMENT.match(line.split(";")[0].strip()):
+            kept.append(line)
+    return sorted(set(kept))
+
+
+def python_environment(project_root: Path, names) -> Path | None:
+    """The project's declared Python packages in an environment of the shared directory.
+
+    Built once per set of manifests and interpreter, from wheels only: no package
+    build script and no project code runs, and nothing is written into the project.
+    None when the project declares no package, uv is missing, the disk is short or
+    no package could be installed.
+    """
+    project_root = Path(project_root).resolve()
+    manifests = python_manifests(project_root, names)
+    uv = shutil.which("uv")
+    if not manifests or uv is None:
+        return None
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    digest = hashlib.sha256(f"{version}\0{_platform()}\0".encode("utf-8"))
+    for name in manifests:
+        digest.update(name.encode("utf-8") + b"\0" + (project_root / name).read_bytes() + b"\0")
+    destination = shared_cache_dir() / "python" / digest.hexdigest()[:16]
+    marker = destination / "daodan-environment.json"
+    if marker.is_file():
+        return destination
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    free = shutil.disk_usage(destination.parent).free
+    if free < ENVIRONMENT_MIN_FREE:
+        print(f"the project's Python packages were not installed: {free / 2**30:.1f} GB free in "
+              f"{destination.parent}, at least {ENVIRONMENT_MIN_FREE / 2**30:.0f} GB are needed", flush=True)
+        return None
+    requirements = _declared_requirements(project_root, manifests, uv)
+    if not requirements:
+        return None
+    print(f"installing the project's Python packages into {destination} (first use)", flush=True)
+    shutil.rmtree(destination, ignore_errors=True)
+
+    def run(*arguments, timeout=1800):
+        return subprocess.run([uv, *arguments], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout)
+
+    if run("venv", str(destination), "--python", version).returncode != 0:
+        return None
+    install = ("pip", "install", "--python", str(destination), "--only-binary", ":all:")
+    listed = destination / "daodan-requirements.txt"
+    listed.write_text("\n".join(requirements) + "\n", encoding="utf-8")
+    installed = len(requirements)
+    if run(*install, "-r", str(listed)).returncode != 0:
+        # One package without a wheel must not cost the others.
+        installed = sum(1 for requirement in requirements if run(*install, requirement, timeout=600).returncode == 0)
+    if installed == 0:
+        shutil.rmtree(destination, ignore_errors=True)
+        return None
+    marker.write_text(json.dumps({"manifests": manifests, "requirements": len(requirements), "installed": installed,
+                                  "python": version}) + "\n", encoding="utf-8")
+    print(f"installed {installed} of {len(requirements)} declared Python packages", flush=True)
+    return destination
+
+
 def default_environments(project_root: Path) -> list[Path]:
     """The analyzed project's own environments, when it has one where projects keep it."""
     found = []
@@ -3817,7 +3998,8 @@ def main(argv: list[str] | None = None) -> int:
                              "directory also works, in added_sys_path mode. Repeatable; "
                              "populated environments beat empty stubs, then the "
                              "nearest serving scope wins per file. Default: the project's "
-                             ".venv or venv, or VIRTUAL_ENV")
+                             ".venv or venv, or VIRTUAL_ENV, else with --pass one built in the "
+                             "shared directory from the declared packages; `none` uses no environment")
     parser.add_argument("--limit", type=int, default=None,
                         help="ask about at most this many positions")
     parser.add_argument("--stride", type=int, default=1,
@@ -3847,8 +4029,19 @@ def main(argv: list[str] | None = None) -> int:
         project_root = (Path(store["root"]) / store["target"]).resolve()
         if project_root.is_file():
             project_root = project_root.parent
-    environments = [path.resolve() for path in (args.environment or default_environments(project_root))]
+    declined = any(str(path) == "none" for path in args.environment)
+    environments = [] if declined else [path.resolve() for path in (args.environment or default_environments(project_root))]
     if args.whole_pass:
+        if not environments and not declined:
+            # The detached pass is where a first install may take minutes.
+            with open_snapshot(manifest) as store:
+                names = [row[0] for row in store.connection.execute("SELECT file FROM sem_coverage")]
+            try:
+                prepared = python_environment(project_root, names)
+            except (OSError, subprocess.SubprocessError) as error:
+                print(f"the project's Python packages were not installed: {error}", flush=True)
+                prepared = None
+            environments = [prepared] if prepared is not None else []
         report = run_pass(manifest, (args.report_out or manifest.with_name(REPORT_NAME)).resolve(), environments)
         print(json.dumps({key: report[key] for key in ("available", "languages")}, indent=2, sort_keys=True))
         return 0 if report.get("available") else 1

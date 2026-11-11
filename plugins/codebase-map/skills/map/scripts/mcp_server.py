@@ -114,9 +114,10 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         return await _invoke(ctx, service.search, run_id, query, anchors=anchors, limit=limit)
 
     @server.tool(annotations=writes)
-    async def codebase_map_index(ctx: Context, run_id: str, check: bool = False, break_lock: bool = False) -> dict:
-        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind. Also reports the call-resolution engine store (fresh, sampled, running, missing, stale, failed, unavailable) and, unless check is true, restarts its pass when it is not fresh or running."""
-        return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock)
+    async def codebase_map_index(ctx: Context, run_id: str, check: bool = False, break_lock: bool = False,
+                                 environment: str | None = None) -> dict:
+        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind. Also reports the call-resolution engine store (fresh, sampled, running, missing, stale, failed, unavailable) and, unless check is true, restarts its pass when it is not fresh or running. environment is the project's Python environment for a pass that starts: omitted or auto, the project's own or one Daodan builds once in its shared directory from the declared packages (wheels only, no project code); a path uses that environment; none uses no environment."""
+        return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock, environment=environment)
 
     @server.tool(annotations=read_only)
     async def codebase_map_read(ctx: Context, run_id: str, requests: list[dict]) -> dict:

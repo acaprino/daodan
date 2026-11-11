@@ -280,12 +280,18 @@ class MapService:
             result["engine"] = self._engine(state, manifest.path, repair=False)
         return result
 
-    def _engine(self, state, manifest, *, repair):
-        """The run's engine store, repaired when asked, unless the run declined the pass."""
+    def _engine(self, state, manifest, *, repair, environment=None):
+        """The run's engine store, repaired when asked, unless the run declined the pass.
+
+        `environment` is the project's Python environment for a pass that starts now:
+        a path, `none`, or nothing for the one Daodan finds or builds."""
         if state.get("engine", True) is False:
             return {"state": "off", "action": "none", "reason": "the run was created with engine=false",
                     "resolution": resolve_edges.edge_state(manifest).get("resolution")}
-        return resolve_edges.ensure_edges(manifest) if repair else resolve_edges.edge_state(manifest)
+        if not repair:
+            return resolve_edges.edge_state(manifest)
+        offered = None if environment in (None, "auto") else [Path(environment)]
+        return resolve_edges.ensure_edges(manifest, environments=offered)
 
     def _update_state(self, run, updates, *, remove=()):
         # Workers write state.json outside the service lock. Re-read just
@@ -471,16 +477,19 @@ class MapService:
                                       verify=False)
             return {**retrieval.public_result(result), "run_id": run_id, "index_state": "fresh"}
 
-    def index(self, run_id, check=False, break_lock=False):
+    def index(self, run_id, check=False, break_lock=False, environment=None):
         """Report or repair the run's lexical index beside its snapshot."""
         if not isinstance(check, bool) or not isinstance(break_lock, bool):
             raise ValueError("check and break_lock must be booleans")
+        if environment is not None and (not isinstance(environment, str) or not environment.strip()
+                                        or len(environment) > 1000):
+            raise ValueError("environment must be auto, none or the path of a Python environment")
         with self._operation(write=not check):
             run, state, manifest, _ = self._bound_run(run_id)
             result = retrieval.ensure_index(manifest.path, check=check, break_lock=break_lock)
             if not check and result.get("action") in ("rebuilt", "refreshed"):
                 self._event(run, "index_refreshed", message=result["action"])
-            engine = self._engine(state, manifest.path, repair=not check)
+            engine = self._engine(state, manifest.path, repair=not check, environment=environment)
             if not check:
                 self._engine_event(run, engine)
             return {**result, "engine": engine, "run_id": run_id}

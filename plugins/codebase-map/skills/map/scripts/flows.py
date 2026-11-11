@@ -421,8 +421,17 @@ def _keys(spec: str, call, facts) -> list[str] | None:
         if member:
             return [member.group(1)]
         unpacked = _UNPACKED.search(call["before"])
-        return [name.split(":")[0].strip() for name in unpacked.group(1).split(",")
-                if name.strip() and not name.strip().startswith("...")] if unpacked else None
+        if unpacked:
+            return [name.split(":")[0].strip() for name in unpacked.group(1).split(",")
+                    if name.strip() and not name.strip().startswith("...")]
+        # The whole value held in a variable: its keys are the properties read on that variable
+        # inside the function that holds it.
+        holder, owner = _HOLDER.search(call["before"]), facts.enclosing(call["file"], call["line"])
+        if holder is None or owner is None:
+            return None
+        lines = (facts.source.lines(call["file"]) or [])[call["line"] - 1:owner["end"] or call["line"]]
+        read = re.compile(r"(?<![\w$.])" + re.escape(holder.group(1)) + r"\s*\??\.\s*([A-Za-z_$][\w$]*)")
+        return list(dict.fromkeys(name for line in lines for name in read.findall(line))) or None
     if _ARG.match(spec):
         value = _value(spec, call, facts)
         return [value] if value is not None else None
@@ -474,7 +483,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             if args is None:
                 gaps.append({"site": site, "reason": "call arguments not readable"})
                 continue
-            call = {"file": ref["file"], "parts": parts, "args": args, "text": text,
+            call = {"file": ref["file"], "line": span[0], "parts": parts, "args": args, "text": text,
                     "before": facts.source.before(ref["file"], span[0], span[1])}
             for rule in matched:
                 owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else caller
@@ -492,7 +501,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                             accesses.append({"symbol": owner, "link": link, "store": rule["store"], "key": key, "site": site})
                         elif len(found) > 1:
                             gaps.append({"site": site, "symbol": owner, "reason": f"{rule['store']}/{key}: several functions"})
-                        elif (holder := _HOLDER.search(call["before"])) and len(keys) == 1:
+                        elif (holder := _HOLDER.search(call["before"])) and len(keys) == 1 and rule["key"] == "selector":
                             held[(ref["file"], holder.group(1))] = found[0]
                         elif _UNPACKED.search(call["before"]):
                             held[(ref["file"], key)] = found[0]

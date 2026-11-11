@@ -108,7 +108,9 @@ class WrittenRuleTests(unittest.TestCase):
         "web/store.ts": ("import { create } from 'state-lib';\n"
                          "export const useStore = create((set, get) => ({\n  count: 0,\n"
                          "  add: (n: number) => set((s) => ({ count: s.count + n })),\n"
-                         "  reset: () => {\n    if (get().count === 0) return;\n    set({ count: 0 });\n  },\n}));\n"),
+                         "  reset: () => {\n    if (get().count === 0) return;\n    set({ count: 0 });\n  },\n}));\n"
+                         "export function report(): string {\n  const state = useStore.getState();\n"
+                         "  if (state.count > 9) state.reset();\n  return `${state.count}`;\n}\n"),
         "web/urls.ts": "const BASE = '/api';\nexport const SAVE_URL = `${BASE}/save`;\n",
         "web/view.tsx": ("import { useStore } from './store';\nimport { SAVE_URL } from './urls';\n"
                          "declare function post(url: string, body: unknown): void;\n"
@@ -125,6 +127,8 @@ class WrittenRuleTests(unittest.TestCase):
     RULES = [
         {"written": "useStore", "in": ["web"], "link": "legge", "store": "state", "key": "selector", "actions_in": ["web/store.ts"]},
         {"written": "get", "in": ["web/store.ts"], "link": "legge", "store": "state", "key": "member"},
+        {"written": "useStore.getState", "in": ["web"], "link": "legge", "store": "state", "key": "member",
+         "actions_in": ["web/store.ts"]},
         {"written": "set", "in": ["web/store.ts"], "link": "scrive", "store": "state", "key": "object"},
         {"written": "post", "in": ["web"], "link": "rotta", "strip": "${BASE}",
          "route": {"service": "api", "method": "POST", "path": "arg0"}},
@@ -161,7 +165,10 @@ class WrittenRuleTests(unittest.TestCase):
     def test_a_store_function_is_named_by_its_property_and_keyed_by_what_it_returns(self):
         self.assertEqual(self.links["stores"]["state/count"],
                          {"writes": ["web/store.ts::add", "web/store.ts::reset"],
-                          "reads": ["web/store.ts::reset", "web/view.tsx::View"]})
+                          "reads": ["web/store.ts::report", "web/store.ts::reset", "web/view.tsx::View"]})
+
+    def test_a_state_held_whole_gives_the_properties_read_on_its_variable(self):
+        self.assertIn(("web/store.ts::report", "web/store.ts::reset"), self.edges("chiama"))
 
     def test_a_held_store_function_is_called_where_its_variable_is(self):
         self.assertIn(("web/view.tsx::View", "web/store.ts::add"), self.edges("attiva"))

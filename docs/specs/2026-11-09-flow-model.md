@@ -48,7 +48,7 @@ Un flusso non introduce entità nuove: i suoi nodi sono i simboli e i moduli che
 
 ### 1. Collegamenti dedotti
 
-1. Il modello legge il progetto una volta e scrive una tabella di regole di collegamento. Una regola dice come si riconosce chi offre e chi usa: «lo stato globale si legge con `<hook>`», «le chiamate al servizio passano da `<client>`, con gli URL di `<file>`», «la tabella `<nome>` si scrive solo da `<modulo>`».
+1. Il modello legge il progetto una volta e scrive una tabella di regole di collegamento. Una regola dice come si riconosce chi offre e chi usa: «lo stato globale si legge con `<hook>`», «le chiamate al servizio passano da `<client>`, con gli URL di `<file>`», «la tabella `<nome>` si scrive solo da `<modulo>`». Una regola indica il costrutto in uno di tre modi: una funzione del progetto; una chiamata così come è scritta, quando passa da un oggetto di libreria (`router.post`, `db.<collezione>.find_one`), limitata a un insieme di cartelle; un attributo del markup che lega un'azione al suo handler.
 2. La macchina applica la tabella a tutto il sorgente: elenca chi offre e chi usa, e li accoppia sull'identità riconosciuta. Ogni regola precisa cosa confrontare: store o collezione e campo/chiave del dato; servizio, metodo e URL per una rotta. Condividere lo store o il solo nome non basta: scrivere `store.theme` non collega a chi legge `store.cart`.
 3. Ogni coppia riconosciuta diventa un collegamento dedotto, con la sua evidenza. Identità ambigue, accessi dinamici non risolti e accessi spaiati restano lacune dichiarate: non diventano collegamenti. Il modello si prova in `benchmarks/flow-model/` prima di esporre `codebase_map_flows`.
 4. Un nodo senza codice è un modulo `external`: lo dichiara il progetto o lo propone il modello, con la sua evidenza. Il collegamento che lo raggiunge è dichiarato, non ricavato dal sorgente. Se il modulo è solo proposto, anche il collegamento resta `inferred`.
@@ -62,7 +62,19 @@ Su richiesta, il modello legge un collegamento `scrive` o `legge` e ne scrive gr
 
 Servono a vedere quando chi scrive e chi legge lo stesso store intendono granularità diverse: il caso misurato è in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md).
 
-### 3. Unità
+### 3. Lettura del flusso da parte del modello
+
+La macchina trova dove passa un dato; cosa significa lo dice il modello, che legge la strada già tracciata e non il codice intero.
+
+1. **Dalla domanda ai punti di partenza.** Per «dove va questo dato» il modello cerca dove il dato vive, cioè il campo del form, la chiave dello stato, la colonna o la collezione, e li consegna come punti di partenza.
+2. **La macchina traccia** i collegamenti da quei punti, senza modello.
+3. **Il modello riceve l'elenco dei passaggi:** nodi, tipo di nodo, tipo di collegamento ed evidenza. Apre il sorgente solo dove il dato si scrive, si legge o si trasforma.
+4. **Il modello scrive la scheda del flusso:** nome, tipo (dati, UX, servizio, dispositivo, misto), rami principali e secondari, cosa accade al dato a ogni tappa, dove vive. Ogni frase cita un passaggio dell'elenco: ciò che l'elenco non contiene non entra nella scheda.
+5. **All'inizio di un progetto** il modello riceve i punti d'ingresso trovati dalla macchina e sceglie i flussi principali, con nome e tipo; gli altri restano interrogabili.
+
+La scheda è legata ai digest dei simboli del flusso e segue la freschezza delle schede: si rilegge solo se uno di quei simboli cambia.
+
+### 4. Unità
 
 1. **Il modello legge la richiesta** e dichiara in `00-scope.md` che cosa è nominato, i punti di partenza con i riferimenti della mappa, il perimetro e il contesto. Per una funzionalità include i diversi punti d'ingresso pertinenti. Rispetta i confini che la richiesta dichiara. Chiede solo se due letture cambiano correttezza o costo.
 
@@ -86,7 +98,7 @@ Servono a vedere quando chi scrive e chi legge lo stesso store intendono granula
 
 Un flusso fra strati richiede la mappa di tutti gli strati che attraversa, con i collegamenti `chiama` presenti per i loro linguaggi.
 
-### 4. Livelli
+### 5. Livelli
 
 Un flusso è uno solo; si guarda a livelli diversi, come le viste Logica e Fisica dell'esploratore.
 
@@ -100,11 +112,11 @@ Un flusso è uno solo; si guarda a livelli diversi, come le viste Logica e Fisic
 
 Una contrazione conserva consultabili i collegamenti originali. Un simbolo senza modulo resta un simbolo: nessuna appartenenza viene inventata.
 
-### 5. Interrogazione
+### 6. Interrogazione
 
 `codebase_map_flows` con una di tre domande e un livello: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un nodo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti, dedotti o dichiarati, con granularità, significato, freschezza, lacune e ciò che resta da esplorare. Distingue un flusso incompleto da un flusso completo diviso in più unità.
 
-### 6. Chi usa flussi e unità
+### 7. Chi usa flussi e unità
 
 - **Esploratore:** un flusso scelto evidenzia i suoi nodi al livello della vista; un nodo elenca i flussi che lo attraversano. Ogni nodo mostra un'icona generica per il suo tipo e se è interno o esterno. `daodan/visual@1` ottiene un elenco `flows`.
 - **Mappa funzionale:** l'elenco delle funzionalità con i loro flussi, per chi non legge il codice. `03-flows.md` si genera da qui.
