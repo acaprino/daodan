@@ -131,9 +131,10 @@ def _unresolved(manifest: Path) -> dict:
                        "top_unresolved": callees[language].most_common(25)} for language in verdicts}
 
 
-@app.function(cpu=4, memory=16384, timeout=3600, volumes={"/results": volume})
-def flow_links(name: str, case: dict, archive: bytes, rules: str, tag: str = "") -> dict:
-    """The links `flows.py` deduces on a case from its rules, on a snapshot without the engine pass."""
+@app.function(cpu=4, memory=16384, timeout=3 * 3600, volumes={"/results": volume})
+def flow_links(name: str, case: dict, archive: bytes, rules: str, tag: str = "", engine: bool = False,
+               label: str = "") -> dict:
+    """The links `flows.py` deduces on a case from its rules, with or without the engine pass."""
     import io
     import sys
     import tarfile
@@ -149,13 +150,16 @@ def flow_links(name: str, case: dict, archive: bytes, rules: str, tag: str = "")
     manifest = work / "snapshot/manifest.sqlite"
     _run([sys.executable, "/daodan/scripts/snapshot.py", "write", str(source / case["target"]),
           "--out", str(manifest), "--no-engine", "--no-index"])
+    if engine:
+        _run([sys.executable, "/daodan/scripts/resolve_edges.py", str(manifest), "--pass",
+              "--report-out", str(work / "engine-report.json")])
     (work / "rules.json").write_text(rules, encoding="utf-8")
     sys.path.insert(0, "/daodan/scripts")
     import flows
     links = flows.link_facts(manifest, flows.load_rules(work / "rules.json"))
     links["sizes"] = flows.file_sizes(manifest)
     if tag:
-        out = Path("/results") / tag / f"flow-links-{name}.json"
+        out = Path("/results") / tag / f"flow-links-{name}{label}.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(links, sort_keys=True), encoding="utf-8")
         volume.commit()
@@ -163,8 +167,10 @@ def flow_links(name: str, case: dict, archive: bytes, rules: str, tag: str = "")
 
 
 @app.local_entrypoint()
-def flows(phazly_tar: str, rules: str, out: str, case: str = "phazly", tag: str = ""):
-    result = flow_links.remote(case, CASES[case], Path(phazly_tar).read_bytes(), Path(rules).read_text(encoding="utf-8"), tag)
+def flows(phazly_tar: str, rules: str, out: str, case: str = "phazly", tag: str = "", engine: bool = False,
+          label: str = ""):
+    result = flow_links.remote(case, CASES[case], Path(phazly_tar).read_bytes(),
+                               Path(rules).read_text(encoding="utf-8"), tag, engine, label)
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     Path(out).write_text(json.dumps(result, sort_keys=True), encoding="utf-8")
     print(case, len(result["edges"]), "edges", len(result["stores"]), "stores", len(result["entries"]), "entries",

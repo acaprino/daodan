@@ -10,7 +10,8 @@ says where a construct is and what it means.
 
 Where, one of:
 
-- `callee`: `file::name`, a project function the call resolves to.
+- `callee`: `file::name`, a project function the call resolves to, or a value of that
+  name declared there and called by its name (a store hook a library creates).
 - `written`: the callee as written, dotted, for calls that go through a library
   object (`router.post`, `db.*.find_one|find`); `*` is any part, `|` separates
   alternatives. `in` restricts it to path prefixes.
@@ -62,6 +63,8 @@ LINKS_SCHEMA = "daodan/flow-links/v1"
 FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
+_FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "actions_in", "route", "strip",
+           "decorates", "handler", "entry"}
 _ARG = re.compile(r"(arg|part)(\d+)$")
 _IDENT = re.compile(r"[A-Za-z_$][\w$]*$")
 _STRING = re.compile(r"""(['"`])((?:\\.|(?!\1).)*)\1$""", re.S)
@@ -98,8 +101,11 @@ def load_rules(path: Path) -> list[dict]:
         missing = [name for name in need if not rule.get(name)]
         if missing:
             raise ValueError(f"{where}: {rule['link']} needs {', '.join(missing)}")
-        if rule["link"] in ("rotta", "offre") and not {"service", "method", "path"} <= set(rule["route"]):
-            raise ValueError(f"{where}: route needs service, method and path")
+        if rule["link"] in ("rotta", "offre") and set(rule["route"]) != {"service", "method", "path"}:
+            raise ValueError(f"{where}: route has exactly service, method and path")
+        unknown = sorted(set(rule) - _FIELDS)
+        if unknown:
+            raise ValueError(f"{where}: unknown field {', '.join(unknown)}")
     return payload["rules"]
 
 
@@ -354,14 +360,16 @@ class Facts:
         """A function of that name declared inside a function that holds `line`, else at module level."""
         inside = []
         for declaration in self.functions.get(file, ()):
-            if declaration["name"] != name:
+            if declaration["name"] != name or declaration.get("contract"):
                 continue
             holder = self.enclosing(file, declaration["line"], skip=declaration["id"])
             if holder is not None and holder["line"] <= line <= (holder["end"] or holder["line"]):
                 inside.append(declaration)
         if inside:
             return self.node(max(inside, key=lambda d: d["line"])["id"])
-        found = self.targets(name, file, -1, -1, ("function", "method"))
+        # A method an interface declares is a contract, not the function that handles the action.
+        found = [target for target in self.targets(name, file, -1, -1, ("function", "method"))
+                 if not self.declarations[target].get("contract")]
         return self.node(found[0]) if found else None
 
     def property_functions(self, prefixes) -> dict[str, list[str]]:
@@ -470,6 +478,10 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             parts = [str(part) for part in ref.get("parts") or []]
             if target and caller:
                 calls.append({"from": caller, "to": facts.node(ref["target_id"]), "site": site})
+            if target is None and len(parts) == 1 and parts[0] in wanted:
+                # A callable value: the call names the binding the rule names.
+                holders = facts.targets(parts[0], ref["file"], -1, -1, ("binding",))
+                target = facts.named(holders[0]) if holders else None
             matched = by_callee.get(target or "", []) + [rule for rule in written if _written(rule, parts, ref["file"])]
             if not matched:
                 if ref["resolution"] != "resolved":

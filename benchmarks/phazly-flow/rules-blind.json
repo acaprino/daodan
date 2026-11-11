@@ -1,0 +1,22 @@
+{
+  "schema": "daodan/flow-rules/v1",
+  "rules": [
+    {"callee": "react-app/src/stores/appStore.ts::useAppStore", "link": "legge", "store": "app state", "key": "selector", "actions_in": ["react-app/src/stores/slices", "react-app/src/stores/appStore.ts"]},
+    {"written": "useAppStore.getState", "in": ["react-app/src"], "link": "legge", "store": "app state", "key": "member", "actions_in": ["react-app/src/stores/slices", "react-app/src/stores/appStore.ts"]},
+    {"written": "useAppStore.setState", "in": ["react-app/src"], "link": "scrive", "store": "app state", "key": "object"},
+    {"written": "set", "in": ["react-app/src/stores/slices", "react-app/src/stores/appStore.ts"], "link": "scrive", "store": "app state", "key": "object"},
+    {"callee": "react-app/src/stores/plannerStore.ts::usePlannerStore", "link": "legge", "store": "planner state", "key": "selector", "actions_in": ["react-app/src/stores/plannerStore.ts"]},
+    {"written": "usePlannerStore.getState", "in": ["react-app/src"], "link": "legge", "store": "planner state", "key": "member", "actions_in": ["react-app/src/stores/plannerStore.ts"]},
+    {"written": "set", "in": ["react-app/src/stores/plannerStore.ts"], "link": "scrive", "store": "planner state", "key": "object"},
+    {"callee": "react-app/src/utils/apiClient.ts::apiPost", "link": "rotta", "route": {"service": "api", "method": "POST", "path": "arg0", "strip": "${API_BASE_URL}"}},
+    {"callee": "react-app/src/utils/apiClient.ts::apiPostUnwrap", "link": "rotta", "route": {"service": "api", "method": "POST", "path": "arg0", "strip": "${API_BASE_URL}"}},
+    {"callee": "react-app/src/utils/apiClient.ts::apiGet", "link": "rotta", "route": {"service": "api", "method": "GET", "path": "arg0", "strip": "${API_BASE_URL}"}},
+    {"written": "router.post", "in": ["functions-python/app/handlers"], "link": "offre", "decorates": true, "route": {"service": "api", "method": "POST", "path": "arg0"}},
+    {"written": "router.get", "in": ["functions-python/app/handlers"], "link": "offre", "decorates": true, "route": {"service": "api", "method": "GET", "path": "arg0"}},
+    {"written": "db.*.find_one|find|aggregate|count_documents", "in": ["functions-python/app"], "link": "legge", "store": "db", "key": "part1"},
+    {"written": "db.*.insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write|find_one_and_update", "in": ["functions-python/app"], "link": "scrive", "store": "db", "key": "part1"},
+    {"written": "self._db.*.find_one|find|aggregate|count_documents", "in": ["functions-python/app"], "link": "legge", "store": "db", "key": "part2"},
+    {"written": "self._db.*.insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write|find_one_and_update", "in": ["functions-python/app"], "link": "scrive", "store": "db", "key": "part2"},
+    {"attribute": "on*", "in": ["react-app/src", "shared/ui"], "link": "attiva"}
+  ]
+}

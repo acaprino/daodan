@@ -114,18 +114,19 @@ class WrittenRuleTests(unittest.TestCase):
         "web/urls.ts": "const BASE = '/api';\nexport const SAVE_URL = `${BASE}/save`;\n",
         "web/view.tsx": ("import { useStore } from './store';\nimport { SAVE_URL } from './urls';\n"
                          "declare function post(url: string, body: unknown): void;\n"
-                         "export function View(props: { onClose: () => void }) {\n"
+                         "interface Props { onClose: () => void; onPick(id: string): void }\n"
+                         "export function View(props: Props) {\n  const { onPick } = props;\n"
                          "  const count = useStore((s) => s.count);\n  const add = useStore((s) => s.add);\n"
                          "  const save = () => {\n    post(SAVE_URL, { count });\n  };\n"
                          "  return (\n    <div>\n      <button onClick={() => add(1)}>+</button>\n"
-                         "      <button onClick={save}>save</button>\n      <button onClick={props.onClose}>x</button>\n"
+                         "      <button onClick={save}>save</button>\n      <button onClick={props.onClose}>x</button>\n      <button onClick={onPick}>p</button>\n"
                          "      {count}\n    </div>\n  );\n}\n"),
         "api/handlers.py": ("from lib import APIRouter, db\n\nrouter = APIRouter()\n\n\n@router.post(\"/save\")\n"
                             "async def save(body):\n    await db.counters.update_one({}, body)\n\n\n"
                             "async def total():\n    return await db.counters.find_one({})\n"),
     }
     RULES = [
-        {"written": "useStore", "in": ["web"], "link": "legge", "store": "state", "key": "selector", "actions_in": ["web/store.ts"]},
+        {"callee": "web/store.ts::useStore", "link": "legge", "store": "state", "key": "selector", "actions_in": ["web/store.ts"]},
         {"written": "get", "in": ["web/store.ts"], "link": "legge", "store": "state", "key": "member"},
         {"written": "useStore.getState", "in": ["web"], "link": "legge", "store": "state", "key": "member",
          "actions_in": ["web/store.ts"]},
@@ -161,6 +162,16 @@ class WrittenRuleTests(unittest.TestCase):
 
     def edges(self, kind):
         return {(edge["from"], edge["to"]) for edge in self.links["edges"] if edge["type"] == kind}
+
+    def test_a_misplaced_or_unknown_field_is_refused_by_name(self):
+        rules = self.work / "bad.json"
+        for rule, message in (
+                ({"written": "post", "link": "rotta", "route": {"service": "a", "method": "GET", "path": "arg0", "strip": "x"}},
+                 "exactly service, method and path"),
+                ({"written": "post", "link": "legge", "store": "s", "key": "arg0", "within": ["web"]}, "unknown field within")):
+            rules.write_text(json.dumps({"schema": flows.RULES_SCHEMA, "rules": [rule]}), encoding="utf-8")
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                flows.load_rules(rules)
 
     def test_a_store_function_is_named_by_its_property_and_keyed_by_what_it_returns(self):
         self.assertEqual(self.links["stores"]["state/count"],

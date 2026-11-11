@@ -1,0 +1,47 @@
+{
+  "entries": {
+    "azione": 123,
+    "rotta": 111
+  },
+  "edges": {
+    "attiva dedotto": 150,
+    "chiama dedotto": 213,
+    "chiama diretto": 6704,
+    "legge dedotto": 346,
+    "scrive dedotto": 435
+  },
+  "routes": {
+    "called": 32,
+    "linked": 32,
+    "offered": 111
+  },
+  "stores": {
+    "total": 123,
+    "by_store": {
+      "app state": 75,
+      "db": 38,
+      "planner state": 10
+    },
+    "with_writers_and_readers": 68,
+    "only_written": 37,
+    "only_read": 18
+  },
+  "flows": {
+    "total": 234,
+    "reach_a_store": 59,
+    "cross_layer": 10,
+    "single_node": 122,
+    "largest_nodes": 78,
+    "incomplete": 35
+  },
+  "gaps": {
+    "legge app state: key not a literal": 39,
+    "scrive app state: key not a literal": 5,
+    "rotta call outside a named symbol": 3,
+    "legge call outside a named symbol": 3,
+    "call arguments not readable": 3,
+    "scrive call outside a named symbol": 2,
+    "legge planner state: key not a literal": 1,
+    "rotta": 1
+  }
+}

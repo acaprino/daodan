@@ -62,18 +62,25 @@ Limite: due run per A, una per B, un modello, permessi ristretti. **La mappa non
 
 ## Flussi dalle regole di collegamento, 11 novembre 2026
 
-Prima applicazione di `flows.py` a un'app reale. Regole in `rules.json` (14, scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB). Snapshot senza passaggio del motore, su Modal; riepilogo in `results/flow-links-summary.json`.
+Prima applicazione di `flows.py` a un'app reale, su Modal, snapshot senza passaggio del motore. Due insiemi di regole sullo stesso snapshot:
 
-| Misura | Valore |
-| --- | --- |
-| Punti d'ingresso | 330: 219 azioni dell'utente, 111 rotte |
-| Chiamate del client a una rotta | 46, tutte collegate al loro handler |
-| Store | 123: 75 campi dello stato, 38 collezioni, 10 campi dello stato del planner |
-| Store con chi scrive e chi legge | 64; solo scritti 41, solo letti 18 |
-| Flussi | 330: 58 arrivano a uno store, 9 attraversano interfaccia e servizio, 217 restano di un solo nodo |
-| Lacune dichiarate | 88: 67 letture dello stato tenuto intero in una variabile |
+- `rules.json`: 14 regole scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB.
+- `rules-blind.json`: 17 regole scritte da un agente senza contesto, con il solo formato e il sorgente (circa 25 letture). Così come scritte sono rifiutate: `strip` stava dentro `route`. Misurate dopo aver spostato quel campo, senza altre modifiche.
 
-- 217 flussi di un solo nodo: il punto d'ingresso chiama funzioni che lo snapshot non risolve (TypeScript 26% con il motore, qui solo lessicale).
-- Solo 9 flussi attraversano i due strati benché le rotte collegate siano 46: le chiamate alle API stanno in servizi e hook che le azioni raggiungono attraverso chiamate non risolte.
-- `const state = useAppStore.getState()` seguito da `state.campo` non dà la chiave: 67 lacune, e campi come `favoriteFoods` risultano senza lettori.
-- Le regole sono scritte da un modello che ha visto il codice, non da un modello cieco con un mandato fisso: la misura con regole scritte alla cieca resta da fare.
+Riepiloghi in `results/` (`python benchmarks/phazly-flow/summarize.py LINKS.json`).
+
+| Misura | `rules.json` | `rules-blind.json` |
+| --- | --- | --- |
+| Punti d'ingresso | 234: 123 azioni, 111 rotte | 234: 123 azioni, 111 rotte |
+| Chiamate del client collegate a una rotta | 46 su 46 | 32 |
+| Store | 123: 75 campi dello stato, 38 collezioni, 10 campi del planner | 123, gli stessi |
+| Store con chi scrive e chi legge | 70 | 68 |
+| Flussi che arrivano a uno store | 59 | 59 |
+| Flussi fra interfaccia e servizio | 11 | 10 |
+| Flussi di un solo nodo | 121 | 122 |
+| Lacune dichiarate | 60 | 57 |
+
+- Un modello scrive le regole da solo: le due colonne differiscono solo sulle rotte. L'agente ha nominato il client delle API come funzione del progetto (`callee`), che non vale per le chiamate importate con un alias di percorso; `written` le prende tutte.
+- I flussi di un solo nodo sono punti d'ingresso che chiamano funzioni non risolte dal risolutore lessicale: 51 rotte chiamano i servizi come attributo di un modulo importato, 70 azioni chiamano funzioni ricevute o importate con alias. Serve il passaggio del motore.
+- Le lacune restanti sono 39 letture dello stato con un selettore non letterale e scritture con chiave calcolata.
+- Correzioni nate da questa misura, ciascuna con un test in `tests/test_codebase_map_flows.py`: lo stato tenuto intero in una variabile, il metodo di un'interfaccia non preso per handler, il campo sconosciuto rifiutato per nome, il valore chiamabile nominato da `callee`.
