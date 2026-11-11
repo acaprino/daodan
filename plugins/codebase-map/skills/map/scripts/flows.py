@@ -21,7 +21,9 @@ What (`link`):
 
 - `scrive` / `legge`: a store access. `key` is `argN`, `partN` (a written part),
   `selector` (`s => s.field`), `object` (`{field: ...}`, also returned by a function
-  argument) or `member` (the property read on the call's result). With `actions_in`
+  argument), `member` (the property read on the call's result) or `holder` (the
+  call is made on a handle assigned in the same file as `handle = store.key` or
+  `handle = store[KEY]`; a receiver with no such assignment is not this store). With `actions_in`
   a key naming a function declared as a property under those prefixes is a call to
   it, also through the variable that holds it.
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
@@ -423,7 +425,33 @@ def _value(spec, call, facts, strip: str = ""):
     return None if value is None or "${" in value else value
 
 
+_HANDLE = re.compile(r"=\s*(?:await\s+)?[A-Za-z_$][\w$.]*?(?:\.([A-Za-z_$][\w$]*)|\[\s*([^\]]+?)\s*\])\s*(?:#.*|//.*|;)?$")
+
+
+def _handle_key(call, facts) -> str | None:
+    """The key of the store handle a call is made on: `handle = store.key` or `handle = store[KEY]`,
+    assigned in the same file."""
+    receiver = ".".join(call["parts"][:-1])
+    if not receiver:
+        return None
+    assigned = re.compile(r"(?<![\w$.])" + re.escape(receiver) + r"\s*(?::[^=]*)?(?==[^=])")
+    for number, line in enumerate(facts.source.lines(call["file"]) or [], 1):
+        found = assigned.search(line)
+        handle = _HANDLE.search(line[found.end():]) if found else None
+        if handle and handle.group(1):
+            return handle.group(1)
+        if handle:
+            column = len(line[:found.end() + handle.start(2)].encode("utf-8"))
+            value = facts.literal(handle.group(2), call["file"], number, column)
+            if value is not None and "${" not in value:
+                return value
+    return None
+
+
 def _keys(spec: str, call, facts) -> list[str] | None:
+    if spec == "holder":
+        key = _handle_key(call, facts)
+        return [key] if key else []
     if spec == "member":
         end = _enclosed(call["text"], call["text"].find("("))
         member = re.match(r"\s*\??\.\s*([A-Za-z_$][\w$]*)", call["text"][end:]) if end else None
@@ -518,6 +546,8 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                 link = rule["link"]
                 if link in ("scrive", "legge"):
                     keys = _keys(rule["key"], call, facts)
+                    if keys == []:
+                        continue  # the receiver is no handle of this store
                     if not keys:
                         gaps.append({"site": site, "symbol": owner, "reason": f"{link} {rule['store']}: key not a literal"})
                     for key in keys or []:

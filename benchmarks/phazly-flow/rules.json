@@ -14,6 +14,10 @@
     {"written": "router.get|post|put|delete|patch", "in": ["functions-python/app"], "link": "offre", "decorates": true, "route": {"service": "api", "method": "part1", "path": "arg0"}},
     {"written": "db.*.find_one|find|count_documents|aggregate|distinct|find_one_and_update", "in": ["functions-python/app"], "link": "legge", "store": "mongo", "key": "part1"},
     {"written": "db.*.insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write|find_one_and_update", "in": ["functions-python/app"], "link": "scrive", "store": "mongo", "key": "part1"},
+    {"written": "self.*.find_one|find|count_documents|aggregate|distinct|find_one_and_update", "in": ["functions-python/app"], "link": "legge", "store": "mongo", "key": "holder"},
+    {"written": "self.*.insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write|find_one_and_update", "in": ["functions-python/app"], "link": "scrive", "store": "mongo", "key": "holder"},
+    {"written": "*.find_one|find|count_documents|aggregate|distinct|find_one_and_update", "in": ["functions-python/app"], "link": "legge", "store": "mongo", "key": "holder"},
+    {"written": "*.insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write|find_one_and_update", "in": ["functions-python/app"], "link": "scrive", "store": "mongo", "key": "holder"},
     {"attribute": "on*", "in": ["react-app/src"], "link": "attiva"}
   ]
 }

@@ -124,6 +124,11 @@ class WrittenRuleTests(unittest.TestCase):
         "api/handlers.py": ("from lib import APIRouter, db\n\nrouter = APIRouter()\n\n\n@router.post(\"/save\")\n"
                             "async def save(body):\n    await db.counters.update_one({}, body)\n\n\n"
                             "async def total():\n    return await db.counters.find_one({})\n"),
+        "api/repository.py": ("from lib import db\n\nCOUNTERS = \"counters\"\n\n\nclass Repository:\n"
+                              "    def __init__(self, database):\n        self._collection = database[COUNTERS]\n\n"
+                              "    async def load(self):\n        return await self._collection.find_one({})\n\n\n"
+                              "async def audit(cache):\n    events = db.events\n    await events.find_one({})\n"
+                              "    return await cache.find_one({})\n"),
     }
     RULES = [
         {"callee": "web/store.ts::useStore", "link": "legge", "store": "state", "key": "selector", "actions_in": ["web/store.ts"]},
@@ -137,6 +142,8 @@ class WrittenRuleTests(unittest.TestCase):
          "route": {"service": "api", "method": "part1", "path": "arg0"}},
         {"written": "db.*.find_one", "in": ["api"], "link": "legge", "store": "db", "key": "part1"},
         {"written": "db.*.update_one", "in": ["api"], "link": "scrive", "store": "db", "key": "part1"},
+        {"written": "*.find_one", "in": ["api"], "link": "legge", "store": "db", "key": "holder"},
+        {"written": "self.*.find_one", "in": ["api"], "link": "legge", "store": "db", "key": "holder"},
         {"attribute": "on*", "in": ["web"], "link": "attiva"},
     ]
 
@@ -198,7 +205,10 @@ class WrittenRuleTests(unittest.TestCase):
     def test_a_templated_constant_reaches_the_decorated_route_and_its_collection(self):
         self.assertIn(("web/view.tsx::View.save", "api/handlers.py::save"), self.edges("chiama"))
         self.assertEqual(self.links["stores"]["db/counters"],
-                         {"writes": ["api/handlers.py::save"], "reads": ["api/handlers.py::total"]})
+                         {"writes": ["api/handlers.py::save"],
+                          "reads": ["api/handlers.py::total", "api/repository.py::Repository.load"]})
+        # A handle assigned from the store gives its key; a receiver never assigned from it is no access.
+        self.assertEqual(self.links["stores"]["db/events"], {"writes": [], "reads": ["api/repository.py::audit"]})
         flow = flows.trace(self.links, "web/view.tsx::View.save", "from")
         self.assertIn("api/handlers.py::total", flow["nodes"])
         self.assertEqual(self.links["gaps"], [])
