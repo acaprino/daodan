@@ -1,0 +1,51 @@
+{
+  "schema": "daodan/flow-links-summary/v1",
+  "commit": "46c92b28",
+  "rules": "benchmarks/phazly-flow/rules.json",
+  "volume": "daodan-flow-results/flows-20261111/flow-links-phazly.json",
+  "entries": {
+    "azione": 219,
+    "rotta": 111
+  },
+  "edges": {
+    "attiva dedotto": 270,
+    "chiama dedotto": 199,
+    "chiama diretto": 6704,
+    "legge dedotto": 290,
+    "scrive dedotto": 435
+  },
+  "routes": {
+    "called": 46,
+    "linked": 46,
+    "offered": 111
+  },
+  "stores": {
+    "total": 123,
+    "by_store": {
+      "app state": 75,
+      "mongo": 38,
+      "planner state": 10
+    },
+    "with_writers_and_readers": 64,
+    "only_written": 41,
+    "only_read": 18
+  },
+  "flows": {
+    "total": 330,
+    "reach_a_store": 58,
+    "cross_layer": 9,
+    "single_node": 217,
+    "largest_nodes": 62,
+    "incomplete": 35
+  },
+  "gaps": {
+    "legge app state: key not a literal": 67,
+    "scrive app state: key not a literal": 5,
+    "legge call outside a named symbol": 4,
+    "rotta": 3,
+    "rotta call outside a named symbol": 3,
+    "call arguments not readable": 3,
+    "scrive call outside a named symbol": 2,
+    "legge planner state: key not a literal": 1
+  }
+}

@@ -59,3 +59,21 @@ I reviewer vedono il difetto quando leggono chi scrive il fatto e cosa afferma l
 4. **Perimetro.** I lettori dello stesso fatto in altre aree restano fuori (G2 in A3).
 
 Limite: due run per A, una per B, un modello, permessi ristretti. **La mappa non aveva il grafo delle chiamate TypeScript:** nell'ambiente mancava `tree-sitter`, quindi i 412 file TS e TSX di `react-app` hanno simboli e import ma nessun riferimento di chiamata (le 202 chiamate dello snapshot sono tutte Python). La Phase 0 e i job hanno lavorato con ricerca, outline e lettura; le conclusioni su perimetro e roster valgono per questa condizione. Dopo A3b il problema di partenza è la variabilità del reviewer su un difetto sottile, prima ancora del consolidamento: la correzione del punto 3 non basta se il reviewer non scrive il trigger.
+
+## Flussi dalle regole di collegamento, 11 novembre 2026
+
+Prima applicazione di `flows.py` a un'app reale. Regole in `rules.json` (14, scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB). Snapshot senza passaggio del motore, su Modal; riepilogo in `results/flow-links-summary.json`.
+
+| Misura | Valore |
+| --- | --- |
+| Punti d'ingresso | 330: 219 azioni dell'utente, 111 rotte |
+| Chiamate del client a una rotta | 46, tutte collegate al loro handler |
+| Store | 123: 75 campi dello stato, 38 collezioni, 10 campi dello stato del planner |
+| Store con chi scrive e chi legge | 64; solo scritti 41, solo letti 18 |
+| Flussi | 330: 58 arrivano a uno store, 9 attraversano interfaccia e servizio, 217 restano di un solo nodo |
+| Lacune dichiarate | 88: 67 letture dello stato tenuto intero in una variabile |
+
+- 217 flussi di un solo nodo: il punto d'ingresso chiama funzioni che lo snapshot non risolve (TypeScript 26% con il motore, qui solo lessicale).
+- Solo 9 flussi attraversano i due strati benché le rotte collegate siano 46: le chiamate alle API stanno in servizi e hook che le azioni raggiungono attraverso chiamate non risolte.
+- `const state = useAppStore.getState()` seguito da `state.campo` non dà la chiave: 67 lacune, e campi come `favoriteFoods` risultano senza lettori.
+- Le regole sono scritte da un modello che ha visto il codice, non da un modello cieco con un mandato fisso: la misura con regole scritte alla cieca resta da fare.

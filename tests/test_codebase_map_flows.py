@@ -99,5 +99,86 @@ class FlowFixtureTests(unittest.TestCase):
         self.assertEqual(flows.units(self.links, sizes, ["."], 1_500), flows.units(self.links, sizes, ["."], 1_500))
 
 
+
+class WrittenRuleTests(unittest.TestCase):
+    """Constructs that pass through library objects: a store created by a library, markup
+    handlers, a decorated route on a router object, a collection reached by attribute."""
+
+    SOURCES = {
+        "web/store.ts": ("import { create } from 'state-lib';\n"
+                         "export const useStore = create((set, get) => ({\n  count: 0,\n"
+                         "  add: (n: number) => set((s) => ({ count: s.count + n })),\n"
+                         "  reset: () => {\n    if (get().count === 0) return;\n    set({ count: 0 });\n  },\n}));\n"),
+        "web/urls.ts": "const BASE = '/api';\nexport const SAVE_URL = `${BASE}/save`;\n",
+        "web/view.tsx": ("import { useStore } from './store';\nimport { SAVE_URL } from './urls';\n"
+                         "declare function post(url: string, body: unknown): void;\n"
+                         "export function View(props: { onClose: () => void }) {\n"
+                         "  const count = useStore((s) => s.count);\n  const add = useStore((s) => s.add);\n"
+                         "  const save = () => {\n    post(SAVE_URL, { count });\n  };\n"
+                         "  return (\n    <div>\n      <button onClick={() => add(1)}>+</button>\n"
+                         "      <button onClick={save}>save</button>\n      <button onClick={props.onClose}>x</button>\n"
+                         "      {count}\n    </div>\n  );\n}\n"),
+        "api/handlers.py": ("from lib import APIRouter, db\n\nrouter = APIRouter()\n\n\n@router.post(\"/save\")\n"
+                            "async def save(body):\n    await db.counters.update_one({}, body)\n\n\n"
+                            "async def total():\n    return await db.counters.find_one({})\n"),
+    }
+    RULES = [
+        {"written": "useStore", "in": ["web"], "link": "legge", "store": "state", "key": "selector", "actions_in": ["web/store.ts"]},
+        {"written": "get", "in": ["web/store.ts"], "link": "legge", "store": "state", "key": "member"},
+        {"written": "set", "in": ["web/store.ts"], "link": "scrive", "store": "state", "key": "object"},
+        {"written": "post", "in": ["web"], "link": "rotta", "strip": "${BASE}",
+         "route": {"service": "api", "method": "POST", "path": "arg0"}},
+        {"written": "router.get|post", "in": ["api"], "link": "offre", "decorates": True,
+         "route": {"service": "api", "method": "part1", "path": "arg0"}},
+        {"written": "db.*.find_one", "in": ["api"], "link": "legge", "store": "db", "key": "part1"},
+        {"written": "db.*.update_one", "in": ["api"], "link": "scrive", "store": "db", "key": "part1"},
+        {"attribute": "on*", "in": ["web"], "link": "attiva"},
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="flow-written-")).resolve()
+        app = cls.work / "app"
+        for rel, text in cls.SOURCES.items():
+            (app / rel).parent.mkdir(parents=True, exist_ok=True)
+            (app / rel).write_text(text, encoding="utf-8", newline="\n")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+            subprocess.run(command, cwd=app, check=True, capture_output=True)
+        manifest = cls.work / "snapshot/manifest.sqlite"
+        snapshot.main(["write", str(app), "--out", str(manifest), "--no-engine", "--no-index"])
+        rules = cls.work / "rules.json"
+        rules.write_text(json.dumps({"schema": flows.RULES_SCHEMA, "rules": cls.RULES}), encoding="utf-8")
+        cls.links = flows.link_facts(manifest, flows.load_rules(rules))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.work, True)
+
+    def edges(self, kind):
+        return {(edge["from"], edge["to"]) for edge in self.links["edges"] if edge["type"] == kind}
+
+    def test_a_store_function_is_named_by_its_property_and_keyed_by_what_it_returns(self):
+        self.assertEqual(self.links["stores"]["state/count"],
+                         {"writes": ["web/store.ts::add", "web/store.ts::reset"],
+                          "reads": ["web/store.ts::reset", "web/view.tsx::View"]})
+
+    def test_a_held_store_function_is_called_where_its_variable_is(self):
+        self.assertIn(("web/view.tsx::View", "web/store.ts::add"), self.edges("attiva"))
+        self.assertNotIn("state/add", self.links["stores"])
+
+    def test_markup_handlers_are_entry_points_and_a_passed_parameter_is_not(self):
+        actions = sorted(entry["symbol"] for entry in self.links["entries"] if entry["kind"] == "azione")
+        self.assertEqual(actions, ["web/store.ts::add", "web/view.tsx::View.save"])
+
+    def test_a_templated_constant_reaches_the_decorated_route_and_its_collection(self):
+        self.assertIn(("web/view.tsx::View.save", "api/handlers.py::save"), self.edges("chiama"))
+        self.assertEqual(self.links["stores"]["db/counters"],
+                         {"writes": ["api/handlers.py::save"], "reads": ["api/handlers.py::total"]})
+        flow = flows.trace(self.links, "web/view.tsx::View.save", "from")
+        self.assertIn("api/handlers.py::total", flow["nodes"])
+        self.assertEqual(self.links["gaps"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

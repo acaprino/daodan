@@ -1,0 +1,19 @@
+{
+  "schema": "daodan/flow-rules/v1",
+  "rules": [
+    {"written": "useAppStore", "in": ["react-app/src"], "link": "legge", "store": "app state", "key": "selector", "actions_in": ["react-app/src/stores"]},
+    {"written": "useAppStore.getState", "in": ["react-app/src"], "link": "legge", "store": "app state", "key": "member", "actions_in": ["react-app/src/stores"]},
+    {"written": "get", "in": ["react-app/src/stores/slices", "react-app/src/stores/appStore.ts"], "link": "legge", "store": "app state", "key": "member", "actions_in": ["react-app/src/stores"]},
+    {"written": "useAppStore.setState", "in": ["react-app/src"], "link": "scrive", "store": "app state", "key": "object"},
+    {"written": "set", "in": ["react-app/src/stores/slices", "react-app/src/stores/appStore.ts"], "link": "scrive", "store": "app state", "key": "object"},
+    {"written": "usePlannerStore", "in": ["react-app/src"], "link": "legge", "store": "planner state", "key": "selector", "actions_in": ["react-app/src/stores/plannerStore.ts"]},
+    {"written": "usePlannerStore.getState", "in": ["react-app/src"], "link": "legge", "store": "planner state", "key": "member", "actions_in": ["react-app/src/stores/plannerStore.ts"]},
+    {"written": "set", "in": ["react-app/src/stores/plannerStore.ts"], "link": "scrive", "store": "planner state", "key": "object"},
+    {"written": "apiPost|apiPostUnwrap", "in": ["react-app/src"], "link": "rotta", "strip": "${API_BASE_URL}", "route": {"service": "api", "method": "POST", "path": "arg0"}},
+    {"written": "apiGet", "in": ["react-app/src"], "link": "rotta", "strip": "${API_BASE_URL}", "route": {"service": "api", "method": "GET", "path": "arg0"}},
+    {"written": "router.get|post|put|delete|patch", "in": ["functions-python/app"], "link": "offre", "decorates": true, "route": {"service": "api", "method": "part1", "path": "arg0"}},
+    {"written": "db.*.find_one|find|count_documents|aggregate|distinct|find_one_and_update", "in": ["functions-python/app"], "link": "legge", "store": "mongo", "key": "part1"},
+    {"written": "db.*.insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write|find_one_and_update", "in": ["functions-python/app"], "link": "scrive", "store": "mongo", "key": "part1"},
+    {"attribute": "on*", "in": ["react-app/src"], "link": "attiva"}
+  ]
+}

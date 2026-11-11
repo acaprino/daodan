@@ -6,24 +6,34 @@
 
 A model writes the rules once per project (`daodan/flow-rules/v1`); this module only
 applies them, so the same snapshot and rules always give the same links. A rule
-names a project function by `file::name` and says what one of its calls means:
+says where a construct is and what it means.
 
-- `scrive` / `legge`: the call writes or reads a store; `key` says where the
-  field, collection or key is: `argN`, `selector` (`s => s.field`), `object`
-  (`{field: ...}`).
-- `rotta`: the call reaches a route; `route` gives `service`, `method`, `path`,
-  each a literal or `argN`.
-- `offre`: the call declares a route (`route` as above); with `decorates` the
-  route belongs to the decorated function.
-- `attiva`: the call binds a user action to the handler in `handler` (`argN`).
-- `ingresso`: the call declares an entry point (`entry` names its kind); with
-  `decorates` the entry point is the decorated function.
+Where, one of:
 
-An argument counts only when it is a literal or a constant bound to a literal; a
-computed one is a gap, never a guess. A store link needs the same store and key,
-a route link the same service, method and path. External modules of the module
-graph are nodes too: a symbol in a file an external module cites as evidence
-uses that module, a declared link.
+- `callee`: `file::name`, a project function the call resolves to.
+- `written`: the callee as written, dotted, for calls that go through a library
+  object (`router.post`, `db.*.find_one|find`); `*` is any part, `|` separates
+  alternatives. `in` restricts it to path prefixes.
+- `attribute`: a markup attribute bound to a handler (`on*`), within `in`.
+
+What (`link`):
+
+- `scrive` / `legge`: a store access. `key` is `argN`, `partN` (a written part),
+  `selector` (`s => s.field`), `object` (`{field: ...}`, also returned by a function
+  argument) or `member` (the property read on the call's result). With `actions_in`
+  a key naming a function declared as a property under those prefixes is a call to
+  it, also through the variable that holds it.
+- `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
+  `path`, each a literal, `argN` or `partN`; `strip` removes a leading text from
+  the path. With `decorates` the route belongs to the decorated function.
+- `attiva`: a user action bound to the handler in `handler` (`argN`), or to the
+  handler an `attribute` names.
+- `ingresso`: an entry point of kind `entry`; with `decorates`, the decorated function.
+
+A value counts only when it is a literal or a constant bound to one; a computed
+one is a gap, never a guess. A store link needs the same store and key, a route
+link the same service, method and path. External modules of the module graph are
+nodes too: a symbol in a file an external module cites as evidence uses it.
 
     python flows.py links MANIFEST --rules RULES
     python flows.py trace MANIFEST --rules RULES (--from NODE | --to NODE | --through NODE)
@@ -31,6 +41,7 @@ uses that module, a declared link.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 import sys
@@ -51,12 +62,18 @@ LINKS_SCHEMA = "daodan/flow-links/v1"
 FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
-_ARG = re.compile(r"arg(\d+)$")
+_ARG = re.compile(r"(arg|part)(\d+)$")
 _IDENT = re.compile(r"[A-Za-z_$][\w$]*$")
 _STRING = re.compile(r"""(['"`])((?:\\.|(?!\1).)*)\1$""", re.S)
 _SELECTOR = re.compile(r"""^\(?\s*([A-Za-z_$][\w$]*)\s*(?::[^)=]*)?\)?\s*=>\s*\1\s*\.\s*([A-Za-z_$][\w$]*)""")
 _LAMBDA = re.compile(r"^lambda\s+([A-Za-z_]\w*)\s*:\s*\1\s*\.\s*([A-Za-z_]\w*)")
-_KEY = re.compile(r"""^\s*(?:\.\.\.|\*\*)|^\s*(['"]?)([A-Za-z_$][\w$]*)\1\s*(?::|,|$)""")
+_KEY = re.compile(r"""^\s*(['"]?)([A-Za-z_$][\w$]*)\1\s*(?::|,|$)""")
+_PROPERTY = re.compile(r"""(['"]?)([A-Za-z_$][\w$]*)\1\s*:\s*(?:async\s+)?$""")
+_HOLDER = re.compile(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:await\s+)?$")
+_UNPACKED = re.compile(r"(?:const|let|var)\s*\{([^}]*)\}\s*=\s*(?:await\s+)?$")
+_ARROW = re.compile(r"^(?:async\s+)?(?:\([^()]*\)|[A-Za-z_$][\w$]*)\s*=>\s*")
+_ATTRIBUTE = re.compile(
+    r"\b([A-Za-z]\w*)=\{\s*((?:async\s+)?\([^()]*\)\s*=>\s*)?(?:void\s+)?([A-Za-z_$][\w$]*)\s*([}(.]?)")
 
 
 # ---------------------------------------------------------------- rules
@@ -69,16 +86,31 @@ def load_rules(path: Path) -> list[dict]:
         where = f"rule {index}"
         if not isinstance(rule, dict) or rule.get("link") not in LINKS:
             raise ValueError(f"{where}: link must be one of {', '.join(LINKS)}")
-        if not isinstance(rule.get("callee"), str) or "::" not in rule["callee"]:
+        places = [name for name in ("callee", "written", "attribute") if isinstance(rule.get(name), str)]
+        if len(places) != 1:
+            raise ValueError(f"{where}: exactly one of callee, written, attribute")
+        if places == ["callee"] and "::" not in rule["callee"]:
             raise ValueError(f"{where}: callee must be file::name")
-        need = {"scrive": ("store", "key"), "legge": ("store", "key"), "rotta": ("route",),
-                "offre": ("route",), "attiva": ("handler",), "ingresso": ("entry",)}[rule["link"]]
+        if places == ["attribute"] and rule["link"] != "attiva":
+            raise ValueError(f"{where}: an attribute rule is an attiva link")
+        need = {"scrive": ("store", "key"), "legge": ("store", "key"), "rotta": ("route",), "offre": ("route",),
+                "attiva": () if places == ["attribute"] else ("handler",), "ingresso": ("entry",)}[rule["link"]]
         missing = [name for name in need if not rule.get(name)]
         if missing:
             raise ValueError(f"{where}: {rule['link']} needs {', '.join(missing)}")
         if rule["link"] in ("rotta", "offre") and not {"service", "method", "path"} <= set(rule["route"]):
             raise ValueError(f"{where}: route needs service, method and path")
     return payload["rules"]
+
+
+def _under(file: str, prefixes) -> bool:
+    return not prefixes or any(p == "." or file == p or file.startswith(p.rstrip("/") + "/") for p in prefixes)
+
+
+def _written(rule: dict, parts: list[str], file: str) -> bool:
+    pattern = rule["written"].split(".")
+    return (len(pattern) == len(parts) and _under(file, rule.get("in"))
+            and all(want == "*" or part in want.split("|") for want, part in zip(pattern, parts)))
 
 
 # ---------------------------------------------------------------- source
@@ -109,6 +141,36 @@ class Source:
             return None
         head = lines[line - 1].encode("utf-8")[column:].decode("utf-8", errors="replace")
         return "\n".join([head, *lines[line:]])
+
+    def before(self, rel: str, line: int, column: int) -> str:
+        """Text of a line up to a byte column."""
+        lines = self.lines(rel)
+        if lines is None or not 1 <= line <= len(lines):
+            return ""
+        return lines[line - 1].encode("utf-8")[:column].decode("utf-8", errors="replace")
+
+
+def _enclosed(text: str, start: int) -> int | None:
+    """Index after the bracket that closes the one at `start`, quotes respected."""
+    depth, quote, escaped = 0, None, False
+    for index in range(max(start, 0), len(text)):
+        char = text[index]
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+        elif char in "'\"`":
+            quote = char
+        elif char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+    return None
 
 
 def call_arguments(text: str) -> list[str] | None:
@@ -145,17 +207,28 @@ def call_arguments(text: str) -> list[str] | None:
 
 
 def object_keys(text: str) -> list[str] | None:
+    """Keys an object literal names, or those of every object a function argument returns.
+
+    A spread or a computed key adds nothing; with no named key at all the answer is None.
+    """
     text = text.strip()
+    arrow = _ARROW.match(text)
+    if arrow:
+        body = text[arrow.end():].strip()
+        if body.startswith("("):
+            end = _enclosed(body, 0)
+            return object_keys(body[1:end - 1]) if end else None
+        keys = []
+        for found in re.finditer(r"\breturn\s*\(?\s*(?=\{)", body):
+            end = _enclosed(body, found.end())
+            if end:
+                keys += object_keys(body[found.end():end]) or []
+        return list(dict.fromkeys(keys)) or None
     if not (text.startswith("{") and text.endswith("}")):
         return None
-    parts = call_arguments("(" + text[1:-1] + ")")
-    keys = []
-    for part in parts or []:
-        match = _KEY.match(part)
-        if match is None or match.group(2) is None:
-            return None
-        keys.append(match.group(2))
-    return keys
+    keys = [match.group(2) for part in call_arguments("(" + text[1:-1] + ")") or []
+            if (match := _KEY.match(part))]
+    return keys or None
 
 
 # ---------------------------------------------------------------- snapshot facts
@@ -167,6 +240,13 @@ class Facts:
         self.declarations = {row[0]: {"id": row[0], "file": row[1], "name": row[2], "kind": row[3],
                                       "line": row[4], "column": row[5], "end": row[6], **_unpack(row[7])}
                              for row in db.execute("SELECT id,file,name,kind,l0,c0,l1,payload FROM sem_declarations")}
+        self.functions = defaultdict(list)
+        self.by_name = defaultdict(list)
+        for declaration in self.declarations.values():
+            if declaration["kind"] in ("function", "method"):
+                self.functions[declaration["file"]].append(declaration)
+            if declaration.get("scope") == "module":
+                self.by_name[declaration["name"]].append(declaration)
         self.reads = defaultdict(list)
         for ref_id, file, l0, c0, target in db.execute(
                 "SELECT id,file,l0,c0,target_id FROM sem_references WHERE kind='read'"):
@@ -174,33 +254,62 @@ class Facts:
         self.imports = defaultdict(set)
         for source, target in db.execute("SELECT source,target FROM sem_edges"):
             self.imports[source].add(target)
+        self.imported = defaultdict(set)
+        for file, name in db.execute("SELECT file,name FROM sem_bindings WHERE kind='import'"):
+            self.imported[file].add(name)
+        self._nodes: dict[str, str | None] = {}
 
     def targets(self, name: str, file: str, line: int, column: int, kinds: tuple) -> list[str]:
         """Declarations an identifier names: its resolved read, else the one module-level
-        declaration of that name in the file or in a file it imports."""
+        declaration of that name in the file or in a file it imports, else the only one
+        in the project when the file imports that name."""
         resolved = [t for t in self.reads.get((file, line, column), [])
                     if self.declarations.get(t or "", {}).get("kind") in kinds]
         if resolved:
             return resolved
-        found = [d["id"] for d in self.declarations.values()
-                 if d["name"] == name and d["kind"] in kinds and d.get("scope") == "module"
-                 and (d["file"] == file or d["file"] in self.imports.get(file, ()))]
-        return found if len(found) == 1 else []
+        named = [d for d in self.by_name.get(name, ()) if d["kind"] in kinds]
+        near = [d["id"] for d in named if d["file"] == file or d["file"] in self.imports.get(file, ())]
+        if len(near) == 1:
+            return near
+        return [named[0]["id"]] if len(named) == 1 and name in self.imported.get(file, ()) else []
+
+    def property_label(self, declaration: dict) -> str | None:
+        """The property an anonymous function is the value of: `name: (...) => ...`."""
+        match = _PROPERTY.search(self.source.before(declaration["file"], declaration["line"], declaration["column"]))
+        return match.group(2) if match else None
 
     def node(self, declaration_id: str | None) -> str | None:
-        """The named symbol a declaration belongs to: an anonymous function counts as its owner."""
-        declaration = self.declarations.get(declaration_id or "")
-        if declaration is None:
-            return None
-        name = declaration.get("qualified_name") or declaration["name"]
-        name = name.split(".(anonymous)")[0]
-        return f"{declaration['file']}::{name}" if name and name != "(anonymous)" else None
+        """The named symbol a declaration belongs to. An anonymous function counts as the
+        property it is the value of, inside its owner, or as its owner."""
+        if declaration_id not in self._nodes:
+            declaration, labels = self.declarations.get(declaration_id or ""), []
+            while declaration is not None and declaration["name"] == "(anonymous)":
+                label = self.property_label(declaration)
+                if label:
+                    labels.insert(0, label)
+                scope = str(declaration.get("scope") or "")
+                declaration = self.declarations.get(f"{declaration['file']}::{scope.removeprefix('scope-')}")
+            name, file = None, declaration_id.split("::", 1)[0] if declaration_id else None
+            if declaration is not None:
+                base = (declaration.get("qualified_name") or declaration["name"]).replace(".(anonymous)", "")
+                name = f"{file}::{'.'.join([base, *labels])}"
+            elif labels:
+                # Properties of an object no named function holds: a store created at module level.
+                name = f"{file}::{'.'.join(labels)}"
+            self._nodes[declaration_id] = name
+        return self._nodes[declaration_id]
 
     def named(self, declaration_id: str | None) -> str | None:
         declaration = self.declarations.get(declaration_id or "")
         if declaration is None:
             return None
         return f"{declaration['file']}::{declaration.get('qualified_name') or declaration['name']}"
+
+    def enclosing(self, file: str, line: int, skip: str | None = None) -> dict | None:
+        """The innermost named function whose lines hold `line`."""
+        holders = [d for d in self.functions.get(file, ()) if d["name"] != "(anonymous)" and d["id"] != skip
+                   and d["line"] <= line <= (d["end"] or d["line"])]
+        return max(holders, key=lambda d: (d["line"], d["column"])) if holders else None
 
     def decorated(self, file: str, line: int) -> str | None:
         """The function a decorator on this line decorates: the first declaration below it."""
@@ -210,11 +319,12 @@ class Facts:
         return self.node(below[0]["id"]) if below else None
 
     def literal(self, text: str, file: str, line: int, column: int) -> str | None:
-        """The value of a literal, or of a constant bound to a literal; None when computed."""
+        """The text of a literal, or of a constant bound to one; None when computed.
+        A template keeps its `${...}` parts for the caller to accept or refuse."""
         text = text.strip()
         match = _STRING.match(text)
         if match:
-            return None if match.group(1) == "`" and "${" in match.group(2) else match.group(2)
+            return match.group(2)
         if not _IDENT.match(text):
             return None
         for target in self.targets(text, file, line, column, ("binding",)):
@@ -231,7 +341,7 @@ class Facts:
         if _IDENT.match(text):
             found = self.targets(text, file, line, column, ("function", "method"))
             return self.node(found[0]) if found else None
-        arrow = next((d for d in self.declarations.values() if d["file"] == file and d["line"] == line
+        arrow = next((d for d in self.functions.get(file, ()) if d["line"] == line
                       and d["column"] == column and d["name"] == "(anonymous)"), None)
         if arrow is None:
             return None
@@ -239,6 +349,31 @@ class Facts:
             "SELECT target_id FROM sem_references WHERE kind='call' AND caller=? AND resolution='resolved'",
             (arrow["id"],))]
         return self.node(calls[0]) if len(calls) == 1 else None
+
+    def local_function(self, name: str, file: str, line: int) -> str | None:
+        """A function of that name declared inside a function that holds `line`, else at module level."""
+        inside = []
+        for declaration in self.functions.get(file, ()):
+            if declaration["name"] != name:
+                continue
+            holder = self.enclosing(file, declaration["line"], skip=declaration["id"])
+            if holder is not None and holder["line"] <= line <= (holder["end"] or holder["line"]):
+                inside.append(declaration)
+        if inside:
+            return self.node(max(inside, key=lambda d: d["line"])["id"])
+        found = self.targets(name, file, -1, -1, ("function", "method"))
+        return self.node(found[0]) if found else None
+
+    def property_functions(self, prefixes) -> dict[str, list[str]]:
+        """Functions declared as the value of a property, by property name, under the prefixes."""
+        out = defaultdict(list)
+        for file, declarations in self.functions.items():
+            if not _under(file, prefixes):
+                continue
+            for declaration in declarations:
+                if declaration["name"] == "(anonymous)" and (label := self.property_label(declaration)):
+                    out[label].append(self.node(declaration["id"]))
+        return out
 
 
 def _position(base_line: int, base_column: int, text_before: str, arg_text: str) -> tuple[int, int]:
@@ -262,48 +397,85 @@ def _arguments_with_positions(text: str, line: int, column: int):
     return out
 
 
-def _value(spec, args, facts, file):
-    """A rule field: a literal string, or `argN` read from the call."""
+def _value(spec, call, facts, strip: str = ""):
+    """A rule field: a literal string, `argN` read from the call or `partN` of the written callee."""
     match = _ARG.match(str(spec))
     if match is None:
         return spec
-    index = int(match.group(1))
-    if args is None or index >= len(args):
+    index = int(match.group(2))
+    if match.group(1) == "part":
+        return call["parts"][index] if index < len(call["parts"]) else None
+    if index >= len(call["args"]):
         return None
-    text, line, column = args[index]
-    return facts.literal(text, file, line, column)
+    text, line, column = call["args"][index]
+    value = facts.literal(text, call["file"], line, column)
+    if value is not None and strip and value.startswith(strip):
+        value = value[len(strip):]
+    return None if value is None or "${" in value else value
+
+
+def _keys(spec: str, call, facts) -> list[str] | None:
+    if spec == "member":
+        end = _enclosed(call["text"], call["text"].find("("))
+        member = re.match(r"\s*\??\.\s*([A-Za-z_$][\w$]*)", call["text"][end:]) if end else None
+        if member:
+            return [member.group(1)]
+        unpacked = _UNPACKED.search(call["before"])
+        return [name.split(":")[0].strip() for name in unpacked.group(1).split(",")
+                if name.strip() and not name.strip().startswith("...")] if unpacked else None
+    if _ARG.match(spec):
+        value = _value(spec, call, facts)
+        return [value] if value is not None else None
+    if not call["args"]:
+        return None
+    text = call["args"][0][0]
+    if spec == "selector":
+        match = _SELECTOR.match(text.strip()) or _LAMBDA.match(text.strip())
+        return [match.group(2)] if match else None
+    return object_keys(text) if spec == "object" else None
 
 
 # ---------------------------------------------------------------- links
 
 def link_facts(manifest: Path, rules: list[dict]) -> dict:
     """Accesses, deduced links, entry points and gaps of a snapshot under the given rules."""
-    by_callee = defaultdict(list)
+    by_callee, written, attributes = defaultdict(list), [], []
     for rule in rules:
-        by_callee[rule["callee"]].append(rule)
-    accesses, entries, actions, routes_offered, route_calls, gaps = [], [], [], [], [], []
-    calls = []
+        if "callee" in rule:
+            by_callee[rule["callee"]].append(rule)
+        else:
+            (written if "written" in rule else attributes).append(rule)
+    wanted = {rule["callee"].rsplit("::", 1)[1].split(".")[-1] for rule in rules if "callee" in rule}
+    accesses, entries, actions, routes_offered, route_calls, gaps, calls = [], [], [], [], [], [], []
+    held: dict[tuple[str, str], str] = {}
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         facts = Facts(store, db)
         view = edge_view.load_edge_view(store)
+        members = {id(rule): facts.property_functions(rule["actions_in"]) for rule in rules if rule.get("actions_in")}
+        plain = []
         for ref in view["references"]:
             target = facts.named(ref.get("target_id")) if ref["resolution"] == "resolved" else None
             caller = facts.node(ref.get("caller"))
             span = ref.get("span") or [None, None, None, None]
             site = f"{ref['file']}:{span[0]}"
+            parts = [str(part) for part in ref.get("parts") or []]
             if target and caller:
                 calls.append({"from": caller, "to": facts.node(ref["target_id"]), "site": site})
-            matched = by_callee.get(target or "")
+            matched = by_callee.get(target or "", []) + [rule for rule in written if _written(rule, parts, ref["file"])]
             if not matched:
-                if ref["resolution"] != "resolved" and any(rule["callee"].rsplit("::", 1)[1].split(".")[-1]
-                                                            == ref.get("last_name") for rule in rules):
-                    gaps.append({"site": site, "reason": f"call to {ref.get('last_name')} is unresolved"})
+                if ref["resolution"] != "resolved":
+                    if ref.get("last_name") in wanted:
+                        gaps.append({"site": site, "reason": f"call to {ref.get('last_name')} is unresolved"})
+                    if len(parts) == 1 and caller:
+                        plain.append((ref["file"], parts[0], caller, site))
                 continue
             text = facts.source.after(ref["file"], span[2], span[3])
             args = _arguments_with_positions(text, span[2], span[3]) if text is not None else None
             if args is None:
                 gaps.append({"site": site, "reason": "call arguments not readable"})
                 continue
+            call = {"file": ref["file"], "parts": parts, "args": args, "text": text,
+                    "before": facts.source.before(ref["file"], span[0], span[1])}
             for rule in matched:
                 owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else caller
                 if owner is None:
@@ -311,14 +483,25 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                     continue
                 link = rule["link"]
                 if link in ("scrive", "legge"):
-                    keys = _keys(rule["key"], args, facts, ref["file"])
+                    keys = _keys(rule["key"], call, facts)
                     if not keys:
                         gaps.append({"site": site, "symbol": owner, "reason": f"{link} {rule['store']}: key not a literal"})
                     for key in keys or []:
-                        accesses.append({"symbol": owner, "link": link, "store": rule["store"], "key": key, "site": site})
+                        found = members.get(id(rule), {}).get(key)
+                        if not found:
+                            accesses.append({"symbol": owner, "link": link, "store": rule["store"], "key": key, "site": site})
+                        elif len(found) > 1:
+                            gaps.append({"site": site, "symbol": owner, "reason": f"{rule['store']}/{key}: several functions"})
+                        elif (holder := _HOLDER.search(call["before"])) and len(keys) == 1:
+                            held[(ref["file"], holder.group(1))] = found[0]
+                        elif _UNPACKED.search(call["before"]):
+                            held[(ref["file"], key)] = found[0]
+                        else:
+                            calls.append({"from": owner, "to": found[0], "site": site, "origin": "dedotto"})
                 elif link in ("rotta", "offre"):
-                    identity = tuple(_value(rule["route"][name], args, facts, ref["file"])
-                                     for name in ("service", "method", "path"))
+                    route = rule["route"]
+                    identity = (_value(route["service"], call, facts), _value(route["method"], call, facts),
+                                _value(route["path"], call, facts, rule.get("strip", "")))
                     if None in identity:
                         gaps.append({"site": site, "symbol": owner, "reason": f"{link}: route not a literal"})
                         continue
@@ -329,17 +512,24 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                         entries.append({"symbol": owner, "kind": "rotta", "site": site})
                 elif link == "attiva":
                     match = _ARG.match(rule["handler"])
-                    index = int(match.group(1)) if match else -1
+                    index = int(match.group(2)) if match else -1
                     handler = (facts.handler(args[index][0], ref["file"], args[index][1], args[index][2])
                                if 0 <= index < len(args) else None)
                     if handler is None:
                         gaps.append({"site": site, "symbol": owner, "reason": "attiva: handler not a named function"})
                         continue
-                    label = _value("arg0", args, facts, ref["file"])
-                    actions.append({"symbol": owner, "handler": handler, "label": label, "site": site})
+                    actions.append({"symbol": owner, "handler": handler, "label": _value("arg0", call, facts), "site": site})
                     entries.append({"symbol": handler, "kind": "azione", "site": site})
                 elif link == "ingresso":
                     entries.append({"symbol": owner, "kind": rule["entry"], "site": site})
+        # A store function held in a variable is called where that variable is called.
+        for file, name, caller, site in plain:
+            if (file, name) in held:
+                calls.append({"from": caller, "to": held[(file, name)], "site": site, "origin": "dedotto"})
+        for rule in attributes:
+            for action in _attribute_actions(facts, rule, held):
+                actions.append(action)
+                entries.append({"symbol": action["handler"], "kind": "azione", "site": action["site"]})
         external = _external_nodes(store, manifest)
         symbols_by_file = defaultdict(set)
         for declaration in facts.declarations.values():
@@ -348,7 +538,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                 if node:
                     symbols_by_file[declaration["file"]].add(node)
 
-    edges = [{"from": c["from"], "to": c["to"], "type": "chiama", "origin": "diretto", "site": c["site"]}
+    edges = [{"from": c["from"], "to": c["to"], "type": "chiama", "origin": c.get("origin", "diretto"), "site": c["site"]}
              for c in calls]
     for access in accesses:
         store_node = f"store:{access['store']}/{access['key']}"
@@ -386,21 +576,33 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             "stores": {name: {"writes": sorted(v["writes"]), "reads": sorted(v["reads"])} for name, v in sorted(stores.items())},
             "entries": sorted({(e["symbol"], e["kind"]): e for e in entries}.values(), key=lambda e: (e["kind"], e["symbol"])),
             "edges": sorted(unique.values(), key=lambda e: (e["from"], e["to"], e["type"], e["site"])),
+            "routes": {"offered": len({(o["service"], o["method"], o["path"]) for o in routes_offered}),
+                       "called": len(route_calls), "linked": sum(1 for e in unique.values() if e.get("route"))},
             "external": [{"name": m["name"], "status": m["status"]} for m in external],
             "gaps": sorted(gaps, key=lambda g: (g["site"], g["reason"]))}
 
 
-def _keys(spec: str, args, facts, file) -> list[str] | None:
-    if not args:
-        return None
-    text, line, column = args[0]
-    if spec == "selector":
-        match = _SELECTOR.match(text.strip()) or _LAMBDA.match(text.strip())
-        return [match.group(2)] if match else None
-    if spec == "object":
-        return object_keys(text)
-    value = _value(spec, args, facts, file)
-    return [value] if value is not None else None
+def _attribute_actions(facts: Facts, rule: dict, held: dict) -> list[dict]:
+    """Handlers bound by a markup attribute: a name, or the one call of an inline function.
+
+    A parameter passed on as the handler is no action of this symbol and a local
+    value setter is no flow: both are left out without a gap.
+    """
+    out = []
+    for file in sorted(facts.functions):
+        if not _under(file, rule.get("in")):
+            continue
+        for number, line in enumerate(facts.source.lines(file) or [], 1):
+            for match in _ATTRIBUTE.finditer(line):
+                attribute, inline, name, after = match.groups()
+                if not fnmatch.fnmatchcase(attribute, rule["attribute"]) or after != ("(" if inline else "}"):
+                    continue
+                owner = facts.enclosing(file, number)
+                handler = held.get((file, name)) or facts.local_function(name, file, number)
+                if owner is not None and handler is not None:
+                    out.append({"symbol": facts.node(owner["id"]), "handler": handler, "label": attribute,
+                                "site": f"{file}:{number}"})
+    return out
 
 
 def _external_nodes(store, manifest: Path) -> list[dict]:
@@ -444,7 +646,13 @@ def trace(links: dict, start: str, direction: str, boundary: list[str] | None = 
 
     def steps(node):
         if direction == "from":
+            # A reader reacts to what was written; what it does on its own is another flow.
+            if node in readers:
+                return []
             return [(edge, edge["to"]) for edge in outgoing[node] if edge["type"] in ("chiama", "attiva", "scrive", "legge", "usa")]
+        # A store a writer also updates is a side effect: its other writers are not this fact's origin.
+        if node in effects:
+            return []
         out = [(edge, edge["to"]) for edge in outgoing[node] if edge["type"] in ("chiama", "scrive", "usa")]
         out += [(edge, edge["from"]) for edge in incoming[node] if edge["type"] in ("legge", "scrive")]
         return out
@@ -456,6 +664,7 @@ def trace(links: dict, start: str, direction: str, boundary: list[str] | None = 
         return any(b == "." or file == b or file.startswith(b.rstrip("/") + "/") for b in boundary)
 
     seen, followed, outside, queue = {start}, [], [], deque([start])
+    readers, effects = set(), set()
     stopped = None
     while queue:
         node = queue.popleft()
@@ -470,6 +679,10 @@ def trace(links: dict, start: str, direction: str, boundary: list[str] | None = 
             if nxt not in seen:
                 seen.add(nxt)
                 queue.append(nxt)
+                if direction == "from" and edge["type"] == "legge":
+                    readers.add(nxt)
+                elif direction == "to" and edge["type"] == "scrive" and nxt == edge["to"]:
+                    effects.add(nxt)
         if stopped:
             break
     gaps = [gap for gap in links["gaps"] if gap.get("symbol") in seen]

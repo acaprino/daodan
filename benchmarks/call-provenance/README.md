@@ -50,14 +50,19 @@ Anche `python -m unittest discover -s tests -p test_codebase_map_storage_queries
 
 I test ambientali non verdi nella prova estesa sono `RustGoContractTests.test_go_interface_methods_are_contracts`, `RustGoContractTests.test_rust_trait_signatures_and_enum_variants_are_contracts` e `KotlinEngineTests.test_the_kotlin_engine_loads_the_snapshots_kotlin_and_java_files_only`, oltre ai due test delle junction nominati sopra. Non sono stati disabilitati o modificati per ottenere un esito verde.
 
-## Ripresa del benchmark Phazly
+## Rimisura dei tre casi, 11 novembre 2026
 
-Archivio del commit `46c92b28aabf833a6baa46b88f1795d6668d702c`, verificato tramite intestazione PAX. Prima del trasferimento sono esclusi tre file di firma Android e `functions-python/app/core/secrets.py`. L'esclusione di quest'ultimo modifica anche il perimetro dei sorgenti rispetto al baseline: un confronto dei conteggi deve dichiararlo. Identità del nuovo archivio e del risolutore in `results/phazly-input.json`.
+Modal, 4 CPU e 16 GB per caso, stessi commit della misura 0 di [`flow-model`](../flow-model/README.md). Phazly da `git archive 46c92b28 react-app shared functions-python`, senza file `.env`, `functions-python/app/core/secrets.py` e tre file di firma Android: rispetto al baseline manca `secrets.py`. Identità dell'archivio in `results/phazly-input.json`; i valori per caso in `results/`.
 
-```powershell
-modal run benchmarks/flow-model/modal_engine_count.py --cases phazly --phazly-tar C:/Users/alfio/AppData/Local/Temp/daodan-phazly-provenance-46c92b28.tar --results-dir benchmarks/call-provenance/results
-```
+| Caso | Prima: risolte su risolvibili | Ora | Risolte | Passaggio motore |
+| --- | --- | --- | --- | --- |
+| polar `server/` | 55,9% (34.535 su 61.758) | 41,8% (34.587 su 82.731) | +52 | 41 → 57 min |
+| tududi | 52,8% (17.282 su 32.717) | 41,4% (17.267 su 41.739) | −15 | 11 → 26 min |
+| phazly | 59,7% (13.288 su 22.271) | 47,8% (13.304 su 27.842) | +16 | 16 → 30 min |
 
-Il tentativo di ripresa non ha prodotto un identificativo di job: la sessione non risolve `api.modal.com` (`URLError [Errno 11001] getaddrinfo failed`). CLI interrotta; nessun nuovo risultato remoto dichiarato. Il file baseline `benchmarks/flow-model/results/engine-count-phazly.json` è invariato.
+- Le chiamate risolte restano quasi invariate; il denominatore cresce perché i nomi assenti dal progetto restano dentro finché il motore non li prova esterni.
+- Il grosso delle nuove risolvibili è `unresolved`, cioè il motore non risponde: polar Python 44.192, tududi JavaScript 15.077, phazly Python 5.674 e TypeScript 2.286. polar gira senza l'ambiente Python del progetto, phazly senza i pacchetti di `react-app`: senza librerie il motore non prova l'origine esterna.
+- Phazly TypeScript: `project-not-a-symbol` passa da 4.304 a 5.621. Attraverso il server LSP 2.072 chiamate `t()` restano `project-not-a-symbol`: la verifica sul compilatore non si riproduce nel passaggio reale. Restano `project-not-a-symbol` anche `useState` (335), `useCallback` (225) e `useTranslation` (198): il motore si ferma sull'import, come quando i pacchetti di `react-app` mancano.
+- Phazly: 269 posizioni non chieste.
 
-Il runner ora consente una cartella risultati separata e carica l'archivio anche quando si seleziona soltanto `phazly-react`. Verifica locale dell'entrypoint con chiamata remota simulata: archivio selezionato, nuovo risultato scritto nella destinazione scelta e baseline invariato; compilazione Python e `git diff --check` riusciti.
+Il comando di Modal richiede le variabili del proxy vuote: con `HTTPS_PROXY` di questa sessione il client non raggiunge `api.modal.com`.

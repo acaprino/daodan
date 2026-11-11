@@ -1,6 +1,6 @@
 {
   "commit": "46c92b28aabf833a6baa46b88f1795d6668d702c",
-  "archive_sha256": "7060ac02c3009766bfe4f0cd9ec02ea55aab3ca35cd13205424159f3de80a812",
+  "archive_sha256": "38d2953a58da329a5ba74560b9d9e4cf09e00d9394076be5adc6073d35a7c0f0",
   "excluded": [
     "functions-python/app/core/secrets.py",
     "react-app/src-tauri/gen/android/app/debug.keystore",
@@ -8,8 +8,14 @@
     "react-app/src-tauri/gen/android/keystore.properties"
   ],
   "baseline": "benchmarks/flow-model/results/engine-count-phazly.json",
-  "state": "blocked-before-confirmed-start",
+  "state": "completed",
   "resolver_sha256": "d0eb713ceeb54c63735befde22927a1ebd5024e25ea9908600b7878395ac5622",
-  "reason": "This session cannot resolve api.modal.com: URLError [Errno 11001] getaddrinfo failed; Modal CLI produced no job identifier and was interrupted.",
-  "remote_job_id": null
+  "archive": "git archive 46c92b28 react-app shared functions-python, without .env files and the four excluded paths",
+  "volume": "daodan-flow-results/provenance-20261111",
+  "cases": [
+    "polar",
+    "tududi",
+    "phazly"
+  ],
+  "modal_app": "ap-Da8d43UmaE1HYmNlfeMPlZ"
 }

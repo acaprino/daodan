@@ -39,6 +39,8 @@ image = (
     .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__/**", "**/tests/**"])
 )
 app = modal.App("daodan-flow-engine-count", image=image)
+# Each result is also kept here, so a detached run survives the local client: `modal volume get`.
+volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
 def _run(command: list[str], cwd: str | None = None) -> str:
@@ -49,8 +51,8 @@ def _run(command: list[str], cwd: str | None = None) -> str:
     return done.stdout
 
 
-@app.function(cpu=4, memory=16384, timeout=3 * 3600)
-def count(name: str, case: dict, archive: bytes | None) -> dict:
+@app.function(cpu=4, memory=16384, timeout=3 * 3600, volumes={"/results": volume})
+def count(name: str, case: dict, archive: bytes | None, tag: str = "") -> dict:
     import io
     import sys
     import tarfile
@@ -88,10 +90,16 @@ def count(name: str, case: dict, archive: bytes | None) -> dict:
     import edge_view
     view = edge_view.load_edge_view(manifest)
     report = json.loads((work / "engine-report.json").read_text(encoding="utf-8"))
-    return {"case": name, "snapshot_seconds": snapshot_seconds, "pass_seconds": pass_seconds, "setup": setup,
+    result = {"case": name, "snapshot_seconds": snapshot_seconds, "pass_seconds": pass_seconds, "setup": setup,
             "resolution": view["coverage"].get("resolution"), "gaps": view["gaps"][:20],
             "languages": report.get("languages"), "unresolved": _unresolved(manifest),
             "pass_log": _tail(manifest.with_name("engine-pass.log"))}
+    if tag:
+        out = Path("/results") / tag / f"engine-count-{name}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        volume.commit()
+    return result
 
 
 def _tail(path: Path, lines: int = 60) -> list[str]:
@@ -123,11 +131,51 @@ def _unresolved(manifest: Path) -> dict:
                        "top_unresolved": callees[language].most_common(25)} for language in verdicts}
 
 
+@app.function(cpu=4, memory=16384, timeout=3600, volumes={"/results": volume})
+def flow_links(name: str, case: dict, archive: bytes, rules: str, tag: str = "") -> dict:
+    """The links `flows.py` deduces on a case from its rules, on a snapshot without the engine pass."""
+    import io
+    import sys
+    import tarfile
+
+    work = Path("/work") / name
+    source = work / "src"
+    source.mkdir(parents=True)
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        tar.extractall(source, filter="data")
+    _run(["git", "init", "-q"], str(source))
+    _run(["git", "add", "-A"], str(source))
+    _run(["git", "-c", "user.name=bench", "-c", "user.email=bench@local", "commit", "-qm", "case"], str(source))
+    manifest = work / "snapshot/manifest.sqlite"
+    _run([sys.executable, "/daodan/scripts/snapshot.py", "write", str(source / case["target"]),
+          "--out", str(manifest), "--no-engine", "--no-index"])
+    (work / "rules.json").write_text(rules, encoding="utf-8")
+    sys.path.insert(0, "/daodan/scripts")
+    import flows
+    links = flows.link_facts(manifest, flows.load_rules(work / "rules.json"))
+    links["sizes"] = flows.file_sizes(manifest)
+    if tag:
+        out = Path("/results") / tag / f"flow-links-{name}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(links, sort_keys=True), encoding="utf-8")
+        volume.commit()
+    return links
+
+
 @app.local_entrypoint()
-def main(phazly_tar: str = "", cases: str = "polar,tududi,phazly", results_dir: str = ""):
+def flows(phazly_tar: str, rules: str, out: str, case: str = "phazly", tag: str = ""):
+    result = flow_links.remote(case, CASES[case], Path(phazly_tar).read_bytes(), Path(rules).read_text(encoding="utf-8"), tag)
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
+    Path(out).write_text(json.dumps(result, sort_keys=True), encoding="utf-8")
+    print(case, len(result["edges"]), "edges", len(result["stores"]), "stores", len(result["entries"]), "entries",
+          len(result["gaps"]), "gaps", result["routes"])
+
+
+@app.local_entrypoint()
+def main(phazly_tar: str = "", cases: str = "polar,tududi,phazly", results_dir: str = "", tag: str = ""):
     chosen = [name.strip() for name in cases.split(",") if name.strip()]
     archive = Path(phazly_tar).read_bytes() if any("tar" in CASES[name] for name in chosen) else None
-    calls = [(name, CASES[name], archive if "tar" in CASES[name] else None) for name in chosen]
+    calls = [(name, CASES[name], archive if "tar" in CASES[name] else None, tag) for name in chosen]
     destination = Path(results_dir) if results_dir else RESULTS
     destination.mkdir(parents=True, exist_ok=True)
     for result in count.starmap(calls, return_exceptions=True):
