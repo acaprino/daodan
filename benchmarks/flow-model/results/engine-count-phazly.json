@@ -1,0 +1,437 @@
+{
+  "case": "phazly",
+  "gaps": [],
+  "languages": {
+    "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    },
+    "kotlin": {
+      "engine": "kotlin",
+      "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden",
+      "state": "failed"
+    },
+    "python": {
+      "engine": "jedi@0.20.1",
+      "state": "fresh"
+    },
+    "rust": {
+      "engine": "rust-analyzer@2026-11-09",
+      "state": "fresh"
+    },
+    "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    }
+  },
+  "pass_log": [],
+  "pass_seconds": 963.8,
+  "resolution": {
+    "askable": 19596,
+    "by_language": {
+      "javascript": {
+        "calls": 639,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 244,
+        "resolved": 65,
+        "resolved_ratio": 0.266
+      },
+      "kotlin": {
+        "calls": 573,
+        "engine": null,
+        "resolvable": 100,
+        "resolved": 36,
+        "resolved_ratio": 0.36
+      },
+      "python": {
+        "calls": 32116,
+        "engine": "jedi@0.20.1",
+        "resolvable": 13989,
+        "resolved": 10266,
+        "resolved_ratio": 0.734
+      },
+      "rust": {
+        "calls": 29,
+        "engine": "rust-analyzer@2026-11-09",
+        "resolvable": 2,
+        "resolved": 0,
+        "resolved_ratio": 0.0
+      },
+      "typescript": {
+        "calls": 15158,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 7936,
+        "resolved": 2921,
+        "resolved_ratio": 0.368
+      }
+    },
+    "calls": 48515,
+    "dynamic": 89,
+    "engine_confirmed": 6284,
+    "engine_unresolved": 8808,
+    "external": 26244,
+    "external_by_class": {
+      "builtin": 9483,
+      "engine-external-definition": 4418,
+      "no-project-name": 12343
+    },
+    "lexical_resolved": 7004,
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+    "resolvable": 22271,
+    "resolved": 13288,
+    "resolved_ratio": 0.597,
+    "unasked": 64
+  },
+  "setup": null,
+  "snapshot_seconds": 70.7,
+  "unresolved": {
+    "javascript": {
+      "top_unresolved": [
+        [
+          "join [project-not-a-symbol]",
+          55
+        ],
+        [
+          "resolve [project-not-a-symbol]",
+          15
+        ],
+        [
+          "readFileSync [project-not-a-symbol]",
+          14
+        ],
+        [
+          "replace [unresolved]",
+          11
+        ],
+        [
+          "writeFileSync [project-not-a-symbol]",
+          10
+        ],
+        [
+          "existsSync [project-not-a-symbol]",
+          8
+        ],
+        [
+          "fileURLToPath [project-not-a-symbol]",
+          6
+        ],
+        [
+          "readdirSync [project-not-a-symbol]",
+          5
+        ],
+        [
+          "decode [external-definition]",
+          5
+        ],
+        [
+          "check [external-definition]",
+          5
+        ],
+        [
+          "spawnSync [project-not-a-symbol]",
+          5
+        ],
+        [
+          "createHash [project-not-a-symbol]",
+          4
+        ],
+        [
+          "update [unresolved]",
+          4
+        ],
+        [
+          "digest [unresolved]",
+          4
+        ],
+        [
+          "mkdirSync [project-not-a-symbol]",
+          4
+        ],
+        [
+          "get [external-definition]",
+          4
+        ],
+        [
+          "join [external-definition]",
+          4
+        ],
+        [
+          "dirname [project-not-a-symbol]",
+          3
+        ],
+        [
+          "match [unresolved]",
+          3
+        ],
+        [
+          "close [unresolved]",
+          3
+        ],
+        [
+          "execSync [project-not-a-symbol]",
+          2
+        ],
+        [
+          "extname [project-not-a-symbol]",
+          2
+        ],
+        [
+          "pathToFileURL [project-not-a-symbol]",
+          2
+        ],
+        [
+          "text [unresolved]",
+          2
+        ],
+        [
+          "route [unresolved]",
+          2
+        ]
+      ],
+      "verdicts": {
+        "edge-call": 23,
+        "external-definition": 26,
+        "project-not-a-symbol": 141,
+        "unresolved": 35
+      }
+    },
+    "python": {
+      "top_unresolved": [
+        [
+          "get [external-definition]",
+          1846
+        ],
+        [
+          "get [unresolved]",
+          1433
+        ],
+        [
+          "Field [unresolved]",
+          409
+        ],
+        [
+          "replace [external-definition]",
+          321
+        ],
+        [
+          "find_one [unresolved]",
+          294
+        ],
+        [
+          "deepcopy [external-definition]",
+          241
+        ],
+        [
+          "ConfigDict [unresolved]",
+          135
+        ],
+        [
+          "time [external-definition]",
+          131
+        ],
+        [
+          "join [external-definition]",
+          123
+        ],
+        [
+          "Depends [unresolved]",
+          123
+        ],
+        [
+          "update [external-definition]",
+          118
+        ],
+        [
+          "SimpleNamespace [external-definition]",
+          116
+        ],
+        [
+          "dataclass [external-definition]",
+          113
+        ],
+        [
+          "update_one [unresolved]",
+          100
+        ],
+        [
+          "add [external-definition]",
+          95
+        ],
+        [
+          "insert_one [unresolved]",
+          91
+        ],
+        [
+          "HTTPException [unresolved]",
+          83
+        ],
+        [
+          "now [external-definition]",
+          78
+        ],
+        [
+          "field_validator [unresolved]",
+          72
+        ],
+        [
+          "field [external-definition]",
+          62
+        ],
+        [
+          "as_dict [unresolved]",
+          60
+        ],
+        [
+          "Header [unresolved]",
+          58
+        ],
+        [
+          "APIRouter [unresolved]",
+          49
+        ],
+        [
+          "find [unresolved]",
+          48
+        ],
+        [
+          "fixture [unresolved]",
+          48
+        ]
+      ],
+      "verdicts": {
+        "ambiguous-target": 79,
+        "edge-call": 4464,
+        "edge-instantiation": 987,
+        "external-definition": 4060,
+        "project-not-a-symbol": 2,
+        "unresolved": 3636
+      }
+    },
+    "rust": {
+      "top_unresolved": [
+        [
+          "run [unresolved]",
+          1
+        ],
+        [
+          "build [unresolved]",
+          1
+        ]
+      ],
+      "verdicts": {
+        "unresolved": 2
+      }
+    },
+    "typescript": {
+      "top_unresolved": [
+        [
+          "t [project-not-a-symbol]",
+          2091
+        ],
+        [
+          "useState [project-not-a-symbol]",
+          335
+        ],
+        [
+          "useAppStore [project-not-a-symbol]",
+          255
+        ],
+        [
+          "useCallback [project-not-a-symbol]",
+          225
+        ],
+        [
+          "useTranslation [project-not-a-symbol]",
+          198
+        ],
+        [
+          "number [unresolved]",
+          162
+        ],
+        [
+          "useMemo [project-not-a-symbol]",
+          159
+        ],
+        [
+          "string [unresolved]",
+          155
+        ],
+        [
+          "useEffect [project-not-a-symbol]",
+          139
+        ],
+        [
+          "useRef [project-not-a-symbol]",
+          135
+        ],
+        [
+          "t [unresolved]",
+          67
+        ],
+        [
+          "find [external-definition]",
+          53
+        ],
+        [
+          "get [external-definition]",
+          50
+        ],
+        [
+          "forwardRef [unresolved]",
+          40
+        ],
+        [
+          "sort [external-definition]",
+          37
+        ],
+        [
+          "join [external-definition]",
+          31
+        ],
+        [
+          "now [external-definition]",
+          27
+        ],
+        [
+          "memo [project-not-a-symbol]",
+          25
+        ],
+        [
+          "useId [project-not-a-symbol]",
+          25
+        ],
+        [
+          "replace [external-definition]",
+          23
+        ],
+        [
+          "onOpenChange [project-not-a-symbol]",
+          23
+        ],
+        [
+          "lazy [project-not-a-symbol]",
+          23
+        ],
+        [
+          "onChange [project-not-a-symbol]",
+          22
+        ],
+        [
+          "useShallow [project-not-a-symbol]",
+          21
+        ],
+        [
+          "add [external-definition]",
+          19
+        ]
+      ],
+      "verdicts": {
+        "ambiguous-target": 2,
+        "edge-call": 832,
+        "external-definition": 332,
+        "project-not-a-symbol": 4304,
+        "unresolved": 607
+      }
+    }
+  }
+}

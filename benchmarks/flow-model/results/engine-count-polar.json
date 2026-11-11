@@ -1,0 +1,62 @@
+{
+  "case": "polar",
+  "gaps": [],
+  "languages": {
+    "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    },
+    "python": {
+      "engine": "jedi@0.20.1",
+      "state": "fresh"
+    },
+    "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    }
+  },
+  "pass_seconds": 2479.1,
+  "resolution": {
+    "askable": 51657,
+    "by_language": {
+      "javascript": {
+        "calls": 31,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 5,
+        "resolved": 1,
+        "resolved_ratio": 0.2
+      },
+      "python": {
+        "calls": 107716,
+        "engine": "jedi@0.20.1",
+        "resolvable": 61719,
+        "resolved": 34505,
+        "resolved_ratio": 0.559
+      },
+      "typescript": {
+        "calls": 88,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 34,
+        "resolved": 29,
+        "resolved_ratio": 0.853
+      }
+    },
+    "calls": 107835,
+    "dynamic": 135,
+    "engine_confirmed": 10799,
+    "engine_unresolved": 24453,
+    "external": 46077,
+    "external_by_class": {
+      "builtin": 8317,
+      "engine-external-definition": 13770,
+      "no-project-name": 23990
+    },
+    "lexical_resolved": 23736,
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+    "resolvable": 61758,
+    "resolved": 34535,
+    "resolved_ratio": 0.559,
+    "unasked": 0
+  },
+  "snapshot_seconds": 178.6
+}

@@ -10,7 +10,9 @@ Ogni parola ha un solo significato in queste tre spec.
 
 | Parola | Significato |
 | --- | --- |
-| Collegamento | Da un simbolo a un altro, con tipo e `file:line`. **Diretto** se sta nel codice (chiamata, import). **Dedotto** se una regola di collegamento riconosce lo stesso dato o la stessa rotta in chi offre e in chi usa |
+| Nodo | Un estremo di un collegamento: un simbolo, oppure un modulo della mappa. Tutto ciò che partecipa a un flusso è un nodo, anche senza codice nel repository: un attore, una schermata, una funzionalità, un servizio esterno, un elemento dell'infrastruttura (server, gateway, database, coda), un dispositivo |
+| Tipo di nodo | Cosa fa il nodo nel flusso, da un elenco breve e chiuso: attore, schermata, funzionalità, servizio o API, gateway, database, coda, autenticazione, dispositivo, altro. Un nodo è anche interno o esterno al progetto |
+| Collegamento | Da un nodo a un altro, con tipo ed evidenza. **Diretto** se sta nel codice (chiamata, import). **Dedotto** se una regola di collegamento riconosce lo stesso dato o la stessa rotta in chi offre e in chi usa. **Dichiarato** se tocca un nodo senza codice: è il collegamento `uses` del grafo dei moduli |
 | Tipo di collegamento | `chiama`, `scrive`, `legge`, `attiva` (un'azione dell'utente attiva il suo handler) |
 | Flusso | Sequenza ordinata di collegamenti, da un punto d'ingresso a un fatto mostrato |
 | Punto d'ingresso | Dove un flusso comincia: rotta, comando, azione dell'utente, lavoro pianificato |
@@ -19,6 +21,7 @@ Ogni parola ha un solo significato in queste tre spec.
 | Granularità | Ciò a cui un dato si riferisce: un ordine, una sua riga, un utente |
 | Significato | Una frase: cosa afferma quel dato |
 | Strato | Interfaccia, servizio, dati |
+| Livello | Il modo di guardare un flusso: fisico, logico, UX, dati, misto |
 | Perimetro | I file che un lavoro copre: quelli che un run mappa, quelli che una review giudica |
 | Contesto | I file che si consultano per giudicare il perimetro, senza giudicarli |
 | Unità | I file affidati a un revisore in un solo incarico |
@@ -26,22 +29,30 @@ Ogni parola ha un solo significato in queste tre spec.
 | Revisore | Chi esamina un incarico seguendo un mandato: logica, sicurezza, e così via |
 | Regola di collegamento | Come, in questo progetto, si riconosce chi offre e chi usa uno store o una rotta |
 
-Un flusso non è un'entità nuova: usa i simboli che la mappa e l'esploratore hanno già, con gli stessi riferimenti.
+Un flusso non introduce entità nuove: i suoi nodi sono i simboli e i moduli che la mappa e l'esploratore hanno già, con gli stessi riferimenti.
 
 ## Comportamento attuale
 
 - `03-flows.md` descrive i flussi in prosa e diagrammi, al massimo cinque per categoria. Non si può interrogare e la review non lo legge.
 - La review divide i file con `pack()`: ordine per percorso del file, un gruppo ogni 120.000 byte. Nelle run di [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md) chi scrive, chi legge e chi mostra lo stesso dato sono finiti in tre incarichi diversi; la mappa di quelle run non aveva collegamenti `chiama` per TypeScript.
 - Nessuno strumento risponde a «chi scrive questo dato». Due simboli che usano lo stesso store non si chiamano, quindi il grafo non li collega.
-- La [rassegna della letteratura](../research/2026-11-09-flow-reconstruction-literature.md) e la [rassegna dettagliata](../research/2026-11-11-flow-reconstruction-detailed.md) riportano quattro fatti utili: i collegamenti dedotti si ottengono elencando chi offre e chi usa e accoppiandoli sull'identità riconosciuta (in un caso misurato, 135 trovati su 153); per l'interfaccia vanno tenute distinte le due direzioni «fatto mostrato ← stato ← store» e «azione → handler → effetti»; la qualità dei collegamenti conta più del modo di raggrupparli; dare al modello contesto esteso senza controllo di selezione e budget peggiora i risultati. Nessun lavoro verificato unisce i tre strati in un grafo né confronta il significato fra chi scrive e chi legge.
+- Le due rassegne ([letteratura](../research/2026-11-09-flow-reconstruction-literature.md), [dettagliata](../research/2026-11-11-flow-reconstruction-detailed.md)) riportano quattro fatti utili:
+  - i collegamenti dedotti si ottengono elencando chi offre e chi usa e accoppiandoli (in un caso misurato, 135 trovati su 153);
+  - nell'interfaccia le direzioni sono due: dal fatto mostrato a chi lo scrive, dall'azione ai suoi effetti;
+  - la qualità dei collegamenti conta più del modo di raggrupparli;
+  - più contesto senza selezione peggiora i risultati.
+
+  Nessun lavoro verificato unisce i tre strati in un grafo né confronta il significato fra chi scrive e chi legge.
 
 ## Proposta
 
 ### 1. Collegamenti dedotti
 
-1. Il modello legge il progetto una volta e compila una tabella dichiarativa di regole di collegamento (`costrutto/simbolo → identità(strato, store_o_servizio, chiave_o_rotta)`): «lo stato globale si legge con `<hook>`», «le chiamate al servizio passano da `<client>`, con gli URL di `<file>`», «la tabella `<nome>` si scrive solo da `<modulo>`», tenendo distinte lettura verso un fatto mostrato e reazione a un'azione.
+1. Il modello legge il progetto una volta e scrive una tabella di regole di collegamento. Una regola dice come si riconosce chi offre e chi usa: «lo stato globale si legge con `<hook>`», «le chiamate al servizio passano da `<client>`, con gli URL di `<file>`», «la tabella `<nome>` si scrive solo da `<modulo>`».
 2. La macchina applica la tabella a tutto il sorgente: elenca chi offre e chi usa, e li accoppia sull'identità riconosciuta. Ogni regola precisa cosa confrontare: store o collezione e campo/chiave del dato; servizio, metodo e URL per una rotta. Condividere lo store o il solo nome non basta: scrivere `store.theme` non collega a chi legge `store.cart`.
 3. Ogni coppia riconosciuta diventa un collegamento dedotto, con la sua evidenza. Identità ambigue, accessi dinamici non risolti e accessi spaiati restano lacune dichiarate: non diventano collegamenti. Il modello si prova in `benchmarks/flow-model/` prima di esporre `codebase_map_flows`.
+4. Un nodo senza codice è un modulo `external`: lo dichiara il progetto o lo propone il modello, con la sua evidenza. Il collegamento che lo raggiunge è dichiarato, non ricavato dal sorgente. Se il modulo è solo proposto, anche il collegamento resta `inferred`.
+5. Un servizio con nome proprio si riconosce dalle dipendenze e dalla configurazione del progetto. Nome, sito e descrizione vengono dai metadati del pacchetto che il progetto usa; senza pacchetto li propone il modello. Nome e logo del marchio vengono da una raccolta pubblica già esistente, usata come registro: Simple Icons (CC0, oltre 3.400 marchi). Se il marchio manca, resta l'icona generica del tipo. Daodan non mantiene un registro proprio.
 
 Le regole sono legate ai digest dei file che citano: se quei file cambiano, vanno rilette.
 
@@ -65,24 +76,43 @@ Servono a vedere quando chi scrive e chi legge lo stesso store intendono granula
    | Un aspetto (sicurezza, prestazioni, stabilità, concorrenza, leggerezza) | L'aspetto sceglie i revisori, non i file | Dai punti d'ingresso se l'aspetto segue il dato, altrimenti per percorso del file |
 
 2. **La macchina segue i collegamenti** `chiama`, `scrive`, `legge` e `attiva` dai punti di partenza, senza limite di salti e ciascuno una volta sola, così un ciclo non si ripete. Si ferma in tre casi, con i confini e il budget di `scope_planner.py`: il collegamento esce dal confine di lettura della richiesta (`read_boundary`); un limite del budget si esaurisce (`max_edges`, `max_rounds`, `max_seconds`); il collegamento non si risolve. Ciò che non è stato seguito resta elencato, rispettivamente come fuori confine, da esplorare o lacuna, e il flusso è dichiarato incompleto. Come contesto si aggiunge solo ciò che dista un `chiama` dal flusso.
-3. **Divide il perimetro in unità entro un limite di byte, con sovrapposizione controllata.** Due flussi che toccano lo stesso store o un modulo condiviso non si fondono: un file condiviso può comparire in più unità. Chi scrive e chi legge la stessa identità restano nella stessa unità quando rientrano nel limite; se lo superano, il confine tagliato è registrato come irrisolto senza dichiarare completo il flusso. I file che nessun flusso tocca vengono dopo, per percorso del file, e un file più grande del limite resta da solo, come in `pack()`. Le unità mantengono i riferimenti ai collegamenti che le attraversano. `composition.py account` verifica il 100% dei file distinti del perimetro e conta a parte le appartenenze multiple; i file non esaminati mantengono incompleta la copertura della review.
+3. **Divide il perimetro in unità entro un limite di byte.**
+   - Chi scrive e chi legge lo stesso dato stanno nella stessa unità. Se insieme superano il limite, il taglio è registrato e il flusso resta incompleto.
+   - Un file condiviso da due flussi compare in entrambe le unità: i flussi non si fondono.
+   - I file che nessun flusso tocca vengono dopo, per percorso del file. Un file più grande del limite resta da solo, come in `pack()`.
+   - Ogni file del perimetro è assegnato almeno una volta: `composition.py account` conta i file distinti e, a parte, quelli presenti in più unità.
+   - Le unità mantengono i riferimenti ai collegamenti che le attraversano. I file non esaminati mantengono incompleta la copertura della review.
 4. **Le unità vanno a chi le usa:** il revisore, l'esploratore, la mappa funzionale. La divisione limita i file di un incarico, non il flusso: i suoi collegamenti restano tutti consultabili.
 
 Un flusso fra strati richiede la mappa di tutti gli strati che attraversa, con i collegamenti `chiama` presenti per i loro linguaggi.
 
-### 4. Interrogazione
+### 4. Livelli
 
-`codebase_map_flows` con una di tre domande: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un simbolo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti o dedotti, con granularità, significato, freschezza, lacune e ciò che resta da esplorare. Distingue un flusso incompleto da un flusso completo diviso in più unità.
+Un flusso è uno solo; si guarda a livelli diversi, come le viste Logica e Fisica dell'esploratore.
 
-### 5. Chi usa flussi e unità
+| Livello | Nodi mostrati |
+| --- | --- |
+| Fisico | File e simboli |
+| Logico | Moduli e funzionalità: i simboli dello stesso modulo si contraggono in un nodo |
+| UX | Attori, azioni, schermate e fatti mostrati |
+| Dati | Store, con chi scrive e chi legge |
+| Misto | Nodi di livelli diversi nello stesso flusso |
 
-- **Esploratore:** un flusso scelto evidenzia i suoi simboli; un simbolo elenca i flussi che lo attraversano. `daodan/visual@1` ottiene un elenco `flows`.
+Una contrazione conserva consultabili i collegamenti originali. Un simbolo senza modulo resta un simbolo: nessuna appartenenza viene inventata.
+
+### 5. Interrogazione
+
+`codebase_map_flows` con una di tre domande e un livello: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un nodo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti, dedotti o dichiarati, con granularità, significato, freschezza, lacune e ciò che resta da esplorare. Distingue un flusso incompleto da un flusso completo diviso in più unità.
+
+### 6. Chi usa flussi e unità
+
+- **Esploratore:** un flusso scelto evidenzia i suoi nodi al livello della vista; un nodo elenca i flussi che lo attraversano. Ogni nodo mostra un'icona generica per il suo tipo e se è interno o esterno. `daodan/visual@1` ottiene un elenco `flows`.
 - **Mappa funzionale:** l'elenco delle funzionalità con i loro flussi, per chi non legge il codice. `03-flows.md` si genera da qui.
 - **Review:** si decide nella fase 3.
 
 ## Limiti
 
-Analisi statica: un flusso dice cosa il codice rende possibile, non cosa avviene in esecuzione né quali percorsi seguano davvero gli utenti. Granularità e significato sono affermazioni del modello, da verificare sul sorgente; catene C/C++, RTL/hardware, MMIO, interrupt e AUTOSAR restano fuori da questo modello a tre strati finché mancano parser ed estrattori dedicati. La parte calcolata dalla macchina si aggiorna con `snapshot.py refresh` della fase 1; quella scritta dal modello no.
+Analisi statica: un flusso dice cosa il codice rende possibile, non cosa avviene in esecuzione né quali percorsi seguano davvero gli utenti. Granularità e significato sono affermazioni del modello, da verificare sul sorgente. Un nodo senza codice e i collegamenti che lo toccano sono dichiarati o proposti, mai ricavati dal sorgente; dove la mappa non analizza un linguaggio, la macchina non deduce collegamenti. La parte calcolata dalla macchina si aggiorna con `snapshot.py refresh` della fase 1; quella scritta dal modello no.
 
 ## Prova
 
@@ -92,7 +122,7 @@ Benchmark `benchmarks/flow-model/`, soglie scritte nel README prima di ogni misu
 2. **Fixture** di 8-10 moduli su due strati, con uno store condiviso tra due funzionalità distinte, una rotta HTTP, una violazione writer-reader e una variante lecita simile. Collegamenti trovati contro quelli attesi, con i dedotti contati a parte; verificare che le due funzionalità restino in flussi distinti. Includere campi indipendenti nello stesso store, rotte omonime in servizi diversi e identità ambigue: contare anche i collegamenti falsi e le lacune dichiarate.
 3. **Caso reale fra strati.** Da un fatto mostrato il flusso arriva allo store che lo contiene, attraverso la rotta dichiarata dal caso.
 4. **Etichette.** Granularità e significato su un campione di collegamenti, contro una lettura manuale; costo per collegamento.
-5. **Simboli e funzionalità.** Nella fixture, una catena di almeno tre chiamate fra file diversi, un ciclo e una funzionalità con più punti d'ingresso. Partendo da un simbolo e dalla funzionalità si ritrovano i flussi attesi; si contano i file entrati in un flusso senza appartenere a quelli attesi. Con un limite di byte basso tutti i file restano assegnati, in più unità, e i collegamenti fra unità restano consultabili. Un collegamento irrisolto, un'uscita dal confine di lettura e un budget esaurito lasciano ciascuno il flusso incompleto.
+5. **Simboli e funzionalità.** Nella fixture, una catena di almeno tre chiamate fra file diversi, un ciclo e una funzionalità con più punti d'ingresso. Partendo da un simbolo e dalla funzionalità si ritrovano i flussi attesi; si contano i file entrati in un flusso senza appartenere a quelli attesi. Con un limite di byte basso tutti i file restano assegnati, in più unità, e i collegamenti fra unità restano consultabili. Un collegamento irrisolto, un'uscita dal confine di lettura e un budget esaurito lasciano ciascuno il flusso incompleto. Un nodo senza codice, dichiarato con la sua evidenza, compare nel flusso con il collegamento marcato come dichiarato; al livello logico i simboli dello stesso modulo diventano un nodo e i collegamenti originali restano consultabili.
 
 ## Ordine di lavoro
 
@@ -102,4 +132,4 @@ Benchmark `benchmarks/flow-model/`, soglie scritte nel README prima di ogni misu
 4. Collegamenti dedotti fra strati; misure 2 e 3.
 5. `codebase_map_flows`, poi le etichette; misura 4.
 
-**Da decidere alla rifinitura:** il limite di un'unità; se l'esploratore mostra i flussi come vista propria o sopra le viste esistenti; se le unità estendono `scope_planner.py` o nascono accanto.
+**Da decidere alla rifinitura:** il limite di un'unità; dove si registra il tipo di un nodo; come distribuire i loghi rispettando l'avvertenza sui marchi della raccolta; se l'esploratore mostra i flussi come vista propria o sopra le viste esistenti; se le unità estendono `scope_planner.py` o nascono accanto.

@@ -1,0 +1,51 @@
+{
+  "case": "tududi",
+  "gaps": [],
+  "languages": {
+    "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    },
+    "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    }
+  },
+  "pass_seconds": 646.2,
+  "resolution": {
+    "askable": 36657,
+    "by_language": {
+      "javascript": {
+        "calls": 72842,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 23911,
+        "resolved": 11168,
+        "resolved_ratio": 0.467
+      },
+      "typescript": {
+        "calls": 38477,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 8806,
+        "resolved": 6114,
+        "resolved_ratio": 0.694
+      }
+    },
+    "calls": 111319,
+    "dynamic": 306,
+    "engine_confirmed": 8517,
+    "engine_unresolved": 13750,
+    "external": 78602,
+    "external_by_class": {
+      "builtin": 26789,
+      "engine-external-definition": 13011,
+      "no-project-name": 38802
+    },
+    "lexical_resolved": 8765,
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+    "resolvable": 32717,
+    "resolved": 17282,
+    "resolved_ratio": 0.528,
+    "unasked": 0
+  },
+  "snapshot_seconds": 91.9
+}

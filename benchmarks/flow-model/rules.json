@@ -1,0 +1,16 @@
+{
+  "schema": "daodan/flow-rules/v1",
+  "rules": [
+    {"callee": "web/store.ts::useStore", "link": "legge", "store": "web state", "key": "selector"},
+    {"callee": "web/store.ts::setState", "link": "scrive", "store": "web state", "key": "object"},
+    {"callee": "web/api.ts::apiGet", "link": "rotta", "route": {"service": "shop", "method": "GET", "path": "arg0"}},
+    {"callee": "web/api.ts::apiPost", "link": "rotta", "route": {"service": "shop", "method": "POST", "path": "arg0"}},
+    {"callee": "web/ui.ts::button", "link": "attiva", "handler": "arg1"},
+    {"callee": "server/http.py::route", "link": "offre", "decorates": true, "route": {"service": "shop", "method": "arg0", "path": "arg1"}},
+    {"callee": "admin/http.py::route", "link": "offre", "decorates": true, "route": {"service": "admin", "method": "arg0", "path": "arg1"}},
+    {"callee": "server/scheduler.py::scheduled", "link": "ingresso", "decorates": true, "entry": "lavoro pianificato"},
+    {"callee": "server/db.py::put", "link": "scrive", "store": "db", "key": "arg0"},
+    {"callee": "server/db.py::get", "link": "legge", "store": "db", "key": "arg0"},
+    {"callee": "server/db.py::find", "link": "legge", "store": "db", "key": "arg0"}
+  ]
+}

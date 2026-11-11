@@ -1,0 +1,46 @@
+{
+  "schema": "daodan/flow-fixture-expected/v1",
+  "app": "app",
+  "stores": {
+    "web state/cart": {"writes": ["web/cart.ts::addToCart"], "reads": ["web/cart.ts::addToCart", "web/cart.ts::renderCart"]},
+    "web state/theme": {"writes": ["web/cart.ts::toggleTheme"], "reads": ["web/cart.ts::toggleTheme"]},
+    "web state/payment": {"writes": ["web/checkout.ts::submitPayment"], "reads": ["web/checkout.ts::submitPayment", "web/badge.ts::renderBadge"]},
+    "db/payments": {"writes": ["server/payments.py::charge_order"], "reads": ["server/orders.py::is_paid", "server/receipts.py::receipt_lines", "server/jobs.py::retry_declined"]}
+  },
+  "routes": [
+    {"caller": "web/checkout.ts::submitPayment", "service": "shop", "method": "POST", "path": "/payments", "handler": "server/payments.py::create_payment"},
+    {"caller": "web/history.ts::loadHistory", "service": "shop", "method": "GET", "path": "/orders", "handler": "server/orders.py::list_orders"}
+  ],
+  "actions": [
+    {"label": "Paga", "in": "web/checkout.ts::renderCheckout", "handler": "web/checkout.ts::onPayClick"},
+    {"label": "Tema", "in": "web/cart.ts::renderCart", "handler": "web/cart.ts::toggleTheme"}
+  ],
+  "entry_points": {
+    "route": ["server/payments.py::create_payment", "server/orders.py::list_orders", "admin/orders.py::list_all_orders"],
+    "scheduled": ["server/jobs.py::retry_declined"],
+    "action": ["web/checkout.ts::onPayClick", "web/cart.ts::toggleTheme"]
+  },
+  "external_nodes": [{"module": "card payment provider", "reached_by": "server/gateway.py::charge"}],
+  "gaps": [{"symbol": "web/debug.ts::probe", "reason": "dynamic route path"}],
+  "forbidden_links": [
+    ["web/cart.ts::toggleTheme", "web/badge.ts::renderBadge"],
+    ["web/cart.ts::toggleTheme", "web/cart.ts::renderCart"],
+    ["web/history.ts::loadHistory", "admin/orders.py::list_all_orders"]
+  ],
+  "features": {
+    "payment": {"entry_points": ["web/checkout.ts::onPayClick", "server/jobs.py::retry_declined"]}
+  },
+  "call_chain": ["server/payments.py::charge_order", "server/billing.py::amount_for", "server/pricing.py::unit_price"],
+  "cycle": ["server/pricing.py::unit_price", "server/pricing.py::apply_discount"],
+  "cross_layer": {
+    "from": "web/badge.ts::renderBadge",
+    "store": "db/payments",
+    "through_route": ["shop", "POST", "/payments"]
+  },
+  "labels": [
+    {"writer": "server/payments.py::charge_order", "reader": "server/orders.py::is_paid", "consistent": false,
+     "why": "the writer keys one document per charge attempt; the reader looks it up by order"},
+    {"writer": "server/payments.py::charge_order", "reader": "server/receipts.py::receipt_lines", "consistent": true,
+     "why": "the reader selects the attempts of the order by their order field"}
+  ]
+}

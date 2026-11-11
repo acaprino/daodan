@@ -1,0 +1,353 @@
+{
+  "case": "phazly-react",
+  "gaps": [],
+  "languages": {
+    "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    },
+    "kotlin": {
+      "engine": "kotlin",
+      "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden",
+      "state": "failed"
+    },
+    "python": {
+      "engine": "jedi@0.20.1",
+      "state": "fresh"
+    },
+    "rust": {
+      "engine": "rust-analyzer@2026-11-09",
+      "state": "fresh"
+    },
+    "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    }
+  },
+  "pass_log": [],
+  "pass_seconds": 70.7,
+  "resolution": {
+    "askable": 5690,
+    "by_language": {
+      "javascript": {
+        "calls": 639,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 212,
+        "resolved": 65,
+        "resolved_ratio": 0.307
+      },
+      "kotlin": {
+        "calls": 573,
+        "engine": null,
+        "resolvable": 86,
+        "resolved": 36,
+        "resolved_ratio": 0.419
+      },
+      "python": {
+        "calls": 202,
+        "engine": "jedi@0.20.1",
+        "resolvable": 12,
+        "resolved": 8,
+        "resolved_ratio": 0.667
+      },
+      "rust": {
+        "calls": 29,
+        "engine": "rust-analyzer@2026-11-09",
+        "resolvable": 1,
+        "resolved": 0,
+        "resolved_ratio": 0.0
+      },
+      "typescript": {
+        "calls": 14915,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 7276,
+        "resolved": 2594,
+        "resolved_ratio": 0.357
+      }
+    },
+    "calls": 16358,
+    "dynamic": 83,
+    "engine_confirmed": 518,
+    "engine_unresolved": 4729,
+    "external": 8771,
+    "external_by_class": {
+      "builtin": 2017,
+      "engine-external-definition": 371,
+      "no-project-name": 6383
+    },
+    "lexical_resolved": 2185,
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+    "resolvable": 7587,
+    "resolved": 2703,
+    "resolved_ratio": 0.356,
+    "unasked": 50
+  },
+  "setup": null,
+  "snapshot_seconds": 26.0,
+  "unresolved": {
+    "javascript": {
+      "top_unresolved": [
+        [
+          "join [project-not-a-symbol]",
+          55
+        ],
+        [
+          "resolve [project-not-a-symbol]",
+          15
+        ],
+        [
+          "readFileSync [project-not-a-symbol]",
+          14
+        ],
+        [
+          "writeFileSync [project-not-a-symbol]",
+          10
+        ],
+        [
+          "existsSync [project-not-a-symbol]",
+          8
+        ],
+        [
+          "fileURLToPath [project-not-a-symbol]",
+          6
+        ],
+        [
+          "readdirSync [project-not-a-symbol]",
+          5
+        ],
+        [
+          "check [external-definition]",
+          5
+        ],
+        [
+          "spawnSync [project-not-a-symbol]",
+          5
+        ],
+        [
+          "createHash [project-not-a-symbol]",
+          4
+        ],
+        [
+          "mkdirSync [project-not-a-symbol]",
+          4
+        ],
+        [
+          "join [external-definition]",
+          4
+        ],
+        [
+          "dirname [project-not-a-symbol]",
+          3
+        ],
+        [
+          "execSync [project-not-a-symbol]",
+          2
+        ],
+        [
+          "extname [project-not-a-symbol]",
+          2
+        ],
+        [
+          "pathToFileURL [project-not-a-symbol]",
+          2
+        ],
+        [
+          "request [unresolved]",
+          2
+        ],
+        [
+          "parse [external-definition]",
+          2
+        ],
+        [
+          "defineConfig [project-not-a-symbol]",
+          1
+        ],
+        [
+          "globalIgnores [project-not-a-symbol]",
+          1
+        ],
+        [
+          "createInterface [project-not-a-symbol]",
+          1
+        ],
+        [
+          "validate [project-not-a-symbol]",
+          1
+        ],
+        [
+          "join [unresolved]",
+          1
+        ],
+        [
+          "spawn [project-not-a-symbol]",
+          1
+        ],
+        [
+          "statSync [project-not-a-symbol]",
+          1
+        ]
+      ],
+      "verdicts": {
+        "edge-call": 23,
+        "external-definition": 11,
+        "project-not-a-symbol": 141,
+        "unresolved": 3
+      }
+    },
+    "python": {
+      "top_unresolved": [
+        [
+          "Path [external-definition]",
+          4
+        ],
+        [
+          "TTFont [unresolved]",
+          1
+        ],
+        [
+          "subset [unresolved]",
+          1
+        ],
+        [
+          "mkdir [unresolved]",
+          1
+        ],
+        [
+          "load [unresolved]",
+          1
+        ],
+        [
+          "load [external-definition]",
+          1
+        ]
+      ],
+      "verdicts": {
+        "external-definition": 5,
+        "unresolved": 4
+      }
+    },
+    "rust": {
+      "top_unresolved": [
+        [
+          "run [unresolved]",
+          1
+        ]
+      ],
+      "verdicts": {
+        "unresolved": 1
+      }
+    },
+    "typescript": {
+      "top_unresolved": [
+        [
+          "t [project-not-a-symbol]",
+          2091
+        ],
+        [
+          "useState [project-not-a-symbol]",
+          335
+        ],
+        [
+          "useAppStore [project-not-a-symbol]",
+          255
+        ],
+        [
+          "cn [external-definition]",
+          248
+        ],
+        [
+          "useCallback [project-not-a-symbol]",
+          225
+        ],
+        [
+          "useTranslation [project-not-a-symbol]",
+          198
+        ],
+        [
+          "useMemo [project-not-a-symbol]",
+          159
+        ],
+        [
+          "number [unresolved]",
+          149
+        ],
+        [
+          "useEffect [project-not-a-symbol]",
+          139
+        ],
+        [
+          "useRef [project-not-a-symbol]",
+          135
+        ],
+        [
+          "t [unresolved]",
+          67
+        ],
+        [
+          "join [external-definition]",
+          31
+        ],
+        [
+          "now [external-definition]",
+          27
+        ],
+        [
+          "memo [project-not-a-symbol]",
+          25
+        ],
+        [
+          "useId [project-not-a-symbol]",
+          25
+        ],
+        [
+          "onOpenChange [project-not-a-symbol]",
+          23
+        ],
+        [
+          "lazy [project-not-a-symbol]",
+          23
+        ],
+        [
+          "onChange [project-not-a-symbol]",
+          22
+        ],
+        [
+          "useShallow [project-not-a-symbol]",
+          21
+        ],
+        [
+          "setUserProfile [project-not-a-symbol]",
+          17
+        ],
+        [
+          "onClose [project-not-a-symbol]",
+          16
+        ],
+        [
+          "useReducedMotion [project-not-a-symbol]",
+          14
+        ],
+        [
+          "closeSheet [project-not-a-symbol]",
+          12
+        ],
+        [
+          "toast [project-not-a-symbol]",
+          10
+        ],
+        [
+          "setCurrentPlan [project-not-a-symbol]",
+          10
+        ]
+      ],
+      "verdicts": {
+        "ambiguous-target": 2,
+        "edge-call": 517,
+        "external-definition": 355,
+        "project-not-a-symbol": 4247,
+        "unresolved": 331
+      }
+    }
+  }
+}

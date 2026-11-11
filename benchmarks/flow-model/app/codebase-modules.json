@@ -1,0 +1,21 @@
+{
+  "schema": "daodan/declared-modules/v1",
+  "modules": [
+    {
+      "name": "card payment provider",
+      "kind": "component",
+      "location": "external",
+      "responsibility": "Charges cards for the shop service",
+      "members": [],
+      "evidence": ["server/gateway.py"]
+    },
+    {
+      "name": "payment",
+      "kind": "feature",
+      "location": "internal",
+      "responsibility": "Charging an order and showing its payment state",
+      "members": ["web/checkout.ts", "web/badge.ts", "server/payments.py", "server/jobs.py"],
+      "evidence": ["server/payments.py"]
+    }
+  ]
+}
