@@ -226,7 +226,12 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--store", default=None,
                         help="project-relative analysis store beginning with a dot directory; "
                              "default .daodan/map, fixed for the lifetime of this server")
+    parser.add_argument("--hook", action="store_true",
+                        help="run the PostToolUse refresh hook in this runtime and exit")
     args = parser.parse_args(argv)
+    if args.hook:
+        import snapshot
+        raise SystemExit(snapshot.main(["hook"]))
     try:
         server = create_server(args.project, args.store)
     except ValueError as exc:

@@ -161,4 +161,6 @@ The coordinator prepares the review within Phase 0's scope:
 
 Stop when it is clear what is being reviewed and who should review it; defect analysis belongs to the reviewers.
 
+Every sentence of `01-context.md` about the data model names the type and the granularity it refers to (a record, a field, an addition to it), with `file:line`. A negation ("no X exists") cites the search that supports it; without one, write "not known".
+
 Keep a short description and relevant source references in `01-context.md`, and the selected reviewers with the reason for each and the assumptions behind the choice in `02-selection.md`. Pass the chosen catalog identities to `composition.py bind` as `selection` (`references/composition.md`), with the stack bindings of `references/stack-dimensions.md` and, on content basis, `coverage` from `snapshot.py files` on the bound run. Before dispatch show one compact plan: target and snapshot, rigor and why, selected reviewers and why, verification level, gaps. Record both paths and complete `phase_1_context` and `phase_1_selection` in `state.json`. Phase 2 dispatches the prepared jobs.

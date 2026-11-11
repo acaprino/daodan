@@ -35,6 +35,11 @@ Subcommands:
         Replace the phase-file mirror only after a complete delivery passes.
     register <run_dir> / unregister <run_dir>
         Update only this run's active entry under the publication registry lock.
+    refresh [<project>] [--store S]
+        Bring the run `working`, born from the published run, to the current source:
+        snapshot, index, modules and `chiama` edges, then `refresh.json`.
+    hook
+        PostToolUse entry: `refresh` after an edit inside the published perimeter.
 
 Standard library only. Parsing reuses the adapters in ./languages/. The Python
 grammar is the running interpreter's, so this script declares `requires-python`
@@ -907,13 +912,14 @@ def compare_files(manifest: dict, target: Path, verify: bool = False,
     }
 
 
-def compare_symbols(manifest: dict, comparison: dict) -> dict:
+def compare_symbols(manifest: dict, comparison: dict, entries=None) -> dict:
     """
     Classify symbols inside added and modified files, and record how the lines
     of every surviving symbol moved.
 
     `fresh` carries the re-parsed structure of those files so the caller does
-    not parse them a second time.
+    not parse them a second time. `entries`, the headers of a newer snapshot,
+    replaces the parse.
     """
     old_files = file_headers(manifest)
     added, removed, changed = [], [], []
@@ -921,9 +927,8 @@ def compare_symbols(manifest: dict, comparison: dict) -> dict:
     fresh: dict[str, dict] = {}
 
     for rel in comparison["added"] + comparison["modified"]:
-        path = comparison["current"][rel]
         try:
-            entry = file_entry(path)
+            entry = entries[rel] if entries is not None else file_entry(comparison["current"][rel])
         except OSError:
             continue
         fresh[rel] = {"symbols": entry["symbols"], "imports": entry["imports"],
@@ -3133,6 +3138,208 @@ def cmd_publish(args: argparse.Namespace) -> int:
         return 2
 
 
+WORKING_RUN = "working"
+# Over this share of changed files a refresh rebuilds without reusing a parse.
+FULL_REBUILD_SHARE = 0.4
+
+
+def published_run(root: Path) -> Path | None:
+    """The store's latest complete run, the one the working run follows."""
+    registry = _read_json(root / "runs.json") or {}
+    run_id = registry.get("latest_completed")
+    if not isinstance(run_id, str) or not run_id or run_id == WORKING_RUN:
+        return None
+    run = root / "runs" / run_id
+    state = _read_json(run / "state.json")
+    return run if isinstance(state, dict) and state.get("status") == "complete" else None
+
+
+def _hold(path: Path, wait: bool) -> _RegistryLock | None:
+    _reject_links(path)
+    descriptor = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)
+    while not _try_lock(descriptor):
+        if not wait:
+            os.close(descriptor)
+            return None
+        time.sleep(0.05)
+    return _RegistryLock(path, descriptor)
+
+
+def _refresh_action(root: Path) -> str:
+    project = store_project(root)
+    store = root.relative_to(project).as_posix()
+    return f"snapshot.py refresh {project.as_posix()}" + ("" if store == CANONICAL_STORE else f" --store {store}")
+
+
+def query_gate(manifest: Path) -> dict | None:
+    """None when a query may answer from this snapshot, else why not and what to run.
+
+    Only the working run and the published run are gated: the working run when
+    its last refresh did not end fresh or left another manifest, both when the
+    source differs from the snapshot by `compare_files` (size and mtime first:
+    an edit keeping both is not seen).
+    """
+    manifest = Path(manifest).resolve()
+    run = manifest.parent.parent
+    if manifest.parent.name != "snapshot" or run.parent.name != "runs":
+        return None
+    root = run.parent.parent
+    if run.name != WORKING_RUN and published_run(root) != run:
+        return None
+
+    def needs(reason: str) -> dict:
+        return {"state": "needs_refresh", "run_id": run.name, "reason": reason,
+                "action": _refresh_action(root) + f", then query run {WORKING_RUN!r}"}
+
+    if run.name == WORKING_RUN:
+        refresh = _read_json(run / "refresh.json") or {}
+        if refresh.get("status") != "fresh":
+            return needs(f"working run refresh is {refresh.get('status', 'missing')}"
+                         + (f": {refresh['error']}" if refresh.get("error") else ""))
+        st = manifest.stat()
+        if refresh.get("manifest_stat") != [st.st_ino, st.st_size, st.st_mtime_ns]:
+            return needs("the working snapshot is not the one its last refresh published")
+    with open_snapshot(manifest) as store:
+        comparison = compare_files(store, Path(store["root"]) / store["target"])
+    changed = comparison["added"] + comparison["removed"] + comparison["modified"]
+    if changed:
+        return needs(f"{len(changed)} files changed since the snapshot: " + ", ".join(changed[:5]))
+    return None
+
+
+def refresh_working(root: Path) -> dict:
+    """Bring the working run to the current source; one refresh runs, at most one waits."""
+    published = published_run(root)
+    if published is None:
+        return {"status": "skipped", "reason": "no published run"}
+    working = root / "runs" / WORKING_RUN
+    (working / "snapshot").mkdir(parents=True, exist_ok=True)
+    queued = _hold(working / ".refresh-queue.lock", wait=False)
+    if queued is None:
+        return {"status": "queued", "reason": "a refresh is already waiting and will see this change"}
+    try:
+        active = _hold(working / ".refresh.lock", wait=True)
+    finally:
+        queued.unlink()
+    try:
+        return _refresh_locked(root, published, working)
+    finally:
+        active.unlink()
+
+
+def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
+    import modules
+    import resolve_edges
+    import retrieval
+    from datetime import datetime, timezone
+
+    started = time.perf_counter()
+    report_path = working / "refresh.json"
+    previous = _read_json(report_path) or {}
+    pstate = _read_json(published / "state.json")
+    state = _read_json(working / "state.json") or {}
+    born = state.get("parent_run") != published.name
+    if born:
+        state = {key: pstate.get(key) for key in ("mode", "target", "flags", "snapshot")}
+        state.update(run_id=WORKING_RUN, status="working", parent_run=published.name,
+                     engine=pstate.get("engine", True))
+        for stale in (working / "snapshot").glob("manifest.*"):
+            stale.unlink()
+        if (published / "snapshot/proposals.json").is_file():
+            shutil.copy2(published / "snapshot/proposals.json", working / "snapshot/proposals.json")
+        _write_json_atomic(working / "state.json", state)
+    manifest = working / state["snapshot"]["path"]
+    target = Path(state["target"])
+    target = (target if target.is_absolute() else store_project(root) / target).resolve()
+    now = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")  # noqa: E731
+    try:
+        with ExitStack() as stack:
+            base = stack.enter_context(open_snapshot(resolve_run_snapshot(published if born else working, state)))
+            raw: dict = {}
+            comparison = compare_files(base, target, verify=True, raw_hashes=raw)
+            headers = file_headers(base)
+            changed = sorted(comparison["added"] + comparison["removed"] + comparison["modified"]
+                             + [name for name in comparison["unchanged"]
+                                if raw.get(name) != headers[name].get("raw_hash")])
+            if not born and not changed and previous.get("status") == "fresh":
+                return {"status": "unchanged", "changed": 0}
+            full = len(changed) > FULL_REBUILD_SHARE * max(len(headers), 1)
+            _write_json_atomic(report_path, {"status": "running", "started_at": now()})
+            resolve_edges.reset_pass(manifest)
+            written = write_snapshot(target, manifest, format=state["snapshot"]["format"],
+                                     previous=None if full else base)
+        failed = [f"{name}: {result['state']}: {result.get('reason', '')}"
+                  for name, result in (("index", retrieval.ensure_index(manifest)),
+                                       ("modules", modules.ensure_graph(manifest)))
+                  if result["state"] != "fresh"]
+        if failed:
+            raise ValueError("; ".join(failed))
+        engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
+        with ExitStack() as stack:
+            base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
+            current = stack.enter_context(open_snapshot(manifest))
+            old, new = file_headers(base), file_headers(current)
+            delta = {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new))}
+            delta["modified"] = sorted(name for name in set(old) & set(new)
+                                       if old[name].get("hash") != new[name].get("hash"))
+            delta["unchanged"] = sorted(set(old) & set(new) - set(delta["modified"]))
+            symbols = compare_symbols(base, delta, entries=new)
+        st = manifest.stat()
+        report = {
+            "status": "fresh", "refreshed_at": now(), "published_run": published.name,
+            "rebuild": "full" if full else "incremental", "changed_since_last": len(changed),
+            "parsed_files": written["metrics"]["parsed_files"],
+            "seconds": round(time.perf_counter() - started, 2),
+            "engine": {"fresh": "fresh", "running": "running", "sampled": "partial"}.get(engine["state"],
+                                                                                          "unavailable"),
+            "manifest_stat": [st.st_ino, st.st_size, st.st_mtime_ns],
+            "since_published": {"files": {key: delta[key] for key in ("added", "removed", "modified")},
+                                "symbols": {key: symbols[key] for key in ("added", "removed", "changed")},
+                                "claims": scan_claims(published, delta, symbols, [])},
+        }
+    except (OSError, ValueError, KeyError, TypeError, RunControlError) as error:
+        report = {"status": "failed", "refreshed_at": now(), "error": str(error)}
+    _write_json_atomic(report_path, report)
+    return {key: value for key, value in report.items() if key != "since_published"}
+
+
+def cmd_refresh(args: argparse.Namespace) -> int:
+    try:
+        project = Path(args.project).resolve()
+        root = project / (validate_store(args.store) if args.store else CANONICAL_STORE)
+        result = refresh_working(root)
+    except (RunControlError, OSError, ValueError) as error:
+        result = {"status": "failed", "error": str(error)}
+    print(json.dumps(result, sort_keys=True))
+    return 2 if result["status"] == "failed" else 0
+
+
+def cmd_hook(args: argparse.Namespace) -> int:
+    """PostToolUse: refresh after an edit inside the published run's perimeter; never fails the tool."""
+    try:
+        payload = json.loads(sys.stdin.read() or "{}")
+        cwd = Path(payload.get("cwd") or os.getcwd()).resolve()
+        root = next((base / CANONICAL_STORE for base in (cwd, *cwd.parents)
+                     if (base / CANONICAL_STORE / "runs.json").is_file()), None)
+        published = published_run(root) if root is not None else None
+        if published is None:
+            return 0
+        tool_input = payload.get("tool_input") or {}
+        edited = tool_input.get("file_path") or tool_input.get("notebook_path")
+        if edited:
+            project = store_project(root)
+            target = Path((_read_json(published / "state.json") or {}).get("target", "."))
+            target = (target if target.is_absolute() else project / target).resolve()
+            path = (cwd / edited).resolve()
+            if (not path.is_relative_to(target) or path.relative_to(project).parts[0] in (".daodan", ".team-review")
+                    or not Perimeter(target).covers(path)):
+                return 0
+        print(json.dumps(refresh_working(root), sort_keys=True))
+    except (RunControlError, OSError, ValueError, AttributeError, TypeError):
+        pass
+    return 0
+
+
 def inventory_rows(manifest: Path) -> list[dict]:
     """Every snapshot file with the identity of its bytes, sorted by path: the inventory a review splits."""
     with open_snapshot(Path(manifest)) as store:
@@ -3339,6 +3546,10 @@ def cmd_search(args: argparse.Namespace) -> int:
         anchors = [_search_anchor(item) for item in args.anchor or []]
         if any(set(anchor) - {"entity_id", "path", "symbol", "line", "start", "end"} for anchor in anchors):
             raise ValueError("anchor keys are entity_id, path, symbol, line, start and end")
+        gate = query_gate(manifest)
+        if gate is not None:
+            print(json.dumps(gate, indent=2, sort_keys=True))
+            return 1
         state = retrieval.index_state(manifest)
         if state["state"] != "fresh":
             print(json.dumps(retrieval.gap_result(state, args.limit, _index_command(manifest)), indent=2, sort_keys=True))
@@ -3385,6 +3596,10 @@ def cmd_meta_query(args: argparse.Namespace) -> int:
 def cmd_edit_impact(args: argparse.Namespace) -> int:
     try:
         from semantic_store import build_edit_impact
+        gate = query_gate(Path(args.manifest))
+        if gate is not None:
+            print(json.dumps(gate, indent=2, sort_keys=True))
+            return 1
         with open_snapshot(Path(args.manifest)) as store:
             result = build_edit_impact(
                 store, args.target, cards_path=_cards_path(args), neighbors=args.neighbors,
@@ -3407,6 +3622,10 @@ def cmd_symbols_at(args: argparse.Namespace) -> int:
             raise ValueError("symbols-at --diff requires --base")
         if args.diff is None and args.base:
             raise ValueError("symbols-at --base requires --diff")
+        gate = query_gate(Path(args.manifest))
+        if gate is not None:
+            print(json.dumps(gate, indent=2, sort_keys=True))
+            return 1
         with ExitStack() as stack:
             candidate = stack.enter_context(open_snapshot(Path(args.manifest)))
             if args.diff is not None:
@@ -3616,6 +3835,14 @@ def main(argv: list[str] | None = None) -> int:
     stale_parser.add_argument("--base-engine-store", type=Path)
     stale_parser.add_argument("--candidate-engine-store", type=Path)
     stale_parser.set_defaults(func=cmd_stale_callers)
+
+    refresh_parser = sub.add_parser("refresh", help="bring the working run to the current source")
+    refresh_parser.add_argument("project", nargs="?", default=".")
+    refresh_parser.add_argument("--store", help="project-relative custom analysis store")
+    refresh_parser.set_defaults(func=cmd_refresh)
+
+    hook_parser = sub.add_parser("hook", help="PostToolUse entry: refresh after an edit in the published perimeter")
+    hook_parser.set_defaults(func=cmd_hook)
 
     meta_upsert_parser = sub.add_parser("meta-upsert", help="write Meta-Code cards, bound to the digests of this snapshot, to the card store")
     meta_upsert_parser.add_argument("manifest")

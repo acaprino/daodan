@@ -28,7 +28,8 @@ these conventions in the brief. Reuse existing contracts and native report forma
   A pattern or missing preferred technique alone proves nothing. Where the
   project configures a linter or formatter, style and formatting are its job,
   not findings; report only what those tools cannot see. Calibrate severity
-  to impact; invent no percentages, loads, timings, costs, universal thresholds
+  to impact: false information shown to the user, or an action the user can no
+  longer take, is at least Medium. Invent no percentages, loads, timings, costs, universal thresholds
   or finding quotas. Route overlaps by the violated mechanism or contract.
 
 ## Context economy and coverage

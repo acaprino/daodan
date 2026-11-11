@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run --no-config --no-project --script \"${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py\" --hook",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
