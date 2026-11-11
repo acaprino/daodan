@@ -1,6 +1,6 @@
 # Fase 2: flussi e unità ricavati dal grafo
 
-**Stato:** abbozzo, da rifinire dopo la [fase 1](2026-11-09-working-run-and-review-fixes.md). **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
+**Stato:** in prova. `flows.py` applica le regole, traccia i flussi e forma le unità, senza strumento MCP; misure 2, 3 e 5 sulla fixture e prima applicazione a un caso reale in [`benchmarks/flow-model`](../../benchmarks/flow-model/README.md) e [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). Restano le misure 1 e 4, la scheda del flusso, i livelli e `codebase_map_flows`. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
 
 Codebase Map deve saper rispondere a due domande: «chi scrive il dato che l'applicativo mostra o restituisce, e cosa significa?» e «cosa succede quando arriva questa azione o questa richiesta?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark. Riapre l'esclusione dei flussi nel [FRD](../frd/2026-11-07-codebase-explorer.md) e nell'[ADR](../adr/2026-11-07-codebase-explorer.md) dell'esploratore.
 

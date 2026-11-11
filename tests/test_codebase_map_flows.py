@@ -178,6 +178,12 @@ class WrittenRuleTests(unittest.TestCase):
                          {"writes": ["web/store.ts::add", "web/store.ts::reset"],
                           "reads": ["web/store.ts::report", "web/store.ts::reset", "web/view.tsx::View"]})
 
+    def test_a_wrapped_selector_reads_every_field_it_names(self):
+        call = {"args": [("shallow((s) => ({ n: s.count, r: s.reset }))", 1, 0)], "parts": ["useStore"], "file": "x"}
+        self.assertEqual(flows._keys("selector", call, None), ["count", "reset"])
+        call["args"] = [("(s) => s.count", 1, 0)]
+        self.assertEqual(flows._keys("selector", call, None), ["count"])
+
     def test_a_state_held_whole_gives_the_properties_read_on_its_variable(self):
         self.assertIn(("web/store.ts::report", "web/store.ts::reset"), self.edges("chiama"))
 

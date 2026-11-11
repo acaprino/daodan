@@ -14,7 +14,7 @@ Where, one of:
   name declared there and called by its name (a store hook a library creates).
 - `written`: the callee as written, dotted, for calls that go through a library
   object (`router.post`, `db.*.find_one|find`); `*` is any part, `|` separates
-  alternatives. `in` restricts it to path prefixes.
+  alternatives. `in` restricts it to directories or single files.
 - `attribute`: a markup attribute bound to a handler (`on*`), within `in`.
 
 What (`link`):
@@ -25,8 +25,9 @@ What (`link`):
   a key naming a function declared as a property under those prefixes is a call to
   it, also through the variable that holds it.
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
-  `path`, each a literal, `argN` or `partN`; `strip` removes a leading text from
-  the path. With `decorates` the route belongs to the decorated function.
+  `path`, each a literal, `argN` or `partN`. `strip`, a field of the rule beside
+  `route`, removes a leading text from the path. With `decorates` the route
+  belongs to the decorated function.
 - `attiva`: a user action bound to the handler in `handler` (`argN`), or to the
   handler an `attribute` names.
 - `ingresso`: an entry point of kind `entry`; with `decorates`, the decorated function.
@@ -447,8 +448,20 @@ def _keys(spec: str, call, facts) -> list[str] | None:
         return None
     text = call["args"][0][0]
     if spec == "selector":
-        match = _SELECTOR.match(text.strip()) or _LAMBDA.match(text.strip())
-        return [match.group(2)] if match else None
+        text = text.strip()
+        wrapped = re.match(r"[A-Za-z_$][\w$.]*\s*(?=\()", text)
+        if wrapped and not _ARROW.match(text):
+            # A selector passed through a wrapper: the wrapper's first argument selects.
+            inner = call_arguments(text[wrapped.end():])
+            text = inner[0].strip() if inner else text
+        match = _SELECTOR.match(text) or _LAMBDA.match(text)
+        if match:
+            return [match.group(2)]
+        # A selector that builds a value from several fields reads each field it names.
+        parameter = re.match(r"\(?\s*([A-Za-z_$][\w$]*)\s*(?::[^)=]*)?\)?\s*=>", text)
+        fields = re.findall(r"(?<![\w$.])" + re.escape(parameter.group(1)) + r"\s*\??\.\s*([A-Za-z_$][\w$]*)",
+                            text[parameter.end():]) if parameter else []
+        return list(dict.fromkeys(fields)) or None
     return object_keys(text) if spec == "object" else None
 
 
