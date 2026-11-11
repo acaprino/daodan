@@ -2,8 +2,8 @@
 
 Read each job's findings and gaps from its one result at `job.output_path` (JSON for a job with paths), then apply these deduplication and calibration rules:
 
-1. **Deduplicate**: merge findings that reference the same `file:line` + same issue. Credit all reviewers.
-2. **Co-locate**: same `file:line` but different issues -> keep separate, tag as co-located.
+1. **Deduplicate**: merge findings only when they have the same cause and the same triggering situation (`trigger`). Credit all reviewers.
+2. **Co-locate**: same `file:line` but a different cause or trigger -> keep separate findings in the report, tag as co-located.
 3. **Resolve severity conflicts**: use the higher rating.
 4. **Cross-reference, weighted by provenance.** Per `## Shared-Context Provenance Rule` in the `senior-review:review-quality-gates` skill, agreement is only corroboration when the agreeing findings did not inherit the same premise.
    - Findings that agree and are all `independent`, or whose load-bearing premises are disjoint: **corroborated**. Report as a likely-real root cause.

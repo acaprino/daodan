@@ -12,6 +12,10 @@ Input: variant, target/flags, output root; optional same-snapshot `prepared` bun
 Preparation resolves absent `shape` (`light`/`branch`) and `target-kind`
 (`changeset`/`plan`/`spec`/`doc`). Output: native report and project-result envelope.
 
+The first action of every review is loading `senior-review:review-preparation`
+(step 1), unless a prepared bundle exists. Whoever cannot follow this method says
+so in the first line of the reply and stops; it never reviews on its own.
+
 Before either shape, verify the [Codebase Map prerequisite](../../README.md#prerequisito):
 the entire project's map must already be complete.
 

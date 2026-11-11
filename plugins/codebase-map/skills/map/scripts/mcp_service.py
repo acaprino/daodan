@@ -85,6 +85,14 @@ def _json(path: Path) -> dict:
     return value
 
 
+def _evidence_run(run_id: str) -> str:
+    """A run that documents, reviews or progresses is never the working run."""
+    if run_id == snapshot.WORKING_RUN:
+        raise ValueError("the working run has no analysis documents and serves no review or phase; "
+                         "use the published run, or a run created for the review")
+    return run_id
+
+
 def _write(path: Path, value: dict) -> None:
     confinement.reject_link_chain(path)
     snapshot._write_json_atomic(path, value)
@@ -344,7 +352,7 @@ class MapService:
 
     def create_run(self, target, run_id, depth="full", critical=False, comments=False,
                    docs_only=False, phase=None, stop_after=None, format="sqlite", engine=True):
-        _run_id(run_id)
+        _evidence_run(_run_id(run_id))
         validate_format(format)
         if type(engine) is not bool:
             raise ValueError("engine must be a boolean")
@@ -454,6 +462,8 @@ class MapService:
             raise ValueError("limit must be an integer from 1 through 100")
         with self._operation():
             _, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
             state = retrieval.index_state(manifest.path)
             if state["state"] != "fresh":
                 return {**retrieval.gap_result(state, limit, f"codebase_map_index(run_id={run_id!r})"), "run_id": run_id}
@@ -502,6 +512,8 @@ class MapService:
                 result = module_graph.ensure_graph(manifest.path)
                 if result.get("action") in ("rebuilt", "refreshed"):
                     self._event(run, "modules_refreshed", message=result["action"])
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
             if query is not None:
                 return dict(module_graph.query_manifest(manifest.path, query, limit=limit), run_id=run_id)
             if brief:
@@ -530,6 +542,8 @@ class MapService:
             raise ValueError("pattern must be text of at most 1000 characters")
         with self._operation():
             _, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
     def _engine_store(self, run, value):
@@ -552,6 +566,8 @@ class MapService:
                 _relative(path)
         with self._operation():
             run, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
             return dict(source_reader.graph_packet(manifest, paths, hops, limit,
                         engine_store=self._engine_store(run, engine_store)), run_id=run_id)
 
@@ -560,6 +576,8 @@ class MapService:
             raise ValueError(f"requests must be a list containing 1 through {MAX_LIMIT} selections")
         with self._operation():
             _, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
             packet = dict(source_reader.read_packet(manifest, requests), run_id=run_id)
         if len(json.dumps(packet)) > MAX_READ_CHARS:
             raise ValueError(f"read result exceeds {MAX_READ_CHARS} characters; request fewer files, symbols or ranges")
@@ -575,6 +593,8 @@ class MapService:
                 raise ValueError(f"{name} must be a boolean")
         with self._operation():
             run, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
             packet = dict(semantic_store.build_edit_impact(
                 manifest, targets, cards_path=self.root / card_store.CARD_STORE_NAME,
                 neighbors=neighbors, history=history, include_source=include_source, hops=hops,
@@ -587,6 +607,7 @@ class MapService:
     def context(self, run_id, request, recipient, out='context', cursor=None, base_run_id=None, embedding_result=None):
         """Create a bounded evidence packet within an already bound analysis run."""
         import context_packet
+        _evidence_run(run_id)
         with self._operation(write=True):
             run, _, manifest, _ = self._bound_run(run_id)
             out = _relative(out)
@@ -638,6 +659,8 @@ class MapService:
             raise ValueError("base_run_id requires a diff")
         with self._operation():
             _, _, candidate, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(candidate.path):
+                return gate
             if diff is not None:
                 _, _, base, _ = self._bound_run(base_run_id)
                 packet = snapshot.symbols_at(candidate, base=base, diff=diff)
@@ -702,6 +725,7 @@ class MapService:
 
     def artifact(self, run_id, name):
         _relative(name)
+        _evidence_run(run_id)
         with self._operation():
             run, state, _, _ = self._bound_run(run_id)
             delivery = snapshot._validate_delivery(run, self.root, state)
@@ -735,6 +759,7 @@ class MapService:
         if event not in ("phase_started", "phase_completed", "blocked"):
             raise ValueError("event must be phase_started, phase_completed or blocked")
         _message(message)
+        _evidence_run(run_id)
         with self._operation(write=True):
             run, state, _, target = self._bound_run(run_id)
             if state.get("status") != "in_progress":
@@ -786,6 +811,7 @@ class MapService:
     def resume(self, run_id, phase=None):
         if phase is not None and (type(phase) is not int or phase not in range(1, 8)):
             raise ValueError("resume phase must be an integer from 1 through 7 or null")
+        _evidence_run(run_id)
         with self._operation(write=True):
             run, state, _, target = self._bound_run(run_id)
             if not target.exists():
@@ -819,6 +845,7 @@ class MapService:
         _message(reason)
         if not reason.strip():
             raise ValueError("stop requires a reason after the host has stopped its workers")
+        _evidence_run(run_id)
         with self._operation(write=True):
             run, state, _, _ = self._bound_run(run_id)
             if state.get("status") == "complete":
@@ -832,6 +859,7 @@ class MapService:
             return self._status(run_id, engine=True)
 
     def publish(self, run_id):
+        _evidence_run(run_id)
         with self._operation(write=True):
             run, _, _, target = self._bound_run(run_id)
             if not target.exists():

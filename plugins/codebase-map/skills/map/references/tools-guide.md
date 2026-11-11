@@ -20,6 +20,8 @@ A Python module-level constant is not a symbol: `outline` does not list it,
 `symbols_at` reports a gap and `edit_impact` returns it in `unknown_targets`.
 Find it with `search` and confirm it with `read`.
 
+Run `working` follows the code after every edit (`snapshot.py refresh`, started by the plugin's `PostToolUse` hook): query it instead of the published run; `needs_refresh` gives the reason and the command; analysis documents stay in the published run, and a review never uses `working`.
+
 Choosing, cheapest first: an explicit file needs no tool; a module name goes to
 `modules`; a name, error or domain word goes to `search`; a flow expands with
 `graph` one hop at a time from files already confirmed; `read` decides membership

@@ -611,6 +611,10 @@ def main(argv: list[str] | None = None) -> int:
     read.add_argument("--full", action="store_true")
     args = parser.parse_args(argv)
     try:
+        gate = snapshot.query_gate(args.manifest)
+        if gate is not None:
+            print(json.dumps(gate, ensure_ascii=False))
+            return 1
         with ExitStack() as stack:
             manifest = stack.enter_context(open_snapshot(args.manifest))
             if args.command == "outline":
