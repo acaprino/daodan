@@ -2403,20 +2403,48 @@ def grade(definition, inventory: set[str], tables: dict, root: Path,
 
 
 def grade_all(definitions, inventory: set[str], tables: dict, root: Path,
-              table_for) -> tuple[str, dict | None]:
-    """Confirm only if every engine answer identifies the same declaration."""
-    if not definitions:
-        return "unresolved", None
-    answers = [grade(item, inventory, tables, root, table_for) for item in definitions]
-    # The variable that holds a callable is answered beside the callable itself.
-    held = [answer for answer in answers if answer[0] != "binding"]
-    if not held:
-        return "project-not-a-symbol", None
-    answers = held
-    first_verdict, first_target = answers[0]
-    if all(answer == answers[0] for answer in answers):
-        return first_verdict, first_target
-    return "ambiguous-target", None
+              table_for, *, follow=None) -> tuple[str, dict | None]:
+    """Follow exact holders with engine evidence, bounded to 64 distinct queries.
+
+    A holder beside a confirmed callable names its container (requirement 14).
+    An external location alone does not identify a project holder's contents.
+    Cycles, missing answers and exhausted budgets keep uncertainty explicit.
+    """
+    memo, active = {}, set()
+    queries = 0
+
+    def walk(items):
+        nonlocal queries
+        if not items:
+            return "unresolved", None
+        unique = {(str(item.module_path), item.line, item.column): item for item in items}
+        graded = [(key, item, grade(item, inventory, tables, root, table_for))
+                  for key, item in unique.items()]
+        callable_found = any(answer[0].startswith("edge-") for _, _, answer in graded)
+        answers = []
+        for key, item, answer in graded:
+            if answer[0] == "binding":
+                if callable_found:
+                    continue
+                if follow is None or key in active or len(active) >= 32:
+                    answer = ("project-not-a-symbol", None)
+                elif key in memo:
+                    answer = memo[key]
+                elif queries >= 64:
+                    answer = ("project-not-a-symbol", None)
+                else:
+                    queries += 1
+                    active.add(key)
+                    children = follow(item)
+                    answer = walk(children) if children else ("project-not-a-symbol", None)
+                    active.remove(key)
+                    memo[key] = answer
+            answers.append(answer)
+        if all(answer == answers[0] for answer in answers):
+            return answers[0]
+        return "ambiguous-target", None
+
+    return walk(definitions)
 
 
 def runtime_imports(connection) -> dict[str, dict]:
@@ -2456,13 +2484,7 @@ def runtime_import_roots(connection) -> list[str]:
 
 
 def project_callee_names(connection) -> set[str]:
-    """Every name an engine edge can arrive at: declarations and import aliases.
-
-    `grade` accepts only a declaration of this inventory whose name equals the
-    engine's answer, so a call whose last name is none of these yields no edge
-    whatever the engine infers. Import aliases are kept because `from m import f
-    as g; g()` arrives at `f` under the name `g`.
-    """
+    """Names used to prioritize queries, never to prove a call external."""
     names = {unicodedata.normalize("NFKC", row[0]) for row in connection.execute(
         "SELECT DISTINCT name FROM sem_declarations WHERE kind IN ('function','method','class')")}
     # A Go method is declared as `Type.Method`; a call names it by the last segment.
@@ -2473,25 +2495,16 @@ def project_callee_names(connection) -> set[str]:
 
 
 def classify_reference(payload: dict, names: set[str]) -> str:
-    """One unresolved call: `builtin`, `dynamic`, `no-project-name` or `askable`.
-
-    The first two repeat what the lexical resolver recorded; the third is the
-    exact-name filter of `project_callee_names`; only `askable` positions are
-    worth an inference. Shared by the pass and by the edge view, so the
-    population the engine was asked about and the denominator a consumer reads
-    never differ.
-    """
+    """An unresolved call is builtin, dynamic or askable, regardless of its name."""
     parts = payload.get("parts") or []
     if payload.get("reason") in EXCLUDED_REASONS:
         return "builtin"
     if not parts:
         return "dynamic"
-    if unicodedata.normalize("NFKC", parts[-1]) not in names:
-        return "no-project-name"
     return "askable"
 
 
-REFERENCE_CLASSES = ("builtin", "dynamic", "no-project-name", "askable")
+REFERENCE_CLASSES = ("builtin", "dynamic", "askable")
 
 
 class ResolutionCounter:
@@ -2515,8 +2528,7 @@ class ResolutionCounter:
         """Resolved over resolvable, overall and per language.
 
         `external` counts the calls that cannot arrive at a project symbol under
-        their own name: builtins, callees named after no project function, class
-        or import, and the positions an engine inferred to a definition outside
+        proven origin: builtins and the positions an engine inferred to a definition outside
         the inventory. `resolvable` is every other call, dynamic callees included;
         `unasked` is the askable remainder no engine pass has inferred. Each
         language reads its own entry of the edge store; its `engine` is None when
@@ -2539,12 +2551,12 @@ class ResolutionCounter:
                 row["engine_confirmed"] += int(entry.get("confirmed", 0))
             for key in keys:
                 total[key] += row[key]
-            resolvable = row["calls"] - row["builtin"] - row["no-project-name"] - row["engine_external"]
+            resolvable = row["calls"] - row["builtin"] - row["engine_external"]
             resolved = row["lexical_resolved"] + row["engine_confirmed"]
             by_language[language] = {"calls": row["calls"], "resolved": resolved, "resolvable": resolvable,
                                      "resolved_ratio": round(resolved / resolvable, 3) if resolvable else None,
                                      "engine": entry.get("engine")}
-        external = total["builtin"] + total["no-project-name"] + total["engine_external"]
+        external = total["builtin"] + total["engine_external"]
         resolvable = total["calls"] - external
         resolved = total["lexical_resolved"] + total["engine_confirmed"]
         return {
@@ -2553,7 +2565,7 @@ class ResolutionCounter:
             "lexical_resolved": total["lexical_resolved"],
             "engine_confirmed": total["engine_confirmed"],
             "external": external,
-            "external_by_class": {"builtin": total["builtin"], "no-project-name": total["no-project-name"],
+            "external_by_class": {"builtin": total["builtin"],
                                   "engine-external-definition": total["engine_external"]},
             "resolvable": resolvable,
             "resolved_ratio": round(resolved / resolvable, 3) if resolvable else None,
@@ -2624,7 +2636,7 @@ def edge_destination(out: Path, manifest: Path, sources: dict[str, Path]) -> Pat
     return out
 
 
-EDGE_SCHEMA = 2
+EDGE_SCHEMA = 3
 EDGE_COLUMNS = ("reference_id", "file", "language", "caller", "target_id", "verdict", "resolver", "confidence",
                 "l0", "c0", "payload")
 
@@ -3006,7 +3018,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         context = None if dry_run else getattr(engine, "context", lambda: None)()
         cached, known, cache_path, cache_note, digests = {}, {}, None, None, {}
         if context is not None:
-            context = f"{context}|{store['target']}|{fingerprint}|{semantic_store.RESOLVER_VERSION}"
+            context = f"{context}|{store['target']}|{fingerprint}|{semantic_store.RESOLVER_VERSION}|{EDGE_SCHEMA}"
             digests = dependency_digests(hashes, file_dependencies(connection))
             try:
                 cache_path = edge_destination(default_answers_path(manifest), manifest, source_paths)
@@ -3014,7 +3026,9 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             except (OSError, ValueError, sqlite3.Error) as error:
                 cache_path, cache_note = None, f"answer cache unusable: {error}"
         ranks = file_ranks(connection)
-        population.sort(key=lambda row: (known.get(row[1]) == hashes.get(row[1]), -ranks.get(row[1], 0.0),
+        population.sort(key=lambda row: (known.get(row[1]) == hashes.get(row[1]),
+                                         ((_unpack(row[2]).get("parts") or [""])[-1] not in callee_names),
+                                         -ranks.get(row[1], 0.0),
                                          row[1], row[3] or 0, row[4] or 0, row[0]))
 
         def reusable(row):
@@ -3193,9 +3207,22 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                 finally:
                     latencies.append(time.perf_counter() - started)
                 try:
+                    witnesses = list(inferred)
+
+                    def follow(location):
+                        try:
+                            children = engine.definitions(Path(location.module_path), location.line, location.column)
+                        except (EngineFailure, MemoryError):
+                            raise
+                        except Exception:
+                            # An unsupported follow-up is missing evidence, never external.
+                            return []
+                        witnesses.extend(children)
+                        return children
+
                     verdict, target = grade_all(inferred, inventory, declarations, store_root,
                                                lambda name: symbol_table(connection, name,
-                                                                         "\n".join(lines_for(name))))
+                                                                         "\n".join(lines_for(name))), follow=follow)
                 except (OSError, UnicodeError) as error:
                     failure = {"reason": f"target source became unavailable during inference: {error}",
                                "stage": "after-inference"}
@@ -3206,7 +3233,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                     answers.append({"context": context, "engine": engine.name, "reference_id": reference_id,
                                     "file": rel, "file_hash": hashes.get(rel) or "", "file_digest": digests.get(rel, ""),
                                     "verdict": verdict, "target_id": target_id,
-                                    "targets": answer_targets(inferred, store_root, hashes),
+                                    "targets": answer_targets(witnesses, store_root, hashes),
                                     "resolver": engine.identity(), "line": l1, "column": column})
                 if not dry_run and time.perf_counter() - progress["published"] >= PUBLISH_SECONDS:
                     failure = publish(partial=True)

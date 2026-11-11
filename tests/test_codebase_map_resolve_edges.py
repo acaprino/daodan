@@ -57,8 +57,8 @@ class StubEngine:
 
     def definitions(self, path, line, column):
         self.asked.append((Path(path).name, line, column))
-        answer = self.answers.get((Path(path).name, line))
-        return [] if answer is None else [answer]
+        answer = self.answers.get((Path(path).name, line, column), self.answers.get((Path(path).name, line)))
+        return [] if answer is None else answer if isinstance(answer, list) else [answer]
 
 
 class ResolveEdgesTests(unittest.TestCase):
@@ -606,24 +606,35 @@ class ResolvabilityTests(unittest.TestCase):
         return resolve_edges.resolve_edges(self.manifest, engine=engine or self.confirming_engine(),
                                            limit=None, stride=1)
 
-    def test_calls_that_cannot_reach_the_project_leave_the_denominator(self):
+    def test_only_proven_external_calls_leave_the_denominator(self):
         with open_snapshot(self.manifest) as store:
             summary = resolve_edges.resolution_summary(store.connection, None)
         self.assertEqual((summary["calls"], summary["resolved"], summary["external"], summary["resolvable"]),
-                         (3, 0, 2, 1))
+                         (3, 0, 1, 2))
         self.assertEqual(summary["external_by_class"],
-                         {"builtin": 1, "no-project-name": 1, "engine-external-definition": 0})
-        self.assertEqual((summary["askable"], summary["unasked"], summary["resolved_ratio"]), (1, 1, 0.0))
+                         {"builtin": 1, "engine-external-definition": 0})
+        self.assertEqual((summary["askable"], summary["unasked"], summary["resolved_ratio"]), (2, 2, 0.0))
 
-    def test_the_engine_is_asked_only_about_callees_the_project_declares(self):
+    def test_project_names_are_prioritized_but_other_names_are_asked(self):
         engine = self.confirming_engine()
         report = self.run_pass(engine)
         self.assertTrue(report["available"], report)
-        self.assertEqual([line for _name, line, _column in engine.asked], [self.run_line()])
-        self.assertEqual(report["excluded_classes"], {"builtin": 1, "no-project-name": 1})
+        self.assertEqual([line for _name, line, _column in engine.asked], [self.run_line(), self.run_line() - 1])
+        self.assertEqual(report["excluded_classes"], {"builtin": 1})
         resolution = report["resolution"]
         self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["resolved_ratio"]),
-                         (1, 1, 1.0))
+                         (1, 2, 0.5))
+
+    def test_an_alias_absent_from_project_names_can_resolve_internally(self):
+        (self.root / "app/use.py").write_text(
+            "from .tool import Tool\ndef use():\n    alias = Tool.run\n    return alias(None)\n",
+            encoding="utf-8")
+        snapshot.write_snapshot(self.root, self.manifest)
+        with open_snapshot(self.manifest) as store:
+            self.assertNotIn("alias", resolve_edges.project_callee_names(store.connection))
+        engine = StubEngine({("use.py", 4): Definition(self.root / "app/tool.py", "run")})
+        resolution = self.run_pass(engine)["resolution"]
+        self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["external"]), (1, 1, 0))
 
     def test_each_language_says_whether_an_engine_covers_it(self):
         (self.root / "app/use.ts").write_text(
@@ -727,7 +738,7 @@ class ResolvabilityTests(unittest.TestCase):
         self.assertEqual(view["coverage"]["engine_pass"]["state"], "running")
         self.assertTrue(any(gap.startswith("engine pass running") for gap in view["gaps"]), view["gaps"])
         resolution = view["coverage"]["resolution"]
-        self.assertEqual((resolution["resolvable"], resolution["resolved"]), (1, 0))
+        self.assertEqual((resolution["resolvable"], resolution["resolved"]), (2, 0))
 
     def test_rewriting_a_manifest_first_ends_the_pass_over_its_old_revision(self):
         import contextlib
@@ -766,19 +777,11 @@ class ResolvabilityTests(unittest.TestCase):
 
 
 class HomonymHolderTests(unittest.TestCase):
-    """Calls to `t` through a variable, in any language: the engine answers only the variable.
+    """Same-name calls and library-returned values in Python and TypeScript.
 
-    The project declares a function `t`, so the name filter lets every `t()` in. A
-    held call is external only when the function it calls is proven to live outside
-    the project; a library call filling the variable is no proof, because a library
-    can hand back a project function. Two languages, one criterion:
-
-    - `label.ts` and `label.py` hold a function of a package (`useTranslation()`,
-      `gettext.translation(...).gettext`): external.
-    - `memo.ts` and `memo.py` hold a project function returned by a library
-      (`useCallback(localT, [])`, `functools.partial(local_t)`): resolvable.
-
-    Today every held call is `project-not-a-symbol`, inside the denominator.
+    Holder-only responses cannot prove provenance. Follow-up responses that name
+    the actual callable can; the factory's location is never used as that proof.
+    Scripted engine responses test the common grading, not LSP inference quality.
     """
 
     SOURCES = {
@@ -833,7 +836,9 @@ class HomonymHolderTests(unittest.TestCase):
             answers[(Path(rel).name, line)] = Definition(outside / "lib", library, line=1, column=0)
             line, column = at(rel, holder)
             column += holder.index("t")
-            answers[(Path(rel).name, line + 1)] = Definition(self.root / rel, "t", line=line, column=column)
+            holder_definition = Definition(self.root / rel, "t", line=line, column=column)
+            answers[(Path(rel).name, line + 1)] = holder_definition
+            answers[(Path(rel).name, line, column)] = holder_definition
         line, column = at("web/i18n.ts", "t(key")
         answers[("title.ts", 3)] = Definition(self.root / "web/i18n.ts", "t", line=line, column=column)
         engine = StubEngine(answers)
@@ -863,11 +868,90 @@ class HomonymHolderTests(unittest.TestCase):
         self.assertEqual((verdicts["web/memo.ts"], verdicts["app/memo.py"]),
                          ("project-not-a-symbol", "project-not-a-symbol"))
 
-    @unittest.expectedFailure
-    def test_a_library_function_held_in_a_variable_is_external(self):
+    def test_a_holder_without_callable_evidence_stays_unresolved(self):
         verdicts = self.verdicts()
         self.assertEqual((verdicts["web/label.ts"], verdicts["app/label.py"]),
-                         ("external-definition", "external-definition"))
+                         ("project-not-a-symbol", "project-not-a-symbol"))
+
+    def test_an_engine_answer_with_holder_and_callable_is_resolved(self):
+        engine = self.engine("typescript")
+        holder = engine.answers[("label.ts", 4)]
+        engine.answers[("label.ts", 4)] = [holder, engine.answers[("title.ts", 3)]]
+        resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1, out=self.edges)
+        with open_snapshot(self.manifest) as store:
+            edges, _, _ = resolve_edges.read_edge_store(self.edges, store)
+        _, calls = self.calls()
+        found = next(edge for edge in edges if edge["reference_id"] == calls["web/label.ts"][0])
+        self.assertEqual(found["verdict"], "edge-call")
+
+    def test_following_a_holder_uses_the_callable_not_the_factory(self):
+        for language, rel in (("typescript", "web/label.ts"), ("python", "app/label.py")):
+            before = resolve_edges.resolve_edges(self.manifest, engine=self.engine(language),
+                                                 limit=None, stride=1, out=self.edges)["resolution"]
+            engine = self.engine(language)
+            for key, answer in list(engine.answers.items()):
+                if len(key) == 3 and answer.module_path == self.root / rel:
+                    engine.answers[key] = Definition(self.root.parent / "packages/translate", "translate")
+            after = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None,
+                                                stride=1, out=self.edges)["resolution"]
+            self.assertEqual(after["external"], before["external"] + 1)
+            self.assertEqual(after["resolvable"], before["resolvable"] - 1)
+            self.assertEqual(after["resolved"], before["resolved"])
+        with open_snapshot(self.manifest) as store:
+            edges, _, reason = resolve_edges.read_edge_store(self.edges, store)
+        self.assertIsNone(reason)
+        _, calls = self.calls()
+        verdicts = {edge["reference_id"]: edge["verdict"] for edge in edges}
+        for rel in ("web/memo.ts", "app/memo.py"):
+            self.assertEqual(verdicts[calls[rel][0]], "project-not-a-symbol")
+
+
+
+class ProvenanceGradingTests(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(__file__).resolve().parent
+        self.path = self.root / "virtual.py"
+        self.external = Definition(self.root.parent / "outside.py", "external")
+        self.target = Definition(self.path, "run", line=100, column=0)
+        self.holder = Definition(self.path, "held", line=1, column=0)
+        self.table = ({**{(n, 0): (f"holder-{n}", "binding") for n in range(1, 100)},
+                       (100, 0): ("target", "function")}, set())
+
+    def grade(self, definitions, follow):
+        return resolve_edges.grade_all(definitions, {"virtual.py"}, {}, self.root,
+                                       lambda _: self.table, follow=follow)
+
+    def test_holder_beside_callable_keeps_the_confirmed_edge(self):
+        verdict, target = self.grade([self.holder, self.target], lambda _: [self.holder])
+        self.assertEqual((verdict, target["id"] if target else None), ("edge-call", "target"))
+
+    def test_repeated_branches_query_each_holder_once(self):
+        asked = []
+        def follow(location):
+            asked.append(location.line)
+            if location.line == 10:
+                return [self.target]
+            child = Definition(self.path, "held", line=location.line + 1, column=0)
+            return [child, child]
+        self.assertEqual(self.grade([self.holder], follow)[0], "edge-call")
+        self.assertEqual(asked, list(range(1, 11)))
+
+    def test_mixed_internal_external_and_missing_evidence_are_not_external(self):
+        for targets in ([self.target, self.external], [self.external, self.holder]):
+            self.assertEqual(self.grade([self.holder], lambda _: targets)[0], "ambiguous-target")
+
+    def test_cycle_stays_unknown(self):
+        self.assertEqual(self.grade([self.holder], lambda _: [self.holder])[0], "project-not-a-symbol")
+
+    def test_wide_graph_has_a_total_query_budget(self):
+        asked = []
+        def follow(location):
+            asked.append(location.line)
+            if location.line == 1:
+                return [Definition(self.path, "held", line=n, column=0) for n in range(2, 100)]
+            return [self.external]
+        self.assertNotEqual(self.grade([self.holder], follow)[0], "external-definition")
+        self.assertLessEqual(len(asked), 64)
 
 
 class MultiLanguageTests(unittest.TestCase):

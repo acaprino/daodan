@@ -2,7 +2,7 @@
 
 Aggiornato al 9 novembre 2026.
 
-Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il risolutore lessicale. Per alcuni linguaggi un motore di inferenza risolve in background ciò che il lessicale non prova. La copertura è sempre **risolte su risolvibili**: le chiamate esterne, cioè builtin, librerie e nomi che il progetto non dichiara, sono fuori dal denominatore. Spec e misure complete: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
+Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il risolutore lessicale. Per alcuni linguaggi un motore di inferenza risolve in background ciò che il lessicale non prova. La copertura è sempre **risolte su risolvibili**: le chiamate esterne, cioè builtin riconosciuti e destinazioni provate esterne dal motore, sono fuori dal denominatore. Spec e misure complete: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
 
 ## Linguaggi supportati
 

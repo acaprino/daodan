@@ -1,0 +1,15 @@
+{
+  "commit": "46c92b28aabf833a6baa46b88f1795d6668d702c",
+  "archive_sha256": "7060ac02c3009766bfe4f0cd9ec02ea55aab3ca35cd13205424159f3de80a812",
+  "excluded": [
+    "functions-python/app/core/secrets.py",
+    "react-app/src-tauri/gen/android/app/debug.keystore",
+    "react-app/src-tauri/gen/android/app/phazly-release-key.jks",
+    "react-app/src-tauri/gen/android/keystore.properties"
+  ],
+  "baseline": "benchmarks/flow-model/results/engine-count-phazly.json",
+  "state": "blocked-before-confirmed-start",
+  "resolver_sha256": "d0eb713ceeb54c63735befde22927a1ebd5024e25ea9908600b7878395ac5622",
+  "reason": "This session cannot resolve api.modal.com: URLError [Errno 11001] getaddrinfo failed; Modal CLI produced no job identifier and was interrupted.",
+  "remote_job_id": null
+}

@@ -123,7 +123,9 @@ Il risolutore lessicale (`resolution.py`) lega solo un binding unico e non infer
 
 ### Risolvibilità
 
-Il rapporto delle chiamate si legge come **risolte su risolvibili**, in `edge_view.coverage.resolution` di ogni pacchetto del grafo e nello stato del motore. Una chiamata è esterna, quindi fuori dal denominatore, quando non può arrivare a un simbolo del progetto: un builtin, un nome che nessuna funzione, classe o import del progetto porta, una definizione che il motore trova fuori dall'inventario. Al motore si chiedono solo le chiamate con un nome del progetto: sul campione misurato le altre producono un arco ogni mille, e chiederle costerebbe circa 14 minuti per passaggio su Daodan.
+Il rapporto delle chiamate si legge come **risolte su risolvibili**, in `edge_view.coverage.resolution` e nello stato del motore. Escono dal denominatore i builtin riconosciuti e le destinazioni provate esterne dal motore. Un nome assente dal progetto resta da risolvere: può essere un alias di una funzione interna. I nomi del progetto danno soltanto priorità alle richieste. Le risposte su variabili, parametri e proprietà vengono seguite con lo stesso motore; cicli, ambiguità, mancanza di prove o limiti di ricerca mantengono la chiamata non risolta. Il solo fatto che il valore provenga da una libreria non prova che la funzione chiamata sia esterna.
+
+Le misure seguenti usano il criterio precedente e non sono confrontabili direttamente con il nuovo denominatore.
 
 Misura su Daodan dell'8 novembre 2026, 27.187 chiamate, solo risolutore lessicale:
 

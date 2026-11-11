@@ -124,15 +124,16 @@ def _unresolved(manifest: Path) -> dict:
 
 
 @app.local_entrypoint()
-def main(phazly_tar: str = "", cases: str = "polar,tududi,phazly"):
+def main(phazly_tar: str = "", cases: str = "polar,tududi,phazly", results_dir: str = ""):
     chosen = [name.strip() for name in cases.split(",") if name.strip()]
-    archive = Path(phazly_tar).read_bytes() if "phazly" in chosen else None
+    archive = Path(phazly_tar).read_bytes() if any("tar" in CASES[name] for name in chosen) else None
     calls = [(name, CASES[name], archive if "tar" in CASES[name] else None) for name in chosen]
-    RESULTS.mkdir(exist_ok=True)
+    destination = Path(results_dir) if results_dir else RESULTS
+    destination.mkdir(parents=True, exist_ok=True)
     for result in count.starmap(calls, return_exceptions=True):
         if isinstance(result, Exception):
             print("FAILED", repr(result)[:2000])
             continue
-        out = RESULTS / f"engine-count-{result['case']}.json"
+        out = destination / f"engine-count-{result['case']}.json"
         out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(result["case"], json.dumps(result["resolution"], sort_keys=True)[:600])
