@@ -1,5 +1,7 @@
 # Ricostruire i "flussi" di un sistema software dal codice: rassegna verificata su analisi statica, dinamica e LLM (2014-2026)
 
+> **Nota dell'11 novembre 2026:** la [rassegna dettagliata a 38 lavori](2026-11-11-flow-reconstruction-detailed.md) amplia questa nota su UI→dati, lineage e transazioni DB, ablation del contesto di review e catene hardware/embedded; questo file resta per i sette lavori esclusivi (`PolyCruise`, `Meurice`, `Wittern`, `Lutellier`, `Flexeme`, `LocAgent`, `LLMDFA`).
+
 La letteratura verificata indica che i flussi end-to-end si ricostruiscono in modo affidabile solo modellando esplicitamente i "punti di aggancio" indiretti (callback del framework, dependency injection, intent, endpoint HTTP, query SQL/ORM, confini fra linguaggi) come archi di un grafo unificato. Gli LLM, nei lavori misurati, rendono meglio quando *etichettano* o *navigano* quel grafo (sorgenti e sink, ricerca multi-hop) che quando sostituiscono l'analisi. Nessun lavoro verificato copre però in un unico grafo tutti i livelli UI → servizio → DB → dispositivo: questo resta il problema aperto principale.
 
 ## TL;DR

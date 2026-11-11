@@ -1,6 +1,6 @@
 # Fase 1: mappa sempre aggiornata e quattro regole per la review
 
-**Stato:** proposta rifinita, da approvare. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 1 di 3: [fase 2](2026-11-09-flow-model.md), [fase 3](2026-11-09-flows-in-review.md).
+**Stato:** approvata l'11 novembre 2026, pronta da implementare. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 1 di 3: [fase 2](2026-11-09-flow-model.md), [fase 3](2026-11-09-flows-in-review.md).
 
 Due interventi che usano solo meccanismi già presenti e misurati:
 
@@ -32,11 +32,11 @@ Le altre parole sono definite nella fase 2.
 
 1. **Il run di lavoro nasce dal run pubblicato.** Sta in `.daodan/map/runs/working/`, con lo stesso perimetro. Senza un run pubblicato non nasce: la prima mappa si fa sempre su richiesta. A ogni nuovo run pubblicato riparte da quello.
 2. **Un comando lo aggiorna: `snapshot.py refresh`.** In fila:
-   1. rilegge solo i file cambiati dall'ultimo aggiornamento;
+   1. rilegge solo i file cambiati dall'ultimo aggiornamento, individuati con `compare_files(..., verify=True)`;
    2. prepara il nuovo snapshot del run di lavoro;
-   3. rifà l'indice di ricerca, i moduli e i collegamenti `chiama` sullo stesso snapshot;
-   4. rende disponibile l'aggiornamento solo quando questi artefatti sono coerenti e scrive `refresh.json`: esito, quando, quali file e simboli sono cambiati rispetto al run pubblicato, quali frasi dei documenti pubblicati li citano. Durante l'aggiornamento o dopo un errore gli strumenti dichiarano che il run è da aggiornare; non leggono artefatti di aggiornamenti diversi.
-3. **Un hook lancia il comando dopo ogni modifica.** In `plugins/codebase-map/hooks/hooks.json`: evento `PostToolUse`, strumenti `Edit`, `Write`, `NotebookEdit`, `Bash`, in background. Non parte se il progetto non ha un run pubblicato, o se il file modificato sta fuori dal perimetro, sotto `.daodan/` o sotto `.team-review/`. Dove gli hook non esistono, lo stesso comando si lancia a mano o dall'ingresso della mappa.
+   3. rifà sullo stesso snapshot l'indice di ricerca, i moduli e i collegamenti `chiama` lessicali, e avvia in background `resolve_edges.py`, che pubblica subito le risposte valide riusate da `engine-answers.sqlite` senza attendere i language server;
+   4. rende disponibile l'aggiornamento non appena questi artefatti sono coerenti e scrive `refresh.json`: esito, quando, stato del motore (`fresh`, `running`, `partial`, `unavailable`), quali file e simboli sono cambiati rispetto al run pubblicato, quali frasi dei documenti pubblicati li citano (`resolve_edges.py` rifiuta già un `engine-edges.sqlite` con `manifest_digest` diverso). Durante l'aggiornamento o dopo un errore gli strumenti dichiarano che il run è da aggiornare; non leggono artefatti di aggiornamenti diversi.
+3. **Un hook lancia il comando dopo ogni modifica.** In `plugins/codebase-map/hooks/hooks.json`: evento `PostToolUse`, strumenti `Edit`, `Write`, `NotebookEdit`, `Bash`, in background. Non parte se il progetto non ha un run pubblicato, o se il file modificato sta fuori dal perimetro, sotto `.daodan/` o sotto `.team-review/`. Per `Bash`, che non riceve il percorso del file, l'hook parte quando esiste un run pubblicato e `refresh` esce subito se nessun file del perimetro è cambiato. Dove gli hook non esistono, lo stesso comando si lancia a mano o dall'ingresso della mappa.
 4. **Un aggiornamento alla volta.** Se arriva una modifica mentre un aggiornamento è in corso, alla fine ne parte un altro. Mai due insieme.
 5. **Molte modifiche, ricostruzione completa.** Se è cambiato più del 40% dei file dall'ultimo aggiornamento, il comando rifà per intero snapshot, indice, moduli e collegamenti `chiama`, sempre senza modello.
 
@@ -90,10 +90,12 @@ Ogni regola chiude un errore visto in [`benchmarks/phazly-flow`](../../benchmark
 | 3 | Un'informazione falsa mostrata all'utente, o un'azione che l'utente non può più fare, vale almeno Medium | Run A3: «piatto non mangiato mostrato come Completato, bottone per registrarlo sparito» valutato Low | `review-quality-gates/references/reviewer-common.md` |
 | 4 | Due segnalazioni sono lo stesso problema solo se hanno la stessa causa e la stessa situazione che lo fa scattare. Situazioni diverse sulla stessa riga restano segnalazioni distinte nel rapporto | Run A3: «pasto saltato» e «cibo estraneo» fusi in una voce; la seconda, il difetto vero, sparita | `review-consolidation/references/team-review.md` |
 
+Con rigor `standard` (`critical-high`, `verification-panel.md`) i finding `Medium` restano marcati `unverified (rigor)` nel rapporto finale; `verification-panel.md` non cambia in questa fase.
+
 ### Prova
 
-1. **Regola 1.** La stessa richiesta della run A in cinque sessioni nuove, fermate ai primi turni. Riesce se la prima azione è il caricamento della preparazione in cinque su cinque. Costo atteso: circa 0,3 USD a sessione.
-2. **Regola 4.** Il solo consolidamento rieseguito sui dodici risultati salvati della run A3. Riesce se «cibo estraneo» (`job-03-F4`) compare nel rapporto come segnalazione distinta.
+1. **Regola 1.** La stessa richiesta della run A in cinque sessioni nuove, fermate ai primi turni, previa conferma della spesa. Riesce se la prima azione è il caricamento della preparazione in cinque su cinque. Costo atteso: circa 0,3 USD a sessione.
+2. **Regola 4.** Il solo consolidamento rieseguito sui dodici risultati salvati della run A3 nella copia esterna del benchmark (se assenti si registra la prova come pendente, senza rifare la run). Riesce se «cibo estraneo» (`job-03-F4`) compare nel rapporto come segnalazione distinta.
 3. **Regole 2 e 3.** Si misurano nella fase 3, con le review complete.
 
 ## Ordine di lavoro
@@ -102,4 +104,4 @@ Ogni regola chiude un errore visto in [`benchmarks/phazly-flow`](../../benchmark
 2. Hook.
 3. Regole 1 e 4 con le loro prove.
 4. Regole 2 e 3 come testo.
-5. Versioni dei due plugin e una riga in `tools-guide.md` sul run di lavoro.
+5. Una riga in `tools-guide.md` sul run di lavoro; le versioni dei plugin restano invariate.

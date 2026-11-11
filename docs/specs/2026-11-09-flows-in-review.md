@@ -15,7 +15,7 @@ Dalle run di [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md),
 - Ogni incarico riceve la richiesta in una frase e un elenco di file. Nessuna domanda sul dato.
 - La mappa di quelle run non aveva i collegamenti `chiama` per TypeScript.
 
-Dalla [rassegna della letteratura](../research/2026-11-09-flow-reconstruction-literature.md): dividere il lavoro seguendo i collegamenti è misurato sulle modifiche da rivedere, non sul numero di difetti trovati; confrontare il significato fra chi scrive e chi legge un dato non ha strumenti valutati. La risposta può quindi essere «non aiuta».
+Dalla [rassegna della letteratura](../research/2026-11-09-flow-reconstruction-literature.md) e dalla [rassegna dettagliata](../research/2026-11-11-flow-reconstruction-detailed.md): dividere il lavoro seguendo i collegamenti è misurato sulle modifiche da rivedere, non sul numero di difetti trovati; aggiungere contesto alla review senza controllare budget e selezione peggiora tutti gli otto modelli provati in `SWE-PRBench`; confrontare il significato fra chi scrive e chi legge un dato non ha strumenti valutati. La risposta può quindi essere «non aiuta».
 
 ## Le tre prove
 
@@ -35,9 +35,9 @@ Si prova su casi: progetti reali con difetti noti, al commit che precede la corr
 - **Regole della fase 1:** attive in tutte e tre.
 - **Stima iniziale:** 15-21 USD a run, circa 110 USD per le sei run di un caso; da ricalibrare sul perimetro di ogni caso.
 
-I flussi di C si ricavano dallo stesso perimetro e dallo stesso contesto di A e B.
+I flussi di C si ricavano dallo stesso perimetro e dallo stesso contesto di A e B, entro un tetto fisso di caratteri nell'incarico per non confondere qualità del flusso e diluizione del contesto. Un caso entra nelle run a pagamento solo dopo aver superato le misure senza modello della fase 2 (compreso il conteggio dei `chiama` risolti).
 
-Si conta, per ogni run: difetti attesi presenti nel rapporto finale (non solo in un incarico), altri difetti reali, segnalazioni sbagliate, costo, tempo e file non esaminati. Il confronto è valido solo a parità di perimetro e con copertura completa: una run con file mancanti va completata prima di applicare le soglie.
+Si conta, per ogni run: difetti attesi presenti nel rapporto finale (non solo in un incarico), altri difetti reali, segnalazioni sbagliate, token effettivi, costo, tempo e file non esaminati; per ogni difetto mancato si registra se è mancato nell'estrazione del collegamento, nella selezione dell'incarico o nel giudizio del revisore. Il confronto è valido solo a parità di perimetro e con copertura completa: una run con file mancanti va completata prima di applicare le soglie.
 
 ## La prova sulla ricerca
 
