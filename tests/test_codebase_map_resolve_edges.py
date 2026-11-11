@@ -765,6 +765,111 @@ class ResolvabilityTests(unittest.TestCase):
                 self.assertEqual(ensure.call_args.args, (out,))
 
 
+class HomonymHolderTests(unittest.TestCase):
+    """Calls to `t` through a variable, in any language: the engine answers only the variable.
+
+    The project declares a function `t`, so the name filter lets every `t()` in. A
+    held call is external only when the function it calls is proven to live outside
+    the project; a library call filling the variable is no proof, because a library
+    can hand back a project function. Two languages, one criterion:
+
+    - `label.ts` and `label.py` hold a function of a package (`useTranslation()`,
+      `gettext.translation(...).gettext`): external.
+    - `memo.ts` and `memo.py` hold a project function returned by a library
+      (`useCallback(localT, [])`, `functools.partial(local_t)`): resolvable.
+
+    Today every held call is `project-not-a-symbol`, inside the denominator.
+    """
+
+    SOURCES = {
+        "web/i18n.ts": "export function t(key: string): string {\n  return key;\n}\n",
+        "web/title.ts": "import { t } from './i18n';\nexport function title() {\n  return t('a');\n}\n",
+        "web/label.ts": ("import { useTranslation } from 'react-i18next';\nexport function label() {\n"
+                         "  const { t } = useTranslation();\n  return t('b');\n}\n"),
+        "web/memo.ts": ("import { useCallback } from 'react';\nfunction localT(key: string): string {\n"
+                        "  return key;\n}\nexport function heading() {\n  const t = useCallback(localT, []);\n"
+                        "  return t('titolo');\n}\n"),
+        "app/label.py": ("import gettext\n\n\ndef label():\n"
+                         "    t = gettext.translation('app', fallback=True).gettext\n    return t('b')\n"),
+        "app/memo.py": ("import functools\n\n\ndef local_t(key, upper):\n    return key.upper() if upper else key\n\n\n"
+                        "def heading():\n    t = functools.partial(local_t, upper=True)\n    return t('titolo')\n"),
+    }
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve() / "proj"
+        for rel, text in self.SOURCES.items():
+            path = self.root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        self.manifest = self.root.parent / "manifest.sqlite"
+        self.edges = self.root.parent / "engine-edges.sqlite"
+        snapshot.write_snapshot(self.root, self.manifest)
+
+    def calls(self):
+        """The `t()` call of each file, unresolved by the lexical resolver, with its line."""
+        with open_snapshot(self.manifest) as store:
+            names = resolve_edges.project_callee_names(store.connection)
+            rows = [(row[0], row[1], _unpack(row[2])) for row in store.connection.execute(
+                "SELECT id, file, payload FROM sem_references WHERE kind='call' AND last_name='t'")]
+        return names, {file: (identity, payload) for identity, file, payload in rows}
+
+    def engine(self, language):
+        """Scripted answers: library calls land in packages, held `t()` calls on their variable."""
+        outside = self.root.parent / "packages"
+        lines = {rel: text.split("\n") for rel, text in self.SOURCES.items()}
+
+        def at(rel, needle):
+            line = next(index for index, text in enumerate(lines[rel], 1) if needle in text)
+            return line, lines[rel][line - 1].index(needle)
+
+        answers = {}
+        for rel, library, holder in (("web/label.ts", "useTranslation()", "{ t }"),
+                                     ("web/memo.ts", "useCallback(", "t ="),
+                                     ("app/label.py", "gettext.translation", "t ="),
+                                     ("app/memo.py", "functools.partial", "t =")):
+            line, _column = at(rel, library)
+            answers[(Path(rel).name, line)] = Definition(outside / "lib", library, line=1, column=0)
+            line, column = at(rel, holder)
+            column += holder.index("t")
+            answers[(Path(rel).name, line + 1)] = Definition(self.root / rel, "t", line=line, column=column)
+        line, column = at("web/i18n.ts", "t(key")
+        answers[("title.ts", 3)] = Definition(self.root / "web/i18n.ts", "t", line=line, column=column)
+        engine = StubEngine(answers)
+        engine.languages = (language,)
+        return engine
+
+    def verdicts(self):
+        for language in ("typescript", "python"):
+            resolve_edges.resolve_edges(self.manifest, engine=self.engine(language), limit=None, stride=1,
+                                        out=self.edges)
+        with open_snapshot(self.manifest) as store:
+            edges, _binding, reason = resolve_edges.read_edge_store(self.edges, store)
+        self.assertIsNone(reason)
+        _names, calls = self.calls()
+        by_reference = {edge["reference_id"]: edge["verdict"] for edge in edges}
+        return {file: by_reference.get(identity) for file, (identity, _payload) in calls.items()}
+
+    def test_the_name_filter_asks_the_engine_about_every_held_call(self):
+        names, calls = self.calls()
+        self.assertEqual(sorted(calls), ["app/label.py", "app/memo.py", "web/label.ts", "web/memo.ts", "web/title.ts"])
+        held = {file: resolve_edges.classify_reference(payload, names)
+                for file, (_identity, payload) in calls.items() if file != "web/title.ts"}
+        self.assertEqual(set(held.values()), {"askable"}, held)
+
+    def test_a_project_function_returned_by_a_library_stays_in_the_denominator(self):
+        verdicts = self.verdicts()
+        self.assertEqual((verdicts["web/memo.ts"], verdicts["app/memo.py"]),
+                         ("project-not-a-symbol", "project-not-a-symbol"))
+
+    @unittest.expectedFailure
+    def test_a_library_function_held_in_a_variable_is_external(self):
+        verdicts = self.verdicts()
+        self.assertEqual((verdicts["web/label.ts"], verdicts["app/label.py"]),
+                         ("external-definition", "external-definition"))
+
+
 class MultiLanguageTests(unittest.TestCase):
     """One store with one entry per language, written by one engine at a time."""
 

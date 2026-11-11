@@ -2,7 +2,7 @@
 
 Data: 8 novembre 2026.
 
-**Stato:** applicata in `plugins/codebase-map`, non ancora committata. Misurata su Daodan stesso.
+**Stato:** applicata in `plugins/codebase-map`, non ancora committata. Misurata su Daodan stesso. Il requisito 23 è una proposta dell'11 novembre 2026, non applicata.
 
 **Collocazione:** `resolve_edges.py` (motori, passaggio, stato dello store, rapporto), `languages/semantic.py` (posizione del nome delle dichiarazioni), `edge_view.py` (vista degli archi), `snapshot.py write` e `mcp_service.py` (avvio con lo snapshot); riferimenti `docs/plugins/codebase-map.md` (sezione Risolvibilità), `snapshot.md`, `mcp.md`, `evidence.md`.
 
@@ -35,6 +35,27 @@ Il grafo delle chiamate nasceva dal solo risolutore lessicale di `resolution.py`
 20. **Il passaggio pubblica mentre lavora.** Lo store esce subito con le risposte riusate, poi ogni 30 secondi. La voce del linguaggio è `partial`, e lo stato riporta `answered` su `population`. Un passaggio fermato o fallito lascia ciò che ha provato, e il successivo riprende da lì.
 21. **Il server riceve il testo esatto del file, fine riga comprese.** Un server legge da disco i file chiusi e dal client quelli aperti: se il client normalizza CRLF in LF, ogni riga sposta le risposte di un carattere in più (su javapoet 192 risposte cadevano su posizioni che non nominano dichiarazioni).
 22. **Il progetto si descrive al motore, non si importa.** Un motore che costruisce il modello del progetto dalla build lo riceve da Daodan come descrizione scritta fuori dal repository: le radici dei pacchetti come cartelle sorgente e le librerie risolte come classpath (per JDT LS un progetto Eclipse in una cartella temporanea). Un motore che cerca le librerie solo nelle cartelle sopra un file (TypeScript e `node_modules`) apre uno specchio del progetto in una cartella temporanea: un collegamento per cartella, una copia per file di primo livello e le librerie collegate dalla cartella condivisa; la rimozione dello specchio non entra mai nei collegamenti. Anche cargo e Go lavorano in uno specchio, con la cartella di destinazione in una cartella temporanea: un `Cargo.lock` o un `go.sum` mancante si scrive nello specchio e mai nel progetto.
+
+## Provenienza della funzione chiamata
+
+**Stato:** proposta dell'11 novembre 2026, non applicata. Modifica i requisiti 4 e 5.
+
+**Esito sbagliato riproducibile.** Una chiamata a una funzione tenuta in una variabile resta fra le risolvibili anche quando la funzione sta fuori dal progetto. Il motore risponde con la sola variabile e la chiamata diventa `project-not-a-symbol`. Entra nel denominatore perché il progetto dichiara altrove una funzione o una firma con lo stesso nome: su phazly, 2.091 chiamate `t()`. Caso minimo in TypeScript e Python: `HomonymHolderTests` in `tests/test_codebase_map_resolve_edges.py`.
+
+23. **Una chiamata si classifica per la provenienza della funzione chiamata, mai per il nome.** Il criterio vale per ogni linguaggio. Gli adattatori dei linguaggi e i motori forniscono le informazioni necessarie, senza eccezioni per singole librerie o singoli nomi.
+    1. Il riferimento è quello preciso della chiamata, nel suo file e nel suo scope: due nomi uguali non provano un collegamento.
+    2. La funzione si segue attraverso variabili, alias, proprietà, parametri e valori restituiti. Né la posizione della variabile, né la libreria chiamata per riempirla, stabiliscono da sole dove la funzione è implementata: una libreria può restituire una funzione del progetto.
+    3. L'esito segue le prove:
+
+       | Evidenza | Esito |
+       | --- | --- |
+       | Una sola destinazione interna, identificata senza ambiguità | Risolta |
+       | Tutte le destinazioni possibili sono provate esterne | Esterna |
+       | Provenienza incompleta, ambigua o decisa a runtime | Non risolta |
+
+    4. Il filtro per nome (requisito 4) decide solo cosa chiedere prima al motore, non cosa esce dal denominatore. Anche «nome assente dal progetto, quindi esterna» va superato: una funzione interna si può chiamare con un alias.
+
+    «Funziona sempre» significa classificazioni giustificate e incertezza dichiarata. Una destinazione decisa a runtime resta non risolta.
 
 ## Misura con il motore
 
