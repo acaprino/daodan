@@ -1002,6 +1002,21 @@ class PreparedEnvironmentTests(unittest.TestCase):
         self.assertEqual(self.prepare(), first)
         self.assertEqual(len(self.commands), count)
 
+    def test_a_target_below_the_snapshot_root_still_finds_its_manifests(self):
+        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
+        (self.root / "api/app.py").write_text("def run():\n    return 1\n", encoding="utf-8")
+        manifest = Path(self.temp.name).resolve() / "manifest.sqlite"
+        snapshot.write_snapshot(self.root / "api", manifest)
+        seen = []
+        prepare = mock.patch.object(resolve_edges, "python_environment",
+                                    side_effect=lambda root, names: seen.append((root, sorted(names))))
+        with prepare, mock.patch.object(resolve_edges, "run_pass",
+                                        return_value={"available": True, "languages": {}}):
+            resolve_edges.main([str(manifest), "--pass"])
+        root, names = seen[0]
+        self.assertTrue(all((root / name).is_file() for name in names), (root, names))
+        self.assertIn("requirements.txt", {Path(name).name for name in names})
+
     def test_changed_manifests_build_another_environment_and_none_declared_builds_none(self):
         first = self.prepare()
         (self.root / "api/requirements.txt").write_text("fastapi==0.116.0\n", encoding="utf-8")

@@ -1,0 +1,278 @@
+{
+  "case": "tududi",
+  "gaps": [],
+  "languages": {
+    "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    },
+    "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    }
+  },
+  "pass_log": [],
+  "pass_seconds": 1071.7,
+  "resolution": {
+    "askable": 75459,
+    "by_language": {
+      "javascript": {
+        "calls": 72842,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 29382,
+        "resolved": 11148,
+        "resolved_ratio": 0.379
+      },
+      "typescript": {
+        "calls": 38477,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 12360,
+        "resolved": 6119,
+        "resolved_ratio": 0.495
+      }
+    },
+    "calls": 111319,
+    "dynamic": 306,
+    "engine_confirmed": 8502,
+    "engine_unresolved": 21756,
+    "external": 69577,
+    "external_by_class": {
+      "builtin": 26789,
+      "engine-external-definition": 42788
+    },
+    "lexical_resolved": 8765,
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+    "resolvable": 41742,
+    "resolved": 17267,
+    "resolved_ratio": 0.414,
+    "unasked": 0
+  },
+  "setup": null,
+  "snapshot_seconds": 86.7,
+  "unresolved": {
+    "javascript": {
+      "top_unresolved": [
+        [
+          "toBe [external-definition]",
+          6544
+        ],
+        [
+          "require [external-definition]",
+          2389
+        ],
+        [
+          "create [unresolved]",
+          1625
+        ],
+        [
+          "send [unresolved]",
+          1587
+        ],
+        [
+          "get [unresolved]",
+          1312
+        ],
+        [
+          "post [unresolved]",
+          1183
+        ],
+        [
+          "toContain [external-definition]",
+          951
+        ],
+        [
+          "expect [external-definition]",
+          886
+        ],
+        [
+          "toEqual [external-definition]",
+          736
+        ],
+        [
+          "map [unresolved]",
+          734
+        ],
+        [
+          "findOne [unresolved]",
+          570
+        ],
+        [
+          "toBeNull [external-definition]",
+          543
+        ],
+        [
+          "Date [external-definition]",
+          474
+        ],
+        [
+          "push [external-definition]",
+          465
+        ],
+        [
+          "findAll [unresolved]",
+          464
+        ],
+        [
+          "request [external-definition]",
+          463
+        ],
+        [
+          "json [unresolved]",
+          445
+        ],
+        [
+          "set [unresolved]",
+          415
+        ],
+        [
+          "count [unresolved]",
+          360
+        ],
+        [
+          "findByPk [unresolved]",
+          353
+        ],
+        [
+          "update [unresolved]",
+          339
+        ],
+        [
+          "get [external-definition]",
+          330
+        ],
+        [
+          "join [external-definition]",
+          309
+        ],
+        [
+          "toHaveLength [external-definition]",
+          309
+        ],
+        [
+          "query [unresolved]",
+          307
+        ]
+      ],
+      "verdicts": {
+        "ambiguous-target": 368,
+        "edge-call": 8355,
+        "edge-instantiation": 766,
+        "external-definition": 24329,
+        "project-not-a-symbol": 1082,
+        "unresolved": 15077
+      }
+    },
+    "typescript": {
+      "top_unresolved": [
+        [
+          "t [external-definition]",
+          3752
+        ],
+        [
+          "useState [external-definition]",
+          1098
+        ],
+        [
+          "map [external-definition]",
+          713
+        ],
+        [
+          "getByTestId [external-definition]",
+          583
+        ],
+        [
+          "toBe [external-definition]",
+          495
+        ],
+        [
+          "useEffect [external-definition]",
+          445
+        ],
+        [
+          "toBeInTheDocument [external-definition]",
+          434
+        ],
+        [
+          "click [unresolved]",
+          397
+        ],
+        [
+          "mockResolvedValue [external-definition]",
+          366
+        ],
+        [
+          "json [external-definition]",
+          339
+        ],
+        [
+          "filter [external-definition]",
+          316
+        ],
+        [
+          "useTranslation [external-definition]",
+          289
+        ],
+        [
+          "trim [external-definition]",
+          273
+        ],
+        [
+          "render [external-definition]",
+          272
+        ],
+        [
+          "t [ambiguous-target]",
+          261
+        ],
+        [
+          "getByText [external-definition]",
+          261
+        ],
+        [
+          "toHaveBeenCalledWith [external-definition]",
+          218
+        ],
+        [
+          "toLowerCase [external-definition]",
+          209
+        ],
+        [
+          "preventDefault [external-definition]",
+          209
+        ],
+        [
+          "waitFor [external-definition]",
+          207
+        ],
+        [
+          "setError [project-not-a-symbol]",
+          205
+        ],
+        [
+          "stopPropagation [external-definition]",
+          198
+        ],
+        [
+          "replace [external-definition]",
+          196
+        ],
+        [
+          "expect [external-definition]",
+          191
+        ],
+        [
+          "useRef [external-definition]",
+          187
+        ]
+      ],
+      "verdicts": {
+        "ambiguous-target": 420,
+        "edge-call": 1562,
+        "edge-instantiation": 10,
+        "external-definition": 18459,
+        "project-not-a-symbol": 3542,
+        "unresolved": 1267
+      }
+    }
+  }
+}

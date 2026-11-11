@@ -1,0 +1,393 @@
+{
+  "case": "polar",
+  "gaps": [],
+  "languages": {
+    "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    },
+    "python": {
+      "engine": "jedi@0.20.1",
+      "state": "fresh"
+    },
+    "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh"
+    }
+  },
+  "pass_log": [],
+  "pass_seconds": 3324.2,
+  "resolution": {
+    "askable": 75647,
+    "by_language": {
+      "javascript": {
+        "calls": 31,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 13,
+        "resolved": 1,
+        "resolved_ratio": 0.077
+      },
+      "python": {
+        "calls": 107716,
+        "engine": "jedi@0.20.1",
+        "resolvable": 82714,
+        "resolved": 34554,
+        "resolved_ratio": 0.418
+      },
+      "typescript": {
+        "calls": 88,
+        "engine": "typescript-language-server@4.3.3",
+        "resolvable": 37,
+        "resolved": 29,
+        "resolved_ratio": 0.784
+      }
+    },
+    "calls": 107835,
+    "dynamic": 135,
+    "engine_confirmed": 10848,
+    "engine_unresolved": 44295,
+    "external": 25071,
+    "external_by_class": {
+      "builtin": 8317,
+      "engine-external-definition": 16754
+    },
+    "lexical_resolved": 23736,
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+    "resolvable": 82764,
+    "resolved": 34584,
+    "resolved_ratio": 0.418,
+    "unasked": 0
+  },
+  "setup": null,
+  "snapshot_seconds": 178.7,
+  "unresolved": {
+    "javascript": {
+      "top_unresolved": [
+        [
+          "report [unresolved]",
+          2
+        ],
+        [
+          "addEventListener [external-definition]",
+          2
+        ],
+        [
+          "querySelectorAll [unresolved]",
+          2
+        ],
+        [
+          "forEach [unresolved]",
+          2
+        ],
+        [
+          "abort [external-definition]",
+          2
+        ],
+        [
+          "defineConfig [project-not-a-symbol]",
+          1
+        ],
+        [
+          "push [external-definition]",
+          1
+        ],
+        [
+          "add [unresolved]",
+          1
+        ],
+        [
+          "EventSourcePlus [external-definition]",
+          1
+        ],
+        [
+          "FormData [external-definition]",
+          1
+        ],
+        [
+          "listen [external-definition]",
+          1
+        ],
+        [
+          "has [external-definition]",
+          1
+        ],
+        [
+          "test [external-definition]",
+          1
+        ],
+        [
+          "parseFromString [external-definition]",
+          1
+        ],
+        [
+          "DOMParser [external-definition]",
+          1
+        ],
+        [
+          "getElementById [external-definition]",
+          1
+        ],
+        [
+          "querySelectorAll [external-definition]",
+          1
+        ],
+        [
+          "contains [external-definition]",
+          1
+        ],
+        [
+          "join [external-definition]",
+          1
+        ],
+        [
+          "abort [unresolved]",
+          1
+        ],
+        [
+          "addEventListener [unresolved]",
+          1
+        ],
+        [
+          "remove [unresolved]",
+          1
+        ],
+        [
+          "closest [unresolved]",
+          1
+        ],
+        [
+          "swap [external-definition]",
+          1
+        ]
+      ],
+      "verdicts": {
+        "edge-call": 1,
+        "external-definition": 17,
+        "project-not-a-symbol": 1,
+        "unresolved": 11
+      }
+    },
+    "python": {
+      "top_unresolved": [
+        [
+          "save_fixture [external-definition]",
+          2071
+        ],
+        [
+          "Field [unresolved]",
+          1954
+        ],
+        [
+          "get [unresolved]",
+          1879
+        ],
+        [
+          "from_session [external-definition]",
+          1801
+        ],
+        [
+          "Column [unresolved]",
+          1646
+        ],
+        [
+          "f [unresolved]",
+          1573
+        ],
+        [
+          "patch [unresolved]",
+          1425
+        ],
+        [
+          "where [unresolved]",
+          1356
+        ],
+        [
+          "text [unresolved]",
+          1208
+        ],
+        [
+          "mapped_column [unresolved]",
+          1058
+        ],
+        [
+          "timedelta [external-definition]",
+          1014
+        ],
+        [
+          "execute [unresolved]",
+          1007
+        ],
+        [
+          "raises [unresolved]",
+          978
+        ],
+        [
+          "json [unresolved]",
+          943
+        ],
+        [
+          "post [unresolved]",
+          926
+        ],
+        [
+          "append [external-definition]",
+          832
+        ],
+        [
+          "div [unresolved]",
+          827
+        ],
+        [
+          "auth [unresolved]",
+          821
+        ],
+        [
+          "select [unresolved]",
+          792
+        ],
+        [
+          "Depends [unresolved]",
+          762
+        ],
+        [
+          "drop_index [unresolved]",
+          693
+        ],
+        [
+          "parametrize [unresolved]",
+          665
+        ],
+        [
+          "create_index [unresolved]",
+          638
+        ],
+        [
+          "get [external-definition]",
+          619
+        ],
+        [
+          "uuid4 [external-definition]",
+          603
+        ]
+      ],
+      "verdicts": {
+        "ambiguous-target": 23,
+        "edge-call": 8000,
+        "edge-instantiation": 2837,
+        "external-definition": 16697,
+        "project-not-a-symbol": 50,
+        "unresolved": 44202
+      }
+    },
+    "typescript": {
+      "top_unresolved": [
+        [
+          "Date [external-definition]",
+          5
+        ],
+        [
+          "now [external-definition]",
+          5
+        ],
+        [
+          "toISOString [external-definition]",
+          5
+        ],
+        [
+          "map [external-definition]",
+          3
+        ],
+        [
+          "join [external-definition]",
+          3
+        ],
+        [
+          "includes [external-definition]",
+          2
+        ],
+        [
+          "toUpperCase [external-definition]",
+          2
+        ],
+        [
+          "toLocaleDateString [external-definition]",
+          2
+        ],
+        [
+          "toFixed [external-definition]",
+          2
+        ],
+        [
+          "slice [external-definition]",
+          2
+        ],
+        [
+          "argument [unresolved]",
+          2
+        ],
+        [
+          "replace [external-definition]",
+          1
+        ],
+        [
+          "renderToStaticMarkup [project-not-a-symbol]",
+          1
+        ],
+        [
+          "filter [external-definition]",
+          1
+        ],
+        [
+          "Command [project-not-a-symbol]",
+          1
+        ],
+        [
+          "action [unresolved]",
+          1
+        ],
+        [
+          "render [project-not-a-symbol]",
+          1
+        ],
+        [
+          "parse [unresolved]",
+          1
+        ],
+        [
+          "has [external-definition]",
+          1
+        ],
+        [
+          "toLowerCase [external-definition]",
+          1
+        ],
+        [
+          "format [external-definition]",
+          1
+        ],
+        [
+          "substring [external-definition]",
+          1
+        ],
+        [
+          "split [external-definition]",
+          1
+        ],
+        [
+          "charAt [external-definition]",
+          1
+        ],
+        [
+          "at [external-definition]",
+          1
+        ]
+      ],
+      "verdicts": {
+        "edge-call": 10,
+        "external-definition": 40,
+        "project-not-a-symbol": 3,
+        "unresolved": 5
+      }
+    }
+  }
+}

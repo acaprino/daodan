@@ -83,8 +83,8 @@ def count(name: str, case: dict, archive: bytes | None, tag: str = "") -> dict:
           "--out", str(manifest), "--no-engine"])
     snapshot_seconds = round(time.time() - started, 1)
     started = time.time()
-    _run([sys.executable, "/daodan/scripts/resolve_edges.py", str(manifest), "--pass",
-          "--report-out", str(work / "engine-report.json")])
+    pass_output = _run([sys.executable, "/daodan/scripts/resolve_edges.py", str(manifest), "--pass",
+                        "--report-out", str(work / "engine-report.json")])
     pass_seconds = round(time.time() - started, 1)
     sys.path.insert(0, "/daodan/scripts")
     import edge_view
@@ -93,20 +93,13 @@ def count(name: str, case: dict, archive: bytes | None, tag: str = "") -> dict:
     result = {"case": name, "snapshot_seconds": snapshot_seconds, "pass_seconds": pass_seconds, "setup": setup,
             "resolution": view["coverage"].get("resolution"), "gaps": view["gaps"][:20],
             "languages": report.get("languages"), "unresolved": _unresolved(manifest),
-            "pass_log": _tail(manifest.with_name("engine-pass.log"))}
+            "pass_log": [line for line in pass_output.splitlines() if "install" in line.lower()][:40]}
     if tag:
         out = Path("/results") / tag / f"engine-count-{name}.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         volume.commit()
     return result
-
-
-def _tail(path: Path, lines: int = 60) -> list[str]:
-    try:
-        return path.read_text(encoding="utf-8", errors="replace").splitlines()[-lines:]
-    except OSError:
-        return []
 
 
 def _unresolved(manifest: Path) -> dict:

@@ -4034,10 +4034,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.whole_pass:
         if not environments and not declined:
             # The detached pass is where a first install may take minutes.
+            # Snapshot paths are relative to the snapshot root, which a target below it does not change.
             with open_snapshot(manifest) as store:
                 names = [row[0] for row in store.connection.execute("SELECT file FROM sem_coverage")]
+                snapshot_root = Path(store["root"]).resolve()
             try:
-                prepared = python_environment(project_root, names)
+                prepared = python_environment(snapshot_root, names)
             except (OSError, subprocess.SubprocessError) as error:
                 print(f"the project's Python packages were not installed: {error}", flush=True)
                 prepared = None
