@@ -13,6 +13,19 @@ Prova se senior-review trova, in una review per area e non per commit, un bug re
 | esecuzione | `claude -p` 2.1.319, una sessione nuova per run, modello `claude-sonnet-5-5`; strumenti: Read, Glob, Grep, Write, Edit, sotto-agenti, Skill, Bash solo per `python3`, `uv`, `git` in lettura e `ls` |
 | mappa | `/codebase-map:map` lite su `react-app/` (630 file, 590 con simboli) |
 
+## Parametri per le misure sui flussi
+
+Questo benchmark è uno dei casi delle spec [fase 2](../../docs/specs/2026-11-09-flow-model.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md), sullo stesso target.
+
+| Misura | Valore |
+|---|---|
+| fase 2, file di un difetto noto | i file di G1, di G2 e dei due scrittori dello stato «saltato»; con `pack()` i file di G1 sono in tre incarichi |
+| fase 2, caso fra strati | dalla riga «Completato» della home il flusso arriva alla collezione `diaryDays` passando per `/getDiaryDays` |
+| fase 3, richiesta | «la logica dei widget della home e dell'inserimento» |
+| fase 3, perimetro | i file dei widget della home, dell'inserimento e di chi scrive lo stato che essi leggono; G2 sta nel file dell'inserimento, che i soli widget non comprendono |
+| fase 3, difetti attesi | G1, G2 e lo scrittore che lascia lo stato «saltato» |
+| fase 3, stima | 15-21 USD a run, da ricalibrare sul perimetro |
+
 ## Run del 2026-11-09
 
 | Run | Richiesta | Metodo | Job | G1 | G2 | Costo | Tempo |
