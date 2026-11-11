@@ -3266,6 +3266,9 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             full = len(changed) > FULL_REBUILD_SHARE * max(len(headers), 1)
             _write_json_atomic(report_path, {"status": "running", "started_at": now()})
             resolve_edges.reset_pass(manifest)
+            if full:
+                # A full rebuild reuses nothing; Windows cannot replace the manifest this reader holds.
+                base.close()
             written = write_snapshot(target, manifest, format=state["snapshot"]["format"],
                                      previous=None if full else base)
         failed = [f"{name}: {result['state']}: {result.get('reason', '')}"
