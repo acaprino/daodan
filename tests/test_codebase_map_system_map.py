@@ -382,6 +382,28 @@ class RecordTests(unittest.TestCase):
         self.assertIn("nowhere", system["gaps"][0]["reason"])
         self.assertNotIn("X", names(system))
 
+    def test_a_proposal_removes_nothing_it_does_not_name(self):
+        self.record(TEST_MAP)
+        before = self.load()
+        scoped = self.record({"scope": ["pagamenti e abbonamenti"], "nodes": [], "flows": []})
+        whole = self.record(changed(lambda v: v["flows"].pop(0)))  # the correction of one flow, the other not restated
+        self.assertEqual((scoped["removed"], whole["removed"]), ([], []))
+        self.assertEqual([f["id"] for f in self.load()["flows"]], [f["id"] for f in before["flows"]])
+        self.assertEqual(names(self.load()), names(before))
+
+    def test_a_flow_leaves_the_map_when_the_proposal_removes_it_by_id_or_name(self):
+        self.record(TEST_MAP)
+        report = self.record({"scope": ["esercizio"], "remove": ["Pagare un ordine", "nessuno", "Riprova"]})
+        self.assertIn("pagare-un-ordine", report["removed"])
+        self.assertIn("checkout", report["removed"])        # a node no flow uses any more
+        self.assertNotIn("pagamento", report["removed"])    # still used by the other flow
+        self.assertEqual({r["name"]: r["reason"] for r in report["not_removed"]},
+                         {"nessuno": "no flow has this id or name",
+                          "Riprova": "a node leaves the map when no flow uses it"})
+        self.assertEqual([f["id"] for f in self.load()["flows"]], ["riprova-dei-pagamenti"])
+        with self.assertRaisesRegex(ValueError, "both proposed and removed"):
+            self.record(changed(lambda v: v.update(remove=["Pagare un ordine"])))
+
     def test_a_proposal_for_one_area_leaves_the_others(self):
         self.record(TEST_MAP)
         before = self.load()

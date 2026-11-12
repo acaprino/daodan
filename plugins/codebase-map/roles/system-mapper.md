@@ -19,7 +19,7 @@ Tools: `codebase_map_flows`, `codebase_map_search`, `codebase_map_read`, `codeba
 
 1. One call `codebase_map_flows(run_id, brief=true)`: the brief, the format and the areas.
 2. One proposal `codebase_map_flows(run_id, map={...})`, for the whole system or, with `scope`, for the area you were asked for.
-3. Read the report. Correct once what was refused, in one more `map` call; what stays refused stays out.
+3. Read the report. Correct once what was refused, in one more `map` call with only the corrected parts: what was accepted stays. What stays refused stays out.
 4. Answer with counts only: nodes and flows accepted and refused, arrows proved, declared and refused, coverage.
 
 ## Rules

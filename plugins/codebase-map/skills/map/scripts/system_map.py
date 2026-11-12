@@ -38,7 +38,7 @@ FLOW_TYPES = ("funzionale", "operativo", "tecnico", "dati", "hardware")
 AREAS = ("accesso e identità", "funzioni principali", "pagamenti e abbonamenti", "dati dell'utente",
          "integrazioni esterne", "comunicazioni", "amministrazione", "esercizio")
 ARROW_KINDS = ("chiama", "attiva", "scrive", "legge", "usa", "trasferisce", "stessa informazione")
-_MAP_FIELDS = {"schema", "nodes", "flows", "areas", "scope"}
+_MAP_FIELDS = {"schema", "nodes", "flows", "areas", "scope", "remove"}
 _NODE_FIELDS = {"id", "name", "type", "position", "members", "evidence", "on", "where"}
 _FLOW_FIELDS = {"id", "name", "area", "types", "nodes", "arrows", "paths"}
 _ARROW_FIELDS = {"from", "to", "data", "kind", "cite"}
@@ -198,7 +198,13 @@ def validate(value: object, known: set[str] = frozenset()) -> dict:
             raise ValueError(f"flow name {record['name']} is repeated")
         flow_names.add(key(record["name"]))
         flow_list.append(record)
+    remove = _texts(value, "remove", "the system map") if "remove" in value else []
+    both = [name for name in remove if key(name) in flow_names]
+    if both:
+        raise ValueError(f"flow {', '.join(both)} is both proposed and removed")
     out = {"schema": SCHEMA, "nodes": nodes, "flows": flow_list, "areas": areas}
+    if remove:
+        out["remove"] = remove
     if scope is not None:
         out["scope"] = scope
     return out
@@ -584,9 +590,21 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
         on = [resolve(o) for o in p["on"]]
         candidate[i] = {**{k: v for k, v in p.items() if k in _STORED}, "id": i, "on": [o for o in on if o]}
 
-    # Flows: those of the proposal replace the ones of their area; the others stay.
-    scope = None if "scope" not in proposal else {key(a) for a in proposal["scope"]}
+    # Flows: the proposal adds or changes the ones it names; a flow leaves only when `remove` names it.
     flow_reports, flow_changes, held = {}, {}, set()
+    dropped, not_removed = set(), []
+    for name in proposal.get("remove", []):
+        target = name if name in flow_records else flow_names.get(key(name))
+        if target is None:
+            reason = "a node leaves the map when no flow uses it" if resolve(name) else "no flow has this id or name"
+        elif target in declared:
+            reason = f"confirmed by the project; remove it from {DECLARED_FILE}"
+        elif any(f.get("id") == target or flow_names.get(key(f["name"])) == target for f in proposal["flows"]):
+            reason = "the proposal also changes it"
+        else:
+            dropped.add(target)
+            continue
+        not_removed.append({"name": name, "reason": reason})
 
     def refuse(f, target, reason):
         flow_reports[key(f["name"])] = {"name": f["name"], "status": "refused", "reason": reason}
@@ -610,8 +628,7 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
             i = target or _assign(f["name"], taken)
             flow_changes[i] = {**{k: f[k] for k in ("name", "area", "types", "paths")}, "id": i, "nodes": refs,
                                "arrows": [{**a, "from": resolve(a["from"]), "to": resolve(a["to"])} for a in f["arrows"]]}
-    inside = lambda f: scope is None or key(f["area"]) in scope  # noqa: E731
-    kept_flows = {i: f for i, f in flow_records.items() if i in declared or not inside(f)}
+    kept_flows = {i: f for i, f in flow_records.items() if i not in dropped}
     trial, _ = _verify(manifest, links, list(candidate.values()),
                        list({**kept_flows, **flow_changes}.values()), headers)
     checked = dict(zip(candidate, trial["nodes"]))
@@ -671,7 +688,7 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
             "flows": [flow_reports[key(f["name"])] for f in proposal["flows"]],
             "failing": [f["id"] for f in system["flows"] if f["id"] not in proposed and f["status"] not in
                         ("accepted", "confirmed")],
-            "coverage": _reported(system["coverage"]),
+            "coverage": _reported(system["coverage"]), "not_removed": not_removed,
             "created": sorted(set(after) - set(before)), "removed": sorted(set(before) - set(after)),
             "updated": sorted(i for i in set(after) & set(before) if plain(after[i]) != plain(before[i])),
             "kept": sorted(i for i in set(after) & set(before) if plain(after[i]) == plain(before[i]))}

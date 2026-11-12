@@ -16,6 +16,7 @@ A system map names the things a system is made of (nodes), the processes it runs
 ```
 
 - Without `scope` the proposal covers the whole system and declares every area of the list present or absent. With `scope` it covers those areas only; their flows must stay inside them.
+- A proposal adds or changes what it names; what it does not name stays as it is. `remove` lists the flows to drop, by id or current name; a node leaves the map when no flow uses it.
 - References between nodes (`nodes`, `from`, `to`, `on`) are by current name. A flow may name nodes already in the map.
 - To change a recorded node or flow, give its `id` or its current name. A new name without `id` creates a new record.
 
@@ -44,7 +45,7 @@ funzionale (the product does it for its user), operativo (runs without a person)
 
 ## Report and correction
 
-The answer lists each node and flow with `status` (`accepted`, `refused`, `confirmed`), the `reason` of a refusal, each arrow as `proved`, `declared` or `refused`, the coverage of entry points, store keys and routes (what it leaves out by name, or by directory when the list is long), and the ids `created`, `updated`, `removed`, `kept`. Correct what was refused once; what stays refused does not enter the map. Names the project confirmed in `codebase-system-map.json` do not change.
+The answer lists each node and flow with `status` (`accepted`, `refused`, `confirmed`), the `reason` of a refusal, each arrow as `proved`, `declared` or `refused`, the coverage of entry points, store keys and routes (what it leaves out by name, or by directory when the list is long), the ids `created`, `updated`, `removed`, `kept`, and `not_removed` with the reason. Correct what was refused once, sending only the corrected parts; what stays refused does not enter the map. Names the project confirmed in `codebase-system-map.json` do not change.
 
 ## Reading the map
 
