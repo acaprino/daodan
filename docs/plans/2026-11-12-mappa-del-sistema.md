@@ -366,7 +366,7 @@ Soglie proposte, da scrivere nel README prima di ogni misura; il proprietario pu
 Parametri da provare: tetto della scheda 12.000, 24.000 e 48.000 caratteri; punti d'ingresso mostrati per gruppo (`holders`) 5, 8 e 12; modello economico e modello intermedio.
 
 - [ ] **Passo 1:** scrivere il README con parametri e soglie, e i riferimenti attesi: per phazly gli 11 nodi con i loro file e i 3 flussi dell'esempio del 12 novembre 2026; per ogni caso l'elenco a mano dei servizi e progetti esterni letti dai manifest.
-- [ ] **Passo 2:** scrivere `score.py` con un test su due mappe minime.
+- [x] **Passo 2:** scrivere `score.py` con un test su due mappe minime.
 - [ ] **Passo 3:** misura 6 e dimensione della scheda sui tre casi, su Modal con gli archivi già usati dai benchmark dei flussi: nessun modello. Registrare i risultati nel README.
 - [ ] **Passo 4:** commit.
 
