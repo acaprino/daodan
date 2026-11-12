@@ -41,11 +41,13 @@ image = (
     .add_local_dir(HERE, "/inputs", ignore=["*.py", "results/**"])
 )
 app = modal.App("daodan-phase3-review", image=image)
+# The account the runs bill: its OAuth token (`claude setup-token`) as CLAUDE_CODE_OAUTH_TOKEN.
+CLAUDE_SECRET = "claude-code-alt"
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
 @app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume},
-              secrets=[modal.Secret.from_name("claude-code")])
+              secrets=[modal.Secret.from_name(CLAUDE_SECRET)])
 def review(arm: str, rep: int, archive: bytes, tag: str) -> dict:
     import io
     import os
@@ -91,7 +93,7 @@ def review(arm: str, rep: int, archive: bytes, tag: str) -> dict:
     return summary
 
 
-@app.function(cpu=2, memory=4096, timeout=900, secrets=[modal.Secret.from_name("claude-code")])
+@app.function(cpu=2, memory=4096, timeout=900, secrets=[modal.Secret.from_name(CLAUDE_SECRET)])
 def probe() -> dict:
     """One short session in the same setup: the CLI authenticates, loads both plugins and reaches the map server."""
     import os
