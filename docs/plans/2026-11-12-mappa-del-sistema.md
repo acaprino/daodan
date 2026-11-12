@@ -385,8 +385,8 @@ Parametri da provare: tetto della scheda 12.000, 24.000 e 48.000 caratteri; punt
 
 **File:** modifica `docs/specs/2026-11-09-flow-model.md` (le righe Nodo, Flusso e Livello rimandano alla spec della mappa del sistema; i punti 1.5, 3.5, 5 e 7 sono marcati come sostituiti), `plugins/codebase-map/README.md` (una riga), `plugins/codebase-map/skills/map/references/standalone.md` se i comandi cambiano.
 
-- [ ] **Passo 1:** aggiornare; `git diff --check`.
-- [ ] **Passo 2:** commit.
+- [x] **Passo 1:** aggiornare; `git diff --check`.
+- [x] **Passo 2:** commit.
 
 ## Fuori da questo piano
 

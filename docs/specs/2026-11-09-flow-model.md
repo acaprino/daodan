@@ -10,18 +10,18 @@ Ogni parola ha un solo significato in queste tre spec.
 
 | Parola | Significato |
 | --- | --- |
-| Nodo | Un estremo di un collegamento: un simbolo, oppure un modulo della mappa. Tutto ciò che partecipa a un flusso è un nodo, anche senza codice nel repository: un attore, una schermata, una funzionalità, un servizio esterno, un elemento dell'infrastruttura (server, gateway, database, coda), un dispositivo |
+| Nodo | Un estremo di un collegamento: un simbolo, oppure un modulo della mappa. Tutto ciò che partecipa a un flusso è un nodo, anche senza codice nel repository: un attore, una schermata, una funzionalità, un servizio esterno, un elemento dell'infrastruttura (server, gateway, database, coda), un dispositivo. Ridefinito dalla [mappa del sistema](2026-11-12-mappa-del-sistema.md): una cosa con un nome che raccoglie i suoi membri; un simbolo da solo non è un nodo |
 | Tipo di nodo | Cosa fa il nodo nel flusso, da un elenco breve e chiuso: attore, schermata, funzionalità, servizio o API, gateway, database, coda, autenticazione, dispositivo, altro. Un nodo è anche interno o esterno al progetto |
 | Collegamento | Da un nodo a un altro, con tipo ed evidenza. **Diretto** se sta nel codice (chiamata, import). **Dedotto** se una regola di collegamento riconosce lo stesso dato o la stessa rotta in chi offre e in chi usa. **Dichiarato** se tocca un nodo senza codice: è il collegamento `uses` del grafo dei moduli |
 | Tipo di collegamento | `chiama`, `scrive`, `legge`, `attiva` (un'azione dell'utente attiva il suo handler) |
-| Flusso | Sequenza ordinata di collegamenti, da un punto d'ingresso a un fatto mostrato |
+| Flusso | Sequenza ordinata di collegamenti, da un punto d'ingresso a un fatto mostrato. Nella [mappa del sistema](2026-11-12-mappa-del-sistema.md) questo è un percorso; il flusso è un processo con un nome |
 | Punto d'ingresso | Dove un flusso comincia: rotta, comando, azione dell'utente, lavoro pianificato |
 | Store | Dove un dato vive: stato globale, tabella o collezione, file, cache |
 | Fatto mostrato | Un valore o un testo che l'applicativo mostra o restituisce |
 | Granularità | Ciò a cui un dato si riferisce: un ordine, una sua riga, un utente |
 | Significato | Una frase: cosa afferma quel dato |
 | Strato | Interfaccia, servizio, dati |
-| Livello | Il modo di guardare un flusso: fisico, logico, UX, dati, misto |
+| Livello | Il modo di guardare un flusso: fisico, logico, UX, dati, misto. Sostituito dai livelli della [mappa del sistema](2026-11-12-mappa-del-sistema.md): persone, funzioni, dati, codice, infrastruttura |
 | Perimetro | I file che un lavoro copre: quelli che un run mappa, quelli che una review giudica |
 | Contesto | I file che si consultano per giudicare il perimetro, senza giudicarli |
 | Unità | I file affidati a un revisore in un solo incarico |
@@ -52,7 +52,7 @@ Un flusso non introduce entità nuove: i suoi nodi sono i simboli e i moduli che
 2. La macchina applica la tabella a tutto il sorgente: elenca chi offre e chi usa, e li accoppia sull'identità riconosciuta. Ogni regola precisa cosa confrontare: store o collezione e campo/chiave del dato; servizio, metodo e URL per una rotta. Condividere lo store o il solo nome non basta: scrivere `store.theme` non collega a chi legge `store.cart`.
 3. Ogni coppia riconosciuta diventa un collegamento dedotto, con la sua evidenza. Identità ambigue, accessi dinamici non risolti e accessi spaiati restano lacune dichiarate: non diventano collegamenti. Il modello si prova in `benchmarks/flow-model/` prima di esporre `codebase_map_flows`.
 4. Un nodo senza codice è un modulo `external`: lo dichiara il progetto o lo propone il modello, con la sua evidenza. Il collegamento che lo raggiunge è dichiarato, non ricavato dal sorgente. Se il modulo è solo proposto, anche il collegamento resta `inferred`.
-5. Un servizio con nome proprio si riconosce dalle dipendenze e dalla configurazione del progetto. Nome, sito e descrizione vengono dai metadati del pacchetto che il progetto usa; senza pacchetto li propone il modello. Nome e logo del marchio vengono da una raccolta pubblica già esistente, usata come registro: Simple Icons (CC0, oltre 3.400 marchi). Se il marchio manca, resta l'icona generica del tipo. Daodan non mantiene un registro proprio.
+5. *Sostituito dalla [mappa del sistema](2026-11-12-mappa-del-sistema.md), sezione 3: un registro proprio e stack-analyser.* Un servizio con nome proprio si riconosce dalle dipendenze e dalla configurazione del progetto. Nome, sito e descrizione vengono dai metadati del pacchetto che il progetto usa; senza pacchetto li propone il modello. Nome e logo del marchio vengono da una raccolta pubblica già esistente, usata come registro: Simple Icons (CC0, oltre 3.400 marchi). Se il marchio manca, resta l'icona generica del tipo. Daodan non mantiene un registro proprio.
 
 Le regole sono legate ai digest dei file che citano: se quei file cambiano, vanno rilette.
 
@@ -70,7 +70,7 @@ La macchina trova dove passa un dato; cosa significa lo dice il modello, che leg
 2. **La macchina traccia** i collegamenti da quei punti, senza modello.
 3. **Il modello riceve l'elenco dei passaggi:** nodi, tipo di nodo, tipo di collegamento ed evidenza. Apre il sorgente solo dove il dato si scrive, si legge o si trasforma.
 4. **Il modello scrive la scheda del flusso:** nome, tipo (dati, UX, servizio, dispositivo, misto), rami principali e secondari, cosa accade al dato a ogni tappa, dove vive. Ogni frase cita un passaggio dell'elenco: ciò che l'elenco non contiene non entra nella scheda.
-5. **All'inizio di un progetto** il modello riceve i punti d'ingresso trovati dalla macchina e sceglie i flussi principali, con nome e tipo; gli altri restano interrogabili.
+5. *Sostituito dalla [mappa del sistema](2026-11-12-mappa-del-sistema.md), sezioni 4 e 5.* **All'inizio di un progetto** il modello riceve i punti d'ingresso trovati dalla macchina e sceglie i flussi principali, con nome e tipo; gli altri restano interrogabili.
 
 La scheda è legata ai digest dei file del flusso: si rilegge solo se uno di quei file cambia. Una riga che non cita un passaggio dell'elenco (`file:line` di un collegamento del flusso) rifiuta la scheda.
 
@@ -101,6 +101,8 @@ Un flusso fra strati richiede la mappa di tutti gli strati che attraversa, con i
 
 ### 5. Livelli
 
+*Sostituita dalla [mappa del sistema](2026-11-12-mappa-del-sistema.md), sezione 2.*
+
 Un flusso è uno solo; si guarda a livelli diversi, come le viste Logica e Fisica dell'esploratore.
 
 | Livello | Nodi mostrati |
@@ -118,6 +120,8 @@ Una contrazione conserva consultabili i collegamenti originali. Un simbolo senza
 `codebase_map_flows` con le regole di collegamento del progetto, registrate accanto allo snapshot, una di tre domande e un livello: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un nodo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti, dedotti o dichiarati, con granularità, significato, freschezza, lacune e ciò che resta da esplorare. Distingue un flusso incompleto da un flusso completo diviso in più unità.
 
 ### 7. Chi usa flussi e unità
+
+*Sostituita dalla [mappa del sistema](2026-11-12-mappa-del-sistema.md), sezione 7.*
 
 - **Esploratore:** un flusso scelto evidenzia i suoi nodi al livello della vista; un nodo elenca i flussi che lo attraversano. Ogni nodo mostra un'icona generica per il suo tipo e se è interno o esterno. `daodan/visual@1` ottiene un elenco `flows`.
 - **Mappa funzionale:** l'elenco delle funzionalità con i loro flussi, per chi non legge il codice. `03-flows.md` si genera da qui.
