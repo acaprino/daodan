@@ -870,21 +870,31 @@ def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int) 
             for edge in flow["edges"]:
                 ends = files_of([edge["from"], edge["to"]])
                 if len(ends) == 2 and not any(set(ends) <= set(g) for g in groups):
-                    cuts.append({"entry": entry["symbol"], "edge": [edge["from"], edge["to"]], "type": edge["type"]})
+                    cuts.append({"entry": entry["symbol"], "edge": [edge["from"], edge["to"]], "type": edge["type"],
+                                 "files": ends})
         out.extend({"files": group, "entries": [entry["symbol"]]} for group in groups)
-    # A unit whose files another unit already holds adds nothing but its entry point.
+    # Flows that share files, or that fit together, go in one unit: fewer units, fewer repeated files.
+    weight = lambda files: sum(sizes.get(file, 0) for file in files)  # noqa: E731
     kept = []
-    for unit in sorted(out, key=lambda u: -len(u["files"])):
-        holder = next((k for k in kept if set(unit["files"]) <= set(k["files"])), None)
-        if holder is None:
-            kept.append(unit)
-        elif unit["entries"][0] not in holder["entries"]:
-            holder["entries"].append(unit["entries"][0])
-    out = sorted(kept, key=lambda u: out.index(u))
+    for unit in sorted(out, key=lambda u: (-weight(u["files"]), u["entries"], u["files"])):
+        room = [(weight(set(unit["files"]) & set(k["files"])), weight(k["files"]), -index, k)
+                for index, k in enumerate(kept) if weight(set(unit["files"]) | set(k["files"])) <= limit]
+        if not room:
+            kept.append({"files": list(unit["files"]), "entries": list(unit["entries"])})
+            continue
+        holder = max(room, key=lambda item: item[:3])[3]
+        holder["files"] += [file for file in unit["files"] if file not in holder["files"]]
+        holder["entries"] += [entry for entry in unit["entries"] if entry not in holder["entries"]]
+    out = kept
     assigned = {file for unit in out for file in unit["files"]}
     rest = sorted(f for f in sizes if inside(f) and f not in assigned)
     for group in _pack_blocks([[f] for f in rest], sizes, limit):
         out.append({"files": group, "entries": []})
+    # A link is cut only when no unit holds both its ends.
+    together = {frozenset(pair) for pair in {frozenset(cut["files"]) for cut in cuts}
+                if any(pair <= set(unit["files"]) for unit in out)}
+    cuts = [{key: value for key, value in cut.items() if key != "files"} for cut in cuts
+            if frozenset(cut["files"]) not in together]
     counts = defaultdict(int)
     for unit in out:
         for file in unit["files"]:

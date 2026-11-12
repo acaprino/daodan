@@ -99,3 +99,19 @@ Prima applicazione di `flows.py` a un'app reale, su Modal. Riepiloghi in `result
 
 - Un modello scrive le regole da solo: le colonne differiscono solo sulle rotte. L'agente ha nominato il client delle API come funzione del progetto (`callee`), che non vale per le chiamate importate con un alias di percorso; `written` le prende tutte.
 - Il suo elenco «non esprimibile» ha dato quattro correzioni, ciascuna con un test in `tests/test_codebase_map_flows.py`: il selettore passato da un wrapper, la collezione tenuta in una variabile (`holder`), il campo sconosciuto rifiutato per nome, il valore chiamabile nominato da `callee`. Restano non esprimibili: `fetch` con il metodo nell'oggetto delle opzioni, il prefisso di rotta aggiunto dal servizio, la collezione scelta a runtime.
+
+### File di un difetto noto (misura 1 della fase 2)
+
+Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, collegamenti con il motore. Per G1 e per G2 si contano il file del difetto e i file di chi scrive gli store che esso legge: 4 file ciascuno.
+
+| | `pack()` | Unità |
+| --- | --- | --- |
+| Incarichi | 34 | 79 |
+| File assegnati | 568 | 568, di cui 79 in più unità |
+| Byte inviati sul perimetro | 1,00 | 2,09 |
+| G1: incarichi che servono per i 4 file | 3 | un'unità ne tiene 3 |
+| G2: incarichi che servono per i 4 file | 3 | un'unità ne tiene 3 |
+| Due esecuzioni | uguali | uguali |
+
+Le unità avvicinano il difetto a chi scrive il suo dato (3 file su 4 in un incarico, contro uno o due con `pack()`), ma raddoppiano i byte: un flusso grande si divide in più gruppi e i file condivisi si ripetono. La soglia «ogni difetto in meno unità che incarichi di `pack()`» è rispettata; il costo è al limite del raddoppio ammesso dalla fase 3. 2.547 collegamenti restano fra unità diverse.
+

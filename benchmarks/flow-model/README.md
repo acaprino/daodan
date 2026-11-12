@@ -38,3 +38,8 @@ Nessun caso raggiunge la soglia del 70%. Note: polar senza l'ambiente Python del
 ### Misure 2 e 5 sulla fixture
 
 `tests/test_codebase_map_flows.py`, regole scritte a mano in `rules.json`: tutti i collegamenti attesi, nessun collegamento vietato, la lacuna del percorso dinamico dichiarata, il flusso dal badge arriva alla collezione passando per la rotta, unità che tengono insieme chi scrive e chi legge con limite di 120.000 e di 1.500 byte. Le regole scritte da un modello non sono ancora provate.
+
+### Dopo il requisito 23 e l'ambiente del progetto, 11-12 novembre 2026
+
+La misura 0 con il criterio di provenienza e con l'ambiente che Daodan prepara sta in [`call-provenance`](../call-provenance/README.md). Le misure 1 e 3 sul caso reale, il confronto con le regole scritte alla cieca e i flussi con il motore stanno in [`phazly-flow`](../phazly-flow/README.md). La fixture copre anche i costrutti che passano da oggetti di libreria (`WrittenRuleTests`), i livelli e `codebase_map_flows`: 17 test.
+
