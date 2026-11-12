@@ -230,14 +230,14 @@ CAP = 24_000        # caratteri, parametro del benchmark
 HUB_SHARE = 0.2     # oltre questa quota di punti d'ingresso, una chiave, una rotta o un esterno non lega
 def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, hub_share: float = HUB_SHARE) -> dict
 # {"schema": "daodan/system-brief/v1", "steps": {"statico", "inferenza", "dinamico", "semantico"},
-#  "modules", "externals", "other_dependencies": {unità: quante}, "runtime_files",
+#  "modules", "externals", "other_dependencies": {unità: quante}, "runtime_files", "declared",
 #  "groups": [{"id", "entries", "files", "stores", "externals"}],
 #  "confirmed": [nomi], "text": str, "truncated": int}
 ```
 
-`externals` unisce registro e stack-analyser e dice per ognuno da quale fonte viene; le dipendenze che nessuna fonte riconosce restano contate per unità di build in `other_dependencies`. `runtime_files` elenca i file che configurano esecuzione e rilascio (`Dockerfile`, `docker-compose*`, `*.tf`, manifest di hosting e di CI). Un gruppo candidato è una componente connessa dei punti d'ingresso che condividono una chiave di store, una rotta o un esterno, esclusi quelli sopra `hub_share`. `text` è la scheda da dare all'agente, entro `cap`: oltre il tetto i gruppi con meno collegamenti diventano una riga e `truncated` li conta.
+`externals` unisce registro e stack-analyser e dice per ognuno da quale fonte viene; le dipendenze che nessuna fonte riconosce restano contate per unità di build in `other_dependencies`. `runtime_files` elenca i file che configurano esecuzione e rilascio (`Dockerfile`, `docker-compose*`, `*.tf`, manifest di Kubernetes, di hosting e di CI). `declared` riporta ciò che quei file dichiarano, letto senza strumenti esterni: i servizi e le immagini di docker-compose, l'immagine di base di un Dockerfile, le entità di un `catalog-info.yaml` di Backstage, ciascuno con il suo file. Un gruppo candidato è una componente connessa dei punti d'ingresso che condividono una chiave di store, una rotta o un esterno, esclusi quelli sopra `hub_share`. `text` è la scheda da dare all'agente, entro `cap`: oltre il tetto i gruppi con meno collegamenti diventano una riga e `truncated` li conta.
 
-- [ ] **Passo 1:** test che falliscono, sulla fixture: i punti d'ingresso `web/checkout.ts::onPayClick`, `server/payments.py::create_payment` e `server/jobs.py::retry_declined` stanno nello stesso gruppo e `web/cart.ts::toggleTheme` in un altro; con una chiave aggiunta che tutti toccano i gruppi restano gli stessi; `steps["dinamico"]` è falso; con `cap=600` il testo sta nel tetto e `truncated` è maggiore di zero; `externals` contiene `card payment provider` con la sua fonte.
+- [ ] **Passo 1:** test che falliscono, sulla fixture: i punti d'ingresso `web/checkout.ts::onPayClick`, `server/payments.py::create_payment` e `server/jobs.py::retry_declined` stanno nello stesso gruppo e `web/cart.ts::toggleTheme` in un altro; con una chiave aggiunta che tutti toccano i gruppi restano gli stessi; `steps["dinamico"]` è falso; con `cap=600` il testo sta nel tetto e `truncated` è maggiore di zero; `externals` contiene `card payment provider` con la sua fonte. Su un progetto temporaneo con un `docker-compose.yml` che ha i servizi `web` e `db` (immagine `postgres:16`), `declared` contiene `db` con immagine `postgres` e il suo file, e `externals` riconosce PostgreSQL dal segno dell'immagine.
 - [ ] **Passo 2:** implementare; i test passano.
 - [ ] **Passo 3:** commit.
 
