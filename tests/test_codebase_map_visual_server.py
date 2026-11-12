@@ -70,6 +70,14 @@ class ServerTests(unittest.TestCase):
         if self.linked:
             self.assertEqual(self.get("/assets/link.js")[0].status, 404)
 
+    def test_a_port_in_use_is_refused(self):
+        try:
+            second = visual.make_server(self.export, self.assets, self.port)
+        except OSError:
+            return
+        second.server_close()
+        self.fail("a second server bound a port already in use")
+
 
 class CommittedViewerTests(unittest.TestCase):
     """The compiled viewer the plugin ships: served by default, with its notices, loading nothing remote."""
