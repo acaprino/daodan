@@ -167,4 +167,33 @@ Le tre prove della [fase 3](../../docs/specs/2026-11-09-flows-in-review.md) su p
 | Esecuzione | `claude -p` con `claude-sonnet-5-5`, plugin da questa checkout, un container Modal per run, due run per prova (`modal_review.py`) |
 | Soglie | B o C vince se porta nel rapporto finale, in entrambe le run, almeno un difetto atteso che A non porta, spendendo al massimo il doppio; a parità di esito resta la meno costosa |
 
-**Stato:** non eseguita. La prova nel container (Claude Code 2.1.322, token `CLAUDE_CODE_OAUTH_TOKEN` del secret Modal `claude-code`) risponde «You've hit your weekly limit · resets Nov 15, 1am (UTC)».
+**Stato:** eseguita il 12 novembre 2026 con il token di un altro account (secret `claude-code-alt`); il primo token aveva esaurito il limite settimanale.
+
+### Fase 3: risultati, 12 novembre 2026
+
+Sei run in parallelo su Modal, lanciate alle 11:26. Rapporti, job e flussi degli eventi stanno nel volume Modal `daodan-flow-results`, cartella `phase3-20261112`: il codice di phazly non entra in questo repository.
+
+| Run | Incarichi | Finding consegnati | Costo | Tempo | G1 | G2 |
+| --- | --- | --- | --- | --- | --- | --- |
+| A1 | 28 (4 revisori × 7 gruppi) | circa 40: 13 Medium, il resto Low | 9,28 USD | 10,5 min | no | no |
+| A2 | 20 (4 × 5) | 20: 12 Medium, 8 Low | 8,84 USD | 10,4 min | no | no |
+| B1 | 28 (4 × 7 unità) | 27: 15 Medium, 12 Low | 17,20 USD | 14,9 min | no | no |
+| B2 | 28 (4 × 7 unità), rigore scelto `deep` | 18: 11 Medium, 7 Low | 15,77 USD | 16,1 min | no | no |
+| C1 | 20 (4 × 5) | 19: 15 Medium, 4 Low | 9,87 USD | 12,6 min | no | no |
+| C2 | 20 (4 × 5) | 18 | 11,56 USD | 14,0 min | no | no |
+
+Totale 72,53 USD più 0,11 USD della prova di avvio. Costo medio per prova: A 9,06 USD, B 16,49 USD (1,82 volte A), C 10,72 USD (1,18 volte A).
+
+- **Esito con le soglie scritte prima:** né B né C portano nel rapporto finale un difetto atteso che A non porta. Per la regola 4 della fase 3 la review resta com'è, ma per C l'esito non vale (vedi sotto).
+- **G1 e G2 non compaiono in nessuna run**, né nei rapporti né nei job: cercati per riga (`useDayProgress.ts:190`, `QuickAddSheet.tsx:268`) e per contenuto (alimento estraneo mostrato come completato, offerta del piano che sparisce), poi letti. I passaggi più vicini confermano il giudizio opposto: quattro run (A1, B2, C1, C2) leggono la logica dell'offerta e la giudicano corretta («il riquadro del piano sparisce quando lo slot ha un record»).
+- **Dove sono mancati**, come chiede la fase 3:
+
+  | Difetto | A | B | C |
+  | --- | --- | --- | --- |
+  | G1 | giudizio: il file è letto, i finding citano altre righe dello stesso hook (`:94`, `:187`) | giudizio: il file del difetto e quello di chi scrive lo store stanno nella stessa unità | estrazione: all'elenco dei flussi mancava lo scrittore del record estraneo |
+  | G2 | giudizio: la logica dell'offerta è letta e ritenuta corretta | selezione e giudizio: con la condivisione 2 lo scrittore è membro di altre unità, e `bind` riceve solo i membri | estrazione, come per G1 |
+
+- **L'input della prova C era difettoso.** I flussi erano stati ricavati dai collegamenti calcolati prima della correzione dei commenti (`mask_comments`, commit `75a87cea8`): fra chi scrive `completedMeals` mancavano `addMealAddition`, `moveFromStackToMeal`, `mergeDiaryDays` e `moveMealAddition`, cioè proprio chi produce il record di G1 e G2. La prova C va ripetuta con i collegamenti corretti prima di concludere su C.
+- **Condizioni diverse dalla spec:** la mappa che ogni run crea è solo lessicale (15,2% di chiamate risolte), non completa come chiede la fase 3. Unità e flussi venivano invece dai collegamenti con il motore.
+- **Difetti del metodo emersi:** la review non ha una cartella d'uscita fissa (quattro run usano `.team-review/`, A2 `/tmp/rv/`), e in C2 la pubblicazione della mappa appena creata viene rifiutata per «snapshot parser identity changed». Lo script raccoglieva solo `.daodan/review`: per cinque run su sei la cartella della review è stata ricostruita dal flusso degli eventi, che contiene messaggi, comandi e risultati di ogni agente; per B2 è salvata intera.
+- **Altri difetti trovati in tutte e sei le run**, non verificati: il pulsante «Riprova» di `PhaseReviewSheet` che non rilancia la richiesta, l'azione vocale persa mentre l'abbonamento carica in `useHomeTabController`, un pasto saltato che riceve cibo e resta `skipped` in `favoritesSlice`, un giorno futuro che resta selezionato in `QuickAddSheet`.

@@ -1,6 +1,6 @@
 # Fase 3: unità e flussi aiutano la review?
 
-**Stato:** abbozzo, da rifinire dopo le fasi [1](2026-11-09-working-run-and-review-fixes.md) e [2](2026-11-09-flow-model.md). **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 3 di 3.
+**Stato:** primo caso misurato il 12 novembre 2026 su phazly (sei run, 72,53 USD): nessuna variante porta i difetti attesi nel rapporto, quindi per ora la review resta com'è; la prova C va ripetuta perché il suo elenco di flussi mancava dello scrittore decisivo. Numeri in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 3 di 3.
 
 Una domanda sola: la review trova più difetti se riceve le unità e i flussi della fase 2? Si risponde con una misura. Unità e flussi restano comunque utili all'esploratore e alla mappa funzionale: qui si decide solo se entrano nella review. Le parole sono quelle definite nelle fasi 1 e 2.
 
