@@ -109,13 +109,13 @@ Parametri e soglie in [`benchmarks/call-provenance`](../../benchmarks/call-prove
 2. **Copertura.** Sugli stessi casi del passo 2: risolte su risolvibili per linguaggio, con e senza gli archi osservati; quante posizioni senza risposta ricevono una destinazione; quanti archi osservati contraddicono un arco provato.
 3. **Costo.** Durata di preparazione ed esecuzione, RAM di picco, spazio su disco.
 4. **Ambiente per il passo 2.** Su un caso Gradle e su uno Rust: risolte su risolvibili con e senza i dati preparati nel container.
-5. **Motore proprio.** Su una macchina senza Kiri: Daodan scarica il motore ed esegue un comando in un container senza aprire finestre. `PATH`, configurazione e contesto di Docker e avvio automatico dell'utente restano invariati; fuori dalla cartella di Daodan resta solo la registrazione della distribuzione WSL.
+5. **Motore proprio.** Su una macchina senza Kiri: Daodan scarica il motore ed esegue un comando in un container senza aprire finestre. `PATH`, configurazione e contesto di Docker e avvio automatico dell'utente restano invariati; fuori dalla cartella di Daodan resta solo la registrazione della distribuzione WSL. Provata su Windows il 12 novembre 2026, con un Kiri dell'utente già attivo: riuscita (README del benchmark).
 
 ## Da decidere
 
 - Quale registro adottare per ogni linguaggio (sezione 7). Il profiler di V8 dà coppie di funzioni senza la riga: la chiamata si ritrova dal nome, e due chiamate omonime nella stessa funzione restano ambigue. Su tududi vede il 35% delle chiamate senza risposta che stanno in file eseguiti. Il registro esatto (`benchmarks/call-provenance/dynamic_record.js`) le registra tutte e porta la copertura al 72,2%.
 - Se il motore del passo 2 di un linguaggio gira dentro il container quando deve eseguire codice del progetto, come per le macro procedurali di Rust.
-- Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore («another Kiri engine is running on this machine»): provato nella stessa distribuzione WSL, non tra due distribuzioni.
+- Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL («another Kiri engine is running on this machine»); in una distribuzione propria i due motori convivono, ma quello di Daodan resta senza i domini dei container, perché le porte 80 e 443 sono già prese.
 - Quale comando esegue i test e come si avviano i servizi che richiedono.
 - Quanto vale un arco osservato dopo una modifica al file del chiamante o della destinazione.
 - Come si accende il passo: un parametro del run o una domanda al primo uso.

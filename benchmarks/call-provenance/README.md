@@ -192,6 +192,20 @@ La memoria di picco dei container e i crediti spesi su Modal non sono misurati.
 
 **Deviazioni.** Come nella misura con il profiler: la copia viene dall'archivio del commit, non dal perimetro dello snapshot, e la rete è aperta mentre si costruisce l'immagine. Node 22 e Postgres girano su Debian 12, non su Alpine.
 
+### Kiri portato da Daodan, lato Windows, 12 novembre 2026
+
+Prova 5 della spec, su questo PC (Windows 11, WSL 2 con kernel 6.18, cgroup v2, senza `/dev/kvm`), con il Kiri dell'utente attivo nella sua distribuzione.
+
+1. **Scaricare.** `kiri-lite_0.2.0_amd64.deb` (2,7 MB) e `SHA256SUMS` dalla release, poi la base `alpine-minirootfs-3.24.4-x86_64.tar.gz` con il suo sha256: entrambi i checksum tornano. Il pacchetto contiene `data.tar.zst`; lo estrae il `tar.exe` di Windows, perché il `tarfile` di Python 3.13 non legge zstd. Il motore sono `kiri` e `kiri-init`, 8,2 MB.
+2. **Distribuzione propria.** `wsl --import daodan-kiri-probe %LOCALAPPDATA%\Daodan\kiri-probe <base> --version 2` impiega 1 s; dopo le prove il disco della distribuzione pesa 140 MB.
+3. **Senza demone.** `kiri raw run --rm alpine echo raw-ok` scarica l'immagine e risponde in 1,6 s, accanto al Kiri dell'utente.
+4. **Con il demone.** `kiri daemon` è pronto in 2 ms e serve l'API di Docker 1.47 su `/root/.kiri/run/docker.sock`. Un container creato dall'API con rete `none`, 256 MB di memoria, 64 processi e la copia montata in sola lettura legge la copia, non può scriverci e non raggiunge la rete; creazione, avvio e fine richiedono 5,1 s. I domini dei container restano spenti: le porte 80 e 443 e `*.kiri.local` sono del Kiri dell'utente.
+5. **Togliere.** `wsl --unregister daodan-kiri-probe` toglie distribuzione e disco in meno di un secondo.
+
+**Nessuna traccia nell'utente.** In un secondo giro completo, dall'importazione alla rimozione, l'ambiente dell'utente in `HKCU\Environment`, `PATH` compreso, la configurazione e i contesti di Docker, la cartella Esecuzione automatica e la chiave `Run` sono identici prima e dopo, byte per byte. Il Kiri dell'utente risponde come prima.
+
+**Non provato.** Un Windows senza WSL, dove attivarlo richiede l'amministratore una volta; una macchina senza Kiri; Daodan che chiama il motore da Windows attraverso `wsl.exe` invece che dall'interno della distribuzione.
+
 ### Estrattore JavaScript: bersagli delle assegnazioni, 12 novembre 2026
 
 Un bersaglio come `obj.x = …` o `a[i] += …` marcava lo scope come non risolto: la lettura lessicale di ogni nome in quello scope si fermava, e le chiamate dentro il bersaglio non venivano registrate. Su tududi 935 file JavaScript e TypeScript su 1.648 avevano uno scope bloccato, 686 lo scope del modulo, perché basta `module.exports = …`. Dopo la correzione (`languages/semantic.py`, `binding`) ne restano 14, tutti per i parametri di tipo generici di TypeScript.
