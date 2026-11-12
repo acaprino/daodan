@@ -79,9 +79,9 @@ def validate(value: object) -> dict   # {"schema", "nodes", "flows", "areas"}; V
 
 Un nodo: `{"id", "name", "type", "position", "members": [...], "evidence": [...], "on": [...], "where": str}`. `id` è l'identità del nodo, distinta dal nome: una proposta lo scrive solo per richiamare un nodo che esiste già; a un nodo nuovo lo assegna la macchina (Task 3). Membri: `percorso`, `percorso::Simbolo`, `store:<store>/<chiave>`, `module:<nome>`; una rotta si cita con il simbolo del suo handler. `on` nomina i nodi su cui il nodo gira o in cui vive. Un flusso: `{"id", "name", "area", "types", "nodes", "arrows": [{"from", "to", "data", "kind", "cite"}], "paths"}`, con `id` come per i nodi. `kind` dice che cosa afferma una freccia: `chiama`, `attiva`, `scrive`, `legge`, `usa`, `trasferisce`, `stessa informazione`. La proposta lo scrive solo per una freccia che non può essere provata; per le altre lo ricava la macchina dalla prova (Task 2). Un'area: `{"name", "present": bool}`. Una proposta può dichiarare il suo perimetro con `"scope": [aree]`: senza `scope` riguarda tutto il sistema. I riferimenti ai nodi (`nodes`, `from`, `to`, `on`) sono per nome.
 
-- [ ] **Passo 1:** test che falliscono. `validate` rifiuta, nominando il campo: un tipo fuori elenco; due nodi con lo stesso nome a meno di maiuscole e accenti; un nodo `internal` senza membri; un nodo `external` con membri; un nodo `unseen` senza `where`; un flusso che nomina un nodo assente; una freccia senza `data`; un `kind` fuori elenco; un'area dell'elenco `AREAS` non dichiarata né presente né assente, quando manca `scope`; con `scope`, un flusso la cui area è fuori dal perimetro; un campo sconosciuto.
-- [ ] **Passo 2:** implementare `validate`; i test passano.
-- [ ] **Passo 3:** commit.
+- [x] **Passo 1:** test che falliscono. `validate` rifiuta, nominando il campo: un tipo fuori elenco; due nodi con lo stesso nome a meno di maiuscole e accenti; un nodo `internal` senza membri; un nodo `external` con membri; un nodo `unseen` senza `where`; un flusso che nomina un nodo assente; una freccia senza `data`; un `kind` fuori elenco; un'area dell'elenco `AREAS` non dichiarata né presente né assente, quando manca `scope`; con `scope`, un flusso la cui area è fuori dal perimetro; un campo sconosciuto.
+- [x] **Passo 2:** implementare `validate`; i test passano.
+- [x] **Passo 3:** commit.
 
 ### Task 2: verifica di nodi e frecce
 
