@@ -70,22 +70,36 @@ def review(arm: str, rep: int, archive: bytes, tag: str) -> dict:
     env = {**os.environ, "HOME": str(home), "USER": "runner"}
     command = [*as_runner, "env", f"HOME={home}", "claude", "-p", ARMS[arm], "--model", "claude-sonnet-5-5",
                "--plugin-dir", "/daodan/plugins/codebase-map", "--plugin-dir", "/daodan/plugins/senior-review",
-               "--dangerously-skip-permissions", "--output-format", "json"]
-    started = time.time()
-    done = subprocess.run(command, cwd=project, env=env, capture_output=True, text=True, timeout=2 * 3600 - 300)
+               "--dangerously-skip-permissions", "--output-format", "stream-json", "--verbose"]
+    # The session streams one event per line to a local file: progress is readable during the run
+    # (`modal container exec ... tail /home/runner/stream.jsonl`) and a run cut by the timeout keeps its trace.
+    stream = home / "stream.jsonl"
+    started, timed_out = time.time(), False
+    with stream.open("w", encoding="utf-8") as sink:
+        process = subprocess.Popen(command, cwd=project, env=env, stdout=sink, stderr=subprocess.PIPE, text=True)
+        try:
+            _, error = process.communicate(timeout=2 * 3600 - 600)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            _, error = process.communicate()
+            timed_out = True
     seconds = round(time.time() - started)
     out = Path("/results") / tag / f"{arm}{rep}"
     out.mkdir(parents=True, exist_ok=True)
-    (out / "session.json").write_text(done.stdout, encoding="utf-8")
-    (out / "stderr.txt").write_text(done.stderr[-20000:], encoding="utf-8")
+    shutil.copyfile(stream, out / "stream.jsonl")
+    (out / "stderr.txt").write_text((error or "")[-20000:], encoding="utf-8")
     review_dir = project / ".daodan" / "review"
     if review_dir.is_dir():
         shutil.make_archive(str(out / "review"), "gztar", review_dir)
-    try:
-        result = json.loads(done.stdout)
-    except ValueError:
-        result = {}
-    summary = {"arm": arm, "rep": rep, "returncode": done.returncode, "seconds": seconds,
+    result = {}
+    for line in stream.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if event.get("type") == "result":
+            result = event
+    summary = {"arm": arm, "rep": rep, "returncode": process.returncode, "timed_out": timed_out, "seconds": seconds,
                "cost_usd": result.get("total_cost_usd"), "turns": result.get("num_turns"),
                "result": (result.get("result") or "")[-4000:]}
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
