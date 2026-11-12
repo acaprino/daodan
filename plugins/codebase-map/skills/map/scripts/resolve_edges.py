@@ -847,10 +847,68 @@ def npm_key(root: Path) -> str | None:
     manifests = npm_manifests(root)
     if not manifests:
         return None
-    digest = hashlib.sha256()
+    # The second field changes when the installation itself changes (type packages added).
+    digest = hashlib.sha256(b"npm-install\0types-1\0")
     for manifest in manifests:
         digest.update(manifest.relative_to(root).as_posix().encode("utf-8") + b"\0" + manifest.read_bytes() + b"\0")
     return digest.hexdigest()[:16]
+
+
+def _declares_types(package: Path) -> bool:
+    """Whether an installed package carries its own type declarations."""
+    try:
+        data = json.loads((package / "package.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if data.get("types") or data.get("typings") or "types" in json.dumps(data.get("exports") or {}):
+        return True
+    return (package / "index.d.ts").is_file()
+
+
+def missing_type_packages(directory: Path) -> list[str]:
+    """`@types/...` names for the declared packages installed without their own types.
+
+    A JavaScript project rarely declares them, and without them the engine cannot
+    tell what `res.send` or `request(app).get` is: the call stays unanswered
+    instead of external.
+    """
+    try:
+        data = json.loads((directory / "package.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    declared = set()
+    for table in ("dependencies", "devDependencies", "optionalDependencies"):
+        if isinstance(data.get(table), dict):
+            declared |= set(data[table])
+    wanted = []
+    for name in sorted(declared):
+        if name.startswith("@types/"):
+            continue
+        typed = "@types/" + name.lstrip("@").replace("/", "__")
+        installed = directory / "node_modules" / name
+        if typed in declared or not installed.is_dir() or _declares_types(installed):
+            continue
+        if not (directory / "node_modules" / typed).is_dir():
+            wanted.append(typed)
+    return wanted
+
+
+def _install_type_packages(npm: str, directory: Path) -> int:
+    """Install the missing type packages beside the others, without scripts; one that does
+    not exist must not cost the rest. Returns how many were installed."""
+    wanted = missing_type_packages(directory)
+    if not wanted:
+        return 0
+    base = [npm, "install", "--no-save", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error",
+            "--package-lock=false"]
+
+    def run(names, timeout):
+        return subprocess.run([*base, *names], cwd=directory, stdin=subprocess.DEVNULL, capture_output=True,
+                              text=True, timeout=timeout, shell=os.name == "nt").returncode == 0
+
+    if run(wanted, 900):
+        return len(wanted)
+    return sum(1 for name in wanted if run([name], 300))
 
 
 def _without_local_packages(manifest: Path) -> str | None:
@@ -937,8 +995,15 @@ def npm_modules(root: Path) -> Path | None:
         print(f"the project's JavaScript packages were not installed: {(completed.stderr or '')[-300:]}", flush=True)
         shutil.rmtree(partial, ignore_errors=True)
         return None
+    try:
+        typed = _install_type_packages(npm, partial)
+    except (OSError, subprocess.SubprocessError):
+        typed = 0
+    if typed:
+        print(f"installed {typed} type packages for declared JavaScript packages without their own", flush=True)
     (partial / "daodan-modules.json").write_text(json.dumps({"manifests": [m.relative_to(root).as_posix()
-                                                                           for m in manifests]}), encoding="utf-8")
+                                                                           for m in manifests],
+                                                             "type_packages": typed}), encoding="utf-8")
     shutil.rmtree(destination, ignore_errors=True)
     os.replace(partial, destination)
     return destination / "node_modules"

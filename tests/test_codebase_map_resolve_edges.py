@@ -1604,6 +1604,47 @@ class NestedPackageTests(unittest.TestCase):
         self.assertEqual(command[1], "install")
         self.assertEqual((self.root / "web/package.json").read_text(encoding="utf-8"), before)
 
+    def test_declared_packages_without_types_get_their_type_packages_without_scripts(self):
+        calls = []
+
+        def package(directory, name, **fields):
+            (directory / "node_modules" / name).mkdir(parents=True, exist_ok=True)
+            (directory / "node_modules" / name / "package.json").write_text(json.dumps({"name": name, **fields}),
+                                                                           encoding="utf-8")
+
+        def run(command, cwd, **_options):
+            calls.append(command)
+            cwd = Path(cwd)
+            if command[1] in ("ci", "install") and "--no-save" not in command:
+                package(cwd, "express")
+                package(cwd, "typed", types="index.d.ts")
+                package(cwd, "@scope/plain")
+                package(cwd, "left")
+                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+            names = [item for item in command if item.startswith("@types/")]
+            # One type package does not exist: the batch fails, the others install one by one.
+            ok = "@types/left" not in names
+            if ok:
+                for name in names:
+                    package(cwd, name)
+            return subprocess.CompletedProcess(command, 0 if ok else 1, stdout="", stderr="")
+
+        (self.root / "web/package.json").write_text(json.dumps({
+            "name": "web", "dependencies": {"express": "^4", "typed": "^1", "@scope/plain": "^1", "left": "^1"}}),
+            encoding="utf-8")
+        with mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
+                mock.patch.object(resolve_edges.shutil, "which", return_value="npm"), \
+                mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+            modules = resolve_edges.npm_modules(self.root / "web")
+        installs = [command for command in calls if "--no-save" in command]
+        self.assertEqual(sorted(item for item in installs[0] if item.startswith("@types/")),
+                         ["@types/express", "@types/left", "@types/scope__plain"])
+        self.assertTrue(all("--ignore-scripts" in command for command in installs))
+        self.assertTrue((modules / "@types/express").is_dir())
+        self.assertTrue((modules / "@types/scope__plain").is_dir())
+        self.assertFalse((modules / "@types/typed").exists())
+        self.assertEqual(json.loads((modules.parent / "daodan-modules.json").read_text(encoding="utf-8"))["type_packages"], 2)
+
     def test_a_mirror_links_packages_below_the_root_without_writing_into_the_project(self):
         modules = Path(self.temp.name).resolve() / "shared/node_modules"
         (modules / "left").mkdir(parents=True)
