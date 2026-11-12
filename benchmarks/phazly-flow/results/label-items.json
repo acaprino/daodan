@@ -1,0 +1,366 @@
+[
+ {
+  "id": 1,
+  "store": "app state/_pendingMealPlanOpen",
+  "reader": "react-app/src/hooks/useHomeTabController.ts::useHomeTabController",
+  "reader_site": "react-app/src/hooks/useHomeTabController.ts:52",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setPendingMealPlanOpen",
+    "site": "react-app/src/stores/slices/uiSlice.ts:123"
+   }
+  ]
+ },
+ {
+  "id": 2,
+  "store": "app state/colorPalette",
+  "reader": "react-app/src/App.tsx::AppContent",
+  "reader_site": "react-app/src/App.tsx:109",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setColorPalette",
+    "site": "react-app/src/stores/slices/uiSlice.ts:162"
+   }
+  ]
+ },
+ {
+  "id": 3,
+  "store": "app state/activePlanId",
+  "reader": "react-app/src/components/features/RebalanceConfirmModal.tsx::RebalanceConfirmModal",
+  "reader_site": "react-app/src/components/features/RebalanceConfirmModal.tsx:39",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:206"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setActivePlanId",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:182"
+   }
+  ]
+ },
+ {
+  "id": 4,
+  "store": "app state/glassEffect",
+  "reader": "react-app/src/components/settings/calm/profile/AppPane.tsx::AppPane",
+  "reader_site": "react-app/src/components/settings/calm/profile/AppPane.tsx:22",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setGlassEffect",
+    "site": "react-app/src/stores/slices/uiSlice.ts:190"
+   }
+  ]
+ },
+ {
+  "id": 5,
+  "store": "app state/mealTypes",
+  "reader": "react-app/src/hooks/useDayLogSlots.ts::useDayLogSlots",
+  "reader_site": "react-app/src/hooks/useDayLogSlots.ts:188",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.addMealType",
+    "site": "react-app/src/stores/slices/profileSlice.ts:288"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.removeMealType",
+    "site": "react-app/src/stores/slices/profileSlice.ts:296"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.reorderMealTypes",
+    "site": "react-app/src/stores/slices/profileSlice.ts:311"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.setMealTypes",
+    "site": "react-app/src/stores/slices/profileSlice.ts:274"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.setWorkoutSlotsEnabled",
+    "site": "react-app/src/stores/slices/profileSlice.ts:322"
+   }
+  ]
+ },
+ {
+  "id": 6,
+  "store": "app state/currentPlan",
+  "reader": "react-app/src/components/features/AIAlternatives.tsx::AIAlternatives",
+  "reader_site": "react-app/src/components/features/AIAlternatives.tsx:156",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:206"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearMealPlanCache",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:194"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:189"
+   }
+  ]
+ },
+ {
+  "id": 7,
+  "store": "app state/breakfastStyle",
+  "reader": "react-app/src/components/settings/sheets/DietPreferencesSheet.tsx::DietPreferencesSheet",
+  "reader_site": "react-app/src/components/settings/sheets/DietPreferencesSheet.tsx:35",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.setBreakfastStyle",
+    "site": "react-app/src/stores/slices/profileSlice.ts:346"
+   }
+  ]
+ },
+ {
+  "id": 8,
+  "store": "mongo/shoppingShares",
+  "reader": "functions-python/app/handlers/shopping_share.py::_is_token_unique",
+  "reader_site": "functions-python/app/handlers/shopping_share.py:81",
+  "writers": [
+   {
+    "symbol": "functions-python/app/handlers/shopping_share.py::enable_shopping_share",
+    "site": "functions-python/app/handlers/shopping_share.py:134"
+   },
+   {
+    "symbol": "functions-python/app/handlers/shopping_share.py::revoke_shopping_share",
+    "site": "functions-python/app/handlers/shopping_share.py:359"
+   }
+  ]
+ },
+ {
+  "id": 9,
+  "store": "app state/themeFollowsSystem",
+  "reader": "react-app/src/components/settings/calm/profile/AppPane.tsx::AppPane",
+  "reader_site": "react-app/src/components/settings/calm/profile/AppPane.tsx:22",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setTheme",
+    "site": "react-app/src/stores/slices/uiSlice.ts:139"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setThemeFollowsSystem",
+    "site": "react-app/src/stores/slices/uiSlice.ts:152"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.toggleTheme",
+    "site": "react-app/src/stores/slices/uiSlice.ts:130"
+   }
+  ]
+ },
+ {
+  "id": 10,
+  "store": "app state/completedMeals",
+  "reader": "react-app/src/components/common/QuickAddSheet.tsx::QuickAddSheet",
+  "reader_site": "react-app/src/components/common/QuickAddSheet.tsx:252",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearDiaryHistory",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:448"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.completeMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:215"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.removeMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:323"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.resetDay",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:428"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCompletedMeals",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:415"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.uncompleteMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:241"
+   }
+  ]
+ },
+ {
+  "id": 11,
+  "store": "app state/locale",
+  "reader": "react-app/src/components/planner/PlannerDayView.tsx::PlannerDayView",
+  "reader_site": "react-app/src/components/planner/PlannerDayView.tsx:255",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setLocale",
+    "site": "react-app/src/stores/slices/uiSlice.ts:167"
+   }
+  ]
+ },
+ {
+  "id": 12,
+  "store": "app state/foodStack",
+  "reader": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.getFavoritesByMealSlot",
+  "reader_site": "react-app/src/stores/slices/favoritesSlice.ts:73",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.addToFoodStack",
+    "site": "react-app/src/stores/slices/favoritesSlice.ts:93"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.clearFoodStack",
+    "site": "react-app/src/stores/slices/favoritesSlice.ts:176"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.removeFromFoodStack",
+    "site": "react-app/src/stores/slices/favoritesSlice.ts:104"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.setFoodStack",
+    "site": "react-app/src/stores/slices/favoritesSlice.ts:181"
+   }
+  ]
+ },
+ {
+  "id": 13,
+  "store": "app state/reminderConfig",
+  "reader": "react-app/src/hooks/useSettingsTabController.ts::useSettingsTabController",
+  "reader_site": "react-app/src/hooks/useSettingsTabController.ts:48",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/reminderSlice.ts::createReminderSlice.setReminderConfig",
+    "site": "react-app/src/stores/slices/reminderSlice.ts:25"
+   }
+  ]
+ },
+ {
+  "id": 14,
+  "store": "app state/completedMeals",
+  "reader": "react-app/src/contexts/AuthContext.tsx::AuthProvider",
+  "reader_site": "react-app/src/contexts/AuthContext.tsx:138",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearDiaryHistory",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:448"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.completeMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:215"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.removeMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:323"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.resetDay",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:428"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCompletedMeals",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:415"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.uncompleteMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:241"
+   }
+  ]
+ },
+ {
+  "id": 15,
+  "store": "app state/userProfile",
+  "reader": "react-app/src/components/features/RebalanceConfirmModal.tsx::RebalanceConfirmModal",
+  "reader_site": "react-app/src/components/features/RebalanceConfirmModal.tsx:58",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.endPhase",
+    "site": "react-app/src/stores/slices/profileSlice.ts:421"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.extendPhase",
+    "site": "react-app/src/stores/slices/profileSlice.ts:440"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/profileSlice.ts::createProfileSlice.setUserProfile",
+    "site": "react-app/src/stores/slices/profileSlice.ts:122"
+   }
+  ]
+ },
+ {
+  "id": 16,
+  "store": "mongo/usageEvents",
+  "reader": "functions-python/app/handlers/admin/_helpers.py::monthly_usage",
+  "reader_site": "functions-python/app/handlers/admin/_helpers.py:90",
+  "writers": [
+   {
+    "symbol": "functions-python/app/handlers/admin/user_actions.py::_action_clear_usage",
+    "site": "functions-python/app/handlers/admin/user_actions.py:69"
+   }
+  ]
+ },
+ {
+  "id": 17,
+  "store": "app state/completedMeals",
+  "reader": "react-app/src/hooks/useDayProgress.ts::useDayProgress",
+  "reader_site": "react-app/src/hooks/useDayProgress.ts:66",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearDiaryHistory",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:448"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.completeMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:215"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.removeMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:323"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.resetDay",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:428"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCompletedMeals",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:415"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.uncompleteMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:241"
+   }
+  ]
+ },
+ {
+  "id": 18,
+  "store": "app state/_planEpoch",
+  "reader": "react-app/src/hooks/useHistoricalDayPlan.ts::useDayTargets",
+  "reader_site": "react-app/src/hooks/useHistoricalDayPlan.ts:260",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.bumpPlanEpoch",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:563"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:206"
+   }
+  ]
+ },
+ {
+  "id": 19,
+  "store": "app state/currentWeekKey",
+  "reader": "react-app/src/components/tabs/MealPlanTab.tsx::MealPlanTab",
+  "reader_site": "react-app/src/components/tabs/MealPlanTab.tsx:43",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCurrentWeekKey",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:192"
+   }
+  ]
+ },
+ {
+  "id": 20,
+  "store": "app state/colorPalette",
+  "reader": "react-app/src/components/onboarding/steps/AccentColorStep.tsx::AccentColorStep",
+  "reader_site": "react-app/src/components/onboarding/steps/AccentColorStep.tsx:27",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/uiSlice.ts::createUISlice.setColorPalette",
+    "site": "react-app/src/stores/slices/uiSlice.ts:162"
+   }
+  ]
+ }
+]

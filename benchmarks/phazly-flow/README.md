@@ -119,3 +119,20 @@ Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, colleg
 - Con condivisione 2 il costo torna vicino a `pack()` (1,12) e l'unità del difetto nomina come contesto i file di chi scrive il suo dato: 3 su 4 per G1, 4 su 4 per G2. Con `pack()` quei file stanno in tre incarichi senza che uno nomini gli altri.
 - Se il contesto basti al revisore per trovare il difetto è la domanda della fase 3, che richiede run di review.
 - Tutti i 568 file sono assegnati in ogni colonna. Circa 2.500 collegamenti restano fra unità diverse.
+
+### Etichette di granularità e significato (misura 4 della fase 2), 12 novembre 2026
+
+Un agente senza contesto riceve coppie «chi scrive / chi legge» uscite da `flows.py` (store, lettore con `file:line`, scrittori con `file:line`) e il sorgente; per ogni coppia scrive cosa significa una voce per chi scrive, cosa assume chi legge, e se sono coerenti, con le righe che lo provano. Nessun altro contesto, nessun accenno ai difetti attesi. Voci e risposte in `results/`.
+
+| Giro | Coppie | Fra cui | Coerenti | Incoerenti | Letture |
+| --- | --- | --- | --- | --- | --- |
+| 1 (`label-items.json`, `labels.json`) | 20, estratte a caso con seme fisso più le due di G1 e G2 | G1 (n. 17), G2 (n. 10) | 19 | 1 (n. 5) | 41 file |
+| 2 (`relabel-items.json`, `relabels.json`) | 6: G1, G2 e 4 controlli, con l'elenco completo degli scrittori | G1 (n. 5), G2 (n. 1) | 6 | 0 | 22 file |
+
+- **I due difetti noti non sono trovati, in nessuno dei due giri.**
+  - Nel giro 1 mancava lo scrittore che produce il caso del difetto, `addMealAddition` (un cibo fuori piano nello slot): un commento con un apostrofo dentro `set(...)` rompeva la lettura degli argomenti. Corretto in `flows.py` (`mask_comments`, con test); l'elenco degli scrittori di `completedMeals` passa da 8 a 12.
+  - Nel giro 2, con l'elenco completo: per G1 l'agente segue la lettura fino al conteggio dei pasti registrati (`useDayProgress.ts:86`) e non fino alla riga che mostra il piatto del piano come mangiato (`useDayProgress.ts:190`). Per G2 vede il comportamento (l'offerta del piano sparisce per qualsiasi record nello slot) e lo giudica corretto: decidere che è un difetto richiede di sapere cosa l'offerta deve significare.
+- La coppia n. 5 del giro 1 è una pista nuova, non verificata: spegnendo e riaccendendo gli slot di allenamento lo spuntino torna con id `afternoon_snack` (`types/index.ts:246`) invece di `snack` (`types/index.ts:263`), e i giorni registrati sotto `snack` mostrano lo slot vuoto più una riga orfana (`useDayLogSlots.ts:95`, `useDayLogSlots.ts:98-115`).
+- La coppia n. 12 del giro 1 era un collegamento falso: `getFavoritesByMealSlot` non legge `foodStack`. Lo stato tenuto in una variabile veniva letto fino alla fine della funzione esterna; ora solo nella funzione che lo dichiara (con test).
+- Soglia della misura, 16 concordanze su 20 con una lettura manuale: non valutata, perché la lettura manuale di tutte le 20 coppie non è stata fatta; sulle due coppie dei difetti la concordanza è 0 su 2.
+- Il prompt non è stato adattato a G1 e G2: sarebbe overfitting su questo caso. Ciò che la misura indica è un limite: un'etichetta per coppia giudica il dato dove viene letto, non dove il lettore lo trasforma in un fatto mostrato, e non conosce l'intento del prodotto.

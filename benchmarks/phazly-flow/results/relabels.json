@@ -1,0 +1,88 @@
+[
+  {
+    "id": 1,
+    "written": "One entry per diary day (key `<weekKey>_<weekday>`) holding one record per meal slot id (the plan meal's mealId, else the positional mealTypes id); a slot record is a skip (completeMeal, type 'skipped'), a list of logged foods (addMealAddition, moveMealAddition, moveFromStackToMeal, the latter possibly keeping type 'skipped' with foods), an alternative with its replacement, a tombstone with no foods kept so the deletion wins the merge (uncompleteMeal, removeMealAddition, resetDay, clearDiaryHistory), or whole days loaded/merged from the server (setCompletedMeals, mergeDiaryDays).",
+    "assumed": "QuickAddSheet reads the selected day's record map and, per slot (the plan meal's mealId), treats a record as 'slot already logged' unless statesNothing says it is a tombstone, hiding the plan tile only for a slot that holds foods, a skip or a replacement.",
+    "consistent": "yes",
+    "evidence": [
+      "react-app/src/components/common/QuickAddSheet.tsx:252",
+      "react-app/src/components/common/QuickAddSheet.tsx:268",
+      "react-app/src/utils/sanitizeCompletedMeals.ts:43",
+      "react-app/src/stores/slices/mealPlanSlice.ts:156",
+      "react-app/src/stores/slices/mealPlanSlice.ts:216",
+      "react-app/src/stores/slices/mealPlanSlice.ts:329",
+      "react-app/src/stores/slices/favoritesSlice.ts:155",
+      "react-app/src/stores/completionKey.ts:55"
+    ]
+  },
+  {
+    "id": 2,
+    "written": "One value per user: the revision id of the active planner plan (every setActivePlanId caller passes plan.planId or plannerRevision.revisionId, which the wire adapter makes identical), or null when no plan is active or the plan was deleted (clearCurrentPlan).",
+    "assumed": "RebalanceConfirmModal takes activePlanId as the revision id of the one active plan, keys its preview scope on it and requires currentPlan's plannerRevision.revisionId to equal it, failing closed (failed preview, 'noPlan' toast) when it is null or different.",
+    "consistent": "yes",
+    "evidence": [
+      "react-app/src/components/features/RebalanceConfirmModal.tsx:39",
+      "react-app/src/components/features/RebalanceConfirmModal.tsx:61",
+      "react-app/src/components/features/RebalanceConfirmModal.tsx:133",
+      "react-app/src/stores/slices/mealPlanSlice.ts:182",
+      "react-app/src/stores/slices/mealPlanSlice.ts:206",
+      "react-app/src/utils/plannerPlanWire.ts:308",
+      "react-app/src/utils/plannerPlanWire.ts:336"
+    ]
+  },
+  {
+    "id": 3,
+    "written": "One value per user: the whole active planner plan (stencil) as returned by getActivePlan or by an activation/rebalance/adapt result, or null on logout, no active plan, plan deletion (clearCurrentPlan) or cache clear (clearMealPlanCache).",
+    "assumed": "AIAlternatives takes currentPlan as the active stencil every edit is a child of, checks it with isCurrentActivePlannerPlan against activePlanId and uses its plannerRevision (revisionId, validFrom) as parent of the requested alternatives, showing a generation error when it is null or not the active revision.",
+    "consistent": "yes",
+    "evidence": [
+      "react-app/src/components/features/AIAlternatives.tsx:156",
+      "react-app/src/components/features/AIAlternatives.tsx:228",
+      "react-app/src/components/features/AIAlternatives.tsx:230",
+      "react-app/src/stores/slices/mealPlanSlice.ts:189",
+      "react-app/src/stores/slices/mealPlanSlice.ts:194",
+      "react-app/src/stores/slices/mealPlanSlice.ts:206",
+      "react-app/src/hooks/useMealPlanSync.ts:54"
+    ]
+  },
+  {
+    "id": 4,
+    "written": "One ISO week key ('YYYY-Www') per app session: the week being viewed, set from the planner's selectedWeek, today's week or an adjacent week; initialised to the wall-clock week.",
+    "assumed": "MealPlanTab takes currentWeekKey as the week key the store currently tracks, compares it with selectedWeek (same format) and overwrites it when they differ; it renders nothing from it.",
+    "consistent": "yes",
+    "evidence": [
+      "react-app/src/components/tabs/MealPlanTab.tsx:43",
+      "react-app/src/components/tabs/MealPlanTab.tsx:90",
+      "react-app/src/stores/slices/mealPlanSlice.ts:192",
+      "react-app/src/stores/appStore.ts:55"
+    ]
+  },
+  {
+    "id": 5,
+    "written": "One entry per diary day (key `<weekKey>_<weekday>`) holding one record per meal slot id; a slot record is a skip, a list of logged foods (possibly under type 'skipped' via moveFromStackToMeal), an alternative with its replacement, a tombstone with no foods (uncompleteMeal, removeMealAddition, resetDay, clearDiaryHistory), or server-loaded/merged days (setCompletedMeals, mergeDiaryDays).",
+    "assumed": "useDayProgress reads today's record map (anchored week and day): per plan meal it looks up the record under meal.mealId and counts it as logged unless statesNothing marks it a tombstone (a skip counts as logged), and it sums kcal/macros over every record of the day via calculateCompletedMealCalories (tombstones and skips add 0, foods always add).",
+    "consistent": "yes",
+    "evidence": [
+      "react-app/src/hooks/useDayProgress.ts:66",
+      "react-app/src/hooks/useDayProgress.ts:86",
+      "react-app/src/hooks/useDayProgress.ts:123",
+      "react-app/src/utils/sanitizeCompletedMeals.ts:43",
+      "react-app/src/utils/mealCalories.ts:96",
+      "react-app/src/stores/slices/mealPlanSlice.ts:156",
+      "react-app/src/stores/slices/favoritesSlice.ts:155",
+      "react-app/src/hooks/useToday.ts:41"
+    ]
+  },
+  {
+    "id": 6,
+    "written": "One full ReminderConfig per user (master switch plus meal, supplement, workout, food-log and body-check settings), always written as the previous config spread with a top-level patch.",
+    "assumed": "useSettingsTabController passes reminderConfig through unchanged as the user's single complete reminder configuration for the settings UI.",
+    "consistent": "yes",
+    "evidence": [
+      "react-app/src/hooks/useSettingsTabController.ts:62",
+      "react-app/src/stores/slices/reminderSlice.ts:25",
+      "react-app/src/components/settings/sheets/RemindersSheet.tsx:30",
+      "react-app/src/types/index.ts:1031"
+    ]
+  }
+]

@@ -1,0 +1,158 @@
+[
+ {
+  "id": 1,
+  "store": "app state/completedMeals",
+  "reader": "react-app/src/components/common/QuickAddSheet.tsx::QuickAddSheet",
+  "reader_site": "react-app/src/components/common/QuickAddSheet.tsx:252",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.moveFromStackToMeal",
+    "site": "react-app/src/stores/slices/favoritesSlice.ts:121"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.addMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:271"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearDiaryHistory",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:448"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.completeMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:215"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.mergeDiaryDays",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:505"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.moveMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:364"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.removeMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:323"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.resetDay",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:428"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCompletedMeals",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:415"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.uncompleteMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:241"
+   }
+  ]
+ },
+ {
+  "id": 2,
+  "store": "app state/activePlanId",
+  "reader": "react-app/src/components/features/RebalanceConfirmModal.tsx::RebalanceConfirmModal",
+  "reader_site": "react-app/src/components/features/RebalanceConfirmModal.tsx:39",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:206"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setActivePlanId",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:182"
+   }
+  ]
+ },
+ {
+  "id": 3,
+  "store": "app state/currentPlan",
+  "reader": "react-app/src/components/features/AIAlternatives.tsx::AIAlternatives",
+  "reader_site": "react-app/src/components/features/AIAlternatives.tsx:156",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:206"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearMealPlanCache",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:194"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCurrentPlan",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:189"
+   }
+  ]
+ },
+ {
+  "id": 4,
+  "store": "app state/currentWeekKey",
+  "reader": "react-app/src/components/tabs/MealPlanTab.tsx::MealPlanTab",
+  "reader_site": "react-app/src/components/tabs/MealPlanTab.tsx:43",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCurrentWeekKey",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:192"
+   }
+  ]
+ },
+ {
+  "id": 5,
+  "store": "app state/completedMeals",
+  "reader": "react-app/src/hooks/useDayProgress.ts::useDayProgress",
+  "reader_site": "react-app/src/hooks/useDayProgress.ts:66",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/favoritesSlice.ts::createFavoritesSlice.moveFromStackToMeal",
+    "site": "react-app/src/stores/slices/favoritesSlice.ts:121"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.addMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:271"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.clearDiaryHistory",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:448"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.completeMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:215"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.mergeDiaryDays",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:505"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.moveMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:364"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.removeMealAddition",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:323"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.resetDay",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:428"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.setCompletedMeals",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:415"
+   },
+   {
+    "symbol": "react-app/src/stores/slices/mealPlanSlice.ts::createMealPlanSlice.uncompleteMeal",
+    "site": "react-app/src/stores/slices/mealPlanSlice.ts:241"
+   }
+  ]
+ },
+ {
+  "id": 6,
+  "store": "app state/reminderConfig",
+  "reader": "react-app/src/hooks/useSettingsTabController.ts::useSettingsTabController",
+  "reader_site": "react-app/src/hooks/useSettingsTabController.ts:48",
+  "writers": [
+   {
+    "symbol": "react-app/src/stores/slices/reminderSlice.ts::createReminderSlice.setReminderConfig",
+    "site": "react-app/src/stores/slices/reminderSlice.ts:25"
+   }
+  ]
+ }
+]

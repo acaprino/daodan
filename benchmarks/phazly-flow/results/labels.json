@@ -1,0 +1,142 @@
+[
+ {
+  "id": 1,
+  "written": "One transient boolean per client session: true is a one-shot request, set by another tab, to open the meal-plan sheet on Home; false is no request (initial value, or the request consumed).",
+  "assumed": "A single pending request flag: when true and Home is the active tab the reader clears it and opens the sheet once.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/uiSlice.ts:123", "react-app/src/hooks/useHomeTabController.ts:259"]
+ },
+ {
+  "id": 2,
+  "written": "One value per user: the id of the accent palette the user picked, always a member of COLOR_PALETTES (typed ColorPalette), applied to the DOM in the same call.",
+  "assumed": "The single current palette id, re-applied to the document as data-palette whenever it changes.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/uiSlice.ts:162", "react-app/src/App.tsx:204"]
+ },
+ {
+  "id": 3,
+  "written": "One value per user: the revision id of the plan currently active, or null after an explicit deletion (clearCurrentPlan) or when a caller passes null.",
+  "assumed": "The id of the one active plan: a key of the preview scope and the value the cached plan's active revision must equal before a rebalance request is built; null or a mismatch resolves as failed.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:183", "react-app/src/stores/slices/mealPlanSlice.ts:208", "react-app/src/components/features/RebalanceConfirmModal.tsx:61"]
+ },
+ {
+  "id": 4,
+  "written": "One boolean per device: whether the frosted-glass look is on, applied to the DOM in the same call.",
+  "assumed": "The current on/off state of the glass look, shown as the checked state of its switch.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/uiSlice.ts:190", "react-app/src/components/settings/calm/profile/AppPane.tsx:110"]
+ },
+ {
+  "id": 5,
+  "written": "One entry per meal slot of the user's CURRENT configuration (per user, undated, 3 to 6 entries): id, name (a display name or an i18n key), time, workout flags; a writer can append, remove, reorder or replace the list, and the workout toggle drops the afternoon snack on enable and on disable re-creates it with id = its semanticType ('afternoon_snack'), not the id it had (the default list's is 'snack').",
+  "assumed": "Each entry is a slot of the requested day (any date) whose id is the stable identity of that slot: the day's record is read under mt.id, and a record under an id absent from the list is a slot that left the configuration, drawn as a timeless orphan row.",
+  "consistent": "no",
+  "evidence": ["react-app/src/stores/slices/profileSlice.ts:339", "react-app/src/types/index.ts:246", "react-app/src/types/index.ts:263", "react-app/src/hooks/useDayLogSlots.ts:95", "react-app/src/hooks/useDayLogSlots.ts:103", "react-app/src/hooks/useDayLogSlots.ts:156"]
+ },
+ {
+  "id": 6,
+  "written": "One cached plan per client (not persisted): the MealPlan object last loaded or returned by a plan mutation, whatever revision it is, or null when no plan loaded, the cache was cleared or the plan was deleted.",
+  "assumed": "A cached plan that may or may not be the active one: it is used as the parent revision of an alternatives request only after isCurrentActivePlannerPlan(currentPlan, activePlanId) and state === 'active' hold; otherwise an error is shown.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:189", "react-app/src/components/features/AIAlternatives.tsx:230", "react-app/src/utils/plannerPlanWire.ts:378"]
+ },
+ {
+  "id": 7,
+  "written": "One value per user: the breakfast preference, one of 'sweet' | 'savory' | 'both'.",
+  "assumed": "The single current preference, compared with each of the same three options to mark the selected one and to pick its description text.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/profileSlice.ts:346", "react-app/src/components/settings/sheets/DietPreferencesSheet.tsx:107", "shared/types/dietary.ts:75"]
+ },
+ {
+  "id": 8,
+  "written": "One document per live share token (_id = token; userId, createdAt, expireAt): inserted when a user enables sharing without a token or revokes; revoke deletes the user's previous token document in the same transaction.",
+  "assumed": "A document whose _id equals the candidate token means the token is taken; no document means it is free.",
+  "consistent": "yes",
+  "evidence": ["functions-python/app/handlers/shopping_share.py:134", "functions-python/app/handlers/shopping_share.py:359", "functions-python/app/handlers/shopping_share.py:81"]
+ },
+ {
+  "id": 9,
+  "written": "One boolean per user: true while the theme tracks the OS preference; set false by any manual theme choice (toggleTheme, setTheme) or by opting out, set true by opting in, which also realigns theme to the OS.",
+  "assumed": "True means the appearance choice is 'system'; false means the choice is the stored theme.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/uiSlice.ts:134", "react-app/src/stores/slices/uiSlice.ts:139", "react-app/src/stores/slices/uiSlice.ts:157", "react-app/src/components/settings/calm/profile/AppPane.tsx:34"]
+ },
+ {
+  "id": 10,
+  "written": "One record per meal slot per diary day (key `week_weekday`, then slot id): a logged meal with additions, an alternative with its replacement, a skip (type 'skipped'), or a tombstone (emptied record kept for the cloud merge after uncomplete, removal of the last addition, resetDay or clearDiaryHistory).",
+  "assumed": "The selected day's record under the selected plan meal's mealId means the slot is taken, unless statesNothing() says it is a tombstone; per slot of one day, used to hide the 'add from plan' tile.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:252", "react-app/src/stores/slices/mealPlanSlice.ts:346", "react-app/src/components/common/QuickAddSheet.tsx:268", "react-app/src/utils/sanitizeCompletedMeals.ts:43"]
+ },
+ {
+  "id": 11,
+  "written": "One value per user: the UI language id, one of the supported locales ('it' | 'sq' | 'en'), with the i18n language switched in the same call.",
+  "assumed": "The current UI language, passed as the language of the cooking tips to fetch.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/uiSlice.ts:167", "react-app/src/components/planner/PlannerDayView.tsx:257"]
+ },
+ {
+  "id": 12,
+  "written": "One entry per scanned or queued food not yet assigned to a meal (per user queue, each with a generated id); writers append one, remove one by id, empty the queue or replace it.",
+  "assumed": "Nothing: the reader takes the whole state with get() and uses only favoriteFoods, filtered by mealSlot and sorted by usageCount; foodStack is never touched.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/favoritesSlice.ts:73", "react-app/src/stores/slices/favoritesSlice.ts:74", "react-app/src/stores/slices/favoritesSlice.ts:99"]
+ },
+ {
+  "id": 13,
+  "written": "One object per user: the whole reminder configuration (master enabled flag plus meal, supplement, workout, foodLog and bodyCheck sub-settings), replaced as a unit.",
+  "assumed": "The current configuration object, passed through unchanged to the settings panes, which show the master flag and each sub-setting.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/reminderSlice.ts:26", "react-app/src/hooks/useSettingsTabController.ts:62", "react-app/src/components/settings/calm/profile/AppPane.tsx:115"]
+ },
+ {
+  "id": 14,
+  "written": "One record per meal slot per diary day (key `week_weekday`, then slot id): a logged meal, an alternative, a skip, or a tombstone; resetDay and clearDiaryHistory keep the day key with tombstones only.",
+  "assumed": "Any day key at all means the local store holds some account's diary data; at whole-map granularity, used with a missing userId to detect leftovers of a previous user and reset the store.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:434", "react-app/src/contexts/AuthContext.tsx:159", "react-app/src/contexts/AuthContext.tsx:163"]
+ },
+ {
+  "id": 15,
+  "written": "One object per user: the profile configuration (gender, goal, training days, phase history, activePhaseId...); setUserProfile merges a patch and always stores currentWeight, bodyFatPercentage and muscleMass as null (they go to bodyLog); endPhase and extendPhase rewrite only phaseHistory and activePhaseId.",
+  "assumed": "The stored profile is read directly only for gender (null when unset); current weight is taken through selectUserProfile(state), which derives it from bodyLog.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/profileSlice.ts:123", "react-app/src/utils/currentMeasurements.ts:44", "react-app/src/components/features/RebalanceConfirmModal.tsx:76", "react-app/src/components/features/RebalanceConfirmModal.tsx:77"]
+ },
+ {
+  "id": 16,
+  "written": "One document per metered operation of a user (userId, type, timestamp, tier); the listed writer inserts nothing: the admin clear action deletes every event of one user.",
+  "assumed": "Each remaining document is one metered operation, counted per user per month per type; a month with no event is absent from the result.",
+  "consistent": "yes",
+  "evidence": ["functions-python/app/handlers/admin/user_actions.py:69", "functions-python/app/handlers/admin/_helpers.py:80", "functions-python/app/handlers/admin/_helpers.py:86"]
+ },
+ {
+  "id": 17,
+  "written": "One record per meal slot per diary day (key `week_weekday`, then slot id): a logged meal with additions, an alternative with its replacement, a skip, or a tombstone.",
+  "assumed": "Today's record under a plan meal's mealId, when not a tombstone, means that plan slot is logged (a skip included); every record of the day, whatever its key, contributes its own kcal and macros to the totals, and a tombstone or bare skip contributes zero.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:224", "react-app/src/hooks/useDayProgress.ts:86", "react-app/src/hooks/useDayProgress.ts:123", "react-app/src/utils/mealCalories.ts:66"]
+ },
+ {
+  "id": 18,
+  "written": "One session counter (not persisted), incremented each time what governs a date may have changed without the active plan id changing: a manual refresh, a rebalance, a plan deletion.",
+  "assumed": "An opaque version number: part of the scope and cache key of the per-date targets, so a change refetches them.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:563", "react-app/src/stores/slices/mealPlanSlice.ts:211", "react-app/src/hooks/useHistoricalDayPlan.ts:263", "react-app/src/hooks/useHistoricalDayPlan.ts:273"]
+ },
+ {
+  "id": 19,
+  "written": "One ISO week key per client (`YYYY-Www`): the week the plan sync is asked to load, set to whatever week a caller passes.",
+  "assumed": "The week the plan sync currently targets: compared with the planner tab's selectedWeek and overwritten with it when they differ.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/mealPlanSlice.ts:192", "react-app/src/components/tabs/MealPlanTab.tsx:90"]
+ },
+ {
+  "id": 20,
+  "written": "One value per user: the id of the accent palette the user picked, always a member of COLOR_PALETTES.",
+  "assumed": "The single current palette id, compared with each COLOR_PALETTES id to mark the selected swatch.",
+  "consistent": "yes",
+  "evidence": ["react-app/src/stores/slices/uiSlice.ts:162", "react-app/src/components/onboarding/steps/AccentColorStep.tsx:46"]
+ }
+]
