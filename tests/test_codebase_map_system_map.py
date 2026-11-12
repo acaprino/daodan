@@ -1,6 +1,7 @@
 """System map of the fixture in benchmarks/flow-model: format, verification, record."""
 
 import copy
+import json
 import shutil
 import subprocess
 import sys
@@ -122,21 +123,28 @@ class ValidateTests(unittest.TestCase):
         self.refused(lambda v: v.update(version=2), "version")
 
 
-class Fixture(unittest.TestCase):
-    """The flow-model fixture as a git project with a snapshot and its links."""
+def fixture(holder) -> None:
+    """The flow-model fixture as a git project with a snapshot, its rules and links."""
+    holder.work = Path(tempfile.mkdtemp(prefix="system-map-")).resolve()
+    holder.project = holder.work / "app"
+    shutil.copytree(BENCH / "app", holder.project)
+    for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                    ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+        subprocess.run(command, cwd=holder.project, check=True, capture_output=True)
+    holder.manifest = holder.work / "snapshot/manifest.sqlite"
+    refresh(holder)
+    holder.rules = flows.load_rules(BENCH / "rules.json")
+    holder.links = flows.link_facts(holder.manifest, holder.rules)
 
+
+def refresh(holder) -> None:
+    snapshot.main(["write", str(holder.project), "--out", str(holder.manifest), "--no-engine", "--no-index"])
+
+
+class Fixture(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.work = Path(tempfile.mkdtemp(prefix="system-map-")).resolve()
-        cls.project = cls.work / "app"
-        shutil.copytree(BENCH / "app", cls.project)
-        for command in (["git", "init", "-q"], ["git", "add", "-A"],
-                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
-            subprocess.run(command, cwd=cls.project, check=True, capture_output=True)
-        cls.manifest = cls.work / "snapshot/manifest.sqlite"
-        snapshot.main(["write", str(cls.project), "--out", str(cls.manifest), "--no-engine", "--no-index"])
-        cls.rules = flows.load_rules(BENCH / "rules.json")
-        cls.links = flows.link_facts(cls.manifest, cls.rules)
+        fixture(cls)
 
     @classmethod
     def tearDownClass(cls):
@@ -223,6 +231,165 @@ class VerifyTests(Fixture):
         report = self.check(changed(lambda v: node(v, "API pagamenti").update(on=["Fantasma"])))
         self.assertEqual(self.node("API pagamenti", report)["status"], "refused")
         self.assertIn("Fantasma", self.node("API pagamenti", report)["reason"])
+
+
+def with_node(**fields) -> dict:
+    """The test map with one more node, or with the node of that id changed."""
+    value = copy.deepcopy(TEST_MAP)
+    if "id" in fields:
+        value["nodes"] = [n for n in value["nodes"] if system_map.modules.slug(n["name"]) != fields["id"]]
+    value["nodes"].append({"type": "schermata", **fields})
+    return value
+
+
+def names(system) -> list[str]:
+    return [n["name"] for n in system["nodes"]]
+
+
+def by_id(system, kind, ident) -> dict:
+    return next(r for r in system[kind] if r["id"] == ident)
+
+
+class RecordTests(unittest.TestCase):
+    def setUp(self):
+        fixture(self)
+        self.addCleanup(shutil.rmtree, self.work, True)
+
+    def record(self, value):
+        return system_map.record(self.manifest, self.rules, copy.deepcopy(value))
+
+    def load(self):
+        return system_map.load(self.manifest, self.rules)
+
+    def declare(self, **fields):
+        """The project confirms a node of the map, with the fields given changed."""
+        system = self.load()
+        ids = {n["name"]: n["id"] for n in system["nodes"]}
+        found = dict(by_id(system, "nodes", fields["id"]))
+        declared = {k: found[k] for k in ("id", "name", "type", "position", "members", "evidence") if k in found}
+        declared.update(on=[ids[n] for n in found["on"]], **fields)
+        path = self.project / system_map.DECLARED_FILE
+        value = (json.loads(path.read_text(encoding="utf-8")) if path.exists()
+                 else {"schema": system_map.DECLARED_SCHEMA, "nodes": [], "flows": []})
+        value["nodes"] = [n for n in value["nodes"] if n["id"] != fields["id"]] + [declared]
+        path.write_text(json.dumps(value), encoding="utf-8")
+        refresh(self)
+
+    def node_report(self, report, name):
+        return next(n for n in report["nodes"] if n["name"] == name)
+
+    def test_coverage_counts_what_the_accepted_flows_hold(self):
+        report = self.record(TEST_MAP)
+        coverage = report["coverage"]
+        self.assertEqual((coverage["entries"]["in"], coverage["entries"]["of"]), (3, 6))
+        self.assertEqual(coverage["entries"]["left"],
+                         ["admin/orders.py::list_all_orders", "server/orders.py::list_orders", "web/cart.ts::toggleTheme"])
+        self.assertEqual([(coverage[k]["in"], coverage[k]["of"]) for k in ("stores", "routes")], [(2, 4), (1, 3)])
+        self.assertEqual(self.load()["coverage"], coverage)
+        recorded = (self.manifest.parent / system_map.FILE).read_text(encoding="utf-8")
+        self.assertNotIn("Fantasma", recorded)
+        self.assertNotIn("Refuso", recorded)
+        flow = by_id(self.load(), "flows", "pagare-un-ordine")
+        self.assertNotIn(("Badge pagamento", "API pagamenti"), {(a["from"], a["to"]) for a in flow["arrows"]})
+
+    def test_about_answers_for_a_node_and_an_area(self):
+        self.record(TEST_MAP)
+        system = self.load()
+        self.assertEqual([f["name"] for f in system_map.about(system, "Pagamento")["flows"]],
+                         ["Pagare un ordine", "Riprova dei pagamenti"])
+        self.assertEqual(system_map.about(system, "pagamento"), system_map.about(system, "Pagamento"))
+        area = system_map.about(system, "pagamenti e abbonamenti")
+        self.assertEqual([f["name"] for f in area["flows"]], ["Pagare un ordine"])
+        self.assertEqual(area["flows"][0]["files"], ["server/gateway.py", "server/payments.py", "web/badge.ts",
+                                                     "web/checkout.ts"])
+        self.assertEqual((area["externals"], area["unseen"]), (["card payment provider", "Cliente"], []))
+
+    def test_identity_does_not_follow_the_name(self):
+        first = self.record(TEST_MAP)
+        self.assertEqual(self.node_report(first, "Checkout")["id"], "checkout")
+        again = self.record(with_node(name="Schermata di pagamento", members=["web/checkout.ts"]))
+        self.assertEqual(self.node_report(again, "Schermata di pagamento")["status"], "refused")
+        self.assertIn("checkout", self.node_report(again, "Schermata di pagamento")["reason"])
+        wider = self.record(with_node(name="Gestione cassa", members=["web/checkout.ts", "web/cart.ts"]))
+        self.assertEqual(self.node_report(wider, "Gestione cassa")["status"], "refused")
+        self.assertIn("checkout", self.node_report(wider, "Gestione cassa")["reason"])
+        self.assertEqual(self.record(TEST_MAP)["created"], [])
+        self.record(with_node(id="checkout", name="Schermata di pagamento", members=["web/checkout.ts"]))
+        self.assertEqual(names(self.load()).count("Schermata di pagamento"), 1)
+        self.assertNotIn("Checkout", names(self.load()))
+        self.declare(id="checkout", name="Checkout")
+        report = self.record(with_node(id="checkout", name="Cassa", members=["web/checkout.ts"]))
+        self.assertEqual(self.node_report(report, "Cassa")["status"], "confirmed")
+        confirmed = by_id(self.load(), "nodes", "checkout")
+        self.assertEqual((confirmed["name"], confirmed["status"]), ("Checkout", "confirmed"))
+
+    def test_a_rename_does_not_take_the_name_of_another_node(self):
+        self.record(TEST_MAP)
+        report = self.record({"scope": ["comunicazioni"], "areas": [{"name": "comunicazioni", "present": False}],
+                              "nodes": [{"id": "checkout", "name": "Riprova", "type": "schermata",
+                                         "members": ["web/checkout.ts"]}]})
+        self.assertIn("riprova", self.node_report(report, "Riprova")["reason"])
+        self.assertEqual(by_id(self.load(), "nodes", "checkout")["name"], "Checkout")
+
+    def test_a_refused_flow_leaves_the_recorded_one(self):
+        self.record(TEST_MAP)
+        before = by_id(self.load(), "flows", "riprova-dei-pagamenti")
+        report = self.record(changed(lambda v: v["flows"][1]["arrows"][0].update({"from": "Riprova", "to": "Pagamento"})))
+        self.assertEqual(report["flows"][1]["status"], "refused")
+        self.assertNotIn("riprova-dei-pagamenti", report["removed"])
+        self.assertEqual(by_id(self.load(), "flows", "riprova-dei-pagamenti"), before)
+
+    def test_a_declared_file_that_does_not_read_is_a_gap(self):
+        self.record(TEST_MAP)
+        (self.project / system_map.DECLARED_FILE).write_text(json.dumps(
+            {"schema": system_map.DECLARED_SCHEMA, "nodes": [{"id": "x", "name": "X", "type": "schermata",
+                                                              "members": ["web/cart.ts"], "on": ["nowhere"]}]}))
+        refresh(self)
+        system = self.load()
+        self.assertIn("nowhere", system["gaps"][0]["reason"])
+        self.assertNotIn("X", names(system))
+
+    def test_a_proposal_for_one_area_leaves_the_others(self):
+        self.record(TEST_MAP)
+        before = self.load()
+        flow = copy.deepcopy(TEST_MAP["flows"][0])
+        flow["nodes"].remove("Badge pagamento")
+        flow["arrows"] = [a for a in flow["arrows"] if "Badge pagamento" not in (a["from"], a["to"])]
+        proposal = {"scope": ["pagamenti e abbonamenti"], "areas": [{"name": "pagamenti e abbonamenti", "present": True}],
+                    "nodes": [], "flows": [flow]}
+        report = self.record(proposal)
+        after = self.load()
+        self.assertEqual(by_id(after, "flows", "riprova-dei-pagamenti"), by_id(before, "flows", "riprova-dei-pagamenti"))
+        self.assertEqual([n["id"] for n in after["nodes"]].count("pagamento"), 1)
+        self.assertIn("badge-pagamento", report["removed"])
+        self.assertNotIn("pagamento", report["removed"])
+        self.record(TEST_MAP)
+        self.declare(id="badge-pagamento", name="Badge pagamento")
+        self.assertNotIn("badge-pagamento", self.record(proposal)["removed"])
+        self.assertIn("Badge pagamento", names(self.load()))
+
+    def test_a_changed_file_is_proved_again_or_sent_back(self):
+        self.record(TEST_MAP)
+        for path, line in (("web/badge.ts", "// edited\n"), ("server/http.py", "# edited\n")):
+            with (self.project / path).open("a", encoding="utf-8") as stream:
+                stream.write(line)
+        refresh(self)
+        system = self.load()
+        badge = by_id(system, "nodes", "badge-pagamento")
+        self.assertEqual((badge["status"], badge["fresh"]), ("accepted", True))
+        shop = by_id(system, "nodes", "server-shop")
+        self.assertEqual((shop["fresh"], shop["changed_files"]), (False, ["server/http.py"]))
+        runs_on = next(c for c in system["correspondences"] if (c["from"], c["to"]) == ("API pagamenti", "Server shop"))
+        self.assertEqual((runs_on["fresh"], runs_on["changed_files"]), (False, ["server/http.py"]))
+        self.assertTrue(by_id(system, "nodes", "checkout")["fresh"])
+        with (self.project / "web/checkout.ts").open("a", encoding="utf-8") as stream:
+            stream.write("// edited\n")
+        refresh(self)
+        flow = by_id(self.load(), "flows", "pagare-un-ordine")
+        declared = next(a for a in flow["arrows"] if (a["from"], a["to"]) == ("Cliente", "Checkout"))
+        self.assertEqual((declared["status"], declared["fresh"], declared["changed_files"]),
+                         ("declared", False, ["web/checkout.ts"]))
+        self.assertFalse(flow["fresh"])
 
 
 if __name__ == "__main__":

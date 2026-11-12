@@ -159,8 +159,8 @@ def about(system: dict, name: str) -> dict                            # area, fl
 2. ciò che è solo dichiarato (nodi senza codice, frecce dichiarate, corrispondenze) diventa `fresh: false` con `changed_files` e torna all'agente, perché la macchina vede che il file citato è cambiato ma non cosa dice ora;
 3. i nomi confermati non cambiano in nessuno dei due casi.
 
-- [ ] **Passo 1:** test che falliscono sulla copertura. Sulla mappa di prova: `coverage["entries"]` vale 3 su 6 e lascia fuori `web/cart.ts::toggleTheme`, `server/orders.py::list_orders`, `admin/orders.py::list_all_orders`; `coverage["stores"]` 2 su 4; `coverage["routes"]` 1 su 3. Il file registrato non contiene il nodo e la freccia rifiutati. `about(m, "Pagamento")` elenca i due flussi che attraversano quel nodo; `about(m, "pagamenti e abbonamenti")` elenca i flussi dell'area con i file dei loro nodi.
-- [ ] **Passo 2:** test che falliscono sull'identità.
+- [x] **Passo 1:** test che falliscono sulla copertura. Sulla mappa di prova: `coverage["entries"]` vale 3 su 6 e lascia fuori `web/cart.ts::toggleTheme`, `server/orders.py::list_orders`, `admin/orders.py::list_all_orders`; `coverage["stores"]` 2 su 4; `coverage["routes"]` 1 su 3. Il file registrato non contiene il nodo e la freccia rifiutati. `about(m, "Pagamento")` elenca i due flussi che attraversano quel nodo; `about(m, "pagamenti e abbonamenti")` elenca i flussi dell'area con i file dei loro nodi.
+- [x] **Passo 2:** test che falliscono sull'identità.
 
 ```python
 first = record(manifest, rules, test_map)
@@ -178,7 +178,7 @@ confirmed = node(load(manifest, rules), "checkout")
 assert confirmed["name"] == "Checkout" and confirmed["status"] == "confirmed"
 ```
 
-- [ ] **Passo 3:** test che falliscono sull'aggiornamento di un'area. Dopo la mappa di prova, una proposta con `scope: ["pagamenti e abbonamenti"]` riporta `Pagare un ordine` senza `Badge pagamento`:
+- [x] **Passo 3:** test che falliscono sull'aggiornamento di un'area. Dopo la mappa di prova, una proposta con `scope: ["pagamenti e abbonamenti"]` riporta `Pagare un ordine` senza `Badge pagamento`:
 
 ```python
 report = record(manifest, rules, area_proposal)
@@ -190,9 +190,9 @@ declare(project, id="badge-pagamento", name="Badge pagamento")
 assert "badge-pagamento" not in record(manifest, rules, area_proposal)["removed"]         # confermato: resta
 ```
 
-- [ ] **Passo 4:** test che falliscono sulla freschezza. Dopo una modifica a `web/badge.ts` e un `snapshot refresh`, `load` riverifica `Badge pagamento` e lo lascia `accepted`, con `fresh` vero. Dopo una modifica a `server/http.py`, `Server shop` e la corrispondenza di `API pagamenti` su `Server shop` hanno `fresh` falso e `changed_files == ["server/http.py"]`, mentre `Checkout` resta `fresh`. Dopo una modifica a `web/checkout.ts`, la freccia dichiarata da `Cliente` a `Checkout`, che lo cita, ha `fresh` falso.
-- [ ] **Passo 5:** implementare; i test passano.
-- [ ] **Passo 6:** commit.
+- [x] **Passo 4:** test che falliscono sulla freschezza. Dopo una modifica a `web/badge.ts` e un `snapshot refresh`, `load` riverifica `Badge pagamento` e lo lascia `accepted`, con `fresh` vero. Dopo una modifica a `server/http.py`, `Server shop` e la corrispondenza di `API pagamenti` su `Server shop` hanno `fresh` falso e `changed_files == ["server/http.py"]`, mentre `Checkout` resta `fresh`. Dopo una modifica a `web/checkout.ts`, la freccia dichiarata da `Cliente` a `Checkout`, che lo cita, ha `fresh` falso.
+- [x] **Passo 5:** implementare; i test passano.
+- [x] **Passo 6:** commit.
 
 ### Task 4: livelli
 

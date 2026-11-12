@@ -17,6 +17,7 @@ only what those links say. An arrow with an end without code, or one that says
 """
 from __future__ import annotations
 
+import json
 import sys
 import unicodedata
 from pathlib import Path
@@ -27,6 +28,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import flows  # noqa: E402
 import modules  # noqa: E402
+import snapshot  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-map/v1"
@@ -119,7 +121,7 @@ def _arrow(record, where: str, names: set[str]) -> dict:
     return out
 
 
-def _flow(record, nodes: set[str], present: set[str], scope: set[str] | None) -> dict:
+def _flow(record, nodes: set[str], present: set[str] | None, scope: set[str] | None) -> dict:
     record = _fields(record, _FLOW_FIELDS, "a flow")
     name = _text(record, "name", "a flow")
     where = f"flow {name}"
@@ -129,7 +131,7 @@ def _flow(record, nodes: set[str], present: set[str], scope: set[str] | None) ->
     out["area"] = _text(record, "area", where)
     if scope is not None and key(out["area"]) not in scope:
         raise ValueError(f"{where}: area {out['area']} is outside the scope")
-    if key(out["area"]) not in present:
+    if present is not None and key(out["area"]) not in present:
         raise ValueError(f"{where}: area {out['area']} is not declared present")
     out["types"] = _texts(record, "types", where)
     if not out["types"] or any(t not in FLOW_TYPES for t in out["types"]):
@@ -147,8 +149,11 @@ def _flow(record, nodes: set[str], present: set[str], scope: set[str] | None) ->
     return out
 
 
-def validate(value: object) -> dict:
-    """The proposal in its normal form, or a ValueError that names the wrong field."""
+def validate(value: object, known: set[str] = frozenset()) -> dict:
+    """The proposal in its normal form, or a ValueError that names the wrong field.
+
+    `known` holds the keys of the nodes already in the map, which flows and `on` may name.
+    """
     value = _fields(value, _MAP_FIELDS, "the system map")
     if value.get("schema", SCHEMA) != SCHEMA:
         raise ValueError(f"schema must be {SCHEMA}")
@@ -182,13 +187,13 @@ def validate(value: object) -> dict:
         names[key(record["name"])] = record["name"]
         nodes.append(record)
     for record in nodes:
-        missing = [n for n in record["on"] if key(n) not in names]
+        missing = [n for n in record["on"] if key(n) not in names and key(n) not in known]
         if missing:
             raise ValueError(f"node {record['name']}: on names {', '.join(missing)}, not in the map")
     present = {name for name, flag in seen.items() if flag}
     flow_list, flow_names = [], set()
     for record in value.get("flows", []):
-        record = _flow(record, set(names), present, None if scope is None else {key(a) for a in scope})
+        record = _flow(record, set(names) | set(known), present, None if scope is None else {key(a) for a in scope})
         if key(record["name"]) in flow_names:
             raise ValueError(f"flow name {record['name']} is repeated")
         flow_names.add(key(record["name"]))
@@ -200,6 +205,16 @@ def validate(value: object) -> dict:
 
 
 # ---------------------------------------------------------------- verification
+# Inside, nodes are keyed by an id and flows, arrows and `on` reference ids.
+
+def _inside(path: str, directory: str) -> bool:
+    return directory == "." or path == directory or path.startswith(directory + "/")
+
+
+def _headers(manifest: Path) -> dict:
+    with open_snapshot(manifest) as store:
+        return dict(store.iter_file_headers_only())
+
 
 def _module_files(manifest: Path) -> dict[str, list[str]]:
     state = modules.ensure_graph(manifest)
@@ -208,7 +223,7 @@ def _module_files(manifest: Path) -> dict[str, list[str]]:
 
 
 def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict) -> dict[str, dict]:
-    """Per node key: status, reason, files, and what it owns (whole files, symbols, other members)."""
+    """Per node id: its report, its record and what it owns (whole files, symbols, other members)."""
     texts = sorted({m for r in records for m in r["members"] if not m.startswith(("store:", "module:"))})
     members = dict(zip(texts, modules.resolve_members(manifest, texts))) if texts else {}
     cited = sorted({e for r in records for e in r["evidence"]})
@@ -233,7 +248,7 @@ def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict
             elif not (found := members[member])["resolved"]:
                 problems.append(f"member {member}: {found['reason']}")
             elif found["kind"] == "directory":
-                whole.update(f for f in headers if modules._inside(f, found["path"]))
+                whole.update(f for f in headers if _inside(f, found["path"]))
             elif found["kind"] == "symbol":
                 symbols.add((found["path"], found["symbol"]))
             else:
@@ -243,13 +258,12 @@ def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict
                   "files": sorted(whole | {path for path, _ in symbols})}
         if problems:
             report["reason"] = "; ".join(problems)
-        out[key(record["name"])] = {"report": report, "record": record, "whole": whole, "symbols": symbols,
-                                    "others": others}
+        out[record["id"]] = {"report": report, "record": record, "whole": whole, "symbols": symbols, "others": others}
     changed = True
     while changed:  # `on` names accepted nodes only
         changed = False
         for item in out.values():
-            refused = [n for n in item["record"]["on"] if out[key(n)]["report"]["status"] != "accepted"]
+            refused = [out[i]["report"]["name"] for i in item["record"]["on"] if out[i]["report"]["status"] != "accepted"]
             if refused and item["report"]["status"] == "accepted":
                 item["report"].update(status="refused", reason=f"on names refused nodes: {', '.join(refused)}")
                 changed = True
@@ -270,20 +284,20 @@ def _proof(edge: dict) -> dict:
     return {name: edge[name] for name in ("from", "to", "type", "site")}
 
 
-def _check_arrow(arrow: dict, first: dict, second: dict, links: dict, headers: dict) -> dict:
-    out = {"from": arrow["from"], "to": arrow["to"], "data": arrow["data"]}
+def _check_arrow(arrow: dict, first: dict, second: dict, links: dict, readers: dict, headers: dict) -> dict:
+    out = {"from": first["report"]["name"], "to": second["report"]["name"], "data": arrow["data"]}
     refused = [i["report"]["name"] for i in (first, second) if i["report"]["status"] != "accepted"]
     if refused:
         return {**out, "status": "refused", "reason": f"nodes refused: {', '.join(refused)}"}
-    without_code = [i["report"]["name"] for i in (first, second) if i["record"]["position"] != "internal"]
-    if without_code or arrow.get("kind") == "stessa informazione":
+    if first["record"]["position"] != "internal" or second["record"]["position"] != "internal" \
+            or arrow.get("kind") == "stessa informazione":
         return {**out, **_declared(arrow, first, second, headers)}
     direct = [e for e in links["edges"] if _owns(first, e["from"]) and _owns(second, e["to"])]
     pairs = [(w, r) for w in links["edges"] if w["type"] == "scrive" and _owns(first, w["from"])
-             for r in links["edges"] if r["type"] == "legge" and r["from"] == w["to"] and _owns(second, r["to"])]
+             for r in readers.get(w["to"], []) if _owns(second, r["to"])]
     if not direct and not pairs:
         return {**out, "status": "refused",
-                "reason": f"no link from a member of {arrow['from']} to a member of {arrow['to']}, "
+                "reason": f"no link from a member of {out['from']} to a member of {out['to']}, "
                           "nor a write and a read of the same store key"}
     types = {e["type"] for e in direct} | ({"trasferisce"} if pairs else set())
     via = {e["to"] for e in direct if e["type"] == "scrive"} | {e["from"] for e in direct if e["type"] == "legge"}
@@ -301,7 +315,7 @@ def _declared(arrow: dict, first: dict, second: dict, headers: dict) -> dict:
         return {"status": "refused", "reason": "a declared arrow cites path:line"}
     path, _, line = arrow["cite"].rpartition(":")
     lines = (headers.get(path) or {}).get("lines") or 0
-    if path not in headers or not line.isdigit() or not 1 <= int(line) <= lines:
+    if not line.isdigit() or not 1 <= int(line) <= lines:
         return {"status": "refused", "reason": f"cite {arrow['cite']}: no such line in the snapshot"}
     files = set(first["report"]["files"]) | set(second["report"]["files"])
     if files and path not in files:
@@ -309,20 +323,365 @@ def _declared(arrow: dict, first: dict, second: dict, headers: dict) -> dict:
     return {"status": "declared", "asserts": [arrow["kind"]], "via": [], "proof": [], "cite": arrow["cite"]}
 
 
-def verify(manifest: Path, links: dict, value: dict) -> dict:
-    """Accept or refuse each node, arrow and flow of a validated proposal, with the reason."""
-    manifest = Path(manifest)
-    with open_snapshot(manifest) as store:
-        headers = dict(store.iter_file_headers_only())
-    nodes = _check_nodes(manifest, links, value["nodes"], headers)
+def _verify(manifest: Path, links: dict, nodes: list[dict], flow_records: list[dict], headers: dict):
+    """Reports of nodes and flows referenced by id, and the node items they were checked with."""
+    items = _check_nodes(manifest, links, nodes, headers)
+    readers = {}
+    for edge in links["edges"]:
+        if edge["type"] == "legge":
+            readers.setdefault(edge["from"], []).append(edge)
     out = []
-    for record in value["flows"]:
-        arrows = [_check_arrow(a, nodes[key(a["from"])], nodes[key(a["to"])], links, headers) for a in record["arrows"]]
-        refused = [n for n in record["nodes"] if nodes[key(n)]["report"]["status"] != "accepted"]
+    for record in flow_records:
+        arrows = [_check_arrow(a, items[a["from"]], items[a["to"]], links, readers, headers) for a in record["arrows"]]
+        refused = [items[i]["report"]["name"] for i in record["nodes"] if items[i]["report"]["status"] != "accepted"]
         report = {"name": record["name"], "status": "accepted", "arrows": arrows}
         if refused:
             report.update(status="refused", reason=f"nodes refused: {', '.join(refused)}")
         elif all(a["status"] == "refused" for a in arrows):
             report.update(status="refused", reason="no arrow stands")
         out.append(report)
-    return {"nodes": [item["report"] for item in nodes.values()], "flows": out}
+    return {"nodes": [items[n["id"]]["report"] for n in nodes], "flows": out}, items
+
+
+def _by_key(value: dict) -> tuple[list[dict], list[dict]]:
+    """A validated proposal with each name as its own id."""
+    nodes = [{**n, "id": key(n["name"]), "on": [key(o) for o in n["on"]]} for n in value["nodes"]]
+    flow_records = [{**f, "nodes": [key(n) for n in f["nodes"]],
+                     "arrows": [{**a, "from": key(a["from"]), "to": key(a["to"])} for a in f["arrows"]]}
+                    for f in value["flows"]]
+    return nodes, flow_records
+
+
+def verify(manifest: Path, links: dict, value: dict) -> dict:
+    """Accept or refuse each node, arrow and flow of a validated proposal, with the reason."""
+    manifest = Path(manifest)
+    return _verify(manifest, links, *_by_key(value), _headers(manifest))[0]
+
+
+# ---------------------------------------------------------------- record
+
+FILE = "system-map.json"
+DECLARED_FILE = "codebase-system-map.json"
+DECLARED_SCHEMA = "daodan/declared-system-map/v1"
+_STORED = ("id", "name", "type", "position", "members", "evidence", "on", "where")
+
+
+def _read_declared(manifest: Path, headers: dict, known: set[str]) -> tuple[dict, list[dict]]:
+    """The project's confirmed records, read from the snapshot; a file that does not read is a gap."""
+    empty = {"nodes": [], "flows": []}
+    if DECLARED_FILE not in headers:
+        return empty, []
+    with open_snapshot(manifest) as store:
+        lines = flows.Source(store).lines(DECLARED_FILE)
+    try:
+        if lines is None:
+            raise ValueError("changed since the snapshot; refresh it")
+        value = _fields(json.loads("\n".join(lines)), {"schema", "nodes", "flows"}, DECLARED_FILE)
+        if value.get("schema") != DECLARED_SCHEMA:
+            raise ValueError(f"schema must be {DECLARED_SCHEMA}")
+        nodes = [_node(n) for n in value.get("nodes", [])]
+        if any("id" not in n for n in nodes):
+            raise ValueError("every declared node has its id")
+        ids = known | {n["id"] for n in nodes}
+        if unknown := sorted({o for n in nodes for o in n["on"]} - ids):
+            raise ValueError(f"on names unknown ids {', '.join(unknown)}")
+        flow_records = [_flow(f, ids, None, None) for f in value.get("flows", [])]
+        if any("id" not in f for f in flow_records):
+            raise ValueError("every declared flow has its id")
+        return {"nodes": nodes, "flows": flow_records}, []
+    except ValueError as error:
+        return empty, [{"path": DECLARED_FILE, "reason": str(error)}]
+
+
+def _state(manifest: Path, headers: dict) -> dict:
+    """The recorded map with the project's declared records over it."""
+    path = manifest.with_name(FILE)
+    stored = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"nodes": [], "flows": [], "areas": []}
+    if stored.get("schema", SCHEMA) != SCHEMA:
+        raise ValueError(f"{FILE} is not a system map of this schema")
+    nodes = {n["id"]: n for n in stored["nodes"]}
+    flow_records = {f["id"]: f for f in stored["flows"]}
+    declared, gaps = _read_declared(manifest, headers, set(nodes))
+    for record in declared["nodes"]:
+        nodes[record["id"]] = {**record, "digests": nodes.get(record["id"], {}).get("digests", {})}
+    for record in declared["flows"]:
+        before = {(a["from"], a["to"]): a for a in flow_records.get(record["id"], {}).get("arrows", [])}
+        flow_records[record["id"]] = {**record, "arrows": [
+            {**a, "digests": before.get((a["from"], a["to"]), {}).get("digests", {})} for a in record["arrows"]]}
+    return {"nodes": nodes, "flows": flow_records, "areas": {key(a["name"]): a for a in stored.get("areas", [])},
+            "declared": {r["id"] for r in declared["nodes"] + declared["flows"]}, "gaps": gaps, "exists": path.is_file()}
+
+
+def _changed(digests: dict, headers: dict, paths=None) -> list[str]:
+    return sorted(f for f, digest in digests.items()
+                  if (paths is None or f in paths) and (headers.get(f) or {}).get("raw_hash") != digest)
+
+
+def _site_file(site: str) -> str:
+    path, _, line = site.rpartition(":")
+    return path if line.isdigit() else site
+
+
+def _coverage(links: dict, items: dict, holders: list[str]) -> dict:
+    owners = [items[i] for i in dict.fromkeys(holders)]
+
+    def part(values, strip=0):
+        inside = {v for v in values if any(_owns(o, v) for o in owners)}
+        return {"in": len(inside), "of": len(values), "left": sorted(v[strip:] for v in set(values) - inside)}
+
+    entries = sorted({e["symbol"] for e in links["entries"]})
+    return {"entries": part(entries), "stores": part(sorted("store:" + k for k in links["stores"]), 6),
+            "routes": part(sorted({e["symbol"] for e in links["entries"] if e["kind"] == "rotta"}))}
+
+
+def _evaluate(manifest: Path, links: dict, state: dict, headers: dict) -> dict:
+    """The map as `load` gives it: verified again, with freshness, correspondences and coverage."""
+    nodes, flow_records, declared = state["nodes"], state["flows"], state["declared"]
+    report, items = _verify(manifest, links, list(nodes.values()), list(flow_records.values()), headers)
+    name = {i: n["name"] for i, n in nodes.items()}
+    ok = {"accepted", "confirmed"}
+
+    def status(ident, verified):
+        return {"accepted": "confirmed", "refused": "incomplete"}[verified] if ident in declared else verified
+
+    out_nodes = []
+    for record, checked in zip(nodes.values(), report["nodes"]):
+        state_of = status(record["id"], checked["status"])
+        changed = _changed(record.get("digests", {}), headers)
+        fresh = state_of in ok and (record["position"] == "internal" or not changed)
+        out_nodes.append({**{k: record[k] for k in _STORED if k in record}, "on": [name[o] for o in record["on"]],
+                          "status": state_of, **({"reason": checked["reason"]} if "reason" in checked else {}),
+                          "files": checked["files"], "fresh": fresh, "changed_files": [] if fresh else changed})
+    out_flows, holders = [], []
+    for record, checked in zip(flow_records.values(), report["flows"]):
+        arrows = []
+        for arrow, result in zip(record["arrows"], checked["arrows"]):
+            changed = _changed(arrow.get("digests", {}), headers)
+            fresh = result["status"] == "proved" or (result["status"] == "declared" and not changed)
+            arrows.append({**result, **({"kind": arrow["kind"]} if "kind" in arrow else {}),
+                           "fresh": fresh, "changed_files": [] if fresh else changed})
+        state_of = status(record["id"], checked["status"])
+        if state_of in ok:
+            holders += record["nodes"]
+        changed = sorted({f for a in arrows for f in a["changed_files"]})
+        out_flows.append({"id": record["id"], "name": record["name"], "area": record["area"], "types": record["types"],
+                          "nodes": [name[i] for i in record["nodes"]], "arrows": arrows, "paths": record.get("paths", []),
+                          "status": state_of, **({"reason": checked["reason"]} if "reason" in checked else {}),
+                          "fresh": state_of in ok and all(a["fresh"] for a in arrows), "changed_files": changed})
+    correspondences = []
+    for record in nodes.values():
+        for target in record["on"]:
+            cited = {e.split("#")[0] for e in record["evidence"] + nodes[target]["evidence"]}
+            changed = sorted(set(_changed(record.get("digests", {}), headers, cited))
+                             | set(_changed(nodes[target].get("digests", {}), headers, cited)))
+            standing = items[record["id"]]["report"]["status"] == items[target]["report"]["status"] == "accepted"
+            correspondences.append({"from": record["name"], "to": nodes[target]["name"],
+                                    "status": "declared" if standing else "refused",
+                                    "fresh": standing and not changed, "changed_files": changed})
+    return {"schema": SCHEMA, "nodes": out_nodes, "flows": out_flows, "areas": list(state["areas"].values()),
+            "correspondences": correspondences, "coverage": _coverage(links, items, holders), "gaps": state["gaps"]}
+
+
+def _digests(paths, headers: dict) -> dict:
+    return {f: headers[f]["raw_hash"] for f in sorted(paths) if f in headers}
+
+
+def _assign(name: str, taken: set[str]) -> str:
+    base = modules.slug(name) or "node"
+    ident, number = base, 2
+    while ident in taken:
+        ident, number = f"{base}-{number}", number + 1
+    taken.add(ident)
+    return ident
+
+
+def _nested(first: list[str], second: list[str]) -> bool:
+    a, b = set(first), set(second)
+    return bool(a and b) and (a <= b or b <= a)
+
+
+def record(manifest: Path, rules: list[dict], value: object) -> dict:
+    """Validate and verify a proposal, merge it into the recorded map and write it beside the manifest."""
+    manifest = Path(manifest).resolve()
+    links = flows.cached_links(manifest, rules)
+    headers = _headers(manifest)
+    state = _state(manifest, headers)
+    nodes, flow_records, declared = state["nodes"], state["flows"], state["declared"]
+    before = {**nodes, **flow_records}
+    node_names = {key(n["name"]): i for i, n in nodes.items()}
+    flow_names = {key(f["name"]): i for i, f in flow_records.items()}
+    proposal = validate(value, known=set(node_names) | set(nodes))
+    taken = set(nodes) | set(flow_records)
+    ident, node_reports, changes = {}, {}, {}
+
+    # Nodes: an id or a current name recalls a node; a new one must not repeat an existing one.
+    fresh_nodes = []
+    for p in proposal["nodes"]:
+        target = p.get("id") or node_names.get(key(p["name"]))
+        if "id" in p and p["id"] not in nodes:
+            node_reports[key(p["name"])] = {"name": p["name"], "status": "refused", "reason": f"no node has id {p['id']}"}
+            ident[key(p["name"])] = None
+        elif target in declared:
+            node_reports[key(p["name"])] = {"id": target, "name": p["name"], "status": "confirmed",
+                                            "reason": f"confirmed by the project; rename it in {DECLARED_FILE}"}
+            ident[key(p["name"])] = target
+        elif target and node_names.get(key(p["name"]), target) != target:
+            node_reports[key(p["name"])] = {"name": p["name"], "status": "refused",
+                                            "reason": f"node {node_names[key(p['name'])]} already has this name"}
+            ident[key(p["name"])] = None
+        elif target:
+            ident[key(p["name"])] = target
+            changes[target] = p
+        else:
+            fresh_nodes.append(p)
+    current = {i: {**n, **changes.get(i, {})} for i, n in nodes.items()}
+    for p in fresh_nodes:
+        basis = "members" if p["position"] == "internal" else "evidence"
+        twin = next((i for i, n in current.items() if n["type"] == p["type"] and _nested(n[basis], p[basis])), None)
+        if twin:
+            node_reports[key(p["name"])] = {"name": p["name"], "status": "refused",
+                                            "reason": f"repeats node {twin}: the same {basis}, or nested ones"}
+            ident[key(p["name"])] = None
+        else:
+            ident[key(p["name"])] = _assign(p["name"], taken)
+            changes[ident[key(p["name"])]] = p
+
+    def resolve(reference: str) -> str | None:
+        k = key(reference)
+        return ident[k] if k in ident else node_names.get(k) or (reference if reference in nodes else None)
+
+    candidate = dict(nodes)
+    for i, p in changes.items():
+        on = [resolve(o) for o in p["on"]]
+        candidate[i] = {**{k: v for k, v in p.items() if k in _STORED}, "id": i, "on": [o for o in on if o]}
+
+    # Flows: those of the proposal replace the ones of their area; the others stay.
+    scope = None if "scope" not in proposal else {key(a) for a in proposal["scope"]}
+    flow_reports, flow_changes, held = {}, {}, set()
+
+    def refuse(f, target, reason):
+        flow_reports[key(f["name"])] = {"name": f["name"], "status": "refused", "reason": reason}
+        if target in flow_records:
+            held.add(target)
+
+    for f in proposal["flows"]:
+        target = f.get("id") or flow_names.get(key(f["name"]))
+        refs = [resolve(n) for n in f["nodes"]]
+        twin = next((i for i, g in flow_records.items() if i != target and set(g["nodes"]) == set(refs)), None)
+        if "id" in f and f["id"] not in flow_records:
+            refuse(f, None, f"no flow has id {f['id']}")
+        elif target in declared:
+            flow_reports[key(f["name"])] = {"id": target, "name": f["name"], "status": "confirmed",
+                                            "reason": f"confirmed by the project; change it in {DECLARED_FILE}"}
+        elif None in refs:
+            refuse(f, target, f"nodes refused: {', '.join(n for n, r in zip(f['nodes'], refs) if r is None)}")
+        elif twin:
+            refuse(f, target, f"repeats flow {twin}: the same nodes")
+        else:
+            i = target or _assign(f["name"], taken)
+            flow_changes[i] = {**{k: f[k] for k in ("name", "area", "types", "paths")}, "id": i, "nodes": refs,
+                               "arrows": [{**a, "from": resolve(a["from"]), "to": resolve(a["to"])} for a in f["arrows"]]}
+    inside = lambda f: scope is None or key(f["area"]) in scope  # noqa: E731
+    kept_flows = {i: f for i, f in flow_records.items() if i in declared or not inside(f)}
+    trial, _ = _verify(manifest, links, list(candidate.values()),
+                       list({**kept_flows, **flow_changes}.values()), headers)
+    checked = dict(zip(candidate, trial["nodes"]))
+    for (i, f), result in zip({**kept_flows, **flow_changes}.items(), trial["flows"]):
+        if i not in flow_changes:
+            continue
+        flow_reports[key(f["name"])] = {"id": i, **result}
+        if result["status"] == "refused":
+            del flow_changes[i]
+            if i in flow_records:
+                held.add(i)
+        else:
+            flow_changes[i]["arrows"] = [a for a, r in zip(flow_changes[i]["arrows"], result["arrows"])
+                                         if r["status"] != "refused"]
+    # A refused change leaves the node as it was; a new refused node is not recorded.
+    final_nodes = {i: (n if checked[i]["status"] == "accepted" or i not in nodes else nodes[i])
+                   for i, n in candidate.items() if checked[i]["status"] == "accepted" or i in nodes}
+    final_flows = {**kept_flows, **{i: flow_records[i] for i in held}, **flow_changes}
+    used = {i for f in final_flows.values() for i in f["nodes"]} | (declared & set(final_nodes))
+    stack = list(used)
+    while stack:
+        for target in final_nodes.get(stack.pop(), {}).get("on", []):
+            if target not in used:
+                used.add(target)
+                stack.append(target)
+    final_nodes = {i: n for i, n in sorted(final_nodes.items()) if i in used}
+    areas = {**state["areas"], **{key(a["name"]): a for a in proposal["areas"]}}
+    final = {"nodes": final_nodes, "flows": dict(sorted(final_flows.items())), "areas": areas, "declared": declared,
+             "gaps": state["gaps"]}
+    system = _evaluate(manifest, links, final, headers)
+
+    # Freshness: what each record depends on, as the snapshot has it now.
+    for record_, checked_ in zip(final_nodes.values(), system["nodes"]):
+        record_["digests"] = _digests(set(checked_["files"]) | {e.split("#")[0] for e in record_["evidence"]}, headers)
+    for record_, checked_ in zip(final_flows.values(), system["flows"]):
+        for arrow, result in zip(record_["arrows"], checked_["arrows"]):
+            files = {_site_file(p["site"]) for p in result.get("proof", [])} | (
+                {_site_file(result["cite"])} if "cite" in result else set())
+            arrow["digests"] = _digests(files, headers)
+    snapshot._write_json_atomic(manifest.with_name(FILE), {
+        "schema": SCHEMA, "nodes": list(final_nodes.values()), "flows": list(final["flows"].values()),
+        "areas": sorted(areas.values(), key=lambda a: key(a["name"]))})
+
+    def plain(r):
+        return {k: v for k, v in r.items() if k != "digests"} | (
+            {"arrows": [{k: v for k, v in a.items() if k != "digests"} for a in r["arrows"]]} if "arrows" in r else {})
+
+    after = {**final_nodes, **final["flows"]}
+    for p in proposal["nodes"]:
+        if key(p["name"]) not in node_reports:
+            node_reports[key(p["name"])] = {"id": ident[key(p["name"])], **checked[ident[key(p["name"])]]}
+        report = node_reports[key(p["name"])]
+        if report["status"] == "accepted" and report["id"] not in final_nodes:
+            report.update(status="refused", reason="no flow uses it and no node names it in on")
+    proposed = {flow_reports[key(f["name"])].get("id") for f in proposal["flows"]}
+    return {"nodes": [node_reports[key(p["name"])] for p in proposal["nodes"]],
+            "flows": [flow_reports[key(f["name"])] for f in proposal["flows"]],
+            "failing": [f["id"] for f in system["flows"] if f["id"] not in proposed and f["status"] not in
+                        ("accepted", "confirmed")],
+            "coverage": system["coverage"],
+            "created": sorted(set(after) - set(before)), "removed": sorted(set(before) - set(after)),
+            "updated": sorted(i for i in set(after) & set(before) if plain(after[i]) != plain(before[i])),
+            "kept": sorted(i for i in set(after) & set(before) if plain(after[i]) == plain(before[i]))}
+
+
+def load(manifest: Path, rules: list[dict]) -> dict | None:
+    """The recorded map with the declared one over it, verified again on the current snapshot."""
+    manifest = Path(manifest).resolve()
+    headers = _headers(manifest)
+    state = _state(manifest, headers)
+    if not state["exists"] and not state["declared"]:
+        return None
+    return _evaluate(manifest, flows.cached_links(manifest, rules), state, headers)
+
+
+def about(system: dict, name: str) -> dict:
+    """An area, a flow or a node, by id or current name: its flows, nodes, member files and nodes without code."""
+    k = key(name)
+    flow = next((f for f in system["flows"] if f["id"] == name or key(f["name"]) == k), None)
+    node = next((n for n in system["nodes"] if n["id"] == name or key(n["name"]) == k), None)
+    by_name = {n["name"]: n for n in system["nodes"]}
+    if flow:
+        kind, label, chosen = "flow", flow["name"], [flow]
+    elif node:
+        kind, label, chosen = "node", node["name"], [f for f in system["flows"] if node["name"] in f["nodes"]]
+    elif any(key(f["area"]) == k for f in system["flows"]) or any(key(a["name"]) == k for a in system["areas"]):
+        kind, chosen = "area", [f for f in system["flows"] if key(f["area"]) == k]
+        label = next((a["name"] for a in system["areas"] if key(a["name"]) == k), name)
+    else:
+        raise ValueError(f"no area, flow or node is called {name}")
+    involved = [node] if kind == "node" else [by_name[n] for n in dict.fromkeys(n for f in chosen for n in f["nodes"])]
+
+    def files(group):
+        return sorted({path for n in group for path in n["files"]})
+
+    return {"kind": kind, "name": label,
+            "flows": [{"id": f["id"], "name": f["name"], "area": f["area"], "status": f["status"],
+                       "files": files(by_name[n] for n in f["nodes"])} for f in chosen],
+            "nodes": [{k_: n[k_] for k_ in ("id", "name", "type", "position", "status")} for n in involved],
+            "files": files(involved),
+            "externals": sorted((n["name"] for n in involved if n["position"] == "external"), key=key),
+            "unseen": [{"name": n["name"], "where": n["where"]} for n in involved if n["position"] == "unseen"]}
