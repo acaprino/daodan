@@ -12,7 +12,7 @@ Le parole della fase 2 valgono, tranne queste.
 | --- | --- |
 | Nodo | Una cosa del sistema con un nome, al livello a cui la nomina una persona: un attore, una schermata, una funzione, un servizio, un servizio esterno, un dispositivo, un'entità. Raccoglie i suoi membri: file, simboli, store, rotte. Un simbolo da solo non è un nodo |
 | Tipo di nodo | L'elenco della fase 2, più «entità»: un dato con un nome (un ordine, un utente, un abbonamento), ovunque sia salvato |
-| Progetto esterno | Codice di altri su cui il sistema è costruito: un framework, una libreria, un runtime. Si distingue da «servizio esterno», che gira altrove |
+| Progetto esterno | Software di altri su cui il sistema è costruito o dentro cui gira, in rete o no: un framework, una libreria, un runtime, un motore di container. Si distingue da «servizio esterno», che gira altrove |
 | Non visto | Un nodo che fa parte del sistema ma i cui file stanno fuori dallo snapshot. Si distingue da «esterno», che è di altri |
 | Flusso | Un processo del sistema con un nome: i nodi che vi partecipano e le frecce fra loro. È uno solo, a qualunque livello lo si guardi |
 | Tipo di flusso | Uno o più fra: funzionale (una cosa che il prodotto fa per chi lo usa), operativo (gira senza una persona: un orario, una coda, un avviso esterno), tecnico (un meccanismo interno: cache, sincronizzazione, build, rilascio), dati (segue un dato: dove nasce, dove vive, chi ne tiene copia), hardware (passa da dispositivi fisici o dalla rete) |
@@ -42,7 +42,7 @@ I passi di analisi (statico, inferenza, dinamico, semantico) restano quelli del 
 ### 1. Nodi
 
 1. Un nodo con codice è un gruppo di membri con un nome, un tipo e una posizione. I membri sono file, simboli, store e rotte, oppure un intero modulo della mappa, citato per nome.
-2. Un nodo senza codice (attore, dispositivo, macchina o servizio su cui il sistema gira, servizio esterno, progetto esterno, parte non vista) è un modulo `external` della mappa, come nella fase 2: non ha membri e cita l'evidenza che lo lega al progetto. Un attore cita i punti d'ingresso che usa; una macchina o un servizio di esecuzione cita la configurazione che lo nomina; un progetto esterno cita la dipendenza dichiarata. Un nodo non visto resta distinguibile da un servizio esterno.
+2. Un nodo senza codice (attore, dispositivo, macchina o servizio su cui il sistema gira, servizio esterno, progetto esterno, parte non vista) è un modulo `external` della mappa, come nella fase 2: non ha membri e cita l'evidenza che lo lega al progetto. Un attore cita i punti d'ingresso che usa; una macchina o un servizio di esecuzione cita la configurazione che lo nomina; un progetto esterno cita la dipendenza dichiarata o il file di configurazione che lo nomina. Un nodo non visto resta distinguibile da un servizio esterno.
 3. Un'entità è un nodo i cui membri sono gli store che contengono quel dato.
 4. Lo stesso membro può stare in più nodi: un file che serve due schermate appartiene a entrambe.
 5. La mappa del sistema sta accanto al grafo dei moduli e non ne cambia strati, conflitti e archi.
@@ -59,7 +59,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 | Funzioni | Funzionalità, servizi e servizi esterni |
 | Dati | Entità e i posti in cui vivono |
 | Codice | Moduli, file e simboli: i percorsi. Sotto, i progetti esterni su cui poggiano |
-| Infrastruttura | Dispositivi, servizi in esecuzione, database, code, reti e servizi esterni |
+| Infrastruttura | Dispositivi, container, servizi in esecuzione, database, code, reti e servizi esterni |
 | Misto | Nodi di livelli diversi nello stesso grafo |
 
 1. Ogni livello mostra solo i suoi tipi di nodo, con le frecce riportate fra quelli.
