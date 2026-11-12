@@ -232,9 +232,20 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
             import threading
             import visual
             explorer.append(visual.make_server(None, visual.SCRIPT_DIR.parents[2] / "assets" / "viewer",
-                                               routes=visual.live_routes(service)))
+                                               routes=visual.live_routes(service),
+                                               actions=visual.live_actions(service)))
             threading.Thread(target=explorer[0].serve_forever, daemon=True).start()
         return {"url": f"http://127.0.0.1:{explorer[0].server_address[1]}/"}
+
+    @server.tool(annotations=writes)
+    async def codebase_map_ui_requests(ctx: Context, take: bool = True) -> dict:
+        """List what the person asked in the explorer: kind (map, review), scope (global, changeset, feature, prompt) and their text. take=true moves the pending requests to taken and names them in `taken`; the host runs each with its own method and closes it with codebase_map_ui_done."""
+        return await _invoke(ctx, service.ui_requests, take=take)
+
+    @server.tool(annotations=writes)
+    async def codebase_map_ui_done(ctx: Context, request_id: int, results: list[str] | None = None, message: str = "") -> dict:
+        """Close a taken explorer request. results are project-relative JSON files with a findings or retained_findings list: the explorer shows them."""
+        return await _invoke(ctx, service.ui_done, request_id, results=results or [], message=message)
 
     return server
 

@@ -1,6 +1,8 @@
 """The explorer's local server: 127.0.0.1 only, a fixed list of files, no listing, no other origin.
 
 Live, over a MapService: the runs, a run's events after a cursor and a run's envelope; a refused request answers 400.
+The page's requests wait for the host, which takes and closes them; a closed request shows its findings. A POST
+from another origin is refused.
 """
 
 import http.client
@@ -83,7 +85,8 @@ class LiveTests(unittest.TestCase):
         (self.project / "src/module.py").write_text("LIMIT = 7\n\ndef selected():\n    return LIMIT\n", encoding="utf-8")
         self.service = mcp_service.MapService(self.project)
         self.service.create_run("src", "example", engine=False)
-        self.server = visual.make_server(None, self.project / "no-assets", routes=visual.live_routes(self.service))
+        self.server = visual.make_server(None, self.project / "no-assets", routes=visual.live_routes(self.service),
+                                         actions=visual.live_actions(self.service))
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.addCleanup(self.server.server_close)
         self.addCleanup(self.server.shutdown)
@@ -107,6 +110,41 @@ class LiveTests(unittest.TestCase):
         status, envelope = self.get("/data/visual.json?run=example")
         self.assertEqual((status, envelope["schema"]), (200, visual.SCHEMA))
         self.assertIn("file:module.py", [entity["ref"] for entity in envelope["entities"]])
+
+    def post(self, path, body, origin=None):
+        port = self.server.server_address[1]
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+        connection.request("POST", path, json.dumps(body), {"Content-Type": "application/json",
+                                                            "Origin": origin or f"http://127.0.0.1:{port}"})
+        response = connection.getresponse()
+        value = json.loads(response.read())
+        connection.close()
+        return response.status, value
+
+    def test_a_request_waits_for_the_host_and_shows_its_findings_when_closed(self):
+        status, item = self.post("/api/requests", {"kind": "review", "scope": "prompt", "text": "check payments"})
+        self.assertEqual((status, item["state"], item["id"]), (200, "pending", 1))
+        self.assertEqual(self.service.ui_requests(take=True)["taken"], [1])
+        self.assertEqual(self.service.ui_requests(take=True)["taken"], [])
+        (self.project / "result.json").write_text(json.dumps(
+            {"findings": [{"file": "src/module.py", "line": 3, "severity": "High"}], "gaps": ["g"]}), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            self.service.ui_done(1, results=["../outside.json"])
+        self.service.ui_done(1, results=["result.json"], message="one finding")
+        self.assertEqual(self.get("/api/requests")[1]["requests"][0]["state"], "done")
+        status, shown = self.get("/api/findings")
+        self.assertEqual((shown["findings"][0]["line"], shown["findings"][0]["request"], shown["gaps"]), (3, 1, ["g"]))
+        (self.project / "result.json").unlink()
+        self.assertIn("result.json", self.get("/api/findings")[1]["gaps"][0])
+
+    def test_refused_posts_change_nothing(self):
+        good = {"kind": "review", "scope": "global"}
+        self.assertEqual(self.post("/api/requests", good, origin="http://evil.example")[0], 403)
+        self.assertEqual(self.post("/api/events", good)[0], 403)
+        for body in ({"kind": "deploy", "scope": "global"}, {"kind": "review", "scope": "feature"}, []):
+            with self.subTest(body=body):
+                self.assertEqual(self.post("/api/requests", body)[0], 400)
+        self.assertEqual(self.service.ui_requests()["requests"], [])
 
     def test_a_refused_request_answers_400_with_the_reason(self):
         for path in ("/api/events", "/api/events?run=example&after=x", "/api/events?run=missing",

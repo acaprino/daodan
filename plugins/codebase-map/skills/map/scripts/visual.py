@@ -321,14 +321,25 @@ def live_routes(service) -> dict:
 
     return {"/api/runs": lambda query: service.runs(),
             "/api/events": lambda query: service.events(query["run"], after=int(query.get("after", 0))),
+            "/api/requests": lambda query: service.ui_requests(),
+            "/api/findings": lambda query: service.ui_findings(),
             "/data/visual.json": envelope}
 
 
-def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None) -> ThreadingHTTPServer:
-    """A read-only server on 127.0.0.1: the viewer's files listed at start, and the export's envelope.
+def live_actions(service) -> dict:
+    """What the page may ask: a request for the host session, and a run, which starts no model."""
+    return {"/api/requests": lambda body: service.ui_request(body.get("kind"), body.get("scope"), body.get("text", "")),
+            "/api/runs": lambda body: service.create_run(body["target"], body["run_id"])}
+
+
+def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
+                actions: dict | None = None) -> ThreadingHTTPServer:
+    """A server on 127.0.0.1, read-only without `actions`: the viewer's files listed at start, and the export's envelope.
 
     `routes` maps an exact path to a function of the query that returns JSON, in place of
     an export: a ValueError, a missing parameter or an unreadable file answers 400.
+    `actions` maps an exact path to a function of a POSTed JSON object of at most 16 KiB;
+    a POST from another origin, or one that is not JSON, is refused before it is read.
 
     Paths are matched exactly against the list, so no request reaches a file outside it,
     a directory is never listed and a link in the assets is never served. A request whose
@@ -345,7 +356,7 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
         allowed["/"] = allowed["/index.html"]
     if export_dir is not None:
         allowed["/data/visual.json"] = Path(export_dir).resolve() / "visual.json"
-    routes = routes or {}
+    routes, actions = routes or {}, actions or {}
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):  # noqa: N802 - the stdlib names the method
@@ -362,6 +373,24 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
             if target is None or not target.is_file():
                 return self._send(404, b"not found", "text/plain; charset=utf-8")
             return self._send(200, target.read_bytes(), _TYPES.get(target.suffix.lower(), "application/octet-stream"))
+
+        def do_POST(self):  # noqa: N802 - the stdlib names the method
+            port = self.server.server_address[1]
+            origins = (f"http://127.0.0.1:{port}", f"http://localhost:{port}")
+            action = actions.get(urlsplit(self.path).path)
+            length = int(self.headers.get("Content-Length") or 0)
+            if self.headers.get("Host") not in (origin[7:] for origin in origins):
+                return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
+            if (action is None or self.headers.get("Origin") not in origins or not 0 < length <= 16384
+                    or self.headers.get("Content-Type") != "application/json"):
+                return self._json(403, {"error": "refused"})
+            try:
+                body = json.loads(self.rfile.read(length))
+                if not isinstance(body, dict):
+                    raise ValueError("the body is not a JSON object")
+                return self._json(200, action(body))
+            except (ValueError, KeyError, TypeError, OSError) as error:
+                return self._json(400, {"error": str(error)})
 
         def _json(self, code: int, value) -> None:
             self._send(code, json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), "application/json")

@@ -6,6 +6,7 @@ import type { EdgeProps, NodeProps } from '@xyflow/react';
 import { ArrowLeft, ChevronRight, FolderOpen, Route, Search, X } from 'lucide-react';
 import '@xyflow/react/dist/style.css';
 import './style.css';
+import { getJson, POLL_MS, Session } from './session';
 import { parseEnvelope } from './envelope.ts';
 import type { Entity, Envelope, Flow } from './envelope.ts';
 import { childrenOf, dataLinks, flowFocus, flowsThrough, indexOf, project } from './projection.ts';
@@ -147,8 +148,9 @@ function FlowPanel({ state, dispatch }: { state: ExplorerState; dispatch: (actio
   </>;
 }
 
-function Explorer({ envelope }: { envelope: Envelope }) {
+function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { ref: string } | null }) {
   const [state, dispatch] = useReducer(reduce, envelope, initialState);
+  useEffect(() => { if (pick) dispatch({ type: 'select', ref: pick.ref }); }, [pick]);
   const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
   const [error, setError] = useState('');
   const [vertical, setVertical] = useState(() => window.matchMedia('(max-width: 899px)').matches);
@@ -259,7 +261,7 @@ function Explorer({ envelope }: { envelope: Envelope }) {
         })}</ul>
       </aside>
       <section className="canvas" aria-label="Grafo">
-        <ReactFlow nodes={nodes} edges={viewEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false}
+        <ReactFlow colorMode="dark" nodes={nodes} edges={viewEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false}
           edgesReconnectable={false} deleteKeyCode={null} minZoom={0.15} maxZoom={1.8} fitView zoomOnDoubleClick={false}
           onNodeClick={(_, node) => select((node.data as unknown as NodeData).node.ref)}
           onNodeDoubleClick={(_, node) => { const item = (node.data as unknown as NodeData).node; if (item.collapsed) dispatch({ type: 'open', ref: item.ref }); }}
@@ -278,11 +280,6 @@ function Explorer({ envelope }: { envelope: Envelope }) {
 }
 
 type LiveEvent = { cursor: number; timestamp: string; event: string; message: string; phase?: number };
-const POLL_MS = 2000;
-
-const getJson = (url: string) => fetch(url).then(response => response.json().catch(() => ({})).then(json =>
-  (response.ok ? json : Promise.reject(new Error(json.error ?? `HTTP ${response.status}`)))));
-
 // Served by the MCP server the page lists the runs and follows the chosen run's events; served from an export it draws that file.
 function App() {
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
@@ -290,15 +287,16 @@ function App() {
   const [runs, setRuns] = useState<string[] | null>(null);
   const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
   const [events, setEvents] = useState<LiveEvent[]>([]);
+  const [session, setSession] = useState(false);
+  const [pick, setPick] = useState<{ ref: string } | null>(null);
   const load = (url: string) => getJson(url).then(json => { setEnvelope(parseEnvelope(json)); setFailure(''); })
     .catch(reason => setFailure(String(reason?.message ?? reason)));
-  useEffect(() => {
-    getJson('./api/runs').then(json => {
-      const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
-      setRuns(ids);
-      setRun(current => (ids.includes(current) ? current : ids[ids.length - 1] ?? ''));
-    }).catch(() => load('./data/visual.json'));
-  }, []);
+  const listRuns = (wanted?: string) => getJson('./api/runs').then(json => {
+    const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
+    setRuns(ids);
+    setRun(current => [wanted, current].find(id => id && ids.includes(id)) ?? ids[ids.length - 1] ?? '');
+  });
+  useEffect(() => { listRuns().catch(() => load('./data/visual.json')); }, []);
   useEffect(() => {
     if (!runs || !run) return;
     const address = `./data/visual.json?run=${encodeURIComponent(run)}`;
@@ -317,14 +315,15 @@ function App() {
     return () => { stopped = true; window.clearInterval(timer); };
   }, [runs, run]);
   const last = events[events.length - 1];
-  const live = runs && <div className="live" role="status">
+  const live = runs && <><div className="live">
     <label>Run <select value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>
-    <span className="muted">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
-  </div>;
-  if (runs && !runs.length) return <main className="state"><h1>Nessun run</h1><p>Avvia una mappa nella sessione: la pagina la mostra appena esiste.</p></main>;
+    <span className="muted" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
+    <button type="button" className="link" aria-expanded={session} onClick={() => setSession(!session)}>Sessione e review</button>
+  </div>{session && <Session onPick={ref => setPick({ ref })} onRun={id => { listRuns(id).catch(() => undefined); }} />}</>;
+  if (runs && !runs.length) return <><main className="state"><h1>Nessun run</h1><p>Crea un run qui sotto, o avvia una mappa nella sessione.</p></main><Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>;
   if (failure) return <>{live}<main className="state"><h1>Export non leggibile</h1><p>{failure}</p></main></>;
   if (!envelope) return <>{live}<main className="state" role="status">Carico l'export…</main></>;
-  return <>{live}<ReactFlowProvider key={run}><Explorer envelope={envelope} /></ReactFlowProvider></>;
+  return <>{live}<ReactFlowProvider key={run}><Explorer envelope={envelope} pick={pick} /></ReactFlowProvider></>;
 }
 
 createRoot(document.getElementById('app')!).render(<React.StrictMode><App /></React.StrictMode>);
