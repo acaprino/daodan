@@ -12,8 +12,7 @@
   "react-app/src/hooks/useDayProgress.ts",
   "react-app/src/hooks/useHistoricalDayPlan.ts",
   "react-app/src/hooks/useHomeTabController.ts",
-  "react-app/src/hooks/useTabRefresh.ts",
-  "react-app/src/hooks/useMealPlan.ts"
+  "react-app/src/hooks/useTabRefresh.ts"
  ],
  [
   "react-app/src/stores/appStore.ts",
@@ -27,36 +26,31 @@
   "react-app/src/stores/slices/supplementSlice.ts"
  ],
  [
-  "react-app/src/hooks/useDayProgress.ts",
-  "react-app/src/hooks/useHomeTabController.ts",
-  "react-app/src/hooks/useTabRefresh.ts",
-  "react-app/src/hooks/useMealPlan.ts",
-  "react-app/src/stores/slices/profileSlice.ts",
   "react-app/src/stores/slices/uiSlice.ts",
   "react-app/src/hooks/useDiaryWindow.ts",
-  "react-app/src/components/home/SortableHomeCards.tsx",
-  "react-app/src/components/home/calm/CalmHomeCustomize.tsx",
-  "react-app/src/components/home/HomeCardFrame.tsx",
-  "react-app/src/hooks/useSupplementStatus.ts",
-  "react-app/src/hooks/useWorkoutTracking.ts",
-  "react-app/src/components/home/calm/CalmDayMeals.tsx"
- ],
- [
-  "react-app/src/stores/appStore.ts",
-  "react-app/src/hooks/useHistoricalDayPlan.ts",
-  "react-app/src/hooks/useWeeklyDeviation.ts",
-  "react-app/src/components/home/EditModeToolbar.tsx",
-  "react-app/src/components/home/HomeCardFrame.tsx",
-  "react-app/src/components/home/SortableHomeCards.tsx",
-  "react-app/src/components/home/PhaseReviewSheet.tsx"
- ],
- [
+  "react-app/src/hooks/useHomeTabController.ts",
   "react-app/src/components/common/QuickAddSheet.tsx",
   "react-app/src/components/home/TodayLogCard.tsx",
   "react-app/src/hooks/useDayLogSlots.ts",
+  "react-app/src/hooks/useDayProgress.ts",
   "react-app/src/hooks/useRecentFoods.ts",
   "react-app/src/hooks/useWeeklyDeviation.ts",
   "react-app/src/components/home/HomeTrainingJourney.tsx"
+ ],
+ [
+  "react-app/src/stores/slices/profileSlice.ts",
+  "react-app/src/hooks/useHistoricalDayPlan.ts",
+  "react-app/src/hooks/useTabRefresh.ts",
+  "react-app/src/hooks/useMealPlan.ts",
+  "react-app/src/hooks/useWeeklyDeviation.ts",
+  "react-app/src/components/home/calm/CalmHomeCustomize.tsx",
+  "react-app/src/hooks/useSupplementStatus.ts",
+  "react-app/src/hooks/useWorkoutTracking.ts",
+  "react-app/src/components/home/calm/CalmDayMeals.tsx",
+  "react-app/src/components/home/SortableHomeCards.tsx",
+  "react-app/src/components/home/HomeCardFrame.tsx",
+  "react-app/src/components/home/EditModeToolbar.tsx",
+  "react-app/src/components/home/PhaseReviewSheet.tsx"
  ],
  [
   "react-app/src/components/home/AttentionCard.tsx",
