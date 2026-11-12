@@ -3,6 +3,7 @@
 
     python score.py map MAP.json EXPECTED.json
     python score.py externals BRIEF.json EXPECTED.json [registry|stack-analyser|both]
+    python score.py stable MAP1.json MAP2.json
 
 MAP.json is what `system_map.load` returns, optionally with `refused_arrows` from the
 record reports. A reference node with code is found when a proposed node shares at least
@@ -64,6 +65,18 @@ def score_map(proposed: dict, expected: dict) -> dict:
             "coverage": proposed.get("coverage", {})}
 
 
+def stability(first: dict, second: dict) -> dict:
+    """Nodes of two runs that are the same thing, compared as `score_map` compares a reference node."""
+    same, taken = 0, set()
+    for node in first["nodes"]:
+        best = max((n for n in second["nodes"] if n["name"] not in taken), key=lambda n: _likeness(n, node), default=None)
+        if best is not None and _likeness(best, node) > 0:
+            same += 1
+            taken.add(best["name"])
+    of = max(len(first["nodes"]), len(second["nodes"]))
+    return {"same": same, "of": of, "share": round(same / of, 3) if of else 0.0}
+
+
 SOURCES = {"registry": {"registry"}, "stack-analyser": {"stack-analyser"}, "both": {"registry", "stack-analyser"}}
 
 
@@ -76,12 +89,13 @@ def score_externals(recognized: dict, expected: dict, source: str | None = None)
 
 
 def main(argv: list[str]) -> int:
-    if not (argv[:1] == ["map"] and len(argv) == 3 or argv[:1] == ["externals"] and len(argv) in (3, 4)
+    if not (argv[:1] in (["map"], ["stable"]) and len(argv) == 3 or argv[:1] == ["externals"] and len(argv) in (3, 4)
             and argv[3:] in ([], *([s] for s in SOURCES))):
         print(__doc__)
         return 2
     first, second = (json.loads(Path(p).read_text(encoding="utf-8")) for p in argv[1:3])
-    result = score_map(first, second) if argv[0] == "map" else score_externals(first, second, *argv[3:])
+    result = {"map": score_map, "stable": stability}[argv[0]](first, second) if argv[0] != "externals" \
+        else score_externals(first, second, *argv[3:])
     print(json.dumps(result, ensure_ascii=False, indent=1))
     return 0
 

@@ -1,0 +1,123 @@
+{
+ "schema": "daodan/flow-rules/v1",
+ "rules": [
+  {
+   "callee": "frontend/store/useStore.ts::useStore",
+   "link": "legge",
+   "store": "app state",
+   "key": "selector"
+  },
+  {
+   "written": "useStore.getState",
+   "in": [
+    "frontend"
+   ],
+   "link": "legge",
+   "store": "app state",
+   "key": "member"
+  },
+  {
+   "written": "set",
+   "in": [
+    "frontend/store/useStore.ts"
+   ],
+   "link": "scrive",
+   "store": "app state",
+   "key": "object"
+  },
+  {
+   "callee": "frontend/store/taskPanelStore.ts::useTaskPanel",
+   "link": "legge",
+   "store": "task panel",
+   "key": "selector"
+  },
+  {
+   "written": "set",
+   "in": [
+    "frontend/store/taskPanelStore.ts"
+   ],
+   "link": "scrive",
+   "store": "task panel",
+   "key": "object"
+  },
+  {
+   "callee": "frontend/store/dailyPlanStore.ts::useDailyPlanProgress",
+   "link": "legge",
+   "store": "daily plan progress",
+   "key": "selector"
+  },
+  {
+   "written": "set",
+   "in": [
+    "frontend/store/dailyPlanStore.ts"
+   ],
+   "link": "scrive",
+   "store": "daily plan progress",
+   "key": "object"
+  },
+  {
+   "written": "fetch",
+   "in": [
+    "frontend"
+   ],
+   "link": "rotta",
+   "route": {
+    "service": "api",
+    "method": "arg1.method|GET",
+    "path": "arg0.arg0"
+   },
+   "strip": "/"
+  },
+  {
+   "written": "router.get|post|put|patch|delete",
+   "in": [
+    "backend/modules"
+   ],
+   "link": "offre",
+   "handler": "last",
+   "strip": "/",
+   "route": {
+    "service": "api",
+    "method": "part1",
+    "path": "arg0"
+   }
+  },
+  {
+   "written": "User|Area|Goal|Project|Task|Tag|Note|InboxItem|TaskEvent|TaskRelation|Comment|CommentReaction|Role|Action|Permission|UserGroup|UserGroupMember|MemberSignInLink|GroupShare|GroupPermission|View|ApiToken|Setting|Notification|RecurringCompletion|TaskAttachment|InboxItemAttachment|ProjectAttachment|NoteAttachment|Backup|OIDCIdentity|OIDCStateNonce|AuthAuditLog|CalDAVCalendar|CalDAVSyncState|CalDAVOccurrenceOverride|CalDAVRemoteCalendar|CalendarToken|CalendarFeed|DailyPlan|DailyPlanItem|Person|UserProjectArea|UserProjectOrder|UserGoalOrder|UserAreaOrder|UserTaskOrder|RateLimit|BillingAccount|BillingEvent|WaitlistSubscriber|SiteVisit|EmailDelivery|UsageCounter|Feedback|Account|PushSubscription|Webhook|WebhookDelivery|ImportJob|UserMfa|UserRecoveryCode.findAll|findOne|findByPk|findAndCountAll|count|max|min|sum",
+   "in": [
+    "backend/modules",
+    "backend/services",
+    "backend/models",
+    "backend/middleware",
+    "backend/utils",
+    "backend/shared"
+   ],
+   "link": "legge",
+   "store": "db",
+   "key": "part0",
+   "node_type": "database"
+  },
+  {
+   "written": "User|Area|Goal|Project|Task|Tag|Note|InboxItem|TaskEvent|TaskRelation|Comment|CommentReaction|Role|Action|Permission|UserGroup|UserGroupMember|MemberSignInLink|GroupShare|GroupPermission|View|ApiToken|Setting|Notification|RecurringCompletion|TaskAttachment|InboxItemAttachment|ProjectAttachment|NoteAttachment|Backup|OIDCIdentity|OIDCStateNonce|AuthAuditLog|CalDAVCalendar|CalDAVSyncState|CalDAVOccurrenceOverride|CalDAVRemoteCalendar|CalendarToken|CalendarFeed|DailyPlan|DailyPlanItem|Person|UserProjectArea|UserProjectOrder|UserGoalOrder|UserAreaOrder|UserTaskOrder|RateLimit|BillingAccount|BillingEvent|WaitlistSubscriber|SiteVisit|EmailDelivery|UsageCounter|Feedback|Account|PushSubscription|Webhook|WebhookDelivery|ImportJob|UserMfa|UserRecoveryCode.create|bulkCreate|update|destroy|upsert|findOrCreate|increment|decrement|restore",
+   "in": [
+    "backend/modules",
+    "backend/services",
+    "backend/models",
+    "backend/middleware",
+    "backend/utils",
+    "backend/shared"
+   ],
+   "link": "scrive",
+   "store": "db",
+   "key": "part0",
+   "node_type": "database"
+  },
+  {
+   "attribute": "on*",
+   "in": [
+    "frontend"
+   ],
+   "link": "attiva"
+  }
+ ]
+}

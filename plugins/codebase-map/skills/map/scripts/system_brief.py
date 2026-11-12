@@ -30,7 +30,7 @@ import system_map  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-brief/v1"
-CAP = 24_000        # characters, a parameter of the benchmark
+CAP = 24_000        # characters: at 48,000 tududi's brief answer (51.9 KB) passed the host's tool-output limit
 HOLDERS = 8         # past this many, a group's entry points are summed up by directory
 HOSTING = {"vercel.json", "netlify.toml", "fly.toml", "render.yaml", "app.yaml", "app.json", "firebase.json",
            "railway.json", "railway.toml", "serverless.yml", "serverless.yaml", "wrangler.toml", "catalog-info.yaml"}

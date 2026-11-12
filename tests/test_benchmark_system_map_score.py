@@ -56,6 +56,12 @@ class ScoreTests(unittest.TestCase):
         self.assertEqual(score.score_map({"nodes": [inside], "flows": []}, expected)["nodes"]["missing"],
                          ["Stripe", "Landing"])
 
+    def test_two_runs_agree_on_the_nodes_they_share_by_files(self):
+        first = {"nodes": PROPOSED["nodes"], "flows": []}
+        second = {"nodes": [PROPOSED["nodes"][1], {**PROPOSED["nodes"][0], "files": ["app/Other.tsx"]}], "flows": []}
+        # Pagamenti matches; Stripe (no code) has no counterpart; the screen changed its files.
+        self.assertEqual(score.stability(first, second), {"same": 1, "of": 3, "share": 0.333})
+
     def test_externals_recall_and_wrong(self):
         result = score.score_externals({"externals": [{"id": "stripe"}, {"id": "react"}, {"id": "redis"}]},
                                        {"externals": ["stripe", "react", "fastapi"]})

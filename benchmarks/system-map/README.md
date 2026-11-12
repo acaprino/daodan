@@ -1,6 +1,6 @@
 # Benchmark: mappa del sistema
 
-Prova la [spec della mappa del sistema](../../docs/specs/2026-11-12-mappa-del-sistema.md), misure da 1 a 6. Le soglie sono scritte qui prima di ogni misura; il proprietario può cambiarle. I casi sono quelli dei benchmark dei flussi, che hanno già le regole di collegamento: [`phazly-flow`](../phazly-flow/README.md), [`polar-flow`](../polar-flow/README.md) e [`tududi-flow`](../tududi-flow/README.md). Il codice dei casi non entra qui: solo nomi di file e valori attesi. Le run girano su Modal, in un processo nuovo.
+Prova la [spec della mappa del sistema](../../docs/specs/2026-11-12-mappa-del-sistema.md), misure da 1 a 6. Le soglie sono scritte qui prima di ogni misura; il proprietario può cambiarle. I casi sono quelli dei benchmark dei flussi: [`phazly-flow`](../phazly-flow/README.md), [`polar-flow`](../polar-flow/README.md) e [`tududi-flow`](../tududi-flow/README.md). Le regole di collegamento ci sono per phazly e per tududi (`benchmarks/tududi-flow/rules.json`, scritte a mano il 12 novembre 2026 per la misura 2: store di Zustand, chiamate `fetch(getApiPath(...))`, rotte di Express, modelli di Sequelize). Il codice dei casi non entra qui: solo nomi di file e valori attesi. Le run girano su Modal, in un processo nuovo.
 
 ## Soglie
 
@@ -31,7 +31,8 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-12-mappa-del-si
 
 | Misura | Comando |
 | --- | --- |
-| 1, 2, 4, 5 | `python score.py map MAP.json expected/phazly-payments.json` sulla mappa salvata dalla run |
+| 1, 2, 4, 5 | `modal deploy benchmarks/system-map/modal_map.py`, poi `python benchmarks/system-map/modal_map.py spawn --phazly-tar PATH --phazly-links PATH --tududi-links PATH --tag TAG`: una run per caso, perimetro, modello e ripetizione, ognuna una sessione nuova di `claude -p --agent codebase-map:system-mapper` su un run di Codebase Map preparato prima con le regole del caso e i collegamenti calcolati con il motore; sul volume `daodan-flow-results` restano `stream.jsonl`, `map.json` e `summary.json`. Poi `python score.py map map.json expected/phazly-payments.json` |
+| 3 | `map.json` di ogni run riporta in `levels` i nodi fuori dal loro livello e i punti citati che non esistono, per ogni flusso registrato e ogni livello |
 | 6, dimensione della scheda | `modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH` scrive `results/brief-<caso>.json`; poi `python score.py externals results/brief-<caso>.json expected/externals-<caso>.json registry` (oppure `stack-analyser`, `both`) |
 
 ## Risultati
@@ -73,3 +74,24 @@ Dimensione del testo della scheda, in caratteri; fra parentesi i gruppi riassunt
 | polar, tududi, ogni valore | 5.465 e 5.442 | | |
 
 phazly ha 235 punti d'ingresso, 123 chiavi di store, 48 gruppi e 92 punti d'ingresso isolati; a 12.000 caratteri la sola parte fissa (moduli, esterni, isolati) riempie il tetto. polar e tududi senza regole non hanno gruppi.
+
+### Misure da 1 a 5, prima tornata, 12 novembre 2026
+
+16 run su Modal (tag `system-map-runs`), una sessione nuova ciascuna di `claude -p --agent codebase-map:system-mapper`: phazly e tududi, area «pagamenti e abbonamenti» e intero sistema, Haiku 5.5 e Sonnet 5.5, due ripetizioni. Tetto della scheda 48.000, `HOLDERS` 8. Costo totale 1,53 USD; una run (phazly, area, Haiku, prima ripetizione) non è partita perché Modal ha riusato il container di un'altra. Valori per run in `results/runs-20261112.json`.
+
+| Misura | Risultato | Soglia |
+| --- | --- | --- |
+| 1 Riproduzione, phazly area | nodi ritrovati: Haiku 3, Sonnet 4 e 3 su 11; flussi 0 su 3; frecce rifiutate: Haiku 33%, Sonnet 0% | non raggiunta |
+| 1 Riproduzione, phazly intero sistema | 0 nodi su 11 in tutte e quattro le run | non raggiunta |
+| 2 Secondo progetto, tududi | nessuna mappa registrata in otto run | non misurabile |
+| 3 Livelli | 10-20 viste per run su phazly: nessun nodo fuori dal suo livello, nessun punto citato che manca | raggiunta, sui flussi registrati |
+| 4 Costo | area: Haiku 0,014 USD, Sonnet 0,41 e 0,18; intero sistema: Haiku 0,011 e 0,016, Sonnet 0,24 e 0,28; aperture del sorgente da 0 a 2 | area Sonnet oltre 0,30 in una run su due |
+| 5 Stabilità | phazly area Sonnet 8 nodi su 9 uguali; intero sistema Haiku 1 su 6, Sonnet 1 su 7 | raggiunta solo sull'area con Sonnet |
+
+Cause:
+
+- **tududi:** la risposta di `brief` è di 51,9 KB e supera il limite dell'host per l'uscita di uno strumento (su phazly 31,8 KB passano): l'host la salva in un file e l'agente, che ha solo i quattro strumenti della mappa, non la legge. Il rapporto di `map` è di 86.648 caratteri, soprattutto per gli elenchi di ciò che la copertura lascia fuori (831 punti d'ingresso). In più `codebase_map_read` rifiuta con «parser fingerprint changed»: probabilmente il run è preparato con le versioni di tree-sitter dell'immagine e il server gira in un ambiente `uv` con altre versioni.
+- **phazly, area:** la forma è vicina al riferimento (attore, paywall, scheda abbonamento, Stripe, entità), ma il taglio è più fine (un nodo per gestore: avvio del pagamento, portale clienti, ricezione degli eventi, dove il riferimento ha «API acquisti») e mancano Google Play Billing, i limiti d'uso e i consumi. Un flusso si ritrova con due terzi dei suoi nodi: con 3 o 4 nodi ritrovati su 11 nessun flusso arriva alla soglia.
+- **phazly, intero sistema:** da 2 a 7 nodi per tutto il prodotto (accesso, editor dei pasti, modelli LLM, cancellazioni programmate); l'area dei pagamenti non compare.
+
+Dopo questa tornata il tetto della scheda torna a 24.000 caratteri, perché la risposta di `brief` resti sotto il limite dell'host. Il modello dell'agente non è fissato: nessuno dei due supera la misura 1.

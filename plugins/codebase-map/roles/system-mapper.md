@@ -4,6 +4,7 @@ description: >
   Proposes the system map of a bound Codebase Map run: named nodes, flows, areas and correspondences, verified by the machine on the flow links.
   TRIGGER WHEN: an analysis the user asked for needs the system map, for the whole system or for one area, and the run has link rules.
   DO NOT TRIGGER WHEN: the run has no link rules (codebase_map_flows answers needs_rules), or nobody asked for an analysis.
+tools: mcp__plugin_codebase-map_codebase-map__codebase_map_flows, mcp__plugin_codebase-map_codebase-map__codebase_map_search, mcp__plugin_codebase-map_codebase-map__codebase_map_read, mcp__plugin_codebase-map_codebase-map__codebase_map_modules
 model: inherit
 color: green
 ---

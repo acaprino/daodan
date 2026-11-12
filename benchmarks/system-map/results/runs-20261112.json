@@ -1,0 +1,403 @@
+{
+ "tag": "system-map-runs",
+ "date": "2026-11-12",
+ "cap": 48000,
+ "holders": 8,
+ "failed": {
+  "phazly-area-haiku-1": "FileExistsError: the container of another run was reused"
+ },
+ "runs": [
+  {
+   "run": "phazly-area-haiku-2",
+   "cost": 0.01354471,
+   "seconds": 40,
+   "turns": 5,
+   "flows_calls": 3,
+   "opens": 1,
+   "nodes": 8,
+   "flows": 2,
+   "proved": 1,
+   "declared": 3,
+   "refused": 2,
+   "levels": {
+    "views": 10,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "8/235",
+    "stores": "1/123",
+    "routes": "3/111"
+   },
+   "m1": {
+    "nodes": 3,
+    "flows": 0,
+    "refused_share": 0.333
+   }
+  },
+  {
+   "run": "phazly-area-sonnet-1",
+   "cost": 0.4117842,
+   "seconds": 53,
+   "turns": 7,
+   "flows_calls": 5,
+   "opens": 1,
+   "nodes": 9,
+   "flows": 3,
+   "proved": 5,
+   "declared": 5,
+   "refused": 0,
+   "levels": {
+    "views": 15,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "8/235",
+    "stores": "1/123",
+    "routes": "3/111"
+   },
+   "m1": {
+    "nodes": 4,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-area-sonnet-2",
+   "cost": 0.18025100000000002,
+   "seconds": 30,
+   "turns": 4,
+   "flows_calls": 2,
+   "opens": 1,
+   "nodes": 9,
+   "flows": 3,
+   "proved": 5,
+   "declared": 4,
+   "refused": 0,
+   "levels": {
+    "views": 15,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "9/235",
+    "stores": "1/123",
+    "routes": "4/111"
+   },
+   "m1": {
+    "nodes": 3,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-system-haiku-1",
+   "cost": 0.01085219,
+   "seconds": 55,
+   "turns": 5,
+   "flows_calls": 3,
+   "opens": 1,
+   "nodes": 2,
+   "flows": 1,
+   "proved": 1,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 5,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "12/235",
+    "stores": "1/123",
+    "routes": "12/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-system-haiku-2",
+   "cost": 0.01616901,
+   "seconds": 66,
+   "turns": 4,
+   "flows_calls": 3,
+   "opens": 0,
+   "nodes": 6,
+   "flows": 4,
+   "proved": 5,
+   "declared": 0,
+   "refused": 9,
+   "levels": {
+    "views": 20,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "29/235",
+    "stores": "12/123",
+    "routes": "15/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.643
+   }
+  },
+  {
+   "run": "phazly-system-sonnet-1",
+   "cost": 0.2394346,
+   "seconds": 40,
+   "turns": 4,
+   "flows_calls": 3,
+   "opens": 0,
+   "nodes": 4,
+   "flows": 1,
+   "proved": 0,
+   "declared": 1,
+   "refused": 3,
+   "levels": {
+    "views": 5,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "3/235",
+    "stores": "3/123",
+    "routes": "1/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.75
+   }
+  },
+  {
+   "run": "phazly-system-sonnet-2",
+   "cost": 0.2795459,
+   "seconds": 53,
+   "turns": 6,
+   "flows_calls": 5,
+   "opens": 0,
+   "nodes": 7,
+   "flows": 4,
+   "proved": 0,
+   "declared": 4,
+   "refused": 0,
+   "levels": {
+    "views": 20,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "13/235",
+    "stores": "0/123",
+    "routes": "4/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "tududi-area-haiku-1",
+   "cost": 0.007335050000000002,
+   "seconds": 61,
+   "turns": 10,
+   "flows_calls": 7,
+   "opens": 2,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-area-haiku-2",
+   "cost": 0.01114855,
+   "seconds": 76,
+   "turns": 12,
+   "flows_calls": 9,
+   "opens": 2,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-area-sonnet-1",
+   "cost": 0.0846723,
+   "seconds": 39,
+   "turns": 7,
+   "flows_calls": 4,
+   "opens": 2,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-area-sonnet-2",
+   "cost": 0.06810170000000002,
+   "seconds": 46,
+   "turns": 8,
+   "flows_calls": 5,
+   "opens": 2,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-system-haiku-1",
+   "cost": 0.0023695499999999998,
+   "seconds": 39,
+   "turns": 6,
+   "flows_calls": 4,
+   "opens": 1,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {}
+  },
+  {
+   "run": "tududi-system-haiku-2",
+   "cost": 0.00969386,
+   "seconds": 73,
+   "turns": 10,
+   "flows_calls": 9,
+   "opens": 0,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-system-sonnet-1",
+   "cost": 0.1512833,
+   "seconds": 61,
+   "turns": 11,
+   "flows_calls": 8,
+   "opens": 2,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-system-sonnet-2",
+   "cost": 0.0465361,
+   "seconds": 42,
+   "turns": 8,
+   "flows_calls": 6,
+   "opens": 1,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  }
+ ],
+ "cost_usd": 1.533
+}
