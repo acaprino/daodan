@@ -343,8 +343,8 @@ Misurato il 12 novembre 2026 prima di fissare la regola. Con una soglia sulla qu
 
 Corpo in inglese, entro 40 righe. Strumenti: `codebase_map_flows`, `codebase_map_search`, `codebase_map_read`, `codebase_map_modules`. Sequenza fissa: una chiamata `brief`; una proposta per tutto il sistema o per l'area richiesta; lettura del rapporto e una sola correzione di ciò che è stato rifiutato; risposta finale con i soli conteggi. Regole: nomi come li direbbe chi usa il prodotto; mai un nodo per simbolo; ogni area dell'elenco dichiarata presente o assente; il sorgente si apre solo quando la scheda non basta a decidere un nome o un taglio; i nomi confermati non si toccano. Il modello nel frontmatter si fissa dopo la misura 4.
 
-- [ ] **Passo 1:** scrivere l'agente e verificare che `claude plugin validate` (o il caricamento del plugin) lo accetti.
-- [ ] **Passo 2:** commit.
+- [x] **Passo 1:** scrivere l'agente e verificare che `claude plugin validate` (o il caricamento del plugin) lo accetti.
+- [x] **Passo 2:** commit.
 
 ### Task 11: benchmark, soglie e misure senza modello
 

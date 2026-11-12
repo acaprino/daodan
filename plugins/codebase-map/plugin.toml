@@ -13,7 +13,7 @@ required = []
 
 [components]
 skills = ["map"]
-roles = ["map-analyst", "partition-behavior-worker", "partition-quality-worker", "partition-structure-worker", "partition-synthesizer", "semantic-interconnect-mapper"]
+roles = ["map-analyst", "partition-behavior-worker", "partition-quality-worker", "partition-structure-worker", "partition-synthesizer", "semantic-interconnect-mapper", "system-mapper"]
 workflows = []
 policies = ["write-confinement"]
 

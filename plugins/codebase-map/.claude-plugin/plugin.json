@@ -12,6 +12,7 @@
     "./roles/partition-quality-worker.md",
     "./roles/partition-structure-worker.md",
     "./roles/partition-synthesizer.md",
-    "./roles/semantic-interconnect-mapper.md"
+    "./roles/semantic-interconnect-mapper.md",
+    "./roles/system-mapper.md"
   ]
 }
