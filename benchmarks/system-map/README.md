@@ -120,3 +120,22 @@ Cause di ciò che non raggiunge la soglia:
 Dopo questa tornata una proposta non toglie più ciò che non nomina, e una freccia verso un membro indicato come funzione si prova anche sul file, dichiarandosi meno precisa: su phazly, area, Sonnet, prima ripetizione, le tre frecce rifiutate alla prima proposta reggevano al livello del file (il Paywall chiama `useSubscription`, e il membro indicato era `SubscriptionProvider` nello stesso file).
 
 Il modello dell'agente non è fissato: Haiku e Sonnet stanno entrambi sotto le misure 1 e 5, e la differenza fra i due (1-2 contro 1-3 nodi su phazly) è più piccola della variazione fra ripetizioni.
+
+### Candidati e frecce senza modello, phazly, 13 novembre 2026
+
+Prova a costo zero della revisione del 13 novembre della spec, sui collegamenti di phazly già calcolati con il motore: `python candidates.py LINKS.json expected/phazly-payments.json FILES.txt`. I candidati sono la partizione per dominatori del grafo dei file dai punti d'ingresso; le chiavi di store sono un candidato ciascuna.
+
+| Cosa | Risultato |
+| --- | --- |
+| Candidati | 408, di cui 123 chiavi di store; 360 hanno un solo file |
+| File di codice | 386 in un candidato, 618 che nessun punto d'ingresso raggiunge |
+| Candidati con file di due nodi del riferimento | nessuno |
+| Nodi del riferimento come unione di candidati | Funzioni a consumo, API diritti, Abbonamento, Consumi interi; API acquisti 9 file su 11; Paywall 2 su 4; Scheda abbonamento 2 su 5. I file mancanti sono raggiunti da nessun punto d'ingresso |
+| File che i candidati aggiungono ai nodi del riferimento | 22 a Funzioni a consumo e 2 ad API diritti: le funzioni di supporto dei gestori, che il riferimento non elenca |
+| Frecce del riferimento fra nodi con codice ricavate dai soli collegamenti | 5 su 6: Paywall → API acquisti (4 chiamate), API acquisti → Abbonamento (7 scritture, 14 letture all'indietro), Funzioni a consumo → API diritti (11 chiamate), API diritti → Abbonamento (2 scritture, 3 letture) |
+
+- La freccia mancante, API diritti → Consumi, è un buco del grafo non dichiarato: `services/usage.py` scrive e legge con `db[USAGE_EVENTS_COLLECTION]`, una forma che le regole di phazly non leggono.
+- Scheda abbonamento → API acquisti arriva come Scheda abbonamento → Paywall (5 chiamate al contesto dell'abbonamento, che il riferimento mette nel Paywall) e Paywall → API acquisti: secondo la spec sono due frecce, e il contesto dell'abbonamento è un candidato a sé.
+- In più c'è una freccia vera che il riferimento non ha: API acquisti → API diritti, 13 chiamate.
+- I file che nessun punto d'ingresso raggiunge sono soprattutto componenti dell'interfaccia: rendere un componente non è un collegamento, e chi lo rende non si vede. È il secondo buco del grafo da chiudere.
+- I candidati sono troppo fini per la scheda così come sono: il raggruppamento oltre il tetto è da misurare.
