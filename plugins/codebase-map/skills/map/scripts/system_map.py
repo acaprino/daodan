@@ -289,6 +289,27 @@ def _owns(item: dict, endpoint: str) -> bool:
                                         for p, s in item["symbols"])
 
 
+def _beside(items: dict, endpoint: str) -> set[str]:
+    """Nodes that hold another function of the endpoint's file, when no node holds the endpoint as a function."""
+    path, found, symbol = endpoint.partition("::")
+    if not found or endpoint.startswith(("store:", "module:")):
+        return set()
+    holders = {i for i, item in items.items() if any(p == path for p, _ in item["symbols"])}
+    claimed = any(p == path and (symbol == s or symbol.startswith(s + "."))
+                  for i in holders for p, s in items[i]["symbols"])
+    return set() if claimed else holders
+
+
+def _between(a: str, b: str, owners: dict, leaving: dict, readers: dict) -> tuple[list, list]:
+    """Links from the first node to the second, and pairs of a write and a read of the same store key."""
+    # A link between two members both nodes hold proves nothing between them.
+    direct = [e for e in leaving.get(a, []) if b in owners[e["to"]]
+              and not {a, b} <= owners[e["from"]] & owners[e["to"]]]
+    pairs = [(w, r) for w in leaving.get(a, []) if w["type"] == "scrive"
+             for r in readers.get(w["to"], []) if b in owners[r["to"]] and not {a, b} <= owners[w["from"]] & owners[r["to"]]]
+    return direct, pairs
+
+
 def _proof(edge: dict) -> dict:
     return {name: edge[name] for name in ("from", "to", "type", "site")}
 
@@ -302,12 +323,10 @@ def _check_arrow(arrow: dict, first: dict, second: dict, index: dict, headers: d
             or arrow.get("kind") == "stessa informazione":
         return {**out, **_declared(arrow, first, second, headers)}
     a, b = first["record"]["id"], second["record"]["id"]
-    owners, readers = index["owners"], index["readers"]
-    # A link between two members both nodes hold proves nothing between them.
-    direct = [e for e in index["leaving"].get(a, []) if b in owners[e["to"]]
-              and not {a, b} <= owners[e["from"]] & owners[e["to"]]]
-    pairs = [(w, r) for w in index["leaving"].get(a, []) if w["type"] == "scrive"
-             for r in readers.get(w["to"], []) if b in owners[r["to"]] and not {a, b} <= owners[w["from"]] & owners[r["to"]]]
+    direct, pairs = _between(a, b, index["owners"], index["leaving"], index["readers"])
+    precise = bool(direct or pairs)
+    if not precise:  # the most specific level that holds: the member, else the file of a function member
+        direct, pairs = _between(a, b, index["near"], index["leaving_near"], index["readers"])
     if not direct and not pairs:
         return {**out, "status": "refused",
                 "reason": f"no link from a member of {out['from']} to a member of {out['to']}, "
@@ -317,7 +336,8 @@ def _check_arrow(arrow: dict, first: dict, second: dict, index: dict, headers: d
     via |= {w["to"] for w, _ in pairs}
     proof = [_proof(e) for e in direct] + [_proof(e) for pair in pairs for e in pair]
     return {**out, "status": "proved", "asserts": [k for k in ARROW_KINDS if k in types],
-            "via": sorted(v[6:] for v in via), "proof": list({tuple(p.values()): p for p in proof}.values())}
+            "via": sorted(v[6:] for v in via), "proof": list({tuple(p.values()): p for p in proof}.values()),
+            **({} if precise else {"precise": False})}
 
 
 def _declared(arrow: dict, first: dict, second: dict, headers: dict) -> dict:
@@ -340,11 +360,14 @@ def _verify(manifest: Path, links: dict, nodes: list[dict], flow_records: list[d
     """Reports of nodes and flows referenced by id, and the node items they were checked with."""
     items = _check_nodes(manifest, links, nodes, headers)
     endpoints = {end for edge in links["edges"] for end in (edge["from"], edge["to"])}
-    index = {"owners": {end: {i for i, item in items.items() if _owns(item, end)} for end in endpoints},
-             "leaving": {}, "readers": {}}
+    owners = {end: {i for i, item in items.items() if _owns(item, end)} for end in endpoints}
+    index = {"owners": owners, "near": {end: owners[end] | _beside(items, end) for end in endpoints},
+             "leaving": {}, "leaving_near": {}, "readers": {}}
     for edge in links["edges"]:
-        for owner in index["owners"][edge["from"]]:
+        for owner in owners[edge["from"]]:
             index["leaving"].setdefault(owner, []).append(edge)
+        for owner in index["near"][edge["from"]]:
+            index["leaving_near"].setdefault(owner, []).append(edge)
         if edge["type"] == "legge":
             index["readers"].setdefault(edge["from"], []).append(edge)
     out = []

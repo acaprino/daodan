@@ -117,4 +117,6 @@ Cause di ciò che non raggiunge la soglia:
 - **Pochi nodi per area.** Da 2 a 8 nodi dove il riferimento ne ha 11: mancano Google Play Billing, i limiti d'uso e i consumi; il taglio segue i gestori (ricezione degli eventi, stato nell'app) più che le cose che una persona nomina.
 - **L'intero sistema in una proposta** dà da 2 a 18 nodi per tutto il prodotto, spesso un file per nodo, e l'area dei pagamenti si riduce a un nodo.
 
+Dopo questa tornata una proposta non toglie più ciò che non nomina, e una freccia verso un membro indicato come funzione si prova anche sul file, dichiarandosi meno precisa: su phazly, area, Sonnet, prima ripetizione, le tre frecce rifiutate alla prima proposta reggevano al livello del file (il Paywall chiama `useSubscription`, e il membro indicato era `SubscriptionProvider` nello stesso file).
+
 Il modello dell'agente non è fissato: Haiku e Sonnet stanno entrambi sotto le misure 1 e 5, e la differenza fra i due (1-2 contro 1-3 nodi su phazly) è più piccola della variazione fra ripetizioni.

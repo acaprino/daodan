@@ -24,6 +24,7 @@ A system map names the things a system is made of (nodes), the processes it runs
 
 - `type`: attore, schermata, funzionalità, servizio o API, gateway, database, coda, autenticazione, dispositivo, altro, entità (a named piece of data, its members are the store keys that hold it).
 - `position`: `internal` (default) has `members`: `path`, `path::Symbol`, `store:<store>/<key>`, `module:<name>`; a route is cited by its handler. `external` (an actor, a device, an external service or project) has no members and cites `evidence`. `unseen` (part of the system outside the snapshot) says `where`.
+- A member is the most specific thing you are certain of: the function in its file (`path::Symbol`), otherwise the file (`path`). Never a symbol you were not shown.
 - `on` names the nodes it runs on or lives in.
 - Never one node per symbol; a dependency is a node only when a flow needs it. A member may belong to several nodes.
 - A new node is refused when an existing node of the same type has the same members, all of them, or a part of them.
@@ -31,6 +32,7 @@ A system map names the things a system is made of (nodes), the processes it runs
 ## Arrows
 
 - `data` says what passes. The machine proves an arrow between two nodes with code from the links: a link from a member of the first to a member of the second, or a write and a read of the same store key. It asserts only what those links say (`asserts`) and names the store keys it goes through (`via`).
+- When the links reach another function of the file of a function member, the arrow is proved with `precise: false`: it holds, less precisely. It does not hold when another node has the function reached as its member.
 - An arrow is declared when an end has no code, or when it says `stessa informazione` (one piece of data kept in several places): then `kind` is one of chiama, attiva, scrive, legge, usa, trasferisce, stessa informazione, and `cite` is a `path:line` that exists, in a file of the end with code. The machine checks that the point exists, not that it says it.
 - Any other arrow is refused. A flow stands when its nodes are accepted and one arrow stands.
 - An entity reached through one representation and left through another is not a path: write the arrow between the two with its own evidence.

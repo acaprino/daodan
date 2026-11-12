@@ -26,6 +26,7 @@ Tools: `codebase_map_flows`, `codebase_map_search`, `codebase_map_read`, `codeba
 
 - Names as a person who uses the product would say them, in the language of the product.
 - Never one node per symbol. A node groups the members of one thing; members may repeat across nodes.
+- Give each member as the most specific thing you are certain of: the function in its file (`path::Symbol`), otherwise the file (`path`). Never a symbol you were not shown.
 - Every area of the list is declared present or absent; add the areas the project has and the list lacks.
 - A candidate group of the brief is a hint, not a node: cut and name it.
 - An arrow between nodes with code needs a link the brief shows; with an end without code, give `kind` and a `cite` you read.

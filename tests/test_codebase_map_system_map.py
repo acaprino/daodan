@@ -197,6 +197,28 @@ class VerifyTests(Fixture):
             {"from": "store:web state/payment", "to": "web/badge.ts::renderBadge", "type": "legge",
              "site": "web/badge.ts:4"}])
 
+    def test_a_function_member_is_proved_through_its_file_and_says_so(self):
+        # The route enters at create_payment; the node names charge_order, the function beside it that does the work.
+        work = self.check(changed(lambda v: node(v, "API pagamenti").update(
+            members=["server/payments.py::charge_order", "server/gateway.py"])))
+        entering = self.arrow("Checkout", "API pagamenti", work)
+        self.assertEqual((entering["status"], entering["precise"]), ("proved", False))
+        self.assertEqual(entering["proof"][0]["to"], "server/payments.py::create_payment")
+        self.assertNotIn("precise", self.arrow("API pagamenti", "Pagamento", work))  # charge_order itself writes
+        self.assertNotIn("precise", self.arrow("Checkout", "API pagamenti"))         # a file member holds the function
+        route = self.check(changed(lambda v: node(v, "API pagamenti").update(
+            members=["server/payments.py::create_payment", "server/gateway.py"])))
+        self.assertIs(self.arrow("API pagamenti", "Pagamento", route)["precise"], False)  # the write is beside it
+        self.assertEqual(self.arrow("Badge pagamento", "API pagamenti", work)["status"], "refused")
+
+    def test_a_function_another_node_holds_is_not_beside(self):
+        def cut(v):
+            node(v, "API pagamenti").update(members=["server/payments.py::charge_order", "server/gateway.py"])
+            v["nodes"].append({"name": "Rotta pagamenti", "type": "servizio o API",
+                               "members": ["server/payments.py::create_payment"]})
+            v["flows"][0]["nodes"].append("Rotta pagamenti")
+        self.assertEqual(self.arrow("Checkout", "API pagamenti", self.check(changed(cut)))["status"], "refused")
+
     def test_an_arrow_with_an_end_without_code_is_declared(self):
         self.assertEqual(self.arrow("Cliente", "Checkout")["status"], "declared")
         self.assertEqual(self.arrow("Cliente", "Checkout")["asserts"], ["attiva"])
