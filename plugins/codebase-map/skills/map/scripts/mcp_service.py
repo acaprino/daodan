@@ -35,6 +35,13 @@ _SNAPSHOTS = ContextVar("map_operation_snapshots", default=None)
 
 __all__ = ["MapService"]
 EVENT_FILE = "mcp-events.json"
+UI_FILE = "ui-requests.json"
+UI_KINDS = ("map", "review")
+UI_SCOPES = ("global", "changeset", "feature", "prompt")
+MAX_UI_REQUESTS = 200  # open requests; done ones beyond MAX_UI_DONE are dropped, oldest first
+MAX_UI_DONE = 50
+UI_STATES = ("pending", "taken", "done")
+MAX_UI_TEXT = 2000
 MAX_LIMIT = 1000
 MAX_MESSAGE = 10000
 MAX_EVENTS = 10000
@@ -862,6 +869,110 @@ class MapService:
             self._update_state(run, updates, remove=() if event == "blocked" else ("blocker",))
             self._event(run, event, phase=phase, message=message)
             return self._status(run_id)
+
+    def _ui(self):
+        path = self.root / UI_FILE
+        confinement.reject_link_chain(path)
+        if not path.exists():
+            return []
+        requests = _json(path).get("requests")
+        if not isinstance(requests, list) or not all(
+                isinstance(item, dict) and type(item.get("id")) is int and item.get("state") in UI_STATES
+                and isinstance(item.get("results", []), list) for item in requests):
+            raise ValueError("invalid explorer request file")
+        return requests
+
+    def _ui_write(self, requests):
+        self.root.mkdir(parents=True, exist_ok=True)
+        _write(self.root / UI_FILE, {"schema": 1, "requests": requests})
+
+    def _ui_result(self, relative):
+        """A result's findings and gaps, parsed again only when the file changed."""
+        path = self.project_root / relative
+        confinement.reject_link_chain(path)
+        info = path.stat()
+        key = (info.st_mtime_ns, info.st_size)
+        cache = self.__dict__.setdefault("_ui_cache", {})
+        if cache.get(relative, (None,))[0] != key:
+            record = _json(path)
+            findings = record.get("retained_findings", record.get("findings"))
+            if not isinstance(findings, list):
+                raise ValueError(f"{relative}: no retained_findings or findings list")
+            gaps = record.get("gaps")
+            gaps = [] if gaps in (None, "", []) else gaps if isinstance(gaps, list) else [gaps]
+            cache[relative] = (key, [item for item in findings if isinstance(item, dict)], gaps)
+        return cache[relative][1], cache[relative][2]
+
+    def ui_request(self, kind, scope, text=""):
+        """Record what the person asked in the explorer; the host session takes it with `ui_requests`."""
+        if kind not in UI_KINDS or scope not in UI_SCOPES:
+            raise ValueError(f"kind is one of {UI_KINDS} and scope one of {UI_SCOPES}")
+        if not isinstance(text, str) or len(text) > MAX_UI_TEXT or "\0" in text:
+            raise ValueError(f"text must be at most {MAX_UI_TEXT} characters without NUL")
+        if scope in ("feature", "prompt") and not text.strip():
+            raise ValueError(f"a {scope} request needs its text")
+        with self._operation(write=True):
+            requests = self._ui()
+            done = [item["id"] for item in requests if item["state"] == "done"][-MAX_UI_DONE:]
+            requests = [item for item in requests if item["state"] != "done" or item["id"] in done]
+            if len(requests) - len(done) >= MAX_UI_REQUESTS:
+                raise ValueError(f"the explorer already holds {MAX_UI_REQUESTS} open requests")
+            item = {"id": max((item["id"] for item in requests), default=0) + 1, "kind": kind, "scope": scope, "text": text.strip(),
+                    "state": "pending", "created_at": _now()}
+            self._ui_write([*requests, item])
+            return item
+
+    def ui_requests(self, take=False, release=()):
+        """The explorer's requests; `release` moves the named taken ones back to pending, then `take`
+        moves the pending ones to `taken` and names them."""
+        release = list(release)
+        if not all(type(item) is int for item in release):
+            raise ValueError("release names request ids")
+        with self._operation(write=take or bool(release)):
+            requests = self._ui()
+            released = [item["id"] for item in requests if item["id"] in release and item["state"] == "taken"]
+            if len(released) != len(set(release)):
+                raise ValueError("only a taken request can be released")
+            for item in requests:
+                if item["id"] in released:
+                    item["state"] = "pending"
+            taken = [item["id"] for item in requests if item["state"] == "pending"] if take else []
+            for item in requests:
+                if item["id"] in taken:
+                    item["state"] = "taken"
+            if taken or released:
+                self._ui_write(requests)
+            return {"requests": requests, "taken": taken, "released": released}
+
+    def ui_done(self, request_id, results=(), message=""):
+        """Close a taken request with the project-relative JSON results whose findings the explorer shows."""
+        paths = [_relative(path) for path in results]
+        _message(message)
+        with self._operation(write=True):
+            requests = self._ui()
+            item = next((item for item in requests if item["id"] == request_id), None)
+            if item is None or item["state"] != "taken":
+                raise ValueError("only a taken request can be closed")
+            for path in paths:
+                self._ui_result(path)
+            item.update(state="done", results=paths, message=message, done_at=_now())
+            self._ui_write(requests)
+            return item
+
+    def ui_findings(self):
+        """Findings and gaps of the closed requests, read from their results now; an unreadable result is a gap."""
+        with self._operation():
+            findings, gaps = [], []
+            for item in self._ui():
+                for path in item.get("results", ()):
+                    try:
+                        found, declared = self._ui_result(path)
+                    except (ValueError, OSError) as exc:
+                        gaps.append(f"{path}: {exc}")
+                        continue
+                    findings.extend({**finding, "request": item["id"]} for finding in found)
+                    gaps.extend(declared)
+            return {"findings": findings, "gaps": gaps}
 
     def events(self, run_id, after=0, limit=100):
         if type(after) is not int or after < 0:

@@ -157,7 +157,7 @@ After generating the PR description, check if changes suggest the project's `CLA
 3. If `CLAUDE.md` references outdated information, add a note in the PR description under a `## CLAUDE.md Updates Needed` section
 
 Save final native updates to the same description path, then apply this skill's
-`Optional human view` contract. No HTML renderer exists, so native Markdown remains authoritative and HTML
+`Optional human view` contract. Its renderer reads findings, not a description, so native Markdown remains authoritative and HTML
 rendering is declared unavailable unless the host supplies one. The derived view grants no publication authorization; an explicitly
 requested HTML deliverable remains open if rendering is unavailable or fails.
 

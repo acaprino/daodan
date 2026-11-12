@@ -26,6 +26,11 @@ items = "string"
 # Content audits may include preexisting defects in the authorized scope.
 type = "boolean"
 
+[fields.example]
+# Optional, written for the human view: the defect in plain words through one
+# realistic case with concrete values, from the action to what the person sees.
+type = "string"
+
 [fields.evidence_class]
 # How the decisive evidence was obtained, strongest first. A derived number
 # alone never justifies Critical severity.

@@ -128,8 +128,8 @@ After producing the review output, check if findings suggest the project's `CLAU
 3. If any documented information is outdated or missing, add a `### CLAUDE.md Staleness` section to the review output noting what needs updating
 
 After this final native update, apply the `Optional human view` contract in
-`senior-review:review-consolidation`. No HTML renderer exists, so the final writer keeps the saved Markdown report
-authoritative and declares HTML rendering unavailable unless the host supplies one. Preserve all native findings, evidence
+`senior-review:review-consolidation`. The final writer keeps the saved Markdown report
+authoritative; HTML comes only from that contract's renderer. Preserve all native findings, evidence
 and unknown states; HTML delivery does not satisfy a missing reviewer or gate.
 
 ---
