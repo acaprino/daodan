@@ -88,9 +88,11 @@ def review(arm: str, rep: int, archive: bytes, tag: str) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(stream, out / "stream.jsonl")
     (out / "stderr.txt").write_text((error or "")[-20000:], encoding="utf-8")
-    review_dir = project / ".daodan" / "review"
-    if review_dir.is_dir():
-        shutil.make_archive(str(out / "review"), "gztar", review_dir)
+    # The review chooses its own directory: keep every place a run of 12 November used.
+    for name, place in (("review", project / ".daodan" / "review"), ("team-review", project / ".team-review"),
+                        ("tmp-rv", Path("/tmp/rv"))):
+        if place.is_dir():
+            shutil.make_archive(str(out / name), "gztar", place)
     result = {}
     for line in stream.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
