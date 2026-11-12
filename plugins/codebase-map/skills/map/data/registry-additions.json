@@ -1,0 +1,2916 @@
+{
+ "schema": "daodan/registry-additions/v1",
+ "entries": [
+  {
+   "id": "actixweb",
+   "name": "Actix Web",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://actix.rs",
+   "signs": {
+    "packages": {
+     "crates": [
+      "actix-web"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "adyen",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "adyen"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/adyen"
+  },
+  {
+   "id": "aiohttp",
+   "name": "aiohttp",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://docs.aiohttp.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aiohttp"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "alembic",
+   "name": "Alembic",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://alembic.sqlalchemy.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "alembic"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "algolia",
+   "site": "https://www.algolia.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "amplitude",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/amplitude/amplitude-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/amplitude"
+  },
+  {
+   "id": "ansible",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "ansible"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "anthropic",
+   "site": "https://www.anthropic.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "apache-beam",
+   "name": "Apache Beam",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://beam.apache.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "apache-beam"
+     ],
+     "go": [
+      "github.com/apache/beam/sdks/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "apache-pulsar",
+   "name": "Apache Pulsar",
+   "kind": "service",
+   "type": "coda",
+   "site": "https://pulsar.apache.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulsar-client"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "apache_cassandra",
+   "site": "https://cassandra.apache.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "cassandra-driver"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "apache_flink",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "apache-flink"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "apache_kafka",
+   "site": "https://kafka.apache.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "apache_spark",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pyspark"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "apify",
+   "signs": {
+    "packages": {
+     "crates": [
+      "apify-client"
+     ],
+     "go": [
+      "github.com/apify/apify-client-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/apify"
+  },
+  {
+   "id": "asana",
+   "site": "https://asana.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "atlassian.jira",
+   "signs": {
+    "packages": {
+     "crates": [
+      "jira"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/mrrefactoring"
+  },
+  {
+   "id": "atlassian.opsgenie",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "opsgenie-sdk"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/opsgenie"
+  },
+  {
+   "id": "auth0",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/auth0/go-auth0"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/auth0"
+  },
+  {
+   "id": "auth0",
+   "site": "https://auth0.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "auth0-python"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "aws",
+   "site": "https://aws.amazon.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "aws.apigateway",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-apigateway"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.athena",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-athena"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.cloudformation",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-cloudformation"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.cloudfront",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-cloudfront"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.cloudwatch",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-cloudwatch"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.documentdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-docdb"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.dynamodb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-dynamodb"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.ec2",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-ec2"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.ecr",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-ecr"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.ecs",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-ecs"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.efs",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-efs"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.eks",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-eks"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.elasticache",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-elasticache"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.glue",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-glue"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.kafka",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-kafka"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "aws.kinesis",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-kinesis"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.kms",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-kms"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.lightsail",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-lightsail"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.memorydb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-memorydb"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.neptune",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-neptune"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.rds",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-rds"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.redshift",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-redshift"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.rekognition",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-rekognition"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.sagemaker",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-sagemaker"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.secretsmanager",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-secretsmanager"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.ses",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-ses"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.sns",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-sns"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.sqs",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-sqs"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.timestream",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-aws-timestream"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/aws"
+  },
+  {
+   "id": "awscdk",
+   "name": "AWS CDK",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://aws.amazon.com/cdk",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "aws-cdk-lib"
+     ],
+     "go": [
+      "github.com/aws/aws-cdk-go/awscdk/v2"
+     ],
+     "npm": [
+      "aws-cdk-lib"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "axum",
+   "name": "Axum",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://github.com/tokio-rs/axum",
+   "signs": {
+    "packages": {
+     "crates": [
+      "axum"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "azure",
+   "site": "https://azure.microsoft.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "azure.staticwebapps",
+   "signs": {
+    "packages": {
+     "crates": [
+      "azure"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/azure"
+  },
+  {
+   "id": "azure.storage",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "azure-storage-blob"
+     ],
+     "go": [
+      "github.com/azure/azure-storage-blob-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/azure"
+  },
+  {
+   "id": "bigcommerce",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "bigcommerce"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/bigcommerce"
+  },
+  {
+   "id": "boto3",
+   "name": "Boto3",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://boto3.amazonaws.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "boto3"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "box",
+   "site": "https://www.box.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "bugsnag",
+   "site": "https://www.bugsnag.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "caddy",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/caddyserver/caddy/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "celery",
+   "site": "https://docs.celeryq.dev",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "chargebee",
+   "site": "https://www.chargebee.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "click",
+   "name": "Click",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://click.palletsprojects.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "click"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "cloudflare",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-cloudflare"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "cloudflare.workers",
+   "signs": {
+    "packages": {
+     "crates": [
+      "wrangler"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/cloudflare"
+  },
+  {
+   "id": "cloudinary",
+   "site": "https://cloudinary.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "cobra",
+   "name": "Cobra",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://cobra.dev",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/spf13/cobra"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "cohereai",
+   "site": "https://cohere.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "consul",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/hashicorp/consul/api"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "containerd",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/containerd/containerd"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "contentful",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "contentful"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/contentful"
+  },
+  {
+   "id": "couchbase",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "couchbase"
+     ],
+     "go": [
+      "github.com/couchbase/go-couchbase"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/couchbase"
+  },
+  {
+   "id": "dask",
+   "name": "Dask",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.dask.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "dask"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "databricks",
+   "site": "https://www.databricks.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "databricks-sdk"
+     ],
+     "go": [
+      "github.com/databricks/databricks-sdk-go"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "datadog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/datadog/dd-trace-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/datadog"
+  },
+  {
+   "id": "dbt",
+   "name": "dbt",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.getdbt.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "dbt-core"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "digitalocean",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-digitalocean"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "django",
+   "site": "https://www.djangoproject.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "docker",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-docker"
+     ],
+     "go": [
+      "github.com/pulumi/pulumi-docker"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "docker",
+   "site": "https://www.docker.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "docusign",
+   "site": "https://www.docusign.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "dropbox",
+   "site": "https://www.dropbox.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "dropbox"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "duckdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "duckdb"
+     ],
+     "go": [
+      "github.com/duckdb/duckdb-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/duckdb"
+  },
+  {
+   "id": "echo",
+   "name": "Echo",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://echo.labstack.com",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/labstack/echo/v4"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "elasticsearch",
+   "site": "https://www.elastic.co/elasticsearch",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "elevenlabs",
+   "site": "https://elevenlabs.io",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "envoy",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/envoyproxy/go-control-plane"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "esbuild",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/evanw/esbuild"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/evanw"
+  },
+  {
+   "id": "etcd",
+   "signs": {
+    "packages": {
+     "go": [
+      "go.etcd.io/etcd/client/v3"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "fastapi",
+   "name": "FastAPI",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://fastapi.tiangolo.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "fastapi"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "fastly",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "fastly"
+     ],
+     "go": [
+      "github.com/fastly/fastly-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/fastly"
+  },
+  {
+   "id": "firebase",
+   "site": "https://firebase.google.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "firebase-admin"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "flask",
+   "name": "Flask",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://flask.palletsprojects.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "flask"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "fluentd",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/fluent/fluent-logger-golang"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "foundationdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "foundationdb"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "gcp",
+   "site": "https://cloud.google.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "gcp.appengine",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-appengine-admin"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.artifactregistry",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-artifact-registry"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.bigtable",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-bigtable"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.cloudrun",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-run"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.dataproc",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-dataproc"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.datastore",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-datastore"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.dialogflow",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-dialogflow"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.dns",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-dns"
+     ],
+     "go": [
+      "github.com/googleapis/google-cloud-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.gce",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-compute"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.kms",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-kms"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.language",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-language"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.logging",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-logging"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.memorystore",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-redis"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.pubsub",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-pubsub"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.secretmanager",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-secret-manager"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.spanner",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-spanner"
+     ],
+     "crates": [
+      "google-cloud-spanner"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.sql",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/googlecloudplatform/google-cloud-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googlecloudplatform"
+  },
+  {
+   "id": "gcp.tasks",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-cloud-tasks"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gin",
+   "name": "Gin",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://gin-gonic.com",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/gin-gonic/gin"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "gitea",
+   "name": "Gitea",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://about.gitea.com",
+   "signs": {
+    "packages": {
+     "go": [
+      "code.gitea.io/sdk/gitea"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "github",
+   "site": "https://github.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "google.meet",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-apps-meet"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/googleapis"
+  },
+  {
+   "id": "groq",
+   "site": "https://groq.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "grpc",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "grpcio"
+     ],
+     "go": [
+      "google.golang.org/grpc"
+     ],
+     "npm": [
+      "@grpc/grpc-js"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "gunicorn",
+   "name": "Gunicorn",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://gunicorn.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "gunicorn"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "hashicorp_vault",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-vault"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "helm",
+   "signs": {
+    "packages": {
+     "go": [
+      "helm.sh/helm/v3"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "hetzner",
+   "site": "https://www.hetzner.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "honeycomb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "libhoney"
+     ],
+     "go": [
+      "github.com/honeycombio/libhoney-go"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "httpx",
+   "name": "HTTPX",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.python-httpx.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "httpx"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "hubspot",
+   "site": "https://www.hubspot.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "huggingface",
+   "site": "https://huggingface.co",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "influxdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "influxdb-client"
+     ],
+     "go": [
+      "github.com/influxdata/influxdb-client-go/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "inngest",
+   "signs": {
+    "packages": {
+     "crates": [
+      "inngest"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/inngest"
+  },
+  {
+   "id": "jaeger",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/jaegertracing/jaeger"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "jenkins",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "python-jenkins"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "jinja",
+   "name": "Jinja",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://jinja.palletsprojects.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "jinja2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "jupyter",
+   "name": "Jupyter",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://jupyter.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "jupyter"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "keras",
+   "name": "Keras",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://keras.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "keras"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "keycloak",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "python-keycloak"
+     ],
+     "npm": [
+      "keycloak-js"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "langchain",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "langchain"
+     ],
+     "npm": [
+      "langchain"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "llamaindex",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "llama-index"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "logsnag",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "logsnag"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/logsnag"
+  },
+  {
+   "id": "mailchimp",
+   "site": "https://mailchimp.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "mailgun",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "mailgun"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/mailgun"
+  },
+  {
+   "id": "matplotlib",
+   "name": "Matplotlib",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://matplotlib.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "matplotlib"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "meilisearch",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "meilisearch"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/meilisearch"
+  },
+  {
+   "id": "meilisearch",
+   "site": "https://www.meilisearch.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "mistralai",
+   "site": "https://mistral.ai",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "mixpanel",
+   "site": "https://mixpanel.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "mlflow",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "mlflow"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "mongodbatlas",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-mongodbatlas"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "nats",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "nats-py"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "neo4j",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "neo4j-driver"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/neo4j"
+  },
+  {
+   "id": "neo4j",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/neo4j/neo4j-go-driver/v5"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "newrelic",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "newrelic"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/newrelic"
+  },
+  {
+   "id": "newrelic",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/newrelic/go-agent/v3"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "nodejs",
+   "site": "https://nodejs.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "nomad",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/hashicorp/nomad/api"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "numpy",
+   "name": "NumPy",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://numpy.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "numpy"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "okta",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-okta"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "okta",
+   "site": "https://www.okta.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "ollama",
+   "site": "https://ollama.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "openai",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/openai/openai-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/openai"
+  },
+  {
+   "id": "openai",
+   "site": "https://openai.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "opencv",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "opencv-python"
+     ],
+     "crates": [
+      "opencv"
+     ],
+     "go": [
+      "gocv.io/x/gocv"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "opensearch",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "opensearch-py"
+     ],
+     "go": [
+      "github.com/opensearch-project/opensearch-go/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "optimizely",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "optimizely"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/optimizely"
+  },
+  {
+   "id": "oracledatabase",
+   "name": "Oracle Database",
+   "kind": "service",
+   "type": "database",
+   "site": "https://www.oracle.com/database",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "oracledb"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "ovh",
+   "site": "https://www.ovhcloud.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "oxlint",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "oxlint"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/oxc-project"
+  },
+  {
+   "id": "pagerduty",
+   "site": "https://www.pagerduty.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pdpyras"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "pandas",
+   "name": "pandas",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://pandas.pydata.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pandas"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "paypal",
+   "site": "https://www.paypal.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "paypalrestsdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "php",
+   "site": "https://www.php.net",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "pillow",
+   "name": "Pillow",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://python-pillow.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pillow"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "pinecone",
+   "site": "https://www.pinecone.io",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "pip",
+   "name": "pip",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://pip.pypa.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pip"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "playwright",
+   "site": "https://playwright.dev",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "plotly",
+   "name": "Plotly",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://plotly.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "plotly"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "podman",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/containers/podman/v5"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "polars",
+   "name": "Polars",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://pola.rs",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "polars"
+     ],
+     "crates": [
+      "polars"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "postgresql",
+   "site": "https://www.postgresql.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "posthog",
+   "site": "https://posthog.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "protobuf",
+   "name": "Protocol Buffers",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://protobuf.dev",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "protobuf"
+     ],
+     "crates": [
+      "protobuf"
+     ],
+     "go": [
+      "google.golang.org/protobuf"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "pydantic",
+   "name": "Pydantic",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://docs.pydantic.dev",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pydantic"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "pytest",
+   "name": "pytest",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://pytest.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pytest"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "python",
+   "site": "https://www.python.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "questdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "questdb"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/questdb"
+  },
+  {
+   "id": "railway",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "railway"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/railwayapp"
+  },
+  {
+   "id": "ray",
+   "name": "Ray",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.ray.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "ray"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "redis",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "redis"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/redis"
+  },
+  {
+   "id": "redis",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/redis/go-redis/v9"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "replicate",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/replicate/replicate-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/replicate"
+  },
+  {
+   "id": "replicate",
+   "site": "https://replicate.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "replit.database",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "replit"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/replit"
+  },
+  {
+   "id": "requests",
+   "name": "Requests",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://requests.readthedocs.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "requests"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "rethinkdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "rethinkdb"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/rethinkdb"
+  },
+  {
+   "id": "rollbar",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "rollbar"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/rollbar"
+  },
+  {
+   "id": "rollbar",
+   "site": "https://rollbar.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "rolldown",
+   "signs": {
+    "packages": {
+     "crates": [
+      "rolldown"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/rolldown"
+  },
+  {
+   "id": "ruby",
+   "site": "https://www.ruby-lang.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "ruff",
+   "name": "Ruff",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://docs.astral.sh/ruff",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "ruff"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "scaleway",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "scaleway-sdk"
+     ],
+     "go": [
+      "github.com/scaleway/scaleway-sdk-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/scaleway"
+  },
+  {
+   "id": "scikitlearn",
+   "name": "scikit-learn",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://scikit-learn.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "scikit-learn"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "scipy",
+   "name": "SciPy",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://scipy.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "scipy"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "scrapy",
+   "name": "Scrapy",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://scrapy.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "scrapy"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "segment",
+   "site": "https://segment.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "selenium",
+   "site": "https://www.selenium.dev",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "sendgrid",
+   "site": "https://sendgrid.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "sendgrid"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "serde",
+   "name": "Serde",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://serde.rs",
+   "signs": {
+    "packages": {
+     "crates": [
+      "serde"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "shopify",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "ShopifyAPI"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "slack",
+   "site": "https://slack.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "slack-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "snowflake",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-snowflake"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "spacy",
+   "name": "spaCy",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spacy.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "spacy"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "sphinx",
+   "name": "Sphinx",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.sphinx-doc.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "sphinx"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "splunk",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "splunk-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "sqlalchemy",
+   "site": "https://www.sqlalchemy.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "sqlite",
+   "site": "https://sqlite.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "streamlit",
+   "name": "Streamlit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://streamlit.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "streamlit"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "stripe",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "stripe"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/stripe"
+  },
+  {
+   "id": "stripe",
+   "site": "https://stripe.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "stytch",
+   "signs": {
+    "packages": {
+     "crates": [
+      "stytch"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/stytchauth"
+  },
+  {
+   "id": "stytch",
+   "site": "https://stytch.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "surrealdb",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "surrealdb"
+     ],
+     "crates": [
+      "surrealdb"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/surrealdb"
+  },
+  {
+   "id": "swc",
+   "signs": {
+    "packages": {
+     "crates": [
+      "swc-core"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/swc-project"
+  },
+  {
+   "id": "tailscale",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "pulumi-tailscale"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/pulumi"
+  },
+  {
+   "id": "tensorflow",
+   "signs": {
+    "packages": {
+     "crates": [
+      "tensorflow"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/tensorflow"
+  },
+  {
+   "id": "terraform",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "cdktf"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/hashicorp"
+  },
+  {
+   "id": "tokio",
+   "name": "Tokio",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://tokio.rs",
+   "signs": {
+    "packages": {
+     "crates": [
+      "tokio"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "traefik",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/traefik/traefik/v3"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "trino",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "trino"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "twilio",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "twilio"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/twilio"
+  },
+  {
+   "id": "twilio",
+   "site": "https://www.twilio.com",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "typer",
+   "name": "Typer",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://typer.tiangolo.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "typer"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "typescript",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/microsoft/typescript-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/microsoft"
+  },
+  {
+   "id": "typescript",
+   "site": "https://www.typescriptlang.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "typesense",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "typesense"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/typesense"
+  },
+  {
+   "id": "typesense",
+   "site": "https://typesense.org",
+   "signs": {
+    "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "upstash.redis",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "upstash-redis"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/upstash"
+  },
+  {
+   "id": "uv",
+   "name": "uv",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://docs.astral.sh/uv",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "uv"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "vault",
+   "name": "HashiCorp Vault",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.vaultproject.io",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/hashicorp/vault/api"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "vercel.blob",
+   "signs": {
+    "packages": {
+     "crates": [
+      "vercel-blob"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/vercel"
+  },
+  {
+   "id": "viper",
+   "name": "Viper",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://github.com/spf13/viper",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/spf13/viper"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "wandb",
+   "name": "Weights & Biases",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://wandb.ai",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "wandb"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "weaviate",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "weaviate-client"
+     ],
+     "go": [
+      "github.com/weaviate/weaviate-go-client/v4"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "webflow",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "webflow"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/webflow"
+  }
+ ]
+}
