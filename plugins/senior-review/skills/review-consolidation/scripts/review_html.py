@@ -2,7 +2,8 @@
 
 The page is a view of records that already exist: it reads `retained_findings`
 (final-report) or `findings` (reviewer-result) and their `gaps`, and adds no
-finding, field or judgement. A missing field is shown as `unknown`; a field the
+finding, field or judgement. Each finding opens with its `example`, the plain
+explanation through one realistic case. A missing field is shown as `unknown`; a field the
 page has no place for is listed under "Other fields". With `--root` each finding
 also shows the cited source lines. The page needs no server and no Daodan UI:
 the reader accepts or rejects each fix on it and pastes the reply block back.
@@ -23,7 +24,7 @@ from pathlib import Path
 
 SEVERITIES = ["Critical", "High", "Medium", "Low"]
 SHOWN = {"file", "line", "title", "severity", "confidence", "evidence_class", "premise_provenance", "reviewer",
-         "introduced_by_candidate", "premise", "trigger", "evidence", "counterevidence_checked", "fix"}
+         "introduced_by_candidate", "example", "premise", "trigger", "evidence", "counterevidence_checked", "fix"}
 CONTEXT_LINES = 2
 
 CSS = """
@@ -136,6 +137,7 @@ def article(ref, anchor, finding, root):
              f"<h2>{ref} · {text(finding.get('title') or finding.get('premise'))}</h2>",
              f"<p><code>{place}</code></p>",
              "<dl>" + "".join(f"<div><dt>{name}</dt><dd>{value}</dd></div>" for name, value in facts) + "</dl>",
+             section("In plain words, with an example", f"<p>{text(finding.get('example'))}</p>"),
              section("Premise", f"<p>{text(finding.get('premise'))}</p>"),
              section("Trigger", f"<p>{text(finding.get('trigger'))}</p>"),
              section("Evidence", f"<pre>{text(finding.get('evidence'))}</pre>")]

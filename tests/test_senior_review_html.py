@@ -1,7 +1,7 @@
 """review_html.py renders findings as one standalone page.
 
 Pinned: every finding has an index entry and an anchored article, ordered by
-severity; a missing field reads `unknown`; an unplaced field is kept; text from a
+severity; each finding opens with its plain example; a missing field reads `unknown`; an unplaced field is kept; text from a
 record is escaped; `--root` adds the cited source line and never reads outside
 the root; an input without a findings list fails.
 """
@@ -24,7 +24,7 @@ LOW = {"file": "server/jobs.py", "line": 8, "severity": "Low", "confidence": 60,
        "premise_provenance": "independent", "evidence": "db.find(...)"}
 HIGH = {"file": "server/orders.py", "line": 6, "severity": "High", "confidence": 90,
         "premise": "<img src=x onerror=1>", "premise_provenance": "independent", "evidence": "db.get(...)",
-        "trigger": "any paid order", "counterevidence_checked": ["no second writer"], "fix": "read by field",
+        "trigger": "any paid order", "example": "Anna pays order 42 and still sees it unpaid.", "counterevidence_checked": ["no second writer"], "fix": "read by field",
         "lens_votes": {"1": "REAL"}}
 
 
@@ -47,6 +47,8 @@ class RenderTests(unittest.TestCase):
         page = review_html.render([LOW, HIGH], [])
         low = page[page.index('id="f-02"'):]
         self.assertIn("<h3>Trigger</h3><p>unknown</p>", low)
+        high = page[page.index('id="f-01"'):page.index('id="f-02"')]
+        self.assertLess(high.index("Anna pays order 42"), high.index("<h3>Premise</h3>"))
         self.assertIn("<code>lens_votes</code>", page)
 
     def test_root_adds_the_cited_line_only_inside_the_root(self):

@@ -58,7 +58,10 @@ is requested, `scripts/review_html.py render RESULT.json... --out REPORT.html
 [--root PROJECT_ROOT]` writes one standalone page from the `retained_findings` or
 `findings` and `gaps` of the given JSON records: an index by finding and by file,
 one section per finding, an accept/reject choice per fix and a reply block to
-paste back. It needs no server and no UI. Filter rendering is unavailable. Do not
+paste back. It needs no server and no UI. Before rendering, the final writer gives
+each retained finding its `example`: the defect in plain words through one
+realistic case with concrete values, from the action to what the person sees,
+using only what the finding's evidence supports. Filter rendering is unavailable. Do not
 generate another UI or add analysis, findings or schema.
 
 Preserve native sections/fields, roles/severities, evidence/confidence, premises/
