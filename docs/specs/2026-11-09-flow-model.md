@@ -1,6 +1,6 @@
 # Fase 2: flussi e unità ricavati dal grafo
 
-**Stato:** in prova. `flows.py` applica le regole, traccia i flussi e forma le unità, senza strumento MCP; misure 2, 3 e 5 sulla fixture e prima applicazione a un caso reale in [`benchmarks/flow-model`](../../benchmarks/flow-model/README.md) e [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). Restano le misure 1 e 4, la scheda del flusso, i livelli e `codebase_map_flows`. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
+**Stato:** in prova. `flows.py` applica le regole, traccia i flussi ai quattro livelli e forma le unità; `codebase_map_flows` li espone; misure 2, 3 e 5 sulla fixture e prima applicazione a un caso reale in [`benchmarks/flow-model`](../../benchmarks/flow-model/README.md) e [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). Restano le misure 1 e 4, la scheda del flusso scritta dal modello, il tipo dei nodi con le icone e i flussi nell'esploratore. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
 
 Codebase Map deve saper rispondere a due domande: «chi scrive il dato che l'applicativo mostra o restituisce, e cosa significa?» e «cosa succede quando arriva questa azione o questa richiesta?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark. Riapre l'esclusione dei flussi nel [FRD](../frd/2026-11-07-codebase-explorer.md) e nell'[ADR](../adr/2026-11-07-codebase-explorer.md) dell'esploratore.
 
@@ -114,7 +114,7 @@ Una contrazione conserva consultabili i collegamenti originali. Un simbolo senza
 
 ### 6. Interrogazione
 
-`codebase_map_flows` con una di tre domande e un livello: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un nodo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti, dedotti o dichiarati, con granularità, significato, freschezza, lacune e ciò che resta da esplorare. Distingue un flusso incompleto da un flusso completo diviso in più unità.
+`codebase_map_flows` con le regole di collegamento del progetto, registrate accanto allo snapshot, una di tre domande e un livello: `from` un punto d'ingresso (cosa deve reagire), `to` un fatto mostrato o uno store (chi lo scrive e cosa significa), `through` un nodo (quali flussi lo attraversano). La risposta elenca i collegamenti, diretti, dedotti o dichiarati, con granularità, significato, freschezza, lacune e ciò che resta da esplorare. Distingue un flusso incompleto da un flusso completo diviso in più unità.
 
 ### 7. Chi usa flussi e unità
 

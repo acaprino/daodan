@@ -119,6 +119,13 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind. Also reports the call-resolution engine store (fresh, sampled, running, missing, stale, failed, unavailable) and, unless check is true, restarts its pass when it is not fresh or running. environment is the project's Python environment for a pass that starts: omitted or auto, the project's own or one Daodan builds once in its shared directory from the declared packages (wheels only, no project code); a path uses that environment; none uses no environment."""
         return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock, environment=environment)
 
+    @server.tool(annotations=writes)
+    async def codebase_map_flows(ctx: Context, run_id: str, rules: list[dict] | None = None, start: str | None = None,
+                                 direction: str = "from", level: str = "fisico", limit: int = 100) -> dict:
+        """Flows of the bound run, from the project's link rules. Without recorded rules it returns the rule format (status needs_rules): read the few files that decide how the project reads and writes its state, calls and declares its routes, reaches its stores and binds user actions, then pass rules to record them. Without start: entry points (routes, user actions, scheduled work), stores with their writers and readers, routes linked and declared gaps. With start, a node as file::symbol, store:name/key or module:name: direction from follows what it causes, to follows where its data comes from, through lists the entry points whose flow holds it. level is fisico (symbols), logico (modules), dati (store accesses) or ux (user actions and who shows the data). Links are direct (in the code), deduced (a rule pairs both ends) or declared (an external module); a value a rule cannot read is a gap, never a guess."""
+        return await _invoke(ctx, service.flows, run_id, rules=rules, start=start, direction=direction,
+                             level=level, limit=limit)
+
     @server.tool(annotations=read_only)
     async def codebase_map_read(ctx: Context, run_id: str, requests: list[dict]) -> dict:
         """Read hash-verified source blocks using path, symbols, ranges or full_file requests."""

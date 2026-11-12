@@ -88,6 +88,47 @@ class FlowFixtureTests(unittest.TestCase):
         self.assertFalse(flows.trace(self.links, start, "from", boundary=["web"])["complete"])
         self.assertFalse(flows.trace(self.links, "web/debug.ts::probe", "from")["complete"])
 
+    def test_one_flow_is_seen_at_each_level_without_changing(self):
+        flow = flows.trace(self.links, "web/checkout.ts::onPayClick", "from")
+        modules_of = flows.file_modules(self.manifest)
+        self.assertEqual(modules_of["server/payments.py"], "payment")
+        logical = flows.at_level(flow, "logico", modules_of)
+        self.assertIn("module:payment", logical["nodes"])
+        self.assertNotIn("server/payments.py::charge_order", logical["nodes"])
+        # A symbol whose file belongs to no module stays a symbol.
+        self.assertIn("server/billing.py::amount_for", logical["nodes"])
+        self.assertEqual(sum(edge["links"] for edge in logical["edges"])
+                         + sum(1 for edge in flow["edges"] if modules_of.get(edge["from"].split("::")[0])
+                               and modules_of.get(edge["from"].split("::")[0]) == modules_of.get(edge["to"].split("::")[0])),
+                         len(flow["edges"]))
+        data = flows.at_level(flow, "dati", {})
+        self.assertEqual({edge["type"] for edge in data["edges"]}, {"scrive", "legge"})
+        self.assertIn("store:db/payments", data["nodes"])
+        ux = flows.at_level(flows.trace(self.links, "web/checkout.ts::renderCheckout", "from"), "ux", {})
+        self.assertIn(("web/checkout.ts::renderCheckout", "web/checkout.ts::onPayClick"),
+                      {(edge["from"], edge["to"]) for edge in ux["edges"] if edge["type"] == "attiva"})
+        self.assertEqual(flows.at_level(flow, "fisico", {}), flow)
+
+    def test_the_service_asks_for_rules_records_them_and_answers_at_a_level(self):
+        import mcp_service
+        project = self.work / "service"
+        shutil.copytree(BENCH / "app", project / "app")
+        subprocess.run(["git", "init", "-q", str(project)], check=True, capture_output=True)
+        service = mcp_service.MapService(project)
+        service.create_run("app", "flows", engine=False)
+        self.assertEqual(service.flows("flows")["status"], "needs_rules")
+        rules = json.loads((BENCH / "rules.json").read_text(encoding="utf-8"))["rules"]
+        rules = [{**rule, "callee": "app/" + rule["callee"]} for rule in rules]
+        with self.assertRaisesRegex(ValueError, "unknown field"):
+            service.flows("flows", rules=[{**rules[0], "where": "x"}])
+        summary = service.flows("flows", rules=rules)
+        self.assertEqual((summary["status"], summary["entry_count"], summary["routes"]["linked"]), ("ok", 6, 2))
+        self.assertEqual(summary["stores"]["db/payments"], {"reads": 3, "writes": 1})
+        flow = service.flows("flows", start="app/web/badge.ts::renderBadge", direction="to", level="dati")
+        self.assertIn("store:db/payments", flow["nodes"])
+        through = service.flows("flows", start="app/server/payments.py::charge_order", direction="through")
+        self.assertIn("app/server/jobs.py::retry_declined", through["entries"])
+
     def test_units_keep_writers_with_readers_and_assign_every_file(self):
         sizes = flows.file_sizes(self.manifest)
         for limit in (120_000, 1_500):

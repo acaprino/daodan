@@ -88,7 +88,11 @@ def load_rules(path: Path) -> list[dict]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     if payload.get("schema") != RULES_SCHEMA or not isinstance(payload.get("rules"), list):
         raise ValueError(f"rules must be {RULES_SCHEMA} with a rules list")
-    for index, rule in enumerate(payload["rules"]):
+    return validate_rules(payload["rules"])
+
+
+def validate_rules(rules: list) -> list[dict]:
+    for index, rule in enumerate(rules):
         where = f"rule {index}"
         if not isinstance(rule, dict) or rule.get("link") not in LINKS:
             raise ValueError(f"{where}: link must be one of {', '.join(LINKS)}")
@@ -109,7 +113,7 @@ def load_rules(path: Path) -> list[dict]:
         unknown = sorted(set(rule) - _FIELDS)
         if unknown:
             raise ValueError(f"{where}: unknown field {', '.join(unknown)}")
-    return payload["rules"]
+    return rules
 
 
 def _under(file: str, prefixes) -> bool:
@@ -646,6 +650,26 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             "gaps": sorted(gaps, key=lambda g: (g["site"], g["reason"]))}
 
 
+def cached_links(manifest: Path, rules: list[dict]) -> dict:
+    """`link_facts`, kept beside the snapshot until the rules, the snapshot or the engine store change."""
+    import hashlib
+    manifest = Path(manifest)
+    stamp = [json.dumps(rules, sort_keys=True)]
+    for path in (manifest, manifest.with_name("engine-edges.sqlite")):
+        stamp.append(str(path.stat().st_mtime_ns) if path.is_file() else "-")
+    key = hashlib.sha256("\0".join(stamp).encode("utf-8")).hexdigest()
+    cache = manifest.with_name("flow-links.json")
+    try:
+        kept = json.loads(cache.read_text(encoding="utf-8"))
+        if kept.get("key") == key:
+            return kept["links"]
+    except (OSError, ValueError):
+        pass
+    links = link_facts(manifest, rules)
+    snapshot._write_json_atomic(cache, {"key": key, "links": links})
+    return links
+
+
 def _attribute_actions(facts: Facts, rule: dict, held: dict) -> list[dict]:
     """Handlers bound by a markup attribute: a name, or the one call of an inline function.
 
@@ -756,6 +780,62 @@ def trace(links: dict, start: str, direction: str, boundary: list[str] | None = 
             "files": sorted({node.split("::", 1)[0] for node in seen if "::" in node})}
 
 
+# ---------------------------------------------------------------- levels
+
+LEVELS = ("fisico", "logico", "dati", "ux")
+
+
+def file_modules(manifest: Path) -> dict[str, str]:
+    """The module each file belongs to: the smallest module of the module graph that holds it."""
+    import modules
+    try:
+        graph = json.loads(Path(modules.ensure_graph(manifest)["graph"]).read_text(encoding="utf-8"))
+    except (OSError, ValueError, KeyError):
+        return {}
+    out: dict[str, tuple[int, str]] = {}
+    for module in graph.get("modules", []):
+        files = module.get("files") or []
+        for file in files:
+            if file not in out or len(files) < out[file][0]:
+                out[file] = (len(files), module["name"])
+    return {file: name for file, (_size, name) in out.items()}
+
+
+def at_level(flow: dict, level: str, modules_of: dict[str, str]) -> dict:
+    """One flow seen at a level; the flow itself does not change.
+
+    `logico` contracts the symbols of one module into a node and keeps a symbol with
+    no module as it is; `dati` keeps the store accesses; `ux` keeps the user
+    actions and who shows the data. Every contracted link counts the links it stands for.
+    """
+    if level == "fisico":
+        return flow
+    if level not in LEVELS:
+        raise ValueError(f"level must be one of {', '.join(LEVELS)}")
+    edges = flow["edges"]
+    if level == "dati":
+        edges = [edge for edge in edges if edge["type"] in ("scrive", "legge")]
+    elif level == "ux":
+        edges = [edge for edge in edges if edge["type"] in ("attiva", "legge")]
+
+    def seen_as(node: str) -> str:
+        if level != "logico" or "::" not in node:
+            return node
+        module = modules_of.get(node.split("::", 1)[0])
+        return f"module:{module}" if module else node
+
+    merged: dict[tuple, dict] = {}
+    for edge in edges:
+        source, target = seen_as(edge["from"]), seen_as(edge["to"])
+        if source == target:
+            continue
+        kept = merged.setdefault((source, target, edge["type"]), {**edge, "from": source, "to": target, "links": 0})
+        kept["links"] += 1
+    nodes = sorted({flow["start"] if level != "logico" else seen_as(flow["start"])}
+                   | {node for edge in merged.values() for node in (edge["from"], edge["to"])})
+    return {**flow, "level": level, "nodes": nodes, "edges": list(merged.values())}
+
+
 # ---------------------------------------------------------------- units
 
 def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int) -> dict:
@@ -860,6 +940,7 @@ def main(argv=None) -> int:
     group.add_argument("--to", dest="start_to")
     group.add_argument("--through", dest="start_through")
     trace_parser.add_argument("--boundary", action="append", default=None)
+    trace_parser.add_argument("--level", choices=LEVELS, default="fisico")
     args = parser.parse_args(argv)
     links = link_facts(args.manifest.resolve(), load_rules(args.rules))
     if args.command == "links":
@@ -871,7 +952,10 @@ def main(argv=None) -> int:
         return 0
     start, direction = next((value, name) for value, name in ((args.start_from, "from"), (args.start_to, "to"),
                                                                 (args.start_through, "through")) if value)
-    print(json.dumps(trace(links, start, direction, args.boundary), indent=2, sort_keys=True))
+    flow = trace(links, start, direction, args.boundary)
+    if direction != "through":
+        flow = at_level(flow, args.level, file_modules(args.manifest.resolve()) if args.level == "logico" else {})
+    print(json.dumps(flow, indent=2, sort_keys=True))
     return 0
 
 

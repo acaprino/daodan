@@ -242,7 +242,7 @@ class MapServiceTests(unittest.TestCase):
 
     def test_output_root_spellings_and_resolved_aliases_are_refused(self):
         self.create()
-        for target in (".CODEBASE-MAP", ".Codebase-Map/runs/example"):
+        for target in (".DAODAN", ".Daodan/map/runs/example"):
             with self.subTest(target=target), self.assertRaisesRegex(ValueError, "analysis output"):
                 self.service.scope(target)
         alias = self.project / "archive-alias"

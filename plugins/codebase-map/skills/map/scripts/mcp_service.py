@@ -555,6 +555,48 @@ class MapService:
                 return gate
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
+    def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100):
+        """Flows of the bound run from its link rules: the summary, or one flow at a level.
+
+        `rules` records the project's link rules beside the snapshot. Without recorded
+        rules the answer is the rule format, for a model to write them.
+        """
+        import flows as flow_model
+        if direction not in ("from", "to", "through") or level not in flow_model.LEVELS:
+            raise ValueError("direction is from, to or through; level is " + ", ".join(flow_model.LEVELS))
+        if start is not None and (not isinstance(start, str) or not start.strip() or len(start) > 1000):
+            raise ValueError("start must be a node of at most 1000 characters")
+        _limit(limit)
+        if rules is not None:
+            if not isinstance(rules, list) or not rules:
+                raise ValueError("rules must be a nonempty list")
+            flow_model.validate_rules(rules)
+        with self._operation(write=rules is not None):
+            _, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
+            recorded = manifest.path.with_name("flow-rules.json")
+            if rules is not None:
+                _write(recorded, {"schema": flow_model.RULES_SCHEMA, "rules": rules})
+            if not recorded.is_file():
+                return {"status": "needs_rules", "run_id": run_id,
+                        "format": flow_model.__doc__.split("    python flows.py")[0].strip()}
+            links = flow_model.cached_links(manifest.path, flow_model.load_rules(recorded))
+            if start is None:
+                return {"status": "ok", "run_id": run_id, "entries": links["entries"][:limit],
+                        "entry_count": len(links["entries"]), "routes": links["routes"],
+                        "stores": {name: {key: len(value) for key, value in store.items()}
+                                   for name, store in list(links["stores"].items())[:limit]},
+                        "store_count": len(links["stores"]), "gaps": links["gaps"][:limit],
+                        "gap_count": len(links["gaps"]), "external": links["external"]}
+            flow = flow_model.trace(links, start, direction)
+            if direction != "through":
+                flow = flow_model.at_level(
+                    flow, level, flow_model.file_modules(manifest.path) if level == "logico" else {})
+                flow["edge_count"] = len(flow["edges"])
+                flow["edges"] = flow["edges"][:limit]
+            return {"status": "ok", "run_id": run_id, **flow}
+
     def _engine_store(self, run, value):
         name = "snapshot/engine-edges.sqlite" if value is None else value
         _relative(name)
