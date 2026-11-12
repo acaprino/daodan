@@ -376,8 +376,8 @@ Parametri da provare: tetto della scheda 12.000, 24.000 e 48.000 caratteri; punt
 
 `modal_map.py` segue `benchmarks/phazly-flow/phase3/modal_review.py`: un container per run, `claude -p` con il plugin di questa checkout, snapshot e regole preparati prima, sessione nuova, flusso degli eventi e costo salvati sul volume. Parametri: caso, area oppure intero sistema, modello, ripetizione.
 
-- [ ] **Passo 1:** stimare il costo delle run (due casi, due modelli, due ripetizioni, area e intero sistema) e chiedere il via.
-- [ ] **Passo 2:** lanciare, raccogliere, calcolare le misure da 1 a 5 con `score.py` e con la lettura manuale dei nomi.
+- [x] **Passo 1:** stimare il costo delle run (due casi, due modelli, due ripetizioni, area e intero sistema) e chiedere il via.
+- [x] **Passo 2:** lanciare, raccogliere, calcolare le misure da 1 a 5 con `score.py` e con la lettura manuale dei nomi.
 - [ ] **Passo 3:** scrivere i risultati nel README, con ciò che non ha raggiunto la soglia e il motivo; fissare il modello dell'agente; aggiornare lo stato della spec.
 - [ ] **Passo 4:** commit.
 

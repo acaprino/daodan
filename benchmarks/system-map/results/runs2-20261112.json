@@ -1,0 +1,529 @@
+{
+ "tag": "system-map-runs2",
+ "date": "2026-11-12",
+ "cap": 24000,
+ "holders": 8,
+ "cost_usd": 1.368,
+ "runs": [
+  {
+   "run": "phazly-area-haiku-1",
+   "cost": 0.00843896,
+   "seconds": 51,
+   "turns": 6,
+   "flows_calls": 3,
+   "opens": 2,
+   "nodes": 2,
+   "flows": 1,
+   "proved": 0,
+   "declared": 1,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 5,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "2/235",
+    "stores": "0/123",
+    "routes": "0/111"
+   },
+   "m1": {
+    "nodes": 1,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-area-haiku-2",
+   "cost": 0.00793713,
+   "seconds": 45,
+   "turns": 6,
+   "flows_calls": 3,
+   "opens": 2,
+   "nodes": 4,
+   "flows": 1,
+   "proved": 1,
+   "declared": 1,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 5,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "3/235",
+    "stores": "1/123",
+    "routes": "1/111"
+   },
+   "m1": {
+    "nodes": 2,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-area-sonnet-1",
+   "cost": 0.1440702,
+   "seconds": 42,
+   "turns": 5,
+   "flows_calls": 3,
+   "opens": 1,
+   "nodes": 6,
+   "flows": 2,
+   "proved": 2,
+   "declared": 2,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 10,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "4/235",
+    "stores": "1/123",
+    "routes": "1/111"
+   },
+   "m1": {
+    "nodes": 3,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-area-sonnet-2",
+   "cost": 0.1363951,
+   "seconds": 36,
+   "turns": 5,
+   "flows_calls": 3,
+   "opens": 1,
+   "nodes": 3,
+   "flows": 2,
+   "proved": 2,
+   "declared": 0,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 10,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "2/235",
+    "stores": "1/123",
+    "routes": "2/111"
+   },
+   "m1": {
+    "nodes": 1,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-system-haiku-1",
+   "cost": 0.019062930000000002,
+   "seconds": 90,
+   "turns": 7,
+   "flows_calls": 6,
+   "opens": 0,
+   "nodes": 3,
+   "flows": 2,
+   "proved": 0,
+   "declared": 2,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 10,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 35027,
+    "kept_out": 0,
+    "errors": 3
+   },
+   "coverage": {
+    "entries": "15/235",
+    "stores": "0/123",
+    "routes": "11/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-system-haiku-2",
+   "cost": 0.009820859999999999,
+   "seconds": 66,
+   "turns": 4,
+   "flows_calls": 3,
+   "opens": 0,
+   "nodes": 9,
+   "flows": 5,
+   "proved": 3,
+   "declared": 2,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 25,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 1,
+    "errors": 2
+   },
+   "coverage": {
+    "entries": "235/235",
+    "stores": "4/123",
+    "routes": "111/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-system-sonnet-1",
+   "cost": 0.1339757,
+   "seconds": 43,
+   "turns": 5,
+   "flows_calls": 4,
+   "opens": 0,
+   "nodes": 5,
+   "flows": 3,
+   "proved": 0,
+   "declared": 3,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 15,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 0,
+    "errors": 1
+   },
+   "coverage": {
+    "entries": "12/235",
+    "stores": "0/123",
+    "routes": "6/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.0
+   }
+  },
+  {
+   "run": "phazly-system-sonnet-2",
+   "cost": 0.15276379999999998,
+   "seconds": 39,
+   "turns": 5,
+   "flows_calls": 4,
+   "opens": 0,
+   "nodes": 2,
+   "flows": 1,
+   "proved": 0,
+   "declared": 1,
+   "refused": 2,
+   "held_share": 0.333,
+   "levels": {
+    "views": 5,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29036,
+    "kept_out": 0,
+    "errors": 1
+   },
+   "coverage": {
+    "entries": "5/235",
+    "stores": "0/123",
+    "routes": "0/111"
+   },
+   "m1": {
+    "nodes": 0,
+    "flows": 0,
+    "refused_share": 0.667
+   }
+  },
+  {
+   "run": "tududi-area-haiku-1",
+   "cost": 0.009893250000000001,
+   "seconds": 50,
+   "turns": 5,
+   "flows_calls": 3,
+   "opens": 1,
+   "nodes": 6,
+   "flows": 3,
+   "proved": 0,
+   "declared": 4,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 15,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "13/831",
+    "stores": "0/76",
+    "routes": "11/303"
+   }
+  },
+  {
+   "run": "tududi-area-haiku-2",
+   "cost": 0.008741800000000001,
+   "seconds": 50,
+   "turns": 5,
+   "flows_calls": 3,
+   "opens": 1,
+   "nodes": 0,
+   "flows": 0,
+   "proved": 0,
+   "declared": 0,
+   "refused": 1,
+   "held_share": 0.0,
+   "levels": {
+    "views": 0,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-area-sonnet-1",
+   "cost": 0.2035595,
+   "seconds": 42,
+   "turns": 6,
+   "flows_calls": 3,
+   "opens": 2,
+   "nodes": 8,
+   "flows": 2,
+   "proved": 3,
+   "declared": 2,
+   "refused": 2,
+   "held_share": 0.714,
+   "levels": {
+    "views": 10,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "18/831",
+    "stores": "0/76",
+    "routes": "11/303"
+   }
+  },
+  {
+   "run": "tududi-area-sonnet-2",
+   "cost": 0.1128894,
+   "seconds": 32,
+   "turns": 4,
+   "flows_calls": 3,
+   "opens": 0,
+   "nodes": 2,
+   "flows": 1,
+   "proved": 0,
+   "declared": 1,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 5,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "0/831",
+    "stores": "0/76",
+    "routes": "0/303"
+   }
+  },
+  {
+   "run": "tududi-system-haiku-1",
+   "cost": 0.013462479999999999,
+   "seconds": 72,
+   "turns": 5,
+   "flows_calls": 4,
+   "opens": 0,
+   "nodes": 11,
+   "flows": 5,
+   "proved": 0,
+   "declared": 7,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 25,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 1
+   },
+   "coverage": {
+    "entries": "50/831",
+    "stores": "0/76",
+    "routes": "37/303"
+   }
+  },
+  {
+   "run": "tududi-system-haiku-2",
+   "cost": 0.01393724,
+   "seconds": 56,
+   "turns": 4,
+   "flows_calls": 3,
+   "opens": 0,
+   "nodes": 11,
+   "flows": 8,
+   "proved": 1,
+   "declared": 9,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 40,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 33859,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "92/831",
+    "stores": "0/76",
+    "routes": "79/303"
+   }
+  },
+  {
+   "run": "tududi-system-sonnet-1",
+   "cost": 0.261281,
+   "seconds": 69,
+   "turns": 6,
+   "flows_calls": 5,
+   "opens": 0,
+   "nodes": 18,
+   "flows": 9,
+   "proved": 0,
+   "declared": 17,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 45,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 2
+   },
+   "coverage": {
+    "entries": "154/831",
+    "stores": "0/76",
+    "routes": "154/303"
+   }
+  },
+  {
+   "run": "tududi-system-sonnet-2",
+   "cost": 0.1319933,
+   "seconds": 44,
+   "turns": 4,
+   "flows_calls": 3,
+   "opens": 0,
+   "nodes": 17,
+   "flows": 10,
+   "proved": 0,
+   "declared": 13,
+   "refused": 0,
+   "held_share": 1.0,
+   "levels": {
+    "views": 50,
+    "out_of_level": 0,
+    "missing_points": 0,
+    "technical_with_persone": 0
+   },
+   "answers": {
+    "max_chars": 29109,
+    "kept_out": 0,
+    "errors": 0
+   },
+   "coverage": {
+    "entries": "127/831",
+    "stores": "0/76",
+    "routes": "127/303"
+   }
+  }
+ ]
+}

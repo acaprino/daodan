@@ -95,3 +95,26 @@ Cause:
 - **phazly, intero sistema:** da 2 a 7 nodi per tutto il prodotto (accesso, editor dei pasti, modelli LLM, cancellazioni programmate); l'area dei pagamenti non compare.
 
 Dopo questa tornata il tetto della scheda torna a 24.000 caratteri, perché la risposta di `brief` resti sotto il limite dell'host. Il modello dell'agente non è fissato: nessuno dei due supera la misura 1.
+
+### Misure da 1 a 5, seconda tornata, 12 novembre 2026
+
+Corretti i tre blocchi della prima tornata: il rapporto di `map` conta per cartella ciò che la copertura lascia fuori quando l'elenco supera 40 voci, il run si prepara con l'ambiente del server MCP, ogni run ha un container suo. Tetto della scheda 24.000, `HOLDERS` 8. Stesse 16 run (tag `system-map-runs2`), tutte partite, 1,37 USD. Nessuna risposta degli strumenti supera il limite dell'host salvo un rapporto su phazly, intero sistema, Haiku (16 flussi in una proposta). Valori per run in `results/runs2-20261112.json`.
+
+| Misura | Risultato | Soglia |
+| --- | --- | --- |
+| 1 Riproduzione, phazly area | nodi ritrovati: Haiku 1 e 2, Sonnet 3 e 1 su 11; flussi 0 su 3; frecce rifiutate 0% | non raggiunta |
+| 1 Riproduzione, phazly intero sistema | 0 nodi su 11 in tutte e quattro le run | non raggiunta |
+| 2 Secondo progetto, tududi | frecce provate o dichiarate 57 su 60 (95%), solo 4 provate; nomi letti a mano 8 su 10 (vedi sotto) | raggiunta |
+| 3 Livelli | da 5 a 50 viste per run sui due casi: nessun nodo fuori dal suo livello, nessun punto citato che manca | raggiunta |
+| 4 Costo | area: Haiku da 0,008 a 0,010 USD, Sonnet da 0,11 a 0,20; intero sistema: Haiku da 0,010 a 0,019, Sonnet da 0,13 a 0,26; aperture del sorgente da 0 a 2 | raggiunta |
+| 5 Stabilità | nodi uguali fra le due ripetizioni: da 0% a 55%; il migliore è tududi, intero sistema, Haiku (6 su 11) | non raggiunta |
+
+Nomi letti a mano (tududi, area, Sonnet, prima ripetizione, e due nodi dell'intero sistema): giusti API abbonamenti, Gestione abbonamenti, Pagina admin fatturazione, Provider di pagamento, Scheda Abbonamento, Utente, Assistente MCP, Piano del giorno; sbagliati Client abbonamenti (il nome del codice, non della cosa) e Gateway di pagamento (un nodo solo per Stripe, Paddle e Lemon Squeezy, che il registro riconosce uno per uno).
+
+Cause di ciò che non raggiunge la soglia:
+
+- **La correzione toglie ciò che era stato accettato.** Una proposta con `scope` toglie i flussi non confermati dell'area che non riporta; l'agente corregge mandando solo ciò che è stato rifiutato, e così perde i flussi accettati e i loro nodi. Il rapporto della correzione toglie da 3 a 5 nodi e flussi in 5 run su 8 dell'area (3 su 4 su phazly, 2 su 4 su tududi): su phazly, area, Sonnet, sparisce «Abbonarsi a un piano» con il Paywall. È la causa principale della misura 1 e della misura 5, e la regola di `system-map.md` («Correct what was refused once») non la previene.
+- **Pochi nodi per area.** Da 2 a 8 nodi dove il riferimento ne ha 11: mancano Google Play Billing, i limiti d'uso e i consumi; il taglio segue i gestori (ricezione degli eventi, stato nell'app) più che le cose che una persona nomina.
+- **L'intero sistema in una proposta** dà da 2 a 18 nodi per tutto il prodotto, spesso un file per nodo, e l'area dei pagamenti si riduce a un nodo.
+
+Il modello dell'agente non è fissato: Haiku e Sonnet stanno entrambi sotto le misure 1 e 5, e la differenza fra i due (1-2 contro 1-3 nodi su phazly) è più piccola della variazione fra ripetizioni.
