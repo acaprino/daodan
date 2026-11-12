@@ -109,5 +109,56 @@ docker --context kiri run --rm --network none -v <cartella>:/src:ro alpine sh -c
 - La scrittura è rifiutata con `Read-only file system`; nella cartella dell'host resta il solo file di partenza.
 - Avvio a freddo, con la VM a riposo: 5,3 s. A caldo, tre lanci di `alpine true`: 186, 172 e 170 ms, misurati dalla riga di comando di Windows.
 
-Copertura e costo non sono ancora misurati: nessun progetto è stato eseguito.
+### Copertura osservata su tududi, 12 novembre 2026
 
+Esecuzione, tutta su Kiri:
+
+1. **Preparazione.** In un container `node:22-alpine` (Node 22.23.5): archivio del commit `71da9d7b` da GitHub e `npm ci` (1.731 pacchetti).
+2. **Servizio.** Postgres 16 in un secondo container, sulla rete interna `dyn-int`, che non ha uscita verso l'esterno.
+3. **Test.** `dynamic_tests.sh /work/src backend /out 12 200` sulla stessa rete: Jest in 12 blocchi, un processo alla volta (`--runInBand --shard`), con il profiler di V8 ogni 200 µs. `dynamic_map.js` riporta ogni profilo ai siti di chiamata.
+4. **Unione.** `dynamic_map.js --sites` conta i siti omonimi in ogni funzione. `dynamic_join.py` unisce i siti alle posizioni e ai verdetti del passaggio del motore; le posizioni le scrive `benchmarks/flow-model/modal_engine_count.py` (`positions-<caso>.json.gz`).
+
+| JavaScript | Risolte | Risolvibili | Copertura |
+| --- | --- | --- | --- |
+| Passi 1 e 2 | 11.148 | 29.382 | 37,9% |
+| Con gli archi osservati, conteggio stretto | 11.320 | 26.726 | 42,4% |
+| Con gli archi osservati, conteggio largo | 11.447 | 24.315 | 47,1% |
+
+- **Conteggi.** Lo stretto usa solo i siti senza omonimi nella loro funzione; il largo usa ogni sito riportato.
+- **Soglia del 70%: non raggiunta** in nessuno dei due conteggi.
+- **Test.** 314 file, 4.352 test, tutti passati: nessuno è rimasto fuori.
+- **Risposte.** Nel conteggio largo ne ricevono una 5.366 chiamate: 5.067 vanno a una libreria ed escono dal denominatore, 299 vanno a una funzione del progetto. I nomi più frequenti verso le librerie sono `create` (1.495), `send` (486), `findOne` (453), `json` (344) e `findAll` (343).
+- **Il limite è il campionamento.** Delle 16.527 chiamate che il motore lascia senza risposta, 15.140 (91,6%) stanno in file che i test eseguono, e il profiler ne vede il 35%. Una chiamata breve non cade in nessun campione. Quanta parte di ogni file venga eseguita non è misurato.
+
+**Contraddizioni.** 41 archi osservati contraddicono il verdetto del motore. Nessuna è un errore del motore:
+
+- 34 vanno a `backend/shared/crypto/secretCipher.js`, che il motore classifica esterno. Lo snapshot non legge i file con «secret» nel nome (`FORBIDDEN_GLOBS`, `plugins/codebase-map/skills/map/scripts/snapshot.py:170`). In tududi la regola esclude 5 file tracciati: questo, che è codice, e quattro esempi di configurazione.
+- 2 vengono da doppioni dei test: un `jest.mock` di `stripe` e una richiesta HTTP finta.
+- 5 vengono da chiamate omonime nella stessa funzione (`has`, `sign`, `create`), che il conteggio stretto esclude.
+
+**Costo.**
+
+| Fase | Durata | Memoria di picco | Spazio |
+| --- | --- | --- | --- |
+| Preparazione | 64 s, di cui 55 s per `npm ci` | 1,8 GB | 913 MB, di cui 870 MB di `node_modules`; immagine 61,4 MB |
+| Test con il profiler, mappatura compresa | 3.699 s (61,7 min) | 1,7 GB | Profili da 43-84 MB per blocco, 737 MB in tutto, cancellati dopo la mappatura; siti osservati 24 MB |
+| Siti omonimi | 3 s | | |
+
+La memoria è il picco del container, cache dei file compresa. La durata dei test senza profiler non è misurata.
+
+**Deviazioni dalla spec.**
+
+- Durante la preparazione la rete era aperta verso tutto, non solo verso i registri dei pacchetti.
+- La copia viene dall'archivio del commit, non dal perimetro dello snapshot.
+- Il database è avviato a mano, con l'URL predefinito degli helper dei test.
+- Nella copia del container `backend/babel.config.js` contiene solo `retainLines`, perché le righe del profilo coincidano con il sorgente. L'host non viene scritto.
+
+### Registro esatto: parametri, 12 novembre 2026
+
+Il profiler campiona e vede il 35% delle chiamate che servono. `dynamic_record.js` le registra tutte: come plugin Babel, nella copia del container, fa passare da un registratore la funzione di ogni chiamata; come modulo precaricato chiede all'inspector di Node il file dove quella funzione è definita. Un mock di Jest risulta definito in `jest-mock` e non conta.
+
+- **Comando.** `dynamic_tests.sh /work/src backend /out 12 exact`, stessi container e stessa rete della misura con il profiler.
+- **Soglia.** Invariata: 70% con gli archi osservati.
+- **Validità.** Passano gli stessi 4.352 test; ogni sito registrato coincide con una chiamata dello snapshot, salvo i file che lo snapshot esclude.
+- **Non registrate.** Chiamate opzionali (`?.`), metodi privati, `super`, `import`, `require`, `eval`, membri calcolati e le chiamate sull'oggetto `jest`.
+- **Prova su due file di test.** 10 test su 10 passati; 1.604 siti registrati con 538 richieste all'inspector; i 30 siti senza chiamata corrispondente stanno tutti in `secretCipher.js`.
