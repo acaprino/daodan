@@ -32,7 +32,7 @@ Ingressi che la spec implica e che è facile lasciare scoperti. Ognuno ha il suo
 2. Una freccia unisce due nodi veri che nessun collegamento lega, oppure cita un punto che non esiste: è rifiutata con il motivo (Task 2).
 3. Un pacchetto locale del progetto ha lo stesso nome di un servizio del registro: non diventa un servizio esterno (Task 6).
 4. Node o la rete mancano: stack-analyser risulta `unavailable`, il riconoscimento del registro resta (Task 7).
-5. Una chiave che quasi tutti i punti d'ingresso toccano: non fonde tutti i gruppi candidati in uno (Task 8).
+5. Una risorsa che tutti i punti d'ingresso toccano: aggiunge un gruppo candidato e lascia uguali gli altri, senza fonderli (Task 8).
 
 ## File
 
@@ -227,21 +227,23 @@ Installa una volta nella cache con `npm install --prefix <cache>/stack-analyser-
 
 ```python
 CAP = 24_000        # caratteri, parametro del benchmark
-HUB_SHARE = 0.2     # oltre questa quota di punti d'ingresso, una chiave, una rotta o un esterno non lega
-def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, hub_share: float = HUB_SHARE) -> dict
+HOLDERS = 8         # oltre questo numero i punti d'ingresso di un gruppo si riassumono per cartella
+def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = HOLDERS) -> dict
 # {"schema": "daodan/system-brief/v1", "steps": {"statico", "inferenza", "dinamico", "semantico"},
 #  "modules", "externals", "other_dependencies": {unità: quante}, "runtime_files", "declared",
-#  "groups": [{"id", "entries", "files", "stores", "externals"}],
+#  "groups": [{"resource", "entries": [...], "by_directory": {cartella: quanti}}], "alone": [punti d'ingresso],
 #  "confirmed": [nomi], "text": str, "truncated": int}
 ```
 
-`externals` unisce registro e stack-analyser e dice per ognuno da quale fonte viene; le dipendenze che nessuna fonte riconosce restano contate per unità di build in `other_dependencies`. `runtime_files` elenca i file che configurano esecuzione e rilascio (`Dockerfile`, `docker-compose*`, `*.tf`, manifest di Kubernetes, di hosting e di CI). `declared` riporta ciò che quei file dichiarano, letto senza strumenti esterni: i servizi e le immagini di docker-compose, l'immagine di base di un Dockerfile, le entità di un `catalog-info.yaml` di Backstage, ciascuno con il suo file. Un gruppo candidato è una componente connessa dei punti d'ingresso che condividono una chiave di store, una rotta o un esterno, esclusi quelli sopra `hub_share`. `text` è la scheda da dare all'agente, entro `cap`: oltre il tetto i gruppi con meno collegamenti diventano una riga e `truncated` li conta.
+`externals` unisce registro e stack-analyser e dice per ognuno da quale fonte viene; le dipendenze che nessuna fonte riconosce restano contate per unità di build in `other_dependencies`. `runtime_files` elenca i file che configurano esecuzione e rilascio (`Dockerfile`, `docker-compose*`, `*.tf`, manifest di Kubernetes, di hosting e di CI). `declared` riporta ciò che quei file dichiarano, letto senza strumenti esterni: i servizi e le immagini di docker-compose, l'immagine di base di un Dockerfile, le entità di un `catalog-info.yaml` di Backstage, ciascuno con il suo file. Un punto d'ingresso tocca le risorse (chiavi di store, rotte, esterni) lette, scritte o usate dai simboli che raggiunge seguendo `chiama` e `attiva`. C'è un gruppo candidato per ogni risorsa toccata da almeno due punti d'ingresso: la risorsa e chi la tocca. I gruppi si sovrappongono e non si fondono, quindi non serve nessuna soglia: una risorsa toccata da molti è solo un gruppo grande, riassunto per cartella oltre `holders`. I punti d'ingresso che non condividono nulla stanno in `alone`. `text` è la scheda da dare all'agente, entro `cap`: oltre il tetto i gruppi con meno collegamenti diventano una riga e `truncated` li conta.
 
-- [ ] **Passo 1:** test che falliscono, sulla fixture: i punti d'ingresso `web/checkout.ts::onPayClick`, `server/payments.py::create_payment` e `server/jobs.py::retry_declined` stanno nello stesso gruppo e `web/cart.ts::toggleTheme` in un altro; con una chiave aggiunta che tutti toccano i gruppi restano gli stessi; `steps["dinamico"]` è falso; con `cap=600` il testo sta nel tetto e `truncated` è maggiore di zero; `externals` contiene `card payment provider` con la sua fonte. Su un progetto temporaneo con un `docker-compose.yml` che ha i servizi `web` e `db` (immagine `postgres:16`), `declared` contiene `db` con immagine `postgres` e il suo file, e `externals` riconosce PostgreSQL dal segno dell'immagine.
+- [ ] **Passo 1:** test che falliscono, sulla fixture (6 punti d'ingresso, 4 risorse). I gruppi sono due: `store:db/payments` con `onPayClick`, `create_payment`, `retry_declined` e `list_orders`; `module:card payment provider` con i primi tre. `alone` contiene `admin/orders.py::list_all_orders` e `web/cart.ts::toggleTheme`. Con una chiave aggiunta che tutti e sei toccano i gruppi diventano tre e i primi due restano identici; `steps["dinamico"]` è falso; con `cap=600` il testo sta nel tetto e `truncated` è maggiore di zero; `externals` contiene `card payment provider` con la sua fonte. Su un progetto temporaneo con un `docker-compose.yml` che ha i servizi `web` e `db` (immagine `postgres:16`), `declared` contiene `db` con immagine `postgres` e il suo file, e `externals` riconosce PostgreSQL dal segno dell'immagine.
 - [ ] **Passo 2:** implementare; i test passano.
 - [ ] **Passo 3:** commit.
 
 ## Parte C: agente e misure
+
+Misurato il 12 novembre 2026 prima di fissare la regola. Con una soglia sulla quota dei punti d'ingresso (20%) la fixture non forma nessun gruppo, perché due su sei sono già il 33%, e phazly (235 punti d'ingresso, 68 risorse) forma un solo gruppo da 117 più 118 isolati: le risorse a media condivisione fanno catena. Con un gruppo per risorsa la fixture dà i due gruppi attesi e phazly 44 gruppi, 143 punti d'ingresso in almeno un gruppo, 92 isolati (86 non toccano nessuna risorsa), in 9.300 caratteri. Il README del benchmark registra questi numeri nel Task 11.
 
 ### Task 9: lo strumento
 
@@ -286,7 +288,7 @@ Soglie proposte, da scrivere nel README prima di ogni misura; il proprietario pu
 | 5 Stabilità | almeno l'80% dei nodi uguali fra due esecuzioni |
 | 6 Registro | richiamo almeno 80% per caso, al massimo un riconoscimento sbagliato per caso |
 
-Parametri da provare: tetto della scheda 12.000, 24.000 e 48.000 caratteri; `hub_share` 0,1, 0,2 e 0,3; modello economico e modello intermedio.
+Parametri da provare: tetto della scheda 12.000, 24.000 e 48.000 caratteri; punti d'ingresso mostrati per gruppo (`holders`) 5, 8 e 12; modello economico e modello intermedio.
 
 - [ ] **Passo 1:** scrivere il README con parametri e soglie, e i riferimenti attesi: per phazly gli 11 nodi con i loro file e i 3 flussi dell'esempio del 12 novembre 2026; per ogni caso l'elenco a mano dei servizi e progetti esterni letti dai manifest.
 - [ ] **Passo 2:** scrivere `score.py` con un test su due mappe minime.

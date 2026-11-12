@@ -83,7 +83,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 ### 4. Scheda del sistema
 
 1. La macchina compone, senza modello, un riassunto di ciò che i passi di analisi hanno già prodotto: moduli e cartelle con il numero di file; punti d'ingresso, store e rotte; servizi esterni riconosciuti; file che configurano l'esecuzione e il rilascio; collegamenti provati, dedotti e osservati, contati fra gruppi; titoli delle schede già scritte. Dichiara i passi non eseguiti.
-2. La scheda raggruppa già ciò che i collegamenti legano: i punti d'ingresso che toccano la stessa chiave di uno store, la stessa rotta o lo stesso servizio esterno stanno nello stesso gruppo candidato. Ciò che troppi punti d'ingresso toccano (una chiave di sessione, un client comune) non lega: la soglia è un parametro del benchmark. Chi propone la mappa dà nomi e tagli, non cerca.
+2. La scheda raggruppa già ciò che i collegamenti legano. Per ogni risorsa (una chiave di store, una rotta, un servizio esterno) toccata da almeno due punti d'ingresso c'è un gruppo candidato: la risorsa e chi la tocca. I gruppi si sovrappongono e non si fondono: una risorsa toccata da molti è solo un gruppo grande, riassunto per cartella, e non serve una soglia che su un progetto piccolo scarterebbe ogni condivisione. I punti d'ingresso che non condividono nulla sono elencati a parte. Chi propone la mappa dà nomi e tagli, non cerca.
 3. La scheda ha un tetto di dimensione, scritto nel README del benchmark. Oltre il tetto i gruppi meno collegati si riassumono in una riga e restano interrogabili.
 
 ### 5. Chi propone la mappa del sistema
