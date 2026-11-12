@@ -12,7 +12,8 @@ Le parole della fase 2 valgono, tranne queste.
 | --- | --- |
 | Nodo | Una cosa del sistema con un nome, al livello a cui la nomina una persona: un attore, una schermata, una funzione, un servizio, un servizio esterno, un dispositivo, un'entità. Raccoglie i suoi membri: file, simboli, store, rotte. Un simbolo da solo non è un nodo |
 | Tipo di nodo | L'elenco della fase 2, più «entità»: un dato con un nome (un ordine, un utente, un abbonamento), ovunque sia salvato |
-| Non visto | Un nodo che fa parte del sistema ma i cui file stanno fuori dallo snapshot. Si distingue da «esterno», che è un servizio di altri |
+| Progetto esterno | Codice di altri su cui il sistema è costruito: un framework, una libreria, un runtime. Si distingue da «servizio esterno», che gira altrove |
+| Non visto | Un nodo che fa parte del sistema ma i cui file stanno fuori dallo snapshot. Si distingue da «esterno», che è di altri |
 | Flusso | Un processo del sistema con un nome: i nodi che vi partecipano e le frecce fra loro. È uno solo, a qualunque livello lo si guardi |
 | Tipo di flusso | Uno o più fra: funzionale (una cosa che il prodotto fa per chi lo usa), operativo (gira senza una persona: un orario, una coda, un avviso esterno), tecnico (un meccanismo interno: cache, sincronizzazione, build, rilascio), dati (segue un dato: dove nasce, dove vive, chi ne tiene copia), hardware (passa da dispositivi fisici o dalla rete) |
 | Livello | La prospettiva da cui si guarda un flusso: persone, funzioni, dati, codice, infrastruttura, oppure misto. Sostituisce l'elenco della fase 2, dove «fisico» indicava file e simboli: quello ora è il livello codice |
@@ -41,11 +42,12 @@ I passi di analisi (statico, inferenza, dinamico, semantico) restano quelli del 
 ### 1. Nodi
 
 1. Un nodo con codice è un gruppo di membri con un nome, un tipo e una posizione. I membri sono file, simboli, store e rotte, oppure un intero modulo della mappa, citato per nome.
-2. Un nodo senza codice (attore, dispositivo, macchina o servizio su cui il sistema gira, servizio esterno, parte non vista) è un modulo `external` della mappa, come nella fase 2: non ha membri e cita l'evidenza che lo lega al progetto. Un attore cita i punti d'ingresso che usa; una macchina o un servizio di esecuzione cita la configurazione che lo nomina. Un nodo non visto resta distinguibile da un servizio esterno.
+2. Un nodo senza codice (attore, dispositivo, macchina o servizio su cui il sistema gira, servizio esterno, progetto esterno, parte non vista) è un modulo `external` della mappa, come nella fase 2: non ha membri e cita l'evidenza che lo lega al progetto. Un attore cita i punti d'ingresso che usa; una macchina o un servizio di esecuzione cita la configurazione che lo nomina; un progetto esterno cita la dipendenza dichiarata. Un nodo non visto resta distinguibile da un servizio esterno.
 3. Un'entità è un nodo i cui membri sono gli store che contengono quel dato.
 4. Lo stesso membro può stare in più nodi: un file che serve due schermate appartiene a entrambe.
 5. La mappa del sistema sta accanto al grafo dei moduli e non ne cambia strati, conflitti e archi.
 6. Ogni nodo ha un nome, interno o esterno che sia.
+7. Non ogni dipendenza è un nodo. Lo diventano i progetti esterni che il registro conosce o che un flusso nomina; le altre dipendenze restano raggruppate e contate.
 
 ### 2. Livelli
 
@@ -56,7 +58,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 | Persone | Attori e schermate |
 | Funzioni | Funzionalità, servizi e servizi esterni |
 | Dati | Entità e i posti in cui vivono |
-| Codice | Moduli, file e simboli: i percorsi |
+| Codice | Moduli, file e simboli: i percorsi. Sotto, i progetti esterni su cui poggiano |
 | Infrastruttura | Dispositivi, servizi in esecuzione, database, code, reti e servizi esterni |
 | Misto | Nodi di livelli diversi nello stesso grafo |
 
@@ -66,12 +68,12 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 4. Due flussi si incrociano nei nodi che hanno in comune, a qualunque livello: un nodo elenca i flussi che lo attraversano.
 5. I livelli si guardano uno alla volta, alcuni o tutti insieme. Insieme, ogni nodo mostra le sue corrispondenze agli altri livelli e dichiara i livelli a cui non esiste.
 
-### 3. Registro dei servizi esterni
+### 3. Registro dei servizi e dei progetti esterni
 
-1. Daodan porta con sé un registro dei servizi esterni più diffusi: almeno mille alla prima versione. Per ogni servizio tiene nome, tipo di nodo, sito, marchio e i segni da cui lo si riconosce in un progetto: nomi dei pacchetti, host, prefissi delle variabili di configurazione.
+1. Daodan porta con sé un registro dei servizi e dei progetti esterni più diffusi: almeno mille alla prima versione. Per ognuno tiene nome, tipo di nodo, sito, marchio e i segni da cui lo si riconosce in un progetto: nomi dei pacchetti, host, prefissi delle variabili di configurazione.
 2. La macchina confronta le dipendenze dichiarate, gli host delle chiamate e i nomi delle variabili di configurazione con i segni del registro. Una corrispondenza diventa un modulo `external` proposto, con nome, tipo, sito e marchio, senza modello.
 3. Il marchio viene da una raccolta pubblica, Simple Icons (CC0, 3.470 marchi alla versione 16.37.0). La raccolta dà nome e disegno, non tipo, sito e segni: quelli li tiene il registro.
-4. Il registro si costruisce con uno script, e con lo stesso si rigenera. Parte dalla raccolta dei marchi e dai pacchetti più usati dei registri pubblici; un modello propone tipo, sito e segni; la macchina tiene solo ciò che verifica, cioè che il sito risponda e che il pacchetto esista.
+4. Il registro si costruisce con uno script, e con lo stesso si rigenera, da cataloghi pubblici con licenza adatta ([ricognizione](../research/2026-11-12-external-service-catalogs.md)): le regole di riconoscimento di stack-analyser, i marchi di Simple Icons, le voci del CNCF Landscape. Un modello propone solo ciò che manca: sito, tipo dove assente, pacchetti degli ecosistemi non coperti. La macchina tiene solo ciò che verifica, cioè che il sito risponda e che il pacchetto esista.
 5. Un servizio che il registro non conosce prende il nome del pacchetto o dell'host e l'icona generica del suo tipo, e resta marcato come non riconosciuto. Il modello può proporne nome e tipo.
 6. Ogni nodo esterno mostra nome e marchio in ogni grafo e a ogni livello.
 
