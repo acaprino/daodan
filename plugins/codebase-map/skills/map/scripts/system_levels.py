@@ -36,7 +36,7 @@ def levels_of(node: dict) -> list[str]:
 
 
 def _find(records: list[dict], name: str, what: str) -> dict:
-    found = next((r for r in records if r["id"] == name or system_map.key(r["name"]) == system_map.key(name)), None)
+    found = system_map.find(records, name)
     if found is None:
         raise ValueError(f"no {what} is called {name}")
     return found
@@ -59,11 +59,15 @@ def _contract(visible: set[str], steps: list[dict], entities: set[str]) -> tuple
     arrows, gaps, budget = {}, {}, MAX_PATHS
     for start in sorted(visible):
         stack = [(start, [], {start})]
-        while stack and budget:
+        while stack:
             node, path, seen = stack.pop()
             for step in leaving.get(node, []):
-                if step["to"] in seen or not budget:
+                if step["to"] in seen:
                     continue
+                if not budget:
+                    gaps[(start, "", "budget")] = {"from": start, "to": "", "through": [],
+                                                   "reason": f"path budget of {MAX_PATHS} steps spent: paths not followed"}
+                    break
                 budget -= 1
                 taken = path + [step]
                 if step["to"] in visible:

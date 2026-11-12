@@ -190,7 +190,7 @@ def validate(value: object, known: set[str] = frozenset()) -> dict:
         missing = [n for n in record["on"] if key(n) not in names and key(n) not in known]
         if missing:
             raise ValueError(f"node {record['name']}: on names {', '.join(missing)}, not in the map")
-    present = {name for name, flag in seen.items() if flag}
+    present = {name for name, flag in seen.items() if flag} | {key(a) for a in scope or []}
     flow_list, flow_names = [], set()
     for record in value.get("flows", []):
         record = _flow(record, set(names) | set(known), present, None if scope is None else {key(a) for a in scope})
@@ -217,8 +217,11 @@ def _headers(manifest: Path) -> dict:
 
 
 def _module_files(manifest: Path) -> dict[str, list[str]]:
-    state = modules.ensure_graph(manifest)
-    graph = modules.load_graph(Path(state["graph"]))
+    """Files per module name; empty when the module graph does not build, so the member is refused."""
+    try:
+        graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
+    except (OSError, ValueError):
+        return {}
     return {modules.slug(m["name"]): m.get("files", []) for m in graph["modules"]}
 
 
@@ -284,7 +287,7 @@ def _proof(edge: dict) -> dict:
     return {name: edge[name] for name in ("from", "to", "type", "site")}
 
 
-def _check_arrow(arrow: dict, first: dict, second: dict, links: dict, readers: dict, headers: dict) -> dict:
+def _check_arrow(arrow: dict, first: dict, second: dict, index: dict, headers: dict) -> dict:
     out = {"from": first["report"]["name"], "to": second["report"]["name"], "data": arrow["data"]}
     refused = [i["report"]["name"] for i in (first, second) if i["report"]["status"] != "accepted"]
     if refused:
@@ -292,9 +295,13 @@ def _check_arrow(arrow: dict, first: dict, second: dict, links: dict, readers: d
     if first["record"]["position"] != "internal" or second["record"]["position"] != "internal" \
             or arrow.get("kind") == "stessa informazione":
         return {**out, **_declared(arrow, first, second, headers)}
-    direct = [e for e in links["edges"] if _owns(first, e["from"]) and _owns(second, e["to"])]
-    pairs = [(w, r) for w in links["edges"] if w["type"] == "scrive" and _owns(first, w["from"])
-             for r in readers.get(w["to"], []) if _owns(second, r["to"])]
+    a, b = first["record"]["id"], second["record"]["id"]
+    owners, readers = index["owners"], index["readers"]
+    # A link between two members both nodes hold proves nothing between them.
+    direct = [e for e in index["leaving"].get(a, []) if b in owners[e["to"]]
+              and not {a, b} <= owners[e["from"]] & owners[e["to"]]]
+    pairs = [(w, r) for w in index["leaving"].get(a, []) if w["type"] == "scrive"
+             for r in readers.get(w["to"], []) if b in owners[r["to"]] and not {a, b} <= owners[w["from"]] & owners[r["to"]]]
     if not direct and not pairs:
         return {**out, "status": "refused",
                 "reason": f"no link from a member of {out['from']} to a member of {out['to']}, "
@@ -326,13 +333,17 @@ def _declared(arrow: dict, first: dict, second: dict, headers: dict) -> dict:
 def _verify(manifest: Path, links: dict, nodes: list[dict], flow_records: list[dict], headers: dict):
     """Reports of nodes and flows referenced by id, and the node items they were checked with."""
     items = _check_nodes(manifest, links, nodes, headers)
-    readers = {}
+    endpoints = {end for edge in links["edges"] for end in (edge["from"], edge["to"])}
+    index = {"owners": {end: {i for i, item in items.items() if _owns(item, end)} for end in endpoints},
+             "leaving": {}, "readers": {}}
     for edge in links["edges"]:
+        for owner in index["owners"][edge["from"]]:
+            index["leaving"].setdefault(owner, []).append(edge)
         if edge["type"] == "legge":
-            readers.setdefault(edge["from"], []).append(edge)
+            index["readers"].setdefault(edge["from"], []).append(edge)
     out = []
     for record in flow_records:
-        arrows = [_check_arrow(a, items[a["from"]], items[a["to"]], links, readers, headers) for a in record["arrows"]]
+        arrows = [_check_arrow(a, items[a["from"]], items[a["to"]], index, headers) for a in record["arrows"]]
         refused = [items[i]["report"]["name"] for i in record["nodes"] if items[i]["report"]["status"] != "accepted"]
         report = {"name": record["name"], "status": "accepted", "arrows": arrows}
         if refused:
@@ -544,7 +555,7 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
             ident[key(p["name"])] = None
         else:
             ident[key(p["name"])] = _assign(p["name"], taken)
-            changes[ident[key(p["name"])]] = p
+            changes[ident[key(p["name"])]] = current[ident[key(p["name"])]] = p
 
     def resolve(reference: str) -> str | None:
         k = key(reference)
@@ -658,11 +669,15 @@ def load(manifest: Path, rules: list[dict]) -> dict | None:
     return _evaluate(manifest, flows.cached_links(manifest, rules), state, headers)
 
 
+def find(records: list[dict], name: str) -> dict | None:
+    """The record with this id or this current name."""
+    return next((r for r in records if r["id"] == name or key(r["name"]) == key(name)), None)
+
+
 def about(system: dict, name: str) -> dict:
     """An area, a flow or a node, by id or current name: its flows, nodes, member files and nodes without code."""
     k = key(name)
-    flow = next((f for f in system["flows"] if f["id"] == name or key(f["name"]) == k), None)
-    node = next((n for n in system["nodes"] if n["id"] == name or key(n["name"]) == k), None)
+    flow, node = find(system["flows"], name), find(system["nodes"], name)
     by_name = {n["name"]: n for n in system["nodes"]}
     if flow:
         kind, label, chosen = "flow", flow["name"], [flow]

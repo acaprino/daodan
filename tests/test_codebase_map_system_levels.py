@@ -69,6 +69,13 @@ class LevelTests(unittest.TestCase):
         self.assertNotIn(("Cliente", "Checkout"), {(a["from"], a["to"]) for a in people["arrows"]})
         self.assertIn(("Cliente", "Checkout"), {(g["from"], g["to"]) for g in people["gaps"]})
 
+    def test_a_path_budget_that_runs_out_is_a_gap(self):
+        budget = system_levels.MAX_PATHS
+        system_levels.MAX_PATHS = 1
+        self.addCleanup(setattr, system_levels, "MAX_PATHS", budget)
+        people = self.view(["persone"])
+        self.assertTrue(any("budget" in g["reason"] for g in people["gaps"]))
+
     def test_code_shows_files_from_the_links(self):
         code = self.view(["codice"], links=self.links)
         self.assertIn("server/payments.py", names(code))

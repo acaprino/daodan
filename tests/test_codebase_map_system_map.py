@@ -113,6 +113,7 @@ class ValidateTests(unittest.TestCase):
             v["areas"] = [{"name": "pagamenti e abbonamenti", "present": True}]
         system_map.validate(changed(lambda v: (scoped(v), v["flows"].pop())))
         self.refused(scoped, "area")
+        system_map.validate(changed(lambda v: (scoped(v), v.pop("areas"), v["flows"].pop())))  # the scope is present
 
     def test_a_flow_sits_in_a_present_area(self):
         self.refused(lambda v: v["flows"][1].update(area="comunicazioni"), "area")
@@ -232,6 +233,21 @@ class VerifyTests(Fixture):
         self.assertEqual(self.node("API pagamenti", report)["status"], "refused")
         self.assertIn("Fantasma", self.node("API pagamenti", report)["reason"])
 
+    def test_a_shared_file_proves_no_arrow_by_itself(self):
+        def share(v):
+            node(v, "Badge pagamento")["members"].append("web/checkout.ts")
+            v["flows"][0]["arrows"].append({"from": "Badge pagamento", "to": "Checkout", "data": "nulla"})
+        self.assertEqual(self.arrow("Badge pagamento", "Checkout", self.check(changed(share)))["status"], "refused")
+
+    def test_module_and_directory_members(self):
+        report = self.check(changed(lambda v: (node(v, "Riprova").update(members=["module:payment"]),
+                                               node(v, "API pagamenti").update(members=["server"]))))
+        self.assertIn("server/jobs.py", self.node("Riprova", report)["files"])
+        self.assertIn("server/http.py", self.node("API pagamenti", report)["files"])
+        self.assertEqual(self.arrow("Pagamento", "Riprova", report)["status"], "proved")
+        missing = self.check(changed(lambda v: node(v, "Riprova").update(members=["module:nessuno"])))
+        self.assertIn("module:nessuno", self.node("Riprova", missing)["reason"])
+
 
 def with_node(**fields) -> dict:
     """The test map with one more node, or with the node of that id changed."""
@@ -303,6 +319,9 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(area["flows"][0]["files"], ["server/gateway.py", "server/payments.py", "web/badge.ts",
                                                      "web/checkout.ts"])
         self.assertEqual((area["externals"], area["unseen"]), (["card payment provider", "Cliente"], []))
+        self.assertEqual(system_map.about(system, "riprova-dei-pagamenti")["kind"], "flow")
+        self.record(changed(lambda v: node(v, "Server shop").update(position="unseen", evidence=[], where="infra")))
+        self.assertEqual(system_map.about(self.load(), "Server shop")["unseen"], [{"name": "Server shop", "where": "infra"}])
 
     def test_identity_does_not_follow_the_name(self):
         first = self.record(TEST_MAP)
@@ -310,6 +329,10 @@ class RecordTests(unittest.TestCase):
         again = self.record(with_node(name="Schermata di pagamento", members=["web/checkout.ts"]))
         self.assertEqual(self.node_report(again, "Schermata di pagamento")["status"], "refused")
         self.assertIn("checkout", self.node_report(again, "Schermata di pagamento")["reason"])
+        twins = self.record(changed(lambda v: v["nodes"].extend([
+            {"name": "Carrello", "type": "schermata", "members": ["web/cart.ts"]},
+            {"name": "Cestino", "type": "schermata", "members": ["web/cart.ts"]}])))
+        self.assertIn("carrello", self.node_report(twins, "Cestino")["reason"])
         wider = self.record(with_node(name="Gestione cassa", members=["web/checkout.ts", "web/cart.ts"]))
         self.assertEqual(self.node_report(wider, "Gestione cassa")["status"], "refused")
         self.assertIn("checkout", self.node_report(wider, "Gestione cassa")["reason"])
