@@ -1,0 +1,10 @@
+{
+ "case": "polar",
+ "read": ["server/pyproject.toml", "server/Dockerfile", "server/docker-compose.yml", "server/.env.template",
+          "server/emails/package.json", "server/polar/backoffice/package.json"],
+ "externals": ["stripe", "postgresql", "redis", "github", "aws", "minio", "tinybird", "sentry", "posthog", "logfire",
+               "prometheus", "grafana", "firecrawl", "cloudflare", "numeral", "expodev", "plain", "ipinfo", "tailscale",
+               "fastapi", "sqlalchemy", "pydantic", "dramatiq", "htmx", "docker"],
+ "also": ["python", "nodejs", "uvicorn", "alembic", "boto3", "clickhouse", "httpx", "typer", "polarsh", "localstack",
+          "caddy", "react", "reactemail", "typescript", "tailwind", "daisyui", "esbuild", "oxlint", "pytest", "ruff"]
+}

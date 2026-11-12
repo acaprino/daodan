@@ -1,0 +1,10 @@
+{
+ "case": "phazly",
+ "read": ["react-app/package.json", "shared/package.json", "react-app/src-tauri/Cargo.toml",
+          "functions-python/requirements.txt", "functions-python/pyproject.toml", "functions-python/Dockerfile"],
+ "externals": ["stripe", "google-play-billing", "firebase", "geminiai", "mongodb", "resend", "gcp.secretmanager",
+               "huggingface", "google-cloud-run",
+               "react", "zustand", "tauri", "fastapi", "pydantic", "motor", "docker"],
+ "also": ["python", "nodejs", "typescript", "uvicorn", "reactrouterdom", "radixui", "phosphoreicons", "zod", "tailwind",
+          "vite", "eslint", "playwright", "numpy", "pillow", "httpx", "jinja", "serde"]
+}

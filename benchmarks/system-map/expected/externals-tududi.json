@@ -1,0 +1,9 @@
+{
+ "case": "tududi",
+ "read": ["package.json", "Dockerfile", "docker-compose.yml", "docker-compose.dev.yml", ".env.example",
+          "backend/.env.example"],
+ "externals": ["postgresql", "stripe", "paddle", "lemonsqueezy", "openai", "telegram", "google.calendar", "cloudflare",
+               "express", "sequelize", "react", "zustand", "mcp", "docker"],
+ "also": ["nodejs", "typescript", "reactrouterdom", "tailwind", "webpack", "babel", "swc", "eslint", "prettier", "jest",
+          "testinglibrary", "playwright", "heroicons", "codemirror"]
+}

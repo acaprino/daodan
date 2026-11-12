@@ -1,0 +1,608 @@
+{
+ "case": "polar",
+ "seconds": 171.3,
+ "externals": [
+  {
+   "id": "alembic",
+   "name": "Alembic",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "bash",
+   "name": "Bash",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml"
+   ]
+  },
+  {
+   "id": "boto3",
+   "name": "Boto3",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "caddy",
+   "name": "Caddy",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/Dockerfile"
+   ]
+  },
+  {
+   "id": "clickhouse",
+   "name": "ClickHouse",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "cloudflare",
+   "name": "Cloudflare",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/docker/run_private_backoffice.sh"
+   ]
+  },
+  {
+   "id": "css",
+   "name": "CSS",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "daisyui",
+   "name": "daisyUI",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "discord",
+   "name": "Discord",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/benefit/strategies/discord/service.py",
+    "server/polar/config.py",
+    "server/polar/integrations/discord/client.py",
+    "server/polar/integrations/discord/endpoints.py",
+    "server/polar/integrations/discord/oauth.py",
+    "server/polar/integrations/discord/service.py",
+    "server/tests/integrations/discord/test_client.py"
+   ]
+  },
+  {
+   "id": "docker",
+   "name": "Docker",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/Dockerfile",
+    "server/docker-compose.yml"
+   ]
+  },
+  {
+   "id": "esbuild",
+   "name": "Esbuild",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "fastapi",
+   "name": "FastAPI",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "firecrawl",
+   "name": "Firecrawl",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml",
+    "server/polar/config.py",
+    "server/polar/organization_review/collectors/firecrawl_client.py",
+    "server/pyproject.toml",
+    "server/tests/organization_review/collectors/test_firecrawl_client.py"
+   ]
+  },
+  {
+   "id": "grafana",
+   "name": "Grafana",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml"
+   ]
+  },
+  {
+   "id": "htmx",
+   "name": "HTMX",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "httpx",
+   "name": "HTTPX",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "javascript",
+   "name": "JavaScript",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json",
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "jsx",
+   "name": "JSX",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json"
+   ]
+  },
+  {
+   "id": "linear",
+   "name": "Linear",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/config.py",
+    "server/polar/integrations/linear/client.py",
+    "server/polar/payout/service.py"
+   ]
+  },
+  {
+   "id": "nodejs",
+   "name": "NodeJS",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/Dockerfile",
+    "server/emails/package.json",
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "openai",
+   "name": "Openai",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/organization_review/eval/optimize.py",
+    "server/scripts/eval_organization_reviews.py"
+   ]
+  },
+  {
+   "id": "openapi",
+   "name": "OpenAPI",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json"
+   ]
+  },
+  {
+   "id": "oxlint",
+   "name": "OxLint",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/.oxlintrc.json",
+    "server/emails/package.json"
+   ]
+  },
+  {
+   "id": "pnpm",
+   "name": "pnpm",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json",
+    "server/emails/pnpm-lock.yaml",
+    "server/polar/backoffice/package.json",
+    "server/polar/backoffice/pnpm-lock.yaml"
+   ]
+  },
+  {
+   "id": "polarsh",
+   "name": "Polar",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml",
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "postgresql",
+   "name": "Postgres",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml",
+    "server/init-readonly-user.sql",
+    "server/polar/config.py",
+    "server/polar/postgres.py",
+    "server/scripts/db.py",
+    "server/scripts/helper.py",
+    "server/tests/fixtures/database.py"
+   ]
+  },
+  {
+   "id": "posthog",
+   "name": "PostHog",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml",
+    "server/polar/config.py",
+    "server/polar/posthog.py",
+    "server/polar/sentry.py",
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "prometheus",
+   "name": "Prometheus",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/docker-compose.yml"
+   ]
+  },
+  {
+   "id": "pydantic",
+   "name": "Pydantic",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "python",
+   "name": "Python",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/Dockerfile",
+    "server/docker-compose.yml",
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "react",
+   "name": "React",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json"
+   ]
+  },
+  {
+   "id": "reactemail",
+   "name": "React Email",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json"
+   ]
+  },
+  {
+   "id": "redis",
+   "name": "Redis",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/benchmarks/conftest.py",
+    "server/docker-compose.yml",
+    "server/polar/config.py",
+    "server/polar/redis.py",
+    "server/polar/worker/_broker.py",
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "resend",
+   "name": "Resend",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/config.py",
+    "server/polar/email/sender.py",
+    "server/polar/integrations/resend/client.py",
+    "server/polar/integrations/resend/endpoints.py",
+    "server/polar/integrations/resend/service.py",
+    "server/scripts/backfill_resend_id.py",
+    "server/tests/integrations/resend/test_service.py"
+   ]
+  },
+  {
+   "id": "sentry",
+   "name": "Sentry",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/config.py",
+    "server/polar/sentry.py"
+   ]
+  },
+  {
+   "id": "slack",
+   "name": "Slack",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/config.py",
+    "server/polar/merchant_migration/slack.py",
+    "server/polar/models/slack_app.py",
+    "server/polar/observability/invariants/service.py",
+    "server/polar/observability/slo_report/tasks.py",
+    "server/tests/merchant_migration/test_tasks.py",
+    "server/tests/observability/invariants/test_service.py"
+   ]
+  },
+  {
+   "id": "sqlalchemy",
+   "name": "SQLAlchemy",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "stripe",
+   "name": "Stripe",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/polar/checkout/service.py",
+    "server/polar/config.py",
+    "server/polar/integrations/stripe/endpoints.py",
+    "server/polar/integrations/stripe/payment.py",
+    "server/polar/integrations/stripe/service.py",
+    "server/polar/merchant_migration/adapters/stripe.py",
+    "server/polar/merchant_migration/pan_transfer.py",
+    "server/polar/models/organization.py",
+    "server/polar/order/service.py",
+    "server/polar/organization/schemas.py",
+    "server/polar/organization/service.py",
+    "server/pyproject.toml",
+    "server/scripts/cleanup_stripe_seeds.py",
+    "server/tests/backoffice/organizations_v2/test_analytics.py",
+    "server/tests/backoffice/organizations_v2/test_test_sales_query.py",
+    "server/tests/backoffice/support_cases/test_queries.py",
+    "server/tests/checkout/test_endpoints.py",
+    "server/tests/checkout/test_service.py",
+    "server/tests/customer_email_update/test_service.py",
+    "server/tests/customer_portal/endpoints/test_customer.py",
+    "server/tests/dispute/test_service.py",
+    "server/tests/dispute/test_tasks.py",
+    "server/tests/fixtures/random_objects.py",
+    "server/tests/fixtures/stripe.py",
+    "server/tests/integrations/stripe/test_endpoints.py",
+    "server/tests/models/test_payout_account.py",
+    "server/tests/order/test_service.py",
+    "server/tests/organization/test_endpoints.py",
+    "server/tests/organization/test_tasks.py",
+    "server/tests/organization_review/test_repository.py",
+    "server/tests/payout/test_service.py",
+    "server/tests/subscription/test_service.py",
+    "server/tests/transaction/service/test_balance.py",
+    "server/tests/transaction/service/test_dispute.py",
+    "server/tests/transaction/service/test_payment.py",
+    "server/tests/transaction/service/test_platform_fee.py",
+    "server/tests/transaction/service/test_processor_fee.py",
+    "server/tests/transaction/service/test_refund.py"
+   ]
+  },
+  {
+   "id": "tailwind",
+   "name": "Tailwind",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/polar/backoffice/package.json"
+   ]
+  },
+  {
+   "id": "tinybird",
+   "name": "Tinybird",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/docker-compose.yml",
+    "server/polar/config.py",
+    "server/polar/integrations/tinybird/client.py",
+    "server/polar/integrations/tinybird/tasks.py",
+    "server/polar/worker/_queues.py",
+    "server/scripts/backfill_tinybird_events.py",
+    "server/scripts/seeds_load.py",
+    "server/scripts/tinybird.py",
+    "server/scripts/tinybird_events_cleanup.py",
+    "server/scripts/tinybird_test_workspace.py",
+    "server/tests/fixtures/tinybird.py",
+    "server/tests/metrics/test_service.py",
+    "server/tests/metrics/test_tinybird_metrics.py",
+    "server/tests/scripts/test_seeds_load.py",
+    "server/tests/scripts/test_tinybird.py"
+   ]
+  },
+  {
+   "id": "typer",
+   "name": "Typer",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "server/pyproject.toml"
+   ]
+  },
+  {
+   "id": "typescript",
+   "name": "Typescript",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "server/emails/package.json"
+   ]
+  }
+ ],
+ "stack_analyser": {
+  "status": "ok",
+  "version": "1.27.6",
+  "seconds": 2.02
+ },
+ "entries": 0,
+ "stores": 0,
+ "groups": 0,
+ "alone": 0,
+ "sizes": {
+  "12000/5": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "12000/8": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "12000/12": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "24000/5": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "24000/8": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "24000/12": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "48000/5": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "48000/8": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "48000/12": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "0/5": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "0/8": {
+   "chars": 5465,
+   "truncated": 0
+  },
+  "0/12": {
+   "chars": 5465,
+   "truncated": 0
+  }
+ }
+}

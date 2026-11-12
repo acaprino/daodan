@@ -1,0 +1,515 @@
+{
+ "case": "phazly",
+ "seconds": 64.8,
+ "externals": [
+  {
+   "id": "cargo",
+   "name": "Cargo",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/src-tauri/Cargo.toml"
+   ]
+  },
+  {
+   "id": "gcp.secretmanager",
+   "name": "Cloud Secret Manager",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "css",
+   "name": "CSS",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "docker",
+   "name": "Docker",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "functions-python/Dockerfile",
+    "react-app/components.json"
+   ]
+  },
+  {
+   "id": "eslint",
+   "name": "Eslint",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/eslint.config.js",
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "fastapi",
+   "name": "FastAPI",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "firebase",
+   "name": "Firebase",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "functions-python/app/core/config.py",
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt",
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "geminiai",
+   "name": "Gemini AI",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/app/core/config.py",
+    "functions-python/app/services/llm/client.py"
+   ]
+  },
+  {
+   "id": "ghost",
+   "name": "Ghost",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/tests/unit/test_planner_mutations.py"
+   ]
+  },
+  {
+   "id": "httpx",
+   "name": "HTTPX",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "huggingface",
+   "name": "Hugging Face",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt",
+    "react-app/components.json"
+   ]
+  },
+  {
+   "id": "javascript",
+   "name": "JavaScript",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "jinja",
+   "name": "Jinja",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "jsx",
+   "name": "JSX",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "kotlin",
+   "name": "Kotlin",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/src-tauri/Cargo.toml"
+   ]
+  },
+  {
+   "id": "mongodb",
+   "name": "MongoDB",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/app/core/config.py",
+    "functions-python/app/services/db_indexes.py",
+    "functions-python/app/services/mongodb.py",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "nodejs",
+   "name": "NodeJS",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "npm",
+   "name": "npm",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package-lock.json",
+    "react-app/package.json",
+    "shared/package-lock.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "numpy",
+   "name": "NumPy",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "phosphoreicons",
+   "name": "Phosphor Icons",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "pillow",
+   "name": "Pillow",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "playwright",
+   "name": "Playwright",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "pydantic",
+   "name": "Pydantic",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt"
+   ]
+  },
+  {
+   "id": "pytest",
+   "name": "pytest",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml"
+   ]
+  },
+  {
+   "id": "python",
+   "name": "Python",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "functions-python/Dockerfile",
+    "functions-python/requirements.txt",
+    "react-app/components.json",
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "radixui",
+   "name": "Radix UI",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "react",
+   "name": "React",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "reactrouterdom",
+   "name": "React Router",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "resend",
+   "name": "Resend",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "functions-python/app/core/config.py",
+    "functions-python/app/services/email_service.py",
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt",
+    "react-app/components.json"
+   ]
+  },
+  {
+   "id": "ruff",
+   "name": "Ruff",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/pyproject.toml"
+   ]
+  },
+  {
+   "id": "rust",
+   "name": "Rust",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/src-tauri/Cargo.toml"
+   ]
+  },
+  {
+   "id": "serde",
+   "name": "Serde",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "react-app/src-tauri/Cargo.toml"
+   ]
+  },
+  {
+   "id": "shadcn",
+   "name": "Shadcn",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/components.json"
+   ]
+  },
+  {
+   "id": "stripe",
+   "name": "Stripe",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "functions-python/app/handlers/stripe_webhook.py",
+    "functions-python/app/services/stripe_client.py",
+    "functions-python/pyproject.toml",
+    "functions-python/requirements.txt",
+    "functions-python/tests/unit/test_billing_regressions.py"
+   ]
+  },
+  {
+   "id": "tailwind",
+   "name": "Tailwind",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "react-app/tailwind.config.js"
+   ]
+  },
+  {
+   "id": "tauri",
+   "name": "Tauri",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "react-app/src-tauri/Cargo.toml"
+   ]
+  },
+  {
+   "id": "typescript",
+   "name": "Typescript",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  },
+  {
+   "id": "vite",
+   "name": "Vite",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json"
+   ]
+  },
+  {
+   "id": "zod",
+   "name": "Zod",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "react-app/package.json",
+    "shared/package.json"
+   ]
+  }
+ ],
+ "stack_analyser": {
+  "status": "ok",
+  "version": "1.27.6",
+  "seconds": 1.8
+ },
+ "entries": 235,
+ "stores": 123,
+ "groups": 48,
+ "alone": 92,
+ "sizes": {
+  "12000/5": {
+   "chars": 12000,
+   "truncated": 48
+  },
+  "12000/8": {
+   "chars": 12000,
+   "truncated": 48
+  },
+  "12000/12": {
+   "chars": 12000,
+   "truncated": 48
+  },
+  "24000/5": {
+   "chars": 23868,
+   "truncated": 7
+  },
+  "24000/8": {
+   "chars": 23891,
+   "truncated": 14
+  },
+  "24000/12": {
+   "chars": 23687,
+   "truncated": 30
+  },
+  "48000/5": {
+   "chars": 25022,
+   "truncated": 0
+  },
+  "48000/8": {
+   "chars": 26773,
+   "truncated": 0
+  },
+  "48000/12": {
+   "chars": 32261,
+   "truncated": 0
+  },
+  "0/5": {
+   "chars": 25022,
+   "truncated": 0
+  },
+  "0/8": {
+   "chars": 26773,
+   "truncated": 0
+  },
+  "0/12": {
+   "chars": 32261,
+   "truncated": 0
+  }
+ }
+}

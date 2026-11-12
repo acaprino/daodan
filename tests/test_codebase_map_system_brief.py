@@ -78,6 +78,33 @@ class BriefTests(unittest.TestCase):
 
 
 class DeclaredTests(unittest.TestCase):
+    def test_stack_analyser_paths_count_from_the_target_inside_the_repository(self):
+        work = Path(tempfile.mkdtemp(prefix="brief-"))
+        self.addCleanup(shutil.rmtree, work, True)
+        project = work / "project"
+        (project / "server").mkdir(parents=True)
+        (project / "server/pyproject.toml").write_text('[project]\ndependencies = ["fastapi"]\n', encoding="utf-8")
+        (project / "server/app.py").write_text("print('hi')\n", encoding="utf-8")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "x"]):
+            subprocess.run(command, cwd=project, check=True, capture_output=True)
+        manifest = work / "snapshot/manifest.sqlite"
+        snapshot.main(["write", str(project / "server"), "--out", str(manifest), "--no-engine", "--no-index"])
+
+        def tool(root, _cache, files):  # as stack_analyser.run: paths from the directory read, kept among files
+            self.assertTrue((Path(root) / "pyproject.toml").is_file())
+            paths = sorted({"pyproject.toml"} & set(files))
+            return {"status": "ok", "found": [{"tech": "fastapi", "paths": paths}] if paths else []}
+
+        run = system_brief.stack_analyser.run
+        system_brief.stack_analyser.run = tool
+        try:
+            value = system_brief.brief(manifest, [])
+        finally:
+            system_brief.stack_analyser.run = run
+        fastapi = next(e for e in value["externals"] if e["id"] == "fastapi")
+        self.assertEqual((fastapi["from"], fastapi["paths"]), (["registry", "stack-analyser"], ["server/pyproject.toml"]))
+
     def test_compose_declares_services_and_the_image_is_recognized(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
         self.addCleanup(shutil.rmtree, work, True)

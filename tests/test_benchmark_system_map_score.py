@@ -35,10 +35,43 @@ class ScoreTests(unittest.TestCase):
         thin = {**PROPOSED, "nodes": [{**PROPOSED["nodes"][1], "files": ["api/checkout.py", "api/a.py", "api/b.py"]}]}
         self.assertIn("API acquisti", score.score_map(thin, EXPECTED)["nodes"]["missing"])
 
+    def test_an_entity_is_found_by_its_store_keys(self):
+        expected = {"nodes": [{"name": "Abbonamento", "type": "entità", "members": ["store:mongo/subscriptions"]}],
+                    "flows": []}
+        proposed = {"nodes": [{"name": "Piano", "type": "entità", "members": ["store:mongo/subscriptions"],
+                               "files": [], "evidence": []}], "flows": []}
+        self.assertEqual(score.score_map(proposed, expected)["nodes"]["found"], 1)
+
+    def test_a_node_without_code_is_found_by_one_cited_file_in_the_same_position(self):
+        expected = {"nodes": [{"name": "Stripe", "type": "gateway", "position": "external",
+                               "evidence": ["api/stripe_client.py", "api/webhook.py", "requirements.txt"]},
+                              {"name": "Landing", "type": "schermata", "position": "unseen", "where": "landing-app"}],
+                    "flows": []}
+        cited = {"name": "Pagamenti con carta", "type": "servizio o API", "position": "external", "files": [],
+                 "evidence": ["requirements.txt#stripe"]}
+        unseen = {"name": "Sito", "type": "schermata", "position": "unseen", "files": [], "evidence": []}
+        inside = {"name": "Client", "type": "servizio o API", "files": ["api/stripe_client.py"], "evidence": []}
+        self.assertEqual(score.score_map({"nodes": [cited, unseen], "flows": []}, expected)["nodes"],
+                         {"found": 2, "of": 2, "missing": []})
+        self.assertEqual(score.score_map({"nodes": [inside], "flows": []}, expected)["nodes"]["missing"],
+                         ["Stripe", "Landing"])
+
     def test_externals_recall_and_wrong(self):
         result = score.score_externals({"externals": [{"id": "stripe"}, {"id": "react"}, {"id": "redis"}]},
                                        {"externals": ["stripe", "react", "fastapi"]})
         self.assertEqual(result, {"recall": 0.667, "found": ["react", "stripe"], "missed": ["fastapi"], "wrong": ["redis"]})
+
+    def test_externals_by_source_and_used_but_not_named(self):
+        brief = {"externals": [{"id": "stripe", "from": ["registry"]}, {"id": "react", "from": ["stack-analyser"]},
+                               {"id": "eslint", "from": ["registry", "stack-analyser"]},
+                               {"id": "billing", "from": ["modules"]}]}
+        expected = {"externals": ["stripe", "react"], "also": ["eslint"]}
+        self.assertEqual(score.score_externals(brief, expected, "registry"),
+                         {"recall": 0.5, "found": ["stripe"], "missed": ["react"], "wrong": []})
+        self.assertEqual(score.score_externals(brief, expected, "stack-analyser")["found"], ["react"])
+        self.assertEqual(score.score_externals(brief, expected, "both"),
+                         {"recall": 1.0, "found": ["react", "stripe"], "missed": [], "wrong": []})
+        self.assertEqual(score.score_externals(brief, expected)["wrong"], ["billing"])
 
 
 if __name__ == "__main__":

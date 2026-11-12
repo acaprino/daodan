@@ -1,0 +1,552 @@
+{
+ "case": "tududi",
+ "seconds": 63.9,
+ "externals": [
+  {
+   "id": "babel",
+   "name": "Babel",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "bash",
+   "name": "Bash",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "caddy",
+   "name": "Caddy",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml"
+   ]
+  },
+  {
+   "id": "codemirror",
+   "name": "CodeMirror",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "css",
+   "name": "CSS",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "discord",
+   "name": "Discord",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "backend/modules/landing/stats.js"
+   ]
+  },
+  {
+   "id": "docker",
+   "name": "Docker",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "Dockerfile",
+    "docker-compose.yml",
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "eslint",
+   "name": "Eslint",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "backend/eslint.config.js",
+    "docs/examples/docker-compose.hosted.yml",
+    "eslint.config.mjs",
+    "package.json"
+   ]
+  },
+  {
+   "id": "express",
+   "name": "Express",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "github",
+   "name": "GitHub",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "github.actions",
+   "name": "Github Actions",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "heroicons",
+   "name": "Heroicons",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "javascript",
+   "name": "JavaScript",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "jest",
+   "name": "Jest",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "jsx",
+   "name": "JSX",
+   "from": [
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "kubernetes",
+   "name": "Kubernetes",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "docs/examples/kubernetes/kustomization.yaml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "lemonsqueezy",
+   "name": "Lemon Squeezy",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "backend/config/config.js",
+    "backend/modules/billing/providers/lemonsqueezy.js",
+    "docs/17-hosted-mode.md",
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "mcp",
+   "name": "MCP",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "nodejs",
+   "name": "NodeJS",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "Dockerfile",
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "npm",
+   "name": "npm",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package-lock.json",
+    "package.json"
+   ]
+  },
+  {
+   "id": "openai",
+   "name": "Openai",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "backend/modules/ai-assistant/service.js",
+    "backend/tests/integration/ai-assistant-config-hosted.test.js",
+    "backend/tests/integration/ai-assistant-not-configured.test.js",
+    "backend/tests/unit/modules/ai-assistant/resolveAIConfig.test.js",
+    "backend/tests/unit/modules/ai-assistant/ssrfGuard.test.js",
+    "docs/13-ai-assistant.md",
+    "docs/development-workflow.md",
+    "docs/examples/docker-compose.hosted.yml",
+    "frontend/components/AI/DailyAssistant.tsx",
+    "package.json",
+    "public/locales/ar/translation.json",
+    "public/locales/bg/translation.json",
+    "public/locales/da/translation.json",
+    "public/locales/de/translation.json",
+    "public/locales/el/translation.json",
+    "public/locales/en/translation.json",
+    "public/locales/es/translation.json",
+    "public/locales/fi/translation.json",
+    "public/locales/fr/translation.json",
+    "public/locales/id/translation.json",
+    "public/locales/it/translation.json",
+    "public/locales/jp/translation.json",
+    "public/locales/ko/translation.json",
+    "public/locales/nl/translation.json",
+    "public/locales/no/translation.json",
+    "public/locales/pl/translation.json",
+    "public/locales/pt/translation.json",
+    "public/locales/ro/translation.json",
+    "public/locales/ru/translation.json",
+    "public/locales/sk/translation.json",
+    "public/locales/sl/translation.json",
+    "public/locales/sv/translation.json",
+    "public/locales/tr/translation.json",
+    "public/locales/ua/translation.json",
+    "public/locales/vi/translation.json",
+    "public/locales/zh/translation.json"
+   ]
+  },
+  {
+   "id": "paddle",
+   "name": "Paddle",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "backend/config/config.js",
+    "backend/modules/billing/providers/paddle.js",
+    "docs/17-hosted-mode.md",
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "playwright",
+   "name": "Playwright",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "e2e/playwright.config.ts",
+    "package.json"
+   ]
+  },
+  {
+   "id": "postgresql",
+   "name": "Postgres",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docker-compose.dev.yml",
+    "docker-compose.yml",
+    "docs/16-postgresql.md",
+    "docs/examples/docker-compose.hosted.yml",
+    "docs/testing.md",
+    "package.json"
+   ]
+  },
+  {
+   "id": "prettier",
+   "name": "Prettier",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "react",
+   "name": "React",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "reactrouterdom",
+   "name": "React Router",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "sequelize",
+   "name": "Sequelize",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "stripe",
+   "name": "Stripe",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "backend/config/config.js",
+    "backend/modules/billing/providers/stripe.js",
+    "docs/17-hosted-mode.md",
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "swc",
+   "name": "SWC",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "tailwind",
+   "name": "Tailwind",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json",
+    "tailwind.config.js"
+   ]
+  },
+  {
+   "id": "telegram",
+   "name": "Telegram",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "SECURITY.md",
+    "backend/config/config.js",
+    "backend/modules/telegram/routes.js",
+    "backend/modules/telegram/telegramPoller.js",
+    "backend/tests/helpers/setup.js",
+    "backend/tests/integration/telegram-disabled.test.js",
+    "docker-compose.dev.yml",
+    "docs/04-inbox-page.md",
+    "docs/16-postgresql.md",
+    "docs/development-workflow.md",
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "testinglibrary",
+   "name": "Testing Library",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "typescript",
+   "name": "Typescript",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "webpack",
+   "name": "Webpack",
+   "from": [
+    "registry",
+    "stack-analyser"
+   ],
+   "paths": [
+    "docs/examples/docker-compose.hosted.yml",
+    "package.json"
+   ]
+  },
+  {
+   "id": "zoom",
+   "name": "Zoom",
+   "from": [
+    "registry"
+   ],
+   "paths": [
+    "frontend/components/Project/Timeline/ProjectTimeline.tsx"
+   ]
+  }
+ ],
+ "stack_analyser": {
+  "status": "ok",
+  "version": "1.27.6",
+  "seconds": 1.42
+ },
+ "entries": 0,
+ "stores": 0,
+ "groups": 0,
+ "alone": 0,
+ "sizes": {
+  "12000/5": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "12000/8": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "12000/12": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "24000/5": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "24000/8": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "24000/12": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "48000/5": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "48000/8": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "48000/12": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "0/5": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "0/8": {
+   "chars": 5442,
+   "truncated": 0
+  },
+  "0/12": {
+   "chars": 5442,
+   "truncated": 0
+  }
+ }
+}

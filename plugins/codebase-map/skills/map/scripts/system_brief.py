@@ -130,7 +130,7 @@ def _groups(links: dict) -> tuple[list[dict], list[str]]:
     return groups, [e for e in entries if not touched[e] & shared]
 
 
-def _externals(manifest: Path, graph: dict, files: list[str], root: Path, registry: dict,
+def _externals(manifest: Path, graph: dict, files: list[str], root: Path, target: str, registry: dict,
                recognized: list[dict]) -> tuple[list[dict], dict]:
     by_id = {e["id"]: e for e in registry["entries"]}
     out = {}
@@ -138,8 +138,12 @@ def _externals(manifest: Path, graph: dict, files: list[str], root: Path, regist
         out[found["id"]] = {"id": found["id"], "name": found["name"], "kind": found["kind"], "type": found["type"],
                             "from": ["registry"], "paths": sorted({s["path"] for s in found["signs"] if s["path"]})}
     from embedding_worker import shared_cache_dir
-    stack = stack_analyser.run(root, shared_cache_dir() / "stack-analyser", set(files))
+    # The tool names paths from the target it reads; snapshot paths count from the repository root.
+    prefix = "" if target in ("", ".") else target.strip("/") + "/"
+    stack = stack_analyser.run(root, shared_cache_dir() / "stack-analyser",
+                               {f[len(prefix):] for f in files if f.startswith(prefix)})
     for found in stack.get("found", []):
+        found = {**found, "paths": [prefix + p for p in found["paths"]]}
         entry = out.get(found["tech"])
         if entry is None:
             known = by_id.get(found["tech"], {})
@@ -207,13 +211,14 @@ def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = H
     links = flows.cached_links(manifest, rules)
     graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
     with open_snapshot(manifest) as store:
-        root = Path(store["root"]) / (store.get("target") or ".")
+        target = store.get("target") or "."
+        root = Path(store["root"]) / target
         files = sorted(dict(store.iter_file_headers_only()))
         source = flows.Source(store)
         texts = {rel: source.lines(rel) or [] for rel in files}
     registry = service_registry.load()
     recognized = service_registry.recognize(manifest, registry)
-    externals, stack = _externals(manifest, graph, files, root, registry, recognized)
+    externals, stack = _externals(manifest, graph, files, root, target, registry, recognized)
     known = {s["value"] for e in recognized for s in e["signs"] if s["sign"] == "package"}
     other = {}
     for module in graph["modules"]:

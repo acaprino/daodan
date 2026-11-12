@@ -24,15 +24,15 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-12-mappa-del-si
 
 ## Riferimenti attesi
 
-- `expected/phazly-payments.json`: gli 11 nodi con i loro file e i 3 flussi della mappa fatta a mano il 12 novembre 2026 (pagamento, gestione abbonamento, paywall e limiti d'uso). Si registra dopo la conferma del proprietario e con i percorsi letti dall'archivio di phazly.
-- `expected/externals-<caso>.json`: per ogni caso l'elenco a mano dei servizi e dei progetti esterni dichiarati nei manifest.
+- `expected/phazly-payments.json`: gli 11 nodi e i 3 flussi (pagamento, gestione abbonamento, paywall e limiti d'uso) del grafo d'insieme della mappa fatta a mano il 12 novembre 2026, confermati dal proprietario lo stesso giorno; i 35 percorsi sono letti dall'archivio di phazly. Il pagamento dal web e il suo ritorno (`SubscriptionContext.tsx`, `CheckoutVerificationOverlay.tsx`, `checkout-complete/index.html`) stanno nel Paywall, gli avvisi di prova e scadenza nella Scheda abbonamento; Abbonamento e Consumi sono le chiavi `mongo/subscriptions` e `mongo/usageEvents`; la Landing è un nodo non visto. Un nodo con codice si ritrova per file e chiavi di store, un nodo senza codice se un nodo nella stessa posizione cita uno dei suoi file, un nodo non visto per posizione e tipo.
+- `expected/externals-<caso>.json`: per ogni caso l'elenco a mano letto dai manifest, dai Dockerfile, dai file compose e dai modelli di `.env` del perimetro dello snapshot (`read`). In `externals` stanno ogni servizio esterno che quei file nominano e i progetti con un ruolo nell'architettura (framework dell'applicazione, guscio dell'app, accesso ai dati, stato, code, container), come la mappa fatta a mano di phazly ne nomina 6 su 59 pacchetti. In `also` stanno le cose usate che una persona non nomina (linguaggi, strumenti di build, stile, test e lint, librerie di utilità): non contano per il richiamo né come errore. Un identificatore che il registro non ha è scritto come nome semplice (`zustand`, `google-play-billing`).
 
 ## Esecuzione
 
 | Misura | Comando |
 | --- | --- |
 | 1, 2, 4, 5 | `python score.py map MAP.json expected/phazly-payments.json` sulla mappa salvata dalla run |
-| 6 | `python score.py externals BRIEF.json expected/externals-<caso>.json` sulla scheda del sistema del caso |
+| 6, dimensione della scheda | `modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH` scrive `results/brief-<caso>.json`; poi `python score.py externals results/brief-<caso>.json expected/externals-<caso>.json registry` (oppure `stack-analyser`, `both`) |
 
 ## Risultati
 
@@ -44,4 +44,32 @@ Con una soglia sulla quota dei punti d'ingresso (20%) la fixture `flow-model` no
 
 2.172 voci da stack-analyser 1.27.6 (743 regole), CNCF Landscape (commit `75b47639`, senza le categorie dei membri e dei fornitori certificati) e Simple Icons 16.37.0 (marchi agganciati per nome). `derive`, senza modello, trova pacchetti su PyPI, crates.io o nel proxy di Go per 102 delle 455 voci con un pacchetto npm; tiene un pacchetto solo se il repository ha lo stesso proprietario del pacchetto npm principale, un modulo Go solo se il suo `go.mod` è vero, e scarta i pacchetti trovati per più voci. Una run di Haiku 5.5 (0,023 USD, 40.257 token in uscita) propone il resto: la macchina ne tiene 141, fra cui FastAPI, Flask e Pydantic, e ne rifiuta 22 oltre a quelle già coperte, compresi pacchetti veri con un altro proprietario (`boto3`, `prometheus-client`, il driver Go di MongoDB).
 
-Misura 6 e dimensione della scheda sui tre casi: da eseguire su Modal.
+### Misura 6 e dimensione della scheda, 12 novembre 2026
+
+Su Modal, senza modello, uno snapshot per caso: phazly dall'archivio con i collegamenti già calcolati con il motore, polar (`server/`) e tududi ai commit dei loro benchmark, senza regole. Richiamo sull'elenco scritto prima; sbagliati sono i riconoscimenti fuori da `externals` e da `also`, ognuno letto al punto citato.
+
+| Caso | Attesi | Registro | stack-analyser | Insieme | Falsi letti al punto citato |
+| --- | --- | --- | --- | --- | --- |
+| phazly | 16 | 75,0% | 37,5% | 75,0% | 1: `ghost` da un nome in un test |
+| polar | 25 | 60,0% | 32,0% | 60,0% | 0 |
+| tududi | 14 | 78,6% | 78,6% | 78,6% | 3: `zoom` da un tipo TypeScript, `caddy` e `kubernetes` dagli esempi in `docs/examples` |
+
+Nessun caso raggiunge la soglia del richiamo; tududi supera anche quella dei falsi. stack-analyser non riconosce nulla che il registro non veda già. Cause:
+
+- Mancano dal registro: Zustand, Motor, Dramatiq, Logfire, Numeral, Plain, IPinfo, Google Play Billing (il segno è `@choochmeque/tauri-plugin-iap-api`).
+- Il registro ha la voce ma non il segno che il progetto mostra: AWS (`boto3` riconosce solo il progetto Boto3), GitHub (`githubkit`), Expo (`exponent-server-sdk`), MinIO e Tailscale (immagini `bitnamilegacy/minio`, `tailscale/tailscale`), Cloud Run (solo un commento del Dockerfile e `.gcloudignore`), Cloudflare in tududi (`TURNSTILE_*`), Google Calendar (`GOOGLE_CLIENT_ID`, un prefisso troppo generico).
+- L'elenco letto dai soli manifest non vede i servizi chiamati via HTTP e configurati con variabili: in polar il registro trova Discord, Linear, Slack, Resend e OpenAI, in tududi Discord, tutti veri al punto citato.
+- Gli esempi di documentazione contano come configurazione del progetto.
+
+Corretto durante la misura: con un target dentro il repository (polar `server/`) stack-analyser legge i percorsi dal target e lo snapshot dalla radice, così ogni riconoscimento cadeva; il richiamo di stack-analyser su polar passa da 0 a 32%.
+
+Dimensione del testo della scheda, in caratteri; fra parentesi i gruppi riassunti in una riga:
+
+| `CAP` \ `HOLDERS` | 5 | 8 | 12 |
+| --- | --- | --- | --- |
+| phazly 12.000 | 12.000 (48 su 48) | 12.000 (48) | 12.000 (48) |
+| phazly 24.000 | 23.868 (7) | 23.891 (14) | 23.687 (30) |
+| phazly 48.000 e senza tetto | 25.022 (0) | 26.773 (0) | 32.261 (0) |
+| polar, tududi, ogni valore | 5.465 e 5.442 | | |
+
+phazly ha 235 punti d'ingresso, 123 chiavi di store, 48 gruppi e 92 punti d'ingresso isolati; a 12.000 caratteri la sola parte fissa (moduli, esterni, isolati) riempie il tetto. polar e tududi senza regole non hanno gruppi.
