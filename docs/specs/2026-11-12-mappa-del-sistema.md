@@ -2,7 +2,7 @@
 
 **Stato:** proposta, non applicata. **Data:** 12 novembre 2026. Ridefinisce «nodo», «flusso» e «livello» della [fase 2](2026-11-09-flow-model.md) e ne sostituisce i punti 1.5, 3.5, 5 e 7, compresa la scelta di non tenere un registro proprio; il resto della fase 2 resta e diventa la prova di ciò che si descrive qui.
 
-Daodan deve saper rispondere a tre domande: «di quali cose è fatto questo sistema e cosa fa?», «cosa tocca questa richiesta?» e «come appare lo stesso processo a chi lo usa, a chi lo progetta, a chi lo scrive e a chi lo fa girare?». La risposta serve a chi guarda il sistema e a chi lo revisiona: una richiesta che nomina una parte del sistema deve portare alle schermate, ai servizi, ai dati, al codice e all'infrastruttura che quella parte comprende. Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
+Daodan deve saper rispondere a tre domande: «di quali cose è fatto questo sistema e cosa fa?», «cosa tocca questa richiesta?» e «come appare lo stesso processo a chi lo usa, a chi lo progetta, a chi lo scrive e a chi lo fa girare?». La risposta ha due usi: studiare il prodotto e la codebase, e capire cosa controllare in una review partendo dall'intento di chi la chiede. Un intento che riguarda una parte del sistema deve portare alle schermate, ai servizi, ai dati, al codice e all'infrastruttura che quella parte comprende. Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
 
 ## Parole
 
@@ -83,7 +83,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 
 ### 5. Chi propone la mappa del sistema
 
-1. Un agente riceve la scheda del sistema e propone nodi, flussi, aree e corrispondenze in un formato fisso. Fa parte del passo semantico: parte con l'analisi che l'utente chiede, mai da solo, e richiede le regole di collegamento del progetto, perché store e rotte esistono solo dopo quelle.
+1. Un agente riceve la scheda del sistema e propone nodi, flussi, aree e corrispondenze in un formato fisso. Fa parte del passo semantico: parte con l'analisi che l'utente chiede, mai da solo, e richiede le regole di collegamento del progetto, perché store e rotte esistono solo dopo quelle. Lavora su tutto il sistema, per lo studio, oppure su una sola area, quando una review parte da un intento e la mappa di quell'area manca o non regge più.
 2. Può interrogare ciò che ogni passo ha prodotto (simboli, collegamenti, percorsi, schede) con gli strumenti esistenti e aprire il sorgente. Lo fa solo dove la scheda non basta a decidere un nome o un taglio.
 3. Individua i flussi principali, di ogni tipo, passando in rassegna un elenco di aree: accesso e identità; funzioni principali del prodotto; pagamenti e abbonamenti; dati dell'utente (sincronizzazione, esportazione, cancellazione, consensi); integrazioni esterne; comunicazioni; amministrazione; esercizio (lavori pianificati, cache, manutenzione, rilascio). Per ogni area dichiara i flussi trovati oppure che l'area è assente. Aggiunge le aree che il progetto ha e l'elenco no.
 4. Ogni flusso ha un nome, un'area, uno o più tipi, i suoi nodi a ogni livello in cui esiste, le frecce con il dato che passa e i percorsi che lo compongono.
@@ -101,12 +101,21 @@ La macchina accetta o rifiuta ogni parte della proposta e dice perché. L'agente
 5. **Conferma:** una proposta resta `inferred` finché il progetto non la conferma, come per i moduli. Ciò che il progetto conferma o rinomina non viene riproposto.
 6. **Freschezza:** nodi e flussi sono legati ai digest dei file dei loro membri. Quando un file cambia la macchina riverifica, senza modello, membri e frecce di ciò che lo contiene. Torna all'agente solo ciò che non regge più, e i nomi confermati non cambiano.
 
-### 7. Chi usa la mappa del sistema
+### 7. A cosa serve
 
-- **Esploratore:** apre sul grafo d'insieme e mostra un grafo per flusso, con un selettore di uno o più livelli. Percorsi e collegamenti fra simboli sono il livello codice. Un grafo mostra nodi: un nodo si apre per vederne i membri e le sue corrispondenze agli altri livelli.
-- **Review:** una richiesta che nomina un'area, un flusso o un nodo riceve come perimetro i membri di quei nodi. Il brief elenca nodi, frecce e dati tenuti in più posti, ai livelli che l'aspetto della review richiede. Un nodo non visto è una lacuna dichiarata della review. Si misura prima di adottarlo, come chiede la [fase 3](2026-11-09-flows-in-review.md).
-- **`codebase_map_flows`:** risponde per area, flusso, nodo e livello. I percorsi restano interrogabili come oggi.
-- **`03-flows.md`:** si genera dalla mappa del sistema.
+La mappa del sistema ha due usi.
+
+**Studiare il prodotto e la codebase.**
+
+- L'esploratore apre sul grafo d'insieme e mostra un grafo per flusso, con un selettore di uno o più livelli. Percorsi e collegamenti fra simboli sono il livello codice. Un nodo si apre per vederne i membri e le corrispondenze agli altri livelli.
+- `codebase_map_flows` risponde per area, flusso, nodo e livello; i percorsi restano interrogabili come oggi. `03-flows.md` si genera dalla mappa del sistema.
+
+**Capire cosa controllare in una review, partendo dall'intento di chi la chiede.**
+
+1. Il modello legge l'intento e lo riporta sulla mappa: quali aree, flussi e nodi tocca, e a quali livelli. Dichiara questa lettura nello scope della review; chiede solo se due letture cambiano correttezza o costo, come nella fase 2.
+2. La mappa restituisce ciò che va controllato: i nodi con i loro membri, che sono il perimetro; le frecce con i dati che passano; i servizi esterni con il loro tipo; i dati tenuti in più posti, da confrontare; i nodi non visti, che sono lacune dichiarate della review.
+3. Il brief dei revisori elenca queste cose, non solo i file.
+4. L'effetto sui difetti trovati si misura prima di adottarlo, come chiede la [fase 3](2026-11-09-flows-in-review.md).
 
 ## Limiti
 
@@ -122,7 +131,8 @@ Benchmark `benchmarks/system-map/`, da creare, con le soglie scritte nel README 
 4. **Costo.** Token e costo per mappa e per modello; quante volte l'agente apre il sorgente.
 5. **Stabilità.** Due esecuzioni sullo stesso snapshot danno gli stessi nodi, confrontati per membri.
 6. **Registro.** Sui casi dei benchmark: quanti servizi esterni usati dal progetto il registro riconosce, e quanti riconoscimenti sono sbagliati.
-7. **Review.** Una richiesta per area, con perimetro e brief dalla mappa del sistema, contro la review di oggi. È a pagamento: si chiede prima.
+7. **Dall'intento ai controlli.** Per un intento scritto in linguaggio comune, le cose da controllare che la mappa restituisce a confronto con l'elenco scritto prima dal proprietario: quante ne nomina e quante ne aggiunge senza motivo. Non richiede run di review.
+8. **Review.** Lo stesso intento, con perimetro e brief dalla mappa del sistema, contro la review di oggi. È a pagamento: si chiede prima.
 
 ## Ordine di lavoro
 
@@ -130,6 +140,6 @@ Benchmark `benchmarks/system-map/`, da creare, con le soglie scritte nel README 
 2. Registro dei servizi esterni e scheda del sistema; misura 6.
 3. Prompt dell'agente; misure da 1 a 5.
 4. Esploratore sulla mappa del sistema, con il selettore dei livelli.
-5. Review; misura 7.
+5. Review: dall'intento ai controlli, poi i revisori; misure 7 e 8.
 
 **Da decidere alla rifinitura:** dove il progetto registra ciò che conferma; il tetto della scheda del sistema; dove vive il file del registro e ogni quanto si rigenera; come distribuire i loghi rispettando l'avvertenza sui marchi della raccolta; se gli identificatori nel codice che oggi dicono «flow» per i percorsi e «fisico» per i file cambiano nome.
