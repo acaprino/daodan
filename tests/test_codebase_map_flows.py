@@ -129,6 +129,23 @@ class FlowFixtureTests(unittest.TestCase):
         through = service.flows("flows", start="app/server/payments.py::charge_order", direction="through")
         self.assertIn("app/server/jobs.py::retry_declined", through["entries"])
 
+        badge = "app/web/badge.ts::renderBadge"
+        card = {"name": "Stato del pagamento", "type": "dati",
+                "text": "Il badge legge lo stato del pagamento dallo stato del client (app/web/badge.ts:4).\n"
+                        "Lo stato arriva dalla risposta di POST /payments (app/web/checkout.ts:12)."}
+        with self.assertRaisesRegex(ValueError, "line 2 cites no step"):
+            service.flows("flows", start=badge, direction="to",
+                          card={**card, "text": card["text"].replace("checkout.ts:12", "checkout.ts:99")})
+        recorded = service.flows("flows", start=badge, direction="to", card=card)
+        self.assertEqual((recorded["card"]["name"], recorded["card"]["fresh"]), ("Stato del pagamento", True))
+        self.assertNotIn("card", service.flows("flows", start=badge, direction="from"))
+        cards = json.loads((project / ".daodan/map/runs/flows/snapshot/flow-cards.json").read_text(encoding="utf-8"))
+        files = cards["cards"]["to:" + badge]["files"]
+        files["app/web/checkout.ts"] = "edited"
+        (project / ".daodan/map/runs/flows/snapshot/flow-cards.json").write_text(json.dumps(cards), encoding="utf-8")
+        stale = service.flows("flows", start=badge, direction="to")["card"]
+        self.assertEqual((stale["fresh"], stale["changed_files"]), (False, ["app/web/checkout.ts"]))
+
     def test_units_keep_writers_with_readers_and_assign_every_file(self):
         sizes = flows.file_sizes(self.manifest)
         for limit in (120_000, 1_500):

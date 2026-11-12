@@ -555,11 +555,13 @@ class MapService:
                 return gate
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
-    def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100):
+    def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100, card=None):
         """Flows of the bound run from its link rules: the summary, or one flow at a level.
 
         `rules` records the project's link rules beside the snapshot. Without recorded
-        rules the answer is the rule format, for a model to write them.
+        rules the answer is the rule format, for a model to write them. `card` records
+        the model's card of the flow at `start`; a flow answer carries its card, stale
+        when a file of the flow changed since.
         """
         import flows as flow_model
         if direction not in ("from", "to", "through") or level not in flow_model.LEVELS:
@@ -571,7 +573,9 @@ class MapService:
             if not isinstance(rules, list) or not rules:
                 raise ValueError("rules must be a nonempty list")
             flow_model.validate_rules(rules)
-        with self._operation(write=rules is not None):
+        if card is not None and (start is None or direction == "through"):
+            raise ValueError("a card belongs to one flow: give start and direction from or to")
+        with self._operation(write=rules is not None or card is not None):
             _, _, manifest, _ = self._bound_run(run_id)
             if gate := snapshot.query_gate(manifest.path):
                 return gate
@@ -591,6 +595,20 @@ class MapService:
                         "gap_count": len(links["gaps"]), "external": links["external"]}
             flow = flow_model.trace(links, start, direction)
             if direction != "through":
+                cards_path = manifest.path.with_name("flow-cards.json")
+                cards = _json(cards_path) if cards_path.is_file() else {"schema": "daodan/flow-cards/v1", "cards": {}}
+                key = f"{direction}:{start}"
+                with snapshot.open_snapshot(manifest.path) as store:
+                    hashes = {rel: entry.get("hash") for rel, entry in snapshot.file_headers(store).items()}
+                if card is not None:
+                    flow_model.check_card(card, flow)
+                    cards["cards"][key] = {**card, "files": {rel: hashes.get(rel) for rel in flow_model.card_files(flow)}}
+                    _write(cards_path, cards)
+                kept = cards["cards"].get(key)
+                if kept is not None:
+                    changed = sorted(rel for rel, digest in kept["files"].items() if hashes.get(rel) != digest)
+                    flow["card"] = {**{name: kept[name] for name in ("name", "type", "text")},
+                                    "fresh": not changed, "changed_files": changed[:limit]}
                 flow = flow_model.at_level(
                     flow, level, flow_model.file_modules(manifest.path) if level == "logico" else {})
                 flow["edge_count"] = len(flow["edges"])

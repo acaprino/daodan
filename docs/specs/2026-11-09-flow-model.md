@@ -1,6 +1,6 @@
 # Fase 2: flussi e unità ricavati dal grafo
 
-**Stato:** in prova. `flows.py` applica le regole, traccia i flussi ai quattro livelli e forma le unità; `codebase_map_flows` li espone; misure 2, 3 e 5 sulla fixture e prima applicazione a un caso reale in [`benchmarks/flow-model`](../../benchmarks/flow-model/README.md) e [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). Restano le misure 1 e 4, la scheda del flusso scritta dal modello, il tipo dei nodi con le icone e i flussi nell'esploratore. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
+**Stato:** in prova. `flows.py` applica le regole, traccia i flussi ai quattro livelli e forma le unità; `codebase_map_flows` li espone; misure 2, 3 e 5 sulla fixture e prima applicazione a un caso reale in [`benchmarks/flow-model`](../../benchmarks/flow-model/README.md) e [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). Misure 1 e 4 fatte su phazly; la scheda del flusso si registra con `codebase_map_flows(card=...)`. Restano il tipo dei nodi con le icone e i flussi nell'esploratore. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 2 di 3; l'uso nella review si decide nella [fase 3](2026-11-09-flows-in-review.md).
 
 Codebase Map deve saper rispondere a due domande: «chi scrive il dato che l'applicativo mostra o restituisce, e cosa significa?» e «cosa succede quando arriva questa azione o questa richiesta?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark. Riapre l'esclusione dei flussi nel [FRD](../frd/2026-11-07-codebase-explorer.md) e nell'[ADR](../adr/2026-11-07-codebase-explorer.md) dell'esploratore.
 
@@ -72,7 +72,7 @@ La macchina trova dove passa un dato; cosa significa lo dice il modello, che leg
 4. **Il modello scrive la scheda del flusso:** nome, tipo (dati, UX, servizio, dispositivo, misto), rami principali e secondari, cosa accade al dato a ogni tappa, dove vive. Ogni frase cita un passaggio dell'elenco: ciò che l'elenco non contiene non entra nella scheda.
 5. **All'inizio di un progetto** il modello riceve i punti d'ingresso trovati dalla macchina e sceglie i flussi principali, con nome e tipo; gli altri restano interrogabili.
 
-La scheda è legata ai digest dei simboli del flusso e segue la freschezza delle schede: si rilegge solo se uno di quei simboli cambia.
+La scheda è legata ai digest dei file del flusso: si rilegge solo se uno di quei file cambia. Una riga che non cita un passaggio dell'elenco (`file:line` di un collegamento del flusso) rifiuta la scheda.
 
 ### 4. Unità
 

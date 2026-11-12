@@ -889,6 +889,42 @@ def at_level(flow: dict, level: str, modules_of: dict[str, str]) -> dict:
     return {**flow, "level": level, "nodes": nodes, "edges": list(merged.values())}
 
 
+# ---------------------------------------------------------------- flow cards
+
+CARD_TYPES = ("dati", "ux", "servizio", "dispositivo", "misto")
+_CITATION = re.compile(r"([\w.@-][\w./@\[\]+-]*\.[A-Za-z0-9]+):(\d+)")
+
+
+def check_card(card, flow: dict) -> dict:
+    """A flow card a model wrote, refused unless every line cites a step of the flow.
+
+    `card` is `{name, type, text}`; each nonempty line of `text` cites at least one
+    `file:line` that is the site of a link of the flow, so nothing outside the flow's
+    list enters the card.
+    """
+    if not isinstance(card, dict) or set(card) != {"name", "type", "text"}:
+        raise ValueError("card is {name, type, text}")
+    if not isinstance(card["name"], str) or not 0 < len(card["name"].strip()) <= 200:
+        raise ValueError("card name is text of at most 200 characters")
+    if card["type"] not in CARD_TYPES:
+        raise ValueError("card type is one of " + ", ".join(CARD_TYPES))
+    if not isinstance(card["text"], str) or not 0 < len(card["text"]) <= 8000:
+        raise ValueError("card text is text of at most 8000 characters")
+    sites = {edge["site"] for edge in flow["edges"]}
+    for number, line in enumerate(card["text"].splitlines(), 1):
+        if not line.strip():
+            continue
+        cited = {f"{path}:{row}" for path, row in _CITATION.findall(line)}
+        if not cited & sites:
+            raise ValueError(f"card line {number} cites no step of the flow: {line.strip()[:120]}")
+    return card
+
+
+def card_files(flow: dict) -> list[str]:
+    return sorted({node.split("::", 1)[0] for node in flow["nodes"] if "::" in node}
+                  | {edge["site"].rsplit(":", 1)[0] for edge in flow["edges"]})
+
+
 # ---------------------------------------------------------------- units
 
 def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int, share: int | None = None) -> dict:
