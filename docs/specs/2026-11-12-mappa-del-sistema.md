@@ -33,6 +33,7 @@ I passi di analisi (statico, inferenza, dinamico, semantico) restano quelli del 
 - I livelli della fase 2 contraggono un percorso su moduli, store o attori. Non c'è un livello per l'infrastruttura, e «fisico» vi indica file e simboli.
 - Il modello può già proporre moduli con nome, membri ed evidenze, verificati membro per membro (`codebase_map_modules`), e scrivere la scheda di un percorso con citazioni verificate. Manca chi propone i flussi principali: i punti 3.5 e 7 della fase 2 lo prevedevano e non sono costruiti.
 - Il riconoscimento dei servizi esterni (fase 2, punto 1.5) non è costruito, e quel punto si affidava alla sola raccolta dei marchi, che non dice né il tipo di un servizio né da cosa riconoscerlo. L'esploratore ha le icone generiche per tipo di nodo.
+- L'esploratore è già un grafo navigabile: si entra in un gruppo, si torna indietro, si seleziona un nodo, si evidenzia un percorso. Lavora però su simboli, file e percorsi, non espande un nodo sul posto, e oltre i cento nodi visibili è lento ([misura](../../benchmarks/codebase-explorer/README.md)).
 - `03-flows.md` descrive i flussi in prosa, leggendo il codice. Non si interroga e la review non lo legge.
 - Dei quattro passi di analisi, statico, inferenza e semantico sono applicati; il dinamico è una proposta.
 - Nelle dieci run della fase 3 né le unità né l'elenco di chi scrive e chi legge hanno portato nel rapporto i difetti attesi.
@@ -109,7 +110,9 @@ La mappa del sistema ha due usi.
 
 **Studiare il prodotto e la codebase.**
 
-- L'esploratore apre sul grafo d'insieme e mostra un grafo per flusso, con un selettore di uno o più livelli. Percorsi e collegamenti fra simboli sono il livello codice. Un nodo si apre per vederne i membri e le corrispondenze agli altri livelli.
+- L'esploratore mostra tutto come un grafo dinamico. Apre sul grafo d'insieme; ogni nodo si espande sul posto in ciò che contiene, fino ai file e ai simboli, e si richiude; il grafo si ridispone a ogni passo.
+- Si naviga da un nodo ai flussi che lo attraversano, ai nodi vicini e alle sue corrispondenze agli altri livelli; da un'area ai suoi flussi; da un flusso al suo grafo. Un selettore sceglie uno o più livelli.
+- Un grafo mostra solo i nodi che si riescono a leggere: oltre una soglia restano raggruppati finché non si espandono.
 - `codebase_map_flows` risponde per area, flusso, nodo e livello; i percorsi restano interrogabili come oggi. `03-flows.md` si genera dalla mappa del sistema.
 
 **Capire cosa controllare in una review, partendo dall'intento di chi la chiede.**
