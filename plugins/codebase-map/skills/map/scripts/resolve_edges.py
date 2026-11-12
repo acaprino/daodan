@@ -1559,6 +1559,11 @@ class JavaEngine(LspEngine):
             from multilspy.multilspy_logger import MultilspyLogger
             from multilspy.multilspy_utils import FileUtils
             FileUtils.download_and_extract_archive(MultilspyLogger(), pins["url"], str(partial), pins["archiveType"])
+            # The archive is a zip and its extraction drops the execute bit: without it the bundled runtime cannot start.
+            jre = partial / pins["jre_home_path"]
+            for binary in (*(jre / "bin").glob("*"), jre / "lib" / "jspawnhelper"):
+                if binary.is_file():
+                    binary.chmod(0o755)
 
         self._install(home, fill)
         self.jre_home = home / pins["jre_home_path"]
