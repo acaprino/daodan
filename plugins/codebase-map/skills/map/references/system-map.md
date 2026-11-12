@@ -44,7 +44,7 @@ funzionale (the product does it for its user), operativo (runs without a person)
 
 ## Report and correction
 
-The answer lists each node and flow with `status` (`accepted`, `refused`, `confirmed`), the `reason` of a refusal, each arrow as `proved`, `declared` or `refused`, the coverage of entry points, store keys and routes, and the ids `created`, `updated`, `removed`, `kept`. Correct what was refused once; what stays refused does not enter the map. Names the project confirmed in `codebase-system-map.json` do not change.
+The answer lists each node and flow with `status` (`accepted`, `refused`, `confirmed`), the `reason` of a refusal, each arrow as `proved`, `declared` or `refused`, the coverage of entry points, store keys and routes (what it leaves out by name, or by directory when the list is long), and the ids `created`, `updated`, `removed`, `kept`. Correct what was refused once; what stays refused does not enter the map. Names the project confirmed in `codebase-system-map.json` do not change.
 
 ## Reading the map
 

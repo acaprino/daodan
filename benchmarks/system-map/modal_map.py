@@ -200,7 +200,8 @@ def _levels(system: dict, links: dict, manifest: Path) -> dict:
     return out
 
 
-@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume},
+# One container per run: a reused container would keep the project and the session state of another.
+@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume}, single_use_containers=True,
               secrets=[modal.Secret.from_name(CLAUDE_SECRET)])
 def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: bytes, scope: str, model: str,
             rep: int, tag: str) -> dict:
@@ -227,15 +228,22 @@ def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: byt
                f"cache.write_text(json.dumps(kept))\n")
     subprocess.run(["chown", "-R", "runner:runner", str(home)], check=True)
     as_runner = ["runuser", "-u", "runner", "--", "env", f"HOME={home}"]
-    done = subprocess.run([*as_runner, sys.executable, "-c", prepare], cwd=project, capture_output=True, text=True)
-    if done.returncode != 0:
-        raise RuntimeError(f"prepare -> {done.returncode}\n{done.stderr[-4000:]}")
     # The MCP server's dependencies are installed before the session: a first `uv` install can
     # outlast the first-turn wait, and the session then runs without the server's tools.
     done = subprocess.run([*as_runner, "uv", "run", "--no-config", "--no-project", "--script",
                            f"{SCRIPTS}/mcp_server.py", "--help"], cwd=project, capture_output=True, text=True, timeout=900)
     if done.returncode != 0:
         raise RuntimeError(f"mcp server warm-up -> {done.returncode}\n{done.stderr[-4000:]}")
+    # The run is prepared with the server's own dependencies: other parser versions would leave
+    # the snapshot stale for the server ("parser fingerprint changed").
+    header = Path(f"{SCRIPTS}/mcp_server.py").read_text(encoding="utf-8").split("# ///", 2)[1]
+    script = home / "prepare.py"
+    script.write_text("# ///" + header + "# ///\n" + prepare, encoding="utf-8")
+    subprocess.run(["chown", "runner:runner", str(script)], check=True)
+    done = subprocess.run([*as_runner, "uv", "run", "--no-config", "--no-project", "--script", str(script)],
+                          cwd=project, capture_output=True, text=True, timeout=1800)
+    if done.returncode != 0:
+        raise RuntimeError(f"prepare -> {done.returncode}\n{done.stderr[-4000:]}")
     what = f"for the area «{AREA}» only, with scope" if scope == "area" else "for the whole system"
     command = [*as_runner, "claude", "-p", PROMPT.format(run=RUN_ID, what=what), "--agent", "codebase-map:system-mapper",
                "--model", MODELS[model], "--plugin-dir", "/daodan/plugins/codebase-map",
@@ -263,6 +271,15 @@ def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: byt
             continue
     result = next((e for e in reversed(stream) if e.get("type") == "result"), {})
     init = next((e for e in stream if e.get("type") == "system" and e.get("subtype") == "init"), {})
+    answers = []  # what the tools gave back: size, and whether the host kept it out of the session
+    for event in stream:
+        for block in (event.get("message") or {}).get("content") or []:
+            if isinstance(block, dict) and block.get("type") == "tool_result":
+                content = block.get("content")
+                text = "".join(c.get("text", "") for c in content if isinstance(c, dict)) \
+                    if isinstance(content, list) else str(content or "")
+                answers.append({"chars": len(text), "kept_out": text.startswith("<persisted-output>")
+                                or "exceeds maximum allowed tokens" in text, "error": text.startswith("Error")})
     tools = collections.Counter(block.get("name") for event in stream if event.get("type") == "assistant"
                                 for block in (event.get("message") or {}).get("content") or []
                                 if isinstance(block, dict) and block.get("type") == "tool_use")
@@ -280,7 +297,7 @@ def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: byt
     summary = {"case": name, "scope": scope, "model": MODELS[model], "rep": rep, "returncode": process.returncode,
                "timed_out": timed_out, "seconds": seconds, "cost_usd": result.get("total_cost_usd"),
                "turns": result.get("num_turns"), "usage": result.get("usage"), "tools": dict(tools),
-               "init_tools": init.get("tools"), "init_mcp": init.get("mcp_servers"), "version": init.get("claude_code_version"),
+               "answers": answers, "init_tools": init.get("tools"), "init_mcp": init.get("mcp_servers"), "version": init.get("claude_code_version"),
                "result": (result.get("result") or "")[-3000:], "stderr": (error or "")[-3000:]}
     _save(tag, f"{label}/stream.jsonl", stream_file.read_text(encoding="utf-8", errors="replace"))
     _save(tag, f"{label}/map.json", recorded)

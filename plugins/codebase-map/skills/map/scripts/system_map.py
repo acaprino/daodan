@@ -433,6 +433,24 @@ def _site_file(site: str) -> str:
     return path if line.isdigit() else site
 
 
+LEFT_LISTED = 40  # past this many, a report lists what coverage leaves out by directory; the map keeps the names
+
+
+def _reported(coverage: dict) -> dict:
+    """Coverage as a report gives it back: a long remainder is counted by directory, never dropped."""
+    out = {}
+    for kind, part in coverage.items():
+        if len(part["left"]) <= LEFT_LISTED:
+            out[kind] = part
+            continue
+        by = {}
+        for value in part["left"]:
+            where = value.split("::", 1)[0].rsplit("/", 1)[0] if "::" in value or kind != "stores" else value.split("/", 1)[0]
+            by[where] = by.get(where, 0) + 1
+        out[kind] = {"in": part["in"], "of": part["of"], "left_by_directory": dict(sorted(by.items()))}
+    return out
+
+
 def _coverage(links: dict, items: dict, holders: list[str]) -> dict:
     owners = [items[i] for i in dict.fromkeys(holders)]
 
@@ -653,7 +671,7 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
             "flows": [flow_reports[key(f["name"])] for f in proposal["flows"]],
             "failing": [f["id"] for f in system["flows"] if f["id"] not in proposed and f["status"] not in
                         ("accepted", "confirmed")],
-            "coverage": system["coverage"],
+            "coverage": _reported(system["coverage"]),
             "created": sorted(set(after) - set(before)), "removed": sorted(set(before) - set(after)),
             "updated": sorted(i for i in set(after) & set(before) if plain(after[i]) != plain(before[i])),
             "kept": sorted(i for i in set(after) & set(before) if plain(after[i]) == plain(before[i]))}

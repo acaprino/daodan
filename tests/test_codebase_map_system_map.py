@@ -294,6 +294,16 @@ class RecordTests(unittest.TestCase):
     def node_report(self, report, name):
         return next(n for n in report["nodes"] if n["name"] == name)
 
+    def test_a_long_remainder_is_reported_by_directory_and_kept_by_name_in_the_map(self):
+        from unittest import mock
+        with mock.patch.object(system_map, "LEFT_LISTED", 2):
+            report = self.record(TEST_MAP)
+        entries = report["coverage"]["entries"]
+        self.assertNotIn("left", entries)
+        self.assertEqual(entries["left_by_directory"], {"admin": 1, "server": 1, "web": 1})
+        self.assertEqual(report["coverage"]["routes"]["left"], ["admin/orders.py::list_all_orders", "server/orders.py::list_orders"])
+        self.assertEqual(len(self.load()["coverage"]["entries"]["left"]), 3)
+
     def test_coverage_counts_what_the_accepted_flows_hold(self):
         report = self.record(TEST_MAP)
         coverage = report["coverage"]
