@@ -58,4 +58,4 @@ Una esecuzione per dimensione.
 - Con la finestra visibile, a 100 nodi: layout 934 e 1.169 ms, grafo disegnato in 1.165 e 1.492 ms, selezione p50 70 e 91 ms, p95 116 e 144 ms (due esecuzioni). Una finestra nascosta o coperta riduce i frame a circa uno al secondo e falsa ogni tempo: per questo `measure.js` apre un browser headless e si rifiuta sotto 30 frame al secondo.
 - Cause non verificate con un profilo: a ogni selezione il viewer ricalcola la proiezione e ricrea gli oggetti di tutti i nodi e di tutti gli archi, che React Flow ridisegna.
 - Non misurato: un run reale.
-- La [mappa funzionale](../../docs/specs/2026-11-12-mappa-funzionale.md), una proposta, mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Conviene decidere su quella prima di ottimizzare questo viewer per centinaia di nodi.
+- La [mappa del sistema](../../docs/specs/2026-11-12-mappa-del-sistema.md), una proposta, mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Conviene decidere su quella prima di ottimizzare questo viewer per centinaia di nodi.
