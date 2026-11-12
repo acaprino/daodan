@@ -66,3 +66,4 @@ Vue e Svelte sono verificati su una fixture, non su un progetto pubblico.
 - **Rust.** Le macro procedurali e i build script restano spenti: ciò che generano non ha tipi, quindi le chiamate a funzioni generate restano senza risposta. Le dipendenze di Cargo si scaricano nella cartella condivisa; senza la toolchain completa Daodan scarica 550 MB di Rust.
 - **Go.** Una chiamata su un valore di funzione o su un'interfaccia anonima non ha una dichiarazione a cui arrivare.
 - **Da fare.** C#: scegliere il motore misurando server LSP e SCIP. C e C++: prima l'adattatore tree-sitter, poi clangd.
+- **Da fare, progetto a sé: copertura runtime per JavaScript.** Ciò che lo statico non risolve (i metodi di `req`, `res` e `app` su express; `create`, `findOne` e `send` su valori senza tipo in tududi) si vede solo osservando il programma in esecuzione. Oggi nessun motore esegue codice del progetto.
