@@ -6,6 +6,7 @@ import type { EdgeProps, NodeProps } from '@xyflow/react';
 import { ArrowLeft, ChevronRight, FolderOpen, Route, Search, X } from 'lucide-react';
 import '@xyflow/react/dist/style.css';
 import './style.css';
+import { getJson, POLL_MS, Session } from './session';
 import { parseEnvelope } from './envelope.ts';
 import type { Entity, Envelope, Flow } from './envelope.ts';
 import { childrenOf, dataLinks, flowFocus, flowsThrough, indexOf, project } from './projection.ts';
@@ -147,8 +148,23 @@ function FlowPanel({ state, dispatch }: { state: ExplorerState; dispatch: (actio
   </>;
 }
 
-function Explorer({ envelope }: { envelope: Envelope }) {
+// A finding names a project-relative file; the envelope's refs are relative to the run's target.
+function fileRef(envelope: Envelope, file: string): string | null {
+  const target = String(envelope.meta.target ?? '.').replace(/\/+$/, '');
+  if (target === '.' || target === '') return `file:${file}`;
+  return file.startsWith(`${target}/`) ? `file:${file.slice(target.length + 1)}` : null;
+}
+
+function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: string } | null }) {
   const [state, dispatch] = useReducer(reduce, envelope, initialState);
+  const shown = useRef(envelope);
+  useEffect(() => {
+    if (envelope !== shown.current) { shown.current = envelope; dispatch({ type: 'replaceEnvelope', json: envelope }); }
+  }, [envelope]);
+  useEffect(() => {
+    const ref = pick && fileRef(envelope, pick.file);
+    if (ref) dispatch({ type: 'select', ref });
+  }, [pick]);
   const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
   const [error, setError] = useState('');
   const [vertical, setVertical] = useState(() => window.matchMedia('(max-width: 899px)').matches);
@@ -259,7 +275,7 @@ function Explorer({ envelope }: { envelope: Envelope }) {
         })}</ul>
       </aside>
       <section className="canvas" aria-label="Grafo">
-        <ReactFlow nodes={nodes} edges={viewEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false}
+        <ReactFlow colorMode="dark" nodes={nodes} edges={viewEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false}
           edgesReconnectable={false} deleteKeyCode={null} minZoom={0.15} maxZoom={1.8} fitView zoomOnDoubleClick={false}
           onNodeClick={(_, node) => select((node.data as unknown as NodeData).node.ref)}
           onNodeDoubleClick={(_, node) => { const item = (node.data as unknown as NodeData).node; if (item.collapsed) dispatch({ type: 'open', ref: item.ref }); }}
@@ -277,16 +293,63 @@ function Explorer({ envelope }: { envelope: Envelope }) {
   </div>;
 }
 
+type LiveEvent = { cursor: number; timestamp: string; event: string; message: string; phase?: number };
+// Served by the MCP server the page lists the runs and follows the chosen run's events; served from an export it draws that file.
 function App() {
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
   const [failure, setFailure] = useState('');
+  const [runs, setRuns] = useState<string[] | null>(null);
+  const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
+  const [events, setEvents] = useState<LiveEvent[]>([]);
+  const [session, setSession] = useState(false);
+  const [pick, setPick] = useState<{ file: string } | null>(null);
+  const load = (url: string, stale = () => false) => getJson(url).then(json => {
+    if (!stale()) { setEnvelope(parseEnvelope(json)); setFailure(''); }
+  }).catch(reason => { if (!stale()) setFailure(String(reason?.message ?? reason)); });
+  const listRuns = (wanted?: string) => getJson('./api/runs').then(json => {
+    const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
+    setRuns(ids);
+    setRun(current => [wanted, current].find(id => id && ids.includes(id)) ?? ids[ids.length - 1] ?? '');
+  });
+  useEffect(() => { listRuns().catch(() => load('./data/visual.json')); }, []);
   useEffect(() => {
-    fetch('./data/visual.json').then(response => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
-      .then(json => setEnvelope(parseEnvelope(json))).catch(reason => setFailure(String(reason?.message ?? reason)));
-  }, []);
-  if (failure) return <main className="state"><h1>Export non leggibile</h1><p>{failure}</p></main>;
-  if (!envelope) return <main className="state" role="status">Carico l'export…</main>;
-  return <ReactFlowProvider><Explorer envelope={envelope} /></ReactFlowProvider>;
+    if (!runs || !run) return;
+    const address = `./data/visual.json?run=${encodeURIComponent(run)}`;
+    let cursor = 0, first = true, stopped = false, busy = false;
+    const stale = () => stopped;
+    setEnvelope(null); setEvents([]); load(address, stale);
+    // Reads every page the journal has, so the status line shows the latest event, not the 100th.
+    const poll = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const fresh: LiveEvent[] = [];
+        for (let more = true; more && !stopped;) {
+          const json = await getJson(`./api/events?run=${encodeURIComponent(run)}&after=${cursor}`);
+          fresh.push(...(json.events as LiveEvent[]));
+          cursor = json.next_cursor;
+          more = json.has_more;
+        }
+        if (stopped) return;
+        if (fresh.length) setEvents(current => [...current, ...fresh].slice(-20));
+        if (!first && fresh.some(item => item.event === 'phase_completed')) load(address, stale);
+        first = false;
+      } catch { /* the next poll retries */ } finally { busy = false; }
+    };
+    poll();
+    const timer = window.setInterval(poll, POLL_MS);
+    return () => { stopped = true; window.clearInterval(timer); };
+  }, [runs, run]);
+  const last = events[events.length - 1];
+  const live = runs && <><div className="live">
+    <label>Run <select value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>
+    <span className="muted" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
+    <button type="button" className="link" aria-expanded={session} onClick={() => setSession(!session)}>Sessione e review</button>
+  </div>{session && <Session onPick={file => setPick({ file })} onRun={id => { listRuns(id).catch(() => undefined); }} />}</>;
+  if (runs && !runs.length) return <><main className="state"><h1>Nessun run</h1><p>Crea un run qui sotto, o avvia una mappa nella sessione.</p></main><Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>;
+  if (failure) return <>{live}<main className="state"><h1>Export non leggibile</h1><p>{failure}</p></main></>;
+  if (!envelope) return <>{live}<main className="state" role="status">Carico l'export…</main></>;
+  return <>{live}<ReactFlowProvider key={run}><Explorer envelope={envelope} pick={pick} /></ReactFlowProvider></>;
 }
 
 createRoot(document.getElementById('app')!).render(<React.StrictMode><App /></React.StrictMode>);

@@ -17,11 +17,15 @@ the type its link rule names. A node of unknown type has none.
     python visual.py envelope RUN_DIR [--out FILE]
     python visual.py export RUN_DIR        # publishes .daodan/map/views/<run>/<digest>/visual.json
     python visual.py serve EXPORT_DIR      # http://127.0.0.1:<port>/, read-only
+
+The MCP server serves the same page live (`codebase_map_ui`): `live_routes` answers with the
+project's runs, a run's events and a run's envelope built at each request.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import os
 import shutil
@@ -30,7 +34,7 @@ import tempfile
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlsplit, urlunsplit
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -316,14 +320,40 @@ class _Server(ThreadingHTTPServer):
     allow_reuse_address = sys.platform != "win32"
 
 
-def make_server(export_dir: Path, assets_dir: Path, port: int = 0) -> ThreadingHTTPServer:
-    """A read-only server on 127.0.0.1: the viewer's files listed at start, and the export's envelope.
+def live_routes(service) -> dict:
+    """The JSON routes of a live explorer over one MapService; a refused request raises ValueError."""
+    def envelope(query: dict) -> dict:
+        return build_envelope(service.root / "runs" / service.status(query["run"])["run_id"])
+
+    return {"/api/runs": lambda query: service.runs(),
+            "/api/events": lambda query: service.events(query["run"], after=int(query.get("after", 0))),
+            "/api/requests": lambda query: service.ui_requests(),
+            "/api/findings": lambda query: service.ui_findings(),
+            "/data/visual.json": envelope}
+
+
+def live_actions(service) -> dict:
+    """What the page may ask: a request for the host session, and a run, which starts no model."""
+    return {"/api/requests": lambda body: service.ui_request(body.get("kind"), body.get("scope"), body.get("text", "")),
+            "/api/runs": lambda body: service.create_run(body["target"], body["run_id"])}
+
+
+def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
+                actions: dict | None = None, token: str | None = None) -> ThreadingHTTPServer:
+    """A server on 127.0.0.1, read-only without `actions`: the viewer's files listed at start, and the export's envelope.
+
+    `routes` maps an exact path to a function of the query that returns JSON, in place of
+    an export: a ValueError, a missing parameter or an unreadable file answers 400.
+    `actions` maps an exact path to a function of a POSTed JSON object of at most 16 KiB;
+    a POST from another origin, or one that is not JSON, is refused before it is read.
+    With `token`, every route and action also needs the `X-Daodan-Token` header: another
+    local user who finds the port cannot read the project or queue requests.
 
     Paths are matched exactly against the list, so no request reaches a file outside it,
     a directory is never listed and a link in the assets is never served. A request whose
     Host is not this server is refused, and no response allows other origins.
     """
-    export_dir, assets_dir = Path(export_dir).resolve(), Path(assets_dir).resolve()
+    assets_dir = Path(assets_dir).resolve()
     allowed: dict[str, Path] = {}
     for path in sorted(assets_dir.rglob("*")) if assets_dir.is_dir() else []:
         relative = path.relative_to(assets_dir)
@@ -332,17 +362,54 @@ def make_server(export_dir: Path, assets_dir: Path, port: int = 0) -> ThreadingH
             allowed["/" + relative.as_posix()] = path
     if "/index.html" in allowed:
         allowed["/"] = allowed["/index.html"]
-    allowed["/data/visual.json"] = export_dir / "visual.json"
+    if export_dir is not None:
+        allowed["/data/visual.json"] = Path(export_dir).resolve() / "visual.json"
+    routes, actions = routes or {}, actions or {}
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):  # noqa: N802 - the stdlib names the method
             port = self.server.server_address[1]
             if self.headers.get("Host") not in (f"127.0.0.1:{port}", f"localhost:{port}"):
                 return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
-            target = allowed.get(urlsplit(self.path).path)
+            address = urlsplit(self.path)
+            if address.path in routes:
+                if not self._authorized():
+                    return self._json(403, {"error": "refused"})
+                try:
+                    return self._json(200, routes[address.path](dict(parse_qsl(address.query))))
+                except (ValueError, KeyError, TypeError, OSError) as error:
+                    return self._json(400, {"error": str(error)})
+            if address.path == "/data/visual.json" and not self._authorized():
+                return self._json(403, {"error": "refused"})
+            target = allowed.get(address.path)
             if target is None or not target.is_file():
                 return self._send(404, b"not found", "text/plain; charset=utf-8")
             return self._send(200, target.read_bytes(), _TYPES.get(target.suffix.lower(), "application/octet-stream"))
+
+        def do_POST(self):  # noqa: N802 - the stdlib names the method
+            port = self.server.server_address[1]
+            origins = (f"http://127.0.0.1:{port}", f"http://localhost:{port}")
+            action = actions.get(urlsplit(self.path).path)
+            if self.headers.get("Host") not in (origin[7:] for origin in origins):
+                return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
+            length = self.headers.get("Content-Length") or ""
+            length = int(length) if length.isdigit() else 0
+            if (action is None or self.headers.get("Origin") not in origins or not 0 < length <= 16384
+                    or self.headers.get("Content-Type") != "application/json" or not self._authorized()):
+                return self._json(403, {"error": "refused"})
+            try:
+                body = json.loads(self.rfile.read(length))
+                if not isinstance(body, dict):
+                    raise ValueError("the body is not a JSON object")
+                return self._json(200, action(body))
+            except (ValueError, KeyError, TypeError, OSError) as error:
+                return self._json(400, {"error": str(error)})
+
+        def _authorized(self) -> bool:
+            return token is None or hmac.compare_digest(self.headers.get("X-Daodan-Token", ""), token)
+
+        def _json(self, code: int, value) -> None:
+            self._send(code, json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), "application/json")
 
         def _send(self, code: int, body: bytes, kind: str) -> None:
             self.send_response(code)

@@ -49,13 +49,16 @@ for `uv run --script` and refuses an older interpreter in main().
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from contextlib import ExitStack
 from concurrent.futures import ThreadPoolExecutor
 import copy
 import fnmatch
+import functools
 import hashlib
 from importlib import metadata
 import json
+import math
 import os
 import re
 import shutil
@@ -166,19 +169,55 @@ PRESENTATION_EXTENSIONS = frozenset({
     ".twig", ".vm", ".xhtml",
 })
 
-# The Codebase Map's forbidden list. These never enter the manifest, not even as a hash.
+# What the Codebase Map never reads; such a file never enters the manifest, not even as a hash.
+# The obvious credential files, by name alone.
 FORBIDDEN_GLOBS = (
-    ".env", ".env.*", "credentials.*", "secrets.*", "*secret*", "*credential*",
+    ".env", ".env.*", "credentials.*", "secrets.*",
     "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*",
     ".npmrc", ".pypirc", ".netrc",
     "*service-account*.json", "*kubeconfig*", "*.tfstate", "*.tfstate.*", "*.keystore", "*.jks",
 )
+# Any other name that speaks of secrets is read unless its content holds a generated value: a
+# run of at least 20 characters with an entropy of at least 4.5 bits per character, or 3 when
+# hexadecimal. secretCipher.js holds the code that encrypts, not a key.
+SECRET_NAME_GLOBS = ("*secret*", "*credential*")
+_RUN = re.compile(r"[A-Za-z0-9+/_.!@#$%^&*~?|-]{20,}")
+_HEX = re.compile(r"[0-9a-fA-F]+")
+_SCAN_BYTES = 2 * 1024 * 1024
 
 
-def is_forbidden(name: str) -> bool:
-    """True for a file the Codebase Map must never read. Case-insensitive."""
+def _generated(run: str) -> bool:
+    entropy = -sum(n / len(run) * math.log2(n / len(run)) for n in Counter(run).values())
+    return not run.isdigit() and entropy >= (3.0 if _HEX.fullmatch(run) else 4.5)
+
+
+@functools.lru_cache(maxsize=4096)
+def _holds_generated_value(path: str, mtime_ns: int, size: int) -> bool:
+    try:
+        with open(path, "rb") as stream:
+            text = stream.read(_SCAN_BYTES).decode("utf-8", "ignore")
+    except OSError:
+        return True
+    return any(_generated(run) for run in _RUN.findall(text))
+
+
+def is_forbidden(name: str, path: Path | None = None) -> bool:
+    """
+    True for a file the Codebase Map must never read. Case-insensitive.
+
+    A name that speaks of secrets without being an obvious credential file is judged by the
+    content read through `path`; without a path such a file is not forbidden.
+    """
     lowered = name.lower()
-    return any(fnmatch.fnmatchcase(lowered, glob) for glob in FORBIDDEN_GLOBS)
+    if any(fnmatch.fnmatchcase(lowered, glob) for glob in FORBIDDEN_GLOBS):
+        return True
+    if path is None or not any(fnmatch.fnmatchcase(lowered, glob) for glob in SECRET_NAME_GLOBS):
+        return False
+    try:
+        stat = path.stat()
+    except OSError:
+        return False
+    return _holds_generated_value(str(path), stat.st_mtime_ns, stat.st_size)
 
 
 def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Path]:
@@ -193,9 +232,9 @@ def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Pat
     perimeter = perimeter or Perimeter(target)
     for directory, filenames in perimeter.walk():
         for name in filenames:
-            if is_forbidden(name):
-                continue
             path = directory / name
+            if is_forbidden(name, path):
+                continue
             if target.is_file() and path != target:
                 continue
             suffix = path.suffix.lower()
@@ -1429,7 +1468,7 @@ def ts_path_config(root: Path, *, source_observations: dict[Path, bytes] | None 
             path.resolve().relative_to(root)
         except ValueError:
             return False
-        return perimeter.covers(path) and not is_forbidden(path.name)
+        return perimeter.covers(path) and not is_forbidden(path.name, path)
 
     documents: dict[Path, dict] = {}
 
@@ -1649,7 +1688,7 @@ def iter_resolved_imports(manifest: dict, config: dict | None = None, *,
     by_norm: dict[str, str] = {}
     allowed_importers: set[str] = set()
     for rel in files:
-        if is_forbidden(Path(rel).name):
+        if is_forbidden(Path(rel).name, root / rel):
             continue
         full_path = root / rel
         resolved_rel = full_path.resolve()

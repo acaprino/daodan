@@ -219,8 +219,8 @@ class _Inventory:
         parts = PurePosixPath(rel).parts
         if not parts or ".." in parts or PurePosixPath(rel).is_absolute() or ":" in parts[0]:
             return "not a project-relative path"
-        if snapshot.is_forbidden(parts[-1]):
-            return "secret-like file name, never inventoried"
+        if snapshot.is_forbidden(parts[-1], self.root / rel):
+            return "credential or secret file, never inventoried"
         if any(part.startswith(".") for part in parts[:-1]):
             return "inside a dot directory, outside the map perimeter"
         if any(part in DEPENDENCY_DIRS for part in parts):

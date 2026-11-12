@@ -77,6 +77,9 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | `codebase_map_artifact` | `run_id`, `name`: one declared artifact's content, `bytes` and digest of the whole file; content stops at 2,000,000 bytes with `truncated: true` |
 | `codebase_map_checkpoint` | `run_id`, `phase`, `event`, optional `message`: persist a host phase hook |
 | `codebase_map_events` | `run_id`, optional `after=0`, `limit=100`: persistent events and replay cursor |
+| `codebase_map_ui` | no arguments: starts once the explorer of this project on 127.0.0.1 and returns its `url`, whose `token` the page sends with every data request; give it only to the person. The page lists the runs, draws a run's envelope, polls its events, creates runs and records requests |
+| `codebase_map_ui_requests` | optional `take=false`, `release=[]`: what the person asked in the explorer (`kind` map or review, `scope` global, changeset, feature or prompt, `text`); `release` returns taken requests a stopped session left behind to pending, then `take` moves the pending ones to `taken`. The 50 most recent done requests are kept. The host runs each with its own method: the server starts no model |
+| `codebase_map_ui_done` | `request_id`, optional `results`, `message`: close a taken request; `results` are project-relative JSON files with a `findings` or `retained_findings` list, which the explorer shows |
 | `codebase_map_resume` | `run_id`, optional `phase`: prepare continuation of the unchanged exact run |
 | `codebase_map_stop` | `run_id`, `reason`: record partial state and unregister after workers have stopped |
 | `codebase_map_publish` | `run_id`: canonical freshness, delivery and whole-mirror publication; only an `in_progress` run publishes, so resume a stopped run first |

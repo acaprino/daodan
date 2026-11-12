@@ -47,8 +47,8 @@ Save this complete native final report to the caller's declared report path, or
 `report.md` in the prepared owned output root. Keep the consolidated, verification
 and worker files as native evidence and link their details rather than generating
 parallel presentation content. After saving, apply this skill's `Optional human
-view` contract: no HTML renderer exists, so Markdown remains authoritative and HTML rendering
-is declared unavailable unless the host supplies one. Preserve all fields,
+view` contract: Markdown remains authoritative and HTML comes only from that
+contract's renderer. Preserve all fields,
 provenance, filtered and contested results, coverage gaps, degraded dimensions and
 unknown values. An explicitly requested HTML delivery must be accounted for before
 declaring the requested output complete.

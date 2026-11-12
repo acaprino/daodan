@@ -32,7 +32,7 @@ def _allowed(path: Path, rel: str, root: Path, target: Path, perimeter: Perimete
 
     return (target.is_relative_to(root) and path.is_relative_to(target if target.is_dir() else target.parent)
             and (target.is_dir() or path == target) and perimeter.covers(path)
-            and not is_forbidden(Path(rel).name))
+            and not is_forbidden(Path(rel).name, path))
 
 
 def _index_reusable(index: dict | None, manifest: dict, observations: dict | None) -> bool:

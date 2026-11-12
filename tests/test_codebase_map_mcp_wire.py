@@ -126,11 +126,29 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.process.stdin.close()
         self.assertEqual(self.process.wait(timeout=10), 0)
 
+    def test_ui_tool_starts_one_explorer_that_answers_with_the_runs(self):
+        import http.client
+        from urllib.parse import urlsplit
+        first = self.data(self.call("codebase_map_ui", {}))
+        self.assertEqual(self.data(self.call("codebase_map_ui", {})), first)
+        address = urlsplit(first["url"])
+        self.assertEqual(address.hostname, "127.0.0.1")
+        token = address.query.removeprefix("token=")
+        self.assertGreater(len(token), 20)
+        for header, status in (({}, 403), ({"X-Daodan-Token": token}, 200)):
+            connection = http.client.HTTPConnection(address.hostname, address.port, timeout=10)
+            connection.request("GET", "/api/runs", headers=header)
+            response = connection.getresponse()
+            self.assertEqual(response.status, status)
+            if status == 200:
+                self.assertIn("runs", json.loads(response.read()))
+            connection.close()
+
     def test_real_tool_catalog_exposes_typed_tools_without_context(self):
         catalog = self.request("tools/list", {})["result"]["tools"]
         by_name = {tool["name"]: tool for tool in catalog}
         for name in ("scope", "create_run", "runs", "status", "outline", "graph", "read", "search", "index",
-                     "diff", "artifact", "checkpoint", "events", "resume", "stop", "publish"):
+                     "diff", "artifact", "checkpoint", "events", "resume", "stop", "publish", "ui"):
             self.assertIn("codebase_map_" + name, by_name)
         search = by_name["codebase_map_search"]
         self.assertTrue(search["annotations"]["readOnlyHint"])

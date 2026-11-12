@@ -132,7 +132,7 @@ Esecuzione, tutta su Kiri:
 
 **Contraddizioni.** 41 archi osservati contraddicono il verdetto del motore. Nessuna è un errore del motore:
 
-- 34 vanno a `backend/shared/crypto/secretCipher.js`, che il motore classifica esterno. Lo snapshot non legge i file con «secret» nel nome (`FORBIDDEN_GLOBS`, `plugins/codebase-map/skills/map/scripts/snapshot.py:170`). In tududi la regola esclude 5 file tracciati: questo, che è codice, e quattro esempi di configurazione.
+- 34 vanno a `backend/shared/crypto/secretCipher.js`, che il motore classifica esterno. Lo snapshot non legge i file con «secret» nel nome (`FORBIDDEN_GLOBS`, `plugins/codebase-map/skills/map/scripts/snapshot.py:170`). In tududi la regola esclude 5 file tracciati: questo, che è codice, e quattro esempi di configurazione. Ora per nome si escludono solo i file ovvi (`.env`, `secrets.*`, `credentials.*`, chiavi); un altro nome con «secret» o «credential» esclude il file solo se il contenuto ha un valore generato (`snapshot.is_forbidden`, test in `tests/test_codebase_map_secret_files.py`).
 - 2 vengono da doppioni dei test: un `jest.mock` di `stripe` e una richiesta HTTP finta.
 - 5 vengono da chiamate omonime nella stessa funzione (`has`, `sign`, `create`), che il conteggio stretto esclude.
 
@@ -162,3 +162,40 @@ Il profiler campiona e vede il 35% delle chiamate che servono. `dynamic_record.j
 - **Validità.** Passano gli stessi 4.352 test; ogni sito registrato coincide con una chiamata dello snapshot, salvo i file che lo snapshot esclude.
 - **Non registrate.** Chiamate opzionali (`?.`), metodi privati, `super`, `import`, `require`, `eval`, membri calcolati e le chiamate sull'oggetto `jest`.
 - **Prova su due file di test.** 10 test su 10 passati; 1.604 siti registrati con 538 richieste all'inspector; i 30 siti senza chiamata corrispondente stanno tutti in `secretCipher.js`.
+
+### Registro esatto su tududi: misura, 12 novembre 2026
+
+Eseguita su Modal con `modal_dynamic.py`: 12 blocchi in parallelo, un container ciascuno (2 CPU, 4 GB) con il suo Postgres e la rete bloccata. L'immagine contiene l'archivio del commit `71da9d7b` e il suo `npm ci`. Ogni blocco tiene i suoi file anche sul volume `daodan-flow-results`, in `dynamic/exact-20261112/`.
+
+| JavaScript | Risolte | Risolvibili | Copertura |
+| --- | --- | --- | --- |
+| Passi 1 e 2 | 11.148 | 29.382 | 37,9% |
+| Con il profiler, conteggio largo | 11.447 | 24.315 | 47,1% |
+| Con il registro esatto | 11.824 | 16.381 | 72,2% |
+
+- **Soglia del 70%: raggiunta.** Il registro esatto non distingue conteggio stretto e largo: ogni sito è registrato con la funzione che ha chiamato.
+- **Test.** 4.352 su 4.352 passati, gli stessi della misura con il profiler.
+- **Risposte.** Delle 16.527 chiamate che il motore lascia senza risposta il registro ne risolve 13.677 (82,8%): 13.001 vanno a una libreria, 676 al progetto. Nei file sorgente sono 3.735 su 6.166 (60,6%), nei file di test 9.942 su 10.361 (96,0%). I nomi più frequenti sono `create`, `send`, `get` e `post`: database e richieste HTTP dei test.
+- **Contraddizioni.** 46, nessuna è un errore del motore: 37 vanno a `secretCipher.js`, escluso dallo snapshot; 7 a doppioni definiti nei file di test (pagamenti, captcha, mock di `nanoid`). Restano da guardare 2 archi provati verso il progetto per cui il registro ha visto una funzione nativa.
+- **Validità.** Rispettata per i test. I siti registrati senza chiamata nello snapshot sono 45: 34 stanno in `secretCipher.js`. Gli altri 11 sono chiamate dentro il lato sinistro di un'assegnazione, come `getConfig().hosted.enabled = true` o `counts[effectiveRole(row)] += 1`, e su quelle righe lo snapshot non ha nessuna chiamata. È una lacuna dell'estrattore JavaScript; la copertura non cambia, perché queste chiamate non entrano nemmeno nel denominatore.
+
+**Costo.**
+
+| Fase | Durata |
+| --- | --- |
+| Immagine, una volta | 30 s, di cui 17 s per `npm ci` |
+| 12 blocchi in parallelo | 274 s dal lancio all'ultimo risultato; un blocco dura da 140 a 263 s |
+| Stessi test in un solo processo su Kiri | Fermata dopo 5 blocchi su 12: 1.774 s, contro 1.800 s del profiler sugli stessi blocchi |
+| Stessi test con 4 processi su Kiri, limite 6 GB | Fermata dopo 22 minuti, a 138 file su 314: memoria al limite, 3 processi di Jest uccisi, 30 attese scadute nei test |
+
+La memoria di picco dei container e i crediti spesi su Modal non sono misurati.
+
+**Deviazioni.** Come nella misura con il profiler: la copia viene dall'archivio del commit, non dal perimetro dello snapshot, e la rete è aperta mentre si costruisce l'immagine. Node 22 e Postgres girano su Debian 12, non su Alpine.
+
+### Kiri portato da Daodan, lato Linux su Modal, 12 novembre 2026
+
+Prova 5 della spec, solo la parte Linux: un container Modal (gVisor, root, senza `/dev/kvm`) scarica `kiri-lite_0.2.0_amd64.deb` e `SHA256SUMS` dalla release, verifica il checksum, estrae il pacchetto con `dpkg-deb -x` senza installarlo e usa `HOME=/tmp/home`. Script: `modal_kiri.py`, tenuto fuori dal repository.
+
+- **Scaricare e usare senza installare: funziona.** Il pacchetto estratto pesa 8,2 MB. `kiri daemon` parte senza finestre in 3 ms e serve l'API di Docker su `$HOME/.kiri/run/docker.sock`.
+- **Eseguire un container: non funziona su Modal.** `kiri raw run --rm alpine echo` si ferma dopo 0,9 s con «Kiri needs cgroup v2 at /sys/fs/cgroup (this machine has cgroup v1 or a hybrid tree there)».
+- **Conseguenza.** Su Modal il passo dinamico usa i container di Modal, come in `modal_dynamic.py`. La parte Windows della prova 5, con una distribuzione WSL propria, è ancora da fare sul PC.

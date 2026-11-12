@@ -42,7 +42,7 @@ Eseguire i task nell'ordine e segnare solo i passi verificati. La Parte A misura
 ### Task 3: decisione
 
 - [ ] **Passo 1:** l'utente decide dai numeri del Task 2 se la Parte B parte, per quali linguaggi e con quale registratore.
-  - Registratore per JavaScript, deciso il 12 novembre 2026: il registro esatto (`benchmarks/call-provenance/dynamic_record.js`), da misurare sullo stesso caso prima di decidere il resto.
+  - Registratore per JavaScript, deciso il 12 novembre 2026: il registro esatto (`benchmarks/call-provenance/dynamic_record.js`), da misurare sullo stesso caso prima di decidere il resto. Misurato lo stesso giorno: 72,2%, soglia raggiunta (README del benchmark).
 
 ## Parte B: nel plugin (dopo la misura)
 
