@@ -137,6 +137,22 @@ class AstParserTests(unittest.TestCase):
         self.assertEqual(result.functions[0].calls_made, ["build().finish", "build", "api.send"])
         self.assertEqual(result.external_calls, [])
 
+    def test_assignment_targets_record_their_calls_and_keep_the_scope_resolved(self):
+        self.require("javascript")
+        result = javascript.adapter.parse(
+            "function setup(row) {\n"
+            "  getConfig().hosted.enabled = true;\n"
+            "  counts[effectiveRole(row)] += 1;\n"
+            "  worksheet.getRow(1).font = bold();\n"
+            "  items[pick()]++;\n"
+            "  this.name = row.name;\n"
+            "}\n"
+            "module.exports = { setup };\n",
+            "targets.js")
+        calls = [r["parts"] for r in result.semantic["references"] if r["kind"] == "call"]
+        self.assertEqual(calls, [["getConfig"], ["effectiveRole"], ["worksheet", "getRow"], ["bold"], ["pick"]])
+        self.assertEqual([s for s in result.semantic["scopes"] if s.get("unresolved")], [])
+
     def test_expression_bodied_arrows_and_method_calls_are_attributed(self):
         self.require("typescript")
         result = typescript.adapter.parse(

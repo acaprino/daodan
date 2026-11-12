@@ -478,6 +478,11 @@ class _JavaScriptEvidence(_Evidence):
             pattern = node.child_by_field_name("pattern") or node.child_by_field_name("name")
             self.binding(pattern, kind, scope)
             self.walk(node.child_by_field_name("value"))
+        elif t in ("member_expression", "subscript_expression"):
+            # An assignment target such as getConfig().x or counts[key(row)] binds no name;
+            # its object and index are evaluated.
+            self.walk(node.child_by_field_name("object"))
+            self.walk(node.child_by_field_name("index"))
         elif t not in ("type_annotation", "comment"):
             self.block(f"unsupported binding pattern: {t}")
 

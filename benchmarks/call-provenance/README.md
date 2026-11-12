@@ -177,7 +177,7 @@ Eseguita su Modal con `modal_dynamic.py`: 12 blocchi in parallelo, un container 
 - **Test.** 4.352 su 4.352 passati, gli stessi della misura con il profiler.
 - **Risposte.** Delle 16.527 chiamate che il motore lascia senza risposta il registro ne risolve 13.677 (82,8%): 13.001 vanno a una libreria, 676 al progetto. Nei file sorgente sono 3.735 su 6.166 (60,6%), nei file di test 9.942 su 10.361 (96,0%). I nomi più frequenti sono `create`, `send`, `get` e `post`: database e richieste HTTP dei test.
 - **Contraddizioni.** 46, nessuna è un errore del motore: 37 vanno a `secretCipher.js`, escluso dallo snapshot; 7 a doppioni definiti nei file di test (pagamenti, captcha, mock di `nanoid`). Restano da guardare 2 archi provati verso il progetto per cui il registro ha visto una funzione nativa.
-- **Validità.** Rispettata per i test. I siti registrati senza chiamata nello snapshot sono 45: 34 stanno in `secretCipher.js`. Gli altri 11 sono chiamate dentro il lato sinistro di un'assegnazione, come `getConfig().hosted.enabled = true` o `counts[effectiveRole(row)] += 1`, e su quelle righe lo snapshot non ha nessuna chiamata. È una lacuna dell'estrattore JavaScript; la copertura non cambia, perché queste chiamate non entrano nemmeno nel denominatore.
+- **Validità.** Rispettata per i test. I siti registrati senza chiamata nello snapshot sono 45: 34 stanno in `secretCipher.js`. Gli altri 11 sono chiamate dentro il lato sinistro di un'assegnazione, come `getConfig().hosted.enabled = true` o `counts[effectiveRole(row)] += 1`, e su quelle righe lo snapshot non ha nessuna chiamata. È una lacuna dell'estrattore JavaScript; la copertura non cambia, perché queste chiamate non entrano nemmeno nel denominatore. Corretta lo stesso giorno: sezione «Estrattore JavaScript: bersagli delle assegnazioni».
 
 **Costo.**
 
@@ -191,6 +191,18 @@ Eseguita su Modal con `modal_dynamic.py`: 12 blocchi in parallelo, un container 
 La memoria di picco dei container e i crediti spesi su Modal non sono misurati.
 
 **Deviazioni.** Come nella misura con il profiler: la copia viene dall'archivio del commit, non dal perimetro dello snapshot, e la rete è aperta mentre si costruisce l'immagine. Node 22 e Postgres girano su Debian 12, non su Alpine.
+
+### Estrattore JavaScript: bersagli delle assegnazioni, 12 novembre 2026
+
+Un bersaglio come `obj.x = …` o `a[i] += …` marcava lo scope come non risolto: la lettura lessicale di ogni nome in quello scope si fermava, e le chiamate dentro il bersaglio non venivano registrate. Su tududi 935 file JavaScript e TypeScript su 1.648 avevano uno scope bloccato, 686 lo scope del modulo, perché basta `module.exports = …`. Dopo la correzione (`languages/semantic.py`, `binding`) ne restano 14, tutti per i parametri di tipo generici di TypeScript.
+
+| JavaScript su tududi | Prima | Dopo |
+| --- | --- | --- |
+| Chiamate | 72.842 | 72.890 |
+| Risolte dalla lettura lessicale | 3.304 | 5.878 |
+| Risolte in tutto | 11.148 su 29.382 (37,9%) | 11.258 su 29.350 (38,4%) |
+
+Le chiamate che lo scope bloccato fermava le risolveva quasi tutte il motore: la copertura sale di 0,4 punti. Senza motore la lettura lessicale ne risolve il 78% in più. Misura: `benchmarks/flow-model/modal_engine_count.py`, tag `assign-20261112` sul volume `daodan-flow-results`.
 
 ### Kiri portato da Daodan, lato Linux su Modal, 12 novembre 2026
 
