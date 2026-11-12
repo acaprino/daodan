@@ -104,7 +104,7 @@ Regole. Un nodo con codice è accettato se ogni membro esiste: file e simboli ne
 
 Mappa di prova sulla fixture: `Cliente` (attore, esterno, evidenza `web/checkout.ts`), `Checkout` (schermata, `web/checkout.ts`), `Badge pagamento` (schermata, `web/badge.ts`), `API pagamenti` (servizio o API, `server/payments.py` e `server/gateway.py`), `Pagamento` (entità, `store:db/payments` e `store:web state/payment`), `card payment provider` (gateway, esterno, evidenza `server/gateway.py`), `Riprova` (funzionalità, `server/jobs.py`), `Server shop` (dispositivo, esterno, evidenza `server/http.py`), con `API pagamenti` che ha `on: ["Server shop"]`. Due flussi: `Pagare un ordine` (funzionale, area «pagamenti e abbonamenti», con i primi sei nodi) e `Riprova dei pagamenti` (operativo, area «esercizio», con `Pagamento` e `Riprova`).
 
-- [ ] **Passo 1:** test che falliscono.
+- [x] **Passo 1:** test che falliscono.
 
 ```python
 proved = {(a["from"], a["to"]) for flow in report["flows"] for a in flow["arrows"] if a["status"] == "proved"}
@@ -121,8 +121,8 @@ assert "db/paymnts" in node("Refuso")["reason"]                           # chia
 assert status_with_cite("Cliente", "Checkout", "web/checkout.ts:9999") == "refused"
 ```
 
-- [ ] **Passo 2:** implementare; i test passano, compresi quelli di `tests/test_codebase_map_modules*.py`.
-- [ ] **Passo 3:** commit.
+- [x] **Passo 2:** implementare; i test passano, compresi quelli di `tests/test_codebase_map_modules*.py`.
+- [x] **Passo 3:** commit.
 
 ### Task 3: copertura, registrazione, aggiornamento, conferma, freschezza
 

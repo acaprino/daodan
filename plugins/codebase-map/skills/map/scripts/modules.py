@@ -798,6 +798,20 @@ def _evidence(inventory: _Inventory, text: str) -> dict:
     return record
 
 
+def resolve_members(manifest: Path, texts: list[str]) -> list[dict]:
+    """Members as the snapshot knows them, each resolved or with the reason it is not."""
+    with open_snapshot(manifest) as store:
+        inventory = _Inventory(store)
+        return [_member(inventory, store, text) for text in texts]
+
+
+def resolve_evidence(manifest: Path, texts: list[str]) -> list[dict]:
+    """`path` or `path#heading` references, each resolved or with the reason it is not."""
+    with open_snapshot(manifest) as store:
+        inventory = _Inventory(store)
+        return [_evidence(inventory, text) for text in texts]
+
+
 def _review_paths(inventory: _Inventory, files: set[str]) -> list[str]:
     """Member files, collapsed to a directory only when every inventoried file in it is a member."""
     paths: list[str] = []

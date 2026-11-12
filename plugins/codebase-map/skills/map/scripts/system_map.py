@@ -9,6 +9,11 @@ are files, symbols, store keys and modules. A node without code (an actor, a dev
 an external service or project, a part outside the snapshot) has no members and
 cites its evidence. A flow is a named process: its nodes and the arrows between
 them, each with the data that passes. References between nodes are by name.
+
+An arrow between two nodes with code is proved by a link from a member of the first
+to a member of the second, or by a write and a read of the same store key; it asserts
+only what those links say. An arrow with an end without code, or one that says
+`stessa informazione`, is declared: it names its kind and cites a `path:line`.
 """
 from __future__ import annotations
 
@@ -21,6 +26,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import flows  # noqa: E402
+import modules  # noqa: E402
+from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-map/v1"
 NODE_TYPES = flows.NODE_TYPES + ("entità",)
@@ -190,3 +197,132 @@ def validate(value: object) -> dict:
     if scope is not None:
         out["scope"] = scope
     return out
+
+
+# ---------------------------------------------------------------- verification
+
+def _module_files(manifest: Path) -> dict[str, list[str]]:
+    state = modules.ensure_graph(manifest)
+    graph = modules.load_graph(Path(state["graph"]))
+    return {modules.slug(m["name"]): m.get("files", []) for m in graph["modules"]}
+
+
+def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict) -> dict[str, dict]:
+    """Per node key: status, reason, files, and what it owns (whole files, symbols, other members)."""
+    texts = sorted({m for r in records for m in r["members"] if not m.startswith(("store:", "module:"))})
+    members = dict(zip(texts, modules.resolve_members(manifest, texts))) if texts else {}
+    cited = sorted({e for r in records for e in r["evidence"]})
+    evidence = dict(zip(cited, modules.resolve_evidence(manifest, cited))) if cited else {}
+    module_files = None
+    out = {}
+    for record in records:
+        problems, whole, symbols, others = [], set(), set(), set()
+        for member in record["members"]:
+            if member.startswith("store:"):
+                others.add(member)
+                if member[6:] not in links["stores"]:
+                    problems.append(f"member {member}: the links have no store key {member[6:]}")
+            elif member.startswith("module:"):
+                module_files = _module_files(manifest) if module_files is None else module_files
+                found = module_files.get(modules.slug(member[7:]))
+                others.add("module:" + modules.slug(member[7:]))
+                if found is None:
+                    problems.append(f"member {member}: the module graph has no module of that name")
+                else:
+                    whole.update(found)
+            elif not (found := members[member])["resolved"]:
+                problems.append(f"member {member}: {found['reason']}")
+            elif found["kind"] == "directory":
+                whole.update(f for f in headers if modules._inside(f, found["path"]))
+            elif found["kind"] == "symbol":
+                symbols.add((found["path"], found["symbol"]))
+            else:
+                whole.add(found["path"])
+        problems += [f"evidence {e}: {evidence[e]['reason']}" for e in record["evidence"] if not evidence[e]["resolved"]]
+        report = {"name": record["name"], "status": "refused" if problems else "accepted",
+                  "files": sorted(whole | {path for path, _ in symbols})}
+        if problems:
+            report["reason"] = "; ".join(problems)
+        out[key(record["name"])] = {"report": report, "record": record, "whole": whole, "symbols": symbols,
+                                    "others": others}
+    changed = True
+    while changed:  # `on` names accepted nodes only
+        changed = False
+        for item in out.values():
+            refused = [n for n in item["record"]["on"] if out[key(n)]["report"]["status"] != "accepted"]
+            if refused and item["report"]["status"] == "accepted":
+                item["report"].update(status="refused", reason=f"on names refused nodes: {', '.join(refused)}")
+                changed = True
+    return out
+
+
+def _owns(item: dict, endpoint: str) -> bool:
+    if endpoint.startswith("store:"):
+        return endpoint in item["others"]
+    if endpoint.startswith("module:"):
+        return "module:" + modules.slug(endpoint[7:]) in item["others"]
+    path, _, symbol = endpoint.partition("::")
+    return path in item["whole"] or any(p == path and (symbol == s or symbol.startswith(s + "."))
+                                        for p, s in item["symbols"])
+
+
+def _proof(edge: dict) -> dict:
+    return {name: edge[name] for name in ("from", "to", "type", "site")}
+
+
+def _check_arrow(arrow: dict, first: dict, second: dict, links: dict, headers: dict) -> dict:
+    out = {"from": arrow["from"], "to": arrow["to"], "data": arrow["data"]}
+    refused = [i["report"]["name"] for i in (first, second) if i["report"]["status"] != "accepted"]
+    if refused:
+        return {**out, "status": "refused", "reason": f"nodes refused: {', '.join(refused)}"}
+    without_code = [i["report"]["name"] for i in (first, second) if i["record"]["position"] != "internal"]
+    if without_code or arrow.get("kind") == "stessa informazione":
+        return {**out, **_declared(arrow, first, second, headers)}
+    direct = [e for e in links["edges"] if _owns(first, e["from"]) and _owns(second, e["to"])]
+    pairs = [(w, r) for w in links["edges"] if w["type"] == "scrive" and _owns(first, w["from"])
+             for r in links["edges"] if r["type"] == "legge" and r["from"] == w["to"] and _owns(second, r["to"])]
+    if not direct and not pairs:
+        return {**out, "status": "refused",
+                "reason": f"no link from a member of {arrow['from']} to a member of {arrow['to']}, "
+                          "nor a write and a read of the same store key"}
+    types = {e["type"] for e in direct} | ({"trasferisce"} if pairs else set())
+    via = {e["to"] for e in direct if e["type"] == "scrive"} | {e["from"] for e in direct if e["type"] == "legge"}
+    via |= {w["to"] for w, _ in pairs}
+    proof = [_proof(e) for e in direct] + [_proof(e) for pair in pairs for e in pair]
+    return {**out, "status": "proved", "asserts": [k for k in ARROW_KINDS if k in types],
+            "via": sorted(v[6:] for v in via), "proof": list({tuple(p.values()): p for p in proof}.values())}
+
+
+def _declared(arrow: dict, first: dict, second: dict, headers: dict) -> dict:
+    """A declared arrow: its kind and a cited `path:line` that exists, in a file of an end with code."""
+    if "kind" not in arrow:
+        return {"status": "refused", "reason": "a declared arrow says its kind"}
+    if "cite" not in arrow:
+        return {"status": "refused", "reason": "a declared arrow cites path:line"}
+    path, _, line = arrow["cite"].rpartition(":")
+    lines = (headers.get(path) or {}).get("lines") or 0
+    if path not in headers or not line.isdigit() or not 1 <= int(line) <= lines:
+        return {"status": "refused", "reason": f"cite {arrow['cite']}: no such line in the snapshot"}
+    files = set(first["report"]["files"]) | set(second["report"]["files"])
+    if files and path not in files:
+        return {"status": "refused", "reason": f"cite {arrow['cite']}: {path} is not a file of an end with code"}
+    return {"status": "declared", "asserts": [arrow["kind"]], "via": [], "proof": [], "cite": arrow["cite"]}
+
+
+def verify(manifest: Path, links: dict, value: dict) -> dict:
+    """Accept or refuse each node, arrow and flow of a validated proposal, with the reason."""
+    manifest = Path(manifest)
+    with open_snapshot(manifest) as store:
+        headers = dict(store.iter_file_headers_only())
+    nodes = _check_nodes(manifest, links, value["nodes"], headers)
+    out = []
+    for record in value["flows"]:
+        arrows = [_check_arrow(a, nodes[key(a["from"])], nodes[key(a["to"])], links, headers) for a in record["arrows"]]
+        refused = [n for n in record["nodes"] if nodes[key(n)]["report"]["status"] != "accepted"]
+        report = {"name": record["name"], "status": "accepted", "arrows": arrows}
+        if refused:
+            report.update(status="refused", reason=f"nodes refused: {', '.join(refused)}")
+        elif all(a["status"] == "refused" for a in arrows):
+            report.update(status="refused", reason="no arrow stands")
+        out.append(report)
+    return {"nodes": [item["report"] for item in nodes.values()], "flows": out}
