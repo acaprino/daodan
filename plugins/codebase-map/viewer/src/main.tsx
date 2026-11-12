@@ -148,9 +148,23 @@ function FlowPanel({ state, dispatch }: { state: ExplorerState; dispatch: (actio
   </>;
 }
 
-function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { ref: string } | null }) {
+// A finding names a project-relative file; the envelope's refs are relative to the run's target.
+function fileRef(envelope: Envelope, file: string): string | null {
+  const target = String(envelope.meta.target ?? '.').replace(/\/+$/, '');
+  if (target === '.' || target === '') return `file:${file}`;
+  return file.startsWith(`${target}/`) ? `file:${file.slice(target.length + 1)}` : null;
+}
+
+function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: string } | null }) {
   const [state, dispatch] = useReducer(reduce, envelope, initialState);
-  useEffect(() => { if (pick) dispatch({ type: 'select', ref: pick.ref }); }, [pick]);
+  const shown = useRef(envelope);
+  useEffect(() => {
+    if (envelope !== shown.current) { shown.current = envelope; dispatch({ type: 'replaceEnvelope', json: envelope }); }
+  }, [envelope]);
+  useEffect(() => {
+    const ref = pick && fileRef(envelope, pick.file);
+    if (ref) dispatch({ type: 'select', ref });
+  }, [pick]);
   const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
   const [error, setError] = useState('');
   const [vertical, setVertical] = useState(() => window.matchMedia('(max-width: 899px)').matches);
@@ -288,9 +302,10 @@ function App() {
   const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [session, setSession] = useState(false);
-  const [pick, setPick] = useState<{ ref: string } | null>(null);
-  const load = (url: string) => getJson(url).then(json => { setEnvelope(parseEnvelope(json)); setFailure(''); })
-    .catch(reason => setFailure(String(reason?.message ?? reason)));
+  const [pick, setPick] = useState<{ file: string } | null>(null);
+  const load = (url: string, stale = () => false) => getJson(url).then(json => {
+    if (!stale()) { setEnvelope(parseEnvelope(json)); setFailure(''); }
+  }).catch(reason => { if (!stale()) setFailure(String(reason?.message ?? reason)); });
   const listRuns = (wanted?: string) => getJson('./api/runs').then(json => {
     const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
     setRuns(ids);
@@ -300,16 +315,27 @@ function App() {
   useEffect(() => {
     if (!runs || !run) return;
     const address = `./data/visual.json?run=${encodeURIComponent(run)}`;
-    let cursor = 0, first = true, stopped = false;
-    setEnvelope(null); setEvents([]); load(address);
-    const poll = () => getJson(`./api/events?run=${encodeURIComponent(run)}&after=${cursor}`).then(json => {
-      if (stopped) return;
-      const fresh = json.events as LiveEvent[];
-      cursor = json.next_cursor;
-      if (fresh.length) setEvents(current => [...current, ...fresh].slice(-20));
-      if (!first && fresh.some(item => item.event === 'phase_completed')) load(address);
-      first = false;
-    }).catch(() => undefined);
+    let cursor = 0, first = true, stopped = false, busy = false;
+    const stale = () => stopped;
+    setEnvelope(null); setEvents([]); load(address, stale);
+    // Reads every page the journal has, so the status line shows the latest event, not the 100th.
+    const poll = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const fresh: LiveEvent[] = [];
+        for (let more = true; more && !stopped;) {
+          const json = await getJson(`./api/events?run=${encodeURIComponent(run)}&after=${cursor}`);
+          fresh.push(...(json.events as LiveEvent[]));
+          cursor = json.next_cursor;
+          more = json.has_more;
+        }
+        if (stopped) return;
+        if (fresh.length) setEvents(current => [...current, ...fresh].slice(-20));
+        if (!first && fresh.some(item => item.event === 'phase_completed')) load(address, stale);
+        first = false;
+      } catch { /* the next poll retries */ } finally { busy = false; }
+    };
     poll();
     const timer = window.setInterval(poll, POLL_MS);
     return () => { stopped = true; window.clearInterval(timer); };
@@ -319,7 +345,7 @@ function App() {
     <label>Run <select value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>
     <span className="muted" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
     <button type="button" className="link" aria-expanded={session} onClick={() => setSession(!session)}>Sessione e review</button>
-  </div>{session && <Session onPick={ref => setPick({ ref })} onRun={id => { listRuns(id).catch(() => undefined); }} />}</>;
+  </div>{session && <Session onPick={file => setPick({ file })} onRun={id => { listRuns(id).catch(() => undefined); }} />}</>;
   if (runs && !runs.length) return <><main className="state"><h1>Nessun run</h1><p>Crea un run qui sotto, o avvia una mappa nella sessione.</p></main><Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>;
   if (failure) return <>{live}<main className="state"><h1>Export non leggibile</h1><p>{failure}</p></main></>;
   if (!envelope) return <>{live}<main className="state" role="status">Carico l'export…</main></>;

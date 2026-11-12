@@ -11,11 +11,14 @@ const STATES: Record<string, string> = { pending: 'in attesa della sessione', ta
 
 const answer = (response: Response) => response.json().catch(() => ({})).then(json =>
   (response.ok ? json : Promise.reject(new Error(json.error ?? `HTTP ${response.status}`))));
-export const getJson = (url: string) => fetch(url).then(answer);
+// The token comes in the address the MCP server returned; a static export has none and needs none.
+const TOKEN = new URLSearchParams(window.location.search).get('token') ?? '';
+const auth = TOKEN ? { 'X-Daodan-Token': TOKEN } : undefined;
+export const getJson = (url: string) => fetch(url, { headers: auth }).then(answer);
 const postJson = (url: string, body: unknown) =>
-  fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
+  fetch(url, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
 
-export function Session({ onPick, onRun }: { onPick: (ref: string) => void; onRun: (id: string) => void }) {
+export function Session({ onPick, onRun }: { onPick: (file: string) => void; onRun: (id: string) => void }) {
   const [requests, setRequests] = useState<Request[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
   const [gaps, setGaps] = useState<unknown[]>([]);
@@ -66,7 +69,7 @@ export function Session({ onPick, onRun }: { onPick: (ref: string) => void; onRu
     <div className="block">
       <h3>Finding · {findings.length}</h3>
       <ul className="links">{findings.map((item, index) => <li key={index}>
-        <button type="button" className="finding" onClick={() => item.file && onPick(`file:${item.file}`)}>
+        <button type="button" className="finding" onClick={() => item.file && onPick(item.file)}>
           <span><b className={`sev ${item.severity ?? ''}`}>{item.severity ?? 'unknown'}</b> <code>{item.file ?? 'unknown'}:{item.line ?? '?'}</code></span>
           <span>{item.title ?? item.premise ?? 'unknown'}</span>
           {item.example && <span className="muted">{item.example}</span>}

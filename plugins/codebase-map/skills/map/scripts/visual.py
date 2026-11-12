@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import os
 import shutil
@@ -333,13 +334,15 @@ def live_actions(service) -> dict:
 
 
 def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
-                actions: dict | None = None) -> ThreadingHTTPServer:
+                actions: dict | None = None, token: str | None = None) -> ThreadingHTTPServer:
     """A server on 127.0.0.1, read-only without `actions`: the viewer's files listed at start, and the export's envelope.
 
     `routes` maps an exact path to a function of the query that returns JSON, in place of
     an export: a ValueError, a missing parameter or an unreadable file answers 400.
     `actions` maps an exact path to a function of a POSTed JSON object of at most 16 KiB;
     a POST from another origin, or one that is not JSON, is refused before it is read.
+    With `token`, every route and action also needs the `X-Daodan-Token` header: another
+    local user who finds the port cannot read the project or queue requests.
 
     Paths are matched exactly against the list, so no request reaches a file outside it,
     a directory is never listed and a link in the assets is never served. A request whose
@@ -365,10 +368,14 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
                 return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
             address = urlsplit(self.path)
             if address.path in routes:
+                if not self._authorized():
+                    return self._json(403, {"error": "refused"})
                 try:
                     return self._json(200, routes[address.path](dict(parse_qsl(address.query))))
-                except (ValueError, KeyError, OSError) as error:
+                except (ValueError, KeyError, TypeError, OSError) as error:
                     return self._json(400, {"error": str(error)})
+            if address.path == "/data/visual.json" and not self._authorized():
+                return self._json(403, {"error": "refused"})
             target = allowed.get(address.path)
             if target is None or not target.is_file():
                 return self._send(404, b"not found", "text/plain; charset=utf-8")
@@ -378,11 +385,12 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
             port = self.server.server_address[1]
             origins = (f"http://127.0.0.1:{port}", f"http://localhost:{port}")
             action = actions.get(urlsplit(self.path).path)
-            length = int(self.headers.get("Content-Length") or 0)
             if self.headers.get("Host") not in (origin[7:] for origin in origins):
                 return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
+            length = self.headers.get("Content-Length") or ""
+            length = int(length) if length.isdigit() else 0
             if (action is None or self.headers.get("Origin") not in origins or not 0 < length <= 16384
-                    or self.headers.get("Content-Type") != "application/json"):
+                    or self.headers.get("Content-Type") != "application/json" or not self._authorized()):
                 return self._json(403, {"error": "refused"})
             try:
                 body = json.loads(self.rfile.read(length))
@@ -391,6 +399,9 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
                 return self._json(200, action(body))
             except (ValueError, KeyError, TypeError, OSError) as error:
                 return self._json(400, {"error": str(error)})
+
+        def _authorized(self) -> bool:
+            return token is None or hmac.compare_digest(self.headers.get("X-Daodan-Token", ""), token)
 
         def _json(self, code: int, value) -> None:
             self._send(code, json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), "application/json")

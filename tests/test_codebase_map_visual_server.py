@@ -2,7 +2,8 @@
 
 Live, over a MapService: the runs, a run's events after a cursor and a run's envelope; a refused request answers 400.
 The page's requests wait for the host, which takes and closes them; a closed request shows its findings. A POST
-from another origin is refused.
+from another origin, a bad length or a missing token is refused. A stopped session's taken request can be
+released; only the most recent done requests are kept; a malformed request file answers 400.
 """
 
 import http.client
@@ -136,6 +137,62 @@ class LiveTests(unittest.TestCase):
         self.assertEqual((shown["findings"][0]["line"], shown["findings"][0]["request"], shown["gaps"]), (3, 1, ["g"]))
         (self.project / "result.json").unlink()
         self.assertIn("result.json", self.get("/api/findings")[1]["gaps"][0])
+
+    def test_a_taken_request_can_be_released_and_done_ones_are_pruned(self):
+        self.service.ui_request("review", "global")
+        self.assertEqual(self.service.ui_requests(take=True)["taken"], [1])
+        with self.assertRaises(ValueError):
+            self.service.ui_requests(release=[2])
+        again = self.service.ui_requests(release=[1], take=True)
+        self.assertEqual((again["released"], again["taken"]), ([1], [1]))
+        for _ in range(mcp_service.MAX_UI_DONE + 5):
+            item = self.service.ui_request("map", "global")
+            self.service.ui_requests(take=True)
+            self.service.ui_done(item["id"])
+        self.service.ui_request("map", "global")
+        ids = [item["id"] for item in self.service.ui_requests()["requests"]]
+        self.assertEqual(len(ids), mcp_service.MAX_UI_DONE + 2)
+        self.assertEqual(ids[-1], mcp_service.MAX_UI_DONE + 7)
+
+    def test_a_malformed_request_file_answers_400(self):
+        (self.project / ".daodan/map/ui-requests.json").write_text('{"schema": 1, "requests": ["x"]}', encoding="utf-8")
+        for path in ("/api/requests", "/api/findings"):
+            with self.subTest(path=path):
+                self.assertEqual(self.get(path)[0], 400)
+
+    def test_a_token_guards_routes_and_actions(self):
+        server = visual.make_server(None, self.project / "no-assets", routes=visual.live_routes(self.service),
+                                    actions=visual.live_actions(self.service), token="secret-token")
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        port = server.server_address[1]
+
+        def call(method, path, headers):
+            connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+            body = json.dumps({"kind": "review", "scope": "global"}) if method == "POST" else None
+            connection.request(method, path, body, {"Origin": f"http://127.0.0.1:{port}",
+                                                    "Content-Type": "application/json", **headers})
+            status = connection.getresponse().status
+            connection.close()
+            return status
+
+        for method, path in (("GET", "/api/runs"), ("GET", "/data/visual.json?run=example"), ("POST", "/api/requests")):
+            with self.subTest(method=method, path=path):
+                self.assertEqual(call(method, path, {}), 403)
+                self.assertEqual(call(method, path, {"X-Daodan-Token": "wrong"}), 403)
+                self.assertEqual(call(method, path, {"X-Daodan-Token": "secret-token"}), 200)
+
+    def test_a_bad_content_length_is_refused(self):
+        port = self.server.server_address[1]
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+        connection.putrequest("POST", "/api/requests")
+        for name, value in (("Origin", f"http://127.0.0.1:{port}"), ("Content-Type", "application/json"),
+                            ("Content-Length", "abc")):
+            connection.putheader(name, value)
+        connection.endheaders()
+        self.assertEqual(connection.getresponse().status, 403)
+        connection.close()
 
     def test_refused_posts_change_nothing(self):
         good = {"kind": "review", "scope": "global"}

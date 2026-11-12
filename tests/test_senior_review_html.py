@@ -3,7 +3,9 @@
 Pinned: every finding has an index entry and an anchored article, ordered by
 severity; each finding opens with its plain example; a missing field reads `unknown`; an unplaced field is kept; text from a
 record is escaped; `--root` adds the cited source line and never reads outside
-the root; an input without a findings list fails.
+the root; an input without a findings list fails; a final report adds its degraded
+dimensions, filtered count and coverage, a reviewer result is marked unverified, and a
+single gap is never split into characters.
 """
 
 import json
@@ -70,6 +72,19 @@ class CommandTests(unittest.TestCase):
             page = out.read_text(encoding="utf-8")
             self.assertIn("recovery-auditor", page)
             self.assertIn('id="f-02"', page)
+            self.assertIn("before verification", page)
+
+    def test_a_final_report_keeps_its_coverage_and_a_single_gap_stays_whole(self):
+        with tempfile.TemporaryDirectory() as folder:
+            final = Path(folder, "final.json")
+            final.write_text(json.dumps({"retained_findings": [HIGH], "filtered_findings": [LOW, LOW],
+                                         "degraded_dimensions": ["security"], "coverage": {"files": 11},
+                                         "gaps": "python not covered"}), encoding="utf-8")
+            findings, gaps, verified = review_html.load([final])
+            self.assertTrue(verified)
+            self.assertEqual(gaps, ["python not covered", "degraded dimension: security",
+                                    "filtered by verification: 2", 'coverage: {&quot;files&quot;: 11}'])
+            self.assertNotIn("before verification", review_html.render(findings, gaps, verified=verified))
 
     def test_input_without_findings_fails(self):
         with tempfile.TemporaryDirectory() as folder:

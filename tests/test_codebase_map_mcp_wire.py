@@ -133,11 +133,16 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertEqual(self.data(self.call("codebase_map_ui", {})), first)
         address = urlsplit(first["url"])
         self.assertEqual(address.hostname, "127.0.0.1")
-        connection = http.client.HTTPConnection(address.hostname, address.port, timeout=10)
-        connection.request("GET", "/api/runs")
-        response = connection.getresponse()
-        self.assertEqual((response.status, "runs" in json.loads(response.read())), (200, True))
-        connection.close()
+        token = address.query.removeprefix("token=")
+        self.assertGreater(len(token), 20)
+        for header, status in (({}, 403), ({"X-Daodan-Token": token}, 200)):
+            connection = http.client.HTTPConnection(address.hostname, address.port, timeout=10)
+            connection.request("GET", "/api/runs", headers=header)
+            response = connection.getresponse()
+            self.assertEqual(response.status, status)
+            if status == 200:
+                self.assertIn("runs", json.loads(response.read()))
+            connection.close()
 
     def test_real_tool_catalog_exposes_typed_tools_without_context(self):
         catalog = self.request("tools/list", {})["result"]["tools"]

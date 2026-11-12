@@ -5,7 +5,7 @@ The page is a view of records that already exist: it reads `retained_findings`
 finding, field or judgement. Each finding opens with its `example`, the plain
 explanation through one realistic case. A missing field is shown as `unknown`; a field the
 page has no place for is listed under "Other fields". With `--root` each finding
-also shows the cited source lines. The page needs no server and no Daodan UI:
+also shows the cited source lines. Reviewer results precede verification, and the page says so. The page needs no server and no Daodan UI:
 the reader accepts or rejects each fix on it and pastes the reply block back.
 
 Standard library only.
@@ -71,13 +71,25 @@ reply();
 """
 
 
+def as_list(value):
+    """A record's list field: a single value is one item, never split into characters."""
+    if value is None or value == "" or value == []:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
 def load(paths):
-    """The findings and gaps of the given result files, each finding with its file's `reviewer` when it has none."""
-    findings, gaps = [], []
+    """The findings and gaps of the given result files, each finding with its file's `reviewer` when it has none.
+
+    A final report also contributes its degraded dimensions, filtered count and coverage as gaps. The third
+    value is True when every file is a final report, whose `retained_findings` survived verification.
+    """
+    findings, gaps, verified = [], [], True
     for path in paths:
         record = json.loads(Path(path).read_text(encoding="utf-8"))
         if not isinstance(record, dict):
             raise ValueError(f"{path}: not a JSON object")
+        verified = verified and "retained_findings" in record
         items = record.get("retained_findings", record.get("findings"))
         if not isinstance(items, list):
             raise ValueError(f"{path}: no retained_findings or findings list")
@@ -85,8 +97,14 @@ def load(paths):
             if not isinstance(item, dict):
                 raise ValueError(f"{path}: a finding is not an object")
             findings.append({"reviewer": record.get("reviewer"), **item})
-        gaps.extend(record.get("gaps") or [])
-    return findings, gaps
+        gaps.extend(as_list(record.get("gaps")))
+        gaps.extend(f"degraded dimension: {text(item)}" for item in as_list(record.get("degraded_dimensions")))
+        if "filtered_findings" in record:
+            filtered = record["filtered_findings"]
+            gaps.append(f"filtered by verification: {len(filtered) if isinstance(filtered, list) else text(filtered)}")
+        if record.get("coverage"):
+            gaps.append(f"coverage: {text(record['coverage'])}")
+    return findings, gaps, verified
 
 
 def text(value):
@@ -158,8 +176,8 @@ def article(ref, anchor, finding, root):
     return "".join(parts)
 
 
-def render(findings, gaps, title="Review findings", root=None):
-    """The whole page for these findings, ordered by severity, file and line."""
+def render(findings, gaps, title="Review findings", root=None, verified=True):
+    """The whole page for these findings, ordered by severity, file and line; unverified ones say so."""
     ordered = sorted(findings, key=rank)
     width = max(2, len(str(len(ordered))))
     entries = [(f"F-{number:0{width}}", f"f-{number:0{width}}", finding) for number, finding in enumerate(ordered, 1)]
@@ -175,6 +193,8 @@ def render(findings, gaps, title="Review findings", root=None):
     by_file = "".join(f"<li><code>{file}</code>{''.join(links)}</li>" for file, links in sorted(files.items()))
     gap_items = "".join(f"<li>{text(gap)}</li>" for gap in gaps) or "<li>none declared</li>"
     summary = f"{len(ordered)} findings" + (f" ({', '.join(counts)})" if counts else "") + f" · {len(gaps)} gaps"
+    if not verified:
+        summary += " · before verification: some may be filtered in the final report"
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1"><title>{escape(title)}</title>'
             f"<style>{CSS}</style></head><body>"
@@ -198,11 +218,11 @@ def main(argv=None):
     command.add_argument("--title", default="Review findings")
     args = parser.parse_args(argv)
     try:
-        findings, gaps = load(args.results)
+        findings, gaps, verified = load(args.results)
     except (OSError, ValueError) as error:
         print(f"review_html: {error}", file=sys.stderr)
         return 1
-    page = render(findings, gaps, args.title, Path(args.root) if args.root else None)
+    page = render(findings, gaps, args.title, Path(args.root) if args.root else None, verified)
     Path(args.out).write_text(page, encoding="utf-8")
     print(json.dumps({"output_path": args.out, "findings": len(findings), "gaps": len(gaps)}))
     return 0

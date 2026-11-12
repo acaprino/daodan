@@ -38,7 +38,9 @@ EVENT_FILE = "mcp-events.json"
 UI_FILE = "ui-requests.json"
 UI_KINDS = ("map", "review")
 UI_SCOPES = ("global", "changeset", "feature", "prompt")
-MAX_UI_REQUESTS = 200
+MAX_UI_REQUESTS = 200  # open requests; done ones beyond MAX_UI_DONE are dropped, oldest first
+MAX_UI_DONE = 50
+UI_STATES = ("pending", "taken", "done")
 MAX_UI_TEXT = 2000
 MAX_LIMIT = 1000
 MAX_MESSAGE = 10000
@@ -874,7 +876,9 @@ class MapService:
         if not path.exists():
             return []
         requests = _json(path).get("requests")
-        if not isinstance(requests, list):
+        if not isinstance(requests, list) or not all(
+                isinstance(item, dict) and type(item.get("id")) is int and item.get("state") in UI_STATES
+                and isinstance(item.get("results", []), list) for item in requests):
             raise ValueError("invalid explorer request file")
         return requests
 
@@ -883,11 +887,21 @@ class MapService:
         _write(self.root / UI_FILE, {"schema": 1, "requests": requests})
 
     def _ui_result(self, relative):
-        record = _json(self.project_root / relative)
-        findings = record.get("retained_findings", record.get("findings"))
-        if not isinstance(findings, list):
-            raise ValueError(f"{relative}: no retained_findings or findings list")
-        return [item for item in findings if isinstance(item, dict)], list(record.get("gaps") or [])
+        """A result's findings and gaps, parsed again only when the file changed."""
+        path = self.project_root / relative
+        confinement.reject_link_chain(path)
+        info = path.stat()
+        key = (info.st_mtime_ns, info.st_size)
+        cache = self.__dict__.setdefault("_ui_cache", {})
+        if cache.get(relative, (None,))[0] != key:
+            record = _json(path)
+            findings = record.get("retained_findings", record.get("findings"))
+            if not isinstance(findings, list):
+                raise ValueError(f"{relative}: no retained_findings or findings list")
+            gaps = record.get("gaps")
+            gaps = [] if gaps in (None, "", []) else gaps if isinstance(gaps, list) else [gaps]
+            cache[relative] = (key, [item for item in findings if isinstance(item, dict)], gaps)
+        return cache[relative][1], cache[relative][2]
 
     def ui_request(self, kind, scope, text=""):
         """Record what the person asked in the explorer; the host session takes it with `ui_requests`."""
@@ -899,24 +913,36 @@ class MapService:
             raise ValueError(f"a {scope} request needs its text")
         with self._operation(write=True):
             requests = self._ui()
-            if len(requests) >= MAX_UI_REQUESTS:
-                raise ValueError(f"the explorer already holds {MAX_UI_REQUESTS} requests")
-            item = {"id": len(requests) + 1, "kind": kind, "scope": scope, "text": text.strip(),
+            done = [item["id"] for item in requests if item["state"] == "done"][-MAX_UI_DONE:]
+            requests = [item for item in requests if item["state"] != "done" or item["id"] in done]
+            if len(requests) - len(done) >= MAX_UI_REQUESTS:
+                raise ValueError(f"the explorer already holds {MAX_UI_REQUESTS} open requests")
+            item = {"id": max((item["id"] for item in requests), default=0) + 1, "kind": kind, "scope": scope, "text": text.strip(),
                     "state": "pending", "created_at": _now()}
             self._ui_write([*requests, item])
             return item
 
-    def ui_requests(self, take=False):
-        """The explorer's requests; `take` moves the pending ones to `taken` and names them."""
-        with self._operation(write=take):
+    def ui_requests(self, take=False, release=()):
+        """The explorer's requests; `release` moves the named taken ones back to pending, then `take`
+        moves the pending ones to `taken` and names them."""
+        release = list(release)
+        if not all(type(item) is int for item in release):
+            raise ValueError("release names request ids")
+        with self._operation(write=take or bool(release)):
             requests = self._ui()
+            released = [item["id"] for item in requests if item["id"] in release and item["state"] == "taken"]
+            if len(released) != len(set(release)):
+                raise ValueError("only a taken request can be released")
+            for item in requests:
+                if item["id"] in released:
+                    item["state"] = "pending"
             taken = [item["id"] for item in requests if item["state"] == "pending"] if take else []
-            if taken:
-                for item in requests:
-                    if item["id"] in taken:
-                        item["state"] = "taken"
+            for item in requests:
+                if item["id"] in taken:
+                    item["state"] = "taken"
+            if taken or released:
                 self._ui_write(requests)
-            return {"requests": requests, "taken": taken}
+            return {"requests": requests, "taken": taken, "released": released}
 
     def ui_done(self, request_id, results=(), message=""):
         """Close a taken request with the project-relative JSON results whose findings the explorer shows."""
