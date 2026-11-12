@@ -186,6 +186,55 @@ def _enclosed(text: str, start: int) -> int | None:
     return None
 
 
+def mask_comments(text: str, python: bool) -> str:
+    """The text with its comments blanked, same length and same line breaks.
+
+    A comment can hold an odd quote (`// the user's`) that would otherwise open a
+    string and hide the rest of a call. Strings are kept: `//` in a URL is no comment,
+    and in Python `//` is a division, so only `#` starts a comment there.
+    """
+    out, index, size, quote = list(text), 0, len(text), None
+
+    def blank(start: int, end: int) -> None:
+        for position in range(start, end):
+            if out[position] != "\n":
+                out[position] = " "
+
+    while index < size:
+        char = text[index]
+        if quote:
+            if char == "\\":
+                index += 2
+                continue
+            if text.startswith(quote, index):
+                index += len(quote)
+                quote = None
+                continue
+            if char == "\n" and len(quote) == 1 and quote != "`":
+                quote = None
+            index += 1
+            continue
+        if python and text.startswith(('"""', "'''"), index):
+            quote = text[index:index + 3]
+            index += 3
+        elif char in "'\"" or (char == "`" and not python):
+            quote = char
+            index += 1
+        elif (python and char == "#") or (not python and text.startswith("//", index)):
+            end = text.find("\n", index)
+            end = size if end < 0 else end
+            blank(index, end)
+            index = end
+        elif not python and text.startswith("/*", index):
+            end = text.find("*/", index + 2)
+            end = size if end < 0 else end + 2
+            blank(index, end)
+            index = end
+        else:
+            index += 1
+    return "".join(out)
+
+
 def call_arguments(text: str) -> list[str] | None:
     """Top-level arguments of the call whose callee ends where `text` starts."""
     start = text.find("(")
@@ -466,11 +515,11 @@ def _keys(spec: str, call, facts) -> list[str] | None:
             return [name.split(":")[0].strip() for name in unpacked.group(1).split(",")
                     if name.strip() and not name.strip().startswith("...")]
         # The whole value held in a variable: its keys are the properties read on that variable
-        # inside the function that holds it.
-        holder, owner = _HOLDER.search(call["before"]), facts.enclosing(call["file"], call["line"])
-        if holder is None or owner is None:
+        # inside the function that declares it, anonymous or not, and no further.
+        holder = _HOLDER.search(call["before"])
+        if holder is None or not call.get("scope_end"):
             return None
-        lines = (facts.source.lines(call["file"]) or [])[call["line"] - 1:owner["end"] or call["line"]]
+        lines = (facts.source.lines(call["file"]) or [])[call["line"] - 1:call["scope_end"]]
         read = re.compile(r"(?<![\w$.])" + re.escape(holder.group(1)) + r"\s*\??\.\s*([A-Za-z_$][\w$]*)")
         return list(dict.fromkeys(name for line in lines for name in read.findall(line))) or None
     if _ARG.match(spec):
@@ -536,11 +585,15 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                         plain.append((ref["file"], parts[0], caller, site))
                 continue
             text = facts.source.after(ref["file"], span[2], span[3])
+            if text is not None:
+                text = mask_comments(text, ref["file"].endswith((".py", ".pyi")))
             args = _arguments_with_positions(text, span[2], span[3]) if text is not None else None
             if args is None:
                 gaps.append({"site": site, "reason": "call arguments not readable"})
                 continue
-            call = {"file": ref["file"], "line": span[0], "parts": parts, "args": args, "text": text,
+            scope = facts.declarations.get(ref.get("caller") or "") or {}
+            call = {"file": ref["file"], "line": span[0], "scope_end": scope.get("end"), "parts": parts,
+                    "args": args, "text": text,
                     "before": facts.source.before(ref["file"], span[0], span[1])}
             for rule in matched:
                 owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else caller

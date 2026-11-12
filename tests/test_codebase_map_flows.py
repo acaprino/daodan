@@ -161,7 +161,11 @@ class WrittenRuleTests(unittest.TestCase):
         "web/store.ts": ("import { create } from 'state-lib';\n"
                          "export const useStore = create((set, get) => ({\n  count: 0,\n"
                          "  add: (n: number) => set((s) => ({ count: s.count + n })),\n"
-                         "  reset: () => {\n    if (get().count === 0) return;\n    set({ count: 0 });\n  },\n}));\n"
+                         "  bump: () => set((s) => {\n    // the user's tap, see https://example.org/a\n"
+                         "    return { count: s.count + 1 };\n  }),\n"
+                         "  reset: () => {\n    if (get().count === 0) return;\n    set({ count: 0 });\n  },\n"
+                         "  label: 'n',\n  title: () => {\n    const state = get();\n    return state.label;\n  },\n"
+                         "  total: () => {\n    const state = get();\n    return state.count;\n  },\n}));\n"
                          "export function report(): string {\n  const state = useStore.getState();\n"
                          "  if (state.count > 9) state.reset();\n  return `${state.count}`;\n}\n"),
         "web/urls.ts": "const BASE = '/api';\nexport const SAVE_URL = `${BASE}/save`;\n",
@@ -175,7 +179,8 @@ class WrittenRuleTests(unittest.TestCase):
                          "      <button onClick={save}>save</button>\n      <button onClick={props.onClose}>x</button>\n      <button onClick={onPick}>p</button>\n"
                          "      {count}\n    </div>\n  );\n}\n"),
         "api/handlers.py": ("from lib import APIRouter, db\n\nrouter = APIRouter()\n\n\n@router.post(\"/save\")\n"
-                            "async def save(body):\n    await db.counters.update_one({}, body)\n\n\n"
+                            "async def save(body):\n    await db.counters.update_one(  # the user's counter\n"
+                            "        {\"half\": 7 // 2}, body)\n\n\n"
                             "async def total():\n    return await db.counters.find_one({})\n"),
         "api/repository.py": ("from lib import db\n\nCOUNTERS = \"counters\"\n\n\nclass Repository:\n"
                               "    def __init__(self, database):\n        self._collection = database[COUNTERS]\n\n"
@@ -235,14 +240,31 @@ class WrittenRuleTests(unittest.TestCase):
 
     def test_a_store_function_is_named_by_its_property_and_keyed_by_what_it_returns(self):
         self.assertEqual(self.links["stores"]["state/count"],
-                         {"writes": ["web/store.ts::add", "web/store.ts::reset"],
-                          "reads": ["web/store.ts::report", "web/store.ts::reset", "web/view.tsx::View"]})
+                         {"writes": ["web/store.ts::add", "web/store.ts::bump", "web/store.ts::reset"],
+                          "reads": ["web/store.ts::report", "web/store.ts::reset", "web/store.ts::total",
+                                    "web/view.tsx::View"]})
+
+    def test_comments_are_blanked_and_strings_and_divisions_are_kept(self):
+        js = "set(() => { // it's\n  return { a: '//x' }; /* b's */ })"
+        masked = flows.mask_comments(js, python=False)
+        self.assertEqual(len(masked), len(js))
+        self.assertNotIn("it's", masked)
+        self.assertIn("'//x'", masked)
+        self.assertNotIn("b's", masked)
+        py = "f(7 // 2,  # it's\n  '#no')"
+        self.assertEqual(flows.mask_comments(py, python=True), py.replace("# it's", " " * len("# it's")))
 
     def test_a_wrapped_selector_reads_every_field_it_names(self):
         call = {"args": [("shallow((s) => ({ n: s.count, r: s.reset }))", 1, 0)], "parts": ["useStore"], "file": "x"}
         self.assertEqual(flows._keys("selector", call, None), ["count", "reset"])
         call["args"] = [("(s) => s.count", 1, 0)]
         self.assertEqual(flows._keys("selector", call, None), ["count"])
+
+    def test_a_held_state_is_read_only_inside_the_function_that_holds_it(self):
+        # `title` holds the state and reads `label`; the `count` read a few lines below belongs to `total`.
+        self.assertEqual(self.links["stores"]["state/label"]["reads"], ["web/store.ts::title"])
+        self.assertNotIn("web/store.ts::title", self.links["stores"]["state/count"]["reads"])
+        self.assertIn("web/store.ts::total", self.links["stores"]["state/count"]["reads"])
 
     def test_a_state_held_whole_gives_the_properties_read_on_its_variable(self):
         self.assertIn(("web/store.ts::report", "web/store.ts::reset"), self.edges("chiama"))
