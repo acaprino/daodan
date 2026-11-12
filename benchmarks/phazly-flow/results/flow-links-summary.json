@@ -1,14 +1,14 @@
 {
   "entries": {
-    "azione": 123,
+    "azione": 124,
     "rotta": 111
   },
   "edges": {
-    "attiva dedotto": 150,
-    "chiama dedotto": 227,
+    "attiva dedotto": 151,
+    "chiama dedotto": 258,
     "chiama diretto": 6704,
-    "legge dedotto": 368,
-    "scrive dedotto": 435
+    "legge dedotto": 457,
+    "scrive dedotto": 439
   },
   "routes": {
     "called": 46,
@@ -22,26 +22,25 @@
       "mongo": 38,
       "planner state": 10
     },
-    "with_writers_and_readers": 70,
-    "only_written": 35,
-    "only_read": 18
+    "with_writers_and_readers": 85,
+    "only_written": 21,
+    "only_read": 17
   },
   "flows": {
-    "total": 234,
-    "reach_a_store": 59,
+    "total": 235,
+    "reach_a_store": 62,
     "cross_layer": 11,
-    "single_node": 121,
-    "largest_nodes": 81,
+    "single_node": 119,
+    "largest_nodes": 85,
     "incomplete": 35
   },
   "gaps": {
-    "legge app state: key not a literal": 39,
+    "legge app state: key not a literal": 13,
     "scrive app state: key not a literal": 5,
     "legge call outside a named symbol": 4,
     "rotta": 3,
     "rotta call outside a named symbol": 3,
     "call arguments not readable": 3,
-    "scrive call outside a named symbol": 2,
-    "legge planner state: key not a literal": 1
+    "scrive call outside a named symbol": 2
   }
 }

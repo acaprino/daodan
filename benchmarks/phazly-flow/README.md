@@ -60,27 +60,42 @@ I reviewer vedono il difetto quando leggono chi scrive il fatto e cosa afferma l
 
 Limite: due run per A, una per B, un modello, permessi ristretti. **La mappa non aveva il grafo delle chiamate TypeScript:** nell'ambiente mancava `tree-sitter`, quindi i 412 file TS e TSX di `react-app` hanno simboli e import ma nessun riferimento di chiamata (le 202 chiamate dello snapshot sono tutte Python). La Phase 0 e i job hanno lavorato con ricerca, outline e lettura; le conclusioni su perimetro e roster valgono per questa condizione. Dopo A3b il problema di partenza è la variabilità del reviewer su un difetto sottile, prima ancora del consolidamento: la correzione del punto 3 non basta se il reviewer non scrive il trigger.
 
-## Flussi dalle regole di collegamento, 11 novembre 2026
+## Flussi dalle regole di collegamento, 11-12 novembre 2026
 
-Prima applicazione di `flows.py` a un'app reale, su Modal, snapshot senza passaggio del motore. Due insiemi di regole sullo stesso snapshot:
+Prima applicazione di `flows.py` a un'app reale, su Modal. Riepiloghi in `results/` (`python benchmarks/phazly-flow/summarize.py LINKS.json`).
 
-- `rules.json`: 14 regole scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB.
-- `rules-blind.json`: 17 regole scritte da un agente senza contesto, con il solo formato e il sorgente (circa 25 letture). Così come scritte sono rifiutate: `strip` stava dentro `route`. Misurate dopo aver spostato quel campo, senza altre modifiche.
+### Con e senza il passaggio del motore
 
-Riepiloghi in `results/` (`python benchmarks/phazly-flow/summarize.py LINKS.json`).
+`rules.json`: 18 regole scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB.
+
+| Misura | Solo lessicale | Con il motore |
+| --- | --- | --- |
+| Punti d'ingresso | 235: 124 azioni, 111 rotte | gli stessi |
+| Chiamate del client collegate a una rotta | 46 su 46 | 46 su 46 |
+| Store | 123: 75 campi dello stato, 38 collezioni, 10 campi del planner | gli stessi |
+| Store con chi scrive e chi legge | 85 | 85 |
+| Collegamenti `chiama` diretti | 6.704 | 12.688 |
+| Flussi che arrivano a uno store | 62 | 132 |
+| Flussi fra interfaccia e servizio | 11 | 16 |
+| Flussi di un solo nodo | 119 | 60 |
+| Lacune dichiarate | 33 | 33 |
+
+- **Caso fra strati (misura 3 della fase 2).** Con il motore, da `QuickAddSheet` il flusso a ritroso arriva alla collezione `diaryDays` passando per `POST /getDiaryDays`. Da `useDayProgress` arriva a `POST /getPlanForDate` e a nessuna collezione: riuscita per G2, non per G1.
+- Senza il motore 119 flussi restano di un solo nodo: le rotte chiamano i servizi come attributo di un modulo importato, le azioni chiamano funzioni ricevute o importate con un alias di percorso.
+- Lacune restanti: 13 letture dello stato con un selettore non letterale, 5 scritture con chiave calcolata, 15 chiamate fuori da un simbolo con nome o con rotta calcolata.
+
+### Regole scritte alla cieca
+
+`rules-blind.json`: 17 regole scritte da un agente senza contesto, con il solo formato e il sorgente, in circa 14 letture. Così come scritte sono rifiutate: `strip` stava dentro `route`. Misurate dopo aver spostato quel campo, senza altre modifiche, sullo snapshot lessicale e con `flows.py` al commit `7db9b003b`, contro le 14 regole di `rules.json` di quel commit.
 
 | Misura | `rules.json` | `rules-blind.json` |
 | --- | --- | --- |
-| Punti d'ingresso | 234: 123 azioni, 111 rotte | 234: 123 azioni, 111 rotte |
-| Chiamate del client collegate a una rotta | 46 su 46 | 32 |
-| Store | 123: 75 campi dello stato, 38 collezioni, 10 campi del planner | 123, gli stessi |
+| Punti d'ingresso | 234 | 234 |
+| Chiamate del client collegate a una rotta | 46 | 32 |
+| Store | 123 | 123, gli stessi |
 | Store con chi scrive e chi legge | 70 | 68 |
 | Flussi che arrivano a uno store | 59 | 59 |
-| Flussi fra interfaccia e servizio | 11 | 10 |
-| Flussi di un solo nodo | 121 | 122 |
 | Lacune dichiarate | 60 | 57 |
 
-- Un modello scrive le regole da solo: le due colonne differiscono solo sulle rotte. L'agente ha nominato il client delle API come funzione del progetto (`callee`), che non vale per le chiamate importate con un alias di percorso; `written` le prende tutte.
-- I flussi di un solo nodo sono punti d'ingresso che chiamano funzioni non risolte dal risolutore lessicale: 51 rotte chiamano i servizi come attributo di un modulo importato, 70 azioni chiamano funzioni ricevute o importate con alias. Serve il passaggio del motore.
-- Le lacune restanti sono 39 letture dello stato con un selettore non letterale e scritture con chiave calcolata.
-- Correzioni nate da questa misura, ciascuna con un test in `tests/test_codebase_map_flows.py`: lo stato tenuto intero in una variabile, il metodo di un'interfaccia non preso per handler, il campo sconosciuto rifiutato per nome, il valore chiamabile nominato da `callee`.
+- Un modello scrive le regole da solo: le colonne differiscono solo sulle rotte. L'agente ha nominato il client delle API come funzione del progetto (`callee`), che non vale per le chiamate importate con un alias di percorso; `written` le prende tutte.
+- Il suo elenco «non esprimibile» ha dato quattro correzioni, ciascuna con un test in `tests/test_codebase_map_flows.py`: il selettore passato da un wrapper, la collezione tenuta in una variabile (`holder`), il campo sconosciuto rifiutato per nome, il valore chiamabile nominato da `callee`. Restano non esprimibili: `fetch` con il metodo nell'oggetto delle opzioni, il prefisso di rotta aggiunto dal servizio, la collezione scelta a runtime.
