@@ -14,6 +14,9 @@ export type Projection = {
 };
 
 const STRUCTURE = new Set(['contains', 'defines']);
+const DATA = new Set(['scrive', 'legge', 'usa']);
+// The files no component holds stay reachable in the logical view, without an owner invented for them.
+export const UNASSIGNED = 'unassigned:logical';
 
 export type Index = {
   byRef: Map<string, Entity>;
@@ -44,6 +47,12 @@ export function indexOf(env: Envelope): Index {
     push(index.groups[item.view], item.member, item.group);
   }
   for (const relation of env.relations) if (relation.kind === 'defines') push(index.symbols, relation.source, relation.target);
+  const loose = env.entities.filter(e => e.type === 'file' && !index.groups.logical.has(e.ref)).map(e => e.ref);
+  if (loose.length) {
+    index.byRef.set(UNASSIGNED, { ref: UNASSIGNED, type: 'group', name: 'Fuori dai componenti', technical: '',
+      description: 'File che nessun componente dichiarato o proposto contiene.', evidence: [], gaps: [] });
+    index.members.logical.set(UNASSIGNED, loose);
+  }
   indexes.set(env, index);
   return index;
 }
@@ -56,7 +65,10 @@ export function childrenOf(env: Envelope, ref: string, view: View): string[] {
 
 export function rootsOf(env: Envelope, view: View): string[] {
   const index = indexOf(env);
-  if (view === 'logical') return env.entities.filter(e => ['component', 'external', 'store'].includes(e.type)).map(e => e.ref);
+  if (view === 'logical') {
+    const top = env.entities.filter(e => ['component', 'external', 'store'].includes(e.type)).map(e => e.ref);
+    return index.members.logical.has(UNASSIGNED) ? [...top, UNASSIGNED] : top;
+  }
   const groups = [...index.members.physical.keys()].filter(group => !index.groups.physical.has(group));
   const loose = env.entities.filter(e => e.type === 'file' && !index.groups.physical.has(e.ref)).map(e => e.ref);
   return [...groups, ...loose];
@@ -143,6 +155,22 @@ export function flowFocus(env: Envelope, flowRef: string, projection: Projection
     edges.set(id, edge);
   }
   return { nodes, edges: [...edges.values()] };
+}
+
+// Who writes, reads or uses a node, over all flows, lifted to the visible nodes: the data links shown at rest.
+export function dataLinks(env: Envelope, projection: Projection): ProjectedEdge[] {
+  const edges = new Map<string, ProjectedEdge>();
+  for (const flow of env.flows) for (const step of flow.steps) {
+    if (!DATA.has(step.type)) continue;
+    for (const source of projection.owners[step.source] ?? []) for (const target of projection.owners[step.target] ?? []) {
+      if (source === target) continue;
+      const id = `data:${source}->${target}`;
+      const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [] };
+      if (!edge.kinds.includes(step.type)) edge.kinds.push(step.type);
+      edges.set(id, edge);
+    }
+  }
+  return [...edges.values()];
 }
 
 // The flows a node takes part in: its own ref, or anything it holds in the view.

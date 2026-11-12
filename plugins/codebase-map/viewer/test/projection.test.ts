@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseEnvelope } from '../src/envelope.ts';
-import { flowFocus, flowsThrough, project } from '../src/projection.ts';
+import { dataLinks, flowFocus, flowsThrough, project, UNASSIGNED } from '../src/projection.ts';
 
 const env = parseEnvelope(JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8')));
 const SHARED = 'file:shared/money.ts';
@@ -69,6 +69,19 @@ test('a node lists the flows through it', () => {
   const server = flowsThrough(env, 'component:server', 'logical').map(flow => flow.ref).sort();
   assert.deepEqual(server, ['flow:symbol:server/jobs.ts::nightlyReconcile', 'flow:symbol:web/checkout.tsx::pay']);
   assert.deepEqual(flowsThrough(env, 'component:web', 'logical').map(flow => flow.ref), ['flow:symbol:web/checkout.tsx::pay']);
+});
+
+test('files no component holds sit in one group of the logical view, and data links come from the flows', () => {
+  const raw = JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8'));
+  const bare = parseEnvelope({ ...raw, memberships: raw.memberships.filter((item: { group: string }) => item.group !== 'component:web') });
+  const root = project(bare, 'logical', null);
+  const loose = root.nodes.find(node => node.ref === UNASSIGNED);
+  assert.equal(loose?.count, 2);  // checkout.tsx and api.ts; money.ts stays in server
+  assert.ok(!root.nodes.some(node => node.ref === 'component:web' && node.count > 0));
+  const data = dataLinks(env, project(env, 'logical', null));
+  assert.ok(data.some(edge => edge.source === 'component:server@root' && edge.target === 'store:db/orders@root' && edge.kinds.includes('scrive')));
+  assert.ok(data.some(edge => edge.target === 'external:card payment provider@root' && edge.kinds.includes('usa')));
+  assert.equal(project(env, 'logical', null).nodes.some(node => node.ref === UNASSIGNED), false);
 });
 
 test('node types and location reach the projected node', () => {

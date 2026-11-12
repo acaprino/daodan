@@ -9,7 +9,7 @@ export type ExplorerState = {
   open: string[]; flow: string | null; error: string | null; warning: string | null;
 };
 export type Action =
-  | { type: 'select'; ref: string | null } | { type: 'open'; ref: string } | { type: 'up' }
+  | { type: 'select'; ref: string | null } | { type: 'open'; ref: string } | { type: 'up' } | { type: 'root' }
   | { type: 'view'; view: View } | { type: 'filter'; filters: Filters } | { type: 'resetFilters' }
   | { type: 'toggleGroup'; ref: string } | { type: 'flow'; ref: string | null } | { type: 'replaceEnvelope'; json: unknown };
 
@@ -36,6 +36,8 @@ export function reduce(state: ExplorerState, action: Action): ExplorerState {
     }
     case 'up':
       return state.scope === null ? state : { ...state, scope: parentOf(state, state.scope), selected: state.scope, open: [] };
+    case 'root':
+      return { ...state, scope: null, selected: null, open: [] };
     case 'view': {
       if (action.view === state.view) return state;
       const keep = state.selected !== null && resolves(state.envelope, state.selected, action.view);

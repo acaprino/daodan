@@ -43,6 +43,8 @@ test('open enters a group, up returns with the group selected', () => {
   state = reduce(state, { type: 'up' });
   assert.deepEqual([state.scope, state.selected], [null, 'component:server']);
   assert.equal(reduce(state, { type: 'open', ref: 'feature:payment' }).scope, null);
+  const deep = reduce(reduce(initialState(env), { type: 'open', ref: 'component:server' }), { type: 'select', ref: 'file:server/auth.ts' });
+  assert.deepEqual([reduce(deep, { type: 'root' }).scope, reduce(deep, { type: 'root' }).selected], [null, null]);
 });
 
 test('filters, groups and flows change only their own field', () => {
