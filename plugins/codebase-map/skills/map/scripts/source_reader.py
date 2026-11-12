@@ -162,7 +162,7 @@ def _binding(manifest: dict) -> tuple[Path, Path, Perimeter]:
 
 def _source_path(rel: str, root: Path, target: Path, perimeter: Perimeter) -> Path:
     _relative(rel)
-    if snapshot.is_forbidden(Path(rel).name):
+    if snapshot.is_forbidden(Path(rel).name, root / rel):
         raise ValueError(f"forbidden source path: {rel}")
     path = root / rel
     # covers() deliberately passes paths outside its base, so check the target
@@ -418,7 +418,7 @@ def graph_packet(manifest: dict, paths: list[str] | None = None,
             raise ValueError(f"invalid import metadata for {rel}; refresh the manifest")
         path = root / rel
         within = path.is_relative_to(target) if target.is_dir() else path == target
-        if not within or snapshot.is_forbidden(path.name) or not perimeter.covers(path):
+        if not within or snapshot.is_forbidden(path.name, path) or not perimeter.covers(path):
             if paths is not None and rel in selected:
                 raise ValueError(f"graph seed is outside the current perimeter: {rel}")
             excluded[rel] = {"status": "excluded", "reason": "outside-current-perimeter",

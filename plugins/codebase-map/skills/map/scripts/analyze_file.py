@@ -89,7 +89,7 @@ def _analyze_single_file(file_path, find_usages, project_root, symbol, snapshot_
         import snapshot
         from tree_scope import Perimeter
         graph_target, _ = _resolve_project_root_and_paths(file_path, project_root)
-        if snapshot.is_forbidden(file_path.name) or not Perimeter(graph_target).covers(file_path.resolve()):
+        if snapshot.is_forbidden(file_path.name, file_path) or not Perimeter(graph_target).covers(file_path.resolve()):
             raise ValueError("source is outside the current perimeter")
     content = file_path.read_bytes().decode("utf-8")
 

@@ -30,7 +30,7 @@ Phase 0 collects leads. Phase 6 audits documents as evidence. Never let the seco
 
 NEVER read or include contents from:
 - `.env`, `.env.*` - environment variables with secrets
-- `credentials.*`, `secrets.*`, `*secret*`, `*credential*`
+- `credentials.*`, `secrets.*`; any other name with `secret` or `credential` only when its content holds a generated value (20+ characters, at least 4.5 bits of entropy per character, 3 if hexadecimal)
 - `*.pem`, `*.key`, `*.p12`, `*.pfx` - certificates and private keys
 - `id_rsa*`, `id_ed25519*` - SSH keys
 - `.npmrc`, `.pypirc`, `.netrc` - auth tokens

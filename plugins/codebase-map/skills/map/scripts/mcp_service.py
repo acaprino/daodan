@@ -155,7 +155,7 @@ class MapService:
             raise ValueError("target must be an existing project-relative file or directory")
         if not resolved.is_relative_to(self.project_root):
             raise ValueError("target is outside the bound project")
-        if target.is_file() and (snapshot.is_forbidden(target.name) or snapshot.is_forbidden(resolved.name)):
+        if target.is_file() and (snapshot.is_forbidden(target.name, resolved) or snapshot.is_forbidden(resolved.name, resolved)):
             raise ValueError("forbidden source target")
         return resolved
 

@@ -41,7 +41,7 @@ def _preflight(store, db, selected, explicit, observations=None):
         row = db.execute("SELECT status,verified,payload FROM sem_coverage WHERE file=?", (rel,)).fetchone()
         if row is None:
             raise ValueError("semantic inventory is incomplete; refresh the manifest")
-        if not within or snapshot.is_forbidden(path.name) or not perimeter.covers(path):
+        if not within or snapshot.is_forbidden(path.name, path) or not perimeter.covers(path):
             if explicit and rel in selected:
                 raise ValueError(f"graph seed is outside the current perimeter: {rel}")
             excluded = {"status": "excluded", "reason": "outside-current-perimeter", "verified_source": False,

@@ -132,7 +132,7 @@ Esecuzione, tutta su Kiri:
 
 **Contraddizioni.** 41 archi osservati contraddicono il verdetto del motore. Nessuna è un errore del motore:
 
-- 34 vanno a `backend/shared/crypto/secretCipher.js`, che il motore classifica esterno. Lo snapshot non legge i file con «secret» nel nome (`FORBIDDEN_GLOBS`, `plugins/codebase-map/skills/map/scripts/snapshot.py:170`). In tududi la regola esclude 5 file tracciati: questo, che è codice, e quattro esempi di configurazione.
+- 34 vanno a `backend/shared/crypto/secretCipher.js`, che il motore classifica esterno. Lo snapshot non legge i file con «secret» nel nome (`FORBIDDEN_GLOBS`, `plugins/codebase-map/skills/map/scripts/snapshot.py:170`). In tududi la regola esclude 5 file tracciati: questo, che è codice, e quattro esempi di configurazione. Ora per nome si escludono solo i file ovvi (`.env`, `secrets.*`, `credentials.*`, chiavi); un altro nome con «secret» o «credential» esclude il file solo se il contenuto ha un valore generato (`snapshot.is_forbidden`, test in `tests/test_codebase_map_secret_files.py`).
 - 2 vengono da doppioni dei test: un `jest.mock` di `stripe` e una richiesta HTTP finta.
 - 5 vengono da chiamate omonime nella stessa funzione (`has`, `sign`, `create`), che il conteggio stretto esclude.
 

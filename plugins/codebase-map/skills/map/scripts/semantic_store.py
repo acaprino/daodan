@@ -769,7 +769,7 @@ def build_semantic_store(
             set_of_paths_changed = prev_all_paths != curr_all_paths
             prev_verified = {r[0] for r in db.execute("SELECT file FROM prev_snap.sem_coverage WHERE verified=1")}
             for rel in reused_files:
-                if rel not in prev_verified or snapshot.is_forbidden(Path(rel).name):
+                if rel not in prev_verified or snapshot.is_forbidden(Path(rel).name, root / rel):
                     continue
                 resolved = (root / rel).resolve()
                 if (resolved.is_relative_to(target) or resolved == target) and perimeter.covers(resolved):
