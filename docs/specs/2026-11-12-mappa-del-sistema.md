@@ -1,6 +1,6 @@
 # Mappa del sistema: nodi con nome, flussi e livelli
 
-**Stato:** proposta, non applicata. **Data:** 12 novembre 2026. Ridefinisce «nodo», «flusso» e «livello» della [fase 2](2026-11-09-flow-model.md) e ne sostituisce i punti 1.5, 3.5, 5 e 7; il resto della fase 2 resta e diventa la prova di ciò che si descrive qui.
+**Stato:** proposta, non applicata. **Data:** 12 novembre 2026. Ridefinisce «nodo», «flusso» e «livello» della [fase 2](2026-11-09-flow-model.md) e ne sostituisce i punti 1.5, 3.5, 5 e 7, compresa la scelta di non tenere un registro proprio; il resto della fase 2 resta e diventa la prova di ciò che si descrive qui.
 
 Daodan deve saper rispondere a tre domande: «di quali cose è fatto questo sistema e cosa fa?», «cosa tocca questa richiesta?» e «come appare lo stesso processo a chi lo usa, a chi lo progetta, a chi lo scrive e a chi lo fa girare?». La risposta serve a chi guarda il sistema e a chi lo revisiona: una richiesta che nomina una parte del sistema deve portare alle schermate, ai servizi, ai dati, al codice e all'infrastruttura che quella parte comprende. Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
 
@@ -31,7 +31,7 @@ I passi di analisi (statico, inferenza, dinamico, semantico) restano quelli del 
 - I dati sono store presi uno per uno: nello stesso caso 123, di cui 75 sono chiavi dello stesso stato dell'app.
 - I livelli della fase 2 contraggono un percorso su moduli, store o attori. Non c'è un livello per l'infrastruttura, e «fisico» vi indica file e simboli.
 - Il modello può già proporre moduli con nome, membri ed evidenze, verificati membro per membro (`codebase_map_modules`), e scrivere la scheda di un percorso con citazioni verificate. Manca chi propone i flussi principali: i punti 3.5 e 7 della fase 2 lo prevedevano e non sono costruiti.
-- Il riconoscimento dei servizi esterni (fase 2, punto 1.5) non è costruito. L'esploratore ha le icone generiche per tipo di nodo.
+- Il riconoscimento dei servizi esterni (fase 2, punto 1.5) non è costruito, e quel punto si affidava alla sola raccolta dei marchi, che non dice né il tipo di un servizio né da cosa riconoscerlo. L'esploratore ha le icone generiche per tipo di nodo.
 - `03-flows.md` descrive i flussi in prosa, leggendo il codice. Non si interroga e la review non lo legge.
 - Dei quattro passi di analisi, statico, inferenza e semantico sono applicati; il dinamico è una proposta.
 - Nelle dieci run della fase 3 né le unità né l'elenco di chi scrive e chi legge hanno portato nel rapporto i difetti attesi.
@@ -64,12 +64,16 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 2. Un flusso esiste ai livelli in cui ha nodi: un flusso tecnico può non avere il livello persone.
 3. Le corrispondenze dicono quali nodi di due livelli sono la stessa cosa. Quella verso il codice è l'appartenenza dei membri. Quelle verso l'infrastruttura e verso il posto in cui un'entità vive si dichiarano citando la configurazione o il codice che le prova.
 4. Due flussi si incrociano nei nodi che hanno in comune, a qualunque livello: un nodo elenca i flussi che lo attraversano.
+5. I livelli si guardano uno alla volta, alcuni o tutti insieme. Insieme, ogni nodo mostra le sue corrispondenze agli altri livelli e dichiara i livelli a cui non esiste.
 
-### 3. Servizi esterni con nome
+### 3. Registro dei servizi esterni
 
-1. La macchina confronta le dipendenze dichiarate, gli host delle chiamate e i nomi delle variabili di configurazione con una raccolta pubblica di marchi, usata come registro: Simple Icons (CC0, oltre 3.400 marchi). Una corrispondenza diventa un modulo `external` proposto, con nome e logo; il sito viene dai metadati del pacchetto.
-2. Il tipo del servizio (gateway, database, autenticazione e così via) lo propone il modello.
-3. Un servizio non riconosciuto prende il nome del pacchetto o dell'host e resta marcato come non riconosciuto. Daodan non mantiene un registro proprio.
+1. Daodan porta con sé un registro dei servizi esterni più diffusi: almeno mille alla prima versione. Per ogni servizio tiene nome, tipo di nodo, sito, marchio e i segni da cui lo si riconosce in un progetto: nomi dei pacchetti, host, prefissi delle variabili di configurazione.
+2. La macchina confronta le dipendenze dichiarate, gli host delle chiamate e i nomi delle variabili di configurazione con i segni del registro. Una corrispondenza diventa un modulo `external` proposto, con nome, tipo, sito e marchio, senza modello.
+3. Il marchio viene da una raccolta pubblica, Simple Icons (CC0, 3.470 marchi alla versione 16.37.0). La raccolta dà nome e disegno, non tipo, sito e segni: quelli li tiene il registro.
+4. Il registro si costruisce con uno script, e con lo stesso si rigenera. Parte dalla raccolta dei marchi e dai pacchetti più usati dei registri pubblici; un modello propone tipo, sito e segni; la macchina tiene solo ciò che verifica, cioè che il sito risponda e che il pacchetto esista.
+5. Un servizio che il registro non conosce prende il nome del pacchetto o dell'host e l'icona generica del suo tipo, e resta marcato come non riconosciuto. Il modello può proporne nome e tipo.
+6. Ogni nodo esterno mostra nome e marchio in ogni grafo e a ogni livello.
 
 ### 4. Scheda del sistema
 
@@ -99,7 +103,7 @@ La macchina accetta o rifiuta ogni parte della proposta e dice perché. L'agente
 
 ### 7. Chi usa la mappa del sistema
 
-- **Esploratore:** apre sul grafo d'insieme e mostra un grafo per flusso, con un selettore dei livelli. Percorsi e collegamenti fra simboli sono il livello codice. Un grafo mostra nodi: un nodo si apre per vederne i membri e le sue corrispondenze agli altri livelli.
+- **Esploratore:** apre sul grafo d'insieme e mostra un grafo per flusso, con un selettore di uno o più livelli. Percorsi e collegamenti fra simboli sono il livello codice. Un grafo mostra nodi: un nodo si apre per vederne i membri e le sue corrispondenze agli altri livelli.
 - **Review:** una richiesta che nomina un'area, un flusso o un nodo riceve come perimetro i membri di quei nodi. Il brief elenca nodi, frecce e dati tenuti in più posti, ai livelli che l'aspetto della review richiede. Un nodo non visto è una lacuna dichiarata della review. Si misura prima di adottarlo, come chiede la [fase 3](2026-11-09-flows-in-review.md).
 - **`codebase_map_flows`:** risponde per area, flusso, nodo e livello. I percorsi restano interrogabili come oggi.
 - **`03-flows.md`:** si genera dalla mappa del sistema.
@@ -117,14 +121,15 @@ Benchmark `benchmarks/system-map/`, da creare, con le soglie scritte nel README 
 3. **Livelli.** Per un flusso del riferimento, a ogni livello: i nodi mostrati sono solo dei tipi di quel livello e le corrispondenze citano punti che esistono. Un flusso tecnico resta senza livello persone.
 4. **Costo.** Token e costo per mappa e per modello; quante volte l'agente apre il sorgente.
 5. **Stabilità.** Due esecuzioni sullo stesso snapshot danno gli stessi nodi, confrontati per membri.
-6. **Review.** Una richiesta per area, con perimetro e brief dalla mappa del sistema, contro la review di oggi. È a pagamento: si chiede prima.
+6. **Registro.** Sui casi dei benchmark: quanti servizi esterni usati dal progetto il registro riconosce, e quanti riconoscimenti sono sbagliati.
+7. **Review.** Una richiesta per area, con perimetro e brief dalla mappa del sistema, contro la review di oggi. È a pagamento: si chiede prima.
 
 ## Ordine di lavoro
 
 1. Formato della mappa del sistema e verifica.
-2. Scheda del sistema e riconoscimento dei servizi esterni.
+2. Registro dei servizi esterni e scheda del sistema; misura 6.
 3. Prompt dell'agente; misure da 1 a 5.
 4. Esploratore sulla mappa del sistema, con il selettore dei livelli.
-5. Review; misura 6.
+5. Review; misura 7.
 
-**Da decidere alla rifinitura:** dove il progetto registra ciò che conferma; il tetto della scheda del sistema; come distribuire i loghi rispettando l'avvertenza sui marchi della raccolta; se gli identificatori nel codice che oggi dicono «flow» per i percorsi e «fisico» per i file cambiano nome.
+**Da decidere alla rifinitura:** dove il progetto registra ciò che conferma; il tetto della scheda del sistema; dove vive il file del registro e ogni quanto si rigenera; come distribuire i loghi rispettando l'avvertenza sui marchi della raccolta; se gli identificatori nel codice che oggi dicono «flow» per i percorsi e «fisico» per i file cambiano nome.
