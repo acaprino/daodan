@@ -33,6 +33,9 @@ Ingressi che la spec implica e che è facile lasciare scoperti. Ognuno ha il suo
 3. Un pacchetto locale del progetto ha lo stesso nome di un servizio del registro: non diventa un servizio esterno (Task 6).
 4. Node o la rete mancano: stack-analyser risulta `unavailable`, il riconoscimento del registro resta (Task 7).
 5. Una risorsa che tutti i punti d'ingresso toccano: aggiunge un gruppo candidato e lascia uguali gli altri, senza fonderli (Task 8).
+6. Una nuova analisi chiama con un altro nome una cosa già in mappa: non nasce un doppione (Task 3).
+7. Si rianalizza una sola area: le altre restano, e un nodo usato altrove non viene tolto (Task 3).
+8. Cambia il file citato come evidenza di un nodo senza codice: il nodo risulta da rivedere (Task 3).
 
 ## File
 
@@ -72,9 +75,9 @@ AREAS = ("accesso e identità", "funzioni principali", "pagamenti e abbonamenti"
 def validate(value: object) -> dict   # {"schema", "nodes", "flows", "areas"}; ValueError che nomina il campo
 ```
 
-Un nodo: `{"name", "type", "position", "members": [...], "evidence": [...], "on": [...], "where": str}`. Membri: `percorso`, `percorso::Simbolo`, `store:<store>/<chiave>`, `module:<nome>`; una rotta si cita con il simbolo del suo handler. `on` nomina i nodi su cui il nodo gira o in cui vive. Un flusso: `{"name", "area", "types", "nodes", "arrows": [{"from", "to", "data", "cite", "same"}], "paths"}`. Un'area: `{"name", "present": bool}`.
+Un nodo: `{"id", "name", "type", "position", "members": [...], "evidence": [...], "on": [...], "where": str}`. `id` è l'identità del nodo, distinta dal nome: una proposta lo scrive solo per richiamare un nodo che esiste già; a un nodo nuovo lo assegna la macchina (Task 3). Membri: `percorso`, `percorso::Simbolo`, `store:<store>/<chiave>`, `module:<nome>`; una rotta si cita con il simbolo del suo handler. `on` nomina i nodi su cui il nodo gira o in cui vive. Un flusso: `{"id", "name", "area", "types", "nodes", "arrows": [{"from", "to", "data", "cite", "same"}], "paths"}`, con `id` come per i nodi. Un'area: `{"name", "present": bool}`. Una proposta può dichiarare il suo perimetro con `"scope": [aree]`: senza `scope` riguarda tutto il sistema. I riferimenti ai nodi (`nodes`, `from`, `to`, `on`) sono per nome.
 
-- [ ] **Passo 1:** test che falliscono. `validate` rifiuta, nominando il campo: un tipo fuori elenco; due nodi con lo stesso nome a meno di maiuscole e accenti; un nodo `internal` senza membri; un nodo `external` con membri; un nodo `unseen` senza `where`; un flusso che nomina un nodo assente; una freccia senza `data`; un'area dell'elenco `AREAS` non dichiarata né presente né assente; un campo sconosciuto.
+- [ ] **Passo 1:** test che falliscono. `validate` rifiuta, nominando il campo: un tipo fuori elenco; due nodi con lo stesso nome a meno di maiuscole e accenti; un nodo `internal` senza membri; un nodo `external` con membri; un nodo `unseen` senza `where`; un flusso che nomina un nodo assente; una freccia senza `data`; un'area dell'elenco `AREAS` non dichiarata né presente né assente, quando manca `scope`; con `scope`, un flusso la cui area è fuori dal perimetro; un campo sconosciuto.
 - [ ] **Passo 2:** implementare `validate`; i test passano.
 - [ ] **Passo 3:** commit.
 
@@ -96,7 +99,7 @@ def verify(manifest: Path, links: dict, value: dict) -> dict
 
 Regole. Un nodo con codice è accettato se ogni membro esiste: file e simboli nello snapshot, chiavi di store in `links["stores"]`, moduli nel grafo. Un nodo senza codice è accettato se la sua evidenza si risolve; `unseen` basta `where`. Una freccia è `proved` da un arco fra un membro del primo nodo e un membro del secondo nel verso indicato (un arco `scrive` prova nodo → entità, un arco `legge` entità → nodo), oppure da `scrive` e `legge` sulla stessa chiave, dal primo al secondo. È `declared` se un capo è senza codice o se `same` è vero, e `cite` è un `percorso:riga` che esiste; se l'altro capo ha codice, il percorso citato è fra i suoi file. Altrimenti è `refused`. `on` nomina solo nodi accettati. Un flusso è accettato se ha almeno una freccia non rifiutata e tutti i suoi nodi accettati.
 
-Mappa di prova sulla fixture: `Cliente` (attore, esterno, evidenza `web/checkout.ts`), `Checkout` (schermata, `web/checkout.ts`), `Badge pagamento` (schermata, `web/badge.ts`), `API pagamenti` (servizio o API, `server/payments.py` e `server/gateway.py`), `Pagamento` (entità, `store:db/payments` e `store:web state/payment`), `card payment provider` (gateway, esterno, evidenza `server/gateway.py`), `Riprova` (funzionalità, `server/jobs.py`). Due flussi: `Pagare un ordine` (funzionale, con i primi sei nodi) e `Riprova dei pagamenti` (operativo, con `Pagamento` e `Riprova`).
+Mappa di prova sulla fixture: `Cliente` (attore, esterno, evidenza `web/checkout.ts`), `Checkout` (schermata, `web/checkout.ts`), `Badge pagamento` (schermata, `web/badge.ts`), `API pagamenti` (servizio o API, `server/payments.py` e `server/gateway.py`), `Pagamento` (entità, `store:db/payments` e `store:web state/payment`), `card payment provider` (gateway, esterno, evidenza `server/gateway.py`), `Riprova` (funzionalità, `server/jobs.py`), `Server shop` (dispositivo, esterno, evidenza `server/http.py`), con `API pagamenti` che ha `on: ["Server shop"]`. Due flussi: `Pagare un ordine` (funzionale, area «pagamenti e abbonamenti», con i primi sei nodi) e `Riprova dei pagamenti` (operativo, area «esercizio», con `Pagamento` e `Riprova`).
 
 - [ ] **Passo 1:** test che falliscono.
 
@@ -114,23 +117,75 @@ assert status_with_cite("Cliente", "Checkout", "web/checkout.ts:9999") == "refus
 - [ ] **Passo 2:** implementare; i test passano, compresi quelli di `tests/test_codebase_map_modules*.py`.
 - [ ] **Passo 3:** commit.
 
-### Task 3: copertura, registrazione, conferma, freschezza
+### Task 3: copertura, registrazione, aggiornamento, conferma, freschezza
 
 **File:** modifica `system_map.py` e i suoi test.
 
 **Interfacce.** Produce:
 
 ```python
-def record(manifest: Path, rules: list[dict], value: object) -> dict  # valida, verifica, scrive system-map.json accanto al manifest con le sole parti accettate
-def load(manifest: Path, rules: list[dict]) -> dict | None            # mappa registrata più quella dichiarata, riverificata; ogni nodo e flusso ha "status", "fresh", "changed_files"
+def record(manifest: Path, rules: list[dict], value: object) -> dict  # valida, verifica, unisce alla mappa esistente, scrive system-map.json accanto al manifest
+def load(manifest: Path, rules: list[dict]) -> dict | None            # mappa registrata più quella dichiarata, riverificata; nodi, flussi, frecce e corrispondenze hanno "status", "fresh", "changed_files"
 def about(system: dict, name: str) -> dict                            # area, flusso o nodo: flussi, nodi, file dei membri, esterni, nodi non visti
 ```
 
-`record` e `load` restituiscono anche `"coverage": {"entries": {"in", "of", "left"}, "stores": {...}, "routes": {...}}`: un punto d'ingresso, una chiave o una rotta è dentro quando appartiene a un nodo di un flusso accettato. Il progetto conferma con `codebase-system-map.json` nella radice (`daodan/declared-system-map/v1`, stessi record): un record dichiarato ha stato `confirmed` se verificato e sostituisce la proposta con lo stesso nome, che esce come lacuna `proposal_superseded`. I nodi senza codice accettati si registrano anche come moduli `external` proposti, con `modules.propose`.
+`record` e `load` restituiscono anche `"coverage": {"entries": {"in", "of", "left"}, "stores": {...}, "routes": {...}}`: un punto d'ingresso, una chiave o una rotta è dentro quando appartiene a un nodo di un flusso accettato. `record` restituisce inoltre `"created"`, `"updated"`, `"removed"` e `"kept"`, elenchi di identità: niente sparisce senza comparire in `removed`. I nodi senza codice accettati si registrano anche come moduli `external` proposti, con `modules.propose`.
 
-- [ ] **Passo 1:** test che falliscono. Sulla mappa di prova: `coverage["entries"]` vale 3 su 6 e lascia fuori `web/cart.ts::toggleTheme`, `server/orders.py::list_orders`, `admin/orders.py::list_all_orders`; `coverage["stores"]` 2 su 4; `coverage["routes"]` 1 su 3. Il file registrato non contiene il nodo e la freccia rifiutati. Dopo una modifica a `web/badge.ts` e un `snapshot refresh`, `load` dà `fresh` falso solo a `Badge pagamento` e al flusso che lo contiene. Un nodo dichiarato `Checkout` resta `confirmed` quando una nuova proposta lo rinomina. `about(m, "Pagamento")` elenca i due flussi che attraversano quel nodo; `about(m, "pagamenti e abbonamenti")` elenca i flussi dell'area con i file dei loro nodi.
-- [ ] **Passo 2:** implementare; i test passano.
-- [ ] **Passo 3:** commit.
+**Identità.** Ogni nodo e ogni flusso ha un `id` che non cambia quando cambia il nome. Lo assegna `record` alla prima registrazione: lo slug del primo nome, con un suffisso numerico se è già preso. Regole:
+
+1. Una proposta richiama un nodo o un flusso esistente con il suo `id`, oppure con il suo nome attuale, e lo aggiorna. Con un nome nuovo e senza `id` ne crea uno nuovo. In `nodes` una proposta elenca solo i nodi nuovi o cambiati: i flussi possono nominare quelli che esistono già.
+2. Un nodo nuovo è rifiutato come doppione, e il motivo nomina l'`id` esistente, quando un nodo esistente dello stesso tipo ha gli stessi membri, li contiene tutti o ne è contenuto. Chi vuole davvero dividere un nodo in due cambia nella stessa proposta anche i membri di quello esistente. Per un nodo senza codice il confronto è su tipo ed evidenze. Un flusso nuovo con gli stessi nodi di uno esistente è rifiutato allo stesso modo.
+3. Un nome non confermato segue la proposta. Un nome confermato non cambia con una proposta: il rapporto dice che è confermato. Cambia solo con una rinomina esplicita, cioè quando il progetto modifica il `name` del record con quell'`id` in `codebase-system-map.json`.
+
+**Conferma.** Il progetto conferma con `codebase-system-map.json` nella radice (`daodan/declared-system-map/v1`, stessi record con il loro `id`). Un record dichiarato ha stato `confirmed` se verificato, `incomplete` altrimenti, e una proposta non lo toglie mai.
+
+**Aggiornare un'area.** Una proposta con `scope` aggiorna solo quel perimetro:
+
+1. I flussi delle aree fuori dal perimetro restano come sono.
+2. Dentro il perimetro, i flussi della proposta sostituiscono quelli esistenti; un flusso non confermato che la proposta non riporta è tolto e compare in `removed`.
+3. Un nodo è unico in tutta la mappa. Resta se è confermato o se lo usa almeno un flusso, anche di un'altra area; altrimenti è tolto e compare in `removed`.
+4. Se la proposta cambia un nodo usato anche fuori dal perimetro, `record` riverifica tutti i flussi che lo contengono e segnala quelli che non reggono più, senza toglierli.
+
+**Freschezza.** Ogni nodo, freccia e corrispondenza tiene i digest dei file da cui dipende: i file dei membri, i file citati come evidenza di un nodo senza codice, il file citato da una freccia dichiarata o da una corrispondenza, i file dei collegamenti che provano una freccia. Quando uno cambia:
+
+1. ciò che la macchina sa riprovare (membri, frecce provate) viene riverificato senza modello, e torna all'agente solo se non regge;
+2. ciò che è solo dichiarato (nodi senza codice, frecce dichiarate, corrispondenze) diventa `fresh: false` con `changed_files` e torna all'agente, perché la macchina vede che il file citato è cambiato ma non cosa dice ora;
+3. i nomi confermati non cambiano in nessuno dei due casi.
+
+- [ ] **Passo 1:** test che falliscono sulla copertura. Sulla mappa di prova: `coverage["entries"]` vale 3 su 6 e lascia fuori `web/cart.ts::toggleTheme`, `server/orders.py::list_orders`, `admin/orders.py::list_all_orders`; `coverage["stores"]` 2 su 4; `coverage["routes"]` 1 su 3. Il file registrato non contiene il nodo e la freccia rifiutati. `about(m, "Pagamento")` elenca i due flussi che attraversano quel nodo; `about(m, "pagamenti e abbonamenti")` elenca i flussi dell'area con i file dei loro nodi.
+- [ ] **Passo 2:** test che falliscono sull'identità.
+
+```python
+first = record(manifest, rules, test_map)
+assert id_of(first, "Checkout") == "checkout"
+again = record(manifest, rules, with_node(name="Schermata di pagamento", members=["web/checkout.ts"]))   # senza id
+assert refused(again, "Schermata di pagamento") and "checkout" in reason(again, "Schermata di pagamento")
+wider = record(manifest, rules, with_node(name="Gestione cassa", type="schermata", members=["web/checkout.ts", "web/cart.ts"]))
+assert refused(wider, "Gestione cassa") and "checkout" in reason(wider, "Gestione cassa")                # contiene i membri di Checkout
+assert record(manifest, rules, test_map)["created"] == []                                                # stessi nomi: nessun doppione
+record(manifest, rules, with_node(id="checkout", name="Schermata di pagamento", members=["web/checkout.ts"]))
+assert names(load(manifest, rules)).count("Schermata di pagamento") == 1 and "Checkout" not in names(load(manifest, rules))
+declare(project, id="checkout", name="Checkout")                                                         # il progetto conferma
+record(manifest, rules, with_node(id="checkout", name="Cassa", members=["web/checkout.ts"]))
+confirmed = node(load(manifest, rules), "checkout")
+assert confirmed["name"] == "Checkout" and confirmed["status"] == "confirmed"
+```
+
+- [ ] **Passo 3:** test che falliscono sull'aggiornamento di un'area. Dopo la mappa di prova, una proposta con `scope: ["pagamenti e abbonamenti"]` riporta `Pagare un ordine` senza `Badge pagamento`:
+
+```python
+report = record(manifest, rules, area_proposal)
+m = load(manifest, rules)
+assert flow(m, "riprova-dei-pagamenti") == flow(before, "riprova-dei-pagamenti")          # l'altra area è intatta
+assert [n["id"] for n in m["nodes"]].count("pagamento") == 1                              # il nodo condiviso resta unico
+assert "badge-pagamento" in report["removed"] and "pagamento" not in report["removed"]
+declare(project, id="badge-pagamento", name="Badge pagamento")
+assert "badge-pagamento" not in record(manifest, rules, area_proposal)["removed"]         # confermato: resta
+```
+
+- [ ] **Passo 4:** test che falliscono sulla freschezza. Dopo una modifica a `web/badge.ts` e un `snapshot refresh`, `load` riverifica `Badge pagamento` e lo lascia `accepted`, con `fresh` vero. Dopo una modifica a `server/http.py`, `Server shop` e la corrispondenza di `API pagamenti` su `Server shop` hanno `fresh` falso e `changed_files == ["server/http.py"]`, mentre `Checkout` resta `fresh`. Dopo una modifica a `web/checkout.ts`, la freccia dichiarata da `Cliente` a `Checkout`, che lo cita, ha `fresh` falso.
+- [ ] **Passo 5:** implementare; i test passano.
+- [ ] **Passo 6:** commit.
 
 ### Task 4: livelli
 
@@ -147,7 +202,7 @@ def view(system: dict, flow: str, levels: list[str], links: dict | None = None) 
 
 Regole. Livello di casa per tipo: attore e schermata `persone`; entità `dati`; database e dispositivo `infrastruttura`; gli altri `funzioni`. Un servizio esterno compare anche a `infrastruttura`. A `infrastruttura` un nodo con `on` è sostituito dai nodi che nomina. A `codice` un nodo è sostituito dai file dei suoi membri toccati dai collegamenti del flusso, e servono i `links`. Una freccia fra due nodi visibili è la contrazione di un cammino i cui nodi intermedi sono nascosti. Con più livelli si mostrano i nodi di tutti; `also` elenca, per ogni nodo, i suoi corrispondenti agli altri livelli.
 
-- [ ] **Passo 1:** test che falliscono, sul flusso `Pagare un ordine` della mappa di prova con `API pagamenti` che ha `on: ["Server shop"]` (dispositivo, esterno, evidenza `server/http.py`).
+- [ ] **Passo 1:** test che falliscono, sul flusso `Pagare un ordine` della mappa di prova.
 
 ```python
 assert names(view(m, "Pagare un ordine", ["persone"])) == {"Cliente", "Checkout", "Badge pagamento"}
