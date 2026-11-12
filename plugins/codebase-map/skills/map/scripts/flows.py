@@ -838,13 +838,16 @@ def at_level(flow: dict, level: str, modules_of: dict[str, str]) -> dict:
 
 # ---------------------------------------------------------------- units
 
-def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int) -> dict:
+def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int, share: int | None = None) -> dict:
     """The perimeter's files in units of at most `limit` bytes, following the flows.
 
     Each entry point's flow gives its files in the order the flow meets them. The
     writers and readers of one store key form a block that is never split while it
     fits the limit. A file shared by two flows goes in both units; files no flow
     touches follow by path, as `pack()` does. Every perimeter file is assigned.
+
+    With `share`, a file is a member of at most that many units: in the others it
+    is `context`, a file to consult and not to judge.
     """
     def inside(file):
         return any(p == "." or file == p or file.startswith(p.rstrip("/") + "/") for p in perimeter)
@@ -873,26 +876,27 @@ def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int) 
                     cuts.append({"entry": entry["symbol"], "edge": [edge["from"], edge["to"]], "type": edge["type"],
                                  "files": ends})
         out.extend({"files": group, "entries": [entry["symbol"]]} for group in groups)
-    # Flows that share files, or that fit together, go in one unit: fewer units, fewer repeated files.
-    weight = lambda files: sum(sizes.get(file, 0) for file in files)  # noqa: E731
-    kept = []
-    for unit in sorted(out, key=lambda u: (-weight(u["files"]), u["entries"], u["files"])):
-        room = [(weight(set(unit["files"]) & set(k["files"])), weight(k["files"]), -index, k)
-                for index, k in enumerate(kept) if weight(set(unit["files"]) | set(k["files"])) <= limit]
-        if not room:
-            kept.append({"files": list(unit["files"]), "entries": list(unit["entries"])})
-            continue
-        holder = max(room, key=lambda item: item[:3])[3]
-        holder["files"] += [file for file in unit["files"] if file not in holder["files"]]
-        holder["entries"] += [entry for entry in unit["entries"] if entry not in holder["entries"]]
-    out = kept
+    out = _merge_units(out, sizes, limit)
+    if share:
+        # The units that hold most of a shared file's flows keep it; the others consult it.
+        members = defaultdict(int)
+        for unit in out:
+            kept_files = []
+            for file in unit["files"]:
+                if members[file] < share:
+                    members[file] += 1
+                    kept_files.append(file)
+                else:
+                    unit.setdefault("context", []).append(file)
+            unit["files"] = kept_files
+        out = _merge_units([unit for unit in out if unit["files"]], sizes, limit)
     assigned = {file for unit in out for file in unit["files"]}
     rest = sorted(f for f in sizes if inside(f) and f not in assigned)
     for group in _pack_blocks([[f] for f in rest], sizes, limit):
         out.append({"files": group, "entries": []})
-    # A link is cut only when no unit holds both its ends.
+    # A link is cut only when no unit holds both its ends, as members or as context.
     together = {frozenset(pair) for pair in {frozenset(cut["files"]) for cut in cuts}
-                if any(pair <= set(unit["files"]) for unit in out)}
+                if any(pair <= set(unit["files"]) | set(unit.get("context", ())) for unit in out)}
     cuts = [{key: value for key, value in cut.items() if key != "files"} for cut in cuts
             if frozenset(cut["files"]) not in together]
     counts = defaultdict(int)
@@ -902,6 +906,26 @@ def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int) 
     distinct = sorted(f for f in sizes if inside(f))
     return {"units": out, "cuts": cuts, "files": len(distinct),
             "assigned": sum(1 for f in distinct if counts[f]), "in_several_units": sum(1 for f in distinct if counts[f] > 1)}
+
+
+def _merge_units(found: list[dict], sizes: dict[str, int], limit: int) -> list[dict]:
+    """Units that share files, or that fit together, become one: fewer units, fewer repeated files."""
+    weight = lambda files: sum(sizes.get(file, 0) for file in files)  # noqa: E731
+    kept: list[dict] = []
+    for unit in sorted(found, key=lambda u: (-weight(u["files"]), u["entries"], u["files"])):
+        room = [(weight(set(unit["files"]) & set(k["files"])), weight(k["files"]), -index, k)
+                for index, k in enumerate(kept) if weight(set(unit["files"]) | set(k["files"])) <= limit]
+        if not room:
+            kept.append({key: list(value) for key, value in unit.items()})
+            continue
+        holder = max(room, key=lambda item: item[:3])[3]
+        for key in ("files", "entries", "context"):
+            added = [item for item in unit.get(key, []) if item not in holder.get(key, [])]
+            if added:
+                holder.setdefault(key, []).extend(added)
+        if "context" in holder:
+            holder["context"] = [file for file in holder["context"] if file not in holder["files"]]
+    return kept
 
 
 def _pack_blocks(blocks: list[list[str]], sizes: dict[str, int], limit: int) -> list[list[str]]:
@@ -944,6 +968,8 @@ def main(argv=None) -> int:
         command.add_argument("--rules", type=Path, required=True)
     sub.choices["units"].add_argument("--perimeter", action="append", required=True)
     sub.choices["units"].add_argument("--limit", type=int, default=120_000)
+    sub.choices["units"].add_argument("--share", type=int, default=None,
+                                      help="a file is a member of at most this many units, context in the others")
     trace_parser = sub.choices["trace"]
     group = trace_parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--from", dest="start_from")
@@ -957,7 +983,7 @@ def main(argv=None) -> int:
         print(json.dumps(links, indent=2, sort_keys=True))
         return 0
     if args.command == "units":
-        result = units(links, file_sizes(args.manifest.resolve()), args.perimeter, args.limit)
+        result = units(links, file_sizes(args.manifest.resolve()), args.perimeter, args.limit, args.share)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     start, direction = next((value, name) for value, name in ((args.start_from, "from"), (args.start_to, "to"),

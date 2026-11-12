@@ -139,6 +139,18 @@ class FlowFixtureTests(unittest.TestCase):
                 self.assertTrue(any(block <= set(unit["files"]) for unit in result["units"]), block)
         self.assertEqual(flows.units(self.links, sizes, ["."], 1_500), flows.units(self.links, sizes, ["."], 1_500))
 
+    def test_a_shared_file_is_a_member_of_few_units_and_context_in_the_others(self):
+        sizes = flows.file_sizes(self.manifest)
+        free = flows.units(self.links, sizes, ["."], 1_500)
+        shared = flows.units(self.links, sizes, ["."], 1_500, share=1)
+        self.assertGreater(free["in_several_units"], 0)
+        self.assertEqual((shared["in_several_units"], shared["assigned"]), (0, len(sizes)))
+        context = [file for unit in shared["units"] for file in unit.get("context", [])]
+        self.assertTrue(context)
+        for unit in shared["units"]:
+            self.assertFalse(set(unit["files"]) & set(unit.get("context", [])))
+        self.assertLessEqual(len(shared["cuts"]), len(free["cuts"]) + len(context))
+
 
 
 class WrittenRuleTests(unittest.TestCase):

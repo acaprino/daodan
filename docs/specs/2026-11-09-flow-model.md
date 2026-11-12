@@ -91,6 +91,7 @@ La scheda è legata ai digest dei simboli del flusso e segue la freschezza delle
 3. **Divide il perimetro in unità entro un limite di byte.**
    - Chi scrive e chi legge lo stesso dato stanno nella stessa unità. Se insieme superano il limite, il taglio è registrato e il flusso resta incompleto.
    - Un file condiviso da due flussi compare in entrambe le unità: i flussi non si fondono.
+   - Un file che molti flussi toccano è membro di poche unità, in numero fissato, e contesto nelle altre: senza questo tetto i file dello stato si ripetono in quasi ogni unità (su un caso reale, il doppio dei byte).
    - I file che nessun flusso tocca vengono dopo, per percorso del file. Un file più grande del limite resta da solo, come in `pack()`.
    - Ogni file del perimetro è assegnato almeno una volta: `composition.py account` conta i file distinti e, a parte, quelli presenti in più unità.
    - Le unità mantengono i riferimenti ai collegamenti che le attraversano. I file non esaminati mantengono incompleta la copertura della review.

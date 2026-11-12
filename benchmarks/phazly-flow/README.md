@@ -102,16 +102,20 @@ Prima applicazione di `flows.py` a un'app reale, su Modal. Riepiloghi in `result
 
 ### File di un difetto noto (misura 1 della fase 2)
 
-Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, collegamenti con il motore. Per G1 e per G2 si contano il file del difetto e i file di chi scrive gli store che esso legge: 4 file ciascuno.
+Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, collegamenti con il motore. Per G1 e per G2 si contano il file del difetto e i file di chi scrive gli store che esso legge: 4 file ciascuno. «Condivisione» è il numero massimo di unità di cui un file è membro; nelle altre è contesto, da consultare e non da giudicare (`flows.py units --share`).
 
-| | `pack()` | Unità |
-| --- | --- | --- |
-| Incarichi | 34 | 79 |
-| File assegnati | 568 | 568, di cui 79 in più unità |
-| Byte inviati sul perimetro | 1,00 | 2,09 |
-| G1: incarichi che servono per i 4 file | 3 | un'unità ne tiene 3 |
-| G2: incarichi che servono per i 4 file | 3 | un'unità ne tiene 3 |
-| Due esecuzioni | uguali | uguali |
+| | `pack()` | Unità, condivisione libera | Unità, condivisione 2 | Unità, condivisione 1 |
+| --- | --- | --- | --- | --- |
+| Incarichi | 34 | 79 | 39 | 34 |
+| File in più unità | 0 | 79 | 52 | 0 |
+| Byte inviati sul perimetro | 1,00 | 2,09 | 1,12 | 1,00 |
+| G1: file nell'unità del difetto, membri | uno o due | 2 | 1 | 1 |
+| G1: con il contesto | | 2 | 3 | 4 |
+| G2: file nell'unità del difetto, membri | uno o due | 3 | 1 | 1 |
+| G2: con il contesto | | 3 | 4 | 3 |
+| Due esecuzioni | uguali | uguali | uguali | uguali |
 
-Le unità avvicinano il difetto a chi scrive il suo dato (3 file su 4 in un incarico, contro uno o due con `pack()`), ma raddoppiano i byte: un flusso grande si divide in più gruppi e i file condivisi si ripetono. La soglia «ogni difetto in meno unità che incarichi di `pack()`» è rispettata; il costo è al limite del raddoppio ammesso dalla fase 3. 2.547 collegamenti restano fra unità diverse.
-
+- Con la condivisione libera i file dello stato, che ogni flusso tocca, si ripetono in quasi tutte le unità: il doppio dei byte.
+- Con condivisione 2 il costo torna vicino a `pack()` (1,12) e l'unità del difetto nomina come contesto i file di chi scrive il suo dato: 3 su 4 per G1, 4 su 4 per G2. Con `pack()` quei file stanno in tre incarichi senza che uno nomini gli altri.
+- Se il contesto basti al revisore per trovare il difetto è la domanda della fase 3, che richiede run di review.
+- Tutti i 568 file sono assegnati in ogni colonna. Circa 2.500 collegamenti restano fra unità diverse.
