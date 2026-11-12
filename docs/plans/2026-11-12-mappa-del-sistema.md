@@ -36,6 +36,8 @@ Ingressi che la spec implica e che è facile lasciare scoperti. Ognuno ha il suo
 6. Una nuova analisi chiama con un altro nome una cosa già in mappa: non nasce un doppione (Task 3).
 7. Si rianalizza una sola area: le altre restano, e un nodo usato altrove non viene tolto (Task 3).
 8. Cambia il file citato come evidenza di un nodo senza codice: il nodo risulta da rivedere (Task 3).
+9. Un'entità ha due copie, una nel database e una nello stato dell'app: chi scrive l'una e chi legge l'altra non risultano collegati, compare una lacuna (Task 4).
+10. Una freccia riassume un passo solo dichiarato o mancante: resta dichiarata o diventa una lacuna, mai provata (Task 4).
 
 ## File
 
@@ -75,9 +77,9 @@ AREAS = ("accesso e identità", "funzioni principali", "pagamenti e abbonamenti"
 def validate(value: object) -> dict   # {"schema", "nodes", "flows", "areas"}; ValueError che nomina il campo
 ```
 
-Un nodo: `{"id", "name", "type", "position", "members": [...], "evidence": [...], "on": [...], "where": str}`. `id` è l'identità del nodo, distinta dal nome: una proposta lo scrive solo per richiamare un nodo che esiste già; a un nodo nuovo lo assegna la macchina (Task 3). Membri: `percorso`, `percorso::Simbolo`, `store:<store>/<chiave>`, `module:<nome>`; una rotta si cita con il simbolo del suo handler. `on` nomina i nodi su cui il nodo gira o in cui vive. Un flusso: `{"id", "name", "area", "types", "nodes", "arrows": [{"from", "to", "data", "cite", "same"}], "paths"}`, con `id` come per i nodi. Un'area: `{"name", "present": bool}`. Una proposta può dichiarare il suo perimetro con `"scope": [aree]`: senza `scope` riguarda tutto il sistema. I riferimenti ai nodi (`nodes`, `from`, `to`, `on`) sono per nome.
+Un nodo: `{"id", "name", "type", "position", "members": [...], "evidence": [...], "on": [...], "where": str}`. `id` è l'identità del nodo, distinta dal nome: una proposta lo scrive solo per richiamare un nodo che esiste già; a un nodo nuovo lo assegna la macchina (Task 3). Membri: `percorso`, `percorso::Simbolo`, `store:<store>/<chiave>`, `module:<nome>`; una rotta si cita con il simbolo del suo handler. `on` nomina i nodi su cui il nodo gira o in cui vive. Un flusso: `{"id", "name", "area", "types", "nodes", "arrows": [{"from", "to", "data", "kind", "cite"}], "paths"}`, con `id` come per i nodi. `kind` dice che cosa afferma una freccia: `chiama`, `attiva`, `scrive`, `legge`, `usa`, `trasferisce`, `stessa informazione`. La proposta lo scrive solo per una freccia che non può essere provata; per le altre lo ricava la macchina dalla prova (Task 2). Un'area: `{"name", "present": bool}`. Una proposta può dichiarare il suo perimetro con `"scope": [aree]`: senza `scope` riguarda tutto il sistema. I riferimenti ai nodi (`nodes`, `from`, `to`, `on`) sono per nome.
 
-- [ ] **Passo 1:** test che falliscono. `validate` rifiuta, nominando il campo: un tipo fuori elenco; due nodi con lo stesso nome a meno di maiuscole e accenti; un nodo `internal` senza membri; un nodo `external` con membri; un nodo `unseen` senza `where`; un flusso che nomina un nodo assente; una freccia senza `data`; un'area dell'elenco `AREAS` non dichiarata né presente né assente, quando manca `scope`; con `scope`, un flusso la cui area è fuori dal perimetro; un campo sconosciuto.
+- [ ] **Passo 1:** test che falliscono. `validate` rifiuta, nominando il campo: un tipo fuori elenco; due nodi con lo stesso nome a meno di maiuscole e accenti; un nodo `internal` senza membri; un nodo `external` con membri; un nodo `unseen` senza `where`; un flusso che nomina un nodo assente; una freccia senza `data`; un `kind` fuori elenco; un'area dell'elenco `AREAS` non dichiarata né presente né assente, quando manca `scope`; con `scope`, un flusso la cui area è fuori dal perimetro; un campo sconosciuto.
 - [ ] **Passo 2:** implementare `validate`; i test passano.
 - [ ] **Passo 3:** commit.
 
@@ -94,10 +96,11 @@ def resolve_evidence(manifest: Path, texts: list[str]) -> list[dict]  # come _ev
 # system_map.py
 def verify(manifest: Path, links: dict, value: dict) -> dict
 # {"nodes": [{"name", "status": "accepted"|"refused", "reason", "files": [...]}],
-#  "flows": [{"name", "status", "arrows": [{"from", "to", "status": "proved"|"declared"|"refused", "proof": [siti], "reason"}]}]}
+#  "flows": [{"name", "status", "arrows": [{"from", "to", "status": "proved"|"declared"|"refused",
+#             "asserts": [tipi], "via": [chiavi di store], "proof": [siti], "reason"}]}]}
 ```
 
-Regole. Un nodo con codice è accettato se ogni membro esiste: file e simboli nello snapshot, chiavi di store in `links["stores"]`, moduli nel grafo. Un nodo senza codice è accettato se la sua evidenza si risolve; `unseen` basta `where`. Una freccia è `proved` da un arco fra un membro del primo nodo e un membro del secondo nel verso indicato (un arco `scrive` prova nodo → entità, un arco `legge` entità → nodo), oppure da `scrive` e `legge` sulla stessa chiave, dal primo al secondo. È `declared` se un capo è senza codice o se `same` è vero, e `cite` è un `percorso:riga` che esiste; se l'altro capo ha codice, il percorso citato è fra i suoi file. Altrimenti è `refused`. `on` nomina solo nodi accettati. Un flusso è accettato se ha almeno una freccia non rifiutata e tutti i suoi nodi accettati.
+Regole. Un nodo con codice è accettato se ogni membro esiste: file e simboli nello snapshot, chiavi di store in `links["stores"]`, moduli nel grafo. Un nodo senza codice è accettato se la sua evidenza si risolve; `unseen` basta `where`. Una freccia è `proved` da un arco fra un membro del primo nodo e un membro del secondo nel verso indicato (un arco `scrive` prova nodo → entità, un arco `legge` entità → nodo), oppure da `scrive` e `legge` sulla stessa chiave, dal primo al secondo. Una freccia provata afferma solo ciò che i suoi archi dicono: `asserts` elenca i loro tipi (`trasferisce` per la coppia `scrive` e `legge`), e `via` le chiavi di store toccate, cioè la rappresentazione dell'entità a cui la freccia è legata. È `declared` se un capo è senza codice o se `kind` è `stessa informazione`; allora `kind` è obbligatorio e `cite` è un `percorso:riga` che esiste; se l'altro capo ha codice, il percorso citato è fra i suoi file. Altrimenti è `refused`. `on` nomina solo nodi accettati. Un flusso è accettato se ha almeno una freccia non rifiutata e tutti i suoi nodi accettati.
 
 Mappa di prova sulla fixture: `Cliente` (attore, esterno, evidenza `web/checkout.ts`), `Checkout` (schermata, `web/checkout.ts`), `Badge pagamento` (schermata, `web/badge.ts`), `API pagamenti` (servizio o API, `server/payments.py` e `server/gateway.py`), `Pagamento` (entità, `store:db/payments` e `store:web state/payment`), `card payment provider` (gateway, esterno, evidenza `server/gateway.py`), `Riprova` (funzionalità, `server/jobs.py`), `Server shop` (dispositivo, esterno, evidenza `server/http.py`), con `API pagamenti` che ha `on: ["Server shop"]`. Due flussi: `Pagare un ordine` (funzionale, area «pagamenti e abbonamenti», con i primi sei nodi) e `Riprova dei pagamenti` (operativo, area «esercizio», con `Pagamento` e `Riprova`).
 
@@ -107,6 +110,10 @@ Mappa di prova sulla fixture: `Cliente` (attore, esterno, evidenza `web/checkout
 proved = {(a["from"], a["to"]) for flow in report["flows"] for a in flow["arrows"] if a["status"] == "proved"}
 assert {("Checkout", "API pagamenti"), ("API pagamenti", "Pagamento"), ("Pagamento", "Badge pagamento"),
         ("Checkout", "Badge pagamento"), ("Pagamento", "Riprova")} <= proved
+assert arrow("Checkout", "API pagamenti")["asserts"] == ["chiama"]
+assert arrow("API pagamenti", "Pagamento")["asserts"] == ["scrive"] and arrow("API pagamenti", "Pagamento")["via"] == ["db/payments"]
+assert arrow("Pagamento", "Badge pagamento")["via"] == ["web state/payment"]                 # un'altra rappresentazione
+assert arrow("Checkout", "Badge pagamento")["asserts"] == ["trasferisce"] and arrow("Checkout", "Badge pagamento")["via"] == ["web state/payment"]
 assert status("Cliente", "Checkout") == "declared" and status("API pagamenti", "card payment provider") == "declared"
 assert status("Badge pagamento", "API pagamenti") == "refused"            # nessun collegamento
 assert node("Fantasma")["status"] == "refused" and "web/nope.ts" in node("Fantasma")["reason"]
@@ -197,19 +204,32 @@ assert "badge-pagamento" not in record(manifest, rules, area_proposal)["removed"
 LEVELS = ("persone", "funzioni", "dati", "codice", "infrastruttura")
 def view(system: dict, flow: str, levels: list[str], links: dict | None = None) -> dict
 # {"flow", "levels", "nodes": [{"name", "type", "level", "position", "also": {livello: [nomi]}}],
-#  "arrows": [{"from", "to", "data", "through": [nodi nascosti]}], "absent": [livelli senza nodi]}
+#  "arrows": [{"from", "to", "data", "status": "proved"|"declared", "asserts", "via", "proof": [...], "through": [nodi nascosti]}],
+#  "gaps": [{"from", "to", "reason", "through"}], "absent": [livelli senza nodi]}
+def inside(system: dict, name: str, links: dict | None = None) -> dict
+# {"node", "detail": "available"|"none", "members": [{"id", "kind", "writes", "reads"}], "relations": [...], "gaps": [...]}
 ```
 
-Regole. Livello di casa per tipo: attore e schermata `persone`; entità `dati`; database e dispositivo `infrastruttura`; gli altri `funzioni`. Un servizio esterno compare anche a `infrastruttura`. A `infrastruttura` un nodo con `on` è sostituito dai nodi che nomina. A `codice` un nodo è sostituito dai file dei suoi membri toccati dai collegamenti del flusso, e servono i `links`. Una freccia fra due nodi visibili è la contrazione di un cammino i cui nodi intermedi sono nascosti. Con più livelli si mostrano i nodi di tutti; `also` elenca, per ogni nodo, i suoi corrispondenti agli altri livelli.
+Regole. Livello di casa per tipo: attore e schermata `persone`; entità `dati`; database e dispositivo `infrastruttura`; gli altri `funzioni`. Un servizio esterno compare anche a `infrastruttura`. A `infrastruttura` un nodo con `on` è sostituito dai nodi che nomina. A `codice` un nodo è sostituito dai file dei suoi membri toccati dai collegamenti del flusso, e servono i `links` (mai dai singoli simboli). Una freccia fra due nodi visibili è la contrazione di un cammino i cui nodi intermedi sono nascosti: resta `declared` se almeno un passo o una corrispondenza `on` attraversata è `declared`, `proved` altrimenti, e raccoglie `proof` di tutti i passi contratti. Un cammino attraversa un'entità solo sulla stessa rappresentazione: se chi scrive tocca una chiave e chi legge un'altra non nasce una freccia ma una lacuna in `gaps`, con le due chiavi nel motivo; un passo rifiutato o mancante dà una lacuna allo stesso modo, mai una freccia. `inside` apre un nodo: per un'entità le sue rappresentazioni, ciascuna con chi la scrive e chi la legge, e fra loro solo le relazioni provate o dichiarate; per un nodo con codice i suoi file e i collegamenti che sostengono le sue frecce; per un servizio esterno o un nodo non visto `detail` è `none`. Con più livelli si mostrano i nodi di tutti; `also` elenca, per ogni nodo, i suoi corrispondenti agli altri livelli.
 
 - [ ] **Passo 1:** test che falliscono, sul flusso `Pagare un ordine` della mappa di prova.
 
 ```python
 assert names(view(m, "Pagare un ordine", ["persone"])) == {"Cliente", "Checkout", "Badge pagamento"}
-assert ("Checkout", "Badge pagamento") in arrows(view(m, "Pagare un ordine", ["persone"]))
+assert ("Checkout", "Badge pagamento", "proved") in arrow_states(view(m, "Pagare un ordine", ["persone"]))
+assert ("Cliente", "Checkout", "declared") in arrow_states(view(m, "Pagare un ordine", ["persone"]))
 assert names(view(m, "Pagare un ordine", ["dati"])) == {"Pagamento"}
-assert {"Server shop", "card payment provider"} <= names(view(m, "Pagare un ordine", ["infrastruttura"]))
+assert ("Server shop", "card payment provider", "declared") in arrow_states(view(m, "Pagare un ordine", ["infrastruttura"]))
 assert "server/payments.py" in names(view(m, "Pagare un ordine", ["codice"], links))
+mixed = view(m, "Pagare un ordine", ["persone", "funzioni"])                               # Pagamento è nascosto
+assert ("API pagamenti", "Badge pagamento") not in {(a["from"], a["to"]) for a in mixed["arrows"]}   # due copie diverse
+gap = next(g for g in mixed["gaps"] if (g["from"], g["to"]) == ("API pagamenti", "Badge pagamento"))
+assert "db/payments" in gap["reason"] and "web state/payment" in gap["reason"]
+kept = next(a for a in view(m, "Pagare un ordine", ["persone"])["arrows"] if (a["from"], a["to"]) == ("Checkout", "Badge pagamento"))
+assert kept["via"] == ["web state/payment"] and kept["proof"]
+opened = inside(m, "Pagamento", links)
+assert {r["id"] for r in opened["members"]} == {"store:db/payments", "store:web state/payment"} and opened["relations"] == []
+assert inside(m, "card payment provider")["detail"] == "none"
 assert view(m, "Riprova dei pagamenti", ["persone"])["absent"] == ["persone"]
 assert view(m, "Pagare un ordine", list(LEVELS), links)["nodes"][0]["also"]     # corrispondenze presenti
 ```

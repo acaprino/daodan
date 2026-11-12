@@ -16,10 +16,11 @@ Le parole della fase 2 valgono, tranne queste.
 | Non visto | Un nodo che fa parte del sistema ma i cui file stanno fuori dallo snapshot. Si distingue da «esterno», che è di altri |
 | Flusso | Un processo del sistema con un nome: i nodi che vi partecipano e le frecce fra loro. È uno solo, a qualunque livello lo si guardi |
 | Tipo di flusso | Uno o più fra: funzionale (una cosa che il prodotto fa per chi lo usa), operativo (gira senza una persona: un orario, una coda, un avviso esterno), tecnico (un meccanismo interno: cache, sincronizzazione, build, rilascio), dati (segue un dato: dove nasce, dove vive, chi ne tiene copia), hardware (passa da dispositivi fisici o dalla rete) |
-| Livello | La prospettiva da cui si guarda un flusso: persone, funzioni, dati, codice, infrastruttura, oppure misto. Sostituisce l'elenco della fase 2, dove «fisico» indicava file e simboli: quello ora è il livello codice |
+| Livello | La prospettiva da cui si guarda un flusso: persone, funzioni, dati, codice, infrastruttura, oppure misto. Sostituisce l'elenco della fase 2, dove «fisico» scendeva fino ai simboli; il livello codice si ferma invece a moduli e file |
 | Corrispondenza | Il legame fra nodi di livelli diversi che sono la stessa cosa vista da due prospettive: una funzione e i file che la realizzano, un servizio e la macchina su cui gira, un'entità e il database in cui vive |
 | Percorso | Ciò che la fase 2 chiamava flusso: la sequenza ordinata di collegamenti da un punto d'ingresso. È il livello codice di un flusso, e la sua prova |
-| Freccia | Da un nodo a un altro dentro un flusso, con il dato che passa. Riassume i collegamenti fra i membri dei due nodi |
+| Freccia | Da un nodo a un altro dentro un flusso, con il dato che passa. Riassume i collegamenti fra i membri dei due nodi e afferma solo ciò che quei collegamenti provano |
+| Rappresentazione | Uno dei posti in cui un'entità vive: una tabella, una chiave di stato, una cache. È un membro dell'entità |
 | Area | Un gruppo di flussi che una persona nomina insieme. È ciò che una richiesta nomina più spesso |
 | Mappa del sistema | Nodi, flussi, aree e corrispondenze di un progetto, con le loro prove |
 | Scheda del sistema | Il riassunto che la macchina compone dai passi di analisi per chi propone la mappa del sistema |
@@ -59,7 +60,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 | Persone | Attori e schermate |
 | Funzioni | Funzionalità, servizi e servizi esterni |
 | Dati | Entità e i posti in cui vivono |
-| Codice | Moduli, file e simboli: i percorsi. Sotto, i progetti esterni su cui poggiano |
+| Codice | Moduli e file; sotto, i progetti esterni su cui poggiano. I simboli restano nei percorsi e nell'ispettore, non come nodi del grafo |
 | Infrastruttura | Dispositivi, container, servizi in esecuzione, database, code, reti e servizi esterni |
 | Misto | Nodi di livelli diversi nello stesso grafo |
 
@@ -100,7 +101,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 La macchina accetta o rifiuta ogni parte della proposta e dice perché. L'agente corregge una volta; ciò che resta rifiutato non entra nella mappa.
 
 1. **Nodo:** nome unico e tipo dell'elenco. Un nodo con codice ha almeno un membro che esiste: un file o un simbolo dello snapshot, una chiave di store o una rotta fra i collegamenti. Un nodo senza codice cita la sua evidenza; un nodo non visto dichiara dove sta.
-2. **Freccia:** è provata in uno di due modi. Da un collegamento diretto, dedotto o osservato fra un membro del primo nodo e un membro del secondo, nel verso indicato. Oppure da una coppia `scrive` e `legge` sulla stessa chiave di store, dal primo nodo al secondo. È «dichiarata», con un punto del codice o della configurazione citato, quando un capo è un nodo senza codice o quando dice «stessa informazione»: lì la macchina verifica che i punti citati esistano, non che i valori coincidano. Ogni altra freccia è rifiutata.
+2. **Freccia:** afferma solo ciò che la sua prova dice, a qualunque livello appartenga: una chiamata, un'attivazione, una scrittura, una lettura, un uso, un trasferimento. Quando tocca un'entità è legata alla rappresentazione che la prova nomina: un cammino che entra in un'entità da una rappresentazione ed esce da un'altra non è provato, e fra le due serve una freccia con la sua evidenza. È provata in uno di due modi. Da un collegamento diretto, dedotto o osservato fra un membro del primo nodo e un membro del secondo, nel verso indicato. Oppure da una coppia `scrive` e `legge` sulla stessa chiave di store, dal primo nodo al secondo. È «dichiarata», con ciò che afferma e con un punto del codice o della configurazione citato, quando un capo è un nodo senza codice o quando dice «stessa informazione»: lì la macchina verifica che i punti citati esistano, non che i valori coincidano. Ogni altra freccia è rifiutata.
 3. **Corrispondenza:** quella verso il codice è verificata sui membri. Le altre sono dichiarate, con il punto citato che esiste.
 4. **Copertura:** quanti punti d'ingresso, store e rotte stanno in almeno un flusso. Il resto è elencato, non nascosto.
 5. **Identità e conferma:** ogni nodo e ogni flusso ha un'identità che non dipende dal nome. Chi aggiorna richiama l'identità esistente; un nodo nuovo è rifiutato come doppione quando uno esistente dello stesso tipo ha gli stessi membri, li contiene tutti o ne è contenuto. Una proposta resta `inferred` finché il progetto non la conferma, come per i moduli. Un nome confermato cambia solo con una rinomina esplicita del progetto, e una proposta non toglie ciò che è confermato.
@@ -112,10 +113,15 @@ La mappa del sistema ha due usi.
 
 **Studiare il prodotto e la codebase.**
 
-- L'esploratore mostra tutto come un grafo dinamico. Apre sul grafo d'insieme; ogni nodo si espande sul posto in ciò che contiene, fino ai file e ai simboli, e si richiude; il grafo si ridispone a ogni passo.
-- Si naviga da un nodo ai flussi che lo attraversano, ai nodi vicini e alle sue corrispondenze agli altri livelli; da un'area ai suoi flussi; da un flusso al suo grafo. Un selettore sceglie uno o più livelli.
-- Un grafo mostra solo i nodi che si riescono a leggere: oltre una soglia restano raggruppati finché non si espandono.
-- `codebase_map_flows` risponde per area, flusso, nodo e livello; i percorsi restano interrogabili come oggi. `03-flows.md` si genera dalla mappa del sistema.
+La mappa del sistema è un grafo navigabile in cui livello e grado di dettaglio sono controlli distinti.
+
+1. **Il livello sceglie la prospettiva.** Lo stesso sistema o flusso si guarda ai livelli persone, funzioni, dati, codice o infrastruttura, uno alla volta o combinati (sezione 2).
+2. **Il dettaglio sceglie quanto aprire nel grafo, al massimo fino ai file.** Un'area si apre nei flussi e nei nodi che comprende al livello scelto e si richiude nella vista sintetica, senza cambiare livello. Al livello codice un modulo o un nodo si apre sulla tela al massimo fino ai file, senza inventare scomposizioni non presenti nella mappa; i simboli e le righe restano consultabili nell'ispettore e nei percorsi, mai come nodi del grafo. Oltre una soglia di leggibilità i gruppi restano chiusi finché non si aprono.
+3. **L'apertura è locale e conserva il fuoco.** Ogni gruppo si apre e si richiude sul posto lasciando compatto il resto del grafo, anche con più gruppi aperti a dettagli diversi, e il grafo si ridispone a ogni passo. Si naviga da un nodo ai flussi che lo attraversano, ai nodi vicini e alle sue corrispondenze agli altri livelli; cambiare livello conserva il flusso selezionato e, quando esiste una corrispondenza, il nodo osservato.
+4. **Le relazioni valgono per ciò che provano.** Riferirsi alla stessa entità o avere una freccia «stessa informazione» non dimostra che due copie siano sincronizzate (sezioni 5.5 e 6): trasferimento, aggiornamento e attivazione richiedono una freccia con la propria evidenza.
+5. **Le frecce riassunte conservano stato, evidenze e lacune.** Chiudere un gruppo o contrarre un cammino riassume i collegamenti; aprirlo mostra i nodi e le frecce che sostengono il riassunto, insieme alle frecce solo dichiarate e alle lacune dichiarate (flussi incompleti, nodi non visti). La contrazione non promuove una freccia dichiarata a provata né nasconde una lacuna; le frecce rifiutate restano fuori dalla mappa.
+
+`codebase_map_flows` risponde per area, flusso, nodo e livello; i percorsi restano interrogabili come oggi. `03-flows.md` si genera dalla mappa del sistema.
 
 **Capire cosa controllare in una review, partendo dall'intento di chi la chiede.**
 
