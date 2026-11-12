@@ -33,8 +33,8 @@ register({
 Versione 1.27.6 (pubblicata il 18 gennaio 2026, 12 dipendenze), eseguita il 12 novembre 2026 in un container Modal sull'archivio di phazly (1.812 file, tre cartelle): 1,6 secondi, nessun modello. Legge manifest e configurazione, non esegue il progetto.
 
 - **Riconosce 25 tecnologie:** Docker, Firebase, Hugging Face, Resend, React, React Router, Tauri, Tailwind, Vite, Radix UI, shadcn, Zod, Phosphor Icons, Playwright, ESLint, più linguaggi e gestori di pacchetti (Python, TypeScript, JavaScript, Rust, Kotlin, npm, Cargo).
-- **Non riconosce**, pur dichiarati nei manifest: Stripe, MongoDB (Motor e PyMongo), FastAPI, Pydantic, Google Gen AI, Secret Manager di Google Cloud, Prometheus, Zustand. Dal lato Python riconosce 2 pacchetti su 22.
-- **Non può vedere** ciò che sta solo nella configurazione fuori dall'archivio: Cloud Run, Pub/Sub, Google Play.
+- **Non riconosce**, pur dichiarati nei manifest: Stripe, MongoDB (Motor e PyMongo), FastAPI, Pydantic, Google Gen AI, Secret Manager di Google Cloud, Prometheus, Zustand, il modulo degli acquisti su Google Play. Dal lato Python riconosce 2 pacchetti su 22.
+- **Non può vedere** ciò che sta solo nella configurazione fuori dall'archivio: Cloud Run e Pub/Sub.
 
 Conclusione: utile come fonte in più, forte su npm, insufficiente da sola.
 
