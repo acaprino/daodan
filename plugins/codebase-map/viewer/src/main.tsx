@@ -277,16 +277,54 @@ function Explorer({ envelope }: { envelope: Envelope }) {
   </div>;
 }
 
+type LiveEvent = { cursor: number; timestamp: string; event: string; message: string; phase?: number };
+const POLL_MS = 2000;
+
+const getJson = (url: string) => fetch(url).then(response => response.json().catch(() => ({})).then(json =>
+  (response.ok ? json : Promise.reject(new Error(json.error ?? `HTTP ${response.status}`)))));
+
+// Served by the MCP server the page lists the runs and follows the chosen run's events; served from an export it draws that file.
 function App() {
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
   const [failure, setFailure] = useState('');
+  const [runs, setRuns] = useState<string[] | null>(null);
+  const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
+  const [events, setEvents] = useState<LiveEvent[]>([]);
+  const load = (url: string) => getJson(url).then(json => { setEnvelope(parseEnvelope(json)); setFailure(''); })
+    .catch(reason => setFailure(String(reason?.message ?? reason)));
   useEffect(() => {
-    fetch('./data/visual.json').then(response => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
-      .then(json => setEnvelope(parseEnvelope(json))).catch(reason => setFailure(String(reason?.message ?? reason)));
+    getJson('./api/runs').then(json => {
+      const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
+      setRuns(ids);
+      setRun(current => (ids.includes(current) ? current : ids[ids.length - 1] ?? ''));
+    }).catch(() => load('./data/visual.json'));
   }, []);
-  if (failure) return <main className="state"><h1>Export non leggibile</h1><p>{failure}</p></main>;
-  if (!envelope) return <main className="state" role="status">Carico l'export…</main>;
-  return <ReactFlowProvider><Explorer envelope={envelope} /></ReactFlowProvider>;
+  useEffect(() => {
+    if (!runs || !run) return;
+    const address = `./data/visual.json?run=${encodeURIComponent(run)}`;
+    let cursor = 0, first = true, stopped = false;
+    setEnvelope(null); setEvents([]); load(address);
+    const poll = () => getJson(`./api/events?run=${encodeURIComponent(run)}&after=${cursor}`).then(json => {
+      if (stopped) return;
+      const fresh = json.events as LiveEvent[];
+      cursor = json.next_cursor;
+      if (fresh.length) setEvents(current => [...current, ...fresh].slice(-20));
+      if (!first && fresh.some(item => item.event === 'phase_completed')) load(address);
+      first = false;
+    }).catch(() => undefined);
+    poll();
+    const timer = window.setInterval(poll, POLL_MS);
+    return () => { stopped = true; window.clearInterval(timer); };
+  }, [runs, run]);
+  const last = events[events.length - 1];
+  const live = runs && <div className="live" role="status">
+    <label>Run <select value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>
+    <span className="muted">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
+  </div>;
+  if (runs && !runs.length) return <main className="state"><h1>Nessun run</h1><p>Avvia una mappa nella sessione: la pagina la mostra appena esiste.</p></main>;
+  if (failure) return <>{live}<main className="state"><h1>Export non leggibile</h1><p>{failure}</p></main></>;
+  if (!envelope) return <>{live}<main className="state" role="status">Carico l'export…</main></>;
+  return <>{live}<ReactFlowProvider key={run}><Explorer envelope={envelope} /></ReactFlowProvider></>;
 }
 
 createRoot(document.getElementById('app')!).render(<React.StrictMode><App /></React.StrictMode>);

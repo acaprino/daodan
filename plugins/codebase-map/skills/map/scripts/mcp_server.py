@@ -223,6 +223,19 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         """Publish through canonical freshness/delivery gates after the host verifies requested views."""
         return await _invoke(ctx, publish, run_id)
 
+    explorer: list = []
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_ui(ctx: Context) -> dict:
+        """Start once the explorer of this project on 127.0.0.1 and return its address; the page lists the runs and follows a run's events while the host works."""
+        if not explorer:
+            import threading
+            import visual
+            explorer.append(visual.make_server(None, visual.SCRIPT_DIR.parents[2] / "assets" / "viewer",
+                                               routes=visual.live_routes(service)))
+            threading.Thread(target=explorer[0].serve_forever, daemon=True).start()
+        return {"url": f"http://127.0.0.1:{explorer[0].server_address[1]}/"}
+
     return server
 
 

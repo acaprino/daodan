@@ -1,6 +1,10 @@
-"""The explorer's local server: 127.0.0.1 only, a fixed list of files, no listing, no other origin."""
+"""The explorer's local server: 127.0.0.1 only, a fixed list of files, no listing, no other origin.
+
+Live, over a MapService: the runs, a run's events after a cursor and a run's envelope; a refused request answers 400.
+"""
 
 import http.client
+import json
 import os
 import shutil
 import sys
@@ -12,6 +16,7 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
+import mcp_service  # noqa: E402
 import visual  # noqa: E402
 
 
@@ -68,6 +73,48 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.get("/", host="evil.example")[0].status, 421)
         if self.linked:
             self.assertEqual(self.get("/assets/link.js")[0].status, 404)
+
+
+class LiveTests(unittest.TestCase):
+    def setUp(self):
+        self.project = Path(tempfile.mkdtemp(prefix="visual-live-")).resolve()
+        self.addCleanup(shutil.rmtree, self.project, True)
+        (self.project / "src").mkdir()
+        (self.project / "src/module.py").write_text("LIMIT = 7\n\ndef selected():\n    return LIMIT\n", encoding="utf-8")
+        self.service = mcp_service.MapService(self.project)
+        self.service.create_run("src", "example", engine=False)
+        self.server = visual.make_server(None, self.project / "no-assets", routes=visual.live_routes(self.service))
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+
+    def get(self, path):
+        connection = http.client.HTTPConnection("127.0.0.1", self.server.server_address[1], timeout=30)
+        connection.request("GET", path)
+        response = connection.getresponse()
+        value = json.loads(response.read())
+        connection.close()
+        return response.status, value
+
+    def test_runs_events_and_envelope_come_from_the_service(self):
+        status, runs = self.get("/api/runs")
+        self.assertEqual((status, [run["run_id"] for run in runs["runs"]]), (200, ["example"]))
+        status, events = self.get("/api/events?run=example")
+        self.assertEqual((status, events["next_cursor"]), (200, len(events["events"])))
+        self.service.checkpoint("example", 1, "phase_started", message="reading")
+        status, later = self.get(f"/api/events?run=example&after={events['next_cursor']}")
+        self.assertEqual([(item["event"], item["message"]) for item in later["events"]], [("phase_started", "reading")])
+        status, envelope = self.get("/data/visual.json?run=example")
+        self.assertEqual((status, envelope["schema"]), (200, visual.SCHEMA))
+        self.assertIn("file:module.py", [entity["ref"] for entity in envelope["entities"]])
+
+    def test_a_refused_request_answers_400_with_the_reason(self):
+        for path in ("/api/events", "/api/events?run=example&after=x", "/api/events?run=missing",
+                     "/data/visual.json?run=..%2F..", "/data/visual.json"):
+            with self.subTest(path=path):
+                status, value = self.get(path)
+                self.assertEqual(status, 400)
+                self.assertTrue(value["error"])
 
 
 if __name__ == "__main__":

@@ -77,6 +77,7 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | `codebase_map_artifact` | `run_id`, `name`: one declared artifact's content, `bytes` and digest of the whole file; content stops at 2,000,000 bytes with `truncated: true` |
 | `codebase_map_checkpoint` | `run_id`, `phase`, `event`, optional `message`: persist a host phase hook |
 | `codebase_map_events` | `run_id`, optional `after=0`, `limit=100`: persistent events and replay cursor |
+| `codebase_map_ui` | no arguments: starts once the explorer of this project on 127.0.0.1 and returns its `url`; the page lists the runs, draws a run's envelope and polls its events |
 | `codebase_map_resume` | `run_id`, optional `phase`: prepare continuation of the unchanged exact run |
 | `codebase_map_stop` | `run_id`, `reason`: record partial state and unregister after workers have stopped |
 | `codebase_map_publish` | `run_id`: canonical freshness, delivery and whole-mirror publication; only an `in_progress` run publishes, so resume a stopped run first |

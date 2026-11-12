@@ -100,6 +100,7 @@ Ventidue tool, tutti con risposta JSON (`references/mcp.md` ha i parametri compl
 | Navigazione | `codebase_map_search`, `codebase_map_index`, `codebase_map_outline`, `codebase_map_graph`, `codebase_map_read`, `codebase_map_modules`, `codebase_map_flows` |
 | Impatto | `codebase_map_edit_impact`, `codebase_map_symbols_at`, `codebase_map_stale_callers`, `codebase_map_meta_query`, `codebase_map_context` |
 | Ciclo di vita | `codebase_map_checkpoint`, `codebase_map_events`, `codebase_map_resume`, `codebase_map_stop`, `codebase_map_publish` |
+| Esploratore | `codebase_map_ui` |
 
 Limiti nel codice (`mcp_service.py`): una lettura oltre 4.000.000 caratteri è rifiutata e va divisa; un artefatto si ferma a 2.000.000 byte con `truncated: true`; il giornale `mcp-events.json` tiene al massimo 10.000 eventi. Il server non avvia modelli, non ha scheduler e non cancella analisi: l'host dispaccia i worker e, per fermare un run, ferma prima i propri worker e poi chiama `stop`. `MapService(project_root, store)` espone le stesse operazioni a un backend nativo senza SDK.
 

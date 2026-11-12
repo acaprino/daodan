@@ -17,6 +17,9 @@ the type its link rule names. A node of unknown type has none.
     python visual.py envelope RUN_DIR [--out FILE]
     python visual.py export RUN_DIR        # publishes .daodan/map/views/<run>/<digest>/visual.json
     python visual.py serve EXPORT_DIR      # http://127.0.0.1:<port>/, read-only
+
+The MCP server serves the same page live (`codebase_map_ui`): `live_routes` answers with the
+project's runs, a run's events and a run's envelope built at each request.
 """
 from __future__ import annotations
 
@@ -30,7 +33,7 @@ import tempfile
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlsplit, urlunsplit
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -311,14 +314,27 @@ _TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=
 _POLICY = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:"
 
 
-def make_server(export_dir: Path, assets_dir: Path, port: int = 0) -> ThreadingHTTPServer:
+def live_routes(service) -> dict:
+    """The JSON routes of a live explorer over one MapService; a refused request raises ValueError."""
+    def envelope(query: dict) -> dict:
+        return build_envelope(service.root / "runs" / service.status(query["run"])["run_id"])
+
+    return {"/api/runs": lambda query: service.runs(),
+            "/api/events": lambda query: service.events(query["run"], after=int(query.get("after", 0))),
+            "/data/visual.json": envelope}
+
+
+def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None) -> ThreadingHTTPServer:
     """A read-only server on 127.0.0.1: the viewer's files listed at start, and the export's envelope.
+
+    `routes` maps an exact path to a function of the query that returns JSON, in place of
+    an export: a ValueError, a missing parameter or an unreadable file answers 400.
 
     Paths are matched exactly against the list, so no request reaches a file outside it,
     a directory is never listed and a link in the assets is never served. A request whose
     Host is not this server is refused, and no response allows other origins.
     """
-    export_dir, assets_dir = Path(export_dir).resolve(), Path(assets_dir).resolve()
+    assets_dir = Path(assets_dir).resolve()
     allowed: dict[str, Path] = {}
     for path in sorted(assets_dir.rglob("*")) if assets_dir.is_dir() else []:
         relative = path.relative_to(assets_dir)
@@ -327,17 +343,28 @@ def make_server(export_dir: Path, assets_dir: Path, port: int = 0) -> ThreadingH
             allowed["/" + relative.as_posix()] = path
     if "/index.html" in allowed:
         allowed["/"] = allowed["/index.html"]
-    allowed["/data/visual.json"] = export_dir / "visual.json"
+    if export_dir is not None:
+        allowed["/data/visual.json"] = Path(export_dir).resolve() / "visual.json"
+    routes = routes or {}
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):  # noqa: N802 - the stdlib names the method
             port = self.server.server_address[1]
             if self.headers.get("Host") not in (f"127.0.0.1:{port}", f"localhost:{port}"):
                 return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
-            target = allowed.get(urlsplit(self.path).path)
+            address = urlsplit(self.path)
+            if address.path in routes:
+                try:
+                    return self._json(200, routes[address.path](dict(parse_qsl(address.query))))
+                except (ValueError, KeyError, OSError) as error:
+                    return self._json(400, {"error": str(error)})
+            target = allowed.get(address.path)
             if target is None or not target.is_file():
                 return self._send(404, b"not found", "text/plain; charset=utf-8")
             return self._send(200, target.read_bytes(), _TYPES.get(target.suffix.lower(), "application/octet-stream"))
+
+        def _json(self, code: int, value) -> None:
+            self._send(code, json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), "application/json")
 
         def _send(self, code: int, body: bytes, kind: str) -> None:
             self.send_response(code)

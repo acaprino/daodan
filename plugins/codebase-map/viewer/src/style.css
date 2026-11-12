@@ -20,7 +20,9 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-siz
 .muted { color: var(--muted); font-weight: 400; }
 .state { padding: 48px 24px; max-width: 720px; margin: 0 auto; }
 
-.app { display: flex; flex-direction: column; height: 100%; }
+#app { display: flex; flex-direction: column; }
+.app { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.live { display: flex; align-items: center; gap: 16px; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 13px; flex-wrap: wrap; }
 .topbar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .open-export { margin-left: auto; color: var(--accent); cursor: pointer; font-size: 13px; }
 .open-export input { display: none; }
