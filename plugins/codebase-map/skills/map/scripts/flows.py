@@ -27,7 +27,9 @@ What (`link`):
   a key naming a function declared as a property under those prefixes is a call to
   it, also through the variable that holds it.
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
-  `path`, each a literal, `argN` or `partN`. `strip`, a field of the rule beside
+  `path`, each a literal, `argN`, `partN`, `argN.argM` (an argument of the call written
+  as argument N: `fetch(apiPath('/x'))`) or `argN.key` (a key of the object written there:
+  `{method: 'POST'}`), with `|value` for when that argument or key is absent. `strip`, a field of the rule beside
   `route`, removes a leading text from the path. With `decorates` the route
   belongs to the decorated function; with `handler` (`argN` or `last`) to the
   function passed there, named or written in place (then named by its route,
@@ -76,6 +78,7 @@ _FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "acti
 NODE_TYPES = ("attore", "schermata", "funzionalità", "servizio o API", "gateway", "database", "coda",
               "autenticazione", "dispositivo", "altro")
 _ARG = re.compile(r"(arg|part)(\d+)$")
+_NESTED = re.compile(r"arg(\d+)\.(arg\d+|[A-Za-z_$][\w$]*)(?:\|(.*))?$")
 _IDENT = re.compile(r"[A-Za-z_$][\w$]*$")
 _STRING = re.compile(r"""(['"`])((?:\\.|(?!\1).)*)\1$""", re.S)
 _SELECTOR = re.compile(r"""^\(?\s*([A-Za-z_$][\w$]*)\s*(?::[^)=]*)?\)?\s*=>\s*\1\s*\.\s*([A-Za-z_$][\w$]*)""")
@@ -496,8 +499,38 @@ def _arguments_with_positions(text: str, line: int, column: int):
     return out
 
 
+def _nested(spec: str, call: dict, facts, strip: str):
+    """`argN.argM`, argument M of the call written as argument N; `argN.key`, the literal value of `key`
+    in the object written as argument N; after `|`, the value when that argument or key is absent."""
+    match = _NESTED.match(spec)
+    index, inner, default = int(match.group(1)), match.group(2), match.group(3)
+    if index >= len(call["args"]):
+        return default
+    text, line, column = call["args"][index]
+    if inner.startswith("arg") and inner[3:].isdigit():
+        called = re.match(r"[A-Za-z_$][\w$.]*\s*(?=\()", text)
+        args = _arguments_with_positions(text[called.end():], *_position(line, column, text[:called.end()], "")) \
+            if called else None
+        if args is None:
+            return None
+        return _value(inner, {**call, "args": args}, facts, strip) if int(inner[3:]) < len(args) else default
+    if not (text.startswith("{") and text.endswith("}")):
+        return None
+    parts = call_arguments("(" + text[1:-1] + ")") or []
+    if any(part.strip().startswith("...") for part in parts):
+        return None  # a spread may hold the key
+    for part in parts:
+        found = re.match(r"""\s*(['"]?)([A-Za-z_$][\w$]*)\1\s*:\s*(.+)$""", part, re.S)
+        if found and found.group(2) == inner:
+            return facts.literal(found.group(3), call["file"], -1, -1)
+    return default
+
+
 def _value(spec, call, facts, strip: str = ""):
-    """A rule field: a literal string, `argN` read from the call or `partN` of the written callee."""
+    """A rule field: a literal string, `argN` read from the call, `partN` of the written callee,
+    or a value nested in an argument (`_nested`)."""
+    if _NESTED.match(str(spec)):
+        return _nested(str(spec), call, facts, strip)
     match = _ARG.match(str(spec))
     if match is None:
         return spec

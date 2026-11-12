@@ -321,8 +321,11 @@ class HandlerRouteTests(unittest.TestCase):
                           "router.post('/task', requireAuth, async (req, res) => {\n"
                           "    await db.save('tasks', req.body);\n    res.json({});\n});\n"
                           "router.get('/odd', makeHandler());\n\nmodule.exports = router;\n"),
-        "web/client.ts": ("declare function apiGet(url: string): void;\n"
-                          "export function loadPlans() {\n  apiGet('/billing');\n}\n"),
+        "web/client.ts": ("declare function apiGet(url: string): void;\ndeclare function apiPath(p: string): string;\n"
+                          "export function loadPlans() {\n  apiGet('/billing');\n}\n"
+                          "export function addTask() {\n  fetch(apiPath('/task'), { method: 'POST', credentials: 'include' });\n}\n"
+                          "export function readBilling() {\n  fetch(apiPath('/billing'));\n}\n"
+                          "export function openTask(id: string) {\n  fetch(apiPath(`/task/${id}`));\n}\n"),
     }
     RULES = [
         {"written": "router.get|post", "in": ["api"], "link": "offre", "handler": "last",
@@ -330,6 +333,9 @@ class HandlerRouteTests(unittest.TestCase):
         {"written": "db.find", "in": ["api"], "link": "legge", "store": "db", "key": "arg0"},
         {"written": "db.save", "in": ["api"], "link": "scrive", "store": "db", "key": "arg0"},
         {"written": "apiGet", "in": ["web"], "link": "rotta", "route": {"service": "api", "method": "GET", "path": "arg0"}},
+        # The path is the argument of the call written first; the method a key of the options, GET when absent.
+        {"written": "fetch", "in": ["web"], "link": "rotta",
+         "route": {"service": "api", "method": "arg1.method|GET", "path": "arg0.arg0"}},
     ]
 
     @classmethod
@@ -353,16 +359,19 @@ class HandlerRouteTests(unittest.TestCase):
     def test_the_route_belongs_to_the_handler_it_is_given(self):
         routes = {e["symbol"] for e in self.links["entries"] if e["kind"] == "rotta"}
         self.assertEqual(routes, {"api/controller.js::status", "api/routes.js::POST /task"})
-        self.assertIn(("web/client.ts::loadPlans", "api/controller.js::status"),
-                      {(e["from"], e["to"]) for e in self.links["edges"] if e.get("route")})
-        self.assertEqual(self.links["routes"], {"offered": 2, "called": 1, "linked": 1})
+        linked = {(e["from"], e["to"]) for e in self.links["edges"] if e.get("route")}
+        self.assertEqual(linked, {("web/client.ts::loadPlans", "api/controller.js::status"),
+                                  ("web/client.ts::readBilling", "api/controller.js::status"),
+                                  ("web/client.ts::addTask", "api/routes.js::POST /task")})
+        self.assertEqual(self.links["routes"], {"offered": 2, "called": 3, "linked": 3})
 
     def test_an_inline_handler_is_named_by_its_route_and_holds_its_accesses(self):
         self.assertEqual(self.links["stores"]["db/tasks"], {"writes": ["api/routes.js::POST /task"], "reads": []})
         self.assertEqual(self.links["stores"]["db/plans"], {"writes": [], "reads": ["api/controller.js::status"]})
 
     def test_a_handler_that_is_no_function_is_a_gap(self):
-        self.assertEqual([g["reason"] for g in self.links["gaps"]], ["offre: handler not a function"])
+        self.assertEqual([g["reason"] for g in self.links["gaps"]],
+                         ["offre: handler not a function", "rotta: route not a literal"])  # a computed path too
 
     def test_handler_is_an_argument_or_last_and_excludes_decorates(self):
         for rule, message in (
