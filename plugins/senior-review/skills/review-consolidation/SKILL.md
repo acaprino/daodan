@@ -53,9 +53,13 @@ using the caller's path or variant filename. Link native details with verdict,
 material findings and gaps; include full text when requested or needed for approval.
 Workers deliver native reports, never separate UI or another final synthesis.
 
-No HTML renderer exists: keep the saved native Markdown report as the
-authoritative `output_path` and declare HTML/navigation/filter rendering
-unavailable. Do not generate a separate UI or add analysis, findings or schema.
+The saved native Markdown report stays the authoritative `output_path`. When HTML
+is requested, `scripts/review_html.py render RESULT.json... --out REPORT.html
+[--root PROJECT_ROOT]` writes one standalone page from the `retained_findings` or
+`findings` and `gaps` of the given JSON records: an index by finding and by file,
+one section per finding, an accept/reject choice per fix and a reply block to
+paste back. It needs no server and no UI. Filter rendering is unavailable. Do not
+generate another UI or add analysis, findings or schema.
 
 Preserve native sections/fields, roles/severities, evidence/confidence, premises/
 provenance, verification, filtered counts, knowledge/coverage gaps and degraded or
