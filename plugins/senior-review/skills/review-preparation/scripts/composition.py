@@ -172,7 +172,11 @@ def coverage_scope(roster: dict, coverage: dict, entries: dict) -> dict:
                 if evidence.get("source") == "configurations":
                     configured.append(evidence["path"])
     stacks = {**review_roster.LANGUAGE_ROLE, "tauri": review_roster.SIGNAL_ROLE["tauri"]}
-    return {"files": files.resolve().as_posix(), "root": root, "budget": budget, "inventory": inventory,
+    units = coverage.get("units", [])
+    if not isinstance(units, list) or not all(isinstance(unit, list) and all(isinstance(path, str) for path in unit)
+                                              for unit in units):
+        raise ValueError("coverage.units must be a list of path lists")
+    return {"files": files.resolve().as_posix(), "root": root, "budget": budget, "inventory": inventory, "units": units,
             "paths": sorted(paths), "configured": configured, "obliged": obliged, "texts": {},
             "stack_of": {leaf: stack for stack, role in stacks.items() for leaf in leaf_roles(role, entries)}}
 
@@ -312,7 +316,16 @@ def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
         cells += own
         reviewers[job["role"]] = sources(job["members"])[2]
         pending = {cell["path"]: cell for cell in own if cell["status"] == "open" and cell["sha256"] is not None}
-        for group in pack([cover["inventory"][path] for path in pending], cover["budget"]):
+        groups = []
+        for unit in cover["units"]:
+            # A given unit keeps its files together; a file already in a group stays in the first one.
+            group = [cover["inventory"][path] for path in unit
+                     if path in pending and all(path not in [row["path"] for row in g] for g in groups)]
+            if group:
+                groups.append(group)
+        grouped = {row["path"] for group in groups for row in group}
+        groups += pack([cover["inventory"][path] for path in pending if path not in grouped], cover["budget"])
+        for group in groups:
             job_id = add_job(job["role"], job["scope_id"], job["members"], group)
             for row in group:
                 pending[row["path"]]["job_id"] = job_id

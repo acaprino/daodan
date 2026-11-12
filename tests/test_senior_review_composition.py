@@ -296,6 +296,13 @@ class CoverageBindTest(CoverageCase):
         for job in prepared["jobs"]:
             self.assertTrue(job["bytes"] <= 40000 or len(job["paths"]) == 1, job)
 
+    def test_given_units_replace_the_groups_by_path(self):
+        prepared = self.bind([CODE], budget=60000, units=[["web/c.ts", "app/a.py"], ["app/a.py", "docs/d.md"]])
+        # The first unit keeps its files; a file already grouped stays there; the rest is packed by path.
+        self.assertEqual(self.groups(prepared, CODE), [["web/c.ts", "app/a.py"], ["docs/d.md"], ["app/b.py"]])
+        with self.assertRaisesRegex(ValueError, "coverage.units"):
+            self.bind([CODE], units=["app/a.py"])
+
     def test_typescript_reviewer_skips_known_other_languages(self):
         cells = self.cells(self.bind([TYPESCRIPT]), TYPESCRIPT)
         self.assertEqual({path: cell["status"] for path, cell in cells.items()},

@@ -59,7 +59,9 @@ Build one `BINDINGS.json` from verified values:
   brief. Independent modes never share a job.
 - `coverage`, bound by every branch review on content basis and by no other:
   `{"files": "FILES.json", "root": ".", "budget": 120000}`. `budget` defaults
-  to `GROUP_BYTES`; a budget the caller states replaces it. Without a usable map
+  to `GROUP_BYTES`; a budget the caller states replaces it. `units`, optional,
+  is a list of path lists the caller gives (the units of a flow map): each becomes
+  one group, and the files no unit holds are packed by path. Without a usable map
   run, bind without `coverage` and declare the gap. `FILES.json` is
   `snapshot.py files` on the bound run after the map-freshness gate of
   `references/candidate-grounding.md`; give `compute` only the perimeter's
