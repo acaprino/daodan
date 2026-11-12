@@ -555,15 +555,28 @@ class MapService:
                 return gate
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
-    def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100, card=None):
+    def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100, card=None,
+              brief=False, map=None, about=None, levels=None):
         """Flows of the bound run from its link rules: the summary, or one flow at a level.
 
         `rules` records the project's link rules beside the snapshot. Without recorded
         rules the answer is the rule format, for a model to write them. `card` records
         the model's card of the flow at `start`; a flow answer carries its card, stale
-        when a file of the flow changed since.
+        when a file of the flow changed since. The system map: `brief` gives the system
+        brief, its format and the areas; `map` records a proposal and reports it; `about`
+        answers for an area, a flow or a node, and with `levels` shows a flow at those levels.
         """
         import flows as flow_model
+        import system_levels
+        asked = [name for name, value in (("brief", brief), ("map", map is not None), ("about", about is not None),
+                                          ("start", start is not None)) if value]
+        if len(asked) > 1:
+            raise ValueError("ask one of brief, map, about or start")
+        if levels is not None and (about is None or not isinstance(levels, list)
+                                   or not levels or any(lv not in system_levels.LEVELS for lv in levels)):
+            raise ValueError("levels go with about and are one or more of " + ", ".join(system_levels.LEVELS))
+        if about is not None and (not isinstance(about, str) or not about.strip() or len(about) > 200):
+            raise ValueError("about must be a name of at most 200 characters")
         if direction not in ("from", "to", "through") or level not in flow_model.LEVELS:
             raise ValueError("direction is from, to or through; level is " + ", ".join(flow_model.LEVELS))
         if start is not None and (not isinstance(start, str) or not start.strip() or len(start) > 1000):
@@ -575,7 +588,7 @@ class MapService:
             flow_model.validate_rules(rules)
         if card is not None and (start is None or direction == "through"):
             raise ValueError("a card belongs to one flow: give start and direction from or to")
-        with self._operation(write=rules is not None or card is not None):
+        with self._operation(write=rules is not None or card is not None or map is not None):
             _, _, manifest, _ = self._bound_run(run_id)
             if gate := snapshot.query_gate(manifest.path):
                 return gate
@@ -585,6 +598,9 @@ class MapService:
             if not recorded.is_file():
                 return {"status": "needs_rules", "run_id": run_id,
                         "format": flow_model.__doc__.split("    python flows.py")[0].strip()}
+            if brief or map is not None or about is not None:
+                return {"status": "ok", "run_id": run_id,
+                        **self._system_map(manifest.path, flow_model.load_rules(recorded), brief, map, about, levels)}
             links = flow_model.cached_links(manifest.path, flow_model.load_rules(recorded))
             if start is None:
                 return {"status": "ok", "run_id": run_id, "entries": links["entries"][:limit],
@@ -614,6 +630,27 @@ class MapService:
                 flow["edge_count"] = len(flow["edges"])
                 flow["edges"] = flow["edges"][:limit]
             return {"status": "ok", "run_id": run_id, **flow}
+
+    @staticmethod
+    def _system_map(manifest, rules, brief, proposal, about, levels):
+        import system_brief
+        import system_levels
+        import system_map
+        if brief:
+            value = system_brief.brief(manifest, rules)
+            reference = Path(__file__).resolve().parent.parent / "references" / "system-map.md"
+            return {"brief": value["text"], "truncated": value["truncated"], "steps": value["steps"],
+                    "format": reference.read_text(encoding="utf-8"), "areas": list(system_map.AREAS)}
+        if proposal is not None:
+            return system_map.record(manifest, rules, proposal)
+        system = system_map.load(manifest, rules)
+        if system is None:
+            return {"status": "no_map", "reason": "no system map is recorded: propose one with map"}
+        if levels:
+            import flows as flow_model
+            links = flow_model.cached_links(manifest, rules) if "codice" in levels else None
+            return system_levels.view(system, about, levels, links)
+        return system_map.about(system, about)
 
     def _engine_store(self, run, value):
         name = "snapshot/engine-edges.sqlite" if value is None else value

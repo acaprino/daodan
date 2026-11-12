@@ -903,3 +903,66 @@ class CustomStoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SystemMapServiceTests(unittest.TestCase):
+    """codebase_map_flows answers for the system map: brief, map, about and levels."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import system_brief
+        from test_codebase_map_system_map import TEST_MAP
+        bench = Path(__file__).resolve().parents[1] / "benchmarks/flow-model"
+        cls.temporary = tempfile.TemporaryDirectory(prefix="map-mcp-system-")
+        project = Path(cls.temporary.name).resolve()
+        shutil.copytree(bench / "app", project / "app")
+        subprocess.run(["git", "init", "-q", str(project)], check=True, capture_output=True)
+        cls.service = mcp_service.MapService(project)
+        cls.service.create_run("app", "system", engine=False)
+        cls.needs_rules = cls.service.flows("system", brief=True)["status"]
+        rules = json.loads((bench / "rules.json").read_text(encoding="utf-8"))["rules"]
+        cls.service.flows("system", rules=[{**rule, "callee": "app/" + rule["callee"]} for rule in rules])
+        cls.stack = system_brief.stack_analyser.run
+        system_brief.stack_analyser.run = lambda *_: {"status": "unavailable", "reason": "not in tests"}
+
+        def under_app(text):
+            return text if text.startswith(("store:", "module:")) else "app/" + text
+        cls.map = json.loads(json.dumps(TEST_MAP))
+        for node in cls.map["nodes"]:
+            node["members"] = [under_app(m) for m in node.get("members", [])]
+            node["evidence"] = [under_app(e) for e in node.get("evidence", [])]
+        for flow in cls.map["flows"]:
+            for arrow in flow["arrows"]:
+                if "cite" in arrow:
+                    arrow["cite"] = "app/" + arrow["cite"]
+
+    @classmethod
+    def tearDownClass(cls):
+        import system_brief
+        system_brief.stack_analyser.run = cls.stack
+        cls.temporary.cleanup()
+
+    def test_brief_map_about_and_levels(self):
+        import system_map
+        self.assertEqual(self.needs_rules, "needs_rules")
+        brief = self.service.flows("system", brief=True)
+        self.assertEqual((brief["status"], brief["areas"]), ("ok", list(system_map.AREAS)))
+        self.assertIn("store:db/payments", brief["brief"])
+        self.assertIn("proved", brief["format"])
+        report = self.service.flows("system", map=self.map)
+        self.assertEqual((report["coverage"]["entries"]["in"], report["coverage"]["entries"]["of"]), (3, 6))
+        about = self.service.flows("system", about="Pagare un ordine")
+        self.assertIn("app/web/checkout.ts", about["files"])
+        people = self.service.flows("system", about="Pagare un ordine", levels=["persone"])
+        self.assertEqual({n["name"] for n in people["nodes"]}, {"Cliente", "Checkout", "Badge pagamento"})
+        self.assertEqual(self.service.flows("system", start="app/web/badge.ts::renderBadge", direction="to",
+                                            level="dati")["status"], "ok")
+
+    def test_a_wrong_map_or_a_mix_of_questions_names_what_is_wrong(self):
+        with self.assertRaisesRegex(ValueError, "type"):
+            self.service.flows("system", map={**self.map, "nodes": [{**self.map["nodes"][1], "type": "pagina"}]})
+        with self.assertRaisesRegex(ValueError, "one of"):
+            self.service.flows("system", brief=True, about="Pagare un ordine")
+        with self.assertRaisesRegex(ValueError, "levels"):
+            self.service.flows("system", levels=["persone"])

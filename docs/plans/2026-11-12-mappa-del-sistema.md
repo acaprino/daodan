@@ -333,9 +333,9 @@ Misurato il 12 novembre 2026 prima di fissare la regola. Con una soglia sulla qu
 
 `references/system-map.md`, in inglese, entro 80 righe: formato, tipi, posizioni, regole della prova di una freccia, aree, un solo giro di correzione.
 
-- [ ] **Passo 1:** test che falliscono: il servizio, sulla fixture, risponde a `brief`, registra la mappa di prova, risponde ad `about="Pagare un ordine"` con i file dei membri e, con `levels=["persone"]`, con i tre nodi attesi; una mappa non valida dà un errore che nomina il campo.
-- [ ] **Passo 2:** implementare e documentare; i test passano, compresa la suite MCP esistente.
-- [ ] **Passo 3:** commit.
+- [x] **Passo 1:** test che falliscono: il servizio, sulla fixture, risponde a `brief`, registra la mappa di prova, risponde ad `about="Pagare un ordine"` con i file dei membri e, con `levels=["persone"]`, con i tre nodi attesi; una mappa non valida dà un errore che nomina il campo.
+- [x] **Passo 2:** implementare e documentare; i test passano, compresa la suite MCP esistente.
+- [x] **Passo 3:** commit.
 
 ### Task 10: l'agente
 
