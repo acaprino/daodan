@@ -113,8 +113,10 @@ Forma dell'envelope (i Task 3, 5 e 6 dipendono da questi nomi):
 - Consuma: envelope del Task 2.
 - Produce: `parseEnvelope(json: unknown): Envelope` (lancia `EnvelopeError` con motivo); `project(env: Envelope, view: "logical" | "physical", scope: string | null, filters: Filters): Projection` con `nodes: {id, ref, type, label, collapsed, count}[]`, `edges: {id, source, target, relations: string[]}[]`, `counts: {filtered, aggregated, unloaded}`; `reduce(state: ExplorerState, action: Action): ExplorerState` con azioni `select`, `open`, `up`, `view`, `filter`, `resetFilters`, `toggleGroup`, `replaceEnvelope`.
 
-- [ ] **Passo 1:** test (con i nomi del Controllo 2): `shared file yields two occurrences and one unique count`; `collapsed group keeps the underlying relation refs`; `edges inside a collapsed group become a count, not external edges`; `filters hide but never delete the selection`; `empty projection exposes resetFilters`; `switching view keeps the selection only when its ref resolves`; `replaceEnvelope with an unknown schema leaves the previous envelope and reports the error`; `replaceEnvelope drops vanished refs from the selection and returns a warning`; `inferred and stale_body stay distinct fields`.
-- [ ] **Passo 2:** verificarne il fallimento (`npm test`), implementare, test verdi. ID d'occorrenza = `ref@container`; i conteggi deduplicano per `ref`.
+- [x] **Passo 1:** test (con i nomi del Controllo 2): `shared file yields two occurrences and one unique count`; `collapsed group keeps the underlying relation refs`; `edges inside a collapsed group become a count, not external edges`; `filters hide but never delete the selection`; `empty projection exposes resetFilters`; `switching view keeps the selection only when its ref resolves`; `replaceEnvelope with an unknown schema leaves the previous envelope and reports the error`; `replaceEnvelope drops vanished refs from the selection and returns a warning`; `inferred and stale_body stay distinct fields`.
+- [x] **Passo 2:** verificarne il fallimento (`npm test`), implementare, test verdi. ID d'occorrenza = `ref@container`; i conteggi deduplicano per `ref`.
+
+Fatto il 12 novembre 2026, con due aggiunte della fase 2: `flowFocus` (i passi di un flusso sollevati ai nodi visibili) e `flowsThrough` (i flussi che attraversano un nodo); i nodi proiettati portano `nodeType` e `location`. `project` riceve anche i gruppi aperti e la selezione. `vite.config.ts` e `tsconfig.json` arrivano con il Task 6.
 
 ### Task 6: interfaccia del viewer
 

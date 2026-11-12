@@ -1,0 +1,11 @@
+{
+  "name": "daodan-codebase-explorer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/*.test.ts\"",
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build"
+  }
+}

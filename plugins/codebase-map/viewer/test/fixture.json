@@ -1,0 +1,961 @@
+{
+ "schema": "daodan/visual@1",
+ "meta": {
+  "project_root": "shop",
+  "run_id": "fixture",
+  "target": ".",
+  "git": null,
+  "snapshot_digest": "fixture",
+  "modules_digest": "fixture",
+  "cards_digest": null,
+  "created_at": "2026-11-12T00:00:00Z"
+ },
+ "entities": [
+  {
+   "ref": "build:package.json",
+   "type": "build",
+   "name": "shop",
+   "technical": "package.json",
+   "provenance": "build",
+   "status": "confirmed",
+   "path": "package.json",
+   "location": "internal",
+   "evidence": [
+    "package.json"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "component:web",
+   "type": "component",
+   "name": "web",
+   "technical": "web",
+   "description": "Schermate del negozio",
+   "provenance": "declared",
+   "status": "confirmed",
+   "location": "internal",
+   "evidence": [
+    "codebase-modules.json"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "component:server",
+   "type": "component",
+   "name": "server",
+   "technical": "server",
+   "description": "Servizio shop",
+   "provenance": "declared",
+   "status": "confirmed",
+   "location": "internal",
+   "evidence": [
+    "codebase-modules.json"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "feature:payment",
+   "type": "feature",
+   "name": "payment",
+   "technical": "payment",
+   "description": "Addebito di un ordine",
+   "provenance": "proposed",
+   "status": "inferred",
+   "node_type": "funzionalità",
+   "location": "internal",
+   "evidence": [
+    "server/payments.ts"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "external:card payment provider",
+   "type": "external",
+   "name": "card payment provider",
+   "technical": "card payment provider",
+   "provenance": "declared",
+   "status": "confirmed",
+   "node_type": "servizio o API",
+   "location": "external",
+   "address": "https://pay.example/v1",
+   "evidence": [
+    "server/payments.ts"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "external:customer",
+   "type": "external",
+   "name": "Cliente",
+   "technical": "customer",
+   "provenance": "declared",
+   "status": "confirmed",
+   "node_type": "attore",
+   "location": "external",
+   "evidence": [
+    "codebase-modules.json"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "external:api gateway",
+   "type": "external",
+   "name": "API gateway",
+   "technical": "api gateway",
+   "provenance": "declared",
+   "status": "incomplete",
+   "node_type": "gateway",
+   "location": "external",
+   "evidence": [],
+   "gaps": [
+    "nessuna evidenza risolta"
+   ]
+  },
+  {
+   "ref": "external:pos terminal",
+   "type": "external",
+   "name": "Terminale POS",
+   "technical": "pos terminal",
+   "provenance": "declared",
+   "status": "confirmed",
+   "node_type": "dispositivo",
+   "location": "external",
+   "evidence": [
+    "codebase-modules.json"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "directory:web",
+   "type": "directory",
+   "name": "web",
+   "technical": "web",
+   "path": "web",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "directory:server",
+   "type": "directory",
+   "name": "server",
+   "technical": "server",
+   "path": "server",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "directory:shared",
+   "type": "directory",
+   "name": "shared",
+   "technical": "shared",
+   "path": "shared",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:web/checkout.tsx",
+   "type": "file",
+   "name": "checkout.tsx",
+   "technical": "web/checkout.tsx",
+   "path": "web/checkout.tsx",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:web/api.ts",
+   "type": "file",
+   "name": "api.ts",
+   "technical": "web/api.ts",
+   "path": "web/api.ts",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:shared/money.ts",
+   "type": "file",
+   "name": "money.ts",
+   "technical": "shared/money.ts",
+   "path": "shared/money.ts",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:server/routes.ts",
+   "type": "file",
+   "name": "routes.ts",
+   "technical": "server/routes.ts",
+   "path": "server/routes.ts",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:server/auth.ts",
+   "type": "file",
+   "name": "auth.ts",
+   "technical": "server/auth.ts",
+   "path": "server/auth.ts",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:server/payments.ts",
+   "type": "file",
+   "name": "payments.ts",
+   "technical": "server/payments.ts",
+   "path": "server/payments.ts",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "file:server/jobs.ts",
+   "type": "file",
+   "name": "jobs.ts",
+   "technical": "server/jobs.ts",
+   "path": "server/jobs.ts",
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:web/checkout.tsx::CheckoutScreen",
+   "type": "symbol",
+   "name": "CheckoutScreen",
+   "technical": "web/checkout.tsx::CheckoutScreen",
+   "freshness": "fresh",
+   "description": "Mostra il totale e il pulsante Paga",
+   "node_type": "schermata",
+   "location": "internal",
+   "path": "web/checkout.tsx",
+   "lines": [
+    3,
+    10
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:web/checkout.tsx::pay",
+   "type": "symbol",
+   "name": "pay",
+   "technical": "web/checkout.tsx::pay",
+   "freshness": "uncovered",
+   "location": "internal",
+   "path": "web/checkout.tsx",
+   "lines": [
+    11,
+    15
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:web/api.ts::apiPost",
+   "type": "symbol",
+   "name": "apiPost",
+   "technical": "web/api.ts::apiPost",
+   "freshness": "uncovered",
+   "location": "internal",
+   "path": "web/api.ts",
+   "lines": [
+    1,
+    6
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:shared/money.ts::formatTotal",
+   "type": "symbol",
+   "name": "<img src=x onerror=1>",
+   "technical": "shared/money.ts::formatTotal",
+   "freshness": "uncovered",
+   "location": "internal",
+   "path": "shared/money.ts",
+   "lines": [
+    1,
+    4
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:server/routes.ts::postPayment",
+   "type": "symbol",
+   "name": "postPayment",
+   "technical": "server/routes.ts::postPayment",
+   "freshness": "fresh",
+   "description": "POST /payments",
+   "node_type": "servizio o API",
+   "location": "internal",
+   "path": "server/routes.ts",
+   "lines": [
+    4,
+    12
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:server/auth.ts::requireUser",
+   "type": "symbol",
+   "name": "requireUser",
+   "technical": "server/auth.ts::requireUser",
+   "freshness": "fresh",
+   "description": "Rifiuta le richieste senza sessione",
+   "node_type": "autenticazione",
+   "location": "internal",
+   "path": "server/auth.ts",
+   "lines": [
+    1,
+    9
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:server/payments.ts::chargeOrder",
+   "type": "symbol",
+   "name": "chargeOrder",
+   "technical": "server/payments.ts::chargeOrder",
+   "freshness": "stale_body",
+   "description": "Addebita un ordine e registra il pagamento",
+   "location": "internal",
+   "path": "server/payments.ts",
+   "lines": [
+    5,
+    30
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:server/payments.ts::enqueueReceipt",
+   "type": "symbol",
+   "name": "enqueueReceipt",
+   "technical": "server/payments.ts::enqueueReceipt",
+   "freshness": "uncovered",
+   "location": "internal",
+   "path": "server/payments.ts",
+   "lines": [
+    31,
+    36
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "symbol:server/jobs.ts::nightlyReconcile",
+   "type": "symbol",
+   "name": "nightlyReconcile",
+   "technical": "server/jobs.ts::nightlyReconcile",
+   "freshness": "uncovered",
+   "node_type": "altro",
+   "location": "internal",
+   "path": "server/jobs.ts",
+   "lines": [
+    1,
+    12
+   ],
+   "evidence": [],
+   "gaps": []
+  },
+  {
+   "ref": "store:db/orders",
+   "type": "store",
+   "name": "db/orders",
+   "technical": "db/orders",
+   "node_type": "database",
+   "location": "internal",
+   "evidence": [
+    "server/payments.ts:20"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "store:queue/receipts",
+   "type": "store",
+   "name": "queue/receipts",
+   "technical": "queue/receipts",
+   "node_type": "coda",
+   "location": "internal",
+   "evidence": [
+    "server/payments.ts:34"
+   ],
+   "gaps": []
+  }
+ ],
+ "relations": [
+  {
+   "ref": "contains:build:package.json->directory:web",
+   "kind": "contains",
+   "source": "build:package.json",
+   "target": "directory:web",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:build:package.json->directory:server",
+   "kind": "contains",
+   "source": "build:package.json",
+   "target": "directory:server",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:build:package.json->directory:shared",
+   "kind": "contains",
+   "source": "build:package.json",
+   "target": "directory:shared",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:web->file:web/checkout.tsx",
+   "kind": "contains",
+   "source": "directory:web",
+   "target": "file:web/checkout.tsx",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:web->file:web/api.ts",
+   "kind": "contains",
+   "source": "directory:web",
+   "target": "file:web/api.ts",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:shared->file:shared/money.ts",
+   "kind": "contains",
+   "source": "directory:shared",
+   "target": "file:shared/money.ts",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:server->file:server/routes.ts",
+   "kind": "contains",
+   "source": "directory:server",
+   "target": "file:server/routes.ts",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:server->file:server/auth.ts",
+   "kind": "contains",
+   "source": "directory:server",
+   "target": "file:server/auth.ts",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:server->file:server/payments.ts",
+   "kind": "contains",
+   "source": "directory:server",
+   "target": "file:server/payments.ts",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "contains:directory:server->file:server/jobs.ts",
+   "kind": "contains",
+   "source": "directory:server",
+   "target": "file:server/jobs.ts",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:web/checkout.tsx->symbol:web/checkout.tsx::CheckoutScreen",
+   "kind": "defines",
+   "source": "file:web/checkout.tsx",
+   "target": "symbol:web/checkout.tsx::CheckoutScreen",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:web/checkout.tsx->symbol:web/checkout.tsx::pay",
+   "kind": "defines",
+   "source": "file:web/checkout.tsx",
+   "target": "symbol:web/checkout.tsx::pay",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:web/api.ts->symbol:web/api.ts::apiPost",
+   "kind": "defines",
+   "source": "file:web/api.ts",
+   "target": "symbol:web/api.ts::apiPost",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:shared/money.ts->symbol:shared/money.ts::formatTotal",
+   "kind": "defines",
+   "source": "file:shared/money.ts",
+   "target": "symbol:shared/money.ts::formatTotal",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:server/routes.ts->symbol:server/routes.ts::postPayment",
+   "kind": "defines",
+   "source": "file:server/routes.ts",
+   "target": "symbol:server/routes.ts::postPayment",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:server/auth.ts->symbol:server/auth.ts::requireUser",
+   "kind": "defines",
+   "source": "file:server/auth.ts",
+   "target": "symbol:server/auth.ts::requireUser",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:server/payments.ts->symbol:server/payments.ts::chargeOrder",
+   "kind": "defines",
+   "source": "file:server/payments.ts",
+   "target": "symbol:server/payments.ts::chargeOrder",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:server/payments.ts->symbol:server/payments.ts::enqueueReceipt",
+   "kind": "defines",
+   "source": "file:server/payments.ts",
+   "target": "symbol:server/payments.ts::enqueueReceipt",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "defines:file:server/jobs.ts->symbol:server/jobs.ts::nightlyReconcile",
+   "kind": "defines",
+   "source": "file:server/jobs.ts",
+   "target": "symbol:server/jobs.ts::nightlyReconcile",
+   "status": "confirmed",
+   "evidence": []
+  },
+  {
+   "ref": "imports:file:web/checkout.tsx->file:web/api.ts",
+   "kind": "imports",
+   "source": "file:web/checkout.tsx",
+   "target": "file:web/api.ts",
+   "status": "confirmed",
+   "counts": {
+    "imports": 1
+   },
+   "evidence": [
+    "web/checkout.tsx:1"
+   ]
+  },
+  {
+   "ref": "imports:file:web/checkout.tsx->file:shared/money.ts",
+   "kind": "imports",
+   "source": "file:web/checkout.tsx",
+   "target": "file:shared/money.ts",
+   "status": "confirmed",
+   "counts": {
+    "imports": 1
+   },
+   "evidence": [
+    "web/checkout.tsx:2"
+   ]
+  },
+  {
+   "ref": "imports:file:server/routes.ts->file:server/payments.ts",
+   "kind": "imports",
+   "source": "file:server/routes.ts",
+   "target": "file:server/payments.ts",
+   "status": "confirmed",
+   "counts": {
+    "imports": 1
+   },
+   "evidence": [
+    "server/routes.ts:1"
+   ]
+  },
+  {
+   "ref": "imports:file:server/routes.ts->file:server/auth.ts",
+   "kind": "imports",
+   "source": "file:server/routes.ts",
+   "target": "file:server/auth.ts",
+   "status": "confirmed",
+   "counts": {
+    "imports": 1
+   },
+   "evidence": [
+    "server/routes.ts:2"
+   ]
+  },
+  {
+   "ref": "imports:file:server/payments.ts->file:shared/money.ts",
+   "kind": "imports",
+   "source": "file:server/payments.ts",
+   "target": "file:shared/money.ts",
+   "status": "confirmed",
+   "counts": {
+    "imports": 1
+   },
+   "evidence": [
+    "server/payments.ts:1"
+   ]
+  },
+  {
+   "ref": "imports:file:server/jobs.ts->file:server/payments.ts",
+   "kind": "imports",
+   "source": "file:server/jobs.ts",
+   "target": "file:server/payments.ts",
+   "status": "confirmed",
+   "counts": {
+    "imports": 1
+   },
+   "evidence": [
+    "server/jobs.ts:1"
+   ]
+  },
+  {
+   "ref": "calls:symbol:web/checkout.tsx::pay->symbol:web/api.ts::apiPost",
+   "kind": "calls",
+   "source": "symbol:web/checkout.tsx::pay",
+   "target": "symbol:web/api.ts::apiPost",
+   "status": "confirmed",
+   "counts": {
+    "calls": 1
+   },
+   "evidence": [
+    "web/checkout.tsx:12"
+   ]
+  },
+  {
+   "ref": "calls:symbol:server/routes.ts::postPayment->symbol:server/auth.ts::requireUser",
+   "kind": "calls",
+   "source": "symbol:server/routes.ts::postPayment",
+   "target": "symbol:server/auth.ts::requireUser",
+   "status": "confirmed",
+   "counts": {
+    "calls": 1
+   },
+   "evidence": [
+    "server/routes.ts:5"
+   ]
+  },
+  {
+   "ref": "calls:symbol:server/routes.ts::postPayment->symbol:server/payments.ts::chargeOrder",
+   "kind": "calls",
+   "source": "symbol:server/routes.ts::postPayment",
+   "target": "symbol:server/payments.ts::chargeOrder",
+   "status": "confirmed",
+   "counts": {
+    "calls": 1
+   },
+   "evidence": [
+    "server/routes.ts:8"
+   ]
+  },
+  {
+   "ref": "calls:symbol:server/payments.ts::chargeOrder->symbol:server/payments.ts::enqueueReceipt",
+   "kind": "calls",
+   "source": "symbol:server/payments.ts::chargeOrder",
+   "target": "symbol:server/payments.ts::enqueueReceipt",
+   "status": "confirmed",
+   "counts": {
+    "calls": 1
+   },
+   "evidence": [
+    "server/payments.ts:24"
+   ]
+  },
+  {
+   "ref": "calls:symbol:server/jobs.ts::nightlyReconcile->symbol:server/payments.ts::chargeOrder",
+   "kind": "calls",
+   "source": "symbol:server/jobs.ts::nightlyReconcile",
+   "target": "symbol:server/payments.ts::chargeOrder",
+   "status": "confirmed",
+   "counts": {
+    "calls": 1
+   },
+   "evidence": [
+    "server/jobs.ts:6"
+   ]
+  },
+  {
+   "ref": "uses:component:server->external:card payment provider",
+   "kind": "uses",
+   "source": "component:server",
+   "target": "external:card payment provider",
+   "status": "confirmed",
+   "evidence": [
+    "server/payments.ts"
+   ]
+  },
+  {
+   "ref": "uses:component:web->external:api gateway",
+   "kind": "uses",
+   "source": "component:web",
+   "target": "external:api gateway",
+   "status": "incomplete",
+   "evidence": []
+  },
+  {
+   "ref": "uses:external:customer->component:web",
+   "kind": "uses",
+   "source": "external:customer",
+   "target": "component:web",
+   "status": "confirmed",
+   "evidence": [
+    "codebase-modules.json"
+   ]
+  },
+  {
+   "ref": "uses:external:pos terminal->component:server",
+   "kind": "uses",
+   "source": "external:pos terminal",
+   "target": "component:server",
+   "status": "confirmed",
+   "evidence": [
+    "codebase-modules.json"
+   ]
+  },
+  {
+   "ref": "declares:component:server->feature:payment",
+   "kind": "declares",
+   "source": "component:server",
+   "target": "feature:payment",
+   "status": "inferred",
+   "evidence": [
+    "server/payments.ts"
+   ]
+  }
+ ],
+ "memberships": [
+  {
+   "member": "file:web/checkout.tsx",
+   "group": "component:web",
+   "view": "logical"
+  },
+  {
+   "member": "file:web/api.ts",
+   "group": "component:web",
+   "view": "logical"
+  },
+  {
+   "member": "file:shared/money.ts",
+   "group": "component:web",
+   "view": "logical"
+  },
+  {
+   "member": "file:shared/money.ts",
+   "group": "component:server",
+   "view": "logical"
+  },
+  {
+   "member": "file:server/routes.ts",
+   "group": "component:server",
+   "view": "logical"
+  },
+  {
+   "member": "file:server/auth.ts",
+   "group": "component:server",
+   "view": "logical"
+  },
+  {
+   "member": "file:server/payments.ts",
+   "group": "component:server",
+   "view": "logical"
+  },
+  {
+   "member": "file:server/jobs.ts",
+   "group": "component:server",
+   "view": "logical"
+  },
+  {
+   "member": "file:server/payments.ts",
+   "group": "feature:payment",
+   "view": "logical"
+  },
+  {
+   "member": "directory:web",
+   "group": "build:package.json",
+   "view": "physical"
+  },
+  {
+   "member": "directory:server",
+   "group": "build:package.json",
+   "view": "physical"
+  },
+  {
+   "member": "directory:shared",
+   "group": "build:package.json",
+   "view": "physical"
+  },
+  {
+   "member": "file:web/checkout.tsx",
+   "group": "directory:web",
+   "view": "physical"
+  },
+  {
+   "member": "file:web/api.ts",
+   "group": "directory:web",
+   "view": "physical"
+  },
+  {
+   "member": "file:shared/money.ts",
+   "group": "directory:shared",
+   "view": "physical"
+  },
+  {
+   "member": "file:server/routes.ts",
+   "group": "directory:server",
+   "view": "physical"
+  },
+  {
+   "member": "file:server/auth.ts",
+   "group": "directory:server",
+   "view": "physical"
+  },
+  {
+   "member": "file:server/payments.ts",
+   "group": "directory:server",
+   "view": "physical"
+  },
+  {
+   "member": "file:server/jobs.ts",
+   "group": "directory:server",
+   "view": "physical"
+  }
+ ],
+ "gaps": [
+  {
+   "refs": [
+    "file:shared/money.ts",
+    "component:web",
+    "component:server"
+   ],
+   "reason": "shared_member"
+  },
+  {
+   "refs": [
+    "external:api gateway"
+   ],
+   "reason": "esterno senza evidenza risolta"
+  },
+  {
+   "refs": [
+    "feature:payment"
+   ],
+   "reason": "modulo proposto, non dichiarato dal progetto"
+  }
+ ],
+ "flows": [
+  {
+   "ref": "flow:symbol:web/checkout.tsx::pay",
+   "entry": "symbol:web/checkout.tsx::pay",
+   "entry_kind": "azione",
+   "complete": true,
+   "steps": [
+    {
+     "source": "symbol:web/checkout.tsx::pay",
+     "target": "symbol:web/api.ts::apiPost",
+     "type": "chiama",
+     "origin": "diretto",
+     "site": "web/checkout.tsx:12"
+    },
+    {
+     "source": "symbol:web/api.ts::apiPost",
+     "target": "symbol:server/routes.ts::postPayment",
+     "type": "chiama",
+     "origin": "dedotto",
+     "site": "web/api.ts:4"
+    },
+    {
+     "source": "symbol:server/routes.ts::postPayment",
+     "target": "symbol:server/auth.ts::requireUser",
+     "type": "chiama",
+     "origin": "diretto",
+     "site": "server/routes.ts:5"
+    },
+    {
+     "source": "symbol:server/routes.ts::postPayment",
+     "target": "symbol:server/payments.ts::chargeOrder",
+     "type": "chiama",
+     "origin": "diretto",
+     "site": "server/routes.ts:8"
+    },
+    {
+     "source": "symbol:server/payments.ts::chargeOrder",
+     "target": "external:card payment provider",
+     "type": "usa",
+     "origin": "dichiarato",
+     "site": "server/payments.ts"
+    },
+    {
+     "source": "symbol:server/payments.ts::chargeOrder",
+     "target": "store:db/orders",
+     "type": "scrive",
+     "origin": "dedotto",
+     "site": "server/payments.ts:20"
+    },
+    {
+     "source": "symbol:server/payments.ts::chargeOrder",
+     "target": "symbol:server/payments.ts::enqueueReceipt",
+     "type": "chiama",
+     "origin": "diretto",
+     "site": "server/payments.ts:24"
+    },
+    {
+     "source": "symbol:server/payments.ts::enqueueReceipt",
+     "target": "store:queue/receipts",
+     "type": "scrive",
+     "origin": "dedotto",
+     "site": "server/payments.ts:34"
+    }
+   ],
+   "nodes": [
+    "external:card payment provider",
+    "store:db/orders",
+    "store:queue/receipts",
+    "symbol:server/auth.ts::requireUser",
+    "symbol:server/payments.ts::chargeOrder",
+    "symbol:server/payments.ts::enqueueReceipt",
+    "symbol:server/routes.ts::postPayment",
+    "symbol:web/api.ts::apiPost",
+    "symbol:web/checkout.tsx::pay"
+   ],
+   "gaps": []
+  },
+  {
+   "ref": "flow:symbol:server/jobs.ts::nightlyReconcile",
+   "entry": "symbol:server/jobs.ts::nightlyReconcile",
+   "entry_kind": "lavoro pianificato",
+   "complete": false,
+   "steps": [
+    {
+     "source": "symbol:server/jobs.ts::nightlyReconcile",
+     "target": "symbol:server/payments.ts::chargeOrder",
+     "type": "chiama",
+     "origin": "diretto",
+     "site": "server/jobs.ts:6"
+    },
+    {
+     "source": "symbol:server/payments.ts::chargeOrder",
+     "target": "store:db/orders",
+     "type": "scrive",
+     "origin": "dedotto",
+     "site": "server/payments.ts:20"
+    }
+   ],
+   "nodes": [
+    "store:db/orders",
+    "symbol:server/jobs.ts::nightlyReconcile",
+    "symbol:server/payments.ts::chargeOrder"
+   ],
+   "gaps": [
+    {
+     "site": "server/jobs.ts:9",
+     "reason": "call to refund is unresolved"
+    }
+   ]
+  }
+ ]
+}
