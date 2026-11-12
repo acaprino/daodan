@@ -26,3 +26,36 @@ Gate del Task 1 di [`docs/plans/2026-11-08-codebase-explorer.md`](../../docs/pla
 ## Verdetto
 
 **React Flow + ELK.** LikeC4 non rappresenta un file in due gruppi senza duplicarlo nel modello, con ogni relazione da duplicare per ogni copia: l'adattamento è più complesso, non più semplice. Con React Flow le occorrenze multiple sono una scelta della proiezione, che Daodan controlla.
+
+## Prestazioni del viewer, prima misura
+
+Passo 2 del Task 7 del piano. Obiettivi da misurare, non promessi: fino a 300 nodi visibili, layout più primo disegno entro 2 s; p95 della selezione entro 100 ms su 20 interazioni. 1.000 nodi è stress diagnostico.
+
+### Parametri
+
+| Parametro | Valore |
+| --- | --- |
+| Export | sintetici, da `scale.py 100 300 1000`: dell'80% dei nodi visibili ogni componente ha una cartella di quattro file con tre simboli; il 10% sono servizi esterni e il 10% store, con un flusso per store |
+| Vista misurata | quella all'apertura: Logica, alla radice |
+| Strumento | `measure.js` con lo strumento `browser_run_code_unsafe` di Playwright MCP, sull'indirizzo di `visual.py serve` |
+| Browser | Chrome 157.0.8103.51 headless, finestra 1440 × 900 |
+| Macchina | Intel Core Ultra 7 155H, 16 core e 22 thread, 31 GB, Windows 11 |
+| Versioni | `@xyflow/react` 12.12.1, `elkjs` 0.12.1, React 19.3.1, viewer al commit `156607044` |
+| Cosa si misura | layout nel worker, dalla richiesta alla risposta; dal caricamento al grafo disegnato (tutti i nodi nel DOM, poi due frame); 20 selezioni distribuite sui nodi, dal clic al frame dopo l'aggiornamento della scheda; heap JavaScript della pagina dopo una raccolta, senza quello del worker; nodi del DOM |
+
+### Risultati, 12 novembre 2026
+
+Una esecuzione per dimensione.
+
+| Nodi visibili | Archi visibili | Entità e relazioni dell'export | Layout, primo e ripetuto | Grafo disegnato | Selezione p50, p95, massimo | Heap | Nodi del DOM |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 100 | 241 | 1.460 e 1.989 | 1.380 e 1.361 ms | 1.748 ms | 120, 265, 407 ms | 10,1 MB | 5.263 |
+| 300 | 721 | 4.380 e 5.946 | 3.969 e 4.948 ms | 4.643 ms | 290, 378, 388 ms | 21,6 MB | 15.403 |
+| 1.000 | 2.413 | 14.600 e 19.816 | oltre il budget di 5.000 ms | nessuno: «Impossibile disporre il grafo» | non misurata | non misurato | non misurato |
+
+- **Nessuno dei due obiettivi è raggiunto.** A 300 nodi il grafo arriva in 4,6 s contro 2 s. La selezione supera 100 ms già a 100 nodi.
+- Il layout ripetuto sullo stesso grafo costa quanto il primo: il tempo è di ELK, non del caricamento del worker.
+- Con la finestra visibile, a 100 nodi: layout 934 e 1.169 ms, grafo disegnato in 1.165 e 1.492 ms, selezione p50 70 e 91 ms, p95 116 e 144 ms (due esecuzioni). Una finestra nascosta o coperta riduce i frame a circa uno al secondo e falsa ogni tempo: per questo `measure.js` apre un browser headless e si rifiuta sotto 30 frame al secondo.
+- Cause non verificate con un profilo: a ogni selezione il viewer ricalcola la proiezione e ricrea gli oggetti di tutti i nodi e di tutti gli archi, che React Flow ridisegna.
+- Non misurato: un run reale.
+- La [mappa del sistema](../../docs/specs/2026-11-12-mappa-del-sistema.md), una proposta, mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Conviene decidere su quella prima di ottimizzare questo viewer per centinaia di nodi.

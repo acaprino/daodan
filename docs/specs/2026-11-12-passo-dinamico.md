@@ -1,6 +1,6 @@
 # Passo dinamico: i test del progetto in un container
 
-**Stato:** proposta, non applicata. Provato solo l'avvio di un container senza rete, in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
+**Stato:** proposta, non applicata. Misurato su tududi, JavaScript, con il profiler di V8: la copertura passa dal 37,9% al 42,4-47,1%, sotto la soglia del 70%. Dettagli in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
 
 Daodan deve saper rispondere a due domande che la lettura del codice lascia aperte: «quale funzione viene chiamata davvero, dove la destinazione si decide in esecuzione?» e «questo difetto si riproduce?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
 
@@ -43,9 +43,9 @@ Il passo dinamico e la review usano la stessa operazione, con queste garanzie:
 ### 3. Motore di container
 
 - Daodan parla la Docker Engine API attraverso la riga di comando compatibile (`run`, `cp`, `rm`). Non dipende da un prodotto: un motore si sostituisce senza toccare il resto.
-- Usa il motore già presente sulla macchina. Se manca, scarica Kiri a versione fissata nella cartella condivisa, con il checksum verificato, come ogni altro motore (requisito 12 della spec del motore).
+- Daodan porta il proprio motore: scarica Kiri a versione fissata nella cartella condivisa, con il checksum verificato, come ogni altro motore (requisito 12 della spec del motore), e lo usa senza interfaccia. L'utente non installa nulla. Daodan non esegue l'installer di Kiri, che cambia `PATH`, configurazione di Docker e avvio automatico dell'utente, e non modifica un motore già installato.
 - Un motore si adotta solo se è attivo e supportato: licenza che consente la ridistribuzione, repository non archiviato, commit e release nell'ultimo anno. Il controllo si ripete a ogni cambio della versione fissata.
-- Su Windows Kiri gira dentro WSL 2. Dove WSL 2 non è attivo serve un amministratore, una volta: Daodan dichiara la lacuna con il rimedio.
+- Su Windows Kiri gira dentro WSL 2: Daodan importa una distribuzione propria nella sua cartella e parla al motore attraverso `wsl.exe`, senza l'applicazione di Kiri per Windows. Dove WSL 2 non è attivo serve un amministratore, una volta: Daodan dichiara la lacuna con il rimedio.
 
 Motori controllati il 12 novembre 2026 sui loro repository:
 
@@ -56,7 +56,7 @@ Motori controllati il 12 novembre 2026 sui loro repository:
 | microsandbox 0.7.14 | Micro-VM | Con WHP attivo | Apache 2.0, dichiarato beta | Scartato: API propria |
 | sandbox-runtime 0.0.82 | Nessuna VM: limiti del sistema operativo | Dichiarato alpha: utente locale e filtri di rete per tutta la macchina | Apache 2.0 | Scartato su Windows |
 
-Pesi di Kiri 0.2.0: installer per Windows 58 MB, il solo motore per Linux (`kiri-lite`) 2,4 MB, macOS 47-57 MB.
+Pesi di Kiri 0.2.0: installer per Windows 58 MB, il solo motore per Linux (`kiri-lite`) 2,4 MB, macOS 47-57 MB. Dentro WSL il motore sono due file, 8 MB in tutto; l'applicazione per Windows aggiunge un ponte di 6,8 MB e 71 MB di WebView2, che a Daodan non servono.
 
 ### 4. Ambiente in due tempi
 
@@ -64,6 +64,8 @@ Pesi di Kiri 0.2.0: installer per Windows 58 MB, il solo motore per Linux (`kiri
 2. **Esecuzione.** I test girano con la rete chiusa.
 
 L'ambiente del passo 2 resta com'è: lì nessuno script gira.
+
+Lo stesso container può preparare anche dati per il passo 2: le librerie che gli script di build calcolano (Gradle) e i file che i build script generano (Rust). Il passo 2 li legge come legge i file di build, e sull'host continua a non girare nulla. Le macro procedurali di Rust restano escluse: espanderle significa eseguirle.
 
 ### 5. Fatti osservati
 
@@ -79,6 +81,19 @@ L'ambiente del passo 2 resta com'è: lì nessuno script gira.
 - **Flussi:** un arco osservato è un collegamento `chiama` con la sua provenienza.
 - **Review e indagine:** la riproduzione di un finding e il test di riproduzione girano nel container al posto del workspace sull'host. Il disegno delle review dinamiche è una spec a parte.
 
+### 7. Per linguaggio
+
+Operazione e fatti osservati sono gli stessi per ogni linguaggio; cambiano l'immagine, la preparazione e il registro delle chiamate. Un registro si adotta solo se fa parte del runtime o della sua toolchain e riporta chiamante e chiamato; quello a campioni perde le chiamate brevi.
+
+| Linguaggio | Preparazione | Registro candidato | Limite noto che può chiudere |
+| --- | --- | --- | --- |
+| JavaScript, TypeScript | `npm ci` o l'equivalente del lockfile | Profiler di V8 (`--cpu-prof`), a campioni, senza la riga della chiamata | Metodi su valori senza tipo e su oggetti costruiti a runtime |
+| Python | `uv sync` o `pip install` | `sys.monitoring` (Python 3.12+), ogni chiamata con la sua riga | Parametri senza tipo |
+| Java, Kotlin | Gradle o Maven, script compresi | JFR del JDK, a campioni; un agente Java registra ogni chiamata | Librerie calcolate dagli script Gradle (sezione 4) |
+| Go | `go mod download` | pprof (`go test -cpuprofile`), a campioni | Valori di funzione, interfacce anonime |
+| Rust | `cargo fetch`, build script accesi | perf, a campioni; richiede `perf_event_open`, che il profilo seccomp predefinito di Docker blocca | Codice generato dai build script (sezione 4) |
+| C# | `dotnet restore` | dotnet-trace, a campioni | Nessuno: il motore del passo 2 non è ancora scelto |
+
 ## Limiti
 
 - Il passo vede solo ciò che i test eseguono. Un progetto senza test, o con test che non partono, non dà nulla: è una lacuna dichiarata.
@@ -93,10 +108,14 @@ Parametri e soglie in [`benchmarks/call-provenance`](../../benchmarks/call-prove
 1. **Isolamento.** Dal container una richiesta di rete fallisce, una scrittura nel progetto è rifiutata e sull'host non compare nessun file.
 2. **Copertura.** Sugli stessi casi del passo 2: risolte su risolvibili per linguaggio, con e senza gli archi osservati; quante posizioni senza risposta ricevono una destinazione; quanti archi osservati contraddicono un arco provato.
 3. **Costo.** Durata di preparazione ed esecuzione, RAM di picco, spazio su disco.
+4. **Ambiente per il passo 2.** Su un caso Gradle e su uno Rust: risolte su risolvibili con e senza i dati preparati nel container.
+5. **Motore proprio.** Su una macchina senza Kiri: Daodan scarica il motore ed esegue un comando in un container senza aprire finestre. `PATH`, configurazione e contesto di Docker e avvio automatico dell'utente restano invariati; fuori dalla cartella di Daodan resta solo la registrazione della distribuzione WSL.
 
 ## Da decidere
 
-- Come si registra chi chiama chi. Per JavaScript: il profiler di Node, che campiona e perde le chiamate rare, oppure un registratore esatto da scrivere. Entrambi danno coppie di funzioni da riportare alla posizione della chiamata.
+- Quale registro adottare per ogni linguaggio (sezione 7). Il profiler di V8 dà coppie di funzioni senza la riga: la chiamata si ritrova dal nome, e due chiamate omonime nella stessa funzione restano ambigue. Su tududi vede il 35% delle chiamate senza risposta che stanno in file eseguiti. L'alternativa è un registro esatto da scrivere.
+- Se il motore del passo 2 di un linguaggio gira dentro il container quando deve eseguire codice del progetto, come per le macro procedurali di Rust.
+- Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore («another Kiri engine is running on this machine»): provato nella stessa distribuzione WSL, non tra due distribuzioni.
 - Quale comando esegue i test e come si avviano i servizi che richiedono.
 - Quanto vale un arco osservato dopo una modifica al file del chiamante o della destinazione.
 - Come si accende il passo: un parametro del run o una domanda al primo uso.

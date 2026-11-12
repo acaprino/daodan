@@ -139,9 +139,9 @@ Stato al 12 novembre 2026: client del layout con i due test, worker ELK, grafo R
 - Crea: `plugins/codebase-map/assets/viewer/` (output di `npm run build`, con `LICENSES.txt`), `benchmarks/codebase-explorer/scale.py` (genera fixture da 100, 300, 1.000 nodi visibili)
 - Modifica: `benchmarks/codebase-explorer/README.md`, `plugins/codebase-map/skills/map/references/mcp.md` o una nuova sezione in `references/standalone.md` per i comandi `visual.py`, `docs/plugins/codebase-map.md` (coordinarsi: il file ha modifiche altrui in corso)
 
-- [ ] **Passo 1:** `npm run build` scrive in `assets/viewer/`; test Python che verifica che `make_server` trovi `index.html` e che nessun asset referenzi `http://` o `https://`.
-- [ ] **Passo 2:** misurare con Playwright sulle fixture scalate e su un run reale: layout + primo disegno, p95 su 20 selezioni, memoria; registrare hardware, browser, versioni, nodi e archi visibili e totali, distinguendo sintetico e reale.
-- [ ] **Passo 3:** documentare `visual.py export` e `visual.py serve` nella reference scelta, una riga nel README del plugin.
+- [x] **Passo 1:** `npm run build` scrive in `assets/viewer/`; test Python che verifica che `make_server` trovi `index.html` e che nessun asset referenzi `http://` o `https://`.
+- [ ] **Passo 2:** misurare con Playwright sulle fixture scalate e su un run reale: layout + primo disegno, p95 su 20 selezioni, memoria; registrare hardware, browser, versioni, nodi e archi visibili e totali, distinguendo sintetico e reale. Stato al 12 novembre 2026: misurato sulle fixture sintetiche, obiettivi non raggiunti (`benchmarks/codebase-explorer/README.md`); manca il run reale.
+- [x] **Passo 3:** documentare `visual.py export` e `visual.py serve` nella reference scelta, una riga nel README del plugin.
 
 ## Fuori da questo piano
 

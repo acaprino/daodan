@@ -315,6 +315,11 @@ _TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=
 _POLICY = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:"
 
 
+class _Server(ThreadingHTTPServer):
+    # On Windows SO_REUSEADDR lets a second server bind a port in use and take part of its connections.
+    allow_reuse_address = sys.platform != "win32"
+
+
 def live_routes(service) -> dict:
     """The JSON routes of a live explorer over one MapService; a refused request raises ValueError."""
     def envelope(query: dict) -> dict:
@@ -419,7 +424,7 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
         def log_message(self, *args):  # quiet: the terminal shows only the address
             return
 
-    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    return _Server(("127.0.0.1", port), Handler)
 
 
 def main(argv=None) -> int:

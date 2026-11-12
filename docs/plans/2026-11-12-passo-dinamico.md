@@ -34,14 +34,15 @@ Eseguire i task nell'ordine e segnare solo i passi verificati. La Parte A misura
 - Modifica: `benchmarks/call-provenance/README.md` (risultati).
 
 - [x] **Passo 1:** parametri e soglia nel README.
-- [ ] **Passo 2:** copia del perimetro, installazione dei pacchetti con la rete aperta ai soli registri, test con la rete chiusa e il profiler attivo.
-- [ ] **Passo 3:** riporto delle coppie osservate alle posizioni senza risposta dello store del motore, classificate per provenienza.
-- [ ] **Passo 4:** conteggio con e senza gli archi osservati, archi che contraddicono un arco provato, durata, RAM di picco e spazio.
-- [ ] **Passo 5:** risultati nel README, con i test che non sono partiti e il motivo.
+- [x] **Passo 2:** copia del perimetro, installazione dei pacchetti con la rete aperta ai soli registri, test con la rete chiusa e il profiler attivo. Eseguito con le deviazioni scritte nel README.
+- [x] **Passo 3:** riporto delle coppie osservate alle posizioni senza risposta dello store del motore, classificate per provenienza.
+- [x] **Passo 4:** conteggio con e senza gli archi osservati, archi che contraddicono un arco provato, durata, RAM di picco e spazio.
+- [x] **Passo 5:** risultati nel README, con i test che non sono partiti e il motivo.
 
 ### Task 3: decisione
 
 - [ ] **Passo 1:** l'utente decide dai numeri del Task 2 se la Parte B parte, per quali linguaggi e con quale registratore.
+  - Registratore per JavaScript, deciso il 12 novembre 2026: il registro esatto (`benchmarks/call-provenance/dynamic_record.js`), da misurare sullo stesso caso prima di decidere il resto.
 
 ## Parte B: nel plugin (dopo la misura)
 
@@ -62,3 +63,7 @@ Un risolutore nuovo in `resolve_edges.py` con la provenienza «osservato»; il r
 ### Task 7: review dinamiche
 
 Spec propria in senior-review: la riproduzione di un finding e il test di riproduzione di un'indagine usano l'operazione del Task 4.
+
+### Task 8: ambiente del passo 2 dal container
+
+Le librerie calcolate dagli script Gradle e i file generati dai build script di Rust (sezione 4 della spec), misurati su un caso per linguaggio (misura 4) prima di adottarli.

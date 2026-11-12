@@ -9,6 +9,7 @@ released; only the most recent done requests are kept; a malformed request file 
 import http.client
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -76,6 +77,50 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.get("/", host="evil.example")[0].status, 421)
         if self.linked:
             self.assertEqual(self.get("/assets/link.js")[0].status, 404)
+
+    def test_a_port_in_use_is_refused(self):
+        try:
+            second = visual.make_server(self.export, self.assets, self.port)
+        except OSError:
+            return
+        second.server_close()
+        self.fail("a second server bound a port already in use")
+
+
+class CommittedViewerTests(unittest.TestCase):
+    """The compiled viewer the plugin ships: served by default, with its notices, loading nothing remote."""
+
+    ASSETS = SCRIPTS.parents[2] / "assets" / "viewer"
+    # A namespace or an error link inside the bundle is text; loading code or styles from elsewhere is not allowed.
+    REMOTE = re.compile(r"""(?:\bimport\s*\(|\bfrom\s*|new\s+Worker\s*\(|url\(|\bsrc=|\bhref=)\s*['"`]?https?://""")
+
+    def test_the_shipped_viewer_is_served_and_loads_nothing_remote(self):
+        self.assertTrue((self.ASSETS / "index.html").is_file())
+        self.assertTrue((self.ASSETS / "LICENSES.txt").is_file())
+        for path in self.ASSETS.rglob("*"):
+            if path.suffix in (".html", ".css", ".js"):
+                with self.subTest(path=path.name):
+                    self.assertIsNone(self.REMOTE.search(path.read_text(encoding="utf-8", errors="replace")))
+        with tempfile.TemporaryDirectory() as temp:
+            (Path(temp) / "visual.json").write_text('{"schema": "daodan/visual@1"}', encoding="utf-8")
+            server = visual.make_server(Path(temp), self.ASSETS)
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            try:
+                port = server.server_address[1]
+                connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+                connection.request("GET", "/", headers={"Host": f"127.0.0.1:{port}"})
+                response = connection.getresponse()
+                page = response.read().decode("utf-8")
+                connection.close()
+                self.assertEqual(response.status, 200)
+                for script in re.findall(r'src="\./(assets/[^"]+)"', page):
+                    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+                    connection.request("GET", "/" + script, headers={"Host": f"127.0.0.1:{port}"})
+                    self.assertEqual(connection.getresponse().status, 200, script)
+                    connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
 
 
 class LiveTests(unittest.TestCase):

@@ -98,8 +98,26 @@ def count(name: str, case: dict, archive: bytes | None, tag: str = "") -> dict:
         out = Path("/results") / tag / f"engine-count-{name}.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        import gzip
+        with gzip.open(out.with_name(f"positions-{name}.json.gz"), "wt", encoding="utf-8") as stream:
+            json.dump(_positions(manifest), stream)
         volume.commit()
     return result
+
+
+def _positions(manifest: Path) -> list[dict]:
+    """Every call reference with its position, lexical resolution and engine verdict, to join with other evidence."""
+    import sqlite3
+    import resolve_edges
+    answers = resolve_edges.default_answers_path(manifest)
+    verdicts = dict(sqlite3.connect(answers).execute("SELECT reference_id, verdict FROM answers")) \
+        if answers.is_file() else {}
+    rows = sqlite3.connect(manifest).execute(
+        "SELECT r.id, r.file, c.language, r.l0, r.c0, r.l1, r.c1, r.last_name, r.resolution "
+        "FROM sem_references r JOIN sem_coverage c ON c.file = r.file WHERE r.kind = 'call'")
+    return [{"file": file, "language": language, "l0": l0, "c0": c0, "l1": l1, "c1": c1, "name": name,
+             "resolution": resolution, "verdict": verdicts.get(ref)}
+            for ref, file, language, l0, c0, l1, c1, name, resolution in rows]
 
 
 def _unresolved(manifest: Path) -> dict:

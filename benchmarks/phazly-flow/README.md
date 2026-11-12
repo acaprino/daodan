@@ -193,7 +193,43 @@ Totale 72,53 USD più 0,11 USD della prova di avvio. Costo medio per prova: A 9,
   | G1 | giudizio: il file è letto, i finding citano altre righe dello stesso hook (`:94`, `:187`) | giudizio: il file del difetto e quello di chi scrive lo store stanno nella stessa unità | estrazione: all'elenco dei flussi mancava lo scrittore del record estraneo |
   | G2 | giudizio: la logica dell'offerta è letta e ritenuta corretta | selezione e giudizio: con la condivisione 2 lo scrittore è membro di altre unità, e `bind` riceve solo i membri | estrazione, come per G1 |
 
-- **L'input della prova C era difettoso.** I flussi erano stati ricavati dai collegamenti calcolati prima della correzione dei commenti (`mask_comments`, commit `75a87cea8`): fra chi scrive `completedMeals` mancavano `addMealAddition`, `moveFromStackToMeal`, `mergeDiaryDays` e `moveMealAddition`, cioè proprio chi produce il record di G1 e G2. La prova C va ripetuta con i collegamenti corretti prima di concludere su C.
+- **L'input della prova C era difettoso.** I flussi erano stati ricavati dai collegamenti calcolati prima della correzione dei commenti (`mask_comments`, commit `75a87cea8`): fra chi scrive `completedMeals` mancavano `addMealAddition`, `moveFromStackToMeal`, `mergeDiaryDays` e `moveMealAddition`, cioè proprio chi produce il record di G1 e G2. La prova C è stata ripetuta con i collegamenti corretti, insieme a B: vedi [la ripetizione](#fase-3-ripetizione-di-b-e-c-12-novembre-2026).
 - **Condizioni diverse dalla spec:** la mappa che ogni run crea è solo lessicale (15,2% di chiamate risolte), non completa come chiede la fase 3. Unità e flussi venivano invece dai collegamenti con il motore.
 - **Difetti del metodo emersi:** la review non ha una cartella d'uscita fissa (quattro run usano `.team-review/`, A2 `/tmp/rv/`), e in C2 la pubblicazione della mappa appena creata viene rifiutata per «snapshot parser identity changed». Lo script raccoglieva solo `.daodan/review`: per cinque run su sei la cartella della review è stata ricostruita dal flusso degli eventi, che contiene messaggi, comandi e risultati di ogni agente; per B2 è salvata intera.
 - **Altri difetti trovati in tutte e sei le run**, non verificati: il pulsante «Riprova» di `PhaseReviewSheet` che non rilancia la richiesta, l'azione vocale persa mentre l'abbonamento carica in `useHomeTabController`, un pasto saltato che riceve cibo e resta `skipped` in `favoritesSlice`, un giorno futuro che resta selezionato in `QuickAddSheet`.
+
+### Fase 3: ripetizione di B e C, 12 novembre 2026
+
+Quattro run in parallelo su Modal, lanciate alle 12:31 con gli input del commit `8e38cd01a`, ricavati con `phase3/inputs.py` dai collegamenti ricalcolati dopo `mask_comments`. Cartella `phase3-20261112-r2` dello stesso volume. Richiesta, perimetro, revisori, modello e soglie non cambiano.
+
+| Parametro | Valore |
+| --- | --- |
+| Prova B | 6 unità con condivisione 2 (`units.json`); `bind` dà ogni file alla prima unità che lo contiene: incarichi da 13, 2, 6, 9, 26 e 4 file |
+| Prova C | `flows.md`: 15 store, 10.323 caratteri su un tetto di 12.000; fra chi scrive `completedMeals` ci sono `addMealAddition`, `moveFromStackToMeal`, `mergeDiaryDays` e `moveMealAddition` |
+
+| Run | Incarichi | Finding consegnati | Costo | Tempo | G1 | G2 |
+| --- | --- | --- | --- | --- | --- | --- |
+| B1 | 24 (4 revisori × 6 unità) | 16: 8 Medium, 8 Low | 9,92 USD | 24,0 min | no | no |
+| B2 | 24 (4 × 6) | 32: 14 Medium, 18 Low | 10,04 USD | 21,6 min | no | no |
+| C1 | 20 (4 × 5) | 26: 1 High, 13 Medium, 12 Low | 10,43 USD | 16,6 min | no | no |
+| C2 | 20 (4 × 5) | 24: 16 Medium, 8 Low | 9,48 USD | 10,0 min | no | no |
+
+Totale 39,86 USD. Costo medio per prova: B 9,98 USD, C 9,95 USD, entrambe 1,10 volte A.
+
+- **Esito con le soglie scritte prima:** né B né C portano nel rapporto finale un difetto atteso che A non porta. Con gli input corretti l'esito vale anche per C: per la regola 4 della fase 3 la review resta com'è.
+- **G1 e G2 non compaiono in nessuna delle quattro run**, né nei rapporti né nei job: cercati per riga e per contenuto, poi letti, come nella prima esecuzione.
+  - `useDayProgress.ts` è dichiarato letto da tutti e quattro i revisori in ogni run. I finding citano `:94`, `:241` e `:290` (il pasto corrente che non segue l'orologio) e `:169` (calorie di ripiego): nessuno riguarda la riga del piano mostrata come fatta.
+  - Su `QuickAddSheet.tsx:264-270` tutte e quattro le run leggono la regola dell'offerta e la prendono per l'intento: «proposal only on unlogged slot» (B1), «hides the 'Dal piano' tile only when dayCompletions[slotId] holds a live record», citata come invariante (B2), «plannedForSlot null once record […] callers hold the guard (no finding)» (C1), «hides the tile only when dayCompletions[slotId] exists locally» (C2).
+  - I finding consegnati su quelle righe vanno nel verso opposto: l'offerta compare quando dovrebbe sparire, su un giorno archiviato non ancora caricato (B2, C2), oppure scrive su un giorno futuro (B2, C1, C2).
+- **Dove sono mancati:**
+
+  | Difetto | B | C |
+  | --- | --- | --- |
+  | G1 | giudizio: `useDayProgress.ts`, `mealPlanSlice.ts` e `favoritesSlice.ts` stanno nello stesso incarico, l'unità 1 | giudizio: l'elenco dei flussi nomina chi scrive e chi legge `completedMeals`, il file è letto, i finding citano altre righe |
+  | G2 | selezione e giudizio: `QuickAddSheet.tsx` è nell'incarico dell'unità 3 senza chi scrive lo store, che con la condivisione 2 è membro delle unità 1 e 2 | giudizio: la regola dell'offerta è letta e ritenuta corretta |
+
+  Nessuna mancanza è di estrazione, e nessun finding su G1 o G2 arriva alla verifica.
+- **B1 non è una prova B pura.** La cartella degli input contiene i file di tutte le prove: il coordinatore di B1 ha letto `flows.md` e lo ha indicato come pista facoltativa in `01-context.md` e in 26 prompt su 27. Nessun revisore lo ha aperto: nel flusso degli eventi non c'è una sola lettura. B2, C1 e C2 usano solo il proprio input.
+- **Condizioni diverse dalla spec, come nella prima esecuzione:** la mappa che ogni run crea non è completa, e cambia da run a run. Chiamate risolte: 48,3% in B1 (motore Kotlin fallito), circa 15% in B2 (archi del motore rifiutati), passata del motore ancora in corso in C1 e in C2 (0,18 alla pubblicazione). In C1 la pubblicazione della mappa è rifiutata per «snapshot parser identity changed». B1 dichiara 194 celle coperte su 240.
+- **Lo scrittore che lascia lo stato «saltato»** (`favoritesSlice.ts:152-155`) è nel rapporto di tutte e quattro: Medium in B1, C1 e C2, Low in B2. Era già in tutte le run della prima esecuzione, quindi non distingue le prove.
+- La cartella della review è salvata intera per tutte e quattro: `.team-review/` in tre, `.daodan/review/.team-review/` in B2.
