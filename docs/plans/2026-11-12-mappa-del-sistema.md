@@ -212,7 +212,7 @@ def inside(system: dict, name: str, links: dict | None = None) -> dict
 
 Regole. Livello di casa per tipo: attore e schermata `persone`; entità `dati`; database e dispositivo `infrastruttura`; gli altri `funzioni`. Un servizio esterno compare anche a `infrastruttura`. A `infrastruttura` un nodo con `on` è sostituito dai nodi che nomina. A `codice` un nodo è sostituito dai file dei suoi membri toccati dai collegamenti del flusso, e servono i `links` (mai dai singoli simboli). Una freccia fra due nodi visibili è la contrazione di un cammino i cui nodi intermedi sono nascosti: resta `declared` se almeno un passo o una corrispondenza `on` attraversata è `declared`, `proved` altrimenti, e raccoglie `proof` di tutti i passi contratti. Un cammino attraversa un'entità solo sulla stessa rappresentazione: se chi scrive tocca una chiave e chi legge un'altra non nasce una freccia ma una lacuna in `gaps`, con le due chiavi nel motivo; un passo rifiutato o mancante dà una lacuna allo stesso modo, mai una freccia. `inside` apre un nodo: per un'entità le sue rappresentazioni, ciascuna con chi la scrive e chi la legge, e fra loro solo le relazioni provate o dichiarate; per un nodo con codice i suoi file e i collegamenti che sostengono le sue frecce; per un servizio esterno o un nodo non visto `detail` è `none`. Con più livelli si mostrano i nodi di tutti; `also` elenca, per ogni nodo, i suoi corrispondenti agli altri livelli.
 
-- [ ] **Passo 1:** test che falliscono, sul flusso `Pagare un ordine` della mappa di prova.
+- [x] **Passo 1:** test che falliscono, sul flusso `Pagare un ordine` della mappa di prova.
 
 ```python
 assert names(view(m, "Pagare un ordine", ["persone"])) == {"Cliente", "Checkout", "Badge pagamento"}
@@ -234,8 +234,8 @@ assert view(m, "Riprova dei pagamenti", ["persone"])["absent"] == ["persone"]
 assert view(m, "Pagare un ordine", list(LEVELS), links)["nodes"][0]["also"]     # corrispondenze presenti
 ```
 
-- [ ] **Passo 2:** implementare; i test passano.
-- [ ] **Passo 3:** commit.
+- [x] **Passo 2:** implementare; i test passano.
+- [x] **Passo 3:** commit.
 
 ## Parte B: registro e scheda
 
