@@ -29,6 +29,8 @@ I flussi sono stati riaperti il 9 novembre 2026 ([spec](../specs/2026-11-09-flow
 
 ## 2. Librerie, alternative e ricerca
 
+**Renderer confermato: React Flow + ELK** (12 novembre 2026): LikeC4 perde le appartenenze multiple di un file; misure in [`benchmarks/codebase-explorer`](../../benchmarks/codebase-explorer/README.md).
+
 Documentazione ufficiale consultata il 7 novembre 2026; nessun pacchetto installato o benchmark eseguito. Le versioni dei rami sorgenti non sono trattate come release compatibili: versioni distribuite, peer dependencies e licenze transitive saranno fissate nel lockfile dopo la prova di integrazione.
 
 | Componente | Riuso previsto | Lavoro che resta Daodan | Licenza verificata |

@@ -34,6 +34,9 @@ What (`link`):
   handler an `attribute` names.
 - `ingresso`: an entry point of kind `entry`; with `decorates`, the decorated function.
 
+A store rule may name the store's `node_type`, from the closed list of the flow model
+(`database`, `coda`, ...): the explorer draws the store with that type's icon.
+
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service, method and path. External modules of the module graph are
@@ -67,7 +70,9 @@ FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
 _FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "actions_in", "route", "strip",
-           "decorates", "handler", "entry"}
+           "decorates", "handler", "entry", "node_type"}
+NODE_TYPES = ("attore", "schermata", "funzionalità", "servizio o API", "gateway", "database", "coda",
+              "autenticazione", "dispositivo", "altro")
 _ARG = re.compile(r"(arg|part)(\d+)$")
 _IDENT = re.compile(r"[A-Za-z_$][\w$]*$")
 _STRING = re.compile(r"""(['"`])((?:\\.|(?!\1).)*)\1$""", re.S)
@@ -113,6 +118,8 @@ def validate_rules(rules: list) -> list[dict]:
         unknown = sorted(set(rule) - _FIELDS)
         if unknown:
             raise ValueError(f"{where}: unknown field {', '.join(unknown)}")
+        if "node_type" in rule and (rule["link"] not in ("scrive", "legge") or rule["node_type"] not in NODE_TYPES):
+            raise ValueError(f"{where}: node_type belongs to a store rule and is one of {', '.join(NODE_TYPES)}")
     return rules
 
 
@@ -697,6 +704,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             "stores": {name: {"writes": sorted(v["writes"]), "reads": sorted(v["reads"])} for name, v in sorted(stores.items())},
             "entries": sorted({(e["symbol"], e["kind"]): e for e in entries}.values(), key=lambda e: (e["kind"], e["symbol"])),
             "edges": sorted(unique.values(), key=lambda e: (e["from"], e["to"], e["type"], e["site"])),
+            "store_types": {rule["store"]: rule["node_type"] for rule in rules if rule.get("node_type")},
             "routes": {"offered": len({(o["service"], o["method"], o["path"]) for o in routes_offered}),
                        "called": len(route_calls), "linked": sum(1 for e in unique.values() if e.get("route"))},
             "external": [{"name": m["name"], "status": m["status"]} for m in external],

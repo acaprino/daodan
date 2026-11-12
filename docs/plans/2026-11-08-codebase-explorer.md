@@ -14,7 +14,7 @@
 
 ## Vincoli
 
-- Nessun flusso: nessun campo, artefatto, vista o avviso sui flussi.
+- Flussi solo come li definisce la [fase 2](../specs/2026-11-09-flow-model.md): l'envelope li riceve in `flows` quando il run ha regole di collegamento; nessuna inferenza nell'esportatore o nel viewer.
 - `visual.py` usa solo la libreria standard e le API di `snapshot_store`, `modules`, `source_reader`, `semantic_store`; non legge tabelle SQLite direttamente e non richiede il server MCP.
 - Stati mai promossi: `provenance` (`build`, `declared`, `proposed`), `status` (`confirmed`, `inferred`, `incomplete`) e freschezza delle schede (`fresh`, `stale_body`, `stale_interface`, `stale_callee`, `orphan`, `uncovered`) restano campi distinti, con i valori dei produttori.
 - Export legato al run e al digest dei suoi input, mai al mirror; scritto solo se valido, mai sovrascrivendo un export precedente.
@@ -62,12 +62,13 @@ Forma dell'envelope (i Task 3, 5 e 6 dipendono da questi nomi):
 | Campo | Contenuto |
 |---|---|
 | `schema`, `meta` | `meta`: `project_root`, `run_id`, `target`, `git`, `snapshot_digest` (logical digest), `modules_digest` (`inputs_digest` di `modules.json`), `cards_digest` (o `null`), `created_at` |
-| `entities` | lista di `{ref, type, name, technical, description, provenance?, status?, freshness?, path?, lines?, address?, evidence[], gaps[]}`; `ref` = `"<type>:<id originale>"`; `type` ∈ `component`, `feature`, `external`, `build`, `directory`, `file`, `symbol` |
+| `entities` | lista di `{ref, type, name, technical, description, provenance?, status?, freshness?, path?, lines?, address?, evidence[], gaps[]}`; `ref` = `"<type>:<id originale>"`; `type` ∈ `component`, `feature`, `external`, `build`, `directory`, `file`, `symbol`, `store`; `location` (`internal`, `external`) e `node_type` dall'elenco chiuso della fase 2, quando noto |
 | `relations` | `{ref, kind, source, target, status, counts?, evidence[]}`; `kind` ∈ `declares`, `contains`, `imports`, `calls`, `uses`, `defines`; `ref` derivato da `kind:source->target` |
 | `memberships` | `{member, group, view}` con `view` ∈ `logical`, `physical`; un file può comparire in più gruppi |
 | `gaps` | `{refs[], reason}`: lacune del grafo dei moduli, conflitti `shared_member`, simboli troncati, esterni senza evidenza risolta |
+| `flows` | `{ref, entry, entry_kind, complete, nodes[], steps[]}` per ogni punto d'ingresso, dai collegamenti di `flows.py`; `steps`: `{source, target, type, origin, site, route?}`; vuoto senza regole di collegamento |
 
-- [ ] **Passo 1:** test con un progetto temporaneo (stile `tests/test_codebase_map_mcp.py`: `src/a.py` importa `src/b.py`, un `pyproject.toml`, un `codebase-modules.json` con due componenti che condividono `src/b.py` e una feature). Creare il run con `MapService(project).create_run("src", "r1", engine=False)`. Asserzioni: `build_envelope(run)["schema"] == "daodan/visual@1"`; esiste `relations` con `kind == "imports"` tra `file:src/a.py` e `file:src/b.py`; `memberships` contiene `file:src/b.py` due volte con `view == "logical"`; nessuna entità ha `type == "feature"` come gruppo fisico; ogni `relation.source/target` è un `ref` di `entities`; nessun campo contiene `flow`.
+- [ ] **Passo 1:** test con un progetto temporaneo (stile `tests/test_codebase_map_mcp.py`: `src/a.py` importa `src/b.py`, un `pyproject.toml`, un `codebase-modules.json` con due componenti che condividono `src/b.py` e una feature). Creare il run con `MapService(project).create_run("src", "r1", engine=False)`. Asserzioni: `build_envelope(run)["schema"] == "daodan/visual@1"`; esiste `relations` con `kind == "imports"` tra `file:src/a.py` e `file:src/b.py`; `memberships` contiene `file:src/b.py` due volte con `view == "logical"`; nessuna entità ha `type == "feature"` come gruppo fisico; ogni `relation.source/target` è un `ref` di `entities`; senza regole di collegamento `flows` è vuoto.
 - [ ] **Passo 2:** test `sanitize_address`: `"https://u:p@host:8443/x?token=1#f"` → `"https://host:8443/x"`; `"not a url"` → invariato; stringa con `password=` → `""`.
 - [ ] **Passo 3:** eseguire i test e verificarne il fallimento.
 - [ ] **Passo 4:** implementare. Fonti: `snapshot_store.resolve_run_snapshot` + `open_snapshot`; `modules.ensure_graph(manifest)` poi `load_graph`; `source_reader.outline_manifest` per i simboli (limite 1000 per file, troncamento → `gaps`); `source_reader.graph_packet(manifest, paths, 1, 1000)` a blocchi di percorsi per gli import tra file (il limite di 1000 per lista va rispettato: suddividere, mai troncare in silenzio). Directory derivate dai percorsi dell'inventario; `defines` collega file → simbolo, `contains` directory → file e build unit → directory.
