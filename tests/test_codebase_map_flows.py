@@ -306,5 +306,73 @@ class WrittenRuleTests(unittest.TestCase):
         self.assertEqual(self.links["gaps"], [])
 
 
+class HandlerRouteTests(unittest.TestCase):
+    """Routes registered outside any function, with the handler passed as an argument (Express and the like)."""
+
+    SOURCES = {
+        "api/db.js": "module.exports = { find() {}, save() {} };\n",
+        "api/controller.js": ("const db = require('./db');\n\nconst controller = {\n"
+                              "    async status(req, res) {\n        res.json(await db.find('plans'));\n    },\n};\n\n"
+                              "module.exports = controller;\n"),
+        "api/routes.js": ("const express = require('express');\nconst router = express.Router();\n"
+                          "const controller = require('./controller');\nconst db = require('./db');\n\n"
+                          "function requireAuth(req, res, next) {\n    next();\n}\n\n"
+                          "router.get('/billing', controller.status);\n"
+                          "router.post('/task', requireAuth, async (req, res) => {\n"
+                          "    await db.save('tasks', req.body);\n    res.json({});\n});\n"
+                          "router.get('/odd', makeHandler());\n\nmodule.exports = router;\n"),
+        "web/client.ts": ("declare function apiGet(url: string): void;\n"
+                          "export function loadPlans() {\n  apiGet('/billing');\n}\n"),
+    }
+    RULES = [
+        {"written": "router.get|post", "in": ["api"], "link": "offre", "handler": "last",
+         "route": {"service": "api", "method": "part1", "path": "arg0"}},
+        {"written": "db.find", "in": ["api"], "link": "legge", "store": "db", "key": "arg0"},
+        {"written": "db.save", "in": ["api"], "link": "scrive", "store": "db", "key": "arg0"},
+        {"written": "apiGet", "in": ["web"], "link": "rotta", "route": {"service": "api", "method": "GET", "path": "arg0"}},
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="flow-handler-")).resolve()
+        app = cls.work / "app"
+        for rel, text in cls.SOURCES.items():
+            (app / rel).parent.mkdir(parents=True, exist_ok=True)
+            (app / rel).write_text(text, encoding="utf-8", newline="\n")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+            subprocess.run(command, cwd=app, check=True, capture_output=True)
+        cls.manifest = cls.work / "snapshot/manifest.sqlite"
+        snapshot.main(["write", str(app), "--out", str(cls.manifest), "--no-engine", "--no-index"])
+        cls.links = flows.link_facts(cls.manifest, flows.validate_rules(cls.RULES))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.work, True)
+
+    def test_the_route_belongs_to_the_handler_it_is_given(self):
+        routes = {e["symbol"] for e in self.links["entries"] if e["kind"] == "rotta"}
+        self.assertEqual(routes, {"api/controller.js::status", "api/routes.js::POST /task"})
+        self.assertIn(("web/client.ts::loadPlans", "api/controller.js::status"),
+                      {(e["from"], e["to"]) for e in self.links["edges"] if e.get("route")})
+        self.assertEqual(self.links["routes"], {"offered": 2, "called": 1, "linked": 1})
+
+    def test_an_inline_handler_is_named_by_its_route_and_holds_its_accesses(self):
+        self.assertEqual(self.links["stores"]["db/tasks"], {"writes": ["api/routes.js::POST /task"], "reads": []})
+        self.assertEqual(self.links["stores"]["db/plans"], {"writes": [], "reads": ["api/controller.js::status"]})
+
+    def test_a_handler_that_is_no_function_is_a_gap(self):
+        self.assertEqual([g["reason"] for g in self.links["gaps"]], ["offre: handler not a function"])
+
+    def test_handler_is_an_argument_or_last_and_excludes_decorates(self):
+        for rule, message in (
+                ({"written": "r.get", "link": "offre", "handler": "first", "route": {"service": "a", "method": "GET", "path": "arg0"}},
+                 "handler is argN or last"),
+                ({"written": "r.get", "link": "offre", "handler": "last", "decorates": True,
+                  "route": {"service": "a", "method": "GET", "path": "arg0"}}, "handler or decorates")):
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                flows.validate_rules([rule])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -29,9 +29,11 @@ What (`link`):
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
   `path`, each a literal, `argN` or `partN`. `strip`, a field of the rule beside
   `route`, removes a leading text from the path. With `decorates` the route
-  belongs to the decorated function.
-- `attiva`: a user action bound to the handler in `handler` (`argN`), or to the
-  handler an `attribute` names.
+  belongs to the decorated function; with `handler` (`argN` or `last`) to the
+  function passed there, named or written in place (then named by its route,
+  `METHOD path`), as when a route is registered outside any function.
+- `attiva`: a user action bound to the handler in `handler` (`argN` or `last`), or to
+  the handler an `attribute` names.
 - `ingresso`: an entry point of kind `entry`; with `decorates`, the decorated function.
 
 A store rule may name the store's `node_type`, from the closed list of the flow model
@@ -115,6 +117,11 @@ def validate_rules(rules: list) -> list[dict]:
             raise ValueError(f"{where}: {rule['link']} needs {', '.join(missing)}")
         if rule["link"] in ("rotta", "offre") and set(rule["route"]) != {"service", "method", "path"}:
             raise ValueError(f"{where}: route has exactly service, method and path")
+        if "handler" in rule:
+            if rule["link"] not in ("offre", "attiva") or not re.fullmatch(r"arg\d+|last", str(rule["handler"])):
+                raise ValueError(f"{where}: handler is argN or last, on an offre or attiva rule")
+            if rule.get("decorates"):
+                raise ValueError(f"{where}: handler or decorates, not both")
         unknown = sorted(set(rule) - _FIELDS)
         if unknown:
             raise ValueError(f"{where}: unknown field {', '.join(unknown)}")
@@ -327,6 +334,7 @@ class Facts:
         for file, name in db.execute("SELECT file,name FROM sem_bindings WHERE kind='import'"):
             self.imported[file].add(name)
         self._nodes: dict[str, str | None] = {}
+        self.route_named: dict[str, str] = {}  # a function written in place as a route handler: its route
 
     def targets(self, name: str, file: str, line: int, column: int, kinds: tuple) -> list[str]:
         """Declarations an identifier names: its resolved read, else the one module-level
@@ -352,7 +360,8 @@ class Facts:
         property it is the value of, inside its owner, or as its owner."""
         if declaration_id not in self._nodes:
             declaration, labels = self.declarations.get(declaration_id or ""), []
-            while declaration is not None and declaration["name"] == "(anonymous)":
+            while declaration is not None and declaration["name"] == "(anonymous)" \
+                    and declaration["id"] not in self.route_named:
                 label = self.property_label(declaration)
                 if label:
                     labels.insert(0, label)
@@ -360,7 +369,8 @@ class Facts:
                 declaration = self.declarations.get(f"{declaration['file']}::{scope.removeprefix('scope-')}")
             name, file = None, declaration_id.split("::", 1)[0] if declaration_id else None
             if declaration is not None:
-                base = (declaration.get("qualified_name") or declaration["name"]).replace(".(anonymous)", "")
+                base = self.route_named.get(declaration["id"]) or \
+                    (declaration.get("qualified_name") or declaration["name"]).replace(".(anonymous)", "")
                 name = f"{file}::{'.'.join([base, *labels])}"
             elif labels:
                 # Properties of an object no named function holds: a store created at module level.
@@ -418,6 +428,24 @@ class Facts:
             "SELECT target_id FROM sem_references WHERE kind='call' AND caller=? AND resolution='resolved'",
             (arrow["id"],))]
         return self.node(calls[0]) if len(calls) == 1 else None
+
+    def written_function(self, file: str, line: int, column: int) -> dict | None:
+        """The function written at this place of an argument, named or not."""
+        return next((d for d in self.functions.get(file, ()) if d["line"] == line and d["column"] == column), None)
+
+    def passed_function(self, text: str, file: str, line: int, column: int) -> str | None:
+        """The function an argument passes by name: `handler`, or `module.handler` from a file this one imports."""
+        text = text.strip()
+        if _IDENT.match(text):
+            found = self.targets(text, file, line, column, ("function", "method"))
+            return self.node(found[0]) if found else None
+        if not re.fullmatch(r"[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+", text):
+            return None
+        last = text.rsplit(".", 1)[1]
+        found = self.reads.get((file, line, column + text.rfind(".") + 1), [])
+        found = [t for t in found if self.declarations.get(t or "", {}).get("kind") in ("function", "method")] or \
+            [d["id"] for f in sorted(self.imports.get(file, ())) for d in self.functions.get(f, ()) if d["name"] == last]
+        return self.node(found[0]) if len(found) == 1 else None
 
     def local_function(self, name: str, file: str, line: int) -> str | None:
         """A function of that name declared inside a function that holds `line`, else at module level."""
@@ -555,6 +583,50 @@ def _keys(spec: str, call, facts) -> list[str] | None:
 
 # ---------------------------------------------------------------- links
 
+def _call_args(facts: Facts, ref: dict):
+    """The call's text from its callee on, comments masked, and its arguments with their positions."""
+    span = ref.get("span") or [None, None, None, None]
+    text = facts.source.after(ref["file"], span[2], span[3])
+    if text is not None:
+        text = mask_comments(text, ref["file"].endswith((".py", ".pyi")))
+    return text, (_arguments_with_positions(text, span[2], span[3]) if text is not None else None)
+
+
+def _handler_index(spec: str, args: list) -> int:
+    return len(args) - 1 if spec == "last" else int(spec[3:])
+
+
+def _route_handler(facts: Facts, spec: str, args: list, file: str) -> str | None:
+    """The symbol a route registered with a handler argument belongs to."""
+    index = _handler_index(spec, args)
+    if not 0 <= index < len(args):
+        return None
+    text, line, column = args[index]
+    written = facts.written_function(file, line, column)
+    return facts.node(written["id"]) if written else facts.passed_function(text, file, line, column)
+
+
+def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
+    """A function written in place as a route handler is named by its route, before any link reads names."""
+    if not rules:
+        return
+    for ref in view["references"]:
+        parts = [str(part) for part in ref.get("parts") or []]
+        for rule in (r for r in rules if _written(r, parts, ref["file"])):
+            text, args = _call_args(facts, ref)
+            index = _handler_index(rule["handler"], args or [])
+            if not args or not 0 <= index < len(args):
+                continue
+            written = facts.written_function(ref["file"], args[index][1], args[index][2])
+            span = ref.get("span") or [None, None, None, None]
+            call = {"file": ref["file"], "line": span[0], "parts": parts, "args": args, "text": text}
+            method, path = (_value(rule["route"][k], call, facts, rule.get("strip", "") if k == "path" else "")
+                            for k in ("method", "path"))
+            if written and written["name"] == "(anonymous)" and method and path is not None:
+                facts.route_named[written["id"]] = f"{method.upper()} {path}"
+    facts._nodes.clear()
+
+
 def link_facts(manifest: Path, rules: list[dict]) -> dict:
     """Accesses, deduced links, entry points and gaps of a snapshot under the given rules."""
     by_callee, written, attributes = defaultdict(list), [], []
@@ -569,6 +641,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         facts = Facts(store, db)
         view = edge_view.load_edge_view(store)
+        _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
         members = {id(rule): facts.property_functions(rule["actions_in"]) for rule in rules if rule.get("actions_in")}
         plain = []
         for ref in view["references"]:
@@ -591,10 +664,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                     if len(parts) == 1 and caller:
                         plain.append((ref["file"], parts[0], caller, site))
                 continue
-            text = facts.source.after(ref["file"], span[2], span[3])
-            if text is not None:
-                text = mask_comments(text, ref["file"].endswith((".py", ".pyi")))
-            args = _arguments_with_positions(text, span[2], span[3]) if text is not None else None
+            text, args = _call_args(facts, ref)
             if args is None:
                 gaps.append({"site": site, "reason": "call arguments not readable"})
                 continue
@@ -603,10 +673,16 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                     "args": args, "text": text,
                     "before": facts.source.before(ref["file"], span[0], span[1])}
             for rule in matched:
-                owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else caller
-                if owner is None:
-                    gaps.append({"site": site, "reason": f"{rule['link']} call outside a named symbol"})
-                    continue
+                if rule["link"] == "offre" and rule.get("handler"):
+                    owner = _route_handler(facts, rule["handler"], args, ref["file"])
+                    if owner is None:
+                        gaps.append({"site": site, "reason": "offre: handler not a function"})
+                        continue
+                else:
+                    owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else caller
+                    if owner is None:
+                        gaps.append({"site": site, "reason": f"{rule['link']} call outside a named symbol"})
+                        continue
                 link = rule["link"]
                 if link in ("scrive", "legge"):
                     keys = _keys(rule["key"], call, facts)
@@ -639,8 +715,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                     if link == "offre":
                         entries.append({"symbol": owner, "kind": "rotta", "site": site})
                 elif link == "attiva":
-                    match = _ARG.match(rule["handler"])
-                    index = int(match.group(2)) if match else -1
+                    index = _handler_index(rule["handler"], args)
                     handler = (facts.handler(args[index][0], ref["file"], args[index][1], args[index][2])
                                if 0 <= index < len(args) else None)
                     if handler is None:
