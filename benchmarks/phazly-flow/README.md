@@ -109,9 +109,9 @@ Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, colleg
 | Incarichi | 34 | 79 | 39 | 34 |
 | File in più unità | 0 | 79 | 52 | 0 |
 | Byte inviati sul perimetro | 1,00 | 2,09 | 1,12 | 1,00 |
-| G1: file nell'unità del difetto, membri | uno o due | 2 | 1 | 1 |
+| G1: file nell'unità del difetto, membri | i 4 file in 3 incarichi | 2 | 1 | 1 |
 | G1: con il contesto | | 2 | 3 | 4 |
-| G2: file nell'unità del difetto, membri | uno o due | 3 | 1 | 1 |
+| G2: file nell'unità del difetto, membri | i 4 file in 3 incarichi | 3 | 1 | 1 |
 | G2: con il contesto | | 3 | 4 | 3 |
 | Due esecuzioni | uguali | uguali | uguali | uguali |
 
