@@ -136,3 +136,18 @@ Un agente senza contesto riceve coppie «chi scrive / chi legge» uscite da `flo
 - La coppia n. 12 del giro 1 era un collegamento falso: `getFavoritesByMealSlot` non legge `foodStack`. Lo stato tenuto in una variabile veniva letto fino alla fine della funzione esterna; ora solo nella funzione che lo dichiara (con test).
 - Soglia della misura, 16 concordanze su 20 con una lettura manuale: non valutata, perché la lettura manuale di tutte le 20 coppie non è stata fatta; sulle due coppie dei difetti la concordanza è 0 su 2.
 - Il prompt non è stato adattato a G1 e G2: sarebbe overfitting su questo caso. Ciò che la misura indica è un limite: un'etichetta per coppia giudica il dato dove viene letto, non dove il lettore lo trasforma in un fatto mostrato, e non conosce l'intento del prodotto.
+
+### Scheda del flusso scritta dal modello, 12 novembre 2026
+
+Un agente senza contesto riceve i passaggi del flusso «ripristino dell'account» (`RestoreAccountModal.handleRestore`, 74 collegamenti con il motore, dall'interfaccia alle collezioni `users` e `deletionAuditLog`) e il sorgente, e scrive la scheda nel formato di `codebase_map_flows(card=...)`. Passaggi e scheda in `results/card-restore-account*.json`.
+
+| Misura | Valore |
+| --- | --- |
+| Righe | 15, tutte accettate dal controllo |
+| Citazioni | 32, tutte siti di passaggi del flusso |
+| File letti | 12 sorgenti più l'elenco dei passaggi |
+| Affermazioni verificate a mano | il ripristino in `cancel_soft_delete` (condizioni, campi tolti, eccezione), l'evento di audit, la cache dello stato «cancellato»: corrette |
+
+- La scheda segue i rami: risposta già ripristinata, ripristino riuscito, cancellazione definitiva già avviata, errore lato client.
+- L'agente ha elencato a parte ciò che i passaggi non contengono, come chiede il formato: l'autenticazione del server (`get_current_user_allow_deleted`), una pista (lo stato «cancellato» resta in una cache di 10 secondi che il ripristino non svuota, `api/deps.py:64`), l'abbonamento non ripristinato, il caricamento all'avvio.
+- Una scheda accettata non è per questo esatta: il controllo garantisce che ogni riga poggi su un passaggio, non che la frase sia vera.

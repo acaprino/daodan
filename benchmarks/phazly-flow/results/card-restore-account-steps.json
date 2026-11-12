@@ -1,0 +1,607 @@
+{
+ "start": "react-app/src/components/settings/privacy/RestoreAccountModal.tsx::RestoreAccountModal.handleRestore",
+ "direction": "from",
+ "complete": false,
+ "gaps": [
+  {
+   "reason": "rotta: route not a literal",
+   "site": "react-app/src/utils/apiClient.ts:129",
+   "symbol": "react-app/src/utils/apiClient.ts::apiPostUnwrap"
+  }
+ ],
+ "steps": [
+  {
+   "n": 1,
+   "from": "react-app/src/components/settings/privacy/RestoreAccountModal.tsx::RestoreAccountModal.handleRestore",
+   "to": "react-app/src/hooks/useAccountDeletion.ts::useAccountDeletion.cancel",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/components/settings/privacy/RestoreAccountModal.tsx:28"
+  },
+  {
+   "n": 2,
+   "from": "react-app/src/hooks/useAccountDeletion.ts::useAccountDeletion.cancel",
+   "to": "react-app/src/services/accountDeletion.ts::cancelAccountDeletion",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/hooks/useAccountDeletion.ts:32"
+  },
+  {
+   "n": 3,
+   "from": "react-app/src/hooks/useAccountDeletion.ts::useAccountDeletion.cancel",
+   "to": "react-app/src/stores/slices/deletionSlice.ts::createDeletionSlice.setPendingDeletion",
+   "link": "chiama",
+   "origin": "dedotto",
+   "site": "react-app/src/hooks/useAccountDeletion.ts:33"
+  },
+  {
+   "n": 4,
+   "from": "react-app/src/services/accountDeletion.ts::cancelAccountDeletion",
+   "to": "functions-python/app/handlers/account_deletion.py::handler_cancel_account_deletion",
+   "link": "chiama",
+   "origin": "dedotto",
+   "site": "react-app/src/services/accountDeletion.ts:18",
+   "route": "POST /cancelAccountDeletion"
+  },
+  {
+   "n": 5,
+   "from": "react-app/src/services/accountDeletion.ts::cancelAccountDeletion",
+   "to": "react-app/src/utils/apiClient.ts::apiPostUnwrap",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/services/accountDeletion.ts:18"
+  },
+  {
+   "n": 6,
+   "from": "react-app/src/stores/slices/deletionSlice.ts::createDeletionSlice.setPendingDeletion",
+   "to": "store:app state/pendingDeletion",
+   "link": "scrive",
+   "origin": "dedotto",
+   "site": "react-app/src/stores/slices/deletionSlice.ts:27"
+  },
+  {
+   "n": 7,
+   "from": "functions-python/app/handlers/account_deletion.py::handler_cancel_account_deletion",
+   "to": "functions-python/app/api/responses.py::success_response",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/handlers/account_deletion.py:86"
+  },
+  {
+   "n": 8,
+   "from": "functions-python/app/handlers/account_deletion.py::handler_cancel_account_deletion",
+   "to": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/handlers/account_deletion.py:85"
+  },
+  {
+   "n": 9,
+   "from": "react-app/src/utils/apiClient.ts::apiPostUnwrap",
+   "to": "react-app/src/utils/apiClient.ts::apiPost",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:129"
+  },
+  {
+   "n": 10,
+   "from": "react-app/src/utils/apiClient.ts::apiPostUnwrap",
+   "to": "react-app/src/utils/apiClient.ts::unwrapSuccessResponse",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:129"
+  },
+  {
+   "n": 11,
+   "from": "store:app state/pendingDeletion",
+   "to": "react-app/src/App.tsx::AppContent",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "react-app/src/App.tsx:113"
+  },
+  {
+   "n": 12,
+   "from": "store:app state/pendingDeletion",
+   "to": "react-app/src/components/settings/sheets/PrivacyDataSheet.tsx::PrivacyDataSheet",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "react-app/src/components/settings/sheets/PrivacyDataSheet.tsx:23"
+  },
+  {
+   "n": 13,
+   "from": "store:app state/pendingDeletion",
+   "to": "react-app/src/hooks/useSettingsTabController.ts::useSettingsTabController",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "react-app/src/hooks/useSettingsTabController.ts:70"
+  },
+  {
+   "n": 14,
+   "from": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "to": "functions-python/app/core/exceptions.py::AccountDeletedException",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/account_deletion.py:214"
+  },
+  {
+   "n": 15,
+   "from": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "to": "functions-python/app/services/deletion_audit.py::append_audit_entry",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/account_deletion.py:217"
+  },
+  {
+   "n": 16,
+   "from": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "to": "functions-python/app/services/mongodb.py::get_mongo_database",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/account_deletion.py:187"
+  },
+  {
+   "n": 17,
+   "from": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "to": "store:mongo/users",
+   "link": "scrive",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:193"
+  },
+  {
+   "n": 18,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:71"
+  },
+  {
+   "n": 19,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/lib/nativeAuth.ts::getAuthSessionGeneration",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:64"
+  },
+  {
+   "n": 20,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::ApiError",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:86"
+  },
+  {
+   "n": 21,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::assertRequestSession",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:72"
+  },
+  {
+   "n": 22,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::assertRequestSession",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:82"
+  },
+  {
+   "n": 23,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::assertRequestSession",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:85"
+  },
+  {
+   "n": 24,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::assertRequestSession",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:89"
+  },
+  {
+   "n": 25,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::assertRequestSession",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:93"
+  },
+  {
+   "n": 26,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::assertTrustedOrigin",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:63"
+  },
+  {
+   "n": 27,
+   "from": "react-app/src/utils/apiClient.ts::apiPost",
+   "to": "react-app/src/utils/apiClient.ts::parseJsonSafe",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:90"
+  },
+  {
+   "n": 28,
+   "from": "react-app/src/utils/apiClient.ts::unwrapSuccessResponse",
+   "to": "react-app/src/utils/apiClient.ts::ApiError",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:101"
+  },
+  {
+   "n": 29,
+   "from": "react-app/src/utils/apiClient.ts::unwrapSuccessResponse",
+   "to": "react-app/src/utils/apiClient.ts::ApiError",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:108"
+  },
+  {
+   "n": 30,
+   "from": "react-app/src/utils/apiClient.ts::unwrapSuccessResponse",
+   "to": "react-app/src/utils/apiClient.ts::ApiError",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:111"
+  },
+  {
+   "n": 31,
+   "from": "functions-python/app/services/deletion_audit.py::append_audit_entry",
+   "to": "functions-python/app/services/deletion_audit.py::get_salt",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/deletion_audit.py:71"
+  },
+  {
+   "n": 32,
+   "from": "functions-python/app/services/deletion_audit.py::append_audit_entry",
+   "to": "functions-python/app/services/deletion_audit.py::pseudonymize_user_id",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/deletion_audit.py:71"
+  },
+  {
+   "n": 33,
+   "from": "functions-python/app/services/deletion_audit.py::append_audit_entry",
+   "to": "functions-python/app/services/mongodb.py::get_mongo_database",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/deletion_audit.py:70"
+  },
+  {
+   "n": 34,
+   "from": "functions-python/app/services/deletion_audit.py::append_audit_entry",
+   "to": "store:mongo/deletionAuditLog",
+   "link": "scrive",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/deletion_audit.py:82"
+  },
+  {
+   "n": 35,
+   "from": "functions-python/app/services/mongodb.py::get_mongo_database",
+   "to": "functions-python/app/services/mongodb.py::get_mongo_client",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "functions-python/app/services/mongodb.py:55"
+  },
+  {
+   "n": 36,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/api/deps.py::_check_user_deleted",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/api/deps.py:82"
+  },
+  {
+   "n": 37,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/admin/user_actions.py::_action_clear_shopping",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/admin/user_actions.py:99"
+  },
+  {
+   "n": 38,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/admin/user_actions.py::_action_export_data",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/admin/user_actions.py:112"
+  },
+  {
+   "n": 39,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/admin/users.py::admin_get_user_details",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/admin/users.py:146"
+  },
+  {
+   "n": 40,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/shopping_share.py::enable_shopping_share",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/shopping_share.py:110"
+  },
+  {
+   "n": 41,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/shopping_share.py::get_shared_shopping_list",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/shopping_share.py:212"
+  },
+  {
+   "n": 42,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/shopping_share.py::revoke_shopping_share",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/shopping_share.py:349"
+  },
+  {
+   "n": 43,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/shopping_share.py::toggle_shared_shopping_item",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/shopping_share.py:293"
+  },
+  {
+   "n": 44,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/stripe_webhook.py::stripe_webhook",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/stripe_webhook.py:701"
+  },
+  {
+   "n": 45,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/user_data.py::_with_diary_window",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/user_data.py:969"
+  },
+  {
+   "n": 46,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/user_data.py::check_user_deleted",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/user_data.py:1331"
+  },
+  {
+   "n": 47,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/user_data.py::initialize_user_data",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/user_data.py:1210"
+  },
+  {
+   "n": 48,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/handlers/user_data.py::load_user_data",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/handlers/user_data.py:1075"
+  },
+  {
+   "n": 49,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:188"
+  },
+  {
+   "n": 50,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::cancel_soft_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:212"
+  },
+  {
+   "n": 51,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::execute_hard_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:343"
+  },
+  {
+   "n": 52,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::execute_hard_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:360"
+  },
+  {
+   "n": 53,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::execute_hard_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:396"
+  },
+  {
+   "n": 54,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::execute_hard_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:489"
+  },
+  {
+   "n": 55,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::find_users_needing_reminder",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:546"
+  },
+  {
+   "n": 56,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::find_users_past_grace",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:530"
+  },
+  {
+   "n": 57,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::request_soft_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:136"
+  },
+  {
+   "n": 58,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::request_soft_delete",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:81"
+  },
+  {
+   "n": 59,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/account_deletion.py::send_7day_reminder_if_needed",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/account_deletion.py:562"
+  },
+  {
+   "n": 60,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/collection_sync.py::save_collections",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/collection_sync.py:100"
+  },
+  {
+   "n": 61,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/data_export.py::build_user_export",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/data_export.py:198"
+  },
+  {
+   "n": 62,
+   "from": "store:mongo/users",
+   "to": "functions-python/app/services/photo_storage.py::sweep_unreferenced_photos",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/photo_storage.py:275"
+  },
+  {
+   "n": 63,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::adaptFirebaseUser",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:206"
+  },
+  {
+   "n": 64,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::assertSessionCurrent",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:191"
+  },
+  {
+   "n": 65,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::assertSessionCurrent",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:198"
+  },
+  {
+   "n": 66,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::assertSessionCurrent",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:211"
+  },
+  {
+   "n": 67,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::requireNativePlugin",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:189"
+  },
+  {
+   "n": 68,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::tokenBelongsTo",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:199"
+  },
+  {
+   "n": 69,
+   "from": "react-app/src/lib/nativeAuth.ts::getAuthIdToken",
+   "to": "react-app/src/lib/nativeAuth.ts::tokenBelongsTo",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:212"
+  },
+  {
+   "n": 70,
+   "from": "react-app/src/utils/apiClient.ts::assertRequestSession",
+   "to": "react-app/src/lib/nativeAuth.ts::getAuthSessionGeneration",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/utils/apiClient.ts:53"
+  },
+  {
+   "n": 71,
+   "from": "store:mongo/deletionAuditLog",
+   "to": "functions-python/app/services/data_export.py::build_user_export",
+   "link": "legge",
+   "origin": "dedotto",
+   "site": "functions-python/app/services/data_export.py:226"
+  },
+  {
+   "n": 72,
+   "from": "react-app/src/lib/nativeAuth.ts::requireNativePlugin",
+   "to": "react-app/src/lib/nativeAuth.ts::loadNativePlugin",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:148"
+  },
+  {
+   "n": 73,
+   "from": "react-app/src/lib/nativeAuth.ts::requireNativePlugin",
+   "to": "react-app/src/utils/platform.ts::isTauriApp",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:149"
+  },
+  {
+   "n": 74,
+   "from": "react-app/src/lib/nativeAuth.ts::loadNativePlugin",
+   "to": "react-app/src/utils/platform.ts::isTauriApp",
+   "link": "chiama",
+   "origin": "diretto",
+   "site": "react-app/src/lib/nativeAuth.ts:102"
+  }
+ ]
+}
