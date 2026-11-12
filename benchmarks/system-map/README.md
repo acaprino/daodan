@@ -139,3 +139,17 @@ Prova a costo zero della revisione del 13 novembre della spec, sui collegamenti 
 - In più c'è una freccia vera che il riferimento non ha: API acquisti → API diritti, 13 chiamate.
 - I file che nessun punto d'ingresso raggiunge sono soprattutto componenti dell'interfaccia: rendere un componente non è un collegamento, e chi lo rende non si vede. È il secondo buco del grafo da chiudere.
 - I candidati sono troppo fini per la scheda così come sono: il raggruppamento oltre il tetto è da misurare.
+
+### Flussi dai punti d'appoggio, phazly, 13 novembre 2026
+
+Prova a costo zero dei flussi costruiti dalla macchina: `python anchors.py LINKS.json expected/phazly-payments.json expected/phazly-anchors.json`. Per i 3 flussi del riferimento i punti d'appoggio sono dati a mano, come li darebbe il modello dalla scheda: punti d'ingresso e chiavi di store, nessun percorso. La macchina prende ciò che sta su un percorso da una partenza a un arrivo, senza limite di passi.
+
+| Flusso | Nodi del riferimento con codice attraversati | File estranei | Dove il grafo si ferma |
+| --- | --- | --- | --- |
+| Pagamento | API acquisti, Abbonamento; manca Paywall | 0 | `PaywallModal.handleCheckout` non raggiunge niente fuori dal suo file |
+| Gestione abbonamento | API acquisti, Abbonamento; manca Scheda abbonamento | 0 | `SubscriptionCard.handleOpenPortal` e `handleSetRenewal`, come sopra |
+| Paywall e limiti d'uso | Funzioni a consumo, API diritti, Abbonamento; mancano Consumi e Paywall | 0 | nessuna partenza raggiunge `mongo/usageEvents` |
+
+- Nessun percorso si allarga: 0 file fuori dal riferimento in tutti e 3 i flussi, fra 4 e 6 file o chiavi per flusso.
+- Ogni nodo mancante corrisponde a un buco del grafo già visto, e la prova lo localizza: l'interfaccia chiama le funzioni dell'abbonamento attraverso un contesto React (`startCheckout` da `useSubscription()`), e le regole non leggono `db[USAGE_EVENTS_COLLECTION]`. Nessuno dei due è dichiarato oggi.
+- Nei tre flussi non ci sono servizi esterni: senza il grafo dei moduli, i collegamenti `usa` verso Stripe e Google Play mancano da questi dati.

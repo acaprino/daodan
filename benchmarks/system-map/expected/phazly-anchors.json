@@ -1,0 +1,22 @@
+{
+ "case": "phazly",
+ "note": "Anchors as a model would give them from the brief: entry points and store keys, no path between them.",
+ "flows": [
+  {"name": "Pagamento",
+   "from": ["react-app/src/components/subscription/PaywallModal.tsx::PaywallModal.handleCheckout",
+            "functions-python/app/handlers/stripe_webhook.py::stripe_webhook",
+            "functions-python/app/handlers/verify_play_purchase.py::verify_play_purchase"],
+   "to": ["store:mongo/subscriptions"]},
+  {"name": "Gestione abbonamento",
+   "from": ["react-app/src/components/subscription/SubscriptionCard.tsx::SubscriptionCard.handleOpenPortal",
+            "react-app/src/components/subscription/SubscriptionCard.tsx::SubscriptionCard.handleSetRenewal",
+            "functions-python/app/handlers/stripe_webhook.py::stripe_webhook",
+            "functions-python/app/handlers/play_rtdn.py::play_rtdn"],
+   "to": ["store:mongo/subscriptions"]},
+  {"name": "Paywall e limiti d'uso",
+   "from": ["functions-python/app/handlers/analyze_photo.py::analyze_photo",
+            "functions-python/app/handlers/generate_week_plan.py::generate_week_plan",
+            "functions-python/app/handlers/generate_meal_alternatives.py::generate_meal_alternatives"],
+   "to": ["store:mongo/subscriptions", "store:mongo/usageEvents"]}
+ ]
+}
