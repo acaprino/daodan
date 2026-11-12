@@ -290,9 +290,9 @@ def run(root: Path, cache: Path, files: set[str]) -> dict
 
 Installa una volta nella cache con `npm install --prefix <cache>/stack-analyser-1.27.6 --ignore-scripts --no-audit --no-fund @specfy/stack-analyser@1.27.6`. Esegue `node …/dist/cli.js <root> --output=out.json` con la cartella di lavoro in una cartella temporanea: lo strumento unisce il percorso d'uscita alla cartella di lavoro. Tiene solo i ritrovamenti i cui percorsi stanno in `files`.
 
-- [ ] **Passo 1:** test che falliscono: con un `node` finto nel `PATH` che scrive un risultato noto, `run` restituisce `ok` e scarta un percorso fuori da `files`; senza `node` restituisce `unavailable` con il motivo; con un `node` che esce con errore restituisce `unavailable` e non solleva.
-- [ ] **Passo 2:** implementare; i test passano.
-- [ ] **Passo 3:** commit.
+- [x] **Passo 1:** test che falliscono: con un `node` finto nel `PATH` che scrive un risultato noto, `run` restituisce `ok` e scarta un percorso fuori da `files`; senza `node` restituisce `unavailable` con il motivo; con un `node` che esce con errore restituisce `unavailable` e non solleva.
+- [x] **Passo 2:** implementare; i test passano.
+- [x] **Passo 3:** commit.
 
 ### Task 8: scheda del sistema
 
