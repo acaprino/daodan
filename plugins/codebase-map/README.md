@@ -19,6 +19,6 @@ Installazione: `claude plugin install codebase-map@daodan` (marketplace `acaprin
 - Risoluzione delle chiamate: risolutore lessicale più un motore che parte con ogni snapshot (Jedi per Python); il rapporto si legge come risolte su risolvibili ([Risolvibilità](../../docs/plugins/codebase-map.md#risolvibilità)).
 - Python richiesto: **>= 3.12**.
 - `tree-sitter`, `tree-sitter-language-pack` e `sqlglot` li installa il server MCP; uno snapshot da shell li usa se installati.
-- Non esiste una vista HTML: il rapporto Markdown è la vista per le persone.
+- Esploratore: `skills/map/scripts/visual.py export <run>` pubblica la vista di un run e `visual.py serve <export>` la apre su `127.0.0.1`, con viste Logica e Fisica, flussi e tipi di nodo; comandi in `skills/map/references/standalone.md`.
 
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md) · [Riferimento del plugin](../../docs/plugins/codebase-map.md)

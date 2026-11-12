@@ -26,3 +26,12 @@ workflows require their method's authorization.
    with ordinary repository exploration, never starting analysis, update or
    deepening implicitly. A composed producer instead follows its authorized refresh,
    re-derivation or blocking procedure; these obligations remain.
+
+5. **Open the explorer.** `python <plugin>/skills/map/scripts/visual.py export
+   .daodan/map/runs/<run-id>` publishes the run's envelope (`daodan/visual@1`)
+   under `.daodan/map/views/<run-id>/<digest>/`, once per input digest, and prints
+   that directory. `visual.py serve <that directory>` prints
+   `http://127.0.0.1:<port>/` and serves only the compiled viewer
+   (`assets/viewer/`) and the envelope. Flows appear when the run has link rules
+   (`codebase_map_flows`). A run written by another parser identity is refused:
+   refresh it first.
