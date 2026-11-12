@@ -271,9 +271,9 @@ def recognize(manifest: Path) -> list[dict]
 #  "signs": [{"sign": "package"|"env"|"host"|"file", "value", "path", "line"}]}
 ```
 
-- [ ] **Passo 1:** test che falliscono, su un progetto temporaneo con `package.json` (`stripe`, `react`), `requirements.txt` (`stripe`, `fastapi`), un file che legge `STRIPE_SECRET_KEY`, un `Dockerfile` e un pacchetto locale del workspace chiamato `resend`: sono riconosciuti `stripe` (con tre segni, ciascuno con percorso), `react`, `fastapi`, `docker`; `resend` no, perché è un'unità di build del progetto.
-- [ ] **Passo 2:** implementare; i test passano.
-- [ ] **Passo 3:** commit.
+- [x] **Passo 1:** test che falliscono, su un progetto temporaneo con `package.json` (`stripe`, `react`), `requirements.txt` (`stripe`, `fastapi`), un file che legge `STRIPE_SECRET_KEY`, un `Dockerfile` e un pacchetto locale del workspace chiamato `resend`: sono riconosciuti `stripe` (con tre segni, ciascuno con percorso), `react`, `fastapi`, `docker`; `resend` no, perché è un'unità di build del progetto.
+- [x] **Passo 2:** implementare; i test passano.
+- [x] **Passo 3:** commit.
 
 ### Task 7: stack-analyser come fonte in più
 

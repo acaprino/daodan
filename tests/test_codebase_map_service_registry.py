@@ -112,3 +112,52 @@ class DeriveTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RecognizeTests(unittest.TestCase):
+    FILES = {
+        "package.json": '{"name": "root", "private": true, "workspaces": ["web", "packages/*"]}',
+        "web/package.json": '{"name": "web", "dependencies": {"stripe": "1", "react": "18", "resend": "workspace:*"}}',
+        "packages/resend/package.json": '{"name": "resend", "version": "1.0.0"}',
+        "api/requirements.txt": "stripe==7.0\nfastapi>=0.110  # the API\n",
+        "api/pay.py": "import os\n\nKEY = os.environ['STRIPE_SECRET_KEY']\n",
+        "api/Dockerfile": "FROM python:3.12-slim\n",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        import subprocess
+        import tempfile
+        import snapshot
+        import service_registry
+        cls.work = Path(tempfile.mkdtemp(prefix="registry-"))
+        project = cls.work / "project"
+        for rel, text in cls.FILES.items():
+            (project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (project / rel).write_text(text, encoding="utf-8")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "x"]):
+            subprocess.run(command, cwd=project, check=True, capture_output=True)
+        manifest = cls.work / "snapshot/manifest.sqlite"
+        snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
+        cls.found = {r["id"]: r for r in service_registry.recognize(manifest)}
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        shutil.rmtree(cls.work, True)
+
+    def test_each_sign_says_where_it_is(self):
+        signs = {(s["sign"], s["value"], s["path"], s["line"]) for s in self.found["stripe"]["signs"]}
+        self.assertEqual(signs, {("package", "stripe", "web/package.json", 1), ("package", "stripe", "api/requirements.txt", 1),
+                                 ("env", "STRIPE_SECRET_KEY", "api/pay.py", 3)})
+        self.assertEqual((self.found["stripe"]["source"], self.found["stripe"]["type"]), ("registry", "gateway"))
+
+    def test_packages_files_and_images_are_recognized(self):
+        for ident in ("react", "fastapi", "docker"):
+            self.assertIn(ident, self.found)
+        self.assertIn(("file", "Dockerfile", "api/Dockerfile"),
+                      {(s["sign"], s["value"], s["path"]) for s in self.found["docker"]["signs"]})
+
+    def test_a_package_of_the_project_is_not_external(self):
+        self.assertNotIn("resend", self.found)

@@ -145,11 +145,11 @@ DOC_EXTENSIONS = frozenset({
 })
 
 # Build manifests without an extension of their own. They declare the modules
-# of a project (modules.py reads them), so they enter the manifest as
-# file-level entries like any other configuration file.
+# of a project (modules.py reads them), or how it runs (a Dockerfile), so they
+# enter the manifest as file-level entries like any other configuration file.
 MANIFEST_FILES = frozenset({
     "go.mod", "go.work", "Gemfile", "Package.swift", "mix.exs", "build.sbt",
-    "build.zig.zon", "dune-project",
+    "build.zig.zon", "dune-project", "Dockerfile",
 })
 
 # Presentation files no adapter parses: markup, single-file components and
