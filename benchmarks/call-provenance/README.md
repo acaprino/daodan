@@ -66,3 +66,22 @@ Modal, 4 CPU e 16 GB per caso, stessi commit della misura 0 di [`flow-model`](..
 - Phazly: 269 posizioni non chieste.
 
 Il comando di Modal richiede le variabili del proxy vuote: con `HTTPS_PROXY` di questa sessione il client non raggiunge `api.modal.com`.
+
+## Con l'ambiente che Daodan prepara, 11-12 novembre 2026
+
+Requisito 24: Daodan installa i pacchetti dichiarati dal progetto (Python da `uv.lock`, `pyproject.toml` e `requirements*.txt`, soli wheel; JavaScript per ogni cartella con il suo `package.json`, senza i pacchetti presi da un percorso locale). Stessi casi e stessa macchina; valori in `results/environment/`.
+
+| Caso | Senza ambiente | Con ambiente | Per linguaggio | Passaggio motore |
+| --- | --- | --- | --- | --- |
+| polar `server/` | 41,8% (34.587 su 82.731) | 82,4% (34.301 su 41.642) | Python 82,4% | 57 → 156 min |
+| tududi | 41,4% (17.267 su 41.739) | 41,4% (17.267 su 41.742) | JavaScript 37,9%, TypeScript 49,5% | 26 → 18 min |
+| phazly | 47,8% (13.304 su 27.842) | 67,5% (13.338 su 19.768) | Python 77,1%, TypeScript 51,1% | 30 → 36 min |
+
+- polar: 234 pacchetti installati su 236 dichiarati; le posizioni senza risposta scendono da 44.202 a 2.743 e le definizioni provate esterne salgono da 16.697 a 57.819. Le chiamate risolte scendono di 286: con le librerie il motore prova esterne destinazioni che prima cadevano su un simbolo del progetto. Il passaggio dura quasi tre volte tanto.
+- phazly: con i pacchetti il server TypeScript prova esterne 1.807 chiamate `t()` e gli hook di React; restano `project-not-a-symbol` 246 `t()` e 255 `useAppStore` con destinazione ambigua.
+- tududi aveva già i pacchetti alla radice e non cambia: le posizioni senza risposta sono metodi di libreria chiamati su valori senza tipo in JavaScript (`create`, `findOne`, `send`), con la destinazione decisa a runtime.
+- La prima misura di polar con l'ambiente non lo aveva creato: i manifest si cercavano sotto la cartella del target e non dalla radice dello snapshot. Corretto con `PreparedEnvironmentTests.test_a_target_below_the_snapshot_root_still_finds_its_manifests`.
+- Un'installazione JavaScript di polar è fallita su un conflitto di dipendenze di npm; le altre cartelle hanno i loro pacchetti.
+
+Soglia della misura 0 di [`flow-model`](../flow-model/README.md), 70%: la raggiunge polar; phazly è al 67,5%, tududi no.
+

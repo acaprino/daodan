@@ -15,8 +15,15 @@
       "state": "fresh"
     }
   },
-  "pass_log": [],
-  "pass_seconds": 3324.2,
+  "pass_log": [
+    "installing the project's Python packages into /root/.cache/daodan/python/6927e78e6743dc76 (first use)",
+    "installed 234 of 236 declared Python packages",
+    "installing the project's JavaScript packages into /root/.cache/daodan/npm/8dd8ace132111afd (first use)",
+    "the project's JavaScript packages were not installed: correct (and potentially broken) dependency resolution.",
+    "installing the project's JavaScript packages into /root/.cache/daodan/npm/1b875586a9aee563 (first use)",
+    "installing typescript-language-server 4.3.3 into /root/.cache/daodan/engines/typescript-language-server/4.3.3 (first use)"
+  ],
+  "pass_seconds": 9381.2,
   "resolution": {
     "askable": 75647,
     "by_language": {
@@ -30,9 +37,9 @@
       "python": {
         "calls": 107716,
         "engine": "jedi@0.20.1",
-        "resolvable": 82714,
-        "resolved": 34554,
-        "resolved_ratio": 0.418
+        "resolvable": 41592,
+        "resolved": 34271,
+        "resolved_ratio": 0.824
       },
       "typescript": {
         "calls": 88,
@@ -44,22 +51,22 @@
     },
     "calls": 107835,
     "dynamic": 135,
-    "engine_confirmed": 10848,
-    "engine_unresolved": 44295,
-    "external": 25071,
+    "engine_confirmed": 10565,
+    "engine_unresolved": 2835,
+    "external": 66193,
     "external_by_class": {
       "builtin": 8317,
-      "engine-external-definition": 16754
+      "engine-external-definition": 57876
     },
     "lexical_resolved": 23736,
     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-    "resolvable": 82764,
-    "resolved": 34584,
-    "resolved_ratio": 0.418,
+    "resolvable": 41642,
+    "resolved": 34301,
+    "resolved_ratio": 0.824,
     "unasked": 0
   },
   "setup": null,
-  "snapshot_seconds": 178.7,
+  "snapshot_seconds": 170.3,
   "unresolved": {
     "javascript": {
       "top_unresolved": [
@@ -170,43 +177,43 @@
     "python": {
       "top_unresolved": [
         [
+          "get [external-definition]",
+          2162
+        ],
+        [
           "save_fixture [external-definition]",
           2071
         ],
         [
-          "Field [unresolved]",
+          "Field [external-definition]",
           1954
         ],
         [
-          "get [unresolved]",
-          1879
-        ],
-        [
           "from_session [external-definition]",
-          1801
+          1720
         ],
         [
-          "Column [unresolved]",
+          "Column [external-definition]",
           1646
         ],
         [
-          "f [unresolved]",
-          1573
+          "f [external-definition]",
+          1550
         ],
         [
-          "patch [unresolved]",
-          1425
+          "patch [external-definition]",
+          1542
         ],
         [
-          "where [unresolved]",
-          1356
+          "where [external-definition]",
+          1246
         ],
         [
-          "text [unresolved]",
+          "text [external-definition]",
           1208
         ],
         [
-          "mapped_column [unresolved]",
+          "mapped_column [external-definition]",
           1058
         ],
         [
@@ -214,69 +221,69 @@
           1014
         ],
         [
-          "execute [unresolved]",
-          1007
+          "execute [external-definition]",
+          989
         ],
         [
-          "raises [unresolved]",
+          "raises [external-definition]",
           978
         ],
         [
-          "json [unresolved]",
-          943
+          "json [external-definition]",
+          930
         ],
         [
-          "post [unresolved]",
-          926
+          "post [external-definition]",
+          921
         ],
         [
-          "append [external-definition]",
-          832
-        ],
-        [
-          "div [unresolved]",
+          "div [external-definition]",
           827
         ],
         [
-          "auth [unresolved]",
+          "append [external-definition]",
+          822
+        ],
+        [
+          "auth [external-definition]",
           821
         ],
         [
-          "select [unresolved]",
-          792
+          "select [external-definition]",
+          802
         ],
         [
-          "Depends [unresolved]",
+          "Depends [external-definition]",
           762
         ],
         [
-          "drop_index [unresolved]",
+          "drop_index [external-definition]",
           693
         ],
         [
-          "parametrize [unresolved]",
+          "parametrize [external-definition]",
           665
         ],
         [
-          "create_index [unresolved]",
+          "create_index [external-definition]",
           638
-        ],
-        [
-          "get [external-definition]",
-          619
         ],
         [
           "uuid4 [external-definition]",
           603
+        ],
+        [
+          "datetime [external-definition]",
+          590
         ]
       ],
       "verdicts": {
-        "ambiguous-target": 23,
-        "edge-call": 8000,
-        "edge-instantiation": 2837,
-        "external-definition": 16697,
+        "ambiguous-target": 22,
+        "edge-call": 7834,
+        "edge-instantiation": 2720,
+        "external-definition": 57819,
         "project-not-a-symbol": 50,
-        "unresolved": 44202
+        "unresolved": 2743
       }
     },
     "typescript": {
