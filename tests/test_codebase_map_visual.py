@@ -7,13 +7,17 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
+import card_store  # noqa: E402
 import mcp_service  # noqa: E402
+import semantic_store  # noqa: E402
 import visual  # noqa: E402
+from snapshot_store import open_snapshot, resolve_run_snapshot  # noqa: E402
 
 DECLARED = {"schema": "daodan/declared-modules/v1", "modules": [
     {"name": "runner", "kind": "component", "location": "internal", "responsibility": "Runs the job",
@@ -67,6 +71,55 @@ class EnvelopeTests(unittest.TestCase):
         self.assertEqual(refs["symbol:src/app/b.py::helper"]["freshness"], "uncovered")
         self.assertEqual(envelope["flows"], [])
         self.assertTrue(envelope["meta"]["snapshot_digest"])
+
+    def card(self, run_id: str, purpose: str) -> None:
+        run = self.project / ".daodan/map/runs" / run_id
+        manifest = resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8")))
+        with open_snapshot(manifest) as store:
+            semantic_store.upsert_meta_cards(store, card_store.default_cards_path(manifest),
+                                             [{"file": "src/app/b.py", "symbol": "helper", "purpose": purpose}])
+
+    def test_a_card_gives_freshness_and_description_and_goes_stale_with_the_body(self):
+        self.card("r1", "Returns the constant one.")
+        helper = {item["ref"]: item for item in visual.build_envelope(self.project / ".daodan/map/runs/r1")["entities"]}[
+            "symbol:src/app/b.py::helper"]
+        self.assertEqual((helper["freshness"], helper["description"]), ("fresh", "Returns the constant one."))
+        (self.project / "src/app/b.py").write_text("def helper():\n    return 2\n", encoding="utf-8")
+        self.service.create_run(".", "r2", engine=False)
+        helper = {item["ref"]: item for item in visual.build_envelope(self.project / ".daodan/map/runs/r2")["entities"]}[
+            "symbol:src/app/b.py::helper"]
+        self.assertEqual(helper["freshness"], "stale_body")
+
+    def test_an_export_is_published_once_per_digest_and_never_rewritten(self):
+        run, store_root = self.project / ".daodan/map/runs/r1", self.project / ".daodan/map"
+        first = visual.export(run, store_root)
+        self.assertEqual(first.parent, store_root / "views" / "r1")
+        self.assertEqual(json.loads((first / "visual.json").read_text(encoding="utf-8"))["schema"], "daodan/visual@1")
+        written = (first / "visual.json").stat().st_mtime_ns
+        self.assertEqual(visual.export(run, store_root), first)
+        self.assertEqual((first / "visual.json").stat().st_mtime_ns, written)
+        self.card("r1", "Returns the constant one.")
+        second = visual.export(run, store_root)
+        self.assertNotEqual(second, first)
+        self.assertTrue((first / "visual.json").is_file())
+        self.assertEqual(sorted(path.name for path in (store_root / "views/r1").iterdir()), sorted([first.name, second.name]))
+
+    def test_an_export_refuses_a_changed_parser_an_unknown_reference_and_moving_cards(self):
+        run, store_root = self.project / ".daodan/map/runs/r1", self.project / ".daodan/map"
+        with mock.patch.object(visual.snapshot, "parser_fingerprint", return_value="another parser"), \
+                self.assertRaisesRegex(ValueError, "refresh"):
+            visual.export(run, store_root)
+        broken = visual.build_envelope(run)
+        broken["relations"].append({"ref": "imports:x", "kind": "imports", "source": "file:src/app/a.py",
+                                    "target": "file:nowhere.py", "status": "confirmed", "evidence": []})
+        with mock.patch.object(visual, "build_envelope", return_value=broken), \
+                self.assertRaisesRegex(ValueError, "unknown entity: file:nowhere.py"):
+            visual.export(run, store_root)
+        calls = iter(["before", "during", "after"])
+        with mock.patch.object(visual, "_cards_digest", side_effect=lambda *_: next(calls)), \
+                self.assertRaisesRegex(ValueError, "card store changed"):
+            visual.export(run, store_root)
+        self.assertFalse((store_root / "views/r1").exists())
 
     def test_addresses_lose_credentials_query_and_fragment(self):
         self.assertEqual(visual.sanitize_address("https://u:p@host:8443/x?token=1#f"), "https://host:8443/x")

@@ -14,15 +14,21 @@ from the closed list of the flow model: an external module is a service or API, 
 route handler a service or API, the symbol that binds a user action a screen, a store
 the type its link rule names. A node of unknown type has none.
 
-    python visual.py RUN_DIR [--out FILE]
+    python visual.py envelope RUN_DIR [--out FILE]
+    python visual.py export RUN_DIR        # publishes .daodan/map/views/<run>/<digest>/visual.json
+    python visual.py serve EXPORT_DIR      # http://127.0.0.1:<port>/, read-only
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import os
+import shutil
 import sys
+import tempfile
 from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit, urlunsplit
 
@@ -31,7 +37,9 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import card_store  # noqa: E402
+import confinement  # noqa: E402
 import modules  # noqa: E402
+import snapshot  # noqa: E402
 import semantic_store  # noqa: E402
 import source_reader  # noqa: E402
 from snapshot_store import file_headers, logical_digest, open_snapshot, resolve_run_snapshot  # noqa: E402
@@ -134,13 +142,15 @@ def build_envelope(run_dir: Path) -> dict:
                 relation("contains", directory, child)
                 memberships.append({"member": child, "group": directory, "view": "physical"})
                 child, parent = directory, parent.parent
-        # Symbols, with the card freshness the semantic store records.
-        freshness = {}
+        # Symbols, with the card freshness the semantic store records and the card's purpose.
+        freshness, purpose = {}, {}
         if store.format == "sqlite":
             for chunk in _chunks(paths):
                 meta = semantic_store.query_meta_code(store, cards_path=cards_path, paths=chunk,
                                                       include_history=False, limit=LIMIT * 20)
-                freshness.update({(row["file"], row["name"]): row["freshness"] for row in meta.get("symbols", [])})
+                for row in meta.get("symbols", []):
+                    freshness[(row["file"], row["name"])] = row["freshness"]
+                    purpose[(row["file"], row["name"])] = (row.get("card") or {}).get("purpose")
         for path in paths:
             outline = source_reader.outline_manifest(store, path, None, LIMIT)
             if outline.get("truncated"):
@@ -150,7 +160,8 @@ def build_envelope(run_dir: Path) -> dict:
                     continue
                 ref = f"symbol:{path}::{item['symbol']}"
                 entity(ref, "symbol", item["symbol"], path=path, location="internal",
-                       lines=[item.get("start"), item.get("end")], freshness=freshness.get((path, item["symbol"])))
+                       lines=[item.get("start"), item.get("end")], freshness=freshness.get((path, item["symbol"])),
+                       description=purpose.get((path, item["symbol"])))
                 relation("defines", f"file:{path}", ref)
         # Imports between files, read in blocks the reader accepts.
         for chunk in _chunks(paths):
@@ -240,17 +251,142 @@ def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list,
     return out
 
 
+def validate_envelope(envelope: dict) -> None:
+    """Every reference a relation, a membership or a flow makes names an entity, or ValueError."""
+    known = {item["ref"] for item in envelope["entities"]}
+    used = [(item["ref"], end) for item in envelope["relations"] for end in (item["source"], item["target"])]
+    used += [(f"membership of {item['member']}", end) for item in envelope["memberships"] for end in (item["member"], item["group"])]
+    for flow in envelope["flows"]:
+        used += [(flow["ref"], end) for end in flow["nodes"]]
+        used += [(flow["ref"], end) for step in flow["steps"] for end in (step["source"], step["target"])]
+    for owner, end in used:
+        if end not in known:
+            raise ValueError(f"{owner} names an unknown entity: {end}")
+
+
+def export(run_dir: Path, store_root: Path) -> Path:
+    """Publish the run's envelope once per input digest; an existing export is never rewritten.
+
+    The file is written in a directory beside the destination and moved in place only
+    when valid; a snapshot written by another parser identity, or a card store that
+    changes while the envelope is built, publishes nothing.
+    """
+    run_dir, store_root = Path(run_dir).resolve(), Path(store_root).resolve()
+    state = json.loads((run_dir / "state.json").read_text(encoding="utf-8"))
+    manifest = resolve_run_snapshot(run_dir, state)
+    with open_snapshot(manifest) as store:
+        root = store["root"]
+        if store.get("parser_fingerprint") != snapshot.parser_fingerprint():
+            raise ValueError(f"the snapshot of run {run_dir.name} was written by another parser identity; "
+                             "refresh the run before exporting it")
+    cards_path = card_store.default_cards_path(manifest)
+    before = _cards_digest(cards_path, root)
+    envelope = build_envelope(run_dir)
+    validate_envelope(envelope)
+    if _cards_digest(cards_path, root) != before:
+        raise ValueError("the card store changed while the export was built; export again")
+    stable = {**envelope, "meta": {key: value for key, value in envelope["meta"].items() if key != "created_at"}}
+    digest = hashlib.sha256(json.dumps(stable, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+                            .encode("utf-8")).hexdigest()[:16]
+    views = store_root / "views" / run_dir.name
+    destination = views / digest
+    if destination.is_dir():
+        return destination
+    views.mkdir(parents=True, exist_ok=True)
+    confinement.reject_link_chain(views)
+    partial = Path(tempfile.mkdtemp(prefix=f".{digest}.", dir=views))
+    try:
+        (partial / "visual.json").write_text(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")),
+                                             encoding="utf-8")
+        os.replace(partial, destination)
+    except BaseException:
+        shutil.rmtree(partial, ignore_errors=True)
+        raise
+    return destination
+
+
+_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+          ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
+          ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8"}
+_POLICY = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:"
+
+
+def make_server(export_dir: Path, assets_dir: Path, port: int = 0) -> ThreadingHTTPServer:
+    """A read-only server on 127.0.0.1: the viewer's files listed at start, and the export's envelope.
+
+    Paths are matched exactly against the list, so no request reaches a file outside it,
+    a directory is never listed and a link in the assets is never served. A request whose
+    Host is not this server is refused, and no response allows other origins.
+    """
+    export_dir, assets_dir = Path(export_dir).resolve(), Path(assets_dir).resolve()
+    allowed: dict[str, Path] = {}
+    for path in sorted(assets_dir.rglob("*")) if assets_dir.is_dir() else []:
+        relative = path.relative_to(assets_dir)
+        if path.is_file() and not any((assets_dir / Path(*relative.parts[:index])).is_symlink()
+                                      for index in range(1, len(relative.parts) + 1)):
+            allowed["/" + relative.as_posix()] = path
+    if "/index.html" in allowed:
+        allowed["/"] = allowed["/index.html"]
+    allowed["/data/visual.json"] = export_dir / "visual.json"
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802 - the stdlib names the method
+            port = self.server.server_address[1]
+            if self.headers.get("Host") not in (f"127.0.0.1:{port}", f"localhost:{port}"):
+                return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
+            target = allowed.get(urlsplit(self.path).path)
+            if target is None or not target.is_file():
+                return self._send(404, b"not found", "text/plain; charset=utf-8")
+            return self._send(200, target.read_bytes(), _TYPES.get(target.suffix.lower(), "application/octet-stream"))
+
+        def _send(self, code: int, body: bytes, kind: str) -> None:
+            self.send_response(code)
+            self.send_header("Content-Type", kind)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Content-Security-Policy", _POLICY)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):  # quiet: the terminal shows only the address
+            return
+
+    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("run_dir", type=Path)
-    parser.add_argument("--out", type=Path)
+    sub = parser.add_subparsers(dest="command", required=True)
+    envelope_parser = sub.add_parser("envelope", help="print or write the envelope of a run")
+    envelope_parser.add_argument("run_dir", type=Path)
+    envelope_parser.add_argument("--out", type=Path)
+    export_parser = sub.add_parser("export", help="publish the envelope under views/ of the analysis store")
+    export_parser.add_argument("run_dir", type=Path)
+    serve_parser = sub.add_parser("serve", help="serve an export and the viewer on 127.0.0.1")
+    serve_parser.add_argument("export_dir", type=Path)
+    serve_parser.add_argument("--assets", type=Path, default=SCRIPT_DIR.parents[2] / "assets" / "viewer")
+    serve_parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args(argv)
-    envelope = build_envelope(args.run_dir.resolve())
-    text = json.dumps(envelope, ensure_ascii=False, separators=(",", ":"))
-    if args.out:
-        args.out.write_text(text, encoding="utf-8")
-    else:
-        print(text)
+    if args.command == "envelope":
+        text = json.dumps(build_envelope(args.run_dir.resolve()), ensure_ascii=False, separators=(",", ":"))
+        if args.out:
+            args.out.write_text(text, encoding="utf-8")
+        else:
+            print(text)
+        return 0
+    if args.command == "export":
+        run_dir = args.run_dir.resolve()
+        print(export(run_dir, run_dir.parent.parent))
+        return 0
+    server = make_server(args.export_dir, args.assets, args.port)
+    print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
     return 0
 
 

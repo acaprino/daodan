@@ -44,9 +44,9 @@ L'ADR chiede di confrontare React Flow + ELK e LikeC4 Model Builder sulla stessa
 - Crea: `benchmarks/codebase-explorer/README.md`, `benchmarks/codebase-explorer/fixture/visual.json`, `benchmarks/codebase-explorer/likec4-probe/` (prova minima, non un prodotto)
 - Modifica: `docs/adr/2026-11-07-codebase-explorer.md` (sezione 2, una riga con l'esito)
 
-- [ ] **Passo 1:** scrivere a mano `fixture/visual.json` nel formato del Task 2: due moduli logici, un file condiviso da entrambi, una gerarchia directory → file → simbolo, una scheda `stale_body`, un modulo `inferred`, una lacuna dichiarata, un esterno.
-- [ ] **Passo 2:** proiettarla in LikeC4 Model Builder (`likec4-probe/`) e in React Flow + ELK (base: la preview). Misurare per entrambe: membership multiple senza proprietario unico, stati distinti leggibili, gerarchia espandibile, focus e ripristino filtri, righe di adattamento scritte.
-- [ ] **Passo 3:** registrare nel README parametri, versioni, misure e verdetto. Se LikeC4 soddisfa gli stessi requisiti con adattamento più semplice, **fermarsi**: i Task 5–7 vanno ripianificati. Altrimenti annotare nell'ADR «Renderer confermato: React Flow + ELK» con il rimando al README.
+- [x] **Passo 1:** scrivere a mano `fixture/visual.json` nel formato del Task 2: due moduli logici, un file condiviso da entrambi, una gerarchia directory → file → simbolo, una scheda `stale_body`, un modulo `inferred`, una lacuna dichiarata, un esterno.
+- [x] **Passo 2:** proiettarla in LikeC4 Model Builder (`likec4-probe/`) e in React Flow + ELK (base: la preview). Misurare per entrambe: membership multiple senza proprietario unico, stati distinti leggibili, gerarchia espandibile, focus e ripristino filtri, righe di adattamento scritte.
+- [x] **Passo 3:** registrare nel README parametri, versioni, misure e verdetto. Se LikeC4 soddisfa gli stessi requisiti con adattamento più semplice, **fermarsi**: i Task 5–7 vanno ripianificati. Altrimenti annotare nell'ADR «Renderer confermato: React Flow + ELK» con il rimando al README.
 
 ### Task 2: envelope `daodan/visual@1`
 
@@ -68,11 +68,11 @@ Forma dell'envelope (i Task 3, 5 e 6 dipendono da questi nomi):
 | `gaps` | `{refs[], reason}`: lacune del grafo dei moduli, conflitti `shared_member`, simboli troncati, esterni senza evidenza risolta |
 | `flows` | `{ref, entry, entry_kind, complete, nodes[], steps[]}` per ogni punto d'ingresso, dai collegamenti di `flows.py`; `steps`: `{source, target, type, origin, site, route?}`; vuoto senza regole di collegamento |
 
-- [ ] **Passo 1:** test con un progetto temporaneo (stile `tests/test_codebase_map_mcp.py`: `src/a.py` importa `src/b.py`, un `pyproject.toml`, un `codebase-modules.json` con due componenti che condividono `src/b.py` e una feature). Creare il run con `MapService(project).create_run("src", "r1", engine=False)`. Asserzioni: `build_envelope(run)["schema"] == "daodan/visual@1"`; esiste `relations` con `kind == "imports"` tra `file:src/a.py` e `file:src/b.py`; `memberships` contiene `file:src/b.py` due volte con `view == "logical"`; nessuna entità ha `type == "feature"` come gruppo fisico; ogni `relation.source/target` è un `ref` di `entities`; senza regole di collegamento `flows` è vuoto.
-- [ ] **Passo 2:** test `sanitize_address`: `"https://u:p@host:8443/x?token=1#f"` → `"https://host:8443/x"`; `"not a url"` → invariato; stringa con `password=` → `""`.
-- [ ] **Passo 3:** eseguire i test e verificarne il fallimento.
-- [ ] **Passo 4:** implementare. Fonti: `snapshot_store.resolve_run_snapshot` + `open_snapshot`; `modules.ensure_graph(manifest)` poi `load_graph`; `source_reader.outline_manifest` per i simboli (limite 1000 per file, troncamento → `gaps`); `source_reader.graph_packet(manifest, paths, 1, 1000)` a blocchi di percorsi per gli import tra file (il limite di 1000 per lista va rispettato: suddividere, mai troncare in silenzio). Directory derivate dai percorsi dell'inventario; `defines` collega file → simbolo, `contains` directory → file e build unit → directory.
-- [ ] **Passo 5:** test verdi; `python -B -m pytest -q tests/test_codebase_map_visual.py`.
+- [x] **Passo 1:** test con un progetto temporaneo (stile `tests/test_codebase_map_mcp.py`: `src/a.py` importa `src/b.py`, un `pyproject.toml`, un `codebase-modules.json` con due componenti che condividono `src/b.py` e una feature). Creare il run con `MapService(project).create_run("src", "r1", engine=False)`. Asserzioni: `build_envelope(run)["schema"] == "daodan/visual@1"`; esiste `relations` con `kind == "imports"` tra `file:src/a.py` e `file:src/b.py`; `memberships` contiene `file:src/b.py` due volte con `view == "logical"`; nessuna entità ha `type == "feature"` come gruppo fisico; ogni `relation.source/target` è un `ref` di `entities`; senza regole di collegamento `flows` è vuoto.
+- [x] **Passo 2:** test `sanitize_address`: `"https://u:p@host:8443/x?token=1#f"` → `"https://host:8443/x"`; `"not a url"` → invariato; stringa con `password=` → `""`.
+- [x] **Passo 3:** eseguire i test e verificarne il fallimento.
+- [x] **Passo 4:** implementare. Fonti: `snapshot_store.resolve_run_snapshot` + `open_snapshot`; `modules.ensure_graph(manifest)` poi `load_graph`; `source_reader.outline_manifest` per i simboli (limite 1000 per file, troncamento → `gaps`); `source_reader.graph_packet(manifest, paths, 1, 1000)` a blocchi di percorsi per gli import tra file (il limite di 1000 per lista va rispettato: suddividere, mai troncare in silenzio). Directory derivate dai percorsi dell'inventario; `defines` collega file → simbolo, `contains` directory → file e build unit → directory.
+- [x] **Passo 5:** test verdi; `python -B -m pytest -q tests/test_codebase_map_visual.py`.
 
 ### Task 3: schede, freschezza ed export immutabile
 
@@ -84,12 +84,12 @@ Forma dell'envelope (i Task 3, 5 e 6 dipendono da questi nomi):
 - Consuma: `build_envelope`.
 - Produce: `export(run_dir: Path, store_root: Path) -> Path` (restituisce la directory pubblicata); CLI `visual.py export RUN_DIR` che stampa il percorso; file pubblicato `visual.json`.
 
-- [ ] **Passo 1:** test schede: con una scheda scritta via `snapshot.py meta-upsert` su `src/a.py::f` e poi modificato il corpo di `f` in un nuovo run, l'entità `symbol:src/a.py::f` ha `freshness == "stale_body"` e la sua `description`; un simbolo senza scheda ha `freshness == "uncovered"`.
-- [ ] **Passo 2:** test export: `export()` scrive `.daodan/map/views/r1/<digest>/visual.json`; una seconda chiamata con input invariati restituisce lo stesso percorso senza riscriverlo; cambiare una scheda produce un digest diverso e lascia intatta la directory precedente.
-- [ ] **Passo 3:** test di rifiuto (Controllo 1): con `metadata.parser_fingerprint` alterato nel manifest, `export()` solleva `ValueError` il cui testo contiene `refresh` e nessuna directory nuova esiste sotto `views/r1/`. Un envelope con un `relation.target` sconosciuto (iniettato con `mock.patch` su `build_envelope`) viene rifiutato prima della pubblicazione.
-- [ ] **Passo 4:** test digest concorrente: se `cards.sqlite` cambia tra lettura e pubblicazione (mock del secondo digest), l'export fallisce senza pubblicare.
-- [ ] **Passo 5:** implementare: schede da `semantic_store.query_meta_code(store, cards_path=…, limit=…)` a pagine fino a esaurimento; digest = SHA-256 del JSON canonico dell'envelope; scrittura in directory temporanea accanto alla destinazione, validazione dei riferimenti, `os.replace` sulla directory finale; confinamento con `confinement.reject_link_chain`.
-- [ ] **Passo 6:** test verdi; poi eseguire `python plugins/codebase-map/skills/map/scripts/visual.py export .daodan/map/runs/<run reale>` e verificare che il file sia valido e privo di sorgente completo.
+- [x] **Passo 1:** test schede: con una scheda scritta via `snapshot.py meta-upsert` su `src/a.py::f` e poi modificato il corpo di `f` in un nuovo run, l'entità `symbol:src/a.py::f` ha `freshness == "stale_body"` e la sua `description`; un simbolo senza scheda ha `freshness == "uncovered"`.
+- [x] **Passo 2:** test export: `export()` scrive `.daodan/map/views/r1/<digest>/visual.json`; una seconda chiamata con input invariati restituisce lo stesso percorso senza riscriverlo; cambiare una scheda produce un digest diverso e lascia intatta la directory precedente.
+- [x] **Passo 3:** test di rifiuto (Controllo 1): con `metadata.parser_fingerprint` alterato nel manifest, `export()` solleva `ValueError` il cui testo contiene `refresh` e nessuna directory nuova esiste sotto `views/r1/`. Un envelope con un `relation.target` sconosciuto (iniettato con `mock.patch` su `build_envelope`) viene rifiutato prima della pubblicazione.
+- [x] **Passo 4:** test digest concorrente: se `cards.sqlite` cambia tra lettura e pubblicazione (mock del secondo digest), l'export fallisce senza pubblicare.
+- [x] **Passo 5:** implementare: schede da `semantic_store.query_meta_code(store, cards_path=…, limit=…)` a pagine fino a esaurimento; digest = SHA-256 del JSON canonico dell'envelope; scrittura in directory temporanea accanto alla destinazione, validazione dei riferimenti, `os.replace` sulla directory finale; confinamento con `confinement.reject_link_chain`.
+- [x] **Passo 6:** test verdi; poi eseguire `python plugins/codebase-map/skills/map/scripts/visual.py export .daodan/map/runs/<run reale>` e verificare che il file sia valido e privo di sorgente completo. Verificato il 12 novembre 2026 su un run fresco della fixture dei flussi; il run `working` di questo repository si rifiuta finché non viene rinfrescato (parser cambiato).
 
 ### Task 4: server locale in sola lettura
 
@@ -101,8 +101,8 @@ Forma dell'envelope (i Task 3, 5 e 6 dipendono da questi nomi):
 - Consuma: directory prodotta da `export`.
 - Produce: `make_server(export_dir: Path, assets_dir: Path, port: int = 0) -> http.server.ThreadingHTTPServer`; CLI `visual.py serve EXPORT_DIR` che stampa `http://127.0.0.1:<porta>/`. Rotte: `/` e gli asset elencati in `assets_dir` (allowlist calcolata all'avvio), `/data/visual.json`.
 
-- [ ] **Passo 1:** test con server in thread e `http.client`: `GET /` → 200 `text/html`; `GET /data/visual.json` → 200 e corpo uguale al file; `GET /assets/` → 404 senza listing; `GET /../visual.py`, `/%2e%2e/visual.py`, `/data/../../state.json` → 404; `Host: evil.example` → 421; risposta senza `Access-Control-Allow-Origin`; header `Content-Security-Policy` con `default-src 'self'`; un link simbolico in `assets_dir` non entra nell'allowlist. Il server ascolta su `127.0.0.1`.
-- [ ] **Passo 2:** verificarne il fallimento, implementare con `http.server` e `BaseHTTPRequestHandler` (nessun `SimpleHTTPRequestHandler`), test verdi.
+- [x] **Passo 1:** test con server in thread e `http.client`: `GET /` → 200 `text/html`; `GET /data/visual.json` → 200 e corpo uguale al file; `GET /assets/` → 404 senza listing; `GET /../visual.py`, `/%2e%2e/visual.py`, `/data/../../state.json` → 404; `Host: evil.example` → 421; risposta senza `Access-Control-Allow-Origin`; header `Content-Security-Policy` con `default-src 'self'`; un link simbolico in `assets_dir` non entra nell'allowlist. Il server ascolta su `127.0.0.1`.
+- [x] **Passo 2:** verificarne il fallimento, implementare con `http.server` e `BaseHTTPRequestHandler` (nessun `SimpleHTTPRequestHandler`), test verdi.
 
 ### Task 5: modello del viewer
 
