@@ -151,3 +151,20 @@ Un agente senza contesto riceve i passaggi del flusso «ripristino dell'account�
 - La scheda segue i rami: risposta già ripristinata, ripristino riuscito, cancellazione definitiva già avviata, errore lato client.
 - L'agente ha elencato a parte ciò che i passaggi non contengono, come chiede il formato: l'autenticazione del server (`get_current_user_allow_deleted`), una pista (lo stato «cancellato» resta in una cache di 10 secondi che il ripristino non svuota, `api/deps.py:64`), l'abbonamento non ripristinato, il caricamento all'avvio.
 - Una scheda accettata non è per questo esatta: il controllo garantisce che ogni riga poggi su un passaggio, non che la frase sia vera.
+
+## Fase 3: preparazione, 12 novembre 2026
+
+Le tre prove della [fase 3](../../docs/specs/2026-11-09-flows-in-review.md) su phazly, pronte e non eseguite. File in `phase3/`.
+
+| Parametro | Valore |
+| --- | --- |
+| Richiesta | «la logica dei widget della home e dell'inserimento» |
+| Perimetro | 60 file di `react-app/src` (`perimeter.txt`): widget della home, foglio di inserimento, controller della home con gli hook che chiama fino a due livelli, e chi scrive gli store che essi leggono; contiene i file di G1 e G2 |
+| Prova A | gruppi per percorso del file: 5 incarichi da 120.000 byte |
+| Prova B | 7 unità con condivisione 2 (`units.json`), passate a `composition.py bind` come `coverage.units` |
+| Prova C | gruppi per percorso più `flows.md` in `01-context.md`: 11 store con chi scrive e chi legge, 8.151 caratteri su un tetto di 12.000 |
+| Revisori | `logic-integrity-auditor`, `local-correctness-auditor`, `react-auditor`, `ui-race-auditor`, uguali per le tre prove |
+| Esecuzione | `claude -p` con `claude-sonnet-5-5`, plugin da questa checkout, un container Modal per run, due run per prova (`modal_review.py`) |
+| Soglie | B o C vince se porta nel rapporto finale, in entrambe le run, almeno un difetto atteso che A non porta, spendendo al massimo il doppio; a parità di esito resta la meno costosa |
+
+**Stato:** non eseguita. La prova nel container (Claude Code 2.1.322, token `CLAUDE_CODE_OAUTH_TOKEN` del secret Modal `claude-code`) risponde «You've hit your weekly limit · resets Nov 15, 1am (UTC)».
