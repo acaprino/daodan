@@ -77,6 +77,7 @@ Un flusso è uno solo; si guarda da più prospettive, come gli strati di una map
 4. Il registro si costruisce con uno script, e con lo stesso si rigenera, da cataloghi pubblici con licenza adatta ([ricognizione](../research/2026-11-12-external-service-catalogs.md)): le regole di riconoscimento di stack-analyser, i marchi di Simple Icons, le voci del CNCF Landscape. Un modello propone solo ciò che manca: sito, tipo dove assente, pacchetti degli ecosistemi non coperti. La macchina tiene solo ciò che verifica, cioè che il sito risponda e che il pacchetto esista.
 5. Un servizio che il registro non conosce prende il nome del pacchetto o dell'host e l'icona generica del suo tipo, e resta marcato come non riconosciuto. Il modello può proporne nome e tipo.
 6. Ogni nodo esterno mostra nome e marchio in ogni grafo e a ogni livello.
+7. Il passo statico esegue anche stack-analyser, uno strumento pubblico che legge manifest e configurazione senza eseguire il progetto e senza modello. È una fonte in più, non l'unica: ciò che riconosce entra come evidenza dei nodi esterni, e ogni riconoscimento dice da quale fonte viene.
 
 ### 4. Scheda del sistema
 
@@ -135,7 +136,7 @@ Benchmark `benchmarks/system-map/`, da creare, con le soglie scritte nel README 
 3. **Livelli.** Per un flusso del riferimento, a ogni livello: i nodi mostrati sono solo dei tipi di quel livello e le corrispondenze citano punti che esistono. Un flusso tecnico resta senza livello persone.
 4. **Costo.** Token e costo per mappa e per modello; quante volte l'agente apre il sorgente.
 5. **Stabilità.** Due esecuzioni sullo stesso snapshot danno gli stessi nodi, confrontati per membri.
-6. **Registro.** Sui casi dei benchmark: quanti servizi esterni usati dal progetto il registro riconosce, e quanti riconoscimenti sono sbagliati.
+6. **Registro.** Sui casi dei benchmark: quanti servizi e progetti esterni usati dal progetto vengono riconosciuti, e quanti riconoscimenti sono sbagliati, dal registro, da stack-analyser e dai due insieme.
 7. **Dall'intento ai controlli.** Per un intento scritto in linguaggio comune, le cose da controllare che la mappa restituisce a confronto con l'elenco scritto prima dal proprietario: quante ne nomina e quante ne aggiunge senza motivo. Non richiede run di review.
 8. **Review.** Lo stesso intento, con perimetro e brief dalla mappa del sistema, contro la review di oggi. È a pagamento: si chiede prima.
 
@@ -147,4 +148,4 @@ Benchmark `benchmarks/system-map/`, da creare, con le soglie scritte nel README 
 4. Esploratore sulla mappa del sistema, con il selettore dei livelli.
 5. Review: dall'intento ai controlli, poi i revisori; misure 7 e 8.
 
-**Da decidere alla rifinitura:** dove il progetto registra ciò che conferma; il tetto della scheda del sistema; dove vive il file del registro e ogni quanto si rigenera; come distribuire i loghi rispettando l'avvertenza sui marchi della raccolta; se gli identificatori nel codice che oggi dicono «flow» per i percorsi e «fisico» per i file cambiano nome.
+**Da decidere alla rifinitura:** dove il progetto registra ciò che conferma; il tetto della scheda del sistema; dove vive il file del registro e ogni quanto si rigenera; come Daodan esegue stack-analyser dove Node manca; come distribuire i loghi rispettando l'avvertenza sui marchi della raccolta; se gli identificatori nel codice che oggi dicono «flow» per i percorsi e «fisico» per i file cambiano nome.

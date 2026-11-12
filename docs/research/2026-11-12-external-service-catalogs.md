@@ -28,9 +28,19 @@ register({
 });
 ```
 
+## Prova di stack-analyser su un caso reale
+
+Versione 1.27.6 (pubblicata il 18 gennaio 2026, 12 dipendenze), eseguita il 12 novembre 2026 in un container Modal sull'archivio di phazly (1.812 file, tre cartelle): 1,6 secondi, nessun modello. Legge manifest e configurazione, non esegue il progetto.
+
+- **Riconosce 25 tecnologie:** Docker, Firebase, Hugging Face, Resend, React, React Router, Tauri, Tailwind, Vite, Radix UI, shadcn, Zod, Phosphor Icons, Playwright, ESLint, più linguaggi e gestori di pacchetti (Python, TypeScript, JavaScript, Rust, Kotlin, npm, Cargo).
+- **Non riconosce**, pur dichiarati nei manifest: Stripe, MongoDB (Motor e PyMongo), FastAPI, Pydantic, Google Gen AI, Secret Manager di Google Cloud, Prometheus, Zustand. Dal lato Python riconosce 2 pacchetti su 22.
+- **Non può vedere** ciò che sta solo nella configurazione fuori dall'archivio: Cloud Run, Pub/Sub, Google Play.
+
+Conclusione: utile come fonte in più, forte su npm, insufficiente da sola.
+
 ## Uso proposto
 
-- Base: le regole di stack-analyser, che hanno già tipo e segni.
+- Base: le regole di stack-analyser, che hanno già tipo e segni. Lo strumento stesso gira come fonte in più nel passo statico: costa pochi secondi e nessun token.
 - Marchi: Simple Icons, agganciati per nome.
 - Allargamento: le voci del CNCF Landscape per l'infrastruttura.
 - Il modello propone solo ciò che manca: sito, tipo dove assente, pacchetti degli ecosistemi non coperti. Resta ciò che la macchina verifica.
