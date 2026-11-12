@@ -172,6 +172,7 @@ In tutti i casi gli archi confermati restano 840. Una modifica a un file central
 
 - Motore per C#, da fare: il parsing e il risolutore lessicale ci sono; il motore si sceglie misurando un server LSP contro un indice SCIP.
 - C e C++: lo snapshot non li analizza, quindi non hanno simboli né chiamate.
+- Le chiamate la cui destinazione si decide in esecuzione: le osserva il passo dinamico, proposto in [`2026-11-12-passo-dinamico.md`](2026-11-12-passo-dinamico.md). Il requisito 12 resta valido per questo passaggio: qui nessun codice del progetto gira.
 - Le 154 chiamate `self.metodo()` che la regola lessicale dovrebbe già risolvere (`doc_review.py:427`).
 - Un passaggio staccato su quattro si è chiuso dopo circa 6 minuti senza store e senza log; lo stesso comando in primo piano è terminato con successo. Lo stato riporta `failed` e `codebase_map_index` lo riavvia; il comando ora parte con `-X faulthandler` per lasciare nel log il traceback di un crash.
 

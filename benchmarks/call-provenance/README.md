@@ -85,3 +85,29 @@ Requisito 24: Daodan installa i pacchetti dichiarati dal progetto (Python da `uv
 
 Soglia della misura 0 di [`flow-model`](../flow-model/README.md), 70%: la raggiunge polar; phazly è al 67,5%, tududi no.
 
+## Passo dinamico: parametri e prova del container, 12 novembre 2026
+
+Verifica la [spec del passo dinamico](../../docs/specs/2026-11-12-passo-dinamico.md): i test del progetto girano in un container e le chiamate osservate si contano con lo stesso criterio.
+
+| Misura | Parametro | Risultato atteso |
+| --- | --- | --- |
+| Isolamento | Container con `--network none` e una cartella montata `:ro` | Richiesta di rete fallita, scrittura rifiutata, nessun file sull'host |
+| Avvio | `run --rm` di un comando vuoto, a freddo e a caldo | Riportato |
+| Copertura | tududi, JavaScript: risolte su risolvibili con e senza gli archi osservati | 70% con gli archi osservati, la soglia della misura 0; nessun arco osservato contraddice un arco provato |
+| Costo | Durata di preparazione ed esecuzione, RAM di picco, spazio su disco | Riportato |
+
+Base di partenza, da `results/environment/engine-count-tududi.json`: JavaScript 11.148 risolte su 29.382 risolvibili (37,9%). Il verdetto `unresolved` conta 15.077 posizioni; i nomi più frequenti sono `create` (1.625), `send` (1.587), `get` (1.312), `post` (1.183), `map` (734) e `findOne` (570).
+
+Isolamento e avvio, misurati su Kiri 0.2.0 (Windows 11, WSL 2, riga di comando `docker` 29.9.2, immagine `alpine` da 3,85 MB):
+
+```powershell
+docker --context kiri run --rm --network none --memory 256m --pids-limit 64 alpine wget -q -T 3 -O- http://example.com
+docker --context kiri run --rm --network none -v <cartella>:/src:ro alpine sh -c "echo x > /src/b.txt"
+```
+
+- La richiesta di rete fallisce.
+- La scrittura è rifiutata con `Read-only file system`; nella cartella dell'host resta il solo file di partenza.
+- Avvio a freddo, con la VM a riposo: 5,3 s. A caldo, tre lanci di `alpine true`: 186, 172 e 170 ms, misurati dalla riga di comando di Windows.
+
+Copertura e costo non sono ancora misurati: nessun progetto è stato eseguito.
+

@@ -5,14 +5,25 @@
 </p>
 
 <p align="center">
-  <strong>Plugin harness for LLM coding agents: a verifiable map of the code and a composed, evidence-bound review.</strong>
+  <strong>Code Intelligence Platform</strong><br>
+  A verifiable map of the code and a composed, evidence-bound review, for LLM coding agents.
 </p>
 
 Daodan gives a coding agent two things it cannot get from a prompt: a local,
 refreshable understanding of the repository, and a review whose findings cite
-source and survive independent verification. Everything is static analysis
-plus instructions; sources remain the authority and runtime behavior needs the
-project's tests.
+source and survive independent verification. Sources remain the authority.
+
+## Analysis steps
+
+| Step | What it does | Runs project code | State |
+|---|---|---|---|
+| 1. Static | Parsers and the lexical resolver record files, symbols, imports and calls | No | In use |
+| 2. Inference | A language engine resolves calls with the project's libraries, which Daodan downloads | No | In use |
+| 3. Dynamic | The project's tests run in an isolated container and the observed calls join the graph | Only inside the container | [Proposed](docs/specs/2026-11-12-passo-dinamico.md) |
+| 4. Semantic | The model writes semantic cards and link rules; flows connect writers, readers and user actions | No | In use; flows on trial |
+
+Until step 3 is in place nothing runs the project, and runtime behavior needs
+the project's tests.
 
 ## Plugins
 
@@ -73,6 +84,7 @@ re-reads the plugin files but does not restart that server.
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
 - Flows, in three phases: [1, working run and review rules](docs/specs/2026-11-09-working-run-and-review-fixes.md) · [2, flows and units](docs/specs/2026-11-09-flow-model.md) · [3, do they help review](docs/specs/2026-11-09-flows-in-review.md) · [literature](docs/research/2026-11-09-flow-reconstruction-literature.md)
+- Dynamic step, tests in a container: [spec](docs/specs/2026-11-12-passo-dinamico.md) · [plan](docs/plans/2026-11-12-passo-dinamico.md)
 - [Working rules for agents in this repository](AGENTS.md)
 
 ## License

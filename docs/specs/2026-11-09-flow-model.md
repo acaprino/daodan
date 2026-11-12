@@ -125,7 +125,7 @@ Una contrazione conserva consultabili i collegamenti originali. Un simbolo senza
 
 ## Limiti
 
-Analisi statica: un flusso dice cosa il codice rende possibile, non cosa avviene in esecuzione né quali percorsi seguano davvero gli utenti. Granularità e significato sono affermazioni del modello, da verificare sul sorgente. Un nodo senza codice e i collegamenti che lo toccano sono dichiarati o proposti, mai ricavati dal sorgente; dove la mappa non analizza un linguaggio, la macchina non deduce collegamenti. La parte calcolata dalla macchina si aggiorna con `snapshot.py refresh` della fase 1; quella scritta dal modello no.
+Analisi statica: un flusso dice cosa il codice rende possibile, non cosa avviene in esecuzione né quali percorsi seguano davvero gli utenti. Il [passo dinamico](2026-11-12-passo-dinamico.md), una proposta, aggiunge i collegamenti `chiama` osservati nei test, con la loro provenienza. Granularità e significato sono affermazioni del modello, da verificare sul sorgente. Un nodo senza codice e i collegamenti che lo toccano sono dichiarati o proposti, mai ricavati dal sorgente; dove la mappa non analizza un linguaggio, la macchina non deduce collegamenti. La parte calcolata dalla macchina si aggiorna con `snapshot.py refresh` della fase 1; quella scritta dal modello no.
 
 ## Prova
 

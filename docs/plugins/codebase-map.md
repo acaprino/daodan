@@ -1,6 +1,6 @@
 # Codebase Map: riferimento
 
-Codebase Map legge un repository con analisi statica e ne serve all'agente inventario, simboli, relazioni, moduli e descrizioni semantiche, con riferimenti verificabili alle sorgenti. Non esegue il programma: la copertura a runtime è sempre nulla, salvo evidenza fornita dall'utente. Non seleziona reviewer e non emette verdetti di correttezza: quello è senior-review, che ne usa i tool. Versione del plugin `1.0.1` (`plugins/codebase-map/plugin.toml`); nessuna dipendenza da altri plugin.
+Codebase Map legge un repository con analisi statica e ne serve all'agente inventario, simboli, relazioni, moduli e descrizioni semantiche, con riferimenti verificabili alle sorgenti. Non esegue il programma: la copertura a runtime è sempre nulla, salvo evidenza fornita dall'utente. Dei quattro passi di analisi (statico, inferenza, dinamico, semantico) il terzo, i test in un container, è una proposta: `docs/specs/2026-11-12-passo-dinamico.md`. Non seleziona reviewer e non emette verdetti di correttezza: quello è senior-review, che ne usa i tool. Versione del plugin `1.0.1` (`plugins/codebase-map/plugin.toml`); nessuna dipendenza da altri plugin.
 
 Ogni affermazione di questo documento rimanda a un file del plugin. Il testo operativo che il modello esegue è `skills/map/SKILL.md` con i suoi `references/`; questo documento lo descrive e non lo sostituisce.
 
