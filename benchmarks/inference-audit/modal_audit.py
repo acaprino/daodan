@@ -155,7 +155,7 @@ def audit(name: str, case: dict, archive: bytes | None, rules_text: str) -> dict
         command = command[:at] + ["python", "-B", "/audit/probe.py", SCRIPTS, str(manifest), spec.name, str(out)]
         begun = time.time()
         try:
-            probe = _run(command, cwd=SCRIPTS, ok=(0, 1), timeout=3600, env={**os.environ, **spec.environment})
+            probe = _run(command, cwd=SCRIPTS, ok=(0, 1), timeout=7200, env={**os.environ, **spec.environment})
             value = json.loads(out.read_text(encoding="utf-8")) if out.is_file() else \
                 {"error": f"exit {probe.returncode}", "stderr": probe.stderr[-3000:]}
         except Exception as error:

@@ -22,7 +22,7 @@ sys.path.insert(0, str(SCRIPTS))
 import resolve_edges as rx  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
 
-PER_VERDICT, READS, LEXICAL, EXAMPLES = 20, 60, 30, 4
+PER_VERDICT, READS, LEXICAL, EXAMPLES, DISAGREEMENTS = 20, 60, 2000, 4, 200
 CALLABLE = ("function", "method", "class")
 
 
@@ -272,6 +272,7 @@ def main() -> int:
             verdict, target = rx.grade(location, inventory, tables, store_root, table_for)
             entry = {"verdict": verdict}
             if target:
+                entry["id"] = target["id"]
                 kind, is_contract = kind_of.get(target["id"], (None, False))
                 entry["kind"] = f"{kind}{' contract' if is_contract else ''}"
             elif verdict == "binding":
@@ -362,12 +363,16 @@ def main() -> int:
                               "exact": tally_exact(reads), "examples": reads[:EXAMPLES]}
 
         lexical = [row for row in refs if row[8] == "call" and row[9] == "resolved" and row[10]]
-        agreement = collections.Counter()
+        agreement, exactly = collections.Counter(), collections.Counter()
         disagreements = []
         for row in every(lexical, LEXICAL):
             item = ask(row, methods[:1])
             if "skipped" in item:
                 continue
+            if "exact_definition" in item:
+                graded = item["exact_definition"]
+                exactly["same declaration" if row[10] in {e.get("id") for e in graded} else
+                        "engine says another place" if graded else "engine has no answer"] += 1
             ids = {p.get("id") for p in item[methods[0]]}
             if row[10] in ids:
                 agreement["same declaration"] += 1
@@ -375,9 +380,9 @@ def main() -> int:
                 agreement["engine has no answer"] += 1
             else:
                 agreement["engine says another place"] += 1
-                if len(disagreements) < EXAMPLES:
+                if len(disagreements) < DISAGREEMENTS:
                     disagreements.append({**item, "lexical": row[10]})
-        out["lexical_agreement"] = {"population": len(lexical), "counts": dict(agreement),
+        out["lexical_agreement"] = {"population": len(lexical), "counts": dict(agreement), "exact": dict(exactly),
                                     "examples": disagreements}
         closer = getattr(engine, "close", None)
         if closer:

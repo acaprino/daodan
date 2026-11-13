@@ -22,7 +22,7 @@ Verifica, per ogni motore del passo di inferenza ([spec del motore](../../docs/s
 | passo | quello del prodotto: `snapshot.py write --no-engine --no-index`, poi `resolve_edges.py --pass`, tutte le posizioni |
 | campione P3 e P4 | fino a 20 posizioni per esito e per linguaggio, a passo fisso sull'ordine degli identificativi |
 | campione P1 | fino a 60 letture che nominano una funzione, un metodo o una classe del progetto, per linguaggio |
-| campione P7 | fino a 30 chiamate risolte dal lessicale, per linguaggio |
+| campione P7 | fino a 30 chiamate risolte dal lessicale, per linguaggio; dal 13 novembre fino a 2.000, confrontate anche alla posizione esatta, con ogni disaccordo registrato (fino a 200) |
 | regole dei flussi (P6) | `benchmarks/phazly-flow/rules.json`, `benchmarks/tududi-flow/rules.json`; gli altri casi senza regole contano solo la vista degli archi |
 
 Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py --phazly-tar PATH`; un container per caso, risultati in `results/audit-<caso>.json` e sul volume `daodan-flow-results`.
