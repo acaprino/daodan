@@ -433,7 +433,13 @@ class JediEngine:
         project, environment, _mode = self.environment_for(path)
         script = jedi.Script(path=str(path), project=project, environment=environment)
         found = []
-        for definition in script.infer(line=line, column=character):
+        inferred = script.infer(line=line, column=character)
+        if inferred and all(definition.type not in ("function", "class") for definition in inferred):
+            # The value is an object, as a decorator returns one: the callee is declared where its name is.
+            named = [definition for definition in script.goto(line=line, column=character, follow_imports=True)
+                     if definition.type in ("function", "class")]
+            inferred = named or inferred
+        for definition in inferred:
             if definition.module_path is None:
                 found.append(Location(None, None, None))
                 continue

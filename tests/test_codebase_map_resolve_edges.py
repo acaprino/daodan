@@ -1976,6 +1976,26 @@ class EnvironmentTests(unittest.TestCase):
         self.assertTrue(ready, reason)
         return engine
 
+    def test_a_decorated_function_is_found_where_its_name_is_declared(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            (root / "config.py").write_text("@cache\ndef get_settings():\n    return 1\n", encoding="utf-8")
+            (root / "use.py").write_text("get_settings()\n", encoding="utf-8")
+            engine = self.engine_with_mock_jedi(root, [])
+            # Jedi infers the object the decorator returns, which no file declares.
+            wrapper = types.SimpleNamespace(module_path=None, type="instance", line=None, column=None)
+            declared = types.SimpleNamespace(module_path=root / "config.py", type="function", line=2, column=4)
+            statement = types.SimpleNamespace(module_path=root / "use.py", type="statement", line=1, column=0)
+            asked, named = [], [declared]
+            sys.modules["jedi"].Script = mock.Mock(return_value=types.SimpleNamespace(
+                infer=lambda **kwargs: [wrapper], goto=lambda **kwargs: asked.append(kwargs) or list(named)))
+            self.assertEqual(engine.definitions(root / "use.py", 1, 0),
+                             [resolve_edges.Location(root / "config.py", 2, 4)])
+            self.assertEqual(asked, [{"line": 1, "column": 0, "follow_imports": True}])
+            # A name bound to a value declares no callable: the inferred object stays the answer.
+            named[:] = [statement]
+            self.assertEqual(engine.definitions(root / "use.py", 1, 0), [resolve_edges.Location(None, None, None)])
+
     def test_a_venv_root_a_site_packages_and_neither(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve()
