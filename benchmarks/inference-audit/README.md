@@ -78,3 +78,20 @@ P7, lessicale e motore alla posizione esatta:
 | phazly, Jedi | 2.000 su 4.815 | 1.956 | 44: funzioni decorate con `@cache` o `@lru_cache`; `infer` dà l'oggetto restituito dal decoratore (`functools._lru_cache_wrapper`, senza posizione), graduato `external-definition`; ha ragione il lessicale |
 
 Due difetti che la tabella mostra: il grafo tiene i 9 archi lessicali sbagliati di semver, perché il passo non interroga il motore sulle chiamate già risolte dal lessicale; Jedi classifica come esterne le chiamate a funzioni del progetto decorate (`@contextmanager` compreso: `infer` dà `typing.Callable`).
+
+### 13 novembre 2026, il motore controlla anche le chiamate già risolte
+
+Stessi sei casi con le correzioni `1f5c55ac5` (il motore interroga anche le chiamate legate dal lessicale e la sua risposta vince) ed `e86bdb39c` (Jedi usa `goto` quando `infer` non dà una funzione o una classe). chi, javapoet, klaxon e semver dall'app `ap-aE8qBaqhrNAjhSe0Y1IsQo`; phazly e tududi da chiamate `spawn` dell'app distribuita, perché `modal run` annulla i casi in corso quando il client locale perde la rete. Costo fatturato: 0,33 USD per i primi quattro, 0,43 USD per phazly e tududi; 0,27 USD di una run annullata.
+
+| Caso | Chiamate già risolte controllate | Uguali | Corrette | Esterne | Copertura |
+| --- | --- | --- | --- | --- | --- |
+| chi | 231 | 231 | 0 | 0 | 92,2% |
+| javapoet | 289 | 264 | 25 (dalla classe al costruttore) | 0 | 99,7% |
+| klaxon | 311 | 311 | 0 | 0 | 88,5% |
+| semver | 76 | 65 | 0 | 9 (`Err(...)` tolto dal tipo associato) | 92,2% (438 su 475) |
+| phazly | 7.433 | 7.433 | 0 | 0 | 69,6% (13.692 su 19.686) |
+| tududi | 11.895 | 11.894 | 0 | 0 (1 senza risposta) | 47,4% (19.790 su 41.715) |
+
+- Jedi su phazly: P7 2.000 su 2.000 alla stessa dichiarazione (prima 1.956); 37 chiamate Python in più risolte dal motore (10.329 su 13.385).
+- Tempo del passo dei motori: tududi da 1.676 a 2.138 s (+28%); phazly da 2.285 a 1.594 s, ma la misura precedente comprende un riavvio per preemption e non è confrontabile.
+- tududi TypeScript perde 4 archi del motore (7.027 → 7.023) senza una chiamata corretta o esterna che li spieghi: causa da guardare.

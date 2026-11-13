@@ -1,8 +1,8 @@
 {
  "case": "tududi",
- "snapshot_seconds": 75.4,
- "pass_seconds": 1675.8,
- "pass_stdout": "esh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"ambiguous-target\": 127,\n        \"dynamic-callee\": 208,\n        \"edge-call\": 6198,\n        \"edge-instantiation\": 691,\n        \"external-definition\": 17955,\n        \"infer-error:Error\": 52,\n        \"project-not-a-symbol\": 1087,\n        \"unresolved\": 15109\n      }\n    },\n    \"typescript\": {\n      \"asked\": 24138,\n      \"candidates\": 3960,\n      \"confirmed\": 1010,\n      \"created_at\": \"2026-11-13T12:34:53Z\",\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"excluded_classes\": {\n        \"builtin\": 8224\n      },\n      \"no_edges_reason\": null,\n      \"population\": 24236,\n      \"reused\": 0,\n      \"selected\": 24236,\n      \"source_verification\": {\n        \"after_inference\": 1688,\n        \"before_inference\": 1688\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"ambiguous-target\": 419,\n        \"dynamic-callee\": 98,\n        \"edge-call\": 1009,\n        \"edge-instantiation\": 1,\n        \"external-definition\": 17888,\n        \"project-not-a-symbol\": 3541,\n        \"unresolved\": 1280\n      }\n    }\n  },\n  \"latency_mean_ms\": 12.1,\n  \"latency_p95_ms\": 52.1,\n  \"no_edges_reason\": null,\n  \"population\": 65663,\n  \"population_language\": \"multi\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 538651.2,\n  \"project_root\": \"/work/tududi/src\",\n  \"report_out\": \"/work/tududi/snapshot/.engine-stage-typescript.json\",\n  \"resolution\": {\n    \"askable\": 65357,\n    \"by_language\": {\n      \"javascript\": {\n        \"calls\": 72890,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 29350,\n        \"resolved\": 12767,\n        \"resolved_ratio\": 0.435\n      },\n      \"typescript\": {\n        \"calls\": 38477,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 12365,\n        \"resolved\": 7027,\n        \"resolved_ratio\": 0.568\n      }\n    },\n    \"calls\": 111367,\n    \"dynamic\": 306,\n    \"engine_confirmed\": 7899,\n    \"engine_unresolved\": 21563,\n    \"external\": 69652,\n    \"external_by_class\": {\n      \"builtin\": 33809,\n      \"engine-external-definition\": 35843\n    },\n    \"lexical_resolved\": 11895,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 41715,\n    \"resolved\": 19794,\n    \"resolved_ratio\": 0.475,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 65663,\n  \"source_verification\": {\n    \"after_inference\": 1688,\n    \"before_inference\": 1688\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 1673699.8,\n  \"verdicts\": {\n    \"ambiguous-target\": 546,\n    \"dynamic-callee\": 306,\n    \"edge-call\": 7207,\n    \"edge-instantiation\": 692,\n    \"external-definition\": 35843,\n    \"infer-error:Error\": 52,\n    \"project-not-a-symbol\": 4628,\n    \"unresolved\": 16389\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"javascript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    },\n    \"typescript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "snapshot_seconds": 78.5,
+ "pass_seconds": 2138.0,
+ "pass_stdout": "ge-instantiation\": 691,\n        \"external-definition\": 17955,\n        \"infer-error:Error\": 52,\n        \"project-not-a-symbol\": 1087,\n        \"unresolved\": 15109\n      }\n    },\n    \"typescript\": {\n      \"asked\": 24138,\n      \"candidates\": 3960,\n      \"checked\": {\n        \"asked\": 6017,\n        \"corrected\": 0,\n        \"external\": 0,\n        \"population\": 6017,\n        \"same\": 6017\n      },\n      \"confirmed\": 1006,\n      \"created_at\": \"2026-11-13T15:28:23Z\",\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"excluded_classes\": {\n        \"builtin\": 8224\n      },\n      \"no_edges_reason\": null,\n      \"population\": 24236,\n      \"reused\": 0,\n      \"selected\": 24236,\n      \"source_verification\": {\n        \"after_inference\": 1688,\n        \"before_inference\": 1688\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"ambiguous-target\": 417,\n        \"dynamic-callee\": 98,\n        \"edge-call\": 1005,\n        \"edge-instantiation\": 1,\n        \"external-definition\": 17888,\n        \"project-not-a-symbol\": 3543,\n        \"unresolved\": 1284\n      }\n    }\n  },\n  \"latency_mean_ms\": 14.3,\n  \"latency_p95_ms\": 62.8,\n  \"no_edges_reason\": null,\n  \"population\": 65663,\n  \"population_language\": \"multi\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 546356.1,\n  \"project_root\": \"/work/tududi/src\",\n  \"report_out\": \"/work/tududi/snapshot/.engine-stage-typescript.json\",\n  \"resolution\": {\n    \"askable\": 65357,\n    \"by_language\": {\n      \"javascript\": {\n        \"calls\": 72890,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 29350,\n        \"resolved\": 12767,\n        \"resolved_ratio\": 0.435\n      },\n      \"typescript\": {\n        \"calls\": 38477,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 12365,\n        \"resolved\": 7023,\n        \"resolved_ratio\": 0.568\n      }\n    },\n    \"calls\": 111367,\n    \"dynamic\": 306,\n    \"engine_confirmed\": 7895,\n    \"engine_unresolved\": 21567,\n    \"external\": 69652,\n    \"external_by_class\": {\n      \"builtin\": 33809,\n      \"engine-external-definition\": 35843\n    },\n    \"lexical_resolved\": 11895,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 41715,\n    \"resolved\": 19790,\n    \"resolved_ratio\": 0.474,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 65663,\n  \"source_verification\": {\n    \"after_inference\": 1688,\n    \"before_inference\": 1688\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 2135699.3,\n  \"verdicts\": {\n    \"ambiguous-target\": 544,\n    \"dynamic-callee\": 306,\n    \"edge-call\": 7203,\n    \"edge-instantiation\": 692,\n    \"external-definition\": 35843,\n    \"infer-error:Error\": 52,\n    \"project-not-a-symbol\": 4630,\n    \"unresolved\": 16393\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"javascript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    },\n    \"typescript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -12,7 +12,7 @@
     "asked": 65357,
     "available": true,
     "candidates": 5174,
-    "confirmed_edges": 7899,
+    "confirmed_edges": 7895,
     "coverage": "65357 of 65663 unresolved call references",
     "dry_run": false,
     "edges_store": "/work/tududi/snapshot/engine-edges.sqlite",
@@ -20,13 +20,20 @@
     "excluded_classes": {
      "builtin": 33809
     },
-    "inference_elapsed_ms": 793874.1,
+    "inference_elapsed_ms": 1105338.1,
     "languages": {
      "javascript": {
       "asked": 41219,
       "candidates": 1214,
+      "checked": {
+       "asked": 5878,
+       "corrected": 0,
+       "external": 0,
+       "population": 5878,
+       "same": 5877
+      },
       "confirmed": 6889,
-      "created_at": "2026-11-13T12:34:53Z",
+      "created_at": "2026-11-13T15:28:23Z",
       "engine": "typescript-language-server@4.3.3",
       "excluded_classes": {
        "builtin": 25585
@@ -55,8 +62,15 @@
      "typescript": {
       "asked": 24138,
       "candidates": 3960,
-      "confirmed": 1010,
-      "created_at": "2026-11-13T12:34:53Z",
+      "checked": {
+       "asked": 6017,
+       "corrected": 0,
+       "external": 0,
+       "population": 6017,
+       "same": 6017
+      },
+      "confirmed": 1006,
+      "created_at": "2026-11-13T15:28:23Z",
       "engine": "typescript-language-server@4.3.3",
       "excluded_classes": {
        "builtin": 8224
@@ -72,23 +86,23 @@
       "state": "fresh",
       "stride": 1,
       "verdicts": {
-       "ambiguous-target": 419,
+       "ambiguous-target": 417,
        "dynamic-callee": 98,
-       "edge-call": 1009,
+       "edge-call": 1005,
        "edge-instantiation": 1,
        "external-definition": 17888,
-       "project-not-a-symbol": 3541,
-       "unresolved": 1280
+       "project-not-a-symbol": 3543,
+       "unresolved": 1284
       }
      }
     },
-    "latency_mean_ms": 12.1,
-    "latency_p95_ms": 52.1,
+    "latency_mean_ms": 14.3,
+    "latency_p95_ms": 62.8,
     "no_edges_reason": null,
     "population": 65663,
     "population_language": "multi",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 538651.2,
+    "probe_init_elapsed_ms": 546356.1,
     "project_root": "/work/tududi/src",
     "resolution": {
      "askable": 65357,
@@ -104,14 +118,14 @@
        "calls": 38477,
        "engine": "typescript-language-server@4.3.3",
        "resolvable": 12365,
-       "resolved": 7027,
+       "resolved": 7023,
        "resolved_ratio": 0.568
       }
      },
      "calls": 111367,
      "dynamic": 306,
-     "engine_confirmed": 7899,
-     "engine_unresolved": 21563,
+     "engine_confirmed": 7895,
+     "engine_unresolved": 21567,
      "external": 69652,
      "external_by_class": {
       "builtin": 33809,
@@ -120,8 +134,8 @@
      "lexical_resolved": 11895,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
      "resolvable": 41715,
-     "resolved": 19794,
-     "resolved_ratio": 0.475,
+     "resolved": 19790,
+     "resolved_ratio": 0.474,
      "unasked": 0
     },
     "reused": 0,
@@ -131,20 +145,20 @@
      "before_inference": 1688
     },
     "stride": 1,
-    "total_elapsed_ms": 1673699.8,
+    "total_elapsed_ms": 2135699.3,
     "verdicts": {
-     "ambiguous-target": 546,
+     "ambiguous-target": 544,
      "dynamic-callee": 306,
-     "edge-call": 7207,
+     "edge-call": 7203,
      "edge-instantiation": 692,
      "external-definition": 35843,
      "infer-error:Error": 52,
-     "project-not-a-symbol": 4628,
-     "unresolved": 16389
+     "project-not-a-symbol": 4630,
+     "unresolved": 16393
     }
    }
   },
-  "finished_at": "2026-11-13T12:35:06Z",
+  "finished_at": "2026-11-13T15:28:31Z",
   "languages": {
    "javascript": {
     "engine": "typescript-language-server@4.3.3",
@@ -155,9 +169,9 @@
     "state": "fresh"
    }
   },
-  "manifest_digest": "1dcd96473f6fde1962117d71339f582d39ad9ed85a7b55e7e686282eeff4d4c7",
+  "manifest_digest": "caf01bb3075f89feb22c30636f4fcf11ac495e83447bcdbaf797ba6d96947787",
   "pass": true,
-  "started_at": "2026-11-13T12:07:11Z"
+  "started_at": "2026-11-13T14:52:54Z"
  },
  "engines": {
   "typescript": {
@@ -189,14 +203,14 @@
     "typescript read .ts": 1702,
     "typescript read .tsx": 9959
    },
-   "answers_cached": 65305,
+   "answers_cached": 77199,
    "answer_verdicts": {
     "external-definition": 35843,
-    "edge-call": 7207,
-    "ambiguous-target": 546,
-    "unresolved": 16389,
-    "project-not-a-symbol": 4628,
-    "edge-instantiation": 692
+    "edge-call": 18985,
+    "ambiguous-target": 544,
+    "unresolved": 16393,
+    "project-not-a-symbol": 4630,
+    "edge-instantiation": 804
    },
    "edge_store": {
     "reason": null,
@@ -222,7 +236,14 @@
       "excluded_classes": {
        "builtin": 25585
       },
-      "no_edges_reason": null
+      "no_edges_reason": null,
+      "checked": {
+       "population": 5878,
+       "asked": 5878,
+       "same": 5877,
+       "corrected": 0,
+       "external": 0
+      }
      },
      "typescript": {
       "engine": "typescript-language-server@4.3.3",
@@ -230,31 +251,38 @@
       "population": 24236,
       "selected": 24236,
       "asked": 24138,
-      "confirmed": 1010,
+      "confirmed": 1006,
       "candidates": 3960,
       "verdicts": {
-       "ambiguous-target": 419,
+       "ambiguous-target": 417,
        "dynamic-callee": 98,
-       "edge-call": 1009,
+       "edge-call": 1005,
        "edge-instantiation": 1,
        "external-definition": 17888,
-       "project-not-a-symbol": 3541,
-       "unresolved": 1280
+       "project-not-a-symbol": 3543,
+       "unresolved": 1284
       },
       "excluded_classes": {
        "builtin": 8224
       },
-      "no_edges_reason": null
+      "no_edges_reason": null,
+      "checked": {
+       "population": 6017,
+       "asked": 6017,
+       "same": 6017,
+       "corrected": 0,
+       "external": 0
+      }
      }
     }
    },
    "stored_edges": {
-    "candidate ambiguous-target target=None": 546,
-    "candidate project-not-a-symbol target=None": 4628,
-    "confirmed edge-call target=function": 5025,
+    "candidate ambiguous-target target=None": 544,
+    "candidate project-not-a-symbol target=None": 4630,
+    "confirmed edge-call target=function": 16807,
     "confirmed edge-call target=method": 1303,
-    "confirmed edge-call target=method contract": 879,
-    "confirmed edge-instantiation target=class": 692
+    "confirmed edge-call target=method contract": 875,
+    "confirmed edge-instantiation target=class": 804
    },
    "probe": {
     "ready": true,
@@ -432,76 +460,43 @@
      ]
     },
     "javascript edge-call": {
-     "population": 6198,
+     "population": 11984,
      "sampled": 20,
      "places": {
       "definition": {
-       "project-callable function": 16,
-       "project-callable method": 3,
-       "project-callable function + project-no-declaration": 1
+       "project-callable function": 20
       },
       "implementation": {
-       "project-callable function": 11,
-       "nothing": 6,
-       "project-callable method": 3
+       "project-callable function": 15,
+       "nothing": 5
       },
       "type_definition": {
-       "external": 10,
-       "project-callable function": 7,
-       "project-callable method": 2,
-       "external + project-no-declaration": 1
+       "project-callable function": 9,
+       "external": 5,
+       "external + project-value binding": 2,
+       "project-value binding": 2,
+       "external + project-no-declaration": 1,
+       "project-no-declaration": 1
       }
      },
      "exact": {
       "exact_definition": {
-       "edge-call function": 16,
-       "edge-call method": 3,
-       "edge-call function + project-not-a-symbol": 1
+       "edge-call function": 20
       },
       "exact_implementation": {
-       "edge-call function": 11,
-       "nothing": 6,
-       "edge-call method": 3
+       "edge-call function": 15,
+       "nothing": 5
       }
      },
      "examples": [
       {
-       "site": "backend/app.js:284",
-       "name": "(expr).track",
+       "site": "backend/app.js:252",
+       "name": "resolveCookieSecure",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "backend/services/visitService.js::function@91:0",
-         "in_view": true
-        }
-       ],
-       "implementation": [],
-       "type_definition": [
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "backend/services/visitService.js::function@92:11",
-         "in_view": true
-        }
-       ],
-       "exact_definition": [
-        {
-         "verdict": "edge-call",
-         "id": "backend/services/visitService.js::function@91:0",
-         "kind": "function"
-        }
-       ],
-       "exact_implementation": []
-      },
-      {
-       "site": "backend/modules/ai-assistant/routes.js:12",
-       "name": "requireFeature",
-       "definition": [
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "backend/middleware/entitlements.js::function@12:23",
+         "id": "backend/app.js::function@227:0",
          "in_view": true
         }
        ],
@@ -509,7 +504,7 @@
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "backend/middleware/entitlements.js::function@12:23",
+         "id": "backend/app.js::function@227:0",
          "in_view": true
         }
        ],
@@ -517,38 +512,43 @@
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "backend/middleware/entitlements.js::function@12:23",
+         "id": "backend/app.js::function@227:0",
          "in_view": true
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "backend/middleware/entitlements.js::function@12:23",
+         "id": "backend/app.js::function@227:0",
          "kind": "function"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-call",
-         "id": "backend/middleware/entitlements.js::function@12:23",
+         "id": "backend/app.js::function@227:0",
          "kind": "function"
         }
        ]
       },
       {
-       "site": "backend/modules/billing/service.js:455",
-       "name": "entitlements.ensureAccount",
+       "site": "backend/modules/ai-assistant/controller.js:130",
+       "name": "aiAssistantService.generateProjectInsights",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "backend/services/entitlementsService.js::function@131:0",
+         "id": "backend/modules/ai-assistant/service.js::function@901:0",
          "in_view": true
         }
        ],
        "implementation": [],
        "type_definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "backend/modules/ai-assistant/service.js::binding@992:10"
+        },
         {
          "place": "external",
          "package": "node_modules:typescript"
@@ -573,20 +573,20 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "backend/services/entitlementsService.js::function@131:0",
+         "id": "backend/modules/ai-assistant/service.js::function@901:0",
          "kind": "function"
         }
        ],
        "exact_implementation": []
       },
       {
-       "site": "backend/modules/caldav/sync/pull-phase.js:310",
-       "name": "safeRequest",
+       "site": "backend/modules/blog/hostSwitch.js:118",
+       "name": "escapeHtml",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "backend/modules/caldav/services/safe-request.js::function@141:0",
+         "id": "backend/modules/blog/render.js::function@5:19",
          "in_view": true
         }
        ],
@@ -594,43 +594,71 @@
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "backend/modules/caldav/services/safe-request.js::function@141:0",
+         "id": "backend/modules/blog/render.js::function@5:19",
          "in_view": true
         }
        ],
        "type_definition": [
         {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/modules/blog/render.js::function@5:19",
+         "in_view": true
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "backend/modules/caldav/services/safe-request.js::function@141:0",
+         "id": "backend/modules/blog/render.js::function@5:19",
          "kind": "function"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-call",
-         "id": "backend/modules/caldav/services/safe-request.js::function@141:0",
+         "id": "backend/modules/blog/render.js::function@5:19",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/calendar-feeds/service.js:185",
+       "name": "getSafeTimezone",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/utils/timezone-utils.js::function@285:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/utils/timezone-utils.js::function@285:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/utils/timezone-utils.js::function@285:0",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "backend/utils/timezone-utils.js::function@285:0",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "backend/utils/timezone-utils.js::function@285:0",
          "kind": "function"
         }
        ]
@@ -638,15 +666,15 @@
      ]
     },
     "javascript edge-instantiation": {
-     "population": 691,
+     "population": 782,
      "sampled": 20,
      "places": {
       "definition": {
        "project-callable class + project-callable method": 20
       },
       "implementation": {
-       "project-callable class": 18,
-       "project-callable class + project-value binding": 2
+       "project-callable class": 16,
+       "project-callable class + project-value binding": 4
       },
       "type_definition": {
        "project-callable method": 20
@@ -657,8 +685,8 @@
        "edge-instantiation class": 20
       },
       "exact_implementation": {
-       "edge-instantiation class": 18,
-       "binding binding call without a function in place: require + edge-instantiation class": 2
+       "edge-instantiation class": 16,
+       "binding binding call without a function in place: require + edge-instantiation class": 4
       }
      },
      "examples": [
@@ -769,19 +797,19 @@
        ]
       },
       {
-       "site": "backend/modules/apprise/controller.js:9",
-       "name": "UnauthorizedError",
+       "site": "backend/modules/apprise/service.js:36",
+       "name": "ValidationError",
        "definition": [
         {
          "place": "project-callable",
          "kind": "class",
-         "id": "backend/shared/errors/index.js::class@23:0",
+         "id": "backend/shared/errors/index.js::class@11:0",
          "in_view": true
         },
         {
          "place": "project-callable",
          "kind": "method",
-         "id": "backend/shared/errors/index.js::method@24:4",
+         "id": "backend/shared/errors/index.js::method@12:4",
          "in_view": false
         }
        ],
@@ -789,7 +817,7 @@
         {
          "place": "project-callable",
          "kind": "class",
-         "id": "backend/shared/errors/index.js::class@23:0",
+         "id": "backend/shared/errors/index.js::class@11:0",
          "in_view": true
         }
        ],
@@ -797,44 +825,44 @@
         {
          "place": "project-callable",
          "kind": "method",
-         "id": "backend/shared/errors/index.js::method@24:4",
+         "id": "backend/shared/errors/index.js::method@12:4",
          "in_view": false
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-instantiation",
-         "id": "backend/shared/errors/index.js::class@23:0",
+         "id": "backend/shared/errors/index.js::class@11:0",
          "kind": "class"
         },
         {
          "verdict": "edge-instantiation",
-         "id": "backend/shared/errors/index.js::class@23:0",
+         "id": "backend/shared/errors/index.js::class@11:0",
          "kind": "class"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-instantiation",
-         "id": "backend/shared/errors/index.js::class@23:0",
+         "id": "backend/shared/errors/index.js::class@11:0",
          "kind": "class"
         }
        ]
       },
       {
-       "site": "backend/modules/auth/service.js:375",
-       "name": "ForbiddenError",
+       "site": "backend/modules/auth/service.js:97",
+       "name": "ServiceUnavailableError",
        "definition": [
         {
          "place": "project-callable",
          "kind": "class",
-         "id": "backend/shared/errors/index.js::class@29:0",
+         "id": "backend/shared/errors/index.js::class@95:0",
          "in_view": true
         },
         {
          "place": "project-callable",
          "kind": "method",
-         "id": "backend/shared/errors/index.js::method@30:4",
+         "id": "backend/shared/errors/index.js::method@96:4",
          "in_view": false
         }
        ],
@@ -842,7 +870,7 @@
         {
          "place": "project-callable",
          "kind": "class",
-         "id": "backend/shared/errors/index.js::class@29:0",
+         "id": "backend/shared/errors/index.js::class@95:0",
          "in_view": true
         }
        ],
@@ -850,26 +878,26 @@
         {
          "place": "project-callable",
          "kind": "method",
-         "id": "backend/shared/errors/index.js::method@30:4",
+         "id": "backend/shared/errors/index.js::method@96:4",
          "in_view": false
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-instantiation",
-         "id": "backend/shared/errors/index.js::class@29:0",
+         "id": "backend/shared/errors/index.js::class@95:0",
          "kind": "class"
         },
         {
          "verdict": "edge-instantiation",
-         "id": "backend/shared/errors/index.js::class@29:0",
+         "id": "backend/shared/errors/index.js::class@95:0",
          "kind": "class"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-instantiation",
-         "id": "backend/shared/errors/index.js::class@29:0",
+         "id": "backend/shared/errors/index.js::class@95:0",
          "kind": "class"
         }
        ]
@@ -1268,17 +1296,17 @@
      ]
     },
     "typescript ambiguous-target": {
-     "population": 419,
+     "population": 417,
      "sampled": 20,
      "places": {
       "definition": {
-       "external + project-value binding": 9,
-       "external + project-value parameter": 9,
+       "external + project-value parameter": 11,
+       "external + project-value binding": 7,
        "external + project-callable function": 2
       },
       "implementation": {
-       "nothing": 10,
-       "project-value binding": 9,
+       "nothing": 12,
+       "project-value binding": 7,
        "project-callable function": 1
       },
       "type_definition": {
@@ -1288,15 +1316,15 @@
      },
      "exact": {
       "exact_definition": {
-       "binding parameter + external-definition": 10,
-       "binding binding call without a function in place: useNavigate + external-definition": 5,
+       "binding parameter + external-definition": 12,
        "binding binding call without a function in place: fn + external-definition": 4,
+       "binding binding call without a function in place: useNavigate + external-definition": 3,
        "binding binding other value + external-definition": 1
       },
       "exact_implementation": {
-       "nothing": 10,
-       "binding binding call without a function in place: useNavigate": 5,
+       "nothing": 12,
        "binding binding call without a function in place: fn": 4,
+       "binding binding call without a function in place: useNavigate": 3,
        "binding binding other value": 1
       }
      },
@@ -1465,192 +1493,260 @@
      ]
     },
     "typescript edge-call": {
-     "population": 1009,
+     "population": 7001,
      "sampled": 20,
      "places": {
       "definition": {
-       "project-value parameter": 9,
-       "project-value binding": 7,
-       "project-callable function + project-value binding": 4
+       "project-callable function": 18,
+       "project-value parameter": 1,
+       "project-callable function + project-value binding": 1
       },
       "implementation": {
-       "nothing": 20
+       "project-callable function": 18,
+       "nothing": 2
       },
       "type_definition": {
-       "project-contract method": 16,
-       "project-callable function": 4
+       "project-callable function": 8,
+       "project-no-declaration": 5,
+       "external + project-no-declaration": 3,
+       "external": 2,
+       "project-contract method": 1,
+       "project-value binding": 1
       }
      },
      "exact": {
       "exact_definition": {
-       "binding parameter": 9,
-       "binding binding destructured": 7,
-       "binding binding destructured + edge-call function": 3,
-       "binding binding other value + edge-call function": 1
+       "edge-call function": 18,
+       "binding parameter": 1,
+       "binding binding destructured + edge-call function": 1
       },
       "exact_implementation": {
-       "nothing": 20
+       "edge-call function": 18,
+       "nothing": 2
       }
      },
      "examples": [
       {
-       "site": "frontend/Layout.tsx:561",
-       "name": "deleteProject",
+       "site": "e2e/helpers/testHelpers.ts:177",
+       "name": "waitForNetworkIdle",
        "definition": [
-        {
-         "place": "project-value",
-         "kind": "binding",
-         "id": "frontend/Layout.tsx::binding@559:44"
-        },
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "frontend/utils/projectsService.ts::function@143:29",
+         "id": "e2e/helpers/testHelpers.ts::function@67:7",
          "in_view": true
         }
        ],
-       "implementation": [],
-       "type_definition": [
+       "implementation": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "frontend/utils/projectsService.ts::function@143:29",
+         "id": "e2e/helpers/testHelpers.ts::function@67:7",
          "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
         }
        ],
        "exact_definition": [
         {
-         "verdict": "binding",
-         "kind": "binding destructured"
-        },
-        {
          "verdict": "edge-call",
-         "id": "frontend/utils/projectsService.ts::function@143:29",
+         "id": "e2e/helpers/testHelpers.ts::function@67:7",
          "kind": "function"
         }
        ],
-       "exact_implementation": []
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "e2e/helpers/testHelpers.ts::function@67:7",
+         "kind": "function"
+        }
+       ]
       },
       {
-       "site": "frontend/components/Admin/SortableTable.tsx:101",
-       "name": "onSort",
+       "site": "frontend/components/Admin/AdminWaitlistPage.tsx:37",
+       "name": "useSortedRows",
        "definition": [
         {
-         "place": "project-value",
-         "kind": "parameter",
-         "id": "frontend/components/Admin/SortableTable.tsx::parameter@82:4"
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/Admin/SortableTable.tsx::function@27:7",
+         "in_view": true
         }
        ],
-       "implementation": [],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/Admin/SortableTable.tsx::function@27:7",
+         "in_view": true
+        }
+       ],
        "type_definition": [
         {
-         "place": "project-contract",
-         "kind": "method",
-         "id": "frontend/components/Admin/SortableTable.tsx::method@72:4",
-         "in_view": false
+         "place": "project-no-declaration",
+         "file": "frontend/components/Admin/SortableTable.tsx"
         }
        ],
        "exact_definition": [
         {
-         "verdict": "binding",
-         "kind": "parameter"
+         "verdict": "edge-call",
+         "id": "frontend/components/Admin/SortableTable.tsx::function@27:7",
+         "kind": "function"
         }
        ],
-       "exact_implementation": []
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "frontend/components/Admin/SortableTable.tsx::function@27:7",
+         "kind": "function"
+        }
+       ]
       },
       {
-       "site": "frontend/components/CalDAV/EditCalendarModal.tsx:111",
-       "name": "showErrorToast",
+       "site": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx:40",
+       "name": "renderModal",
        "definition": [
         {
-         "place": "project-value",
-         "kind": "binding",
-         "id": "frontend/components/CalDAV/EditCalendarModal.tsx::binding@30:12"
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx::function@23:20",
+         "in_view": true
         }
        ],
-       "implementation": [],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx::function@23:20",
+         "in_view": true
+        }
+       ],
        "type_definition": [
         {
-         "place": "project-contract",
-         "kind": "method",
-         "id": "frontend/components/Shared/ToastContext.tsx::method@16:4",
-         "in_view": false
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx::function@23:20",
+         "in_view": true
         }
        ],
        "exact_definition": [
         {
-         "verdict": "binding",
-         "kind": "binding destructured"
+         "verdict": "edge-call",
+         "id": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx::function@23:20",
+         "kind": "function"
         }
        ],
-       "exact_implementation": []
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx::function@23:20",
+         "kind": "function"
+        }
+       ]
       },
       {
-       "site": "frontend/components/DailyPlan/PlanMyDay.tsx:553",
-       "name": "showErrorToast",
+       "site": "frontend/components/DailyPlan/PlanMyDay.tsx:1302",
+       "name": "placeItem",
        "definition": [
         {
-         "place": "project-value",
-         "kind": "binding",
-         "id": "frontend/components/DailyPlan/PlanMyDay.tsx::binding@168:12"
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/DailyPlan/PlanMyDay.tsx::function@492:22",
+         "in_view": true
         }
        ],
-       "implementation": [],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/DailyPlan/PlanMyDay.tsx::function@492:22",
+         "in_view": true
+        }
+       ],
        "type_definition": [
         {
-         "place": "project-contract",
-         "kind": "method",
-         "id": "frontend/components/Shared/ToastContext.tsx::method@16:4",
-         "in_view": false
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/DailyPlan/PlanMyDay.tsx::function@492:22",
+         "in_view": true
         }
        ],
        "exact_definition": [
         {
-         "verdict": "binding",
-         "kind": "binding destructured"
+         "verdict": "edge-call",
+         "id": "frontend/components/DailyPlan/PlanMyDay.tsx::function@492:22",
+         "kind": "function"
         }
        ],
-       "exact_implementation": []
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "frontend/components/DailyPlan/PlanMyDay.tsx::function@492:22",
+         "kind": "function"
+        }
+       ]
       }
      ]
     },
     "typescript edge-instantiation": {
-     "population": 1,
-     "sampled": 1,
+     "population": 22,
+     "sampled": 20,
      "places": {
       "definition": {
-       "project-callable class + project-callable method": 1
+       "project-callable class + project-callable method": 18,
+       "project-callable class": 2
       },
       "implementation": {
-       "project-callable class": 1
+       "project-callable class": 20
       },
       "type_definition": {
-       "project-callable method": 1
+       "project-callable method": 18,
+       "project-callable class": 2
       }
      },
      "exact": {
       "exact_definition": {
-       "edge-instantiation class": 1
+       "edge-instantiation class": 20
       },
       "exact_implementation": {
-       "edge-instantiation class": 1
+       "edge-instantiation class": 20
       }
      },
      "examples": [
       {
-       "site": "frontend/utils/mfaService.ts:36",
-       "name": "ReauthRequiredError",
+       "site": "frontend/__tests__/serviceWorker.test.ts:177",
+       "name": "FakeResponse",
        "definition": [
         {
          "place": "project-callable",
          "kind": "class",
-         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
          "in_view": true
         },
         {
          "place": "project-callable",
          "kind": "method",
-         "id": "frontend/utils/mfaService.ts::method@24:4",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
          "in_view": false
         }
        ],
@@ -1658,7 +1754,7 @@
         {
          "place": "project-callable",
          "kind": "class",
-         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
          "in_view": true
         }
        ],
@@ -1666,26 +1762,185 @@
         {
          "place": "project-callable",
          "kind": "method",
-         "id": "frontend/utils/mfaService.ts::method@24:4",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
          "in_view": false
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-instantiation",
-         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
          "kind": "class"
         },
         {
          "verdict": "edge-instantiation",
-         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
          "kind": "class"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-instantiation",
-         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "frontend/__tests__/serviceWorker.test.ts:195",
+       "name": "FakeResponse",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
+         "in_view": false
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        },
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "frontend/__tests__/serviceWorker.test.ts:217",
+       "name": "FakeResponse",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
+         "in_view": false
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        },
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "frontend/__tests__/serviceWorker.test.ts:167",
+       "name": "FakeResponse",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/__tests__/serviceWorker.test.ts::method@19:4",
+         "in_view": false
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        },
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
+         "kind": "class"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "frontend/__tests__/serviceWorker.test.ts::class@16:0",
          "kind": "class"
         }
        ]
@@ -1697,14 +1952,13 @@
      "sampled": 20,
      "places": {
       "definition": {
-       "external": 14,
-       "external + project-value binding": 5,
-       "project-value binding": 1
+       "external": 15,
+       "external + project-value binding": 5
       },
       "implementation": {
-       "external": 12,
-       "nothing": 6,
-       "external + project-no-declaration": 2
+       "external": 14,
+       "nothing": 5,
+       "external + project-callable function": 1
       },
       "type_definition": {
        "external": 18,
@@ -1713,14 +1967,13 @@
      },
      "exact": {
       "exact_definition": {
-       "external-definition": 14,
-       "binding binding destructured + external-definition": 5,
-       "binding binding destructured": 1
+       "external-definition": 15,
+       "binding binding destructured + external-definition": 5
       },
       "exact_implementation": {
-       "external-definition": 12,
-       "nothing": 6,
-       "external-definition + project-not-a-symbol": 2
+       "external-definition": 14,
+       "nothing": 5,
+       "external-definition + project-not-a-symbol": 1
       }
      },
      "examples": [
@@ -1773,16 +2026,24 @@
        ]
       },
       {
-       "site": "frontend/__tests__/Notes.newNote.test.tsx:187",
-       "name": "unmount",
+       "site": "frontend/__tests__/Notes.newNote.test.tsx:89",
+       "name": "render",
        "definition": [
         {
-         "place": "project-value",
-         "kind": "binding",
-         "id": "frontend/__tests__/Notes.newNote.test.tsx::binding@152:16"
+         "place": "external",
+         "package": "node_modules:@testing-library/react"
         }
        ],
-       "implementation": [],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/react"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/react"
+        }
+       ],
        "type_definition": [
         {
          "place": "external",
@@ -1791,64 +2052,10 @@
        ],
        "exact_definition": [
         {
-         "verdict": "binding",
-         "kind": "binding destructured"
-        }
-       ],
-       "exact_implementation": []
-      },
-      {
-       "site": "frontend/components/Admin/AdminUsersPage.tsx:1102",
-       "name": "(expr).toLocaleString",
-       "definition": [
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        }
-       ],
-       "implementation": [
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        }
-       ],
-       "type_definition": [
-        {
-         "place": "external",
-         "package": "node_modules:typescript"
-        }
-       ],
-       "exact_definition": [
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
          "verdict": "external-definition"
         }
        ],
        "exact_implementation": [
-        {
-         "verdict": "external-definition"
-        },
         {
          "verdict": "external-definition"
         },
@@ -1858,34 +2065,64 @@
        ]
       },
       {
-       "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:165",
-       "name": "screen.getByTestId",
+       "site": "frontend/components/Admin/AdminUsersPage.tsx:1115",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/AdminUsersPage.tsx::binding@838:12"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding destructured"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": []
+      },
+      {
+       "site": "frontend/components/Admin/__tests__/AdminWaitlistPage.test.tsx:43",
+       "name": "fetchWaitlist.mockResolvedValue",
        "definition": [
         {
          "place": "external",
-         "package": "node_modules:@testing-library/dom"
+         "package": "node_modules:@types/jest"
         }
        ],
        "implementation": [
         {
          "place": "external",
-         "package": "node_modules:@testing-library/dom"
-        },
-        {
-         "place": "external",
-         "package": "node_modules:@testing-library/dom"
+         "package": "node_modules:@types/jest"
         }
        ],
-       "type_definition": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/jest"
+        }
+       ],
        "exact_definition": [
         {
          "verdict": "external-definition"
         }
        ],
        "exact_implementation": [
-        {
-         "verdict": "external-definition"
-        },
         {
          "verdict": "external-definition"
         }
@@ -1894,7 +2131,7 @@
      ]
     },
     "typescript project-not-a-symbol": {
-     "population": 3541,
+     "population": 3543,
      "sampled": 20,
      "places": {
       "definition": {
@@ -2022,22 +2259,20 @@
      ]
     },
     "typescript unresolved": {
-     "population": 1280,
+     "population": 1284,
      "sampled": 20,
      "places": {
       "definition": {
-       "nothing": 17,
-       "external": 2,
-       "project-contract method": 1
+       "nothing": 19,
+       "external": 1
       },
       "implementation": {
-       "nothing": 17,
-       "external": 2,
-       "project-callable function": 1
+       "nothing": 19,
+       "external": 1
       },
       "type_definition": {
-       "external": 11,
-       "nothing": 8,
+       "external": 10,
+       "nothing": 9,
        "project-contract method": 1
       }
      },
@@ -2064,17 +2299,25 @@
        "exact_implementation": []
       },
       {
-       "site": "frontend/App.tsx:184",
-       "name": "(expr).setSidebarVisibleSections",
+       "site": "frontend/App.tsx:183",
+       "name": "useStore.getState",
        "definition": [],
        "implementation": [],
        "type_definition": [],
-       "exact_definition": [],
-       "exact_implementation": []
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
       },
       {
-       "site": "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx:137",
-       "name": "fireEvent.change",
+       "site": "frontend/components/Admin/__tests__/AdminFeedbackPage.test.tsx:107",
+       "name": "fireEvent.click",
        "definition": [],
        "implementation": [],
        "type_definition": [
@@ -2087,7 +2330,7 @@
        "exact_implementation": []
       },
       {
-       "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:637",
+       "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:615",
        "name": "fireEvent.click",
        "definition": [],
        "implementation": [],
@@ -2271,34 +2514,34 @@
     },
     "examples": [
      {
-      "site": "backend/modules/billing/service.js:237",
-      "name": "billingTabUrl",
+      "site": "backend/modules/blog/render.js:36",
+      "name": "escapeHtml",
       "definition": [
        {
         "place": "error",
-        "error": "Error: <main> TypeScript Server Error (5.9.3)\nCould not find source file: '/tmp/daodan-typescript-22u19gxf/src/backend/modules/"
+        "error": "Error: <main> TypeScript Server Error (5.9.3)\nCould not find source file: '/tmp/daodan-typescript-efat2len/src/backend/modules/"
        }
       ],
       "exact_definition": [
        {
         "verdict": "edge-call",
-        "id": "backend/modules/billing/service.js::function@21:0",
+        "id": "backend/modules/blog/render.js::function@5:19",
         "kind": "function"
        }
       ],
       "exact_implementation": [
        {
         "verdict": "edge-call",
-        "id": "backend/modules/billing/service.js::function@21:0",
+        "id": "backend/modules/blog/render.js::function@5:19",
         "kind": "function"
        }
       ],
-      "lexical": "backend/modules/billing/service.js::function@21:0"
+      "lexical": "backend/modules/blog/render.js::function@5:19"
      }
     ]
    },
-   "seconds": 239.0,
-   "probe_seconds": 239.6
+   "seconds": 304.0,
+   "probe_seconds": 304.8
   }
  },
  "graph_use": {
@@ -2309,25 +2552,25 @@
    "selected": 65663,
    "asked": 65357,
    "stride": 1,
-   "confirmed": 7899,
+   "confirmed": 7895,
    "candidates": 5174,
    "no_edges_reason": null,
    "resolution": {
     "calls": 111367,
-    "resolved": 19794,
+    "resolved": 19790,
     "lexical_resolved": 11895,
-    "engine_confirmed": 7899,
+    "engine_confirmed": 7895,
     "external": 69652,
     "external_by_class": {
      "builtin": 33809,
      "engine-external-definition": 35843
     },
     "resolvable": 41715,
-    "resolved_ratio": 0.475,
+    "resolved_ratio": 0.474,
     "dynamic": 306,
     "askable": 65357,
     "unasked": 0,
-    "engine_unresolved": 21563,
+    "engine_unresolved": 21567,
     "by_language": {
      "javascript": {
       "calls": 72890,
@@ -2338,7 +2581,7 @@
      },
      "typescript": {
       "calls": 38477,
-      "resolved": 7027,
+      "resolved": 7023,
       "resolvable": 12365,
       "resolved_ratio": 0.568,
       "engine": "typescript-language-server@4.3.3"
@@ -2349,22 +2592,22 @@
   },
   "references": {
    "engine resolved target=concrete": 7020,
-   "engine resolved target=interface": 879,
+   "engine resolved target=interface": 875,
    "lexical resolved target=concrete": 11895,
-   "lexical unresolved target=None": 91573
+   "lexical unresolved target=None": 91577
   },
   "candidates": 5174,
   "conflicts": 0,
   "conflict_examples": [],
   "call_links_kept": {
-   "engine": 7899,
+   "engine": 7895,
    "lexical": 11895
   },
   "call_links_lost": {},
   "lost_examples": {},
   "links": {
    "edges": {
-    "chiama diretto": 20865,
+    "chiama diretto": 20861,
     "scrive dedotto": 365,
     "attiva dedotto": 622,
     "chiama dedotto": 136,
@@ -2403,5 +2646,5 @@
    }
   }
  },
- "seconds": 2016.5
+ "seconds": 2548.7
 }

@@ -4,7 +4,12 @@ is stored and what reaches the graph (README of this benchmark, P1 to P7). No mo
 One container per case: snapshot, the product's engine pass, then `probe.py` in each engine's own stage
 environment (the command `resolve_edges.stage_command` builds), then the graph use measured in process.
 
-    modal run --detach benchmarks/inference-audit/modal_audit.py --phazly-tar PATH [--cases ...]
+    modal deploy benchmarks/inference-audit/modal_audit.py
+    python benchmarks/inference-audit/modal_audit.py spawn --phazly-tar PATH [--cases ...]
+
+Each case is a spawned call of the deployed app: it runs to its end and writes its result to the
+volume even when the local client disconnects (`modal run` cancels the pending inputs then).
+`python modal_audit.py fetch [--cases ...]` copies the volume's results into `results/`.
 """
 from __future__ import annotations
 
@@ -192,3 +197,33 @@ def main(phazly_tar: str = "", cases: str = ",".join(CASES)):
         (RESULTS / f"audit-{result['case']}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n",
                                                               encoding="utf-8")
         print(result["case"], "engines", sorted(result["engines"]), "seconds", result["seconds"])
+
+
+def _calls(phazly_tar: str, cases: str) -> list[tuple]:
+    calls = []
+    for name in [c.strip() for c in cases.split(",") if c.strip()]:
+        case = CASES[name]
+        archive = Path(phazly_tar).read_bytes() if case.get("tar") else None
+        rules = (ROOT / case["rules"]).read_text(encoding="utf-8") if case.get("rules") else ""
+        calls.append((name, case, archive, rules))
+    return calls
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", choices=("spawn", "fetch"))
+    parser.add_argument("--phazly-tar", default="")
+    parser.add_argument("--cases", default=",".join(CASES))
+    args = parser.parse_args()
+    if args.command == "spawn":
+        function = modal.Function.from_name("daodan-inference-audit", "audit")
+        for call in _calls(args.phazly_tar, args.cases):
+            print(call[0], function.spawn(*call).object_id)
+    else:
+        RESULTS.mkdir(parents=True, exist_ok=True)
+        for name in [c.strip() for c in args.cases.split(",") if c.strip()]:
+            data = b"".join(volume.read_file(f"{TAG}/audit-{name}.json"))
+            (RESULTS / f"audit-{name}.json").write_bytes(data.replace(b"\r\n", b"\n"))
+            print(name, len(data))
