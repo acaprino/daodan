@@ -1,9 +1,16 @@
-"""The shared module's mechanisms, on SCIP indexes written in memory and a stand-in snapshot.
+"""The shared module's mechanisms, on SCIP indexes written in memory and a stand-in snapshot; then the chain
+ends of two small projects in `fixtures/`, each with the index its engine wrote, read with its adapter.
 
     python -m pytest benchmarks/inference-audit/test_scip_graph.py
+
+Rebuild a fixture's index after changing its sources (the snapshot is written by the test):
+`scip-typescript index --cwd . --output index.scip --no-progress-bar` (0.5.2, with `node_modules` beside
+`fixtures/ts`, removed afterwards) in `fixtures/ts`; `rust-analyzer scip . --output index.scip` in `fixtures/rust`.
 """
 from __future__ import annotations
 
+import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -242,3 +249,68 @@ def test_scripts_lookup_from_a_shallow_folder(tmp_path):
     assert found.stdout.strip() in ("/daodan/map/scripts",
                                     *(str(parent / "plugins/codebase-map/skills/map/scripts").replace("\\", "/")
                                       for parent in tmp_path.parents))
+
+
+# The fixtures: 30 ends in a JS/TS project (`ts-ends.json`), 6 in two Rust test crates sharing one module file.
+
+FIXTURES = HERE / "fixtures"
+TS_ENDS = json.loads((FIXTURES / "ts-ends.json").read_text(encoding="utf-8"))
+RUST_ENDS = {  # site -> the snapshot declaration, or `external`, and the chain that reaches it
+    "call tests/test_a.rs:7 assert_len": ("tests/util/mod.rs::function@5:0", []),
+    "call tests/test_a.rs:8 util.version": ("tests/util/mod.rs::function@1:0", []),
+    "call tests/test_b.rs:5 util.assert_len": ("tests/util/mod.rs::function@5:0", ["rust:module-file"]),
+    "call tests/test_b.rs:6 util.version": ("tests/util/mod.rs::function@1:0", ["rust:module-file"]),
+    "call tests/util/mod.rs:2 fxrs.parse": ("src/lib.rs::function@1:0", []),
+    "call src/lib.rs:2 text.len": ("external", []),
+}
+
+
+@pytest.fixture(scope="module")
+def fixture_rows(tmp_path_factory):
+    """`{fixture: {"kind site name": reference}}`, each fixture copied out of the checkout and snapshotted."""
+    from adapters import rust, typescript
+    rows = {}
+    for name, adapter in (("ts", typescript), ("rust", rust)):
+        source = tmp_path_factory.mktemp(name) / name
+        shutil.copytree(FIXTURES / name, source)
+        manifest = source.parent / "manifest.sqlite"
+        done = subprocess.run([sys.executable, "-I", "snapshot.py", "write", str(source), "--out", str(manifest),
+                               "--no-engine", "--no-index", "--no-modules"], cwd=scip_graph._SCRIPTS,
+                              capture_output=True, text=True, timeout=300)
+        assert done.returncode == 0, done.stderr
+        found = rows[name] = {}
+        with scip_graph.Snapshot(manifest) as snapshot:
+            index = scip_graph.Index(snapshot.root)
+            index.load(source / "index.scip")
+            hops = adapter.hops(index)
+            traversal = scip_graph.Traversal(index, snapshot, hops)
+            for language in sorted(set(snapshot.languages.values()) & {"javascript", "typescript", "rust"}):
+                _graph, references = scip_graph.build(index, snapshot, language, hops, {}, {}, traversal)
+                found.update({f"{row['kind']} {row['site']} {row['name']}": row for row in references.values()})
+    return rows
+
+
+@pytest.mark.parametrize("site", sorted(TS_ENDS))
+def test_ts_fixture_end(fixture_rows, site):
+    row, want = fixture_rows["ts"][site], TS_ENDS[site]
+    targets = sorted({end.target for end in row["ends"] if end.cls == "project-callable"})
+    if isinstance(want["end"], list):
+        best = min((len(end.chain) for end in row["ends"] if end.cls == "project-callable"), default=None)
+        assert (targets, best) == (sorted(want["end"]), want.get("hops", best))
+    elif want["end"].startswith("external"):
+        assert not targets and any(end.cls == "external" and want["end"].split(" ", 1)[1] in end.detail
+                                   for end in row["ends"])
+    elif want["end"] == "dangling-local":
+        assert row["hole"] == "dangling-local"
+    else:
+        assert not targets and any(end.cls == want["end"] for end in row["ends"])
+
+
+@pytest.mark.parametrize("site", sorted(RUST_ENDS))
+def test_rust_fixture_end(fixture_rows, site):
+    target, chain = RUST_ENDS[site]
+    ends = fixture_rows["rust"][site]["ends"]
+    if target == "external":
+        assert any(end.cls == "external" for end in ends)
+    else:
+        assert any(end.target == target and list(end.chain) == chain for end in ends)

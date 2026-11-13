@@ -14,7 +14,7 @@
    "missing_count": 0
   },
   "nodes": 1289,
-  "edges": 4043,
+  "edges": 3679,
   "symbols_by_kind": {
    "external class": 43,
    "external function": 30,
@@ -43,8 +43,8 @@
    "external call": 487,
    "external read": 319,
    "external unknown": 413,
-   "project-callable call": 832,
-   "project-callable read": 139,
+   "project-callable call": 476,
+   "project-callable read": 131,
    "project-callable unknown": 211,
    "project-value call": 14,
    "project-value read": 860,
@@ -52,15 +52,17 @@
   },
   "callable_chain_hops": {
    "0": 784,
-   "1": 398
+   "1": 34
   },
   "hop_tags": {
-   "implementation": 372,
    "builtin": 33,
    "type-of-self": 21,
+   "implementation": 8,
    "import-binding": 7,
    "classmethod-cls": 5
   },
+  "edges_uncertain": {},
+  "edges_removed": {},
   "holes_by_class": {
    "dangling-local call": 9,
    "dangling-local read": 1,
@@ -245,42 +247,6 @@
        "src/semver/version.py::function@736:4",
        "",
        []
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `docs.advanced.semverwithvprefix`/SemVerWithVPrefix#parse().",
-       "docs/advanced/semverwithvprefix.py::function@10:4",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.semverwithvprefix`/SemVerWithVPrefix#parse().",
-       "tests/semverwithvprefix.py::function@10:4",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.test_subclass`/test_replace_from_subclass().SemVerWithVPrefix#parse().",
-       "tests/test_subclass.py::function@32:8",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.test_subclass`/test_subclass_from_versioninfo().SemVerWithVPrefix#parse().",
-       "tests/test_subclass.py::function@8:8",
-       "",
-       [
-        "implementation"
-       ]
       ]
      ]
     }
@@ -558,42 +524,6 @@
        "src/semver/version.py::function@736:4",
        "",
        []
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `docs.advanced.semverwithvprefix`/SemVerWithVPrefix#parse().",
-       "docs/advanced/semverwithvprefix.py::function@10:4",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.semverwithvprefix`/SemVerWithVPrefix#parse().",
-       "tests/semverwithvprefix.py::function@10:4",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.test_subclass`/test_replace_from_subclass().SemVerWithVPrefix#parse().",
-       "tests/test_subclass.py::function@32:8",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.test_subclass`/test_subclass_from_versioninfo().SemVerWithVPrefix#parse().",
-       "tests/test_subclass.py::function@8:8",
-       "",
-       [
-        "implementation"
-       ]
       ]
      ]
     }
@@ -612,42 +542,6 @@
        "src/semver/version.py::function@736:4",
        "",
        []
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `docs.advanced.semverwithvprefix`/SemVerWithVPrefix#parse().",
-       "docs/advanced/semverwithvprefix.py::function@10:4",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.semverwithvprefix`/SemVerWithVPrefix#parse().",
-       "tests/semverwithvprefix.py::function@10:4",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.test_subclass`/test_replace_from_subclass().SemVerWithVPrefix#parse().",
-       "tests/test_subclass.py::function@32:8",
-       "",
-       [
-        "implementation"
-       ]
-      ],
-      [
-       "project-callable",
-       "scip-python python semver b6e83e3e40d3 `tests.test_subclass`/test_subclass_from_versioninfo().SemVerWithVPrefix#parse().",
-       "tests/test_subclass.py::function@8:8",
-       "",
-       [
-        "implementation"
-       ]
       ]
      ]
     }
@@ -690,6 +584,7 @@
    ]
   }
  ],
+ "static_sites": 109,
  "unknown_fields": {},
  "engine": {
   "runs": [

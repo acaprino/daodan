@@ -99,17 +99,21 @@ app = modal.App("daodan-graph-python", image=_image())
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
-def hand_check(index, traversal, hand: list) -> list:
-    """The graph's ends at the hand-checked sites, beside what the source reading expected."""
+def hand_check(index, traversal, hand: list, sites: set) -> list:
+    """The graph's ends at the hand-checked sites, beside what the source reading expected; at a static site
+    without the ends reached through an implementation, as `build` leaves them out."""
     out = []
     for rel, line, name, nth, expected in hand:
         text = index.line(rel, line) or ""
         found = [m.start() for m in re.finditer(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])", text)]
         column = index.from_bytes(rel, line, len(text[:found[nth]].encode("utf-8"))) if len(found) > nth else None
-        sites = [o for o in index.at.get((rel, line, column), ()) if not o.definition]
+        found_at = [o for o in index.at.get((rel, line, column), ()) if not o.definition]
         out.append({"site": f"{rel}:{line} {name}", "expected": expected,
                     "graph": [{"symbol": o.key, "ends": [[end.cls, end.key, end.target, end.detail, list(end.chain)]
-                                                         for end in traversal.ends(o.key)]} for o in sites]
+                                                         for end in traversal.ends(o.key)
+                                                         if not ("implementation" in end.chain and
+                                                                 (rel, line, index.to_bytes(rel, line, o.start)) in sites)]}
+                              for o in found_at]
                     or "no occurrence"})
     return out
 
@@ -123,10 +127,12 @@ def write(folder: Path, manifest: Path, source: Path, name: str) -> tuple[dict, 
     hops = adapter.hops(index)
     with scip_graph.Snapshot(manifest) as snapshot:
         traversal = scip_graph.Traversal(index, snapshot, hops)
-        graph, _ = scip_graph.build(index, snapshot, LANGUAGE, hops, engine["indexer"], None, traversal)
+        sites = adapter.static(index)
+        graph, _ = scip_graph.build(index, snapshot, LANGUAGE, hops, engine["indexer"], None, traversal,
+                                    static=sites)
         checks = {"report": scip_graph.report(graph),
-                  "hand_check": hand_check(index, traversal, HAND if name == "semver" else []),
-                  "unknown_fields": dict(index.unknown),
+                  "hand_check": hand_check(index, traversal, HAND if name == "semver" else [], sites),
+                  "static_sites": len(sites), "unknown_fields": dict(index.unknown),
                   "engine": {key: engine.get(key) for key in ("runs", "requirements", "installs", "environment",
                                                               "pyrightconfig", "project")}}
     run = folder / "run.json"

@@ -1,0 +1,156 @@
+{
+ "call src/api/jobs.js:7 billingModule.webhookHandler": {
+  "end": [
+   "src/api/billing/webhook.js::function@1:0"
+  ],
+  "hops": 1
+ },
+ "call src/api/jobs.js:8 logger.logError": {
+  "end": [
+   "src/api/logService.js::function@1:17"
+  ],
+  "hops": 1
+ },
+ "call src/api/jobs.js:9 logger.logInfo": {
+  "end": [
+   "src/api/logService.js::function@4:16"
+  ],
+  "hops": 1
+ },
+ "call src/api/jobs.js:10 logger.log": {
+  "end": [
+   "src/api/logService.js::function@1:17"
+  ],
+  "hops": 1
+ },
+ "call src/api/jobs.js:11 controller.webhook": {
+  "end": "dangling-local"
+ },
+ "call src/api/jobs.js:12 controller.list": {
+  "end": [
+   "src/api/controller.js::function@5:8"
+  ],
+  "hops": 1
+ },
+ "call src/api/jobs.js:14 pick": {
+  "end": "project-value"
+ },
+ "call src/api/jobs.js:16 same": {
+  "end": [
+   "src/api/logService.js::function@1:17"
+  ],
+  "hops": 2
+ },
+ "call src/api/jobs.js:17 callback": {
+  "end": "project-value"
+ },
+ "call src/api/jobs.js:18 makeHandler": {
+  "end": [
+   "src/api/jobs.js::function@22:0"
+  ],
+  "hops": 0
+ },
+ "call src/api/jobs.js:19 made": {
+  "end": "project-value"
+ },
+ "call src/api/jobs.js:20 json": {
+  "end": "external npm @types/express@4.17.21",
+  "hops": 1
+ },
+ "call src/api/server.js:4 CheckoutService": {
+  "end": [
+   "src/api/service.js::class@1:0"
+  ],
+  "hops": 0
+ },
+ "call src/api/server.js:6 service.create": {
+  "end": [
+   "src/api/service.js::method@3:2"
+  ],
+  "hops": 0
+ },
+ "call src/api/server.js:9 app.post": {
+  "end": "external npm @types/express-serve-static-core@4.19.9",
+  "hops": 0
+ },
+ "call src/web/App.jsx:8 pay": {
+  "end": [
+   "src/web/useCheckout.js::function@4:26"
+  ],
+  "hops": 3
+ },
+ "call src/web/billing.js:6 callback": {
+  "end": "project-value"
+ },
+ "call src/web/useCheckout.js:4 startCheckout": {
+  "end": [
+   "src/web/billing.js::function@1:7"
+  ],
+  "hops": 0
+ },
+ "call src/web/client.ts:6 setValue": {
+  "end": "project-value"
+ },
+ "call src/web/client.ts:6 api.load": {
+  "end": "dangling-local"
+ },
+ "call src/web/client.ts:7 api.save": {
+  "end": [
+   "src/web/api.ts::function@5:8"
+  ],
+  "hops": 1
+ },
+ "call src/web/store.ts:15 store.save": {
+  "end": [
+   "src/web/store.ts::method@2:2",
+   "src/web/store.ts::method@5:2",
+   "src/web/store.ts::method@10:2"
+  ],
+  "hops": 0
+ },
+ "read src/web/App.jsx:14 handleClose": {
+  "end": [
+   "src/web/App.jsx::function@8:22"
+  ],
+  "hops": 0
+ },
+ "read src/web/App.jsx:13 pay": {
+  "end": [
+   "src/web/useCheckout.js::function@4:26"
+  ],
+  "hops": 3
+ },
+ "read src/api/jobs.js:13 logger.logError": {
+  "end": [
+   "src/api/logService.js::function@1:17"
+  ],
+  "hops": 1
+ },
+ "call src/api/alias.js:4 report": {
+  "end": [
+   "src/api/logService.js::function@1:17"
+  ],
+  "hops": 1
+ },
+ "call src/api/alias.js:5 logInfo": {
+  "end": [
+   "src/api/logService.js::function@4:16"
+  ],
+  "hops": 1
+ },
+ "call src/api/alias.js:6 Error": {
+  "end": "external npm typescript@6.0.3"
+ },
+ "call src/web/tag.ts:4 openTag": {
+  "end": [
+   "src/web/hooks.ts::function@2:0"
+  ],
+  "hops": 2
+ },
+ "call src/web/tag.ts:5 closeTag": {
+  "end": [
+   "src/web/hooks.ts::function@6:28"
+  ],
+  "hops": 3
+ }
+}

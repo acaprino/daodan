@@ -146,6 +146,26 @@ def _text(index, rel: str, occurrence) -> tuple[str, str]:
     return line, data[begin:stop].decode("utf-8", errors="replace") if begin is not None else ""
 
 
+def static(index) -> set:
+    """`(rel, line, byte column)` of member references Python binds without dispatch: `C.m` on a class symbol
+    the index names right before the dot, and `super().m`. An override in a subclass never runs there."""
+    out = set()
+    for rel, occurrences in index.documents.items():
+        ends = {(o.line, o.end): o.key for o in occurrences if not o.definition and o.end_line == o.line}
+        for o in occurrences:
+            if o.definition or o.start < 2:
+                continue
+            line = index.line(rel, o.line) or ""
+            begin = index.to_bytes(rel, o.line, o.start)
+            head = line.encode("utf-8")[:begin].decode("utf-8", errors="ignore") if begin is not None else ""
+            if not head.endswith("."):
+                continue
+            receiver = ends.get((o.line, o.start - 1), "")
+            if head[:-1].rstrip().endswith("super()") or (receiver.endswith("#") and "#local " not in receiver):
+                out.add((rel, o.line, begin))
+    return out
+
+
 def hops(index) -> dict:
     """Hops `{key: [(target key, tag)]}` for what scip-python leaves implicit; see the module's docstring."""
     import builtins
