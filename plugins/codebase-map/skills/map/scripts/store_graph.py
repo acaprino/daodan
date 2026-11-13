@@ -94,7 +94,7 @@ def _packet(store, db, selected, hops, limit, digest):
     db.execute("CREATE TEMP TABLE q_dist(node TEXT PRIMARY KEY,depth INTEGER)")
     db.execute("""INSERT OR IGNORE INTO q_dist SELECT d.id,0 FROM sem_declarations d
                   JOIN q_seed s ON s.file=d.file JOIN q_cover c ON c.file=d.file AND c.verified=1
-                  WHERE d.kind IN ('function','class')""")
+                  WHERE d.kind IN ('function','method','class')""")
     db.execute("""INSERT OR IGNORE INTO q_dist SELECT s.file||'::@module',0 FROM q_seed s
                   JOIN q_cover c ON c.file=s.file AND c.verified=1""")
     caller = "coalesce(r.caller,r.file||'::@module')"

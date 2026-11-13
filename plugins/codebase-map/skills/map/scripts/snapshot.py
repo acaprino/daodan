@@ -3261,7 +3261,10 @@ def refresh_working(root: Path) -> dict:
     finally:
         queued.unlink()
     try:
-        return _refresh_locked(root, published, working)
+        # MCP readers must close their snapshots before Windows can replace one.
+        from confinement import project_lock
+        with project_lock(store_project(root)):
+            return _refresh_locked(root, published, working)
     finally:
         active.unlink()
 

@@ -118,17 +118,17 @@ class MapService:
 
     @contextmanager
     def _operation(self, *, write=False):
-        with ExitStack() as snapshots:
-            token = _SNAPSHOTS.set(snapshots)
-            try:
-                confinement.reject_link_chain(self.project_root)
-                with confinement.project_lock(self.project_root):
+        confinement.reject_link_chain(self.project_root)
+        with confinement.project_lock(self.project_root):
+            with ExitStack() as snapshots:
+                token = _SNAPSHOTS.set(snapshots)
+                try:
                     confinement.reject_link_chain(self.root)
                     if self.store is not None:
                         self._bind_store(write=write)
                     yield
-            finally:
-                _SNAPSHOTS.reset(token)
+                finally:
+                    _SNAPSHOTS.reset(token)
 
     def _bind_store(self, *, write):
         # A custom store names itself, so standalone CLI commands bind the

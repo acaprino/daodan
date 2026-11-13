@@ -224,9 +224,7 @@ class MethodTargetTests(unittest.TestCase):
                        "}\n"),
     }
 
-    def test_a_method_and_a_contract_method_are_resolved_targets(self):
-        import edge_view
-
+    def setUp(self):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         root = Path(temp.name).resolve() / "proj"
@@ -242,14 +240,44 @@ class MethodTargetTests(unittest.TestCase):
         engine.languages = ("typescript",)
         report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1, out=edges)
         self.assertEqual(report["confirmed_edges"], 2)
-        with open_snapshot(manifest) as store:
-            view = edge_view.load_edge_view(store, engine_store=edges)
+        self.root, self.manifest, self.edges = root, manifest, edges
+
+    def test_a_method_and_a_contract_method_are_resolved_targets(self):
+        import edge_view
+
+        with open_snapshot(self.manifest) as store:
+            view = edge_view.load_edge_view(store, engine_store=self.edges)
         by_line = {ref["span"][0]: ref for ref in view["references"] if ref["file"] == "app/use.ts"}
         self.assertEqual((by_line[5]["resolution"], by_line[5]["target_kind"]), ("resolved", "interface"))
         self.assertTrue(by_line[5]["target_id"].startswith("app/contracts.ts::"))
         self.assertEqual((by_line[6]["resolution"], by_line[6]["target_kind"]), ("resolved", "concrete"))
         self.assertTrue(by_line[6]["target_id"].startswith("app/shop.ts::"))
         self.assertEqual(view["coverage"]["resolution"]["engine_confirmed"], 2)
+
+    def test_graph_from_a_method_file_keeps_its_incoming_calls(self):
+        import source_reader
+
+        for path, name in (("app/shop.ts", "open"), ("app/contracts.ts", "start")):
+            with self.subTest(path=path), open_snapshot(self.manifest) as store:
+                packet = source_reader.graph_packet(store, [path], hops=1, engine_store=self.edges)
+                method = next(item for item in packet["declarations"] if item["name"] == name)
+                self.assertEqual(method["kind"], "method")
+                self.assertEqual([call["target_id"] for call in packet["calls"]], [method["id"]])
+                self.assertEqual(packet["calls"][0]["file"], "app/use.ts")
+
+    def test_file_analysis_and_usages_keep_confirmed_method_calls(self):
+        import store_consumers
+
+        for path, name in (("app/shop.ts", "open"), ("app/contracts.ts", "start")):
+            with self.subTest(path=path), open_snapshot(self.manifest) as store:
+                with store_consumers.consumer_reader(store, engine_store=self.edges) as db:
+                    analysis, _, _ = store_consumers.file_analysis(store, db, path)
+                    self.assertEqual(analysis["counts"]["incoming_calls"], 1)
+                    self.assertIn(name, [item["name"] for item in analysis["declarations"]])
+                with store_consumers.consumer_reader(store, engine_store=self.edges) as db:
+                    usages = store_consumers.find_usages(store, db, [name], self.root / path, self.root)
+                    self.assertEqual(len(usages[name].usages), 1)
+                    self.assertEqual(usages[name].usages[0].precision, "resolved-static")
 
 
 class ImplementationTests(unittest.TestCase):

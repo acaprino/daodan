@@ -58,11 +58,11 @@ def file_analysis(store, db, rel, limit=100):
         values = [_unpack(row[0]) for row in db.execute(sql + " LIMIT ?", (*parameters, limit))]
         return total, values
     declarations_count, declarations = rows(
-        "SELECT payload FROM sem_declarations WHERE file=? AND kind IN ('function','class') ORDER BY rowid", (rel,))
+        "SELECT payload FROM sem_declarations WHERE file=? AND kind IN ('function','method','class') ORDER BY rowid", (rel,))
     calls_count, calls = rows(
         "SELECT payload FROM effective_references WHERE file=? AND kind='call' ORDER BY rowid", (rel,))
     incoming_count, incoming = rows("""SELECT r.payload FROM effective_references r JOIN sem_declarations d
-        ON d.id=r.target_id WHERE d.file=? AND d.kind IN ('function','class')
+        ON d.id=r.target_id WHERE d.file=? AND d.kind IN ('function','method','class')
         AND r.file<>? AND r.kind='call' ORDER BY r.file,r.rowid""", (rel, rel))
     resolved = db.execute("SELECT count(*) FROM effective_references WHERE file=? AND kind='call' AND resolution='resolved'", (rel,)).fetchone()[0]
     coverage = db.execute("SELECT payload FROM q_cover WHERE file=?", (rel,)).fetchone()
@@ -208,14 +208,14 @@ def find_usages(store, db, symbols, source_file, project_root, *, limit=None, ob
         # unknown receivers with no candidate_files. Payloads are decoded after SQL selection.
         query = """SELECT r.payload FROM effective_references r JOIN usage_searched s ON s.file=r.file
             WHERE r.target_id IN (SELECT id FROM sem_declarations
-                WHERE file=? AND name=? AND kind IN ('function','class'))
+                WHERE file=? AND name=? AND kind IN ('function','method','class'))
             OR (r.known_unrelated=0 AND r.resolution<>'resolved' AND (
                 EXISTS(SELECT 1 FROM sem_reference_candidates c WHERE c.reference=r.id
                     AND c.file=? AND (c.imported IN (?,'default') OR r.last_name=?))
                 OR (r.has_candidates=0 AND r.last_name=?)))
             ORDER BY r.file,r.rowid"""
         targets = {row[0] for row in db.execute(
-            "SELECT id FROM sem_declarations WHERE file=? AND name=? AND kind IN ('function','class')", (source_key, symbol))}
+            "SELECT id FROM sem_declarations WHERE file=? AND name=? AND kind IN ('function','method','class')", (source_key, symbol))}
         for (payload,) in db.execute(query, (source_key, symbol, source_key, symbol, symbol, symbol)):
             ref = _unpack(payload)
             l0, c0, l1, c1 = ref["span"]

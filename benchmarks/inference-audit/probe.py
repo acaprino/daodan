@@ -202,7 +202,7 @@ def main() -> int:
         edges, binding, reason = rx.read_edge_store(rx.default_edge_store(MANIFEST), store)
         out["edge_store"] = {"reason": reason, "entries": {k: {f: v.get(f) for f in (
             "engine", "state", "population", "selected", "asked", "confirmed", "candidates", "verdicts",
-            "excluded_classes", "no_edges_reason")} for k, v in ((binding or {}).get("languages") or {}).items()
+            "excluded_classes", "no_edges_reason", "checked")} for k, v in ((binding or {}).get("languages") or {}).items()
             if k in languages}}
         kind_of = {row[0]: (row[1], bool(_unpack(row[2]).get("contract"))) for row in connection.execute(
             "SELECT id, kind, payload FROM sem_declarations")}

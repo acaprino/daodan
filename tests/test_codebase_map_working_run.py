@@ -1,11 +1,14 @@
 """The working run: refresh, the pre-query gate and the PostToolUse hook filters."""
 
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from pathlib import Path
@@ -135,20 +138,20 @@ class WorkingRunTests(unittest.TestCase):
             self.assertEqual(store.file_count, 11)
         self.assertEqual(retrieval.index_state(self.working / "snapshot/manifest.sqlite")["state"], "fresh")
 
-    def test_3_reads_during_a_refresh_or_after_an_error_get_a_warning(self):
+    def test_3_reads_wait_for_refresh_and_warn_after_an_error(self):
         seen = {}
         original = retrieval.ensure_index
 
         def during(manifest, *args, **kwargs):
             seen["gate"] = snapshot.query_gate(manifest)
-            seen["search"] = self.service.search("working", "greet")
+            seen["search"] = pool.submit(self.service.search, "working", "greet")
             return original(manifest, *args, **kwargs)
 
         self.edit("app.py", "def greet():\n    return 'during'\n")
-        with mock.patch.object(retrieval, "ensure_index", during):
+        with ThreadPoolExecutor(max_workers=1) as pool, mock.patch.object(retrieval, "ensure_index", during):
             self.assertEqual(self.refresh()["status"], "fresh")
+            self.assertEqual(seen["search"].result(timeout=10)["index_state"], "fresh")
         self.assertIn("refresh is running", seen["gate"]["reason"])
-        self.assertEqual(seen["search"]["state"], "needs_refresh")
 
         self.edit("app.py", "def greet():\n    return 'broken'\n")
         with mock.patch.object(modules, "ensure_graph", return_value={"state": "failed", "reason": "boom"}):
@@ -201,6 +204,75 @@ class WorkingRunTests(unittest.TestCase):
         with mock.patch.object(resolve_edges, "ensure_edges", return_value={"state": "running"}) as ensure:
             self.assertEqual(self.refresh()["engine"], "running")
         ensure.assert_called_once_with(self.working / "snapshot/manifest.sqlite")
+
+    def test_refresh_waits_for_an_mcp_reader_before_stopping_and_restarting_engines(self):
+        self.assertEqual(self.refresh()["status"], "fresh")
+        state_path = self.working / "state.json"
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        state["engine"] = True
+        state_path.write_text(json.dumps(state), encoding="utf-8")
+        reading, release, refresh_started, refreshing = (threading.Event() for _ in range(4))
+        original_read = mcp_service.source_reader.read_packet
+        original_hold = snapshot._hold
+        original_refresh = snapshot._refresh_locked
+
+        def hold_reader(*args, **kwargs):
+            packet = original_read(*args, **kwargs)
+            reading.set()
+            if not release.wait(10):
+                raise TimeoutError("test reader was not released")
+            return packet
+
+        def hold_refresh(path, wait):
+            lock = original_hold(path, wait)
+            if path.name == ".refresh.lock":
+                refresh_started.set()
+            return lock
+
+        def refresh_after_reading(*args):
+            refreshing.set()
+            return original_refresh(*args)
+
+        with mock.patch.object(mcp_service.source_reader, "read_packet", side_effect=hold_reader), \
+                mock.patch.object(snapshot, "_hold", side_effect=hold_refresh), \
+                mock.patch.object(snapshot, "_refresh_locked", side_effect=refresh_after_reading), \
+                mock.patch.object(resolve_edges, "reset_pass") as reset, \
+                mock.patch.object(resolve_edges, "ensure_edges", return_value={"state": "running"}) as ensure, \
+                ThreadPoolExecutor(max_workers=2) as pool:
+            reader = pool.submit(self.service.read, "working", [{"path": "src/mod0.py", "full_file": True}])
+            try:
+                self.assertTrue(reading.wait(10))
+                self.edit("app.py", "def greet():\n    return 'after reading'\n")
+                refresh = pool.submit(self.refresh)
+                self.assertTrue(refresh_started.wait(10))
+                self.assertFalse(refreshing.wait(0.2), "refresh started while the MCP reader was open")
+                reset.assert_not_called()
+            finally:
+                release.set()
+            self.assertIn("helper0", json.dumps(reader.result(timeout=10)))
+            self.assertEqual(refresh.result(timeout=60)["status"], "fresh")
+            ensure.assert_called_once_with(self.working / "snapshot/manifest.sqlite")
+        self.assertIsNone(self.gate())
+
+    def test_mcp_closes_its_snapshot_before_releasing_the_project_lock(self):
+        captured = []
+        original_lock = mcp_service.confinement.project_lock
+        original_read = mcp_service.source_reader.read_packet
+
+        def read(store, *args, **kwargs):
+            captured.append(store)
+            return original_read(store, *args, **kwargs)
+
+        @contextmanager
+        def checked_lock(project):
+            with original_lock(project):
+                yield
+                self.assertTrue(captured)
+                self.assertTrue(all(store.closed for store in captured), "snapshot outlived the project lock")
+
+        with mock.patch.object(mcp_service.confinement, "project_lock", checked_lock), \
+                mock.patch.object(mcp_service.source_reader, "read_packet", side_effect=read):
+            self.service.read("base", [{"path": "src/mod0.py", "full_file": True}])
 
     def test_working_run_serves_no_documents_reviews_or_phases(self):
         self.refresh()
