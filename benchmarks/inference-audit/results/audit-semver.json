@@ -1,8 +1,8 @@
 {
  "case": "semver",
  "snapshot_seconds": 2.4,
- "pass_seconds": 29.4,
- "pass_stdout": "engine pass: rust for rust\ninstalling Rust 1.99.1 (cargo, rustc, rust-src) into /root/.cache/daodan/engines/rust/1.99.1 (first use)\ninstalling rust-analyzer 2026-11-09 into /root/.cache/daodan/engines/rust-analyzer/2026-11-09 (first use)\n{\n  \"answer_cache\": \"/work/semver/snapshot/engine-answers.sqlite\",\n  \"asked\": 645,\n  \"available\": true,\n  \"candidates\": 4,\n  \"confirmed_edges\": 371,\n  \"coverage\": \"645 of 650 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/semver/snapshot/engine-edges.sqlite\",\n  \"engine\": \"rust-analyzer@2026-11-09\",\n  \"excluded_classes\": {\n    \"builtin\": 67\n  },\n  \"inference_elapsed_ms\": 5603.6,\n  \"languages\": {\n    \"rust\": {\n      \"asked\": 645,\n      \"candidates\": 4,\n      \"confirmed\": 371,\n      \"created_at\": \"2026-11-13T12:06:29Z\",\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"excluded_classes\": {\n        \"builtin\": 67\n      },\n      \"no_edges_reason\": null,\n      \"population\": 650,\n      \"reused\": 0,\n      \"selected\": 650,\n      \"source_verification\": {\n        \"after_inference\": 19,\n        \"before_inference\": 19\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"dynamic-callee\": 5,\n        \"edge-call\": 371,\n        \"external-definition\": 242,\n        \"project-not-a-symbol\": 4,\n        \"unresolved\": 28\n      }\n    }\n  },\n  \"latency_mean_ms\": 8.7,\n  \"latency_p95_ms\": 2.8,\n  \"no_edges_reason\": null,\n  \"population\": 650,\n  \"population_language\": \"rust\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 20808.6,\n  \"project_root\": \"/work/semver/src\",\n  \"report_out\": \"/work/semver/snapshot/.engine-stage-rust.json\",\n  \"resolution\": {\n    \"askable\": 645,\n    \"by_language\": {\n      \"rust\": {\n        \"calls\": 793,\n        \"engine\": \"rust-analyzer@2026-11-09\",\n        \"resolvable\": 484,\n        \"resolved\": 447,\n        \"resolved_ratio\": 0.924\n      }\n    },\n    \"calls\": 793,\n    \"dynamic\": 5,\n    \"engine_confirmed\": 371,\n    \"engine_unresolved\": 32,\n    \"external\": 309,\n    \"external_by_class\": {\n      \"builtin\": 67,\n      \"engine-external-definition\": 242\n    },\n    \"lexical_resolved\": 76,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 484,\n    \"resolved\": 447,\n    \"resolved_ratio\": 0.924,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 650,\n  \"source_verification\": {\n    \"after_inference\": 19,\n    \"before_inference\": 19\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 27414.8,\n  \"verdicts\": {\n    \"dynamic-callee\": 5,\n    \"edge-call\": 371,\n    \"external-definition\": 242,\n    \"project-not-a-symbol\": 4,\n    \"unresolved\": 28\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"rust\": {\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "pass_seconds": 31.3,
+ "pass_stdout": "engine pass: rust for rust\ninstalling Rust 1.99.1 (cargo, rustc, rust-src) into /root/.cache/daodan/engines/rust/1.99.1 (first use)\ninstalling rust-analyzer 2026-11-09 into /root/.cache/daodan/engines/rust-analyzer/2026-11-09 (first use)\n{\n  \"answer_cache\": \"/work/semver/snapshot/engine-answers.sqlite\",\n  \"asked\": 645,\n  \"available\": true,\n  \"candidates\": 4,\n  \"confirmed_edges\": 371,\n  \"coverage\": \"645 of 650 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/semver/snapshot/engine-edges.sqlite\",\n  \"engine\": \"rust-analyzer@2026-11-09\",\n  \"excluded_classes\": {\n    \"builtin\": 67\n  },\n  \"inference_elapsed_ms\": 5886.1,\n  \"languages\": {\n    \"rust\": {\n      \"asked\": 645,\n      \"candidates\": 4,\n      \"checked\": {\n        \"asked\": 76,\n        \"corrected\": 0,\n        \"external\": 9,\n        \"population\": 76,\n        \"same\": 65\n      },\n      \"confirmed\": 371,\n      \"created_at\": \"2026-11-13T13:39:07Z\",\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"excluded_classes\": {\n        \"builtin\": 67\n      },\n      \"no_edges_reason\": null,\n      \"population\": 650,\n      \"reused\": 0,\n      \"selected\": 650,\n      \"source_verification\": {\n        \"after_inference\": 19,\n        \"before_inference\": 19\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"dynamic-callee\": 5,\n        \"edge-call\": 371,\n        \"external-definition\": 242,\n        \"project-not-a-symbol\": 4,\n        \"unresolved\": 28\n      }\n    }\n  },\n  \"latency_mean_ms\": 8.2,\n  \"latency_p95_ms\": 2.9,\n  \"no_edges_reason\": null,\n  \"population\": 650,\n  \"population_language\": \"rust\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 22543.0,\n  \"project_root\": \"/work/semver/src\",\n  \"report_out\": \"/work/semver/snapshot/.engine-stage-rust.json\",\n  \"resolution\": {\n    \"askable\": 645,\n    \"by_language\": {\n      \"rust\": {\n        \"calls\": 793,\n        \"engine\": \"rust-analyzer@2026-11-09\",\n        \"resolvable\": 475,\n        \"resolved\": 438,\n        \"resolved_ratio\": 0.922\n      }\n    },\n    \"calls\": 793,\n    \"dynamic\": 5,\n    \"engine_confirmed\": 371,\n    \"engine_unresolved\": 32,\n    \"external\": 318,\n    \"external_by_class\": {\n      \"builtin\": 67,\n      \"engine-external-definition\": 251\n    },\n    \"lexical_resolved\": 67,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 475,\n    \"resolved\": 438,\n    \"resolved_ratio\": 0.922,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 650,\n  \"source_verification\": {\n    \"after_inference\": 19,\n    \"before_inference\": 19\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 29487.3,\n  \"verdicts\": {\n    \"dynamic-callee\": 5,\n    \"edge-call\": 371,\n    \"external-definition\": 242,\n    \"project-not-a-symbol\": 4,\n    \"unresolved\": 28\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"rust\": {\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -20,13 +20,20 @@
     "excluded_classes": {
      "builtin": 67
     },
-    "inference_elapsed_ms": 5603.6,
+    "inference_elapsed_ms": 5886.1,
     "languages": {
      "rust": {
       "asked": 645,
       "candidates": 4,
+      "checked": {
+       "asked": 76,
+       "corrected": 0,
+       "external": 9,
+       "population": 76,
+       "same": 65
+      },
       "confirmed": 371,
-      "created_at": "2026-11-13T12:06:29Z",
+      "created_at": "2026-11-13T13:39:07Z",
       "engine": "rust-analyzer@2026-11-09",
       "excluded_classes": {
        "builtin": 67
@@ -50,13 +57,13 @@
       }
      }
     },
-    "latency_mean_ms": 8.7,
-    "latency_p95_ms": 2.8,
+    "latency_mean_ms": 8.2,
+    "latency_p95_ms": 2.9,
     "no_edges_reason": null,
     "population": 650,
     "population_language": "rust",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 20808.6,
+    "probe_init_elapsed_ms": 22543.0,
     "project_root": "/work/semver/src",
     "resolution": {
      "askable": 645,
@@ -64,25 +71,25 @@
       "rust": {
        "calls": 793,
        "engine": "rust-analyzer@2026-11-09",
-       "resolvable": 484,
-       "resolved": 447,
-       "resolved_ratio": 0.924
+       "resolvable": 475,
+       "resolved": 438,
+       "resolved_ratio": 0.922
       }
      },
      "calls": 793,
      "dynamic": 5,
      "engine_confirmed": 371,
      "engine_unresolved": 32,
-     "external": 309,
+     "external": 318,
      "external_by_class": {
       "builtin": 67,
-      "engine-external-definition": 242
+      "engine-external-definition": 251
      },
-     "lexical_resolved": 76,
+     "lexical_resolved": 67,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-     "resolvable": 484,
-     "resolved": 447,
-     "resolved_ratio": 0.924,
+     "resolvable": 475,
+     "resolved": 438,
+     "resolved_ratio": 0.922,
      "unasked": 0
     },
     "reused": 0,
@@ -92,7 +99,7 @@
      "before_inference": 19
     },
     "stride": 1,
-    "total_elapsed_ms": 27414.8,
+    "total_elapsed_ms": 29487.3,
     "verdicts": {
      "dynamic-callee": 5,
      "edge-call": 371,
@@ -102,16 +109,16 @@
     }
    }
   },
-  "finished_at": "2026-11-13T12:06:29Z",
+  "finished_at": "2026-11-13T13:39:07Z",
   "languages": {
    "rust": {
     "engine": "rust-analyzer@2026-11-09",
     "state": "fresh"
    }
   },
-  "manifest_digest": "e18824158ffbfd39fb3991949afafa772ad25e2df720b39184d9a3e6bed37f8d",
+  "manifest_digest": "78303905c4c93120e356f8980e22a82668e1b5bdb677f11d453bf38907036a94",
   "pass": true,
-  "started_at": "2026-11-13T12:06:00Z"
+  "started_at": "2026-11-13T13:38:36Z"
  },
  "engines": {
   "rust": {
@@ -133,11 +140,11 @@
    "reads_naming_project_callables": {
     "rust read .rs": 82
    },
-   "answers_cached": 645,
+   "answers_cached": 721,
    "answer_verdicts": {
-    "external-definition": 242,
-    "unresolved": 28,
-    "edge-call": 371,
+    "external-definition": 251,
+    "edge-call": 436,
+    "unresolved": 30,
     "project-not-a-symbol": 4
    },
    "edge_store": {
@@ -161,14 +168,22 @@
       "excluded_classes": {
        "builtin": 67
       },
-      "no_edges_reason": null
+      "no_edges_reason": null,
+      "checked": {
+       "population": 76,
+       "asked": 76,
+       "same": 65,
+       "corrected": 0,
+       "external": 9
+      }
      }
     }
    },
    "stored_edges": {
     "candidate project-not-a-symbol target=None": 4,
-    "confirmed edge-call target=function": 352,
-    "confirmed edge-call target=method contract": 19
+    "confirmed edge-call target=function": 417,
+    "confirmed edge-call target=method contract": 19,
+    "external external-definition target=None": 9
    },
    "probe": {
     "ready": true,
@@ -176,39 +191,39 @@
    },
    "asked_again_by_verdict": {
     "rust edge-call": {
-     "population": 371,
+     "population": 436,
      "sampled": 20,
      "places": {
       "definition": {
-       "project-callable function": 20
+       "project-callable function": 19,
+       "project-contract method": 1
       },
       "implementation": {
-       "nothing": 19,
-       "external + project-callable function": 1
+       "nothing": 20
       },
       "type_definition": {
-       "nothing": 14,
-       "project-callable class": 6
+       "nothing": 18,
+       "project-callable class": 2
       }
      },
      "exact": {
       "exact_definition": {
-       "edge-call function": 20
+       "edge-call function": 19,
+       "edge-call method contract": 1
       },
       "exact_implementation": {
-       "nothing": 19,
-       "edge-call function + external-definition": 1
+       "nothing": 20
       }
      },
      "examples": [
       {
-       "site": "src/display.rs:8",
-       "name": "self.pre.is_empty",
+       "site": "build.rs:8",
+       "name": "rustc_minor_version",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/lib.rs::function@548:4",
+         "id": "build.rs::function@17:0",
          "in_view": true
         }
        ],
@@ -217,20 +232,20 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "src/lib.rs::function@548:4",
+         "id": "build.rs::function@17:0",
          "kind": "function"
         }
        ],
        "exact_implementation": []
       },
       {
-       "site": "src/identifier.rs:185",
-       "name": "self.is_empty",
+       "site": "src/eval.rs:33",
+       "name": "matches_greater",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/identifier.rs::function@167:4",
+         "id": "src/eval.rs::function@62:0",
          "in_view": true
         }
        ],
@@ -239,428 +254,20 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "src/identifier.rs::function@167:4",
+         "id": "src/eval.rs::function@62:0",
          "kind": "function"
         }
        ],
        "exact_implementation": []
       },
       {
-       "site": "src/lib.rs:508",
-       "name": "VersionReq.from_str",
+       "site": "src/identifier.rs:120",
+       "name": "bytes_for_varint",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/parse.rs::function@87:4",
-         "in_view": true
-        }
-       ],
-       "implementation": [
-        {
-         "place": "external",
-         "package": "crate:regex-1.13.1"
-        },
-        {
-         "place": "external",
-         "package": "crate:regex-1.13.1"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "crate:clap_builder-4.6.7"
-        },
-        {
-         "place": "external",
-         "package": "crate:clap_builder-4.6.7"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "crate:proc-macro2-1.0.107"
-        },
-        {
-         "place": "external",
-         "package": "crate:proc-macro2-1.0.107"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "crate:half-2.7.1"
-        },
-        {
-         "place": "external",
-         "package": "crate:half-2.7.1"
-        },
-        {
-         "place": "external",
-         "package": "crate:serde_json-1.0.154"
-        },
-        {
-         "place": "external",
-         "package": "crate:serde_json-1.0.154"
-        },
-        {
-         "place": "external",
-         "package": "crate:serde_json-1.0.154"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "external",
-         "package": "rust:std"
-        },
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "src/parse.rs::function@125:4",
-         "in_view": true
-        },
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "src/parse.rs::function@87:4",
-         "in_view": true
-        },
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "src/parse.rs::function@137:4",
-         "in_view": true
-        },
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "src/parse.rs::function@111:4",
-         "in_view": true
-        },
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "src/parse.rs::function@28:4",
-         "in_view": true
-        }
-       ],
-       "type_definition": [
-        {
-         "place": "project-callable",
-         "kind": "class",
-         "id": "src/lib.rs::class@184:0",
-         "in_view": true
-        }
-       ],
-       "exact_definition": [
-        {
-         "verdict": "edge-call",
-         "id": "src/parse.rs::function@87:4",
-         "kind": "function"
-        }
-       ],
-       "exact_implementation": [
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "external-definition"
-        },
-        {
-         "verdict": "edge-call",
-         "id": "src/parse.rs::function@125:4",
-         "kind": "function"
-        },
-        {
-         "verdict": "edge-call",
-         "id": "src/parse.rs::function@87:4",
-         "kind": "function"
-        },
-        {
-         "verdict": "edge-call",
-         "id": "src/parse.rs::function@137:4",
-         "kind": "function"
-        },
-        {
-         "verdict": "edge-call",
-         "id": "src/parse.rs::function@111:4",
-         "kind": "function"
-        },
-        {
-         "verdict": "edge-call",
-         "id": "src/parse.rs::function@28:4",
-         "kind": "function"
-        }
-       ]
-      },
-      {
-       "site": "src/parse.rs:165",
-       "name": "Error.new",
-       "definition": [
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "src/parse.rs::function@147:4",
+         "id": "src/identifier.rs::function@408:0",
          "in_view": true
         }
        ],
@@ -669,7 +276,29 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "src/parse.rs::function@147:4",
+         "id": "src/identifier.rs::function@408:0",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": []
+      },
+      {
+       "site": "src/impls.rs:64",
+       "name": "self.as_str",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/lib.rs::function@544:4",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "src/lib.rs::function@544:4",
          "kind": "function"
         }
        ],
@@ -678,19 +307,19 @@
      ]
     },
     "rust external-definition": {
-     "population": 242,
+     "population": 251,
      "sampled": 20,
      "places": {
       "definition": {
        "external": 20
       },
       "implementation": {
-       "nothing": 18,
-       "external": 2
+       "nothing": 20
       },
       "type_definition": {
-       "nothing": 12,
+       "nothing": 11,
        "external": 7,
+       "project-callable class": 1,
        "external + project-callable class": 1
       }
      },
@@ -699,8 +328,7 @@
        "external-definition": 20
       },
       "exact_implementation": {
-       "nothing": 18,
-       "external-definition": 2
+       "nothing": 20
       }
      },
      "examples": [
@@ -755,8 +383,8 @@
        "exact_implementation": []
       },
       {
-       "site": "src/display.rs:24",
-       "name": "self.pre.len",
+       "site": "src/display.rs:26",
+       "name": "self.build.len",
        "definition": [
         {
          "place": "external",
@@ -773,8 +401,8 @@
        "exact_implementation": []
       },
       {
-       "site": "src/display.rs:93",
-       "name": "formatter.debug_struct",
+       "site": "src/display.rs:95",
+       "name": "debug.field",
        "definition": [
         {
          "place": "external",
@@ -962,7 +590,7 @@
      ]
     },
     "rust unresolved": {
-     "population": 28,
+     "population": 30,
      "sampled": 20,
      "places": {
       "definition": {
@@ -1005,7 +633,7 @@
       },
       {
        "site": "fuzz/sort_version.rs:23",
-       "name": "(expr).map",
+       "name": "(expr).ok",
        "definition": [],
        "implementation": [],
        "type_definition": [],
@@ -1262,8 +890,8 @@
      }
     ]
    },
-   "seconds": 10.7,
-   "probe_seconds": 10.9
+   "seconds": 10.9,
+   "probe_seconds": 11.2
   }
  },
  "graph_use": {
@@ -1279,16 +907,16 @@
    "no_edges_reason": null,
    "resolution": {
     "calls": 793,
-    "resolved": 447,
-    "lexical_resolved": 76,
+    "resolved": 438,
+    "lexical_resolved": 67,
     "engine_confirmed": 371,
-    "external": 309,
+    "external": 318,
     "external_by_class": {
      "builtin": 67,
-     "engine-external-definition": 242
+     "engine-external-definition": 251
     },
-    "resolvable": 484,
-    "resolved_ratio": 0.924,
+    "resolvable": 475,
+    "resolved_ratio": 0.922,
     "dynamic": 5,
     "askable": 645,
     "unasked": 0,
@@ -1296,9 +924,9 @@
     "by_language": {
      "rust": {
       "calls": 793,
-      "resolved": 447,
-      "resolvable": 484,
-      "resolved_ratio": 0.924,
+      "resolved": 438,
+      "resolvable": 475,
+      "resolved_ratio": 0.922,
       "engine": "rust-analyzer@2026-11-09"
      }
     },
@@ -1308,18 +936,19 @@
   "references": {
    "engine resolved target=concrete": 352,
    "engine resolved target=interface": 19,
-   "lexical resolved target=concrete": 76,
+   "engine unresolved target=None": 9,
+   "lexical resolved target=concrete": 67,
    "lexical unresolved target=None": 346
   },
   "candidates": 4,
   "conflicts": 0,
   "conflict_examples": [],
   "call_links_kept": {
-   "lexical": 76,
+   "lexical": 67,
    "engine": 371
   },
   "call_links_lost": {},
   "lost_examples": {}
  },
- "seconds": 42.9
+ "seconds": 45.1
 }

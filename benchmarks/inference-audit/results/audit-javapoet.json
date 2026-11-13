@@ -1,8 +1,8 @@
 {
  "case": "javapoet",
- "snapshot_seconds": 5.4,
- "pass_seconds": 74.6,
- "pass_stdout": "engine pass: java for java\ninstalling eclipse-jdtls 1.46.0 into /root/.cache/daodan/engines/eclipse-jdtls/1.46.0 (first use)\nresolving 6 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\ninstalling coursier 2.1.24 into /root/.cache/daodan/engines/coursier/2.1.24 (first use)\n{\n  \"answer_cache\": \"/work/javapoet/snapshot/engine-answers.sqlite\",\n  \"asked\": 4864,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 2575,\n  \"coverage\": \"4864 of 4864 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/javapoet/snapshot/engine-edges.sqlite\",\n  \"engine\": \"eclipse-jdtls@1.46.0\",\n  \"excluded_classes\": {\n    \"builtin\": 1290\n  },\n  \"inference_elapsed_ms\": 53946.6,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 4864,\n      \"candidates\": 0,\n      \"confirmed\": 2575,\n      \"created_at\": \"2026-11-13T12:07:15Z\",\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"excluded_classes\": {\n        \"builtin\": 1290\n      },\n      \"no_edges_reason\": null,\n      \"population\": 4864,\n      \"reused\": 0,\n      \"selected\": 4864,\n      \"source_verification\": {\n        \"after_inference\": 39,\n        \"before_inference\": 39\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"edge-call\": 2575,\n        \"external-definition\": 2279,\n        \"unresolved\": 10\n      }\n    }\n  },\n  \"latency_mean_ms\": 11.1,\n  \"latency_p95_ms\": 18.2,\n  \"no_edges_reason\": null,\n  \"population\": 4864,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 13934.1,\n  \"project_root\": \"/work/javapoet/src\",\n  \"report_out\": \"/work/javapoet/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 4864,\n    \"by_language\": {\n      \"java\": {\n        \"calls\": 6443,\n        \"engine\": \"eclipse-jdtls@1.46.0\",\n        \"resolvable\": 2874,\n        \"resolved\": 2864,\n        \"resolved_ratio\": 0.997\n      }\n    },\n    \"calls\": 6443,\n    \"dynamic\": 0,\n    \"engine_confirmed\": 2575,\n    \"engine_unresolved\": 10,\n    \"external\": 3569,\n    \"external_by_class\": {\n      \"builtin\": 1290,\n      \"engine-external-definition\": 2279\n    },\n    \"lexical_resolved\": 289,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 2874,\n    \"resolved\": 2864,\n    \"resolved_ratio\": 0.997,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 4864,\n  \"source_verification\": {\n    \"after_inference\": 39,\n    \"before_inference\": 39\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 72876.6,\n  \"verdicts\": {\n    \"edge-call\": 2575,\n    \"external-definition\": 2279,\n    \"unresolved\": 10\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "snapshot_seconds": 4.7,
+ "pass_seconds": 86.9,
+ "pass_stdout": "engine pass: java for java\ninstalling eclipse-jdtls 1.46.0 into /root/.cache/daodan/engines/eclipse-jdtls/1.46.0 (first use)\nresolving 6 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\ninstalling coursier 2.1.24 into /root/.cache/daodan/engines/coursier/2.1.24 (first use)\n{\n  \"answer_cache\": \"/work/javapoet/snapshot/engine-answers.sqlite\",\n  \"asked\": 4864,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 2575,\n  \"coverage\": \"4864 of 4864 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/javapoet/snapshot/engine-edges.sqlite\",\n  \"engine\": \"eclipse-jdtls@1.46.0\",\n  \"excluded_classes\": {\n    \"builtin\": 1290\n  },\n  \"inference_elapsed_ms\": 66857.2,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 4864,\n      \"candidates\": 0,\n      \"checked\": {\n        \"asked\": 289,\n        \"corrected\": 25,\n        \"external\": 0,\n        \"population\": 289,\n        \"same\": 264\n      },\n      \"confirmed\": 2575,\n      \"created_at\": \"2026-11-13T13:40:04Z\",\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"excluded_classes\": {\n        \"builtin\": 1290\n      },\n      \"no_edges_reason\": null,\n      \"population\": 4864,\n      \"reused\": 0,\n      \"selected\": 4864,\n      \"source_verification\": {\n        \"after_inference\": 39,\n        \"before_inference\": 39\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"edge-call\": 2575,\n        \"external-definition\": 2279,\n        \"unresolved\": 10\n      }\n    }\n  },\n  \"latency_mean_ms\": 13.0,\n  \"latency_p95_ms\": 21.2,\n  \"no_edges_reason\": null,\n  \"population\": 4864,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 12122.5,\n  \"project_root\": \"/work/javapoet/src\",\n  \"report_out\": \"/work/javapoet/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 4864,\n    \"by_language\": {\n      \"java\": {\n        \"calls\": 6443,\n        \"engine\": \"eclipse-jdtls@1.46.0\",\n        \"resolvable\": 2874,\n        \"resolved\": 2864,\n        \"resolved_ratio\": 0.997\n      }\n    },\n    \"calls\": 6443,\n    \"dynamic\": 0,\n    \"engine_confirmed\": 2600,\n    \"engine_unresolved\": 10,\n    \"external\": 3569,\n    \"external_by_class\": {\n      \"builtin\": 1290,\n      \"engine-external-definition\": 2279\n    },\n    \"lexical_resolved\": 264,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 2874,\n    \"resolved\": 2864,\n    \"resolved_ratio\": 0.997,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 4864,\n  \"source_verification\": {\n    \"after_inference\": 39,\n    \"before_inference\": 39\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 85095.3,\n  \"verdicts\": {\n    \"edge-call\": 2575,\n    \"external-definition\": 2279,\n    \"unresolved\": 10\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -20,13 +20,20 @@
     "excluded_classes": {
      "builtin": 1290
     },
-    "inference_elapsed_ms": 53946.6,
+    "inference_elapsed_ms": 66857.2,
     "languages": {
      "java": {
       "asked": 4864,
       "candidates": 0,
+      "checked": {
+       "asked": 289,
+       "corrected": 25,
+       "external": 0,
+       "population": 289,
+       "same": 264
+      },
       "confirmed": 2575,
-      "created_at": "2026-11-13T12:07:15Z",
+      "created_at": "2026-11-13T13:40:04Z",
       "engine": "eclipse-jdtls@1.46.0",
       "excluded_classes": {
        "builtin": 1290
@@ -48,13 +55,13 @@
       }
      }
     },
-    "latency_mean_ms": 11.1,
-    "latency_p95_ms": 18.2,
+    "latency_mean_ms": 13.0,
+    "latency_p95_ms": 21.2,
     "no_edges_reason": null,
     "population": 4864,
     "population_language": "java",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 13934.1,
+    "probe_init_elapsed_ms": 12122.5,
     "project_root": "/work/javapoet/src",
     "resolution": {
      "askable": 4864,
@@ -69,14 +76,14 @@
      },
      "calls": 6443,
      "dynamic": 0,
-     "engine_confirmed": 2575,
+     "engine_confirmed": 2600,
      "engine_unresolved": 10,
      "external": 3569,
      "external_by_class": {
       "builtin": 1290,
       "engine-external-definition": 2279
      },
-     "lexical_resolved": 289,
+     "lexical_resolved": 264,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
      "resolvable": 2874,
      "resolved": 2864,
@@ -90,7 +97,7 @@
      "before_inference": 39
     },
     "stride": 1,
-    "total_elapsed_ms": 72876.6,
+    "total_elapsed_ms": 85095.3,
     "verdicts": {
      "edge-call": 2575,
      "external-definition": 2279,
@@ -98,16 +105,16 @@
     }
    }
   },
-  "finished_at": "2026-11-13T12:07:15Z",
+  "finished_at": "2026-11-13T13:40:05Z",
   "languages": {
    "java": {
     "engine": "eclipse-jdtls@1.46.0",
     "state": "fresh"
    }
   },
-  "manifest_digest": "bd1671ddae4766f21158786c15cc77aeb7749a18bc3a63e1a01518bae636a146",
+  "manifest_digest": "b945c14a24b5d6f65c16fa68a28b9e9e9604b6d6eb5bb54a4bf1c8bc6ff97372",
   "pass": true,
-  "started_at": "2026-11-13T12:06:01Z"
+  "started_at": "2026-11-13T13:38:38Z"
  },
  "engines": {
   "java": {
@@ -128,11 +135,12 @@
    "reads_naming_project_callables": {
     "java read .java": 296
    },
-   "answers_cached": 4864,
+   "answers_cached": 5153,
    "answer_verdicts": {
     "external-definition": 2279,
-    "edge-call": 2575,
-    "unresolved": 10
+    "edge-call": 2862,
+    "unresolved": 10,
+    "edge-instantiation": 2
    },
    "edge_store": {
     "reason": null,
@@ -153,12 +161,20 @@
       "excluded_classes": {
        "builtin": 1290
       },
-      "no_edges_reason": null
+      "no_edges_reason": null,
+      "checked": {
+       "population": 289,
+       "asked": 289,
+       "same": 264,
+       "corrected": 25,
+       "external": 0
+      }
      }
     }
    },
    "stored_edges": {
-    "confirmed edge-call target=function": 2575
+    "confirmed edge-call target=function": 2862,
+    "confirmed edge-instantiation target=class": 2
    },
    "probe": {
     "ready": true,
@@ -166,7 +182,7 @@
    },
    "asked_again_by_verdict": {
     "java edge-call": {
-     "population": 2575,
+     "population": 2862,
      "sampled": 20,
      "places": {
       "definition": {
@@ -176,7 +192,8 @@
        "project-callable function": 20
       },
       "type_definition": {
-       "error": 20
+       "error": 19,
+       "project-callable class": 1
       }
      },
      "exact": {
@@ -229,13 +246,13 @@
        ]
       },
       {
-       "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:114",
-       "name": "joining",
+       "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:385",
+       "name": "unindent",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@422:4",
          "in_view": true
         }
        ],
@@ -243,7 +260,7 @@
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@422:4",
          "in_view": true
         }
        ],
@@ -256,26 +273,26 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@422:4",
          "kind": "function"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-call",
-         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@422:4",
          "kind": "function"
         }
        ]
       },
       {
-       "site": "src/main/java/com/squareup/javapoet/JavaFile.java:151",
-       "name": "writeTo",
+       "site": "src/main/java/com/squareup/javapoet/FieldSpec.java:130",
+       "name": "javadoc.add",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@411:4",
          "in_view": true
         }
        ],
@@ -283,7 +300,7 @@
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@411:4",
          "in_view": true
         }
        ],
@@ -296,26 +313,26 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@411:4",
          "kind": "function"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-call",
-         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@411:4",
          "kind": "function"
         }
        ]
       },
       {
-       "site": "src/main/java/com/squareup/javapoet/ParameterSpec.java:117",
-       "name": "checkArgument",
+       "site": "src/main/java/com/squareup/javapoet/MethodSpec.java:110",
+       "name": "defaultValue.isEmpty",
        "definition": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@79:2",
          "in_view": true
         }
        ],
@@ -323,7 +340,7 @@
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@79:2",
          "in_view": true
         }
        ],
@@ -336,15 +353,124 @@
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@79:2",
          "kind": "function"
         }
        ],
        "exact_implementation": [
         {
          "verdict": "edge-call",
-         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@79:2",
          "kind": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "java edge-instantiation": {
+     "population": 2,
+     "sampled": 2,
+     "places": {
+      "definition": {
+       "project-callable class": 2
+      },
+      "implementation": {
+       "project-callable class": 2
+      },
+      "type_definition": {
+       "project-callable class": 2
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-instantiation class": 2
+      },
+      "exact_implementation": {
+       "edge-instantiation class": 2
+      }
+     },
+     "examples": [
+      {
+       "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:63",
+       "name": "Multiset",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2",
+         "kind": "class"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "src/test/java/com/squareup/javapoet/TypesEclipseTest.java:147",
+       "name": "CompilationRule",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "src/test/java/com/squareup/javapoet/TypesEclipseTest.java::class@60:2",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "src/test/java/com/squareup/javapoet/TypesEclipseTest.java::class@60:2",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "src/test/java/com/squareup/javapoet/TypesEclipseTest.java::class@60:2",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "src/test/java/com/squareup/javapoet/TypesEclipseTest.java::class@60:2",
+         "kind": "class"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "src/test/java/com/squareup/javapoet/TypesEclipseTest.java::class@60:2",
+         "kind": "class"
         }
        ]
       }
@@ -1581,8 +1707,8 @@
      }
     ]
    },
-   "seconds": 52.8,
-   "probe_seconds": 53.1
+   "seconds": 60.9,
+   "probe_seconds": 61.3
   }
  },
  "graph_use": {
@@ -1599,8 +1725,8 @@
    "resolution": {
     "calls": 6443,
     "resolved": 2864,
-    "lexical_resolved": 289,
-    "engine_confirmed": 2575,
+    "lexical_resolved": 264,
+    "engine_confirmed": 2600,
     "external": 3569,
     "external_by_class": {
      "builtin": 1290,
@@ -1625,19 +1751,19 @@
    }
   },
   "references": {
-   "engine resolved target=concrete": 2575,
-   "lexical resolved target=concrete": 289,
+   "engine resolved target=concrete": 2600,
+   "lexical resolved target=concrete": 264,
    "lexical unresolved target=None": 3579
   },
   "candidates": 0,
   "conflicts": 0,
   "conflict_examples": [],
   "call_links_kept": {
-   "engine": 2575,
-   "lexical": 289
+   "engine": 2600,
+   "lexical": 264
   },
   "call_links_lost": {},
   "lost_examples": {}
  },
- "seconds": 133.7
+ "seconds": 153.5
 }

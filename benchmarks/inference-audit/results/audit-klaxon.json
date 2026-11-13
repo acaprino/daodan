@@ -1,8 +1,8 @@
 {
  "case": "klaxon",
- "snapshot_seconds": 19.1,
- "pass_seconds": 37.6,
- "pass_stdout": "jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.10.2\nresolving 4 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling coursier 2.1.24 into /root/.cache/daodan/engines/coursier/2.1.24 (first use)\n{\n  \"answer_cache\": \"/work/klaxon/snapshot/engine-answers.sqlite\",\n  \"asked\": 1443,\n  \"available\": true,\n  \"candidates\": 11,\n  \"confirmed_edges\": 501,\n  \"coverage\": \"1443 of 1444 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/klaxon/snapshot/engine-edges.sqlite\",\n  \"engine\": \"kotlin-analysis-api@2.3.13\",\n  \"excluded_classes\": {\n    \"builtin\": 678\n  },\n  \"inference_elapsed_ms\": 11234.7,\n  \"languages\": {\n    \"kotlin\": {\n      \"asked\": 1443,\n      \"candidates\": 11,\n      \"confirmed\": 501,\n      \"created_at\": \"2026-11-13T12:06:52Z\",\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"excluded_classes\": {\n        \"builtin\": 678\n      },\n      \"no_edges_reason\": null,\n      \"population\": 1444,\n      \"reused\": 0,\n      \"selected\": 1444,\n      \"source_verification\": {\n        \"after_inference\": 104,\n        \"before_inference\": 104\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"dynamic-callee\": 1,\n        \"edge-call\": 432,\n        \"edge-instantiation\": 69,\n        \"external-definition\": 838,\n        \"project-not-a-symbol\": 11,\n        \"unresolved\": 93\n      }\n    }\n  },\n  \"latency_mean_ms\": 7.8,\n  \"latency_p95_ms\": 20.6,\n  \"no_edges_reason\": null,\n  \"population\": 1444,\n  \"population_language\": \"kotlin\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 21136.9,\n  \"project_root\": \"/work/klaxon/src\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-kotlin.json\",\n  \"resolution\": {\n    \"askable\": 1443,\n    \"by_language\": {\n      \"kotlin\": {\n        \"calls\": 2433,\n        \"engine\": \"kotlin-analysis-api@2.3.13\",\n        \"resolvable\": 917,\n        \"resolved\": 812,\n        \"resolved_ratio\": 0.885\n      }\n    },\n    \"calls\": 2433,\n    \"dynamic\": 1,\n    \"engine_confirmed\": 501,\n    \"engine_unresolved\": 104,\n    \"external\": 1516,\n    \"external_by_class\": {\n      \"builtin\": 678,\n      \"engine-external-definition\": 838\n    },\n    \"lexical_resolved\": 311,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 917,\n    \"resolved\": 812,\n    \"resolved_ratio\": 0.885,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 1444,\n  \"source_verification\": {\n    \"after_inference\": 104,\n    \"before_inference\": 104\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 33295.2,\n  \"verdicts\": {\n    \"dynamic-callee\": 1,\n    \"edge-call\": 432,\n    \"edge-instantiation\": 69,\n    \"external-definition\": 838,\n    \"project-not-a-symbol\": 11,\n    \"unresolved\": 93\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"java\",\n      \"state\": \"fresh\"\n    },\n    \"javascript\": {\n      \"engine\": \"typescript\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "snapshot_seconds": 16.9,
+ "pass_seconds": 34.8,
+ "pass_stdout": "ng coursier 2.1.24 into /root/.cache/daodan/engines/coursier/2.1.24 (first use)\n{\n  \"answer_cache\": \"/work/klaxon/snapshot/engine-answers.sqlite\",\n  \"asked\": 1443,\n  \"available\": true,\n  \"candidates\": 11,\n  \"confirmed_edges\": 501,\n  \"coverage\": \"1443 of 1444 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/klaxon/snapshot/engine-edges.sqlite\",\n  \"engine\": \"kotlin-analysis-api@2.3.13\",\n  \"excluded_classes\": {\n    \"builtin\": 678\n  },\n  \"inference_elapsed_ms\": 12712.1,\n  \"languages\": {\n    \"kotlin\": {\n      \"asked\": 1443,\n      \"candidates\": 11,\n      \"checked\": {\n        \"asked\": 311,\n        \"corrected\": 0,\n        \"external\": 0,\n        \"population\": 311,\n        \"same\": 311\n      },\n      \"confirmed\": 501,\n      \"created_at\": \"2026-11-13T13:39:25Z\",\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"excluded_classes\": {\n        \"builtin\": 678\n      },\n      \"no_edges_reason\": null,\n      \"population\": 1444,\n      \"reused\": 0,\n      \"selected\": 1444,\n      \"source_verification\": {\n        \"after_inference\": 104,\n        \"before_inference\": 104\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"dynamic-callee\": 1,\n        \"edge-call\": 432,\n        \"edge-instantiation\": 69,\n        \"external-definition\": 838,\n        \"project-not-a-symbol\": 11,\n        \"unresolved\": 93\n      }\n    }\n  },\n  \"latency_mean_ms\": 7.2,\n  \"latency_p95_ms\": 18.6,\n  \"no_edges_reason\": null,\n  \"population\": 1444,\n  \"population_language\": \"kotlin\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 16873.2,\n  \"project_root\": \"/work/klaxon/src\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-kotlin.json\",\n  \"resolution\": {\n    \"askable\": 1443,\n    \"by_language\": {\n      \"kotlin\": {\n        \"calls\": 2433,\n        \"engine\": \"kotlin-analysis-api@2.3.13\",\n        \"resolvable\": 917,\n        \"resolved\": 812,\n        \"resolved_ratio\": 0.885\n      }\n    },\n    \"calls\": 2433,\n    \"dynamic\": 1,\n    \"engine_confirmed\": 501,\n    \"engine_unresolved\": 104,\n    \"external\": 1516,\n    \"external_by_class\": {\n      \"builtin\": 678,\n      \"engine-external-definition\": 838\n    },\n    \"lexical_resolved\": 311,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 917,\n    \"resolved\": 812,\n    \"resolved_ratio\": 0.885,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 1444,\n  \"source_verification\": {\n    \"after_inference\": 104,\n    \"before_inference\": 104\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 31152.7,\n  \"verdicts\": {\n    \"dynamic-callee\": 1,\n    \"edge-call\": 432,\n    \"edge-instantiation\": 69,\n    \"external-definition\": 838,\n    \"project-not-a-symbol\": 11,\n    \"unresolved\": 93\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"java\",\n      \"state\": \"fresh\"\n    },\n    \"javascript\": {\n      \"engine\": \"typescript\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -23,8 +23,15 @@
      "java": {
       "asked": 0,
       "candidates": 0,
+      "checked": {
+       "asked": 0,
+       "corrected": 0,
+       "external": 0,
+       "population": 0,
+       "same": 0
+      },
       "confirmed": 0,
-      "created_at": "2026-11-13T12:06:19Z",
+      "created_at": "2026-11-13T13:38:53Z",
       "engine": "java",
       "excluded_classes": {},
       "no_edges_reason": "no-unresolved-calls",
@@ -82,7 +89,7 @@
      "before_inference": 1
     },
     "stride": 1,
-    "total_elapsed_ms": 286.8,
+    "total_elapsed_ms": 351.1,
     "verdicts": {}
    },
    "kotlin": {
@@ -98,13 +105,20 @@
     "excluded_classes": {
      "builtin": 678
     },
-    "inference_elapsed_ms": 11234.7,
+    "inference_elapsed_ms": 12712.1,
     "languages": {
      "kotlin": {
       "asked": 1443,
       "candidates": 11,
+      "checked": {
+       "asked": 311,
+       "corrected": 0,
+       "external": 0,
+       "population": 311,
+       "same": 311
+      },
       "confirmed": 501,
-      "created_at": "2026-11-13T12:06:52Z",
+      "created_at": "2026-11-13T13:39:25Z",
       "engine": "kotlin-analysis-api@2.3.13",
       "excluded_classes": {
        "builtin": 678
@@ -129,13 +143,13 @@
       }
      }
     },
-    "latency_mean_ms": 7.8,
-    "latency_p95_ms": 20.6,
+    "latency_mean_ms": 7.2,
+    "latency_p95_ms": 18.6,
     "no_edges_reason": null,
     "population": 1444,
     "population_language": "kotlin",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 21136.9,
+    "probe_init_elapsed_ms": 16873.2,
     "project_root": "/work/klaxon/src",
     "resolution": {
      "askable": 1443,
@@ -171,7 +185,7 @@
      "before_inference": 104
     },
     "stride": 1,
-    "total_elapsed_ms": 33295.2,
+    "total_elapsed_ms": 31152.7,
     "verdicts": {
      "dynamic-callee": 1,
      "edge-call": 432,
@@ -197,8 +211,15 @@
      "javascript": {
       "asked": 0,
       "candidates": 0,
+      "checked": {
+       "asked": 0,
+       "corrected": 0,
+       "external": 0,
+       "population": 0,
+       "same": 0
+      },
       "confirmed": 0,
-      "created_at": "2026-11-13T12:06:18Z",
+      "created_at": "2026-11-13T13:38:52Z",
       "engine": "typescript",
       "excluded_classes": {},
       "no_edges_reason": "no-unresolved-calls",
@@ -256,11 +277,11 @@
      "before_inference": 1
     },
     "stride": 1,
-    "total_elapsed_ms": 236.5,
+    "total_elapsed_ms": 302.2,
     "verdicts": {}
    }
   },
-  "finished_at": "2026-11-13T12:06:53Z",
+  "finished_at": "2026-11-13T13:39:25Z",
   "languages": {
    "java": {
     "engine": "java",
@@ -275,9 +296,9 @@
     "state": "fresh"
    }
   },
-  "manifest_digest": "ff1d29804144891ac43d20467d55bab5ac2beb283106458dbddcacb63120479c",
+  "manifest_digest": "98fb1d3606dda2e7e27e06091448438c1790491c9280691ef10305d0ce7a5182",
   "pass": true,
-  "started_at": "2026-11-13T12:06:15Z"
+  "started_at": "2026-11-13T13:38:50Z"
  },
  "engines": {
   "typescript": {
@@ -303,7 +324,14 @@
       "candidates": 0,
       "verdicts": {},
       "excluded_classes": {},
-      "no_edges_reason": "no-unresolved-calls"
+      "no_edges_reason": "no-unresolved-calls",
+      "checked": {
+       "population": 0,
+       "asked": 0,
+       "same": 0,
+       "corrected": 0,
+       "external": 0
+      }
      }
     }
    },
@@ -326,8 +354,8 @@
     "exact": {},
     "examples": []
    },
-   "seconds": 3.8,
-   "probe_seconds": 4.1
+   "seconds": 4.4,
+   "probe_seconds": 4.6
   },
   "java": {
    "engine": "java",
@@ -352,7 +380,14 @@
       "candidates": 0,
       "verdicts": {},
       "excluded_classes": {},
-      "no_edges_reason": "no-unresolved-calls"
+      "no_edges_reason": "no-unresolved-calls",
+      "checked": {
+       "population": 0,
+       "asked": 0,
+       "same": 0,
+       "corrected": 0,
+       "external": 0
+      }
      }
     }
    },
@@ -375,8 +410,8 @@
     "exact": {},
     "examples": []
    },
-   "seconds": 19.2,
-   "probe_seconds": 19.4
+   "seconds": 9.1,
+   "probe_seconds": 9.4
   },
   "kotlin": {
    "engine": "kotlin",
@@ -397,11 +432,11 @@
    "reads_naming_project_callables": {
     "kotlin read .kt": 260
    },
-   "answers_cached": 1443,
+   "answers_cached": 1754,
    "answer_verdicts": {
     "external-definition": 838,
-    "edge-call": 432,
-    "edge-instantiation": 69,
+    "edge-call": 657,
+    "edge-instantiation": 155,
     "unresolved": 93,
     "project-not-a-symbol": 11
    },
@@ -427,14 +462,21 @@
       "excluded_classes": {
        "builtin": 678
       },
-      "no_edges_reason": null
+      "no_edges_reason": null,
+      "checked": {
+       "population": 311,
+       "asked": 311,
+       "same": 311,
+       "corrected": 0,
+       "external": 0
+      }
      }
     }
    },
    "stored_edges": {
     "candidate project-not-a-symbol target=None": 11,
-    "confirmed edge-call target=function": 432,
-    "confirmed edge-instantiation target=class": 69
+    "confirmed edge-call target=function": 657,
+    "confirmed edge-instantiation target=class": 155
    },
    "probe": {
     "ready": true,
@@ -442,7 +484,7 @@
    },
    "asked_again_by_verdict": {
     "kotlin edge-call": {
-     "population": 432,
+     "population": 657,
      "sampled": 20,
      "places": {
       "definitions": {
@@ -475,20 +517,20 @@
        ]
       },
       {
-       "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:140",
-       "name": "klaxon.findConverterFromClass",
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:195",
+       "name": "converter.fromJson",
        "definitions": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt::function@235:4",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/Converter.kt::function@20:4",
          "in_view": true
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt::function@235:4",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/Converter.kt::function@20:4",
          "kind": "function"
         }
        ]
@@ -513,20 +555,20 @@
        ]
       },
       {
-       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt:74",
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt:27",
        "name": "consumeValue",
        "definitions": [
         {
          "place": "project-callable",
          "kind": "function",
-         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@183:4",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@176:4",
          "in_view": true
         }
        ],
        "exact_definition": [
         {
          "verdict": "edge-call",
-         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@183:4",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@176:4",
          "kind": "function"
         }
        ]
@@ -534,7 +576,7 @@
      ]
     },
     "kotlin edge-instantiation": {
-     "population": 69,
+     "population": 155,
      "sampled": 20,
      "places": {
       "definitions": {
@@ -567,7 +609,26 @@
        ]
       },
       {
-       "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:121",
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt:7",
+       "name": "JsonObject",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt::class@9:0",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt::class@9:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObjectConverter.kt:115",
        "name": "KlaxonException",
        "definitions": [
         {
@@ -586,26 +647,7 @@
        ]
       },
       {
-       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:47",
-       "name": "JsonArray",
-       "definitions": [
-        {
-         "place": "project-callable",
-         "kind": "class",
-         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::class@10:0",
-         "in_view": true
-        }
-       ],
-       "exact_definition": [
-        {
-         "verdict": "edge-instantiation",
-         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::class@10:0",
-         "kind": "class"
-        }
-       ]
-      },
-      {
-       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObjectConverter.kt:223",
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt:171",
        "name": "KlaxonException",
        "definitions": [
         {
@@ -937,8 +979,8 @@
     },
     "examples": []
    },
-   "seconds": 11.3,
-   "probe_seconds": 11.5
+   "seconds": 11.8,
+   "probe_seconds": 12.0
   }
  },
  "graph_use": {
@@ -995,5 +1037,5 @@
   "call_links_lost": {},
   "lost_examples": {}
  },
- "seconds": 92.0
+ "seconds": 78.0
 }
