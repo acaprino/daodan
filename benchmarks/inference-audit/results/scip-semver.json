@@ -1,0 +1,311 @@
+{
+ "case": "semver",
+ "commit": "280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe",
+ "snapshot_seconds": 2.3,
+ "road_a": {
+  "source": "rerun",
+  "seconds": 33.3,
+  "peak_rss_mb": 1094,
+  "returncode": 0,
+  "stderr_tail": "DAODAN_MAXRSS_KB=1119820\n",
+  "coverage": {
+   "rust": {
+    "rust": {
+     "calls": 793,
+     "engine": "rust-analyzer@2026-11-09",
+     "resolvable": 475,
+     "resolved": 438,
+     "resolved_ratio": 0.922
+    }
+   }
+  }
+ },
+ "indexers": {
+  "rust-analyzer": {
+   "indexer": "rust-analyzer",
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/opt/scip/bin/rust-analyzer",
+      "scip",
+      ".",
+      "--output",
+      "/work/semver/rust-analyzer-0.scip",
+      "--config-path",
+      "/work/semver/rust-analyzer.json"
+     ],
+     "returncode": 0,
+     "seconds": 4.8,
+     "peak_rss_mb": 1170,
+     "stdout_tail": "",
+     "stderr_tail": "368f) } })\n2026-11-13T19:15:11.827442969Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(368f) } })\n2026-11-13T19:15:11.885457834Z ERROR Bug: definition at tests/util/mod.rs:6:14-6:21 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885503553Z ERROR Bug: definition at tests/util/mod.rs:6:14-6:21 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885524914Z ERROR Bug: definition at src/lib.rs:245:26-245:35 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885540414Z ERROR Bug: definition at src/lib.rs:307:29-307:38 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.88554859Z ERROR Bug: definition at tests/util/mod.rs:31:14-31:28 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885565001Z ERROR Bug: definition at tests/util/mod.rs:21:14-21:21 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885571173Z ERROR Bug: definition at tests/util/mod.rs:46:14-46:28 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885579981Z ERROR Bug: definition at src/error.rs:18:26-18:35 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.88558497Z ERROR Bug: definition at tests/util/mod.rs:51:14-51:30 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885594268Z ERROR Bug: definition at tests/util/mod.rs:26:14-26:24 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885599398Z ERROR Bug: definition at tests/util/mod.rs:16:14-16:17 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885604778Z ERROR Bug: definition at tests/util/mod.rs:36:14-36:24 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885612163Z ERROR Bug: definition at tests/util/mod.rs:0:0-54:0 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885619838Z ERROR Bug: definition at tests/util/mod.rs:51:14-51:30 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885625308Z ERROR Bug: definition at tests/util/mod.rs:11:14-11:25 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885632732Z ERROR Bug: definition at tests/util/mod.rs:0:0-54:0 should have been in an SCIP document but was not.\n2026-11-13T19:15:11.885637652Z ERROR Bug: definition at src/lib.rs:307:18-307:23 should have been in an SCIP document but was not.\nGenerating SCIP finished 4.620298239s\nDAODAN_MAXRSS_KB=1198344\n",
+     "index": "/work/semver/rust-analyzer-0.scip",
+     "index_bytes": 496873
+    },
+    {
+     "prefix": "fuzz",
+     "command": [
+      "/opt/scip/bin/rust-analyzer",
+      "scip",
+      ".",
+      "--output",
+      "/work/semver/rust-analyzer-1.scip",
+      "--config-path",
+      "/work/semver/rust-analyzer.json"
+     ],
+     "returncode": 0,
+     "seconds": 3.9,
+     "peak_rss_mb": 909,
+     "stdout_tail": "",
+     "stderr_tail": "losing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(126c7) } })\n2026-11-13T19:15:15.652923606Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(126c7) } })\n2026-11-13T19:15:15.692269347Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(dea0) } })\n2026-11-13T19:15:15.692887894Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(dea0) } })\n2026-11-13T19:15:15.693221168Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(dea0) } })\n2026-11-13T19:15:15.693478065Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(dea0) } })\n2026-11-13T19:15:15.696981672Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1c681) } })\n2026-11-13T19:15:15.697245953Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1c681) } })\n2026-11-13T19:15:15.697604857Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1c681) } })\n2026-11-13T19:15:15.698101057Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1c681) } })\n2026-11-13T19:15:15.77782184Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(e1a0) } })\n2026-11-13T19:15:15.80488774Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(dea4) } })\n2026-11-13T19:15:15.832788189Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1ad66) } })\n2026-11-13T19:15:15.833485517Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1ad66) } })\n2026-11-13T19:15:15.833625508Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1ad66) } })\n2026-11-13T19:15:15.83367832Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1ad66) } })\n2026-11-13T19:15:15.833716043Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1ad66) } })\nGenerating SCIP finished 3.753555612s\nDAODAN_MAXRSS_KB=930824\n",
+     "index": "/work/semver/rust-analyzer-1.scip",
+     "index_bytes": 14108
+    }
+   ],
+   "version": "rust-analyzer 0.3.3113-standalone",
+   "toolchain": "1.99.1",
+   "config": {
+    "cargo": {
+     "buildScripts": {
+      "enable": false
+     },
+     "features": "all"
+    },
+    "procMacro": {
+     "enable": false
+    }
+   },
+   "seconds": 8.7,
+   "peak_rss_mb": 1170,
+   "indexes": [
+    [
+     "/work/semver/rust-analyzer-0.scip",
+     ""
+    ],
+    [
+     "/work/semver/rust-analyzer-1.scip",
+     "fuzz"
+    ]
+   ]
+  }
+ },
+ "join": {
+  "languages": {
+   "rust": {
+    "references": {
+     "call": 793,
+     "read": 703
+    },
+    "b": {
+     "call": {
+      "external": 518,
+      "local": 4,
+      "none": 17,
+      "project-declaration": 254
+     },
+     "read": {
+      "external": 26,
+      "local": 499,
+      "none": 8,
+      "project-declaration": 40,
+      "project-other": 130
+     }
+    },
+    "b_none_detail": {
+     "call": {
+      "no-document": 11,
+      "no-occurrence": 1,
+      "no-position": 5
+     },
+     "read": {
+      "no-definition": 1,
+      "no-document": 7
+     }
+    },
+    "b_local_on_declaration": {},
+    "b_external_packages": {
+     "cargo core@https://github.com/rust-lang/rust/library/core": 325,
+     "cargo semver@1.0.28 [own package]": 181,
+     "cargo alloc@https://github.com/rust-lang/rust/library/alloc": 16,
+     "cargo serde_core@1.0.229": 9,
+     "cargo std@https://github.com/rust-lang/rust/library/std": 7,
+     "cargo criterion@0.8.2": 6
+    },
+    "b_followed": {},
+    "b_external_flags": {
+     "call own package": 181
+    },
+    "b_other_verdict": {
+     "call": {},
+     "read": {
+      "project-not-a-symbol": 130
+     }
+    },
+    "a": {
+     "external": 251,
+     "none": 28,
+     "not-asked": 72,
+     "project-declaration": 438,
+     "project-other": 4
+    },
+    "a_target_source": {
+     "engine": 436,
+     "lexical": 2
+    },
+    "matrix": {
+     "A external | B external": 251,
+     "A none | B external": 21,
+     "A none | B none": 7,
+     "A not-asked | B external": 62,
+     "A not-asked | B none": 8,
+     "A not-asked | B project-declaration": 2,
+     "A project-declaration | B external": 184,
+     "A project-declaration | B none": 2,
+     "A project-declaration | B project-declaration": 252,
+     "A project-other | B local": 4
+    },
+    "a_not_asked": {
+     "unresolved dynamic-callee": 5,
+     "unresolved unbound-name": 67
+    },
+    "cells": {
+     "both external": 251,
+     "both none": 15,
+     "mixed: A none, B external": 21,
+     "mixed: A not-asked, B external": 62,
+     "mixed: A project-other, B local": 4,
+     "only A has a project target": 186,
+     "only B has a project target": 2,
+     "same project target": 252
+    },
+    "reads_vs_lexical": {
+     "neither": 663,
+     "only-B": 37,
+     "same": 3
+    },
+    "examples": {
+     "B external, own package": [
+      "tests/test_version.rs:15 version_err | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version_err().",
+      "tests/test_version.rs:37 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/assert_to_string().",
+      "tests/test_version.rs:54 version_err | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version_err().",
+      "tests/test_version.rs:85 version | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version().",
+      "tests/test_version.rs:121 build_metadata | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/build_metadata().",
+      "tests/test_version.rs:176 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/assert_to_string().",
+      "tests/test_version.rs:239 version | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version().",
+      "tests/test_version_req.rs:59 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:85 req | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:121 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:144 req_err | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req_err().",
+      "tests/test_version_req.rs:180 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:223 req | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:298 req | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:335 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:361 req_err | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req_err().",
+      "tests/test_version_req.rs:380 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:400 comparator_err | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/comparator_err().",
+      "tests/test_version_req.rs:420 assert_to_string | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:454 req | cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req()."
+     ],
+     "B local on calls": [
+      "src/display.rs:129 do_len | A project-other project-not-a-symbol | B local local 27",
+      "src/display.rs:131 do_display | A project-other project-not-a-symbol | B local local 26",
+      "src/display.rs:148 do_display | A project-other project-not-a-symbol | B local local 26",
+      "src/impls.rs:91 string_cmp | A project-other project-not-a-symbol | B local local 15"
+     ],
+     "B none on calls (no-document)": [
+      "tests/node/mod.rs:11 VersionReq | A project-declaration tests/node/mod.rs::class@8:0 | B none no-document",
+      "tests/node/mod.rs:14 Command.new | A none unresolved | B none no-document",
+      "tests/node/mod.rs:15 (expr).arg | A none unresolved | B none no-document",
+      "tests/node/mod.rs:16 (expr).arg | A none unresolved | B none no-document",
+      "tests/node/mod.rs:21 (expr).output | A none unresolved | B none no-document",
+      "tests/node/mod.rs:22 (expr).unwrap | A none unresolved | B none no-document",
+      "tests/node/mod.rs:28 String.from_utf8_lossy | A not-asked - | B none no-document",
+      "tests/node/mod.rs:28 String.from_utf8_lossy | A not-asked - | B none no-document",
+      "tests/node/mod.rs:36 Display.fmt | A none unresolved | B none no-document",
+      "tests/node/mod.rs:42 VersionReq | A project-declaration tests/node/mod.rs::class@8:0 | B none no-document",
+      "tests/node/mod.rs:42 crate.util.req | A not-asked - | B none no-document"
+     ],
+     "B none on calls (no-occurrence)": [
+      "src/identifier.rs:326 repr.trailing_zeros | A none unresolved | B none no-occurrence"
+     ],
+     "B none on calls (no-position)": [
+      "benches/parse.rs:8  | A not-asked - | B none no-position",
+      "benches/parse.rs:12  | A not-asked - | B none no-position",
+      "benches/parse.rs:16  | A not-asked - | B none no-position",
+      "src/identifier.rs:321  | A not-asked - | B none no-position",
+      "src/identifier.rs:338  | A not-asked - | B none no-position"
+     ],
+     "only A has a project target (B external)": [
+      "src/serde.rs:51 string.parse | A project-declaration src/parse.rs::function@28:4 | B external cargo core@https://github.com/rust-lang/rust/library/core :: rust-analyzer cargo core https://github.com/rust-lang/rust/library/core lib/str/impl#[str]parse().",
+      "tests/test_version.rs:30 version_err | A project-declaration tests/util/mod.rs::function@12:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version_err().",
+      "tests/test_version.rs:49 assert_to_string | A project-declaration tests/util/mod.rs::function@52:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/assert_to_string().",
+      "tests/test_version.rs:63 version | A project-declaration tests/util/mod.rs::function@7:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version().",
+      "tests/test_version.rs:111 build_metadata | A project-declaration tests/util/mod.rs::function@47:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/build_metadata().",
+      "tests/test_version.rs:146 version | A project-declaration tests/util/mod.rs::function@7:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version().",
+      "tests/test_version.rs:179 version | A project-declaration tests/util/mod.rs::function@7:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version/util/version().",
+      "tests/test_version_req.rs:54 assert_to_string | A project-declaration tests/util/mod.rs::function@52:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:80 req | A project-declaration tests/util/mod.rs::function@17:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:114 req | A project-declaration tests/util/mod.rs::function@17:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:139 assert_to_string | A project-declaration tests/util/mod.rs::function@52:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:179 req_err | A project-declaration tests/util/mod.rs::function@22:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req_err().",
+      "tests/test_version_req.rs:218 req | A project-declaration tests/util/mod.rs::function@17:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:290 req | A project-declaration tests/util/mod.rs::function@17:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req().",
+      "tests/test_version_req.rs:334 req_err | A project-declaration tests/util/mod.rs::function@22:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req_err().",
+      "tests/test_version_req.rs:361 req_err | A project-declaration tests/util/mod.rs::function@22:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req_err().",
+      "tests/test_version_req.rs:380 assert_to_string | A project-declaration tests/util/mod.rs::function@52:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:400 comparator_err | A project-declaration tests/util/mod.rs::function@32:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/comparator_err().",
+      "tests/test_version_req.rs:420 assert_to_string | A project-declaration tests/util/mod.rs::function@52:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/assert_to_string().",
+      "tests/test_version_req.rs:454 req | A project-declaration tests/util/mod.rs::function@17:0 | B external cargo semver@1.0.28 [own package] :: rust-analyzer cargo semver 1.0.28 test/test_version_req/util/req()."
+     ],
+     "only A has a project target (B none)": [
+      "tests/node/mod.rs:11 VersionReq | A project-declaration tests/node/mod.rs::class@8:0 | B none no-document",
+      "tests/node/mod.rs:42 VersionReq | A project-declaration tests/node/mod.rs::class@8:0 | B none no-document"
+     ],
+     "only B has a project target": [
+      "src/identifier.rs:108 Self.empty | A not-asked - | B project-declaration src/identifier.rs::function@90:4",
+      "src/identifier.rs:169 Self.empty | A not-asked - | B project-declaration src/identifier.rs::function@90:4"
+     ],
+     "read-only-B": [
+      "fuzz/sort_version.rs:22 Prerelease.new -> src/lib.rs::function@540:4",
+      "fuzz/sort_version.rs:23 BuildMetadata.new -> src/lib.rs::function@558:4",
+      "fuzz/sort_version.rs:30 BuildMetadata.new -> src/lib.rs::function@558:4",
+      "fuzz/sort_version.rs:37 BuildMetadata.new -> src/lib.rs::function@558:4",
+      "src/display.rs:72 Op.Wildcard -> src/lib.rs::method@256:4",
+      "src/parse.rs:33 Position.Major -> src/error.rs::method@21:4",
+      "src/parse.rs:41 Position.Patch -> src/error.rs::method@23:4",
+      "src/parse.rs:49 Position.Pre -> src/error.rs::method@24:4",
+      "src/parse.rs:96 ErrorKind.UnexpectedAfterWildcard -> src/error.rs::method@15:4",
+      "src/parse.rs:140 Position.Build -> src/error.rs::method@25:4",
+      "src/parse.rs:209 Position.Pre -> src/error.rs::method@24:4",
+      "src/parse.rs:242 Position.Pre -> src/error.rs::method@24:4",
+      "src/parse.rs:268 Op.GreaterEq -> src/lib.rs::method@251:4",
+      "src/parse.rs:274 Op.LessEq -> src/lib.rs::method@253:4",
+      "src/parse.rs:276 Op.Less -> src/lib.rs::method@252:4",
+      "src/parse.rs:281 Op.Caret -> src/lib.rs::method@255:4",
+      "src/parse.rs:297 Position.Minor -> src/error.rs::method@22:4",
+      "src/parse.rs:313 Position.Patch -> src/error.rs::method@23:4",
+      "src/parse.rs:320 ErrorKind.UnexpectedAfterWildcard -> src/error.rs::method@15:4",
+      "src/parse.rs:342 Position.Build -> src/error.rs::method@25:4"
+     ]
+    }
+   }
+  },
+  "files": {
+   "rust": 19
+  },
+  "files_indexed": {
+   "rust": 18
+  },
+  "files_not_indexed": {
+   "rust": [
+    "tests/node/mod.rs"
+   ]
+  },
+  "index_tool": "scip:rust-analyzer@0.3.3113-standalone",
+  "answers": 721,
+  "answer_line_mismatches": 0
+ },
+ "join_seconds": 0.8,
+ "seconds": 45.4
+}

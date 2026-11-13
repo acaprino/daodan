@@ -95,3 +95,49 @@ Stessi sei casi con le correzioni `1f5c55ac5` (il motore interroga anche le chia
 - Jedi su phazly: P7 2.000 su 2.000 alla stessa dichiarazione (prima 1.956); 37 chiamate Python in più risolte dal motore (10.329 su 13.385).
 - Tempo del passo dei motori: tududi da 1.676 a 2.138 s (+28%); phazly da 2.285 a 1.594 s, ma la misura precedente comprende un riavvio per preemption e non è confrontabile.
 - tududi TypeScript perde 4 archi del motore (7.027 → 7.023) senza una chiamata corretta o esterna che li spieghi: causa da guardare.
+
+### 13 novembre 2026, indice SCIP contro motori
+
+Strada A: il passo dei motori del prodotto (`resolve_edges.py --pass`, una posizione per volta, solo chiamate). Strada B: l'indice SCIP dell'intero progetto da un indicizzatore esistente, unito per posizione ai riferimenti dello snapshot (`call` e `read`) e graduato con le stesse regole del passo (`grade_all`, simboli `local` compresi). App `daodan-scip-audit` (`modal_scip.py`), risultati in `results/scip-<caso>.json`.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | chi `c64ed7d6`, semver `280ebcb6`, tududi `71da9d7b` (come sopra) |
+| indicizzatori | scip-go v0.2.9 con Go 1.27.3; `rust-analyzer scip` 2026-11-09 con Rust 1.99.1, senza build script né macro procedurali; scip-typescript 0.5.2 su Node 22.23.4 |
+| dipendenze | Go `go mod download`; Rust quelle di cargo; JS/TS `npm ci --ignore-scripts` (l'installazione del passo, `npm_modules`) |
+| perimetro | una copia del checkout; Go e Rust: un'esecuzione in più per ogni modulo o crate annidato e le cartelle `_x` di Go nominate come pacchetti; TypeScript: un tsconfig generato con ogni file JS/TS dello snapshot e `allowJs`, che estende quello del progetto |
+| strada A | chi e semver rieseguita nel container; tududi dalle risposte per chiamata di `answers-tududi-r1.sqlite` (stesso commit), 0 righe fuori posizione |
+
+Chiamate con una destinazione del progetto:
+
+| Caso | Chiamate | A | B | Uguali | Diverse | Solo A | Solo B |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| chi (Go) | 4.133 | 1.014 | 1.477 | 861 | 153 | 0 | 463 |
+| semver (Rust) | 793 | 438 | 254 | 252 | 0 | 186 | 2 |
+| tududi JavaScript | 72.890 | 12.767 | 11.022 | 11.013 | 0 | 1.754 | 9 |
+| tududi TypeScript | 38.477 | 7.023 | 7.007 | 7.002 | 0 | 21 | 5 |
+
+- Solo B, chi: 463 chiamate che il passo non chiede mai, perché il lessicale le lascia `unbound-name` e il passo le esclude come builtin (`ClientIPFromHeader` da un file di test dello stesso pacchetto, `chi.NewRouter`).
+- Diverse, chi: B dà il metodo dell'interfaccia (`Router.Get`, `chi.go:101`), A l'unica implementazione (`Mux.Get`, `mux.go:155`) grazie a `implementation`.
+- Solo A, semver: 181 chiamate dai test di integrazione agli aiuti di `tests/util/mod.rs`, modulo incluso da più crate di test: l'indice lo definisce una volta sola e gli altri crate lo nominano con un simbolo senza definizione; 3 cadono nella libreria standard (a campione `string.parse()`, che A segue fino all'implementazione `FromStr` del progetto); 2 in `tests/node/mod.rs`, che nessun crate include.
+- Solo A, tududi JavaScript: 1.675 chiamate su un oggetto di modulo CommonJS (`logger.logError`), dove B si ferma alla proprietà di `module.exports = { … }`; 79 su membri di un oggetto letterale di un altro file, che scip-typescript marca `local`.
+- B senza occorrenza sulle chiamate: chi 266 builtin del linguaggio (`len`, `append`); tududi JavaScript 15.445, chiamate su valori `any` (`res.json`, modelli Sequelize), 15.104 delle quali senza risposta anche da A.
+
+Letture con una destinazione del progetto (A non chiede letture):
+
+| Caso | Letture | B | Anche il lessicale | Solo B |
+| --- | --- | --- | --- | --- |
+| chi | 5.966 | 73 | 21 | 52 |
+| semver | 703 | 40 | 3 | 37 |
+| tududi JavaScript | 62.059 | 1.476 | 1.125 | 351 |
+| tududi TypeScript | 39.420 | 3.227 | 2.734 | 493 |
+
+Tempo e memoria (picco del processo più grande):
+
+| Caso | Indicizzatore | Passo dei motori |
+| --- | --- | --- |
+| chi | 12,2 s, 335 MB | 56,4 s, 787 MB |
+| semver | 8,7 s, 1.170 MB | 33,3 s, 1.094 MB |
+| tududi | 62,5 s, 2.257 MB | 2.400 s (run r1, memoria non misurata) |
+
+Costo fatturato da Modal: 0,29 USD per quattro iterazioni (l'ultima fascia oraria non ancora chiusa).

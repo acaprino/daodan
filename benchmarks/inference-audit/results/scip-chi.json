@@ -1,0 +1,402 @@
+{
+ "case": "chi",
+ "commit": "c64ed7d6635f33a8b2feaff7dcfa55677023ac7d",
+ "snapshot_seconds": 4.6,
+ "road_a": {
+  "source": "rerun",
+  "seconds": 56.4,
+  "peak_rss_mb": 787,
+  "returncode": 0,
+  "stderr_tail": "DAODAN_MAXRSS_KB=805680\n",
+  "coverage": {
+   "go": {
+    "go": {
+     "calls": 4133,
+     "engine": "gopls@v0.24.0",
+     "resolvable": 1100,
+     "resolved": 1014,
+     "resolved_ratio": 0.922
+    }
+   }
+  }
+ },
+ "indexers": {
+  "scip-go": {
+   "indexer": "scip-go",
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/opt/scip/bin/scip-go",
+      "--output=/work/chi/scip-go-0.scip",
+      "./...",
+      "./_examples/custom-handler",
+      "./_examples/custom-method",
+      "./_examples/fileserver",
+      "./_examples/graceful",
+      "./_examples/hello-world",
+      "./_examples/limits",
+      "./_examples/logging",
+      "./_examples/pathvalue",
+      "./_examples/router-walk",
+      "./_examples/todos-resource"
+     ],
+     "returncode": 0,
+     "seconds": 10.2,
+     "peak_rss_mb": 335,
+     "stdout_tail": "Resolving module name\nLoading Packages\n\nVisiting Packages [0/15]\nVisiting Packages [15/15]\n\nIndexing Implementations [0/384]\nIndexing Implementations [384/384]\n\nVisiting Project Files [0/15]\nVisiting Project Files [15/15]\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=343464\n",
+     "index": "/work/chi/scip-go-0.scip",
+     "index_bytes": 1632115
+    },
+    {
+     "prefix": "_examples/rest",
+     "command": [
+      "/opt/scip/bin/scip-go",
+      "--output=/work/chi/scip-go-1.scip",
+      "./...",
+      "./"
+     ],
+     "returncode": 0,
+     "seconds": 1.0,
+     "peak_rss_mb": 136,
+     "stdout_tail": "Resolving module name\nLoading Packages\n\nVisiting Packages [0/1]\nVisiting Packages [1/1]\n\nIndexing Implementations [0/165]\nIndexing Implementations [165/165]\n\nVisiting Project Files [0/1]\nVisiting Project Files [1/1]\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=138872\n",
+     "index": "/work/chi/scip-go-1.scip",
+     "index_bytes": 64652
+    },
+    {
+     "prefix": "_examples/versions",
+     "command": [
+      "/opt/scip/bin/scip-go",
+      "--output=/work/chi/scip-go-2.scip",
+      "./...",
+      "./",
+      "./data",
+      "./presenter/v1",
+      "./presenter/v2",
+      "./presenter/v3"
+     ],
+     "returncode": 0,
+     "seconds": 1.0,
+     "peak_rss_mb": 112,
+     "stdout_tail": "Resolving module name\nLoading Packages\n\nVisiting Packages [0/5]\nVisiting Packages [5/5]\n\nIndexing Implementations [0/162]\nIndexing Implementations [162/162]\n\nVisiting Project Files [0/5]\nVisiting Project Files [5/5]\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=114624\n",
+     "index": "/work/chi/scip-go-2.scip",
+     "index_bytes": 39509
+    }
+   ],
+   "version": "v0.2.9",
+   "seconds": 12.2,
+   "peak_rss_mb": 335,
+   "indexes": [
+    [
+     "/work/chi/scip-go-0.scip",
+     ""
+    ],
+    [
+     "/work/chi/scip-go-1.scip",
+     "_examples/rest"
+    ],
+    [
+     "/work/chi/scip-go-2.scip",
+     "_examples/versions"
+    ]
+   ]
+  }
+ },
+ "join": {
+  "languages": {
+   "go": {
+    "references": {
+     "call": 4133,
+     "read": 5966
+    },
+    "b": {
+     "call": {
+      "external": 2302,
+      "local": 39,
+      "none": 309,
+      "project-declaration": 1477,
+      "project-other": 6
+     },
+     "read": {
+      "external": 490,
+      "local": 4489,
+      "project-declaration": 73,
+      "project-other": 914
+     }
+    },
+    "b_none_detail": {
+     "call": {
+      "no-occurrence": 266,
+      "no-position": 43
+     },
+     "read": {}
+    },
+    "b_local_on_declaration": {},
+    "b_external_packages": {
+     "gomod github.com/golang/go/src@go1.24": 2602,
+     "gomod github.com/golang/go/src@go1.22": 45,
+     "gomod github.com/golang/go/src@go1.16": 33,
+     "gomod github.com/go-chi/chi/v5@v5.1.0 [own package]": 29,
+     "gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin]": 23,
+     "gomod github.com/go-chi/render@v1.0.1": 23,
+     "gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin]": 14,
+     "gomod github.com/go-chi/chi/v5@v5.2.4 [own package]": 11,
+     "gomod github.com/go-chi/render@v1.0.3": 9,
+     "gomod github.com/go-chi/docgen@v1.2.0": 3
+    },
+    "b_followed": {},
+    "b_external_flags": {
+     "call own package": 55,
+     "call project twin": 30,
+     "read own package": 22,
+     "read project twin": 7
+    },
+    "b_other_verdict": {
+     "call": {
+      "project-not-a-symbol": 6
+     },
+     "read": {
+      "project-not-a-symbol": 914
+     }
+    },
+    "a": {
+     "external": 2299,
+     "not-asked": 777,
+     "project-declaration": 1014,
+     "project-other": 43
+    },
+    "a_target_source": {
+     "engine": 1014
+    },
+    "matrix": {
+     "A external | B external": 2294,
+     "A external | B none": 5,
+     "A not-asked | B external": 8,
+     "A not-asked | B none": 304,
+     "A not-asked | B project-declaration": 463,
+     "A not-asked | B project-other": 2,
+     "A project-declaration | B project-declaration": 1014,
+     "A project-other | B local": 39,
+     "A project-other | B project-other": 4
+    },
+    "a_not_asked": {
+     "unresolved dynamic-callee": 43,
+     "unresolved unbound-name": 734
+    },
+    "cells": {
+     "both external": 2294,
+     "both none": 304,
+     "different project target": 153,
+     "mixed: A external, B none": 5,
+     "mixed: A not-asked, B external": 8,
+     "mixed: A not-asked, B project-other": 2,
+     "mixed: A project-other, B local": 39,
+     "mixed: A project-other, B project-other": 4,
+     "only B has a project target": 463,
+     "same project target": 861
+    },
+    "reads_vs_lexical": {
+     "neither": 5884,
+     "only-B": 52,
+     "only-lexical": 9,
+     "same": 21
+    },
+    "examples": {
+     "B external, own package": [
+      "_examples/rest/main.go:58 chi.NewRouter | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/NewRouter().",
+      "_examples/rest/main.go:61 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:63 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:70 r.Get | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Get().",
+      "_examples/rest/main.go:80 (expr).Get | gomod github.com/go-chi/chi/v5@v5.2.4 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Router#Get().",
+      "_examples/rest/main.go:85 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Router#Use().",
+      "_examples/rest/main.go:92 r.With | gomod github.com/go-chi/chi/v5@v5.2.4 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Router#With().",
+      "_examples/rest/main.go:129 chi.URLParam | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/URLParam().",
+      "_examples/rest/main.go:222 r.Get | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Get().",
+      "_examples/versions/main.go:23 chi.NewRouter | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/NewRouter().",
+      "_examples/versions/main.go:26 middleware.Logger | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/middleware`/Logger().",
+      "_examples/versions/main.go:31 r.Use | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Router#Use().",
+      "_examples/versions/main.go:38 r.Mount | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Router#Mount().",
+      "_examples/versions/main.go:45 r.Mount | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Router#Mount().",
+      "_examples/versions/main.go:63 r.Route | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Mux#Route().",
+      "_examples/versions/main.go:80 Data | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/_examples/versions/data`/Article#Data.",
+      "_examples/versions/main.go:91 v3.NewArticleResponse | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: thub.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/_examples/versions/presenter/v3`/NewArticleResponse().",
+      "_examples/versions/main.go:111 Title | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: cip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/_examples/versions/data`/Article#Title.",
+      "_examples/versions/main.go:134 v2.NewArticleResponse | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: thub.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/_examples/versions/presenter/v2`/NewArticleResponse().",
+      "_examples/versions/main.go:148 data.ErrNotFound | gomod github.com/go-chi/chi/v5@v5.1.0 [own package] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/_examples/versions/data`/ErrNotFound."
+     ],
+     "B external, project twin": [
+      "_examples/rest/main.go:58 chi.NewRouter | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/NewRouter().",
+      "_examples/rest/main.go:60 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:61 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:62 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:63 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:64 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:70 r.Get | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Get().",
+      "_examples/rest/main.go:74 r.Get | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Get().",
+      "_examples/rest/main.go:97 r.Mount | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Mount().",
+      "_examples/rest/main.go:131 chi.URLParam | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/URLParam().",
+      "_examples/rest/main.go:221 r.Use | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/rest/main.go:225 r.Get | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/Mux#Get().",
+      "_examples/rest/main.go:229 chi.URLParam | gomod github.com/go-chi/chi/v5@v5.2.4 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.2.4 `github.com/go-chi/chi/v5`/URLParam().",
+      "_examples/versions/main.go:25 r.Use | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Mux#Use().",
+      "_examples/versions/main.go:25 middleware.RequestID | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/middleware`/RequestID().",
+      "_examples/versions/main.go:26 middleware.Logger | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/middleware`/Logger().",
+      "_examples/versions/main.go:27 middleware.Recoverer | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5/middleware`/Recoverer().",
+      "_examples/versions/main.go:36 r.Route | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Mux#Route().",
+      "_examples/versions/main.go:61 chi.NewRouter | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/NewRouter().",
+      "_examples/versions/main.go:63 r.Route | gomod github.com/go-chi/chi/v5@v5.1.0 [own package, project twin] :: scip-go gomod github.com/go-chi/chi/v5 v5.1.0 `github.com/go-chi/chi/v5`/Mux#Route()."
+     ],
+     "B local on calls": [
+      "_examples/custom-handler/main.go:13 h | A project-other project-not-a-symbol | B local local 2",
+      "_examples/graceful/main.go:23 stop | A project-other project-not-a-symbol | B local local 2",
+      "middleware/client_ip.go:270 visit | A project-other project-not-a-symbol | B local local 41",
+      "middleware/client_ip_test.go:848 buildReq | A project-other project-not-a-symbol | B local local 181",
+      "middleware/compress.go:186 fn | A project-other project-not-a-symbol | B local local 15",
+      "middleware/compress.go:250 fn | A project-other project-not-a-symbol | B local local 40",
+      "middleware/deprecation_test.go:46 serve | A project-other project-not-a-symbol | B local local 2",
+      "middleware/deprecation_test.go:78 serve | A project-other project-not-a-symbol | B local local 2",
+      "middleware/maybe.go:10 mw | A project-other project-not-a-symbol | B local local 0",
+      "middleware/middleware_test.go:114 wmw | A project-other project-not-a-symbol | B local local 28",
+      "middleware/throttle_test.go:336 waitResponse | A project-other project-not-a-symbol | B local local 95",
+      "middleware/throttle_test.go:345 throttleMiddleware | A project-other project-not-a-symbol | B local local 100",
+      "middleware/value_test.go:28 request | A project-other project-not-a-symbol | B local local 3",
+      "mux.go:271 fn | A project-other project-not-a-symbol | B local local 71",
+      "mux.go:517 fn | A project-other project-not-a-symbol | B local local 132",
+      "mux_test.go:580 testNotFound | A project-other project-not-a-symbol | B local local 204",
+      "mux_test.go:589 testNotFound | A project-other project-not-a-symbol | B local local 204",
+      "mux_test.go:1753 cancel | A project-other project-not-a-symbol | B local local 644",
+      "tree.go:913 walkFn | A project-other project-not-a-symbol | B local local 175",
+      "tree_test.go:565 tt.setup | A project-other project-not-a-symbol | B local local 264"
+     ],
+     "B none on calls (no-occurrence)": [
+      "_examples/fileserver/main.go:50 panic | A not-asked - | B none no-occurrence",
+      "_examples/versions/main.go:96 close | A not-asked - | B none no-occurrence",
+      "middleware/client_ip.go:68 len | A not-asked - | B none no-occurrence",
+      "middleware/client_ip_test.go:299 recover | A not-asked - | B none no-occurrence",
+      "middleware/compress_test.go:20 len | A not-asked - | B none no-occurrence",
+      "middleware/content_encoding.go:11 len | A not-asked - | B none no-occurrence",
+      "middleware/recoverer.go:90 len | A not-asked - | B none no-occurrence",
+      "middleware/route_headers.go:68 append | A not-asked - | B none no-occurrence",
+      "middleware/supress_notfound_test.go:71 string | A not-asked - | B none no-occurrence",
+      "middleware/throttle_test.go:338 close | A not-asked - | B none no-occurrence",
+      "middleware/wrap_writer_test.go:194 int64 | A not-asked - | B none no-occurrence",
+      "mux.go:253 copy | A not-asked - | B none no-occurrence",
+      "mux_test.go:198 string | A not-asked - | B none no-occurrence",
+      "mux_test.go:1843 len | A not-asked - | B none no-occurrence",
+      "tree.go:323 append | A not-asked - | B none no-occurrence",
+      "tree.go:474 append | A not-asked - | B none no-occurrence",
+      "tree.go:624 len | A not-asked - | B none no-occurrence",
+      "tree.go:811 len | A not-asked - | B none no-occurrence",
+      "tree_test.go:151 len | A not-asked - | B none no-occurrence",
+      "tree_test.go:384 len | A not-asked - | B none no-occurrence"
+     ],
+     "B none on calls (no-position)": [
+      "_examples/graceful/main.go:30  | A not-asked - | B none no-position",
+      "chain.go:43  | A not-asked - | B none no-position",
+      "middleware/client_ip_test.go:190  | A not-asked - | B none no-position",
+      "middleware/client_ip_test.go:302  | A not-asked - | B none no-position",
+      "middleware/deprecation_test.go:72  | A not-asked - | B none no-position",
+      "middleware/deprecation_test.go:79  | A not-asked - | B none no-position",
+      "middleware/deprecation_test.go:97  | A not-asked - | B none no-position",
+      "middleware/recoverer.go:43  | A not-asked - | B none no-position",
+      "middleware/recoverer_test.go:54  | A not-asked - | B none no-position",
+      "middleware/recoverer_test.go:84  | A not-asked - | B none no-position",
+      "middleware/sunset_test.go:107  | A not-asked - | B none no-position",
+      "middleware/throttle.go:98  | A not-asked - | B none no-position",
+      "middleware/throttle_test.go:52  | A not-asked - | B none no-position",
+      "middleware/throttle_test.go:119  | A not-asked - | B none no-position",
+      "middleware/throttle_test.go:196  | A not-asked - | B none no-position",
+      "middleware/throttle_test.go:321  | A not-asked - | B none no-position",
+      "mux_test.go:708  | A not-asked - | B none no-position",
+      "mux_test.go:1481  | A not-asked - | B none no-position",
+      "mux_test.go:1542  | A not-asked - | B none no-position",
+      "mux_test.go:1615  | A not-asked - | B none no-position"
+     ],
+     "different project target": [
+      "_examples/fileserver/main.go:54 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "_examples/router-walk/main.go:18 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "_examples/todos-resource/users.go:24 r.Delete | A project-declaration mux.go::function@149:0 | B project-declaration chi.go::method@100:1",
+      "middleware/logger.go:52 ww.Status | A project-declaration middleware/wrap_writer.go::function@130:0 | B project-declaration middleware/wrap_writer.go::method@52:1",
+      "middleware/supress_notfound.go:19 rctx.Routes.Match | A project-declaration mux.go::function@373:0 | B project-declaration chi.go::method@131:1",
+      "middleware/wrap_writer_readfrom_test.go:52 wrapped.Status | A project-declaration middleware/wrap_writer.go::function@130:0 | B project-declaration middleware/wrap_writer.go::method@52:1",
+      "middleware/wrap_writer_test.go:91 wrap.BytesWritten | A project-declaration middleware/wrap_writer.go::function@134:0 | B project-declaration middleware/wrap_writer.go::method@54:1",
+      "mux_test.go:516 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "mux_test.go:856 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "mux_test.go:998 r.Post | A project-declaration mux.go::function@179:0 | B project-declaration chi.go::method@105:1",
+      "mux_test.go:1038 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "mux_test.go:1122 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "mux_test.go:1417 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "mux_test.go:1430 r.With | A project-declaration mux.go::function@242:0 | B project-declaration chi.go::method@76:1",
+      "mux_test.go:1545 r.Group | A project-declaration mux.go::function@268:0 | B project-declaration chi.go::method@80:1",
+      "mux_test.go:1706 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "mux_test.go:1997 r.Route | A project-declaration mux.go::function@278:0 | B project-declaration chi.go::method@83:1",
+      "mux_test.go:2133 mx.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1",
+      "tree_test.go:540 r.With | A project-declaration mux.go::function@242:0 | B project-declaration chi.go::method@76:1",
+      "tree_test.go:588 r.Get | A project-declaration mux.go::function@155:0 | B project-declaration chi.go::method@101:1"
+     ],
+     "only B has a project target": [
+      "_examples/custom-handler/main.go:21 chi.NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "middleware/clean_path_test.go:12 chi.NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "middleware/client_ip_test.go:396 ClientIPFromHeader | A not-asked - | B project-declaration middleware/client_ip.go::function@60:0",
+      "middleware/compress_test.go:17 chi.NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "middleware/deprecation_test.go:79 Deprecation | A not-asked - | B project-declaration middleware/deprecation.go::function@22:0",
+      "middleware/logger.go:114 cW | A not-asked - | B project-declaration middleware/terminal.go::function@55:0",
+      "middleware/realip_test.go:74 chi.NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "middleware/recoverer_test.go:70 assertEqual | A not-asked - | B project-declaration middleware/middleware_test.go::function@208:0",
+      "middleware/strip_test.go:74 chi.URLParam | A not-asked - | B project-declaration context.go::function@11:0",
+      "middleware/strip_test.go:233 testRequest | A not-asked - | B project-declaration middleware/middleware_test.go::function@141:0",
+      "middleware/supress_notfound_test.go:33 chi.URLParam | A not-asked - | B project-declaration context.go::function@11:0",
+      "middleware/throttle_test.go:145 chi.NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "middleware/url_format_test.go:23 chi.URLParam | A not-asked - | B project-declaration context.go::function@11:0",
+      "middleware/wrap_writer_test.go:102 assertEqual | A not-asked - | B project-declaration middleware/middleware_test.go::function@208:0",
+      "middleware/wrap_writer_test.go:217 assertEqual | A not-asked - | B project-declaration middleware/middleware_test.go::function@208:0",
+      "mux_test.go:294 URLParam | A not-asked - | B project-declaration context.go::function@11:0",
+      "mux_test.go:1000 URLParamFromCtx | A not-asked - | B project-declaration context.go::function@16:0",
+      "mux_test.go:1469 NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "mux_test.go:1727 NewRouter | A not-asked - | B project-declaration chi.go::function@62:0",
+      "mux_test.go:2048 NewRouter | A not-asked - | B project-declaration chi.go::function@62:0"
+     ],
+     "read-only-B": [
+      "_examples/custom-method/main.go:18 middleware.RequestID -> middleware/request_id.go::function@67:0",
+      "_examples/fileserver/main.go:30 middleware.Logger -> middleware/logger.go::function@39:0",
+      "_examples/hello-world/main.go:12 middleware.RequestID -> middleware/request_id.go::function@67:0",
+      "_examples/hello-world/main.go:14 middleware.Recoverer -> middleware/recoverer.go::function@22:0",
+      "_examples/limits/main.go:26 middleware.Recoverer -> middleware/recoverer.go::function@22:0",
+      "_examples/todos-resource/main.go:19 middleware.Logger -> middleware/logger.go::function@39:0",
+      "_examples/todos-resource/todos.go:16 rs.List -> _examples/todos-resource/todos.go::function@31:0",
+      "_examples/todos-resource/todos.go:22 rs.Get -> _examples/todos-resource/todos.go::function@39:0",
+      "_examples/todos-resource/todos.go:24 rs.Delete -> _examples/todos-resource/todos.go::function@47:0",
+      "_examples/todos-resource/users.go:17 rs.Create -> _examples/todos-resource/users.go::function@34:0",
+      "_examples/todos-resource/users.go:23 rs.Update -> _examples/todos-resource/users.go::function@42:0",
+      "middleware/clean_path_test.go:13 CleanPath -> middleware/clean_path.go::function@12:0",
+      "middleware/client_ip_test.go:428 ClientIPFromRemoteAddr -> middleware/client_ip.go::function@220:0",
+      "middleware/compress.go:47 compressor.Handler -> middleware/compress.go::function@207:0",
+      "middleware/profiler.go:24 NoCache -> middleware/nocache.go::function@40:0",
+      "middleware/realip_test.go:75 RealIP -> middleware/realip.go::function@28:0",
+      "middleware/recoverer_test.go:27 Recoverer -> middleware/recoverer.go::function@22:0",
+      "middleware/request_id_test.go:57 RequestID -> middleware/request_id.go::function@67:0",
+      "middleware/strip_test.go:69 StripSlashes -> middleware/strip.go::function@14:0",
+      "middleware/url_format_test.go:56 URLFormat -> middleware/url_format.go::function@46:0"
+     ]
+    }
+   }
+  },
+  "files": {
+   "go": 90
+  },
+  "files_indexed": {
+   "go": 90
+  },
+  "files_not_indexed": {
+   "go": []
+  },
+  "index_tool": "scip:scip-go@0.2.9",
+  "answers": 3356,
+  "answer_line_mismatches": 0
+ },
+ "join_seconds": 3.7,
+ "seconds": 77.5
+}

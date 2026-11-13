@@ -1,0 +1,642 @@
+{
+ "case": "tududi",
+ "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
+ "snapshot_seconds": 84.4,
+ "road_a": {
+  "source": "answers-tududi-r1.sqlite",
+  "seconds": 2400.1,
+  "peak_rss_mb": null,
+  "coverage": {
+   "status": "complete",
+   "sampled": false,
+   "population": 65663,
+   "selected": 65663,
+   "asked": 65357,
+   "stride": 1,
+   "confirmed": 7895,
+   "candidates": 5174,
+   "no_edges_reason": null,
+   "resolution": {
+    "calls": 111367,
+    "resolved": 19790,
+    "lexical_resolved": 11895,
+    "engine_confirmed": 7895,
+    "external": 69669,
+    "external_by_class": {
+     "builtin": 33809,
+     "engine-external-definition": 35860
+    },
+    "resolvable": 41698,
+    "resolved_ratio": 0.475,
+    "dynamic": 306,
+    "askable": 65357,
+    "unasked": 0,
+    "engine_unresolved": 21550,
+    "by_language": {
+     "javascript": {
+      "calls": 72890,
+      "resolved": 12767,
+      "resolvable": 29350,
+      "resolved_ratio": 0.435,
+      "engine": "typescript-language-server@4.3.3"
+     },
+     "typescript": {
+      "calls": 38477,
+      "resolved": 7023,
+      "resolvable": 12348,
+      "resolved_ratio": 0.569,
+      "engine": "typescript-language-server@4.3.3"
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  }
+ },
+ "indexers": {
+  "scip-typescript": {
+   "indexer": "scip-typescript",
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/opt/node/bin/scip-typescript",
+      "index",
+      "--cwd",
+      "/work/tududi/mirror-scip-typescript",
+      "--output",
+      "/work/tududi/scip-typescript-0.scip",
+      "--no-progress-bar"
+     ],
+     "returncode": 0,
+     "seconds": 62.5,
+     "peak_rss_mb": 2257,
+     "stdout_tail": ".............................................\n+ /work/tududi/mirror-scip-typescript (48s 926ms)\ndone /work/tududi/scip-typescript-0.scip\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=2311012\n",
+     "index": "/work/tududi/scip-typescript-0.scip",
+     "index_bytes": 44550689
+    }
+   ],
+   "node_modules": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules",
+   "tsconfig_extends": "./tsconfig.project.json",
+   "version": "0.5.2",
+   "seconds": 62.5,
+   "peak_rss_mb": 2257,
+   "indexes": [
+    [
+     "/work/tududi/scip-typescript-0.scip",
+     ""
+    ]
+   ]
+  }
+ },
+ "join": {
+  "languages": {
+   "javascript": {
+    "references": {
+     "call": 72890,
+     "read": 62059
+    },
+    "b": {
+     "call": {
+      "external": 42766,
+      "local": 967,
+      "none": 15653,
+      "project-declaration": 11022,
+      "project-other": 2482
+     },
+     "read": {
+      "external": 2446,
+      "local": 23829,
+      "none": 24054,
+      "project-declaration": 1476,
+      "project-other": 10254
+     }
+    },
+    "b_none_detail": {
+     "call": {
+      "no-occurrence": 15445,
+      "no-position": 208
+     },
+     "read": {
+      "no-occurrence": 24054
+     }
+    },
+    "b_local_on_declaration": {
+     "call": 2089,
+     "read": 44
+    },
+    "b_external_packages": {
+     "npm @types/jest@29.5.14": 28055,
+     "npm typescript@6.0.3": 8857,
+     "npm @types/node@20.19.43": 5111,
+     "npm sequelize@6.37.8": 1513,
+     "npm @types/express-serve-static-core@4.19.9": 822,
+     "npm moment@2.31.0": 402,
+     "npm moment-timezone@0.6.6": 112,
+     "npm @types/express@4.17.25": 72,
+     "npm exceljs@4.4.0": 49,
+     "npm .@.": 44,
+     "npm axios@1.21.1": 29,
+     "npm express-rate-limit@8.7.4": 24,
+     "npm jose@6.2.17": 22,
+     "npm @faker-js/faker@10.6.0": 14,
+     "npm pino@9.14.0": 13,
+     "npm dotenv@16.5.0": 11,
+     "npm openid-client@5.7.1": 10,
+     "npm @types/xml2js@0.4.14": 6,
+     "npm iconv-lite@0.4.24": 6,
+     "npm jszip@3.10.2": 6,
+     "npm nanoid@3.3.20": 5,
+     "npm compromise@14.20.0": 4,
+     "npm tududi@v2.0.0 [own package]": 3,
+     "npm marked@16.4.2": 3,
+     "npm node-cron@4.1.1": 3
+    },
+    "b_followed": {},
+    "b_external_flags": {
+     "read own package": 3
+    },
+    "b_other_verdict": {
+     "call": {
+      "project-not-a-symbol": 2482
+     },
+     "read": {
+      "ambiguous-target": 6,
+      "project-not-a-symbol": 10248
+     }
+    },
+    "a": {
+     "external": 17955,
+     "none": 15109,
+     "not-asked": 25845,
+     "project-declaration": 12767,
+     "project-other": 1214
+    },
+    "a_target_source": {
+     "engine": 12766,
+     "lexical": 1
+    },
+    "matrix": {
+     "A external | B external": 17170,
+     "A external | B local": 5,
+     "A external | B none": 311,
+     "A external | B project-other": 469,
+     "A none | B external": 5,
+     "A none | B none": 15104,
+     "A not-asked | B external": 25591,
+     "A not-asked | B none": 238,
+     "A not-asked | B project-declaration": 9,
+     "A not-asked | B project-other": 7,
+     "A project-declaration | B local": 79,
+     "A project-declaration | B project-declaration": 11013,
+     "A project-declaration | B project-other": 1675,
+     "A project-other | B local": 883,
+     "A project-other | B project-other": 331
+    },
+    "a_not_asked": {
+     "unresolved ambiguous-binding": 1,
+     "unresolved dynamic-callee": 219,
+     "unresolved non-callable-binding": 10,
+     "unresolved unbound-name": 25585,
+     "unresolved unknown-receiver": 30
+    },
+    "cells": {
+     "both external": 17170,
+     "both none": 15342,
+     "mixed: A external, B local": 5,
+     "mixed: A external, B none": 311,
+     "mixed: A external, B project-other": 469,
+     "mixed: A none, B external": 5,
+     "mixed: A not-asked, B external": 25591,
+     "mixed: A not-asked, B project-other": 7,
+     "mixed: A project-other, B local": 883,
+     "mixed: A project-other, B project-other": 331,
+     "only A has a project target": 1754,
+     "only B has a project target": 9,
+     "same project target": 11013
+    },
+    "reads_vs_lexical": {
+     "neither": 60583,
+     "only-B": 351,
+     "same": 1125
+    },
+    "examples": {
+     "B external, own package": [
+      "backend/modules/auth/service.js:37 packageJson.version | npm tududi@v2.0.0 [own package] :: scip-typescript npm tududi v2.0.0 `package.json`/`\"version\"0`:",
+      "backend/services/backupService.js:95 packageJson.version | npm tududi@v2.0.0 [own package] :: scip-typescript npm tududi v2.0.0 `package.json`/`\"version\"0`:",
+      "backend/services/userDataTransfer.js:295 packageJson.version | npm tududi@v2.0.0 [own package] :: scip-typescript npm tududi v2.0.0 `package.json`/`\"version\"0`:"
+     ],
+     "B local on calls": [
+      "backend/app.js:48 next | A project-other ambiguous-target | B local local 43",
+      "backend/emails/trialReminder.js:16 t | A project-other project-not-a-symbol | B local local 5",
+      "backend/middleware/roles.js:15 next | A project-other project-not-a-symbol | B local local 9",
+      "backend/migrations/archive/20250805000001-standardize-uid-columns.js:28 safeAddColumns | A project-other project-not-a-symbol | B local local 3",
+      "backend/migrations/archive/20251120000001-add-ui-settings-to-users.js:25 safeRemoveColumn | A project-other project-not-a-symbol | B local local 2",
+      "backend/migrations/archive/20251229000001-add-task-performance-indexes.js:33 safeAddIndex | A project-other project-not-a-symbol | B local local 1",
+      "backend/migrations/archive/20260420000005-add-caldav-indexes.js:34 safeAddIndex | A project-other project-not-a-symbol | B local local 1",
+      "backend/migrations/archive/20260730000002-add-goal-id-to-tasks.js:7 safeAddColumns | A project-other project-not-a-symbol | B local local 1",
+      "backend/migrations/archive/20260924000004-add-ai-wrap-up-to-daily-plans.js:12 safeAddColumns | A project-other project-not-a-symbol | B local local 1",
+      "backend/migrations/archive/20261008120000-add-onboarded-at-to-users.js:13 safeAddColumns | A project-other project-not-a-symbol | B local local 1",
+      "backend/modules/admin/controller.js:239 next | A project-other project-not-a-symbol | B local local 163",
+      "backend/modules/billing/controller.js:45 next | A project-other project-not-a-symbol | B local local 30",
+      "backend/modules/calendar-feeds/controller.js:18 next | A project-other project-not-a-symbol | B local local 6",
+      "backend/modules/groups/controller.js:80 next | A project-other project-not-a-symbol | B local local 63",
+      "backend/modules/mfa/session.js:22 resolve | A project-other project-not-a-symbol | B local local 15",
+      "backend/modules/people/controller.js:67 next | A project-other project-not-a-symbol | B local local 79",
+      "backend/modules/tasks/queries/metrics-computation.js:148 keep | A project-other project-not-a-symbol | B local local 95",
+      "backend/modules/views/controller.js:30 next | A project-other project-not-a-symbol | B local local 26",
+      "backend/tests/integration/telegram-duplicates.test.js:17 originalConsoleLog | A project-other project-not-a-symbol | B local local 9",
+      "backend/tests/unit/modules/caldav-safe-request.test.js:284 callback | A project-other project-not-a-symbol | B local local 84"
+     ],
+     "B none on calls (no-occurrence)": [
+      "backend/app.js:110 req.path.startsWith | A none unresolved | B none no-occurrence",
+      "backend/migrations/archive/20261024100000-create-webhooks.js:85 Sequelize.literal | A none unresolved | B none no-occurrence",
+      "backend/modules/billing/controller.js:103 (expr).json | A none unresolved | B none no-occurrence",
+      "backend/modules/demo/service.js:29 User.findOne | A none unresolved | B none no-occurrence",
+      "backend/modules/oidc/stateManager.js:82 OIDCStateNonce.destroy | A none unresolved | B none no-occurrence",
+      "backend/modules/tasks/queries/metrics-queries.js:461 Task.findAll | A none unresolved | B none no-occurrence",
+      "backend/services/engagementEmailService.js:227 users.filter | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/admin-users-no-email.test.js:380 res.body.columns.find | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/blog.test.js:251 Note.create | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/cloud-accounts.test.js:39 agent.post | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/everyone.test.js:141 res.body.columns.some | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/inbox-analyze-nlp.test.js:64 ownerAgent.post | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/member-sign-in-link.test.js:60 (expr).send | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/onboarding.test.js:83 Area.findAll | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/projects.test.js:14 Area.create | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/search.test.js:590 agent.get | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/spreadsheets-formats.test.js:1167 Task.create | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/task-user-isolation.test.js:27 agentA.post | A none unresolved | B none no-occurrence",
+      "backend/tests/integration/user-management-integrity.test.js:179 (expr).send | A none unresolved | B none no-occurrence",
+      "backend/tests/unit/models/task_attachment.test.js:185 attachment.getTask | A none unresolved | B none no-occurrence"
+     ],
+     "B none on calls (no-position)": [
+      "backend/app.js:10  | A not-asked - | B none no-position",
+      "backend/models/index.js:13  | A not-asked - | B none no-position",
+      "backend/models/index.js:23  | A not-asked - | B none no-position",
+      "backend/models/index.js:34  | A not-asked - | B none no-position",
+      "backend/models/index.js:46  | A not-asked - | B none no-position",
+      "backend/models/index.js:57  | A not-asked - | B none no-position",
+      "backend/models/index.js:67  | A not-asked - | B none no-position",
+      "backend/modules/caldav/repositories/remote-calendar-repository.js:6  | A not-asked - | B none no-position",
+      "backend/modules/mfa/session.js:102  | A not-asked - | B none no-position",
+      "backend/modules/users/repository.js:57  | A not-asked - | B none no-position",
+      "backend/shared/errors/index.js:41  | A not-asked - | B none no-position",
+      "backend/tests/integration/cloud-account-isolation.test.js:641  | A not-asked - | B none no-position",
+      "backend/tests/integration/landing.test.js:776  | A not-asked - | B none no-position",
+      "backend/tests/integration/static-redirects.test.js:39  | A not-asked - | B none no-position",
+      "backend/tests/integration/user-management-hardening.test.js:286  | A not-asked - | B none no-position",
+      "backend/tests/unit/modules/auth/authController-edge-cases.test.js:60  | A not-asked - | B none no-position",
+      "backend/tests/unit/modules/mfa/totp.test.js:14  | A not-asked - | B none no-position",
+      "backend/tests/unit/modules/tasks/builders.test.js:45  | A not-asked - | B none no-position",
+      "backend/tests/unit/modules/tasks/builders.test.js:197  | A not-asked - | B none no-position",
+      "backend/tests/unit/services/emailDomainService.test.js:14  | A not-asked - | B none no-position"
+     ],
+     "only A has a project target (B local)": [
+      "backend/modules/admin/service.js:55 isAdmin | A project-declaration backend/services/rolesService.js::function@115:0 | B local local 20",
+      "backend/modules/admin/service.js:125 isAdmin | A project-declaration backend/services/rolesService.js::function@115:0 | B local local 20",
+      "backend/modules/billing/webhookRoutes.js:18 controller.webhook | A project-declaration backend/modules/billing/controller.js::method@88:4 | B local local 13",
+      "backend/modules/blog/hostSwitch.js:250 blogService.sitemapEntries | A project-declaration backend/modules/blog/service.js::method@335:4 | B local local 111",
+      "backend/modules/comments/routes.js:24 commentsController.list | A project-declaration backend/modules/comments/controller.js::method@9:4 | B local local 24",
+      "backend/modules/comments/routes.js:60 commentsController.react | A project-declaration backend/modules/comments/controller.js::method@82:4 | B local local 55",
+      "backend/modules/inbox/operations/attachments.js:58 inboxAttachments.listMany | A project-declaration backend/services/entityAttachments.js::method@68:8 | B local local 46",
+      "backend/modules/notes/controller.js:165 publicSharing.get | A project-declaration backend/modules/notes/publicSharing.js::method@96:4 | B local local 138",
+      "backend/modules/notes/controller.js:221 publicSharing.disable | A project-declaration backend/modules/notes/publicSharing.js::method@130:4 | B local local 194",
+      "backend/modules/notes/routes.js:30 notesController.getNoteUidForAuth | A project-declaration backend/modules/notes/controller.js::method@277:4 | B local local 11",
+      "backend/modules/notes/routes.js:67 notesController.getNoteUidForAuth | A project-declaration backend/modules/notes/controller.js::method@277:4 | B local local 11",
+      "backend/modules/notes/service.js:345 noteAttachments.removeAll | A project-declaration backend/services/entityAttachments.js::method@150:8 | B local local 247",
+      "backend/modules/projects/attachmentRoutes.js:11 projectsController.getProjectUidForAuth | A project-declaration backend/modules/projects/controller.js::method@166:4 | B local local 10",
+      "backend/modules/projects/routes.js:100 projectsController.getProjectUidForAuth | A project-declaration backend/modules/projects/controller.js::method@166:4 | B local local 38",
+      "backend/tests/unit/modules/auth/authController-edge-cases.test.js:90 controller.register | A project-declaration backend/modules/auth/controller.js::method@42:4 | B local local 32",
+      "backend/tests/unit/modules/auth/authController-edge-cases.test.js:154 controller.login | A project-declaration backend/modules/auth/controller.js::method@129:4 | B local local 64",
+      "backend/tests/unit/services/entitlementsService.test.js:84 resolvePlan | A project-declaration backend/services/entitlementsService.js::function@40:0 | B local local 3",
+      "backend/tests/unit/services/permissionsService-edge-cases.test.js:64 getAccess | A project-declaration backend/services/permissionsService.js::function@131:0 | B local local 9",
+      "backend/tests/unit/services/permissionsService-edge-cases.test.js:107 getAccess | A project-declaration backend/services/permissionsService.js::function@131:0 | B local local 9",
+      "backend/tests/unit/services/permissionsService-edge-cases.test.js:135 getAccess | A project-declaration backend/services/permissionsService.js::function@131:0 | B local local 9"
+     ],
+     "only A has a project target (B project-other)": [
+      "backend/app.js:182 billingModule.webhookHandler | A project-declaration backend/modules/billing/webhookRoutes.js::function@10:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/billing/`index.js`/webhookHandler0:",
+      "backend/modules/admin/userEmails.js:194 engagement.whyNot | A project-declaration backend/services/engagementEmailService.js::function@72:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`engagementEmailService.js`/whyNot0:",
+      "backend/modules/billing/service.js:215 seats.describeSeats | A project-declaration backend/services/seatsService.js::function@67:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`seatsService.js`/describeSeats0:",
+      "backend/modules/caldav/sync/push-phase.js:68 logger.logError | A project-declaration backend/services/logService.js::function@104:17 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`logService.js`/logError0:",
+      "backend/modules/daily-plan/controller.js:30 dailyPlanService.parseSuggestedLimit | A project-declaration backend/modules/daily-plan/service.js::function@347:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/daily-plan/`service.js`/parseSuggestedLimit0:",
+      "backend/modules/mcp/tools/taskTools.js:225 permissionsService.ownershipOrPermissionWhere | A project-declaration backend/services/permissionsService.js::function@277:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`permissionsService.js`/ownershipOrPermissionWhere0:",
+      "backend/modules/oidc/controller.js:143 provisioningService.linkIdentityToUser | A project-declaration backend/modules/oidc/provisioningService.js::function@240:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/oidc/`provisioningService.js`/linkIdentityToUser0:",
+      "backend/modules/spreadsheets/routes.js:144 importService.commit | A project-declaration backend/modules/spreadsheets/importService.js::function@289:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/spreadsheets/`importService.js`/commit0:",
+      "backend/modules/webhooks/dispatcher.js:150 secretCipher.decrypt | A project-declaration backend/shared/crypto/secretCipher.js::function@74:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/shared/crypto/`secretCipher.js`/decrypt0:",
+      "backend/tests/integration/backup-linked-records.test.js:187 secretCipher.isEncrypted | A project-declaration backend/shared/crypto/secretCipher.js::function@70:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/shared/crypto/`secretCipher.js`/isEncrypted0:",
+      "backend/tests/integration/cloud-trial.test.js:476 lifecycle.remindEndingTrials | A project-declaration backend/services/trialLifecycleService.js::function@207:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`trialLifecycleService.js`/remindEndingTrials0:",
+      "backend/tests/integration/mfa-oidc.test.js:47 providerConfig.reloadProviders | A project-declaration backend/modules/oidc/providerConfig.js::function@186:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/oidc/`providerConfig.js`/reloadProviders0:",
+      "backend/tests/integration/subscription-required.test.js:83 entitlements.invalidate | A project-declaration backend/services/entitlementsService.js::function@323:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`entitlementsService.js`/invalidate0:",
+      "backend/tests/unit/modules/ai-assistant/ssrfGuard.test.js:72 secretCipher.encrypt | A project-declaration backend/shared/crypto/secretCipher.js::function@45:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/shared/crypto/`secretCipher.js`/encrypt0:",
+      "backend/tests/unit/modules/mfa/totp.test.js:41 totp.stepAt | A project-declaration backend/modules/mfa/totp.js::function@54:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/mfa/`totp.js`/stepAt0:",
+      "backend/tests/unit/modules/oidc/controller-edge-cases.test.js:237 controller.getUserIdentities | A project-declaration backend/modules/oidc/controller.js::function@277:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/oidc/`controller.js`/getUserIdentities0:",
+      "backend/tests/unit/modules/oidc/provisioning-edge-cases.test.js:116 provisioning.provisionUser | A project-declaration backend/modules/oidc/provisioningService.js::function@83:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/oidc/`provisioningService.js`/provisionUser0:",
+      "backend/tests/unit/modules/oidc/stateManager.test.js:104 stateManager.createState | A project-declaration backend/modules/oidc/stateManager.js::function@14:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/modules/oidc/`stateManager.js`/createState0:",
+      "backend/tests/unit/modules/tasks/recurringTaskService.test.js:484 calculateVirtualOccurrences | A project-declaration backend/modules/tasks/recurringTaskService.js::function@273:36 | B project-other project-not-a-symbol cip-typescript npm tududi v2.0.0 backend/modules/tasks/`recurringTaskService.js`/calculateVirtualOccurrences0:",
+      "backend/tests/unit/services/permissionsCalculators-edge-cases.test.js:48 calculators.calculateProjectPerms | A project-declaration backend/services/permissionsCalculators.js::function@148:0 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 backend/services/`permissionsCalculators.js`/calculateProjectPerms0:"
+     ],
+     "only B has a project target": [
+      "backend/modules/inbox/nlpParsers.js:111 calculateInitialDueDate | A not-asked - | B project-declaration backend/modules/tasks/core/builders.js::function@93:0",
+      "backend/modules/webhooks/taskEvents.js:57 getConfig | A not-asked - | B project-declaration backend/config/config.js::function@548:0",
+      "backend/modules/webhooks/taskEvents.js:76 logError | A not-asked - | B project-declaration backend/services/logService.js::function@104:17",
+      "backend/services/engagementEmailService.js:34 getConfig | A not-asked - | B project-declaration backend/config/config.js::function@548:0",
+      "backend/services/engagementEmailService.js:78 isAdmin | A not-asked - | B project-declaration backend/services/rolesService.js::function@115:0",
+      "backend/services/engagementEmailService.js:102 deliver | A not-asked - | B project-declaration backend/services/emailDeliveryService.js::function@11:0",
+      "backend/services/engagementEmailService.js:110 deliver | A not-asked - | B project-declaration backend/services/emailDeliveryService.js::function@11:0",
+      "backend/services/engagementEmailService.js:132 isEmailEnabled | A not-asked - | B project-declaration backend/services/emailService.js::function@7:23",
+      "backend/services/engagementEmailService.js:143 logError | A not-asked - | B project-declaration backend/services/logService.js::function@104:17"
+     ],
+     "read-only-B": [
+      "backend/app.js:373 requireAuth -> backend/middleware/auth.js::function@32:20",
+      "backend/models/goal.js:17 uid -> backend/utils/uid.js::function@3:0",
+      "backend/modules/admin/index.js:32 validateUserId -> backend/modules/admin/validation.js::function@36:0",
+      "backend/modules/caldav/api/remote-calendar-controller.js:356 AppError -> backend/shared/errors/AppError.js::class@7:0",
+      "backend/modules/caldav/api/routes.js:36 syncController.resolveConflict -> backend/modules/caldav/api/sync-controller.js::method@142:4",
+      "backend/modules/caldav/routes.js:81 caldavAuth -> backend/modules/caldav/middleware/caldav-auth.js::function@16:0",
+      "backend/modules/caldav/routes.js:144 xmlParser -> backend/modules/caldav/middleware/xml-parser.js::function@1:0",
+      "backend/modules/caldav/routes.js:246 xmlParser -> backend/modules/caldav/middleware/xml-parser.js::function@1:0",
+      "backend/modules/calendar-feeds/service.js:162 FeedFetchError -> backend/modules/calendar-feeds/fetcher.js::class@19:0",
+      "backend/modules/inbox/index.js:29 validateContent -> backend/modules/inbox/validation.js::function@14:0",
+      "backend/modules/mfa/routes.js:36 requireRecentAuth -> backend/modules/mfa/session.js::function@84:0",
+      "backend/modules/search/index.js:27 parseSearchParams -> backend/modules/search/validation.js::function@20:0",
+      "backend/modules/url/service.js:233 publicOnlyLookup -> backend/modules/url/ssrfGuard.js::function@243:0",
+      "backend/services/backupService.js:380 exportUserData -> backend/services/userDataTransfer.js::function@659:0",
+      "backend/shared/errors/index.js:89 AppError -> backend/shared/errors/AppError.js::class@7:0",
+      "backend/tests/unit/middleware/rateLimitStore.test.js:11 DatabaseRateLimitStore -> backend/middleware/rateLimitStore.js::class@12:0",
+      "backend/tests/unit/modules/auth/authService-edge-cases.test.js:83 ValidationError -> backend/shared/errors/index.js::class@11:0",
+      "backend/tests/unit/modules/groupsMembers-edge-cases.test.js:68 ConflictError -> backend/shared/errors/index.js::class@17:0",
+      "backend/tests/unit/modules/oidc/config-edge-cases.test.js:37 logError -> backend/services/logService.js::function@104:17",
+      "backend/tests/unit/modules/url/ssrfGuard.test.js:65 UnsafeUrlError -> backend/modules/url/ssrfGuard.js::class@6:0"
+     ]
+    }
+   },
+   "typescript": {
+    "references": {
+     "call": 38477,
+     "read": 39420
+    },
+    "b": {
+     "call": {
+      "external": 20821,
+      "local": 9026,
+      "none": 1380,
+      "project-declaration": 7007,
+      "project-other": 243
+     },
+     "read": {
+      "external": 4724,
+      "local": 21352,
+      "none": 1562,
+      "project-declaration": 3227,
+      "project-other": 8555
+     }
+    },
+    "b_none_detail": {
+     "call": {
+      "no-occurrence": 1282,
+      "no-position": 98
+     },
+     "read": {
+      "no-occurrence": 1561,
+      "no-position": 1
+     }
+    },
+    "b_local_on_declaration": {
+     "call": 2449,
+     "read": 1373
+    },
+    "b_external_packages": {
+     "npm typescript@6.0.3": 10652,
+     "npm @types/jest@29.5.14": 7232,
+     "npm @types/react@18.3.31": 2832,
+     "npm .@.": 965,
+     "npm @testing-library/jest-dom@6.9.1": 824,
+     "npm react-router@7.18.5": 437,
+     "npm @testing-library/react@14.3.1": 385,
+     "npm playwright@1.65.0": 344,
+     "npm playwright-core@1.65.0": 333,
+     "npm react-i18next@15.7.4": 291,
+     "npm @testing-library/dom@9.3.4": 251,
+     "npm @codemirror/state@6.7.6": 221,
+     "npm @codemirror/view@6.43.15": 162,
+     "npm @lezer/common@1.5.5": 154,
+     "npm @dnd-kit/core@6.3.1": 93,
+     "npm date-fns@4.4.0": 93,
+     "npm i18next@24.2.3": 75,
+     "npm @dnd-kit/sortable@10.0.0": 43,
+     "npm @types/react-dom@18.3.7": 34,
+     "npm @codemirror/lang-markdown@6.5.2": 24,
+     "npm zustand@5.1.0": 18,
+     "npm @types/node@20.19.43": 12,
+     "npm use-debounce@10.1.1": 12,
+     "npm @codemirror/language@6.13.1": 11,
+     "npm @lezer/highlight@1.2.5": 11
+    },
+    "b_followed": {
+     "call": 853,
+     "read": 443
+    },
+    "b_external_flags": {},
+    "b_other_verdict": {
+     "call": {
+      "project-not-a-symbol": 243
+     },
+     "read": {
+      "ambiguous-target": 27,
+      "project-not-a-symbol": 8528
+     }
+    },
+    "a": {
+     "external": 17905,
+     "none": 1267,
+     "not-asked": 8322,
+     "project-declaration": 7023,
+     "project-other": 3960
+    },
+    "a_target_source": {
+     "engine": 7023
+    },
+    "matrix": {
+     "A external | B external": 12596,
+     "A external | B local": 5291,
+     "A external | B none": 18,
+     "A none | B external": 3,
+     "A none | B none": 1264,
+     "A not-asked | B external": 8219,
+     "A not-asked | B none": 98,
+     "A not-asked | B project-declaration": 5,
+     "A project-declaration | B local": 18,
+     "A project-declaration | B project-declaration": 7002,
+     "A project-declaration | B project-other": 3,
+     "A project-other | B external": 3,
+     "A project-other | B local": 3717,
+     "A project-other | B project-other": 240
+    },
+    "a_not_asked": {
+     "unresolved dynamic-callee": 98,
+     "unresolved unbound-name": 8224
+    },
+    "cells": {
+     "both external": 12596,
+     "both none": 1362,
+     "mixed: A external, B local": 5291,
+     "mixed: A external, B none": 18,
+     "mixed: A none, B external": 3,
+     "mixed: A not-asked, B external": 8219,
+     "mixed: A project-other, B external": 3,
+     "mixed: A project-other, B local": 3717,
+     "mixed: A project-other, B project-other": 240,
+     "only A has a project target": 21,
+     "only B has a project target": 5,
+     "same project target": 7002
+    },
+    "reads_vs_lexical": {
+     "neither": 36187,
+     "only-B": 493,
+     "only-lexical": 6,
+     "same": 2734
+    },
+    "examples": {
+     "B local on calls": [
+      "frontend/App.tsx:126 setCurrentUser | A project-other project-not-a-symbol | B local local 30",
+      "frontend/components/Admin/AdminGroupsPanel.tsx:561 t | A external engine | B local local 240",
+      "frontend/components/Admin/__tests__/AdminDashboardPage.test.tsx:336 screen.queryByTestId | A external engine | B local local 53",
+      "frontend/components/Auth/ForgotPassword.tsx:56 t | A external engine | B local local 4",
+      "frontend/components/CalDAV/CalendarForm.tsx:548 t | A external engine | B local local 14",
+      "frontend/components/DailyPlan/TodayPage.tsx:137 setHasFeeds | A project-other project-not-a-symbol | B local local 74",
+      "frontend/components/Goal/GoalModal.tsx:186 t | A external engine | B local local 15",
+      "frontend/components/Inbox/QuickCaptureInput.tsx:1067 setSlash | A project-other project-not-a-symbol | B local local 285",
+      "frontend/components/Login.tsx:208 setResendState | A project-other project-not-a-symbol | B local local 41",
+      "frontend/components/Notifications/NotificationsDropdown.tsx:467 t | A external engine | B local local 13",
+      "frontend/components/Profile/ProfileSettings.tsx:1376 t | A external engine | B local local 16",
+      "frontend/components/Profile/tabs/NotificationsTab.tsx:307 t | A external engine | B local local 37",
+      "frontend/components/Profile/tabs/__tests__/TwoFactorCard.test.tsx:81 screen.findByTestId | A external engine | B local local 12",
+      "frontend/components/Project/ProjectOverviewRail.tsx:473 t | A project-other ambiguous-target | B local local 49",
+      "frontend/components/Shared/DatePicker.tsx:176 setIsOpen | A project-other project-not-a-symbol | B local local 33",
+      "frontend/components/SidePanel/EntitySidePanel.tsx:204 t | A external engine | B local local 22",
+      "frontend/components/Tag/TagDetails.tsx:481 setNoteToDelete | A project-other project-not-a-symbol | B local local 184",
+      "frontend/components/Task/TaskDetails/TaskContentCard.tsx:36 setIsEditing | A project-other project-not-a-symbol | B local local 20",
+      "frontend/components/Task/TaskRow/index.tsx:358 setIsBlockedConfirmOpen | A project-other project-not-a-symbol | B local local 69",
+      "frontend/components/Templates/TemplateCloneModal.tsx:139 t | A external engine | B local local 13"
+     ],
+     "B none on calls (no-occurrence)": [
+      "e2e/tests/inbox-task-project.spec.ts:59 tasks.filter | A none unresolved | B none no-occurrence",
+      "frontend/App.tsx:198 (expr).setFocus | A none unresolved | B none no-occurrence",
+      "frontend/components/Admin/__tests__/AdminFeedbackPage.test.tsx:128 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:567 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Areas.tsx:192 (expr).setError | A none unresolved | B none no-occurrence",
+      "frontend/components/DailyPlan/__tests__/TodayPage.test.tsx:462 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Inbox/InboxItemDetail.tsx:486 tag.name.toLowerCase | A none unresolved | B none no-occurrence",
+      "frontend/components/Inbox/__tests__/InboxItemDetail.cleanedEdit.test.tsx:166 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Inbox/__tests__/QuickCaptureInput.unified.test.tsx:470 fireEvent.keyDown | A none unresolved | B none no-occurrence",
+      "frontend/components/People/__tests__/MemberModal.test.tsx:139 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Profile/ProfileSettings.tsx:1324 useStore.getState | A external engine | B none no-occurrence",
+      "frontend/components/Profile/tabs/__tests__/WebhooksCard.test.tsx:151 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Projects.tsx:681 (expr).sort | A none unresolved | B none no-occurrence",
+      "frontend/components/SidePanel/__tests__/EntitySidePanel.test.tsx:74 fireEvent.keyDown | A none unresolved | B none no-occurrence",
+      "frontend/components/Sidebar/__tests__/SidebarNavAdminVisibility.test.tsx:118 (expr).setSidebarOrder | A none unresolved | B none no-occurrence",
+      "frontend/components/Tags.tsx:96 tag.name.charAt | A none unresolved | B none no-occurrence",
+      "frontend/components/Task/TaskDetails.tsx:1397 tasksStore.tasks.findIndex | A none unresolved | B none no-occurrence",
+      "frontend/components/Task/__tests__/TaskDetails.test.tsx:222 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/components/Task/__tests__/TaskStatusControl.test.tsx:55 fireEvent.click | A none unresolved | B none no-occurrence",
+      "frontend/store/useStore.ts:875 state.inboxStore.inboxItems.filter | A none unresolved | B none no-occurrence"
+     ],
+     "B none on calls (no-position)": [
+      "e2e/tests/notes-editor.spec.ts:76  | A not-asked - | B none no-position",
+      "frontend/App.tsx:82  | A not-asked - | B none no-position",
+      "frontend/App.tsx:94  | A not-asked - | B none no-position",
+      "frontend/App.tsx:770  | A not-asked - | B none no-position",
+      "frontend/components/DailyPlan/AgendaList.tsx:82  | A not-asked - | B none no-position",
+      "frontend/components/Inbox/InboxItemDetail.tsx:527  | A not-asked - | B none no-position",
+      "frontend/components/Inbox/__tests__/QuickCaptureInput.slash.test.tsx:283  | A not-asked - | B none no-position",
+      "frontend/components/Note/editor/widgets.tsx:126  | A not-asked - | B none no-position",
+      "frontend/components/Profile/__tests__/SidebarLayoutEditor.test.tsx:244  | A not-asked - | B none no-position",
+      "frontend/components/Shared/ProjectDropdown.tsx:286  | A not-asked - | B none no-position",
+      "frontend/components/Sidebar/__tests__/SidebarSectionVisibility.test.tsx:139  | A not-asked - | B none no-position",
+      "frontend/components/Task/TaskDetails/TaskDetailsHeader.tsx:717  | A not-asked - | B none no-position",
+      "frontend/components/Task/TaskForm/TaskRecurrenceSection.tsx:140  | A not-asked - | B none no-position",
+      "frontend/config/paths.ts:60  | A not-asked - | B none no-position",
+      "frontend/store/useStore.ts:342  | A not-asked - | B none no-position",
+      "frontend/store/useStore.ts:627  | A not-asked - | B none no-position",
+      "frontend/store/useStore.ts:740  | A not-asked - | B none no-position",
+      "frontend/store/useStore.ts:1012  | A not-asked - | B none no-position",
+      "frontend/utils/configService.ts:31  | A not-asked - | B none no-position",
+      "frontend/utils/planLimits.ts:26  | A not-asked - | B none no-position"
+     ],
+     "only A has a project target (B local)": [
+      "frontend/components/Inbox/InboxItemDetail.tsx:528 detectUrl | A project-declaration frontend/utils/urlService.ts::function@58:21 | B local local 373",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:49 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 28",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:55 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 34",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:63 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 40",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:71 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 50",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:79 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 56",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:91 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 62",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:122 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 83",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:131 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 93",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:147 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 105",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:168 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 114",
+      "frontend/components/Note/editor/__tests__/touchReading.test.ts:178 cleanup | A project-declaration frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20 | B local local 124",
+      "frontend/components/Project/ProjectDetails.tsx:749 requestComplete | A project-declaration frontend/components/Project/useCompleteProject.tsx::function@63:20 | B local local 209",
+      "frontend/components/Project/__tests__/useCompleteProject.test.tsx:29 requestComplete | A project-declaration frontend/components/Project/useCompleteProject.tsx::function@63:20 | B local local 15",
+      "frontend/components/Project/useProjectCardActions.tsx:78 requestComplete | A project-declaration frontend/components/Project/useCompleteProject.tsx::function@63:20 | B local local 71",
+      "frontend/components/Projects.tsx:510 requestComplete | A project-declaration frontend/components/Project/useCompleteProject.tsx::function@63:20 | B local local 99",
+      "frontend/components/Tag/TagDetails.tsx:287 openTagModal | A project-declaration frontend/hooks/usePersistedModal.ts::function@48:22 | B local local 158",
+      "frontend/components/Tag/TagDetails.tsx:395 closeTagModal | A project-declaration frontend/hooks/usePersistedModal.ts::function@64:23 | B local local 159"
+     ],
+     "only A has a project target (B project-other)": [
+      "frontend/__tests__/serviceWorker.test.ts:182 sw.get | A project-declaration frontend/__tests__/serviceWorker.test.ts::function@136:16 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 frontend/__tests__/`serviceWorker.test.ts`/get1:",
+      "frontend/__tests__/serviceWorker.test.ts:200 sw.get | A project-declaration frontend/__tests__/serviceWorker.test.ts::function@136:16 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 frontend/__tests__/`serviceWorker.test.ts`/get1:",
+      "frontend/__tests__/serviceWorker.test.ts:229 sw.sync | A project-declaration frontend/__tests__/serviceWorker.test.ts::function@146:17 | B project-other project-not-a-symbol scip-typescript npm tududi v2.0.0 frontend/__tests__/`serviceWorker.test.ts`/sync0:"
+     ],
+     "only B has a project target": [
+      "frontend/components/Auth/CaptchaWidget.tsx:65 window.turnstile.render | A not-asked - | B project-declaration frontend/components/Auth/CaptchaWidget.tsx::method@6:12",
+      "frontend/components/Auth/CaptchaWidget.tsx:84 window.turnstile.remove | A not-asked - | B project-declaration frontend/components/Auth/CaptchaWidget.tsx::method@11:12",
+      "frontend/components/Auth/CaptchaWidget.tsx:93 window.turnstile.reset | A not-asked - | B project-declaration frontend/components/Auth/CaptchaWidget.tsx::method@10:12",
+      "frontend/components/Profile/ProfileSettings.tsx:357 window.forceLanguageReload | A not-asked - | B project-declaration frontend/i18n.ts::method@212:8",
+      "frontend/components/Profile/ProfileSettings.tsx:377 window.forceLanguageReload | A not-asked - | B project-declaration frontend/i18n.ts::method@212:8"
+     ],
+     "read-only-B": [
+      "frontend/Layout.tsx:457 toggleDarkMode -> frontend/Layout.tsx::method@50:4",
+      "frontend/components/Backup/BackupRestore.tsx:240 onImportSuccess -> frontend/components/Backup/BackupRestore.tsx::method@25:4",
+      "frontend/components/DailyPlan/CandidateList.tsx:160 onAdd -> frontend/components/DailyPlan/CandidateList.tsx::method@71:4",
+      "frontend/components/DailyPlan/TodayPlanned.tsx:107 onPlannedTaskComplete -> frontend/components/DailyPlan/TodayPlanned.tsx::method@26:4",
+      "frontend/components/Goal/GoalModal.tsx:150 onClose -> frontend/components/Goal/GoalModal.tsx::method@20:4",
+      "frontend/components/Inbox/QuickCaptureInput.tsx:1512 onTaskCreate -> frontend/components/Inbox/QuickCaptureInput.tsx::method@109:4",
+      "frontend/components/Note/MarkdownEditor.tsx:326 showErrorToast -> frontend/components/Shared/ToastContext.tsx::method@16:4",
+      "frontend/components/People/MemberEditModal.tsx:75 onClose -> frontend/components/People/MemberEditModal.tsx::method@14:4",
+      "frontend/components/Profile/tabs/FeaturesTab.tsx:114 onToggleKanban -> frontend/components/Profile/tabs/FeaturesTab.tsx::method@9:4",
+      "frontend/components/Profile/tabs/TelegramTab.tsx:354 onToggleSummary -> frontend/components/Profile/tabs/TelegramTab.tsx::method@22:4",
+      "frontend/components/Project/ProjectModal.tsx:295 onDelete -> frontend/components/Project/ProjectModal.tsx::method@35:4",
+      "frontend/components/Shared/ConfirmDialog.tsx:47 onConfirm -> frontend/components/Shared/ConfirmDialog.tsx::method@7:4",
+      "frontend/components/Shared/ProjectDropdown.tsx:189 onClearProject -> frontend/components/Shared/ProjectDropdown.tsx::method@19:4",
+      "frontend/components/Sidebar.tsx:213 openTaskModal -> frontend/components/Sidebar.tsx::method@43:4",
+      "frontend/components/Tag/TagModal.tsx:126 onDelete -> frontend/components/Tag/TagModal.tsx::method@17:4",
+      "frontend/components/Task/GroupedTaskList.tsx:605 onTaskDelete -> frontend/components/Task/GroupedTaskList.tsx::method@35:4",
+      "frontend/components/Task/TaskDetails/TaskAttachmentsCard.tsx:20 onAttachmentsCountChange -> frontend/components/Task/TaskDetails/TaskAttachmentsCard.tsx::method@7:4",
+      "frontend/components/Task/TaskDetails/TaskStartDateCard.tsx:65 onSave -> frontend/components/Task/TaskDetails/TaskStartDateCard.tsx::method@21:4",
+      "frontend/components/Task/TaskModal.tsx:434 onClose -> frontend/components/Task/TaskModal.tsx::method@53:4",
+      "frontend/components/Task/TaskRow/index.tsx:309 showErrorToast -> frontend/components/Shared/ToastContext.tsx::method@16:4"
+     ]
+    }
+   }
+  },
+  "files": {
+   "javascript": 1038,
+   "typescript": 650
+  },
+  "files_indexed": {
+   "javascript": 1038,
+   "typescript": 650
+  },
+  "files_not_indexed": {
+   "javascript": [],
+   "typescript": []
+  },
+  "index_tool": "scip:scip-typescript@0.5.2",
+  "answers": 77199,
+  "answer_line_mismatches": 0
+ },
+ "join_seconds": 103.7,
+ "seconds": 862.3
+}
