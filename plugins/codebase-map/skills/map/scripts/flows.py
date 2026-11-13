@@ -44,7 +44,9 @@ A store rule may name the store's `node_type`, from the closed list of the flow 
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service, method and path. External modules of the module graph are
-nodes too: a symbol in a file an external module cites as evidence uses it.
+nodes too: a symbol in a file an external module cites as evidence uses it. Code outside
+any named function, a callback passed as an argument included, belongs to its module,
+the node `file::<module>`; a route it declares or an entry point needs a named function.
 
     python flows.py links MANIFEST --rules RULES
     python flows.py trace MANIFEST --rules RULES (--from NODE | --to NODE | --through NODE)
@@ -73,6 +75,7 @@ LINKS_SCHEMA = "daodan/flow-links/v1"
 FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
+MODULE = "<module>"  # the node of the code a file runs outside any named function
 _FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "actions_in", "route", "strip",
            "decorates", "handler", "entry", "node_type"}
 NODE_TYPES = ("attore", "schermata", "funzionalità", "servizio o API", "gateway", "database", "coda",
@@ -679,12 +682,14 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
         plain = []
         for ref in view["references"]:
             target = facts.named(ref.get("target_id")) if ref["resolution"] == "resolved" else None
-            caller = facts.node(ref.get("caller"))
+            named = facts.node(ref.get("caller"))
+            caller = named or f"{ref['file']}::{MODULE}"
             span = ref.get("span") or [None, None, None, None]
             site = f"{ref['file']}:{span[0]}"
             parts = [str(part) for part in ref.get("parts") or []]
-            if target and caller:
-                calls.append({"from": caller, "to": facts.node(ref["target_id"]), "site": site})
+            callee = facts.node(ref["target_id"]) if target else None
+            if callee:
+                calls.append({"from": caller, "to": callee, "site": site})
             if target is None and len(parts) == 1 and parts[0] in wanted:
                 # A callable value: the call names the binding the rule names.
                 holders = facts.targets(parts[0], ref["file"], -1, -1, ("binding",))
@@ -712,7 +717,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                         gaps.append({"site": site, "reason": "offre: handler not a function"})
                         continue
                 else:
-                    owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else caller
+                    owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else                         named if rule["link"] in ("offre", "ingresso") else caller
                     if owner is None:
                         gaps.append({"site": site, "reason": f"{rule['link']} call outside a named symbol"})
                         continue

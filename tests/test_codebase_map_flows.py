@@ -321,6 +321,9 @@ class HandlerRouteTests(unittest.TestCase):
                           "router.post('/task', requireAuth, async (req, res) => {\n"
                           "    await db.save('tasks', req.body);\n    res.json({});\n});\n"
                           "router.get('/odd', makeHandler());\n\nmodule.exports = router;\n"),
+        # Code outside any named function: at module level, and in a callback passed as an argument.
+        "api/app.js": ("const routes = require('./routes');\nfunction mount(r) {\n    return r;\n}\n"
+                       "mount(routes);\nsetup(() => {\n    mount(routes);\n});\n"),
         "web/client.ts": ("declare function apiGet(url: string): void;\ndeclare function apiPath(p: string): string;\n"
                           "export function loadPlans() {\n  apiGet('/billing');\n}\n"
                           "export function addTask() {\n  fetch(apiPath('/task'), { method: 'POST', credentials: 'include' });\n}\n"
@@ -368,6 +371,11 @@ class HandlerRouteTests(unittest.TestCase):
     def test_an_inline_handler_is_named_by_its_route_and_holds_its_accesses(self):
         self.assertEqual(self.links["stores"]["db/tasks"], {"writes": ["api/routes.js::POST /task"], "reads": []})
         self.assertEqual(self.links["stores"]["db/plans"], {"writes": [], "reads": ["api/controller.js::status"]})
+
+    def test_code_outside_a_named_function_belongs_to_its_module(self):
+        calls = {(e["from"], e["to"], e["site"]) for e in self.links["edges"] if e["type"] == "chiama"}
+        self.assertIn(("api/app.js::<module>", "api/app.js::mount", "api/app.js:5"), calls)
+        self.assertIn(("api/app.js::<module>", "api/app.js::mount", "api/app.js:7"), calls)
 
     def test_a_handler_that_is_no_function_is_a_gap(self):
         self.assertEqual([g["reason"] for g in self.links["gaps"]],
