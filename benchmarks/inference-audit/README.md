@@ -364,3 +364,99 @@ Con il modulo comune `scip_graph.py`, la stessa sera:
 - 4.043 archi invece di 3.671: il modulo dà a ogni riferimento a un membro anche le sue implementazioni. Sono 372 archi, tutti dai 93 riferimenti a `Version.parse` verso i quattro override `SemVerWithVPrefix.parse`. 91 di quei riferimenti passano dal nome della classe (87) o da `super()` (4) e in Python non vanno mai a un override; solo `cls.parse` (`version.py:479`, `:833`) può andarci. Chiesto a index-traverse un modo per dichiarare i siti a dispatch statico.
 - 64 buchi invece di 44: il modulo conta anche i riferimenti che finiscono solo in un vicolo cieco (10 locali senza definizione, 10 simboli del progetto senza definizione).
 - 1.289 nodi invece di 1.288: ogni documento è un nodo. Un parametro o un locale definito è un `project-value`, non un vicolo cieco.
+
+### 13 novembre 2026, grafo completo dall'indice: Go, Rust, JavaScript e TypeScript
+
+Bozza. Il codice ora è diviso in due parti:
+- `scip_graph.py`, comune e senza linguaggi: legge l'indice, segue le catene e monta il grafo;
+- un adattatore per indicizzatore (`adapters/go.py`, `adapters/rust.py`, `adapters/typescript.py`) con due funzioni. `index(...)` installa ed esegue l'indicizzatore. `hops(index)` dichiara gli alias che quel motore scrive a modo suo.
+
+Gli alias degli adattatori:
+- `initializer`, `pattern-key` e `value`: un nome definito come alias di un altro, come chiave di un pattern, o con una funzione come valore;
+- `declared:@types/react.useCallback` e `declared:@types/react.useMemo`: librerie che per contratto restituiscono il loro argomento, riconosciute dal simbolo esterno e dal pacchetto, mai dal nome;
+- `rust:module-file`: un modulo incluso da più crate.
+
+Dove sono i risultati:
+- il grafo di ogni lingua è sul volume, in `scip-inputs/<caso>/graph-<lingua>.json.gz`;
+- i conteggi sono in `results/scip-chi-graph.json` e `results/scip-tududi-graph.json`;
+- per tududi li ho calcolati in locale dai file del grafo, perché ho fermato l'esecuzione al tetto di spesa prima che scrivesse il suo risultato.
+
+Prima del grafo gli indicizzatori sono stati rieseguiti con gli adattatori:
+- l'indice di chi è identico byte per byte (1.632.115, 64.652 e 39.509 byte);
+- tududi è stato reindicizzato in 55,3 s, con un picco di 2.193 MB;
+- semver non ha un grafo: l'esecuzione si è fermata due volte per la stessa causa, le sorgenti dello snapshot cercate in `/work/semver`.
+
+Archi per fine della catena:
+
+| Lingua | File snapshot / indicizzati | Nodi | Archi | Funzione, metodo o classe del progetto | Valore del progetto | Esterno | Vicolo cieco |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| chi Go | 90 / 90 | 4.847 | 20.102 | 3.357 | 9.094 | 7.651 | 0 |
+| tududi JavaScript | 1.038 / 1.038 | 86.225 | 182.593 | 16.407 | 86.442 | 70.944 | 8.800 |
+| tududi TypeScript | 650 / 650 | 41.107 | 171.821 | 15.147 | 64.977 | 84.067 | 7.630 |
+
+Un arco va dalla definizione che racchiude l'occorrenza alla fine della catena. Ha tipo `call` o `read` quando lo snapshot ha un riferimento in quella posizione, `unknown` altrimenti.
+
+Simboli del progetto per tipo:
+
+| Lingua | Funzioni | Metodi | Classi | Tipi | Variabili | Parametri | Proprietà | Moduli |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| chi | 292 | 169 | 44 | 18 | 3.439 | 0 | 272 | 109 |
+| JavaScript | 1.440 | 1.255 | 85 | 0 | 25.291 | 9.557 | 42.533 | 2.076 |
+| TypeScript | 230 | 60 | 18 | 714 | 12.963 | 8.818 | 13.231 | 1.303 |
+
+- Simboli esterni: 504 per chi, 1.347 per JavaScript, 2.000 per TypeScript.
+- `local` senza definizione: 2.639 in JavaScript, 1.768 in TypeScript.
+- chi conta zero parametri perché scip-go dà ai parametri il tipo `Variable`.
+
+Salti sugli archi che arrivano a una funzione del progetto:
+
+| Lingua | 0 salti | 1 | 2 | 3 o più | Tipi di salto |
+| --- | --- | --- | --- | --- | --- |
+| chi | 2.088 | 1.267 | 2 | 0 | implementazione 1.138, inizializzatore 207, funzione assegnata 102, intervallo condiviso 61 |
+| JavaScript | 12.608 | 3.774 | 25 | 0 | intervallo condiviso 7.721, inizializzatore 897, funzione assegnata 71, chiave di pattern 20, implementazione 6 |
+| TypeScript | 13.324 | 1.753 | 63 | 7 | intervallo condiviso 10.968, inizializzatore 1.053, `declared:@types/react.useCallback` 287, chiave di pattern 54, funzione assegnata 33, `declared:@types/react.useMemo` 1 |
+
+Chiamate dello snapshot senza alcuna occorrenza dell'indice, per classe:
+
+| Lingua | Chiamate | Classe | Esempi |
+| --- | --- | --- | --- |
+| chi | 261 | builtin del linguaggio | `_examples/fileserver/main.go:50` `panic`, `middleware/route_headers.go:66` `append`, `tree.go:80` `panic` |
+| chi | 43 | callee dinamico, senza nome | `_examples/graceful/main.go:30`, `middleware/maybe_test.go:19`, `middleware/throttle_test.go:138` |
+| chi | 5 | `err.Error` sull'interfaccia builtin `error` | `_examples/rest/main.go:268`, `:420`, `_examples/router-walk/main.go:35` |
+| JavaScript | 9.166 | ricevente di tipo `any` (modelli Sequelize, `req`) | `backend/app.js:110`, `backend/modules/spreadsheets/importService.js:607`, `backend/tests/integration/mcp/mcp-tools.test.js:2914` |
+| JavaScript | 3.698 | ricevente che è un'espressione | `backend/config/database-settings.js:39`, `backend/tests/integration/caldav-protocol.test.js:57`, `backend/tests/integration/profile-ai-settings.test.js:153` |
+| JavaScript | 2.565 | legame ambiguo per lo snapshot | `backend/modules/ai-assistant/service.js:839`, `backend/tests/integration/hosted-shared-roster.test.js:233`, `backend/tests/integration/shared-areas-access.test.js:222` |
+| TypeScript | 564 | `fireEvent.click`, `fireEvent.change` | `frontend/__tests__/Layout.test.tsx:262`, `frontend/components/Inbox/__tests__/QuickCaptureInput.nlp.test.tsx:73`, `frontend/components/Shared/__tests__/BlankSlate.test.tsx:39` |
+| TypeScript | 408 | ricevente sconosciuto allo snapshot | `e2e/tests/inbox-task-project.spec.ts:59`, `frontend/components/Inbox/__tests__/QuickCaptureInput.slash.test.tsx:305`, `frontend/components/Task/TaskDetails.tsx:663` |
+
+Lacune dell'indice, contate come buchi:
+- TypeScript, 3.755 chiamate finiscono su un `local` che nessun documento definisce (`t` di `useTranslation`, `frontend/Layout.tsx:497`).
+- JavaScript, 61 chiamate sono metodi abbreviati di un oggetto in un altro file (`backend/modules/admin/service.js:1085`, `backend/modules/inbox/operations/attachments.js:59`, `backend/modules/onboarding/controller.js:26`). L'indice non ha nessun dato nello stesso file e intervallo, quindi restano buchi.
+- Rust, modulo di test condiviso: lo recupera `rust:module-file`, sulla fixture 2 chiamate su 2; su semver non è misurato.
+
+Pacchetti esterni più riferiti, per archi (i venti completi sono nei file dei risultati):
+- chi, otto in tutto: Go standard 1.24 7.128, Go 1.22 168, Go 1.16 117, `go-chi/chi/v5@v5.1.0` 99, `go-chi/render@v1.0.1` 57, `go-chi/chi/v5@v5.2.4` 51, `go-chi/render@v1.0.3` 24, `go-chi/docgen@v1.2.0` 7;
+- JavaScript: `@types/jest` 28.976, `typescript` 24.037, `@types/node` 10.600, `sequelize` 2.935, `@types/express-serve-static-core` 886, `@testing-library/jest-dom` 702, `moment` 684, `stripe` 566, `moment-timezone` 326, `@types/express` 324;
+- TypeScript: `@types/react` 30.064, `typescript` 25.244, `@types/jest` 8.879, `@testing-library/dom` 4.151, `@types/node` 2.733, `@testing-library/jest-dom` 2.328, `react-i18next` 2.020, pacchetto `. .` 2.015, `react-router` 1.396, `playwright` 761.
+
+Prova a mano: 15 chiamate per lingua, scelte a caso fra tutte quelle del checkout (seme 20261113). Ho scritto la destinazione attesa leggendo il sorgente, prima di guardare il grafo; le attese sono in `HAND` di `modal_scip.py`.
+
+| Lingua | Giuste per il grafo | Giuste per A |
+| --- | --- | --- |
+| chi | 15 / 15 | 13 / 15 (`NewRouter` e `GetLogEntry` non chieste) |
+| JavaScript | 12 / 15 | non confrontata |
+| TypeScript | 14 / 15 | non confrontata |
+
+Le quattro sbagliate non hanno nessuna occorrenza nell'indice:
+- `queryInterface.addIndex`: parametro senza tipo;
+- `lastModified.toJSDate`: valore `any` di ical.js;
+- `Task.create`: modello Sequelize costruito a runtime;
+- `tag.slice`, in `frontend/components/Inbox/__tests__/QuickCaptureInput.focus.test.tsx:88`.
+
+Costo fatturato da Modal per l'app: 0,175 USD nell'ora 20 UTC e 0,108 nell'ora 21 UTC, 0,283 in tutto. Il totale comprende i riavvii a vuoto di un container che non trovava le sorgenti del plugin e l'esecuzione di tududi fermata al tetto.
+
+Non verificato:
+- il grafo di semver;
+- il confronto con A sul codice nuovo, per tududi;
+- perché `fireEvent.click` non ha occorrenze;
+- il pacchetto `. .`.

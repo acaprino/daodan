@@ -8,15 +8,22 @@ What is specific to an indexer lives in `adapters/<language>.py`, two functions:
 `prefix` is the checkout-relative directory an indexer run names its documents from; `indexer` is
 `{"name", "version", "seconds", "peak_mb"}`. A hop's target is another symbol key, or `(rel, line, byte
 column)` where a function the snapshot declares starts; its tag names the engine quirk it reads. An adapter
-may add `missing(index, rels) -> {rel: reason}` for the snapshot files the index holds no document for.
+may add, each passed by its driver to `Traversal` or `build`:
+
+    missing(index, rels) -> {rel: reason}       snapshot files the index holds no document for
+    same_range(index) -> {(definition key, other key): bool}   at a shared range: True alias, False never
+    classify(key) -> "project" | "namespace" | {"manager", "package", "version"} | None (the default rule)
+    static(index) -> {(rel, line, byte column)}  member references dispatched statically
+    refine(index, graph) -> None                 holes added, edges marked `uncertain` or `removed`
 
 Everything else is here: every document, occurrence and SymbolInformation decoded (`Index`); the Daodan
 snapshot a graph is measured against (`Snapshot`); from each referenced symbol every chain the index states,
 followed with cycle protection and no step limit (`Traversal`); the graph every language emits (`build`) and
-its counts (`report`). A chain follows only a definition sharing its range with a reference to another
-symbol, an adapter hop, and the implementations a member's SymbolInformation states (`is_implementation`).
-It ends on a function, method or class the snapshot declares, an external symbol, a project value with no
-stated alias, or a dead end: a `local` or project symbol the index defines nowhere, a cycle.
+its counts (`report`). A chain follows only a definition sharing its range with a reference to a symbol not
+also defined there (two definitions at one range are facets of one declaration, never aliases), an adapter
+hop, and the implementations a member's SymbolInformation states (`is_implementation`). It ends on a
+function, method or class the snapshot declares, an external symbol, a namespace the adapter names, a project
+value with no stated alias, or a dead end: a `local` or project symbol the index defines nowhere, a cycle.
 """
 from __future__ import annotations
 
@@ -182,9 +189,10 @@ def package(symbol: str) -> dict | None:
     return {"manager": parts[1], "package": parts[2], "version": parts[3]} if parts else None
 
 
-def package_name(symbol: str) -> str:
-    parts = split_symbol(_global(symbol))
-    return f"{parts[1]} {parts[2]}@{parts[3]}" if parts else "local"
+def package_name(symbol: str | dict) -> str:
+    """`manager package@version` of a symbol, or of a package an adapter states."""
+    stated = symbol if isinstance(symbol, dict) else package(symbol)
+    return f"{stated['manager']} {stated['package']}@{stated['version']}" if stated else "local"
 
 
 def node_kind(key: str, info: dict | None) -> str:
@@ -311,7 +319,7 @@ class Index:
         return Occurrence(*place, self.key(symbol, rel), bool(roles & 1), enclosing)
 
     def _information(self, data: bytes, rel: str | None) -> None:
-        entry = {"kind": 0, "display": "", "enclosing": "", "documentation": ""}
+        entry = {"kind": 0, "display": "", "enclosing": "", "documentation": "", "signature": ""}
         symbol = ""
         for number, wire, value in _fields(data):
             if number == 1 and wire == 2:
@@ -324,6 +332,9 @@ class Index:
                 entry["enclosing"] = value.decode("utf-8", errors="replace")
             elif number == 3 and wire == 2 and not entry["documentation"]:
                 entry["documentation"] = value.decode("utf-8", errors="replace")[:200]
+            elif number == 7 and wire == 2:  # signature_documentation, a Document whose text is the signature
+                entry["signature"] = next((text.decode("utf-8", errors="replace") for field, kind, text in
+                                           _fields(value) if field == 5 and kind == 2), "")
             elif number == 4 and wire == 2:
                 target, implementation = "", False
                 for field, kind, item in _fields(value):
@@ -483,7 +494,7 @@ class Snapshot:
 
 
 class End(NamedTuple):
-    cls: str  # project-callable, project-value, external, dead-end
+    cls: str  # project-callable, project-value, external, namespace, dead-end
     key: str  # the symbol the chain ends at
     target: str | None  # the snapshot's declaration, for a project-callable end
     detail: str  # a value's kind, an external's package, a dead end's reason
@@ -491,13 +502,31 @@ class End(NamedTuple):
 
 
 class Traversal:
-    """Every end the index states for a symbol, memoized; a symbol met again on its own chain is a cycle."""
+    """Every end the index states for a symbol, memoized; a symbol met again on its own chain is a cycle.
 
-    def __init__(self, index: Index, snapshot: Snapshot, hops: dict):
+    `same_range` and `classify` are the adapter's (see the module docstring): a pair it names overrides the
+    same-range rule; a key it classifies `namespace` or external ends there, `project` is a project symbol
+    whatever its package, None keeps the default (a project symbol is of a package the index defines).
+    """
+
+    def __init__(self, index: Index, snapshot: Snapshot, hops: dict, same_range: dict | None = None,
+                 classify=None):
         self.index, self.snapshot, self.hops = index, snapshot, hops
+        self.same_range, self.classify = same_range or {}, classify
         self.own = {tuple(parts[1:4]) for parts in map(split_symbol, map(_global, index.defs)) if parts}
         self.memo: dict[str, list[End]] = {}
         self.active: set = set()
+        self._stated: dict = {}
+
+    def stated(self, key: str):
+        """The adapter's classification of a key, None without one."""
+        if key not in self._stated:
+            self._stated[key] = self.classify(key) if self.classify else None
+        return self._stated[key]
+
+    def package(self, key: str) -> dict | None:
+        stated = self.stated(key)
+        return stated if isinstance(stated, dict) else package(key)
 
     def ends(self, key: str) -> list[End]:
         if key in self.memo:
@@ -505,8 +534,8 @@ class Traversal:
         if key in self.active:
             return [End("dead-end", key, None, "cycle")]
         self.active.add(key)
-        index, found, aliased = self.index, [], False
-        places = index.defs.get(key, ())
+        index, found, aliased, stated = self.index, [], False, self.stated(key)
+        places = index.defs.get(key, ()) if stated in (None, "project") else ()
         for rel, occurrence in places:
             verdict, target = self.snapshot.grade(
                 self.snapshot.rel.get(rel, rel), occurrence.line, index.to_bytes(rel, occurrence.line, occurrence.start))
@@ -518,9 +547,10 @@ class Traversal:
                 found.append(End("external", key, None, f"{package_name(key)} (outside the snapshot)"))
                 aliased = True
                 continue
-            same = sorted({item.key for item in index.at.get((rel, occurrence.line, occurrence.start), ())
-                           if not item.definition and item.key != key
-                           and (item.end_line, item.end) == (occurrence.end_line, occurrence.end)})
+            here = [item for item in index.at.get((rel, occurrence.line, occurrence.start), ())
+                    if item.key != key and (item.end_line, item.end) == (occurrence.end_line, occurrence.end)]
+            defined = {item.key for item in here if item.definition}
+            same = sorted({item.key for item in here if self.same_range.get((key, item.key), item.key not in defined)})
             for other in same:
                 found += [end._replace(chain=("same-range",) + end.chain) for end in self.ends(other)]
             aliased = aliased or bool(same)
@@ -535,7 +565,7 @@ class Traversal:
                     found.append(End("project-callable", key, identity, "", (tag,)) if identity else
                                  End("project-value", key, None, "function the snapshot does not declare", (tag,)))
         if not places and not aliased:
-            found.append(self._undefined(key))
+            found.append(self._undefined(key, stated))
         elif not aliased:
             found.append(End("project-value", key, None, node_kind(key, index.info.get(key))))
         # A member's implementations are where a call through it can run; a type's subtypes (SCIP's type
@@ -548,11 +578,15 @@ class Traversal:
         self.memo[key] = found = list(dict.fromkeys(found))
         return found
 
-    def _undefined(self, key: str) -> End:
+    def _undefined(self, key: str, stated=None) -> End:
+        if stated == "namespace":
+            return End("namespace", key, None, "")
+        if isinstance(stated, dict):
+            return End("external", key, None, package_name(stated))
         parts = split_symbol(_global(key))
         if parts is None:
             return End("dead-end", key, None, "dangling-local")
-        if tuple(parts[1:4]) in self.own:
+        if stated == "project" or tuple(parts[1:4]) in self.own:
             return End("dead-end", key, None, "undefined-project-symbol")
         return End("external", key, None, package_name(key))
 
@@ -583,37 +617,47 @@ HOLES = ("no-position", "no-document", "no-occurrence", "dangling-local", "undef
 
 
 def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: dict,
-          missing_reasons: dict | None = None, traversal: Traversal | None = None) -> tuple[dict, dict]:
+          missing_reasons: dict | None = None, traversal: Traversal | None = None, static=None,
+          refine=None) -> tuple[dict, dict]:
     """The graph of one language's documents, and the ends at each snapshot reference (for comparisons).
 
     Edges run from every non-definition occurrence's innermost enclosing definition (its document when none
-    holds it) to each end of its symbol, with the snapshot reference's kind at that position. Holes are the
-    snapshot references the index answers nothing at, or only with a dead end.
+    holds it) to each end of its symbol (`symbol`, the key referenced there), with the snapshot reference's
+    kind at that position; at a `static` site `(rel, line, byte column)` to no end reached through an
+    implementation. Holes are the snapshot references the index answers nothing at, or only with a dead end.
+    `refine(index, graph)` runs last: an edge it gives `uncertain` (`{reason, candidates}`) stays, one it gives
+    `removed` (a reason) moves to `graph["removed"]`, a hole or edge it adds carries `"by": "refine"`; it
+    drops nothing otherwise.
     """
     traversal = traversal or Traversal(index, snapshot, hops)
+    static = {(rel, line, index.from_bytes(rel, line, column)) for rel, line, column in static or ()}
+
+    def ends(position: tuple | None, keys) -> list[End]:
+        found = list(dict.fromkeys(end for key in dict.fromkeys(keys) for end in traversal.ends(key)))
+        return [end for end in found if "implementation" not in end.chain] if position in static else found
     documents = {rel for rel in index.documents if snapshot.languages.get(snapshot.rel.get(rel, rel)) == language}
     references, holes, by_position = {}, [], collections.defaultdict(list)
     for identity, rel, kind, resolution, lexical, span, parts, reason in snapshot.references(language):
         checkout = snapshot.checkout.get(rel, rel)
         site = snapshot.callee(rel, span, parts)
-        entries = []
+        entries, position = [], None
         if site is not None:
-            native = index.from_bytes(checkout, site[0], site[1])
-            entries = index.at.get((checkout, site[0], native), [])
-            by_position[(checkout, site[0], native)].append(kind)
+            position = (checkout, site[0], index.from_bytes(checkout, site[0], site[1]))
+            entries = index.at.get(position, [])
+            by_position[position].append(kind)
         keys = [item.key for item in entries if not item.definition] or [item.key for item in entries]
-        ends = list(dict.fromkeys(end for key in dict.fromkeys(keys) for end in traversal.ends(key)))
+        found = ends(position, keys)
         if site is None:
             cls = "no-position"
         elif not entries:
             cls = "no-occurrence" if checkout in index.documents else "no-document"
-        elif all(end.cls == "dead-end" for end in ends):
-            cls = ends[0].detail if ends else "no-occurrence"
+        elif all(end.cls == "dead-end" for end in found):
+            cls = found[0].detail if found else "no-occurrence"
         else:
             cls = ""
         references[identity] = {"site": f"{rel}:{site[0] if site else span[2]}", "name": ".".join(parts),
                                 "kind": kind, "reason": reason, "resolution": resolution, "lexical": lexical,
-                                "ends": ends, "hole": cls}
+                                "ends": found, "hole": cls}
         if cls:
             holes.append({"site": references[identity]["site"], "name": ".".join(parts), "kind": kind, "class": cls,
                           "reason": reason})
@@ -627,12 +671,14 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
                                                   index.info.get(occurrence.key)),
                                                   "file": rel, "line": occurrence.line, "external": None})
                 continue
-            kinds = by_position.get((rel, occurrence.line, occurrence.start), ())
+            position = (rel, occurrence.line, occurrence.start)
+            kinds = by_position.get(position, ())
             kind = kinds[0] if len(set(kinds)) == 1 else "unknown"
             source = holder.get(i, rel)
-            for end in traversal.ends(occurrence.key):
-                edges.append({"from": source, "to": end.key, "site": f"{rel}:{occurrence.line}", "kind": kind,
-                              "chain": list(end.chain), "end": end.cls})
+            for end in ends(position, [occurrence.key]):
+                edges.append({"from": source, "to": end.key, "symbol": occurrence.key,
+                              "site": f"{rel}:{occurrence.line}", "kind": kind, "chain": list(end.chain),
+                              "end": end.cls})
     for rel in documents:
         nodes.setdefault(rel, {"id": rel, "kind": "module", "file": rel, "line": 1, "external": None})
     for edge in edges:
@@ -642,11 +688,11 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
         places = index.defs.get(key)
         if places:
             rel, occurrence = places[0]
-            nodes[key] = {"id": key, "kind": node_kind(key, index.info.get(key)), "file": rel,
-                          "line": occurrence.line, "external": package(key) if edge["end"] == "external" else None}
+            nodes[key] = {"id": key, "kind": node_kind(key, index.info.get(key)), "file": rel, "line": occurrence.line,
+                          "external": traversal.package(key) if edge["end"] == "external" else None}
         else:
             nodes[key] = {"id": key, "kind": node_kind(key, index.info.get(key)), "file": None, "line": None,
-                          "external": package(key) if edge["end"] == "external" else None}
+                          "external": traversal.package(key) if edge["end"] == "external" else None}
     inventory = sorted(snapshot.checkout[rel] for rel in snapshot.inventory
                        if snapshot.languages.get(rel) == language and rel in snapshot.checkout)
     missing = [{"path": rel, "reason": (missing_reasons or {}).get(rel) or "no document in the index"}
@@ -656,8 +702,26 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
     graph = {"language": language, "indexer": indexer,
              "files": {"snapshot": len(inventory), "indexed": sum(1 for rel in inventory if index.documents.get(rel)),
                        "missing": missing},
-             "nodes": list(nodes.values()), "edges": edges, "holes": holes}
+             "nodes": list(nodes.values()), "edges": edges, "holes": holes, "removed": []}
+    if refine is not None:
+        _refined(index, graph, refine)
     return graph, references
+
+
+def _refined(index: Index, graph: dict, refine) -> None:
+    """Run an adapter's refine step and tag what it changed (see `build`)."""
+    before = {name: list(graph[name]) for name in ("edges", "holes")}
+    refine(index, graph)
+    for name, items in before.items():
+        now = {id(item) for item in graph[name]}
+        if any(id(item) not in now for item in items):
+            raise ValueError(f"refine dropped {name}: give an edge `removed` (a reason) instead")
+        seen = {id(item) for item in items}
+        for item in graph[name]:
+            if id(item) not in seen:
+                item["by"] = "refine"
+    graph["removed"] += [edge for edge in graph["edges"] if edge.get("removed")]
+    graph["edges"] = [edge for edge in graph["edges"] if not edge.get("removed")]
 
 
 def _examples(items: list, size: int = 3) -> list:
@@ -696,6 +760,9 @@ def report(graph: dict) -> dict:
         "edges_by_end": {f"{end} {kind}": count for (end, kind), count in sorted(ends.items())},
         "callable_chain_hops": {("3+" if hops == 3 else str(hops)): count for hops, count in sorted(callable_chains.items())},
         "hop_tags": dict(tags.most_common()),
+        "edges_uncertain": dict(collections.Counter(edge["uncertain"]["reason"] for edge in graph["edges"]
+                                                    if edge.get("uncertain")).most_common()),
+        "edges_removed": dict(collections.Counter(edge["removed"] for edge in graph.get("removed", ())).most_common()),
         "holes_by_class": {f"{cls} {kind}": count for (cls, kind), count in sorted(by_class.items())},
         "holes": [{"class": cls, "kind": kind, "reason": reason, "count": len(items), "examples": _examples(items)}
                   for (cls, kind, reason), items in sorted(holes.items(), key=lambda pair: -len(pair[1]))][:40],
