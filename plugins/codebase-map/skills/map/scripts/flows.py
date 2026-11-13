@@ -47,6 +47,7 @@ link the same service, method and path. External modules of the module graph are
 nodes too: a symbol in a file an external module cites as evidence uses it. Code outside
 any named function, a callback passed as an argument included, belongs to its module,
 the node `file::<module>`; a route it declares or an entry point needs a named function.
+A component written as an element (`<Paywall />`) is called by the function that writes it.
 
     python flows.py links MANIFEST --rules RULES
     python flows.py trace MANIFEST --rules RULES (--from NODE | --to NODE | --through NODE)
@@ -763,6 +764,17 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                     entries.append({"symbol": handler, "kind": "azione", "site": site})
                 elif link == "ingresso":
                     entries.append({"symbol": owner, "kind": rule["entry"], "site": site})
+        # A component written as an element is rendered: React calls it, so its parent reaches it.
+        for file, holder, line, column, blob in db.execute(
+                "SELECT file, caller, l0, c0, payload FROM sem_references WHERE kind='read'"):
+            parts = _unpack(blob).get("parts") or []
+            if len(parts) != 1 or not line or not facts.source.before(file, line, column).rstrip().endswith("<"):
+                continue
+            found = facts.targets(str(parts[0]), file, line, column, ("function", "class"))
+            component = facts.node(found[0]) if len(found) == 1 else None
+            if component:
+                calls.append({"from": facts.node(holder) or f"{file}::{MODULE}", "to": component,
+                              "site": f"{file}:{line}"})
         # A store function held in a variable is called where that variable is called.
         for file, name, caller, site in plain:
             if (file, name) in held:

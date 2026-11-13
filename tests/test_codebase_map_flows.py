@@ -324,6 +324,10 @@ class HandlerRouteTests(unittest.TestCase):
         # Code outside any named function: at module level, and in a callback passed as an argument.
         "api/app.js": ("const routes = require('./routes');\nfunction mount(r) {\n    return r;\n}\n"
                        "mount(routes);\nsetup(() => {\n    mount(routes);\n});\n"),
+        # A component written as an element: React calls it, so the parent reaches it.
+        "web/Paywall.tsx": "export function Paywall() {\n  return null;\n}\n",
+        "web/Home.tsx": ("import { Paywall } from './Paywall';\n"
+                         "export function Home() {\n  return <div><Paywall /></div>;\n}\n"),
         "web/client.ts": ("declare function apiGet(url: string): void;\ndeclare function apiPath(p: string): string;\n"
                           "export function loadPlans() {\n  apiGet('/billing');\n}\n"
                           "export function addTask() {\n  fetch(apiPath('/task'), { method: 'POST', credentials: 'include' });\n}\n"
@@ -376,6 +380,10 @@ class HandlerRouteTests(unittest.TestCase):
         calls = {(e["from"], e["to"], e["site"]) for e in self.links["edges"] if e["type"] == "chiama"}
         self.assertIn(("api/app.js::<module>", "api/app.js::mount", "api/app.js:5"), calls)
         self.assertIn(("api/app.js::<module>", "api/app.js::mount", "api/app.js:7"), calls)
+
+    def test_a_component_written_as_an_element_is_reached_by_its_parent(self):
+        calls = {(e["from"], e["to"], e["site"]) for e in self.links["edges"] if e["type"] == "chiama"}
+        self.assertIn(("web/Home.tsx::Home", "web/Paywall.tsx::Paywall", "web/Home.tsx:3"), calls)
 
     def test_a_handler_that_is_no_function_is_a_gap(self):
         self.assertEqual([g["reason"] for g in self.links["gaps"]],
