@@ -1,9 +1,11 @@
 """Shared read-only view over lexical references and verified engine edges.
 
 Consumers read this module instead of opening `engine-edges.sqlite` directly or
-running an engine at query time. Lexical bindings remain authoritative when an
-engine disagrees; divergent answers are surfaced in `conflicts` and candidate
-answers stay outside confirmed call edges.
+running an engine at query time. Where an engine checked a call the lexical
+resolver bound, its answer is the target: another declaration replaces the lexical
+one, a definition outside the project removes the edge. A lexical target the caller
+overrides stays, and its divergence from the engine is surfaced in `conflicts`.
+Candidate answers stay outside confirmed call edges.
 
 Standard library only.
 """
@@ -265,7 +267,29 @@ def load_edge_view(
                 eng_target = eng.get("target_id")
                 eng_resolver = eng.get("resolver")
                 if res_state == "resolved":
-                    if eng_conf == "confirmed" and eng_target and eng_target != target_id:
+                    if eng_conf == "confirmed" and eng_target == target_id:
+                        if eng_resolver not in record["provenance"]:
+                            record["provenance"].append(eng_resolver)
+                    elif ref_id not in overrides:
+                        if eng_conf == "confirmed" and eng_target in target_kinds:
+                            record.update(
+                                target_id=eng_target,
+                                resolver=eng_resolver,
+                                provenance=[eng_resolver],
+                                reason=eng.get("payload", {}).get("reason") or f"engine-{eng.get('verdict')}",
+                                target_kind=target_kinds.get(eng_target, "concrete"),
+                            )
+                        elif eng_conf == "external":
+                            record.update(
+                                target_id=None,
+                                resolution="unresolved",
+                                resolver=eng_resolver,
+                                confidence=None,
+                                provenance=[],
+                                reason=f"engine-{eng.get('verdict')}",
+                                target_kind=None,
+                            )
+                    elif eng_conf == "confirmed" and eng_target:
                         conflicts.append({
                             "reference_id": ref_id,
                             "file": file_rel,
@@ -277,8 +301,6 @@ def load_edge_view(
                             "engine_resolver": eng_resolver,
                             "reason": "divergent-lexical-and-engine-targets",
                         })
-                    elif eng_conf == "confirmed" and eng_target == target_id and eng_resolver not in record["provenance"]:
-                        record["provenance"].append(eng_resolver)
                 else:
                     if eng_conf == "confirmed" and eng_target and eng_target in target_kinds:
                         record.update(
@@ -304,7 +326,8 @@ def load_edge_view(
                         candidates.append(candidate_entry)
 
             counter.add(languages.get(file_rel), res_state, payload,
-                        engine_resolved=record["resolution"] == "resolved")
+                        engine_resolved=record["resolution"] == "resolved" and record["target_id"] != target_id,
+                        engine_external=res_state == "resolved" and record["resolution"] != "resolved")
             references.append(record)
 
         population = int(binding.get("population", 0)) if binding else 0

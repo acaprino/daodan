@@ -2114,6 +2114,90 @@ class EnvironmentTests(unittest.TestCase):
             self.assertEqual(report["inference_modes"], {"project-only": 1})
 
 
+class LexicalCheckTests(unittest.TestCase):
+    """The engine is asked about the calls the lexical resolver bound too, and its answer wins."""
+
+    SOURCES = {
+        "app/use.py": "from app.tool import free\n\n\ndef go():\n    return free()\n",
+        "app/tool.py": "def free():\n    return 2\n\n\ndef other():\n    return 3\n",
+    }
+    setUp = ResolveEdgesTests.setUp
+    run_engine = ResolveEdgesTests.run_engine
+    references = ResolveEdgesTests.references
+
+    def bound_call(self):
+        for identity, resolution, payload in self.references():
+            if resolution == "resolved" and payload["parts"] == ["free"]:
+                return identity, payload["span"][0]
+        raise AssertionError("the lexical resolver did not bind the call")
+
+    def declaration(self, name):
+        with open_snapshot(self.manifest) as store:
+            return store.connection.execute(
+                "SELECT id FROM sem_declarations WHERE file='app/tool.py' AND name=?", (name,)).fetchone()[0]
+
+    def check(self, answer):
+        """The pass report, the view and the bound call's reference under one scripted answer."""
+        import edge_view
+        identity, line = self.bound_call()
+        engine = StubEngine(answers={} if answer is None else {("use.py", line): answer})
+        report = self.run_engine(engine)
+        self.assertTrue(report["available"], report)
+        self.assertEqual([asked[:2] for asked in engine.asked], [("use.py", line)])
+        with open_snapshot(self.manifest) as store:
+            view = edge_view.load_edge_view(store, engine_store=self.edges)
+        self.assertEqual(view["conflicts"], [])
+        # The pass and the view count the same calls.
+        self.assertEqual(report["resolution"], view["coverage"]["resolution"])
+        return report, view, {item["id"]: item for item in view["references"]}[identity]
+
+    def test_the_same_answer_adds_the_engine_to_the_provenance(self):
+        report, view, reference = self.check(Definition(self.root / "app/tool.py", "free", line=1, column=4))
+        self.assertEqual(report["languages"]["python"]["checked"],
+                         {"population": 1, "asked": 1, "same": 1, "corrected": 0, "external": 0})
+        # `confirmed` stays the edges an engine adds where the lexical resolver had none.
+        self.assertEqual(report["confirmed_edges"], 0)
+        self.assertEqual(reference["target_id"], self.declaration("free"))
+        self.assertEqual(reference["provenance"], [resolve_edges.resolution.LEXICAL_RESOLVER, "stub@1.0"])
+        resolution = view["coverage"]["resolution"]
+        self.assertEqual((resolution["resolved"], resolution["lexical_resolved"], resolution["engine_confirmed"]),
+                         (1, 1, 0))
+
+    def test_another_project_declaration_replaces_the_lexical_target(self):
+        report, view, reference = self.check(Definition(self.root / "app/tool.py", "other", line=5, column=4))
+        self.assertEqual(report["languages"]["python"]["checked"],
+                         {"population": 1, "asked": 1, "same": 0, "corrected": 1, "external": 0})
+        self.assertEqual((reference["target_id"], reference["resolver"], reference["provenance"]),
+                         (self.declaration("other"), "stub@1.0", ["stub@1.0"]))
+        self.assertEqual(reference["lexical_target_id"], self.declaration("free"))
+        resolution = view["coverage"]["resolution"]
+        self.assertEqual((resolution["resolved"], resolution["lexical_resolved"], resolution["engine_confirmed"]),
+                         (1, 0, 1))
+
+    def test_a_definition_outside_the_project_removes_the_lexical_edge(self):
+        vendor = self.root.parent / "vendor/lib.py"
+        vendor.parent.mkdir()
+        vendor.write_text("def free():\n    return 4\n", encoding="utf-8")
+        report, view, reference = self.check(Definition(vendor, "free", line=1, column=4))
+        self.assertEqual(report["languages"]["python"]["checked"],
+                         {"population": 1, "asked": 1, "same": 0, "corrected": 0, "external": 1})
+        self.assertEqual((reference["target_id"], reference["resolution"], reference["reason"]),
+                         (None, "unresolved", "engine-external-definition"))
+        self.assertEqual(reference["lexical_target_id"], self.declaration("free"))
+        resolution = view["coverage"]["resolution"]
+        self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["external_by_class"]),
+                         (0, 0, {"builtin": 0, "engine-external-definition": 1}))
+
+    def test_no_engine_answer_keeps_the_lexical_target(self):
+        report, view, reference = self.check(None)
+        self.assertEqual(report["languages"]["python"]["checked"],
+                         {"population": 1, "asked": 1, "same": 0, "corrected": 0, "external": 0})
+        self.assertEqual((reference["target_id"], reference["provenance"]),
+                         (self.declaration("free"), [resolve_edges.resolution.LEXICAL_RESOLVER]))
+        resolution = view["coverage"]["resolution"]
+        self.assertEqual((resolution["resolved"], resolution["lexical_resolved"]), (1, 1))
+
+
 class CommandLineTests(unittest.TestCase):
     def test_the_command_reports_a_missing_engine_as_a_failure_with_its_recovery(self):
         import contextlib

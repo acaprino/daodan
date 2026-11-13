@@ -2,7 +2,7 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Resolve a snapshot's unresolved call references with a probed engine.
+"""Resolve a snapshot's call references with a probed engine.
 
 The lexical resolver in `resolution.py` is the floor: it resolves a unique lexical
 binding and nothing it cannot prove. Measured on two real projects it resolved 9.7%
@@ -15,8 +15,8 @@ Three rules keep an engine's output from being mistaken for the lexical graph's:
 
 1. **Every edge names its resolver.** `payload.resolver` is `builtin-lexical` for a
    lexically resolved reference and `<engine>@<version>` for one this command wrote,
-   with `payload.confidence` `confirmed` or `candidate`. Edges of two resolvers are
-   not comparable and are never merged into one count.
+   with `payload.confidence` `confirmed`, `candidate` or `external`. Edges of two
+   resolvers are not comparable and are never merged into one count.
 2. **An edge must arrive at a symbol the snapshot already holds.** The engine's
    answer is graded by membership in this snapshot's own declaration table, which is
    the measured grading and also the prerequisite's point: an engine attached before
@@ -27,6 +27,12 @@ Three rules keep an engine's output from being mistaken for the lexical graph's:
    307 ms), so a whole project's unresolved population is hours, not seconds. The
    run reports how many positions it asked about out of how many, and `--limit`
    bounds it. A partial pass is a partial pass.
+
+The calls the lexical resolver bound are asked about too, after the unresolved ones:
+where the engine names another declaration or a definition outside the project, its
+answer is stored and replaces the lexical target in the edge view. Their counts stay
+apart, in `checked`, so `population`, `asked` and `confirmed` keep describing the
+calls the lexical resolver left unresolved.
 
 One property of an engine's answer needs stating before a consumer trusts an edge:
 it can land on a *contract* rather than an implementation. Verified on this
@@ -2667,12 +2673,16 @@ class ResolutionCounter:
         self.names = names
         self.languages: dict[str, dict] = {}
 
-    def add(self, language: str | None, res_state: str, payload: dict, *, engine_resolved: bool = False) -> None:
+    def add(self, language: str | None, res_state: str, payload: dict, *, engine_resolved: bool = False,
+            engine_external: bool = False) -> None:
         counts = self.languages.setdefault(language or "unknown", {
-            "calls": 0, "lexical_resolved": 0, "engine_confirmed": 0, **dict.fromkeys(REFERENCE_CLASSES, 0)})
+            "calls": 0, "lexical_resolved": 0, "engine_confirmed": 0, "engine_refuted": 0,
+            **dict.fromkeys(REFERENCE_CLASSES, 0)})
         counts["calls"] += 1
         if res_state == "resolved":
-            counts["lexical_resolved"] += 1
+            # A bound call the engine places outside the project is external; one it rebinds is the engine's.
+            counts["engine_refuted" if engine_external else
+                   "engine_confirmed" if engine_resolved else "lexical_resolved"] += 1
             return
         counts["engine_confirmed"] += int(engine_resolved)
         counts[classify_reference(payload, self.names)] += 1
@@ -2686,7 +2696,8 @@ class ResolutionCounter:
         `unasked` is the askable remainder no engine pass has inferred. Each
         language reads its own entry of the edge store; its `engine` is None when
         no pass covers it. `stored_confirmed` counts the store's confirmed edges
-        when the caller did not feed them reference by reference.
+        and its checks of the bound calls when the caller did not feed them
+        reference by reference.
         """
         entries = (binding or {}).get("languages") or {}
         keys = ("calls", "lexical_resolved", "engine_confirmed", "engine_external", "asked", "engine_unresolved",
@@ -2696,12 +2707,17 @@ class ResolutionCounter:
         for language, counts in sorted(self.languages.items()):
             entry = entries.get(language) or {}
             verdicts = entry.get("verdicts") or {}
-            row = {**counts, "engine_external": int(verdicts.get("external-definition", 0)),
+            row = {**counts,
                    "asked": int(entry.get("asked", 0)) + int(entry.get("reused", 0)),
                    "engine_unresolved": sum(int(verdicts.get(key, 0)) for key in
                                             ("unresolved", "ambiguous-target", "project-not-a-symbol"))}
             if stored_confirmed:
-                row["engine_confirmed"] += int(entry.get("confirmed", 0))
+                checked = entry.get("checked") or {}
+                corrected, refuted = int(checked.get("corrected", 0)), int(checked.get("external", 0))
+                row["lexical_resolved"] -= corrected + refuted
+                row["engine_confirmed"] += int(entry.get("confirmed", 0)) + corrected
+                row["engine_refuted"] += refuted
+            row["engine_external"] = int(verdicts.get("external-definition", 0)) + row["engine_refuted"]
             for key in keys:
                 total[key] += row[key]
             resolvable = row["calls"] - row["builtin"] - row["engine_external"]
@@ -2789,7 +2805,7 @@ def edge_destination(out: Path, manifest: Path, sources: dict[str, Path]) -> Pat
     return out
 
 
-EDGE_SCHEMA = 3
+EDGE_SCHEMA = 4
 EDGE_COLUMNS = ("reference_id", "file", "language", "caller", "target_id", "verdict", "resolver", "confidence",
                 "l0", "c0", "payload")
 
@@ -3152,13 +3168,22 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         rows = connection.execute(
             f"SELECT r.id, r.file, r.payload, r.l0, r.c0, r.l1, r.c1, c.language FROM sem_references r "
             f"JOIN sem_coverage c ON c.file=r.file "
-            f"WHERE r.kind='call' AND r.resolution='unresolved' AND c.language IN ({placeholders}) "
+            f"WHERE r.kind='call' AND r.resolution IN ('unresolved','resolved') AND c.language IN ({placeholders}) "
             f"ORDER BY r.id", tuple(languages)).fetchall()
+        # The calls the lexical resolver bound, with the target the engine is checked against.
+        lexical = dict(connection.execute(
+            "SELECT id, target_id FROM sem_references WHERE kind='call' AND resolution='resolved'"))
         callee_names = project_callee_names(connection)
         counts = {language: {"population": 0, "selected": 0, "asked": 0, "reused": 0, "confirmed": 0,
-                             "candidates": 0, "verdicts": {}, "excluded_classes": {}} for language in languages}
-        population = []
+                             "candidates": 0, "verdicts": {}, "excluded_classes": {},
+                             "checked": {"population": 0, "asked": 0, "same": 0, "corrected": 0, "external": 0}}
+                  for language in languages}
+        population, bound = [], []
         for row in rows:
+            if row[0] in lexical:
+                bound.append(row)
+                counts[row[7]]["checked"]["population"] += 1
+                continue
             reference_class = classify_reference(_unpack(row[2]), callee_names)
             if reference_class in ("askable", "dynamic"):
                 population.append(row)
@@ -3181,10 +3206,11 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             except (OSError, ValueError, sqlite3.Error) as error:
                 cache_path, cache_note = None, f"answer cache unusable: {error}"
         ranks = file_ranks(connection)
-        population.sort(key=lambda row: (known.get(row[1]) == hashes.get(row[1]),
-                                         ((_unpack(row[2]).get("parts") or [""])[-1] not in callee_names),
-                                         -ranks.get(row[1], 0.0),
-                                         row[1], row[3] or 0, row[4] or 0, row[0]))
+        for group in (population, bound):
+            group.sort(key=lambda row: (known.get(row[1]) == hashes.get(row[1]),
+                                        ((_unpack(row[2]).get("parts") or [""])[-1] not in callee_names),
+                                        -ranks.get(row[1], 0.0),
+                                        row[1], row[3] or 0, row[4] or 0, row[0]))
 
         def reusable(row):
             answer = cached.get(row[0])
@@ -3194,14 +3220,15 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                 return None
             return answer
 
-        reused, pending = [], []
-        for row in population:
+        reused, pending, unchecked = [], [], []
+        for row in population + bound:
             answer = reusable(row)
             if answer is None:
-                pending.append(row)
+                (unchecked if row[0] in lexical else pending).append(row)
             else:
                 reused.append((row, answer))
-        selected = pending[::stride] if stride > 1 else pending
+        # The unresolved calls come first: a limit spends its questions on them.
+        selected = pending[::stride] + unchecked[::stride]
         if limit is not None:
             selected = selected[:limit]
 
@@ -3238,20 +3265,35 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                 contracts[identity] = bool(row and (_unpack(row[0]) or {}).get("contract"))
             return contracts[identity]
 
-        def count(language, verdict):
+        def count(language, verdict, reference_id=None):
+            """One verdict on an unresolved call; the bound calls are counted in `checked`."""
+            if reference_id in lexical:
+                return
             verdicts = counts[language]["verdicts"]
             verdicts[verdict] = verdicts.get(verdict, 0) + 1
 
         def record(reference_id, rel, language, payload, verdict, target_id, resolver, line, column):
-            count(language, verdict)
-            if verdict.startswith("edge-") and target_id:
-                counts[language]["confirmed"] += 1
-                confidence = "confirmed"
-            elif verdict in CANDIDATE_REASONS:
-                counts[language]["candidates"] += 1
-                confidence = "candidate"
+            if reference_id in lexical:
+                # The engine agrees with the lexical target, names another declaration or a place outside.
+                checked = counts[language]["checked"]
+                if verdict.startswith("edge-") and target_id:
+                    checked["same" if target_id == lexical[reference_id] else "corrected"] += 1
+                    confidence = "confirmed"
+                elif verdict == "external-definition":
+                    checked["external"] += 1
+                    confidence = "external"
+                else:
+                    return
             else:
-                return
+                count(language, verdict)
+                if verdict.startswith("edge-") and target_id:
+                    counts[language]["confirmed"] += 1
+                    confidence = "confirmed"
+                elif verdict in CANDIDATE_REASONS:
+                    counts[language]["candidates"] += 1
+                    confidence = "candidate"
+                else:
+                    return
             edges.append({
                 "reference_id": reference_id, "file": rel, "language": language,
                 # The stored payload already qualifies its caller with its file.
@@ -3307,8 +3349,11 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             return None
 
         for (reference_id, rel, blob, _l0, _c0, _l1, _c1, language), answer in reused:
-            counts[language]["selected"] += 1
-            counts[language]["reused"] += 1
+            if reference_id in lexical:
+                counts[language]["checked"]["asked"] += 1
+            else:
+                counts[language]["selected"] += 1
+                counts[language]["reused"] += 1
             progress["reused_identity"] = progress["reused_identity"] or answer["resolver"]
             record(reference_id, rel, language, _unpack(blob), answer["verdict"], answer["target_id"],
                    answer["resolver"], answer["line"], answer["column"])
@@ -3322,29 +3367,29 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         failure = None
         try:
             for reference_id, rel, blob, l0, c0, l1, c1, language in selected:
-                counts[language]["selected"] += 1
+                counts[language]["selected"] += reference_id not in lexical
                 payload = _unpack(blob)
                 parts = payload.get("parts") or []
                 if not parts:
                     # A reference with no parts is a dynamic callee, not a position this
                     # command failed to find: the verdict keeps the payload's own reason
                     # so the declared coverage says what was really asked about.
-                    count(language, payload.get("reason") or "dynamic-reference")
+                    count(language, payload.get("reason") or "dynamic-reference", reference_id)
                     continue
                 if not l0 or not l1:
-                    count(language, "no-position")
+                    count(language, "no-position", reference_id)
                     continue
                 try:
                     lines = lines_for(rel)
                 except (OSError, UnicodeError):
                     lines = []
                 if not 1 <= l0 <= l1 <= len(lines):
-                    count(language, "no-position")
+                    count(language, "no-position", reference_id)
                     continue
                 column = callee_column(lines[l1 - 1], [l0, c0, l1, c1], parts[-1])
                 if column is None:
                     skipped_position += 1
-                    count(language, "position-unverified")
+                    count(language, "position-unverified", reference_id)
                     continue
                 if not progress["probed"]:
                     # The engine starts only once a position needs it.
@@ -3360,13 +3405,13 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                                 "memory_exhausted": bool(MEMORY_EXHAUSTED.search(reason or ""))}
                     progress["probed"] = True
                 started = time.perf_counter()
-                counts[language]["asked"] += 1
+                (counts[language]["checked"] if reference_id in lexical else counts[language])["asked"] += 1
                 try:
                     inferred = engine.definitions(source_paths[rel], l1, column)
                 except (EngineFailure, MemoryError):
                     raise
                 except Exception as error:
-                    count(language, f"infer-error:{type(error).__name__}")
+                    count(language, f"infer-error:{type(error).__name__}", reference_id)
                     continue
                 finally:
                     latencies.append(time.perf_counter() - started)
