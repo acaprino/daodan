@@ -260,9 +260,11 @@ def main() -> int:
             value = init.group(1) if init else ""
             if re.match(r"(async\s+)?(function\b|\(|[A-Za-z_$][\w$]*\s*=>)", value):
                 return "binding function in place"
-            if re.match(r"(await\s+)?[A-Za-z_$][\w$.]*\s*\(", value):
+            called = re.match(r"(await\s+)?([A-Za-z_$][\w$.]*)\s*\(", value)
+            if called:
                 written = "=>" in value or re.search(r"\bfunction\b", value)
-                return f"binding call {'with' if written else 'without'} a function in place"
+                name = called.group(2).split(".")[-1]
+                return f"binding call {'with' if written else 'without'} a function in place: {name}"
             return "binding other value"
 
         def exact(location) -> dict:
