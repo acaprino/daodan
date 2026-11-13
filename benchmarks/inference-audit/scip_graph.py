@@ -480,6 +480,8 @@ class Snapshot:
         """`callable` with the declaration the snapshot names there, `outside` the snapshot, or `value`."""
         if column is None or rel not in self.paths:
             return "outside", None
+        if rel not in self.inventory:  # a project file the snapshot reads lexically: no declaration to name
+            return "value", "file without declarations in the snapshot"
         location = self._rx.Location(self.paths[rel], line, column)
         verdict, target = self._rx.grade(location, self.inventory, self._tables, self.store_root, self._table)
         if verdict.startswith("edge-") and target:

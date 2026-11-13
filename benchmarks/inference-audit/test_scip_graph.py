@@ -251,6 +251,15 @@ def test_scripts_lookup_from_a_shallow_folder(tmp_path):
                                       for parent in tmp_path.parents))
 
 
+
+# A file the snapshot holds without declarations (lexical coverage) is the project's, not outside it.
+
+def test_file_without_declarations_is_inside_the_snapshot(tmp_path):
+    snapshot = scip_graph.Snapshot.__new__(scip_graph.Snapshot)
+    snapshot.paths, snapshot.inventory = {"a.kt": tmp_path / "a.kt"}, set()
+    assert snapshot.grade("a.kt", 1, 0) == ("value", "file without declarations in the snapshot")
+    assert snapshot.grade("b.kt", 1, 0) == ("outside", None)
+
 # The fixtures: 30 ends in a JS/TS project (`ts-ends.json`), 6 in two Rust test crates sharing one module file.
 
 FIXTURES = HERE / "fixtures"
