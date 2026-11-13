@@ -1,19 +1,23 @@
-"""SCIP versus engines on Modal: for every reference of a snapshot, what a whole-project SCIP index answers
-at the referenced name's position, beside the engine pass's answer for the same call. No model.
+"""SCIP versus engines on Modal, and the whole graph each index states. No model.
 
-Road A is the product's engine pass (`resolve_edges.py --pass`); road B is the index of an existing SCIP
-indexer joined by position with the snapshot's references. One container per case: snapshot as
-`modal_audit.py` builds it, road A (rerun, or the per-call answers a labelled audit run left on the volume),
-then each indexer of the case's languages in a copy of the checkout, then the join.
+Road A is the product's engine pass (`resolve_edges.py --pass`); road B is a whole-project SCIP index of an
+existing indexer read completely by `scip_graph.py`, with the adapter of its language (`adapters/go.py`,
+`adapters/rust.py`, `adapters/typescript.py`): every chain the index states followed to its end. One
+container per case: the snapshot as `modal_audit.py` builds it and road A (rerun, or the per-call answers a
+labelled audit run left on the volume), kept under `scip-inputs/<case>` with the indexes; the adapters'
+indexers (rerun with `--reindex`, the kept indexes otherwise); then the graph of each language
+(`scip-inputs/<case>/graph-<language>.json.gz`), its counts, the comparison with road A and the hand checks.
 
     modal deploy benchmarks/inference-audit/modal_scip.py
-    python benchmarks/inference-audit/modal_scip.py spawn --cases chi,semver,tududi
-    python benchmarks/inference-audit/modal_scip.py fetch --cases chi,semver,tududi
+    python benchmarks/inference-audit/modal_scip.py spawn --cases chi,semver,tududi [--reindex] [--label L]
+    python benchmarks/inference-audit/modal_scip.py fetch --cases chi,semver,tududi [--label L]
 
-`python modal_scip.py join --manifest M --index I [--answers A] --out O` runs the join alone, locally.
+`python modal_scip.py join --manifest M --index I[=prefix] [--answers A] --out O` runs the join alone, locally.
 """
 from __future__ import annotations
 
+import collections
+import importlib
 import json
 import sys
 from pathlib import Path
@@ -28,17 +32,90 @@ RESULTS = HERE / "results"
 TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
+import scip_graph  # noqa: E402
+from adapters import go, typescript  # noqa: E402
 from modal_audit import CASES, _run, _source  # noqa: E402
 
 # Road A's per-call answers kept by a labelled audit run at the same commit and plugin: reused, never rerun.
 REUSE = {"tududi": "r1"}
-SCIP_GO = "v0.2.9"  # github.com/scip-code/scip-go, built with the Go release the engine pass pins
-SCIP_TYPESCRIPT = "0.5.2"  # @sourcegraph/scip-typescript; needs Node >= 22.13
 NODE = ("v22.23.4", "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce")
-SUFFIXES = {"scip-typescript": (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"), "scip-go": (".go",),
-            "rust-analyzer": (".rs",)}
-INDEXERS = {"go": "scip-go", "rust": "rust-analyzer", "javascript": "scip-typescript", "typescript": "scip-typescript"}
+ADAPTERS = {"go": "go", "rust": "rust", "javascript": "typescript", "typescript": "typescript"}
+SUFFIXES = {"go": (".go",), "rust": (".rs",), "typescript": typescript.SUFFIXES}
 EXAMPLES = 20
+# Fifteen call sites per language picked at random over every call of the checkout (seed 20261113) and read in
+# the source, the expected end written before any graph existed: `decl FILE:LINE` (the declaration that starts
+# there), `external PACKAGE[|PACKAGE]` (a substring of `manager package@version`), `value` (a project value
+# with no stated alias) or `none` (no function of the project: a builtin, a value of type any, a state setter).
+HAND = {
+    "chi": [
+        ("_examples/fileserver/main.go", 43, "ListenAndServe", "external golang/go"),
+        ("_examples/hello-world/main.go", 13, "Use", "decl mux.go:100"),
+        ("_examples/rest/main.go", 143, "WithContext", "external golang/go"),
+        ("_examples/todos-resource/main.go", 15, "NewRouter", "decl chi.go:62"),
+        ("context.go", 155, "TrimSuffix", "external golang/go"),
+        ("middleware/client_ip.go", 62, "mustParsePrefixes", "decl middleware/client_ip.go:278"),
+        ("middleware/client_ip_bench_test.go", 47, "Join", "external golang/go"),
+        ("middleware/client_ip_test.go", 353, "runChain", "decl middleware/client_ip_test.go:845"),
+        ("middleware/recoverer.go", 32, "GetLogEntry", "decl middleware/logger.go:75"),
+        ("middleware/sunset.go", 34, "ServeHTTP", "external golang/go"),  # net/http Handler, a parameter
+        ("middleware/throttle_test.go", 147, "Use", "decl mux.go:100"),
+        ("mux_test.go", 428, "len", "none"),
+        ("mux_test.go", 1982, "Write", "external golang/go"),  # net/http ResponseWriter, a parameter
+        ("tree.go", 416, "len", "none"),
+        ("tree.go", 609, "len", "none"),
+    ],
+    "semver": [
+        ("benches/parse.rs", 12, "black_box", "external rust-lang/rust"),
+        ("build.rs", 22, "Some", "external rust-lang/rust"),
+        ("fuzz/sort_version.rs", 16, "ok", "external rust-lang/rust"),
+        ("src/display.rs", 8, "is_empty", "decl src/lib.rs:548"),  # Prerelease::is_empty
+        ("src/display.rs", 98, "is_empty", "decl src/lib.rs:548"),
+        ("src/display.rs", 151, "write_char", "external rust-lang/rust"),
+        ("src/identifier.rs", 196, "ptr_as_str", "decl src/identifier.rs:397"),
+        ("src/identifier.rs", 384, "new_unchecked", "external rust-lang/rust"),  # NonZeroUsize
+        ("src/identifier.rs", 398, "repr_to_ptr", "decl src/identifier.rs:298"),
+        ("src/parse.rs", 48, "strip_prefix", "external rust-lang/rust"),
+        ("src/parse.rs", 179, "next", "external rust-lang/rust"),
+        ("src/parse.rs", 217, "Ok", "external rust-lang/rust"),
+        ("tests/test_version.rs", 48, "version_err", "decl tests/util/mod.rs:12"),
+        ("tests/test_version.rs", 179, "version", "decl tests/util/mod.rs:7"),
+        ("tests/test_version_req.rs", 292, "assert_match_none", "decl tests/test_version_req.rs:30"),
+    ],
+    "tududi": [
+        ("backend/migrations/archive/20251023000001-add-unique-constraint-tags.js", 162, "addIndex", "value"),
+        ("backend/migrations/archive/20261024100000-create-webhooks.js", 162, "addIndexOnce",
+         "decl backend/migrations/archive/20261024100000-create-webhooks.js:5"),
+        ("backend/modules/caldav/icalendar/vtodo-parser.js", 189, "toJSDate", "external ical.js"),
+        ("backend/modules/caldav/services/safe-request.js", 191, "AppError", "decl backend/shared/errors/AppError.js:7"),
+        ("backend/modules/daily-plan/routes.js", 32, "put", "external express"),
+        ("backend/modules/oidc/configService.js", 95, "require", "external @types/node"),
+        ("backend/modules/spreadsheets/analyze.js", 750, "key", "decl backend/modules/spreadsheets/analyze.js:28"),
+        ("backend/modules/tasks/routes.js", 654, "findByIdAndUser", "decl backend/modules/tasks/repository.js:13"),
+        ("backend/modules/tasks/taskReminderService.js", 3, "require", "external @types/node"),
+        ("backend/tests/integration/admin-users-cascade.test.js", 16, "require", "external @types/node"),
+        ("backend/tests/integration/recurring-tasks.test.js", 365, "create", "external sequelize"),
+        ("backend/tests/integration/spreadsheets-formats.test.js", 492, "map", "none"),
+        ("backend/tests/unit/middleware/rateLimitStore.test.js", 19, "beforeAll", "external @types/jest"),
+        ("backend/tests/unit/modules/tasks/recurringTaskService.test.js", 677, "expect", "external @types/jest"),
+        ("backend/utils/timezone-utils.js", 69, "getDayBoundsInUTC", "decl backend/utils/timezone-utils.js:53"),
+        ("e2e/tests/notes-editor.spec.ts", 106, "log", "external typescript|@types/node"),
+        ("frontend/Layout.tsx", 216, "setSelectedArea", "none"),
+        ("frontend/__tests__/Notes.staleCache.test.tsx", 80, "fn", "external @types/jest"),
+        ("frontend/components/Admin/AdminUsersPage.tsx", 1353, "setRolesError", "none"),
+        ("frontend/components/Admin/__tests__/AdminUserStatusTable.test.tsx", 87, "getAllByRole", "external @testing-library"),
+        ("frontend/components/Admin/__tests__/AdminUsersPage.test.tsx", 216, "toBeEnabled", "external jest"),
+        ("frontend/components/Billing/__tests__/UpgradeModal.test.tsx", 75, "getByTestId", "external @testing-library"),
+        ("frontend/components/Calendar.tsx", 250, "Date", "external typescript"),
+        ("frontend/components/DailyPlan/NowCard.tsx", 75, "push", "external typescript"),
+        ("frontend/components/DailyPlan/PlanMyDay.tsx", 797, "useSensor", "external @dnd-kit"),
+        ("frontend/components/Inbox/__tests__/QuickCaptureInput.focus.test.tsx", 88, "slice", "external typescript"),
+        ("frontend/components/Shared/ShareModal.tsx", 308, "trim", "external typescript"),
+        ("frontend/components/Shared/__tests__/MarkdownRenderer.mermaid.test.tsx", 78, "queryByTestId",
+         "external @testing-library"),
+        ("frontend/components/Task/TaskDetails/__tests__/TaskDetailsHeader.test.tsx", 6, "mock", "external @types/jest"),
+        ("frontend/utils/dailyPlanService.ts", 311, "map", "external typescript"),
+    ],
+}
 
 
 def _image():
@@ -56,12 +133,12 @@ def _image():
             f"echo '{node_sha}  /tmp/{node}' | sha256sum -c -",
             f"mkdir -p /opt/node && tar -xJf /tmp/{node} -C /opt/node --strip-components=1 && rm /tmp/{node}",
             f"PATH=/opt/node/bin:$PATH npm install -g --ignore-scripts --no-audit --no-fund "
-            f"@sourcegraph/scip-typescript@{SCIP_TYPESCRIPT}",
+            f"@sourcegraph/scip-typescript@{typescript.VERSION}",
             f"curl -fsSL https://go.dev/dl/{go_asset} -o /tmp/{go_asset}",
             f"echo '{go_sha}  /tmp/{go_asset}' | sha256sum -c -",
             f"tar -xzf /tmp/{go_asset} -C /opt && rm /tmp/{go_asset}",
             f"GOBIN=/opt/scip/bin GOPATH=/tmp/gopath GOFLAGS= GOTOOLCHAIN=local /opt/go/bin/go install "
-            f"github.com/scip-code/scip-go/cmd/scip-go@{SCIP_GO} && rm -rf /tmp/gopath",
+            f"github.com/scip-code/scip-go/cmd/scip-go@{go.VERSION} && rm -rf /tmp/gopath",
             f"curl -fsSL https://github.com/rust-lang/rust-analyzer/releases/download/{rx.RUST_ANALYZER_RELEASE}/"
             f"rust-analyzer-{ra_asset} -o /tmp/ra.gz",
             f"echo '{ra_sha}  /tmp/ra.gz' | sha256sum -c -",
@@ -70,176 +147,18 @@ def _image():
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
+        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
+                       ignore=["**/__pycache__/**"])
     )
 
 
 app = modal.App("daodan-scip-audit", image=_image())
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
-MEASURE = ("import resource,subprocess,sys;r=subprocess.run(sys.argv[1:]);"
-           "print('DAODAN_MAXRSS_KB=%d' % resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss, file=sys.stderr);"
-           "sys.exit(r.returncode)")
 
-
-def _measured(command: list[str], cwd: str, env: dict, timeout: int) -> dict:
-    """Wall time and the peak resident memory of the largest process the command started."""
-    import re
-    import subprocess
-    import time
-    begun = time.time()
-    try:
-        done = subprocess.run([sys.executable, "-c", MEASURE, *command], cwd=cwd, env=env, capture_output=True,
-                              text=True, timeout=timeout, stdin=subprocess.DEVNULL)
-        code, out, err = done.returncode, done.stdout, done.stderr
-    except subprocess.TimeoutExpired as error:
-        code, out, err = "timeout", str(error.stdout or "")[-2000:], str(error.stderr or "")[-2000:]
-    peak = re.findall(r"DAODAN_MAXRSS_KB=(\d+)", err or "")
-    return {"command": command, "returncode": code, "seconds": round(time.time() - begun, 1),
-            "peak_rss_mb": round(int(peak[-1]) / 1024) if peak else None,
-            "stdout_tail": (out or "")[-1500:], "stderr_tail": (err or "")[-2500:]}
-
-
-def _tsconfig(mirror: Path, files: list[str]) -> dict:
-    """Every JS/TS file of the snapshot in one program with `allowJs`; the project's own options kept."""
-    options = {"allowJs": True, "checkJs": False, "noEmit": True, "incremental": False, "skipLibCheck": True}
-    config = {"compilerOptions": options, "include": files, "exclude": []}
-    own = mirror / "tsconfig.json"
-    if own.is_file():
-        own.rename(mirror / "tsconfig.project.json")
-        config["extends"] = "./tsconfig.project.json"
-    else:
-        options.update({"target": "es2022", "module": "esnext", "moduleResolution": "bundler", "jsx": "preserve",
-                        "esModuleInterop": True, "allowSyntheticDefaultImports": True, "resolveJsonModule": True})
-    own.write_text(json.dumps(config, indent=1), encoding="utf-8")
-    return config
-
-
-MANIFESTS = {"scip-go": "go.mod", "rust-analyzer": "Cargo.toml"}
-# The engine pass's own rust-analyzer options: all features, no build script, no procedural macro.
-RUST_CONFIG = {"cargo": {"buildScripts": {"enable": False}, "features": "all"}, "procMacro": {"enable": False}}
-
-
-def _owner(rel: str, roots: set[str]) -> str | None:
-    """The nearest directory holding a manifest above a file, '' for the checkout's root."""
-    parts = rel.split("/")[:-1]
-    for size in range(len(parts), -1, -1):
-        if "/".join(parts[:size]) in roots:
-            return "/".join(parts[:size])
-    return None
-
-
-def _documents(index: Path, mirror: Path, prefix: str) -> set[str]:
-    """The checkout-relative files an index holds a document for."""
-    import resolve_edges as rx
-    base = mirror.resolve()
-    reader = rx.ScipEngine(base / prefix if prefix else base, [index])
-    reader.probe()
-    return {path.relative_to(base).as_posix() for path in reader._units if path.is_relative_to(base)}
-
-
-def _index(language: str, target: Path, work: Path, files: list[str]) -> dict:
-    """The SCIP indexes of the case's checkout, written from a copy of it.
-
-    One run at the root; for Go and Rust, one more run in each other module or crate directory that holds
-    snapshot files the root run left out, and Go's ignored directories (`_x`, `.x`, `testdata`) named as
-    explicit packages, so the index covers the files the snapshot covers.
-    """
-    import os
-    import shutil
-    import resolve_edges as rx
-    tool = INDEXERS[language]
-    mirror = work / f"mirror-{tool}"
-    if not mirror.exists():
-        shutil.copytree(target, mirror, symlinks=True, ignore=shutil.ignore_patterns("node_modules"))
-    env = dict(os.environ)
-    info = {"indexer": tool, "runs": []}
-    roots = set()
-    if tool in MANIFESTS:
-        for path in mirror.rglob(MANIFESTS[tool]):
-            relative = path.parent.relative_to(mirror)
-            if not {".git", "target"} & set(relative.parts):
-                roots.add("" if relative == Path(".") else relative.as_posix())
-    if tool == "scip-go":
-        cache = rx.shared_cache_dir() / "go"
-        env.update({"GOROOT": "/opt/go", "GOPATH": str(cache / "path"), "GOCACHE": str(cache / "build"),
-                    "GOTOOLCHAIN": "local", "GOFLAGS": "-mod=readonly", "GOTELEMETRY": "off",
-                    "PATH": "/opt/go/bin:/opt/scip/bin:" + env["PATH"]})
-        info["version"] = SCIP_GO
-
-        def command(prefix, output):
-            _run(["/opt/go/bin/go", "mod", "download"], str(mirror / prefix), ok=(0, 1), env=env, timeout=1800)
-            skip = len(prefix) + 1 if prefix else 0
-            ignored = sorted({rel.rsplit("/", 1)[0][skip:] for rel in files
-                              if "/" in rel and _owner(rel, roots) == prefix and any(
-                                  part.startswith(("_", ".")) or part == "testdata"
-                                  for part in rel.split("/")[:-1])})
-            return ["/opt/scip/bin/scip-go", f"--output={output}", "./...", *[f"./{d}" for d in ignored]]
-    elif tool == "rust-analyzer":
-        toolchain = rx.rust_toolchain()
-        env.update({"PATH": f"{toolchain}/bin:" + env["PATH"], "CARGO_HOME": str(rx.shared_cache_dir() / "cargo"),
-                    "CARGO_TARGET_DIR": str(work / "rust-target")})
-        info["version"] = _run(["/opt/scip/bin/rust-analyzer", "--version"], env=env).stdout.strip()
-        info["toolchain"] = rx.RUST_VERSION
-        config = work / "rust-analyzer.json"
-        config.write_text(json.dumps(RUST_CONFIG), encoding="utf-8")
-        info["config"] = RUST_CONFIG
-
-        def command(prefix, output):
-            return ["/opt/scip/bin/rust-analyzer", "scip", ".", "--output", str(output), "--config-path", str(config)]
-    else:
-        modules = rx.npm_modules(target)  # the engine pass's own install: npm ci --ignore-scripts
-        info["node_modules"] = str(modules)
-        if modules is not None:
-            for found in sorted(modules.parent.rglob("node_modules")):
-                relative = found.relative_to(modules.parent)
-                if "node_modules" in relative.parts[:-1]:
-                    continue
-                link = mirror / relative
-                if not link.exists():
-                    link.parent.mkdir(parents=True, exist_ok=True)
-                    link.symlink_to(found, target_is_directory=True)
-        info["tsconfig_extends"] = _tsconfig(mirror, files).get("extends")
-        env["PATH"] = "/opt/node/bin:" + env["PATH"]
-        env["NODE_OPTIONS"] = "--max-old-space-size=12288"
-        info["version"] = SCIP_TYPESCRIPT
-
-        def command(prefix, output):
-            return ["/opt/node/bin/scip-typescript", "index", "--cwd", str(mirror), "--output", str(output),
-                    "--no-progress-bar"]
-    pending, covered = [""], set()
-    while pending:
-        prefix = pending.pop(0)
-        output = work / f"{tool}-{len(info['runs'])}.scip"
-        run = {"prefix": prefix, **_measured(command(prefix, output), str(mirror / prefix), env, timeout=3 * 3600)}
-        if tool == "rust-analyzer" and run["returncode"] != 0:
-            # An option the release does not take: the indexer's defaults rather than no index.
-            run = {"prefix": prefix, "config": "rejected",
-                   **_measured(command(prefix, output)[:-2], str(mirror / prefix), env, timeout=3 * 3600)}
-        run["index"] = str(output) if output.is_file() else None
-        run["index_bytes"] = output.stat().st_size if output.is_file() else 0
-        info["runs"].append(run)
-        if run["index"]:
-            covered |= _documents(output, mirror, prefix)
-        if prefix == "" and roots:
-            missing = [rel for rel in files if rel not in covered]
-            pending += sorted({_owner(rel, roots) for rel in missing} - {None, ""})
-    info["seconds"] = round(sum(run["seconds"] for run in info["runs"]), 1)
-    info["peak_rss_mb"] = max((run["peak_rss_mb"] or 0 for run in info["runs"]), default=None)
-    info["indexes"] = [[run["index"], run["prefix"]] for run in info["runs"] if run["index"]]
-    return info
-
-
-def _package(symbol: str) -> str:
-    """`manager package@version` of a SCIP symbol (`scheme manager package version descriptors`)."""
-    parts = symbol.replace("  ", "\0").split(" ")
-    if len(parts) < 5:
-        return symbol[:80]
-    return f"{parts[1]} {parts[2]}@{parts[3]}".replace("\0", " ")
-
-
-def _descriptors(symbol: str) -> str:
-    """A SCIP symbol without its scheme, manager, package and version."""
-    return " ".join(symbol.replace("  ", "\0").split(" ")[4:])
+def _adapter(language: str):
+    return importlib.import_module(f"adapters.{ADAPTERS[language]}")
 
 
 def _sample(items: list, size: int = EXAMPLES) -> list:
@@ -249,292 +168,212 @@ def _sample(items: list, size: int = EXAMPLES) -> list:
     return [items[int(i * step)] for i in range(size)]
 
 
-def join(manifest: Path, indexes: list[tuple[Path, str]], answers_path: Path | None,
-         trace: bool = False) -> dict:
-    """Road B (the index at each reference's name) beside road A (the engine's and the lexical answer)."""
-    import collections
-    import sqlite3
-    import resolve_edges as rx
-    from snapshot_store import _unpack, open_snapshot
+def _road_b(reference: dict) -> tuple[str, set, str, scip_graph.End | None]:
+    """(class, project targets, detail, shortest end to a target) of road B at one reference."""
+    ends = reference["ends"]
+    callable_ends = [end for end in ends if end.cls == "project-callable" and end.target]
+    if callable_ends:
+        return "project-declaration", {end.target for end in callable_ends}, "", \
+            min(callable_ends, key=lambda end: len(end.chain))
+    if reference["hole"]:
+        return reference["hole"], set(), reference["hole"], None
+    external = next((end for end in ends if end.cls == "external"), None)
+    if external is not None:
+        return "external", set(), external.detail, None
+    value = next((end for end in ends if end.cls == "project-value"), None)
+    return ("project-value", set(), value.detail, None) if value else ("none", set(), "no end", None)
 
-    class Index(rx.ScipEngine):
-        """The pass's SCIP reader, keeping every occurrence by position with its raw symbol."""
 
-        def __init__(self, root, paths):
-            super().__init__(root, paths)
-            self.at: dict = {}
-            self.prefix = ""
+def _road_a(answer, lexical_target):
+    """The graph the product keeps: the engine's answer wins, the lexical target stays otherwise."""
+    if answer is not None:
+        verdict, target_id = answer[0], answer[1]
+        if verdict.startswith("edge-") and target_id:
+            return "project-declaration", target_id, "engine"
+        if verdict == "external-definition":
+            return "external", None, "engine"
+    if lexical_target:
+        return "project-declaration", lexical_target, "lexical"
+    if answer is None:
+        return "not-asked", None, "-"
+    if answer[0] in ("project-not-a-symbol", "ambiguous-target", "binding"):
+        return "project-other", None, answer[0]
+    return "none", None, answer[0]
 
-        def load(self, indexes):
-            for path, prefix in indexes:
-                self.prefix = prefix
-                self._parse_scip_bytes(Path(path).read_bytes())
-                self.loaded_indexes.append(str(path))
-            return True, ""
 
-        def _document(self, rel, occurrences, encoding):
-            # A run in a module directory may name its documents from that directory or from the checkout.
-            if rel and self.prefix and not (self.project_root / rel).is_file():
-                rel = f"{self.prefix}/{rel}"
-            super()._document(rel, occurrences, encoding)
-            if not rel:
-                return
-            path = (self.project_root / rel).resolve()
-            for rng, symbol, roles in occurrences:
-                if len(rng) < 3 or not symbol:
-                    continue
-                key = f"{path.as_posix()}#{symbol}" if symbol.startswith("local ") else symbol
-                self.at.setdefault((path, int(rng[0]) + 1, int(rng[1])), []).append((symbol, key, bool(roles & 1)))
+def _chain(end: scip_graph.End) -> str:
+    return " -> ".join([*end.chain, end.target or f"{end.cls} {end.detail}"[:120]])
 
-    with open_snapshot(manifest) as store:
-        connection = store.connection
-        project_root = (Path(store["root"]) / store["target"]).resolve()
-        if project_root.is_file():
-            project_root = project_root.parent
-        store_root, source_paths, _ = rx.verify_sources(store)
-        index = Index(project_root, [])
-        ready, reason = index.load(indexes)
-        if not ready:
-            return {"error": reason}
-        documents = {path for path in index._units}
-        inventory = rx.inventory_files(connection)
-        languages = dict(connection.execute("SELECT file, language FROM sem_coverage"))
-        tables: dict = {}
-        lines: dict = {}
 
-        def lines_for(rel):
-            if rel not in lines:
-                lines[rel] = source_paths[rel].read_text(encoding="utf-8").split("\n")
-            return lines[rel]
-
-        def table_for(rel):
-            return rx.symbol_table(connection, rel, "\n".join(lines_for(rel)))
-
-        own: set = set()
-
-        def own_packages():
-            """`manager package` of the symbols the index defines: the project's own packages."""
-            if not own:
-                own.add(None)
-                for key in index._defs_by_symbol:
-                    if not key.split("#", 1)[-1].startswith("local "):
-                        parts = key.split(" ")
-                        if len(parts) >= 5:
-                            own.add(f"{parts[1]} {parts[2]}")
-            return own
-
-        twin_table: dict = {}
-
-        def twins():
-            """A defined project symbol by its descriptors, for an external symbol that differs only in its package."""
-            if not twin_table:
-                twin_table[None] = None
-                for key in index._defs_by_symbol:
-                    if not key.split("#", 1)[-1].startswith("local ") and "/" in key:
-                        twin_table.setdefault(_descriptors(key), key)
-            return twin_table
-
-        def follow(location):
-            # The product's own rule (`grade_all`): a value binding is followed by asking the source again at its
-            # position; for an index, the other symbols that occur there (a shorthand property, a destructuring).
-            return index.definitions(Path(location.module_path), location.line, location.column)
-
-        def road_b(rel, payload, span):
-            """(class, project declaration or None, detail, followed) of the index at the referenced name.
-
-            The definitions of every symbol at the position are graded as the engine pass grades an engine's
-            answer (`grade_all`, with its bounded follow of value bindings), so A and B differ only by source.
-            """
-            parts = payload.get("parts") or []
-            if not parts or not span or rel not in source_paths:
-                return "none", None, "no-position", False
-            l0, c0, l1, c1 = span
-            try:
-                text = lines_for(rel)
-            except (OSError, UnicodeError):
-                return "none", None, "no-position", False
-            if not 1 <= l0 <= l1 <= len(text):
-                return "none", None, "no-position", False
-            column = rx.callee_column(text[l1 - 1], [l0, c0, l1, c1], parts[-1])
-            if column is None:
-                return "none", None, "no-position", False
-            path = source_paths[rel].resolve()
-            native = index._convert(path, l1, column, to_bytes=False)
-            entries = index.at.get((path, l1, native), [])
-            if not entries:
-                return "none", None, ("no-document" if path not in documents else "no-occurrence"), False
-            locations = index.definitions(path, l1, column)
-            verdict, target = rx.grade_all(locations, inventory, tables, store_root, table_for)
-            followed = False
-            if not verdict.startswith("edge-"):
-                verdict, target = rx.grade_all(locations, inventory, tables, store_root, table_for, follow=follow)
-                followed = verdict.startswith("edge-")
-            symbols = [symbol for symbol, _key, definition in entries if not definition] or \
-                [symbol for symbol, _key, _definition in entries]
-            local = any(symbol.startswith("local ") for symbol in symbols)
-            if verdict.startswith("edge-") and target:
-                return "project-declaration", target["id"], ("local " if local else "") + symbols[0][-120:], followed
-            if local:
-                return "local", None, symbols[0], False
-            if verdict == "external-definition":
-                symbol = next((s for s in symbols if not s.startswith("local ")), symbols[0])
-                package = _package(symbol)
-                flags = []
-                if " ".join(package.split("@")[0].split(" ")[:2]) in own_packages():
-                    flags.append("own package")
-                if twins().get(_descriptors(symbol)):
-                    flags.append("project twin")
-                return "external", None, f"{package}{' [' + ', '.join(flags) + ']' if flags else ''} :: " \
-                                         f"{symbol[-110:]}", False
-            if verdict == "unresolved":
-                return "none", None, "no-definition", False
-            return "project-other", None, f"{verdict} {symbols[0][-110:]}", False
-
-        answers = {}
-        if answers_path is not None and Path(answers_path).is_file():
-            db = sqlite3.connect(answers_path)
-            for row in db.execute("SELECT reference_id, verdict, target_id, file, line, column FROM answers"):
-                answers[row[0]] = row[1:]
-            db.close()
-
-        def road_a(reference_id, lexical_target, rel, l1, column_hint):
-            """The graph the product keeps: the engine's answer wins, the lexical target stays otherwise."""
-            answer = answers.get(reference_id)
-            if answer is not None:
-                verdict, target_id = answer[0], answer[1]
-                if verdict.startswith("edge-") and target_id:
-                    return "project-declaration", target_id, "engine"
-                if verdict == "external-definition":
-                    return "external", None, "engine"
-            if lexical_target:
-                return "project-declaration", lexical_target, "lexical"
-            if answer is None:
-                return "not-asked", None, "-"
-            if answer[0] in ("project-not-a-symbol", "ambiguous-target", "binding"):
-                return "project-other", None, answer[0]
-            return "none", None, answer[0]
-
-        out: dict = {}
-        examples: dict = collections.defaultdict(lambda: collections.defaultdict(list))
-        mismatched = 0
-        rows = connection.execute(
-            "SELECT id, file, kind, resolution, target_id, l0, c0, l1, c1, payload FROM sem_references "
-            "WHERE kind IN ('call','read') ORDER BY file, l0, c0, id")
-        for reference_id, rel, kind, resolution, lexical_target, l0, c0, l1, c1, blob in rows:
-            language = languages.get(rel) or "?"
-            if language not in INDEXERS:
-                continue
-            payload = _unpack(blob) or {}
-            name = ".".join(payload.get("parts") or [])
-            entry = out.setdefault(language, {
-                "references": collections.Counter(), "b": {"call": collections.Counter(), "read": collections.Counter()},
-                "b_none_detail": {"call": collections.Counter(), "read": collections.Counter()},
-                "b_local_on_declaration": collections.Counter(), "b_external_packages": collections.Counter(),
-                "b_followed": collections.Counter(), "b_external_flags": collections.Counter(),
-                "b_other_verdict": {"call": collections.Counter(), "read": collections.Counter()},
-                "a": collections.Counter(), "a_target_source": collections.Counter(), "matrix": collections.Counter(),
-                "a_not_asked": collections.Counter(),
-                "cells": collections.Counter(), "reads_vs_lexical": collections.Counter()})
-            entry["references"][kind] += 1
-            b_cls, b_target, b_detail, b_followed = road_b(rel, payload, [l0, c0, l1, c1])
-            b_targets = {b_target} if b_target else set()
-            entry["b"][kind][b_cls] += 1
-            if b_followed:
-                entry["b_followed"][kind] += 1
-            if b_cls == "none":
-                entry["b_none_detail"][kind][b_detail] += 1
-            if b_cls == "project-declaration" and b_detail.startswith("local "):
-                entry["b_local_on_declaration"][kind] += 1
-            if b_cls == "project-other":
-                entry["b_other_verdict"][kind][b_detail.split(" ")[0]] += 1
-            if b_cls == "external":
-                entry["b_external_packages"][b_detail.split(" :: ")[0]] += 1
-                for flag in ("own package", "project twin"):
-                    if flag in b_detail.split(" :: ")[0]:
-                        entry["b_external_flags"][f"{kind} {flag}"] += 1
-                        examples[language][f"B external, {flag}"].append(f"{rel}:{l1} {name} | {b_detail}")
-            site = f"{rel}:{l1} {name}"
-            if trace:
-                entry.setdefault("trace", []).append(f"{kind} {site} | lexical {lexical_target} | B {b_cls} {b_target or b_detail}")
-            if kind == "read":
-                lexical = lexical_target if resolution == "resolved" else None
-                if lexical and b_targets:
-                    entry["reads_vs_lexical"]["same" if lexical in b_targets else "different"] += 1
-                elif lexical:
-                    entry["reads_vs_lexical"]["only-lexical"] += 1
-                elif b_target:
-                    entry["reads_vs_lexical"]["only-B"] += 1
-                    examples[language]["read-only-B"].append(f"{site} -> {b_target}")
-                else:
-                    entry["reads_vs_lexical"]["neither"] += 1
-                continue
-            answer = answers.get(reference_id)
-            if answer is not None and (answer[2] != rel or answer[3] != l1):
-                mismatched += 1
-            a_cls, a_target, a_source = road_a(reference_id, lexical_target if resolution == "resolved" else None,
-                                               rel, l1, None)
-            entry["a"][a_cls] += 1
-            if a_cls == "not-asked":
-                entry["a_not_asked"][f"{resolution} {payload.get('reason') or '-'}"] += 1
-            if a_target:
-                entry["a_target_source"][a_source] += 1
-            entry["matrix"][f"A {a_cls} | B {b_cls}{' (declaration)' if b_cls == 'local' and b_target else ''}"] += 1
-            detail = f"{site} | A {a_cls} {a_target or a_source} | B {b_cls} {b_target or b_detail}"
-            if a_target and b_targets:
-                cell = "same project target" if a_target in b_targets else "different project target"
-            elif a_target:
-                cell = "only A has a project target"
-            elif b_target:
-                cell = "only B has a project target"
-            elif a_cls == "external" and b_cls == "external":
-                cell = "both external"
-            elif a_cls in ("none", "not-asked") and b_cls == "none":
-                cell = "both none"
+def _compare(references: dict, answers: dict) -> dict:
+    """Road B beside road A, per reference kind, with examples."""
+    counters = collections.defaultdict(collections.Counter)
+    examples = collections.defaultdict(list)
+    mismatched = 0
+    for identity, reference in references.items():
+        kind, site = reference["kind"], f"{reference['site']} {reference['name']}"
+        b_cls, b_targets, b_detail, best = _road_b(reference)
+        implemented = {end.target for end in reference["ends"] if end.cls == "project-callable"
+                       and "implementation" in end.chain}
+        counters[f"b {kind}"][b_cls if b_cls != "project-value" else f"project-value {b_detail}"] += 1
+        if best is not None:
+            hops = len(best.chain)
+            counters[f"hops {kind}"][str(hops) if hops < 3 else "3+"] += 1
+            counters[f"hop kinds {kind}"]["+".join(best.chain) or "direct"] += 1
+            if hops and kind == "call":
+                examples[f"chain {'+'.join(best.chain)}"].append(f"{site}: {_chain(best)}")
+        if b_cls == "external":
+            counters[f"external packages {kind}"][b_detail] += 1
+        if implemented:
+            counters["implementations"][f"{kind} with implementations"] += 1
+            counters["implementations"][f"{kind} implementations listed"] += len(implemented)
+        if kind == "read":
+            lexical = reference["lexical"] if reference["resolution"] == "resolved" else None
+            if lexical and b_targets:
+                counters["reads vs lexical"]["same" if lexical in b_targets else "different"] += 1
+            elif lexical:
+                counters["reads vs lexical"]["only lexical"] += 1
+            elif b_targets:
+                counters["reads vs lexical"]["only B"] += 1
             else:
-                cell = f"mixed: A {a_cls}, B {b_cls}"
-            entry["cells"][cell] += 1
-            if cell == "only A has a project target":
-                examples[language][f"{cell} (B {b_cls})"].append(detail)
-            elif cell in ("different project target", "only B has a project target"):
-                examples[language][cell].append(detail)
-            if b_cls == "none":
-                examples[language][f"B none on calls ({b_detail})"].append(detail)
-            elif b_cls == "local":
-                examples[language]["B local on calls"].append(detail)
-        for language, entry in out.items():
-            for key, value in list(entry.items()):
-                if key == "trace":
-                    continue
-                if isinstance(value, collections.Counter):
-                    entry[key] = dict(value.most_common(25) if key == "b_external_packages" else sorted(value.items()))
-                elif isinstance(value, dict):
-                    entry[key] = {k: dict(sorted(v.items())) for k, v in value.items()}
-            entry["examples"] = {k: _sample(v) for k, v in sorted(examples[language].items())}
-        files = {language: sum(1 for rel, lang in languages.items() if lang == language and rel in inventory)
-                 for language in out}
-        indexed = collections.Counter(languages.get(path.relative_to(project_root).as_posix())
-                                      for path in documents if path.is_relative_to(project_root))
-        missing = {language: sorted(rel for rel, lang in languages.items() if lang == language and rel in inventory
-                                    and rel in source_paths and source_paths[rel].resolve() not in documents)[:40]
-                   for language in out}
-        return {"languages": out, "files": files, "files_indexed": {k: indexed.get(k, 0) for k in out},
-                "files_not_indexed": missing,
-                "index_tool": index.identity(), "answers": len(answers), "answer_line_mismatches": mismatched}
+                counters["reads vs lexical"]["neither"] += 1
+            continue
+        answer = answers.get(identity)
+        if answer is not None and (answer[2] != reference["site"].rsplit(":", 1)[0]):
+            mismatched += 1
+        lexical = reference["lexical"] if reference["resolution"] == "resolved" else None
+        a_cls, a_target, a_source = _road_a(answer, lexical)
+        counters["a"][a_cls] += 1
+        if a_target:
+            counters["a target source"][a_source] += 1
+        reached = "through an implementation only" if b_targets and b_targets <= implemented else \
+            "direct or alias" if b_targets else ""
+        counters["matrix"][f"A {a_cls} | B {b_cls}{' (' + reached + ')' if reached else ''}"] += 1
+        if a_target and b_targets:
+            cell = "same project target" if a_target in b_targets else "different project target"
+            if a_target in implemented and a_target not in b_targets - implemented:
+                counters["implementations"]["A matched only through an implementation"] += 1
+        elif a_target:
+            cell = "only A has a project target"
+        elif b_targets:
+            cell = "only B has a project target"
+        elif a_cls == "external" and b_cls == "external":
+            cell = "both external"
+        else:
+            cell = f"mixed: A {a_cls}, B {b_cls}"
+        counters["cells"][cell] += 1
+        detail = f"{site} | A {a_cls} {a_target or a_source} | B {b_cls} {_chain(best) if best else b_detail}"
+        if cell == "only A has a project target":
+            counters["only A by B"][f"{b_cls} {b_detail}"[:80]] += 1
+            examples[f"only A (B {b_cls})"].append(detail)
+        elif cell in ("different project target", "only B has a project target"):
+            examples[f"{cell} ({reached})"].append(detail)
+    out = {key: dict(value.most_common(40)) for key, value in sorted(counters.items())}
+    out["examples"] = {key: _sample(items) for key, items in sorted(examples.items())}
+    out["answer_file_mismatches"] = mismatched
+    return out
 
 
-@app.function(cpu=4, memory=16384, timeout=4 * 3600, volumes={"/results": volume})
-def scip_case(name: str, case: dict, label: str = "") -> dict:
+def _hand(checks: list, references: dict, answers: dict) -> list:
+    """Each hand-read call site beside what road B and road A give there."""
+    by_site = collections.defaultdict(list)
+    for identity, reference in references.items():
+        if reference["kind"] == "call":
+            by_site[reference["site"]].append((identity, reference))
+    rows = []
+    for rel, line, name, expected in checks:
+        found = [(identity, reference) for identity, reference in by_site.get(f"{rel}:{line}", ())
+                 if reference["name"].rsplit(".", 1)[-1] == name]
+        if not found:
+            rows.append({"site": f"{rel}:{line} {name}", "expected": expected, "b": "no snapshot reference",
+                         "b_right": False, "a_right": False})
+            continue
+        identity, reference = found[0]
+        b_cls, b_targets, b_detail, _best = _road_b(reference)
+        externals = sorted({end.detail for end in reference["ends"] if end.cls == "external"})
+        lexical = reference["lexical"] if reference["resolution"] == "resolved" else None
+        a_cls, a_target, _source = _road_a(answers.get(identity), lexical)
+        kind, _, want = expected.partition(" ")
+
+        def right(targets, cls, packages):
+            if kind == "decl":
+                return any(target.split("::")[0] == want.rsplit(":", 1)[0] and
+                           target.rsplit("@", 1)[-1].split(":")[0] == want.rsplit(":", 1)[1] for target in targets)
+            if kind == "external":
+                return any(part in package for part in want.split("|") for package in packages)
+            if kind == "value":
+                return not targets and cls == "project-value"
+            return not targets
+
+        rows.append({"site": f"{rel}:{line} {name}", "expected": expected, "b": b_cls, "b_targets": sorted(b_targets),
+                     "b_detail": b_detail, "b_externals": externals,
+                     "b_chains": [_chain(end) for end in reference["ends"]][:6],
+                     "b_right": right(b_targets, b_cls, externals), "a": a_cls, "a_target": a_target,
+                     "a_right": right({a_target} if a_target else set(), a_cls, ["engine"] if a_cls == "external" else [])
+                     if kind != "external" else a_cls == "external"})
+    return rows
+
+
+def join(manifest: Path, indexes: list, answers_path: Path | None, indexers: dict | None = None,
+         hand: list = (), graph_dir: Path | None = None) -> dict:
+    """The graph of each language of the snapshot, its counts, road A beside road B, and the hand checks."""
+    import gzip
+    import sqlite3
+    import time
+    answers = {}
+    if answers_path is not None and Path(answers_path).is_file():
+        db = sqlite3.connect(answers_path)
+        for row in db.execute("SELECT reference_id, verdict, target_id, file, line, column FROM answers"):
+            answers[row[0]] = row[1:]
+        db.close()
+    with scip_graph.Snapshot(manifest) as snapshot:
+        index = scip_graph.Index(snapshot.root)
+        for path, prefix in indexes:
+            index.load(Path(path), prefix)
+        languages = sorted({language for rel, language in snapshot.languages.items()
+                            if language in ADAPTERS and rel in snapshot.inventory})
+        hops, timing = {}, {}
+        for name in sorted({ADAPTERS[language] for language in languages}):
+            begun = time.time()
+            hops.update(_adapter(next(lang for lang in languages if ADAPTERS[lang] == name)).hops(index))
+            timing[f"hops {name}"] = round(time.time() - begun, 1)
+        traversal = scip_graph.Traversal(index, snapshot, hops)
+        out = {"index_tools": index.tools, "documents_written_twice": sum(1 for n in index.repeated.values() if n > 1),
+               "unknown_fields": dict(index.unknown), "hops": len(hops), "answers": len(answers), "languages": {}}
+        references_all = {}
+        for language in languages:
+            begun = time.time()
+            adapter = _adapter(language)
+            rels = sorted(snapshot.checkout[rel] for rel in snapshot.inventory
+                          if snapshot.languages.get(rel) == language and rel in snapshot.checkout)
+            absent = [rel for rel in rels if rel not in index.documents]
+            reasons = adapter.missing(index, absent) if hasattr(adapter, "missing") and absent else {}
+            info = (indexers or {}).get(ADAPTERS[language], {}).get("indexer") or {}
+            graph, references = scip_graph.build(index, snapshot, language, hops, info, reasons, traversal)
+            references_all.update(references)
+            out["languages"][language] = {"graph": scip_graph.report(graph), "road_a": _compare(references, answers)}
+            if graph_dir is not None:
+                Path(graph_dir).mkdir(parents=True, exist_ok=True)
+                with gzip.open(Path(graph_dir) / f"graph-{language}.json.gz", "wt", encoding="utf-8") as handle:
+                    json.dump(graph, handle)
+            timing[f"graph {language}"] = round(time.time() - begun, 1)
+        out["hand"] = _hand(list(hand), references_all, answers)
+        out["hand_score"] = {"checks": len(out["hand"]), "b_right": sum(row["b_right"] for row in out["hand"]),
+                             "a_right": sum(row["a_right"] for row in out["hand"])}
+        out["seconds"] = timing
+        out["symbols_walked"] = len(traversal.memo)
+    return out
+
+
+def _inputs(name: str, case: dict, target: Path, work: Path, manifest: Path) -> tuple[dict, Path]:
+    """The snapshot and road A's per-call answers of a case, built in the container."""
     import shutil
     import time
     started = time.time()
-    work = Path("/work") / name
-    target = _source(work / "src", case, None)
-    manifest = work / "snapshot/manifest.sqlite"
     _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest),
           "--no-engine", "--no-index"])
-    result = {"case": name, "commit": case["commit"], "snapshot_seconds": round(time.time() - started, 1)}
+    result = {"snapshot_seconds": round(time.time() - started, 1)}
     import resolve_edges as rx
-    import sqlite3
     reuse = REUSE.get(name)
     if reuse:
         answers = work / "answers.sqlite"
@@ -544,10 +383,10 @@ def scip_case(name: str, case: dict, label: str = "") -> dict:
                             "peak_rss_mb": None, "coverage": audit.get("graph_use", {}).get("coverage")}
     else:
         report = work / "engine-report.json"
-        run = _measured([sys.executable, f"{SCRIPTS}/resolve_edges.py", str(manifest), "--pass",
-                         "--report-out", str(report)], SCRIPTS, None, 3 * 3600)
+        run = scip_graph.measured([sys.executable, f"{SCRIPTS}/resolve_edges.py", str(manifest), "--pass",
+                                   "--report-out", str(report)], SCRIPTS, None, 3 * 3600)
         answers = rx.default_answers_path(manifest)
-        result["road_a"] = {"source": "rerun", "seconds": run["seconds"], "peak_rss_mb": run["peak_rss_mb"],
+        result["road_a"] = {"source": "rerun", "seconds": run["seconds"], "peak_rss_mb": run["peak_mb"],
                             "returncode": run["returncode"], "stderr_tail": run["stderr_tail"][-800:]}
         try:
             summary = json.loads(report.read_text(encoding="utf-8"))
@@ -555,25 +394,96 @@ def scip_case(name: str, case: dict, label: str = "") -> dict:
                                             for name, engine in (summary.get("engines") or {}).items()}
         except (OSError, ValueError) as error:
             result["road_a"]["coverage"] = repr(error)
+    return result, Path(answers)
+
+
+def _indexers(target: Path, work: Path, manifest: Path) -> dict:
+    """Each adapter's indexer over the checkout, for the snapshot's files of its languages."""
+    import sqlite3
     connection = sqlite3.connect(manifest)
     coverage = connection.execute("SELECT file, language FROM sem_coverage WHERE status='ast'").fetchall()
     connection.close()
-    result["indexers"] = {}
-    indexes = []
-    for language in sorted({language for _, language in coverage if language in INDEXERS}):
-        tool = INDEXERS[language]
-        if tool in result["indexers"]:
-            continue
-        files = sorted(rel for rel, lang in coverage if INDEXERS.get(lang) == tool and rel.endswith(SUFFIXES[tool]))
+    out = {}
+    for name in sorted({ADAPTERS[language] for _, language in coverage if language in ADAPTERS}):
+        files = sorted(rel for rel, language in coverage if ADAPTERS.get(language) == name
+                       and rel.endswith(SUFFIXES[name]))
         try:
-            info = _index(language, target, work, files)
-        except Exception as error:
-            info = {"indexer": tool, "error": repr(error)[:3000]}
-        result["indexers"][tool] = info
-        indexes += [(Path(path), prefix) for path, prefix in info.get("indexes", ())]
+            out[name] = importlib.import_module(f"adapters.{name}").index(target, work, files)
+        except Exception:
+            import traceback
+            out[name] = {"error": traceback.format_exc()[-3000:], "indexes": []}
+    return out
+
+
+def _kept_indexers(kept: Path, inputs: dict) -> dict:
+    """The indexes an earlier run kept, in the adapters' shape (older runs named them by tool)."""
+    tools = {"scip-go": "go", "rust-analyzer": "rust", "scip-typescript": "typescript"}
+    out = {}
+    for key, info in (inputs.get("indexers") or {}).items():
+        name = tools.get(key, key)
+        indexer = info.get("indexer") if isinstance(info.get("indexer"), dict) else {
+            "name": key, "version": info.get("version"), "seconds": info.get("seconds"),
+            "peak_mb": info.get("peak_rss_mb")}
+        out[name] = {**info, "indexer": indexer,
+                     "indexes": [[str(kept / Path(path).name), prefix] for path, prefix in info.get("indexes", ())]}
+    return out
+
+
+@app.function(cpu=4, memory=16384, timeout=4 * 3600, volumes={"/results": volume})
+def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> dict:
+    """One case: snapshot and road A from the volume when an earlier run kept them, built and kept otherwise;
+    the indexers (again with `reindex`, from the volume otherwise; kept either way); the graphs and the join."""
+    import shutil
+    import time
+    started = time.time()
+    work = Path("/work") / name  # the kept snapshot binds its sources here
+    shutil.rmtree(work, ignore_errors=True)  # a warm container may have run this case before
+    kept = Path("/results") / TAG / "scip-inputs" / name
+    target = _source(work / "src", case, None)  # the checkout the snapshot verifies its sources against
+    manifest = work / "snapshot/manifest.sqlite"
+    answers = work / "answers.sqlite"
+    if (kept / "inputs.json").is_file():
+        manifest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(kept / "manifest.sqlite", manifest)
+        if (kept / "answers.sqlite").is_file():
+            shutil.copyfile(kept / "answers.sqlite", answers)
+        inputs = json.loads((kept / "inputs.json").read_text(encoding="utf-8"))
+        result = {"case": name, "commit": case["commit"], "inputs": f"kept, {kept}", **inputs}
+    else:
+        inputs, road_a_answers = _inputs(name, case, target, work, manifest)
+        result = {"case": name, "commit": case["commit"], "inputs": f"built, kept in {kept}", **inputs}
+        kept.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(manifest, kept / "manifest.sqlite")
+        if road_a_answers.is_file():
+            shutil.copyfile(road_a_answers, kept / "answers.sqlite")
+            if road_a_answers.resolve() != answers.resolve():
+                shutil.copyfile(road_a_answers, answers)
+        reindex = True
+    indexers = _kept_indexers(kept, inputs)
+    if reindex:
+        fresh = _indexers(target, work, manifest)
+        result["reindexed"] = {}
+        for adapter, info in fresh.items():
+            result["reindexed"][adapter] = {"error": info.get("error"), "indexer": info.get("indexer"),
+                                            "index_bytes": [run.get("index_bytes") for run in info.get("runs", [])],
+                                            "kept_bytes": [Path(path).stat().st_size for path, _ in
+                                                           indexers.get(adapter, {}).get("indexes", ())
+                                                           if Path(path).is_file()]}
+            if info.get("indexes"):  # a failed indexer leaves the kept indexes in place
+                kept.mkdir(parents=True, exist_ok=True)
+                for path, _prefix in info["indexes"]:
+                    shutil.copyfile(path, kept / Path(path).name)
+                info["indexes"] = [[str(kept / Path(path).name), prefix] for path, prefix in info["indexes"]]
+                indexers[adapter] = info
+        inputs = {**{key: value for key, value in inputs.items() if key != "indexers"}, "indexers": indexers}
+        (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        volume.commit()
+    result["indexers"] = indexers
+    indexes = [(Path(path), prefix) for info in indexers.values() for path, prefix in info.get("indexes", ())]
     begun = time.time()
     try:
-        result["join"] = join(manifest, indexes, answers) if indexes else {"error": "no index"}
+        result["join"] = join(manifest, indexes, answers if answers.is_file() else None, indexers, HAND.get(name, ()),
+                              kept) if indexes else {"error": "no index"}
     except Exception:
         import traceback
         result["join"] = {"error": traceback.format_exc()[-3000:]}
@@ -594,17 +504,17 @@ if __name__ == "__main__":
     parser.add_argument("command", choices=("spawn", "fetch", "join"))
     parser.add_argument("--cases", default="chi,semver,tududi")
     parser.add_argument("--label", default="")
+    parser.add_argument("--reindex", action="store_true")
     parser.add_argument("--manifest")
     parser.add_argument("--index", action="append", default=[])
     parser.add_argument("--answers")
     parser.add_argument("--out")
-    parser.add_argument("--trace", action="store_true")
     args = parser.parse_args()
     chosen = [c.strip() for c in args.cases.split(",") if c.strip()]
     if args.command == "spawn":
         function = modal.Function.from_name("daodan-scip-audit", "scip_case")
         for name in chosen:
-            print(name, function.spawn(name, CASES[name], args.label).object_id)
+            print(name, function.spawn(name, CASES[name], args.label, args.reindex).object_id)
     elif args.command == "fetch":
         RESULTS.mkdir(parents=True, exist_ok=True)
         for name in chosen:
@@ -613,7 +523,8 @@ if __name__ == "__main__":
             (RESULTS / f"scip-{stem}.json").write_bytes(data.replace(b"\r\n", b"\n"))
             print(name, len(data))
     else:
-        value = join(Path(args.manifest), [(Path(p.split("=")[0]), p.partition("=")[2]) for p in args.index], Path(args.answers) if args.answers else None,
-                     args.trace)
-        text = json.dumps(value, indent=1, ensure_ascii=False)
+        value = join(Path(args.manifest), [(Path(p.split("=")[0]), p.partition("=")[2]) for p in args.index],
+                     Path(args.answers) if args.answers else None,
+                     graph_dir=Path(args.out).parent if args.out else None)
+        text = json.dumps(value, indent=1, ensure_ascii=False, default=str)
         Path(args.out).write_text(text + "\n", encoding="utf-8") if args.out else print(text)

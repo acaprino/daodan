@@ -1,0 +1,469 @@
+{
+ "case": "chi",
+ "commit": "c64ed7d6635f33a8b2feaff7dcfa55677023ac7d",
+ "inputs": "kept, /results/inference-audit/scip-inputs/chi",
+ "snapshot_seconds": 4.7,
+ "road_a": {
+  "source": "rerun",
+  "seconds": 59.0,
+  "peak_rss_mb": 740,
+  "returncode": 0,
+  "stderr_tail": "DAODAN_MAXRSS_KB=757436\n",
+  "coverage": {
+   "go": {
+    "go": {
+     "calls": 4133,
+     "engine": "gopls@v0.24.0",
+     "resolvable": 1100,
+     "resolved": 1014,
+     "resolved_ratio": 0.922
+    }
+   }
+  }
+ },
+ "indexers": {
+  "scip-go": {
+   "indexer": "scip-go",
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/opt/scip/bin/scip-go",
+      "--output=/work/chi/scip-go-0.scip",
+      "./...",
+      "./_examples/custom-handler",
+      "./_examples/custom-method",
+      "./_examples/fileserver",
+      "./_examples/graceful",
+      "./_examples/hello-world",
+      "./_examples/limits",
+      "./_examples/logging",
+      "./_examples/pathvalue",
+      "./_examples/router-walk",
+      "./_examples/todos-resource"
+     ],
+     "returncode": 0,
+     "seconds": 10.8,
+     "peak_rss_mb": 338,
+     "stdout_tail": "Resolving module name\nLoading Packages\n\nVisiting Packages [0/15]\nVisiting Packages [15/15]\n\nIndexing Implementations [0/384]\nIndexing Implementations [384/384]\n\nVisiting Project Files [0/15]\nVisiting Project Files [0/15]\nVisiting Project Files [0/15]\nVisiting Project Files [0/15]\nVisiting Project Files [15/15]\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=346264\n",
+     "stderr_errors": 0,
+     "stderr_error_examples": [],
+     "index": "/work/chi/scip-go-0.scip",
+     "index_bytes": 1632115
+    },
+    {
+     "prefix": "_examples/rest",
+     "command": [
+      "/opt/scip/bin/scip-go",
+      "--output=/work/chi/scip-go-1.scip",
+      "./...",
+      "./"
+     ],
+     "returncode": 0,
+     "seconds": 1.0,
+     "peak_rss_mb": 134,
+     "stdout_tail": "Resolving module name\nLoading Packages\n\nVisiting Packages [0/1]\nVisiting Packages [1/1]\n\nIndexing Implementations [0/165]\nIndexing Implementations [165/165]\n\nVisiting Project Files [0/1]\nVisiting Project Files [1/1]\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=136860\n",
+     "stderr_errors": 0,
+     "stderr_error_examples": [],
+     "index": "/work/chi/scip-go-1.scip",
+     "index_bytes": 64652
+    },
+    {
+     "prefix": "_examples/versions",
+     "command": [
+      "/opt/scip/bin/scip-go",
+      "--output=/work/chi/scip-go-2.scip",
+      "./...",
+      "./",
+      "./data",
+      "./presenter/v1",
+      "./presenter/v2",
+      "./presenter/v3"
+     ],
+     "returncode": 0,
+     "seconds": 1.0,
+     "peak_rss_mb": 112,
+     "stdout_tail": "Resolving module name\nLoading Packages\n\nVisiting Packages [0/5]\nVisiting Packages [5/5]\n\nIndexing Implementations [0/162]\nIndexing Implementations [162/162]\n\nVisiting Project Files [0/5]\nVisiting Project Files [5/5]\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=114476\n",
+     "stderr_errors": 0,
+     "stderr_error_examples": [],
+     "index": "/work/chi/scip-go-2.scip",
+     "index_bytes": 39509
+    }
+   ],
+   "version": "v0.2.9",
+   "seconds": 12.8,
+   "peak_rss_mb": 338,
+   "indexes": [
+    [
+     "/work/chi/scip-go-0.scip",
+     ""
+    ],
+    [
+     "/work/chi/scip-go-1.scip",
+     "_examples/rest"
+    ],
+    [
+     "/work/chi/scip-go-2.scip",
+     "_examples/versions"
+    ]
+   ]
+  }
+ },
+ "join": {
+  "languages": {
+   "go": {
+    "references": {
+     "call": 4133,
+     "read": 5966
+    },
+    "b": {
+     "call": {
+      "external": 1918,
+      "project-declaration": 1875,
+      "none": 309,
+      "parameter": 14,
+      "no-initializer": 9,
+      "call-result": 7,
+      "other-value": 1
+     },
+     "read": {
+      "no-initializer": 1812,
+      "call-result": 1480,
+      "parameter": 1199,
+      "other-value": 607,
+      "external": 526,
+      "project-declaration": 173,
+      "no-statement": 169
+     }
+    },
+    "b_detail": {
+     "call": {
+      "none no-occurrence": 266,
+      "none no-position": 43,
+      "parameter": 14,
+      "no-initializer field": 9,
+      "call-result call_expression": 7,
+      "other-value destructured index_expression": 1
+     },
+     "read": {
+      "no-initializer field": 1812,
+      "call-result call_expression": 1480,
+      "parameter": 1199,
+      "no-statement expression_list": 169,
+      "other-value value composite_literal": 151,
+      "other-value value unary_expression": 68,
+      "other-value value interpreted_string_literal": 64,
+      "other-value value binary_expression": 63,
+      "other-value destructured type_assertion_expression": 50,
+      "other-value value int_literal": 49,
+      "other-value destructured index_expression": 38,
+      "other-value value index_expression": 35,
+      "other-value value raw_string_literal": 23,
+      "other-value value slice_expression": 20,
+      "other-value value type_assertion_expression": 19,
+      "other-value value iota": 13,
+      "other-value value type_conversion_expression": 10,
+      "other-value value false": 2,
+      "other-value value true": 1,
+      "other-value value rune_literal": 1
+     }
+    },
+    "b_external_packages": {
+     "gomod github.com/golang/go/src@go1.24": 2251,
+     "gomod github.com/go-chi/chi/v5@v5.1.0": 46,
+     "gomod github.com/golang/go/src@go1.22": 45,
+     "gomod github.com/go-chi/chi/v5@v5.2.4": 34,
+     "gomod github.com/golang/go/src@go1.16": 33,
+     "gomod github.com/go-chi/render@v1.0.1": 23,
+     "gomod github.com/go-chi/render@v1.0.3": 9,
+     "gomod github.com/go-chi/docgen@v1.2.0": 3
+    },
+    "hops": {
+     "call": {
+      "0": 1477,
+      "1": 398
+     },
+     "read": {
+      "1": 98,
+      "0": 73,
+      "2": 2
+     }
+    },
+    "hop_kinds": {
+     "direct": 1477,
+     "implementation": 384,
+     "value": 14
+    },
+    "implementations": {
+     "A matched only through an implementation": 153,
+     "call implementations listed": 1126,
+     "call with implementations": 538
+    },
+    "undefined_named_like_a_defined_symbol": {},
+    "a": {
+     "external": 2299,
+     "not-asked": 777,
+     "project-declaration": 1014,
+     "project-other": 43
+    },
+    "a_target_source": {
+     "engine": 1014
+    },
+    "matrix": {
+     "A external | B external": 1910,
+     "A external | B none": 5,
+     "A external | B project-declaration (through an implementation only)": 384,
+     "A not-asked | B external": 8,
+     "A not-asked | B no-initializer": 2,
+     "A not-asked | B none": 304,
+     "A not-asked | B project-declaration (direct or alias)": 463,
+     "A project-declaration | B project-declaration (direct or alias)": 1014,
+     "A project-other | B call-result": 7,
+     "A project-other | B no-initializer": 7,
+     "A project-other | B other-value": 1,
+     "A project-other | B parameter": 14,
+     "A project-other | B project-declaration (direct or alias)": 14
+    },
+    "a_not_asked": {
+     "unresolved dynamic-callee": 43,
+     "unresolved unbound-name": 734
+    },
+    "cells": {
+     "both external": 1910,
+     "both none": 304,
+     "mixed: A external, B none": 5,
+     "mixed: A not-asked, B external": 8,
+     "mixed: A not-asked, B no-initializer": 2,
+     "mixed: A project-other, B call-result": 7,
+     "mixed: A project-other, B no-initializer": 7,
+     "mixed: A project-other, B other-value": 1,
+     "mixed: A project-other, B parameter": 14,
+     "only B has a project target": 861,
+     "same project target": 1014
+    },
+    "only_a_by_b": {},
+    "reads_vs_lexical": {
+     "neither": 5788,
+     "only-B": 148,
+     "only-lexical": 5,
+     "same": 25
+    },
+    "examples": {
+     "B call-result on calls": [
+      "_examples/graceful/main.go:23 stop | A project-other project-not-a-symbol | B call-result local 2 = call-result call_expression",
+      "_examples/graceful/main.go:37 cancel | A project-other project-not-a-symbol | B call-result local 5 = call-result call_expression",
+      "middleware/compress.go:223 cleanup | A project-other project-not-a-symbol | B call-result local 28 = call-result call_expression",
+      "middleware/throttle_test.go:345 throttleMiddleware | A project-other project-not-a-symbol | B call-result local 100 = call-result call_expression",
+      "middleware/timeout.go:37 cancel | A project-other project-not-a-symbol | B call-result local 7 = call-result call_expression",
+      "mux_test.go:1730 cancel | A project-other project-not-a-symbol | B call-result local 638 = call-result call_expression",
+      "mux_test.go:1753 cancel | A project-other project-not-a-symbol | B call-result local 644 = call-result call_expression"
+     ],
+     "B external on calls": [
+      "_examples/custom-handler/main.go:23 http.ListenAndServe | A external engine | B external `net/http`/ListenAndServe(). = external gomod github.com/golang/go/src@go1.24",
+      "_examples/rest/main.go:180 render.Render | A external engine | B external `github.com/go-chi/render`/Render(). = external gomod github.com/go-chi/render@v1.0.1",
+      "_examples/versions/main.go:129 (expr).Value | A external engine | B external context/Context#Value(). = external gomod github.com/golang/go/src@go1.16",
+      "middleware/client_ip.go:298 peer.WithZone | A external engine | B external `net/netip`/Addr#WithZone(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/client_ip_test.go:479 req.Header.Set | A external engine | B external `net/http`/Header#Set(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/compress_test.go:101 t.Errorf | A external engine | B external testing/common#Errorf(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/content_type_test.go:62 t.Parallel | A external engine | B external testing/T#Parallel(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/logger.go:82 r.Context | A external engine | B external `net/http`/Request#Context(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/profiler.go:44 pprof.Handler | A external engine | B external `net/http/pprof`/Handler(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/request_id_test.go:51 httptest.NewRecorder | A external engine | B external `net/http/httptest`/NewRecorder(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/strip_test.go:80 ts.Close | A external engine | B external `net/http/httptest`/Server#Close(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/sunset_test.go:96 w.Header | A external engine | B external `net/http/httptest`/ResponseRecorder#Header(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/throttle_test.go:252 res.header.Get | A external engine | B external `net/http`/Header#Get(). = external gomod github.com/golang/go/src@go1.24",
+      "middleware/wrap_writer_test.go:192 strings.NewReader | A external engine | B external strings/NewReader(). = external gomod github.com/golang/go/src@go1.24",
+      "mux_test.go:306 t.Fatal | A external engine | B external testing/common#Fatal(). = external gomod github.com/golang/go/src@go1.24",
+      "mux_test.go:752 ts.Close | A external engine | B external `net/http/httptest`/Server#Close(). = external gomod github.com/golang/go/src@go1.24",
+      "mux_test.go:1073 ctx.Value | A external engine | B external context/Context#Value(). = external gomod github.com/golang/go/src@go1.24",
+      "mux_test.go:1559 fmt.Sprintf | A external engine | B external fmt/Sprintf(). = external gomod github.com/golang/go/src@go1.24",
+      "mux_test.go:1992 w.Header | A external engine | B external `net/http`/ResponseWriter#Header(). = external gomod github.com/golang/go/src@go1.24",
+      "tree_test.go:26 http.HandlerFunc | A external engine | B external `net/http`/HandlerFunc# = external gomod github.com/golang/go/src@go1.24"
+     ],
+     "B no-initializer on calls": [
+      "middleware/logger.go:40 DefaultLogger | A project-other project-not-a-symbol | B no-initializer `github.com/go-chi/chi/v5/middleware`/DefaultLogger. = no-initializer field",
+      "middleware/logger_test.go:34 DefaultLogger | A not-asked - | B no-initializer `github.com/go-chi/chi/v5/middleware`/DefaultLogger. = no-initializer field",
+      "middleware/logger_test.go:47 DefaultLogger | A not-asked - | B no-initializer `github.com/go-chi/chi/v5/middleware`/DefaultLogger. = no-initializer field",
+      "middleware/request_id_test.go:65 test.request | A project-other project-not-a-symbol | B no-initializer local 4 = no-initializer field",
+      "middleware/route_headers.go:94 matcher.Middleware | A project-other project-not-a-symbol | B no-initializer `github.com/go-chi/chi/v5/middleware`/HeaderRoute#Middleware. = no-initializer field",
+      "middleware/route_headers.go:106 (expr).Middleware | A project-other project-not-a-symbol | B no-initializer `github.com/go-chi/chi/v5/middleware`/HeaderRoute#Middleware. = no-initializer field",
+      "middleware/throttle.go:155 t.retryAfterFn | A project-other project-not-a-symbol | B no-initializer `github.com/go-chi/chi/v5/middleware`/throttler#retryAfterFn. = no-initializer field",
+      "middleware/wrap_writer_test.go:68 writer.wrap | A project-other project-not-a-symbol | B no-initializer local 5 = no-initializer field",
+      "tree_test.go:565 tt.setup | A project-other project-not-a-symbol | B no-initializer local 264 = no-initializer field"
+     ],
+     "B none on calls": [
+      "_examples/fileserver/main.go:50 panic | A not-asked - | B none no-occurrence",
+      "_examples/versions/main.go:96 close | A not-asked - | B none no-occurrence",
+      "middleware/client_ip.go:69 len | A not-asked - | B none no-occurrence",
+      "middleware/client_ip_test.go:299 recover | A not-asked - | B none no-occurrence",
+      "middleware/compress_test.go:20 len | A not-asked - | B none no-occurrence",
+      "middleware/deprecation.go:24 panic | A not-asked - | B none no-occurrence",
+      "middleware/recoverer.go:25 recover | A not-asked - | B none no-occurrence",
+      "middleware/recoverer_test.go:92 panic | A not-asked - | B none no-occurrence",
+      "middleware/strip.go:51 len | A not-asked - | B none no-occurrence",
+      "middleware/throttle_test.go:119  | A not-asked - | B none no-position",
+      "middleware/wrap_writer.go:227 int | A not-asked - | B none no-occurrence",
+      "middleware/wrap_writer_test.go:196 len | A not-asked - | B none no-occurrence",
+      "mux.go:313 panic | A not-asked - | B none no-occurrence",
+      "mux_test.go:1467  | A not-asked - | B none no-position",
+      "mux_test.go:1893 len | A not-asked - | B none no-occurrence",
+      "tree.go:337 panic | A not-asked - | B none no-occurrence",
+      "tree.go:522 append | A not-asked - | B none no-occurrence",
+      "tree.go:769 panic | A not-asked - | B none no-occurrence",
+      "tree.go:893 append | A not-asked - | B none no-occurrence",
+      "tree_test.go:381 len | A not-asked - | B none no-occurrence"
+     ],
+     "B other-value on calls": [
+      "middleware/compress.go:250 fn | A project-other project-not-a-symbol | B other-value local 40 = other-value destructured index_expression"
+     ],
+     "B parameter on calls": [
+      "_examples/custom-handler/main.go:13 h | A project-other project-not-a-symbol | B parameter local 2 = parameter local 2",
+      "middleware/client_ip.go:270 visit | A project-other project-not-a-symbol | B parameter local 41 = parameter local 41",
+      "middleware/client_ip_test.go:832 buildReq | A project-other project-not-a-symbol | B parameter local 173 = parameter local 173",
+      "middleware/client_ip_test.go:848 buildReq | A project-other project-not-a-symbol | B parameter local 181 = parameter local 181",
+      "middleware/compress.go:182 fn | A project-other project-not-a-symbol | B parameter local 15 = parameter local 15",
+      "middleware/compress.go:186 fn | A project-other project-not-a-symbol | B parameter local 15 = parameter local 15",
+      "middleware/maybe.go:10 mw | A project-other project-not-a-symbol | B parameter local 0 = parameter local 0",
+      "middleware/maybe.go:12 maybeFn | A project-other project-not-a-symbol | B parameter local 1 = parameter local 1",
+      "mux.go:271 fn | A project-other project-not-a-symbol | B parameter local 71 = parameter local 71",
+      "mux.go:283 fn | A project-other project-not-a-symbol | B parameter local 76 = parameter local 76",
+      "mux.go:517 fn | A project-other project-not-a-symbol | B parameter local 132 = parameter local 132",
+      "tree.go:718 fn | A project-other project-not-a-symbol | B parameter local 124 = parameter local 124",
+      "tree.go:913 walkFn | A project-other project-not-a-symbol | B parameter local 175 = parameter local 175",
+      "tree.go:917 walkFn | A project-other project-not-a-symbol | B parameter local 175 = parameter local 175"
+     ],
+     "chain implementation": [
+      "_examples/custom-handler/main.go:15 w.WriteHeader: `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "_examples/pathvalue/main.go:24 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/basic_auth.go:32 w.WriteHeader: `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/compress_test.go:46 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/get_head_test.go:16 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/middleware_test.go:159 resp.Body.Close: io/Closer#Close(). -implementation-> `github.com/go-chi/chi/v5/middleware`/compressResponseWriter#Close(). = middleware/compress.go::function@387:0",
+      "middleware/request_size_test.go:49 w.WriteHeader: `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/route_headers_test.go:133 w.WriteHeader: `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/strip_test.go:115 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/terminal.go:57 w.Write: io/Writer#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/url_format_test.go:17 w.WriteHeader: `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/wrap_writer_readfrom_test.go:41 wrapped.WriteHeader: `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "mux_test.go:55 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:248 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:438 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:712 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:996 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:1183 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:1559 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:1867 w.Write: `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0"
+     ],
+     "chain value": [
+      "middleware/deprecation_test.go:31 serve: local 2 -value-> middleware/deprecation_test.go::function@15:10 = middleware/deprecation_test.go::function@15:10",
+      "middleware/deprecation_test.go:46 serve: local 2 -value-> middleware/deprecation_test.go::function@15:10 = middleware/deprecation_test.go::function@15:10",
+      "middleware/deprecation_test.go:59 serve: local 2 -value-> middleware/deprecation_test.go::function@15:10 = middleware/deprecation_test.go::function@15:10",
+      "middleware/deprecation_test.go:78 serve: local 2 -value-> middleware/deprecation_test.go::function@15:10 = middleware/deprecation_test.go::function@15:10",
+      "middleware/deprecation_test.go:96 serve: local 2 -value-> middleware/deprecation_test.go::function@15:10 = middleware/deprecation_test.go::function@15:10",
+      "middleware/middleware_test.go:114 wmw: local 28 -value-> middleware/middleware_test.go::function@106:8 = middleware/middleware_test.go::function@106:8",
+      "middleware/throttle_test.go:336 waitResponse: local 95 -value-> middleware/throttle_test.go::function@324:17 = middleware/throttle_test.go::function@324:17",
+      "middleware/throttle_test.go:339 waitResponse: local 95 -value-> middleware/throttle_test.go::function@324:17 = middleware/throttle_test.go::function@324:17",
+      "middleware/value_test.go:28 request: local 3 -value-> middleware/value_test.go::function@14:12 = middleware/value_test.go::function@14:12",
+      "mux_test.go:579 decorateRouter: local 188 -value-> mux_test.go::function@502:19 = mux_test.go::function@502:19",
+      "mux_test.go:580 testNotFound: local 204 -value-> mux_test.go::function@532:17 = mux_test.go::function@532:17",
+      "mux_test.go:585 decorateRouter: local 188 -value-> mux_test.go::function@502:19 = mux_test.go::function@502:19",
+      "mux_test.go:589 testNotFound: local 204 -value-> mux_test.go::function@532:17 = mux_test.go::function@532:17",
+      "tree_test.go:695 mwName: local 319 -value-> tree_test.go::function@680:11 = tree_test.go::function@680:11"
+     ],
+     "only B has a project target (direct or alias)": [
+      "_examples/custom-handler/main.go:21 chi.NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "middleware/clean_path_test.go:12 chi.NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "middleware/client_ip_test.go:398 GetClientIP | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/GetClientIP(). = middleware/client_ip.go::function@232:0",
+      "middleware/compress_test.go:115 chi.NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "middleware/deprecation_test.go:78 serve | A project-other project-not-a-symbol | B project-declaration local 2 -value-> middleware/deprecation_test.go::function@15:10 = middleware/deprecation_test.go::function@15:10",
+      "middleware/logger.go:113 cW | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/cW(). = middleware/terminal.go::function@55:0",
+      "middleware/realip_test.go:42 chi.NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "middleware/recoverer_test.go:62 RequestLogger | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/RequestLogger(). = middleware/logger.go::function@44:0",
+      "middleware/strip_test.go:57 chi.NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "middleware/strip_test.go:233 testRequest | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/testRequest(). = middleware/middleware_test.go::function@141:0",
+      "middleware/supress_notfound_test.go:84 chi.NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "middleware/throttle_test.go:170 assertNoError | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/assertNoError(). = middleware/middleware_test.go::function@194:0",
+      "middleware/url_format_test.go:30 chi.URLParam | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/URLParam(). = context.go::function@11:0",
+      "middleware/wrap_writer_test.go:103 assertEqual | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/assertEqual(). = middleware/middleware_test.go::function@208:0",
+      "middleware/wrap_writer_test.go:217 assertEqual | A not-asked - | B project-declaration `github.com/go-chi/chi/v5/middleware`/assertEqual(). = middleware/middleware_test.go::function@208:0",
+      "mux_test.go:317 NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "mux_test.go:994 URLParamFromCtx | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/URLParamFromCtx(). = context.go::function@16:0",
+      "mux_test.go:1413 NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "mux_test.go:1727 NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0",
+      "mux_test.go:2121 NewRouter | A not-asked - | B project-declaration `github.com/go-chi/chi/v5`/NewRouter(). = chi.go::function@62:0"
+     ],
+     "only B has a project target (through an implementation only)": [
+      "_examples/custom-handler/main.go:15 w.WriteHeader | A external engine | B project-declaration `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "_examples/pathvalue/main.go:24 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/basic_auth.go:32 w.WriteHeader | A external engine | B project-declaration `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/compress_test.go:46 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/get_head_test.go:16 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/middleware_test.go:159 resp.Body.Close | A external engine | B project-declaration io/Closer#Close(). -implementation-> `github.com/go-chi/chi/v5/middleware`/compressResponseWriter#Close(). = middleware/compress.go::function@387:0",
+      "middleware/request_size_test.go:49 w.WriteHeader | A external engine | B project-declaration `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/route_headers_test.go:133 w.WriteHeader | A external engine | B project-declaration `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/strip_test.go:115 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/terminal.go:57 w.Write | A external engine | B project-declaration io/Writer#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "middleware/url_format_test.go:17 w.WriteHeader | A external engine | B project-declaration `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "middleware/wrap_writer_readfrom_test.go:41 wrapped.WriteHeader | A external engine | B project-declaration `net/http`/ResponseWriter#WriteHeader(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#WriteHeader(). = middleware/wrap_writer.go::function@83:0",
+      "mux_test.go:55 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:248 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:438 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:712 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:996 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:1183 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:1559 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0",
+      "mux_test.go:1867 w.Write | A external engine | B project-declaration `net/http`/ResponseWriter#Write(). -implementation-> `github.com/go-chi/chi/v5/middleware`/basicWriter#Write(). = middleware/wrap_writer.go::function@97:0"
+     ],
+     "read-only-B": [
+      "_examples/custom-method/main.go:18 middleware.RequestID: `github.com/go-chi/chi/v5/middleware`/RequestID(). = middleware/request_id.go::function@67:0",
+      "_examples/hello-world/main.go:14 middleware.Recoverer: `github.com/go-chi/chi/v5/middleware`/Recoverer(). = middleware/recoverer.go::function@22:0",
+      "_examples/rest/main.go:194 data.Article: rest-example/ArticleRequest#Article. -same-range-> rest-example/Article# = _examples/rest/main.go::class@447:5",
+      "_examples/todos-resource/todos.go:17 rs.Create: `github.com/go-chi/chi/v5/_examples/todos-resource`/todosResource#Create(). = _examples/todos-resource/todos.go::function@35:0",
+      "_examples/todos-resource/users.go:17 rs.Create: `github.com/go-chi/chi/v5/_examples/todos-resource`/usersResource#Create(). = _examples/todos-resource/users.go::function@34:0",
+      "middleware/client_ip_test.go:428 ClientIPFromRemoteAddr: `github.com/go-chi/chi/v5/middleware`/ClientIPFromRemoteAddr(). = middleware/client_ip.go::function@220:0",
+      "middleware/heartbeat.go:23 fn: local 3 -value-> middleware/heartbeat.go::function@14:8 = middleware/heartbeat.go::function@14:8",
+      "middleware/realip_test.go:17 RealIP: `github.com/go-chi/chi/v5/middleware`/RealIP(). = middleware/realip.go::function@28:0",
+      "middleware/request_id.go:78 fn: local 5 -value-> middleware/request_id.go::function@68:7 = middleware/request_id.go::function@68:7",
+      "middleware/strip_test.go:69 StripSlashes: `github.com/go-chi/chi/v5/middleware`/StripSlashes(). = middleware/strip.go::function@14:0",
+      "middleware/value.go:15 fn: local 4 -value-> middleware/value.go::function@11:8 = middleware/value.go::function@11:8",
+      "mux_test.go:101 usermw: local 6 -value-> mux_test.go::function@25:11 = mux_test.go::function@25:11",
+      "mux_test.go:108 pingAll2: local 39 -value-> mux_test.go::function@78:13 = mux_test.go::function@78:13",
+      "mux_test.go:300 indexHandler: local 106 -value-> mux_test.go::function@293:17 = mux_test.go::function@293:17",
+      "mux_test.go:855 stdmw: local 317 -value-> mux_test.go::function@836:10 = mux_test.go::function@836:10",
+      "mux_test.go:1423 mwIncreaseCounter: local 507 -value-> mux_test.go::function@1402:22 = mux_test.go::function@1402:22",
+      "mux_test.go:1433 mwIncreaseCounter: local 507 -value-> mux_test.go::function@1402:22 = mux_test.go::function@1402:22",
+      "mux_test.go:1485 handler: local 531 -value-> mux_test.go::function@1475:12 = mux_test.go::function@1475:12",
+      "tree_test.go:553 mw: local 257 -value-> tree_test.go::function@526:7 = tree_test.go::function@526:7",
+      "tree_test.go:640 handler: local 296 -value-> tree_test.go::function@615:12 = tree_test.go::function@615:12"
+     ]
+    }
+   }
+  },
+  "files": {
+   "go": 90
+  },
+  "files_indexed": {
+   "go": 90
+  },
+  "files_not_indexed": {
+   "go": []
+  },
+  "documents_written_twice": {
+   "count": 0,
+   "examples": []
+  },
+  "implementation_relationships": {
+   "type": 78,
+   "member": 76
+  },
+  "symbols_walked": 2967,
+  "index_tool": "scip:scip-go@0.2.9",
+  "answers": 3356,
+  "answer_line_mismatches": 0
+ },
+ "join_seconds": 2.9,
+ "seconds": 4.6
+}

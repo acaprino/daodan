@@ -1,0 +1,953 @@
+{
+ "report": {
+  "language": "java",
+  "indexer": {
+   "name": "scip-java",
+   "version": "0.13.2",
+   "seconds": 41.1,
+   "peak_mb": 688
+  },
+  "files": {
+   "snapshot": 39,
+   "indexed": 39,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 3541,
+  "edges": 19189,
+  "symbols_by_kind": {
+   "external class": 176,
+   "external method": 370,
+   "external property": 81,
+   "project class": 82,
+   "project method": 928,
+   "project module": 39,
+   "project parameter": 25,
+   "project property": 223,
+   "project type": 13,
+   "project variable": 1509,
+   "undefined module": 49,
+   "undefined property": 44,
+   "undefined variable": 2
+  },
+  "edges_by_end": {
+   "dead-end read": 10,
+   "dead-end unknown": 1677,
+   "external call": 2428,
+   "external read": 226,
+   "external unknown": 3611,
+   "project-callable call": 4383,
+   "project-callable read": 11,
+   "project-callable unknown": 2557,
+   "project-value read": 2433,
+   "project-value unknown": 1853
+  },
+  "callable_chain_hops": {
+   "0": 6583,
+   "1": 368
+  },
+  "hop_tags": {
+   "implementation": 368
+  },
+  "holes_by_class": {
+   "undefined-project-symbol read": 10
+  },
+  "holes": [
+   {
+    "class": "undefined-project-symbol",
+    "kind": "read",
+    "reason": "unknown-receiver",
+    "count": 10,
+    "examples": [
+     "src/main/java/com/squareup/javapoet/CodeBlock.java:243 args.length",
+     "src/main/java/com/squareup/javapoet/CodeBlock.java:287 args.length",
+     "src/main/java/com/squareup/javapoet/CodeBlock.java:299 args.length"
+    ]
+   }
+  ],
+  "external_packages": {
+   "maven jdk@17": 4501,
+   "maven maven/com.google.truth/truth@1.4.4": 1002,
+   "maven maven/junit/junit@4.13.2": 647,
+   "maven maven/com.google.testing.compile/compile-testing@0.21.0": 53,
+   "maven maven/com.google.guava/guava@33.2.1-android": 29,
+   "maven maven/org.mockito/mockito-core@4.11.0": 23,
+   "maven maven/com.google.jimfs/jimfs@1.3.0": 6,
+   "maven maven/com.google.code.findbugs/jsr305@3.0.2": 2,
+   "maven maven/org.eclipse.jdt.core.compiler/ecj@4.6.1": 2
+  }
+ },
+ "static_sites": {
+  "sites": [
+   "src/main/java/com/squareup/javapoet/ClassName.java:82:17",
+   "src/main/java/com/squareup/javapoet/TypeName.java:321:21",
+   "src/test/java/com/squareup/javapoet/TypesEclipseTest.java:82:20"
+  ],
+  "implementation_edges_dropped": 2
+ },
+ "enum_constants": 9,
+ "lexical_agreement": {
+  "counts": {
+   "same declaration": 264,
+   "lexical the class, index its constructor": 25
+  },
+  "examples": {
+   "lexical the class, index its constructor": [
+    "src/main/java/com/squareup/javapoet/AnnotationSpec.java:147 Visitor | lexical src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@256:2 | index [('scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/AnnotationSpec#Visitor#`<init>`().', 'src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@259:4')]",
+    "src/main/java/com/squareup/javapoet/AnnotationSpec.java:158 Builder | lexical src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@195:2 | index [('scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/AnnotationSpec#Builder#`<init>`().', 'src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4')]",
+    "src/main/java/com/squareup/javapoet/AnnotationSpec.java:166 Builder | lexical src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@195:2 | index [('scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/AnnotationSpec#Builder#`<init>`().', 'src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4')]",
+    "src/main/java/com/squareup/javapoet/CodeBlock.java:105 Builder | lexical src/main/java/com/squareup/javapoet/CodeBlock.java::class@159:2 | index [('scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#Builder#`<init>`().', 'src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4')]",
+    "src/main/java/com/squareup/javapoet/CodeBlock.java:124 CodeBlockJoiner | lexical src/main/java/com/squareup/javapoet/CodeBlock.java::class@438:2 | index [('scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#CodeBlockJoiner#`<init>`().', 'src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4')]"
+   ]
+  }
+ },
+ "overload_order": {
+  "counts": {
+   "same parameters": 808
+  },
+  "mismatches": []
+ },
+ "hand_check": {
+  "right": 20,
+  "target_right": 20,
+  "total": 20,
+  "sites": [
+   {
+    "site": "src/main/java/com/squareup/javapoet/TypeName.java:221",
+    "name": "emit",
+    "nth": 0,
+    "why": "virtual call, five overrides",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/TypeName#emit",
+      "CodeWriter"
+     ],
+     "implementations": [
+      [
+       "com/squareup/javapoet/ArrayTypeName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/ClassName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/ParameterizedTypeName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/TypeVariableName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/WildcardTypeName#emit",
+       "CodeWriter"
+      ]
+     ]
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#emit().",
+     "parameters": "CodeWriter",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#emit().",
+       []
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/ArrayTypeName#emit().",
+       [
+        "implementation"
+       ]
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/ClassName#emit().",
+       [
+        "implementation"
+       ]
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/ParameterizedTypeName#emit().",
+       [
+        "implementation"
+       ]
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeVariableName#emit().",
+       [
+        "implementation"
+       ]
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/WildcardTypeName#emit().",
+       [
+        "implementation"
+       ]
+      ]
+     ],
+     "implementations": [
+      [
+       "com/squareup/javapoet/ArrayTypeName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/ClassName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/ParameterizedTypeName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/TypeVariableName#emit",
+       "CodeWriter"
+      ],
+      [
+       "com/squareup/javapoet/WildcardTypeName#emit",
+       "CodeWriter"
+      ]
+     ],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/TypeName.java:220",
+    "name": "CodeWriter",
+    "nth": 1,
+    "why": "constructor, three overloads",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeWriter#<init>",
+      "Appendable"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#`<init>`().",
+     "parameters": "Appendable",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#`<init>`().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/TypeName.java:252",
+    "name": "get",
+    "nth": 0,
+    "why": "static overload, four candidates",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/TypeName#get",
+      "TypeMirror, Map"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#get(+1).",
+     "parameters": "TypeMirror, Map",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#get(+1).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/TypeName.java:235",
+    "name": "emit",
+    "nth": 0,
+    "why": "overload, four candidates",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeWriter#emit",
+      "String"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#emit().",
+     "parameters": "String",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#emit().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/JavaFile.java:169",
+    "name": "createSourceFile",
+    "nth": 0,
+    "why": "call through a JDK interface implemented in tests",
+    "expected": {
+     "target": [
+      "javax/annotation/processing/Filer#createSourceFile",
+      "CharSequence, Element..."
+     ],
+     "implementations": [
+      [
+       "com/squareup/javapoet/TestFiler#createSourceFile",
+       "CharSequence, Element..."
+      ]
+     ]
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven jdk 17 javax/annotation/processing/Filer#createSourceFile().",
+     "parameters": "CharSequence, Element...",
+     "overload_from": "class-file order (javap), not the index",
+     "ends": [
+      [
+       "external",
+       "scip-java maven jdk 17 javax/annotation/processing/Filer#createSourceFile().",
+       []
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TestFiler#createSourceFile().",
+       [
+        "implementation"
+       ]
+      ]
+     ],
+     "implementations": [
+      [
+       "com/squareup/javapoet/TestFiler#createSourceFile",
+       "CharSequence, Element[]"
+      ]
+     ],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/TypeName.java:208",
+    "name": "toString",
+    "nth": 0,
+    "why": "unqualified call to a final override of Object",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/TypeName#toString",
+      ""
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#toString().",
+     "parameters": "",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#toString().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:125",
+    "name": "add",
+    "nth": 0,
+    "why": "method reference to a private nested class",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeBlock#CodeBlockJoiner#add",
+      "CodeBlock"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#CodeBlockJoiner#add().",
+     "parameters": "CodeBlock",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#CodeBlockJoiner#add().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:124",
+    "name": "builder",
+    "nth": 0,
+    "why": "static call inside a lambda",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeBlock#builder",
+      ""
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#builder().",
+     "parameters": "",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#builder().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:143",
+    "name": "add",
+    "nth": 0,
+    "why": "overload inside a lambda",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeBlock#Builder#add",
+      "CodeBlock"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#Builder#add(+1).",
+     "parameters": "CodeBlock",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeBlock#Builder#add(+1).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:123",
+    "name": "of",
+    "nth": 0,
+    "why": "JDK overload, two candidates",
+    "expected": {
+     "target": [
+      "java/util/stream/Collector#of",
+      "Supplier, BiConsumer, BinaryOperator, Function, Characteristics..."
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven jdk 17 java/util/stream/Collector#of(+1).",
+     "parameters": "Supplier, BiConsumer, BinaryOperator, Function, Characteristics...",
+     "overload_from": "class-file order (javap), not the index",
+     "ends": [
+      [
+       "external",
+       "scip-java maven jdk 17 java/util/stream/Collector#of(+1).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:74",
+    "name": "this",
+    "nth": 0,
+    "why": "this(...) constructor delegation",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeWriter#<init>",
+      "Appendable, String, Set, Set"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#`<init>`(+1).",
+     "parameters": "Appendable, String, Set, Set",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#`<init>`(+1).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:405",
+    "name": "join",
+    "nth": 0,
+    "why": "static import of a JDK overload",
+    "expected": {
+     "target": [
+      "java/lang/String#join",
+      "CharSequence, Iterable"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven jdk 17 java/lang/String#join(+2).",
+     "parameters": "CharSequence, Iterable",
+     "overload_from": "class-file order (javap), not the index",
+     "ends": [
+      [
+       "external",
+       "scip-java maven jdk 17 java/lang/String#join(+2).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:198",
+    "name": "add",
+    "nth": 0,
+    "why": "generic private nested class inside a lambda",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/CodeWriter#Multiset#add",
+      "T"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#Multiset#add().",
+     "parameters": "T",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/CodeWriter#Multiset#add().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:198",
+    "name": "forEach",
+    "nth": 0,
+    "why": "default method inherited by List",
+    "expected": {
+     "target": [
+      "java/lang/Iterable#forEach",
+      "Consumer"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven jdk 17 java/lang/Iterable#forEach().",
+     "parameters": "Consumer",
+     "overload_from": "class-file order (javap), not the index",
+     "ends": [
+      [
+       "external",
+       "scip-java maven jdk 17 java/lang/Iterable#forEach().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/ClassName.java:82",
+    "name": "isAnnotated",
+    "nth": 0,
+    "why": "super call, not dispatched",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/TypeName#isAnnotated",
+      ""
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#isAnnotated().",
+     "parameters": "",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#isAnnotated().",
+       []
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/ClassName#isAnnotated().",
+       [
+        "implementation"
+       ]
+      ]
+     ],
+     "implementations": [],
+     "static_site": true
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/ClassName.java:82",
+    "name": "isAnnotated",
+    "nth": 1,
+    "why": "call to the override in a final class",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/ClassName#isAnnotated",
+      ""
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/ClassName#isAnnotated().",
+     "parameters": "",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/ClassName#isAnnotated().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/ClassName.java:59",
+    "name": "super",
+    "nth": 0,
+    "why": "super(...) constructor call, three constructors",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/TypeName#<init>",
+      "List"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#`<init>`(+2).",
+     "parameters": "List",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#`<init>`(+2).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/test/java/com/squareup/javapoet/AbstractTypesTest.java:263",
+    "name": "box",
+    "nth": 0,
+    "why": "inherited method on a subclass receiver",
+    "expected": {
+     "target": [
+      "com/squareup/javapoet/TypeName#box",
+      ""
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#box().",
+     "parameters": "",
+     "overload_from": "index signature",
+     "ends": [
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/TypeName#box().",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/test/java/com/squareup/javapoet/AbstractTypesTest.java:263",
+    "name": "assertThat",
+    "nth": 0,
+    "why": "static import, two imported classes",
+    "expected": {
+     "target": [
+      "com/google/common/truth/Truth#assertThat",
+      "Object"
+     ],
+     "implementations": []
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven maven/com.google.truth/truth 1.4.4 com/google/common/truth/Truth#assertThat(+2).",
+     "parameters": "Object",
+     "overload_from": "class-file order (javap), not the index",
+     "ends": [
+      [
+       "external",
+       "scip-java maven maven/com.google.truth/truth 1.4.4 com/google/common/truth/Truth#assertThat(+2).",
+       []
+      ]
+     ],
+     "implementations": [],
+     "static_site": false
+    }
+   },
+   {
+    "site": "src/main/java/com/squareup/javapoet/LineWrapper.java:158",
+    "name": "append",
+    "nth": 0,
+    "why": "call through a JDK interface implemented in the project",
+    "expected": {
+     "target": [
+      "java/lang/Appendable#append",
+      "CharSequence"
+     ],
+     "implementations": [
+      [
+       "com/squareup/javapoet/LineWrapper#RecordingAppendable#append",
+       "CharSequence"
+      ],
+      [
+       "src/main/java/com/squareup/javapoet/JavaFile.java:48",
+       "CharSequence"
+      ]
+     ]
+    },
+    "verdict": "right",
+    "target_ok": true,
+    "implementations_ok": true,
+    "got": {
+     "symbol": "scip-java maven jdk 17 java/lang/Appendable#append().",
+     "parameters": "CharSequence",
+     "overload_from": "class-file order (javap), not the index",
+     "ends": [
+      [
+       "external",
+       "scip-java maven jdk 17 java/lang/Appendable#append().",
+       []
+      ],
+      [
+       "project-callable",
+       "scip-java maven maven/com.squareup/javapoet 1.14.0-SNAPSHOT com/squareup/javapoet/LineWrapper#RecordingAppendable#append().",
+       [
+        "implementation"
+       ]
+      ],
+      [
+       "project-callable",
+       "src/main/java/com/squareup/javapoet/JavaFile.java#local 1",
+       [
+        "implementation"
+       ]
+      ]
+     ],
+     "implementations": [
+      [
+       "com/squareup/javapoet/LineWrapper#RecordingAppendable#append",
+       "CharSequence"
+      ],
+      [
+       "src/main/java/com/squareup/javapoet/JavaFile.java:48",
+       "CharSequence"
+      ]
+     ],
+     "static_site": false
+    }
+   }
+  ]
+ },
+ "run": {
+  "engine_runs": [
+   {
+    "step": "index",
+    "tools": {
+     "scip-java": "0.13.2",
+     "java": [
+      "openjdk version \"17.0.21\" 2026-10-20",
+      "OpenJDK Runtime Environment (build 17.0.21+9-1-deb12u1-Debian)",
+      "OpenJDK 64-Bit Server VM (build 17.0.21+9-1-deb12u1-Debian, mixed mode, sharing)"
+     ],
+     "maven": [
+      "\u001b[1mApache Maven 3.8.7\u001b[m",
+      "Maven home: /usr/share/maven",
+      "Java version: 17.0.21, vendor: Debian, runtime: /usr/lib/jvm/java-17-openjdk-amd64"
+     ]
+    },
+    "patched_pom_removed": null,
+    "command": [
+     "/opt/scip-java/scip-java",
+     "index",
+     "--output",
+     "/work/javapoet/index-0.scip"
+    ],
+    "returncode": 1,
+    "seconds": 28.4,
+    "peak_mb": 552,
+    "stdout_tail": "/java.base/java/io/IOException.class\n    class file has wrong version 61.0, should be 53.0\n    Please remove or make sure it appears in the correct subdirectory of the classpath.\n[INFO] 1 error\n[INFO] -------------------------------------------------------------\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD FAILURE\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  25.610 s\n[INFO] Finished at: 2026-11-13T20:30:19Z\n[INFO] ------------------------------------------------------------------------\n[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.12.1:compile (default-compile) on project javapoet: Compilation failure\n[ERROR] /work/javapoet/mirror/src/main/java/com/squareup/javapoet/LineWrapper.java:[18,15] cannot access java.io.IOException\n[ERROR]   bad class file: /modules/java.base/java/io/IOException.class\n[ERROR]     class file has wrong version 61.0, should be 53.0\n[ERROR]     Please remove or make sure it appears in the correct subdirectory of the classpath.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException\n\u001b[0m\n\u001b[0m\u001b[0m\n",
+    "index_bytes": 0,
+    "run": "r1"
+   },
+   {
+    "step": "index",
+    "tools": {
+     "scip-java": "0.13.2",
+     "java": [
+      "openjdk version \"17.0.21\" 2026-10-20",
+      "OpenJDK Runtime Environment (build 17.0.21+9-1-deb12u1-Debian)",
+      "OpenJDK 64-Bit Server VM (build 17.0.21+9-1-deb12u1-Debian, mixed mode, sharing)"
+     ],
+     "maven": [
+      "\u001b[1mApache Maven 3.8.7\u001b[m",
+      "Maven home: /usr/share/maven",
+      "Java version: 17.0.21, vendor: Debian, runtime: /usr/lib/jvm/java-17-openjdk-amd64"
+     ]
+    },
+    "patched_pom_removed": [
+     "<compilerId>javac-with-errorprone</compilerId>",
+     "<forceJavacCompilerUse>true</forceJavacCompilerUse>",
+     "<dependencies>\n          <dependency>\n            <groupId>org.codehaus.plexus</groupId>\n            <artifactId>plexus-compiler-javac-errorprone</artifactId>\n            <version>2.8.2</version>\n          </dependency>\n          <dependency>\n            <groupId>com.google.errorprone</groupId>\n            <artifactId>error_prone_core</artifactId>\n            <version>2.3.1</version>\n          </dependency>\n        </dependencies>"
+    ],
+    "command": [
+     "/opt/scip-java/scip-java",
+     "index",
+     "--output",
+     "/work/javapoet/index-0.scip"
+    ],
+    "returncode": 0,
+    "seconds": 39.9,
+    "peak_mb": 688,
+    "stdout_tail": "-lang3-3.16.0.jar (674 kB at 1.3 MB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar (128 kB at 240 kB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar (57 kB at 85 kB/s)\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7-site.xml\n[WARNING] Unable to find a URL to the parent project. The parent menu will NOT be added.\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/skins/maven-fluido-skin/2.0.0-M9/maven-fluido-skin-2.0.0-M9.jar\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/skins/maven-fluido-skin/2.0.0-M9/maven-fluido-skin-2.0.0-M9.jar (355 kB at 4.6 MB/s)\n[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:2.0.0-M9 skin\n[INFO] Starting audit...\nAudit done.\n[WARNING] Unable to locate Source XRef to link to - DISABLED\n[WARNING] Unable to locate Test Source XRef to link to - DISABLED\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  37.026 s\n[INFO] Finished at: 2026-11-13T20:39:44Z\n[INFO] ------------------------------------------------------------------------\n\u001b[0m\n\u001b[0m\u001b[0m\n/work/javapoet/index-0.scip\n",
+    "index_bytes": 2266831,
+    "run": "r2"
+   },
+   {
+    "step": "aggregate without inverse relationships",
+    "command": [
+     "/opt/scip-java/scip-java",
+     "aggregate",
+     "--no-emit-inverse-relationships",
+     "--output",
+     "/work/javapoet/index-forward.scip",
+     "/work/javapoet/mirror/target/scip-targetroot"
+    ],
+    "returncode": 0,
+    "seconds": 1.2,
+    "peak_mb": 452,
+    "stdout_tail": "/work/javapoet/index-forward.scip\n",
+    "same_occurrences": true
+   }
+  ],
+  "case": "javapoet",
+  "commit": "b9017a9503b76e11b4ad4c1a9f050e2d29112cb0",
+  "snapshot": {
+   "command": [
+    "/usr/local/bin/python",
+    "/daodan/map/scripts/snapshot.py",
+    "write",
+    "/work/javapoet/src",
+    "--out",
+    "/work/javapoet/snapshot/manifest.sqlite",
+    "--no-engine",
+    "--no-index"
+   ],
+   "returncode": 0,
+   "seconds": 4.4,
+   "peak_rss_mb": 81,
+   "log_tail": "snapshot: 46 files -> /work/javapoet/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/javapoet/snapshot/modules.json (1 modules)\n"
+  },
+  "container_processes_peak_mb": 1433,
+  "seconds": 54.4,
+  "run": "r2 fc-01M7BA4YZW6D2DGWG5WCCB4T4B"
+ }
+}

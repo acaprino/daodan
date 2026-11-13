@@ -1,0 +1,819 @@
+{
+ "case": "tududi",
+ "note": "graph-javascript.json.gz and graph-typescript.json.gz written by the Modal run 'graph' (reindex) to scip-inputs/tududi before it was cancelled for the budget; counts computed from them locally with scip_graph.report; hand checks read by hand from the graph's call edges at each site; road A not compared in this run",
+ "indexers": {
+  "typescript": {
+   "indexes": [
+    [
+     "/results/inference-audit/scip-inputs/tududi/scip-typescript-0.scip",
+     ""
+    ]
+   ],
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/opt/node/bin/scip-typescript",
+      "index",
+      "--cwd",
+      "/work/tududi/mirror-scip-typescript",
+      "--output",
+      "/work/tududi/scip-typescript-0.scip",
+      "--no-progress-bar"
+     ],
+     "returncode": 0,
+     "seconds": 55.3,
+     "peak_mb": 2193,
+     "stdout_tail": ".........................................\n+ /work/tududi/mirror-scip-typescript (43s 935ms)\ndone /work/tududi/scip-typescript-0.scip\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=2246100\n",
+     "stderr_errors": 0,
+     "stderr_error_examples": [],
+     "index": "/work/tududi/scip-typescript-0.scip",
+     "index_bytes": 44550689
+    }
+   ],
+   "indexer": {
+    "name": "scip-typescript",
+    "version": "0.5.2",
+    "seconds": 55.3,
+    "peak_mb": 2193
+   },
+   "node_modules": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules",
+   "tsconfig_extends": "./tsconfig.project.json"
+  }
+ },
+ "languages": {
+  "javascript": {
+   "graph": {
+    "language": "javascript",
+    "indexer": {
+     "name": "scip-typescript",
+     "version": "0.5.2",
+     "seconds": 55.3,
+     "peak_mb": 2193
+    },
+    "files": {
+     "snapshot": 1038,
+     "indexed": 1038,
+     "missing": [],
+     "missing_count": 0
+    },
+    "nodes": 86225,
+    "edges": 182593,
+    "symbols_by_kind": {
+     "external class": 83,
+     "external function": 106,
+     "external method": 381,
+     "external module": 377,
+     "external property": 297,
+     "external variable": 103,
+     "project class": 85,
+     "project function": 1440,
+     "project method": 1255,
+     "project module": 2076,
+     "project parameter": 9557,
+     "project property": 42533,
+     "project variable": 25291,
+     "undefined module": 1,
+     "undefined other": 1,
+     "undefined variable": 2639
+    },
+    "edges_by_end": {
+     "dead-end call": 61,
+     "dead-end read": 1291,
+     "dead-end unknown": 7448,
+     "external call": 51083,
+     "external read": 3308,
+     "external unknown": 16553,
+     "project-callable call": 12850,
+     "project-callable read": 1548,
+     "project-callable unknown": 2009,
+     "project-value call": 1554,
+     "project-value read": 32961,
+     "project-value unknown": 51927
+    },
+    "callable_chain_hops": {
+     "0": 12608,
+     "1": 3774,
+     "2": 25
+    },
+    "hop_tags": {
+     "same-range": 7721,
+     "initializer": 897,
+     "value": 71,
+     "pattern-key": 20,
+     "implementation": 6
+    },
+    "holes_by_class": {
+     "dangling-local call": 61,
+     "dangling-local read": 1067,
+     "no-occurrence call": 15445,
+     "no-occurrence read": 24054,
+     "no-position call": 208,
+     "undefined-project-symbol read": 5
+    },
+    "holes": [
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 19621,
+      "examples": [
+       "backend/app.js:10 session.Store",
+       "backend/modules/tasks/core/builders.js:304 body.status",
+       "backend/tests/integration/landing.test.js:750 res.text"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 9166,
+      "examples": [
+       "backend/app.js:110 req.path.startsWith",
+       "backend/modules/spreadsheets/importService.js:607 Project.findByPk",
+       "backend/tests/integration/mcp/mcp-tools.test.js:2914 project.reload"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 4134,
+      "examples": [
+       "backend/middleware/auth.js:98 payload.sub",
+       "backend/tests/integration/group-page.test.js:148 group.id",
+       "backend/tests/integration/shared-areas-access.test.js:163 area.id"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 3698,
+      "examples": [
+       "backend/config/database-settings.js:39 (expr).trim",
+       "backend/tests/integration/caldav-protocol.test.js:57 (expr).propfind",
+       "backend/tests/integration/profile-ai-settings.test.js:153 (expr).send"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 2565,
+      "examples": [
+       "backend/modules/ai-assistant/service.js:839 parsed.insight.trim",
+       "backend/tests/integration/hosted-shared-roster.test.js:233 cAgent.post",
+       "backend/tests/integration/shared-areas-access.test.js:222 memberAgent.get"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "unbound-name",
+      "count": 701,
+      "examples": [
+       "babel.config.js:1 module",
+       "backend/models/groupShare.js:3 module",
+       "backend/modules/members/signInLinkService.js:258 module"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "unbound-name",
+      "count": 297,
+      "examples": [
+       "babel.config.js:8 process.env.NODE_ENV",
+       "backend/config/config.js:326 process.env.PORT",
+       "backend/shared/crypto/secretCipher.js:21 process.env.TUDUDI_OIDC_SECRET_ENCRYPTION_KEY"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 292,
+      "examples": [
+       "backend/migrations/archive/20251224000001-cleanup-unused-task-fields.js:10 tableInfo.uuid",
+       "backend/modules/everyone/routes.js:8 everyoneController.get",
+       "backend/modules/people/routes.js:36 peopleController.delete"
+      ]
+     },
+     {
+      "class": "no-position",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 208,
+      "examples": [
+       "backend/app.js:10 ",
+       "backend/modules/billing/providers/index.js:70 ",
+       "backend/tests/integration/uploads-static.test.js:583 "
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 74,
+      "examples": [
+       "backend/modules/admin/index.js:30 adminService",
+       "backend/modules/people/index.js:7 peopleService",
+       "backend/modules/url/index.js:6 urlService"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 60,
+      "examples": [
+       "backend/modules/admin/service.js:1085 blogService.status",
+       "backend/modules/inbox/operations/attachments.js:59 inboxAttachments.removeAll",
+       "backend/modules/onboarding/controller.js:26 onboardingService.countExamples"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "unbound-name",
+      "count": 16,
+      "examples": [
+       "backend/modules/mcp/tools/taskTools.js:520 Object.hasOwn",
+       "public/sw.js:37 self.skipWaiting",
+       "public/sw.js:272 self.registration.sync.register"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 3,
+      "examples": [
+       "backend/modules/auth/service.js:37 packageJson.version",
+       "backend/services/backupService.js:95 packageJson.version",
+       "backend/services/userDataTransfer.js:295 packageJson.version"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 2,
+      "examples": [
+       "backend/services/backupService.js:98 currentVersion",
+       "backend/services/backupService.js:103 currentVersion"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 2,
+      "examples": [
+       "eslint.config.mjs:10 pluginJs.configs.recommended",
+       "eslint.config.mjs:12 pluginReact.configs.flat.recommended"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "unique-lexical-binding",
+      "count": 1,
+      "examples": [
+       "backend/tests/integration/billing.test.js:28 StripeSignatureVerificationError"
+      ]
+     }
+    ],
+    "external_packages": {
+     "npm @types/jest@29.5.14": 28976,
+     "npm typescript@6.0.3": 24037,
+     "npm @types/node@20.19.43": 10600,
+     "npm sequelize@6.37.8": 2935,
+     "npm @types/express-serve-static-core@4.19.9": 886,
+     "npm @testing-library/jest-dom@6.9.1": 702,
+     "npm moment@2.31.0": 684,
+     "npm stripe@18.5.0": 566,
+     "npm moment-timezone@0.6.6": 326,
+     "npm @types/express@4.17.25": 324,
+     "npm axios@1.21.1": 199,
+     "npm .@.": 104,
+     "npm exceljs@4.4.0": 91,
+     "npm ical.js@2.2.1": 46,
+     "npm @faker-js/faker@10.6.0": 44,
+     "npm openid-client@5.7.1": 38,
+     "npm jose@6.2.17": 37,
+     "npm express-rate-limit@8.7.4": 30,
+     "npm marked@16.4.2": 27,
+     "npm @types/xml2js@0.4.14": 25
+    }
+   },
+   "hand": [
+    {
+     "site": "backend/migrations/archive/20251023000001-add-unique-constraint-tags.js:162 addIndex",
+     "expected": "value",
+     "graph": "hole no-occurrence",
+     "right": false
+    },
+    {
+     "site": "backend/migrations/archive/20261024100000-create-webhooks.js:162 addIndexOnce",
+     "expected": "decl create-webhooks.js:5",
+     "graph": "addIndexOnce() :5",
+     "right": true
+    },
+    {
+     "site": "backend/modules/caldav/icalendar/vtodo-parser.js:189 toJSDate",
+     "expected": "external ical.js",
+     "graph": "hole no-occurrence",
+     "right": false
+    },
+    {
+     "site": "backend/modules/caldav/services/safe-request.js:191 AppError",
+     "expected": "decl AppError.js:7",
+     "graph": "AppError#<constructor>() :8",
+     "right": true
+    },
+    {
+     "site": "backend/modules/daily-plan/routes.js:32 put",
+     "expected": "external express",
+     "graph": "@types/express-serve-static-core IRouter#put",
+     "right": true
+    },
+    {
+     "site": "backend/modules/oidc/configService.js:95 require",
+     "expected": "external @types/node",
+     "graph": "@types/node require",
+     "right": true
+    },
+    {
+     "site": "backend/modules/spreadsheets/analyze.js:750 key",
+     "expected": "decl analyze.js:28",
+     "graph": "key() :28",
+     "right": true
+    },
+    {
+     "site": "backend/modules/tasks/routes.js:654 findByIdAndUser",
+     "expected": "decl repository.js:13",
+     "graph": "TaskRepository#findByIdAndUser() :13",
+     "right": true
+    },
+    {
+     "site": "backend/modules/tasks/taskReminderService.js:3 require",
+     "expected": "external @types/node",
+     "graph": "@types/node require",
+     "right": true
+    },
+    {
+     "site": "backend/tests/integration/admin-users-cascade.test.js:16 require",
+     "expected": "external @types/node",
+     "graph": "@types/node require",
+     "right": true
+    },
+    {
+     "site": "backend/tests/integration/recurring-tasks.test.js:365 create",
+     "expected": "external sequelize",
+     "graph": "hole no-occurrence",
+     "right": false
+    },
+    {
+     "site": "backend/tests/integration/spreadsheets-formats.test.js:492 map",
+     "expected": "none",
+     "graph": "hole no-occurrence",
+     "right": true
+    },
+    {
+     "site": "backend/tests/unit/middleware/rateLimitStore.test.js:19 beforeAll",
+     "expected": "external @types/jest",
+     "graph": "@types/jest beforeAll",
+     "right": true
+    },
+    {
+     "site": "backend/tests/unit/modules/tasks/recurringTaskService.test.js:677 expect",
+     "expected": "external @types/jest",
+     "graph": "@types/jest expect",
+     "right": true
+    },
+    {
+     "site": "backend/utils/timezone-utils.js:69 getDayBoundsInUTC",
+     "expected": "decl timezone-utils.js:53",
+     "graph": "getDayBoundsInUTC() :53",
+     "right": true
+    }
+   ],
+   "hand_score": {
+    "checks": 15,
+    "right": 12
+   }
+  },
+  "typescript": {
+   "graph": {
+    "language": "typescript",
+    "indexer": {
+     "name": "scip-typescript",
+     "version": "0.5.2",
+     "seconds": 55.3,
+     "peak_mb": 2193
+    },
+    "files": {
+     "snapshot": 650,
+     "indexed": 650,
+     "missing": [],
+     "missing_count": 0
+    },
+    "nodes": 41107,
+    "edges": 171821,
+    "symbols_by_kind": {
+     "external class": 227,
+     "external function": 148,
+     "external method": 491,
+     "external module": 69,
+     "external property": 713,
+     "external variable": 352,
+     "project class": 18,
+     "project function": 230,
+     "project method": 60,
+     "project module": 1303,
+     "project parameter": 8818,
+     "project property": 13231,
+     "project type": 714,
+     "project variable": 12963,
+     "undefined other": 2,
+     "undefined variable": 1768
+    },
+    "edges_by_end": {
+     "dead-end call": 5291,
+     "dead-end read": 560,
+     "dead-end unknown": 1779,
+     "external call": 27377,
+     "external read": 5940,
+     "external unknown": 50750,
+     "project-callable call": 7178,
+     "project-callable read": 3480,
+     "project-callable unknown": 4489,
+     "project-value call": 3807,
+     "project-value read": 28991,
+     "project-value unknown": 32179
+    },
+    "callable_chain_hops": {
+     "0": 13324,
+     "1": 1753,
+     "2": 63,
+     "3+": 7
+    },
+    "hop_tags": {
+     "same-range": 10968,
+     "initializer": 1053,
+     "declared:@types/react.useCallback": 287,
+     "pattern-key": 54,
+     "value": 33,
+     "declared:@types/react.useMemo": 1
+    },
+    "holes_by_class": {
+     "dangling-local call": 3755,
+     "dangling-local read": 444,
+     "no-occurrence call": 1282,
+     "no-occurrence read": 1561,
+     "no-position call": 98,
+     "no-position read": 1
+    },
+    "holes": [
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "non-callable-binding",
+      "count": 3748,
+      "examples": [
+       "frontend/Layout.tsx:497 t",
+       "frontend/components/Habits/HabitDayPanel.tsx:189 t",
+       "frontend/components/Project/ProjectUnavailable.tsx:45 t"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 1499,
+      "examples": [
+       "e2e/tests/inbox-task-project.spec.ts:79 task.uid",
+       "frontend/components/Profile/ProfileSettings.tsx:796 bot.username",
+       "frontend/components/Task/TaskDetails.tsx:836 task.parent_task.uid"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 564,
+      "examples": [
+       "frontend/__tests__/Layout.test.tsx:262 fireEvent.click",
+       "frontend/components/Inbox/__tests__/QuickCaptureInput.nlp.test.tsx:73 fireEvent.change",
+       "frontend/components/Shared/__tests__/BlankSlate.test.tsx:39 fireEvent.click"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 408,
+      "examples": [
+       "e2e/tests/inbox-task-project.spec.ts:59 tasks.filter",
+       "frontend/components/Inbox/__tests__/QuickCaptureInput.slash.test.tsx:305 areasStore.setAreas",
+       "frontend/components/Task/TaskDetails.tsx:663 tasksStore.tasks.findIndex"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 233,
+      "examples": [
+       "frontend/components/Admin/AdminBlogSettings.tsx:141 status.note.title",
+       "frontend/components/Inbox/QuickCaptureInput.tsx:286 error.kind",
+       "frontend/components/Shared/MermaidDiagram.tsx:13 module.default"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 181,
+      "examples": [
+       "e2e/tests/calendar-toolbar.spec.ts:41 viewportWidth",
+       "frontend/components/Habits/HabitDetails.tsx:234 t",
+       "frontend/components/Project/Timeline/ProjectTimeline.tsx:288 items"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "unknown-receiver-or-import-form",
+      "count": 164,
+      "examples": [
+       "frontend/App.tsx:139 useStore.getState",
+       "frontend/components/Focus/__tests__/FocusChip.test.tsx:98 useStore.getState",
+       "frontend/components/Sidebar/SidebarResizeHandle.tsx:32 useStore.getState"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 144,
+      "examples": [
+       "e2e/tests/inbox.spec.ts:11 (expr).fill",
+       "frontend/components/Focus/__tests__/FocusChip.test.tsx:187 (expr).setFocus",
+       "frontend/components/Sidebar/__tests__/AppLauncherModal.test.tsx:186 (expr).setSidebarOrder"
+      ]
+     },
+     {
+      "class": "no-position",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 98,
+      "examples": [
+       "e2e/tests/notes-editor.spec.ts:76 ",
+       "frontend/components/Note/editor/widgets.tsx:52 ",
+       "frontend/hooks/__tests__/useSidebarSectionExpanded.test.ts:34 "
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "unbound-name",
+      "count": 49,
+      "examples": [
+       "e2e/helpers/testHelpers.ts:13 process.env.APP_URL",
+       "e2e/tests/inbox.spec.ts:121 process.env.APP_URL",
+       "e2e/tests/registration.spec.ts:132 process.env.APP_URL"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 11,
+      "examples": [
+       "frontend/components/Inbox/QuickCaptureInput.tsx:1916 analysis.parsed_area.uid",
+       "frontend/components/Project/Timeline/ProjectTimeline.tsx:153 day",
+       "frontend/components/Project/Timeline/ProjectTimeline.tsx:160 day"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "reexport-unsupported",
+      "count": 10,
+      "examples": [
+       "frontend/components/Eisenhower/EisenhowerMatrix.tsx:318 TaskItem",
+       "frontend/components/Task/GroupedTaskList.tsx:515 TaskItem",
+       "frontend/components/Task/GroupedTaskList.tsx:599 TaskItem"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "export-missing-or-ambiguous",
+      "count": 7,
+      "examples": [
+       "frontend/components/DailyPlan/AgendaList.tsx:227 TaskRow",
+       "frontend/components/Task/__tests__/TaskRow.test.tsx:173 TaskRow",
+       "frontend/components/Task/__tests__/TaskRow.test.tsx:367 TaskRow"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 7,
+      "examples": [
+       "frontend/components/Everyone/PeopleBoard.tsx:453 t",
+       "frontend/components/Everyone/PeopleBoard.tsx:529 t",
+       "frontend/components/Everyone/PeopleBoard.tsx:568 t"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 6,
+      "examples": [
+       "frontend/components/Task/TaskDetails/__tests__/TaskContentCard.test.tsx:57 capturedMarkdownProps.onContentChange",
+       "frontend/utils/taskTokens.ts:44 analysis.parsed_projects",
+       "frontend/utils/taskTokens.ts:56 analysis.parsed_due_date"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 4,
+      "examples": [
+       "frontend/utils/mfaService.ts:35 body.reauth_required",
+       "frontend/utils/mfaService.ts:36 body.method",
+       "frontend/utils/mfaService.ts:36 body.error"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "unknown-receiver-or-import-form",
+      "count": 3,
+      "examples": [
+       "frontend/components/Note/editor/widgets.tsx:103 CALLOUT_CONFIG.NOTE",
+       "frontend/utils/__tests__/sidebarLayout.test.ts:25 DEFAULT_SECTION_ORDER.length",
+       "frontend/utils/__tests__/tagsService.refreshTagCountsIfTagsChanged.test.ts:13 useStore.getState"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "frontend/components/Everyone/PeopleBoard.tsx:460 t",
+       "frontend/components/Everyone/PeopleBoard.tsx:507 t"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 2,
+      "examples": [
+       "frontend/components/Spreadsheet/__tests__/ImportWizard.test.tsx:29 template.replace",
+       "frontend/utils/taskTokens.ts:52 analysis.cleaned_content.trim"
+      ]
+     },
+     {
+      "class": "no-position",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 1,
+      "examples": [
+       "frontend/components/Inbox/__tests__/QuickCaptureInput.slash.test.tsx:51 state.areasStore.areasStore"
+      ]
+     }
+    ],
+    "external_packages": {
+     "npm @types/react@18.3.31": 30064,
+     "npm typescript@6.0.3": 25244,
+     "npm @types/jest@29.5.14": 8879,
+     "npm @testing-library/dom@9.3.4": 4151,
+     "npm @types/node@20.19.43": 2733,
+     "npm @testing-library/jest-dom@6.9.1": 2328,
+     "npm react-i18next@15.7.4": 2020,
+     "npm .@.": 2015,
+     "npm react-router@7.18.5": 1396,
+     "npm playwright@1.65.0": 761,
+     "npm @testing-library/react@14.3.1": 654,
+     "npm @codemirror/state@6.7.6": 555,
+     "npm @codemirror/view@6.43.15": 475,
+     "npm playwright-core@1.65.0": 447,
+     "npm @dnd-kit/core@6.3.1": 416,
+     "npm csstype@3.2.3": 383,
+     "npm @lezer/common@1.5.5": 252,
+     "npm @dnd-kit/sortable@10.0.0": 223,
+     "npm i18next@24.2.3": 205,
+     "npm date-fns@4.4.0": 171
+    }
+   },
+   "hand": [
+    {
+     "site": "e2e/tests/notes-editor.spec.ts:106 log",
+     "expected": "external typescript|@types/node",
+     "graph": "typescript Console#log, @types/node Console#log",
+     "right": true
+    },
+    {
+     "site": "frontend/Layout.tsx:216 setSelectedArea",
+     "expected": "none",
+     "graph": "project value local 75 (useState setter)",
+     "right": true
+    },
+    {
+     "site": "frontend/__tests__/Notes.staleCache.test.tsx:80 fn",
+     "expected": "external @types/jest",
+     "graph": "@types/jest jest/fn()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Admin/AdminUsersPage.tsx:1353 setRolesError",
+     "expected": "none",
+     "graph": "project value local 630 (useState setter)",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Admin/__tests__/AdminUserStatusTable.test.tsx:87 getAllByRole",
+     "expected": "external @testing-library",
+     "graph": "@testing-library/dom getAllByRole()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:216 toBeEnabled",
+     "expected": "external jest",
+     "graph": "@testing-library/jest-dom toBeEnabled()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx:75 getByTestId",
+     "expected": "external @testing-library",
+     "graph": "@testing-library/dom getByTestId()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Calendar.tsx:250 Date",
+     "expected": "external typescript",
+     "graph": "typescript Date#",
+     "right": true
+    },
+    {
+     "site": "frontend/components/DailyPlan/NowCard.tsx:75 push",
+     "expected": "external typescript",
+     "graph": "typescript Array#push()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/DailyPlan/PlanMyDay.tsx:797 useSensor",
+     "expected": "external @dnd-kit",
+     "graph": "@dnd-kit/core useSensor()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Inbox/__tests__/QuickCaptureInput.focus.test.tsx:88 slice",
+     "expected": "external typescript",
+     "graph": "hole no-occurrence",
+     "right": false
+    },
+    {
+     "site": "frontend/components/Shared/ShareModal.tsx:308 trim",
+     "expected": "external typescript",
+     "graph": "typescript String#trim()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Shared/__tests__/MarkdownRenderer.mermaid.test.tsx:78 queryByTestId",
+     "expected": "external @testing-library",
+     "graph": "@testing-library/dom queryByTestId()",
+     "right": true
+    },
+    {
+     "site": "frontend/components/Task/TaskDetails/__tests__/TaskDetailsHeader.test.tsx:6 mock",
+     "expected": "external @types/jest",
+     "graph": "@types/jest jest/mock()",
+     "right": true
+    },
+    {
+     "site": "frontend/utils/dailyPlanService.ts:311 map",
+     "expected": "external typescript",
+     "graph": "typescript Array#map()",
+     "right": true
+    }
+   ],
+   "hand_score": {
+    "checks": 15,
+    "right": 14
+   }
+  }
+ }
+}

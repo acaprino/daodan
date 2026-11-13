@@ -1,0 +1,1370 @@
+{
+ "case": "klaxon",
+ "commit": "1173bdc568a6d339b45cf24a6a9c5c2f6847f42d",
+ "stage": "graph",
+ "indexer": {
+  "scip_java": "0.14.2",
+  "java": "openjdk version \"17.0.21\" 2026-10-20\nOpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)\nOpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)",
+  "command": [
+   "/opt/jdk/bin/java",
+   "-Xmx4g",
+   "-cp",
+   "/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scip-code/scip-java/0.14.2/scip-java-0.14.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scip-code/scip-aggregator/0.14.2/scip-aggregator-0.14.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scip-code/scip-kotlin-analysis/0.14.2/scip-kotlin-analysis-0.14.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/clikt/clikt-jvm/5.1.0/clikt-jvm-5.1.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.4.21/kotlin-stdlib-2.4.21.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.13.0/kotlinx-serialization-json-jvm-1.13.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scip-code/scip-java-bindings/0.10.0/scip-java-bindings-0.10.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scip-code/scip-shared/0.14.2/scip-shared-0.14.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scip-code/scip-kotlin-bindings/0.10.0/scip-kotlin-bindings-0.10.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler/2.4.0/kotlin-compiler-2.4.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ben-manes/caffeine/caffeine/3.3.1/caffeine-3.3.1.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-collections-immutable-jvm/0.5.2/kotlinx-collections-immutable-jvm-0.5.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/clikt/clikt-core-jvm/5.1.0/clikt-core-jvm-5.1.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/mordant/mordant-jvm/3.0.2/mordant-jvm-3.0.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.13.0/kotlinx-serialization-core-jvm-1.13.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/4.34.2/protobuf-java-4.34.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-kotlin/4.34.2/protobuf-kotlin-4.34.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jspecify/jspecify/1.0.1/jspecify-1.0.1.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.50.0/error_prone_annotations-2.50.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/mordant/mordant-core-jvm/3.0.2/mordant-core-jvm-3.0.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/mordant/mordant-jvm-jna-jvm/3.0.2/mordant-jvm-jna-jvm-3.0.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/mordant/mordant-jvm-ffm-jvm/3.0.2/mordant-jvm-ffm-jvm-3.0.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/mordant/mordant-jvm-graal-ffi-jvm/3.0.2/mordant-jvm-graal-ffi-jvm-3.0.2.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ajalt/colormath/colormath-jvm/3.6.0/colormath-jvm-3.6.0.jar:/root/.cache/coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/5.14.0/jna-5.14.0.jar",
+   "org.scip_code.scip_java.ScipJava",
+   "index",
+   "--output",
+   "/work/klaxon/index.scip"
+  ],
+  "returncode": 0,
+  "seconds": 111.0,
+  "peak_rss_mb_all_processes": 4688,
+  "log_tail": "ecated. Use appendLine instead. Note that the new method always appends the line feed character '\\n' regardless of the system line separator.\nw: /work/klaxon/mirror/klaxon/src/main/kotlin/com/beust/klaxon/Lexer.kt: (196, 36): 'toLowerCase(): String' is deprecated. Use lowercase() instead.\nw: /work/klaxon/mirror/klaxon/src/main/kotlin/com/beust/klaxon/Lexer.kt: (198, 37): 'toLowerCase(): String' is deprecated. Use lowercase() instead.\nw: /work/klaxon/mirror/klaxon/src/main/kotlin/com/beust/klaxon/Lexer.kt: (204, 47): 'toInt(): Int' is deprecated. Conversion of Char to Number is deprecated. Use Char.code property instead.\nw: /work/klaxon/mirror/klaxon/src/main/kotlin/com/beust/klaxon/Render.kt: (46, 59): 'toInt(): Int' is deprecated. Conversion of Char to Number is deprecated. Use Char.code property instead.\n\n> Task :klaxon:compileJava\n> Task :klaxon:processResources NO-SOURCE\n> Task :klaxon:classes\n\n> Task :klaxon:compileTestKotlin\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt: (44, 29): The corresponding parameter in the supertype 'Converter' is named 'value'. This may cause problems when calling this function with named arguments.\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt: (47, 43): 'toUpperCase(): String' is deprecated. Use uppercase() instead.\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/EnumTest.kt: (16, 13): 'when' is exhaustive so 'else' is redundant here\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/EnumTest.kt: (32, 13): Variable 'result' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue122Test.kt: (11, 13): Variable 'x' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue133Test.kt: (20, 13): Variable 'type' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue167Test.kt: (24, 13): Variable 'aMix' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue168Test.kt: (23, 13): Variable 'parsed' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue180Test.kt: (42, 28): Unchecked cast: Any? to T\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue180Test.kt: (48, 25): Unchecked cast: Any? to T\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue228Test.kt: (14, 17): Check for instance is always 'false'\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue230Test.kt: (25, 13): 'when' is exhaustive so 'else' is redundant here\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue340Test.kt: (19, 36): Unchecked cast: Map<Any, Any?> to Map<String, Any?>\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt: (22, 13): Variable 'result' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt: (37, 71): Name shadowed: value\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Main.kt: (6, 10): Parameter 'args' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/Main.kt: (52, 47): Unnecessary non-null assertion (!!) on a non-null receiver of type Any\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/PathMatcherTest.kt: (36, 13): Variable 'r' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/TypeAdapterTest.kt: (31, 27): This class shouldn't be used in Kotlin. Use kotlin.Int instead.\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/TypeAdapterTest.kt: (45, 23): This class shouldn't be used in Kotlin. Use kotlin.Int instead.\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/TypeAdapterTest.kt: (49, 13): Variable 'shapes' is never used\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/TypeAdapterTest.kt: (65, 27): This class shouldn't be used in Kotlin. Use kotlin.Int instead.\nw: /work/klaxon/mirror/klaxon/src/test/kotlin/com/beust/klaxon/TypeAdapterTest.kt: (70, 13): Variable 'shapes' is never used\n\n> Task :klaxon:scipKotlinConfigs\n> Task :klaxon:inspectClassesForKotlinIC\n> Task :klaxon:jar\n> Task :klaxon-jackson:compileKotlin\n> Task :klaxon-jackson:compileJava NO-SOURCE\n> Task :klaxon-jackson:processResources NO-SOURCE\n> Task :klaxon-jackson:classes UP-TO-DATE\n> Task :klaxon-jackson:compileTestKotlin NO-SOURCE\n> Task :klaxon-jackson:scipKotlinConfigs\n> Task :klaxon-jackson:inspectClassesForKotlinIC\n> Task :klaxon-jackson:jar\n> Task :compileKotlin NO-SOURCE\n> Task :compileJava NO-SOURCE\n> Task :processResources NO-SOURCE\n> Task :classes UP-TO-DATE\n\n> Task :compileTestKotlin\nw: /work/klaxon/mirror/src/test/kotlin/com/beust/klaxon/KlaxonTest.kt: (482, 39): Unnecessary non-null assertion (!!) on a non-null receiver of type KlaxonBaseTest.Registry\nw: /work/klaxon/mirror/src/test/kotlin/com/beust/klaxon/TestTypes.kt: (78, 36): Unnecessary non-null assertion (!!) on a non-null receiver of type String\nw: /work/klaxon/mirror/src/test/kotlin/com/beust/klaxon/TestTypes.kt: (78, 42): 'toInt(): Int' is deprecated. Conversion of Char to Number is deprecated. Use Char.code property instead.\nw: /work/klaxon/mirror/src/test/kotlin/com/beust/klaxon/TestTypes.kt: (79, 40): 'toInt(): Int' is deprecated. Conversion of Char to Number is deprecated. Use Char.code property instead.\n\n> Task :compileTestJava NO-SOURCE\n> Task :scipKotlinConfigs\n> Task :scipCompileAll\n> Task :klaxon:compileTestJava NO-SOURCE\n> Task :klaxon:scipCompileAll\n> Task :klaxon-jackson:compileTestJava NO-SOURCE\n> Task :klaxon-jackson:scipCompileAll\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nSee https://docs.gradle.org/7.3/userguide/command_line_interface.html#sec:command_line_warnings\n\nBUILD SUCCESSFUL in 1m 33s\n24 actionable tasks: 21 executed, 3 up-to-date\n/work/klaxon/index.scip\n",
+  "index_bytes": 2136300,
+  "kotlin_configs": {
+   "compileKotlin-b7eee38c37317e48.txt": 33,
+   "compileKotlin-f5133158ad900b9b.txt": 1,
+   "compileTestKotlin-38773ba40ec970be.txt": 61,
+   "compileTestKotlin-77cdc3821426e09b.txt": 2
+  }
+ },
+ "graph": {
+  "index": {
+   "bytes": 2136300,
+   "metadata": {
+    "tool_info": {
+     "name": "scip-java",
+     "version": "0.14.2"
+    },
+    "project_root": "file:///work/klaxon/mirror/",
+    "text_document_encoding": 1
+   },
+   "documents": 98,
+   "documents_by_language": {
+    "kotlin": 97,
+    "java": 1
+   },
+   "occurrences": 15014,
+   "definition_occurrences": 4508,
+   "symbol_information": 4508,
+   "external_symbol_information": 0,
+   "position_encodings": {
+    "0": 98
+   },
+   "documents_with_text": 97,
+   "occurrences_with_diagnostics": 0,
+   "relationships": {
+    "is_reference+is_implementation": 30,
+    "is_implementation": 486
+   },
+   "unknown_fields": {}
+  },
+  "coverage": {
+   "kotlin_files_in_snapshot": 103,
+   "kotlin_files_tracked": 104,
+   "compile_tasks": {
+    "compileKotlin-b7eee38c37317e48.txt": 33,
+    "compileKotlin-f5133158ad900b9b.txt": 1,
+    "compileTestKotlin-38773ba40ec970be.txt": 61,
+    "compileTestKotlin-77cdc3821426e09b.txt": 2
+   },
+   "files_with_occurrences": 97,
+   "documents_not_in_snapshot": [
+    "klaxon/src/main/java/com/beust/klaxon/KlaxonDoc.java"
+   ],
+   "missing": {
+    "build.gradle.kts": "in the sources of no Kotlin compile task the build ran",
+    "buildSrc/build.gradle.kts": "in the sources of no Kotlin compile task the build ran",
+    "buildSrc/src/main/kotlin/KlaxonConfig.kt": "in the sources of no Kotlin compile task the build ran",
+    "klaxon-jackson/build.gradle.kts": "in the sources of no Kotlin compile task the build ran",
+    "klaxon/build.gradle.kts": "in the sources of no Kotlin compile task the build ran",
+    "kobalt/src/Build.kt": "in the sources of no Kotlin compile task the build ran",
+    "settings.gradle.kts": "in the sources of no Kotlin compile task the build ran"
+   }
+  },
+  "nodes": {
+   "project_symbols_by_kind": {
+    "Method": 1319,
+    "Parameter": 824,
+    "Property": 345,
+    "Constructor": 248,
+    "Class": 247,
+    "TypeParameter": 35,
+    "EnumMember": 32,
+    "StaticField": 21,
+    "Interface": 11,
+    "TypeAlias": 1
+   },
+   "local_symbols_by_kind": {
+    "Property": 659,
+    "Parameter": 361,
+    "Method": 277,
+    "Class": 64,
+    "Constructor": 64
+   },
+   "symbols_with_more_than_one_definition": 0,
+   "definitions_without_enclosing_range": {
+    "Constructor": 1
+   },
+   "referenced_external_symbols_by_package": {
+    "external without package": 236,
+    "maven jdk@17": 176,
+    "maven maven/org.jetbrains.kotlin/kotlin-stdlib@1.6.0": 82,
+    "maven maven/com.fasterxml.jackson.core/jackson-databind@2.9.6": 47,
+    "namespace": 41,
+    "maven maven/org.assertj/assertj-core@3.10.0": 21,
+    "maven maven/org.testng/testng@7.0.0": 9,
+    "maven maven/com.fasterxml.jackson.core/jackson-core@2.9.6": 5,
+    "dead end": 2,
+    "maven maven/org.jetbrains/annotations@13.0": 1
+   }
+  },
+  "edges": {
+   "sites": 9169,
+   "edges": 10506,
+   "symbols_per_site": {
+    "1": 8214,
+    "2": 591,
+    "3": 346,
+    "4": 18
+   },
+   "occurrence_roles": {
+    "0": 10506
+   },
+   "edges_by_end_class": {
+    "project property or value": 2902,
+    "external without package": 2102,
+    "project function/method": 2015,
+    "external": 1594,
+    "namespace": 1079,
+    "project class": 812,
+    "dead end": 2
+   },
+   "sites_by_best_end_class": {
+    "project property or value": 2039,
+    "external without package": 1931,
+    "project function/method": 1837,
+    "external": 1469,
+    "namespace": 1079,
+    "project class": 812,
+    "dead end": 2
+   },
+   "dead_end_detail": {
+    "symbol of a project package without a definition": 2
+   },
+   "chain_length_per_end": {
+    "0": 10506,
+    "1": 5913
+   },
+   "implementations_added_per_edge": {
+    "0": 10347,
+    "1": 49,
+    "2": 32,
+    "3": 2,
+    "5": 3,
+    "8": 1,
+    "12": 4,
+    "17": 9,
+    "94": 53,
+    "98": 6
+   },
+   "caller_kinds": {
+    "Method": 6837,
+    "file (outside any definition)": 1267,
+    "Property": 475,
+    "Class": 444,
+    "Constructor": 140,
+    "EnumMember": 3,
+    "Interface": 2,
+    "TypeAlias": 1
+   }
+  },
+  "external_packages_top20": {
+   "maven jdk@17": 591,
+   "maven maven/org.testng/testng@7.0.0": 359,
+   "maven maven/org.jetbrains.kotlin/kotlin-stdlib@1.6.0": 323,
+   "maven maven/org.assertj/assertj-core@3.10.0": 237,
+   "maven maven/com.fasterxml.jackson.core/jackson-databind@2.9.6": 71,
+   "maven maven/com.fasterxml.jackson.core/jackson-core@2.9.6": 11,
+   "maven maven/org.jetbrains/annotations@13.0": 2
+  },
+  "holes": {
+   "call": {
+    "file has no index document": {
+     "count": 150,
+     "examples": [
+      "build.gradle.kts:1 plugins",
+      "klaxon-jackson/build.gradle.kts:15 kotlin",
+      "klaxon/build.gradle.kts:81 name.set"
+     ]
+    },
+    "no position for the name": {
+     "count": 1,
+     "examples": [
+      "klaxon/src/test/kotlin/com/beust/klaxon/PrettyPrintTest.kt:10 "
+     ]
+    }
+   },
+   "read": {
+    "file has no index document": {
+     "count": 76,
+     "examples": [
+      "build.gradle.kts:2 java",
+      "klaxon/build.gradle.kts:30 it",
+      "klaxon/build.gradle.kts:106 name"
+     ]
+    },
+    "read: bare name": {
+     "count": 8,
+     "examples": [
+      "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:46 instanceSettings",
+      "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:53 serializeNull",
+      "klaxon/src/test/kotlin/com/beust/klaxon/LexerTest.kt:37 lenient"
+     ]
+    }
+   }
+  },
+  "holes_all": {
+   "call": {
+    "file has no index document": [
+     "build.gradle.kts:1 plugins",
+     "build.gradle.kts:4 kotlin",
+     "build.gradle.kts:7 allprojects",
+     "build.gradle.kts:12 repositories",
+     "build.gradle.kts:13 mavenCentral",
+     "build.gradle.kts:17 java",
+     "build.gradle.kts:22 repositories",
+     "build.gradle.kts:23 jcenter",
+     "build.gradle.kts:24 mavenCentral",
+     "build.gradle.kts:25 maven",
+     "build.gradle.kts:25 setUrl",
+     "build.gradle.kts:28 tasks.getting",
+     "build.gradle.kts:29 useTestNG",
+     "build.gradle.kts:32 dependencies",
+     "build.gradle.kts:33 listOf",
+     "build.gradle.kts:33 (expr).forEach",
+     "build.gradle.kts:34 implementation",
+     "build.gradle.kts:34 kotlin",
+     "build.gradle.kts:36 listOf",
+     "build.gradle.kts:36 (expr).forEach",
+     "build.gradle.kts:37 testImplementation",
+     "build.gradle.kts:37 kotlin",
+     "build.gradle.kts:39 listOf",
+     "build.gradle.kts:39 (expr).forEach",
+     "build.gradle.kts:40 testImplementation",
+     "build.gradle.kts:43 listOf",
+     "build.gradle.kts:43 (expr).forEach",
+     "build.gradle.kts:44 implementation",
+     "build.gradle.kts:44 project",
+     "build.gradle.kts:56 subprojects",
+     "build.gradle.kts:57 System.getProperty",
+     "buildSrc/build.gradle.kts:3 plugins",
+     "buildSrc/build.gradle.kts:8 repositories",
+     "buildSrc/build.gradle.kts:9 jcenter",
+     "buildSrc/build.gradle.kts:10 mavenCentral",
+     "buildSrc/build.gradle.kts:11 maven",
+     "buildSrc/build.gradle.kts:11 setUrl",
+     "buildSrc/build.gradle.kts:14 tasks.withType",
+     "buildSrc/build.gradle.kts:15 options",
+     "buildSrc/build.gradle.kts:16 quiet",
+     "klaxon-jackson/build.gradle.kts:1 buildscript",
+     "klaxon-jackson/build.gradle.kts:2 repositories",
+     "klaxon-jackson/build.gradle.kts:3 jcenter",
+     "klaxon-jackson/build.gradle.kts:4 mavenCentral",
+     "klaxon-jackson/build.gradle.kts:5 maven",
+     "klaxon-jackson/build.gradle.kts:5 setUrl",
+     "klaxon-jackson/build.gradle.kts:9 plugins",
+     "klaxon-jackson/build.gradle.kts:11 kotlin",
+     "klaxon-jackson/build.gradle.kts:14 dependencies",
+     "klaxon-jackson/build.gradle.kts:15 implementation",
+     "klaxon-jackson/build.gradle.kts:15 kotlin",
+     "klaxon-jackson/build.gradle.kts:16 implementation",
+     "klaxon-jackson/build.gradle.kts:16 project",
+     "klaxon-jackson/build.gradle.kts:17 implementation",
+     "klaxon/build.gradle.kts:13 version.contains",
+     "klaxon/build.gradle.kts:16 allprojects",
+     "klaxon/build.gradle.kts:19 apply",
+     "klaxon/build.gradle.kts:22 plugins",
+     "klaxon/build.gradle.kts:25 kotlin",
+     "klaxon/build.gradle.kts:28 dependencies",
+     "klaxon/build.gradle.kts:29 listOf",
+     "klaxon/build.gradle.kts:29 (expr).forEach",
+     "klaxon/build.gradle.kts:30 testImplementation",
+     "klaxon/build.gradle.kts:30 kotlin",
+     "klaxon/build.gradle.kts:32 listOf",
+     "klaxon/build.gradle.kts:32 (expr).forEach",
+     "klaxon/build.gradle.kts:33 testImplementation",
+     "klaxon/build.gradle.kts:36 listOf",
+     "klaxon/build.gradle.kts:36 (expr).forEach",
+     "klaxon/build.gradle.kts:37 implementation",
+     "klaxon/build.gradle.kts:37 kotlin",
+     "klaxon/build.gradle.kts:41 tasks.creating",
+     "klaxon/build.gradle.kts:44 archiveClassifier.set",
+     "klaxon/build.gradle.kts:45 from",
+     "klaxon/build.gradle.kts:45 sourceSets.getByName",
+     "klaxon/build.gradle.kts:48 tasks.creating",
+     "klaxon/build.gradle.kts:49 from",
+     "klaxon/build.gradle.kts:50 archiveClassifier.set",
+     "klaxon/build.gradle.kts:53 with",
+     "klaxon/build.gradle.kts:54 publications",
+     "klaxon/build.gradle.kts:55 create",
+     "klaxon/build.gradle.kts:58 project.version.toString",
+     "klaxon/build.gradle.kts:59 afterEvaluate",
+     "klaxon/build.gradle.kts:60 from",
+     "klaxon/build.gradle.kts:62 artifact",
+     "klaxon/build.gradle.kts:63 artifact",
+     "klaxon/build.gradle.kts:64 pom",
+     "klaxon/build.gradle.kts:65 name.set",
+     "klaxon/build.gradle.kts:66 description.set",
+     "klaxon/build.gradle.kts:67 url.set",
+     "klaxon/build.gradle.kts:68 licenses",
+     "klaxon/build.gradle.kts:69 license",
+     "klaxon/build.gradle.kts:70 name.set",
+     "klaxon/build.gradle.kts:71 url.set",
+     "klaxon/build.gradle.kts:74 issueManagement",
+     "klaxon/build.gradle.kts:75 system.set",
+     "klaxon/build.gradle.kts:76 url.set",
+     "klaxon/build.gradle.kts:78 developers",
+     "klaxon/build.gradle.kts:79 developer",
+     "klaxon/build.gradle.kts:80 id.set",
+     "klaxon/build.gradle.kts:81 name.set",
+     "klaxon/build.gradle.kts:82 email.set",
+     "klaxon/build.gradle.kts:85 scm",
+     "klaxon/build.gradle.kts:86 connection.set",
+     "klaxon/build.gradle.kts:87 url.set",
+     "klaxon/build.gradle.kts:93 repositories",
+     "klaxon/build.gradle.kts:94 mavenLocal",
+     "klaxon/build.gradle.kts:95 maven",
+     "klaxon/build.gradle.kts:98 uri",
+     "klaxon/build.gradle.kts:99 uri",
+     "klaxon/build.gradle.kts:100 credentials",
+     "klaxon/build.gradle.kts:101 project.findProperty",
+     "klaxon/build.gradle.kts:101 (expr).toString",
+     "klaxon/build.gradle.kts:101 System.getenv",
+     "klaxon/build.gradle.kts:102 project.findProperty",
+     "klaxon/build.gradle.kts:102 (expr).toString",
+     "klaxon/build.gradle.kts:102 System.getenv",
+     "klaxon/build.gradle.kts:105 maven",
+     "klaxon/build.gradle.kts:107 uri",
+     "klaxon/build.gradle.kts:112 tasks.register",
+     "klaxon/build.gradle.kts:114 doFirst",
+     "klaxon/build.gradle.kts:115 println",
+     "klaxon/build.gradle.kts:117 dependsOn",
+     "klaxon/build.gradle.kts:119 println",
+     "klaxon/build.gradle.kts:124 signing",
+     "klaxon/build.gradle.kts:125 project.hasProperty",
+     "klaxon/build.gradle.kts:127 sign",
+     "klaxon/build.gradle.kts:130 tasks.test",
+     "klaxon/build.gradle.kts:131 useTestNG",
+     "klaxon/build.gradle.kts:136 (expr).doLast",
+     "klaxon/build.gradle.kts:138 println",
+     "kobalt/src/Build.kt:13 project",
+     "kobalt/src/Build.kt:20 dependencies",
+     "kobalt/src/Build.kt:21 compile",
+     "kobalt/src/Build.kt:25 dependenciesTest",
+     "kobalt/src/Build.kt:26 compile",
+     "kobalt/src/Build.kt:31 assemble",
+     "kobalt/src/Build.kt:32 mavenJars",
+     "kobalt/src/Build.kt:35 bintray",
+     "kobalt/src/Build.kt:39 javaCompiler",
+     "kobalt/src/Build.kt:40 args",
+     "kobalt/src/Build.kt:43 kotlinCompiler",
+     "kobalt/src/Build.kt:44 args",
+     "kobalt/src/Build.kt:48 project",
+     "kobalt/src/Build.kt:55 dependencies",
+     "kobalt/src/Build.kt:56 compile",
+     "kobalt/src/Build.kt:59 bintray",
+     "kobalt/src/Build.kt:63 assemble",
+     "kobalt/src/Build.kt:64 mavenJars",
+     "settings.gradle.kts:3 include"
+    ],
+    "no position for the name": [
+     "klaxon/src/test/kotlin/com/beust/klaxon/PrettyPrintTest.kt:10 "
+    ]
+   },
+   "read": {
+    "file has no index document": [
+     "build.gradle.kts:2 java",
+     "build.gradle.kts:3 `java-library`",
+     "build.gradle.kts:4 version",
+     "build.gradle.kts:4 KOTLIN_VERSION",
+     "build.gradle.kts:4 apply",
+     "build.gradle.kts:8 group",
+     "build.gradle.kts:10 version",
+     "build.gradle.kts:18 sourceCompatibility",
+     "build.gradle.kts:18 JavaVersion.VERSION_1_8",
+     "build.gradle.kts:19 targetCompatibility",
+     "build.gradle.kts:19 JavaVersion.VERSION_1_8",
+     "build.gradle.kts:34 it",
+     "build.gradle.kts:37 it",
+     "build.gradle.kts:40 it",
+     "build.gradle.kts:57 extra",
+     "buildSrc/build.gradle.kts:4 `kotlin-dsl`",
+     "buildSrc/build.gradle.kts:5 java",
+     "klaxon-jackson/build.gradle.kts:10 java",
+     "klaxon/build.gradle.kts:4 KLAXON_VERSION",
+     "klaxon/build.gradle.kts:17 group",
+     "klaxon/build.gradle.kts:17 This.groupId",
+     "klaxon/build.gradle.kts:18 version",
+     "klaxon/build.gradle.kts:18 This.version",
+     "klaxon/build.gradle.kts:23 `maven-publish`",
+     "klaxon/build.gradle.kts:24 signing",
+     "klaxon/build.gradle.kts:30 it",
+     "klaxon/build.gradle.kts:33 it",
+     "klaxon/build.gradle.kts:37 it",
+     "klaxon/build.gradle.kts:42 group",
+     "klaxon/build.gradle.kts:42 JavaBasePlugin.DOCUMENTATION_GROUP",
+     "klaxon/build.gradle.kts:43 description",
+     "klaxon/build.gradle.kts:49 tasks.javadoc",
+     "klaxon/build.gradle.kts:53 publishing",
+     "klaxon/build.gradle.kts:56 groupId",
+     "klaxon/build.gradle.kts:56 This.groupId",
+     "klaxon/build.gradle.kts:57 artifactId",
+     "klaxon/build.gradle.kts:57 This.artifactId",
+     "klaxon/build.gradle.kts:58 version",
+     "klaxon/build.gradle.kts:60 components",
+     "klaxon/build.gradle.kts:62 sourcesJar",
+     "klaxon/build.gradle.kts:63 javadocJar",
+     "klaxon/build.gradle.kts:65 This.artifactId",
+     "klaxon/build.gradle.kts:66 This.description",
+     "klaxon/build.gradle.kts:67 This.url",
+     "klaxon/build.gradle.kts:76 This.issueManagementUrl",
+     "klaxon/build.gradle.kts:96 name",
+     "klaxon/build.gradle.kts:97 url",
+     "klaxon/build.gradle.kts:97 This.isSnapshot",
+     "klaxon/build.gradle.kts:101 username",
+     "klaxon/build.gradle.kts:102 password",
+     "klaxon/build.gradle.kts:106 name",
+     "klaxon/build.gradle.kts:107 url",
+     "klaxon/build.gradle.kts:113 This.isSnapshot",
+     "klaxon/build.gradle.kts:126 isRequired",
+     "klaxon/build.gradle.kts:126 isRelease",
+     "klaxon/build.gradle.kts:127 publishing.publications",
+     "klaxon/build.gradle.kts:136 tasks",
+     "klaxon/build.gradle.kts:137 This.isSnapshot",
+     "kobalt/src/Build.kt:14 name",
+     "kobalt/src/Build.kt:15 group",
+     "kobalt/src/Build.kt:16 artifactId",
+     "kobalt/src/Build.kt:16 name",
+     "kobalt/src/Build.kt:17 version",
+     "kobalt/src/Build.kt:17 Version.klaxon",
+     "kobalt/src/Build.kt:18 directory",
+     "kobalt/src/Build.kt:36 publish",
+     "kobalt/src/Build.kt:48 klaxon",
+     "kobalt/src/Build.kt:49 name",
+     "kobalt/src/Build.kt:50 directory",
+     "kobalt/src/Build.kt:51 group",
+     "kobalt/src/Build.kt:52 artifactId",
+     "kobalt/src/Build.kt:52 name",
+     "kobalt/src/Build.kt:53 version",
+     "kobalt/src/Build.kt:60 publish",
+     "settings.gradle.kts:1 rootProject",
+     "settings.gradle.kts:1 name"
+    ],
+    "read: bare name": [
+     "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:46 instanceSettings",
+     "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:46 serializeNull",
+     "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:53 serializeNull",
+     "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:77 serializeNull",
+     "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:84 serializeNull",
+     "klaxon/src/test/kotlin/com/beust/klaxon/LexerTest.kt:37 lenient",
+     "src/test/kotlin/com/beust/klaxon/KlaxonTest.kt:136 canonical",
+     "src/test/kotlin/com/beust/klaxon/KlaxonTest.kt:149 canonical"
+    ]
+   }
+  },
+  "snapshot_references_matched": {
+   "call": 2282,
+   "read": 1773
+  },
+  "snapshot_references_matched_by_end": {
+   "call": {
+    "project function/method": 1150,
+    "external": 573,
+    "external without package": 546,
+    "project property or value": 10,
+    "dead end": 2,
+    "project function/method + project property or value": 1
+   },
+   "read": {
+    "project property or value": 1049,
+    "project function/method + project property or value": 306,
+    "external without package": 162,
+    "definition occurrence": 136,
+    "external": 94,
+    "project class": 24,
+    "external without package + project property or value": 2
+   }
+  },
+  "sites_outside_any_definition": {
+   "import": 968,
+   "package": 296,
+   "other": 3
+  },
+  "checks": {
+   "relationships": {
+    "forward": 486,
+    "inverse": 30,
+    "inverse_not_forward": 0,
+    "forward_eligible_not_inverse": 209
+   },
+   "overrides": {
+    "counts": {
+     "not checkable (property, class, or overridden symbol outside the index)": 401,
+     "parameter types agree, across compile tasks": 62,
+     "parameter types agree, same compile task": 20,
+     "parameter types disagree, across compile tasks": 3
+    },
+    "disagreeing": [
+     "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:29 com/beust/klaxon/jackson/JacksonParser#parse(). (public open override fun parse(rawValue: StringBuilder): Any) -> com/beust/klaxon/Parser#parse(+3). (public abstract fun parse(reader: Reader): Any\n)",
+     "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:33 com/beust/klaxon/jackson/JacksonParser#parse(+1). (public open override fun parse(inputStream: InputStream, charset: Charset): Any) -> com/beust/klaxon/Parser#parse(). (public abstract fun parse(rawValue: StringBuilder): Any\n)",
+     "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:38 com/beust/klaxon/jackson/JacksonParser#parse(+2). (public open override fun parse(reader: Reader): Any) -> com/beust/klaxon/Parser#parse(+1). (public open fun parse(fileName: String): Any)"
+    ]
+   },
+   "callable_references": {
+    "by_overload_and_task": {
+     "overloaded, other compile task": 216,
+     "overloaded, other compile task, arity checked": 207,
+     "overloaded, same compile task": 41,
+     "overloaded, same compile task, arity checked": 37,
+     "single, other compile task": 384,
+     "single, other compile task, arity checked": 355,
+     "single, same compile task": 1374,
+     "single, same compile task, arity checked": 539
+    },
+    "arity_contradicts_target": {
+     "overloaded, other compile task": {
+      "count": 86,
+      "examples": [
+       "klaxon/src/test/kotlin/com/beust/klaxon/NullValueTest.kt:9 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue82Test.kt:12 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue82Test.kt:22 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue340Test.kt:21 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:22 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:26 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:41 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt:11 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt:19 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt:28 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt:46 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)",
+       "klaxon/src/test/kotlin/com/beust/klaxon/Issue216Test.kt:10 1 argument(s) -> com/beust/klaxon/Klaxon#toJsonString(+1). (private final fun toJsonString(value: Any, converter: Any): String)"
+      ]
+     },
+     "single, same compile task": {
+      "count": 2,
+      "examples": [
+       "klaxon/src/main/kotlin/com/beust/klaxon/Render.kt:23 1 argument(s) -> com/beust/klaxon/Klaxon#findConverter(). (public open override fun findConverter(value: Any, prop: KProperty<*>?): Converter)",
+       "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:150 1 argument(s) -> com/beust/klaxon/Klaxon#findConverter(). (public open override fun findConverter(value: Any, prop: KProperty<*>?): Converter)"
+      ]
+     }
+    },
+    "arity_contradicted_targets": {
+     "overloaded, other compile task: com/beust/klaxon/Klaxon#toJsonString(+1).": 49,
+     "overloaded, other compile task: com/beust/klaxon/KlaxonJson#obj().": 24,
+     "overloaded, other compile task: com/beust/klaxon/KlaxonJson#array(+1).": 12,
+     "single, same compile task: com/beust/klaxon/Klaxon#findConverter().": 2,
+     "overloaded, other compile task: com/beust/klaxon/KlaxonJson#obj(+2).": 1
+    }
+   },
+   "implicit_calls": {
+    "destructuring entry (componentN)": {
+     "with occurrence": 2,
+     "no occurrence": 2,
+     "examples": [
+      "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt:22",
+      "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt:22"
+     ]
+    },
+    "for loop (iterator, hasNext, next)": {
+     "no occurrence": 5,
+     "examples": [
+      "klaxon/src/main/kotlin/com/beust/klaxon/Render.kt:32",
+      "klaxon/src/main/kotlin/com/beust/klaxon/internal/Extensions.kt:4",
+      "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt:22"
+     ]
+    },
+    "indexed assignment (set)": {
+     "no occurrence": 21,
+     "examples": [
+      "klaxon/src/main/kotlin/com/beust/klaxon/StateMachine.kt:12",
+      "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:37",
+      "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:30"
+     ]
+    },
+    "indexed read (get)": {
+     "no occurrence": 63,
+     "examples": [
+      "klaxon/src/test/kotlin/com/beust/klaxon/SpecialTypesTest.kt:27",
+      "klaxon/src/test/kotlin/com/beust/klaxon/SpecialTypesTest.kt:27",
+      "klaxon/src/test/kotlin/com/beust/klaxon/SpecialTypesTest.kt:26"
+     ]
+    },
+    "named argument label": {
+     "no occurrence": 102,
+     "with occurrence": 8,
+     "examples": [
+      "klaxon/src/test/kotlin/com/beust/klaxon/LexerTest.kt:37",
+      "klaxon/src/test/kotlin/com/beust/klaxon/Issue82Test.kt:20",
+      "klaxon/src/test/kotlin/com/beust/klaxon/JazzerTest.kt:36"
+     ]
+    },
+    "property delegate (getValue, setValue)": {
+     "no occurrence": 2,
+     "examples": [
+      "klaxon/src/test/kotlin/com/beust/klaxon/Issue180Test.kt:26",
+      "klaxon/src/test/kotlin/com/beust/klaxon/MapTest.kt:112"
+     ]
+    }
+   }
+  },
+  "index_sites_without_snapshot_reference": {
+   "project property or value": 1335,
+   "external without package": 1223,
+   "namespace": 1079,
+   "external": 802,
+   "project class": 788,
+   "project function/method": 23
+  },
+  "hand_check": {
+   "right": 16,
+   "of": 20,
+   "sites": [
+    {
+     "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:23 create",
+     "hard": "companion object method through the class name",
+     "expected": {
+      "project": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:43"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "ip-java maven maven/org.gradle.kotlin.dsl.samples.multiproject/klaxon-jackson 1.0 com/beust/klaxon/jackson/JacksonParser#Companion#create().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:43"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:72 parseJsonObject",
+     "hard": "lambda with receiver: the private KlaxonJson extension, not the same-named top-level function",
+     "expected": {
+      "project": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:79"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven . . com/beust/klaxon/jackson/KlaxonJson#parseJsonObject().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:79"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:86 obj",
+     "hard": "member of the extension receiver, Iterable overload",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:19"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2).",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:25"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": false,
+     "target_right": false,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:58 codec",
+     "hard": "Java getter read as a Kotlin property",
+     "expected": {
+      "external": "com/fasterxml/jackson/core/JsonParser#(getCodec\\(\\)|codec)"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.fasterxml.jackson.core/jackson-core 2.9.6 com/fasterxml/jackson/core/JsonParser#codec.",
+       "class": "external",
+       "defined_at": [],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.fasterxml.jackson.core/jackson-core 2.9.6 com/fasterxml/jackson/core/JsonParser#getCodec().",
+       "class": "external",
+       "defined_at": [],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.fasterxml.jackson.core/jackson-core 2.9.6 com/fasterxml/jackson/core/JsonParser#setCodec().",
+       "class": "external",
+       "defined_at": [],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:8 JsonArray",
+     "hard": "primary constructor chosen over the same-named top-level function",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:10"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/JsonArray#`<init>`().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:10"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:53 [",
+     "hard": "operator get through a delegated MutableMap",
+     "expected": {
+      "external": "kotlin/collections/(Mutable)?Map#get\\("
+     },
+     "occurrence_found": false,
+     "graph": [],
+     "right": false,
+     "target_right": false,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt:268 canConvert",
+     "hard": "call through an interface",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Converter.kt:10",
+      "impls": [
+       "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:16",
+       "klaxon/src/main/kotlin/com/beust/klaxon/EnumConverter.kt:21"
+      ]
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Converter#canConvert().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Converter.kt:10"
+       ],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/EnumConverter#canConvert().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/EnumConverter.kt:21"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/DefaultConverter#canConvert().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:16"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt#local 40",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt:36"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt#local 31",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:34"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt#local 19",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:15"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue278Test.kt#local 2",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue278Test.kt:10"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue221Test.kt#local 2",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue221Test.kt:16"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue220Test.kt#local 2",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue220Test.kt:11"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue132Test.kt#local 8",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue132Test.kt:13"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue122Test.kt#local 2",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue122Test.kt:4"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/EnumTest.kt#local 2",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/EnumTest.kt:10"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt#local 6",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt:40"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 50",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:177"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 41",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:155"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 3",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:51"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 22",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:99"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 11",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:65"
+       ],
+       "via": "implementation"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt:31 parse",
+     "hard": "interface overload, implementations in two modules",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Parser.kt:27",
+      "impls": [
+       "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonParser.kt:23",
+       "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:38"
+      ]
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Parser#parse(+3).",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Parser.kt:27"
+       ],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/org.gradle.kotlin.dsl.samples.multiproject/klaxon-jackson 1.0 com/beust/klaxon/jackson/JacksonParser#parse().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:29"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonParser#parse(+2).",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonParser.kt:23"
+       ],
+       "via": "implementation"
+      }
+     ],
+     "right": false,
+     "target_right": true,
+     "implementations_right": false
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt:308 verbose",
+     "hard": "companion property through the class name",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Debug.kt:5"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Debug#Companion#verbose.",
+       "class": "project property or value",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Debug.kt:5"
+       ],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Debug#Companion#getVerbose().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Debug.kt:5"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt:160 add",
+     "hard": "member of kotlin.collections.ArrayList, a typealias of java.util.ArrayList",
+     "expected": {
+      "external": "java/util/ArrayList#add\\("
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven jdk 17 java/util/ArrayList#add(+1).",
+       "class": "external",
+       "defined_at": [],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:27 init",
+     "hard": "invoke of a function-type parameter with receiver",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:25"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2).(init)",
+       "class": "project property or value",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:25"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:59 theKlaxonJson",
+     "hard": "internal companion property through the class name",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:42"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#Companion#theKlaxonJson.",
+       "class": "project property or value",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:42"
+       ],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#Companion#getTheKlaxonJson().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:42"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:23 obj",
+     "hard": "overload chosen by the argument type",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:19"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:19"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:30 [",
+     "hard": "indexed assignment: the stdlib operator extension MutableMap.set",
+     "expected": {
+      "external": "kotlin/collections/(MapsKt#)?set\\("
+     },
+     "occurrence_found": false,
+     "graph": [],
+     "right": false,
+     "target_right": false,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Render.kt:28 renderString",
+     "hard": "private generic extension, not the same-named member it is called from",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Render.kt:57"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Render#renderString(+1).",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Render.kt:57"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Render.kt:23 toJson",
+     "hard": "call through an interface on a returned value",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Converter.kt:15",
+      "impls": [
+       "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:50",
+       "klaxon/src/main/kotlin/com/beust/klaxon/EnumConverter.kt:7"
+      ]
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Converter#toJson().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Converter.kt:15"
+       ],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/EnumConverter#toJson().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/EnumConverter.kt:7"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/DefaultConverter#toJson().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:50"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt#local 42",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue95Test.kt:37"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt#local 33",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:35"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt#local 21",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue84Test.kt:16"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue278Test.kt#local 6",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue278Test.kt:17"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue221Test.kt#local 6",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue221Test.kt:18"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue220Test.kt#local 6",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue220Test.kt:13"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue132Test.kt#local 10",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue132Test.kt:15"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/Issue122Test.kt#local 4",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/Issue122Test.kt:6"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/EnumTest.kt#local 4",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/EnumTest.kt:12"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt#local 10",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt:44"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 7",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:60"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 52",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:179"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 43",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:156"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 34",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:126"
+       ],
+       "via": "implementation"
+      },
+      {
+       "symbol": "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt#local 16",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/test/kotlin/com/beust/klaxon/BindingAdapterTest.kt:75"
+       ],
+       "via": "implementation"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/Annotations.kt:113 nameInitialized",
+     "hard": "extension on an annotation class, declared in a .kt under src/main/java",
+     "expected": {
+      "project": "klaxon/src/main/java/com/beust/klaxon/Json.kt:39"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Json#nameInitialized().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/java/com/beust/klaxon/Json.kt:39"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonParser.kt:84 tokenType",
+     "hard": "property with a custom getter, read on an object",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/token/Token.kt:30"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/token/Token#tokenType.",
+       "class": "project property or value",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/token/Token.kt:30"
+       ],
+       "via": "direct"
+      },
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/token/Token#getTokenType().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/token/Token.kt:31"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "klaxon/src/test/kotlin/com/beust/klaxon/JazzerTest.kt:9 default",
+     "hard": "companion of an interface, from a test source",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Parser.kt:56"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Parser#Companion#default().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Parser.kt:56"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    },
+    {
+     "site": "src/test/kotlin/com/beust/klaxon/KlaxonTest.kt:276 lookup",
+     "hard": "extension function, from the root project's tests",
+     "expected": {
+      "project": "klaxon/src/main/kotlin/com/beust/klaxon/Lookup.kt:9"
+     },
+     "occurrence_found": true,
+     "graph": [
+      {
+       "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/JsonBase#lookup().",
+       "class": "project function/method",
+       "defined_at": [
+        "klaxon/src/main/kotlin/com/beust/klaxon/Lookup.kt:9"
+       ],
+       "via": "direct"
+      }
+     ],
+     "right": true,
+     "target_right": true,
+     "implementations_right": true
+    }
+   ]
+  }
+ },
+ "graph_seconds": 3.5,
+ "seconds": 4.7
+}
