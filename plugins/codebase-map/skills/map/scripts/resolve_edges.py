@@ -3385,7 +3385,8 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                     if hasattr(engine, "implementations") and (
                             verdict in ("project-not-a-symbol", "ambiguous-target")
                             or (verdict.startswith("edge-") and target and contract(target["id"]))):
-                        # The declaration is a contract or a value: the one place that implements it is the target.
+                        # The declaration is a contract or a value: the target is the one place that implements it,
+                        # when no implementation falls outside the project's declarations.
                         try:
                             implemented = list(engine.implementations(source_paths[rel], l1, column))
                         except (EngineFailure, MemoryError):
@@ -3393,12 +3394,14 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                         except Exception:
                             implemented = []
                         witnesses.extend(implemented)
-                        concrete = {}
+                        concrete, elsewhere = {}, False
                         for item in implemented:
                             found_verdict, found = grade(item, inventory, declarations, store_root, table_for)
-                            if found_verdict.startswith("edge-") and found and not contract(found["id"]):
+                            if not (found_verdict.startswith("edge-") and found):
+                                elsewhere = True
+                            elif not contract(found["id"]):
                                 concrete[found["id"]] = (found_verdict, found)
-                        if len(concrete) == 1:
+                        if len(concrete) == 1 and not elsewhere:
                             verdict, target = next(iter(concrete.values()))
                 except (OSError, UnicodeError) as error:
                     failure = {"reason": f"target source became unavailable during inference: {error}",

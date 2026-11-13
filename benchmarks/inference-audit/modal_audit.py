@@ -95,11 +95,11 @@ def _graph_use(manifest: Path, rules: list | None) -> dict:
             if r["resolution"] != "resolved":
                 continue
             source = "lexical" if r.get("resolver") == resolution.LEXICAL_RESOLVER else "engine"
-            target, caller = facts.named(r.get("target_id")), facts.node(r.get("caller"))
-            if target and caller:
+            # As flows.link_facts links a call: the callee is a node, the caller a node or its module.
+            if facts.node(r.get("target_id")):
                 kept[source] += 1
                 continue
-            reason = "no target declaration" if not target else "call outside a named symbol"
+            reason = "no target node"
             lost[f"{source}: {reason}"] += 1
             if len(examples[reason]) < 4:
                 examples[reason].append({"site": f"{r['file']}:{(r.get('span') or [None])[0]}",

@@ -262,9 +262,10 @@ class ImplementationTests(unittest.TestCase):
         "app/mobile.ts": ('import type { Checkout } from "./contracts";\n'
                           "export class MobileCheckout implements Checkout {\n  start(plan: string): void {\n    return;\n  }\n}\n"),
         "app/use.ts": ('import type { Checkout } from "./contracts";\n\n'
-                       "export function buy(checkout: Checkout, other: Checkout): void {\n"
+                       "export function buy(checkout: Checkout, other: Checkout, third: Checkout): void {\n"
                        '  checkout.start("pro");\n'
                        '  other.start("base");\n'
+                       '  third.start("team");\n'
                        "}\n"),
     }
 
@@ -282,14 +283,22 @@ class ImplementationTests(unittest.TestCase):
         contract = Definition(root / "app/contracts.ts", "start", line=2, column=2)
         web = Definition(root / "app/web.ts", "start", line=3, column=2)
         mobile = Definition(root / "app/mobile.ts", "start", line=3, column=2)
-        engine = StubEngine(answers={("use.ts", 4): contract, ("use.ts", 5): contract},
-                            implementations={("use.ts", 4): web, ("use.ts", 5): [web, mobile]})
+        vendor = root.parent / "vendor/checkout.ts"
+        vendor.parent.mkdir()
+        vendor.write_text("export class VendorCheckout {\n  start(plan: string): void {}\n}\n", encoding="utf-8")
+        outside = Definition(vendor, "start", line=2, column=2)
+        engine = StubEngine(answers={("use.ts", 4): contract, ("use.ts", 5): contract, ("use.ts", 6): contract},
+                            implementations={("use.ts", 4): web, ("use.ts", 5): [web, mobile],
+                                             ("use.ts", 6): [web, outside]})
         engine.languages = ("typescript",)
         report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1, out=edges)
-        self.assertEqual(report["confirmed_edges"], 2)
+        self.assertEqual(report["confirmed_edges"], 3)
         with open_snapshot(manifest) as store:
             view = edge_view.load_edge_view(store, engine_store=edges)
         by_line = {ref["span"][0]: ref for ref in view["references"] if ref["file"] == "app/use.ts"}
+        # An implementation outside the project cannot be excluded: the contract stays the target.
+        self.assertTrue(by_line[6]["target_id"].startswith("app/contracts.ts::"))
+        self.assertEqual(by_line[6]["target_kind"], "interface")
         self.assertTrue(by_line[4]["target_id"].startswith("app/web.ts::"))
         self.assertEqual(by_line[4]["target_kind"], "concrete")
         self.assertTrue(by_line[5]["target_id"].startswith("app/contracts.ts::"))
