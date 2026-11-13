@@ -203,5 +203,47 @@ class EdgeViewTests(unittest.TestCase):
         self.assertEqual(full["confirmed_edges"], 1)
 
 
+class MethodTargetTests(unittest.TestCase):
+    """An engine edge to a method, or to the method an interface declares, reaches the view."""
+
+    SOURCES = {
+        "app/contracts.ts": "export interface Checkout {\n  start(plan: string): void;\n}\n",
+        "app/shop.ts": "export class Shop {\n  open(): number {\n    return 1;\n  }\n}\n",
+        "app/use.ts": ('import { Shop } from "./shop";\n'
+                       'import type { Checkout } from "./contracts";\n\n'
+                       "export function buy(shop: Shop, checkout: Checkout): number {\n"
+                       '  checkout.start("pro");\n'
+                       "  return shop.open();\n"
+                       "}\n"),
+    }
+
+    def test_a_method_and_a_contract_method_are_resolved_targets(self):
+        import edge_view
+
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name).resolve() / "proj"
+        for rel, text in self.SOURCES.items():
+            (root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (root / rel).write_text(text, encoding="utf-8")
+        manifest, edges = root.parent / "manifest.sqlite", root.parent / "engine-edges.sqlite"
+        snapshot.write_snapshot(root, manifest)
+        engine = StubEngine(answers={
+            ("use.ts", 5): Definition(root / "app/contracts.ts", "start", line=2, column=2),
+            ("use.ts", 6): Definition(root / "app/shop.ts", "open", line=2, column=2),
+        })
+        engine.languages = ("typescript",)
+        report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1, out=edges)
+        self.assertEqual(report["confirmed_edges"], 2)
+        with open_snapshot(manifest) as store:
+            view = edge_view.load_edge_view(store, engine_store=edges)
+        by_line = {ref["span"][0]: ref for ref in view["references"] if ref["file"] == "app/use.ts"}
+        self.assertEqual((by_line[5]["resolution"], by_line[5]["target_kind"]), ("resolved", "interface"))
+        self.assertTrue(by_line[5]["target_id"].startswith("app/contracts.ts::"))
+        self.assertEqual((by_line[6]["resolution"], by_line[6]["target_kind"]), ("resolved", "concrete"))
+        self.assertTrue(by_line[6]["target_id"].startswith("app/shop.ts::"))
+        self.assertEqual(view["coverage"]["resolution"]["engine_confirmed"], 2)
+
+
 if __name__ == "__main__":
     unittest.main()

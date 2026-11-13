@@ -70,11 +70,13 @@ def _build_target_kinds(store: SnapshotStore, sem_db) -> dict[str, str]:
         scopes[(file_rel, scope_id)] = _unpack(blob)
 
     declarations: dict[str, dict] = {}
-    for decl_id, file_rel, blob in sem_db.execute(
-        "SELECT id, file, payload FROM sem_declarations WHERE kind IN ('function','class')"
+    # A method is a target like a function: an engine edge to it must reach the view.
+    for decl_id, file_rel, kind, blob in sem_db.execute(
+        "SELECT id, file, kind, payload FROM sem_declarations WHERE kind IN ('function','method','class')"
     ):
         payload = _unpack(blob)
         payload["file"] = file_rel
+        payload["kind"] = "function" if kind == "method" else kind
         declarations[decl_id] = payload
 
     file_symbols: dict[str, dict] = {}
@@ -106,6 +108,10 @@ def _build_target_kinds(store: SnapshotStore, sem_db) -> dict[str, str]:
     for decl_id, decl in declarations.items():
         if decl.get("kind") == "class":
             kinds[decl_id] = class_kind(decl_id)
+            continue
+        if decl.get("contract"):
+            # A method an interface, a trait or a type declares: the call goes through a contract.
+            kinds[decl_id] = "interface"
             continue
         file_rel = decl["file"]
         scope_info = scopes.get((file_rel, decl.get("scope")))
