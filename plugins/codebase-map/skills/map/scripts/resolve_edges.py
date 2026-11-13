@@ -1128,7 +1128,6 @@ def rust_toolchain() -> Path | None:
     if (home / ".installed").is_file():
         return home
     import tomllib
-    import urllib.request
     import lzma
     import tarfile
     print(f"installing Rust {RUST_VERSION} (cargo, rustc, rust-src) into {home} (first use)", flush=True)
@@ -1136,8 +1135,8 @@ def rust_toolchain() -> Path | None:
     shutil.rmtree(partial, ignore_errors=True)
     partial.mkdir(parents=True)
     try:
-        with urllib.request.urlopen(f"https://static.rust-lang.org/dist/channel-rust-{RUST_VERSION}.toml",
-                                    timeout=120) as response:
+        with open_url(f"https://static.rust-lang.org/dist/channel-rust-{RUST_VERSION}.toml",
+                      timeout=120) as response:
             packages = tomllib.loads(response.read().decode("utf-8"))["pkg"]
         target = RUST_TARGETS[_platform()]
         for component in ("rustc", "cargo", "rust-src"):
@@ -1702,9 +1701,17 @@ def maven_central_dir() -> Path:
     return shared_cache_dir() / "coursier" / "https" / "repo1.maven.org" / "maven2"
 
 
+USER_AGENT = "daodan"  # Python's default agent is refused by some hosts: the Temurin API answers 403
+
+
+def open_url(url: str, timeout: float):
+    """A URL opened with Daodan's own agent name."""
+    import urllib.request
+    return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": USER_AGENT}), timeout=timeout)
+
+
 def download(url: str, target: Path, *, sha256: str | None = None, sha1_url: str | None = None) -> Path:
     """Fetch a file into the shared directory through a partial file, verified, with three attempts."""
-    import urllib.request
     target.parent.mkdir(parents=True, exist_ok=True)
     partial = target.with_name(target.name + ".partial")
     last = None
@@ -1712,10 +1719,10 @@ def download(url: str, target: Path, *, sha256: str | None = None, sha1_url: str
         try:
             expected = sha256
             if sha1_url:
-                with urllib.request.urlopen(sha1_url, timeout=60) as response:
+                with open_url(sha1_url, timeout=60) as response:
                     expected = response.read().decode("ascii", "replace").split()[0].lower()
             digest = hashlib.sha1() if sha1_url else hashlib.sha256()
-            with urllib.request.urlopen(url, timeout=600) as response, partial.open("wb") as handle:
+            with open_url(url, timeout=600) as response, partial.open("wb") as handle:
                 for chunk in iter(lambda: response.read(1024 * 1024), b""):
                     digest.update(chunk)
                     handle.write(chunk)
@@ -2009,12 +2016,11 @@ def java_runtime() -> Path:
     system = {"Windows": "windows", "Linux": "linux", "Darwin": "mac"}[platform.system()]
     arch = "aarch64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"
     print(f"installing a Java 21 runtime into {home} (first use)", flush=True)
-    import urllib.request
     partial = home.with_name(".21.partial")
     shutil.rmtree(partial, ignore_errors=True)
     partial.mkdir(parents=True)
     archive = partial / ("jre.zip" if system == "windows" else "jre.tar.gz")
-    with urllib.request.urlopen(TEMURIN_JRE.format(os=system, arch=arch), timeout=600) as response, \
+    with open_url(TEMURIN_JRE.format(os=system, arch=arch), timeout=600) as response, \
             archive.open("wb") as handle:
         shutil.copyfileobj(response, handle)
     if archive.suffix == ".zip":

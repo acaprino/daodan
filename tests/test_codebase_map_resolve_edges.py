@@ -1674,16 +1674,16 @@ class KotlinEngineTests(unittest.TestCase):
                 self.assertEqual(resolve_edges.maven_artifact("org.demo:lib:1.0"), local)
             urlopen.assert_not_called()
 
-            def answer(url, timeout):
+            def answer(request, timeout):
                 digest = hashlib.sha1(payload).hexdigest().encode()
-                return io.BytesIO(digest if url.endswith(".sha1") else payload)
+                return io.BytesIO(digest if request.full_url.endswith(".sha1") else payload)
 
             with mock.patch("urllib.request.urlopen", side_effect=answer):
                 fetched = resolve_edges.maven_artifact("org.demo:other:2.0")
             self.assertEqual(fetched, resolve_edges.maven_central_dir() / "org/demo/other/2.0/other-2.0.jar")
             self.assertEqual(fetched.read_bytes(), payload)
-            with mock.patch("urllib.request.urlopen", side_effect=lambda url, timeout: io.BytesIO(
-                    b"0" * 40 if url.endswith(".sha1") else payload)),                     mock.patch.object(resolve_edges.time, "sleep"):
+            with mock.patch("urllib.request.urlopen", side_effect=lambda request, timeout: io.BytesIO(
+                    b"0" * 40 if request.full_url.endswith(".sha1") else payload)),                     mock.patch.object(resolve_edges.time, "sleep"):
                 with self.assertRaises(ValueError):
                     resolve_edges.maven_artifact("org.demo:broken:3.0")
             self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/broken/3.0/broken-3.0.jar").exists())
@@ -1829,6 +1829,23 @@ class NativeToolchainTests(unittest.TestCase):
                 self.assertTrue((root / "bin" / resolve_edges.executable_name("go")).is_file())
                 self.assertEqual(resolve_edges.go_toolchain(), root)
             self.assertEqual(len(calls), 1)
+
+    def test_downloads_name_daodan_as_their_agent(self):
+        # The Temurin API answers 403 to Python's default agent: Kotlin had no engine on a machine without Java.
+        import io
+        import urllib.request
+        agents = []
+
+        def opened(request, timeout=None):
+            agents.append(request.get_header("User-agent") if isinstance(request, urllib.request.Request) else None)
+            return io.BytesIO(b"jar")
+
+        with tempfile.TemporaryDirectory() as temp, mock.patch("urllib.request.urlopen", side_effect=opened):
+            resolve_edges.download("https://repo.example/a.jar", Path(temp) / "a.jar")
+            with resolve_edges.open_url("https://api.example/jre", timeout=5) as response:
+                self.assertEqual(response.read(), b"jar")
+        self.assertEqual(agents, [resolve_edges.USER_AGENT, resolve_edges.USER_AGENT])
+        self.assertFalse(resolve_edges.USER_AGENT.startswith("Python-urllib"))
 
     def test_a_mirror_keeps_what_the_server_writes_out_of_the_project(self):
         with tempfile.TemporaryDirectory() as temp:
