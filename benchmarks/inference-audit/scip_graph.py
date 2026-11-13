@@ -28,6 +28,7 @@ value with no stated alias, or a dead end: a `local` or project symbol the index
 from __future__ import annotations
 
 import collections
+import hashlib
 import subprocess
 import sys
 import time
@@ -770,6 +771,14 @@ def report(graph: dict) -> dict:
                   for (cls, kind, reason), items in sorted(holes.items(), key=lambda pair: -len(pair[1]))][:40],
         "external_packages": dict(packages.most_common(20)),
     }
+
+
+def code_sha256() -> dict[str, str]:
+    """The first twelve hex digits of the sha256 of this module and of each adapter beside it: what a container
+    runs, to compare with the checkout before trusting its results."""
+    here = Path(__file__).resolve().parent
+    files = [here / "scip_graph.py", *sorted((here / "adapters").glob("*.py"))]
+    return {path.relative_to(here).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()[:12] for path in files}
 
 
 def measured(command: list[str], cwd: str, env: dict | None, timeout: int) -> dict:

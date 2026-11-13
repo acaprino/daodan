@@ -205,6 +205,7 @@ def kotlin_case(stage: str = "graph") -> dict:
     import shutil
     import time
     started = time.time()
+    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     case = CASES[CASE]
     work = Path("/work") / CASE
     engine = work / "engine"

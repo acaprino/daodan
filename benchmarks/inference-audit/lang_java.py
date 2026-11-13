@@ -163,6 +163,7 @@ def index_case(label: str = "") -> dict:
     import shutil
     import time
     started = time.time()
+    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     peak = _Peak()
     peak.thread.start()
     case = CASES[CASE]

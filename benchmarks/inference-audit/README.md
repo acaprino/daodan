@@ -264,10 +264,9 @@ Tempo e memoria:
 - RAM: 688 MB il processo più grande, 1.433 MB la somma dei processi del container.
 - Costo fatturato da Modal: 0,028 USD per due esecuzioni. In r1 il build senza modifiche è fallito in 28,4 s; r2 ha usato solo il javac semplice. L'indice è lo stesso nelle due esecuzioni (2.266.831 byte).
 
-Il grafo è rifatto in locale dai file di r2 sul volume.
+Confermato su Modal dopo il passaggio al modulo comune (esecuzione `confirm`, pipeline completa, codice uguale al checkout per hash): stessi 3.541 nodi, 19.189 archi e 10 buchi, verifica a mano 20 su 20, stesso indice (2.266.831 byte). Indicizzatore 37,7 s e 639 MB, container 48,1 s, 0,010 USD. I file in `results/` vengono da questa esecuzione.
 
 Non verificato:
-- Il collegamento Modal dopo il passaggio al modulo comune: `index` di `adapters/java.py` non è stato rieseguito. I comandi di build sono quelli di r2.
 - L'overload dei simboli del JDK direttamente sul JDK: la regola del class file è provata solo sui metodi del progetto, e `javap` copre solo le classi esterne della verifica a mano.
 - Le destinazioni delle letture e dei riferimenti a tipi, oltre ai 20 casi e alle 289 chiamate.
 - Che il build con Error Prone avrebbe dato gli stessi simboli.
@@ -358,7 +357,7 @@ Non verificato:
 
 Con il modulo comune `scip_graph.py`, la stessa sera:
 - `lang_python.py` ora collega solo adattatore, `scip_graph.py` e volume; `adapters/python.py` segue il contratto del modulo (`index` restituisce `indexes`, `indexer` e `runs`; `hops` le quattro regole sopra).
-- Il grafo in `results/` è rifatto in locale dall'indice di questa esecuzione (`python benchmarks/inference-audit/lang_python.py graph --cases semver --dir DIR`), senza nuove esecuzioni su Modal. Il nuovo collegamento non è ancora stato eseguito su Modal.
+- Confermato su Modal (pipeline completa, codice uguale al checkout per hash): stessi 1.289 nodi, 3.679 archi e 64 buchi del rifacimento locale. Indicizzatore 7,5 s e 369 MB, container 15,3 s, 0,004 USD. I file in `results/` vengono da questa esecuzione.
 - Le fini dirette coincidono con i conteggi sopra: chiamate e letture divise allo stesso modo, verifica a mano 18 su 20, 3.671 archi dai riferimenti.
 - 3.679 archi invece di 3.671: il modulo dà a ogni riferimento a un membro anche le sue implementazioni, tranne nei siti a dispatch statico che l'adattatore dichiara (`static`: `C.m` su un simbolo di classe e `super().m`, 109 siti). Restano 8 archi `implementation`, da `cls.parse` (`version.py:479`, `:833`) verso i quattro override `SemVerWithVPrefix.parse`. Senza `static` sarebbero 372: ogni `Version.parse(...)` e `super().parse(...)` riceveva anche gli override, che lì non vengono mai eseguiti.
 - 64 buchi invece di 44: il modulo conta anche i riferimenti che finiscono solo in un vicolo cieco (10 locali senza definizione, 10 simboli del progetto senza definizione).
@@ -377,19 +376,19 @@ Gli alias degli adattatori:
 
 Dove sono i risultati:
 - il grafo di ogni lingua è sul volume, in `scip-inputs/<caso>/graph-<lingua>.json.gz`;
-- i conteggi sono in `results/scip-chi-graph.json` e `results/scip-tududi-graph.json`;
-- per tududi li ho calcolati in locale dai file del grafo, perché ho fermato l'esecuzione al tetto di spesa prima che scrivesse il suo risultato.
+- i conteggi sono in `results/scip-<caso>-confirm.json`, dall'esecuzione di conferma (sotto).
 
 Prima del grafo gli indicizzatori sono stati rieseguiti con gli adattatori:
 - l'indice di chi è identico byte per byte (1.632.115, 64.652 e 39.509 byte);
 - tududi è stato reindicizzato in 55,3 s, con un picco di 2.193 MB;
-- semver non ha un grafo: l'esecuzione si è fermata due volte per la stessa causa, le sorgenti dello snapshot cercate in `/work/semver`.
+- semver è stato reindicizzato in 8,7 s, 1.180 MB, con un indice identico byte per byte (496.873 e 14.108 byte).
 
 Archi per fine della catena:
 
 | Lingua | File snapshot / indicizzati | Nodi | Archi | Funzione, metodo o classe del progetto | Valore del progetto | Esterno | Vicolo cieco |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | chi Go | 90 / 90 | 4.847 | 20.102 | 3.357 | 9.094 | 7.651 | 0 |
+| semver Rust | 19 / 18 | 1.073 | 3.960 | 1.023 | 1.306 | 1.572 | 59 |
 | tududi JavaScript | 1.038 / 1.038 | 86.225 | 182.593 | 16.407 | 86.442 | 70.944 | 8.800 |
 | tududi TypeScript | 650 / 650 | 41.107 | 171.821 | 15.147 | 64.977 | 84.067 | 7.630 |
 
@@ -431,7 +430,7 @@ Chiamate dello snapshot senza alcuna occorrenza dell'indice, per classe:
 Lacune dell'indice, contate come buchi:
 - TypeScript, 3.755 chiamate finiscono su un `local` che nessun documento definisce (`t` di `useTranslation`, `frontend/Layout.tsx:497`).
 - JavaScript, 61 chiamate sono metodi abbreviati di un oggetto in un altro file (`backend/modules/admin/service.js:1085`, `backend/modules/inbox/operations/attachments.js:59`, `backend/modules/onboarding/controller.js:26`). L'indice non ha nessun dato nello stesso file e intervallo, quindi restano buchi.
-- Rust, modulo di test condiviso: lo recupera `rust:module-file`, sulla fixture 2 chiamate su 2; su semver non è misurato.
+- Rust, modulo di test condiviso: lo recupera `rust:module-file`, sulla fixture 2 chiamate su 2. Su semver arrivano così 181 delle 186 chiamate che solo A risolveva, tutte sullo stesso bersaglio di A. Le 5 restanti non sono nell'indice: 3 `string.parse` (`core`) e 2 in `tests/node/mod.rs`, senza documento.
 
 Pacchetti esterni più riferiti, per archi (i venti completi sono nei file dei risultati):
 - chi, otto in tutto: Go standard 1.24 7.128, Go 1.22 168, Go 1.16 117, `go-chi/chi/v5@v5.1.0` 99, `go-chi/render@v1.0.1` 57, `go-chi/chi/v5@v5.2.4` 51, `go-chi/render@v1.0.3` 24, `go-chi/docgen@v1.2.0` 7;
@@ -443,8 +442,9 @@ Prova a mano: 15 chiamate per lingua, scelte a caso fra tutte quelle del checkou
 | Lingua | Giuste per il grafo | Giuste per A |
 | --- | --- | --- |
 | chi | 15 / 15 | 13 / 15 (`NewRouter` e `GetLogEntry` non chieste) |
-| JavaScript | 12 / 15 | non confrontata |
-| TypeScript | 14 / 15 | non confrontata |
+| semver Rust | 15 / 15 | 12 / 15 (`Some`, `ok`, `Ok` non chieste o senza risposta) |
+| JavaScript | 12 / 15 | 7 / 15 |
+| TypeScript | 14 / 15 | 10 / 15 |
 
 Le quattro sbagliate non hanno nessuna occorrenza nell'indice:
 - `queryInterface.addIndex`: parametro senza tipo;
@@ -454,9 +454,13 @@ Le quattro sbagliate non hanno nessuna occorrenza nell'indice:
 
 Costo fatturato da Modal per l'app: 0,175 USD nell'ora 20 UTC e 0,108 nell'ora 21 UTC, 0,283 in tutto. Il totale comprende i riavvii a vuoto di un container che non trovava le sorgenti del plugin e l'esecuzione di tududi fermata al tetto.
 
+Confermato su Modal con un'esecuzione completa per caso (etichetta `confirm`, indicizzatori rieseguiti, codice uguale al checkout per hash):
+- chi e tududi: stessi nodi, archi e fini della tabella; indici identici byte per byte (tududi 44.550.689 byte, 55,2 s, 2.264 MB);
+- semver Rust, la prima volta: la riga della tabella. Archi `call` 776, `read` 713, `unknown` 2.471. Catene verso una funzione del progetto: 733 a 0 salti, 290 a 1 (`rust:module-file` 260, inizializzatore 22, funzione assegnata 8). Buchi 24: 18 in `tests/node/mod.rs`, senza documento; 5 callee dinamici senza nome (`benches/parse.rs:8`); 1 senza occorrenza (`src/identifier.rs:326` `repr.trailing_zeros`). I 59 vicoli ciechi sono simboli del progetto che rust-analyzer riferisce senza definirli: 57 impl generati da `derive` (`impl#[Op][PartialEq<Self>]eq()`), 2 `QuotedChar#0.`; rust-analyzer registra 84 errori `definition should have been in an SCIP document`;
+- A contro il grafo sul codice nuovo, tududi: JavaScript 12.709 stesse destinazioni, 58 solo A, 119 solo B, 0 diverse; TypeScript 7.023, 0, 155, 0. I solo B di TypeScript salgono da 10 a 155: la crescita è pari alle 145 chiamate che ora arrivano al progetto per `declared:@types/react.useCallback`, dove A, negli esempi, risponde `project-not-a-symbol`;
+- container: chi 14,9 s, semver 28,4 s, tududi 651,4 s (snapshot e risposte di A dal volume, installazione dei pacchetti JS e indice rifatti). Costo fatturato: 0,082 USD per chi, semver e tududi, nella fascia delle 22 UTC non ancora chiusa.
+
 Non verificato:
-- il grafo di semver;
-- il confronto con A sul codice nuovo, per tududi;
 - perché `fireEvent.click` non ha occorrenze;
 - il pacchetto `. .`.
 
@@ -561,10 +565,10 @@ Tempo e memoria:
 - Indicizzatore 111,0 s, compresi lo scaricamento di Gradle e la build (1m33s).
 - Prima esecuzione completa (clone, snapshot, indice, grafo) 128,9 s; il solo grafo dal volume 3,3 s.
 - RAM: 4.688 MB come somma dei processi del container, campionata ogni 0,5 s.
+- Confermato su Modal dopo il passaggio al modulo comune (`spawn --stage index`, pipeline completa, codice uguale al checkout per hash): stessi conteggi, archi incerti e buchi, verifica a mano 16 su 20. Indicizzatore 107,2 s e 2.205 MB il processo più grande, container 125,6 s, circa 0,016 USD (0,028 nella fascia delle 22 UTC, meno 0,013 delle esecuzioni precedenti).
 - Costo fatturato da Modal: 0,029 USD per un'esecuzione con l'indicizzatore e tre solo per il grafo (l'ultima fascia oraria forse non ancora chiusa).
 
 Non verificato:
-- Il collegamento Modal di `index` in `adapters/kotlin.py` dopo il passaggio al modulo comune: non è stato rieseguito. I comandi sono quelli della prima esecuzione, ma la memoria ora si misura sul processo più grande.
 - Uno per uno, gli archi incerti che il numero di argomenti non smentisce.
 - La regola dell'ordine compilato: osservata nei dati, non letta nel codice dell'Analysis API.
 - Perché i task di scip-java non girano in buildSrc: lo dice solo il log.

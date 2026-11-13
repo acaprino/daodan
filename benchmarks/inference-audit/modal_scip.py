@@ -357,6 +357,7 @@ def join(manifest: Path, indexes: list, answers_path: Path | None, indexers: dic
                 with gzip.open(Path(graph_dir) / f"graph-{language}.json.gz", "wt", encoding="utf-8") as handle:
                     json.dump(graph, handle)
             timing[f"graph {language}"] = round(time.time() - begun, 1)
+            print("join", timing, flush=True)
         out["hand"] = _hand(list(hand), references_all, answers)
         out["hand_score"] = {"checks": len(out["hand"]), "b_right": sum(row["b_right"] for row in out["hand"]),
                              "a_right": sum(row["a_right"] for row in out["hand"])}
@@ -435,6 +436,7 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
     the indexers (again with `reindex`, from the volume otherwise; kept either way); the graphs and the join."""
     import shutil
     import time
+    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     started = time.time()
     work = Path("/work") / name  # the kept snapshot binds its sources here
     shutil.rmtree(work, ignore_errors=True)  # a warm container may have run this case before
@@ -478,7 +480,7 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
         inputs = {**{key: value for key, value in inputs.items() if key != "indexers"}, "indexers": indexers}
         (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         volume.commit()
-    result["indexers"] = indexers
+    result["indexers"], result["code"] = indexers, scip_graph.code_sha256()
     indexes = [(Path(path), prefix) for info in indexers.values() for path, prefix in info.get("indexes", ())]
     begun = time.time()
     try:

@@ -4,8 +4,8 @@
   "indexer": {
    "name": "scip-java",
    "version": "0.13.2",
-   "seconds": 41.1,
-   "peak_mb": 688
+   "seconds": 37.7,
+   "peak_mb": 639
   },
   "files": {
    "snapshot": 39,
@@ -851,7 +851,6 @@
    {
     "step": "index",
     "tools": {
-     "scip-java": "0.13.2",
      "java": [
       "openjdk version \"17.0.21\" 2026-10-20",
       "OpenJDK Runtime Environment (build 17.0.21+9-1-deb12u1-Debian)",
@@ -868,19 +867,20 @@
      "/opt/scip-java/scip-java",
      "index",
      "--output",
-     "/work/javapoet/index-0.scip"
+     "/work/javapoet/index.scip"
     ],
     "returncode": 1,
-    "seconds": 28.4,
-    "peak_mb": 552,
-    "stdout_tail": "/java.base/java/io/IOException.class\n    class file has wrong version 61.0, should be 53.0\n    Please remove or make sure it appears in the correct subdirectory of the classpath.\n[INFO] 1 error\n[INFO] -------------------------------------------------------------\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD FAILURE\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  25.610 s\n[INFO] Finished at: 2026-11-13T20:30:19Z\n[INFO] ------------------------------------------------------------------------\n[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.12.1:compile (default-compile) on project javapoet: Compilation failure\n[ERROR] /work/javapoet/mirror/src/main/java/com/squareup/javapoet/LineWrapper.java:[18,15] cannot access java.io.IOException\n[ERROR]   bad class file: /modules/java.base/java/io/IOException.class\n[ERROR]     class file has wrong version 61.0, should be 53.0\n[ERROR]     Please remove or make sure it appears in the correct subdirectory of the classpath.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException\n\u001b[0m\n\u001b[0m\u001b[0m\n",
-    "index_bytes": 0,
-    "run": "r1"
+    "seconds": 17.2,
+    "peak_mb": 566,
+    "stdout_tail": " /modules/java.base/java/io/IOException.class\n    class file has wrong version 61.0, should be 53.0\n    Please remove or make sure it appears in the correct subdirectory of the classpath.\n[INFO] 1 error\n[INFO] -------------------------------------------------------------\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD FAILURE\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  15.220 s\n[INFO] Finished at: 2026-11-13T22:37:25Z\n[INFO] ------------------------------------------------------------------------\n[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.12.1:compile (default-compile) on project javapoet: Compilation failure\n[ERROR] /work/javapoet/mirror/src/main/java/com/squareup/javapoet/LineWrapper.java:[18,15] cannot access java.io.IOException\n[ERROR]   bad class file: /modules/java.base/java/io/IOException.class\n[ERROR]     class file has wrong version 61.0, should be 53.0\n[ERROR]     Please remove or make sure it appears in the correct subdirectory of the classpath.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException\n\u001b[0m\n",
+    "stderr_tail": "\u001b[0m\u001b[0m\nDAODAN_MAXRSS_KB=579152\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
+    "index_bytes": 0
    },
    {
     "step": "index",
     "tools": {
-     "scip-java": "0.13.2",
      "java": [
       "openjdk version \"17.0.21\" 2026-10-20",
       "OpenJDK Runtime Environment (build 17.0.21+9-1-deb12u1-Debian)",
@@ -901,14 +901,16 @@
      "/opt/scip-java/scip-java",
      "index",
      "--output",
-     "/work/javapoet/index-0.scip"
+     "/work/javapoet/index.scip"
     ],
     "returncode": 0,
-    "seconds": 39.9,
-    "peak_mb": 688,
-    "stdout_tail": "-lang3-3.16.0.jar (674 kB at 1.3 MB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar (128 kB at 240 kB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar (57 kB at 85 kB/s)\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7-site.xml\n[WARNING] Unable to find a URL to the parent project. The parent menu will NOT be added.\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/skins/maven-fluido-skin/2.0.0-M9/maven-fluido-skin-2.0.0-M9.jar\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/skins/maven-fluido-skin/2.0.0-M9/maven-fluido-skin-2.0.0-M9.jar (355 kB at 4.6 MB/s)\n[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:2.0.0-M9 skin\n[INFO] Starting audit...\nAudit done.\n[WARNING] Unable to locate Source XRef to link to - DISABLED\n[WARNING] Unable to locate Test Source XRef to link to - DISABLED\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  37.026 s\n[INFO] Finished at: 2026-11-13T20:39:44Z\n[INFO] ------------------------------------------------------------------------\n\u001b[0m\n\u001b[0m\u001b[0m\n/work/javapoet/index-0.scip\n",
-    "index_bytes": 2266831,
-    "run": "r2"
+    "seconds": 19.5,
+    "peak_mb": 639,
+    "stdout_tail": ".0/commons-lang3-3.16.0.jar (674 kB at 1.9 MB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar (128 kB at 333 kB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar (57 kB at 143 kB/s)\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7-site.xml\n[WARNING] Unable to find a URL to the parent project. The parent menu will NOT be added.\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/skins/maven-fluido-skin/2.0.0-M9/maven-fluido-skin-2.0.0-M9.jar\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/skins/maven-fluido-skin/2.0.0-M9/maven-fluido-skin-2.0.0-M9.jar (355 kB at 7.6 MB/s)\n[INFO] Rendering content with org.apache.maven.skins:maven-fluido-skin:jar:2.0.0-M9 skin\n[INFO] Starting audit...\nAudit done.\n[WARNING] Unable to locate Source XRef to link to - DISABLED\n[WARNING] Unable to locate Test Source XRef to link to - DISABLED\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  16.817 s\n[INFO] Finished at: 2026-11-13T22:37:44Z\n[INFO] ------------------------------------------------------------------------\n\u001b[0m\n/work/javapoet/index.scip\n",
+    "stderr_tail": "\u001b[0m\u001b[0m\nDAODAN_MAXRSS_KB=654588\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
+    "index_bytes": 2266831
    },
    {
     "step": "aggregate without inverse relationships",
@@ -921,14 +923,18 @@
      "/work/javapoet/mirror/target/scip-targetroot"
     ],
     "returncode": 0,
-    "seconds": 1.2,
-    "peak_mb": 452,
+    "seconds": 1.0,
+    "peak_mb": 475,
     "stdout_tail": "/work/javapoet/index-forward.scip\n",
+    "stderr_tail": "DAODAN_MAXRSS_KB=486076\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
     "same_occurrences": true
    }
   ],
   "case": "javapoet",
   "commit": "b9017a9503b76e11b4ad4c1a9f050e2d29112cb0",
+  "label": "confirm",
   "snapshot": {
    "command": [
     "/usr/local/bin/python",
@@ -941,12 +947,14 @@
     "--no-index"
    ],
    "returncode": 0,
-   "seconds": 4.4,
-   "peak_rss_mb": 81,
-   "log_tail": "snapshot: 46 files -> /work/javapoet/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/javapoet/snapshot/modules.json (1 modules)\n"
+   "seconds": 4.8,
+   "peak_mb": 81,
+   "stdout_tail": "snapshot: 46 files -> /work/javapoet/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/javapoet/snapshot/modules.json (1 modules)\n",
+   "stderr_tail": "DAODAN_MAXRSS_KB=82664\n",
+   "stderr_errors": 0,
+   "stderr_error_examples": []
   },
-  "container_processes_peak_mb": 1433,
-  "seconds": 54.4,
-  "run": "r2 fc-01M7BA4YZW6D2DGWG5WCCB4T4B"
+  "container_processes_peak_mb": 1360,
+  "seconds": 48.1
  }
 }

@@ -1,12 +1,12 @@
 {
  "case": "klaxon",
  "commit": "1173bdc568a6d339b45cf24a6a9c5c2f6847f42d",
- "stage": "graph",
+ "stage": "index",
  "indexer": {
   "name": "scip-java",
   "version": "0.14.2",
-  "seconds": 111.0,
-  "peak_mb": 4688
+  "seconds": 107.2,
+  "peak_mb": 2205
  },
  "reverse_relationships_dropped": 30,
  "report": {
@@ -14,8 +14,8 @@
   "indexer": {
    "name": "scip-java",
    "version": "0.14.2",
-   "seconds": 111.0,
-   "peak_mb": 4688
+   "seconds": 107.2,
+   "peak_mb": 2205
   },
   "files": {
    "snapshot": 103,
@@ -1263,6 +1263,6 @@
    }
   ]
  },
- "graph_seconds": 2.7,
- "seconds": 3.2
+ "graph_seconds": 1.9,
+ "seconds": 125.6
 }

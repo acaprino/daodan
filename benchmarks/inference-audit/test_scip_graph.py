@@ -323,3 +323,9 @@ def test_rust_fixture_end(fixture_rows, site):
         assert any(end.cls == "external" for end in ends)
     else:
         assert any(end.target == target and list(end.chain) == chain for end in ends)
+
+
+def test_code_digests_name_the_module_and_each_adapter():
+    digests = scip_graph.code_sha256()
+    assert {"scip_graph.py", "adapters/go.py", "adapters/kotlin.py"} <= set(digests)
+    assert all(len(value) == 12 for value in digests.values())

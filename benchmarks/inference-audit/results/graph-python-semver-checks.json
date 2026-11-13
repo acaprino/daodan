@@ -4,8 +4,8 @@
   "indexer": {
    "name": "scip-python",
    "version": "0.6.8",
-   "seconds": 9.3,
-   "peak_mb": 368
+   "seconds": 7.5,
+   "peak_mb": 369
   },
   "files": {
    "snapshot": 35,
@@ -589,6 +589,7 @@
  "engine": {
   "runs": [
    {
+    "prefix": "",
     "command": [
      "/opt/node/bin/scip-python",
      "index",
@@ -598,12 +599,16 @@
      "--project-version",
      "b6e83e3e40d3",
      "--output",
-     "/work/semver/engine/index.scip"
+     "/work/semver/engine/scip-python-0.scip"
     ],
     "returncode": 0,
-    "seconds": 9.3,
-    "peak_rss_mb": 368,
-    "log_tail": "Loading configuration file at /work/semver/engine/mirror/pyrightconfig.json\nPython version 3.13 from interpreter is unsupported\nAssuming Python platform Linux\nNo include entries specified; assuming /work/semver/engine/mirror\nAuto-excluding **/node_modules\nAuto-excluding **/__pycache__\nAuto-excluding **/.*\n(21:18:12) Total Project Files 35\n(21:18:12) Indexing /work/semver/engine/mirror with version b6e83e3e40d3\n(21:18:12) Evaluating python environment dependencies\n(21:18:12)   Gathering environment information\nWarning: Could not find package information for: \n(21:18:14) Parse and search for dependencies\n(21:18:17) Index workspace and track project files\n(21:18:17) Analyze project and dependencies\n(21:18:18) Parse and emit SCIP\n(21:18:19)   - (7/35): /work/semver/engine/mirror/src/semver/_types.py\n(21:18:20)   - (19/35): /work/semver/engine/mirror/tests/test_docstrings.py\n(21:18:20) Writing external symbols to SCIP index\n(21:18:20) Sucessfully wrote SCIP index to /work/semver/engine/index.scip\n",
+    "seconds": 7.5,
+    "peak_mb": 369,
+    "stdout_tail": "Loading configuration file at /work/semver/engine/mirror/pyrightconfig.json\nPython version 3.13 from interpreter is unsupported\nAssuming Python platform Linux\nNo include entries specified; assuming /work/semver/engine/mirror\nAuto-excluding **/node_modules\nAuto-excluding **/__pycache__\nAuto-excluding **/.*\n(22:36:24) Total Project Files 35\n(22:36:24) Indexing /work/semver/engine/mirror with version b6e83e3e40d3\n(22:36:24) Evaluating python environment dependencies\n(22:36:24)   Gathering environment information\n(22:36:26) Parse and search for dependencies\n(22:36:28) Index workspace and track project files\n(22:36:28) Analyze project and dependencies\n(22:36:29) Parse and emit SCIP\n(22:36:30)   - (10/35): /work/semver/engine/mirror/tests/coerce.py\n(22:36:31) Writing external symbols to SCIP index\n(22:36:31) Sucessfully wrote SCIP index to /work/semver/engine/scip-python-0.scip\n",
+    "stderr_tail": "Warning: Could not find package information for: \nDAODAN_MAXRSS_KB=377884\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
+    "index": "/work/semver/engine/scip-python-0.scip",
     "index_bytes": 512842
    }
   ],
@@ -742,12 +747,12 @@
   "repo": "https://github.com/python-semver/python-semver.git",
   "commit": "b6e83e3e40d3a7570386e8d694ae8011477a55c1",
   "adapter": "/audit/adapters/python.py",
-  "adapter_sha256": "82eabc8ef8ef401eccb2cb99eab1b2ecc185aeffc304e1ef82d45cd2953db1b9",
+  "adapter_sha256": "b9a90540a243714cb6a7ce063dce0543e9870ffcf75bd79e8ec8b80ec2b003d0",
   "symlinks_copied_for_snapshot": {
    "tests/coerce.py": "../docs/advanced/coerce.py",
    "tests/semverwithvprefix.py": "../docs/advanced/semverwithvprefix.py"
   },
-  "snapshot_seconds": 2.8,
-  "seconds": 17.6
+  "snapshot_seconds": 2.6,
+  "seconds": 15.3
  }
 }

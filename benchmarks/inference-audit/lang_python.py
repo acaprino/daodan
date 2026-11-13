@@ -176,6 +176,7 @@ def index_case(name: str) -> dict:
     import shutil
     import time
     started = time.time()
+    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     loaded = Path(adapter.__file__)
     case = CASES[name]
     work = Path("/work") / name
