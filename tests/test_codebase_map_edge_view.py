@@ -33,8 +33,9 @@ class Definition:
 class StubEngine:
     name = "stub"
 
-    def __init__(self, answers=None, ready=True, reason=""):
+    def __init__(self, answers=None, ready=True, reason="", implementations=None):
         self.answers = dict(answers or {})
+        self.implemented = dict(implementations or {})
         self.ready = ready
         self.reason = reason
         self.asked = []
@@ -48,6 +49,12 @@ class StubEngine:
     def definitions(self, path, line, column):
         self.asked.append((Path(path).name, line, column))
         answer = self.answers.get((Path(path).name, line))
+        if isinstance(answer, list):
+            return answer
+        return [] if answer is None else [answer]
+
+    def implementations(self, path, line, column):
+        answer = self.implemented.get((Path(path).name, line))
         if isinstance(answer, list):
             return answer
         return [] if answer is None else [answer]
@@ -243,6 +250,50 @@ class MethodTargetTests(unittest.TestCase):
         self.assertEqual((by_line[6]["resolution"], by_line[6]["target_kind"]), ("resolved", "concrete"))
         self.assertTrue(by_line[6]["target_id"].startswith("app/shop.ts::"))
         self.assertEqual(view["coverage"]["resolution"]["engine_confirmed"], 2)
+
+
+class ImplementationTests(unittest.TestCase):
+    """Where the definition is the method an interface declares, the engine is asked where it is implemented."""
+
+    SOURCES = {
+        "app/contracts.ts": "export interface Checkout {\n  start(plan: string): void;\n}\n",
+        "app/web.ts": ('import type { Checkout } from "./contracts";\n'
+                       "export class WebCheckout implements Checkout {\n  start(plan: string): void {\n    return;\n  }\n}\n"),
+        "app/mobile.ts": ('import type { Checkout } from "./contracts";\n'
+                          "export class MobileCheckout implements Checkout {\n  start(plan: string): void {\n    return;\n  }\n}\n"),
+        "app/use.ts": ('import type { Checkout } from "./contracts";\n\n'
+                       "export function buy(checkout: Checkout, other: Checkout): void {\n"
+                       '  checkout.start("pro");\n'
+                       '  other.start("base");\n'
+                       "}\n"),
+    }
+
+    def test_one_implementation_is_the_target_and_several_keep_the_contract(self):
+        import edge_view
+
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name).resolve() / "proj"
+        for rel, text in self.SOURCES.items():
+            (root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (root / rel).write_text(text, encoding="utf-8")
+        manifest, edges = root.parent / "manifest.sqlite", root.parent / "engine-edges.sqlite"
+        snapshot.write_snapshot(root, manifest)
+        contract = Definition(root / "app/contracts.ts", "start", line=2, column=2)
+        web = Definition(root / "app/web.ts", "start", line=3, column=2)
+        mobile = Definition(root / "app/mobile.ts", "start", line=3, column=2)
+        engine = StubEngine(answers={("use.ts", 4): contract, ("use.ts", 5): contract},
+                            implementations={("use.ts", 4): web, ("use.ts", 5): [web, mobile]})
+        engine.languages = ("typescript",)
+        report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1, out=edges)
+        self.assertEqual(report["confirmed_edges"], 2)
+        with open_snapshot(manifest) as store:
+            view = edge_view.load_edge_view(store, engine_store=edges)
+        by_line = {ref["span"][0]: ref for ref in view["references"] if ref["file"] == "app/use.ts"}
+        self.assertTrue(by_line[4]["target_id"].startswith("app/web.ts::"))
+        self.assertEqual(by_line[4]["target_kind"], "concrete")
+        self.assertTrue(by_line[5]["target_id"].startswith("app/contracts.ts::"))
+        self.assertEqual(by_line[5]["target_kind"], "interface")
 
 
 if __name__ == "__main__":

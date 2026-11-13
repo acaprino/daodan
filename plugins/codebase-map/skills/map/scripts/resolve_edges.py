@@ -691,15 +691,17 @@ class LspEngine:
         self._run(notify(), LSP_REQUEST_TIMEOUT)
         self.open.pop(uri, None)
 
-    def _ask(self, uri: str, line: int, character: int) -> list[tuple[str, int, int]]:
+    def _ask(self, uri: str, line: int, character: int, method: str = "definition") -> list[tuple[str, int, int]]:
         process = getattr(self.handler, "process", None)
         if process is not None and process.returncode is not None:
             raise EngineFailure(f"{self.server_name} exited with code {process.returncode}")
         try:
-            response = self._run(self.handler.send.definition(
+            response = self._run(getattr(self.handler.send, method)(
                 {"textDocument": {"uri": uri}, "position": {"line": line, "character": character}}),
                 LSP_REQUEST_TIMEOUT)
         except TimeoutError:
+            if method != "definition":
+                raise  # a slow follow-up question costs its answer, never the pass
             self.timeouts += 1
             if self.timeouts >= 3:
                 raise EngineFailure(f"{self.server_name} timed out three times in a row") from None
@@ -752,6 +754,14 @@ class LspEngine:
         return utf16_to_byte(line, units)
 
     def definitions(self, path: Path, line: int, column: int) -> list[Location]:
+        """Where the callee at a UTF-8 byte column is declared."""
+        return self._locations(path, line, column, "definition")
+
+    def implementations(self, path: Path, line: int, column: int) -> list[Location]:
+        """Where it is implemented: asked when its declaration is a contract or a value."""
+        return self._locations(path, line, column, "implementation")
+
+    def _locations(self, path: Path, line: int, column: int, method: str) -> list[Location]:
         """Ask at a UTF-8 byte column, converted to the negotiated units of the served text."""
         from urllib.parse import unquote, urlparse
         from urllib.request import url2pathname
@@ -761,7 +771,7 @@ class LspEngine:
         if units is None:
             raise ValueError(f"no character starts at byte {column} of {path}:{line}")
         found = []
-        for target_uri, row, start in self._ask(uri, line - 1, units):
+        for target_uri, row, start in self._ask(uri, line - 1, units, method):
             if not target_uri.startswith("file:"):
                 # A class file or a library the server reads from an archive: external.
                 found.append(Location(None, None, None))
@@ -3150,6 +3160,8 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         cached, known, cache_path, cache_note, digests = {}, {}, None, None, {}
         if context is not None:
             context = f"{context}|{store['target']}|{fingerprint}|{semantic_store.RESOLVER_VERSION}|{EDGE_SCHEMA}"
+            if hasattr(engine, "implementations"):
+                context += "|implementation"
             digests = dependency_digests(hashes, file_dependencies(connection))
             try:
                 cache_path = edge_destination(default_answers_path(manifest), manifest, source_paths)
@@ -3204,6 +3216,15 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             if rel not in source_lines:
                 source_lines[rel] = source_paths[rel].read_text(encoding="utf-8").split("\n")
             return source_lines[rel]
+
+        contracts: dict[str, bool] = {}
+
+        def contract(identity):
+            """Whether a declaration is a method an interface, a trait or a type declares."""
+            if identity not in contracts:
+                row = connection.execute("SELECT payload FROM sem_declarations WHERE id=?", (identity,)).fetchone()
+                contracts[identity] = bool(row and (_unpack(row[0]) or {}).get("contract"))
+            return contracts[identity]
 
         def count(language, verdict):
             verdicts = counts[language]["verdicts"]
@@ -3351,9 +3372,28 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                         witnesses.extend(children)
                         return children
 
-                    verdict, target = grade_all(inferred, inventory, declarations, store_root,
-                                               lambda name: symbol_table(connection, name,
-                                                                         "\n".join(lines_for(name))), follow=follow)
+                    def table_for(name):
+                        return symbol_table(connection, name, "\n".join(lines_for(name)))
+
+                    verdict, target = grade_all(inferred, inventory, declarations, store_root, table_for, follow=follow)
+                    if hasattr(engine, "implementations") and (
+                            verdict in ("project-not-a-symbol", "ambiguous-target")
+                            or (verdict.startswith("edge-") and target and contract(target["id"]))):
+                        # The declaration is a contract or a value: the one place that implements it is the target.
+                        try:
+                            implemented = list(engine.implementations(source_paths[rel], l1, column))
+                        except (EngineFailure, MemoryError):
+                            raise
+                        except Exception:
+                            implemented = []
+                        witnesses.extend(implemented)
+                        concrete = {}
+                        for item in implemented:
+                            found_verdict, found = grade(item, inventory, declarations, store_root, table_for)
+                            if found_verdict.startswith("edge-") and found and not contract(found["id"]):
+                                concrete[found["id"]] = (found_verdict, found)
+                        if len(concrete) == 1:
+                            verdict, target = next(iter(concrete.values()))
                 except (OSError, UnicodeError) as error:
                     failure = {"reason": f"target source became unavailable during inference: {error}",
                                "stage": "after-inference"}
