@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import collections
 import json
+import re
 import sqlite3
 import sys
 import time
@@ -235,6 +236,59 @@ def main() -> int:
         methods = ("definition", "implementation", "type_definition") if lsp else \
             ("infer", "goto") if ENGINE == "jedi" else ("definitions",)
 
+        tables: dict = {}
+
+        def table_for(name):
+            return rx.symbol_table(connection, name, (store_root / name).read_text(encoding="utf-8"))
+
+        declared_at = {(file, l0, c0): kind for file, kind, l0, c0 in connection.execute(
+            "SELECT file, kind, l0, c0 FROM sem_declarations WHERE kind IN ('binding','parameter','property')")}
+
+        def shape(rel: str, line: int, column: int) -> str:
+            """What a value answer holds: the measure behind problem 5 of the README."""
+            kind = declared_at.get((rel, line, column))
+            if kind != "binding":
+                return kind or "unknown"
+            try:
+                text = (store_root / rel).read_text(encoding="utf-8").split("\n")[line - 1].encode("utf-8")
+            except (OSError, IndexError):
+                return "binding"
+            head, rest = text[:column].decode("utf-8", "replace"), text[column:].decode("utf-8", "replace")
+            if re.search(r"[{\[][^=]*$", head):
+                return "binding destructured"
+            init = re.match(r"\s*[\w$]*\s*(?::[^=]*)?=\s*(.*)", rest)
+            value = init.group(1) if init else ""
+            if re.match(r"(async\s+)?(function\b|\(|[A-Za-z_$][\w$]*\s*=>)", value):
+                return "binding function in place"
+            if re.match(r"(await\s+)?[A-Za-z_$][\w$.]*\s*\(", value):
+                written = "=>" in value or re.search(r"\bfunction\b", value)
+                return f"binding call {'with' if written else 'without'} a function in place"
+            return "binding other value"
+
+        def exact(location) -> dict:
+            """One location graded at its exact position, as the pass grades it."""
+            verdict, target = rx.grade(location, inventory, tables, store_root, table_for)
+            entry = {"verdict": verdict}
+            if target:
+                kind, is_contract = kind_of.get(target["id"], (None, False))
+                entry["kind"] = f"{kind}{' contract' if is_contract else ''}"
+            elif verdict == "binding":
+                rel = Path(location.module_path).resolve().relative_to(store_root).as_posix()
+                entry["kind"] = shape(rel, location.line, location.column)
+            return entry
+
+        def tally_exact(items: list[dict]) -> dict:
+            summary = {}
+            for method in ("exact_definition", "exact_implementation"):
+                counts = collections.Counter()
+                for item in items:
+                    if method in item:
+                        seen = sorted({e["verdict"] + (f" {e['kind']}" if e.get("kind") else "") for e in item[method]})
+                        counts[" + ".join(seen) or "nothing"] += 1
+                if counts:
+                    summary[method] = dict(counts.most_common())
+            return summary
+
         def ask(row, only=None):
             rid, rel, blob, l0, c0, l1, c1 = row[:7]
             payload = _unpack(blob)
@@ -264,6 +318,13 @@ def main() -> int:
                 except Exception as error:  # an unsupported request is a fact of the audit
                     raw = [{"place": "error", "error": f"{type(error).__name__}: {str(error)[:120]}"}]
                 result[method] = raw
+            for method, call in (("exact_definition", "definitions"), ("exact_implementation", "implementations")):
+                if not hasattr(engine, call):
+                    continue
+                try:
+                    result[method] = [exact(location) for location in getattr(engine, call)(source_paths[rel], l1, column)]
+                except Exception as error:  # an unsupported request is a fact of the audit
+                    result[method] = [{"verdict": "error", "error": f"{type(error).__name__}: {str(error)[:120]}"}]
             return result
 
         def tally(items: list[dict]) -> dict:
@@ -289,14 +350,14 @@ def main() -> int:
             items = [ask(row) for row in every(rows, PER_VERDICT)]
             asked = [i for i in items if "skipped" not in i]
             samples[key] = {"population": len(rows), "sampled": len(asked), "places": tally(asked),
-                            "examples": asked[:EXAMPLES]}
+                            "exact": tally_exact(asked), "examples": asked[:EXAMPLES]}
         out["asked_again_by_verdict"] = samples
 
         first = methods[:2] if lsp else methods[:1]
         reads = [ask(row, first) for row in every(reads_naming, READS)]
         reads = [r for r in reads if "skipped" not in r]
         out["reads_asked"] = {"population": len(reads_naming), "sampled": len(reads), "places": tally(reads),
-                              "examples": reads[:EXAMPLES]}
+                              "exact": tally_exact(reads), "examples": reads[:EXAMPLES]}
 
         lexical = [row for row in refs if row[8] == "call" and row[9] == "resolved" and row[10]]
         agreement = collections.Counter()
