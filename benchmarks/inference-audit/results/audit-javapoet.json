@@ -1,8 +1,8 @@
 {
  "case": "javapoet",
- "snapshot_seconds": 5.5,
- "pass_seconds": 103.6,
- "pass_stdout": "engine pass: java for java\ninstalling eclipse-jdtls 1.46.0 into /root/.cache/daodan/engines/eclipse-jdtls/1.46.0 (first use)\nresolving 6 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\nthe project's libraries were not resolved: HTTPError: HTTP Error 403: Forbidden\n{\n  \"answer_cache\": \"/work/javapoet/snapshot/engine-answers.sqlite\",\n  \"asked\": 4864,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 2575,\n  \"coverage\": \"4864 of 4864 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/javapoet/snapshot/engine-edges.sqlite\",\n  \"engine\": \"eclipse-jdtls@1.46.0\",\n  \"excluded_classes\": {\n    \"builtin\": 1290\n  },\n  \"inference_elapsed_ms\": 85118.1,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 4864,\n      \"candidates\": 0,\n      \"confirmed\": 2575,\n      \"created_at\": \"2026-11-13T08:31:27Z\",\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"excluded_classes\": {\n        \"builtin\": 1290\n      },\n      \"no_edges_reason\": null,\n      \"population\": 4864,\n      \"reused\": 0,\n      \"selected\": 4864,\n      \"source_verification\": {\n        \"after_inference\": 39,\n        \"before_inference\": 39\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"edge-call\": 2575,\n        \"external-definition\": 1076,\n        \"unresolved\": 1213\n      }\n    }\n  },\n  \"latency_mean_ms\": 17.5,\n  \"latency_p95_ms\": 49.4,\n  \"no_edges_reason\": null,\n  \"population\": 4864,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 10605.3,\n  \"project_root\": \"/work/javapoet/src\",\n  \"report_out\": \"/work/javapoet/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 4864,\n    \"by_language\": {\n      \"java\": {\n        \"calls\": 6443,\n        \"engine\": \"eclipse-jdtls@1.46.0\",\n        \"resolvable\": 4077,\n        \"resolved\": 2864,\n        \"resolved_ratio\": 0.702\n      }\n    },\n    \"calls\": 6443,\n    \"dynamic\": 0,\n    \"engine_confirmed\": 2575,\n    \"engine_unresolved\": 1213,\n    \"external\": 2366,\n    \"external_by_class\": {\n      \"builtin\": 1290,\n      \"engine-external-definition\": 1076\n    },\n    \"lexical_resolved\": 289,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 4077,\n    \"resolved\": 2864,\n    \"resolved_ratio\": 0.702,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 4864,\n  \"source_verification\": {\n    \"after_inference\": 39,\n    \"before_inference\": 39\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 101236.6,\n  \"verdicts\": {\n    \"edge-call\": 2575,\n    \"external-definition\": 1076,\n    \"unresolved\": 1213\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "snapshot_seconds": 5.4,
+ "pass_seconds": 74.6,
+ "pass_stdout": "engine pass: java for java\ninstalling eclipse-jdtls 1.46.0 into /root/.cache/daodan/engines/eclipse-jdtls/1.46.0 (first use)\nresolving 6 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\ninstalling coursier 2.1.24 into /root/.cache/daodan/engines/coursier/2.1.24 (first use)\n{\n  \"answer_cache\": \"/work/javapoet/snapshot/engine-answers.sqlite\",\n  \"asked\": 4864,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 2575,\n  \"coverage\": \"4864 of 4864 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/javapoet/snapshot/engine-edges.sqlite\",\n  \"engine\": \"eclipse-jdtls@1.46.0\",\n  \"excluded_classes\": {\n    \"builtin\": 1290\n  },\n  \"inference_elapsed_ms\": 53946.6,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 4864,\n      \"candidates\": 0,\n      \"confirmed\": 2575,\n      \"created_at\": \"2026-11-13T12:07:15Z\",\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"excluded_classes\": {\n        \"builtin\": 1290\n      },\n      \"no_edges_reason\": null,\n      \"population\": 4864,\n      \"reused\": 0,\n      \"selected\": 4864,\n      \"source_verification\": {\n        \"after_inference\": 39,\n        \"before_inference\": 39\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"edge-call\": 2575,\n        \"external-definition\": 2279,\n        \"unresolved\": 10\n      }\n    }\n  },\n  \"latency_mean_ms\": 11.1,\n  \"latency_p95_ms\": 18.2,\n  \"no_edges_reason\": null,\n  \"population\": 4864,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 13934.1,\n  \"project_root\": \"/work/javapoet/src\",\n  \"report_out\": \"/work/javapoet/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 4864,\n    \"by_language\": {\n      \"java\": {\n        \"calls\": 6443,\n        \"engine\": \"eclipse-jdtls@1.46.0\",\n        \"resolvable\": 2874,\n        \"resolved\": 2864,\n        \"resolved_ratio\": 0.997\n      }\n    },\n    \"calls\": 6443,\n    \"dynamic\": 0,\n    \"engine_confirmed\": 2575,\n    \"engine_unresolved\": 10,\n    \"external\": 3569,\n    \"external_by_class\": {\n      \"builtin\": 1290,\n      \"engine-external-definition\": 2279\n    },\n    \"lexical_resolved\": 289,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 2874,\n    \"resolved\": 2864,\n    \"resolved_ratio\": 0.997,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 4864,\n  \"source_verification\": {\n    \"after_inference\": 39,\n    \"before_inference\": 39\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 72876.6,\n  \"verdicts\": {\n    \"edge-call\": 2575,\n    \"external-definition\": 2279,\n    \"unresolved\": 10\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -20,13 +20,13 @@
     "excluded_classes": {
      "builtin": 1290
     },
-    "inference_elapsed_ms": 85118.1,
+    "inference_elapsed_ms": 53946.6,
     "languages": {
      "java": {
       "asked": 4864,
       "candidates": 0,
       "confirmed": 2575,
-      "created_at": "2026-11-13T08:31:27Z",
+      "created_at": "2026-11-13T12:07:15Z",
       "engine": "eclipse-jdtls@1.46.0",
       "excluded_classes": {
        "builtin": 1290
@@ -43,18 +43,18 @@
       "stride": 1,
       "verdicts": {
        "edge-call": 2575,
-       "external-definition": 1076,
-       "unresolved": 1213
+       "external-definition": 2279,
+       "unresolved": 10
       }
      }
     },
-    "latency_mean_ms": 17.5,
-    "latency_p95_ms": 49.4,
+    "latency_mean_ms": 11.1,
+    "latency_p95_ms": 18.2,
     "no_edges_reason": null,
     "population": 4864,
     "population_language": "java",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 10605.3,
+    "probe_init_elapsed_ms": 13934.1,
     "project_root": "/work/javapoet/src",
     "resolution": {
      "askable": 4864,
@@ -62,25 +62,25 @@
       "java": {
        "calls": 6443,
        "engine": "eclipse-jdtls@1.46.0",
-       "resolvable": 4077,
+       "resolvable": 2874,
        "resolved": 2864,
-       "resolved_ratio": 0.702
+       "resolved_ratio": 0.997
       }
      },
      "calls": 6443,
      "dynamic": 0,
      "engine_confirmed": 2575,
-     "engine_unresolved": 1213,
-     "external": 2366,
+     "engine_unresolved": 10,
+     "external": 3569,
      "external_by_class": {
       "builtin": 1290,
-      "engine-external-definition": 1076
+      "engine-external-definition": 2279
      },
      "lexical_resolved": 289,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-     "resolvable": 4077,
+     "resolvable": 2874,
      "resolved": 2864,
-     "resolved_ratio": 0.702,
+     "resolved_ratio": 0.997,
      "unasked": 0
     },
     "reused": 0,
@@ -90,24 +90,24 @@
      "before_inference": 39
     },
     "stride": 1,
-    "total_elapsed_ms": 101236.6,
+    "total_elapsed_ms": 72876.6,
     "verdicts": {
      "edge-call": 2575,
-     "external-definition": 1076,
-     "unresolved": 1213
+     "external-definition": 2279,
+     "unresolved": 10
     }
    }
   },
-  "finished_at": "2026-11-13T08:31:28Z",
+  "finished_at": "2026-11-13T12:07:15Z",
   "languages": {
    "java": {
     "engine": "eclipse-jdtls@1.46.0",
     "state": "fresh"
    }
   },
-  "manifest_digest": "a20f1529c51c7ee09f145267bcb492c6a58b3528f17b84e2e0891ac4e81a0b4f",
+  "manifest_digest": "bd1671ddae4766f21158786c15cc77aeb7749a18bc3a63e1a01518bae636a146",
   "pass": true,
-  "started_at": "2026-11-13T08:29:44Z"
+  "started_at": "2026-11-13T12:06:01Z"
  },
  "engines": {
   "java": {
@@ -130,9 +130,9 @@
    },
    "answers_cached": 4864,
    "answer_verdicts": {
-    "external-definition": 1076,
+    "external-definition": 2279,
     "edge-call": 2575,
-    "unresolved": 1213
+    "unresolved": 10
    },
    "edge_store": {
     "reason": null,
@@ -147,8 +147,8 @@
       "candidates": 0,
       "verdicts": {
        "edge-call": 2575,
-       "external-definition": 1076,
-       "unresolved": 1213
+       "external-definition": 2279,
+       "unresolved": 10
       },
       "excluded_classes": {
        "builtin": 1290
@@ -179,6 +179,14 @@
        "error": 20
       }
      },
+     "exact": {
+      "exact_definition": {
+       "edge-call function": 20
+      },
+      "exact_implementation": {
+       "edge-call function": 20
+      }
+     },
      "examples": [
       {
        "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:146",
@@ -203,6 +211,20 @@
         {
          "place": "error",
          "error": "Error:  (-32600)"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@156:2",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@156:2",
+         "kind": "function"
         }
        ]
       },
@@ -230,6 +252,20 @@
          "place": "error",
          "error": "Error:  (-32600)"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "kind": "function"
+        }
        ]
       },
       {
@@ -255,6 +291,20 @@
         {
          "place": "error",
          "error": "Error:  (-32600)"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "kind": "function"
         }
        ]
       },
@@ -282,24 +332,45 @@
          "place": "error",
          "error": "Error:  (-32600)"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "kind": "function"
+        }
        ]
       }
      ]
     },
     "java external-definition": {
-     "population": 1076,
+     "population": 2279,
      "sampled": 20,
      "places": {
       "definition": {
        "not-a-file": 20
       },
       "implementation": {
-       "not-a-file": 19,
-       "not-a-file + project-callable function": 1
+       "not-a-file": 20
       },
       "type_definition": {
        "error": 19,
        "not-a-file": 1
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "external-definition": 20
+      },
+      "exact_implementation": {
+       "external-definition": 20
       }
      },
      "examples": [
@@ -316,6 +387,102 @@
         {
          "place": "not-a-file",
          "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
         }
        ],
        "type_definition": [
@@ -323,11 +490,93 @@
          "place": "error",
          "error": "Error:  (-32600)"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
-       "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:128",
-       "name": "method.getName",
+       "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:208",
+       "name": "matcher.group",
        "definition": [
         {
          "place": "not-a-file",
@@ -345,11 +594,21 @@
          "place": "error",
          "error": "Error:  (-32600)"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
-       "site": "src/main/java/com/squareup/javapoet/ClassName.java:178",
-       "name": "(expr).lastIndexOf",
+       "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:521",
+       "name": "LinkedHashMap",
        "definition": [
         {
          "place": "not-a-file",
@@ -364,14 +623,24 @@
        ],
        "type_definition": [
         {
-         "place": "error",
-         "error": "Error:  (-32600)"
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
         }
        ]
       },
       {
-       "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:167",
-       "name": "formatParts.isEmpty",
+       "site": "src/main/java/com/squareup/javapoet/MethodSpec.java:219",
+       "name": "(expr).toString",
        "definition": [
         {
          "place": "not-a-file",
@@ -382,30 +651,69 @@
         {
          "place": "not-a-file",
          "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        },
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
         }
        ],
        "type_definition": [
         {
          "place": "error",
          "error": "Error:  (-32600)"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
         }
        ]
       }
      ]
     },
     "java unresolved": {
-     "population": 1213,
-     "sampled": 20,
+     "population": 10,
+     "sampled": 10,
      "places": {
       "definition": {
-       "nothing": 20
+       "nothing": 10
       },
       "implementation": {
-       "nothing": 20
+       "nothing": 10
       },
       "type_definition": {
-       "error": 19,
-       "not-a-file": 1
+       "not-a-file": 7,
+       "error": 3
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "nothing": 10
+      },
+      "exact_implementation": {
+       "nothing": 10
       }
      },
      "examples": [
@@ -419,43 +727,51 @@
          "place": "not-a-file",
          "scheme": "jdt"
         }
-       ]
+       ],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
-       "site": "src/test/java/com/squareup/javapoet/AbstractTypesTest.java:228",
-       "name": "assertThat",
+       "site": "src/main/java/com/squareup/javapoet/NameAllocator.java:86",
+       "name": "LinkedHashSet",
        "definition": [],
        "implementation": [],
        "type_definition": [
         {
-         "place": "error",
-         "error": "Error:  (-32600)"
+         "place": "not-a-file",
+         "scheme": "jdt"
         }
-       ]
+       ],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
-       "site": "src/test/java/com/squareup/javapoet/AnnotatedTypeNameTest.java:131",
-       "name": "(expr).isEqualTo",
+       "site": "src/main/java/com/squareup/javapoet/NameAllocator.java:86",
+       "name": "LinkedHashMap",
        "definition": [],
        "implementation": [],
        "type_definition": [
         {
-         "place": "error",
-         "error": "Error:  (-32600)"
+         "place": "not-a-file",
+         "scheme": "jdt"
         }
-       ]
+       ],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
-       "site": "src/test/java/com/squareup/javapoet/AnnotationSpecTest.java:304",
-       "name": "(expr).isEqualTo",
+       "site": "src/main/java/com/squareup/javapoet/ParameterizedTypeName.java:38",
+       "name": "ArrayList",
        "definition": [],
        "implementation": [],
        "type_definition": [
         {
-         "place": "error",
-         "error": "Error:  (-32600)"
+         "place": "not-a-file",
+         "scheme": "jdt"
         }
-       ]
+       ],
+       "exact_definition": [],
+       "exact_implementation": []
       }
      ]
     }
@@ -477,6 +793,24 @@
       "not-a-file": 1
      }
     },
+    "exact": {
+     "exact_definition": {
+      "binding binding other value": 33,
+      "binding parameter": 17,
+      "binding binding call without a function in place: get": 3,
+      "binding binding call without a function in place: getSuperclass": 2,
+      "binding binding call without a function in place: builder": 1,
+      "binding binding call without a function in place: getSimpleName": 1,
+      "edge-instantiation class": 1,
+      "external-definition": 1,
+      "binding binding call without a function in place: simpleName": 1
+     },
+     "exact_implementation": {
+      "nothing": 58,
+      "edge-instantiation class": 1,
+      "external-definition": 1
+     }
+    },
     "examples": [
      {
       "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:147",
@@ -488,7 +822,14 @@
         "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::binding@146:27"
        }
       ],
-      "implementation": []
+      "implementation": [],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "binding call without a function in place: builder"
+       }
+      ],
+      "exact_implementation": []
      },
      {
       "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:261",
@@ -501,7 +842,14 @@
         "in_view": true
        }
       ],
-      "implementation": []
+      "implementation": [],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "parameter"
+       }
+      ],
+      "exact_implementation": []
      },
      {
       "site": "src/main/java/com/squareup/javapoet/ArrayTypeName.java:56",
@@ -514,7 +862,14 @@
         "in_view": true
        }
       ],
-      "implementation": []
+      "implementation": [],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "parameter"
+       }
+      ],
+      "exact_implementation": []
      },
      {
       "site": "src/main/java/com/squareup/javapoet/ClassName.java:61",
@@ -527,15 +882,26 @@
         "in_view": true
        }
       ],
-      "implementation": []
+      "implementation": [],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "parameter"
+       }
+      ],
+      "exact_implementation": []
      }
     ]
    },
    "lexical_agreement": {
     "population": 289,
     "counts": {
-     "engine says another place": 2,
-     "same declaration": 28
+     "engine says another place": 25,
+     "same declaration": 264
+    },
+    "exact": {
+     "engine says another place": 25,
+     "same declaration": 264
     },
     "examples": [
      {
@@ -549,7 +915,480 @@
         "in_view": true
        }
       ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@259:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@259:4",
+        "kind": "function"
+       }
+      ],
       "lexical": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@256:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:158",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@195:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:166",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@200:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@195:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:105",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/CodeBlock.java::class@159:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:124",
+      "name": "CodeBlockJoiner",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/CodeBlock.java::class@438:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:139",
+      "name": "CodeBlockJoiner",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@443:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/CodeBlock.java::class@438:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:149",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/CodeBlock.java::class@159:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:153",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@163:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/CodeBlock.java::class@159:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/FieldSpec.java:92",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/FieldSpec.java::function@119:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/FieldSpec.java::function@119:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/FieldSpec.java::function@119:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/FieldSpec.java::class@109:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/FieldSpec.java:101",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/FieldSpec.java::function@119:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/FieldSpec.java::function@119:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/FieldSpec.java::function@119:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/FieldSpec.java::class@109:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/JavaFile.java:265",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@285:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@285:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@285:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/JavaFile.java::class@276:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/JavaFile.java:269",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@285:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@285:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@285:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/JavaFile.java::class@276:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/LineWrapper.java:50",
+      "name": "RecordingAppendable",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/LineWrapper.java::function@149:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/LineWrapper.java::function@149:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/LineWrapper.java::function@149:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/LineWrapper.java::class@144:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/MethodSpec.java:188",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/MethodSpec.java::class@294:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/MethodSpec.java:192",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/MethodSpec.java::class@294:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/MethodSpec.java:280",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/MethodSpec.java::function@309:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/MethodSpec.java::class@294:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/ParameterSpec.java:118",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/ParameterSpec.java::function@145:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/ParameterSpec.java::function@145:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/ParameterSpec.java::function@145:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/ParameterSpec.java::class@137:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/ParameterSpec.java:131",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/ParameterSpec.java::function@145:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/ParameterSpec.java::function@145:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/ParameterSpec.java::function@145:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/ParameterSpec.java::class@137:2"
      },
      {
       "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:144",
@@ -562,12 +1401,188 @@
         "in_view": true
        }
       ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
       "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:156",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:160",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:168",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:128",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:136",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     },
+     {
+      "site": "src/test/java/com/squareup/javapoet/TestFiler.java:70",
+      "name": "Source",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/test/java/com/squareup/javapoet/TestFiler.java::function@38:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "src/test/java/com/squareup/javapoet/TestFiler.java::function@38:4",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "src/test/java/com/squareup/javapoet/TestFiler.java::function@38:4",
+        "kind": "function"
+       }
+      ],
+      "lexical": "src/test/java/com/squareup/javapoet/TestFiler.java::class@36:2"
      }
     ]
    },
-   "seconds": 21.6,
-   "probe_seconds": 21.9
+   "seconds": 52.8,
+   "probe_seconds": 53.1
   }
  },
  "graph_use": {
@@ -586,23 +1601,23 @@
     "resolved": 2864,
     "lexical_resolved": 289,
     "engine_confirmed": 2575,
-    "external": 2366,
+    "external": 3569,
     "external_by_class": {
      "builtin": 1290,
-     "engine-external-definition": 1076
+     "engine-external-definition": 2279
     },
-    "resolvable": 4077,
-    "resolved_ratio": 0.702,
+    "resolvable": 2874,
+    "resolved_ratio": 0.997,
     "dynamic": 0,
     "askable": 4864,
     "unasked": 0,
-    "engine_unresolved": 1213,
+    "engine_unresolved": 10,
     "by_language": {
      "java": {
       "calls": 6443,
       "resolved": 2864,
-      "resolvable": 4077,
-      "resolved_ratio": 0.702,
+      "resolvable": 2874,
+      "resolved_ratio": 0.997,
       "engine": "eclipse-jdtls@1.46.0"
      }
     },
@@ -618,37 +1633,11 @@
   "conflicts": 0,
   "conflict_examples": [],
   "call_links_kept": {
-   "engine": 2562,
-   "lexical": 287
+   "engine": 2575,
+   "lexical": 289
   },
-  "call_links_lost": {
-   "engine: call outside a named symbol": 13,
-   "lexical: call outside a named symbol": 2
-  },
-  "lost_examples": {
-   "call outside a named symbol": [
-    {
-     "site": "src/main/java/com/squareup/javapoet/ClassName.java:34",
-     "caller": null,
-     "target": "src/main/java/com/squareup/javapoet/ClassName.java::function@162:2"
-    },
-    {
-     "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:63",
-     "caller": null,
-     "target": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2"
-    },
-    {
-     "site": "src/main/java/com/squareup/javapoet/TypeName.java:69",
-     "caller": null,
-     "target": "src/main/java/com/squareup/javapoet/TypeName.java::function@97:2"
-    },
-    {
-     "site": "src/main/java/com/squareup/javapoet/TypeName.java:70",
-     "caller": null,
-     "target": "src/main/java/com/squareup/javapoet/TypeName.java::function@97:2"
-    }
-   ]
-  }
+  "call_links_lost": {},
+  "lost_examples": {}
  },
- "seconds": 131.6
+ "seconds": 133.7
 }

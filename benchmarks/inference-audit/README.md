@@ -47,3 +47,34 @@ Sei casi su Modal, un container ciascuno (app `ap-BDU0cjbbx8vImvzZqpgAFZ`), ness
 - Il risolutore lessicale e il motore indicano la stessa dichiarazione in 28-30 casi su 30 per caso (semver 25 su 30).
 - Jedi `goto` e `infer` danno le stesse destinazioni a campione.
 - Nessun conflitto fra lessicale e motore in nessun caso.
+
+### 13 novembre 2026, rimisura dopo le correzioni
+
+Stessi sei casi (app `ap-2Cwf3qAFgMtesOgHaex1Qa`, plugin del working tree al commit `4adbde359`, con le modifiche locali non committate di `store_graph.py`, `store_consumers.py`, `snapshot.py` e `mcp_service.py`), P7 fino a 2.000 chiamate. Costo fatturato da Modal: 0,66 USD (la prima misura 0,48 USD).
+
+| Caso | Chiamate risolte su risolvibili, prima | Dopo | Collegamenti persi nel grafo, prima | Dopo |
+| --- | --- | --- | --- | --- |
+| chi | 858 su 1.100 (78,0%) | 1.014 su 1.100 (92,2%) | 0 | 0 |
+| javapoet | 2.864 su 4.077 (70,2%) | 2.864 su 2.874 (99,7%) | 15 | 0 |
+| klaxon | 311 su 1.755 (17,7%) | 812 su 917 (88,5%) | 12 | 0 |
+| phazly | 13.339 su 19.763 (67,5%) | 13.655 su 19.648 (69,5%) | 485 | 0 |
+| semver | 428 su 484 (88,4%) | 447 su 484 (92,4%) | 3 | 0 |
+| tududi | 17.377 su 41.695 (41,7%) | 19.794 su 41.715 (47,5%) | 8.314 | 0 |
+
+- Il motore Kotlin si installa in un container senza Java: klaxon passa da 17,7% a 88,5%; in phazly risponde su 269 chiamate (5 archi, 151 senza risposta).
+- In javapoet 1.203 chiamate prima senza risposta ora cadono in una libreria (`external-definition` da 1.076 a 2.279): escono dalle risolvibili.
+
+P7, lessicale e motore alla posizione esatta:
+
+| Caso e motore | Confrontate | Stessa dichiarazione | Divergenze |
+| --- | --- | --- | --- |
+| chi, gopls | 231 | 231 | 0 |
+| klaxon, Kotlin | 311 | 311 | 0 |
+| phazly, Kotlin | 36 | 36 | 0 |
+| phazly, TypeScript | 2.000 su 2.582 | 2.000 | 0 |
+| tududi, TypeScript | 2.000 su 11.895 | 2.000 | 0 |
+| javapoet, JDT LS | 289 | 264 | 25: il lessicale indica la classe, il motore il suo costruttore |
+| semver, rust-analyzer | 76 | 65 | 9: il lessicale lega `Err(...)` al tipo associato `type Err` dell'`impl`, il motore alla libreria standard; 2 senza risposta del motore |
+| phazly, Jedi | 2.000 su 4.815 | 1.956 | 44: funzioni decorate con `@cache` o `@lru_cache`; `infer` dà l'oggetto restituito dal decoratore (`functools._lru_cache_wrapper`, senza posizione), graduato `external-definition`; ha ragione il lessicale |
+
+Due difetti che la tabella mostra: il grafo tiene i 9 archi lessicali sbagliati di semver, perché il passo non interroga il motore sulle chiamate già risolte dal lessicale; Jedi classifica come esterne le chiamate a funzioni del progetto decorate (`@contextmanager` compreso: `infer` dà `typing.Callable`).

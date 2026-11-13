@@ -1,8 +1,8 @@
 {
  "case": "phazly",
- "snapshot_seconds": 55.0,
- "pass_seconds": 2403.7,
- "pass_stdout": " \"confirmed\": 0,\n      \"created_at\": \"2026-11-13T09:10:35Z\",\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"excluded_classes\": {\n        \"builtin\": 12\n      },\n      \"no_edges_reason\": \"no-project-targets\",\n      \"population\": 17,\n      \"reused\": 0,\n      \"selected\": 17,\n      \"source_verification\": {\n        \"after_inference\": 3,\n        \"before_inference\": 3\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"unresolved\": 17\n      }\n    }\n  },\n  \"latency_mean_ms\": 1.2,\n  \"latency_p95_ms\": 4.8,\n  \"no_edges_reason\": \"no-project-targets\",\n  \"population\": 17,\n  \"population_language\": \"rust\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 17418.3,\n  \"project_root\": \"/work/phazly/src\",\n  \"report_out\": \"/work/phazly/snapshot/.engine-stage-rust.json\",\n  \"resolution\": {\n    \"askable\": 31004,\n    \"by_language\": {\n      \"javascript\": {\n        \"calls\": 639,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 329,\n        \"resolved\": 65,\n        \"resolved_ratio\": 0.198\n      },\n      \"kotlin\": {\n        \"calls\": 573,\n        \"engine\": null,\n        \"resolvable\": 305,\n        \"resolved\": 36,\n        \"resolved_ratio\": 0.118\n      },\n      \"python\": {\n        \"calls\": 32116,\n        \"engine\": \"jedi@0.20.1\",\n        \"resolvable\": 13349,\n        \"resolved\": 10292,\n        \"resolved_ratio\": 0.771\n      },\n      \"rust\": {\n        \"calls\": 29,\n        \"engine\": \"rust-analyzer@2026-11-09\",\n        \"resolvable\": 17,\n        \"resolved\": 0,\n        \"resolved_ratio\": 0.0\n      },\n      \"typescript\": {\n        \"calls\": 15160,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 5763,\n        \"resolved\": 3250,\n        \"resolved_ratio\": 0.564\n      }\n    },\n    \"calls\": 48517,\n    \"dynamic\": 89,\n    \"engine_confirmed\": 6210,\n    \"engine_unresolved\": 5760,\n    \"external\": 28754,\n    \"external_by_class\": {\n      \"builtin\": 9991,\n      \"engine-external-definition\": 18763\n    },\n    \"lexical_resolved\": 7433,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 19763,\n    \"resolved\": 13643,\n    \"resolved_ratio\": 0.69,\n    \"unasked\": 269\n  },\n  \"reused\": 0,\n  \"selected\": 17,\n  \"source_verification\": {\n    \"after_inference\": 3,\n    \"before_inference\": 3\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 21691.3,\n  \"verdicts\": {\n    \"unresolved\": 17\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"javascript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin\",\n      \"reason\": \"could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden\",\n      \"state\": \"failed\"\n    },\n    \"python\": {\n      \"engine\": \"jedi@0.20.1\",\n      \"state\": \"fresh\"\n    },\n    \"rust\": {\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"state\": \"fresh\"\n    },\n    \"typescript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "snapshot_seconds": 55.1,
+ "pass_seconds": 2284.5,
+ "pass_stdout": "\"rust\": {\n      \"asked\": 17,\n      \"candidates\": 0,\n      \"confirmed\": 0,\n      \"created_at\": \"2026-11-13T13:13:22Z\",\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"excluded_classes\": {\n        \"builtin\": 12\n      },\n      \"no_edges_reason\": \"no-project-targets\",\n      \"population\": 17,\n      \"reused\": 0,\n      \"selected\": 17,\n      \"source_verification\": {\n        \"after_inference\": 3,\n        \"before_inference\": 3\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"unresolved\": 17\n      }\n    }\n  },\n  \"latency_mean_ms\": 1.0,\n  \"latency_p95_ms\": 3.4,\n  \"no_edges_reason\": \"no-project-targets\",\n  \"population\": 17,\n  \"population_language\": \"rust\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 16536.6,\n  \"project_root\": \"/work/phazly/src\",\n  \"report_out\": \"/work/phazly/snapshot/.engine-stage-rust.json\",\n  \"resolution\": {\n    \"askable\": 31004,\n    \"by_language\": {\n      \"javascript\": {\n        \"calls\": 639,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 329,\n        \"resolved\": 65,\n        \"resolved_ratio\": 0.198\n      },\n      \"kotlin\": {\n        \"calls\": 573,\n        \"engine\": \"kotlin-analysis-api@2.3.13\",\n        \"resolvable\": 192,\n        \"resolved\": 41,\n        \"resolved_ratio\": 0.214\n      },\n      \"python\": {\n        \"calls\": 32116,\n        \"engine\": \"jedi@0.20.1\",\n        \"resolvable\": 13347,\n        \"resolved\": 10292,\n        \"resolved_ratio\": 0.771\n      },\n      \"rust\": {\n        \"calls\": 29,\n        \"engine\": \"rust-analyzer@2026-11-09\",\n        \"resolvable\": 17,\n        \"resolved\": 0,\n        \"resolved_ratio\": 0.0\n      },\n      \"typescript\": {\n        \"calls\": 15160,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 5763,\n        \"resolved\": 3257,\n        \"resolved_ratio\": 0.565\n      }\n    },\n    \"calls\": 48517,\n    \"dynamic\": 89,\n    \"engine_confirmed\": 6222,\n    \"engine_unresolved\": 5903,\n    \"external\": 28869,\n    \"external_by_class\": {\n      \"builtin\": 9991,\n      \"engine-external-definition\": 18878\n    },\n    \"lexical_resolved\": 7433,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 19648,\n    \"resolved\": 13655,\n    \"resolved_ratio\": 0.695,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 17,\n  \"source_verification\": {\n    \"after_inference\": 3,\n    \"before_inference\": 3\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 20572.9,\n  \"verdicts\": {\n    \"unresolved\": 17\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"javascript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"state\": \"fresh\"\n    },\n    \"python\": {\n      \"engine\": \"jedi@0.20.1\",\n      \"state\": \"fresh\"\n    },\n    \"rust\": {\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"state\": \"fresh\"\n    },\n    \"typescript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -20,13 +20,13 @@
     "excluded_classes": {
      "builtin": 7494
     },
-    "inference_elapsed_ms": 1607541.2,
+    "inference_elapsed_ms": 1597130.3,
     "languages": {
      "python": {
       "asked": 19801,
       "candidates": 181,
       "confirmed": 5477,
-      "created_at": "2026-11-13T08:58:39Z",
+      "created_at": "2026-11-13T13:03:16Z",
       "engine": "jedi@0.20.1",
       "excluded_classes": {
        "builtin": 7494
@@ -46,20 +46,20 @@
        "dynamic-callee": 6,
        "edge-call": 4477,
        "edge-instantiation": 1000,
-       "external-definition": 11273,
-       "infer-error:KeyError": 2,
+       "external-definition": 11275,
+       "infer-error:KeyError": 1,
        "project-not-a-symbol": 68,
-       "unresolved": 2868
+       "unresolved": 2867
       }
      }
     },
-    "latency_mean_ms": 81.2,
-    "latency_p95_ms": 226.3,
+    "latency_mean_ms": 80.7,
+    "latency_p95_ms": 228.1,
     "no_edges_reason": null,
     "population": 19807,
     "population_language": "python",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 5586.6,
+    "probe_init_elapsed_ms": 6356.3,
     "project_root": "/work/phazly/src",
     "resolution": {
      "askable": 31004,
@@ -81,7 +81,7 @@
       "python": {
        "calls": 32116,
        "engine": "jedi@0.20.1",
-       "resolvable": 13349,
+       "resolvable": 13347,
        "resolved": 10292,
        "resolved_ratio": 0.771
       },
@@ -103,15 +103,15 @@
      "calls": 48517,
      "dynamic": 89,
      "engine_confirmed": 5477,
-     "engine_unresolved": 3049,
-     "external": 21264,
+     "engine_unresolved": 3048,
+     "external": 21266,
      "external_by_class": {
       "builtin": 9991,
-      "engine-external-definition": 11273
+      "engine-external-definition": 11275
      },
      "lexical_resolved": 7433,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-     "resolvable": 27253,
+     "resolvable": 27251,
      "resolved": 12910,
      "resolved_ratio": 0.474,
      "unasked": 11203
@@ -123,27 +123,135 @@
      "before_inference": 336
     },
     "stride": 1,
-    "total_elapsed_ms": 1680285.2,
+    "total_elapsed_ms": 1669917.4,
     "verdicts": {
      "ambiguous-target": 113,
      "dynamic-callee": 6,
      "edge-call": 4477,
      "edge-instantiation": 1000,
-     "external-definition": 11273,
-     "infer-error:KeyError": 2,
+     "external-definition": 11275,
+     "infer-error:KeyError": 1,
      "project-not-a-symbol": 68,
-     "unresolved": 2868
+     "unresolved": 2867
     }
    },
    "kotlin": {
-    "available": false,
-    "engine": "kotlin",
-    "install": null,
-    "languages": [
-     "kotlin"
-    ],
-    "memory_exhausted": false,
-    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+    "answer_cache": "/work/phazly/snapshot/engine-answers.sqlite",
+    "asked": 269,
+    "available": true,
+    "candidates": 0,
+    "confirmed_edges": 5,
+    "coverage": "269 of 269 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/phazly/snapshot/engine-edges.sqlite",
+    "engine": "kotlin-analysis-api@2.3.13",
+    "excluded_classes": {
+     "builtin": 268
+    },
+    "inference_elapsed_ms": 5158.2,
+    "languages": {
+     "kotlin": {
+      "asked": 269,
+      "candidates": 0,
+      "confirmed": 5,
+      "created_at": "2026-11-13T13:13:01Z",
+      "engine": "kotlin-analysis-api@2.3.13",
+      "excluded_classes": {
+       "builtin": 268
+      },
+      "no_edges_reason": null,
+      "population": 269,
+      "reused": 0,
+      "selected": 269,
+      "source_verification": {
+       "after_inference": 8,
+       "before_inference": 8
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "edge-call": 5,
+       "external-definition": 113,
+       "unresolved": 151
+      }
+     }
+    },
+    "latency_mean_ms": 19.2,
+    "latency_p95_ms": 65.6,
+    "no_edges_reason": null,
+    "population": 269,
+    "population_language": "kotlin",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 39887.0,
+    "project_root": "/work/phazly/src",
+    "resolution": {
+     "askable": 31004,
+     "by_language": {
+      "javascript": {
+       "calls": 639,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 329,
+       "resolved": 65,
+       "resolved_ratio": 0.198
+      },
+      "kotlin": {
+       "calls": 573,
+       "engine": "kotlin-analysis-api@2.3.13",
+       "resolvable": 192,
+       "resolved": 41,
+       "resolved_ratio": 0.214
+      },
+      "python": {
+       "calls": 32116,
+       "engine": "jedi@0.20.1",
+       "resolvable": 13347,
+       "resolved": 10292,
+       "resolved_ratio": 0.771
+      },
+      "rust": {
+       "calls": 29,
+       "engine": null,
+       "resolvable": 17,
+       "resolved": 0,
+       "resolved_ratio": 0.0
+      },
+      "typescript": {
+       "calls": 15160,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 5763,
+       "resolved": 3257,
+       "resolved_ratio": 0.565
+      }
+     },
+     "calls": 48517,
+     "dynamic": 89,
+     "engine_confirmed": 6222,
+     "engine_unresolved": 5886,
+     "external": 28869,
+     "external_by_class": {
+      "builtin": 9991,
+      "engine-external-definition": 18878
+     },
+     "lexical_resolved": 7433,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 19648,
+     "resolved": 13655,
+     "resolved_ratio": 0.695,
+     "unasked": 17
+    },
+    "reused": 0,
+    "selected": 269,
+    "source_verification": {
+     "after_inference": 8,
+     "before_inference": 8
+    },
+    "stride": 1,
+    "total_elapsed_ms": 49861.2,
+    "verdicts": {
+     "edge-call": 5,
+     "external-definition": 113,
+     "unresolved": 151
+    }
    },
    "rust": {
     "answer_cache": "/work/phazly/snapshot/engine-answers.sqlite",
@@ -158,13 +266,13 @@
     "excluded_classes": {
      "builtin": 12
     },
-    "inference_elapsed_ms": 20.6,
+    "inference_elapsed_ms": 17.3,
     "languages": {
      "rust": {
       "asked": 17,
       "candidates": 0,
       "confirmed": 0,
-      "created_at": "2026-11-13T09:10:35Z",
+      "created_at": "2026-11-13T13:13:22Z",
       "engine": "rust-analyzer@2026-11-09",
       "excluded_classes": {
        "builtin": 12
@@ -184,13 +292,13 @@
       }
      }
     },
-    "latency_mean_ms": 1.2,
-    "latency_p95_ms": 4.8,
+    "latency_mean_ms": 1.0,
+    "latency_p95_ms": 3.4,
     "no_edges_reason": "no-project-targets",
     "population": 17,
     "population_language": "rust",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 17418.3,
+    "probe_init_elapsed_ms": 16536.6,
     "project_root": "/work/phazly/src",
     "resolution": {
      "askable": 31004,
@@ -204,15 +312,15 @@
       },
       "kotlin": {
        "calls": 573,
-       "engine": null,
-       "resolvable": 305,
-       "resolved": 36,
-       "resolved_ratio": 0.118
+       "engine": "kotlin-analysis-api@2.3.13",
+       "resolvable": 192,
+       "resolved": 41,
+       "resolved_ratio": 0.214
       },
       "python": {
        "calls": 32116,
        "engine": "jedi@0.20.1",
-       "resolvable": 13349,
+       "resolvable": 13347,
        "resolved": 10292,
        "resolved_ratio": 0.771
       },
@@ -227,25 +335,25 @@
        "calls": 15160,
        "engine": "typescript-language-server@4.3.3",
        "resolvable": 5763,
-       "resolved": 3250,
-       "resolved_ratio": 0.564
+       "resolved": 3257,
+       "resolved_ratio": 0.565
       }
      },
      "calls": 48517,
      "dynamic": 89,
-     "engine_confirmed": 6210,
-     "engine_unresolved": 5760,
-     "external": 28754,
+     "engine_confirmed": 6222,
+     "engine_unresolved": 5903,
+     "external": 28869,
      "external_by_class": {
       "builtin": 9991,
-      "engine-external-definition": 18763
+      "engine-external-definition": 18878
      },
      "lexical_resolved": 7433,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-     "resolvable": 19763,
-     "resolved": 13643,
-     "resolved_ratio": 0.69,
-     "unasked": 269
+     "resolvable": 19648,
+     "resolved": 13655,
+     "resolved_ratio": 0.695,
+     "unasked": 0
     },
     "reused": 0,
     "selected": 17,
@@ -254,7 +362,7 @@
      "before_inference": 3
     },
     "stride": 1,
-    "total_elapsed_ms": 21691.3,
+    "total_elapsed_ms": 20572.9,
     "verdicts": {
      "unresolved": 17
     }
@@ -263,8 +371,8 @@
     "answer_cache": "/work/phazly/snapshot/engine-answers.sqlite",
     "asked": 10917,
     "available": true,
-    "candidates": 2565,
-    "confirmed_edges": 733,
+    "candidates": 2558,
+    "confirmed_edges": 740,
     "coverage": "10917 of 11000 unresolved call references",
     "dry_run": false,
     "edges_store": "/work/phazly/snapshot/engine-edges.sqlite",
@@ -272,13 +380,13 @@
     "excluded_classes": {
      "builtin": 2217
     },
-    "inference_elapsed_ms": 451975.3,
+    "inference_elapsed_ms": 254656.5,
     "languages": {
      "javascript": {
       "asked": 392,
       "candidates": 139,
       "confirmed": 0,
-      "created_at": "2026-11-13T09:10:09Z",
+      "created_at": "2026-11-13T13:12:10Z",
       "engine": "typescript-language-server@4.3.3",
       "excluded_classes": {
        "builtin": 179
@@ -302,9 +410,9 @@
      },
      "typescript": {
       "asked": 10525,
-      "candidates": 2426,
-      "confirmed": 733,
-      "created_at": "2026-11-13T09:10:09Z",
+      "candidates": 2419,
+      "confirmed": 740,
+      "created_at": "2026-11-13T13:12:10Z",
       "engine": "typescript-language-server@4.3.3",
       "excluded_classes": {
        "builtin": 2038
@@ -320,22 +428,22 @@
       "state": "fresh",
       "stride": 1,
       "verdicts": {
-       "ambiguous-target": 493,
+       "ambiguous-target": 486,
        "dynamic-callee": 80,
-       "edge-call": 733,
+       "edge-call": 740,
        "external-definition": 7359,
        "project-not-a-symbol": 1933,
        "unresolved": 7
       }
      }
     },
-    "latency_mean_ms": 41.4,
-    "latency_p95_ms": 114.6,
+    "latency_mean_ms": 23.3,
+    "latency_p95_ms": 45.7,
     "no_edges_reason": null,
     "population": 11000,
     "population_language": "multi",
     "position_unverified": 0,
-    "probe_init_elapsed_ms": 61395.5,
+    "probe_init_elapsed_ms": 67360.9,
     "project_root": "/work/phazly/src",
     "resolution": {
      "askable": 31004,
@@ -357,7 +465,7 @@
       "python": {
        "calls": 32116,
        "engine": "jedi@0.20.1",
-       "resolvable": 13349,
+       "resolvable": 13347,
        "resolved": 10292,
        "resolved_ratio": 0.771
       },
@@ -372,24 +480,24 @@
        "calls": 15160,
        "engine": "typescript-language-server@4.3.3",
        "resolvable": 5763,
-       "resolved": 3250,
-       "resolved_ratio": 0.564
+       "resolved": 3257,
+       "resolved_ratio": 0.565
       }
      },
      "calls": 48517,
      "dynamic": 89,
-     "engine_confirmed": 6210,
-     "engine_unresolved": 5743,
-     "external": 28754,
+     "engine_confirmed": 6217,
+     "engine_unresolved": 5735,
+     "external": 28756,
      "external_by_class": {
       "builtin": 9991,
-      "engine-external-definition": 18763
+      "engine-external-definition": 18765
      },
      "lexical_resolved": 7433,
      "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-     "resolvable": 19763,
-     "resolved": 13643,
-     "resolved_ratio": 0.69,
+     "resolvable": 19761,
+     "resolved": 13650,
+     "resolved_ratio": 0.691,
      "unasked": 286
     },
     "reused": 0,
@@ -399,27 +507,26 @@
      "before_inference": 448
     },
     "stride": 1,
-    "total_elapsed_ms": 678722.9,
+    "total_elapsed_ms": 522253.1,
     "verdicts": {
-     "ambiguous-target": 493,
+     "ambiguous-target": 486,
      "dynamic-callee": 83,
-     "edge-call": 733,
+     "edge-call": 740,
      "external-definition": 7490,
      "project-not-a-symbol": 2072,
      "unresolved": 129
     }
    }
   },
-  "finished_at": "2026-11-13T09:10:36Z",
+  "finished_at": "2026-11-13T13:13:24Z",
   "languages": {
    "javascript": {
     "engine": "typescript-language-server@4.3.3",
     "state": "fresh"
    },
    "kotlin": {
-    "engine": "kotlin",
-    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden",
-    "state": "failed"
+    "engine": "kotlin-analysis-api@2.3.13",
+    "state": "fresh"
    },
    "python": {
     "engine": "jedi@0.20.1",
@@ -434,9 +541,9 @@
     "state": "fresh"
    }
   },
-  "manifest_digest": "6aca1b9389989b58b555764bc04f1d966721c9d8956bee09885f0c7c295783ed",
+  "manifest_digest": "4aaed70d43b00d284f746835783a4cd69aacadcad2f429dcdaec40cfcd19b266",
   "pass": true,
-  "started_at": "2026-11-13T08:30:39Z"
+  "started_at": "2026-11-13T12:35:25Z"
  },
  "engines": {
   "jedi": {
@@ -458,11 +565,11 @@
    "reads_naming_project_callables": {
     "python read .py": 14071
    },
-   "answers_cached": 19799,
+   "answers_cached": 19800,
    "answer_verdicts": {
-    "external-definition": 11273,
+    "external-definition": 11275,
     "edge-call": 4477,
-    "unresolved": 2868,
+    "unresolved": 2867,
     "edge-instantiation": 1000,
     "ambiguous-target": 113,
     "project-not-a-symbol": 68
@@ -483,10 +590,10 @@
        "dynamic-callee": 6,
        "edge-call": 4477,
        "edge-instantiation": 1000,
-       "external-definition": 11273,
-       "infer-error:KeyError": 2,
+       "external-definition": 11275,
+       "infer-error:KeyError": 1,
        "project-not-a-symbol": 68,
-       "unresolved": 2868
+       "unresolved": 2867
       },
       "excluded_classes": {
        "builtin": 7494
@@ -516,6 +623,12 @@
       "goto": {
        "project-callable function": 19,
        "project-value binding": 1
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-call function": 19,
+       "edge-call function + project-not-a-symbol": 1
       }
      },
      "examples": [
@@ -558,6 +671,28 @@
          "kind": "binding",
          "id": "functions-python/app/handlers/admin/analytics.py::binding@275:4",
          "type": "statement"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@46:0",
+         "kind": "function"
+        },
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@121:0",
+         "kind": "function"
+        },
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@160:0",
+         "kind": "function"
+        },
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@193:0",
+         "kind": "function"
         }
        ]
       },
@@ -609,6 +744,25 @@
          "in_view": true,
          "type": "statement"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@159:0",
+         "kind": "function"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        }
        ]
       },
       {
@@ -644,6 +798,18 @@
          "id": "functions-python/app/planner/persistence.py::function@1520:4",
          "in_view": true,
          "type": "function"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/planner/persistence.py::function@983:4",
+         "kind": "function"
+        },
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/planner/persistence.py::function@1520:4",
+         "kind": "function"
         }
        ]
       },
@@ -681,6 +847,18 @@
          "in_view": true,
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/planner/persistence.py::function@1114:4",
+         "kind": "function"
+        },
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/planner/persistence.py::function@1827:4",
+         "kind": "function"
+        }
        ]
       }
      ]
@@ -694,6 +872,11 @@
       },
       "goto": {
        "project-callable function": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-call function": 20
       }
      },
      "examples": [
@@ -717,6 +900,13 @@
          "in_view": true,
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/services/mongodb.py::function@49:0",
+         "kind": "function"
+        }
        ]
       },
       {
@@ -738,6 +928,13 @@
          "id": "functions-python/app/api/responses.py::function@14:0",
          "in_view": true,
          "type": "function"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/api/responses.py::function@14:0",
+         "kind": "function"
         }
        ]
       },
@@ -761,6 +958,13 @@
          "in_view": true,
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/handlers/admin/_helpers.py::function@38:0",
+         "kind": "function"
+        }
        ]
       },
       {
@@ -783,6 +987,13 @@
          "in_view": true,
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "functions-python/app/handlers/lookup/rag_search.py::function@141:0",
+         "kind": "function"
+        }
        ]
       }
      ]
@@ -797,6 +1008,11 @@
       "goto": {
        "project-callable class": 19,
        "project-callable function": 1
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-instantiation class": 20
       }
      },
      "examples": [
@@ -820,6 +1036,13 @@
          "in_view": true,
          "type": "class"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "functions-python/app/core/exceptions.py::class@49:0",
+         "kind": "class"
+        }
        ]
       },
       {
@@ -841,6 +1064,13 @@
          "id": "functions-python/app/core/exceptions.py::class@42:0",
          "in_view": true,
          "type": "class"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "functions-python/app/core/exceptions.py::class@42:0",
+         "kind": "class"
         }
        ]
       },
@@ -864,6 +1094,13 @@
          "in_view": true,
          "type": "class"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "functions-python/app/core/exceptions.py::class@42:0",
+         "kind": "class"
+        }
        ]
       },
       {
@@ -886,21 +1123,31 @@
          "in_view": true,
          "type": "class"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "functions-python/app/schemas/lookup_macros.py::class@162:0",
+         "kind": "class"
+        }
        ]
       }
      ]
     },
     "python external-definition": {
-     "population": 11273,
+     "population": 11275,
      "sampled": 20,
      "places": {
       "infer": {
-       "external": 19,
-       "no-location": 1
+       "external": 20
       },
       "goto": {
-       "external": 19,
-       "no-location": 1
+       "external": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "external-definition": 20
       }
      },
      "examples": [
@@ -922,6 +1169,11 @@
          "full_name": "typing.MutableMapping.setdefault",
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
@@ -941,6 +1193,11 @@
          "package": "site-packages:pydantic",
          "full_name": "pydantic.fields.Field",
          "type": "function"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
         }
        ]
       },
@@ -962,25 +1219,35 @@
          "full_name": "builtins.list.extend",
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
-       "site": "functions-python/app/handlers/stripe_webhook.py:632",
-       "name": "request.headers.get",
+       "site": "functions-python/app/handlers/stripe_webhook.py:634",
+       "name": "JSONResponse",
        "infer": [
         {
          "place": "external",
-         "package": "site-packages:jedi",
-         "full_name": "typing.Mapping.get",
-         "type": "function"
+         "package": "site-packages:starlette",
+         "full_name": "starlette.responses.JSONResponse",
+         "type": "class"
         }
        ],
        "goto": [
         {
          "place": "external",
-         "package": "site-packages:jedi",
-         "full_name": "typing.Mapping.get",
-         "type": "function"
+         "package": "site-packages:starlette",
+         "full_name": "starlette.responses.JSONResponse",
+         "type": "class"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
         }
        ]
       }
@@ -998,6 +1265,11 @@
       "goto": {
        "project-callable function": 19,
        "project-value binding": 1
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "project-not-a-symbol": 20
       }
      },
      "examples": [
@@ -1034,6 +1306,17 @@
          "id": "functions-python/app/week_planner/insight_engine.py::binding@1113:12",
          "type": "statement"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        }
        ]
       },
       {
@@ -1053,6 +1336,11 @@
          "id": "functions-python/app/handlers/admin/api_keys.py::function@68:0",
          "in_view": true,
          "type": "function"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
         }
        ]
       },
@@ -1075,6 +1363,11 @@
          "in_view": true,
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
        ]
       },
       {
@@ -1095,12 +1388,17 @@
          "in_view": true,
          "type": "function"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
        ]
       }
      ]
     },
     "python unresolved": {
-     "population": 2868,
+     "population": 2867,
      "sampled": 20,
      "places": {
       "infer": {
@@ -1110,30 +1408,39 @@
        "nothing": 20
       }
      },
+     "exact": {
+      "exact_definition": {
+       "nothing": 20
+      }
+     },
      "examples": [
       {
        "site": "functions-python/app/api/deps.py:196",
        "name": "db.apiKeys.find_one",
        "infer": [],
-       "goto": []
+       "goto": [],
+       "exact_definition": []
       },
       {
        "site": "functions-python/app/handlers/admin/users.py:192",
        "name": "user_data.get",
        "infer": [],
-       "goto": []
+       "goto": [],
+       "exact_definition": []
       },
       {
        "site": "functions-python/app/handlers/lookup_barcode.py:129",
        "name": "data.get",
        "infer": [],
-       "goto": []
+       "goto": [],
+       "exact_definition": []
       },
       {
        "site": "functions-python/app/handlers/user_data.py:421",
        "name": "meal_val.get",
        "infer": [],
-       "goto": []
+       "goto": [],
+       "exact_definition": []
       }
      ]
     }
@@ -1152,6 +1459,15 @@
       "project-no-declaration": 1
      }
     },
+    "exact": {
+     "exact_definition": {
+      "external-definition": 31,
+      "edge-instantiation class": 11,
+      "project-not-a-symbol": 10,
+      "nothing": 7,
+      "edge-call function": 1
+     }
+    },
     "examples": [
      {
       "site": "functions-python/app/api/deps.py:231",
@@ -1163,6 +1479,13 @@
         "id": "functions-python/app/api/deps.py::class@147:0",
         "in_view": true,
         "type": "class"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "functions-python/app/api/deps.py::class@147:0",
+        "kind": "class"
        }
       ]
      },
@@ -1177,6 +1500,13 @@
         "in_view": true,
         "type": "class"
        }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "functions-python/app/handlers/admin/analytics.py::class@37:0",
+        "kind": "class"
+       }
       ]
      },
      {
@@ -1190,6 +1520,13 @@
         "in_view": true,
         "type": "class"
        }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "functions-python/app/pipeline/types.py::class@368:0",
+        "kind": "class"
+       }
       ]
      },
      {
@@ -1202,6 +1539,11 @@
         "full_name": "builtins.float",
         "type": "instance"
        }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
       ]
      }
     ]
@@ -1209,10 +1551,371 @@
    "lexical_agreement": {
     "population": 4815,
     "counts": {
-     "same declaration": 28,
-     "engine says another place": 2
+     "same declaration": 1956,
+     "engine says another place": 44
+    },
+    "exact": {
+     "same declaration": 1956,
+     "engine says another place": 44
     },
     "examples": [
+     {
+      "site": "functions-python/app/core/config.py:138",
+      "name": "get_settings",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/app/core/config.py::function@132:0"
+     },
+     {
+      "site": "functions-python/app/planner/context.py:610",
+      "name": "engine_build_digest",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/app/planner/snapshot.py::function@259:0"
+     },
+     {
+      "site": "functions-python/app/services/food_search.py:1132",
+      "name": "_marker_pattern",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/app/services/food_search.py::function@784:0"
+     },
+     {
+      "site": "functions-python/tests/conftest.py:226",
+      "name": "_tracked_translations",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/conftest.py::function@111:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_application.py:217",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_application.py::function@117:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_assembly.py:71",
+      "name": "_structured",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_assembly.py::function@53:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_assembly.py:1230",
+      "name": "_catalog",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_assembly.py::function@60:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_assembly.py:1412",
+      "name": "_catalog",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_assembly.py::function@60:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_assembly.py:362",
+      "name": "_catalog",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_assembly.py::function@60:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_context.py:424",
+      "name": "_source",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_context.py::function@50:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_context.py:591",
+      "name": "_source",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_context.py::function@50:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_context.py:676",
+      "name": "_source",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_context.py::function@50:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_context.py:944",
+      "name": "_source",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_context.py::function@50:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1201",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1219",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1247",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1263",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1297",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1313",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1329",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1364",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
      {
       "site": "functions-python/tests/unit/test_planner_solver.py:1380",
       "name": "_corpus",
@@ -1223,10 +1926,100 @@
         "type": "instance"
        }
       ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
       "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
      },
      {
-      "site": "functions-python/tests/unit/test_planner_witness.py:1351",
+      "site": "functions-python/tests/unit/test_planner_solver.py:1396",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1413",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1464",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1505",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1521",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1590",
       "name": "_corpus",
       "infer": [
        {
@@ -1235,12 +2028,289 @@
         "type": "instance"
        }
       ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1658",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1809",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1824",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1851",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:2167",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:2183",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:2203",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@139:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:2303",
+      "name": "_archetypes_by_semantic",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@2262:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:2779",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:2812",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:3290",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1013",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_witness.py:1349",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_witness.py::function@131:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_witness.py:159",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
       "lexical": "functions-python/tests/unit/test_planner_witness.py::function@125:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_witness.py:555",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_witness.py::function@131:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_witness.py:611",
+      "name": "_protos",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_witness.py::function@131:0"
      }
     ]
    },
-   "seconds": 86.1,
-   "probe_seconds": 93.8
+   "seconds": 158.7,
+   "probe_seconds": 164.9
   },
   "typescript": {
    "engine": "typescript",
@@ -1277,8 +2347,8 @@
     "external-definition": 7490,
     "project-not-a-symbol": 2072,
     "unresolved": 129,
-    "edge-call": 733,
-    "ambiguous-target": 493
+    "edge-call": 740,
+    "ambiguous-target": 486
    },
    "edge_store": {
     "reason": null,
@@ -1308,12 +2378,12 @@
       "population": 10605,
       "selected": 10605,
       "asked": 10525,
-      "confirmed": 733,
-      "candidates": 2426,
+      "confirmed": 740,
+      "candidates": 2419,
       "verdicts": {
-       "ambiguous-target": 493,
+       "ambiguous-target": 486,
        "dynamic-callee": 80,
-       "edge-call": 733,
+       "edge-call": 740,
        "external-definition": 7359,
        "project-not-a-symbol": 1933,
        "unresolved": 7
@@ -1326,9 +2396,9 @@
     }
    },
    "stored_edges": {
-    "candidate ambiguous-target target=None": 493,
+    "candidate ambiguous-target target=None": 486,
     "candidate project-not-a-symbol target=None": 2072,
-    "confirmed edge-call target=function": 429,
+    "confirmed edge-call target=function": 436,
     "confirmed edge-call target=method contract": 304
    },
    "probe": {
@@ -1348,6 +2418,14 @@
       },
       "type_definition": {
        "external": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "external-definition": 20
+      },
+      "exact_implementation": {
+       "external-definition": 20
       }
      },
      "examples": [
@@ -1407,6 +2485,22 @@
          "place": "external",
          "package": "node_modules:typescript"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
@@ -1428,6 +2522,16 @@
         {
          "place": "external",
          "package": "node_modules:typescript"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
         }
        ]
       },
@@ -1467,6 +2571,16 @@
          "place": "external",
          "package": "node_modules:typescript"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
@@ -1489,6 +2603,16 @@
          "place": "external",
          "package": "node_modules:typescript"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       }
      ]
@@ -1507,6 +2631,14 @@
        "nothing": 20
       }
      },
+     "exact": {
+      "exact_definition": {
+       "project-not-a-symbol": 20
+      },
+      "exact_implementation": {
+       "nothing": 20
+      }
+     },
      "examples": [
       {
        "site": "react-app/scripts/android-version.mjs:29",
@@ -1518,7 +2650,13 @@
         }
        ],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": []
       },
       {
        "site": "react-app/scripts/android-version.mjs:30",
@@ -1530,7 +2668,13 @@
         }
        ],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": []
       },
       {
        "site": "react-app/scripts/build-android.mjs:47",
@@ -1542,7 +2686,13 @@
         }
        ],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": []
       },
       {
        "site": "react-app/scripts/store-art/export-feature.mjs:8",
@@ -1554,7 +2704,13 @@
         }
        ],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": []
       }
      ]
     },
@@ -1572,53 +2728,81 @@
        "nothing": 20
       }
      },
+     "exact": {
+      "exact_definition": {
+       "nothing": 20
+      },
+      "exact_implementation": {
+       "nothing": 20
+      }
+     },
      "examples": [
       {
        "site": "react-app/scripts/android-version.mjs:107",
        "name": "rl.close",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/scripts/android-version.mjs:57",
        "name": "rl.on",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/scripts/android-version.mjs:73",
        "name": "rl.question",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/scripts/compute-safe-area-csp-hash.mjs:35",
        "name": "html.indexOf",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       }
      ]
     },
     "typescript ambiguous-target": {
-     "population": 493,
+     "population": 486,
      "sampled": 20,
      "places": {
       "definition": {
-       "external + project-value binding": 12,
-       "external + project-callable function": 7,
-       "external + project-value parameter": 1
+       "external + project-value binding": 14,
+       "external + project-callable function": 6
       },
       "implementation": {
-       "project-value binding": 11,
-       "nothing": 9
+       "project-value binding": 12,
+       "nothing": 8
       },
       "type_definition": {
-       "external": 11,
-       "nothing": 9
+       "nothing": 11,
+       "external": 9
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "binding binding other value + external-definition": 12,
+       "binding parameter + external-definition": 6,
+       "binding binding destructured + external-definition": 1,
+       "binding binding call without a function in place: bind + external-definition": 1
+      },
+      "exact_implementation": {
+       "binding binding other value": 11,
+       "nothing": 8,
+       "binding binding call without a function in place: bind": 1
       }
      },
      "examples": [
@@ -1643,7 +2827,22 @@
          "id": "react-app/src/stores/appStore.ts::binding@164:13"
         }
        ],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding other value"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "binding",
+         "kind": "binding other value"
+        }
+       ]
       },
       {
        "site": "react-app/src/components/common/QuickAddSheet.tsx:252",
@@ -1666,10 +2865,25 @@
          "id": "react-app/src/stores/appStore.ts::binding@164:13"
         }
        ],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding other value"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "binding",
+         "kind": "binding other value"
+        }
+       ]
       },
       {
-       "site": "react-app/src/components/home/EditModeToolbar.tsx:21",
+       "site": "react-app/src/components/home/BodyCheckSheet.tsx:27",
        "name": "useAppStore",
        "definition": [
         {
@@ -1689,10 +2903,25 @@
          "id": "react-app/src/stores/appStore.ts::binding@164:13"
         }
        ],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding other value"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "binding",
+         "kind": "binding other value"
+        }
+       ]
       },
       {
-       "site": "react-app/src/components/home/HomeTrainingJourney.tsx:81",
+       "site": "react-app/src/components/home/HomeTrainingJourney.tsx:78",
        "name": "t",
        "definition": [
         {
@@ -1711,29 +2940,53 @@
          "place": "external",
          "package": "node_modules:i18next"
         }
-       ]
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding destructured"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": []
       }
      ]
     },
     "typescript edge-call": {
-     "population": 733,
+     "population": 740,
      "sampled": 20,
      "places": {
       "definition": {
-       "project-callable function": 9,
-       "project-contract method": 6,
-       "project-value parameter": 4,
+       "project-callable function": 8,
+       "project-value parameter": 6,
+       "project-contract method": 5,
        "project-callable function + project-value binding": 1
       },
       "implementation": {
-       "project-callable function": 11,
-       "nothing": 7,
+       "project-callable function": 10,
+       "nothing": 8,
        "project-callable function + project-no-declaration": 1,
        "project-no-declaration": 1
       },
       "type_definition": {
        "project-contract method": 12,
-       "project-callable function": 8
+       "project-callable function": 7,
+       "external": 1
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-call function": 7,
+       "binding parameter": 7,
+       "edge-call method contract": 5,
+       "binding binding destructured + edge-call function": 1
+      },
+      "exact_implementation": {
+       "nothing": 8,
+       "edge-call function": 7,
+       "project-not-a-symbol": 5
       }
      },
      "examples": [
@@ -1871,10 +3124,79 @@
          "id": "react-app/scripts/screenshots/take-screenshots.ts::method@309:2",
          "in_view": false
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::method@309:2",
+         "kind": "method contract"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        }
        ]
       },
       {
-       "site": "react-app/src/components/common/GoalDurationSelector.tsx:206",
+       "site": "react-app/src/components/common/GoalDurationSelector.tsx:265",
        "name": "cn",
        "definition": [
         {
@@ -1899,44 +3221,30 @@
          "id": "shared/ui/lib/utils.ts::function@4:7",
          "in_view": true
         }
-       ]
-      },
-      {
-       "site": "react-app/src/components/diario/DiarioMealSection.tsx:123",
-       "name": "cn",
-       "definition": [
+       ],
+       "exact_definition": [
         {
-         "place": "project-callable",
-         "kind": "function",
+         "verdict": "edge-call",
          "id": "shared/ui/lib/utils.ts::function@4:7",
-         "in_view": true
+         "kind": "function"
         }
        ],
-       "implementation": [
+       "exact_implementation": [
         {
-         "place": "project-callable",
-         "kind": "function",
+         "verdict": "edge-call",
          "id": "shared/ui/lib/utils.ts::function@4:7",
-         "in_view": true
-        }
-       ],
-       "type_definition": [
-        {
-         "place": "project-callable",
-         "kind": "function",
-         "id": "shared/ui/lib/utils.ts::function@4:7",
-         "in_view": true
+         "kind": "function"
         }
        ]
       },
       {
-       "site": "react-app/src/components/features/FoodStackPanel.tsx:113",
-       "name": "onAssignToMeal",
+       "site": "react-app/src/components/diario/DiarioMealSection.tsx:549",
+       "name": "onSkip",
        "definition": [
         {
          "place": "project-value",
          "kind": "parameter",
-         "id": "react-app/src/components/features/FoodStackPanel.tsx::parameter@63:2"
+         "id": "react-app/src/components/diario/DiarioMealSection.tsx::parameter@258:2"
         }
        ],
        "implementation": [],
@@ -1944,8 +3252,57 @@
         {
          "place": "project-contract",
          "kind": "method",
-         "id": "react-app/src/components/features/FoodStackPanel.tsx::method@55:2",
+         "id": "react-app/src/components/diario/DiarioMealSection.tsx::method@57:2",
          "in_view": false
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "parameter"
+        }
+       ],
+       "exact_implementation": []
+      },
+      {
+       "site": "react-app/src/components/features/FoodStackPanel.tsx:139",
+       "name": "cn",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "kind": "function"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "edge-call",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "kind": "function"
         }
        ]
       }
@@ -1966,6 +3323,17 @@
       },
       "type_definition": {
        "external": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "external-definition": 16,
+       "binding binding destructured + external-definition": 3,
+       "binding parameter": 1
+      },
+      "exact_implementation": {
+       "external-definition": 16,
+       "nothing": 4
       }
      },
      "examples": [
@@ -1989,6 +3357,16 @@
          "place": "external",
          "package": "node_modules:typescript"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
@@ -2011,7 +3389,17 @@
          "place": "external",
          "package": "node_modules:i18next"
         }
-       ]
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding destructured"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src/components/diario/calm/CalmDiarioHeader.tsx:20",
@@ -2037,6 +3425,19 @@
          "place": "external",
          "package": "node_modules:react-i18next"
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
+        }
        ]
       },
       {
@@ -2058,6 +3459,16 @@
         {
          "place": "external",
          "package": "node_modules:@types/react"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "external-definition"
         }
        ]
       }
@@ -2085,6 +3496,22 @@
        "project-value binding": 1
       }
      },
+     "exact": {
+      "exact_definition": {
+       "binding binding destructured": 8,
+       "binding binding call with a function in place: useCallback + project-not-a-symbol": 5,
+       "binding parameter": 3,
+       "project-not-a-symbol": 1,
+       "binding binding destructured + project-not-a-symbol": 1,
+       "binding binding other value": 1,
+       "binding binding call without a function in place: useNavigateTab + project-not-a-symbol": 1
+      },
+      "exact_implementation": {
+       "nothing": 14,
+       "binding binding call with a function in place: useCallback": 5,
+       "binding binding call without a function in place: useNavigateTab": 1
+      }
+     },
      "examples": [
       {
        "site": "react-app/scripts/screenshots/take-screenshots.ts:292",
@@ -2103,7 +3530,13 @@
          "kind": "binding",
          "id": "react-app/scripts/screenshots/take-screenshots.ts::binding@289:10"
         }
-       ]
+       ],
+       "exact_definition": [
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src/components/common/PortionTag.tsx:44",
@@ -2129,7 +3562,17 @@
          "id": "react-app/src/hooks/useUnitLabels.ts::function@28:36",
          "in_view": true
         }
-       ]
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding destructured"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src/components/features/AIAlternatives.tsx:383",
@@ -2163,6 +3606,21 @@
          "id": "react-app/src/components/features/AIAlternatives.tsx::function@186:34",
          "in_view": true
         }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding call with a function in place: useCallback"
+        },
+        {
+         "verdict": "project-not-a-symbol"
+        }
+       ],
+       "exact_implementation": [
+        {
+         "verdict": "binding",
+         "kind": "binding call with a function in place: useCallback"
+        }
        ]
       },
       {
@@ -2181,7 +3639,14 @@
          "place": "external",
          "package": "node_modules:@types/react"
         }
-       ]
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "binding destructured"
+        }
+       ],
+       "exact_implementation": []
       }
      ]
     },
@@ -2199,34 +3664,50 @@
        "nothing": 7
       }
      },
+     "exact": {
+      "exact_definition": {
+       "nothing": 7
+      },
+      "exact_implementation": {
+       "nothing": 7
+      }
+     },
      "examples": [
       {
        "site": "react-app/src/lib/nativeAuth.ts:233",
        "name": "plugin.signInWithGoogle",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src/lib/nativeAuth.ts:255",
        "name": "plugin.signOut",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src/lib/nativeAuth.ts:326",
        "name": "plugin.getCurrentUser",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src/lib/nativeAuth.ts:167",
        "name": "plugin.getCurrentUser",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       }
      ]
     }
@@ -2255,6 +3736,40 @@
       "project-callable function + project-no-declaration + project-value binding": 1
      }
     },
+    "exact": {
+     "exact_definition": {
+      "edge-call function": 14,
+      "binding parameter": 10,
+      "binding property": 9,
+      "binding binding other value": 7,
+      "binding binding destructured": 5,
+      "external-definition": 3,
+      "binding binding call with a function in place: useAppStore": 3,
+      "project-not-a-symbol": 2,
+      "binding binding call with a function in place: useCallback + edge-call method contract": 1,
+      "edge-call method contract": 1,
+      "binding binding call with a function in place: lazy": 1,
+      "binding binding call with a function in place: findIndex": 1,
+      "binding binding call without a function in place: getActivePhase": 1,
+      "nothing": 1,
+      "binding binding call without a function in place: parseWeekPlan": 1
+     },
+     "exact_implementation": {
+      "nothing": 19,
+      "edge-call function": 14,
+      "project-not-a-symbol": 7,
+      "binding binding other value": 7,
+      "external-definition": 3,
+      "binding binding call with a function in place: useAppStore": 3,
+      "binding binding destructured": 1,
+      "binding binding call with a function in place: useCallback": 1,
+      "binding binding call with a function in place: lazy": 1,
+      "binding binding call with a function in place: findIndex": 1,
+      "binding binding call without a function in place: getActivePhase": 1,
+      "binding binding call without a function in place: parseWeekPlan + project-not-a-symbol": 1,
+      "binding binding call without a function in place: parseWeekPlan": 1
+     }
+    },
     "examples": [
      {
       "site": "react-app/public/webview-guard.js:53",
@@ -2269,6 +3784,16 @@
        {
         "place": "external",
         "package": "node_modules:typescript"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "external-definition"
        }
       ]
      },
@@ -2379,6 +3904,86 @@
         "place": "project-no-declaration",
         "file": "react-app/scripts/screenshots/take-screenshots.ts"
        }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "property"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       },
+       {
+        "verdict": "project-not-a-symbol"
+       }
       ]
      },
      {
@@ -2394,6 +3999,16 @@
        {
         "place": "external",
         "package": "node_modules:typescript"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "external-definition"
        }
       ]
      },
@@ -2415,6 +4030,20 @@
         "id": "react-app/src/App.tsx::function@194:21",
         "in_view": true
        }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "react-app/src/App.tsx::function@194:21",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "react-app/src/App.tsx::function@194:21",
+        "kind": "function"
+       }
       ]
      }
     ]
@@ -2422,12 +4051,206 @@
    "lexical_agreement": {
     "population": 2582,
     "counts": {
-     "same declaration": 30
+     "same declaration": 1993,
+     "engine says another place": 7
     },
-    "examples": []
+    "exact": {
+     "same declaration": 2000
+    },
+    "examples": [
+     {
+      "site": "react-app/scripts/store-art/export-feature.mjs:98",
+      "name": "f",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "react-app/scripts/store-art/export-feature.mjs::function@98:22",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "react-app/scripts/store-art/export-feature.mjs::function@98:49",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "react-app/scripts/store-art/export-feature.mjs::function@98:49",
+        "kind": "function"
+       }
+      ],
+      "lexical": "react-app/scripts/store-art/export-feature.mjs::function@98:49"
+     },
+     {
+      "site": "react-app/scripts/store-art/export-feature.mjs:98",
+      "name": "f",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "react-app/scripts/store-art/export-feature.mjs::function@98:22",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-call",
+        "id": "react-app/scripts/store-art/export-feature.mjs::function@98:49",
+        "kind": "function"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-call",
+        "id": "react-app/scripts/store-art/export-feature.mjs::function@98:49",
+        "kind": "function"
+       }
+      ],
+      "lexical": "react-app/scripts/store-art/export-feature.mjs::function@98:49"
+     },
+     {
+      "site": "react-app/src/services/cloudSync.ts:617",
+      "name": "DocumentTooLargeError",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "method",
+        "id": "react-app/src/services/cloudSync.ts::method@21:2",
+        "in_view": false
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/services/cloudSync.ts::class@20:7",
+        "kind": "class"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/services/cloudSync.ts::class@20:7",
+        "kind": "class"
+       }
+      ],
+      "lexical": "react-app/src/services/cloudSync.ts::class@20:7"
+     },
+     {
+      "site": "react-app/src/utils/apiClient.ts:156",
+      "name": "ApiError",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "method",
+        "id": "react-app/src/utils/apiClient.ts::method@30:2",
+        "in_view": false
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "lexical": "react-app/src/utils/apiClient.ts::class@28:7"
+     },
+     {
+      "site": "react-app/src/utils/apiClient.ts:86",
+      "name": "ApiError",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "method",
+        "id": "react-app/src/utils/apiClient.ts::method@30:2",
+        "in_view": false
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "lexical": "react-app/src/utils/apiClient.ts::class@28:7"
+     },
+     {
+      "site": "react-app/src/utils/apiClient.ts:108",
+      "name": "ApiError",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "method",
+        "id": "react-app/src/utils/apiClient.ts::method@30:2",
+        "in_view": false
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "lexical": "react-app/src/utils/apiClient.ts::class@28:7"
+     },
+     {
+      "site": "react-app/src/utils/apiClient.ts:111",
+      "name": "ApiError",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "method",
+        "id": "react-app/src/utils/apiClient.ts::method@30:2",
+        "in_view": false
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "exact_implementation": [
+       {
+        "verdict": "edge-instantiation",
+        "id": "react-app/src/utils/apiClient.ts::class@28:7",
+        "kind": "class"
+       }
+      ],
+      "lexical": "react-app/src/utils/apiClient.ts::class@28:7"
+     }
+    ]
    },
-   "seconds": 232.8,
-   "probe_seconds": 233.1
+   "seconds": 517.1,
+   "probe_seconds": 517.8
   },
   "kotlin": {
    "engine": "kotlin",
@@ -2447,18 +4270,434 @@
     "kotlin read .kts": 5,
     "kotlin read .kt": 10
    },
-   "answers_cached": 0,
-   "answer_verdicts": {},
+   "answers_cached": 269,
+   "answer_verdicts": {
+    "unresolved": 151,
+    "external-definition": 113,
+    "edge-call": 5
+   },
    "edge_store": {
     "reason": null,
-    "entries": {}
+    "entries": {
+     "kotlin": {
+      "engine": "kotlin-analysis-api@2.3.13",
+      "state": "fresh",
+      "population": 269,
+      "selected": 269,
+      "asked": 269,
+      "confirmed": 5,
+      "candidates": 0,
+      "verdicts": {
+       "edge-call": 5,
+       "external-definition": 113,
+       "unresolved": 151
+      },
+      "excluded_classes": {
+       "builtin": 268
+      },
+      "no_edges_reason": null
+     }
+    }
    },
-   "stored_edges": {},
+   "stored_edges": {
+    "confirmed edge-call target=function": 5
+   },
    "probe": {
-    "ready": false,
-    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+    "ready": true,
+    "reason": ""
    },
-   "probe_seconds": 2.9
+   "asked_again_by_verdict": {
+    "kotlin edge-call": {
+     "population": 5,
+     "sampled": 5,
+     "places": {
+      "definitions": {
+       "project-callable function": 5
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-call function": 5
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt:184",
+       "name": "listener.onAppSettingsRequested",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@161:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@161:4",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt:192",
+       "name": "listener.onBridgeReady",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@136:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@136:4",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt:202",
+       "name": "listener.onSafeAreaApplied",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@144:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@144:4",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt:210",
+       "name": "listener.onViewportResynced",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@153:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/WebViewBridge.kt::function@153:4",
+         "kind": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "kotlin external-definition": {
+     "population": 113,
+     "sampled": 20,
+     "places": {
+      "definitions": {
+       "no-location": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "external-definition": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/src-tauri/gen/android/app/build.gradle.kts:159",
+       "name": "tauriAndroidModules.forEach",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/build.gradle.kts:42",
+       "name": "(expr).use",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/build.gradle.kts:91",
+       "name": "(expr).toList",
+       "definitions": [
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        },
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        },
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts:214",
+       "name": "(expr).forEach",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      }
+     ]
+    },
+    "kotlin unresolved": {
+     "population": 151,
+     "sampled": 20,
+     "places": {
+      "definitions": {
+       "nothing": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "nothing": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/src-tauri/gen/android/app/build.gradle.kts:41",
+       "name": "propFile.exists",
+       "definitions": [],
+       "exact_definition": []
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts:357",
+       "name": "kotlinGeneratedDir.mkdirs",
+       "definitions": [],
+       "exact_definition": []
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts:543",
+       "name": "(expr).configureEach",
+       "definitions": [],
+       "exact_definition": []
+      },
+      {
+       "site": "react-app/src-tauri/gen/android/app/src/main/java/com/phazly/app/MainActivity.kt:294",
+       "name": "WindowInsetsCompat.toWindowInsetsCompat",
+       "definitions": [],
+       "exact_definition": []
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 15,
+    "sampled": 15,
+    "places": {
+     "definitions": {
+      "nothing": 6,
+      "project-value binding": 4,
+      "project-no-declaration": 2,
+      "project-value parameter": 1,
+      "project-callable function": 1,
+      "no-location": 1
+     }
+    },
+    "exact": {
+     "exact_definition": {
+      "nothing": 6,
+      "binding parameter": 2,
+      "binding binding call without a function in place: file": 2,
+      "project-not-a-symbol": 2,
+      "binding binding call without a function in place: composeApplySafeArea": 1,
+      "binding binding call without a function in place: composeResyncViewport": 1,
+      "external-definition": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "react-app/src-tauri/gen/android/app/build.gradle.kts:168",
+      "name": "requested.group",
+      "definitions": [],
+      "exact_definition": []
+     },
+     {
+      "site": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts:321",
+      "name": "profile",
+      "definitions": [
+       {
+        "place": "project-value",
+        "kind": "parameter",
+        "id": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts::parameter@289:4"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "parameter"
+       }
+      ]
+     },
+     {
+      "site": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts:67",
+      "name": "f",
+      "definitions": [
+       {
+        "place": "project-value",
+        "kind": "binding",
+        "id": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts::binding@66:16"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "binding call without a function in place: file"
+       }
+      ]
+     },
+     {
+      "site": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts:80",
+      "name": "f",
+      "definitions": [
+       {
+        "place": "project-value",
+        "kind": "binding",
+        "id": "react-app/src-tauri/gen/android/app/frontend.build.gradle.kts::binding@79:12"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "binding call without a function in place: file"
+       }
+      ]
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 36,
+    "counts": {
+     "same declaration": 36
+    },
+    "exact": {
+     "same declaration": 36
+    },
+    "examples": []
+   },
+   "seconds": 9.5,
+   "probe_seconds": 9.7
   },
   "rust": {
    "engine": "rust",
@@ -2519,34 +4758,50 @@
        "nothing": 17
       }
      },
+     "exact": {
+      "exact_definition": {
+       "nothing": 17
+      },
+      "exact_implementation": {
+       "nothing": 17
+      }
+     },
      "examples": [
       {
        "site": "react-app/src-tauri/src/lib.rs:27",
        "name": "(expr).level",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src-tauri/src/lib.rs:28",
        "name": "(expr).build",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src-tauri/src/lib.rs:33",
        "name": "app.handle",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       },
       {
        "site": "react-app/src-tauri/src/lib.rs:33",
        "name": "(expr).plugin",
        "definition": [],
        "implementation": [],
-       "type_definition": []
+       "type_definition": [],
+       "exact_definition": [],
+       "exact_implementation": []
       }
      ]
     }
@@ -2555,44 +4810,46 @@
     "population": 0,
     "sampled": 0,
     "places": {},
+    "exact": {},
     "examples": []
    },
    "lexical_agreement": {
     "population": 0,
     "counts": {},
+    "exact": {},
     "examples": []
    },
    "seconds": 6.4,
-   "probe_seconds": 6.7
+   "probe_seconds": 6.6
   }
  },
  "graph_use": {
   "coverage": {
    "status": "complete",
    "sampled": false,
-   "population": 30824,
-   "selected": 30824,
-   "asked": 30735,
+   "population": 31093,
+   "selected": 31093,
+   "asked": 31004,
    "stride": 1,
-   "confirmed": 6210,
-   "candidates": 2746,
+   "confirmed": 6222,
+   "candidates": 2739,
    "no_edges_reason": null,
    "resolution": {
     "calls": 48517,
-    "resolved": 13339,
+    "resolved": 13655,
     "lexical_resolved": 7433,
-    "engine_confirmed": 5906,
-    "external": 28754,
+    "engine_confirmed": 6222,
+    "external": 28869,
     "external_by_class": {
      "builtin": 9991,
-     "engine-external-definition": 18763
+     "engine-external-definition": 18878
     },
-    "resolvable": 19763,
-    "resolved_ratio": 0.675,
+    "resolvable": 19648,
+    "resolved_ratio": 0.695,
     "dynamic": 89,
     "askable": 31004,
-    "unasked": 269,
-    "engine_unresolved": 5760,
+    "unasked": 0,
+    "engine_unresolved": 5903,
     "by_language": {
      "javascript": {
       "calls": 639,
@@ -2603,15 +4860,15 @@
      },
      "kotlin": {
       "calls": 573,
-      "resolved": 36,
-      "resolvable": 305,
-      "resolved_ratio": 0.118,
-      "engine": null
+      "resolved": 41,
+      "resolvable": 192,
+      "resolved_ratio": 0.214,
+      "engine": "kotlin-analysis-api@2.3.13"
      },
      "python": {
       "calls": 32116,
       "resolved": 10292,
-      "resolvable": 13349,
+      "resolvable": 13347,
       "resolved_ratio": 0.771,
       "engine": "jedi@0.20.1"
      },
@@ -2624,9 +4881,9 @@
      },
      "typescript": {
       "calls": 15160,
-      "resolved": 2946,
+      "resolved": 3257,
       "resolvable": 5763,
-      "resolved_ratio": 0.511,
+      "resolved_ratio": 0.565,
       "engine": "typescript-language-server@4.3.3"
      }
     },
@@ -2634,53 +4891,28 @@
    }
   },
   "references": {
-   "engine resolved target=concrete": 5872,
+   "engine resolved target=concrete": 5884,
+   "engine resolved target=interface": 304,
    "engine resolved target=protocol": 34,
    "lexical resolved target=concrete": 7433,
-   "lexical unresolved target=None": 35178
+   "lexical unresolved target=None": 34862
   },
-  "candidates": 2746,
+  "candidates": 2739,
   "conflicts": 0,
   "conflict_examples": [],
   "call_links_kept": {
-   "engine": 5667,
-   "lexical": 7187
+   "engine": 6222,
+   "lexical": 7433
   },
-  "call_links_lost": {
-   "lexical: call outside a named symbol": 246,
-   "engine: call outside a named symbol": 239
-  },
-  "lost_examples": {
-   "call outside a named symbol": [
-    {
-     "site": "functions-python/app/api/deps.py:378",
-     "caller": null,
-     "target": "functions-python/app/api/deps.py::function@326:0"
-    },
-    {
-     "site": "functions-python/app/core/config.py:36",
-     "caller": null,
-     "target": "functions-python/app/core/config.py::function@28:0"
-    },
-    {
-     "site": "functions-python/app/core/config.py:138",
-     "caller": null,
-     "target": "functions-python/app/core/config.py::function@132:0"
-    },
-    {
-     "site": "functions-python/app/food_query/facts.py:76",
-     "caller": null,
-     "target": "functions-python/app/food_query/facts.py::function@71:0"
-    }
-   ]
-  },
+  "call_links_lost": {},
+  "lost_examples": {},
   "links": {
    "edges": {
-    "chiama diretto": 12688,
+    "chiama diretto": 14072,
     "scrive dedotto": 454,
-    "chiama dedotto": 258,
+    "chiama dedotto": 269,
     "attiva dedotto": 151,
-    "legge dedotto": 445
+    "legge dedotto": 447
    },
    "entries": {
     "azione": 124,
@@ -2688,18 +4920,15 @@
    },
    "routes": {
     "offered": 111,
-    "called": 46,
-    "linked": 46
+    "called": 49,
+    "linked": 49
    },
    "gaps": {
     "rotta": 3,
     "legge app state": 13,
-    "rotta call outside a named symbol": 3,
-    "legge call outside a named symbol": 4,
-    "scrive app state": 2,
-    "scrive call outside a named symbol": 2
+    "scrive app state": 4
    }
   }
  },
- "seconds": 2808.7
+ "seconds": 3053.6
 }

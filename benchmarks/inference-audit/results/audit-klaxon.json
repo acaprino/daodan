@@ -1,8 +1,8 @@
 {
  "case": "klaxon",
- "snapshot_seconds": 14.7,
- "pass_seconds": 3.9,
- "pass_stdout": "\": 0.177,\n    \"unasked\": 1443\n  },\n  \"reused\": 0,\n  \"selected\": 0,\n  \"source_verification\": {\n    \"after_inference\": 1,\n    \"before_inference\": 1\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 261.9,\n  \"verdicts\": {}\n}\nengine pass: java for java\n{\n  \"answer_cache\": \"/work/klaxon/snapshot/engine-answers.sqlite\",\n  \"asked\": 0,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 0,\n  \"coverage\": \"0 of 0 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/klaxon/snapshot/engine-edges.sqlite\",\n  \"engine\": \"java\",\n  \"excluded_classes\": {},\n  \"inference_elapsed_ms\": 0,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 0,\n      \"candidates\": 0,\n      \"confirmed\": 0,\n      \"created_at\": \"2026-11-13T08:29:57Z\",\n      \"engine\": \"java\",\n      \"excluded_classes\": {},\n      \"no_edges_reason\": \"no-unresolved-calls\",\n      \"population\": 0,\n      \"reused\": 0,\n      \"selected\": 0,\n      \"source_verification\": {\n        \"after_inference\": 1,\n        \"before_inference\": 1\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {}\n    }\n  },\n  \"latency_mean_ms\": null,\n  \"latency_p95_ms\": null,\n  \"no_edges_reason\": \"no-unresolved-calls\",\n  \"population\": 0,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 0.0,\n  \"project_root\": \"/work/klaxon/src\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 1443,\n    \"by_language\": {\n      \"kotlin\": {\n        \"calls\": 2433,\n        \"engine\": null,\n        \"resolvable\": 1755,\n        \"resolved\": 311,\n        \"resolved_ratio\": 0.177\n      }\n    },\n    \"calls\": 2433,\n    \"dynamic\": 1,\n    \"engine_confirmed\": 0,\n    \"engine_unresolved\": 0,\n    \"external\": 678,\n    \"external_by_class\": {\n      \"builtin\": 678,\n      \"engine-external-definition\": 0\n    },\n    \"lexical_resolved\": 311,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 1755,\n    \"resolved\": 311,\n    \"resolved_ratio\": 0.177,\n    \"unasked\": 1443\n  },\n  \"reused\": 0,\n  \"selected\": 0,\n  \"source_verification\": {\n    \"after_inference\": 1,\n    \"before_inference\": 1\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 350.3,\n  \"verdicts\": {}\n}\nengine pass: kotlin for kotlin\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\n{\n  \"available\": false,\n  \"engine\": \"kotlin\",\n  \"install\": null,\n  \"languages\": [\n    \"kotlin\"\n  ],\n  \"memory_exhausted\": false,\n  \"reason\": \"could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-kotlin.json\"\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"java\",\n      \"state\": \"fresh\"\n    },\n    \"javascript\": {\n      \"engine\": \"typescript\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin\",\n      \"reason\": \"could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden\",\n      \"state\": \"failed\"\n    }\n  }\n}\n",
+ "snapshot_seconds": 19.1,
+ "pass_seconds": 37.6,
+ "pass_stdout": "jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.10.2\nresolving 4 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling coursier 2.1.24 into /root/.cache/daodan/engines/coursier/2.1.24 (first use)\n{\n  \"answer_cache\": \"/work/klaxon/snapshot/engine-answers.sqlite\",\n  \"asked\": 1443,\n  \"available\": true,\n  \"candidates\": 11,\n  \"confirmed_edges\": 501,\n  \"coverage\": \"1443 of 1444 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/klaxon/snapshot/engine-edges.sqlite\",\n  \"engine\": \"kotlin-analysis-api@2.3.13\",\n  \"excluded_classes\": {\n    \"builtin\": 678\n  },\n  \"inference_elapsed_ms\": 11234.7,\n  \"languages\": {\n    \"kotlin\": {\n      \"asked\": 1443,\n      \"candidates\": 11,\n      \"confirmed\": 501,\n      \"created_at\": \"2026-11-13T12:06:52Z\",\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"excluded_classes\": {\n        \"builtin\": 678\n      },\n      \"no_edges_reason\": null,\n      \"population\": 1444,\n      \"reused\": 0,\n      \"selected\": 1444,\n      \"source_verification\": {\n        \"after_inference\": 104,\n        \"before_inference\": 104\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"dynamic-callee\": 1,\n        \"edge-call\": 432,\n        \"edge-instantiation\": 69,\n        \"external-definition\": 838,\n        \"project-not-a-symbol\": 11,\n        \"unresolved\": 93\n      }\n    }\n  },\n  \"latency_mean_ms\": 7.8,\n  \"latency_p95_ms\": 20.6,\n  \"no_edges_reason\": null,\n  \"population\": 1444,\n  \"population_language\": \"kotlin\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 21136.9,\n  \"project_root\": \"/work/klaxon/src\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-kotlin.json\",\n  \"resolution\": {\n    \"askable\": 1443,\n    \"by_language\": {\n      \"kotlin\": {\n        \"calls\": 2433,\n        \"engine\": \"kotlin-analysis-api@2.3.13\",\n        \"resolvable\": 917,\n        \"resolved\": 812,\n        \"resolved_ratio\": 0.885\n      }\n    },\n    \"calls\": 2433,\n    \"dynamic\": 1,\n    \"engine_confirmed\": 501,\n    \"engine_unresolved\": 104,\n    \"external\": 1516,\n    \"external_by_class\": {\n      \"builtin\": 678,\n      \"engine-external-definition\": 838\n    },\n    \"lexical_resolved\": 311,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 917,\n    \"resolved\": 812,\n    \"resolved_ratio\": 0.885,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 1444,\n  \"source_verification\": {\n    \"after_inference\": 104,\n    \"before_inference\": 104\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 33295.2,\n  \"verdicts\": {\n    \"dynamic-callee\": 1,\n    \"edge-call\": 432,\n    \"edge-instantiation\": 69,\n    \"external-definition\": 838,\n    \"project-not-a-symbol\": 11,\n    \"unresolved\": 93\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"java\",\n      \"state\": \"fresh\"\n    },\n    \"javascript\": {\n      \"engine\": \"typescript\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin-analysis-api@2.3.13\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
  "pass_stderr": "",
  "pass_report": {
   "available": true,
@@ -24,7 +24,7 @@
       "asked": 0,
       "candidates": 0,
       "confirmed": 0,
-      "created_at": "2026-11-13T08:29:57Z",
+      "created_at": "2026-11-13T12:06:19Z",
       "engine": "java",
       "excluded_classes": {},
       "no_edges_reason": "no-unresolved-calls",
@@ -82,18 +82,104 @@
      "before_inference": 1
     },
     "stride": 1,
-    "total_elapsed_ms": 350.3,
+    "total_elapsed_ms": 286.8,
     "verdicts": {}
    },
    "kotlin": {
-    "available": false,
-    "engine": "kotlin",
-    "install": null,
-    "languages": [
-     "kotlin"
-    ],
-    "memory_exhausted": false,
-    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+    "answer_cache": "/work/klaxon/snapshot/engine-answers.sqlite",
+    "asked": 1443,
+    "available": true,
+    "candidates": 11,
+    "confirmed_edges": 501,
+    "coverage": "1443 of 1444 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/klaxon/snapshot/engine-edges.sqlite",
+    "engine": "kotlin-analysis-api@2.3.13",
+    "excluded_classes": {
+     "builtin": 678
+    },
+    "inference_elapsed_ms": 11234.7,
+    "languages": {
+     "kotlin": {
+      "asked": 1443,
+      "candidates": 11,
+      "confirmed": 501,
+      "created_at": "2026-11-13T12:06:52Z",
+      "engine": "kotlin-analysis-api@2.3.13",
+      "excluded_classes": {
+       "builtin": 678
+      },
+      "no_edges_reason": null,
+      "population": 1444,
+      "reused": 0,
+      "selected": 1444,
+      "source_verification": {
+       "after_inference": 104,
+       "before_inference": 104
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "dynamic-callee": 1,
+       "edge-call": 432,
+       "edge-instantiation": 69,
+       "external-definition": 838,
+       "project-not-a-symbol": 11,
+       "unresolved": 93
+      }
+     }
+    },
+    "latency_mean_ms": 7.8,
+    "latency_p95_ms": 20.6,
+    "no_edges_reason": null,
+    "population": 1444,
+    "population_language": "kotlin",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 21136.9,
+    "project_root": "/work/klaxon/src",
+    "resolution": {
+     "askable": 1443,
+     "by_language": {
+      "kotlin": {
+       "calls": 2433,
+       "engine": "kotlin-analysis-api@2.3.13",
+       "resolvable": 917,
+       "resolved": 812,
+       "resolved_ratio": 0.885
+      }
+     },
+     "calls": 2433,
+     "dynamic": 1,
+     "engine_confirmed": 501,
+     "engine_unresolved": 104,
+     "external": 1516,
+     "external_by_class": {
+      "builtin": 678,
+      "engine-external-definition": 838
+     },
+     "lexical_resolved": 311,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 917,
+     "resolved": 812,
+     "resolved_ratio": 0.885,
+     "unasked": 0
+    },
+    "reused": 0,
+    "selected": 1444,
+    "source_verification": {
+     "after_inference": 104,
+     "before_inference": 104
+    },
+    "stride": 1,
+    "total_elapsed_ms": 33295.2,
+    "verdicts": {
+     "dynamic-callee": 1,
+     "edge-call": 432,
+     "edge-instantiation": 69,
+     "external-definition": 838,
+     "project-not-a-symbol": 11,
+     "unresolved": 93
+    }
    },
    "typescript": {
     "answer_cache": "/work/klaxon/snapshot/engine-answers.sqlite",
@@ -112,7 +198,7 @@
       "asked": 0,
       "candidates": 0,
       "confirmed": 0,
-      "created_at": "2026-11-13T08:29:55Z",
+      "created_at": "2026-11-13T12:06:18Z",
       "engine": "typescript",
       "excluded_classes": {},
       "no_edges_reason": "no-unresolved-calls",
@@ -170,11 +256,11 @@
      "before_inference": 1
     },
     "stride": 1,
-    "total_elapsed_ms": 261.9,
+    "total_elapsed_ms": 236.5,
     "verdicts": {}
    }
   },
-  "finished_at": "2026-11-13T08:29:57Z",
+  "finished_at": "2026-11-13T12:06:53Z",
   "languages": {
    "java": {
     "engine": "java",
@@ -185,14 +271,13 @@
     "state": "fresh"
    },
    "kotlin": {
-    "engine": "kotlin",
-    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden",
-    "state": "failed"
+    "engine": "kotlin-analysis-api@2.3.13",
+    "state": "fresh"
    }
   },
-  "manifest_digest": "7d97dfea10257f77672d7ceba0f870087d9e2344e309a6facd2bfaf4aaf43b89",
+  "manifest_digest": "ff1d29804144891ac43d20467d55bab5ac2beb283106458dbddcacb63120479c",
   "pass": true,
-  "started_at": "2026-11-13T08:29:54Z"
+  "started_at": "2026-11-13T12:06:15Z"
  },
  "engines": {
   "typescript": {
@@ -232,15 +317,17 @@
     "population": 0,
     "sampled": 0,
     "places": {},
+    "exact": {},
     "examples": []
    },
    "lexical_agreement": {
     "population": 0,
     "counts": {},
+    "exact": {},
     "examples": []
    },
-   "seconds": 4.5,
-   "probe_seconds": 4.7
+   "seconds": 3.8,
+   "probe_seconds": 4.1
   },
   "java": {
    "engine": "java",
@@ -279,15 +366,17 @@
     "population": 0,
     "sampled": 0,
     "places": {},
+    "exact": {},
     "examples": []
    },
    "lexical_agreement": {
     "population": 0,
     "counts": {},
+    "exact": {},
     "examples": []
    },
-   "seconds": 7.7,
-   "probe_seconds": 7.9
+   "seconds": 19.2,
+   "probe_seconds": 19.4
   },
   "kotlin": {
    "engine": "kotlin",
@@ -308,96 +397,603 @@
    "reads_naming_project_callables": {
     "kotlin read .kt": 260
    },
-   "answers_cached": 0,
-   "answer_verdicts": {},
+   "answers_cached": 1443,
+   "answer_verdicts": {
+    "external-definition": 838,
+    "edge-call": 432,
+    "edge-instantiation": 69,
+    "unresolved": 93,
+    "project-not-a-symbol": 11
+   },
    "edge_store": {
     "reason": null,
-    "entries": {}
+    "entries": {
+     "kotlin": {
+      "engine": "kotlin-analysis-api@2.3.13",
+      "state": "fresh",
+      "population": 1444,
+      "selected": 1444,
+      "asked": 1443,
+      "confirmed": 501,
+      "candidates": 11,
+      "verdicts": {
+       "dynamic-callee": 1,
+       "edge-call": 432,
+       "edge-instantiation": 69,
+       "external-definition": 838,
+       "project-not-a-symbol": 11,
+       "unresolved": 93
+      },
+      "excluded_classes": {
+       "builtin": 678
+      },
+      "no_edges_reason": null
+     }
+    }
    },
-   "stored_edges": {},
+   "stored_edges": {
+    "candidate project-not-a-symbol target=None": 11,
+    "confirmed edge-call target=function": 432,
+    "confirmed edge-instantiation target=class": 69
+   },
    "probe": {
-    "ready": false,
-    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+    "ready": true,
+    "reason": ""
    },
-   "probe_seconds": 0.6
+   "asked_again_by_verdict": {
+    "kotlin edge-call": {
+     "population": 432,
+     "sampled": 20,
+     "places": {
+      "definitions": {
+       "project-callable function": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-call function": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:23",
+       "name": "JacksonParser.create",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt::function@43:8",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt::function@43:8",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:140",
+       "name": "klaxon.findConverterFromClass",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt::function@235:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt::function@235:4",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:49",
+       "name": "it.mapChildren",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::function@46:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::function@46:4",
+         "kind": "function"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt:74",
+       "name": "consumeValue",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@183:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-call",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@183:4",
+         "kind": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "kotlin edge-instantiation": {
+     "population": 69,
+     "sampled": 20,
+     "places": {
+      "definitions": {
+       "project-callable class": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "edge-instantiation class": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:46",
+       "name": "KlaxonJsonObjectDeserializer",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt::class@55:0",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt::class@55:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:121",
+       "name": "KlaxonException",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonException.kt::class@3:0",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonException.kt::class@3:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:47",
+       "name": "JsonArray",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::class@10:0",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::class@10:0",
+         "kind": "class"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObjectConverter.kt:223",
+       "name": "KlaxonException",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonException.kt::class@3:0",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "edge-instantiation",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonException.kt::class@3:0",
+         "kind": "class"
+        }
+       ]
+      }
+     ]
+    },
+    "kotlin external-definition": {
+     "population": 838,
+     "sampled": 20,
+     "places": {
+      "definitions": {
+       "no-location": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "external-definition": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "build.gradle.kts:33",
+       "name": "(expr).forEach",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/build.gradle.kts:32",
+       "name": "(expr).forEach",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:31",
+       "name": "value.toDouble",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt:7",
+       "name": "LinkedHashMap",
+       "definitions": [
+        {
+         "place": "no-location"
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "external-definition"
+        }
+       ]
+      }
+     ]
+    },
+    "kotlin project-not-a-symbol": {
+     "population": 11,
+     "sampled": 11,
+     "places": {
+      "definitions": {
+       "project-callable function": 9,
+       "project-value binding": 1,
+       "project-callable class": 1
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "binding parameter": 10,
+       "binding binding other value": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:41",
+       "name": "block",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::function@39:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "parameter"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:48",
+       "name": "block",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt::function@46:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "parameter"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt:116",
+       "name": "closure",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@113:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "parameter"
+        }
+       ]
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt:128",
+       "name": "closure",
+       "definitions": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonReader.kt::function@125:4",
+         "in_view": true
+        }
+       ],
+       "exact_definition": [
+        {
+         "verdict": "binding",
+         "kind": "parameter"
+        }
+       ]
+      }
+     ]
+    },
+    "kotlin unresolved": {
+     "population": 93,
+     "sampled": 20,
+     "places": {
+      "definitions": {
+       "nothing": 20
+      }
+     },
+     "exact": {
+      "exact_definition": {
+       "nothing": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "klaxon/build.gradle.kts:136",
+       "name": "(expr).doLast",
+       "definitions": [],
+       "exact_definition": []
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/Annotations.kt:50",
+       "name": "o2.findAnnotation",
+       "definitions": [],
+       "exact_definition": []
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonObjectConverter.kt:204",
+       "name": "kClass.createType",
+       "definitions": [],
+       "exact_definition": []
+      },
+      {
+       "site": "klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt:281",
+       "name": "toJsonMethod.call",
+       "definitions": [],
+       "exact_definition": []
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 260,
+    "sampled": 60,
+    "places": {
+     "definitions": {
+      "project-value binding": 32,
+      "project-callable class": 13,
+      "project-callable function": 11,
+      "no-location": 2,
+      "project-no-declaration": 2
+     }
+    },
+    "exact": {
+     "exact_definition": {
+      "binding binding other value": 23,
+      "binding parameter": 13,
+      "project-not-a-symbol": 7,
+      "edge-instantiation class": 6,
+      "binding binding call without a function in place: toJsonString": 3,
+      "external-definition": 2,
+      "binding binding call without a function in place: get": 1,
+      "binding binding call without a function in place: retrieveKeyValues": 1,
+      "binding binding call without a function in place: last": 1,
+      "binding binding call without a function in place: Klaxon": 1,
+      "binding binding call without a function in place: Person": 1,
+      "binding binding call without a function in place: listOf": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:84",
+      "name": "it.value",
+      "definitions": [
+       {
+        "place": "no-location"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "external-definition"
+       }
+      ]
+     },
+     {
+      "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:123",
+      "name": "value",
+      "definitions": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt::function@119:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "parameter"
+       }
+      ]
+     },
+     {
+      "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:207",
+      "name": "value",
+      "definitions": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt::function@179:4",
+        "in_view": true
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "parameter"
+       }
+      ]
+     },
+     {
+      "site": "klaxon/src/main/kotlin/com/beust/klaxon/DefaultConverter.kt:229",
+      "name": "jv.obj",
+      "definitions": [
+       {
+        "place": "project-value",
+        "kind": "binding",
+        "id": "klaxon/src/main/kotlin/com/beust/klaxon/JsonValue.kt::binding@18:8"
+       }
+      ],
+      "exact_definition": [
+       {
+        "verdict": "binding",
+        "kind": "binding other value"
+       }
+      ]
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 311,
+    "counts": {
+     "same declaration": 311
+    },
+    "exact": {
+     "same declaration": 311
+    },
+    "examples": []
+   },
+   "seconds": 11.3,
+   "probe_seconds": 11.5
   }
  },
  "graph_use": {
   "coverage": {
-   "status": "completed_empty",
+   "status": "complete",
    "sampled": false,
-   "population": 0,
-   "selected": 0,
-   "asked": 0,
+   "population": 1444,
+   "selected": 1444,
+   "asked": 1443,
    "stride": 1,
-   "confirmed": 0,
-   "candidates": 0,
-   "no_edges_reason": "no-unresolved-calls",
+   "confirmed": 501,
+   "candidates": 11,
+   "no_edges_reason": null,
    "resolution": {
     "calls": 2433,
-    "resolved": 311,
+    "resolved": 812,
     "lexical_resolved": 311,
-    "engine_confirmed": 0,
-    "external": 678,
+    "engine_confirmed": 501,
+    "external": 1516,
     "external_by_class": {
      "builtin": 678,
-     "engine-external-definition": 0
+     "engine-external-definition": 838
     },
-    "resolvable": 1755,
-    "resolved_ratio": 0.177,
+    "resolvable": 917,
+    "resolved_ratio": 0.885,
     "dynamic": 1,
     "askable": 1443,
-    "unasked": 1443,
-    "engine_unresolved": 0,
+    "unasked": 0,
+    "engine_unresolved": 104,
     "by_language": {
      "kotlin": {
       "calls": 2433,
-      "resolved": 311,
-      "resolvable": 1755,
-      "resolved_ratio": 0.177,
-      "engine": null
+      "resolved": 812,
+      "resolvable": 917,
+      "resolved_ratio": 0.885,
+      "engine": "kotlin-analysis-api@2.3.13"
      }
     },
     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
    }
   },
   "references": {
+   "engine resolved target=concrete": 501,
    "lexical resolved target=concrete": 311,
-   "lexical unresolved target=None": 2122
+   "lexical unresolved target=None": 1621
   },
-  "candidates": 0,
+  "candidates": 11,
   "conflicts": 0,
   "conflict_examples": [],
   "call_links_kept": {
-   "lexical": 299
+   "engine": 501,
+   "lexical": 311
   },
-  "call_links_lost": {
-   "lexical: call outside a named symbol": 12
-  },
-  "lost_examples": {
-   "call outside a named symbol": [
-    {
-     "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonValue.kt:153",
-     "caller": null,
-     "target": "klaxon/src/main/kotlin/com/beust/klaxon/JsonValue.kt::function@178:8"
-    },
-    {
-     "site": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:31",
-     "caller": null,
-     "target": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt::class@10:4"
-    },
-    {
-     "site": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:32",
-     "caller": null,
-     "target": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt::class@17:4"
-    },
-    {
-     "site": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:33",
-     "caller": null,
-     "target": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt::class@24:4"
-    }
-   ]
-  }
+  "call_links_lost": {},
+  "lost_examples": {}
  },
- "seconds": 32.1
+ "seconds": 92.0
 }
