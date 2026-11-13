@@ -73,14 +73,14 @@
    "dead-end call": 2,
    "external call": 1119,
    "external read": 393,
-   "external unknown": 2209,
+   "external unknown": 2186,
    "namespace unknown": 1079,
    "project-callable call": 2129,
    "project-callable read": 24,
    "project-callable unknown": 5497,
    "project-value call": 24,
    "project-value read": 1798,
-   "project-value unknown": 1917
+   "project-value unknown": 1940
   },
   "callable_chain_hops": {
    "0": 1967,
@@ -1264,5 +1264,5 @@
   ]
  },
  "graph_seconds": 2.7,
- "seconds": 3.3
+ "seconds": 3.2
 }

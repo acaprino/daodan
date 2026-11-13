@@ -501,16 +501,15 @@ Archi: 16.191, di cui 15.940 certi e 251 incerti.
 | Fine | Archi |
 | --- | --- |
 | funzione, metodo o classe del progetto | 7.650 (1.967 diretti, 5.683 implementazioni) |
-| valore del progetto (proprietà, getter sintetici, parametri, locali) | 3.739 |
+| valore del progetto (proprietà, getter sintetici, parametri, locali) | 3.762 |
 | esterno Maven con versione | 1.594 |
 | esterno con manager `unknown` e percorso Kotlin | 2.104 |
-| esterno "fuori dallo snapshot" | 23 |
 | namespace | 1.079 |
 | vicolo cieco | 2 |
 
 - Tipo dell'arco: `call` 3.274, `read` 2.215, `unknown` 10.702. scip-java non scrive ruoli di accesso, quindi il tipo viene dal riferimento dello snapshot nella stessa posizione.
 - Catene: un riferimento alla proprietà porta anche al getter (e al setter se è `var`), scritti dall'indice allo stesso range, quindi nessun salto. Le implementazioni sono tutte a un salto. Ne portano di più `kotlin/Any#equals` e `toString`, con 94 e 98 override del progetto, compresi quelli generati delle data class. Solo 6 archi passano per `same-range`.
-- I 23 esterni "fuori dallo snapshot" sono simboli di `klaxon/src/test/kotlin/com/beust/klaxon/Issue118Test.kt`. Lo snapshot tiene quel file solo come lessicale e la lettura comune non lo riconosce come file del progetto.
+- `klaxon/src/test/kotlin/com/beust/klaxon/Issue118Test.kt` lo snapshot lo legge solo come lessicale, senza dichiarazioni: i suoi 23 simboli riferiti finiscono come valori del progetto.
 
 Archi incerti: 238 `overload-across-tasks` e 13 `override-across-tasks`.
 - Il motivo: per una dichiarazione con sorgente, il numero `(+N)` segue l'ordine del sorgente (`SymbolsCache.kt`). Per una letta dal classpath di un altro task segue l'ordine della classe compilata, quindi la stessa stringa può nominare un altro overload.
