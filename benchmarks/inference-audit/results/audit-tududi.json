@@ -1,0 +1,1802 @@
+{
+ "case": "tududi",
+ "snapshot_seconds": 74.8,
+ "pass_seconds": 1719.2,
+ "pass_stdout": "fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"ambiguous-target\": 359,\n        \"dynamic-callee\": 208,\n        \"edge-call\": 5972,\n        \"edge-instantiation\": 685,\n        \"external-definition\": 17955,\n        \"infer-error:Error\": 52,\n        \"project-not-a-symbol\": 1087,\n        \"unresolved\": 15109\n      }\n    },\n    \"typescript\": {\n      \"asked\": 24138,\n      \"candidates\": 3963,\n      \"confirmed\": 1024,\n      \"created_at\": \"2026-11-13T08:59:25Z\",\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"excluded_classes\": {\n        \"builtin\": 8224\n      },\n      \"no_edges_reason\": null,\n      \"population\": 24236,\n      \"reused\": 0,\n      \"selected\": 24236,\n      \"source_verification\": {\n        \"after_inference\": 1688,\n        \"before_inference\": 1688\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"ambiguous-target\": 419,\n        \"dynamic-callee\": 98,\n        \"edge-call\": 1023,\n        \"edge-instantiation\": 1,\n        \"external-definition\": 17908,\n        \"project-not-a-symbol\": 3544,\n        \"unresolved\": 1243\n      }\n    }\n  },\n  \"latency_mean_ms\": 13.5,\n  \"latency_p95_ms\": 57.6,\n  \"no_edges_reason\": null,\n  \"population\": 65663,\n  \"population_language\": \"multi\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 568737.8,\n  \"project_root\": \"/work/tududi/src\",\n  \"report_out\": \"/work/tududi/snapshot/.engine-stage-typescript.json\",\n  \"resolution\": {\n    \"askable\": 65357,\n    \"by_language\": {\n      \"javascript\": {\n        \"calls\": 72890,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 29350,\n        \"resolved\": 12535,\n        \"resolved_ratio\": 0.427\n      },\n      \"typescript\": {\n        \"calls\": 38477,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 12345,\n        \"resolved\": 7041,\n        \"resolved_ratio\": 0.57\n      }\n    },\n    \"calls\": 111367,\n    \"dynamic\": 306,\n    \"engine_confirmed\": 7681,\n    \"engine_unresolved\": 21761,\n    \"external\": 69672,\n    \"external_by_class\": {\n      \"builtin\": 33809,\n      \"engine-external-definition\": 35863\n    },\n    \"lexical_resolved\": 11895,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 41695,\n    \"resolved\": 19576,\n    \"resolved_ratio\": 0.47,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 65663,\n  \"source_verification\": {\n    \"after_inference\": 1688,\n    \"before_inference\": 1688\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 1717155.2,\n  \"verdicts\": {\n    \"ambiguous-target\": 778,\n    \"dynamic-callee\": 306,\n    \"edge-call\": 6995,\n    \"edge-instantiation\": 686,\n    \"external-definition\": 35863,\n    \"infer-error:Error\": 52,\n    \"project-not-a-symbol\": 4631,\n    \"unresolved\": 16352\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"javascript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    },\n    \"typescript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "pass_stderr": "",
+ "pass_report": {
+  "available": true,
+  "engines": {
+   "typescript": {
+    "answer_cache": "/work/tududi/snapshot/engine-answers.sqlite",
+    "asked": 65357,
+    "available": true,
+    "candidates": 5409,
+    "confirmed_edges": 7681,
+    "coverage": "65357 of 65663 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/tududi/snapshot/engine-edges.sqlite",
+    "engine": "typescript-language-server@4.3.3",
+    "excluded_classes": {
+     "builtin": 33809
+    },
+    "inference_elapsed_ms": 883343.6,
+    "languages": {
+     "javascript": {
+      "asked": 41219,
+      "candidates": 1446,
+      "confirmed": 6657,
+      "created_at": "2026-11-13T08:59:25Z",
+      "engine": "typescript-language-server@4.3.3",
+      "excluded_classes": {
+       "builtin": 25585
+      },
+      "no_edges_reason": null,
+      "population": 41427,
+      "reused": 0,
+      "selected": 41427,
+      "source_verification": {
+       "after_inference": 1688,
+       "before_inference": 1688
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "ambiguous-target": 359,
+       "dynamic-callee": 208,
+       "edge-call": 5972,
+       "edge-instantiation": 685,
+       "external-definition": 17955,
+       "infer-error:Error": 52,
+       "project-not-a-symbol": 1087,
+       "unresolved": 15109
+      }
+     },
+     "typescript": {
+      "asked": 24138,
+      "candidates": 3963,
+      "confirmed": 1024,
+      "created_at": "2026-11-13T08:59:25Z",
+      "engine": "typescript-language-server@4.3.3",
+      "excluded_classes": {
+       "builtin": 8224
+      },
+      "no_edges_reason": null,
+      "population": 24236,
+      "reused": 0,
+      "selected": 24236,
+      "source_verification": {
+       "after_inference": 1688,
+       "before_inference": 1688
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "ambiguous-target": 419,
+       "dynamic-callee": 98,
+       "edge-call": 1023,
+       "edge-instantiation": 1,
+       "external-definition": 17908,
+       "project-not-a-symbol": 3544,
+       "unresolved": 1243
+      }
+     }
+    },
+    "latency_mean_ms": 13.5,
+    "latency_p95_ms": 57.6,
+    "no_edges_reason": null,
+    "population": 65663,
+    "population_language": "multi",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 568737.8,
+    "project_root": "/work/tududi/src",
+    "resolution": {
+     "askable": 65357,
+     "by_language": {
+      "javascript": {
+       "calls": 72890,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 29350,
+       "resolved": 12535,
+       "resolved_ratio": 0.427
+      },
+      "typescript": {
+       "calls": 38477,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 12345,
+       "resolved": 7041,
+       "resolved_ratio": 0.57
+      }
+     },
+     "calls": 111367,
+     "dynamic": 306,
+     "engine_confirmed": 7681,
+     "engine_unresolved": 21761,
+     "external": 69672,
+     "external_by_class": {
+      "builtin": 33809,
+      "engine-external-definition": 35863
+     },
+     "lexical_resolved": 11895,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 41695,
+     "resolved": 19576,
+     "resolved_ratio": 0.47,
+     "unasked": 0
+    },
+    "reused": 0,
+    "selected": 65663,
+    "source_verification": {
+     "after_inference": 1688,
+     "before_inference": 1688
+    },
+    "stride": 1,
+    "total_elapsed_ms": 1717155.2,
+    "verdicts": {
+     "ambiguous-target": 778,
+     "dynamic-callee": 306,
+     "edge-call": 6995,
+     "edge-instantiation": 686,
+     "external-definition": 35863,
+     "infer-error:Error": 52,
+     "project-not-a-symbol": 4631,
+     "unresolved": 16352
+    }
+   }
+  },
+  "finished_at": "2026-11-13T08:59:32Z",
+  "languages": {
+   "javascript": {
+    "engine": "typescript-language-server@4.3.3",
+    "state": "fresh"
+   },
+   "typescript": {
+    "engine": "typescript-language-server@4.3.3",
+    "state": "fresh"
+   }
+  },
+  "manifest_digest": "d959c689a9c3d70dfed134612ab5256da4cbc5912421d49ea6233e6b5854ca30",
+  "pass": true,
+  "started_at": "2026-11-13T08:30:53Z"
+ },
+ "engines": {
+  "typescript": {
+   "engine": "typescript",
+   "languages": [
+    "typescript",
+    "javascript"
+   ],
+   "references": {
+    "javascript call resolved": 5878,
+    "javascript call unresolved": 67012,
+    "javascript read resolved": 1125,
+    "javascript read unresolved": 60934,
+    "typescript call resolved": 6017,
+    "typescript call unresolved": 32460,
+    "typescript read resolved": 2740,
+    "typescript read unresolved": 36680
+   },
+   "unresolved_calls_by_class": {
+    "javascript askable": 41219,
+    "javascript builtin": 25585,
+    "javascript dynamic": 208,
+    "typescript askable": 24138,
+    "typescript builtin": 8224,
+    "typescript dynamic": 98
+   },
+   "reads_naming_project_callables": {
+    "javascript read .js": 17719,
+    "typescript read .ts": 1702,
+    "typescript read .tsx": 9959
+   },
+   "answers_cached": 65305,
+   "answer_verdicts": {
+    "external-definition": 35863,
+    "edge-call": 6995,
+    "ambiguous-target": 778,
+    "unresolved": 16352,
+    "project-not-a-symbol": 4631,
+    "edge-instantiation": 686
+   },
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh",
+      "population": 41427,
+      "selected": 41427,
+      "asked": 41219,
+      "confirmed": 6657,
+      "candidates": 1446,
+      "verdicts": {
+       "ambiguous-target": 359,
+       "dynamic-callee": 208,
+       "edge-call": 5972,
+       "edge-instantiation": 685,
+       "external-definition": 17955,
+       "infer-error:Error": 52,
+       "project-not-a-symbol": 1087,
+       "unresolved": 15109
+      },
+      "excluded_classes": {
+       "builtin": 25585
+      },
+      "no_edges_reason": null
+     },
+     "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh",
+      "population": 24236,
+      "selected": 24236,
+      "asked": 24138,
+      "confirmed": 1024,
+      "candidates": 3963,
+      "verdicts": {
+       "ambiguous-target": 419,
+       "dynamic-callee": 98,
+       "edge-call": 1023,
+       "edge-instantiation": 1,
+       "external-definition": 17908,
+       "project-not-a-symbol": 3544,
+       "unresolved": 1243
+      },
+      "excluded_classes": {
+       "builtin": 8224
+      },
+      "no_edges_reason": null
+     }
+    }
+   },
+   "stored_edges": {
+    "candidate ambiguous-target target=None": 778,
+    "candidate project-not-a-symbol target=None": 4631,
+    "confirmed edge-call target=function": 4796,
+    "confirmed edge-call target=method": 1303,
+    "confirmed edge-call target=method contract": 896,
+    "confirmed edge-instantiation target=class": 686
+   },
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {
+    "javascript ambiguous-target": {
+     "population": 359,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function + project-no-declaration": 15,
+       "external + project-value binding": 3,
+       "external + project-callable function": 2
+      },
+      "implementation": {
+       "project-callable function": 11,
+       "nothing": 4,
+       "project-value binding": 3,
+       "project-callable function + project-value binding": 1,
+       "project-no-declaration": 1
+      },
+      "type_definition": {
+       "project-callable function": 15,
+       "external": 5
+      }
+     },
+     "examples": [
+      {
+       "site": "backend/app.js:206",
+       "name": "next",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/app.js::function@200:8",
+         "in_view": true
+        },
+        {
+         "place": "external",
+         "package": "node_modules:@types/express-serve-static-core"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/express-serve-static-core"
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/billing/providers/stripe.js:198",
+       "name": "configuredPrices",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "backend/modules/billing/stripeClient.js"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/modules/billing/stripeClient.js::function@39:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "backend/modules/billing/providers/stripe.js::binding@9:4"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/modules/billing/stripeClient.js::function@39:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/modules/billing/stripeClient.js::function@39:0",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/billing/service.js:452",
+       "name": "getPlans",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "backend/config/plans.js"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/config/plans.js::function@152:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/config/plans.js::function@152:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/config/plans.js::function@152:0",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/caldav/services/sync-scheduler.js:31",
+       "name": "withJobLock",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "backend/services/jobLock.js"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/jobLock.js::function@18:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/jobLock.js::function@18:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/jobLock.js::function@18:0",
+         "in_view": true
+        }
+       ]
+      }
+     ]
+    },
+    "javascript edge-call": {
+     "population": 5972,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function": 14,
+       "project-callable method": 6
+      },
+      "implementation": {
+       "nothing": 7,
+       "project-callable function": 7,
+       "project-callable method": 6
+      },
+      "type_definition": {
+       "project-callable function": 6,
+       "project-callable method": 6,
+       "external": 5,
+       "external + project-no-declaration": 1,
+       "project-value binding": 1,
+       "external + project-value binding": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "backend/app.js:284",
+       "name": "(expr).track",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/visitService.js::function@91:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/visitService.js::function@92:11",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/ai-assistant/controller.js:94",
+       "name": "aiAssistantService.updateTaskInsightsDismissed",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/modules/ai-assistant/service.js::function@662:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/billing/service.js:69",
+       "name": "(expr).provider",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/modules/billing/service.js::method@59:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/modules/billing/service.js::method@59:4",
+         "in_view": false
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/modules/billing/service.js::method@59:4",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/caldav/sync/pull-phase.js:277",
+       "name": "logger.logError",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/logService.js::function@104:17",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/services/logService.js::function@104:17",
+         "in_view": true
+        }
+       ]
+      }
+     ]
+    },
+    "javascript edge-instantiation": {
+     "population": 685,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable class + project-callable method": 20
+      },
+      "implementation": {
+       "project-callable class": 17,
+       "project-callable class + project-value binding": 3
+      },
+      "type_definition": {
+       "project-callable method": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "backend/middleware/demo.js:14",
+       "name": "ForbiddenError",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@29:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/index.js::method@30:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@29:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/index.js::method@30:4",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/admin/userEmails.js:271",
+       "name": "ValidationError",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@11:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/index.js::method@12:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@11:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/index.js::method@12:4",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/ai-assistant/service.js:181",
+       "name": "AppError",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/AppError.js::class@7:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/AppError.js::method@8:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "backend/shared/errors/index.js::binding@3:6"
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@5:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@11:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@17:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@23:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@29:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@37:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@55:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@73:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@81:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@89:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@95:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/AppError.js::method@8:4",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/auth/service.js:362",
+       "name": "ValidationError",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@11:0",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/index.js::method@12:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "backend/shared/errors/index.js::class@11:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "backend/shared/errors/index.js::method@12:4",
+         "in_view": false
+        }
+       ]
+      }
+     ]
+    },
+    "javascript external-definition": {
+     "population": 17955,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external": 20
+      },
+      "implementation": {
+       "external": 19,
+       "project-value binding": 1
+      },
+      "type_definition": {
+       "external": 19,
+       "nothing": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "babel.config.js:9",
+       "name": "(expr).filter",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/blog/render.js:7",
+       "name": "(expr).replace",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/inbox/validation.js:71",
+       "name": "date.getTime",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "backend/modules/spreadsheets/core/values.js:226",
+       "name": "(expr).normalize",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      }
+     ]
+    },
+    "javascript project-not-a-symbol": {
+     "population": 1087,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function": 10,
+       "project-value binding": 7,
+       "project-callable method": 3
+      },
+      "implementation": {
+       "nothing": 18,
+       "project-callable function": 2
+      },
+      "type_definition": {
+       "nothing": 17,
+       "project-callable function": 2,
+       "external": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "backend/emails/comeBack.js:8",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/emails/comeBack.js::function@7:17",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "backend/emails/verification.js:18",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "backend/emails/verification.js::function@6:17",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "backend/migrations/archive/20250619000001-add-recurring-parent-id.js:11",
+       "name": "safeAddColumns",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "backend/migrations/archive/20250619000001-add-recurring-parent-id.js::binding@4:4"
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "backend/migrations/archive/20250924000001-add-uid-to-inbox-items.js:50",
+       "name": "safeAddIndex",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "backend/migrations/archive/20250924000001-add-uid-to-inbox-items.js::binding@4:8"
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      }
+     ]
+    },
+    "javascript unresolved": {
+     "population": 15109,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "nothing": 20
+      },
+      "implementation": {
+       "nothing": 20
+      },
+      "type_definition": {
+       "nothing": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "backend/app.js:110",
+       "name": "req.path.startsWith",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "backend/migrations/archive/20261018110000-create-email-deliveries.js:51",
+       "name": "Sequelize.STRING",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "backend/modules/backup/controller.js:111",
+       "name": "res.status",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "backend/modules/daily-plan/service.js:181",
+       "name": "tasks.map",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      }
+     ]
+    },
+    "typescript ambiguous-target": {
+     "population": 419,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external + project-value parameter": 10,
+       "external + project-value binding": 8,
+       "external + project-callable function": 2
+      },
+      "implementation": {
+       "nothing": 12,
+       "project-value binding": 8
+      },
+      "type_definition": {
+       "external": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "frontend/App.tsx:259",
+       "name": "navigate",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/App.tsx::binding@99:10"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:react-router"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/App.tsx::binding@99:10"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:react-router"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx:41",
+       "name": "fetchAdminGroups",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx::binding@32:6"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:@types/jest"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx::binding@32:6"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/jest"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/roleLabels.ts:12",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "frontend/components/Admin/roleLabels.ts::function@7:24",
+         "in_view": true
+        },
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Billing/SubscriptionRequired.tsx:75",
+       "name": "navigate",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Billing/SubscriptionRequired.tsx::binding@28:10"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:react-router"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Billing/SubscriptionRequired.tsx::binding@28:10"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:react-router"
+        }
+       ]
+      }
+     ]
+    },
+    "typescript edge-call": {
+     "population": 1023,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-value parameter": 11,
+       "project-value binding": 5,
+       "project-contract method": 2,
+       "nothing": 1,
+       "project-callable function + project-value binding": 1
+      },
+      "implementation": {
+       "nothing": 19,
+       "project-callable function + project-no-declaration": 1
+      },
+      "type_definition": {
+       "project-contract method": 18,
+       "nothing": 1,
+       "project-callable function": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "frontend/App.tsx:632",
+       "name": "state.tagsStore.loadTags",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "frontend/components/Admin/AdminUsersPage.tsx:922",
+       "name": "showSuccessToast",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/AdminUsersPage.tsx::binding@840:12"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "frontend/components/Shared/ToastContext.tsx::method@15:4",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/CalDAV/CalendarForm.tsx:124",
+       "name": "showSuccessToast",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/CalDAV/CalendarForm.tsx::binding@22:12"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "frontend/components/Shared/ToastContext.tsx::method@15:4",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/DailyPlan/DayTimeline.tsx:84",
+       "name": "onResize",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "parameter",
+         "id": "frontend/components/DailyPlan/DayTimeline.tsx::parameter@42:4"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "frontend/components/DailyPlan/DayTimeline.tsx::method@33:4",
+         "in_view": false
+        }
+       ]
+      }
+     ]
+    },
+    "typescript edge-instantiation": {
+     "population": 1,
+     "sampled": 1,
+     "places": {
+      "definition": {
+       "project-callable class + project-callable method": 1
+      },
+      "implementation": {
+       "project-callable class": 1
+      },
+      "type_definition": {
+       "project-callable method": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "frontend/utils/mfaService.ts:36",
+       "name": "ReauthRequiredError",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/utils/mfaService.ts::method@24:4",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "frontend/utils/mfaService.ts::class@21:7",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "method",
+         "id": "frontend/utils/mfaService.ts::method@24:4",
+         "in_view": false
+        }
+       ]
+      }
+     ]
+    },
+    "typescript external-definition": {
+     "population": 17908,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external": 18,
+       "external + project-value binding": 2
+      },
+      "implementation": {
+       "external": 15,
+       "nothing": 2,
+       "external + project-callable function": 2,
+       "external + project-no-declaration": 1
+      },
+      "type_definition": {
+       "external": 19,
+       "nothing": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "e2e/helpers/testHelpers.ts:21",
+       "name": "(expr).fill",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:playwright-core"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:playwright-core"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "frontend/__tests__/Notes.directLink.test.tsx:111",
+       "name": "(expr).toBeInTheDocument",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/jest-dom"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/jest-dom"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/jest-dom"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/AdminUsersPage.tsx:991",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/AdminUsersPage.tsx::binding@838:12"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:999",
+       "name": "(expr).toHaveBeenCalled",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/jest"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/jest"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/jest"
+        }
+       ]
+      }
+     ]
+    },
+    "typescript project-not-a-symbol": {
+     "population": 3544,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-value binding": 18,
+       "project-value parameter": 2
+      },
+      "implementation": {
+       "nothing": 20
+      },
+      "type_definition": {
+       "external": 19,
+       "project-value parameter": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "frontend/App.tsx:223",
+       "name": "setCurrentUser",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/App.tsx::binding@101:11"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/AdminFeedbackPage.tsx:429",
+       "name": "setPage",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/AdminFeedbackPage.tsx::binding@94:11"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/AdminWaitlistPage.tsx:85",
+       "name": "setEntries",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Admin/AdminWaitlistPage.tsx::binding@30:11"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Billing/UpgradeModal.tsx:187",
+       "name": "setDetail",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "frontend/components/Billing/UpgradeModal.tsx::binding@19:11"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ]
+      }
+     ]
+    },
+    "typescript unresolved": {
+     "population": 1243,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "nothing": 19,
+       "project-contract method": 1
+      },
+      "implementation": {
+       "nothing": 18,
+       "external": 1,
+       "project-callable function": 1
+      },
+      "type_definition": {
+       "nothing": 10,
+       "external": 9,
+       "project-contract method": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "e2e/tests/inbox-task-project.spec.ts:59",
+       "name": "tasks.filter",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "frontend/Layout.tsx:415",
+       "name": "state.projectsStore.loadProjects",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "frontend/components/Admin/__tests__/AdminUserStatusTable.test.tsx:166",
+       "name": "fireEvent.click",
+       "definition": [],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/dom"
+        }
+       ]
+      },
+      {
+       "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:997",
+       "name": "fireEvent.click",
+       "definition": [],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@testing-library/dom"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 29380,
+    "sampled": 60,
+    "places": {
+     "definition": {
+      "nothing": 18,
+      "project-callable function": 15,
+      "project-value property": 8,
+      "project-value parameter": 6,
+      "project-value binding": 6,
+      "project-callable method": 4,
+      "project-no-declaration": 2,
+      "external": 1
+     },
+     "implementation": {
+      "nothing": 37,
+      "project-callable function": 8,
+      "project-value binding": 5,
+      "project-no-declaration": 4,
+      "project-value parameter": 1,
+      "external": 1,
+      "project-callable function + project-no-declaration + project-value binding": 1,
+      "project-no-declaration + project-value binding": 1,
+      "project-no-declaration + project-value binding + project-value parameter": 1,
+      "project-callable function + project-no-declaration + project-value binding + project-value parameter": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "backend/app.js:212",
+      "name": "req",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "backend/app.js::function@200:8",
+        "in_view": true
+       }
+      ],
+      "implementation": []
+     },
+     {
+      "site": "backend/models/notification.js:355",
+      "name": "data",
+      "definition": [
+       {
+        "place": "project-value",
+        "kind": "parameter",
+        "id": "backend/models/notification.js::parameter@317:8"
+       }
+      ],
+      "implementation": [
+       {
+        "place": "project-value",
+        "kind": "parameter",
+        "id": "backend/models/notification.js::parameter@317:8"
+       }
+      ]
+     },
+     {
+      "site": "backend/modules/ai-assistant/service.js:643",
+      "name": "userId",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "backend/modules/ai-assistant/service.js::function@640:0",
+        "in_view": true
+       }
+      ],
+      "implementation": []
+     },
+     {
+      "site": "backend/modules/billing/providers/paddle.js:376",
+      "name": "base",
+      "definition": [
+       {
+        "place": "project-value",
+        "kind": "binding",
+        "id": "backend/modules/billing/providers/paddle.js::binding@315:10"
+       }
+      ],
+      "implementation": [
+       {
+        "place": "project-value",
+        "kind": "binding",
+        "id": "backend/modules/billing/providers/paddle.js::binding@315:10"
+       }
+      ]
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 11895,
+    "counts": {
+     "same declaration": 30
+    },
+    "examples": []
+   },
+   "seconds": 87.6,
+   "probe_seconds": 88.1
+  }
+ },
+ "graph_use": {
+  "coverage": {
+   "status": "complete",
+   "sampled": false,
+   "population": 65663,
+   "selected": 65663,
+   "asked": 65357,
+   "stride": 1,
+   "confirmed": 7681,
+   "candidates": 5409,
+   "no_edges_reason": null,
+   "resolution": {
+    "calls": 111367,
+    "resolved": 17377,
+    "lexical_resolved": 11895,
+    "engine_confirmed": 5482,
+    "external": 69672,
+    "external_by_class": {
+     "builtin": 33809,
+     "engine-external-definition": 35863
+    },
+    "resolvable": 41695,
+    "resolved_ratio": 0.417,
+    "dynamic": 306,
+    "askable": 65357,
+    "unasked": 0,
+    "engine_unresolved": 21761,
+    "by_language": {
+     "javascript": {
+      "calls": 72890,
+      "resolved": 11258,
+      "resolvable": 29350,
+      "resolved_ratio": 0.384,
+      "engine": "typescript-language-server@4.3.3"
+     },
+     "typescript": {
+      "calls": 38477,
+      "resolved": 6119,
+      "resolvable": 12345,
+      "resolved_ratio": 0.496,
+      "engine": "typescript-language-server@4.3.3"
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  },
+  "references": {
+   "engine resolved target=concrete": 5482,
+   "lexical resolved target=concrete": 11895,
+   "lexical unresolved target=None": 93990
+  },
+  "candidates": 5409,
+  "conflicts": 0,
+  "conflict_examples": [],
+  "call_links_kept": {
+   "engine": 2702,
+   "lexical": 6361
+  },
+  "call_links_lost": {
+   "engine: call outside a named symbol": 2780,
+   "lexical: call outside a named symbol": 5534
+  },
+  "lost_examples": {
+   "call outside a named symbol": [
+    {
+     "site": "backend/app.js:18",
+     "caller": null,
+     "target": "backend/config/config.js::function@548:0"
+    },
+    {
+     "site": "backend/app.js:182",
+     "caller": "backend/app.js::function@181:32",
+     "target": "backend/modules/billing/webhookRoutes.js::function@10:0"
+    },
+    {
+     "site": "backend/app.js:252",
+     "caller": null,
+     "target": "backend/app.js::function@227:0"
+    },
+    {
+     "site": "backend/app.js:284",
+     "caller": null,
+     "target": "backend/services/visitService.js::function@91:0"
+    }
+   ]
+  },
+  "links": {
+   "edges": {
+    "chiama diretto": 9155,
+    "scrive dedotto": 333,
+    "attiva dedotto": 622,
+    "chiama dedotto": 136,
+    "legge dedotto": 911
+   },
+   "entries": {
+    "azione": 528,
+    "rotta": 303
+   },
+   "routes": {
+    "offered": 306,
+    "called": 155,
+    "linked": 136
+   },
+   "gaps": {
+    "legge call outside a named symbol": 59,
+    "scrive call outside a named symbol": 32,
+    "offre": 37,
+    "rotta": 164,
+    "legge app state": 9,
+    "route api POST login/mfa": 1,
+    "route api GET tasks?type=calendar": 1,
+    "route api GET tasks?client_side_filtering=true&status=active": 1,
+    "route api GET tasks?status=all": 1,
+    "route api GET tasks?client_side_filtering=true&limit=10000&o": 1,
+    "route api GET oidc/providers": 3,
+    "route api GET notifications?limit=20&includeRead=true": 1,
+    "rotta call outside a named symbol": 4,
+    "route api POST caldav/calendars": 1,
+    "route api GET caldav/remote-calendars": 1,
+    "route api POST caldav/remote-calendars": 1,
+    "route api POST caldav/remote-calendars/test-connection": 1,
+    "route api POST caldav/sync/all": 1,
+    "route api GET caldav/calendars": 1,
+    "route api GET profile/mfa": 1,
+    "route api GET oidc/identities": 1,
+    "route api POST people": 1,
+    "route api POST imports": 1
+   }
+  }
+ },
+ "seconds": 1912.5
+}

@@ -1,0 +1,667 @@
+{
+ "case": "chi",
+ "snapshot_seconds": 6.9,
+ "pass_seconds": 77.2,
+ "pass_stdout": "engine pass: go for go\ninstalling Go 1.27.3 into /root/.cache/daodan/engines/go/1.27.3 (first use)\ninstalling gopls v0.24.0 into /root/.cache/daodan/engines/gopls/v0.24.0 (first use)\n{\n  \"answer_cache\": \"/work/chi/snapshot/engine-answers.sqlite\",\n  \"asked\": 3125,\n  \"available\": true,\n  \"candidates\": 43,\n  \"confirmed_edges\": 783,\n  \"coverage\": \"3125 of 3168 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/chi/snapshot/engine-edges.sqlite\",\n  \"engine\": \"gopls@v0.24.0\",\n  \"excluded_classes\": {\n    \"builtin\": 734\n  },\n  \"inference_elapsed_ms\": 27478.8,\n  \"languages\": {\n    \"go\": {\n      \"asked\": 3125,\n      \"candidates\": 43,\n      \"confirmed\": 783,\n      \"created_at\": \"2026-11-13T08:31:04Z\",\n      \"engine\": \"gopls@v0.24.0\",\n      \"excluded_classes\": {\n        \"builtin\": 734\n      },\n      \"no_edges_reason\": null,\n      \"population\": 3168,\n      \"reused\": 0,\n      \"selected\": 3168,\n      \"source_verification\": {\n        \"after_inference\": 90,\n        \"before_inference\": 90\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"dynamic-callee\": 43,\n        \"edge-call\": 783,\n        \"external-definition\": 2299,\n        \"project-not-a-symbol\": 43\n      }\n    }\n  },\n  \"latency_mean_ms\": 8.8,\n  \"latency_p95_ms\": 17.9,\n  \"no_edges_reason\": null,\n  \"population\": 3168,\n  \"population_language\": \"go\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 44294.7,\n  \"project_root\": \"/work/chi/src\",\n  \"report_out\": \"/work/chi/snapshot/.engine-stage-go.json\",\n  \"resolution\": {\n    \"askable\": 3125,\n    \"by_language\": {\n      \"go\": {\n        \"calls\": 4133,\n        \"engine\": \"gopls@v0.24.0\",\n        \"resolvable\": 1100,\n        \"resolved\": 1014,\n        \"resolved_ratio\": 0.922\n      }\n    },\n    \"calls\": 4133,\n    \"dynamic\": 43,\n    \"engine_confirmed\": 783,\n    \"engine_unresolved\": 43,\n    \"external\": 3033,\n    \"external_by_class\": {\n      \"builtin\": 734,\n      \"engine-external-definition\": 2299\n    },\n    \"lexical_resolved\": 231,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 1100,\n    \"resolved\": 1014,\n    \"resolved_ratio\": 0.922,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 3168,\n  \"source_verification\": {\n    \"after_inference\": 90,\n    \"before_inference\": 90\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 74553.9,\n  \"verdicts\": {\n    \"dynamic-callee\": 43,\n    \"edge-call\": 783,\n    \"external-definition\": 2299,\n    \"project-not-a-symbol\": 43\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"go\": {\n      \"engine\": \"gopls@v0.24.0\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "pass_stderr": "",
+ "pass_report": {
+  "available": true,
+  "engines": {
+   "go": {
+    "answer_cache": "/work/chi/snapshot/engine-answers.sqlite",
+    "asked": 3125,
+    "available": true,
+    "candidates": 43,
+    "confirmed_edges": 783,
+    "coverage": "3125 of 3168 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/chi/snapshot/engine-edges.sqlite",
+    "engine": "gopls@v0.24.0",
+    "excluded_classes": {
+     "builtin": 734
+    },
+    "inference_elapsed_ms": 27478.8,
+    "languages": {
+     "go": {
+      "asked": 3125,
+      "candidates": 43,
+      "confirmed": 783,
+      "created_at": "2026-11-13T08:31:04Z",
+      "engine": "gopls@v0.24.0",
+      "excluded_classes": {
+       "builtin": 734
+      },
+      "no_edges_reason": null,
+      "population": 3168,
+      "reused": 0,
+      "selected": 3168,
+      "source_verification": {
+       "after_inference": 90,
+       "before_inference": 90
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "dynamic-callee": 43,
+       "edge-call": 783,
+       "external-definition": 2299,
+       "project-not-a-symbol": 43
+      }
+     }
+    },
+    "latency_mean_ms": 8.8,
+    "latency_p95_ms": 17.9,
+    "no_edges_reason": null,
+    "population": 3168,
+    "population_language": "go",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 44294.7,
+    "project_root": "/work/chi/src",
+    "resolution": {
+     "askable": 3125,
+     "by_language": {
+      "go": {
+       "calls": 4133,
+       "engine": "gopls@v0.24.0",
+       "resolvable": 1100,
+       "resolved": 1014,
+       "resolved_ratio": 0.922
+      }
+     },
+     "calls": 4133,
+     "dynamic": 43,
+     "engine_confirmed": 783,
+     "engine_unresolved": 43,
+     "external": 3033,
+     "external_by_class": {
+      "builtin": 734,
+      "engine-external-definition": 2299
+     },
+     "lexical_resolved": 231,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 1100,
+     "resolved": 1014,
+     "resolved_ratio": 0.922,
+     "unasked": 0
+    },
+    "reused": 0,
+    "selected": 3168,
+    "source_verification": {
+     "after_inference": 90,
+     "before_inference": 90
+    },
+    "stride": 1,
+    "total_elapsed_ms": 74553.9,
+    "verdicts": {
+     "dynamic-callee": 43,
+     "edge-call": 783,
+     "external-definition": 2299,
+     "project-not-a-symbol": 43
+    }
+   }
+  },
+  "finished_at": "2026-11-13T08:31:04Z",
+  "languages": {
+   "go": {
+    "engine": "gopls@v0.24.0",
+    "state": "fresh"
+   }
+  },
+  "manifest_digest": "ba6ca434509e72d73f9c01f1c9b9b590c53d3a1f4e646a2cdd6486d5b4f0b263",
+  "pass": true,
+  "started_at": "2026-11-13T08:29:47Z"
+ },
+ "engines": {
+  "go": {
+   "engine": "go",
+   "languages": [
+    "go"
+   ],
+   "references": {
+    "go call resolved": 231,
+    "go call unresolved": 3902,
+    "go read resolved": 30,
+    "go read unresolved": 5936
+   },
+   "unresolved_calls_by_class": {
+    "go askable": 3125,
+    "go builtin": 734,
+    "go dynamic": 43
+   },
+   "reads_naming_project_callables": {
+    "go read .go": 181
+   },
+   "answers_cached": 3125,
+   "answer_verdicts": {
+    "external-definition": 2299,
+    "edge-call": 783,
+    "project-not-a-symbol": 43
+   },
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "go": {
+      "engine": "gopls@v0.24.0",
+      "state": "fresh",
+      "population": 3168,
+      "selected": 3168,
+      "asked": 3125,
+      "confirmed": 783,
+      "candidates": 43,
+      "verdicts": {
+       "dynamic-callee": 43,
+       "edge-call": 783,
+       "external-definition": 2299,
+       "project-not-a-symbol": 43
+      },
+      "excluded_classes": {
+       "builtin": 734
+      },
+      "no_edges_reason": null
+     }
+    }
+   },
+   "stored_edges": {
+    "candidate project-not-a-symbol target=None": 43,
+    "confirmed edge-call target=function": 627,
+    "confirmed edge-call target=method contract": 156
+   },
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {
+    "go edge-call": {
+     "population": 783,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function": 15,
+       "project-contract method": 5
+      },
+      "implementation": {
+       "project-contract method": 10,
+       "project-callable function": 5,
+       "nothing": 5
+      },
+      "type_definition": {
+       "error": 10,
+       "project-callable class": 8,
+       "external": 2
+      }
+     },
+     "examples": [
+      {
+       "site": "_examples/custom-handler/main.go:22",
+       "name": "r.Method",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "mux.go::function@127:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "chi.go::method@95:1",
+         "in_view": false
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error: cannot find type name(s) from type func(method string, pattern string, handler net/http.Handler) (0)"
+        }
+       ]
+      },
+      {
+       "site": "_examples/router-walk/main.go:18",
+       "name": "r.Get",
+       "definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "chi.go::method@101:1",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "mux.go::function@155:0",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error: cannot find type name(s) from type func(pattern string, h net/http.HandlerFunc) (0)"
+        }
+       ]
+      },
+      {
+       "site": "middleware/clean_path_test.go:13",
+       "name": "r.Use",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "mux.go::function@100:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "chi.go::method@73:1",
+         "in_view": false
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error: cannot find type name(s) from type func(middlewares ...func(net/http.Handler) net/http.Handler) (0)"
+        }
+       ]
+      },
+      {
+       "site": "middleware/compress.go:130",
+       "name": "c.SetEncoder",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "middleware/compress.go::function@167:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error: cannot find type name(s) from type func(encoding string, fn github.com/go-chi/chi/v5/middleware.EncoderFunc) (0)"
+        }
+       ]
+      }
+     ]
+    },
+    "go external-definition": {
+     "population": 2299,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external": 20
+      },
+      "implementation": {
+       "external": 6,
+       "error": 5,
+       "nothing": 5,
+       "external + project-callable function": 4
+      },
+      "type_definition": {
+       "external": 12,
+       "error": 8
+      }
+     },
+     "examples": [
+      {
+       "site": "_examples/custom-handler/main.go:23",
+       "name": "http.ListenAndServe",
+       "definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "error",
+         "error": "Error: ListenAndServe is a function, not a method (query at 'func' token to find matching signatures) (0)"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ]
+      },
+      {
+       "site": "_examples/rest/main.go:80",
+       "name": "r.With",
+       "definition": [
+        {
+         "place": "external",
+         "package": "go:github.com/go-chi/chi/v5"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "go:github.com/go-chi/chi/v5"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "go:github.com/go-chi/chi/v5"
+        }
+       ]
+      },
+      {
+       "site": "_examples/versions/main.go:122",
+       "name": "(expr).Get",
+       "definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ]
+      },
+      {
+       "site": "middleware/client_ip_bench_test.go:51",
+       "name": "b.Loop",
+       "definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ]
+      }
+     ]
+    },
+    "go project-not-a-symbol": {
+     "population": 43,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function": 13,
+       "project-value binding": 4,
+       "project-no-declaration": 3
+      },
+      "implementation": {
+       "error": 20
+      },
+      "type_definition": {
+       "external": 11,
+       "error": 6,
+       "project-callable class": 3
+      }
+     },
+     "examples": [
+      {
+       "site": "_examples/custom-handler/main.go:13",
+       "name": "h",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "_examples/custom-handler/main.go::function@12:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "error",
+         "error": "Error: h is a var, not a type (0)"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "_examples/custom-handler/main.go::class@10:5",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "_examples/graceful/main.go:23",
+       "name": "stop",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "_examples/graceful/main.go::binding@22:1"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "error",
+         "error": "Error: stop is a var, not a type (0)"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "go:std"
+        }
+       ]
+      },
+      {
+       "site": "middleware/client_ip_test.go:832",
+       "name": "buildReq",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "middleware/client_ip_test.go::function@829:0",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "error",
+         "error": "Error: buildReq is a var, not a type (0)"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error: cannot find type name(s) from type func(*net/http.Request) (0)"
+        }
+       ]
+      },
+      {
+       "site": "middleware/compress.go:223",
+       "name": "cleanup",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "middleware/compress.go::binding@209:2"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "error",
+         "error": "Error: cleanup is a var, not a type (0)"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error: cannot find type name(s) from type func() (0)"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 181,
+    "sampled": 60,
+    "places": {
+     "definition": {
+      "project-callable function": 28,
+      "project-no-declaration": 16,
+      "external": 9,
+      "project-value binding": 7
+     },
+     "implementation": {
+      "error": 57,
+      "nothing": 2,
+      "project-callable function": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "_examples/custom-handler/main.go:22",
+      "name": "customHandler",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "_examples/custom-handler/main.go::function@26:0",
+        "in_view": true
+       }
+      ],
+      "implementation": [
+       {
+        "place": "error",
+        "error": "Error: not a dynamic function call (0)"
+       }
+      ]
+     },
+     {
+      "site": "_examples/fileserver/main.go:30",
+      "name": "middleware.Logger",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "middleware/logger.go::function@39:0",
+        "in_view": true
+       }
+      ],
+      "implementation": [
+       {
+        "place": "error",
+        "error": "Error: Logger is a function, not a method (query at 'func' token to find matching signatures) (0)"
+       }
+      ]
+     },
+     {
+      "site": "_examples/graceful/main.go:49",
+      "name": "middleware.Logger",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "middleware/logger.go::function@39:0",
+        "in_view": true
+       }
+      ],
+      "implementation": [
+       {
+        "place": "error",
+        "error": "Error: Logger is a function, not a method (query at 'func' token to find matching signatures) (0)"
+       }
+      ]
+     },
+     {
+      "site": "_examples/hello-world/main.go:14",
+      "name": "middleware.Recoverer",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "middleware/recoverer.go::function@22:0",
+        "in_view": true
+       }
+      ],
+      "implementation": [
+       {
+        "place": "error",
+        "error": "Error: Recoverer is a function, not a method (query at 'func' token to find matching signatures) (0)"
+       }
+      ]
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 231,
+    "counts": {
+     "same declaration": 30
+    },
+    "examples": []
+   },
+   "seconds": 10.6,
+   "probe_seconds": 10.9
+  }
+ },
+ "graph_use": {
+  "coverage": {
+   "status": "complete",
+   "sampled": false,
+   "population": 3168,
+   "selected": 3168,
+   "asked": 3125,
+   "stride": 1,
+   "confirmed": 783,
+   "candidates": 43,
+   "no_edges_reason": null,
+   "resolution": {
+    "calls": 4133,
+    "resolved": 858,
+    "lexical_resolved": 231,
+    "engine_confirmed": 627,
+    "external": 3033,
+    "external_by_class": {
+     "builtin": 734,
+     "engine-external-definition": 2299
+    },
+    "resolvable": 1100,
+    "resolved_ratio": 0.78,
+    "dynamic": 43,
+    "askable": 3125,
+    "unasked": 0,
+    "engine_unresolved": 43,
+    "by_language": {
+     "go": {
+      "calls": 4133,
+      "resolved": 858,
+      "resolvable": 1100,
+      "resolved_ratio": 0.78,
+      "engine": "gopls@v0.24.0"
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  },
+  "references": {
+   "engine resolved target=concrete": 627,
+   "lexical resolved target=concrete": 231,
+   "lexical unresolved target=None": 3275
+  },
+  "candidates": 43,
+  "conflicts": 0,
+  "conflict_examples": [],
+  "call_links_kept": {
+   "engine": 627,
+   "lexical": 231
+  },
+  "call_links_lost": {},
+  "lost_examples": {}
+ },
+ "seconds": 95.5
+}

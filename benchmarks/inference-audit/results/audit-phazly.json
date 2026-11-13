@@ -1,0 +1,2705 @@
+{
+ "case": "phazly",
+ "snapshot_seconds": 55.0,
+ "pass_seconds": 2403.7,
+ "pass_stdout": " \"confirmed\": 0,\n      \"created_at\": \"2026-11-13T09:10:35Z\",\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"excluded_classes\": {\n        \"builtin\": 12\n      },\n      \"no_edges_reason\": \"no-project-targets\",\n      \"population\": 17,\n      \"reused\": 0,\n      \"selected\": 17,\n      \"source_verification\": {\n        \"after_inference\": 3,\n        \"before_inference\": 3\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"unresolved\": 17\n      }\n    }\n  },\n  \"latency_mean_ms\": 1.2,\n  \"latency_p95_ms\": 4.8,\n  \"no_edges_reason\": \"no-project-targets\",\n  \"population\": 17,\n  \"population_language\": \"rust\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 17418.3,\n  \"project_root\": \"/work/phazly/src\",\n  \"report_out\": \"/work/phazly/snapshot/.engine-stage-rust.json\",\n  \"resolution\": {\n    \"askable\": 31004,\n    \"by_language\": {\n      \"javascript\": {\n        \"calls\": 639,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 329,\n        \"resolved\": 65,\n        \"resolved_ratio\": 0.198\n      },\n      \"kotlin\": {\n        \"calls\": 573,\n        \"engine\": null,\n        \"resolvable\": 305,\n        \"resolved\": 36,\n        \"resolved_ratio\": 0.118\n      },\n      \"python\": {\n        \"calls\": 32116,\n        \"engine\": \"jedi@0.20.1\",\n        \"resolvable\": 13349,\n        \"resolved\": 10292,\n        \"resolved_ratio\": 0.771\n      },\n      \"rust\": {\n        \"calls\": 29,\n        \"engine\": \"rust-analyzer@2026-11-09\",\n        \"resolvable\": 17,\n        \"resolved\": 0,\n        \"resolved_ratio\": 0.0\n      },\n      \"typescript\": {\n        \"calls\": 15160,\n        \"engine\": \"typescript-language-server@4.3.3\",\n        \"resolvable\": 5763,\n        \"resolved\": 3250,\n        \"resolved_ratio\": 0.564\n      }\n    },\n    \"calls\": 48517,\n    \"dynamic\": 89,\n    \"engine_confirmed\": 6210,\n    \"engine_unresolved\": 5760,\n    \"external\": 28754,\n    \"external_by_class\": {\n      \"builtin\": 9991,\n      \"engine-external-definition\": 18763\n    },\n    \"lexical_resolved\": 7433,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 19763,\n    \"resolved\": 13643,\n    \"resolved_ratio\": 0.69,\n    \"unasked\": 269\n  },\n  \"reused\": 0,\n  \"selected\": 17,\n  \"source_verification\": {\n    \"after_inference\": 3,\n    \"before_inference\": 3\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 21691.3,\n  \"verdicts\": {\n    \"unresolved\": 17\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"javascript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin\",\n      \"reason\": \"could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden\",\n      \"state\": \"failed\"\n    },\n    \"python\": {\n      \"engine\": \"jedi@0.20.1\",\n      \"state\": \"fresh\"\n    },\n    \"rust\": {\n      \"engine\": \"rust-analyzer@2026-11-09\",\n      \"state\": \"fresh\"\n    },\n    \"typescript\": {\n      \"engine\": \"typescript-language-server@4.3.3\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "pass_stderr": "",
+ "pass_report": {
+  "available": true,
+  "engines": {
+   "jedi": {
+    "answer_cache": "/work/phazly/snapshot/engine-answers.sqlite",
+    "asked": 19801,
+    "available": true,
+    "candidates": 181,
+    "confirmed_edges": 5477,
+    "coverage": "19801 of 19807 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/phazly/snapshot/engine-edges.sqlite",
+    "engine": "jedi@0.20.1",
+    "excluded_classes": {
+     "builtin": 7494
+    },
+    "inference_elapsed_ms": 1607541.2,
+    "languages": {
+     "python": {
+      "asked": 19801,
+      "candidates": 181,
+      "confirmed": 5477,
+      "created_at": "2026-11-13T08:58:39Z",
+      "engine": "jedi@0.20.1",
+      "excluded_classes": {
+       "builtin": 7494
+      },
+      "no_edges_reason": null,
+      "population": 19807,
+      "reused": 0,
+      "selected": 19807,
+      "source_verification": {
+       "after_inference": 336,
+       "before_inference": 336
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "ambiguous-target": 113,
+       "dynamic-callee": 6,
+       "edge-call": 4477,
+       "edge-instantiation": 1000,
+       "external-definition": 11273,
+       "infer-error:KeyError": 2,
+       "project-not-a-symbol": 68,
+       "unresolved": 2868
+      }
+     }
+    },
+    "latency_mean_ms": 81.2,
+    "latency_p95_ms": 226.3,
+    "no_edges_reason": null,
+    "population": 19807,
+    "population_language": "python",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 5586.6,
+    "project_root": "/work/phazly/src",
+    "resolution": {
+     "askable": 31004,
+     "by_language": {
+      "javascript": {
+       "calls": 639,
+       "engine": null,
+       "resolvable": 460,
+       "resolved": 65,
+       "resolved_ratio": 0.141
+      },
+      "kotlin": {
+       "calls": 573,
+       "engine": null,
+       "resolvable": 305,
+       "resolved": 36,
+       "resolved_ratio": 0.118
+      },
+      "python": {
+       "calls": 32116,
+       "engine": "jedi@0.20.1",
+       "resolvable": 13349,
+       "resolved": 10292,
+       "resolved_ratio": 0.771
+      },
+      "rust": {
+       "calls": 29,
+       "engine": null,
+       "resolvable": 17,
+       "resolved": 0,
+       "resolved_ratio": 0.0
+      },
+      "typescript": {
+       "calls": 15160,
+       "engine": null,
+       "resolvable": 13122,
+       "resolved": 2517,
+       "resolved_ratio": 0.192
+      }
+     },
+     "calls": 48517,
+     "dynamic": 89,
+     "engine_confirmed": 5477,
+     "engine_unresolved": 3049,
+     "external": 21264,
+     "external_by_class": {
+      "builtin": 9991,
+      "engine-external-definition": 11273
+     },
+     "lexical_resolved": 7433,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 27253,
+     "resolved": 12910,
+     "resolved_ratio": 0.474,
+     "unasked": 11203
+    },
+    "reused": 0,
+    "selected": 19807,
+    "source_verification": {
+     "after_inference": 336,
+     "before_inference": 336
+    },
+    "stride": 1,
+    "total_elapsed_ms": 1680285.2,
+    "verdicts": {
+     "ambiguous-target": 113,
+     "dynamic-callee": 6,
+     "edge-call": 4477,
+     "edge-instantiation": 1000,
+     "external-definition": 11273,
+     "infer-error:KeyError": 2,
+     "project-not-a-symbol": 68,
+     "unresolved": 2868
+    }
+   },
+   "kotlin": {
+    "available": false,
+    "engine": "kotlin",
+    "install": null,
+    "languages": [
+     "kotlin"
+    ],
+    "memory_exhausted": false,
+    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+   },
+   "rust": {
+    "answer_cache": "/work/phazly/snapshot/engine-answers.sqlite",
+    "asked": 17,
+    "available": true,
+    "candidates": 0,
+    "confirmed_edges": 0,
+    "coverage": "17 of 17 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/phazly/snapshot/engine-edges.sqlite",
+    "engine": "rust-analyzer@2026-11-09",
+    "excluded_classes": {
+     "builtin": 12
+    },
+    "inference_elapsed_ms": 20.6,
+    "languages": {
+     "rust": {
+      "asked": 17,
+      "candidates": 0,
+      "confirmed": 0,
+      "created_at": "2026-11-13T09:10:35Z",
+      "engine": "rust-analyzer@2026-11-09",
+      "excluded_classes": {
+       "builtin": 12
+      },
+      "no_edges_reason": "no-project-targets",
+      "population": 17,
+      "reused": 0,
+      "selected": 17,
+      "source_verification": {
+       "after_inference": 3,
+       "before_inference": 3
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "unresolved": 17
+      }
+     }
+    },
+    "latency_mean_ms": 1.2,
+    "latency_p95_ms": 4.8,
+    "no_edges_reason": "no-project-targets",
+    "population": 17,
+    "population_language": "rust",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 17418.3,
+    "project_root": "/work/phazly/src",
+    "resolution": {
+     "askable": 31004,
+     "by_language": {
+      "javascript": {
+       "calls": 639,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 329,
+       "resolved": 65,
+       "resolved_ratio": 0.198
+      },
+      "kotlin": {
+       "calls": 573,
+       "engine": null,
+       "resolvable": 305,
+       "resolved": 36,
+       "resolved_ratio": 0.118
+      },
+      "python": {
+       "calls": 32116,
+       "engine": "jedi@0.20.1",
+       "resolvable": 13349,
+       "resolved": 10292,
+       "resolved_ratio": 0.771
+      },
+      "rust": {
+       "calls": 29,
+       "engine": "rust-analyzer@2026-11-09",
+       "resolvable": 17,
+       "resolved": 0,
+       "resolved_ratio": 0.0
+      },
+      "typescript": {
+       "calls": 15160,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 5763,
+       "resolved": 3250,
+       "resolved_ratio": 0.564
+      }
+     },
+     "calls": 48517,
+     "dynamic": 89,
+     "engine_confirmed": 6210,
+     "engine_unresolved": 5760,
+     "external": 28754,
+     "external_by_class": {
+      "builtin": 9991,
+      "engine-external-definition": 18763
+     },
+     "lexical_resolved": 7433,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 19763,
+     "resolved": 13643,
+     "resolved_ratio": 0.69,
+     "unasked": 269
+    },
+    "reused": 0,
+    "selected": 17,
+    "source_verification": {
+     "after_inference": 3,
+     "before_inference": 3
+    },
+    "stride": 1,
+    "total_elapsed_ms": 21691.3,
+    "verdicts": {
+     "unresolved": 17
+    }
+   },
+   "typescript": {
+    "answer_cache": "/work/phazly/snapshot/engine-answers.sqlite",
+    "asked": 10917,
+    "available": true,
+    "candidates": 2565,
+    "confirmed_edges": 733,
+    "coverage": "10917 of 11000 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/phazly/snapshot/engine-edges.sqlite",
+    "engine": "typescript-language-server@4.3.3",
+    "excluded_classes": {
+     "builtin": 2217
+    },
+    "inference_elapsed_ms": 451975.3,
+    "languages": {
+     "javascript": {
+      "asked": 392,
+      "candidates": 139,
+      "confirmed": 0,
+      "created_at": "2026-11-13T09:10:09Z",
+      "engine": "typescript-language-server@4.3.3",
+      "excluded_classes": {
+       "builtin": 179
+      },
+      "no_edges_reason": null,
+      "population": 395,
+      "reused": 0,
+      "selected": 395,
+      "source_verification": {
+       "after_inference": 448,
+       "before_inference": 448
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "dynamic-callee": 3,
+       "external-definition": 131,
+       "project-not-a-symbol": 139,
+       "unresolved": 122
+      }
+     },
+     "typescript": {
+      "asked": 10525,
+      "candidates": 2426,
+      "confirmed": 733,
+      "created_at": "2026-11-13T09:10:09Z",
+      "engine": "typescript-language-server@4.3.3",
+      "excluded_classes": {
+       "builtin": 2038
+      },
+      "no_edges_reason": null,
+      "population": 10605,
+      "reused": 0,
+      "selected": 10605,
+      "source_verification": {
+       "after_inference": 448,
+       "before_inference": 448
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "ambiguous-target": 493,
+       "dynamic-callee": 80,
+       "edge-call": 733,
+       "external-definition": 7359,
+       "project-not-a-symbol": 1933,
+       "unresolved": 7
+      }
+     }
+    },
+    "latency_mean_ms": 41.4,
+    "latency_p95_ms": 114.6,
+    "no_edges_reason": null,
+    "population": 11000,
+    "population_language": "multi",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 61395.5,
+    "project_root": "/work/phazly/src",
+    "resolution": {
+     "askable": 31004,
+     "by_language": {
+      "javascript": {
+       "calls": 639,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 329,
+       "resolved": 65,
+       "resolved_ratio": 0.198
+      },
+      "kotlin": {
+       "calls": 573,
+       "engine": null,
+       "resolvable": 305,
+       "resolved": 36,
+       "resolved_ratio": 0.118
+      },
+      "python": {
+       "calls": 32116,
+       "engine": "jedi@0.20.1",
+       "resolvable": 13349,
+       "resolved": 10292,
+       "resolved_ratio": 0.771
+      },
+      "rust": {
+       "calls": 29,
+       "engine": null,
+       "resolvable": 17,
+       "resolved": 0,
+       "resolved_ratio": 0.0
+      },
+      "typescript": {
+       "calls": 15160,
+       "engine": "typescript-language-server@4.3.3",
+       "resolvable": 5763,
+       "resolved": 3250,
+       "resolved_ratio": 0.564
+      }
+     },
+     "calls": 48517,
+     "dynamic": 89,
+     "engine_confirmed": 6210,
+     "engine_unresolved": 5743,
+     "external": 28754,
+     "external_by_class": {
+      "builtin": 9991,
+      "engine-external-definition": 18763
+     },
+     "lexical_resolved": 7433,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 19763,
+     "resolved": 13643,
+     "resolved_ratio": 0.69,
+     "unasked": 286
+    },
+    "reused": 0,
+    "selected": 11000,
+    "source_verification": {
+     "after_inference": 448,
+     "before_inference": 448
+    },
+    "stride": 1,
+    "total_elapsed_ms": 678722.9,
+    "verdicts": {
+     "ambiguous-target": 493,
+     "dynamic-callee": 83,
+     "edge-call": 733,
+     "external-definition": 7490,
+     "project-not-a-symbol": 2072,
+     "unresolved": 129
+    }
+   }
+  },
+  "finished_at": "2026-11-13T09:10:36Z",
+  "languages": {
+   "javascript": {
+    "engine": "typescript-language-server@4.3.3",
+    "state": "fresh"
+   },
+   "kotlin": {
+    "engine": "kotlin",
+    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden",
+    "state": "failed"
+   },
+   "python": {
+    "engine": "jedi@0.20.1",
+    "state": "fresh"
+   },
+   "rust": {
+    "engine": "rust-analyzer@2026-11-09",
+    "state": "fresh"
+   },
+   "typescript": {
+    "engine": "typescript-language-server@4.3.3",
+    "state": "fresh"
+   }
+  },
+  "manifest_digest": "6aca1b9389989b58b555764bc04f1d966721c9d8956bee09885f0c7c295783ed",
+  "pass": true,
+  "started_at": "2026-11-13T08:30:39Z"
+ },
+ "engines": {
+  "jedi": {
+   "engine": "jedi",
+   "languages": [
+    "python"
+   ],
+   "references": {
+    "python call resolved": 4815,
+    "python call unresolved": 27301,
+    "python read resolved": 1400,
+    "python read unresolved": 70877
+   },
+   "unresolved_calls_by_class": {
+    "python askable": 19801,
+    "python builtin": 7494,
+    "python dynamic": 6
+   },
+   "reads_naming_project_callables": {
+    "python read .py": 14071
+   },
+   "answers_cached": 19799,
+   "answer_verdicts": {
+    "external-definition": 11273,
+    "edge-call": 4477,
+    "unresolved": 2868,
+    "edge-instantiation": 1000,
+    "ambiguous-target": 113,
+    "project-not-a-symbol": 68
+   },
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "python": {
+      "engine": "jedi@0.20.1",
+      "state": "fresh",
+      "population": 19807,
+      "selected": 19807,
+      "asked": 19801,
+      "confirmed": 5477,
+      "candidates": 181,
+      "verdicts": {
+       "ambiguous-target": 113,
+       "dynamic-callee": 6,
+       "edge-call": 4477,
+       "edge-instantiation": 1000,
+       "external-definition": 11273,
+       "infer-error:KeyError": 2,
+       "project-not-a-symbol": 68,
+       "unresolved": 2868
+      },
+      "excluded_classes": {
+       "builtin": 7494
+      },
+      "no_edges_reason": null
+     }
+    }
+   },
+   "stored_edges": {
+    "candidate ambiguous-target target=None": 113,
+    "candidate project-not-a-symbol target=None": 68,
+    "confirmed edge-call target=function": 4477,
+    "confirmed edge-instantiation target=class": 1000
+   },
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {
+    "python ambiguous-target": {
+     "population": 113,
+     "sampled": 20,
+     "places": {
+      "infer": {
+       "project-callable function": 20
+      },
+      "goto": {
+       "project-callable function": 19,
+       "project-value binding": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "functions-python/app/handlers/admin/analytics.py:276",
+       "name": "calculator",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@46:0",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@121:0",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@160:0",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/analytics.py::function@193:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "functions-python/app/handlers/admin/analytics.py::binding@275:4",
+         "type": "statement"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/tests/unit/test_planner_context.py:530",
+       "name": "mutate",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@159:0",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@528:23",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@528:23",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@528:23",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@528:23",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/tests/unit/test_planner_context.py::function@528:23",
+         "in_view": true,
+         "type": "statement"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/tests/unit/test_planner_mutations.py:2195",
+       "name": "first_repository.renew_mutation_claim",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@983:4",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@1520:4",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@983:4",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@1520:4",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/tests/unit/test_planner_mutations.py:2238",
+       "name": "second_repository.commit_active",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@1114:4",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@1827:4",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@1114:4",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/planner/persistence.py::function@1827:4",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "python edge-call": {
+     "population": 4477,
+     "sampled": 20,
+     "places": {
+      "infer": {
+       "project-callable function": 20
+      },
+      "goto": {
+       "project-callable function": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "functions-python/app/api/deps.py:195",
+       "name": "get_mongo_database",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/services/mongodb.py::function@49:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/services/mongodb.py::function@49:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/admin/recipe_forge.py:448",
+       "name": "success_response",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/api/responses.py::function@14:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/api/responses.py::function@14:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/admin/users.py:303",
+       "name": "log_admin_action",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/_helpers.py::function@38:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/_helpers.py::function@38:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/lookup/lookup_macros.py:366",
+       "name": "fetch_nutrients_from_db",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/lookup/rag_search.py::function@141:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/lookup/rag_search.py::function@141:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "python edge-instantiation": {
+     "population": 1000,
+     "sampled": 20,
+     "places": {
+      "infer": {
+       "project-callable class": 20
+      },
+      "goto": {
+       "project-callable class": 19,
+       "project-callable function": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "functions-python/app/api/deps.py:198",
+       "name": "AuthenticationError",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/core/exceptions.py::class@49:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/core/exceptions.py::class@49:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/admin/llm_models.py:390",
+       "name": "ValidationError",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/core/exceptions.py::class@42:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/core/exceptions.py::class@42:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/admin/recipe_forge.py:1315",
+       "name": "ValidationError",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/core/exceptions.py::class@42:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/core/exceptions.py::class@42:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/lookup/lookup_macros.py:245",
+       "name": "FoodComponent",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/schemas/lookup_macros.py::class@162:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "class",
+         "id": "functions-python/app/schemas/lookup_macros.py::class@162:0",
+         "in_view": true,
+         "type": "class"
+        }
+       ]
+      }
+     ]
+    },
+    "python external-definition": {
+     "population": 11273,
+     "sampled": 20,
+     "places": {
+      "infer": {
+       "external": 19,
+       "no-location": 1
+      },
+      "goto": {
+       "external": 19,
+       "no-location": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "functions-python/app/api/deps.py:49",
+       "name": "RATE_LIMIT_TIERS.setdefault",
+       "infer": [
+        {
+         "place": "external",
+         "package": "site-packages:jedi",
+         "full_name": "typing.MutableMapping.setdefault",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "external",
+         "package": "site-packages:jedi",
+         "full_name": "typing.MutableMapping.setdefault",
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/admin/recipe_forge.py:404",
+       "name": "Field",
+       "infer": [
+        {
+         "place": "external",
+         "package": "site-packages:pydantic",
+         "full_name": "pydantic.fields.Field",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "external",
+         "package": "site-packages:pydantic",
+         "full_name": "pydantic.fields.Field",
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/generate_shopping_list.py:354",
+       "name": "items.extend",
+       "infer": [
+        {
+         "place": "external",
+         "package": "site-packages:jedi",
+         "full_name": "builtins.list.extend",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "external",
+         "package": "site-packages:jedi",
+         "full_name": "builtins.list.extend",
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/app/handlers/stripe_webhook.py:632",
+       "name": "request.headers.get",
+       "infer": [
+        {
+         "place": "external",
+         "package": "site-packages:jedi",
+         "full_name": "typing.Mapping.get",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "external",
+         "package": "site-packages:jedi",
+         "full_name": "typing.Mapping.get",
+         "type": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "python project-not-a-symbol": {
+     "population": 68,
+     "sampled": 20,
+     "places": {
+      "infer": {
+       "project-no-declaration": 15,
+       "project-callable function": 4,
+       "project-value unknown": 1
+      },
+      "goto": {
+       "project-callable function": 19,
+       "project-value binding": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "functions-python/app/week_planner/insight_engine.py:1119",
+       "name": "_det_call",
+       "infer": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/week_planner/insight_engine.py::function@1114:37",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/week_planner/insight_engine.py::function@1115:35",
+         "in_view": true,
+         "type": "function"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/week_planner/insight_engine.py::function@1116:41",
+         "in_view": true,
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "functions-python/app/week_planner/insight_engine.py::binding@1113:12",
+         "type": "statement"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/tests/unit/test_api_keys.py:273",
+       "name": "api_keys.admin_create_api_key",
+       "infer": [
+        {
+         "place": "project-no-declaration",
+         "file": "functions-python/app/utils/log_decorator.py",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/api_keys.py::function@68:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/tests/unit/test_api_keys.py:319",
+       "name": "api_keys.admin_list_api_keys",
+       "infer": [
+        {
+         "place": "project-value",
+         "kind": "unknown",
+         "id": "functions-python/app/utils/log_decorator.py::unknown@57:8",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/admin/api_keys.py::function@57:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      },
+      {
+       "site": "functions-python/tests/unit/test_billing_regressions.py:1108",
+       "name": "play_rtdn.play_rtdn",
+       "infer": [
+        {
+         "place": "project-no-declaration",
+         "file": "functions-python/app/utils/log_decorator.py",
+         "type": "function"
+        }
+       ],
+       "goto": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "functions-python/app/handlers/play_rtdn.py::function@128:0",
+         "in_view": true,
+         "type": "function"
+        }
+       ]
+      }
+     ]
+    },
+    "python unresolved": {
+     "population": 2868,
+     "sampled": 20,
+     "places": {
+      "infer": {
+       "nothing": 20
+      },
+      "goto": {
+       "nothing": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "functions-python/app/api/deps.py:196",
+       "name": "db.apiKeys.find_one",
+       "infer": [],
+       "goto": []
+      },
+      {
+       "site": "functions-python/app/handlers/admin/users.py:192",
+       "name": "user_data.get",
+       "infer": [],
+       "goto": []
+      },
+      {
+       "site": "functions-python/app/handlers/lookup_barcode.py:129",
+       "name": "data.get",
+       "infer": [],
+       "goto": []
+      },
+      {
+       "site": "functions-python/app/handlers/user_data.py:421",
+       "name": "meal_val.get",
+       "infer": [],
+       "goto": []
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 14071,
+    "sampled": 60,
+    "places": {
+     "infer": {
+      "external": 28,
+      "project-callable class": 20,
+      "nothing": 7,
+      "external + no-location": 2,
+      "no-location": 1,
+      "project-callable function": 1,
+      "project-no-declaration": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "functions-python/app/api/deps.py:231",
+      "name": "Principal",
+      "infer": [
+       {
+        "place": "project-callable",
+        "kind": "class",
+        "id": "functions-python/app/api/deps.py::class@147:0",
+        "in_view": true,
+        "type": "class"
+       }
+      ]
+     },
+     {
+      "site": "functions-python/app/handlers/admin/analytics.py:256",
+      "name": "GetAnalyticsRequest",
+      "infer": [
+       {
+        "place": "project-callable",
+        "kind": "class",
+        "id": "functions-python/app/handlers/admin/analytics.py::class@37:0",
+        "in_view": true,
+        "type": "class"
+       }
+      ]
+     },
+     {
+      "site": "functions-python/app/handlers/analyze_photo.py:444",
+      "name": "PipelineResponse",
+      "infer": [
+       {
+        "place": "project-callable",
+        "kind": "class",
+        "id": "functions-python/app/pipeline/types.py::class@368:0",
+        "in_view": true,
+        "type": "class"
+       }
+      ]
+     },
+     {
+      "site": "functions-python/app/handlers/generate_week_plan.py:712",
+      "name": "macro_targets.kcal",
+      "infer": [
+       {
+        "place": "external",
+        "package": "site-packages:jedi",
+        "full_name": "builtins.float",
+        "type": "instance"
+       }
+      ]
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 4815,
+    "counts": {
+     "same declaration": 28,
+     "engine says another place": 2
+    },
+    "examples": [
+     {
+      "site": "functions-python/tests/unit/test_planner_solver.py:1380",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_solver.py::function@133:0"
+     },
+     {
+      "site": "functions-python/tests/unit/test_planner_witness.py:1351",
+      "name": "_corpus",
+      "infer": [
+       {
+        "place": "no-location",
+        "full_name": "functools._lru_cache_wrapper",
+        "type": "instance"
+       }
+      ],
+      "lexical": "functions-python/tests/unit/test_planner_witness.py::function@125:0"
+     }
+    ]
+   },
+   "seconds": 86.1,
+   "probe_seconds": 93.8
+  },
+  "typescript": {
+   "engine": "typescript",
+   "languages": [
+    "typescript",
+    "javascript"
+   ],
+   "references": {
+    "javascript call resolved": 65,
+    "javascript call unresolved": 574,
+    "javascript read resolved": 3,
+    "javascript read unresolved": 846,
+    "typescript call resolved": 2517,
+    "typescript call unresolved": 12643,
+    "typescript read resolved": 683,
+    "typescript read unresolved": 26059
+   },
+   "unresolved_calls_by_class": {
+    "javascript askable": 392,
+    "javascript builtin": 179,
+    "javascript dynamic": 3,
+    "typescript askable": 10525,
+    "typescript builtin": 2038,
+    "typescript dynamic": 80
+   },
+   "reads_naming_project_callables": {
+    "javascript read .js": 3,
+    "javascript read .mjs": 116,
+    "typescript read .ts": 1483,
+    "typescript read .tsx": 2131
+   },
+   "answers_cached": 10917,
+   "answer_verdicts": {
+    "external-definition": 7490,
+    "project-not-a-symbol": 2072,
+    "unresolved": 129,
+    "edge-call": 733,
+    "ambiguous-target": 493
+   },
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "javascript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh",
+      "population": 395,
+      "selected": 395,
+      "asked": 392,
+      "confirmed": 0,
+      "candidates": 139,
+      "verdicts": {
+       "dynamic-callee": 3,
+       "external-definition": 131,
+       "project-not-a-symbol": 139,
+       "unresolved": 122
+      },
+      "excluded_classes": {
+       "builtin": 179
+      },
+      "no_edges_reason": null
+     },
+     "typescript": {
+      "engine": "typescript-language-server@4.3.3",
+      "state": "fresh",
+      "population": 10605,
+      "selected": 10605,
+      "asked": 10525,
+      "confirmed": 733,
+      "candidates": 2426,
+      "verdicts": {
+       "ambiguous-target": 493,
+       "dynamic-callee": 80,
+       "edge-call": 733,
+       "external-definition": 7359,
+       "project-not-a-symbol": 1933,
+       "unresolved": 7
+      },
+      "excluded_classes": {
+       "builtin": 2038
+      },
+      "no_edges_reason": null
+     }
+    }
+   },
+   "stored_edges": {
+    "candidate ambiguous-target target=None": 493,
+    "candidate project-not-a-symbol target=None": 2072,
+    "confirmed edge-call target=function": 429,
+    "confirmed edge-call target=method contract": 304
+   },
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {
+    "javascript external-definition": {
+     "population": 131,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external": 20
+      },
+      "implementation": {
+       "external": 20
+      },
+      "type_definition": {
+       "external": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/eslint.config.js:8",
+       "name": "defineConfig",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@eslint/config-helpers"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:eslint"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:eslint"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:@eslint/config-helpers"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@eslint/core"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "react-app/scripts/build-frontend.mjs:20",
+       "name": "(expr).includes",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "react-app/scripts/store-art/export-feature.mjs:81",
+       "name": "image.decode",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "react-app/scripts/store-art/export-feature.mjs:93",
+       "name": "found.push",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      }
+     ]
+    },
+    "javascript project-not-a-symbol": {
+     "population": 139,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-no-declaration": 20
+      },
+      "implementation": {
+       "nothing": 20
+      },
+      "type_definition": {
+       "nothing": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/scripts/android-version.mjs:29",
+       "name": "resolve",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/android-version.mjs"
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/scripts/android-version.mjs:30",
+       "name": "resolve",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/android-version.mjs"
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/scripts/build-android.mjs:47",
+       "name": "spawn",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/build-android.mjs"
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/scripts/store-art/export-feature.mjs:8",
+       "name": "fileURLToPath",
+       "definition": [
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/store-art/export-feature.mjs"
+        }
+       ],
+       "implementation": [],
+       "type_definition": []
+      }
+     ]
+    },
+    "javascript unresolved": {
+     "population": 122,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "nothing": 20
+      },
+      "implementation": {
+       "nothing": 20
+      },
+      "type_definition": {
+       "nothing": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/scripts/android-version.mjs:107",
+       "name": "rl.close",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/scripts/android-version.mjs:57",
+       "name": "rl.on",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/scripts/android-version.mjs:73",
+       "name": "rl.question",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/scripts/compute-safe-area-csp-hash.mjs:35",
+       "name": "html.indexOf",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      }
+     ]
+    },
+    "typescript ambiguous-target": {
+     "population": 493,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external + project-value binding": 12,
+       "external + project-callable function": 7,
+       "external + project-value parameter": 1
+      },
+      "implementation": {
+       "project-value binding": 11,
+       "nothing": 9
+      },
+      "type_definition": {
+       "external": 11,
+       "nothing": 9
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/src/App.tsx:326",
+       "name": "useAppStore",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/stores/appStore.ts::binding@164:13"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:zustand"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/stores/appStore.ts::binding@164:13"
+        }
+       ],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src/components/common/QuickAddSheet.tsx:252",
+       "name": "useAppStore",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/stores/appStore.ts::binding@164:13"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:zustand"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/stores/appStore.ts::binding@164:13"
+        }
+       ],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src/components/home/EditModeToolbar.tsx:21",
+       "name": "useAppStore",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/stores/appStore.ts::binding@164:13"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:zustand"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/stores/appStore.ts::binding@164:13"
+        }
+       ],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src/components/home/HomeTrainingJourney.tsx:81",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/components/home/HomeTrainingJourney.tsx::binding@37:10"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ]
+      }
+     ]
+    },
+    "typescript edge-call": {
+     "population": 733,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function": 9,
+       "project-contract method": 6,
+       "project-value parameter": 4,
+       "project-callable function + project-value binding": 1
+      },
+      "implementation": {
+       "project-callable function": 11,
+       "nothing": 7,
+       "project-callable function + project-no-declaration": 1,
+       "project-no-declaration": 1
+      },
+      "type_definition": {
+       "project-contract method": 12,
+       "project-callable function": 8
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/scripts/screenshots/take-screenshots.ts:807",
+       "name": "(expr).prepare",
+       "definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::method@309:2",
+         "in_view": false
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@361:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@382:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@412:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@438:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@450:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@462:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@475:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@529:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@569:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@610:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@673:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@678:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@686:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@696:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@707:13",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@719:13",
+         "in_view": true
+        },
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/screenshots/take-screenshots.ts"
+        },
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/screenshots/take-screenshots.ts"
+        },
+        {
+         "place": "project-no-declaration",
+         "file": "react-app/scripts/screenshots/take-screenshots.ts"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::function@807:15",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::method@309:2",
+         "in_view": false
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/common/GoalDurationSelector.tsx:206",
+       "name": "cn",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/diario/DiarioMealSection.tsx:123",
+       "name": "cn",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "shared/ui/lib/utils.ts::function@4:7",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/features/FoodStackPanel.tsx:113",
+       "name": "onAssignToMeal",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "parameter",
+         "id": "react-app/src/components/features/FoodStackPanel.tsx::parameter@63:2"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-contract",
+         "kind": "method",
+         "id": "react-app/src/components/features/FoodStackPanel.tsx::method@55:2",
+         "in_view": false
+        }
+       ]
+      }
+     ]
+    },
+    "typescript external-definition": {
+     "population": 7359,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "external": 16,
+       "external + project-value binding": 3,
+       "project-callable function": 1
+      },
+      "implementation": {
+       "external": 16,
+       "nothing": 4
+      },
+      "type_definition": {
+       "external": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/scripts/screenshots/mock-data.ts:39",
+       "name": "d.getUTCFullYear",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:typescript"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/auth/AuthScreen.tsx:295",
+       "name": "t",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/components/auth/AuthScreen.tsx::binding@52:10"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:i18next"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/diario/calm/CalmDiarioHeader.tsx:20",
+       "name": "useTranslation",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:react-i18next"
+        },
+        {
+         "place": "external",
+         "package": "node_modules:react-i18next"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:react-i18next"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:react-i18next"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/features/PhotoCapture/PhotoCapture.tsx:465",
+       "name": "useCallback",
+       "definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ]
+      }
+     ]
+    },
+    "typescript project-not-a-symbol": {
+     "population": 1933,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-value binding": 10,
+       "project-callable function": 5,
+       "project-value parameter": 3,
+       "project-callable function + project-value binding": 2
+      },
+      "implementation": {
+       "nothing": 14,
+       "project-callable function": 5,
+       "project-value binding": 1
+      },
+      "type_definition": {
+       "external": 9,
+       "project-callable function": 7,
+       "project-no-declaration": 3,
+       "project-value binding": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/scripts/screenshots/take-screenshots.ts:292",
+       "name": "store.getState",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::binding@289:10"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/scripts/screenshots/take-screenshots.ts::binding@289:10"
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/common/PortionTag.tsx:44",
+       "name": "formatPortion",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/components/common/PortionTag.tsx::binding@33:10"
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src/hooks/useUnitLabels.ts::function@28:36",
+         "in_view": true
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src/hooks/useUnitLabels.ts::function@28:36",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/features/AIAlternatives.tsx:383",
+       "name": "handleClose",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src/components/features/AIAlternatives.tsx::function@186:34",
+         "in_view": true
+        },
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src/components/features/AIAlternatives.tsx::function@186:34",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src/components/features/AIAlternatives.tsx::function@186:34",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "react-app/src/components/features/AIAlternatives.tsx::function@186:34",
+         "in_view": true
+        }
+       ]
+      },
+      {
+       "site": "react-app/src/components/features/PhotoCapture/components/ImageEditor.tsx:211",
+       "name": "setRotation",
+       "definition": [
+        {
+         "place": "project-value",
+         "kind": "binding",
+         "id": "react-app/src/components/features/PhotoCapture/components/ImageEditor.tsx::binding@29:9"
+        }
+       ],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "external",
+         "package": "node_modules:@types/react"
+        }
+       ]
+      }
+     ]
+    },
+    "typescript unresolved": {
+     "population": 7,
+     "sampled": 7,
+     "places": {
+      "definition": {
+       "nothing": 7
+      },
+      "implementation": {
+       "nothing": 7
+      },
+      "type_definition": {
+       "nothing": 7
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/src/lib/nativeAuth.ts:233",
+       "name": "plugin.signInWithGoogle",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src/lib/nativeAuth.ts:255",
+       "name": "plugin.signOut",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src/lib/nativeAuth.ts:326",
+       "name": "plugin.getCurrentUser",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src/lib/nativeAuth.ts:167",
+       "name": "plugin.getCurrentUser",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 3733,
+    "sampled": 60,
+    "places": {
+     "definition": {
+      "project-callable function": 28,
+      "project-value binding": 13,
+      "project-value property": 9,
+      "external": 3,
+      "project-value parameter": 2,
+      "project-no-declaration": 2,
+      "project-callable function + project-contract method": 1,
+      "project-contract method": 1,
+      "nothing": 1
+     },
+     "implementation": {
+      "project-callable function": 23,
+      "nothing": 19,
+      "project-value binding": 9,
+      "project-no-declaration": 5,
+      "external": 3,
+      "project-callable function + project-no-declaration + project-value binding": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "react-app/public/webview-guard.js:53",
+      "name": "document.body",
+      "definition": [
+       {
+        "place": "external",
+        "package": "node_modules:typescript"
+       }
+      ],
+      "implementation": [
+       {
+        "place": "external",
+        "package": "node_modules:typescript"
+       }
+      ]
+     },
+     {
+      "site": "react-app/scripts/screenshots/take-screenshots.ts:999",
+      "name": "screen.route",
+      "definition": [
+       {
+        "place": "project-value",
+        "kind": "property",
+        "id": "react-app/scripts/screenshots/take-screenshots.ts::property@307:2"
+       }
+      ],
+      "implementation": [
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       },
+       {
+        "place": "project-no-declaration",
+        "file": "react-app/scripts/screenshots/take-screenshots.ts"
+       }
+      ]
+     },
+     {
+      "site": "react-app/scripts/store-art/export-gallery.mjs:105",
+      "name": "document.body",
+      "definition": [
+       {
+        "place": "external",
+        "package": "node_modules:typescript"
+       }
+      ],
+      "implementation": [
+       {
+        "place": "external",
+        "package": "node_modules:typescript"
+       }
+      ]
+     },
+     {
+      "site": "react-app/src/App.tsx:200",
+      "name": "onChange",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "react-app/src/App.tsx::function@194:21",
+        "in_view": true
+       }
+      ],
+      "implementation": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "react-app/src/App.tsx::function@194:21",
+        "in_view": true
+       }
+      ]
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 2582,
+    "counts": {
+     "same declaration": 30
+    },
+    "examples": []
+   },
+   "seconds": 232.8,
+   "probe_seconds": 233.1
+  },
+  "kotlin": {
+   "engine": "kotlin",
+   "languages": [
+    "kotlin"
+   ],
+   "references": {
+    "kotlin call resolved": 36,
+    "kotlin call unresolved": 537,
+    "kotlin read unresolved": 534
+   },
+   "unresolved_calls_by_class": {
+    "kotlin askable": 269,
+    "kotlin builtin": 268
+   },
+   "reads_naming_project_callables": {
+    "kotlin read .kts": 5,
+    "kotlin read .kt": 10
+   },
+   "answers_cached": 0,
+   "answer_verdicts": {},
+   "edge_store": {
+    "reason": null,
+    "entries": {}
+   },
+   "stored_edges": {},
+   "probe": {
+    "ready": false,
+    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+   },
+   "probe_seconds": 2.9
+  },
+  "rust": {
+   "engine": "rust",
+   "languages": [
+    "rust"
+   ],
+   "references": {
+    "rust call unresolved": 29,
+    "rust read unresolved": 3
+   },
+   "unresolved_calls_by_class": {
+    "rust askable": 17,
+    "rust builtin": 12
+   },
+   "reads_naming_project_callables": {},
+   "answers_cached": 17,
+   "answer_verdicts": {
+    "unresolved": 17
+   },
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "rust": {
+      "engine": "rust-analyzer@2026-11-09",
+      "state": "fresh",
+      "population": 17,
+      "selected": 17,
+      "asked": 17,
+      "confirmed": 0,
+      "candidates": 0,
+      "verdicts": {
+       "unresolved": 17
+      },
+      "excluded_classes": {
+       "builtin": 12
+      },
+      "no_edges_reason": "no-project-targets"
+     }
+    }
+   },
+   "stored_edges": {},
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {
+    "rust unresolved": {
+     "population": 17,
+     "sampled": 17,
+     "places": {
+      "definition": {
+       "nothing": 17
+      },
+      "implementation": {
+       "nothing": 17
+      },
+      "type_definition": {
+       "nothing": 17
+      }
+     },
+     "examples": [
+      {
+       "site": "react-app/src-tauri/src/lib.rs:27",
+       "name": "(expr).level",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src-tauri/src/lib.rs:28",
+       "name": "(expr).build",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src-tauri/src/lib.rs:33",
+       "name": "app.handle",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      },
+      {
+       "site": "react-app/src-tauri/src/lib.rs:33",
+       "name": "(expr).plugin",
+       "definition": [],
+       "implementation": [],
+       "type_definition": []
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 0,
+    "sampled": 0,
+    "places": {},
+    "examples": []
+   },
+   "lexical_agreement": {
+    "population": 0,
+    "counts": {},
+    "examples": []
+   },
+   "seconds": 6.4,
+   "probe_seconds": 6.7
+  }
+ },
+ "graph_use": {
+  "coverage": {
+   "status": "complete",
+   "sampled": false,
+   "population": 30824,
+   "selected": 30824,
+   "asked": 30735,
+   "stride": 1,
+   "confirmed": 6210,
+   "candidates": 2746,
+   "no_edges_reason": null,
+   "resolution": {
+    "calls": 48517,
+    "resolved": 13339,
+    "lexical_resolved": 7433,
+    "engine_confirmed": 5906,
+    "external": 28754,
+    "external_by_class": {
+     "builtin": 9991,
+     "engine-external-definition": 18763
+    },
+    "resolvable": 19763,
+    "resolved_ratio": 0.675,
+    "dynamic": 89,
+    "askable": 31004,
+    "unasked": 269,
+    "engine_unresolved": 5760,
+    "by_language": {
+     "javascript": {
+      "calls": 639,
+      "resolved": 65,
+      "resolvable": 329,
+      "resolved_ratio": 0.198,
+      "engine": "typescript-language-server@4.3.3"
+     },
+     "kotlin": {
+      "calls": 573,
+      "resolved": 36,
+      "resolvable": 305,
+      "resolved_ratio": 0.118,
+      "engine": null
+     },
+     "python": {
+      "calls": 32116,
+      "resolved": 10292,
+      "resolvable": 13349,
+      "resolved_ratio": 0.771,
+      "engine": "jedi@0.20.1"
+     },
+     "rust": {
+      "calls": 29,
+      "resolved": 0,
+      "resolvable": 17,
+      "resolved_ratio": 0.0,
+      "engine": "rust-analyzer@2026-11-09"
+     },
+     "typescript": {
+      "calls": 15160,
+      "resolved": 2946,
+      "resolvable": 5763,
+      "resolved_ratio": 0.511,
+      "engine": "typescript-language-server@4.3.3"
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  },
+  "references": {
+   "engine resolved target=concrete": 5872,
+   "engine resolved target=protocol": 34,
+   "lexical resolved target=concrete": 7433,
+   "lexical unresolved target=None": 35178
+  },
+  "candidates": 2746,
+  "conflicts": 0,
+  "conflict_examples": [],
+  "call_links_kept": {
+   "engine": 5667,
+   "lexical": 7187
+  },
+  "call_links_lost": {
+   "lexical: call outside a named symbol": 246,
+   "engine: call outside a named symbol": 239
+  },
+  "lost_examples": {
+   "call outside a named symbol": [
+    {
+     "site": "functions-python/app/api/deps.py:378",
+     "caller": null,
+     "target": "functions-python/app/api/deps.py::function@326:0"
+    },
+    {
+     "site": "functions-python/app/core/config.py:36",
+     "caller": null,
+     "target": "functions-python/app/core/config.py::function@28:0"
+    },
+    {
+     "site": "functions-python/app/core/config.py:138",
+     "caller": null,
+     "target": "functions-python/app/core/config.py::function@132:0"
+    },
+    {
+     "site": "functions-python/app/food_query/facts.py:76",
+     "caller": null,
+     "target": "functions-python/app/food_query/facts.py::function@71:0"
+    }
+   ]
+  },
+  "links": {
+   "edges": {
+    "chiama diretto": 12688,
+    "scrive dedotto": 454,
+    "chiama dedotto": 258,
+    "attiva dedotto": 151,
+    "legge dedotto": 445
+   },
+   "entries": {
+    "azione": 124,
+    "rotta": 111
+   },
+   "routes": {
+    "offered": 111,
+    "called": 46,
+    "linked": 46
+   },
+   "gaps": {
+    "rotta": 3,
+    "legge app state": 13,
+    "rotta call outside a named symbol": 3,
+    "legge call outside a named symbol": 4,
+    "scrive app state": 2,
+    "scrive call outside a named symbol": 2
+   }
+  }
+ },
+ "seconds": 2808.7
+}

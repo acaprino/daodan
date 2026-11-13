@@ -1,0 +1,403 @@
+{
+ "case": "klaxon",
+ "snapshot_seconds": 14.7,
+ "pass_seconds": 3.9,
+ "pass_stdout": "\": 0.177,\n    \"unasked\": 1443\n  },\n  \"reused\": 0,\n  \"selected\": 0,\n  \"source_verification\": {\n    \"after_inference\": 1,\n    \"before_inference\": 1\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 261.9,\n  \"verdicts\": {}\n}\nengine pass: java for java\n{\n  \"answer_cache\": \"/work/klaxon/snapshot/engine-answers.sqlite\",\n  \"asked\": 0,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 0,\n  \"coverage\": \"0 of 0 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/klaxon/snapshot/engine-edges.sqlite\",\n  \"engine\": \"java\",\n  \"excluded_classes\": {},\n  \"inference_elapsed_ms\": 0,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 0,\n      \"candidates\": 0,\n      \"confirmed\": 0,\n      \"created_at\": \"2026-11-13T08:29:57Z\",\n      \"engine\": \"java\",\n      \"excluded_classes\": {},\n      \"no_edges_reason\": \"no-unresolved-calls\",\n      \"population\": 0,\n      \"reused\": 0,\n      \"selected\": 0,\n      \"source_verification\": {\n        \"after_inference\": 1,\n        \"before_inference\": 1\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {}\n    }\n  },\n  \"latency_mean_ms\": null,\n  \"latency_p95_ms\": null,\n  \"no_edges_reason\": \"no-unresolved-calls\",\n  \"population\": 0,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 0.0,\n  \"project_root\": \"/work/klaxon/src\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 1443,\n    \"by_language\": {\n      \"kotlin\": {\n        \"calls\": 2433,\n        \"engine\": null,\n        \"resolvable\": 1755,\n        \"resolved\": 311,\n        \"resolved_ratio\": 0.177\n      }\n    },\n    \"calls\": 2433,\n    \"dynamic\": 1,\n    \"engine_confirmed\": 0,\n    \"engine_unresolved\": 0,\n    \"external\": 678,\n    \"external_by_class\": {\n      \"builtin\": 678,\n      \"engine-external-definition\": 0\n    },\n    \"lexical_resolved\": 311,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 1755,\n    \"resolved\": 311,\n    \"resolved_ratio\": 0.177,\n    \"unasked\": 1443\n  },\n  \"reused\": 0,\n  \"selected\": 0,\n  \"source_verification\": {\n    \"after_inference\": 1,\n    \"before_inference\": 1\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 350.3,\n  \"verdicts\": {}\n}\nengine pass: kotlin for kotlin\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\n{\n  \"available\": false,\n  \"engine\": \"kotlin\",\n  \"install\": null,\n  \"languages\": [\n    \"kotlin\"\n  ],\n  \"memory_exhausted\": false,\n  \"reason\": \"could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden\",\n  \"report_out\": \"/work/klaxon/snapshot/.engine-stage-kotlin.json\"\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"java\",\n      \"state\": \"fresh\"\n    },\n    \"javascript\": {\n      \"engine\": \"typescript\",\n      \"state\": \"fresh\"\n    },\n    \"kotlin\": {\n      \"engine\": \"kotlin\",\n      \"reason\": \"could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden\",\n      \"state\": \"failed\"\n    }\n  }\n}\n",
+ "pass_stderr": "",
+ "pass_report": {
+  "available": true,
+  "engines": {
+   "java": {
+    "answer_cache": "/work/klaxon/snapshot/engine-answers.sqlite",
+    "asked": 0,
+    "available": true,
+    "candidates": 0,
+    "confirmed_edges": 0,
+    "coverage": "0 of 0 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/klaxon/snapshot/engine-edges.sqlite",
+    "engine": "java",
+    "excluded_classes": {},
+    "inference_elapsed_ms": 0,
+    "languages": {
+     "java": {
+      "asked": 0,
+      "candidates": 0,
+      "confirmed": 0,
+      "created_at": "2026-11-13T08:29:57Z",
+      "engine": "java",
+      "excluded_classes": {},
+      "no_edges_reason": "no-unresolved-calls",
+      "population": 0,
+      "reused": 0,
+      "selected": 0,
+      "source_verification": {
+       "after_inference": 1,
+       "before_inference": 1
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {}
+     }
+    },
+    "latency_mean_ms": null,
+    "latency_p95_ms": null,
+    "no_edges_reason": "no-unresolved-calls",
+    "population": 0,
+    "population_language": "java",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 0.0,
+    "project_root": "/work/klaxon/src",
+    "resolution": {
+     "askable": 1443,
+     "by_language": {
+      "kotlin": {
+       "calls": 2433,
+       "engine": null,
+       "resolvable": 1755,
+       "resolved": 311,
+       "resolved_ratio": 0.177
+      }
+     },
+     "calls": 2433,
+     "dynamic": 1,
+     "engine_confirmed": 0,
+     "engine_unresolved": 0,
+     "external": 678,
+     "external_by_class": {
+      "builtin": 678,
+      "engine-external-definition": 0
+     },
+     "lexical_resolved": 311,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 1755,
+     "resolved": 311,
+     "resolved_ratio": 0.177,
+     "unasked": 1443
+    },
+    "reused": 0,
+    "selected": 0,
+    "source_verification": {
+     "after_inference": 1,
+     "before_inference": 1
+    },
+    "stride": 1,
+    "total_elapsed_ms": 350.3,
+    "verdicts": {}
+   },
+   "kotlin": {
+    "available": false,
+    "engine": "kotlin",
+    "install": null,
+    "languages": [
+     "kotlin"
+    ],
+    "memory_exhausted": false,
+    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+   },
+   "typescript": {
+    "answer_cache": "/work/klaxon/snapshot/engine-answers.sqlite",
+    "asked": 0,
+    "available": true,
+    "candidates": 0,
+    "confirmed_edges": 0,
+    "coverage": "0 of 0 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/klaxon/snapshot/engine-edges.sqlite",
+    "engine": "typescript",
+    "excluded_classes": {},
+    "inference_elapsed_ms": 0,
+    "languages": {
+     "javascript": {
+      "asked": 0,
+      "candidates": 0,
+      "confirmed": 0,
+      "created_at": "2026-11-13T08:29:55Z",
+      "engine": "typescript",
+      "excluded_classes": {},
+      "no_edges_reason": "no-unresolved-calls",
+      "population": 0,
+      "reused": 0,
+      "selected": 0,
+      "source_verification": {
+       "after_inference": 1,
+       "before_inference": 1
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {}
+     }
+    },
+    "latency_mean_ms": null,
+    "latency_p95_ms": null,
+    "no_edges_reason": "no-unresolved-calls",
+    "population": 0,
+    "population_language": "javascript",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 0.0,
+    "project_root": "/work/klaxon/src",
+    "resolution": {
+     "askable": 1443,
+     "by_language": {
+      "kotlin": {
+       "calls": 2433,
+       "engine": null,
+       "resolvable": 1755,
+       "resolved": 311,
+       "resolved_ratio": 0.177
+      }
+     },
+     "calls": 2433,
+     "dynamic": 1,
+     "engine_confirmed": 0,
+     "engine_unresolved": 0,
+     "external": 678,
+     "external_by_class": {
+      "builtin": 678,
+      "engine-external-definition": 0
+     },
+     "lexical_resolved": 311,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 1755,
+     "resolved": 311,
+     "resolved_ratio": 0.177,
+     "unasked": 1443
+    },
+    "reused": 0,
+    "selected": 0,
+    "source_verification": {
+     "after_inference": 1,
+     "before_inference": 1
+    },
+    "stride": 1,
+    "total_elapsed_ms": 261.9,
+    "verdicts": {}
+   }
+  },
+  "finished_at": "2026-11-13T08:29:57Z",
+  "languages": {
+   "java": {
+    "engine": "java",
+    "state": "fresh"
+   },
+   "javascript": {
+    "engine": "typescript",
+    "state": "fresh"
+   },
+   "kotlin": {
+    "engine": "kotlin",
+    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden",
+    "state": "failed"
+   }
+  },
+  "manifest_digest": "7d97dfea10257f77672d7ceba0f870087d9e2344e309a6facd2bfaf4aaf43b89",
+  "pass": true,
+  "started_at": "2026-11-13T08:29:54Z"
+ },
+ "engines": {
+  "typescript": {
+   "engine": "typescript",
+   "languages": [
+    "javascript"
+   ],
+   "references": {},
+   "unresolved_calls_by_class": {},
+   "reads_naming_project_callables": {},
+   "answers_cached": 0,
+   "answer_verdicts": {},
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "javascript": {
+      "engine": "typescript",
+      "state": "fresh",
+      "population": 0,
+      "selected": 0,
+      "asked": 0,
+      "confirmed": 0,
+      "candidates": 0,
+      "verdicts": {},
+      "excluded_classes": {},
+      "no_edges_reason": "no-unresolved-calls"
+     }
+    }
+   },
+   "stored_edges": {},
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {},
+   "reads_asked": {
+    "population": 0,
+    "sampled": 0,
+    "places": {},
+    "examples": []
+   },
+   "lexical_agreement": {
+    "population": 0,
+    "counts": {},
+    "examples": []
+   },
+   "seconds": 4.5,
+   "probe_seconds": 4.7
+  },
+  "java": {
+   "engine": "java",
+   "languages": [
+    "java"
+   ],
+   "references": {},
+   "unresolved_calls_by_class": {},
+   "reads_naming_project_callables": {},
+   "answers_cached": 0,
+   "answer_verdicts": {},
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "java": {
+      "engine": "java",
+      "state": "fresh",
+      "population": 0,
+      "selected": 0,
+      "asked": 0,
+      "confirmed": 0,
+      "candidates": 0,
+      "verdicts": {},
+      "excluded_classes": {},
+      "no_edges_reason": "no-unresolved-calls"
+     }
+    }
+   },
+   "stored_edges": {},
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {},
+   "reads_asked": {
+    "population": 0,
+    "sampled": 0,
+    "places": {},
+    "examples": []
+   },
+   "lexical_agreement": {
+    "population": 0,
+    "counts": {},
+    "examples": []
+   },
+   "seconds": 7.7,
+   "probe_seconds": 7.9
+  },
+  "kotlin": {
+   "engine": "kotlin",
+   "languages": [
+    "kotlin"
+   ],
+   "references": {
+    "kotlin call resolved": 311,
+    "kotlin call unresolved": 2122,
+    "kotlin read resolved": 10,
+    "kotlin read unresolved": 1847
+   },
+   "unresolved_calls_by_class": {
+    "kotlin askable": 1443,
+    "kotlin builtin": 678,
+    "kotlin dynamic": 1
+   },
+   "reads_naming_project_callables": {
+    "kotlin read .kt": 260
+   },
+   "answers_cached": 0,
+   "answer_verdicts": {},
+   "edge_store": {
+    "reason": null,
+    "entries": {}
+   },
+   "stored_edges": {},
+   "probe": {
+    "ready": false,
+    "reason": "could not install the Kotlin Analysis API: HTTPError: HTTP Error 403: Forbidden"
+   },
+   "probe_seconds": 0.6
+  }
+ },
+ "graph_use": {
+  "coverage": {
+   "status": "completed_empty",
+   "sampled": false,
+   "population": 0,
+   "selected": 0,
+   "asked": 0,
+   "stride": 1,
+   "confirmed": 0,
+   "candidates": 0,
+   "no_edges_reason": "no-unresolved-calls",
+   "resolution": {
+    "calls": 2433,
+    "resolved": 311,
+    "lexical_resolved": 311,
+    "engine_confirmed": 0,
+    "external": 678,
+    "external_by_class": {
+     "builtin": 678,
+     "engine-external-definition": 0
+    },
+    "resolvable": 1755,
+    "resolved_ratio": 0.177,
+    "dynamic": 1,
+    "askable": 1443,
+    "unasked": 1443,
+    "engine_unresolved": 0,
+    "by_language": {
+     "kotlin": {
+      "calls": 2433,
+      "resolved": 311,
+      "resolvable": 1755,
+      "resolved_ratio": 0.177,
+      "engine": null
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  },
+  "references": {
+   "lexical resolved target=concrete": 311,
+   "lexical unresolved target=None": 2122
+  },
+  "candidates": 0,
+  "conflicts": 0,
+  "conflict_examples": [],
+  "call_links_kept": {
+   "lexical": 299
+  },
+  "call_links_lost": {
+   "lexical: call outside a named symbol": 12
+  },
+  "lost_examples": {
+   "call outside a named symbol": [
+    {
+     "site": "klaxon/src/main/kotlin/com/beust/klaxon/JsonValue.kt:153",
+     "caller": null,
+     "target": "klaxon/src/main/kotlin/com/beust/klaxon/JsonValue.kt::function@178:8"
+    },
+    {
+     "site": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:31",
+     "caller": null,
+     "target": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt::class@10:4"
+    },
+    {
+     "site": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:32",
+     "caller": null,
+     "target": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt::class@17:4"
+    },
+    {
+     "site": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:33",
+     "caller": null,
+     "target": "klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt::class@24:4"
+    }
+   ]
+  }
+ },
+ "seconds": 32.1
+}

@@ -1,0 +1,654 @@
+{
+ "case": "javapoet",
+ "snapshot_seconds": 5.5,
+ "pass_seconds": 103.6,
+ "pass_stdout": "engine pass: java for java\ninstalling eclipse-jdtls 1.46.0 into /root/.cache/daodan/engines/eclipse-jdtls/1.46.0 (first use)\nresolving 6 libraries of the project into /root/.cache/daodan/coursier (first use)\ninstalling a Java 21 runtime into /root/.cache/daodan/engines/jre/21 (first use)\nthe project's libraries were not resolved: HTTPError: HTTP Error 403: Forbidden\n{\n  \"answer_cache\": \"/work/javapoet/snapshot/engine-answers.sqlite\",\n  \"asked\": 4864,\n  \"available\": true,\n  \"candidates\": 0,\n  \"confirmed_edges\": 2575,\n  \"coverage\": \"4864 of 4864 unresolved call references\",\n  \"dry_run\": false,\n  \"edges_store\": \"/work/javapoet/snapshot/engine-edges.sqlite\",\n  \"engine\": \"eclipse-jdtls@1.46.0\",\n  \"excluded_classes\": {\n    \"builtin\": 1290\n  },\n  \"inference_elapsed_ms\": 85118.1,\n  \"languages\": {\n    \"java\": {\n      \"asked\": 4864,\n      \"candidates\": 0,\n      \"confirmed\": 2575,\n      \"created_at\": \"2026-11-13T08:31:27Z\",\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"excluded_classes\": {\n        \"builtin\": 1290\n      },\n      \"no_edges_reason\": null,\n      \"population\": 4864,\n      \"reused\": 0,\n      \"selected\": 4864,\n      \"source_verification\": {\n        \"after_inference\": 39,\n        \"before_inference\": 39\n      },\n      \"state\": \"fresh\",\n      \"stride\": 1,\n      \"verdicts\": {\n        \"edge-call\": 2575,\n        \"external-definition\": 1076,\n        \"unresolved\": 1213\n      }\n    }\n  },\n  \"latency_mean_ms\": 17.5,\n  \"latency_p95_ms\": 49.4,\n  \"no_edges_reason\": null,\n  \"population\": 4864,\n  \"population_language\": \"java\",\n  \"position_unverified\": 0,\n  \"probe_init_elapsed_ms\": 10605.3,\n  \"project_root\": \"/work/javapoet/src\",\n  \"report_out\": \"/work/javapoet/snapshot/.engine-stage-java.json\",\n  \"resolution\": {\n    \"askable\": 4864,\n    \"by_language\": {\n      \"java\": {\n        \"calls\": 6443,\n        \"engine\": \"eclipse-jdtls@1.46.0\",\n        \"resolvable\": 4077,\n        \"resolved\": 2864,\n        \"resolved_ratio\": 0.702\n      }\n    },\n    \"calls\": 6443,\n    \"dynamic\": 0,\n    \"engine_confirmed\": 2575,\n    \"engine_unresolved\": 1213,\n    \"external\": 2366,\n    \"external_by_class\": {\n      \"builtin\": 1290,\n      \"engine-external-definition\": 1076\n    },\n    \"lexical_resolved\": 289,\n    \"note\": \"resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.\",\n    \"resolvable\": 4077,\n    \"resolved\": 2864,\n    \"resolved_ratio\": 0.702,\n    \"unasked\": 0\n  },\n  \"reused\": 0,\n  \"selected\": 4864,\n  \"source_verification\": {\n    \"after_inference\": 39,\n    \"before_inference\": 39\n  },\n  \"stride\": 1,\n  \"total_elapsed_ms\": 101236.6,\n  \"verdicts\": {\n    \"edge-call\": 2575,\n    \"external-definition\": 1076,\n    \"unresolved\": 1213\n  }\n}\n{\n  \"available\": true,\n  \"languages\": {\n    \"java\": {\n      \"engine\": \"eclipse-jdtls@1.46.0\",\n      \"state\": \"fresh\"\n    }\n  }\n}\n",
+ "pass_stderr": "",
+ "pass_report": {
+  "available": true,
+  "engines": {
+   "java": {
+    "answer_cache": "/work/javapoet/snapshot/engine-answers.sqlite",
+    "asked": 4864,
+    "available": true,
+    "candidates": 0,
+    "confirmed_edges": 2575,
+    "coverage": "4864 of 4864 unresolved call references",
+    "dry_run": false,
+    "edges_store": "/work/javapoet/snapshot/engine-edges.sqlite",
+    "engine": "eclipse-jdtls@1.46.0",
+    "excluded_classes": {
+     "builtin": 1290
+    },
+    "inference_elapsed_ms": 85118.1,
+    "languages": {
+     "java": {
+      "asked": 4864,
+      "candidates": 0,
+      "confirmed": 2575,
+      "created_at": "2026-11-13T08:31:27Z",
+      "engine": "eclipse-jdtls@1.46.0",
+      "excluded_classes": {
+       "builtin": 1290
+      },
+      "no_edges_reason": null,
+      "population": 4864,
+      "reused": 0,
+      "selected": 4864,
+      "source_verification": {
+       "after_inference": 39,
+       "before_inference": 39
+      },
+      "state": "fresh",
+      "stride": 1,
+      "verdicts": {
+       "edge-call": 2575,
+       "external-definition": 1076,
+       "unresolved": 1213
+      }
+     }
+    },
+    "latency_mean_ms": 17.5,
+    "latency_p95_ms": 49.4,
+    "no_edges_reason": null,
+    "population": 4864,
+    "population_language": "java",
+    "position_unverified": 0,
+    "probe_init_elapsed_ms": 10605.3,
+    "project_root": "/work/javapoet/src",
+    "resolution": {
+     "askable": 4864,
+     "by_language": {
+      "java": {
+       "calls": 6443,
+       "engine": "eclipse-jdtls@1.46.0",
+       "resolvable": 4077,
+       "resolved": 2864,
+       "resolved_ratio": 0.702
+      }
+     },
+     "calls": 6443,
+     "dynamic": 0,
+     "engine_confirmed": 2575,
+     "engine_unresolved": 1213,
+     "external": 2366,
+     "external_by_class": {
+      "builtin": 1290,
+      "engine-external-definition": 1076
+     },
+     "lexical_resolved": 289,
+     "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
+     "resolvable": 4077,
+     "resolved": 2864,
+     "resolved_ratio": 0.702,
+     "unasked": 0
+    },
+    "reused": 0,
+    "selected": 4864,
+    "source_verification": {
+     "after_inference": 39,
+     "before_inference": 39
+    },
+    "stride": 1,
+    "total_elapsed_ms": 101236.6,
+    "verdicts": {
+     "edge-call": 2575,
+     "external-definition": 1076,
+     "unresolved": 1213
+    }
+   }
+  },
+  "finished_at": "2026-11-13T08:31:28Z",
+  "languages": {
+   "java": {
+    "engine": "eclipse-jdtls@1.46.0",
+    "state": "fresh"
+   }
+  },
+  "manifest_digest": "a20f1529c51c7ee09f145267bcb492c6a58b3528f17b84e2e0891ac4e81a0b4f",
+  "pass": true,
+  "started_at": "2026-11-13T08:29:44Z"
+ },
+ "engines": {
+  "java": {
+   "engine": "java",
+   "languages": [
+    "java"
+   ],
+   "references": {
+    "java call resolved": 289,
+    "java call unresolved": 6154,
+    "java read resolved": 7,
+    "java read unresolved": 2692
+   },
+   "unresolved_calls_by_class": {
+    "java askable": 4864,
+    "java builtin": 1290
+   },
+   "reads_naming_project_callables": {
+    "java read .java": 296
+   },
+   "answers_cached": 4864,
+   "answer_verdicts": {
+    "external-definition": 1076,
+    "edge-call": 2575,
+    "unresolved": 1213
+   },
+   "edge_store": {
+    "reason": null,
+    "entries": {
+     "java": {
+      "engine": "eclipse-jdtls@1.46.0",
+      "state": "fresh",
+      "population": 4864,
+      "selected": 4864,
+      "asked": 4864,
+      "confirmed": 2575,
+      "candidates": 0,
+      "verdicts": {
+       "edge-call": 2575,
+       "external-definition": 1076,
+       "unresolved": 1213
+      },
+      "excluded_classes": {
+       "builtin": 1290
+      },
+      "no_edges_reason": null
+     }
+    }
+   },
+   "stored_edges": {
+    "confirmed edge-call target=function": 2575
+   },
+   "probe": {
+    "ready": true,
+    "reason": ""
+   },
+   "asked_again_by_verdict": {
+    "java edge-call": {
+     "population": 2575,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "project-callable function": 20
+      },
+      "implementation": {
+       "project-callable function": 20
+      },
+      "type_definition": {
+       "error": 20
+      }
+     },
+     "examples": [
+      {
+       "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:146",
+       "name": "AnnotationSpec.builder",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@156:2",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@156:2",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:114",
+       "name": "joining",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/CodeBlock.java::function@122:2",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/main/java/com/squareup/javapoet/JavaFile.java:151",
+       "name": "writeTo",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/JavaFile.java::function@105:2",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/main/java/com/squareup/javapoet/ParameterSpec.java:117",
+       "name": "checkArgument",
+       "definition": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "in_view": true
+        }
+       ],
+       "implementation": [
+        {
+         "place": "project-callable",
+         "kind": "function",
+         "id": "src/main/java/com/squareup/javapoet/Util.java::function@52:2",
+         "in_view": true
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      }
+     ]
+    },
+    "java external-definition": {
+     "population": 1076,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "not-a-file": 20
+      },
+      "implementation": {
+       "not-a-file": 19,
+       "not-a-file + project-callable function": 1
+      },
+      "type_definition": {
+       "error": 19,
+       "not-a-file": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:61",
+       "name": "members.size",
+       "definition": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:128",
+       "name": "method.getName",
+       "definition": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/main/java/com/squareup/javapoet/ClassName.java:178",
+       "name": "(expr).lastIndexOf",
+       "definition": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/main/java/com/squareup/javapoet/CodeBlock.java:167",
+       "name": "formatParts.isEmpty",
+       "definition": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "implementation": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      }
+     ]
+    },
+    "java unresolved": {
+     "population": 1213,
+     "sampled": 20,
+     "places": {
+      "definition": {
+       "nothing": 20
+      },
+      "implementation": {
+       "nothing": 20
+      },
+      "type_definition": {
+       "error": 19,
+       "not-a-file": 1
+      }
+     },
+     "examples": [
+      {
+       "site": "src/main/java/com/squareup/javapoet/ArrayTypeName.java:34",
+       "name": "ArrayList",
+       "definition": [],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "not-a-file",
+         "scheme": "jdt"
+        }
+       ]
+      },
+      {
+       "site": "src/test/java/com/squareup/javapoet/AbstractTypesTest.java:228",
+       "name": "assertThat",
+       "definition": [],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/test/java/com/squareup/javapoet/AnnotatedTypeNameTest.java:131",
+       "name": "(expr).isEqualTo",
+       "definition": [],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      },
+      {
+       "site": "src/test/java/com/squareup/javapoet/AnnotationSpecTest.java:304",
+       "name": "(expr).isEqualTo",
+       "definition": [],
+       "implementation": [],
+       "type_definition": [
+        {
+         "place": "error",
+         "error": "Error:  (-32600)"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "reads_asked": {
+    "population": 296,
+    "sampled": 60,
+    "places": {
+     "definition": {
+      "project-value binding": 41,
+      "project-callable function": 14,
+      "project-value parameter": 3,
+      "project-callable class": 1,
+      "not-a-file": 1
+     },
+     "implementation": {
+      "nothing": 58,
+      "project-callable class": 1,
+      "not-a-file": 1
+     }
+    },
+    "examples": [
+     {
+      "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:147",
+      "name": "builder",
+      "definition": [
+       {
+        "place": "project-value",
+        "kind": "binding",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::binding@146:27"
+       }
+      ],
+      "implementation": []
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:261",
+      "name": "builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@259:4",
+        "in_view": true
+       }
+      ],
+      "implementation": []
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/ArrayTypeName.java:56",
+      "name": "varargs",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/ArrayTypeName.java::function@54:2",
+        "in_view": true
+       }
+      ],
+      "implementation": []
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/ClassName.java:61",
+      "name": "enclosingClassName",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/ClassName.java::function@57:2",
+        "in_view": true
+       }
+      ],
+      "implementation": []
+     }
+    ]
+   },
+   "lexical_agreement": {
+    "population": 289,
+    "counts": {
+     "engine says another place": 2,
+     "same declaration": 28
+    },
+    "examples": [
+     {
+      "site": "src/main/java/com/squareup/javapoet/AnnotationSpec.java:147",
+      "name": "Visitor",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::function@259:4",
+        "in_view": true
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/AnnotationSpec.java::class@256:2"
+     },
+     {
+      "site": "src/main/java/com/squareup/javapoet/TypeSpec.java:144",
+      "name": "Builder",
+      "definition": [
+       {
+        "place": "project-callable",
+        "kind": "function",
+        "id": "src/main/java/com/squareup/javapoet/TypeSpec.java::function@432:4",
+        "in_view": true
+       }
+      ],
+      "lexical": "src/main/java/com/squareup/javapoet/TypeSpec.java::class@411:2"
+     }
+    ]
+   },
+   "seconds": 21.6,
+   "probe_seconds": 21.9
+  }
+ },
+ "graph_use": {
+  "coverage": {
+   "status": "complete",
+   "sampled": false,
+   "population": 4864,
+   "selected": 4864,
+   "asked": 4864,
+   "stride": 1,
+   "confirmed": 2575,
+   "candidates": 0,
+   "no_edges_reason": null,
+   "resolution": {
+    "calls": 6443,
+    "resolved": 2864,
+    "lexical_resolved": 289,
+    "engine_confirmed": 2575,
+    "external": 2366,
+    "external_by_class": {
+     "builtin": 1290,
+     "engine-external-definition": 1076
+    },
+    "resolvable": 4077,
+    "resolved_ratio": 0.702,
+    "dynamic": 0,
+    "askable": 4864,
+    "unasked": 0,
+    "engine_unresolved": 1213,
+    "by_language": {
+     "java": {
+      "calls": 6443,
+      "resolved": 2864,
+      "resolvable": 4077,
+      "resolved_ratio": 0.702,
+      "engine": "eclipse-jdtls@1.46.0"
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  },
+  "references": {
+   "engine resolved target=concrete": 2575,
+   "lexical resolved target=concrete": 289,
+   "lexical unresolved target=None": 3579
+  },
+  "candidates": 0,
+  "conflicts": 0,
+  "conflict_examples": [],
+  "call_links_kept": {
+   "engine": 2562,
+   "lexical": 287
+  },
+  "call_links_lost": {
+   "engine: call outside a named symbol": 13,
+   "lexical: call outside a named symbol": 2
+  },
+  "lost_examples": {
+   "call outside a named symbol": [
+    {
+     "site": "src/main/java/com/squareup/javapoet/ClassName.java:34",
+     "caller": null,
+     "target": "src/main/java/com/squareup/javapoet/ClassName.java::function@162:2"
+    },
+    {
+     "site": "src/main/java/com/squareup/javapoet/CodeWriter.java:63",
+     "caller": null,
+     "target": "src/main/java/com/squareup/javapoet/CodeWriter.java::class@527:2"
+    },
+    {
+     "site": "src/main/java/com/squareup/javapoet/TypeName.java:69",
+     "caller": null,
+     "target": "src/main/java/com/squareup/javapoet/TypeName.java::function@97:2"
+    },
+    {
+     "site": "src/main/java/com/squareup/javapoet/TypeName.java:70",
+     "caller": null,
+     "target": "src/main/java/com/squareup/javapoet/TypeName.java::function@97:2"
+    }
+   ]
+  }
+ },
+ "seconds": 131.6
+}
