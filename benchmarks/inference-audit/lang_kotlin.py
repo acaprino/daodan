@@ -172,19 +172,18 @@ def graph(index_path: Path, manifest: Path, source: Path, configs: Path | None, 
     compiled = adapter.tasks(configs)
     hops = adapter.hops(index)
     with scip_graph.Snapshot(manifest) as snapshot:
-        traversal = scip_graph.Traversal(index, snapshot, hops)
+        traversal = scip_graph.Traversal(index, snapshot, hops, classify=adapter.classify(index))
         absent = [snapshot.checkout[rel] for rel in snapshot.inventory if snapshot.languages.get(rel) == "kotlin"
                   and rel in snapshot.checkout and snapshot.checkout[rel] not in index.documents]
         built, _references = scip_graph.build(index, snapshot, "kotlin", hops, indexer,
-                                              adapter.missing(index, absent, compiled), traversal)
-        adapter.refine(index, built, compiled)
+                                              adapter.missing(index, absent, compiled), traversal,
+                                              refine=lambda read, graph: adapter.refine(read, graph, compiled))
         checks = hand_check(index, traversal, built)
     edges = built["edges"]
     uncertain = [edge for edge in edges if edge.get("uncertain")]
     summary = {
         "report": scip_graph.report(built),
         "edges_certain": len(edges) - len(uncertain),
-        "edges_uncertain": dict(collections.Counter(edge["uncertain"]["reason"] for edge in uncertain)),
         "uncertain_examples": [{key: edge[key] for key in ("site", "symbol", "to", "uncertain")}
                                for edge in uncertain[:: max(1, len(uncertain) // 6)]][:6],
         "holes": dict(collections.Counter(hole["class"] for hole in built["holes"])),
@@ -285,5 +284,5 @@ if __name__ == "__main__":
         out.write_text(json.dumps({"indexer": indexer, **summary}, indent=1, ensure_ascii=False) + "\n",
                        encoding="utf-8")
         out.with_suffix(".graph.json").write_text(json.dumps(built, ensure_ascii=False), encoding="utf-8")
-        print(out, summary["edges_certain"], summary["edges_uncertain"], summary["holes"],
+        print(out, summary["edges_certain"], summary["report"]["edges_uncertain"], summary["holes"],
               summary["hand_check"]["right"])

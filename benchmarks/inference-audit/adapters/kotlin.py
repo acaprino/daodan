@@ -13,7 +13,11 @@ Kotlin Analysis API indexer over the sources and classpath each KotlinCompile ta
   and an override relation across tasks, can name the wrong overload: `refine` marks those edges uncertain
   with every overload of the name in the target class as candidates;
 - calls the index never writes (`x[k]`, `x[k] = v`, the `for` iterator, `by` delegates, `componentN`) are
-  found with tree-sitter and become holes of class `implicit-operator`.
+  found with tree-sitter and become holes of class `implicit-operator`;
+- the package placeholder `. .` names both project symbols (the test tasks) and every Kotlin builtin or stdlib
+  symbol: `classify` keeps it a project symbol only under a package path where the index defines `. .`
+  symbols, else an external with manager `unknown` and the Kotlin package path; a namespace symbol (`package`
+  and `import` lines, never defined) is a namespace.
 """
 from __future__ import annotations
 
@@ -153,6 +157,26 @@ def hops(index) -> dict:
     return {}
 
 
+def _package_path(descriptors: str) -> str:
+    return "/".join(name for name, kind in scip_graph.descriptors(descriptors) if kind == "namespace")
+
+
+def classify(index):
+    """The classification of a symbol key for the shared traversal (see the module docstring)."""
+    own = {_package_path(parts[4]) for parts in map(scip_graph.split_symbol, map(scip_graph._global, index.defs))
+           if parts and parts[2] == "."}
+
+    def classified(key: str):
+        if key.endswith("/"):
+            return "namespace"
+        parts = scip_graph.split_symbol(scip_graph._global(key))
+        if parts is None or parts[2] != "." or key in index.defs:
+            return None
+        path = _package_path(parts[4])
+        return "project" if path in own else {"manager": "unknown", "package": path, "version": "unknown"}
+    return classified
+
+
 # Compile tasks, from the sources each KotlinCompile task listed for the indexer.
 
 def tasks(configs_dir: Path | None) -> dict[str, str]:
@@ -246,10 +270,7 @@ def refine(index, graph: dict, compiled: dict[str, str]) -> None:
         match = OVERLOAD.match(key)
         return overloads.get(match.groups()) if match else None
 
-    if graph["edges"] and "symbol" not in graph["edges"][0]:
-        raise ValueError("scip_graph edges carry no `symbol` (the key referenced at the site): overloads unjudged")
     for edge in graph["edges"]:
-        edge.setdefault("uncertain", None)
         symbol, target = edge["symbol"], edge["to"]
         site = compiled.get(edge["site"].rsplit(":", 1)[0])
         if candidates(symbol) and site and _task(index, compiled, symbol) not in (None, site):

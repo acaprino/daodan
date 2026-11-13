@@ -197,7 +197,7 @@ Non verificato: 968 chiamate TypeScript su simboli con pacchetto `. .`; che i 3.
 
 ### 13 novembre 2026, grafo completo dall'indice: Java
 
-Un indicizzatore di progetto intero, scip-java, compila javapoet; il suo indice si legge tutto, ogni documento, occorrenza e simbolo, e diventa il grafo del codice. Ciò che è proprio del motore sta in `adapters/java.py`: `index` (installazione, build, seconda aggregazione, ordine dei membri nei class file) e `hops`, vuoto. Lettura, percorso e grafo sono quelli comuni di `scip_graph.py`; `lang_java.py` collega adattatore, modulo comune e volume, e aggiunge i due passi che il modulo comune non esprime (sotto). Esecuzione: `modal deploy benchmarks/inference-audit/lang_java.py`, poi `python benchmarks/inference-audit/lang_java.py spawn` e `fetch`; `fetch --files DIR` e `graph --dir DIR` rifanno il grafo dai file sul volume (`inference-audit/graph-java/javapoet/`) senza rieseguire l'indicizzatore. Risultati: `results/graph-java-javapoet.json` (nodi, archi, buchi; 6,8 MB) e `results/graph-java-javapoet-checks.json` (il resoconto comune, accordo con il lessicale, verifica a mano).
+Un indicizzatore di progetto intero, scip-java, compila javapoet; il suo indice si legge tutto, ogni documento, occorrenza e simbolo, e diventa il grafo del codice. Ciò che è proprio del motore sta in `adapters/java.py`: `index` (installazione, build, seconda aggregazione, ordine dei membri nei class file) e `hops`, vuoto, più `static` e `same_range` (sotto). Lettura, percorso e grafo sono quelli comuni di `scip_graph.py`; `lang_java.py` collega adattatore, modulo comune e volume. Esecuzione: `modal deploy benchmarks/inference-audit/lang_java.py`, poi `python benchmarks/inference-audit/lang_java.py spawn` e `fetch`; `fetch --files DIR` e `graph --dir DIR` rifanno il grafo dai file sul volume (`inference-audit/graph-java/javapoet/`) senza rieseguire l'indicizzatore. Risultati: `results/graph-java-javapoet.json` (nodi, archi, buchi; 8,5 MB) e `results/graph-java-javapoet-checks.json` (il resoconto comune, accordo con il lessicale, verifica a mano).
 
 | Parametro | Valore |
 | --- | --- |
@@ -229,10 +229,9 @@ Archi: 19.189, cioè 18.821 dai riferimenti e 368 implementazioni. Per tipo: `ca
 - Vicoli ciechi: 1.540 nomi di package (SCIP non li definisce), 133 letterali `X.class`, 10 `array.length`, 2 `X#super.` e `X#this.`, 2 `super` locali nelle classi anonime.
 - Catene: tutti i riferimenti hanno catena 0, perché l'indice non scrive `is_definition` e Java non ha alias. Le 368 implementazioni sono a un salto e stanno su 69 riferimenti; per esempio `Object#toString` porta 12 override del progetto.
 - Lette alla lettera, le relazioni dell'aggregazione di default cambierebbero 11 archi. Per esempio `ParameterizedTypeName.java:44 annotated` riceverebbe come implementazioni il padre `TypeName#annotated(+1)` e quattro fratelli.
-- Passi propri di Java, che il modulo comune non esprime (segnalati a chi lo mantiene):
-  - le chiamate `super.m()` non passano dalla dispatch: le implementazioni aggiunte dal modulo comune si tolgono dopo `build`, 2 archi (`ClassName.java:82`, `TypesEclipseTest.java:82`);
-  - le costanti enum: al nome di ogni costante scip-java scrive la definizione e un riferimento al costruttore che la costante esegue. La regola comune dello stesso intervallo lo legge come alias, e 33 letture di costanti finirebbero sul costruttore (`LineWrapper.java:77` `FlushType.WRAP`). Le 9 costanti sono fissate come valori prima del percorso;
-  - la firma di `SymbolInformation` (campo 7), che il modulo comune non tiene: la legge l'adattatore, per la verifica degli overload.
+- Casi propri di Java, dichiarati dall'adattatore al modulo comune:
+  - `static`: le chiamate `super.m()` non passano dalla dispatch, quindi in quei 3 siti nessuna fine raggiunta per implementazione. Toglie 2 archi (`ClassName.java:82`, `TypesEclipseTest.java:82`);
+  - `same_range`: al nome di ogni costante enum scip-java scrive la definizione e un riferimento al costruttore che la costante esegue. Le 9 coppie sono dichiarate mai alias; altrimenti 33 letture di costanti finirebbero sul costruttore (`LineWrapper.java:77` `FlushType.WRAP`).
 
 Buchi: ogni chiamata e ogni lettura dello snapshot (6.443 e 2.699) ha la sua occorrenza nell'indice. Il modulo comune conta come buco anche un riferimento che finisce solo in un vicolo cieco: 10 letture `args.length` (`CodeBlock.java:243`), con un simbolo che SCIP non definisce. Al contrario, l'indice ha 36 chiamate che lo snapshot non elenca: `this(...)` 10, `super(...)` 7, costruttori impliciti delle costanti enum 9, nomi degli elementi di annotazione 8, `@Test(expected=...)` 2.
 
@@ -268,7 +267,7 @@ Tempo e memoria:
 Il grafo è rifatto in locale dai file di r2 sul volume.
 
 Non verificato:
-- Il collegamento Modal dopo il passaggio al modulo comune: `index` di `adapters/java.py` e il montaggio in `/audit/benchmarks/inference-audit` non sono stati rieseguiti. I comandi di build sono quelli di r2.
+- Il collegamento Modal dopo il passaggio al modulo comune: `index` di `adapters/java.py` non è stato rieseguito. I comandi di build sono quelli di r2.
 - L'overload dei simboli del JDK direttamente sul JDK: la regola del class file è provata solo sui metodi del progetto, e `javap` copre solo le classi esterne della verifica a mano.
 - Le destinazioni delle letture e dei riferimenti a tipi, oltre ai 20 casi e alle 289 chiamate.
 - Che il build con Error Prone avrebbe dato gli stessi simboli.
@@ -349,7 +348,7 @@ Pacchetti esterni (4 in tutto, siti):
 
 Tempo e memoria:
 - Indicizzatore 9,3 s, 368 MB il processo più grande; snapshot 2,8 s; container 17,6 s; grafo 0,3 s.
-- Costo fatturato da Modal: 0,0246 USD per le prime sette chiamate (indice senza e con configurazione, grafi rifatti dal volume); la fascia oraria delle ultime tre (due fallite, poi quella buona) non è ancora chiusa.
+- Costo fatturato da Modal: 0,034 USD in tutto, cioè 0,0246 USD per le prime sette chiamate (indice senza e con configurazione, grafi rifatti dal volume) e 0,0096 USD per le ultime tre (due fallite, poi quella buona).
 
 Non verificato:
 - Se nella prima esecuzione pesa anche la TomlError di scip-python su `pyproject.toml` (riga 105, probabilmente un array misto, ammesso da TOML 1.0 e non da TOML 0.5), oltre al layout `src` non dichiarato.
@@ -361,7 +360,7 @@ Con il modulo comune `scip_graph.py`, la stessa sera:
 - `lang_python.py` ora collega solo adattatore, `scip_graph.py` e volume; `adapters/python.py` segue il contratto del modulo (`index` restituisce `indexes`, `indexer` e `runs`; `hops` le quattro regole sopra).
 - Il grafo in `results/` è rifatto in locale dall'indice di questa esecuzione (`python benchmarks/inference-audit/lang_python.py graph --cases semver --dir DIR`), senza nuove esecuzioni su Modal. Il nuovo collegamento non è ancora stato eseguito su Modal.
 - Le fini dirette coincidono con i conteggi sopra: chiamate e letture divise allo stesso modo, verifica a mano 18 su 20, 3.671 archi dai riferimenti.
-- 4.043 archi invece di 3.671: il modulo dà a ogni riferimento a un membro anche le sue implementazioni. Sono 372 archi, tutti dai 93 riferimenti a `Version.parse` verso i quattro override `SemVerWithVPrefix.parse`. 91 di quei riferimenti passano dal nome della classe (87) o da `super()` (4) e in Python non vanno mai a un override; solo `cls.parse` (`version.py:479`, `:833`) può andarci. Chiesto a index-traverse un modo per dichiarare i siti a dispatch statico.
+- 3.679 archi invece di 3.671: il modulo dà a ogni riferimento a un membro anche le sue implementazioni, tranne nei siti a dispatch statico che l'adattatore dichiara (`static`: `C.m` su un simbolo di classe e `super().m`, 109 siti). Restano 8 archi `implementation`, da `cls.parse` (`version.py:479`, `:833`) verso i quattro override `SemVerWithVPrefix.parse`. Senza `static` sarebbero 372: ogni `Version.parse(...)` e `super().parse(...)` riceveva anche gli override, che lì non vengono mai eseguiti.
 - 64 buchi invece di 44: il modulo conta anche i riferimenti che finiscono solo in un vicolo cieco (10 locali senza definizione, 10 simboli del progetto senza definizione).
 - 1.289 nodi invece di 1.288: ogni documento è un nodo. Un parametro o un locale definito è un `project-value`, non un vicolo cieco.
 
@@ -460,3 +459,115 @@ Non verificato:
 - il confronto con A sul codice nuovo, per tududi;
 - perché `fireEvent.click` non ha occorrenze;
 - il pacchetto `. .`.
+
+### 13 novembre 2026, grafo completo dall'indice: Kotlin
+
+scip-java indicizza klaxon con la build Gradle del progetto. Il suo indice si legge tutto, ogni documento, occorrenza e simbolo, e diventa il grafo del codice. Ciò che è proprio del motore sta in `adapters/kotlin.py`:
+- `index`: JDK, scip-java, build e copia dell'indice senza le relazioni inverse;
+- `hops`, vuoto;
+- `classify`, `missing` e `refine`, descritti sotto.
+
+Lettura, percorso e grafo sono quelli comuni di `scip_graph.py`; `lang_kotlin.py` collega adattatore, modulo comune e volume e tiene la verifica a mano.
+
+Esecuzione: `modal deploy benchmarks/inference-audit/lang_kotlin.py`, poi `python benchmarks/inference-audit/lang_kotlin.py spawn --stage index` e `fetch`. `spawn --stage graph` rifà il grafo dai file sul volume (`inference-audit/graph-kotlin/klaxon/`: index.scip, index-forward.scip, manifest.sqlite, indexer.json, kotlin-configs/) senza rieseguire l'indicizzatore, e scrive lì anche `graph.json` (nodi, archi con catena e incertezza, buchi). `graph --index --manifest --source --configs --out` fa lo stesso in locale. Risultato: `results/graph-kotlin-klaxon.json` (il resoconto comune, archi incerti, buchi, verifica a mano).
+
+| Parametro | Valore |
+| --- | --- |
+| caso | klaxon `1173bdc568a6d339b45cf24a6a9c5c2f6847f42d`, Gradle wrapper 7.3, Kotlin 1.6.0; 103 file Kotlin nello snapshot, test compresi |
+| indicizzatore | scip-java 0.14.2 (`org.scip-code:scip-java`, classpath di coursier 2.1.24) con scip-kotlin-analysis 0.14.2, cioè la Kotlin Analysis API di kotlin-compiler 2.4.0; Temurin 17.0.21 |
+| build | `scip-java index`: `gradlew` con l'init script di scip-java (`clean scipPrintDependencies scipCompileAll`). Ogni task KotlinCompile scrive sorgenti e classpath in `kotlin-configs/`, poi l'indicizzatore li analizza fuori dal compilatore, quindi la versione Kotlin del progetto non conta. La 0.13.0 ha tolto il supporto ufficiale per Gradle < 8, ma con la 7.3 la build va al primo tentativo |
+| relazioni | l'indicizzatore scrive `is_implementation` sul membro che sovrascrive, verso quello sovrascritto. L'aggregatore aggiunge l'inversa sul sovrascritto, con `is_implementation` e `is_reference` (`ScipAggregator.java`). `forward_only` ne toglie 30, tutte doppioni di una relazione diretta, e si legge `index-forward.scip` |
+| pacchetti | scip-java scrive il segnaposto `. .` sia per i simboli dei test del progetto sia per ogni builtin e simbolo della stdlib. `classify` lo tiene simbolo del progetto solo sotto un percorso di package dove l'indice definisce simboli `. .`; altrove è un esterno con manager `unknown`, il percorso Kotlin (`kotlin/collections`) e versione `unknown`. I simboli di package (righe `package` e `import`) sono namespace |
+| arco | quello di `scip_graph.build`, come per Java; la regola comune di `same-range` non fa alias fra due definizioni allo stesso range |
+| incertezza | `refine` marca `overload-across-tasks` un arco verso una funzione del progetto con overload, riferita da un altro task di compilazione; `override-across-tasks` un'implementazione con overload fra task diversi. I candidati sono tutti gli overload del nome nella classe. Un arco incerto resta nel grafo |
+| buchi impliciti | `x[k]`, `x[k] = v`, l'iteratore del `for`, i delegati `by` e i `componentN`, trovati con tree-sitter dove l'indice non ha un'occorrenza non locale: classe `implicit-operator` |
+| riferimenti indipendenti | `sem_references` dello snapshot, `call` e `read` |
+| verifica a mano | 20 chiamate lette nel sorgente prima di leggere il grafo (`HAND_CHECK` in `lang_kotlin.py`) |
+
+Copertura: 96 file su 103 hanno occorrenze. Mancano:
+- 5 script Gradle `.kts`: nessun task KotlinCompile li compila;
+- `buildSrc/src/main/kotlin/KlaxonConfig.kt`: buildSrc ha una sua build, dove i task di scip-java non girano;
+- `kobalt/src/Build.kt`: non sta in nessun source set.
+
+L'indice ha 98 documenti (97 Kotlin più `KlaxonDoc.java`), 15.014 occorrenze, 4.508 definizioni con `SymbolInformation`, `external_symbols` vuoto. La codifica delle posizioni non è dichiarata e si legge come UTF-16.
+
+Nodi: 5.223.
+- Del progetto: metodi 1.907 (compresi getter e setter sintetici), parametri 1.220, proprietà 1.057, classi 310, tipi 12, file 97.
+- Esterni: metodi 340, classi 99, proprietà 95, funzioni 40, variabili 3.
+- Senza definizione: 41 package e 2 membri delegati.
+
+Archi: 16.191, di cui 15.940 certi e 251 incerti.
+
+| Fine | Archi |
+| --- | --- |
+| funzione, metodo o classe del progetto | 7.650 (1.967 diretti, 5.683 implementazioni) |
+| valore del progetto (proprietà, getter sintetici, parametri, locali) | 3.739 |
+| esterno Maven con versione | 1.594 |
+| esterno con manager `unknown` e percorso Kotlin | 2.104 |
+| esterno "fuori dallo snapshot" | 23 |
+| namespace | 1.079 |
+| vicolo cieco | 2 |
+
+- Tipo dell'arco: `call` 3.274, `read` 2.215, `unknown` 10.702. scip-java non scrive ruoli di accesso, quindi il tipo viene dal riferimento dello snapshot nella stessa posizione.
+- Catene: un riferimento alla proprietà porta anche al getter (e al setter se è `var`), scritti dall'indice allo stesso range, quindi nessun salto. Le implementazioni sono tutte a un salto. Ne portano di più `kotlin/Any#equals` e `toString`, con 94 e 98 override del progetto, compresi quelli generati delle data class. Solo 6 archi passano per `same-range`.
+- I 23 esterni "fuori dallo snapshot" sono simboli di `klaxon/src/test/kotlin/com/beust/klaxon/Issue118Test.kt`. Lo snapshot tiene quel file solo come lessicale e la lettura comune non lo riconosce come file del progetto.
+
+Archi incerti: 238 `overload-across-tasks` e 13 `override-across-tasks`.
+- Il motivo: per una dichiarazione con sorgente, il numero `(+N)` segue l'ordine del sorgente (`SymbolsCache.kt`). Per una letta dal classpath di un altro task segue l'ordine della classe compilata, quindi la stessa stringa può nominare un altro overload.
+- Overload: `Klaxon#parse` 78, `Klaxon#toJsonString` 49, `KlaxonJson#obj` 38, `Parser#parse` 33, `KlaxonJson#array` 17, `Klaxon#parseArray` 12, il costruttore di `JsonArray` 9, `Klaxon#parseJsonObject` 2.
+- Override: i 13 sono tutti verso `JacksonParser#parse()`.
+- Nella misura precedente con controllo del numero di argomenti, la stessa causa dava 86 chiamate da un altro task in contraddizione con il bersaglio e 14 su 14 sbagliate in un campione letto a mano. Nello stesso task le contraddizioni erano 0 su 37.
+
+Buchi: 330.
+- `no-document` 226: negli script `.kts` 132 chiamate e 60 letture; in `kobalt/src/Build.kt` 18 chiamate e 16 letture.
+- `implicit-operator` 93:
+  - `get` 63 (`klaxon/src/main/kotlin/com/beust/klaxon/Annotations.kt:37`);
+  - `set` 21 (`klaxon/src/main/kotlin/com/beust/klaxon/KlaxonParser.kt:175`);
+  - iteratore del `for` 5;
+  - delegati `by` 2;
+  - `componentN` 2, nel `for ((k, v) in map)` di `klaxon/src/main/kotlin/com/beust/klaxon/JsonObject.kt:22`.
+  - Gli operatori binari (`==`, `+`, `in`, `..`) hanno invece la loro occorrenza.
+- `no-occurrence` 8: etichette di argomenti nominati, come `klaxon/src/test/kotlin/com/beust/klaxon/InstanceSettingsTest.kt:46 instanceSettings`. L'indice scrive l'etichetta solo quando la funzione chiamata ha sorgente nello stesso task: 8 su 110.
+- `undefined-project-symbol` 2: i membri delegati con `by map` e `by value`, che l'indice non definisce (`src/test/kotlin/com/beust/klaxon/TestTypes.kt:100`, `src/test/kotlin/com/beust/klaxon/KlaxonTest.kt:318`).
+- `no-position` 1: il riferimento dello snapshot senza nome a `klaxon/src/test/kotlin/com/beust/klaxon/PrettyPrintTest.kt:10`.
+
+Verifica a mano: 16 su 20. I quattro errori sono tutti marcati, come incerti o come buchi; nessuno resta un arco certo sbagliato.
+- Giusti: membri di companion object dalla classe, lambda con receiver, estensioni anche dai test della root, getter Java e getter personalizzato, costruttore primario, overload nello stesso task, chiamate su interfacce con le implementazioni, typealias di `ArrayList`, invoke di un parametro funzione con receiver.
+- `klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:86 obj`: l'indice dà `KlaxonJson#obj(+2)` invece di `obj(Iterable)`. L'arco è `overload-across-tasks`, e fra i tre candidati c'è quello giusto.
+- `klaxon/src/main/kotlin/com/beust/klaxon/Klaxon.kt:31 parse`: il bersaglio `Parser#parse(Reader)` è giusto. L'implementazione di `JacksonParser` è sbagliata ed è `override-across-tasks`.
+- `klaxon/src/main/kotlin/com/beust/klaxon/JsonArray.kt:53` `it[key]` e `klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:30` `newMap[key] = ...`: buchi `implicit-operator`.
+
+Pacchetti esterni (riferimenti):
+
+| Pacchetto | Riferimenti |
+| --- | --- |
+| `unknown` kotlin | 1.220 |
+| jdk 17 | 591 |
+| `unknown` kotlin/collections | 459 |
+| testng 7.0.0 | 359 |
+| kotlin-stdlib 1.6.0 | 323 |
+| assertj-core 3.10.0 | 237 |
+| `unknown` kotlin/jvm | 170 |
+| jackson-databind 2.9.6 | 71 |
+| `unknown` kotlin/test | 68 |
+| `unknown` kotlin/io | 52 |
+| `unknown` kotlin/text | 49 |
+| `unknown` kotlin/reflect/full | 46 |
+| `unknown` kotlin/reflect/jvm | 38 |
+| jackson-core 2.9.6 | 11 |
+| `unknown` kotlin/sequences | 2 |
+| annotations 13.0 | 2 |
+
+Tempo e memoria:
+- Indicizzatore 111,0 s, compresi lo scaricamento di Gradle e la build (1m33s).
+- Prima esecuzione completa (clone, snapshot, indice, grafo) 128,9 s; il solo grafo dal volume 3,3 s.
+- RAM: 4.688 MB come somma dei processi del container, campionata ogni 0,5 s.
+- Costo fatturato da Modal: 0,029 USD per un'esecuzione con l'indicizzatore e tre solo per il grafo (l'ultima fascia oraria forse non ancora chiusa).
+
+Non verificato:
+- Il collegamento Modal di `index` in `adapters/kotlin.py` dopo il passaggio al modulo comune: non è stato rieseguito. I comandi sono quelli della prima esecuzione, ma la memoria ora si misura sul processo più grande.
+- Uno per uno, gli archi incerti che il numero di argomenti non smentisce.
+- La regola dell'ordine compilato: osservata nei dati, non letta nel codice dell'Analysis API.
+- Perché i task di scip-java non girano in buildSrc: lo dice solo il log.
+- I picchi di RAM fra un campione e l'altro, sotto gVisor.
+- Altri progetti Kotlin, Gradle 8 e oltre, Android, Kotlin Multiplatform.
