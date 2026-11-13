@@ -29,8 +29,7 @@ PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path(
 SCRIPTS = str(PLUGIN / "scripts")
 RESULTS = HERE / "results"
 TAG = "inference-audit"
-REMOTE = "/audit/benchmarks/inference-audit"
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
 import scip_graph  # noqa: E402
 from adapters import java  # noqa: E402
@@ -118,13 +117,11 @@ def _image():
         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
         .run_commands(*java.install_commands())
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
-        # The folder keeps its depth, `/audit/benchmarks/inference-audit`: `scip_graph.py` finds the map's
-        # scripts two levels up from itself, and falls back to /daodan/map/scripts when they are not there.
-        .add_local_file(HERE / "modal_audit.py", f"{REMOTE}/modal_audit.py")
-        .add_local_file(HERE / "probe.py", f"{REMOTE}/probe.py")
-        .add_local_file(HERE / "probe.py", "/audit/probe.py")  # the path modal_audit.py runs it from
-        .add_local_file(HERE / "scip_graph.py", f"{REMOTE}/scip_graph.py")
-        .add_local_dir(HERE / "adapters", f"{REMOTE}/adapters", ignore=["**/__pycache__/**"])
+        .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
+        .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
+        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
+                       ignore=["**/__pycache__/**"])
     )
 
 
@@ -200,7 +197,7 @@ def index_case(label: str = "") -> dict:
 
 
 # ---------------------------------------------------------------------------------------------------------
-# The graph: the shared module, and the one Java step it cannot express
+# The graph
 
 
 def write(folder: Path, manifest: Path, source: Path, out: Path) -> tuple[Path, Path]:
@@ -209,25 +206,17 @@ def write(folder: Path, manifest: Path, source: Path, out: Path) -> tuple[Path, 
     index = scip_graph.Index(source)
     for name, prefix in engine["indexes"]:
         index.load(folder / name, prefix)
-    hops = java.hops(index)
+    hops, veto, sites = java.hops(index), java.same_range(index), java.static(index)
     with scip_graph.Snapshot(manifest) as snapshot:
-        traversal = scip_graph.Traversal(index, snapshot, hops)
-        # An enum constant is a value: its end is set before the traversal, which has no hop to say so.
-        constants = java.enum_constants(index)
-        for key in constants:
-            traversal.memo[key] = [scip_graph.End("project-value", key, None,
-                                                  scip_graph.node_kind(key, index.info.get(key)))]
-        graph, references = scip_graph.build(index, snapshot, LANGUAGE, hops, engine["indexer"], None, traversal)
-        sites = java.static_sites(index)
-        dropped = drop_static_dispatch(graph, index, traversal, sites)
+        traversal = scip_graph.Traversal(index, snapshot, hops, same_range=veto)
+        graph, references = scip_graph.build(index, snapshot, LANGUAGE, hops, engine["indexer"], None, traversal,
+                                             static=sites)
         checks = {"report": scip_graph.report(graph),
-                  "static_sites": {"sites": sorted(f"{rel}:{line}:{start}" for rel, line, start in sites),
-                                   "implementation_edges_dropped": dropped},
-                  "enum_constants": len(constants),
+                  "static": sorted(f"{rel}:{line}:{column}" for rel, line, column in sites),
+                  "same_range_vetoed": len(veto),
                   "lexical_agreement": agreement(snapshot, references, traversal)}
-    signatures = java.signatures(folder / engine["indexes"][0][0])
-    checks["overload_order"] = overload_check(index, signatures, folder)
-    checks["hand_check"] = hand_check(index, traversal, sites, signatures, folder)
+    checks["overload_order"] = overload_check(index, folder)
+    checks["hand_check"] = hand_check(index, traversal, sites, folder)
     run = folder / "run.json"
     checks["run"] = {"engine_runs": engine["runs"], **(json.loads(run.read_text(encoding="utf-8"))
                                                          if run.is_file() else {})}
@@ -236,31 +225,6 @@ def write(folder: Path, manifest: Path, source: Path, out: Path) -> tuple[Path, 
     graph_path.write_text(dump(graph), encoding="utf-8", newline="\n")
     checks_path.write_text(json.dumps(checks, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     return graph_path, checks_path
-
-
-def drop_static_dispatch(graph: dict, index, traversal, sites: set) -> int:
-    """Remove the implementation edges of the statically bound calls, one edge per end and site.
-
-    `scip_graph.build` gives a member reference every implementation its traversal reaches, whatever the call
-    site; hops are keyed by symbol, so an adapter cannot name a site where dispatch does not happen.
-    """
-    drop = collections.Counter()
-    for rel, line, start in sites:
-        for occurrence in index.at.get((rel, line, start), ()):
-            if not occurrence.definition:
-                for end in traversal.ends(occurrence.key):
-                    if end.chain[:1] == ("implementation",):
-                        drop[(end.key, f"{rel}:{line}", end.chain)] += 1
-    kept, dropped = [], 0
-    for edge in graph["edges"]:
-        key = (edge["to"], edge["site"], tuple(edge["chain"]))
-        if drop[key]:
-            drop[key] -= 1
-            dropped += 1
-            continue
-        kept.append(edge)
-    graph["edges"] = kept
-    return dropped
 
 
 def dump(graph: dict) -> str:
@@ -315,7 +279,7 @@ def _same(a: str | None, b: str | None) -> bool:
     return a is not None and b is not None and a.replace("...", "[]") == b.replace("...", "[]")
 
 
-def overload_check(index, signatures: dict, folder: Path) -> dict:
+def overload_check(index, folder: Path) -> dict:
     """Project methods: the index signature against the class-file member `name(+n)` names."""
     counts, mismatches = collections.Counter(), []
     for key in index.defs:
@@ -327,14 +291,14 @@ def overload_check(index, signatures: dict, folder: Path) -> dict:
         if declaration is None:
             counts["class file member not found"] += 1
             continue
-        a, b = java.parameters(signatures.get(key), name), java.parameters(declaration, name)
+        a, b = java.parameters(index.info[key]["signature"], name), java.parameters(declaration, name)
         counts["same parameters" if _same(a, b) else "different parameters"] += 1
         if not _same(a, b) and len(mismatches) < 8:
             mismatches.append({"symbol": key, "index": a, "javap": b, "declaration": declaration})
     return {"counts": dict(counts), "mismatches": mismatches}
 
 
-def hand_check(index, traversal, sites: set, signatures: dict, folder: Path) -> dict:
+def hand_check(index, traversal, sites: set, folder: Path) -> dict:
     """The sites of `HAND_CHECK` against the ends the graph gives the same occurrences."""
 
     def label(key):
@@ -347,7 +311,7 @@ def hand_check(index, traversal, sites: set, signatures: dict, folder: Path) -> 
         method = label(key).split("#")[-1]
         if method == "<init>":
             method = label(key).split("#")[-2]
-        got = java.parameters(signatures.get(key), method)
+        got = java.parameters(index.info.get(key, {}).get("signature"), method)
         if got is not None:
             return got, "index signature"
         declaration = java.class_file_declaration(key, folder)
@@ -365,7 +329,8 @@ def hand_check(index, traversal, sites: set, signatures: dict, folder: Path) -> 
             out.append({**row, "verdict": "miss", "reason": "no occurrence of the name on the line"})
             continue
         occurrence = found[nth]
-        ends = [] if (rel, line, occurrence.start) in sites else traversal.ends(occurrence.key)
+        static = (rel, line, index.to_bytes(rel, line, occurrence.start)) in sites
+        ends = [end for end in traversal.ends(occurrence.key) if not static or "implementation" not in end.chain]
         implementers = list(dict.fromkeys(end.key for end in ends if end.chain[:1] == ("implementation",)))
         got_params, overload_from = types(occurrence.key)
         rows = [(label(key), (types(key)[0] or "").replace("...", "[]")) for key in implementers]
@@ -375,7 +340,7 @@ def hand_check(index, traversal, sites: set, signatures: dict, folder: Path) -> 
                     "implementations_ok": impl_ok,
                     "got": {"symbol": occurrence.key, "parameters": got_params, "overload_from": overload_from,
                             "ends": [[end.cls, end.key, list(end.chain)] for end in traversal.ends(occurrence.key)],
-                            "implementations": rows, "static_site": (rel, line, occurrence.start) in sites}})
+                            "implementations": rows, "static": static}})
     return {"right": sum(1 for row in out if row["verdict"] == "right"),
             "target_right": sum(1 for row in out if row.get("target_ok")), "total": len(out), "sites": out}
 

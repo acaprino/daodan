@@ -6,12 +6,10 @@ first, then with the plain javac when the unchanged build gives no index. The de
 traversal would take a method's parent and siblings for its implementations; the same build is aggregated once
 more with `--no-emit-inverse-relationships`, and that index, whose occurrences are checked equal, is the one
 read. `hops` is empty: `new X()` already names the constructor, an implicit constructor is defined at its
-class's name, Java has no aliases, and implementations come from `is_implementation`.
-
-Not expressed by the shared module, kept here: `static_sites`, the calls through `super`, bound statically,
-which take no implementation; `enum_constants`, definitions the shared same-range rule would alias to the enum
-constructor; `signatures`, the SymbolInformation signature the shared `Index` does not keep;
-`class_file_declaration`, the overload an external `name(+n)` names, read from the class-file member order.
+class's name, Java has no aliases, and implementations come from `is_implementation`. `static` names the calls
+through `super`, bound statically, which take no implementation; `same_range` keeps an enum constant from
+aliasing the constructor it runs. `class_file_declaration` reads the overload an external `name(+n)` names
+from the class-file member order: the hand check uses it, the graph does not.
 """
 from __future__ import annotations
 
@@ -146,56 +144,29 @@ def hops(index) -> dict:
     return {}
 
 
-def static_sites(index) -> set[tuple[str, int, int]]:
-    """`(rel, line, start)` of each method name called through `super` (`super.m()`), bound statically."""
+def static(index) -> set[tuple[str, int, int]]:
+    """`(rel, line, byte column)` of each method name called through `super` (`super.m()`), bound statically."""
     out = set()
     for rel, occurrences in index.documents.items():
         ordered = sorted(occurrences, key=lambda o: (o.line, o.start))
         for before, after in zip(ordered, ordered[1:]):
             text = index.line(rel, before.line) or ""
             # `super(...)` names a constructor; `super.m` is `super`, a dot, then the method's name.
-            if text[before.start:before.end] == "super" and not before.key.endswith(").") \
-                    and (after.line, after.start) == (before.end_line, before.end + 1) and not after.definition:
-                out.add((rel, after.line, after.start))
+            if text[before.start:before.end] == "super" and not before.key.endswith(").")                     and (after.line, after.start) == (before.end_line, before.end + 1) and not after.definition:
+                out.add((rel, after.line, index.to_bytes(rel, after.line, after.start)))
     return out
 
 
-def enum_constants(index) -> set[str]:
-    """Enum constants: at each constant's name scip-java writes its definition and a reference to the enum
-    constructor it runs, which the shared same-range rule reads as an alias. A read of a constant is not a call."""
-    out = set()
+def same_range(index) -> dict[tuple[str, str], bool]:
+    """Never an alias: at each enum constant's name scip-java writes its definition and a reference to the enum
+    constructor it runs; a read of the constant is not a call of the constructor."""
+    out = {}
     for rel, occurrences in index.documents.items():
         for occurrence in occurrences:
-            if occurrence.definition and any(
-                    not other.definition and "`<init>`" in other.key and other.key != occurrence.key
-                    and (other.end_line, other.end) == (occurrence.end_line, occurrence.end)
-                    for other in index.at.get((rel, occurrence.line, occurrence.start), ())):
-                out.add(occurrence.key)
-    return out
-
-
-def signatures(path: Path) -> dict[str, str]:
-    """The signature (SymbolInformation field 7) of each symbol a document of the index describes."""
-    out = {}
-    for number, wire, value in scip_graph._fields(Path(path).read_bytes()):
-        if number != 2 or wire != 2:
-            continue
-        rel, infos = "", []
-        for field, kind, item in scip_graph._fields(value):
-            if field == 1 and kind == 2:
-                rel = item.decode("utf-8", errors="replace")
-            elif field == 3 and kind == 2:
-                infos.append(item)
-        for info in infos:
-            symbol = signature = None
-            for field, kind, item in scip_graph._fields(info):
-                if field == 1 and kind == 2:
-                    symbol = item.decode("utf-8", errors="replace")
-                elif field == 7 and kind == 2:
-                    signature = next((text.decode("utf-8", errors="replace") for n, w, text in
-                                      scip_graph._fields(item) if n == 5 and w == 2), None)
-            if symbol and signature:
-                out[scip_graph.Index.key(symbol, rel)] = signature
+            if occurrence.definition:
+                for other in index.at.get((rel, occurrence.line, occurrence.start), ()):
+                    if not other.definition and "`<init>`" in other.key and other.key != occurrence.key                             and (other.end_line, other.end) == (occurrence.end_line, occurrence.end):
+                        out[(occurrence.key, other.key)] = False
     return out
 
 

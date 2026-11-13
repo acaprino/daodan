@@ -49,6 +49,8 @@
   "hop_tags": {
    "implementation": 368
   },
+  "edges_uncertain": {},
+  "edges_removed": {},
   "holes_by_class": {
    "undefined-project-symbol read": 10
   },
@@ -77,15 +79,12 @@
    "maven maven/org.eclipse.jdt.core.compiler/ecj@4.6.1": 2
   }
  },
- "static_sites": {
-  "sites": [
-   "src/main/java/com/squareup/javapoet/ClassName.java:82:17",
-   "src/main/java/com/squareup/javapoet/TypeName.java:321:21",
-   "src/test/java/com/squareup/javapoet/TypesEclipseTest.java:82:20"
-  ],
-  "implementation_edges_dropped": 2
- },
- "enum_constants": 9,
+ "static": [
+  "src/main/java/com/squareup/javapoet/ClassName.java:82:17",
+  "src/main/java/com/squareup/javapoet/TypeName.java:321:21",
+  "src/test/java/com/squareup/javapoet/TypesEclipseTest.java:82:20"
+ ],
+ "same_range_vetoed": 9,
  "lexical_agreement": {
   "counts": {
    "same declaration": 264,
@@ -216,7 +215,7 @@
        "CodeWriter"
       ]
      ],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -246,7 +245,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -276,7 +275,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -306,7 +305,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -353,7 +352,7 @@
        "CharSequence, Element[]"
       ]
      ],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -383,7 +382,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -413,7 +412,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -443,7 +442,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -473,7 +472,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -503,7 +502,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -533,7 +532,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -563,7 +562,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -593,7 +592,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -623,7 +622,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -660,7 +659,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": true
+     "static": true
     }
    },
    {
@@ -690,7 +689,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -720,7 +719,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -750,7 +749,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -780,7 +779,7 @@
       ]
      ],
      "implementations": [],
-     "static_site": false
+     "static": false
     }
    },
    {
@@ -842,7 +841,7 @@
        "CharSequence"
       ]
      ],
-     "static_site": false
+     "static": false
     }
    }
   ]
