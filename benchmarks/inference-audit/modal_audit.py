@@ -123,7 +123,7 @@ def _graph_use(manifest: Path, rules: list | None) -> dict:
 
 
 @app.function(cpu=4, memory=16384, timeout=4 * 3600, volumes={"/results": volume})
-def audit(name: str, case: dict, archive: bytes | None, rules_text: str) -> dict:
+def audit(name: str, case: dict, archive: bytes | None, rules_text: str, label: str = "") -> dict:
     import os
     import sys
     import time
@@ -173,7 +173,15 @@ def audit(name: str, case: dict, archive: bytes | None, rules_text: str) -> dict
     except Exception as error:
         result["graph_use"] = {"error": repr(error)[:3000]}
     result["seconds"] = round(time.time() - started, 1)
-    destination = Path("/results") / TAG / f"audit-{name}.json"
+    stem = f"{name}-{label}" if label else name
+    if label:
+        # The per-call answers, so two runs of one case compare call by call.
+        import shutil
+        answers = manifest.with_name("engine-answers.sqlite")
+        if answers.is_file():
+            (Path("/results") / TAG).mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(answers, Path("/results") / TAG / f"answers-{stem}.sqlite")
+    destination = Path("/results") / TAG / f"audit-{stem}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     volume.commit()
@@ -216,11 +224,13 @@ if __name__ == "__main__":
     parser.add_argument("command", choices=("spawn", "fetch"))
     parser.add_argument("--phazly-tar", default="")
     parser.add_argument("--cases", default=",".join(CASES))
+    parser.add_argument("--labels", default="", help="comma-separated; one spawn per case and label")
     args = parser.parse_args()
     if args.command == "spawn":
         function = modal.Function.from_name("daodan-inference-audit", "audit")
         for call in _calls(args.phazly_tar, args.cases):
-            print(call[0], function.spawn(*call).object_id)
+            for label in [x.strip() for x in args.labels.split(",")] if args.labels else [""]:
+                print(call[0], label, function.spawn(*call, label).object_id)
     else:
         RESULTS.mkdir(parents=True, exist_ok=True)
         for name in [c.strip() for c in args.cases.split(",") if c.strip()]:
