@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .css_sass import failure
+
 SCRIPT = Path(__file__).resolve().with_suffix(".js")
 CONFIGS = ("tailwind.config.js", "tailwind.config.cjs", "tailwind.config.mjs", "tailwind.config.ts")
 
@@ -21,11 +23,11 @@ def index(project_dir: Path, runner, tokens: list[str], entries: list[str] | Non
         return {"indexer": {"name": "tailwindcss", "version": None, "seconds": 0, "peak_mb": None}, "valid": None,
                 "version": None, "error": "tailwindcss not installed"}
     config = next((project_dir / name for name in CONFIGS if (project_dir / name).is_file()), None)
-    sources = [{"path": str(project_dir / rel), "text": (project_dir / rel).read_text(encoding="utf-8")}
-               for rel in entries or ()]
-    data, run = runner(SCRIPT, {"tailwind": str(package), "config": str(config) if config else None,
+    sources = [{"path": rel, "text": (project_dir / rel).read_text(encoding="utf-8")} for rel in entries or ()]
+    data, run = runner(SCRIPT, {"tailwind": "node_modules/tailwindcss",
+                                "config": config.relative_to(project_dir).as_posix() if config else None,
                                 "entries": sources, "tokens": tokens})
-    data = data or {"version": None, "valid": None, "error": (run.get("stderr_tail") or "")[-600:]}
+    data = data or {"version": None, "valid": None, "error": failure("tailwindcss", run)[-600:]}
     return {"indexer": {"name": "tailwindcss", "version": data["version"], "seconds": run.get("seconds"),
                         "peak_mb": run.get("peak_mb")},
             "valid": data["valid"], "version": data["version"], "error": data["error"],

@@ -1,6 +1,6 @@
 // Less's own parser (`less`, the reference implementation) over Less sheets: one tree per sheet in the neutral form
 // `css.py` reads (see css_sass.js), without evaluating anything. usage: node css_less.js IN.json OUT.json
-// IN: {"engines": node_modules folder, "items": [{"key", "path" | "text"}]}. Less specifics in the tree:
+// IN: {"engines": the folder of the engines' package.json, "items": [{"key", "path" | "text"}]}. Less specifics in the tree:
 // var {name, literal: its text when the value is a plain word, string or dimension, kids: a detached ruleset};
 // include {path: [".a", ".b"] (a mixin call `.a > .b()` or `.a.b;`), symbol, refs}; def {name, params, refs (the guard)};
 // rule {sel, refs (a CSS guard), extends: [{sel, all}]}; import {kind: import | plugin, url, options}; refs may be
@@ -13,7 +13,8 @@ const path = require("path");
 const [inPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(inPath, "utf8"));
-const less = require(path.join(cfg.engines, "less"));
+const need = require("module").createRequire(path.join(cfg.engines, "package.json"));  // the pinned engines
+const less = need("less");
 const tree = less.tree;
 
 function lineAt(starts, index) {
@@ -186,6 +187,6 @@ function parse(text, filename) {
       out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };
     }
   }
-  fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "less/package.json")).version,
+  fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "node_modules", "less/package.json")).version,
     seconds: (Date.now() - begun) / 1000, sheets: out }));
 })();

@@ -9,7 +9,7 @@ const path = require("path");
 
 const MAX = 256;
 
-function acorn(engines) { return require(path.join(engines, "acorn")); }
+function acorn(engines) { return require("module").createRequire(path.join(engines, "package.json"))("acorn"); }
 
 // The expression of a text, its lines counted from `line`; null when acorn cannot read it (TypeScript syntax).
 function parse(engines, text, line) {

@@ -1,6 +1,6 @@
 // The official Sass parser (`sass-parser`, the Sass team's PostCSS-compatible wrapper of Dart Sass's own parser) over
 // SCSS and indented Sass: one tree per sheet in the neutral form `css.py` reads. usage: node css_sass.js IN.json OUT.json
-// IN: {"engines": node_modules folder, "items": [{"key", "path" | "text", "syntax": "scss" | "sass"}]}.
+// IN: {"engines": the folder of the engines' package.json, "items": [{"key", "path" | "text", "syntax": "scss" | "sass"}]}.
 // A node: {t, line, end, ...}. t: rule {sel: parts}, decl {prop, value, refs, kids}, var {name, ns, flags, refs},
 // import {kind: use | forward | import, url, ns, prefix, show, hide, config}, def {kind: mixin | function, name,
 // params}, include {name, ns, refs, using}, extend {sel}, loop {vars, values: literal iterations or null, refs},
@@ -14,7 +14,8 @@ const path = require("path");
 const [inPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(inPath, "utf8"));
-const sp = require(path.join(cfg.engines, "sass-parser"));
+const need = require("module").createRequire(path.join(cfg.engines, "package.json"));  // the pinned engines
+const sp = need("sass-parser");
 const SKIP = new Set(["parent", "_parent", "source", "raws", "proxyCache", "lastEach", "indexes", "_raws"]);
 
 function refsOf(value, line, out = [], seen = new Set()) {
@@ -172,5 +173,5 @@ for (const item of cfg.items) {
     out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };
   }
 }
-fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "sass-parser/package.json")).version,
+fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "node_modules", "sass-parser/package.json")).version,
   seconds: (Date.now() - begun) / 1000, sheets: out }));

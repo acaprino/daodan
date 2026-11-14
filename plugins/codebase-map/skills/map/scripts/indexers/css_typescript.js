@@ -1,7 +1,7 @@
 // The TypeScript compiler over a project's scripts, in one process: every place a class, an id, a CSS Module
 // member, a custom property or a stylesheet import is written. usage: node css_typescript.js CONFIG.json OUT.json
-// CONFIG: {"engines": node_modules folder, "tsconfig": the generated tsconfig, "root": the project,
-// "files": [project-relative paths to read]}.
+// CONFIG: {"engines": the folder of the engines' package.json, "tsconfig": the tsconfig to use, its paths relative
+// to the project, "files": [project-relative paths to read]}; run in the project's root.
 // A class expression is evaluated to its alternatives, each a list of parts: {s, c} text with the rules that
 // stated it (`literal-type`: the checker's string literal type; `initializer`: a const's or a const object's
 // initializer; `clsx`...), {h, x, ctx} a value not known statically (h its kind, x its text, ctx `template` or
@@ -18,10 +18,9 @@ const path = require("path");
 const [configPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
-const ts = require(path.join(cfg.engines, "typescript"));  // the TypeScript pinned with the engines
-const parsed = ts.getParsedCommandLineOfConfigFile(cfg.tsconfig, {}, {
-  ...ts.sys, onUnRecoverableConfigFileDiagnostic: (d) => { throw new Error(ts.flattenDiagnosticMessageText(d.messageText, "\n")); },
-});
+const ts = require("module").createRequire(path.join(cfg.engines, "package.json"))("typescript");  // pinned
+const root = process.cwd();
+const parsed = ts.parseJsonConfigFileContent(cfg.tsconfig, ts.sys, root, undefined, path.join(root, "css-tsconfig.json"));
 const program = ts.createProgram({ rootNames: parsed.fileNames, options: parsed.options });
 const checker = program.getTypeChecker();
 const K = ts.SyntaxKind;
@@ -45,7 +44,7 @@ const CLASSLIST = { add: Infinity, remove: Infinity, replace: 2, toggle: 1, cont
 const WRAPPERS = new Set([K.ParenthesizedExpression, K.AsExpression, K.NonNullExpression, K.SatisfiesExpression,
   K.TypeAssertionExpression]);
 const key = (p) => path.resolve(p).replace(/\\/g, "/").toLowerCase();
-const wanted = new Map(cfg.files.map((rel) => [key(path.join(cfg.root, rel)), rel]));
+const wanted = new Map(cfg.files.map((rel) => [key(path.join(root, rel)), rel]));
 const out = [];
 const walked = [];
 let file, modules;
@@ -342,7 +341,7 @@ function cssInJsTemplate(node) {
 
 function loaded(node, spec) {
   const found = ts.resolveModuleName(spec, node.getSourceFile().fileName, parsed.options, ts.sys).resolvedModule;
-  out.push({ t: "module", file, line: line(node), spec, to: found ? found.resolvedFileName : null });
+  out.push({ t: "module", file, line: line(node), spec, to: found ? path.relative(root, found.resolvedFileName).split(path.sep).join("/") : null });
 }
 
 function isStyleObject(node) {

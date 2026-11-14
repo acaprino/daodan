@@ -6,21 +6,21 @@
     "items": [
      {
       "key": "src/App.vue",
-      "path": "{project}/src/App.vue"
+      "path": "src/App.vue"
      },
      {
       "key": "src/Child.vue",
-      "path": "{project}/src/Child.vue"
+      "path": "src/Child.vue"
      },
      {
       "key": "src/Other.vue",
-      "path": "{project}/src/Other.vue"
+      "path": "src/Other.vue"
      }
     ]
    },
    "data": {
     "version": "3.5.45",
-    "seconds": 0.214,
+    "seconds": 0.167,
     "components": {
      "src/App.vue": {
       "blocks": [
@@ -252,8 +252,8 @@
    },
    "measured": {
     "seconds": 0.3,
-    "peak_mb": 141,
-    "stderr_tail": "DAODAN_MAXRSS_KB=143932\n"
+    "peak_mb": 137,
+    "stderr_tail": "DAODAN_MAXRSS_KB=140512\n"
    }
   },
   {
@@ -262,13 +262,13 @@
     "items": [
      {
       "key": "src/Card.svelte",
-      "path": "{project}/src/Card.svelte"
+      "path": "src/Card.svelte"
      }
     ]
    },
    "data": {
     "version": "5.57.3",
-    "seconds": 0.093,
+    "seconds": 0.078,
     "components": {
      "src/Card.svelte": {
       "blocks": [
@@ -343,8 +343,8 @@
    },
    "measured": {
     "seconds": 0.2,
-    "peak_mb": 139,
-    "stderr_tail": "DAODAN_MAXRSS_KB=142428\n"
+    "peak_mb": 134,
+    "stderr_tail": "DAODAN_MAXRSS_KB=136720\n"
    }
   },
   {
@@ -353,13 +353,13 @@
     "items": [
      {
       "key": "src/Title.astro",
-      "path": "{project}/src/Title.astro"
+      "path": "src/Title.astro"
      }
     ]
    },
    "data": {
     "version": "4.0.0",
-    "seconds": 0.259,
+    "seconds": 0.16,
     "components": {
      "src/Title.astro": {
       "blocks": [
@@ -426,9 +426,9 @@
     }
    },
    "measured": {
-    "seconds": 0.4,
-    "peak_mb": 168,
-    "stderr_tail": "DAODAN_MAXRSS_KB=171576\n"
+    "seconds": 0.3,
+    "peak_mb": 171,
+    "stderr_tail": "DAODAN_MAXRSS_KB=174688\n"
    }
   },
   {
@@ -444,7 +444,7 @@
    },
    "data": {
     "version": "0.5.6",
-    "seconds": 0.631,
+    "seconds": 0.441,
     "sheets": {
      "src/App.vue#2": {
       "tree": [
@@ -489,9 +489,9 @@
     }
    },
    "measured": {
-    "seconds": 0.8,
-    "peak_mb": 174,
-    "stderr_tail": "DAODAN_MAXRSS_KB=178648\n"
+    "seconds": 0.5,
+    "peak_mb": 179,
+    "stderr_tail": "DAODAN_MAXRSS_KB=183344\n"
    }
   },
   {
@@ -506,7 +506,7 @@
    },
    "data": {
     "version": "4.9.1",
-    "seconds": 0.044,
+    "seconds": 0.038,
     "sheets": {
      "src/Child.vue#0": {
       "tree": [
@@ -550,16 +550,29 @@
     }
    },
    "measured": {
-    "seconds": 0.2,
-    "peak_mb": 127,
-    "stderr_tail": "DAODAN_MAXRSS_KB=130456\n"
+    "seconds": 0.1,
+    "peak_mb": 126,
+    "stderr_tail": "DAODAN_MAXRSS_KB=128868\n"
    }
   },
   {
    "script": "css_typescript",
    "payload": {
-    "tsconfig": "{work}/css-tsconfig.json",
-    "root": "{project}",
+    "tsconfig": {
+     "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "incremental": false,
+      "skipLibCheck": true
+     },
+     "files": [
+      "src/components/index.ts",
+      "src/main.ts"
+     ],
+     "include": [],
+     "extends": "./tsconfig.json"
+    },
     "files": [
      "src/components/index.ts",
      "src/main.ts"
@@ -600,12 +613,12 @@
       "spec": "@/global.css"
      }
     ],
-    "seconds": 1.218
+    "seconds": 0.816
    },
    "measured": {
-    "seconds": 1.4,
-    "peak_mb": 257,
-    "stderr_tail": "DAODAN_MAXRSS_KB=262840\n"
+    "seconds": 0.9,
+    "peak_mb": 254,
+    "stderr_tail": "DAODAN_MAXRSS_KB=260012\n"
    }
   }
  ],

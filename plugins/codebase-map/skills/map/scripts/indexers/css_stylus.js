@@ -1,6 +1,6 @@
 // Stylus's own parser (`stylus`) over Stylus sheets: one tree per sheet in the neutral form `css.py` reads (see
 // css_sass.js), without evaluating anything. usage: node css_stylus.js IN.json OUT.json
-// IN: {"engines": node_modules folder, "items": [{"key", "path" | "text"}]}. Stylus specifics: a variable has no sigil
+// IN: {"engines": the folder of the engines' package.json, "items": [{"key", "path" | "text"}]}. Stylus specifics: a variable has no sigil
 // (`brand = #0af`, `$w = 1px`), so a word in a value is a reference only where a variable of that name exists
 // (`optional`); a mixin is called as a function or as a property (`pad 4px`); `{x}` interpolates in selectors; `for`
 // over a literal range or list gives its iterations.
@@ -11,7 +11,8 @@ const path = require("path");
 const [inPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(inPath, "utf8"));
-const stylus = require(path.join(cfg.engines, "stylus"));
+const need = require("module").createRequire(path.join(cfg.engines, "package.json"));  // the pinned engines
+const stylus = need("stylus");
 const nodes = stylus.nodes;
 
 function kind(n) { return n && n.constructor ? n.constructor.name : ""; }
@@ -121,5 +122,5 @@ for (const item of cfg.items) {
     out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };
   }
 }
-fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "stylus/package.json")).version,
+fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "node_modules", "stylus/package.json")).version,
   seconds: (Date.now() - begun) / 1000, sheets: out }));

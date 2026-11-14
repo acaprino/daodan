@@ -3,11 +3,11 @@
   {
    "script": "css_tailwind",
    "payload": {
-    "tailwind": "{project}/node_modules/tailwindcss",
+    "tailwind": "node_modules/tailwindcss",
     "config": null,
     "entries": [
      {
-      "path": "{project}/src/app.css",
+      "path": "src/app.css",
       "text": "@import \"tailwindcss\";\n@source \"../templates\";\n@theme {\n  --color-brand: #0af;\n}\n@utility tab-4 {\n  tab-size: 4;\n}\n@utility scrollbar-* {\n  scrollbar-width: --value(\"thin\", \"none\");\n}\n@custom-variant pointer-coarse (@media (pointer: coarse));\n.card { @apply bg-brand p-4; }\n"
      }
     ],
@@ -36,12 +36,12 @@
      "text-brand"
     ],
     "error": null,
-    "seconds": 0.252
+    "seconds": 0.167
    },
    "measured": {
-    "seconds": 0.4,
+    "seconds": 0.3,
     "peak_mb": 155,
-    "stderr_tail": "DAODAN_MAXRSS_KB=158548\n"
+    "stderr_tail": "DAODAN_MAXRSS_KB=158848\n"
    }
   }
  ],

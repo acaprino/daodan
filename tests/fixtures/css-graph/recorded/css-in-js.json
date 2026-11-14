@@ -3,8 +3,26 @@
   {
    "script": "css_typescript",
    "payload": {
-    "tsconfig": "{work}/css-tsconfig.json",
-    "root": "{project}",
+    "tsconfig": {
+     "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "incremental": false,
+      "skipLibCheck": true
+     },
+     "files": [
+      "src/Box.tsx",
+      "src/dom.ts",
+      "src/main.ts",
+      "src/stitches.ts",
+      "src/styled.tsx",
+      "src/styles.css.ts",
+      "src/theme.ts"
+     ],
+     "include": [],
+     "extends": "./tsconfig.json"
+    },
     "files": [
      "src/Box.tsx",
      "src/dom.ts",
@@ -32,7 +50,7 @@
       "file": "src/Box.tsx",
       "line": 1,
       "spec": "@mui/system",
-      "to": "{project}/node_modules/@mui/system/index.d.mts"
+      "to": "node_modules/@mui/system/index.d.mts"
      },
      {
       "t": "cssinjs",
@@ -124,7 +142,7 @@
       "file": "src/theme.ts",
       "line": 1,
       "spec": "@codemirror/view",
-      "to": "{project}/node_modules/@codemirror/view/dist/index.d.ts"
+      "to": "node_modules/@codemirror/view/dist/index.d.ts"
      },
      {
       "t": "cssinjs",
@@ -235,14 +253,14 @@
       "file": "src/styled.tsx",
       "line": 1,
       "spec": "styled-components",
-      "to": "{project}/node_modules/styled-components/dist/index.d.ts"
+      "to": "node_modules/styled-components/dist/index.d.ts"
      },
      {
       "t": "module",
       "file": "src/styled.tsx",
       "line": 2,
       "spec": "@emotion/css",
-      "to": "{project}/node_modules/@emotion/css/dist/emotion-css.cjs.d.mts"
+      "to": "node_modules/@emotion/css/dist/emotion-css.cjs.d.mts"
      },
      {
       "t": "cssinjs-text",
@@ -277,7 +295,7 @@
       "file": "src/styles.css.ts",
       "line": 1,
       "spec": "@vanilla-extract/css",
-      "to": "{project}/node_modules/@vanilla-extract/css/dist/vanilla-extract-css.cjs.d.ts"
+      "to": "node_modules/@vanilla-extract/css/dist/vanilla-extract-css.cjs.d.ts"
      },
      {
       "t": "cssinjs",
@@ -343,7 +361,7 @@
       "file": "src/stitches.ts",
       "line": 1,
       "spec": "@stitches/react",
-      "to": "{project}/node_modules/@stitches/react/types/index.d.ts"
+      "to": "node_modules/@stitches/react/types/index.d.ts"
      },
      {
       "t": "cssinjs",
@@ -396,50 +414,50 @@
       "file": "src/main.ts",
       "line": 1,
       "spec": "./theme",
-      "to": "{project}/src/theme.ts"
+      "to": "src/theme.ts"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 2,
       "spec": "./dom",
-      "to": "{project}/src/dom.ts"
+      "to": "src/dom.ts"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 3,
       "spec": "./styled",
-      "to": "{project}/src/styled.tsx"
+      "to": "src/styled.tsx"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 4,
       "spec": "./styles.css",
-      "to": "{project}/src/styles.css.ts"
+      "to": "src/styles.css.ts"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 5,
       "spec": "./stitches",
-      "to": "{project}/src/stitches.ts"
+      "to": "src/stitches.ts"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 6,
       "spec": "./Box",
-      "to": "{project}/src/Box.tsx"
+      "to": "src/Box.tsx"
      }
     ],
-    "seconds": 2.395
+    "seconds": 1.748
    },
    "measured": {
-    "seconds": 2.6,
-    "peak_mb": 315,
-    "stderr_tail": "DAODAN_MAXRSS_KB=323044\n"
+    "seconds": 1.9,
+    "peak_mb": 311,
+    "stderr_tail": "DAODAN_MAXRSS_KB=318296\n"
    }
   }
  ],

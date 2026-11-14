@@ -12,6 +12,10 @@ const path = require("path");
 const [configPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
+// Paths are relative to the project's root, where the script runs.
+cfg.tailwind = path.resolve(cfg.tailwind);
+cfg.config = cfg.config ? path.resolve(cfg.config) : null;
+for (const entry of cfg.entries || []) entry.path = path.resolve(entry.path);
 const version = require(path.join(cfg.tailwind, "package.json")).version;
 
 function sheet(id, base) {

@@ -6,24 +6,24 @@
     "items": [
      {
       "key": "src/legacy.sass",
-      "path": "{project}/src/legacy.sass",
+      "path": "src/legacy.sass",
       "syntax": "sass"
      },
      {
       "key": "src/styles/_tokens.scss",
-      "path": "{project}/src/styles/_tokens.scss",
+      "path": "src/styles/_tokens.scss",
       "syntax": "scss"
      },
      {
       "key": "src/styles/main.scss",
-      "path": "{project}/src/styles/main.scss",
+      "path": "src/styles/main.scss",
       "syntax": "scss"
      }
     ]
    },
    "data": {
     "version": "0.5.6",
-    "seconds": 0.634,
+    "seconds": 0.565,
     "sheets": {
      "src/legacy.sass": {
       "tree": [
@@ -209,9 +209,9 @@
     }
    },
    "measured": {
-    "seconds": 0.8,
-    "peak_mb": 175,
-    "stderr_tail": "DAODAN_MAXRSS_KB=179260\n"
+    "seconds": 0.7,
+    "peak_mb": 176,
+    "stderr_tail": "DAODAN_MAXRSS_KB=180244\n"
    }
   },
   {
@@ -220,13 +220,13 @@
     "items": [
      {
       "key": "src/styles/extra.less",
-      "path": "{project}/src/styles/extra.less"
+      "path": "src/styles/extra.less"
      }
     ]
    },
    "data": {
     "version": "4.9.1",
-    "seconds": 0.058,
+    "seconds": 0.043,
     "sheets": {
      "src/styles/extra.less": {
       "tree": [
@@ -270,9 +270,9 @@
     }
    },
    "measured": {
-    "seconds": 0.2,
-    "peak_mb": 128,
-    "stderr_tail": "DAODAN_MAXRSS_KB=130836\n"
+    "seconds": 0.1,
+    "peak_mb": 124,
+    "stderr_tail": "DAODAN_MAXRSS_KB=127304\n"
    }
   },
   {
@@ -281,13 +281,13 @@
     "items": [
      {
       "key": "src/Widget.vue",
-      "path": "{project}/src/Widget.vue"
+      "path": "src/Widget.vue"
      }
     ]
    },
    "data": {
     "version": "3.5.45",
-    "seconds": 0.199,
+    "seconds": 0.152,
     "components": {
      "src/Widget.vue": {
       "blocks": [],
@@ -317,9 +317,9 @@
     }
    },
    "measured": {
-    "seconds": 0.3,
-    "peak_mb": 135,
-    "stderr_tail": "DAODAN_MAXRSS_KB=138540\n"
+    "seconds": 0.2,
+    "peak_mb": 146,
+    "stderr_tail": "DAODAN_MAXRSS_KB=149400\n"
    }
   },
   {
@@ -328,13 +328,13 @@
     "items": [
      {
       "key": "src/Card.svelte",
-      "path": "{project}/src/Card.svelte"
+      "path": "src/Card.svelte"
      }
     ]
    },
    "data": {
     "version": "5.57.3",
-    "seconds": 0.085,
+    "seconds": 0.068,
     "components": {
      "src/Card.svelte": {
       "blocks": [],
@@ -360,15 +360,28 @@
    },
    "measured": {
     "seconds": 0.2,
-    "peak_mb": 139,
-    "stderr_tail": "DAODAN_MAXRSS_KB=141860\n"
+    "peak_mb": 134,
+    "stderr_tail": "DAODAN_MAXRSS_KB=137356\n"
    }
   },
   {
    "script": "css_typescript",
    "payload": {
-    "tsconfig": "{work}/css-tsconfig.json",
-    "root": "{project}",
+    "tsconfig": {
+     "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "incremental": false,
+      "skipLibCheck": true
+     },
+     "files": [
+      "src/App.tsx",
+      "tailwind.config.js"
+     ],
+     "include": [],
+     "extends": "./tsconfig.json"
+    },
     "files": [
      "src/App.tsx",
      "tailwind.config.js"
@@ -386,7 +399,7 @@
       "file": "src/App.tsx",
       "line": 1,
       "spec": "clsx",
-      "to": "{project}/node_modules/clsx/clsx.d.mts"
+      "to": "node_modules/clsx/clsx.d.mts"
      },
      {
       "t": "import",
@@ -689,19 +702,19 @@
       ]
      }
     ],
-    "seconds": 1.055
+    "seconds": 0.925
    },
    "measured": {
-    "seconds": 1.2,
-    "peak_mb": 255,
-    "stderr_tail": "DAODAN_MAXRSS_KB=261504\n"
+    "seconds": 1.0,
+    "peak_mb": 248,
+    "stderr_tail": "DAODAN_MAXRSS_KB=253824\n"
    }
   },
   {
    "script": "css_tailwind",
    "payload": {
-    "tailwind": "{project}/node_modules/tailwindcss",
-    "config": "{project}/tailwind.config.js",
+    "tailwind": "node_modules/tailwindcss",
+    "config": "tailwind.config.js",
     "entries": [],
     "tokens": [
      "[--accent:blue]",
@@ -738,12 +751,12 @@
      "text-red-500"
     ],
     "error": null,
-    "seconds": 0.372
+    "seconds": 0.283
    },
    "measured": {
-    "seconds": 0.5,
-    "peak_mb": 157,
-    "stderr_tail": "DAODAN_MAXRSS_KB=160280\n"
+    "seconds": 0.4,
+    "peak_mb": 149,
+    "stderr_tail": "DAODAN_MAXRSS_KB=152864\n"
    }
   }
  ],

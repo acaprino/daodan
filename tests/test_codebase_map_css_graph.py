@@ -29,57 +29,31 @@ FIXTURES = HERE / "fixtures/css-graph"
 RECORDED = FIXTURES / "recorded"
 
 
-def normal(value, project: str, work: str):
-    """A payload or an output with the project's and the work folder's paths as `{project}` and `{work}`, `/` as the
-    separator: the same on every machine."""
-    if isinstance(value, dict):
-        return {key: normal(item, project, work) for key, item in value.items()}
-    if isinstance(value, list):
-        return [normal(item, project, work) for item in value]
-    if isinstance(value, str):
-        for root, mark in ((project, "{project}"), (work, "{work}")):
-            if value.startswith(root):
-                return mark + value[len(root):].replace(chr(92), "/")
-        return value.replace(project, "{project}").replace(work, "{work}")
-    return value
-
-
-def local(value, project: str, work: str):
-    """A recorded output with `{project}` and `{work}` as this machine's folders."""
-    if isinstance(value, dict):
-        return {key: local(item, project, work) for key, item in value.items()}
-    if isinstance(value, list):
-        return [local(item, project, work) for item in value]
-    if isinstance(value, str):
-        return value.replace("{project}", project).replace("{work}", work)
-    return value
-
-
 def key(script, payload) -> tuple:
     return Path(script).stem, json.dumps(payload, sort_keys=True)
 
 
-def replayer(recording: dict, project: Path, work: Path):
-    """A runner that answers each engine run with the one recorded for the same payload."""
-    roots = str(project), str(work)
+def replayer(recording: dict):
+    """A runner that answers each engine run with the one recorded for the same payload. Payloads and outputs name
+    files relative to the project's root, so a recording holds on any machine."""
     calls = {key(call["script"], call["payload"]): call for call in recording["calls"]}
 
     def runner(script, payload):
-        call = calls.get(key(script, normal(payload, *roots)))
+        call = calls.get(key(script, payload))
         assert call is not None, f"no recorded run of {Path(script).stem} for this payload: record the fixtures again"
-        return local(call["data"], project.as_posix(), work.as_posix()), call["measured"]
+        return call["data"], call["measured"]
     return runner
 
 
-def record(project: Path, work: Path, runner) -> dict:
+def record(project: Path, runner) -> dict:
     """The recording of a fixture (`replayer`): its engine runs through a real runner, and every file and folder of
     `node_modules` the graph itself looks at, each file with its text. On Modal only (`lang_css.py fixtures`)."""
     import os
-    roots, calls, seen = (str(project), str(work)), [], set()
+    calls, seen = [], set()
 
     def recording(script, payload):
         data, measured = runner(script, payload)
-        calls.append({"script": Path(script).stem, "payload": normal(payload, *roots), "data": normal(data, *roots),
+        calls.append({"script": Path(script).stem, "payload": payload, "data": data,
                       "measured": {name: measured.get(name) for name in ("seconds", "peak_mb", "stderr_tail")}})
         return data, measured
 
@@ -97,7 +71,7 @@ def record(project: Path, work: Path, runner) -> dict:
     sys.addaudithook(hook)
     os.stat = watched
     try:
-        css.run(project, work, recording, files)
+        css.run(project, recording, files)
     finally:
         os.stat, watching[0] = stat, False
     packages, directories = {}, set()
@@ -116,9 +90,9 @@ def record(project: Path, work: Path, runner) -> dict:
     return {"calls": calls, "packages": packages, "directories": sorted(directories)}
 
 
-def _run(name: str, tmp_path_factory, remote=None, units=None) -> dict:
-    """The fixture's graph: a copy of it, the package files the graph reads, the recorded engine runs."""
-    project = (tmp_path_factory.mktemp(name) / "fixture").resolve()
+def project_copy(name: str, folder: Path) -> tuple[Path, dict]:
+    """A copy of the fixture with the package files its recording holds, and the recording."""
+    project = (folder / "fixture").resolve()
     shutil.copytree(FIXTURES / name, project)
     recording = json.loads((RECORDED / f"{name}.json").read_text(encoding="utf-8"))
     for rel in recording["directories"]:
@@ -126,9 +100,13 @@ def _run(name: str, tmp_path_factory, remote=None, units=None) -> dict:
     for rel, text in recording["packages"].items():
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8")
-    work = project.parent / "work"
-    work.mkdir()
-    return css.run(project, work, replayer(recording, project, work), units=units, remote=remote)
+    return project, recording
+
+
+def _run(name: str, tmp_path_factory, remote=None, units=None) -> dict:
+    """The fixture's graph from its recorded engine runs."""
+    project, recording = project_copy(name, tmp_path_factory.mktemp(name))
+    return css.run(project, replayer(recording), units=units, remote=remote)
 
 
 T, B, M = "src/styles/theme.css", "src/styles/base.css", "src/styles/Button.module.css"
@@ -888,3 +866,51 @@ def test_a_site_without_a_row_breaks_the_coverage(graph):
     broken = {**graph, "holes": [item for item in graph["holes"] if item is not hole]}
     _edges, _holes_, coverage = css.rows(broken, "stylesheet@test")
     assert coverage["violations"] == {"custom-property": [f"{hole['site']} {hole['ref'][2]}"]}
+
+
+# The runner's contract: relative paths, and the cause of a run without data.
+def test_recorded_payloads_and_outputs_name_no_absolute_path():
+    """Every file a payload or an output names (`path`, `files`, `extends`, `tailwind`, `config`, `to`) is relative to
+    the project's root, so the runner decides where the engines run."""
+    import re
+    absolute = re.compile(r"^(?:/|[A-Za-z]:[\\/])")
+    keys = {"path", "files", "extends", "tailwind", "config", "to"}
+
+    def named(value):
+        if isinstance(value, dict):
+            for name, item in value.items():
+                if name in keys:
+                    yield from (item if isinstance(item, list) else [item])
+                yield from named(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from named(item)
+    for path in sorted(RECORDED.glob("*.json")):
+        recording = json.loads(path.read_text(encoding="utf-8"))
+        found = [text for call in recording["calls"] for text in (*named(call["payload"]), *named(call["data"]))
+                 if isinstance(text, str) and absolute.match(text)]
+        assert found == [], (path.name, found[:3])
+
+
+def test_an_engine_that_cannot_run_makes_the_graph_unavailable(tmp_path):
+    from indexers import runtime
+    project, _recording = project_copy("css-sass", tmp_path)
+
+    def runner(script, payload):
+        return None, {"seconds": 0.1, "peak_mb": None, "stderr_tail": "", "state": "unavailable",
+                      "reason": "the container allows 512 MB; sass-parser needs more", "install": "raise the limit"}
+    with pytest.raises(runtime.Unavailable) as raised:
+        css.run(project, runner)
+    assert raised.value.reason == "sass-parser: the container allows 512 MB; sass-parser needs more"
+    assert raised.value.install == "raise the limit"
+
+
+def test_a_failed_run_leaves_its_files_missing_with_the_runner_reason(tmp_path):
+    project, _recording = project_copy("css-sass", tmp_path)
+
+    def runner(script, payload):
+        return None, {"seconds": 0.1, "peak_mb": None, "stderr_tail": "...", "state": "failed",
+                      "reason": "exit code 1: TypeError at css_sass.js:17"}
+    graph = css.run(project, runner)
+    reasons = {item["reason"] for item in graph["files"]["missing"]}
+    assert graph["files"]["missing"] and reasons == {"not parsed: exit code 1: TypeError at css_sass.js:17"}

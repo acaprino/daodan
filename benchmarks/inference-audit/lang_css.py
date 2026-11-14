@@ -258,7 +258,8 @@ def code_sha256() -> dict:
 
 def node_runner(engines: Path, project: Path, work: Path):
     """The runner the stylesheet graph's engines run through (`indexers/css_sass.py`): `node <script> IN OUT` in the
-    project's folder, IN the payload with `engines` added."""
+    project's root, IN the payload with `engines` added (the folder of the engines' package.json), IN and OUT in
+    `work`; a run without data says why (`state`, `reason`)."""
     import os
 
     def runner(script, payload):
@@ -269,6 +270,9 @@ def node_runner(engines: Path, project: Path, work: Path):
         measured = scip_graph.measured(["node", str(script), str(settings), str(output)], str(project),
                                        {**os.environ, "NODE_OPTIONS": "--max-old-space-size=6144"}, 3600)
         data = json.loads(output.read_text(encoding="utf-8")) if output.is_file() else None
+        if data is None:
+            measured.update(state="failed", reason=f"exit code {measured['returncode']}: "
+                                                   f"{(measured['stderr_tail'] or '').strip()[-300:]}")
         return data, measured
     return runner
 
@@ -504,7 +508,7 @@ def css_case(name: str) -> dict:
     installed = round(time.time() - begun, 1)
     if modules is not None and not (target / "node_modules").exists():
         os.symlink(modules, target / "node_modules", target_is_directory=True)
-    graph = css.run(target, work / "engine", node_runner(Path("/engines/node_modules"), target, work / "runs"), files)
+    graph = css.run(target, node_runner(Path("/engines"), target, work / "runs"), files)
     checks = {"case": name, "commit": case["commit"], "code": code_sha256(), "files_given": len(files),
               "npm_install_seconds": installed, "node_modules": str(modules),
               "report": scip_graph.report(graph), "summary": summary(graph),
@@ -542,9 +546,7 @@ def fixtures() -> dict:
         if (project / "package.json").is_file():
             subprocess.run(["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error",
                             "--no-package-lock"], cwd=project, check=True, capture_output=True, text=True, timeout=900)
-        work = project.parent / "work"
-        work.mkdir()
-        recording = record(project, work, node_runner(Path("/engines/node_modules"), project, project.parent / "runs"))
+        recording = record(project, node_runner(Path("/engines"), project, project.parent / "runs"))
         (store / f"{fixture.name}.json").write_text(json.dumps(recording, indent=1, ensure_ascii=False) + "\n",
                                                     encoding="utf-8")
         out[fixture.name] = {"calls": len(recording["calls"]), "packages": len(recording["packages"]),

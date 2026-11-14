@@ -6,17 +6,17 @@
     "items": [
      {
       "key": "src/site.styl",
-      "path": "{project}/src/site.styl"
+      "path": "src/site.styl"
      },
      {
       "key": "src/vars.styl",
-      "path": "{project}/src/vars.styl"
+      "path": "src/vars.styl"
      }
     ]
    },
    "data": {
     "version": "0.64.0",
-    "seconds": 0.311,
+    "seconds": 0.173,
     "sheets": {
      "src/site.styl": {
       "tree": [
@@ -357,9 +357,9 @@
     }
    },
    "measured": {
-    "seconds": 0.4,
-    "peak_mb": 129,
-    "stderr_tail": "DAODAN_MAXRSS_KB=132480\n"
+    "seconds": 0.3,
+    "peak_mb": 131,
+    "stderr_tail": "DAODAN_MAXRSS_KB=134436\n"
    }
   }
  ],

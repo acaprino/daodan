@@ -2,7 +2,7 @@
 // (scoped by default, `:global` and `<style global>` global), and every class and id the markup writes (`class`
 // with its `{...}` parts, `class={...}` objects and arrays, `class:name`, `id`). The style bodies are blanked before
 // the compiler reads the markup, so a block in another dialect cannot stop it; they are read by their own readers.
-// usage: node css_svelte.js IN OUT; IN: {"engines": node_modules folder, "items": [{"key", "path"}]}.
+// usage: node css_svelte.js IN OUT; IN: {"engines": the folder of the engines' package.json, "items": [{"key", "path"}]}.
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -11,7 +11,8 @@ const expressions = require("./css_expressions.js");
 const [inPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(inPath, "utf8"));
-const svelte = require(path.join(cfg.engines, "svelte/compiler"));
+const need = require("module").createRequire(path.join(cfg.engines, "package.json"));  // the pinned engines
+const svelte = need("svelte/compiler");
 const STYLE = /<style\b([^>]*)>([\s\S]*?)<\/style\s*>/gi;
 
 function component(text) {
@@ -80,5 +81,5 @@ for (const item of cfg.items) {
     out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };
   }
 }
-fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "svelte/package.json")).version,
+fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "node_modules", "svelte/package.json")).version,
   seconds: (Date.now() - begun) / 1000, components: out }));

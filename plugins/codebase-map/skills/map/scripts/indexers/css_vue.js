@@ -2,7 +2,7 @@
 // the sheet readers, every class and id the template writes (`class`, `:class`, `v-bind:class`, `id`, with the
 // template's CSS Module `$style.x`), the script's imports and bindings (for `v-bind()` in CSS), the components the
 // template renders and its root elements (a parent's scoped rules reach a child's root). usage: node css_vue.js IN OUT
-// IN: {"engines": node_modules folder, "items": [{"key", "path"}]}.
+// IN: {"engines": the folder of the engines' package.json, "items": [{"key", "path"}]}.
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -11,7 +11,8 @@ const expressions = require("./css_expressions.js");
 const [inPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(inPath, "utf8"));
-const sfc = require(path.join(cfg.engines, "@vue/compiler-sfc"));
+const need = require("module").createRequire(path.join(cfg.engines, "package.json"));  // the pinned engines
+const sfc = need("@vue/compiler-sfc");
 const ELEMENT = 1, ATTRIBUTE = 6, DIRECTIVE = 7;
 
 function component(text) {
@@ -94,5 +95,5 @@ for (const item of cfg.items) {
     out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };
   }
 }
-fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "@vue/compiler-sfc/package.json")).version,
+fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "node_modules", "@vue/compiler-sfc/package.json")).version,
   seconds: (Date.now() - begun) / 1000, components: out }));

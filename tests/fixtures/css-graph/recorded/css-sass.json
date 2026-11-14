@@ -6,34 +6,34 @@
     "items": [
      {
       "key": "src/styles/_index.scss",
-      "path": "{project}/src/styles/_index.scss",
+      "path": "src/styles/_index.scss",
       "syntax": "scss"
      },
      {
       "key": "src/styles/_mixins.scss",
-      "path": "{project}/src/styles/_mixins.scss",
+      "path": "src/styles/_mixins.scss",
       "syntax": "scss"
      },
      {
       "key": "src/styles/_tokens.scss",
-      "path": "{project}/src/styles/_tokens.scss",
+      "path": "src/styles/_tokens.scss",
       "syntax": "scss"
      },
      {
       "key": "src/styles/legacy.sass",
-      "path": "{project}/src/styles/legacy.sass",
+      "path": "src/styles/legacy.sass",
       "syntax": "sass"
      },
      {
       "key": "src/styles/theme.scss",
-      "path": "{project}/src/styles/theme.scss",
+      "path": "src/styles/theme.scss",
       "syntax": "scss"
      }
     ]
    },
    "data": {
     "version": "0.5.6",
-    "seconds": 0.651,
+    "seconds": 0.468,
     "sheets": {
      "src/styles/_index.scss": {
       "tree": [
@@ -769,9 +769,9 @@
     }
    },
    "measured": {
-    "seconds": 0.8,
-    "peak_mb": 173,
-    "stderr_tail": "DAODAN_MAXRSS_KB=177504\n"
+    "seconds": 0.6,
+    "peak_mb": 172,
+    "stderr_tail": "DAODAN_MAXRSS_KB=176508\n"
    }
   }
  ],

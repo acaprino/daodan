@@ -6,21 +6,21 @@
     "items": [
      {
       "key": "src/styles/mixins.less",
-      "path": "{project}/src/styles/mixins.less"
+      "path": "src/styles/mixins.less"
      },
      {
       "key": "src/styles/site.less",
-      "path": "{project}/src/styles/site.less"
+      "path": "src/styles/site.less"
      },
      {
       "key": "src/styles/vars.less",
-      "path": "{project}/src/styles/vars.less"
+      "path": "src/styles/vars.less"
      }
     ]
    },
    "data": {
     "version": "4.9.1",
-    "seconds": 0.057,
+    "seconds": 0.053,
     "sheets": {
      "src/styles/mixins.less": {
       "tree": [
@@ -635,16 +635,34 @@
     }
    },
    "measured": {
-    "seconds": 0.2,
-    "peak_mb": 124,
-    "stderr_tail": "DAODAN_MAXRSS_KB=126532\n"
+    "seconds": 0.1,
+    "peak_mb": 132,
+    "stderr_tail": "DAODAN_MAXRSS_KB=135044\n"
    }
   },
   {
    "script": "css_typescript",
    "payload": {
-    "tsconfig": "{work}/css-tsconfig.json",
-    "root": "{project}",
+    "tsconfig": {
+     "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "incremental": false,
+      "skipLibCheck": true,
+      "target": "es2022",
+      "module": "esnext",
+      "moduleResolution": "bundler",
+      "jsx": "preserve",
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true
+     },
+     "files": [
+      "src/styles/plugins/units.js"
+     ],
+     "include": []
+    },
     "files": [
      "src/styles/plugins/units.js"
     ]
@@ -655,12 +673,12 @@
      "src/styles/plugins/units.js"
     ],
     "records": [],
-    "seconds": 1.107
+    "seconds": 0.855
    },
    "measured": {
-    "seconds": 1.3,
-    "peak_mb": 251,
-    "stderr_tail": "DAODAN_MAXRSS_KB=257244\n"
+    "seconds": 1.0,
+    "peak_mb": 253,
+    "stderr_tail": "DAODAN_MAXRSS_KB=259240\n"
    }
   }
  ],

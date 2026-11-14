@@ -3,8 +3,22 @@
   {
    "script": "css_typescript",
    "payload": {
-    "tsconfig": "{work}/css-tsconfig.json",
-    "root": "{project}",
+    "tsconfig": {
+     "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "incremental": false,
+      "skipLibCheck": true
+     },
+     "files": [
+      "admin/Panel.tsx",
+      "frontend/src/App.tsx",
+      "frontend/src/main.tsx"
+     ],
+     "include": [],
+     "extends": "./tsconfig.json"
+    },
     "files": [
      "admin/Panel.tsx",
      "frontend/src/App.tsx",
@@ -62,7 +76,7 @@
       "file": "frontend/src/main.tsx",
       "line": 1,
       "spec": "./App",
-      "to": "{project}/frontend/src/App.tsx"
+      "to": "frontend/src/App.tsx"
      },
      {
       "t": "import",
@@ -71,12 +85,12 @@
       "spec": "./app.css"
      }
     ],
-    "seconds": 1.124
+    "seconds": 0.876
    },
    "measured": {
-    "seconds": 1.3,
-    "peak_mb": 249,
-    "stderr_tail": "DAODAN_MAXRSS_KB=255104\n"
+    "seconds": 1.0,
+    "peak_mb": 246,
+    "stderr_tail": "DAODAN_MAXRSS_KB=251976\n"
    }
   }
  ],

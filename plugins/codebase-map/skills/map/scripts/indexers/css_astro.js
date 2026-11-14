@@ -2,7 +2,7 @@
 // default; `is:global` and `is:inline` global; `define:vars` keys declared as custom properties), and every class and
 // id the markup writes (`class`, `class={...}`, `class:list={...}`, `id`). Attribute expressions are text in the
 // compiler's tree and are read with acorn (`css_expressions.js`). usage: node css_astro.js IN OUT
-// IN: {"engines": node_modules folder, "items": [{"key", "path"}]}.
+// IN: {"engines": the folder of the engines' package.json, "items": [{"key", "path"}]}.
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -60,7 +60,7 @@ async function component(astro, text) {
 }
 
 (async () => {
-  const astro = await import(pathToFileURL(path.join(cfg.engines, "@astrojs/compiler/dist/node/index.js")).href);
+  const astro = await import(pathToFileURL(path.join(cfg.engines, "node_modules", "@astrojs/compiler/dist/node/index.js")).href);
   const out = {};
   for (const item of cfg.items) {
     try {
@@ -69,6 +69,6 @@ async function component(astro, text) {
       out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };
     }
   }
-  fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "@astrojs/compiler/package.json")).version,
+  fs.writeFileSync(outPath, JSON.stringify({ version: require(path.join(cfg.engines, "node_modules", "@astrojs/compiler/package.json")).version,
     seconds: (Date.now() - begun) / 1000, components: out }));
 })();

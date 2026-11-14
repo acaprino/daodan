@@ -3,8 +3,24 @@
   {
    "script": "css_typescript",
    "payload": {
-    "tsconfig": "{work}/css-tsconfig.json",
-    "root": "{project}",
+    "tsconfig": {
+     "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "incremental": false,
+      "skipLibCheck": true
+     },
+     "files": [
+      "src/app.component.ts",
+      "src/button.tsx",
+      "src/main.ts",
+      "src/use.tsx",
+      "src/utils.ts"
+     ],
+     "include": [],
+     "extends": "./tsconfig.json"
+    },
     "files": [
      "src/app.component.ts",
      "src/button.tsx",
@@ -28,7 +44,7 @@
       "file": "src/app.component.ts",
       "line": 1,
       "spec": "@angular/core",
-      "to": "{project}/node_modules/@angular/core/types/core.d.ts"
+      "to": "node_modules/@angular/core/types/core.d.ts"
      },
      {
       "t": "template",
@@ -48,14 +64,14 @@
       "file": "src/button.tsx",
       "line": 1,
       "spec": "class-variance-authority",
-      "to": "{project}/node_modules/class-variance-authority/dist/index.d.ts"
+      "to": "node_modules/class-variance-authority/dist/index.d.ts"
      },
      {
       "t": "module",
       "file": "src/button.tsx",
       "line": 2,
       "spec": "tailwind-variants",
-      "to": "{project}/node_modules/tailwind-variants/dist/index.d.ts"
+      "to": "node_modules/tailwind-variants/dist/index.d.ts"
      },
      {
       "t": "classes",
@@ -200,21 +216,21 @@
       "file": "src/utils.ts",
       "line": 1,
       "spec": "clsx",
-      "to": "{project}/node_modules/clsx/clsx.d.mts"
+      "to": "node_modules/clsx/clsx.d.mts"
      },
      {
       "t": "module",
       "file": "src/utils.ts",
       "line": 2,
       "spec": "tailwind-merge",
-      "to": "{project}/node_modules/tailwind-merge/dist/types.d.ts"
+      "to": "node_modules/tailwind-merge/dist/types.d.ts"
      },
      {
       "t": "module",
       "file": "src/use.tsx",
       "line": 1,
       "spec": "./utils",
-      "to": "{project}/src/utils.ts"
+      "to": "src/utils.ts"
      },
      {
       "t": "classes",
@@ -264,29 +280,29 @@
       "file": "src/main.ts",
       "line": 1,
       "spec": "./app.component",
-      "to": "{project}/src/app.component.ts"
+      "to": "src/app.component.ts"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 2,
       "spec": "./button",
-      "to": "{project}/src/button.tsx"
+      "to": "src/button.tsx"
      },
      {
       "t": "module",
       "file": "src/main.ts",
       "line": 3,
       "spec": "./use",
-      "to": "{project}/src/use.tsx"
+      "to": "src/use.tsx"
      }
     ],
-    "seconds": 1.688
+    "seconds": 1.264
    },
    "measured": {
-    "seconds": 1.9,
-    "peak_mb": 282,
-    "stderr_tail": "DAODAN_MAXRSS_KB=289172\n"
+    "seconds": 1.4,
+    "peak_mb": 283,
+    "stderr_tail": "DAODAN_MAXRSS_KB=290260\n"
    }
   }
  ],

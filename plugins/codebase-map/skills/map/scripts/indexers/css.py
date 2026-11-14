@@ -126,20 +126,20 @@ def walk(project_dir: Path) -> list[str]:
                               for part in path.relative_to(project_dir).parts))
 
 
-def run(project_dir: Path, work_dir: Path, runner, files: list[str] | None = None, units: list | None = None,
+def run(project_dir: Path, runner, files: list[str] | None = None, units: list | None = None,
         remote: dict | None = None) -> dict:
-    """The adapters over a project, then the graph. `runner` runs an engine script (`css_sass`); `work_dir` holds
-    the files a run writes; `units` and `remote` as `graph` takes them."""
-    project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
-    work_dir.mkdir(parents=True, exist_ok=True)
+    """The adapters over a project, then the graph. `runner` runs an engine script in the project's root
+    (`css_sass`), and raises `runtime.Unavailable` when an engine cannot run; `units` and `remote` as `graph` takes
+    them."""
+    project_dir = Path(project_dir).resolve()
     files = walk(project_dir) if files is None else files
-    own = index(project_dir, work_dir, files)
+    own = index(project_dir, files)
     sass = sass_sheets(runner, project_dir, files)
     less = less_sheets(runner, project_dir, files)
     stylus = engine_sheets(runner, css_stylus, "stylus", project_dir, files)
     components = component_files(runner, project_dir, files)
     script_files = [rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)]
-    scripts = css_typescript.index(project_dir, work_dir, runner, script_files) if script_files else \
+    scripts = css_typescript.index(project_dir, runner, script_files) if script_files else \
         {"indexer": None, "records": [], "missing": {}}
     records = (own["records"] + sass["records"] + less["records"] + stylus["records"] + components["records"] +
                scripts["records"])
@@ -159,7 +159,7 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
     to the script binding it reads, and the scoped rules of a Vue parent on its child's root element."""
     records, missing, indexers, found = [], {}, [], {}
     for suffix, engine in COMPONENTS.items():
-        items = [{"key": rel, "path": str(Path(project_dir) / rel)} for rel in files if rel.lower().endswith(suffix)]
+        items = [{"key": rel, "path": rel} for rel in files if rel.lower().endswith(suffix)]
         result = engine.index(runner, items)
         indexers.append(result["indexer"])
         for item in items:
@@ -268,8 +268,7 @@ def less_sheets(runner, project_dir: Path, files: list[str]) -> dict:
 
 def engine_sheets(runner, engine, dialect: str, project_dir: Path, files: list[str]) -> dict:
     """The files of one dialect through its own parser, as records."""
-    items = [{"key": rel, "path": str(Path(project_dir) / rel)} for rel in files
-             if rel.lower().endswith(engine.SUFFIXES)]
+    items = [{"key": rel, "path": rel} for rel in files if rel.lower().endswith(engine.SUFFIXES)]
     parsed = engine.index(runner, items)
     records, missing = [], {}
     for item in items:
@@ -284,7 +283,7 @@ def engine_sheets(runner, engine, dialect: str, project_dir: Path, files: list[s
 
 def sass_sheets(runner, project_dir: Path, files: list[str]) -> dict:
     """The SCSS and indented Sass files through the official Sass parser (`css_sass`), as records."""
-    items = [{"key": rel, "path": str(Path(project_dir) / rel), "syntax": "sass" if rel.lower().endswith(".sass")
+    items = [{"key": rel, "path": rel, "syntax": "sass" if rel.lower().endswith(".sass")
               else "scss"} for rel in files if rel.lower().endswith(css_sass.SUFFIXES)]
     parsed = css_sass.index(runner, items)
     records, missing = [], {}
@@ -300,7 +299,7 @@ def sass_sheets(runner, project_dir: Path, files: list[str]) -> dict:
 
 # Reading: stylesheets and markup into records.
 
-def index(project_dir: Path, work_dir: Path | None = None, files: list[str] | None = None) -> dict:
+def index(project_dir: Path, files: list[str] | None = None) -> dict:
     """Records of every stylesheet and HTML/EJS file: `node`, `ref`, `classes`, `hole` and `file`."""
     begun = time.time()
     project_dir = Path(project_dir)
@@ -1411,9 +1410,9 @@ def _aliased(project_dir: Path, spec: str) -> list[Path]:
 def _module_file(project_dir: Path, rel: str, spec: str, resolved: str | None, in_snapshot: set) -> str | None:
     """The project module a script's import loads: TypeScript's resolution, else a relative path with the script
     extensions tried in order (a component, which TypeScript does not resolve)."""
-    if resolved:
+    if resolved:  # relative to the project's root, as TypeScript's run gives it
         try:
-            target = Path(resolved).resolve().relative_to(project_dir).as_posix()
+            target = (project_dir / resolved).resolve().relative_to(project_dir).as_posix()
         except ValueError:
             return None
         return target if target in in_snapshot else None
