@@ -443,7 +443,7 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 
 **File:**
 - Lettore: `scripts/languages/cfamily.py`, `_CFamilyEvidence` in `scripts/languages/semantic.py`, `scripts/languages/__init__.py`, `scripts/languages/_treesitter.py`, `scripts/snapshot.py` (`parser_profile`, `resolve_module` per `#include`).
-- Indicizzatore: `scripts/indexers/clang.py`, la parte di lettura di `benchmarks/inference-audit/adapters/clang.py`.
+- Indicizzatore: `scripts/indexers/clang.py`, la parte di lettura di `benchmarks/inference-audit/adapters/clang.py`; `scripts/indexers/clang_run.py`, la parte che gira nel container.
 
 - [x] **Test prima:** `tests/test_codebase_map_clang_reader.py` su `tests/fixtures/clang-reader/{c,cpp}`, 77 prove con le attese scritte dal sorgente:
   - dichiarazioni, con il prototipo come `contract`; export senza `static`;
@@ -452,14 +452,15 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - [x] **Regola per `.h`:** è C++ se il testo, commenti e stringhe esclusi, ha un namespace, una classe, un template, un'etichetta di accesso o `using namespace`; altrimenti è C.
 - [x] **Verifica:** `benchmarks/inference-audit/test_clang_graph.py` gira anche sullo snapshot del prodotto. In C le fini sono uguali in 17 chiamate su 17, in C++ in 14 su 15.
   - La differenza: `new geo::Square(3.0)` si legge su `Square`, dove l'indice nomina la classe. Il sostituto lo leggeva dove inizia il tipo, dove l'indice nomina il costruttore. Decide il requisito 14 (task 3).
-- [ ] **File con macro:** su zlib si leggono interi 15 file C su 66. Gli altri 51 hanno errori di sintassi da macro (`local int f(`, `uch FAR uchf`, `z_const`) e restano senza fatti semantici.
-  - Togliendo sei macro di zlib i file interi diventano 39 su 66.
-  - Serve una regola che legga i `#define` del progetto, non un elenco di nomi.
-- [ ] **Nomi dalle intestazioni:** oggi un nome che arriva da un `#include` resta `scope-unresolved`. Serve una regola in `resolution.py`, usata da entrambi i proprietari: cerca fra gli export delle intestazioni incluse che si risolvono a un solo file, e accetta un solo bersaglio.
-- [ ] **Indicizzatore nel container:** dopo il task 9, nello stesso container.
-  - Immagine Ubuntu 24.04 (glibc 2.38) con CMake e gcc; scip-clang v0.4.1 fissato con sha256.
-  - Database di compilazione dal configure e dalla build di CMake su una copia, con le regole di rete del task 9.
-  - `indexers/clang.py`: `dedupe`, `utf8_columns`, `enclose`, `same_range`, `hops`, `refine`, `classifier`.
+- [x] **File con macro:** il lettore cancella, a posizioni invariate, le macro che i sorgenti definiscono come decorazioni (`#define local static`) o come involucri di prototipo (`OF((args))`): quelle del file e dei file con cui condivide un'unità di traduzione (`cfamily.include_contexts`, passato dallo snapshot). Su zlib restano senza fatti semantici 12 file C su 66 (erano 51) e le chiamate risolte salgono da 303 a 510; su tinyxml2 resta 1 file su 4. Restano rotti i file con un'istruzione spezzata da rami `#if` e quelli con token sconosciuti nei rami inattivi.
+- [x] **Nomi dalle intestazioni:** `resolution.included_definition`, usata da `semantic_store.py` e da `semantic_index.py`. Un nome che il file non dichiara si risolve alla sua sola definizione con linkage esterno nelle intestazioni incluse. Un `static` non è mai candidato; con più definizioni non c'è bersaglio (`included-definition-ambiguous`).
+- [ ] **Indicizzatore nel container:**
+  - [x] Lettura dell'indice nel plugin: `indexers/clang.py` (`prepare`, `same_range`, `classify`, `missing`, `refine`); i file non letti restano dichiarati nel grafo (`unread`).
+  - [x] `index()` prende `units` e `workspace` della pre-mappa così come sono; ogni `cmake-target` si configura una volta, dalla radice del suo workspace CMake. Una sola run senza rete, sull'immagine `buildpack-deps:noble` fissata per digest (glibc 2.39). CMake 3.28.3 e scip-clang v0.4.1 li scarica Daodan con sha256 e li ricontrolla a ogni uso. `unavailable` su arm64 e per le unità Meson, Make e Bazel. Provato solo con un container finto.
+  - [x] Il fornitore di dipendenze di CMake (`clang_run.PROVIDER`) registra nome e URL di ogni `FetchContent_MakeAvailable` e non fornisce nulla. Se il configure poi fallisce, l'unità è `unavailable` con `download-outside-registries`, `fetched` e l'output di CMake così com'è; senza registro è `failed`, e la causa dice che `file(DOWNLOAD)` ed ExternalProject non sono registrati. Il posto del secondo tentativo è `clang_run.second_attempt`, che oggi non lo fa mai.
+  - [ ] Prova reale: lo smoke su `tests/fixtures/clang-index/fetch` (`DAODAN_CLANG_SMOKE=1`). Fino ad allora il percorso del fornitore non è verificato su una run vera. Aspetta la scelta dell'immagine: `buildpack-deps:noble` sono 261 MiB compressi e 770 MiB scompattati. `ubuntu:24.04` con i 57 pacchetti che servono (gcc, g++, header della libc, python3, make) arriva a circa 340 MiB, ma chiede un'immagine derivata, perché preparazione ed esecuzione sono due container, e gli host della distribuzione fra i registri.
+  - [ ] Passo di scaricamento, per decisione del proprietario del 14 novembre 2026. Il codice del progetto non gira mai con la rete aperta. Il passo di scaricamento di Daodan non esegue nulla del progetto e scarica da qualunque sito pubblico ciò che il fornitore ha registrato; poi il configure gira di nuovo senza rete, con `FETCHCONTENT_SOURCE_DIR_<NAME>` sulle sorgenti scaricate. È il secondo tentativo; il passo in `container.py` lo aggiunge `jvm-container`. Un indirizzo non pubblico resta un buco dichiarato. Nel giro guidato dalla pre-mappa.
+  - [ ] Driver, nel giro guidato dalla pre-mappa (task 12): `units` e `workspace` della pre-mappa a `index()`, `result["units"]` salvato nella voce del linguaggio per contare le unità per causa, la patch del driver (`adapter_traversal`, `lower-bound` con file non letti, `xfail` tolto).
 - [ ] **Richieste mirate per `extern "C"`:** in C++ scip-clang non scrive occorrenze per una funzione `extern "C"`. Sono 91 chiamate della libreria C in tinyxml2, più `c_helper` nella fixture. Il task 8 le chiede per posizione; senza risposta restano buchi con questa causa.
 - [ ] **Soglia:** come nel task 5, su zlib e tinyxml2.
   - Conteggi uguali a `results/graph-c-zlib.json` e `results/graph-cpp-tinyxml2.json`.
