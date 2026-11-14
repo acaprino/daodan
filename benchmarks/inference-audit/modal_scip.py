@@ -1,16 +1,23 @@
 """SCIP versus engines on Modal, and the whole graph each index states. No model.
 
 Road A is the product's engine pass (`resolve_edges.py --pass`); road B is a whole-project SCIP index of an
-existing indexer read completely by `scip_graph.py`, with the adapter of its language (`adapters/go.py`,
-`adapters/rust.py`, `adapters/typescript.py`): every chain the index states followed to its end. One
-container per case: the snapshot as `modal_audit.py` builds it and road A (rerun, or the per-call answers a
-labelled audit run left on the volume), kept under `scip-inputs/<case>` with the indexes; the adapters'
-indexers (rerun with `--reindex`, the kept indexes otherwise); then the graph of each language
-(`scip-inputs/<case>/graph-<language>.json.gz`), its counts, the comparison with road A and the hand checks.
+existing indexer read completely by `scip_graph.py`, with the plugin's indexer module of its language
+(`indexers/go.py`, `indexers/rust.py`, `indexers/typescript.py`, `indexers/python.py`): every chain the index
+states followed to its end. One container per case, with the base system only: the snapshot as `modal_audit.py`
+builds it and road A (rerun, or the per-call answers a labelled audit run left on the volume), kept under
+`scip-inputs/<case>` with the indexes; each module's `index()` (rerun with `--reindex`, the kept indexes
+otherwise), which downloads its indexer into the container's shared directory; then the graph of each language
+(`scip-inputs/<case>/graph-<language>.json.gz`), its counts, the comparison with road A and the hand checks. A
+labelled run with `--reindex` keeps its indexes and graphs in `scip-inputs/<case>/<label>` and leaves the kept
+inputs as they are.
 
     modal deploy benchmarks/inference-audit/modal_scip.py
     python benchmarks/inference-audit/modal_scip.py spawn --cases chi,semver,tududi [--reindex] [--label L]
     python benchmarks/inference-audit/modal_scip.py fetch --cases chi,semver,tududi [--label L]
+
+phazly is private: its archive goes once to the volume (`modal volume put daodan-flow-results PATH
+inference-audit/scip-inputs/phazly/source.tar`) and the container reads it there; `OPTIONS` holds what the
+adapters cannot find alone in it (the Python project's directory, the app's tsconfig).
 
 `python modal_scip.py join --manifest M --index I[=prefix] [--answers A] --out O` runs the join alone, locally.
 """
@@ -34,14 +41,21 @@ sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 import code_graph as scip_graph  # noqa: E402
-from adapters import go, typescript  # noqa: E402
+from indexers import typescript  # noqa: E402
 from modal_audit import CASES, _run, _source  # noqa: E402
 
 # Road A's per-call answers kept by a labelled audit run at the same commit and plugin: reused, never rerun.
 REUSE = {"tududi": "r1"}
-NODE = ("v22.23.4", "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce")
-ADAPTERS = {"go": "go", "rust": "rust", "javascript": "typescript", "typescript": "typescript"}
-SUFFIXES = {"go": (".go",), "rust": (".rs",), "typescript": typescript.SUFFIXES}
+# Per case: the commit the archive was made at, the directory each adapter indexes when it is not the root
+# (its documents named from the root through the prefix), the tsconfig a root without one extends.
+# `focus`: declarations (`FILE:LINE`) whose incoming edges the result lists in full.
+OPTIONS = {"phazly": {"commit": "46c92b28", "roots": {"python": "functions-python"},
+                      "tsconfig": "react-app/tsconfig.app.json",
+                      "focus": ["react-app/src/components/subscription/PaywallModal.tsx:68",
+                                "react-app/src/contexts/SubscriptionContext.tsx:296",
+                                "react-app/src/contexts/SubscriptionContext.tsx:151"]}}
+ADAPTERS = {"go": "go", "rust": "rust", "javascript": "typescript", "typescript": "typescript", "python": "python"}
+SUFFIXES = {"go": (".go",), "rust": (".rs",), "typescript": typescript.SUFFIXES, "python": (".py",)}
 EXAMPLES = 20
 # Fifteen call sites per language picked at random over every call of the checkout (seed 20261113) and read in
 # the source, the expected end written before any graph existed: `decl FILE:LINE` (the declaration that starts
@@ -116,35 +130,104 @@ HAND = {
         ("frontend/components/Task/TaskDetails/__tests__/TaskDetailsHeader.test.tsx", 6, "mock", "external @types/jest"),
         ("frontend/utils/dailyPlanService.ts", 311, "map", "external typescript"),
     ],
+    # phazly (private archive, commit 46c92b28): fifteen sites per language chosen across files, hard ones on
+    # purpose, read in the source and the end written before the graph existed. A fifth element `read` checks a
+    # rendered component; the Paywall: the eleven `<PaywallModal` renders and `startCheckout` (contract at
+    # SubscriptionContext.tsx:151, the function at :296). Kotlin is not here: no indexer runs on it (README).
+    "phazly": [
+        ("functions-python/app/handlers/account_deletion.py", 58, "log_handler",
+         "decl functions-python/app/utils/log_decorator.py:17"),  # decorator factory on a route handler
+        ("functions-python/app/handlers/account_deletion.py", 62, "rate_limit",
+         "decl functions-python/app/api/deps.py:326"),  # factory inside a Depends() default
+        ("functions-python/app/handlers/account_deletion.py", 62, "Depends", "external fastapi"),
+        ("functions-python/app/handlers/account_deletion.py", 66, "request_soft_delete",
+         "decl functions-python/app/services/account_deletion.py:63"),  # decorated handler, injected parameters
+        ("functions-python/app/food_query/resolver.py", 183, "search_filter",
+         "decl functions-python/app/food_query/adapter.py:45"),  # Protocol parameter; off.py:39 and usda.py:76 run
+        ("functions-python/app/food_query/resolver.py", 189, "rank_round",
+         "decl functions-python/app/services/food_search.py:1386"),  # nested function, multi-line import
+        ("functions-python/app/food_query/resolver.py", 190, "_judge", "decl functions-python/app/food_query/resolver.py:205"),
+        ("functions-python/app/food_query/resolver.py", 193, "one",
+         "decl functions-python/app/food_query/resolver.py:187"),  # nested function called in a generator
+        ("functions-python/app/api/deps.py", 204, "to_thread", "external python-stdlib"),  # a bound method passed as value
+        ("functions-python/app/services/stripe_client.py", 57, "_get_stripe_secret_key_from_sm",
+         "none"),  # alias imported from app/core/secrets.py, left out of the archive
+        ("functions-python/app/core/config.py", 138, "get_settings",
+         "decl functions-python/app/core/config.py:132"),  # decorated by lru_cache
+        ("functions-python/app/core/exceptions.py", 74, "__init__", "decl functions-python/app/core/exceptions.py:35"),
+        ("functions-python/app/food_query/description.py", 52, "_words",
+         "decl functions-python/app/food_query/description.py:32"),  # inside a field_validator classmethod
+        ("functions-python/tests/unit/test_api_keys.py", 25, "FakeDb",
+         "decl functions-python/tests/unit/forge_fakes.py:488"),  # class built in a pytest fixture
+        ("functions-python/tests/unit/test_api_keys.py", 78, "resolve_principal",
+         "decl functions-python/app/api/deps.py:257"),  # module attribute, test with injected fixtures
+        ("react-app/src/components/subscription/PaywallModal.tsx", 132, "startCheckout",
+         "decl react-app/src/contexts/SubscriptionContext.tsx:296"),  # destructured from the context hook
+        ("react-app/src/components/subscription/PaywallModal.tsx", 72, "useSubscription",
+         "decl react-app/src/contexts/SubscriptionContext.tsx:176"),
+        ("react-app/src/components/subscription/PaywallModal.tsx", 130, "clearError",
+         "decl react-app/src/contexts/SubscriptionContext.tsx:237"),  # context value built with useCallback
+        ("react-app/src/components/subscription/PaywallModal.tsx", 129, "setIsLoading", "none"),  # useState setter
+        ("react-app/src/components/subscription/PaywallModal.tsx", 239, "onOpenChange",
+         "value"),  # prop callback, the callers' setters at run time
+        ("react-app/src/components/subscription/PaywallModal.tsx", 397, "handleCheckout",
+         "decl react-app/src/components/subscription/PaywallModal.tsx:126"),  # arrow const called in a JSX handler
+        ("react-app/src/components/subscription/ExpiredBanner.tsx", 66, "PaywallModal",
+         "decl react-app/src/components/subscription/PaywallModal.tsx:68", "read"),
+        ("react-app/src/components/diario/DiarioOverlays.tsx", 91, "PaywallModal",
+         "decl react-app/src/components/subscription/PaywallModal.tsx:68", "read"),  # through @/components/subscription
+        ("react-app/src/components/features/AIAlternatives.tsx", 770, "PaywallModal",
+         "decl react-app/src/components/subscription/PaywallModal.tsx:68", "read"),  # through ../subscription
+        ("react-app/src/contexts/SubscriptionContext.tsx", 699, "Provider", "external @types/react", "read"),  # two-part
+        ("react-app/src/components/home/SortableHomeCards.tsx", 73, "Item", "external framer-motion", "read"),  # two-part
+        ("react-app/src/components/features/PhotoCapture/PhotoCapture.tsx", 201, "showUsageLimitPaywall",
+         "decl react-app/src/components/features/PhotoCapture/PhotoCapture.tsx:188"),  # useCallback
+        ("react-app/src/hooks/useHomeTabController.ts", 393, "addMealAddition",
+         "decl react-app/src/stores/slices/mealPlanSlice.ts:260"),  # zustand selector result
+        ("react-app/src/hooks/useHomeTabController.ts", 413, "t", "external i18next"),  # useTranslation
+        ("react-app/src/components/onboarding/hooks/useOnboardingFlow.ts", 201, "clampMacroTargets",
+         "decl shared/schemas/macroTargets.ts:76"),  # @shared alias
+        ("react-app/scripts/android-version.mjs", 43, "parts", "decl react-app/scripts/android-version.mjs:41"),
+        ("react-app/scripts/android-version.mjs", 47, "parts", "decl react-app/scripts/android-version.mjs:41"),
+        ("react-app/scripts/android-version.mjs", 59, "cancel",
+         "decl react-app/scripts/android-version.mjs:53"),  # inside a callback
+        ("react-app/scripts/android-version.mjs", 34, "readFileSync", "external @types/node"),
+        ("react-app/scripts/android-version.mjs", 34, "parse", "external typescript"),
+        ("react-app/scripts/android-version.mjs", 51, "createInterface", "external @types/node"),
+        ("react-app/scripts/android-version.mjs", 57, "on", "external @types/node"),
+        ("react-app/scripts/build-android.mjs", 44, "map", "external typescript"),
+        ("react-app/scripts/build-android.mjs", 53, "on", "external @types/node"),
+        ("react-app/.design-sync/prebuild.mjs", 21, "sort", "external typescript"),
+        ("react-app/.design-sync/prebuild.mjs", 24, "writeFileSync", "external @types/node"),
+        ("react-app/public/webview-guard.js", 66, "render", "decl react-app/public/webview-guard.js:52"),  # in an IIFE
+        ("react-app/public/webview-guard.js", 68, "addEventListener", "external typescript"),
+        ("react-app/scripts/store-art/export-feature.mjs", 51, "asset",
+         "decl react-app/scripts/store-art/export-feature.mjs:38"),  # inside a replace callback
+        ("react-app/scripts/store-art/export-feature.mjs", 60, "launch", "none"),  # value of a dynamic import
+        ("react-app/src-tauri/src/main.rs", 5, "run", "decl react-app/src-tauri/src/lib.rs:2"),  # bin to lib crate
+        ("react-app/src-tauri/build.rs", 2, "build", "external tauri-build"),
+        ("react-app/src-tauri/src/lib.rs", 9, "default", "external tauri"),
+        ("react-app/src-tauri/src/lib.rs", 22, "init", "external tauri-plugin-http"),
+        ("react-app/src-tauri/src/lib.rs", 22, "plugin", "external tauri"),
+        ("react-app/src-tauri/src/lib.rs", 26, "default", "external tauri-plugin-log"),
+        ("react-app/src-tauri/src/lib.rs", 27, "level", "external tauri-plugin-log"),
+        ("react-app/src-tauri/src/lib.rs", 28, "build", "external tauri-plugin-log"),
+        ("react-app/src-tauri/src/lib.rs", 30, "setup", "external tauri"),
+        ("react-app/src-tauri/src/lib.rs", 33, "plugin", "external tauri"),  # cfg(mobile) block in a closure
+        ("react-app/src-tauri/src/lib.rs", 37, "init", "external tauri-plugin-native-camera"),  # cfg(android), path dep
+        ("react-app/src-tauri/src/lib.rs", 41, "Ok", "external rust-lang/rust"),
+        ("react-app/src-tauri/src/lib.rs", 43, "run", "external tauri"),
+        ("react-app/src-tauri/src/lib.rs", 44, "expect", "external rust-lang/rust"),
+    ],
 }
 
 
 def _image():
-    import resolve_edges as rx
-    go_asset, go_sha = rx.GO_ASSETS["linux-x64"]
-    ra_asset, ra_sha = rx.RUST_ANALYZER_ASSETS["linux-x64"]
-    node_version, node_sha = NODE
-    node = f"node-{node_version}-linux-x64.tar.xz"
+    """The base system: each indexer module downloads what it runs (`indexers/runtime.py`)."""
     return (
         modal.Image.debian_slim(python_version="3.13")
-        .apt_install("git", "curl", "ca-certificates", "nodejs", "npm", "unzip", "xz-utils")
+        .apt_install("git", "ca-certificates")
         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
-        .run_commands(
-            f"curl -fsSL https://nodejs.org/dist/{node_version}/{node} -o /tmp/{node}",
-            f"echo '{node_sha}  /tmp/{node}' | sha256sum -c -",
-            f"mkdir -p /opt/node && tar -xJf /tmp/{node} -C /opt/node --strip-components=1 && rm /tmp/{node}",
-            f"PATH=/opt/node/bin:$PATH npm install -g --ignore-scripts --no-audit --no-fund "
-            f"@sourcegraph/scip-typescript@{typescript.VERSION}",
-            f"curl -fsSL https://go.dev/dl/{go_asset} -o /tmp/{go_asset}",
-            f"echo '{go_sha}  /tmp/{go_asset}' | sha256sum -c -",
-            f"tar -xzf /tmp/{go_asset} -C /opt && rm /tmp/{go_asset}",
-            f"GOBIN=/opt/scip/bin GOPATH=/tmp/gopath GOFLAGS= GOTOOLCHAIN=local /opt/go/bin/go install "
-            f"github.com/scip-code/scip-go/cmd/scip-go@{go.VERSION} && rm -rf /tmp/gopath",
-            f"curl -fsSL https://github.com/rust-lang/rust-analyzer/releases/download/{rx.RUST_ANALYZER_RELEASE}/"
-            f"rust-analyzer-{ra_asset} -o /tmp/ra.gz",
-            f"echo '{ra_sha}  /tmp/ra.gz' | sha256sum -c -",
-            "gunzip -c /tmp/ra.gz > /opt/scip/bin/rust-analyzer && chmod 755 /opt/scip/bin/rust-analyzer && rm /tmp/ra.gz",
-        )
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
@@ -280,11 +363,11 @@ def _hand(checks: list, references: dict, answers: dict) -> list:
     """Each hand-read call site beside what road B and road A give there."""
     by_site = collections.defaultdict(list)
     for identity, reference in references.items():
-        if reference["kind"] == "call":
-            by_site[reference["site"]].append((identity, reference))
+        by_site[(reference["site"], reference["kind"])].append((identity, reference))
     rows = []
-    for rel, line, name, expected in checks:
-        found = [(identity, reference) for identity, reference in by_site.get(f"{rel}:{line}", ())
+    for rel, line, name, expected, *kind in checks:  # a fifth element names the kind, `call` otherwise
+        found = [(identity, reference) for identity, reference in
+                 by_site.get((f"{rel}:{line}", kind[0] if kind else "call"), ())
                  if reference["name"].rsplit(".", 1)[-1] == name]
         if not found:
             rows.append({"site": f"{rel}:{line} {name}", "expected": expected, "b": "no snapshot reference",
@@ -316,8 +399,22 @@ def _hand(checks: list, references: dict, answers: dict) -> list:
     return rows
 
 
+def _focus(graph: dict, wanted: list) -> dict:
+    """Every edge of the graph into each wanted declaration `FILE:LINE`, and the distinct sources."""
+    out = {}
+    for place in wanted:
+        rel, line = place.rsplit(":", 1)
+        into = [edge for edge in graph["edges"] if edge.get("target") and edge["target"].split("::")[0] == rel
+                and edge["target"].rsplit("@", 1)[-1].split(":")[0] == line]
+        if into:
+            out[place] = {"edges": len(into), "sources": sorted({edge["from"] for edge in into}),
+                          "sites": sorted({f"{edge['site']} {edge['kind']} {'+'.join(edge['chain']) or 'direct'}"
+                                           for edge in into})}
+    return out
+
+
 def join(manifest: Path, indexes: list, answers_path: Path | None, indexers: dict | None = None,
-         hand: list = (), graph_dir: Path | None = None) -> dict:
+         hand: list = (), graph_dir: Path | None = None, focus: list = ()) -> dict:
     """The graph of each language of the snapshot, its counts, road A beside road B, and the hand checks."""
     import gzip
     import sqlite3
@@ -351,9 +448,11 @@ def join(manifest: Path, indexes: list, answers_path: Path | None, indexers: dic
             absent = [rel for rel in rels if rel not in index.documents]
             reasons = adapter.missing(index, absent) if hasattr(adapter, "missing") and absent else {}
             info = (indexers or {}).get(ADAPTERS[language], {}).get("indexer") or {}
-            graph, references = scip_graph.build(index, snapshot, language, hops, info, reasons, traversal)
+            static = adapter.static(index) if hasattr(adapter, "static") else None
+            graph, references = scip_graph.build(index, snapshot, language, hops, info, reasons, traversal, static)
             references_all.update(references)
-            out["languages"][language] = {"graph": scip_graph.report(graph), "road_a": _compare(references, answers)}
+            out["languages"][language] = {"graph": scip_graph.report(graph), "road_a": _compare(references, answers),
+                                          "focus": _focus(graph, list(focus))}
             if graph_dir is not None:
                 Path(graph_dir).mkdir(parents=True, exist_ok=True)
                 with gzip.open(Path(graph_dir) / f"graph-{language}.json.gz", "wt", encoding="utf-8") as handle:
@@ -400,18 +499,27 @@ def _inputs(name: str, case: dict, target: Path, work: Path, manifest: Path) -> 
     return result, Path(answers)
 
 
-def _indexers(target: Path, work: Path, manifest: Path) -> dict:
-    """Each adapter's indexer over the checkout, for the snapshot's files of its languages."""
+def _indexers(target: Path, work: Path, manifest: Path, options: dict | None = None) -> dict:
+    """Each adapter's indexer over the checkout, for the snapshot's files of its languages; over the directory
+    `options` names for it, its documents then named from the checkout by that prefix."""
     import sqlite3
     connection = sqlite3.connect(manifest)
     coverage = connection.execute("SELECT file, language FROM sem_coverage WHERE status='ast'").fetchall()
     connection.close()
-    out = {}
+    out, options = {}, options or {}
     for name in sorted({ADAPTERS[language] for _, language in coverage if language in ADAPTERS}):
         files = sorted(rel for rel, language in coverage if ADAPTERS.get(language) == name
                        and rel.endswith(SUFFIXES[name]))
+        root = options.get("roots", {}).get(name, "")
+        extra = {"tsconfig": options["tsconfig"]} if name == "typescript" and options.get("tsconfig") else {}
         try:
-            out[name] = importlib.import_module(f"adapters.{name}").index(target, work, files)
+            if root:
+                inner = [rel[len(root) + 1:] for rel in files if rel.startswith(f"{root}/")]
+                info = importlib.import_module(f"indexers.{name}").index(target / root, work, inner, **extra)
+                info["indexes"] = [[path, f"{root}/{prefix}" if prefix else root] for path, prefix in info["indexes"]]
+                out[name] = {**info, "root": root}
+            else:
+                out[name] = importlib.import_module(f"indexers.{name}").index(target, work, files, **extra)
         except Exception:
             import traceback
             out[name] = {"error": traceback.format_exc()[-3000:], "indexes": []}
@@ -443,7 +551,10 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
     work = Path("/work") / name  # the kept snapshot binds its sources here
     shutil.rmtree(work, ignore_errors=True)  # a warm container may have run this case before
     kept = Path("/results") / TAG / "scip-inputs" / name
-    target = _source(work / "src", case, None)  # the checkout the snapshot verifies its sources against
+    options = OPTIONS.get(name, {})
+    case = {**case, "commit": case.get("commit") or options.get("commit")}
+    archive = (kept / "source.tar").read_bytes() if case.get("tar") else None
+    target = _source(work / "src", case, archive)  # the checkout the snapshot verifies its sources against
     manifest = work / "snapshot/manifest.sqlite"
     answers = work / "answers.sqlite"
     if (kept / "inputs.json").is_file():
@@ -460,34 +571,41 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
         shutil.copyfile(manifest, kept / "manifest.sqlite")
         if road_a_answers.is_file():
             shutil.copyfile(road_a_answers, kept / "answers.sqlite")
+            if label:  # road A rerun here, kept also under the label beside the audit runs' answers
+                shutil.copyfile(road_a_answers, Path("/results") / TAG / f"answers-{name}-{label}.sqlite")
             if road_a_answers.resolve() != answers.resolve():
                 shutil.copyfile(road_a_answers, answers)
         reindex = True
     indexers = _kept_indexers(kept, inputs)
+    # A labelled rerun over kept inputs keeps its indexes and graphs apart and leaves the inputs as they are.
+    store = kept / label if label and result["inputs"].startswith("kept") else kept
     if reindex:
-        fresh = _indexers(target, work, manifest)
+        fresh = _indexers(target, work, manifest, options)
         result["reindexed"] = {}
         for adapter, info in fresh.items():
             result["reindexed"][adapter] = {"error": info.get("error"), "indexer": info.get("indexer"),
+                                            "state": info.get("state"), "reason": info.get("reason"),
                                             "index_bytes": [run.get("index_bytes") for run in info.get("runs", [])],
                                             "kept_bytes": [Path(path).stat().st_size for path, _ in
                                                            indexers.get(adapter, {}).get("indexes", ())
                                                            if Path(path).is_file()]}
             if info.get("indexes"):  # a failed indexer leaves the kept indexes in place
-                kept.mkdir(parents=True, exist_ok=True)
+                store.mkdir(parents=True, exist_ok=True)
                 for path, _prefix in info["indexes"]:
-                    shutil.copyfile(path, kept / Path(path).name)
-                info["indexes"] = [[str(kept / Path(path).name), prefix] for path, prefix in info["indexes"]]
+                    shutil.copyfile(path, store / Path(path).name)
+                info["indexes"] = [[str(store / Path(path).name), prefix] for path, prefix in info["indexes"]]
                 indexers[adapter] = info
-        inputs = {**{key: value for key, value in inputs.items() if key != "indexers"}, "indexers": indexers}
-        (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        if store == kept:
+            inputs = {**{key: value for key, value in inputs.items() if key != "indexers"}, "indexers": indexers}
+            (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n",
+                                              encoding="utf-8")
         volume.commit()
     result["indexers"], result["code"] = indexers, plugin_scripts.code_sha256()
     indexes = [(Path(path), prefix) for info in indexers.values() for path, prefix in info.get("indexes", ())]
     begun = time.time()
     try:
         result["join"] = join(manifest, indexes, answers if answers.is_file() else None, indexers, HAND.get(name, ()),
-                              kept) if indexes else {"error": "no index"}
+                              store, options.get("focus", ())) if indexes else {"error": "no index"}
     except Exception:
         import traceback
         result["join"] = {"error": traceback.format_exc()[-3000:]}

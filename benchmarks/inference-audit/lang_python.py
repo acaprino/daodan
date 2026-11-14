@@ -1,20 +1,21 @@
 """Python, the whole index read: scip-python on python-semver, every document, occurrence and symbol, as a graph.
 
-Wiring only: the Python adapter (`adapters/python.py`: dependencies, index, the engine's hops), the shared
-`scip_graph.py` (reading, traversal, graph) and the volume. One container per case: the checkout at its pinned
-commit, the snapshot as the other benchmarks of this folder build it, then the adapter's index. `snapshot.py
-write` crashes on a symlinked file (UNIQUE constraint failed: files.path), so the snapshot reads a copy where each
-link is a regular file; the adapter reads the checkout itself. Index, engine record, snapshot and checkout stay
-on the volume; the graph is rebuilt from them, in the container (`spawn --graph-only`) or here (`graph --dir`),
-without running the indexer again. No model.
+Wiring only: the plugin's Python indexer (`indexers/python.py`: dependencies, index, the engine's hops), the
+plugin's `code_graph.py` (reading, traversal, graph) and the volume. One container per case: the checkout at
+its pinned commit, the snapshot as the other benchmarks of this folder build it, then the indexer's `index()`,
+which installs Node and scip-python itself. `snapshot.py write` crashes on a symlinked file (UNIQUE constraint
+failed: files.path), so the snapshot reads a copy where each link is a regular file; the indexer reads the
+checkout itself. Index, engine record, snapshot and checkout stay on the volume; the graph is rebuilt from
+them, in the container (`spawn --graph-only`) or here (`graph --dir`), without running the indexer again. No model.
 
     modal deploy benchmarks/inference-audit/lang_python.py
-    python benchmarks/inference-audit/lang_python.py spawn --cases semver [--graph-only]
-    python benchmarks/inference-audit/lang_python.py fetch --cases semver [--files DIR]
+    python benchmarks/inference-audit/lang_python.py spawn --cases semver [--graph-only] [--label L]
+    python benchmarks/inference-audit/lang_python.py fetch --cases semver [--files DIR] [--label L]
     python benchmarks/inference-audit/lang_python.py graph --cases semver --dir DIR
 
 Writes `results/graph-python-<case>.json` (the graph) and `results/graph-python-<case>-checks.json` (the shared
-report, the hand check, the run).
+report, the hand check, the run); with `--label L` the index run keeps its files and results under `<case>-L`,
+beside the stored ones.
 """
 from __future__ import annotations
 
@@ -38,7 +39,6 @@ sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 import code_graph as scip_graph  # noqa: E402
 import indexers.python  # noqa: E402
-from adapters import python as adapter  # noqa: E402
 from modal_audit import _run, _source  # noqa: E402
 
 CASES = {
@@ -85,9 +85,8 @@ HAND = [
 def _image():
     return (
         modal.Image.debian_slim(python_version="3.13")
-        .apt_install(*adapter.APT)
+        .apt_install("git", "ca-certificates")
         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
-        .run_commands(*adapter.install_commands())
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
@@ -136,8 +135,8 @@ def write(folder: Path, manifest: Path, source: Path, name: str) -> tuple[dict, 
         checks = {"report": scip_graph.report(graph),
                   "hand_check": hand_check(index, traversal, HAND if name == "semver" else [], sites),
                   "static_sites": len(sites), "unknown_fields": dict(index.unknown),
-                  "engine": {key: engine.get(key) for key in ("runs", "requirements", "installs", "environment",
-                                                              "pyrightconfig", "project")}}
+                  "engine": {key: engine.get(key) for key in ("runs", "environment", "requirements", "packages",
+                                                              "pyrightconfig", "project", "state", "reason")}}
     run = folder / "run.json"
     checks["run"] = json.loads(run.read_text(encoding="utf-8")) if run.is_file() else None
     return graph, checks
@@ -173,14 +172,14 @@ def _tar(work: Path, destination: Path, folders: tuple) -> None:
 
 
 @app.function(cpu=2, memory=6144, timeout=3600, volumes={"/results": volume})
-def index_case(name: str) -> dict:
+def index_case(name: str, label: str = "") -> dict:
     import hashlib
     import os
     import shutil
     import time
     started = time.time()
     print("code", plugin_scripts.code_sha256(), flush=True)  # compared with the checkout before trusting the run
-    loaded = Path(adapter.__file__)
+    loaded = Path(indexers.python.__file__)
     case = CASES[name]
     work = Path("/work") / name
     shutil.rmtree(work, ignore_errors=True)  # a warm container keeps the previous call's files
@@ -191,11 +190,13 @@ def index_case(name: str) -> dict:
     _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(work / "snapshot-src" / case["target"]), "--out",
           str(work / "snapshot" / "manifest.sqlite"), "--no-engine", "--no-index"])
     run = {"case": name, "repo": case["repo"], "commit": case["commit"], "adapter": str(loaded),
-           "adapter_sha256": hashlib.sha256(loaded.read_bytes()).hexdigest(), "symlinks_copied_for_snapshot": links,
+           "adapter_sha256": hashlib.sha256(loaded.read_bytes()).hexdigest(), "code": plugin_scripts.code_sha256(),
+           "symlinks_copied_for_snapshot": links,
            "snapshot_seconds": round(time.time() - started, 1)}
-    engine = adapter.index(target, work / "engine")
+    engine = indexers.python.index(target, work / "engine")
     run["seconds"] = round(time.time() - started, 1)
-    store = Path("/results") / STORE / name
+    stem = f"{name}-{label}" if label else name
+    store = Path("/results") / STORE / stem
     store.mkdir(parents=True, exist_ok=True)
     for path, _prefix in engine["indexes"]:
         shutil.copyfile(path, store / Path(path).name)
@@ -209,7 +210,7 @@ def index_case(name: str) -> dict:
     if not engine["indexes"]:
         return {**run, "error": "no index", "runs": engine["runs"]}
     graph, checks = write(work, work / "snapshot" / "manifest.sqlite", work / "snapshot-src" / case["target"], name)
-    _dump(graph, checks, Path("/results") / TAG, name)
+    _dump(graph, checks, Path("/results") / TAG, stem)
     volume.commit()
     return {**run, "edges": len(graph["edges"]), "holes": len(graph["holes"])}
 
@@ -243,20 +244,22 @@ if __name__ == "__main__":
     parser.add_argument("command", choices=("spawn", "fetch", "graph"))
     parser.add_argument("--cases", default="semver")
     parser.add_argument("--graph-only", action="store_true")
+    parser.add_argument("--label", default="")
     parser.add_argument("--files", help="with fetch: also copy each case's stored files into this directory")
     parser.add_argument("--dir", help="with graph: a directory filled by fetch --files, work.tar.gz extracted")
     args = parser.parse_args()
     chosen = [c.strip() for c in args.cases.split(",") if c.strip()]
     if args.command == "spawn":
-        print("local adapter", hashlib.sha256((HERE / "adapters" / "python.py").read_bytes()).hexdigest())
+        print("local adapter", hashlib.sha256((Path(SCRIPTS) / "indexers" / "python.py").read_bytes()).hexdigest())
         function = modal.Function.from_name("daodan-graph-python", "graph_case" if args.graph_only else "index_case")
         for name in chosen:
-            print(name, function.spawn(name).object_id)
+            print(name, (function.spawn(name) if args.graph_only else function.spawn(name, args.label)).object_id)
     elif args.command == "fetch":
         for name in chosen:
             for suffix in ("", "-checks"):
-                data = b"".join(volume.read_file(f"{TAG}/graph-python-{name}{suffix}.json"))
-                (RESULTS / f"graph-python-{name}{suffix}.json").write_bytes(data.replace(b"\r\n", b"\n"))
+                stem = f"{name}-{args.label}" if args.label else name
+                data = b"".join(volume.read_file(f"{TAG}/graph-python-{stem}{suffix}.json"))
+                (RESULTS / f"graph-python-{stem}{suffix}.json").write_bytes(data.replace(b"\r\n", b"\n"))
                 print(name + suffix, len(data))
             if args.files:
                 folder = Path(args.files) / name

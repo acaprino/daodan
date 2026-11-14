@@ -1,9 +1,10 @@
 """Java, the whole index read: scip-java on javapoet, every document, occurrence and symbol, rebuilt as a graph.
 
-Wiring only: the Java adapter (`adapters/java.py`) builds and indexes, the shared `scip_graph.py` reads the
-index and assembles the graph, this file runs them on Modal, keeps their inputs on the volume and checks the
-case. One container: the checkout of the `javapoet` case of `modal_audit.py`, the snapshot as the other
-benchmarks of this folder build it, then the adapter's index. Indexes, snapshot and checkout stay on the
+Wiring only: the plugin's `indexers/java.py` builds and indexes (its two phases run by `adapters/jvm_here.py`
+in this function's container, on the plugin's image), the plugin's `code_graph.py` reads the index and assembles
+the graph, this file runs them on Modal, keeps their inputs on the volume and checks the case. One container:
+the checkout of the `javapoet` case of `modal_audit.py`, the snapshot as the other benchmarks of this folder
+build it, then the adapter's index. Indexes, snapshot and checkout stay on the
 volume; the graph is rebuilt from them, in the container or here, without running the indexer again. No model.
 
     modal deploy benchmarks/inference-audit/lang_java.py
@@ -34,6 +35,7 @@ sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 import code_graph as scip_graph  # noqa: E402
 import indexers.java  # noqa: E402
+from indexers import jvm  # noqa: E402
 from adapters import java  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
@@ -114,10 +116,9 @@ HAND_CHECK_CLASSES = {
 
 def _image():
     return (
-        modal.Image.debian_slim(python_version="3.13")
-        .apt_install("git", "curl", "ca-certificates", *java.APT)
+        # The plugin's image (JDK 17); scip-java and the build tool come from `jvm.tools`, as in the plugin.
+        modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git")  # the checkout
         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
-        .run_commands(*java.install_commands())
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
@@ -175,7 +176,7 @@ def index_case(label: str = "") -> dict:
     store.mkdir(parents=True, exist_ok=True)
     target = _source(work / "src", case, None)
     manifest = work / "snapshot/manifest.sqlite"
-    run = {"case": CASE, "commit": case["commit"], "label": label}
+    run = {"case": CASE, "commit": case["commit"], "label": label, "code": plugin_scripts.code_sha256()}
     run["snapshot"] = scip_graph.measured([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out",
                                            str(manifest), "--no-engine", "--no-index"], SCRIPTS, None, 1800)
     engine = java.index(target, work, None, HAND_CHECK_CLASSES)

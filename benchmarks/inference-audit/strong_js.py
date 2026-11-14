@@ -4,7 +4,7 @@ The sources are `adapters/ts_compiler.py` (the TypeScript compiler API in batch,
 install, then with the `@types/*` packages its dependencies lack) and `adapters/js_jelly.py` (Jelly, static
 only, with `node_modules` and with `--ignore-dependencies`). The index graph is rebuilt from the snapshot and
 the scip-typescript index an earlier `modal_scip.py` run kept on the volume (`scip-inputs/<case>/`), with
-`adapters/typescript.py` for the hops. Every snapshot call is then classed by what the index gives there and by
+the plugin's `indexers/typescript.py` for the hops. Every snapshot call is then classed by what the index gives there and by
 what each source gives at the same site (the callee's last name, line and UTF-8 byte column).
 
     modal deploy benchmarks/inference-audit/strong_js.py

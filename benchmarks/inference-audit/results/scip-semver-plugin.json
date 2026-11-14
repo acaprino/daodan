@@ -1,0 +1,767 @@
+{
+ "case": "semver",
+ "commit": "280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe",
+ "inputs": "kept, /results/inference-audit/scip-inputs/semver",
+ "snapshot_seconds": 2.1,
+ "road_a": {
+  "source": "rerun",
+  "seconds": 33.1,
+  "peak_rss_mb": 1097,
+  "returncode": 0,
+  "stderr_tail": "DAODAN_MAXRSS_KB=1123728\n",
+  "coverage": {
+   "rust": {
+    "rust": {
+     "calls": 793,
+     "engine": "rust-analyzer@2026-11-09",
+     "resolvable": 475,
+     "resolved": 438,
+     "resolved_ratio": 0.922
+    }
+   }
+  }
+ },
+ "indexers": {
+  "rust": {
+   "indexes": [
+    [
+     "/results/inference-audit/scip-inputs/semver/plugin/rust-analyzer-0.scip",
+     ""
+    ],
+    [
+     "/results/inference-audit/scip-inputs/semver/plugin/rust-analyzer-1.scip",
+     "fuzz"
+    ]
+   ],
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/root/.cache/daodan/engines/rust-analyzer/2026-11-09/rust-analyzer",
+      "scip",
+      ".",
+      "--output",
+      "/work/semver/rust-analyzer-0.scip",
+      "--config-path",
+      "/work/semver/rust-analyzer.json"
+     ],
+     "returncode": 0,
+     "seconds": 5.4,
+     "peak_mb": 1163,
+     "stdout_tail": "",
+     "stderr_tail": "cd) } })\n2026-11-14T13:25:15.761783485Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1e8cd) } })\n2026-11-14T13:25:15.80837477Z ERROR Bug: definition at tests/util/mod.rs:6:14-6:21 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808408585Z ERROR Bug: definition at tests/util/mod.rs:6:14-6:21 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808428433Z ERROR Bug: definition at src/lib.rs:245:26-245:35 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808438583Z ERROR Bug: definition at src/lib.rs:307:29-307:38 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808464563Z ERROR Bug: definition at tests/util/mod.rs:31:14-31:28 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808481326Z ERROR Bug: definition at tests/util/mod.rs:21:14-21:21 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808486195Z ERROR Bug: definition at tests/util/mod.rs:46:14-46:28 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808497176Z ERROR Bug: definition at src/error.rs:18:26-18:35 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808503118Z ERROR Bug: definition at tests/util/mod.rs:51:14-51:30 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808508528Z ERROR Bug: definition at tests/util/mod.rs:26:14-26:24 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808516053Z ERROR Bug: definition at tests/util/mod.rs:16:14-16:17 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808523798Z ERROR Bug: definition at tests/util/mod.rs:36:14-36:24 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808529228Z ERROR Bug: definition at tests/util/mod.rs:0:0-54:0 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808534518Z ERROR Bug: definition at tests/util/mod.rs:51:14-51:30 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808540921Z ERROR Bug: definition at tests/util/mod.rs:11:14-11:25 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808551812Z ERROR Bug: definition at tests/util/mod.rs:0:0-54:0 should have been in an SCIP document but was not.\n2026-11-14T13:25:15.808557794Z ERROR Bug: definition at src/lib.rs:307:18-307:23 should have been in an SCIP document but was not.\nGenerating SCIP finished 5.228070708s\nDAODAN_MAXRSS_KB=1191032\n",
+     "stderr_errors": 64,
+     "stderr_error_examples": [
+      "Config Error(s) error_sink=ConfigErrors([])",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(e815) } })",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(193bb) } })",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1c755) } })",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1c756) } })"
+     ],
+     "index": "/work/semver/rust-analyzer-0.scip",
+     "index_bytes": 496869
+    },
+    {
+     "prefix": "fuzz",
+     "command": [
+      "/root/.cache/daodan/engines/rust-analyzer/2026-11-09/rust-analyzer",
+      "scip",
+      ".",
+      "--output",
+      "/work/semver/rust-analyzer-1.scip",
+      "--config-path",
+      "/work/semver/rust-analyzer.json"
+     ],
+     "returncode": 0,
+     "seconds": 3.3,
+     "peak_mb": 896,
+     "stdout_tail": "",
+     "stderr_tail": "osing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(3201) } })\n2026-11-14T13:25:18.994773933Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(3201) } })\n2026-11-14T13:25:19.016290269Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(18c9e) } })\n2026-11-14T13:25:19.01667086Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(18c9e) } })\n2026-11-14T13:25:19.016874724Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(18c9e) } })\n2026-11-14T13:25:19.01711596Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(18c9e) } })\n2026-11-14T13:25:19.018878868Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1be0a) } })\n2026-11-14T13:25:19.018961188Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1be0a) } })\n2026-11-14T13:25:19.019072192Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1be0a) } })\n2026-11-14T13:25:19.019233915Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1be0a) } })\n2026-11-14T13:25:19.062018706Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1f800) } })\n2026-11-14T13:25:19.082958786Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(2e78) } })\n2026-11-14T13:25:19.10104465Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1a766) } })\n2026-11-14T13:25:19.101639891Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1a766) } })\n2026-11-14T13:25:19.101740755Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1a766) } })\n2026-11-14T13:25:19.1017847Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1a766) } })\n2026-11-14T13:25:19.101827824Z ERROR Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1a766) } })\nGenerating SCIP finished 3.122491798s\nDAODAN_MAXRSS_KB=917664\n",
+     "stderr_errors": 20,
+     "stderr_error_examples": [
+      "Config Error(s) error_sink=ConfigErrors([])",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(3201) } })",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(18c9e) } })",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1be0a) } })",
+      "Encountered enclosing definition with no name def=Module(Module { id: ModuleIdLt { [salsa id]: Id(1f800) } })"
+     ],
+     "index": "/work/semver/rust-analyzer-1.scip",
+     "index_bytes": 14104
+    }
+   ],
+   "indexer": {
+    "name": "rust-analyzer",
+    "version": "rust-analyzer 0.3.3113-standalone",
+    "seconds": 8.7,
+    "peak_mb": 1163
+   },
+   "toolchain": "1.99.1",
+   "config": {
+    "cargo": {
+     "buildScripts": {
+      "enable": false
+     },
+     "features": "all"
+    },
+    "procMacro": {
+     "enable": false
+    }
+   }
+  }
+ },
+ "reindexed": {
+  "rust": {
+   "error": null,
+   "indexer": {
+    "name": "rust-analyzer",
+    "version": "rust-analyzer 0.3.3113-standalone",
+    "seconds": 8.7,
+    "peak_mb": 1163
+   },
+   "state": null,
+   "reason": null,
+   "index_bytes": [
+    496869,
+    14104
+   ],
+   "kept_bytes": [
+    496873,
+    14108
+   ]
+  }
+ },
+ "code": {
+  "code_graph.py": "707e7bf514b1",
+  "indexers/__init__.py": "43bd620a8715",
+  "indexers/go.py": "6c3e9282cb2d",
+  "indexers/java.py": "75b02d325c43",
+  "indexers/jvm.py": "388a15c2899d",
+  "indexers/kotlin.py": "015ecf6ac276",
+  "indexers/python.py": "f201bd46a865",
+  "indexers/runtime.py": "2db68ac2bc24",
+  "indexers/rust.py": "f767b5e1e6ac",
+  "indexers/typescript.py": "1d5c694e219d",
+  "adapters/clang.py": "9b9536b26f29",
+  "adapters/css.py": "49854bf56415",
+  "adapters/css_astro.py": "83ae4f9723f2",
+  "adapters/css_less.py": "1f082b76eb1f",
+  "adapters/css_sass.py": "45180a7e614c",
+  "adapters/css_stylus.py": "bbe7cdfae4fe",
+  "adapters/css_svelte.py": "6c91a62cd587",
+  "adapters/css_tailwind.py": "c9419a41c53a",
+  "adapters/css_typescript.py": "6ff05448a8d6",
+  "adapters/css_vue.py": "93c02e4a9797",
+  "adapters/go_callgraph.py": "c9b877b12ede",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "1b791191f54f",
+  "adapters/kotlin.py": "09a12a6361f7",
+  "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+  "adapters/python_jedi.py": "9ff396b7438a",
+  "adapters/ts_compiler.py": "99c9e265cae2"
+ },
+ "join": {
+  "index_tools": [
+   [
+    "rust-analyzer",
+    "0.3.3113-standalone"
+   ],
+   [
+    "rust-analyzer",
+    "0.3.3113-standalone"
+   ]
+  ],
+  "documents_written_twice": 0,
+  "unknown_fields": {},
+  "hops": 23,
+  "answers": 721,
+  "languages": {
+   "rust": {
+    "graph": {
+     "language": "rust",
+     "indexer": {
+      "name": "rust-analyzer",
+      "version": "rust-analyzer 0.3.3113-standalone",
+      "seconds": 8.7,
+      "peak_mb": 1163
+     },
+     "files": {
+      "snapshot": 19,
+      "indexed": 18,
+      "missing": [
+       {
+        "path": "tests/node/mod.rs",
+        "reason": "no document in the index"
+       }
+      ],
+      "missing_count": 1
+     },
+     "nodes": 1073,
+     "edges": 3960,
+     "symbols_by_kind": {
+      "external class": 61,
+      "external function": 131,
+      "external macro": 14,
+      "external method": 11,
+      "external module": 28,
+      "external other": 11,
+      "external property": 1,
+      "external variable": 2,
+      "project class": 14,
+      "project function": 83,
+      "project method": 63,
+      "project module": 37,
+      "project parameter": 186,
+      "project property": 41,
+      "project type": 10,
+      "project variable": 345,
+      "undefined function": 4,
+      "undefined property": 1,
+      "undefined type": 30
+     },
+     "edges_by_end": {
+      "dead-end unknown": 59,
+      "external call": 337,
+      "external read": 27,
+      "external unknown": 1208,
+      "project-callable call": 436,
+      "project-callable read": 61,
+      "project-callable unknown": 526,
+      "project-value call": 3,
+      "project-value read": 625,
+      "project-value unknown": 678
+     },
+     "callable_chain_hops": {
+      "0": 733,
+      "1": 290
+     },
+     "hop_tags": {
+      "rust:module-file": 264,
+      "initializer": 30,
+      "value": 8
+     },
+     "edges_uncertain": {},
+     "edges_removed": {},
+     "holes_by_class": {
+      "no-document call": 11,
+      "no-document read": 7,
+      "no-occurrence call": 1,
+      "no-position call": 5
+     },
+     "holes": [
+      {
+       "class": "no-position",
+       "kind": "call",
+       "reason": "dynamic-callee",
+       "count": 5,
+       "examples": [
+        "benches/parse.rs:8 ",
+        "benches/parse.rs:12 ",
+        "src/identifier.rs:321 "
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "call",
+       "reason": "dynamic-callee",
+       "count": 4,
+       "examples": [
+        "tests/node/mod.rs:15 (expr).arg",
+        "tests/node/mod.rs:16 (expr).arg",
+        "tests/node/mod.rs:21 (expr).output"
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 4,
+       "examples": [
+        "tests/node/mod.rs:23 out.stdout",
+        "tests/node/mod.rs:25 out.stdout",
+        "tests/node/mod.rs:28 out.stdout"
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "call",
+       "reason": "unbound-name",
+       "count": 3,
+       "examples": [
+        "tests/node/mod.rs:28 String.from_utf8_lossy",
+        "tests/node/mod.rs:28 String.from_utf8_lossy",
+        "tests/node/mod.rs:42 crate.util.req"
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "call",
+       "reason": "unique-lexical-binding",
+       "count": 2,
+       "examples": [
+        "tests/node/mod.rs:11 VersionReq",
+        "tests/node/mod.rs:42 VersionReq"
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "call",
+       "reason": "import-target-missing-or-ambiguous",
+       "count": 2,
+       "examples": [
+        "tests/node/mod.rs:14 Command.new",
+        "tests/node/mod.rs:36 Display.fmt"
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "read",
+       "reason": "non-callable-binding",
+       "count": 2,
+       "examples": [
+        "tests/node/mod.rs:36 formatter",
+        "tests/node/mod.rs:42 text"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "ambiguous-binding",
+       "count": 1,
+       "examples": [
+        "src/identifier.rs:326 repr.trailing_zeros"
+       ]
+      },
+      {
+       "class": "no-document",
+       "kind": "read",
+       "reason": "unbound-name",
+       "count": 1,
+       "examples": [
+        "tests/node/mod.rs:11 semver.VersionReq.STAR"
+       ]
+      }
+     ],
+     "external_packages": {
+      "cargo core@https://github.com/rust-lang/rust/library/core": 1407,
+      "cargo alloc@https://github.com/rust-lang/rust/library/alloc": 59,
+      "cargo serde_core@1.0.229": 52,
+      "cargo std@https://github.com/rust-lang/rust/library/std": 32,
+      "cargo criterion@0.8.2": 13,
+      "cargo libfuzzer-sys@0.4.13": 9
+     }
+    },
+    "road_a": {
+     "a": {
+      "project-declaration": 438,
+      "external": 251,
+      "not-asked": 72,
+      "none": 28,
+      "project-other": 4
+     },
+     "a target source": {
+      "engine": 436,
+      "lexical": 2
+     },
+     "b call": {
+      "project-declaration": 436,
+      "external": 337,
+      "no-document": 11,
+      "no-position": 5,
+      "project-value parameter": 3,
+      "no-occurrence": 1
+     },
+     "b read": {
+      "project-value variable": 400,
+      "project-value property": 106,
+      "project-value parameter": 101,
+      "project-declaration": 61,
+      "external": 27,
+      "no-document": 7,
+      "project-value module": 1
+     },
+     "cells": {
+      "same project target": 433,
+      "both external": 251,
+      "mixed: A not-asked, B external": 62,
+      "mixed: A none, B external": 21,
+      "mixed: A none, B no-document": 6,
+      "mixed: A not-asked, B no-position": 5,
+      "only A has a project target": 5,
+      "mixed: A project-other, B project-value": 3,
+      "only B has a project target": 3,
+      "mixed: A not-asked, B no-document": 3,
+      "mixed: A none, B no-occurrence": 1
+     },
+     "external packages call": {
+      "cargo core@https://github.com/rust-lang/rust/library/core": 303,
+      "cargo alloc@https://github.com/rust-lang/rust/library/alloc": 16,
+      "cargo criterion@0.8.2": 6,
+      "cargo std@https://github.com/rust-lang/rust/library/std": 6,
+      "cargo serde_core@1.0.229": 6
+     },
+     "external packages read": {
+      "cargo core@https://github.com/rust-lang/rust/library/core": 23,
+      "cargo serde_core@1.0.229": 3,
+      "cargo std@https://github.com/rust-lang/rust/library/std": 1
+     },
+     "hop kinds call": {
+      "direct": 254,
+      "rust:module-file": 181,
+      "value": 1
+     },
+     "hop kinds read": {
+      "direct": 40,
+      "initializer": 14,
+      "value": 7
+     },
+     "hops call": {
+      "0": 254,
+      "1": 182
+     },
+     "hops read": {
+      "0": 40,
+      "1": 21
+     },
+     "matrix": {
+      "A project-declaration | B project-declaration (direct or alias)": 433,
+      "A external | B external": 251,
+      "A not-asked | B external": 62,
+      "A none | B external": 21,
+      "A none | B no-document": 6,
+      "A not-asked | B no-position": 5,
+      "A project-other | B project-value": 3,
+      "A project-declaration | B external": 3,
+      "A not-asked | B no-document": 3,
+      "A not-asked | B project-declaration (direct or alias)": 2,
+      "A project-declaration | B no-document": 2,
+      "A none | B no-occurrence": 1,
+      "A project-other | B project-declaration (direct or alias)": 1
+     },
+     "only A by B": {
+      "external cargo core@https://github.com/rust-lang/rust/library/core": 3,
+      "no-document no-document": 2
+     },
+     "reads vs lexical": {
+      "neither": 642,
+      "only B": 58,
+      "same": 3
+     },
+     "examples": {
+      "chain rust:module-file": [
+       "tests/test_version.rs:15 version_err: rust:module-file -> tests/util/mod.rs::function@12:0",
+       "tests/test_version.rs:37 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version.rs:54 version_err: rust:module-file -> tests/util/mod.rs::function@12:0",
+       "tests/test_version.rs:85 version: rust:module-file -> tests/util/mod.rs::function@7:0",
+       "tests/test_version.rs:121 build_metadata: rust:module-file -> tests/util/mod.rs::function@47:0",
+       "tests/test_version.rs:176 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version.rs:239 version: rust:module-file -> tests/util/mod.rs::function@7:0",
+       "tests/test_version_req.rs:59 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version_req.rs:85 req: rust:module-file -> tests/util/mod.rs::function@17:0",
+       "tests/test_version_req.rs:121 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version_req.rs:144 req_err: rust:module-file -> tests/util/mod.rs::function@22:0",
+       "tests/test_version_req.rs:180 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version_req.rs:223 req: rust:module-file -> tests/util/mod.rs::function@17:0",
+       "tests/test_version_req.rs:298 req: rust:module-file -> tests/util/mod.rs::function@17:0",
+       "tests/test_version_req.rs:335 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version_req.rs:361 req_err: rust:module-file -> tests/util/mod.rs::function@22:0",
+       "tests/test_version_req.rs:380 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version_req.rs:400 comparator_err: rust:module-file -> tests/util/mod.rs::function@32:0",
+       "tests/test_version_req.rs:420 assert_to_string: rust:module-file -> tests/util/mod.rs::function@52:0",
+       "tests/test_version_req.rs:454 req: rust:module-file -> tests/util/mod.rs::function@17:0"
+      ],
+      "chain value": [
+       "src/impls.rs:91 string_cmp: value -> src/impls.rs::function@75:29"
+      ],
+      "only A (B external)": [
+       "src/serde.rs:51 string.parse | A project-declaration src/parse.rs::function@28:4 | B external cargo core@https://github.com/rust-lang/rust/library/core",
+       "src/serde.rs:77 string.parse | A project-declaration src/parse.rs::function@87:4 | B external cargo core@https://github.com/rust-lang/rust/library/core",
+       "src/serde.rs:103 string.parse | A project-declaration src/parse.rs::function@111:4 | B external cargo core@https://github.com/rust-lang/rust/library/core"
+      ],
+      "only A (B no-document)": [
+       "tests/node/mod.rs:11 VersionReq | A project-declaration tests/node/mod.rs::class@8:0 | B no-document no-document",
+       "tests/node/mod.rs:42 VersionReq | A project-declaration tests/node/mod.rs::class@8:0 | B no-document no-document"
+      ],
+      "only B has a project target (direct or alias)": [
+       "src/identifier.rs:108 Self.empty | A not-asked - | B project-declaration src/identifier.rs::function@90:4",
+       "src/identifier.rs:169 Self.empty | A not-asked - | B project-declaration src/identifier.rs::function@90:4",
+       "src/impls.rs:91 string_cmp | A project-other project-not-a-symbol | B project-declaration value -> src/impls.rs::function@75:29"
+      ]
+     },
+     "answer_file_mismatches": 0
+    },
+    "focus": {}
+   }
+  },
+  "hand": [
+   {
+    "site": "benches/parse.rs:12 black_box",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "build.rs:22 Some",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "fuzz/sort_version.rs:16 ok",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "none",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "src/display.rs:8 is_empty",
+    "expected": "decl src/lib.rs:548",
+    "b": "project-declaration",
+    "b_targets": [
+     "src/lib.rs::function@548:4"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "src/lib.rs::function@548:4"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "src/lib.rs::function@548:4",
+    "a_right": true
+   },
+   {
+    "site": "src/display.rs:98 is_empty",
+    "expected": "decl src/lib.rs:548",
+    "b": "project-declaration",
+    "b_targets": [
+     "src/lib.rs::function@548:4"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "src/lib.rs::function@548:4"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "src/lib.rs::function@548:4",
+    "a_right": true
+   },
+   {
+    "site": "src/display.rs:151 write_char",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "src/identifier.rs:196 ptr_as_str",
+    "expected": "decl src/identifier.rs:397",
+    "b": "project-declaration",
+    "b_targets": [
+     "src/identifier.rs::function@397:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "src/identifier.rs::function@397:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "src/identifier.rs::function@397:0",
+    "a_right": true
+   },
+   {
+    "site": "src/identifier.rs:384 new_unchecked",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "src/identifier.rs:398 repr_to_ptr",
+    "expected": "decl src/identifier.rs:298",
+    "b": "project-declaration",
+    "b_targets": [
+     "src/identifier.rs::function@298:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "src/identifier.rs::function@298:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "src/identifier.rs::function@298:0",
+    "a_right": true
+   },
+   {
+    "site": "src/parse.rs:48 strip_prefix",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "src/parse.rs:179 next",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "src/parse.rs:217 Ok",
+    "expected": "external rust-lang/rust",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "cargo core@https://github.com/rust-lang/rust/library/core",
+    "b_externals": [
+     "cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_chains": [
+     "external cargo core@https://github.com/rust-lang/rust/library/core"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "tests/test_version.rs:48 version_err",
+    "expected": "decl tests/util/mod.rs:12",
+    "b": "project-declaration",
+    "b_targets": [
+     "tests/util/mod.rs::function@12:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "rust:module-file -> tests/util/mod.rs::function@12:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "tests/util/mod.rs::function@12:0",
+    "a_right": true
+   },
+   {
+    "site": "tests/test_version.rs:179 version",
+    "expected": "decl tests/util/mod.rs:7",
+    "b": "project-declaration",
+    "b_targets": [
+     "tests/util/mod.rs::function@7:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "rust:module-file -> tests/util/mod.rs::function@7:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "tests/util/mod.rs::function@7:0",
+    "a_right": true
+   },
+   {
+    "site": "tests/test_version_req.rs:292 assert_match_none",
+    "expected": "decl tests/test_version_req.rs:30",
+    "b": "project-declaration",
+    "b_targets": [
+     "tests/test_version_req.rs::function@30:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "tests/test_version_req.rs::function@30:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "tests/test_version_req.rs::function@30:0",
+    "a_right": true
+   }
+  ],
+  "hand_score": {
+   "checks": 15,
+   "b_right": 15,
+   "a_right": 12
+  },
+  "seconds": {
+   "hops rust": 0.7,
+   "graph rust": 0.3
+  },
+  "symbols_walked": 975
+ },
+ "join_seconds": 1.1,
+ "seconds": 27.7
+}

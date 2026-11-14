@@ -2,7 +2,7 @@
 
 Wiring only: the Jedi adapter (`adapters/python_jedi.py`), the stored index, snapshot and checkout of
 `lang_python.py` (volume `daodan-flow-results`, `inference-audit/graph-python/<case>/`) and `scip_graph.py`.
-One container: the project's declared dependencies in a venv (the build of `adapters/python.py` `index`), Jedi
+One container: the project's declared dependencies in a venv (the requirements the index run recorded), Jedi
 over every name of every file in its own process, then each snapshot call and read compared with what the index
 graph answers at the same position. No model, no change to the stored graph.
 
@@ -101,8 +101,8 @@ def short(key: str) -> str:
 
 
 def environment(work: Path, engine: dict) -> dict:
-    """The venv `adapters/python.py` `index` builds: the declared requirements in one installer call, then one
-    per package when that fails. Returns what is installed and how it differs from the index run's."""
+    """A venv with the requirements the index run recorded, in one installer call, then one per package when
+    that fails. Returns what is installed and how it differs from the index run's."""
     import subprocess
     import sys as _sys
     venv = work / "venv"

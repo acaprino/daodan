@@ -1,7 +1,7 @@
 """Go, a second source: the whole-program call graph (callgraph, VTA) beside the index graph, call site by call site.
 
 Wiring only: the adapter `adapters/go_callgraph.py`; the snapshot, indexes and stored graph `modal_scip.py` kept on
-the volume (`inference-audit/scip-inputs/chi/`); `scip_graph.py` and `adapters/go.py`, which rebuild the index
+the volume (`inference-audit/scip-inputs/chi/`); `scip_graph.py` and the plugin's `indexers/go.py`, which rebuild the index
 graph's ends at each snapshot call (checked edge for edge against the stored graph). One container: the checkout at
 the pinned commit, the callgraph run, the comparison and the hand check. No model, no change to the stored graph.
 

@@ -1,141 +1,35 @@
-"""scip-java for Java: how the indexer runs. What its index leaves to the reader is the plugin's
-`indexers/java.py`.
-
-`index` compiles a copy of the checkout with scip-java (Maven and the SemanticDB javac plugin): unchanged
-first, then with the plain javac when the unchanged build gives no index. The default aggregation writes each
-`is_implementation` twice, from child to parent and from parent to child with the same flags, so the shared
-traversal would take a method's parent and siblings for its implementations; the same build is aggregated once
-more with `--no-emit-inverse-relationships`, and that index, whose occurrences are checked equal, is the one
-read. `class_file_declaration` reads the overload an external `name(+n)` names from the class-file member
-order: the hand check uses it, the graph does not.
+"""scip-java for Java on Modal: the plugin's `indexers.java` steps, run by `jvm_here` in the function's own
+container, where no container engine runs. How the index is built and what it leaves to the reader is the
+plugin's `indexers/java.py`. `class_file_declaration` reads the overload an external `name(+n)` names from the
+class-file member order (`javap.json`): the hand check uses it, the graph does not.
 """
 from __future__ import annotations
 
 import json
-import os
 import re
-import shutil
-import subprocess
 import sys
 from functools import lru_cache
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
-import code_graph  # noqa: E402
+from adapters import jvm_here  # noqa: E402
+from indexers import java as plugin  # noqa: E402
+from indexers import jvm  # noqa: E402
 
-VERSION = "0.13.2"  # org.scip-code:scip-java on Maven Central, released 2026-10-22
-LAUNCHER = "/opt/scip-java/scip-java"
-APT = ("default-jdk-headless", "maven")
+VERSION = jvm.VERSION
 METHOD = re.compile(r"^((?:[\w$]+/)*)((?:[\w$]+#)+)`?([\w$<>]+)`?\(([^)]*)\)\.$")
-
-
-def install_commands() -> list[str]:
-    """scip-java assembled by coursier, at the coursier pin of the map's engines."""
-    import resolve_edges
-    coursier = resolve_edges.COURSIER
-    return [f"curl -fsSL {coursier['url']} -o /opt/coursier.jar",
-            f"echo '{coursier['sha256']}  /opt/coursier.jar' | sha256sum -c -",
-            "mkdir -p /opt/scip-java",
-            f"java -jar /opt/coursier.jar bootstrap --assembly -o {LAUNCHER} org.scip-code:scip-java:{VERSION} "
-            "--main org.scip_code.scip_java.ScipJava"]
-
-
-def _install() -> None:
-    if Path(LAUNCHER).is_file():
-        return
-    for command in ["apt-get update", f"apt-get install -y {' '.join(APT)}", *install_commands()]:
-        subprocess.run(command, shell=True, check=True)
-
-
-def _plain_javac(pom: Path) -> list[str]:
-    """The compiler plugin without Error Prone, whose pinned 2.3.1 runs only on Java 8 and 9: what was removed."""
-    text = pom.read_text(encoding="utf-8")
-    start = text.index("<artifactId>maven-compiler-plugin</artifactId>")
-    end = text.index("</plugin>", start)
-    block, removed = text[start:end], []
-    for pattern in (r"\s*<compilerId>[^<]*</compilerId>", r"\s*<forceJavacCompilerUse>[^<]*</forceJavacCompilerUse>",
-                    r"\s*<dependencies>.*?</dependencies>"):
-        removed += [m.group(0).strip() for m in re.finditer(pattern, block, flags=re.S)]
-        block = re.sub(pattern, "", block, flags=re.S)
-    pom.write_text(text[:start] + block + text[end:], encoding="utf-8")
-    return removed
-
-
-def _members(text: str) -> dict:
-    """Methods of each class of a `javap -p -v` output, in class-file order, with their access flags."""
-    out, current, pending = {}, None, None
-    for line in text.split("\n"):
-        match = re.match(r"\s*this_class: #\d+\s+// (\S+)", line)
-        if match:
-            current, pending = match.group(1), None
-            out[current] = []
-            continue
-        if current is None:
-            continue
-        if re.match(r"^  \S", line) and line.rstrip().endswith(";") and "(" in line:
-            name = re.search(r"([\w$<>]+)\(", line)
-            pending = {"declaration": line.strip(), "name": name.group(1) if name else "", "flags": []}
-            out[current].append(pending)
-            continue
-        match = re.match(r"^    flags: \(0x[0-9a-f]+\)(.*)", line)
-        if match and pending is not None:
-            pending["flags"] = [flag.strip() for flag in match.group(1).split(",") if flag.strip()]
-            pending = None
-    return out
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None,
           external_classes: dict | None = None) -> dict:
-    """The forward index of the project, its runs and the indexer's time and memory.
+    """The plugin's contract for the checkout, built here; `refused` lists the hosts the registry proxy refused.
 
     `external_classes` maps a classpath (`""` for the JDK, else a jar under the local Maven repository) to the
     class names whose member order `javap.json` records beside the project's own classes.
     """
-    _install()
-    work_dir.mkdir(parents=True, exist_ok=True)
-    mirror = work_dir / "mirror"
-    if not mirror.exists():
-        shutil.copytree(project_dir, mirror, symlinks=True, ignore=shutil.ignore_patterns(".git"))
-    env = dict(os.environ)
-    tools = {"java": subprocess.run(["java", "-version"], capture_output=True, text=True).stderr.strip().splitlines(),
-             "maven": subprocess.run(["mvn", "-v"], capture_output=True, text=True).stdout.strip().splitlines()[:3]}
-    runs, output = [], work_dir / "index.scip"
-    for patched in (False, True):
-        removed = _plain_javac(mirror / "pom.xml") if patched else None
-        run = {"step": "index", "tools": tools, "patched_pom_removed": removed,
-               **code_graph.measured([LAUNCHER, "index", "--output", str(output)], str(mirror), env, 3000)}
-        run["index_bytes"] = output.stat().st_size if output.is_file() else 0
-        runs.append(run)
-        if run["returncode"] == 0 and run["index_bytes"]:
-            break
-    if not (runs[-1]["returncode"] == 0 and runs[-1]["index_bytes"]):
-        return {"indexes": [], "runs": runs, "indexer": code_graph.indexer("scip-java", VERSION, runs)}
-    forward = work_dir / "index-forward.scip"
-    runs.append({"step": "aggregate without inverse relationships",
-                 **code_graph.measured([LAUNCHER, "aggregate", "--no-emit-inverse-relationships", "--output",
-                                        str(forward), str(mirror / "target/scip-targetroot")], str(mirror), env, 600)})
-    commands = [["javap", "-p", "-v", *names] if not path else
-                ["javap", "-p", "-v", "-cp", str(Path.home() / ".m2/repository" / path), *names]
-                for path, names in (external_classes or {}).items()]
-    commands.append(["javap", "-p", "-v", *sorted(str(p) for p in mirror.glob("target/*classes/**/*.class"))])
-    members = {}
-    for command in commands:
-        members.update(_members(subprocess.run(command, capture_output=True, text=True).stdout))
-    (work_dir / "javap.json").write_text(json.dumps(members), encoding="utf-8")
-    runs[-1]["same_occurrences"] = same = forward.is_file() and same_occurrences(project_dir, output, forward)
-    # Without an equal forward index the default one is read, and its implementations include the inverses.
-    return {"indexes": [[str(forward if same else output), ""]], "runs": runs,
-            "indexer": code_graph.indexer("scip-java", VERSION, runs)}
-
-
-def same_occurrences(root: Path, default: Path, forward: Path) -> bool:
-    loaded = []
-    for path in (default, forward):
-        item = code_graph.Index(root)
-        item.load(path)
-        loaded.append(item.documents)
-    return loaded[0] == loaded[1]
+    result, runs, out = jvm_here.run(project_dir, work_dir, plugin.PREPARE, plugin.execute(external_classes))
+    return {**plugin.finish(Path(project_dir), Path(work_dir), result, runs, out), "refused": result["refused"]}
 
 
 @lru_cache(maxsize=4)

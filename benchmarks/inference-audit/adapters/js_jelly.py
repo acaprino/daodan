@@ -70,7 +70,7 @@ def _exact(tree, start: tuple, end: tuple):
 
 def analyze(project_dir: Path, work_dir: Path, files: list[str] | None = None, dependencies: bool = True,
             timeout: int = 1200) -> dict:
-    from adapters import typescript
+    from indexers import typescript
     work_dir = Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
     here = ts_compiler.mirror(Path(project_dir), work_dir)

@@ -276,7 +276,7 @@ Non verificato:
 
 ### 13 novembre 2026, grafo completo dall'indice: Python
 
-Un indicizzatore di progetto intero, scip-python, indicizza python-semver; il suo indice si legge tutto, ogni documento, occorrenza e simbolo, e diventa il grafo del codice. Ciò che è proprio del motore sta in `adapters/python.py`: `index` (dipendenze dichiarate in una venv, `pyrightconfig.json` per il layout `src`, indice di una copia) e `hops` (quattro salti per ciò che l'indice lascia implicito). `lang_python.py` collega adattatore, lettura SCIP e volume. Esecuzione: `modal deploy benchmarks/inference-audit/lang_python.py`, poi `python benchmarks/inference-audit/lang_python.py spawn --cases semver` e `fetch --cases semver`; `spawn --graph-only` rifà il grafo dai file sul volume (`inference-audit/graph-python/semver/`) senza rieseguire l'indicizzatore. Risultati: `results/graph-python-semver.json` (nodi, archi, buchi; 1,1 MB) e `results/graph-python-semver-checks.json` (fatti dell'indice, conteggi, buchi per classe, verifica a mano).
+Un indicizzatore di progetto intero, scip-python, indicizza python-semver; il suo indice si legge tutto, ogni documento, occorrenza e simbolo, e diventa il grafo del codice. Ciò che è proprio del motore sta nel modulo `indexers/python.py` del plugin: `index` (dipendenze dichiarate in un ambiente della cartella condivisa, solo wheel, date a scip-python con `--environment`; `pyrightconfig.json` per il layout `src`; indice di uno specchio del progetto) e `hops` (quattro salti per ciò che l'indice lascia implicito). `lang_python.py` collega modulo, lettura SCIP e volume. Esecuzione: `modal deploy benchmarks/inference-audit/lang_python.py`, poi `python benchmarks/inference-audit/lang_python.py spawn --cases semver` e `fetch --cases semver`; `spawn --graph-only` rifà il grafo dai file sul volume (`inference-audit/graph-python/semver/`) senza rieseguire l'indicizzatore. Risultati: `results/graph-python-semver.json` (nodi, archi, buchi; 1,1 MB) e `results/graph-python-semver-checks.json` (fatti dell'indice, conteggi, buchi per classe, verifica a mano).
 
 | Parametro | Valore |
 | --- | --- |
@@ -356,7 +356,7 @@ Non verificato:
 - Altri progetti Python: httpx non è stato aggiunto perché semver ha 995 chiamate. Nessun confronto con il passo dei motori (Jedi) su questo caso.
 
 Con il modulo comune `scip_graph.py`, la stessa sera:
-- `lang_python.py` ora collega solo adattatore, `scip_graph.py` e volume; `adapters/python.py` segue il contratto del modulo (`index` restituisce `indexes`, `indexer` e `runs`; `hops` le quattro regole sopra).
+- `lang_python.py` collega solo il modulo `indexers/python.py`, `scip_graph.py` e volume; il modulo segue il contratto (`index` restituisce `indexes`, `indexer` e `runs`; `hops` le quattro regole sopra).
 - Confermato su Modal (pipeline completa, codice uguale al checkout per hash): stessi 1.289 nodi, 3.679 archi e 64 buchi del rifacimento locale. Indicizzatore 7,5 s e 369 MB, container 15,3 s, 0,004 USD. I file in `results/` vengono da questa esecuzione.
 - Le fini dirette coincidono con i conteggi sopra: chiamate e letture divise allo stesso modo, verifica a mano 18 su 20, 3.671 archi dai riferimenti.
 - 3.679 archi invece di 3.671: il modulo dà a ogni riferimento a un membro anche le sue implementazioni, tranne nei siti a dispatch statico che l'adattatore dichiara (`static`: `C.m` su un simbolo di classe e `super().m`, 109 siti). Restano 8 archi `implementation`, da `cls.parse` (`version.py:479`, `:833`) verso i quattro override `SemVerWithVPrefix.parse`. Senza `static` sarebbero 372: ogni `Version.parse(...)` e `super().parse(...)` riceveva anche gli override, che lì non vengono mai eseguiti.
@@ -367,7 +367,7 @@ Con il modulo comune `scip_graph.py`, la stessa sera:
 
 Bozza. Il codice ora è diviso in due parti:
 - `scip_graph.py`, comune e senza linguaggi: legge l'indice, segue le catene e monta il grafo;
-- un adattatore per indicizzatore (`adapters/go.py`, `adapters/rust.py`, `adapters/typescript.py`) con due funzioni. `index(...)` installa ed esegue l'indicizzatore. `hops(index)` dichiara gli alias che quel motore scrive a modo suo.
+- un modulo per indicizzatore nel plugin (`indexers/go.py`, `indexers/rust.py`, `indexers/typescript.py`, `indexers/python.py`) con due funzioni. `index(...)` scarica l'indicizzatore nella cartella condivisa e lo esegue in uno specchio del progetto. `hops(index)` dichiara gli alias che quel motore scrive a modo suo.
 
 Gli alias degli adattatori:
 - `initializer`, `pattern-key` e `value`: un nome definito come alias di un altro, come chiave di un pattern, o con una funzione come valore;
@@ -585,7 +585,7 @@ Adattatore `adapters/python_jedi.py` (`analyze(project_dir, work_dir, environmen
 | --- | --- |
 | caso | lo stesso di `lang_python.py`: python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, 35 file, la copia dello snapshot (symlink come file normali) |
 | motore | Jedi 0.20.1, Python 3.13, `jedi.Project` con radici il progetto e `src` (come il `pyrightconfig.json` dell'indice), ambiente creato con `create_environment(safe=False)` |
-| ambiente | venv con le dipendenze dichiarate, installate come fa `adapters/python.py`: 87 pacchetti, `pip list` identico a quello dell'esecuzione dell'indice (stesse versioni) |
+| ambiente | venv con le dipendenze dichiarate, installate come nell'esecuzione dell'indice: 87 pacchetti, `pip list` identico a quello dell'esecuzione dell'indice (stesse versioni) |
 | nomi | `get_names(all_scopes=True, definitions=False, references=True)` su ogni file, senza i nomi di argomenti per parola chiave: 3.125 nomi, 2.653 con risposta, 472 senza, 0 errori |
 | risposta | `infer()` alla posizione del nome; `goto(follow_imports=True)` ristretto a funzioni, classi e property quando nessun valore inferito è una funzione, classe o property del progetto. Ogni arco porta `via` e `product`: `product` marca i `goto` che la regola del prodotto (`JediEngine.definitions`: `goto` solo se nessun valore è funzione o classe) usa al posto dei valori inferiti. 3.865 archi, 2.885 da `infer`, 980 da `goto` |
 | confronto | i 2.343 riferimenti `call` e `read` dello snapshot (995 chiamate, 1.348 letture) alla posizione del nome, contro le fini del grafo salvato; un bersaglio di Jedi è del progetto quando lo snapshot riconosce alla posizione del suo nome una funzione, un metodo o una classe (`Snapshot.grade`, come il prodotto fa con i risultati di Jedi) |
@@ -648,7 +648,7 @@ Domanda: l'analisi del programma intero di Go chiude i due buchi dell'indice di 
 
 Esecuzione: `modal deploy benchmarks/inference-audit/strong_go.py`, poi `python benchmarks/inference-audit/strong_go.py spawn` e `fetch`.
 
-Il grafo dell'indice è rifatto nel container con `scip_graph.py` e `adapters/go.py` invariati: 20.102 archi, identici uno per uno a quelli sul volume.
+Il grafo dell'indice è rifatto nel container con `scip_graph.py` e gli `hops` di Go invariati: 20.102 archi, identici uno per uno a quelli sul volume.
 
 Verdetto: chiude il buco dei valori funzione e restringe le liste delle interfacce; sulle chiamate dirette non contraddice mai l'indice. Si può unire per aggiungere e confermare, non per togliere: VTA vede solo i tipi che il codice del modulo crea. Una funzione esportata che il modulo non chiama non riceve archi, e un candidato scartato è "non raggiunto da questo modulo", non "impossibile" per chi usa la libreria. VTA a volte tiene candidati impossibili (prova a mano, sotto).
 
@@ -1313,21 +1313,48 @@ Non verificato:
 
 ## 14 novembre 2026, fogli di stile su progetti reali: tutti i dialetti e la regola di pagina
 
-Verdetto: sui quattro progetti misurati la verifica a mano dà 65 su 66; l'unico errore (Bootstrap) è corretto nel codice ma non ancora rimisurato su Modal. Nessun file perso senza motivo. La regola di pagina rende incerti, senza toglierli, gli archi verso fogli che il codice non prova caricati: su tududi i 7 archi `sr-only` verso Font Awesome. styled-components-website e Bulma non sono misurati: il primo per un `overrides` che npm rifiuta, il secondo per un giro oltre il limite; i due difetti sono corretti, ma le credenziali di Modal sono sparite da questa macchina e il giro di conferma non è partito.
+Verdetto: giro di conferma con il codice finale, un solo hash per tutti i casi (`css.py` `49854bf56415`; Bulma rigirato dopo la correzione dei keyframe in percentuale, `css_sass.js` `040e6256e5ac`). Verifica a mano: v3-admin-vite 15 su 15, tududi 20 su 20, Bootstrap 3 15 su 15, hn.svelte.dev 16 su 16, saas-starter 15 su 15, Bulma 7 su 11. styled-components-website non è misurato: secondo fallimento per la stessa causa, caso fermato. Nessun file perso senza motivo. La regola di pagina rende incerti, senza toglierli, gli archi verso fogli che il codice non prova caricati: su tududi i 7 archi `sr-only` verso Font Awesome.
 
 | Parametro | Valore |
 | --- | --- |
-| casi | tududi `71da9d7b34df`, Bootstrap 3.4.1 `68b0d231a132` (Less), hn.svelte.dev `0010bbea0678` (Svelte 3, stili scoped), saas-starter `6e33e58b1e55` (Tailwind 4.1.7), styled-components-website `e70dc5c3f513`, Bulma 1.0.4 `e133d45b7a82` (SCSS con `@use`, `@forward`, mixin) |
-| motori | `adapters/css_engines.json`: sass-parser 0.5.6, less 4.9.1, stylus 0.64.0, @vue/compiler-sfc 3.5.45, svelte 5.57.3, @astrojs/compiler 4.0.0, TypeScript 5.9.3 quando il progetto non ha il suo; Tailwind e i pacchetti del progetto da `npm ci --ignore-scripts` |
-| container | 2 CPU, 8 GiB; hash dei file `css*` degli adattatori stampato all'avvio, uguale a quello locale (`css.py` `517c5214a3d8` per i giri di tududi, Bootstrap e saas-starter) |
-| verifica a mano | 15 usi per caso (16 per hn.svelte.dev, i 20 di prima per tududi), attese scritte leggendo il sorgente prima del grafo (`HAND` in `lang_css.py`); `all` è una scansione propria che appiattisce il nesting |
-| costo | letto dal conto di Modal: 0,0217 USD nell'ora delle 11 e il resto nell'ora delle 12, non ancora chiusa quando le credenziali sono sparite; stima sotto 0,05 USD |
+| casi | v3-admin-vite `c2c895d71d57` (Vue 3.5, SCSS scoped), tududi `71da9d7b34df`, Bootstrap 3.4.1 `68b0d231a132` (Less), hn.svelte.dev `0010bbea0678` (Svelte 3), saas-starter `6e33e58b1e55` (Tailwind 4.1.7), Bulma 1.0.4 `e133d45b7a82` (SCSS con `@use`, `@forward`, mixin), styled-components-website `e70dc5c3f513` |
+| motori | `adapters/css_engines.json`: sass-parser 0.5.6, less 4.9.1, stylus 0.64.0, @vue/compiler-sfc 3.5.45, svelte 5.57.3, @astrojs/compiler 4.0.0, TypeScript 5.9.3 quando il progetto non ha il suo; Tailwind e i pacchetti del progetto da `npm ci --ignore-scripts`, o da pnpm col suo lockfile quando npm non installa |
+| container | 2 CPU, 8 GiB; i progetti si clonano e installano solo su Modal, tornano solo i file `-checks.json`; hash dei file `css*` stampato all'avvio e uguale a quello locale |
+| verifica a mano | 15 usi per caso (16 per hn.svelte.dev, i 20 di prima per tududi), attese scritte dal sorgente prima del grafo (`HAND` in `lang_css.py`); `all` è una scansione propria che appiattisce il nesting |
+| costo | letto dal conto di Modal: 0,0217 USD nell'ora 11 UTC e 0,2649 + 0,0235 USD nell'ora 12 UTC (la seconda voce è l'app ridistribuita dopo un arresto), insieme 0,3101 USD; dentro ci sono circa 0,09 USD sprecati da un container del primo giro di Bulma rimasto acceso e da un lancio doppio, fermati entrambi. Altri 0,0677 USD nell'ora 00 UTC sono di giri precedenti sulla stessa app, non di questo lavoro |
 
-Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python benchmarks/inference-audit/lang_css.py spawn --cases tududi,bootstrap3,hn-svelte,saas-starter,sc-website,bulma` e `fetch`.
+Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bootstrap3,hn-svelte,saas-starter,bulma` e `fetch`.
+
+### v3-admin-vite (Vue 3)
+
+- File: 131 trovati, 131 letti interi, 0 mancanti. Pacchetti installati in 29,9 s, giro intero 37,2 s.
+- Nodi: rule 284, custom-property 167, custom-property external 80, module 68, variable 7, class external 6, module external 5, script-binding 4, keyframes 2, mixin 1.
+- Archi: class external 12, class project 392, custom-property external 222, custom-property project 235, id project 6, import external 5, import project 26, keyframes project 2, mixin project 6, placeholder project 25, sass-variable project 12, script project 2, v-bind project 7.
+- Incerti: 425 archi su 144 riferimenti.
+
+| Buco | Quanti | Esempi |
+| --- | --- | --- |
+| `no-font-face font-face` | 8 | `src/common/assets/styles/index.scss:41 Inter`, `src/common/assets/styles/index.scss:41 Helvetica`, `src/common/assets/styles/index.scss:41 Microsoft YaHei` |
+| `undeclared custom-property` | 5 | `src/common/assets/styles/view-transition.scss:15 --v3-theme-x`, `src/common/assets/styles/view-transition.scss:15 --v3-theme-y`, `src/common/assets/styles/view-transition.scss:18 --v3-theme-x` |
+| `no-rule class` | 3 | `src/common/components/Notify/index.vue:55 notify`, `src/common/components/Notify/index.vue:67 demo-tabs`, `src/common/composables/useTheme.ts:52 normal` |
+| `variable class` | 2 | `src/layouts/modes/LeftMode.vue:36 layoutClasses`, `src/layouts/modes/LeftTopMode.vue:21 layoutClasses` |
+| `interpolated-selector rule` | 1 | `src/common/assets/styles/theme/core/index.scss:1 .#{$theme-name}` |
+| `spread class` | 1 | `src/common/composables/useTheme.ts:58 ...otherThemeNameList` |
+| `url-scheme import` | 1 | `src/main.ts:15 virtual:uno.css` |
+
+Verifica a mano: 15 su 15.
+
+Note:
+- Scelto dalle pagine del repository, senza clone locale: 47 `.vue`, fogli globali importati da `src/main.ts` (normalize, Element Plus, vxe-table, `@@/assets/styles/index.scss`), alias `@` e `@@`, componenti di layout attraverso un barrel `src/layouts/components/index.ts`.
+- `.vue` trovati 47, letti 47. Blocchi `<style>`: 36 scoped SCSS, 1 globale SCSS; nessun `module`, nessun CSS semplice.
+- Archi delle classi dai template: 314 verso il componente proprio, 10 verso il padre con `child-root` (`.app-main` dei tre layout sulla radice di `AppMain`), 55 verso fogli globali importati da `main.ts`, 11 verso un altro componente (il blocco globale o un `:deep()` di un antenato), 10 verso fogli di pacchetti. Tutti certi.
+- Regola di pagina: nessun arco `sheet-not-proven-loaded`. `index.html` carica `/src/main.ts`; da lì il grafo dei moduli arriva a ogni componente per import, router (`() => import("@/pages/...")`) e barrel. I 425 incerti sono della cascata: 421 proprietà custom con più dichiarazioni (temi chiaro, scuro, dark-blue), 4 variabili Sass dichiarate in più file.
+- npm non installa senza un lockfile npm: è entrato il ripiego su pnpm (dal `pnpm-lock.yaml`, senza script).
+- Snapshot del prodotto: per ogni `.vue` i simboli dello script e una regola per selettore dei blocchi `<style>`, con il selettore appiattito; non sa se un blocco è `scoped` o `module` e non legge le classi del template. Il resto (tipo dei blocchi, classi del template, `v-bind()`, padre e figli, alias, fogli da `main`, regola di pagina) lo vede solo il grafo.
 
 ### tududi, prima e dopo
 
-- File: 1.708 trovati, 1.708 letti interi, 0 mancanti. Pacchetti installati in 475,4 s, giro intero 498,2 s.
+- File: 1.708 trovati, 1.708 letti interi, 0 mancanti. Pacchetti installati in 536,4 s, giro intero 565,6 s.
 - Nodi: class external 1.849, rule 707, font-face 69, module 20, custom-property 13, keyframes 9, module external 2, layer external 2, font-face external 1.
 - Archi: class external 37.158, class project 1.703, custom-property project 51, font-face external 1, font-face project 670, id project 1, import external 4, import project 3, include project 26, keyframes project 9, layer external 3.
 - Incerti: 924 archi su 667 riferimenti.
@@ -1353,44 +1380,43 @@ Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python b
 
 Verifica a mano: 20 su 20.
 
-Prima e dopo, sullo stesso commit:
-- buchi da 375 a 350: i 24 `css-in-js` sono diventati 69 archi verso le regole di `EditorView.theme` (`Note/editor/livePreviewTheme.ts`, `blockHandle.ts`), i 2 `tailwind-named-group` archi a `tailwindcss group` (catena `named-group`);
-- i 7 archi da `sr-only` dell'app React a Font Awesome restano e sono incerti (`sheet-not-proven-loaded`): l'app non carica il foglio della landing;
-- nuovi 26 archi `include` fra template EJS, che fanno delle pagine della landing un'unità con i loro partial;
-- 924 archi incerti, 897 per la regola di pagina: 639 verso Tailwind da sette file che il bundle dell'app non raggiunge (366 da `ProjectInsightsPanel.tsx`, 203 da `ProjectBanner.tsx`, poi due test), 144 verso `markdown.css`, 59 `@font-face` di `fonts.css` da pagine della landing; queste ultime due cause non sono indagate.
+Note:
+- Buchi da 375 a 350: i 24 `css-in-js` sono diventati 69 archi verso le regole di `EditorView.theme` (`Note/editor/livePreviewTheme.ts`, `blockHandle.ts`), i 2 `tailwind-named-group` archi a `tailwindcss group` (catena `named-group`).
+- I 7 archi da `sr-only` dell'app React a Font Awesome restano e sono incerti (`sheet-not-proven-loaded`): l'app non carica il foglio della landing.
+- 26 archi `include` fra template EJS: le pagine della landing sono un'unità con i loro partial.
+- 897 archi incerti per la regola di pagina: 639 verso Tailwind da sette file che il bundle dell'app non raggiunge (366 da `ProjectInsightsPanel.tsx`, 203 da `ProjectBanner.tsx`, poi due test), 144 verso `markdown.css`, 59 `@font-face` di `fonts.css` da pagine della landing; queste due ultime cause non sono indagate. Uguale al giro precedente: nessuna correzione successiva tocca tududi.
 
 ### Bootstrap 3.4.1 (Less)
 
-- File: 282 trovati, 280 letti interi, 2 mancanti: `docs/_pug/customizer-nav.pug` (template language: no reader); `docs/_pug/customizer-variables.pug` (template language: no reader). Pacchetti installati in 200,0 s, giro intero 208,5 s.
+- File: 282 trovati, 280 letti interi, 2 mancanti: `docs/_pug/customizer-nav.pug` (template language: no reader); `docs/_pug/customizer-variables.pug` (template language: no reader). Pacchetti installati in 239,4 s, giro intero 249,9 s.
 - Nodi: rule 2.775, class external 654, variable 399, module 264, mixin 115, module external 5, keyframes 2, font-face external 2, font-face 1, id external 1.
-- Archi: class external 14.612, class project 130.517, font-face external 2, font-face project 1, id external 1, id project 31, import external 34, import project 137, less-variable project 1.521, mixin project 263, script project 95.
-- Incerti: 143.192 archi su 7.228 riferimenti.
+- Archi: class external 14.612, class project 130.517, font-face external 2, font-face project 1, id external 1, id project 31, import external 34, import project 137, less-variable project 1.521, mixin project 281, script project 95.
+- Incerti: 143.210 archi su 7.234 riferimenti.
 
 | Buco | Quanti | Esempi |
 | --- | --- | --- |
 | `no-rule id` | 1.353 | `docs/_includes/ads.html:1 _carbonads_js`, `docs/_includes/customizer-variables.html:103 input-@font-family-base`, `docs/_includes/customizer-variables.html:1630 help-block-@thumbnail-padding` |
-| `interpolated-selector class` | 131 | `docs/_includes/components/glyphicons.html:10 {{`, `docs/_includes/js/scrollspy.html:18 bs-example-js-navbar-scrollspy`, `docs/examples/theme/index.html:412 collapsed` |
+| `no-rule class` | 118 | `docs/_includes/components/navbar.html:36 collapsed`, `docs/_includes/js/scrollspy.html:10 collapsed`, `docs/examples/tooltip-viewport/index.html:38 tooltip-right` |
 | `unresolved-import script` | 56 | `docs/_includes/ads.html:1 https://cdn.carbonads.com/carbon.js?zoneid=1673&serve=C6AILKT&pl`, `docs/examples/cover/index.html:80 ../../dist/js/bootstrap.min.js`, `docs/examples/sticky-footer-navbar/index.html:91 ../../dist/js/bootstrap.min.js` |
 | `no-font-face font-face` | 22 | `docs/assets/css/docs.css:1241 Menlo`, `docs/assets/css/docs.min.css:10 Courier New`, `docs/assets/less/customizer.less:31 Menlo` |
 | `interpolated-selector rule` | 15 | `less/mixins/grid-framework.less:17 @{list}`, `less/mixins/grid-framework.less:62 .col-@{class}-pull-@{index}`, `less/mixins/list-group.less:12 a.list-group-item-@{state} .list-group-item-heading, button` |
 | `unresolved-import import` | 7 | `docs/_includes/getting-started/download.html:34 {{ site.cdn.css }}`, `docs/_includes/getting-started/template.html:18 {{ site.cdn.css }}`, `docs/_includes/header.html:19 {{ site.baseurl }}/dist/css/bootstrap.css` |
-| `undeclared mixin` | 6 | `less/mixins/grid-framework.less:10 .col`, `less/mixins/grid-framework.less:26 .col`, `less/mixins/grid-framework.less:36 .col` |
 | `url-scheme import` | 2 | `docs/_includes/header.html:25 data:text/css;charset=utf-8,`, `docs/_includes/header.html:27 data:text/css;charset=utf-8,` |
+| `template-tag class` | 1 | `docs/_includes/components/glyphicons.html:10 {{ iconClassName }}` |
+| `template-tag-glued class` | 1 | `docs/_layouts/default.html:23 col-md-{% if page.fullwidth == true %}12{% else %}9{% endif ` |
 | `variable id` | 1 | `docs/assets/js/docs.min.js:1 c` |
 | `element-access class` | 1 | `docs/assets/js/docs.min.js:1 this.options["class"]` |
 
-Verifica a mano: 14 su 15.
-- `docs/examples/starter-template/index.html:39` `.collapsed`: mancano {'.collapsed': ['hole:no-rule']}, in più {'.collapsed': ['hole:interpolated-selector']}.
+Verifica a mano: 15 su 15.
 
 Note:
-- La verifica a mano è ricalcolata in locale dal grafo scaricato, con le attese corrette prima di guardarlo: la prima lista nominava un foglio che nessuna pagina carica (`dist/css/bootstrap.css` è in una stringa di un test JS) e una riga sbagliata (`.starter-template` è alla 59).
-- L'errore `.collapsed`: un selettore interpolato senza prefisso né suffisso (`@{list}`) dichiarava di poter generare ogni nome. Corretto (serve un prefisso o un suffisso), da rimisurare.
-- 143.192 archi incerti su 147.214: le pagine caricano i fogli compilati di `dist`, mai i sorgenti Less. Che `dist/css/bootstrap.css` nasca da `less/bootstrap.less` lo dice il Gruntfile, non il codice dei fogli.
-- I 6 `undeclared mixin .col` sono un mixin definito dentro un altro mixin: ora si cerca dallo scope più interno (fixture), da rimisurare. I 131 `interpolated-selector` contano anche i tag Liquid (`{{`): ora sono buchi `template-tag`.
+- La lista a mano è stata corretta dopo il primo giro, rileggendo il sorgente: nominava un foglio che nessuna pagina carica (`dist/css/bootstrap.css`, citato solo in una stringa di un test JS), una riga sbagliata (`.starter-template` è alla 59) e un buco sbagliato per `.collapsed` (nessuna regola lo nomina, lo legge solo il JavaScript del plugin collapse).
+- Corretto nel codice dopo il primo giro: un selettore interpolato senza prefisso né suffisso (`@{list}`) dichiarava di poter generare ogni nome; un mixin definito dentro un altro mixin ora si cerca dallo scope più interno (i 6 `undeclared mixin .col` sono spariti); i tag Liquid (`{{ }}`, `{% %}`) sono buchi `template-tag`.
+- 143.165 archi incerti per la regola di pagina: le pagine caricano i fogli compilati di `dist`, mai i sorgenti Less. Che `dist/css/bootstrap.css` nasca da `less/bootstrap.less` lo dice il Gruntfile, non il codice dei fogli.
 
 ### hn.svelte.dev (Svelte 3, stili scoped)
 
-- File: 20 trovati, 20 letti interi, 0 mancanti. Pacchetti installati in 43,8 s, giro intero 46,1 s.
+- File: 20 trovati, 20 letti interi, 0 mancanti. Pacchetti installati in 61,7 s, giro intero 64,1 s.
 - Nodi: rule 60, module 14, custom-property 6, keyframes 1.
 - Archi: class project 48, custom-property project 24, keyframes project 1.
 - Incerti: 27 archi su 13 riferimenti.
@@ -1405,19 +1431,19 @@ Note:
 Verifica a mano: 16 su 16.
 
 Note:
-- Le regole di un componente arrivano solo al suo markup; `:global(html).dark .x` dà `dark` a tutti. Un composto aperto da `:global(...)` è globale per intero, come in Svelte: il primo giro lo leggeva a metà (15 su 16), corretto.
+- Le regole di un componente arrivano solo al suo markup; `:global(html).dark .x` dà `dark` a tutti. Un composto aperto da `:global(...)` è globale per intero, come in Svelte: il primo giro lo leggeva a metà.
 - `src/template.html` linka `global.css`, che Sapper serve da `static/`: la convenzione non è nel codice, quindi buco `unresolved-import` e archi verso `static/global.css` incerti.
 
 ### saas-starter (Tailwind 4.1.7)
 
-- File: 43 trovati, 43 letti interi, 0 mancanti. Pacchetti installati in 37,1 s, giro intero 43,5 s.
-- Nodi: class external 280, custom-property 177, rule 10, module external 2, custom-property external 2, layer external 2, variant 1, module 1.
-- Archi: class external 818, custom-property external 8, custom-property project 222, import external 2, import project 1, layer external 5, variant project 5.
-- Incerti: 1.034 archi su 868 riferimenti.
+- File: 43 trovati, 43 letti interi, 0 mancanti. Pacchetti installati in 36,2 s, giro intero 41,7 s.
+- Nodi: class external 364, custom-property 177, rule 10, layer external 3, module external 2, custom-property external 2, variant 1, module 1.
+- Archi: class external 1.063, custom-property external 8, custom-property project 222, import external 2, import project 1, layer external 5, variant project 9.
+- Incerti: 1.279 archi su 1.113 riferimenti.
 
 | Buco | Quanti | Esempi |
 | --- | --- | --- |
-| `call class` | 24 | `components/ui/card.tsx:9 cn( "bg-card text-card-foreground flex flex-col gap-6 rounded-xl `, `components/ui/input.tsx:10 cn( "file:text-foreground placeholder:text-muted-foreground sel`, `components/ui/dropdown-menu.tsx:76 cn( "focus:bg-accent focus:text-accent-foreground data-` |
+| `parameter class` | 23 | `components/ui/card.tsx:9 className`, `components/ui/input.tsx:10 className`, `components/ui/dropdown-menu.tsx:76 className` |
 | `no-rule id` | 11 | `app/(dashboard)/dashboard/general/page.tsx:40 name`, `app/(dashboard)/dashboard/page.tsx:227 member`, `app/(dashboard)/dashboard/security/page.tsx:82 confirm-password` |
 | `no-font-face font-face` | 3 | `app/globals.css:80 Manrope`, `app/globals.css:80 Arial`, `app/globals.css:80 Helvetica` |
 | `property class` | 1 | `app/layout.tsx:26 manrope.className` |
@@ -1426,22 +1452,301 @@ Note:
 Verifica a mano: 15 su 15.
 
 Note:
-- Tailwind 4 è letto dal suo design system (`@theme`, `@custom-variant dark`, `@import "tw-animate-css"` come foglio esterno): 818 archi verso utility.
-- 1.034 archi incerti: con l'App Router di Next.js il layout `app/layout.tsx`, che importa `globals.css`, avvolge le pagine per convenzione, senza import. Da leggere come regola di framework (task 11 del piano).
-- I 24 buchi `call` sono `cn(...)`, l'helper del progetto su clsx e tailwind-merge: ora riconosciuto quando rende la chiamata dell'helper sul suo parametro (fixture), da rimisurare.
+- Tailwind 4 letto dal suo design system (`@theme`, `@custom-variant dark`, `@import "tw-animate-css"` come foglio esterno).
+- L'helper `cn` del progetto (tailwind-merge su clsx) ora è riconosciuto: le utility scritte nelle sue chiamate diventano archi (verso l'esterno da 818 a 1.063); resta buco `parameter` il `className` passato dal chiamante.
+- 1.050 archi `sheet-not-proven-loaded`: con l'App Router di Next.js il layout `app/layout.tsx`, che importa `globals.css`, avvolge le pagine per convenzione, senza import. Da leggere come regola di framework (task 11 del piano).
 
-### v3-admin-vite (Vue 3), styled-components-website e Bulma: non misurati
+### Bulma 1.0.4 (SCSS)
 
-- styled-components-website: `npm install` fallisce con `EOVERRIDE` (gli `overrides` di npm contro una dipendenza diretta; il progetto usa pnpm). Senza pacchetti il programma TypeScript non vede styled-components, e i template non sono riconosciuti: il giro (5,7 s) non vale come misura. Aggiunto il ripiego: pnpm alla versione di `packageManager`, dal lockfile, senza script.
-- Bulma: il giro ha superato i 50 minuti. Causa: ogni arco incerto portava la lista intera dei candidati, e una classe come `.button` ha migliaia di regole fra i 14 fogli compilati del checkout (`css/`, `css/versions/`, `docs/assets/css/website.css`). Ora la lista c'è solo quando una cascata o una compilazione sceglie fra candidati, e si calcola solo allora.
-- v3-admin-vite `c2c895d71d57`: scelto come caso Vue dalle pagine del repository, senza clone locale. Sono 47 `.vue` con 36 blocchi `<style lang="scss" scoped>` e uno SCSS globale, fogli globali importati da `src/main.ts` (normalize, Element Plus, vxe-table, `@@/assets/styles/index.scss`), alias `@` e `@@`, componenti di layout attraverso un barrel. I 15 usi della verifica a mano sono scritti dal sorgente in `HAND["v3-admin-vite"]` di `lang_css.py`, prima di qualunque grafo; il caso stampa anche file `.vue` trovati e letti, blocchi per tipo e `lang`, e dove finiscono gli archi delle classi dei template (componente proprio, padre, altro componente, foglio globale; certi o incerti).
-- Il giro di conferma con il codice finale non è partito per nessun caso: il file delle credenziali di Modal di questa macchina non esiste più (AuthError «Token missing»).
+- File: 602 trovati, 602 letti interi, 0 mancanti. Pacchetti installati in 7,0 s, giro intero 117,8 s.
+- Nodi: custom-property 56.445, rule 51.160, variable 991, module 507, keyframes 86, mixin 62, function 17, container 15, property 12, module external 12.
+- Archi: class project 5.052.873, container project 807, custom-property project 3.791.991, function external 188, function project 1.520, id project 35, import external 36, import project 359, keyframes project 962, mixin project 374, module-member project 62, placeholder project 103, sass-variable project 2.905, script project 1.
+- Incerti: 8.846.500 archi su 98.895 riferimenti.
 
-Vue, cosa sta nello snapshot del prodotto e cosa vede solo il grafo:
-- Snapshot: per ogni `.vue` i simboli dello script e una regola per ogni selettore dei blocchi `<style>` (CSS, SCSS, Sass, LESS), con lo span esatto e il selettore appiattito (`.login-container .login-card .content :deep(.el-input-group__append)`); un blocco Stylus è nominato nelle note. Non sa se un blocco è `scoped` o `module`, non legge le classi del template e non collega nulla.
-- Solo il grafo: il tipo di ogni blocco, le classi del template (`class`, `:class`, `id`), `$style.x`, `v-bind()`, l'albero padre-figlio, gli alias, gli import dei fogli da `main` e la regola di pagina.
+| Buco | Quanti | Esempi |
+| --- | --- | --- |
+| `undeclared custom-property` | 4.001 | `css/bulma.css:3336 --bulma-link-focus-border`, `css/versions/bulma-no-dark-mode.css:12863 --bulma-dark-15-l`, `css/versions/bulma-prefixed.min.css:3 --bulma-black-70-l` |
+| `interpolated-selector rule` | 1.157 | `docs/_sass/docs/notification.scss:55 .bd-notification.is-#{$name}`, `sass/elements/button.scss:628 .#{iv.$class-prefix}buttons.#{iv.$class-prefix}has-addons .#`, `sass/grid/columns.scss:195 .#{iv.$class-prefix}column.#{iv.$class-prefix}is-three-fifths-m` |
+| `no-rule class` | 1.072 | `docs/_includes/about/author.html:5 bd-footer-iframe`, `docs/_includes/library/layout/level.html:62 link`, `docs/documentation/elements/icon.html:521 fa-home` |
+| `no-rule id` | 268 | `docs/_includes/book/book-banner.html:1 bulma-book`, `docs/cyp/components/pagination.html:64 pagination-medium`, `docs/cyp/form/tools.html:57 field-is-grouped-centered` |
+| `undeclared function` | 246 | `docs/_sass/docs/backers.scss:27 cv.getVar`, `docs/_sass/docs/menu.scss:150 cv.getVar`, `docs/_sass/global/nav.scss:83 cv.getVar` |
+| `no-font-face font-face` | 233 | `css/bulma.css:21044 Inter`, `css/versions/bulma-no-dark-mode.css:18249 Ubuntu`, `css/versions/bulma-prefixed.min.css:3 Arial` |
+| `template-tag-glued class` | 219 | `docs/_includes/docs/components/call.html:1 bd-theme-{{ include.color }}`, `docs/_includes/docs/subnav/subnav-form.html:35 {% if page.doc-subtab == 'radio' %}is-activ`, `docs/cyp/elements/button.html:56 is-{{ color }}` |
+| `interpolated-selector class` | 165 | `docs/_includes/book/book-banner.html:5 bd-book-columns`, `docs/_includes/global/navbar.html:1 bd-navbar`, `docs/documentation/components/navbar.html:733 is-paddingless` |
+| `unresolved-import import` | 127 | `docs/_includes/docs/snippets/custom-page.html:7 my-bulma-project.css`, `docs/_sass/docs/tw.scss:1 sass/utilities/mixins`, `test/ruby-sass/sass/customize.scss:32 ../../../sass/elements/container.sass` |
+| `undeclared mixin` | 81 | `docs/_sass/docs/backers.scss:139 mx.mobile`, `docs/_sass/docs/examples.scss:106 mx.ltr`, `docs/_sass/global/nav.scss:243 mx.from` |
+| `template-tag-glued id` | 39 | `docs/_includes/docs/examples/navbar-bottom.html:14 navbarExample{{ include.id }}`, `docs/cyp/elements/button.html:38 button-{{ color }}-active`, `docs/cyp/elements/title.html:21 subtitle-{{ i }}` |
+| `unresolved-import module-member` | 34 | `docs/_react/bulma-customizer/src/pages/Colors.jsx:9 .colors`, `docs/_react/bulma-customizer/src/pages/components/Modal.jsx:10 .items`, `docs/_react/bulma-customizer/src/pages/elements/Table.jsx:10 .items` |
+| `parameter id` | 33 | `docs/_react/bulma-customizer/src/pages/Scheme.jsx:12 schemeId`, `docs/_react/bulma-customizer/src/pages/components/Navbar.jsx:12 id`, `docs/_react/bulma-customizer/src/pages/elements/Tag.jsx:12 id` |
+| `undeclared sass-variable` | 23 | `docs/_sass/docs/notification.scss:54 dv.$colors`, `docs/_sass/examples/custom.scss:9 $control-border-width`, `docs/website.scss:357 iv.$gap` |
+| `template-tag class` | 22 | `docs/_includes/docs/components/heading.html:5 {{ include.icon }}`, `docs/_includes/docs/elements/snippet.html:18 {{ include.wrapper }}`, `docs/_includes/global/nav-item.html:5 {% if link.icon_only %}` |
+| `unresolved-import script` | 15 | `docs/_includes/docs/content/klmn.html:111 {{ site.url }}/assets/javascript/klmn.js`, `docs/_layouts/default.html:24 {{ site.url }}/assets/vendor/clipboard-2.0.11.min.js`, `docs/index.html:16 {{ site.url }}/assets/javascript/home.js` |
+| `interpolated-selector id` | 12 | `docs/_includes/library/components/modal.html:26 modal-box`, `docs/cyp/elements/container.html:18 container-widescreen`, `docs/cyp/grid/columns.html:107 columns-mobile` |
+| `call class` | 11 | `docs/_react/bulma-customizer/src/components/Slider.jsx:150 classNames({ [cn.main]: true, [`, `docs/_react/bulma-customizer/src/components/VarItem.jsx:78 classNames({ "button is-small":`, `docs/_react/bulma-customizer/src/App.jsx:575 classNames({ [cn.button]: true, "is-hidden": ` |
+| `not-read import` | 6 | `docs/_includes/docs/snippets/getting-started.html:7 https://cdn.jsdelivr.net/npm/bulma@{{ `, `docs/documentation/start/installation.html:23 https://cdn.jsdelivr.net/npm/bulma@{{ site.d`, `docs/_sass/examples/custom.scss:41 https://fonts.googleapis.com/css?family=Nunito:400,700` |
+| `template id` | 3 | `docs/_react/bulma-customizer/src/components/Color.jsx:201 ${color}-h`, `docs/_react/bulma-customizer/src/components/Color.jsx:218 ${color}-s`, `docs/_react/bulma-customizer/src/components/Color.jsx:235 ${color}-l` |
+| `template class` | 3 | `docs/_react/bulma-customizer/src/components/Color.jsx:251 is-${color}`, `docs/assets/javascript/klmn.js:27 is-${n}`, `docs/assets/javascript/shop.js:398 shop-product-${getId(product.id)}` |
+| `template-tag id` | 2 | `docs/_includes/docs/elements/anchor-bis.html:1 {{ include.name | slugify }}`, `docs/_includes/docs/elements/anchor.html:1 {{ include.name | slugify }}` |
+| `dynamic-member module-member` | 2 | `docs/_react/bulma-customizer/src/components/Slider.jsx:133 cn[kind]`, `docs/_react/bulma-customizer/src/components/Picker.jsx:46 cn[kind]` |
+| `parameter class` | 2 | `docs/assets/javascript/shop.js:846 className`, `docs/assets/javascript/shop.js:854 icon` |
+| `property id` | 1 | `docs/_react/bulma-customizer/src/components/VarItem.jsx:47 cssvar.id` |
+| `unknown-member module-member` | 1 | `docs/_react/bulma-customizer/src/components/Color.jsx:175 side` |
+
+Verifica a mano: 7 su 11.
+- `docs/_layouts/docs.html:15` `.button`: mancano {'.button': ['docs/_react/bulma-customizer/src/App.module.css:53']}, in più {}.
+- `docs/_layouts/docs.html:16` `.fas`: mancano {'.fas': ['hole:no-rule']}, in più {'.fas': ['docs/_sass/docs/docs.scss:124', 'docs/_sass/docs/docs.scss:162', 'docs/assets/css/website.css:33713', 'docs/assets/css/website.css:33745', 'docs/assets/css/website.min.css:2']}.
+- `docs/_layouts/docs.html:35` `.algolia-content`: mancano {}, in più {'.algolia-content': ['hole:interpolated-selector']}.
+- `docs/_layouts/docs.html:15` `#js-menu-toggle`: mancano {}, in più {'#js-menu-toggle': ['hole:no-rule']}.
+
+Note:
+- 602 file trovati, tutti letti. Nel primo giro di conferma 4 fogli restavano fuori (`sass/base/animations.scss`, `docs/website.scss` e altri due): sass-parser 0.5.6 rifiuta un selettore di keyframe in percentuale (`0% { ... }`, «expected selector»), che Dart Sass legge. Dentro `@keyframes` quel selettore ora si scrive `to`, sulla stessa riga, prima del parser: il grafo non tiene i selettori dei keyframe, solo le dichiarazioni. Prova nella fixture `css-sass`.
+- 8.852.216 archi, quasi tutti incerti per la regola di pagina: le pagine della documentazione linkano i fogli con URL Liquid (`{{ site.url }}/...`), che non si risolvono, quindi nessuna pagina prova di caricare un foglio; e il checkout contiene 14 copie compilate di Bulma (`css/`, `css/versions/`, `docs/assets/css/website.css`), ciascuna con tutte le regole.
+- 1.157 buchi `interpolated-selector`: `.#{iv.$class-prefix}button` e simili. Il prefisso è una variabile di modulo con `!default`, che chi usa Bulma può cambiare: non è un valore letterale e locale, quindi buco per scelta.
+- 246 `undeclared function` (`cv.getVar`) e 81 `undeclared mixin` (`mx.mobile`): i fogli di `docs/_sass` caricano `sass/utilities/...` per un load path di Jekyll (`_config.yml`), che non è nel codice dei fogli; l'import resta `unresolved-import` e lo spazio dei nomi è sconosciuto.
+- Verifica a mano 7 su 11, quattro differenze, nessuna un errore del grafo: `.button` (la scansione conta anche `App.module.css:53`, che è una classe locale di un CSS Module); `.fas` (attesa sbagliata: `docs/_sass/docs/docs.scss:124` e `:162` nominano `.fas`); `.algolia-content` e `#js-menu-toggle` (nessuna regola li nomina, l'attesa «tutte le regole» doveva essere un buco: il grafo dà `no-rule` per l'id e `interpolated-selector` per la classe, perché un selettore costruito a compilazione che finisce con `content` potrebbe nominarla). Le attese sono lasciate come erano state scritte.
+
+### styled-components-website: non misurato
+
+- Primo giro: `npm install` fallisce con `EOVERRIDE` (gli `overrides` di npm contro una dipendenza diretta; il progetto usa pnpm). Secondo giro, con il ripiego su pnpm: `npx` girava nella copia dei manifest e rileggeva lo stesso `package.json`, con lo stesso `EOVERRIDE`. Seconda volta per la stessa causa: caso fermato.
+- Corretto dopo, non provato: `npx pnpm --dir <copia>` da una cartella sua.
+- Senza pacchetti il programma TypeScript non vede styled-components e i template non sono riconosciuti; il giro (8,2 s) non vale come misura. Il file `graph-css-sc-website-checks.json` non è salvato.
 
 Cosa manca a questa misura:
-- il giro di conferma con il codice finale, per tutti i casi;
-- v3-admin-vite, Bulma e styled-components-website;
-- i casi Vue e Stylus reali: provati solo sulle fixture.
+- styled-components-website, e un caso Svelte 5 e uno Stylus reali: provati solo sulle fixture;
+- le convenzioni dei framework per il caricamento (layout di Next.js, `static/` di Sapper);
+- UnoCSS (v3-admin-vite lo usa poco: i suoi token restano `no-rule`).
+
+### 14 novembre 2026, Java e Kotlin nel container del plugin
+
+Il prodotto indicizza Java e Kotlin con `index()` di `indexers/java.py` e `indexers/kotlin.py`. La build gira solo nel container, in due tempi: la preparazione con la rete aperta ai soli registri, poi l'esecuzione senza rete. Su Modal un container non si avvia, quindi gli stessi script girano nel container della funzione (`adapters/jvm_here.py`). Ricevono la stessa copia del perimetro e gli stessi strumenti portati da Daodan, e stanno dietro lo stesso proxy dei registri, che lì fa solo da controllo. `lang_java.py`, `lang_kotlin.py` e `fixture_indexes.py` usano l'immagine e le funzioni del plugin, più `git` per il checkout.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | javapoet e klaxon, ai commit sopra; la fixture Java sul PC del proprietario |
+| immagine | `eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6` (`indexers.jvm.IMAGE`) |
+| scip-java | 0.14.2: i 26 jar che coursier 2.1.24 risolve, ciascuno con il suo sha256 (`indexers.jvm.CLASSPATH`) |
+| strumento di build | quello del wrapper, scaricato da Daodan e verificato; senza wrapper Gradle 9.9.1 o Maven 3.10.0 |
+| registri | quelli di `container.REGISTRIES` più `indexers.jvm.REGISTRIES_ADDED`; nessun host di GitHub, nessun `services.gradle.org` |
+| soglia | conteggi uguali a `results/graph-java-javapoet-checks.json` (scip-java 0.13.2) e a `results/graph-kotlin-klaxon.json` |
+
+Risultati su Modal, con il codice del plugin verificato per hash. Costo di tutte le prove del giorno: 0,10 USD.
+- javapoet: resoconto del grafo identico (3.541 nodi, 19.189 archi, archi per fine, buchi, pacchetti, `same_range` 9, `static` 3, ordine degli overload 808 su 808); verifica a mano 20 su 20.
+  - La prima build fallisce come con la 0.13.2. La seconda, con il javac semplice (ora un programma Java: l'immagine non ha Python), dà l'indice.
+  - Indicizzatore 28,2 s, picco 733 MB; 1.596 MB per tutti i processi.
+  - Il proxy rifiuta `maven.java.net`, `oss.sonatype.org` e `repository.apache.org`, che la build chiede ma non usa.
+- L'accordo con il lessicale passa da 264 uguali e 25 «il lessicale la classe, l'indice il costruttore» a 283 uguali e 6 diversi. Lo causa la regola del costruttore nel grafo (commit `88c21ea89`), non l'indicizzatore: nei 6 il lessicale indica un costruttore scritto, come `AnnotationSpec.java:249`, mentre la fine ora indica la classe.
+- klaxon: ogni conteggio identico (15.940 archi certi, 251 incerti, buchi, 30 relazioni inverse tolte, verifica a mano 16 su 20). Gradle 7.3 è quello del wrapper, portato da Daodan, e il proxy non rifiuta nulla.
+  - Indicizzatore 84,9 s, picco 1.636 MB.
+  - Con l'immagine di rilascio di scip-java erano 130,2 s e 4.050 MB; nella misura salvata 107,2 s e 2.205 MB.
+- Con l'immagine di rilascio il wrapper di Gradle scaricava da `services.gradle.org`, che lo rimanda a `github.com`. Ora la distribuzione la porta Daodan, e nessun host di GitHub è aperto.
+
+Peso su disco, misurato su Modal leggendo gli strati dal registro:
+- immagine di rilascio di scip-java: 1.700 MB compressi, 2.748 MB su disco. Di questi, 1.538 MB sono la cache di coursier (i JDK 17, 21 e 25 e le dipendenze), 251 MB il JDK 25 della base, 145 MB Gradle e 110 MB gcc.
+- immagine del plugin: Temurin 17, 190 MB compressi e 403 MB su disco. Gli strumenti restano nella cartella condivisa sull'host: scip-java 81 MB, Maven 10 MB, Gradle 129 MB.
+
+Sul PC del proprietario (Kiri 0.2.0, CLI docker 29.9.2, un container da 2 GB, `RealContainerSmokeTest`):
+- fixture Java senza wrapper: Maven 3.10.0 portato da Daodan e dipendenze da Maven Central attraverso il proxy. L'indice è scritto e le 7 attese di `expected.json` tengono. 31,7 s, indicizzatore 10,2 s, picco 346 MB.
+- la stessa fixture con `mvnw` in CRLF, senza bit di esecuzione, e `.mvn/` tracciato da Git: la copia porta `.mvn/` e il container chiama il Maven portato, senza scaricare distribuzioni. 15,6 s.
+- impostazioni dell'utente uguali prima e dopo (PATH, configurazione e contesti di Docker, PATH dell'utente, distribuzioni WSL).
+- in Kiri restano Temurin (438 MB) e il proxy `python:3.13-alpine` (53 MB). Il disco di Kiri resta di 1,66 GB.
+- fixture Kotlin, con un container da 4 GB: senza wrapper si usa il Gradle 9.9.1 portato da Daodan, verificato con il suo sha256. Il plugin Kotlin 2.1.0 compila, e le 7 attese di `expected.json` tengono. 84 s; indicizzatore 63,4 s, picco 1.788 MB.
+- wrapper di Gradle che indica `downloads.example.com`: risulta `unavailable`, senza container e senza richieste a quel sito.
+- ogni run lascia in `/var/lib/kiri/layers` lo strato dell'immagine preparata, che Kiri 0.2.0 non cancella con `rmi -f` e che la CLI non elenca. Pesa 118 MB per Java (scip-java 83, `.m2` 24, Maven 12) e 426 MB per Kotlin (`.gradle` 195, Gradle 148, scip-java 83). Il disco di Kiri passa da 1,66 a 2,26 GB.
+
+Cosa manca a questa misura:
+- klaxon in un container vero;
+- la correzione di `container.py`, perché gli strumenti portati non restino nello strato preparato;
+- la rimozione per nome degli strati orfani già lasciati.
+
+## 14 novembre 2026, phazly nel grafo dall'indice
+
+phazly (privato) passa per la prima volta dal grafo letto dall'indice. Archivio: `git archive 46c92b28 react-app shared functions-python`, senza `google-services.json`; i file `.env`, i keystore e `functions-python/app/core/secrets.py` non c'erano già. Restano fuori i tre sottomoduli `vendor/` (plugin Tauri). Una sola esecuzione su Modal, app `daodan-scip-audit`, caso `phazly` di `modal_scip.py` con etichetta `graph`, codice uguale al checkout per hash. Nello stesso container:
+- snapshot;
+- passo dei motori rieseguito, perché le risposte per chiamata del 13 novembre non erano state tenute; ora sono in `scip-inputs/phazly/answers.sqlite` e `answers-phazly-graph.sqlite`;
+- scip-python su `functions-python`;
+- scip-typescript su ogni file JS/TS, con `react-app/tsconfig.app.json` come base (alias `@/` e `@shared/`) e i pacchetti di `react-app` e `shared` installati a parte;
+- rust-analyzer su `react-app/src-tauri`.
+
+Risultato: `results/scip-phazly-graph.json`. Il driver ha avuto il caso `phazly` (`OPTIONS`: commit, cartella di Python, tsconfig base, dichiarazioni da elencare per intero), Python fra le lingue, i siti `read` nella prova a mano e i siti statici dell'adapter Python nel join.
+
+### Verdetto
+
+| Lingua | Il grafo è meglio del passo? | Cosa resta fuori |
+| --- | --- | --- |
+| Python | quasi: stesse destinazioni in 10.202 chiamate e 317 in più, ma 114 solo nel passo e 13 diverse | riceventi senza tipo che Jedi deduce dai chiamanti o dagli assegnamenti (56); funzioni tenute in un locale, perché l'adapter Python non ha il salto `initializer` (49); `@overload` al posto dell'implementazione (12) |
+| TypeScript | sì: tutte le 3.257 destinazioni del passo, più 329 | `t` di `useTranslation`; membri di contratto al posto delle funzioni del contesto (`startCheckout`); azioni zustand ferme alla firma |
+| JavaScript | sì: 65 uguali, nessuna persa, più gli esterni con pacchetto | riceventi senza tipo negli script |
+| Rust | non misurato (grafo 2 chiamate su 29, passo 0) | le dipendenze `path` verso `vendor/` mancano, `cargo metadata` fallisce e rust-analyzer indicizza senza dipendenze |
+| Kotlin | non misurato | nessun indice: la build Gradle chiama `cargo metadata` su `vendor/` e vuole l'SDK Android e `google-services.json` |
+
+Rust e Kotlin su phazly non sono misurati. L'archivio non ha i sottomoduli `vendor/`, da cui dipendono sia il crate Tauri sia la build Android; la build Android vuole anche l'SDK Android e `google-services.json`, un file segreto che resta fuori dall'archivio.
+
+### Grafo
+
+| Lingua | File snapshot / indicizzati | Nodi | Archi | Funzione, metodo o classe del progetto | Valore del progetto | Esterno | Vicolo cieco | Incerti |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Python | 336 / 333 | 35.662 | 147.143 | 16.877 | 83.699 | 43.718 | 2.849 | 0 |
+| TypeScript | 437 / 437 | 26.158 | 102.734 | 7.975 | 49.893 | 41.090 | 3.776 | 0 |
+| JavaScript | 11 / 11 | 889 | 2.814 | 68 | 1.020 | 1.549 | 177 | 0 |
+| Rust | 3 / 3 | 12 | 8 | 1 | 6 | 1 | 0 | 0 |
+
+- Python, i 3 file mancanti sono script fuori dalla cartella indicizzata: `react-app/scripts/generate-emoji-font.py`, `react-app/scripts/store-art/finalize.py`, `react-app/scripts/store-art/verify-gallery-png.py`.
+- Rust: i 3 file hanno un documento ma quasi nessuna occorrenza.
+- Nessun adapter di queste lingue marca archi incerti.
+- Salti sulle chiamate che arrivano al progetto: Python `builtin` 2.371, `import-binding` 259, implementazione 194, `classmethod-cls` 19; TypeScript intervallo condiviso 8.238, inizializzatore 1.994, `declared:@types/react.useCallback` 663, chiave di pattern 213.
+
+### Confronto con il passo dei motori, chiamate
+
+| Lingua | Chiamate | Passo | Grafo | Uguali | Diverse | Solo passo | Solo grafo |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Python | 32.116 | 10.329 | 10.532 | 10.202 | 13 | 114 | 317 |
+| TypeScript | 15.160 | 3.257 | 3.586 | 3.257 | 0 | 0 | 329 |
+| JavaScript | 639 | 65 | 65 | 65 | 0 | 0 | 0 |
+| Rust | 29 | 0 | 1 | 0 | 0 | 0 | 1 |
+
+- Il passo non chiede le letture. Il grafo dà una destinazione del progetto a 2.878 letture Python (1.478 senza il lessicale), 1.616 TypeScript (933) e 3 JavaScript.
+- Esterni con pacchetto e versione nelle chiamate: Python 18.260, TypeScript 7.448, JavaScript 504. Il passo ne dà 11.239, 7.359 e 131, sempre senza pacchetto.
+
+Solo passo, Python, tutte e 114 per quello che il grafo ha in quel punto:
+
+| Classe | Chiamate | Perché | Esempi |
+| --- | --- | --- | --- |
+| ricevente senza tipo: parametro senza annotazione, fixture, attributo di un risultato | 56 | scip-python non scrive l'occorrenza; Jedi deduce il tipo dai chiamanti o dagli assegnamenti | `functions-python/app/services/meal_images.py:166` `corpus.match`, `functions-python/tests/unit/test_api_keys.py:165` `fake_db.apiKeys.count_documents`, `functions-python/tests/unit/test_planner_solver.py:1205` `result.week.week_vector` |
+| funzione tenuta in un locale (35), in un parametro (13), in un attributo (1) | 49 | il grafo si ferma al valore: l'adapter Python non ha il salto `initializer` che ha TypeScript | `functions-python/tests/unit/test_planner_compose.py:182` `real`, `functions-python/tests/unit/test_planner_revision_repository.py:2138` `repo_at`, `functions-python/app/planner/mutations.py:1735` `self._food_loader` |
+| file fuori dalla cartella indicizzata | 8 | i tre script di `react-app/scripts` | `react-app/scripts/store-art/finalize.py:134` `mean_rgb`, `:164` `main`, `react-app/scripts/generate-emoji-font.py:152` `download_font` |
+| nome importato, letto come attributo di un altro modulo | 1 | il salto `import-binding` vale solo sulla riga dell'import | `functions-python/tests/unit/test_billing_regressions.py:2539` `play_billing.get_settings` |
+
+Diverse, Python, tutte e 13:
+- 12 `generate` di `functions-python/app/services/llm/gateway.py`: il grafo dà il primo `@overload` (`:123`), il passo l'implementazione (`:156`). Ha ragione il passo. Esempi: `functions-python/app/handlers/decompose_dish.py:84`, `functions-python/app/pipeline/oneshot.py:74`, `functions-python/app/services/recipe_titles.py:168`.
+- `functions-python/app/services/llm/providers/__init__.py:28` `provider.handles`: il passo dà il metodo del `Protocol` (`providers/base.py:37`). Il grafo dà una sola delle due implementazioni, `providers/vertex.py:229`; manca `providers/openai_compat.py:98`.
+
+Solo grafo, letti 20 esempi per lingua:
+- Python, 317. Il passo risponde `project-not-a-symbol` o `ambiguous-target` in 132, un esterno in 112, niente in 73. Fra i 20:
+  - metodi `@classmethod`, dove Jedi risponde con il decoratore (`functions-python/app/planner/proof.py:936` `Residual.between`, `functions-python/tests/unit/test_planner_assembly.py:783` `CorpusIndex.build`);
+  - handler decorati da `@router.post`, dove Jedi dà il valore del decoratore (`functions-python/tests/unit/test_billing_regressions.py:1138` `play_rtdn.play_rtdn`);
+  - metodi su locali tipizzati, dove Jedi tace (`functions-python/app/planner/proof.py:275` `r.as_dict`);
+  - 6 destinazioni ambigue per Jedi, una sola per il grafo (`functions-python/tests/unit/test_planner_revision_repository.py:1383` `repo.commit_active`).
+- TypeScript, 329. Il passo risponde `project-not-a-symbol` in 328. Fra i 20:
+  - 15 funzioni avvolte in `useCallback`, raggiunte con il salto dichiarato (`react-app/src/components/features/PhotoCapture/PhotoCapture.tsx:201` `showUsageLimitPaywall`);
+  - 1 funzione dentro un oggetto (`react-app/src/components/settings/SettingsSheetsHost.tsx:49`);
+  - 4 azioni di uno slice zustand (`react-app/src/components/settings/calm/profile/AppPane.tsx:42` `ui.setTheme`, `react-app/src/components/tabs/MealPlanTab.tsx:162` `setCurrentPlan`), che arrivano al membro dell'interfaccia (`react-app/src/stores/slices/uiSlice.ts:78`, `react-app/src/stores/slices/mealPlanSlice.ts:56`) e non alla funzione eseguita. È lo stesso difetto di tududi: una firma presa per funzione.
+- Rust, 1: `react-app/src-tauri/src/main.rs:5` `phazly_lib.run` → `react-app/src-tauri/src/lib.rs:2`; il passo non la chiede.
+
+### Buchi per classe (chiamate e letture)
+
+| Lingua | Classe | Riferimenti | Esempi |
+| --- | --- | --- | --- |
+| Python | nessuna occorrenza | 4.398 (2.584 chiamate) | `functions-python/app/api/deps.py:83` `doc.get`, `functions-python/app/planner/solver.py:783` `model.NewBoolVar`, `functions-python/app/handlers/admin/analytics.py:141` `(expr).to_list` |
+| Python | file senza documento | 528 | `react-app/scripts/generate-emoji-font.py:103`, `react-app/scripts/store-art/finalize.py:116`, `react-app/scripts/store-art/verify-gallery-png.py:26` |
+| Python | simbolo del progetto senza definizione | 394 | `functions-python/app/api/deps.py:51` `__name__`, `functions-python/tests/unit/test_billing_regressions.py:743` `asyncio.Event`, `functions-python/app/handlers/admin/meal_images.py:143` `httpx.AsyncClient` |
+| Python | locale senza definizione | 308 | `functions-python/app/api/deps.py:227` `task.add_done_callback`, `functions-python/tests/unit/test_billing_regressions.py:910` `entered.wait`, `functions-python/app/handlers/process_meal_images.py:767` `_worker_task.done` |
+| TypeScript | locale senza definizione | 2.293 | `react-app/src/App.tsx:81` `t`, `react-app/src/components/common/AddMealTypeSheet.tsx:76` `toast.success`, `react-app/src/components/features/AIAlternatives.tsx:386` `DialogPrimitive.Portal` |
+| TypeScript | nessuna occorrenza | 517 (7 chiamate) | `react-app/src/components/common/DesktopTabRenderer.tsx:29` `TAB_MAP.home`, `react-app/src/services/mealPlanService.ts:176` `data.proof.policyHash`, `react-app/src/utils/plannerPlanWire.ts:85` `value.inputBasis` |
+| TypeScript | chiamata senza posizione (callee dinamico) | 80 | `react-app/src/contexts/SubscriptionContext.tsx:197`, `react-app/src/components/settings/MealTypesConfig.tsx:326`, `react-app/scripts/screenshots/take-screenshots.ts:82` |
+| JavaScript | nessuna occorrenza | 208 | `react-app/scripts/android-version.mjs:41` `v.match`, `react-app/scripts/store-art/export-feature.mjs:136` `page.screenshot`, `react-app/scripts/store-art/export-gallery.mjs:86` `page.setContent` |
+| Rust | nessuna occorrenza | 29 | `react-app/src-tauri/build.rs:2` `tauri_build.build`, `react-app/src-tauri/src/lib.rs:22` `(expr).plugin`, `react-app/src-tauri/src/lib.rs:33` `app.handle` |
+
+Classi minori: Python senza posizione 6, TypeScript simbolo senza definizione 7, JavaScript senza posizione 3. Fra i locali TypeScript senza definizione, 1.923 riferimenti sono quelli che il lessicale chiama `non-callable-binding`, negli esempi tutti `t`; altri 193 hanno negli esempi `toast.*` di sonner.
+
+### Esterni con pacchetto e versione (archi)
+
+- Python: python-stdlib 3.11 37.363, pydantic 2.12.5 2.173, pytest 9.2.0 1.541, fastapi 0.136.3 781, ortools 9.12.4544 345, motor 3.7.0 272, starlette 1.10.0 232, firebase_admin 7.1.0 231, pymongo 4.18.3 225, httpx 0.28.1 168, stripe 14.3.0 92.
+- TypeScript: typescript 6.0.3 16.483, @types/react 19.3.0 13.099 (e 19.2.14 1.513, dall'installazione di `shared`), pacchetto `. .` 1.713, @phosphor-icons/react 2.1.10 1.602, framer-motion 12.43.0 1.456, motion-dom 12.43.0 1.201, @types/node 24.19.2 1.143, react-i18next 16.6.6 560, sonner 2.0.8 316, playwright-core 1.65.1 302, i18next 25.10.10 267, zustand 5.1.0 183.
+- JavaScript: typescript 6.0.3 872, @types/node 24.19.2 638, pacchetti di eslint 26.
+- Rust: `core` 1.
+
+### Controllo a mano
+
+59 siti, scelti fra file diversi e con casi difficili (decoratori, `Depends`, funzioni annidate, fixture, `useCallback`, valori del contesto, JSX a una e a due parti, callback). L'atteso è stato scritto leggendo il sorgente prima che il grafo esistesse; sta in `HAND["phazly"]` di `modal_scip.py`. Kotlin non ha siti, perché non ha grafo.
+
+| Lingua | Siti | Grafo | Passo |
+| --- | --- | --- | --- |
+| Python | 15 | 15 | 15 |
+| TypeScript | 15 | 9 | 6 |
+| JavaScript | 15 | 13 | 6 |
+| Rust | 14 | 2 | 0 |
+
+Mancati del grafo:
+- TypeScript, 6:
+  - `react-app/src/components/subscription/PaywallModal.tsx:132` `startCheckout` e `:130` `clearError`: il grafo, come il passo, dà il membro del contratto (`react-app/src/contexts/SubscriptionContext.tsx:151`, `:155`). L'atteso era la funzione in `useCallback` (`:296`, `:237`): il valore del contesto è legato al contratto solo dal tipo.
+  - `PaywallModal.tsx:239` `onOpenChange`: l'atteso era un valore, perché a runtime sono i setter dei chiamanti. Il grafo prende per funzione la firma della prop (`PaywallModal.tsx:38`).
+  - `react-app/src/components/home/SortableHomeCards.tsx:73` `Reorder.Item`: un `local` senza definizione; l'atteso era framer-motion.
+  - `react-app/src/hooks/useHomeTabController.ts:393` `addMealAddition`: è il risultato del selettore `useAppStore(...)` e il grafo si ferma alla variabile; l'atteso era `react-app/src/stores/slices/mealPlanSlice.ts:260`.
+  - `react-app/src/hooks/useHomeTabController.ts:413` `t`: un `local` senza definizione. Il passo dà un esterno senza pacchetto.
+- JavaScript, 2: `react-app/.design-sync/prebuild.mjs:21` e `:24` non sono nello snapshot, che esclude le cartelle che iniziano con un punto. L'errore è mio, nella scelta dei siti.
+- Rust, 12: nessuna occorrenza, perché senza le dipendenze non c'è nessun simbolo di tauri.
+
+Mancati del passo:
+- TypeScript: i cinque siti sopra, più due rese di `PaywallModal` e `SubscriptionContext.Provider`, che non chiede, e `showUsageLimitPaywall` (`project-not-a-symbol`).
+- JavaScript: sette esterni non chiesti o senza risposta, più i due siti fuori dallo snapshot.
+- Rust: tutti e 14.
+
+### Paywall e `startCheckout`
+
+- `<PaywallModal` è reso da 11 componenti, contati nel sorgente, tutti con un nome di una sola parte. Nel grafo arrivano tutti e 11 a `react-app/src/components/subscription/PaywallModal.tsx:68`, senza salti: 23 archi, cioè 11 letture JSX, 11 import e il re-export di `react-app/src/components/subscription/index.ts:1`.
+- Il passo non chiede le letture. Dei 3 siti di resa controllati a mano ne ha 1, grazie al lessicale (import diretto, `react-app/src/components/subscription/ExpiredBanner.tsx:66`). Gli altri due passano dal barrel `@/components/subscription` o `../subscription`.
+- In phazly a questo commit non c'è nessun `<X.Paywall />`. Le forme JSX a due parti presenti: `react-app/src/contexts/SubscriptionContext.tsx:699` `SubscriptionContext.Provider` è giusta (esterno `@types/react`), `Reorder.Item` è mancata.
+- `startCheckout` ha 3 archi, tutti verso il contratto `react-app/src/contexts/SubscriptionContext.tsx:151`: la chiamata `PaywallModal.tsx:132`, la destrutturazione `PaywallModal.tsx:71` e la proprietà dell'oggetto valore `SubscriptionContext.tsx:687`. Nessuno arriva alla funzione `:296`. Il grafo conserva il contratto, come chiede il recap. Per arrivare alla funzione bisognerebbe legare la proprietà dell'oggetto passato al Provider al membro del contratto, e l'indice questo legame non lo scrive.
+- Classe aperta: quando una funzione arriva a chi la chiama attraverso un oggetto passato al Provider di un contesto o a un creatore di store (zustand), l'indice si ferma al membro del contratto. Su phazly: `startCheckout` e `clearError` del contesto, le azioni degli slice (`setTheme`, `setCurrentPlan`, `addMealAddition`). Nessuna fonte provata finora la chiude.
+
+### Tempi, memoria, costo
+
+| Fase | Secondi | RAM di picco |
+| --- | --- | --- |
+| snapshot | 52,8 | non misurata |
+| passo dei motori (Jedi, typescript-language-server, rust-analyzer, Kotlin Analysis API) | 2.347,3 | 1.216 MB |
+| scip-python 0.6.8 (47 requisiti dichiarati, 127 pacchetti nella venv) | 72,4 | 1.850 MB |
+| scip-typescript 0.5.2 (TypeScript 6.0.3) | 40,0 | 1.834 MB |
+| rust-analyzer 2026-11-09 | 2,5 | 891 MB |
+| grafo e confronto | 30,2 | non misurata |
+| container intero | 2.556,1 | |
+
+- Copertura del passo in questa esecuzione, risolte su risolvibili: Python 10.329 su 13.383 (77,2%), TypeScript 3.257 su 5.763 (56,5%), JavaScript 65 su 329 (19,8%), Kotlin 41 su 192 (21,4%), Rust 0 su 17. Il 13 novembre il passo durava 1.594 s.
+- Costo fatturato da Modal: 0,159 USD nell'ora 12 UTC, che è solo di questa esecuzione, immagine compresa. L'ora 13 UTC, non ancora chiusa, vale 0,105 USD, ma contiene anche le esecuzioni chi e semver di un altro agente sulla stessa app: la quota di phazly, 13 minuti su 43, è circa 0,07 USD. In tutto circa 0,23 USD.
+
+Non verificato:
+- dei 56 riceventi senza tipo e delle 49 funzioni in un locale ho letto 20 esempi per classe, e nel sorgente un caso per classe; gli altri sono contati dalla classe che dà l'indice;
+- i 6 siti che Jedi dà ambigui e il grafo dà con un solo bersaglio: non so se quel bersaglio è quello giusto;
+- perché scip-python attribuisce al progetto `asyncio.Event` e `httpx.AsyncClient` (394 riferimenti), e perché la libreria standard è etichettata 3.11 con Python 3.13;
+- il pacchetto `. .` (1.713 archi TypeScript);
+- Kotlin, che non ha indice;
+- l'immagine contiene modifiche non committate di altri agenti al plugin; l'hash del codice era uguale al checkout al momento del deploy.
+
+### Le due cause Python corrette
+
+Due regole nuove nell'adapter Python (`indexers/python.py`, `hops`), provate prima sulla fixture
+(`tests/fixtures/code-graph/python/fx/held.py`, `fx/over.py`, nove casi in `expected.json`, indice rigenerato su
+Modal con `fixture_indexes.py`):
+
+- `initializer`: un nome assegnato a un solo nome, semplice o puntato (`f = area`, `f = shapes.area`,
+  `self.f = area`), porta a ciò a cui rimanda l'ultimo nome. Il risultato di una chiamata no.
+- `rebinding`: scip-python definisce una funzione solo al suo primo `def`, cioè allo stub `@overload`. Gli altri
+  `def` sono riferimenti allo stesso simbolo. La chiamata finisce sull'ultimo `def` senza `overload`. Un
+  Protocol fatto di soli stub li tiene. In `code_graph.Traversal.ends` un salto `rebinding` prende il posto della
+  definizione, e l'arco lo dice nella sua catena. Senza questo cambio lo stub, che è già una funzione, ferma
+  ogni salto. La parte comune non sa nulla di `overload`: decide l'adapter quando emettere il salto.
+  `tests/test_codebase_map_code_graph.py`: 95 test verdi, uno nuovo per `rebinding` nella parte comune.
+
+Stesso indice e stesse risposte del passo, ricongiunti su Modal (etichette `before` e `final`, hash del codice
+uguale al worktree):
+
+| Python, chiamate | prima | dopo |
+|---|---:|---:|
+| stesso bersaglio | 10.202 | 10.234 |
+| bersaglio diverso | 13 | 1 |
+| solo il passo | 114 | 94 |
+| solo il grafo | 317 | 321 |
+
+- I 12 `generate` vanno ora a `functions-python/app/services/llm/gateway.py:156`, come il passo. Resta diverso
+  `functions-python/app/services/llm/providers/__init__.py:28` `provider.handles`: il passo dà il Protocol, il
+  grafo l'implementazione.
+- `initializer` porta 24 chiamate a una funzione del progetto. Ne ho lette 9 nel sorgente, tutte giuste.
+- Restano 94 chiamate trovate solo dal passo:
+  - 56 su un valore senza tipo;
+  - 14 da uno spacchettamento di tupla (`seed`, `build`, `request`);
+  - 13 da fixture pytest iniettate come parametro (`repo_at`, `configured_billing_app`);
+  - 8 negli script di `react-app/scripts`, fuori dalla radice indicizzata;
+  - 1 da un attributo preso da un parametro del costruttore (`self._food_loader`);
+  - 1 da un nome preso da un indice (`find_user`, `functions-python/tests/unit/test_planner_revision_repository.py:2920`);
+  - 1 da una riesportazione via attributo di modulo (`play_billing.get_settings`).
+- Controllo a mano Python: 15 su 15, prima e dopo. Costo: circa 0,02 USD.

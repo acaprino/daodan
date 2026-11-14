@@ -28,6 +28,6 @@ def test_scripts_lookup_from_a_shallow_folder(tmp_path):
 
 def test_code_digests_name_the_graph_module_each_indexer_and_each_adapter():
     digests = plugin_scripts.code_sha256()
-    assert {"code_graph.py", "indexers/go.py", "indexers/kotlin.py", "adapters/go.py", "adapters/clang.py"} \
+    assert {"code_graph.py", "indexers/go.py", "indexers/kotlin.py", "adapters/clang.py"} \
         <= set(digests)
     assert all(len(value) == 12 for value in digests.values())

@@ -1,0 +1,844 @@
+{
+ "report": {
+  "language": "python",
+  "indexer": {
+   "name": "scip-python",
+   "version": "0.6.8",
+   "seconds": 7.9,
+   "peak_mb": 355
+  },
+  "files": {
+   "snapshot": 35,
+   "indexed": 35,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 1289,
+  "edges": 3679,
+  "symbols_by_kind": {
+   "external class": 43,
+   "external function": 30,
+   "external method": 41,
+   "external other": 20,
+   "external parameter": 19,
+   "external property": 2,
+   "external variable": 18,
+   "project class": 9,
+   "project function": 202,
+   "project method": 47,
+   "project module": 35,
+   "project other": 35,
+   "project parameter": 294,
+   "project property": 10,
+   "project variable": 317,
+   "undefined class": 2,
+   "undefined module": 3,
+   "undefined other": 11,
+   "undefined variable": 151
+  },
+  "edges_by_end": {
+   "dead-end call": 11,
+   "dead-end read": 9,
+   "dead-end unknown": 203,
+   "external call": 487,
+   "external read": 319,
+   "external unknown": 413,
+   "project-callable call": 476,
+   "project-callable read": 131,
+   "project-callable unknown": 211,
+   "project-value call": 14,
+   "project-value read": 860,
+   "project-value unknown": 545
+  },
+  "callable_chain_hops": {
+   "0": 784,
+   "1": 34
+  },
+  "hop_tags": {
+   "builtin": 33,
+   "type-of-self": 21,
+   "implementation": 8,
+   "import-binding": 7,
+   "classmethod-cls": 5
+  },
+  "edges_uncertain": {},
+  "edges_removed": {},
+  "holes_by_class": {
+   "dangling-local call": 9,
+   "dangling-local read": 1,
+   "no-occurrence call": 13,
+   "no-occurrence read": 29,
+   "no-position call": 2,
+   "undefined-project-symbol call": 2,
+   "undefined-project-symbol read": 8
+  },
+  "holes": [
+   {
+    "class": "no-occurrence",
+    "kind": "read",
+    "reason": "unknown-receiver",
+    "count": 21,
+    "examples": [
+     "src/semver/cli.py:38 args.bump",
+     "src/semver/cli.py:82 args.version",
+     "tests/test_docstrings.py:38 func.__module__"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "call",
+    "reason": "unknown-receiver",
+    "count": 12,
+    "examples": [
+     "src/semver/cli.py:41 args.parser.parse_args",
+     "tests/test_pysemver-cli.py:111 capsys.readouterr",
+     "tests/test_pysemver-cli.py:135 capsys.readouterr"
+    ]
+   },
+   {
+    "class": "undefined-project-symbol",
+    "kind": "read",
+    "reason": "unbound-name",
+    "count": 6,
+    "examples": [
+     "docs/conf.py:24 __file__",
+     "src/semver/__main__.py:22 __file__",
+     "src/semver/cli.py:92 __package__"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "read",
+    "reason": "scope-unresolved",
+    "count": 5,
+    "examples": [
+     "src/semver/version.py:217 major.setter",
+     "src/semver/version.py:226 minor.setter",
+     "src/semver/version.py:244 prerelease.setter"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "read",
+    "reason": "import-target-missing-or-ambiguous",
+    "count": 3,
+    "examples": [
+     "src/semver/version.py:56 String.__args__",
+     "src/semver/version.py:478 String.__args__",
+     "src/semver/version.py:764 String.__args__"
+    ]
+   },
+   {
+    "class": "dangling-local",
+    "kind": "call",
+    "reason": "dynamic-callee",
+    "count": 3,
+    "examples": [
+     "src/semver/version.py:157 (expr).format",
+     "tests/test_deprecated_functions.py:65 (expr).format",
+     "tests/test_subclass.py:11 (expr).format"
+    ]
+   },
+   {
+    "class": "dangling-local",
+    "kind": "call",
+    "reason": "unknown-receiver",
+    "count": 2,
+    "examples": [
+     "src/semver/_deprecated.py:72 msg.format",
+     "tests/test_pysemver-cli.py:144 mocked_main.assert_called_once"
+    ]
+   },
+   {
+    "class": "dangling-local",
+    "kind": "call",
+    "reason": "scope-unresolved",
+    "count": 2,
+    "examples": [
+     "src/semver/version.py:134 _REGEX_TEMPLATE.format",
+     "src/semver/version.py:139 _REGEX_TEMPLATE.format"
+    ]
+   },
+   {
+    "class": "no-position",
+    "kind": "call",
+    "reason": "dynamic-callee",
+    "count": 2,
+    "examples": [
+     "src/semver/version.py:556 ",
+     "src/semver/version.py:807 "
+    ]
+   },
+   {
+    "class": "undefined-project-symbol",
+    "kind": "read",
+    "reason": "unknown-receiver-or-import-form",
+    "count": 2,
+    "examples": [
+     "tests/conftest.py:15 semver",
+     "tests/test_docstrings.py:8 semver"
+    ]
+   },
+   {
+    "class": "undefined-project-symbol",
+    "kind": "call",
+    "reason": "import-target-missing-or-ambiguous",
+    "count": 2,
+    "examples": [
+     "tests/test_deprecated_functions.py:65 pytest.fail",
+     "tests/test_optional_native_backend.py:16 pytest.skip"
+    ]
+   },
+   {
+    "class": "dangling-local",
+    "kind": "call",
+    "reason": "import-target-missing-or-ambiguous",
+    "count": 1,
+    "examples": [
+     "src/semver/__main__.py:29 sys.exit"
+    ]
+   },
+   {
+    "class": "dangling-local",
+    "kind": "call",
+    "reason": "ambiguous-binding",
+    "count": 1,
+    "examples": [
+     "tests/test_optional_native_backend.py:15 importlib.util.find_spec"
+    ]
+   },
+   {
+    "class": "dangling-local",
+    "kind": "read",
+    "reason": "ambiguous-binding",
+    "count": 1,
+    "examples": [
+     "tests/test_optional_native_backend.py:18 version_module._native_parse_parts"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "call",
+    "reason": "dynamic-callee",
+    "count": 1,
+    "examples": [
+     "tests/test_pysemver-cli.py:157 (expr).startswith"
+    ]
+   }
+  ],
+  "external_packages": {
+   "python python-stdlib@3.11": 821,
+   "python pytest@9.1.1": 390,
+   "python fast-semver-rs-backend@0.1.1": 5,
+   "python packaging@26.3": 3
+  }
+ },
+ "hand_check": [
+  {
+   "site": "src/semver/_deprecated.py:113 parse",
+   "expected": "project src/semver/version.py::Version.parse",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#parse().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#parse().",
+       "src/semver/version.py::function@736:4",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/_deprecated.py:113 compare",
+   "expected": "project src/semver/version.py::Version.compare (method of a call result, parse returns T bound to Version)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#compare().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#compare().",
+       "src/semver/version.py::function@462:4",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/_deprecated.py:399 deprecated",
+   "expected": "project src/semver/_deprecated.py::deprecated",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/deprecated().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/deprecated().",
+       "src/semver/_deprecated.py::function@18:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/_deprecated.py:399 cmd_bump",
+   "expected": "project src/semver/cli.py::cmd_bump (callback passed as value)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.cli`/cmd_bump().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.cli`/cmd_bump().",
+       "src/semver/cli.py::function@21:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/_deprecated.py:81 func",
+   "expected": "dead end: parameter func of deprecated (runtime: the decorated function)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/deprecated().(func)",
+     "ends": [
+      [
+       "project-value",
+       "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/deprecated().(func)",
+       null,
+       "parameter",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:68 operator",
+   "expected": "dead end: parameter operator of _comparator (shadows the module operator)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/_comparator().(operator)",
+     "ends": [
+      [
+       "project-value",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/_comparator().(operator)",
+       null,
+       "parameter",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:65 cls",
+   "expected": "project src/semver/version.py::Version (class, through local cls = type(self))",
+   "graph": [
+    {
+     "symbol": "src/semver/version.py#local 1",
+     "ends": [
+      [
+       "project-value",
+       "src/semver/version.py#local 1",
+       null,
+       "variable",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:592 _comparator",
+   "expected": "project src/semver/version.py::_comparator (decorator)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/_comparator().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/_comparator().",
+       "src/semver/version.py::function@45:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:594 compare",
+   "expected": "project src/semver/version.py::Version.compare (inside a decorated method)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#compare().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#compare().",
+       "src/semver/version.py::function@462:4",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:576 replace",
+   "expected": "project src/semver/version.py::Version.replace (method of a call result of a local)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#replace().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#replace().",
+       "src/semver/version.py::function@790:4",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:307 search",
+   "expected": "external python-stdlib re.Pattern.search",
+   "graph": [
+    {
+     "symbol": "scip-python python python-stdlib 3.11 re/Pattern#search().",
+     "ends": [
+      [
+       "external",
+       "scip-python python python-stdlib 3.11 re/Pattern#search().",
+       null,
+       "python python-stdlib@3.11",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/version.py:769 _native_parse_parts",
+   "expected": "external fast-semver-rs-backend parse_parts (import alias inside try)",
+   "graph": [
+    {
+     "symbol": "src/semver/version.py#local 0",
+     "ends": [
+      [
+       "external",
+       "scip-python python fast-semver-rs-backend 0.1.1 fast_semver_rs_backend/__init__:",
+       null,
+       "python fast-semver-rs-backend@0.1.1",
+       [
+        "import-binding"
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/cli.py:152 func",
+   "expected": "no static target: dynamic attribute of argparse.Namespace (runtime: a cli.cmd_* set by set_defaults)",
+   "graph": "no occurrence"
+  },
+  {
+   "site": "src/semver/cli.py:101 cmd_compare",
+   "expected": "project src/semver/cli.py::cmd_compare (callback as keyword value)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.cli`/cmd_compare().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.cli`/cmd_compare().",
+       "src/semver/cli.py::function@62:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "src/semver/__main__.py:25 main",
+   "expected": "project src/semver/cli.py::main (module attribute of `from semver import cli`)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.cli`/main().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.cli`/main().",
+       "src/semver/cli.py::function@155:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "tests/test_pysemver-cli.py:109 main",
+   "expected": "project src/semver/_deprecated.py::main (value deprecated(cli.main), re-exported by semver/__init__)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/main.",
+     "ends": [
+      [
+       "project-value",
+       "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/main.",
+       null,
+       "variable",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "tests/test_subclass.py:13 parse",
+   "expected": "project src/semver/version.py::Version.parse (super())",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#parse().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#parse().",
+       "src/semver/version.py::function@736:4",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "tests/test_subclass.py:62 parse",
+   "expected": "project src/semver/version.py::Version.parse (inherited by SemVerSubclass)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#parse().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#parse().",
+       "src/semver/version.py::function@736:4",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "docs/advanced/coerce.py:42 Version",
+   "expected": "project src/semver/version.py::Version (class re-exported by semver/__init__)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver.version`/Version#",
+       "src/semver/version.py::class@78:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "site": "tests/test_deprecated_functions.py:70 deprecated",
+   "expected": "project src/semver/_deprecated.py::deprecated (decorator without arguments)",
+   "graph": [
+    {
+     "symbol": "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/deprecated().",
+     "ends": [
+      [
+       "project-callable",
+       "scip-python python semver b6e83e3e40d3 `src.semver._deprecated`/deprecated().",
+       "src/semver/_deprecated.py::function@18:0",
+       "",
+       []
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "static_sites": 109,
+ "unknown_fields": {},
+ "engine": {
+  "runs": [
+   {
+    "prefix": "",
+    "command": [
+     "/root/.cache/daodan/engines/node/v22.23.4/node-v22.23.4-linux-x64/bin/node",
+     "/root/.cache/daodan/engines/scip-python/0.6.8/node_modules/@sourcegraph/scip-python/index.js",
+     "index",
+     ".",
+     "--project-name",
+     "semver",
+     "--project-version",
+     "b6e83e3e40d3",
+     "--output",
+     "/work/semver/engine/scip-python-0.scip",
+     "--environment",
+     "/work/semver/engine/scip-python-environment.json"
+    ],
+    "returncode": 0,
+    "seconds": 7.9,
+    "peak_mb": 355,
+    "stdout_tail": "Loading configuration file at /tmp/daodan-scip-python-pkbfqatv/src/pyrightconfig.json\nPython version 3.13 from interpreter is unsupported\nAssuming Python platform Linux\nNo include entries specified; assuming /tmp/daodan-scip-python-pkbfqatv/src\nAuto-excluding **/node_modules\nAuto-excluding **/__pycache__\nAuto-excluding **/.*\n(13:11:15) Total Project Files 35\n(13:11:15) Indexing /tmp/daodan-scip-python-pkbfqatv/src with version b6e83e3e40d3\n(13:11:15) Parse and search for dependencies\n(13:11:18) Index workspace and track project files\n(13:11:18) Analyze project and dependencies\n(13:11:19) Parse and emit SCIP\n(13:11:20)   - (6/35): /tmp/daodan-scip-python-pkbfqatv/src/src/semver/_deprecated.py\n(13:11:22)   - (10/35): /tmp/daodan-scip-python-pkbfqatv/src/tests/coerce.py\n(13:11:23) Writing external symbols to SCIP index\n(13:11:23) Sucessfully wrote SCIP index to /work/semver/engine/scip-python-0.scip\n",
+    "stderr_tail": "DAODAN_MAXRSS_KB=363608\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
+    "index": "/work/semver/engine/scip-python-0.scip",
+    "index_bytes": 512852
+   }
+  ],
+  "environment": "/root/.cache/daodan/python/121d57a7955c6173",
+  "requirements": [
+   "alabaster==1.0.0",
+   "ast-serialize==0.5.0",
+   "babel==2.18.0",
+   "backports-tarfile==1.2.0 ; python_full_version < '3.12' and platform_machine != 'ppc64le' and platform_machine != 's390x'",
+   "bleach==6.4.0",
+   "build==1.5.0",
+   "cachetools==7.1.4",
+   "certifi==2026.10.19",
+   "cffi==2.0.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and platform_python_implementation != 'PyPy' and sys_platform == 'linux'",
+   "charset-normalizer==3.4.7",
+   "click==8.4.2",
+   "colorama==0.4.6",
+   "coverage==7.14.3",
+   "cryptography==50.0.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'linux'",
+   "distlib==0.4.3",
+   "docutils==0.21.2",
+   "exceptiongroup==1.3.1 ; python_full_version < '3.11'",
+   "fast-semver-rs-backend==0.1.1 ; platform_python_implementation == 'CPython'",
+   "filelock==3.29.4",
+   "id==1.6.1",
+   "idna==3.18",
+   "imagesize==2.0.0",
+   "importlib-metadata==9.0.0 ; (python_full_version < '3.10.2' and platform_machine == 'ppc64le') or (python_full_version < '3.10.2' and platform_machine == 's390x') or (python_full_version < '3.12' and platform_machine != 'ppc64le' and platform_machine != 's390x')",
+   "iniconfig==2.3.0",
+   "jaraco-classes==3.4.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x'",
+   "jaraco-context==6.1.2 ; platform_machine != 'ppc64le' and platform_machine != 's390x'",
+   "jaraco-functools==4.5.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x'",
+   "jeepney==0.9.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'linux'",
+   "jinja2==3.1.6",
+   "keyring==25.7.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x'",
+   "librt==0.11.0 ; platform_python_implementation != 'PyPy'",
+   "markdown-it-py==4.2.0",
+   "markupsafe==3.0.3",
+   "mdurl==0.1.2",
+   "more-itertools==11.1.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x'",
+   "mypy-extensions==1.1.0",
+   "mypy==2.1.0",
+   "nodeenv==1.10.0",
+   "packaging==26.3",
+   "pathspec==1.1.1",
+   "platformdirs==4.10.0",
+   "pluggy==1.6.0",
+   "pycparser==3.0 ; implementation_name != 'PyPy' and platform_machine != 'ppc64le' and platform_machine != 's390x' and platform_python_implementation != 'PyPy' and sys_platform == 'linux'",
+   "pygments==2.20.0",
+   "pyproject-api==1.10.1",
+   "pyproject-hooks==1.2.0",
+   "pyright==1.1.411",
+   "pytest-cov==7.1.0",
+   "pytest==9.1.1",
+   "python-discovery==1.6.1",
+   "pywin32-ctypes==0.2.3 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'win32'",
+   "readme-renderer==36.0",
+   "requests-toolbelt==1.0.0",
+   "requests==2.34.2",
+   "rfc3986==2.0.0",
+   "rich==15.0.0",
+   "ruff==0.15.20",
+   "secretstorage==3.5.0 ; platform_machine != 'ppc64le' and platform_machine != 's390x' and sys_platform == 'linux'",
+   "snowballstemmer==3.1.1",
+   "sphinx-argparse==0.4.0",
+   "sphinx-argparse==0.5.2",
+   "sphinx-autodoc-typehints==1.24.0",
+   "sphinx-autodoc-typehints==3.0.1",
+   "sphinx==7.0.1",
+   "sphinx==8.1.3",
+   "sphinxcontrib-applehelp==2.0.0",
+   "sphinxcontrib-devhelp==2.0.0",
+   "sphinxcontrib-htmlhelp==2.1.0",
+   "sphinxcontrib-jsmath==1.0.1",
+   "sphinxcontrib-qthelp==2.0.0",
+   "sphinxcontrib-serializinghtml==2.0.0",
+   "tomli-w==1.2.0",
+   "tomli==2.4.1 ; python_full_version <= '3.11'",
+   "towncrier==25.8.0",
+   "tox-gh-actions==3.5.0",
+   "tox==4.56.1",
+   "twine==6.2.0",
+   "typing-extensions==4.15.0 ; python_full_version >= '3.11'",
+   "typing-extensions==4.16.0 ; python_full_version < '3.11'",
+   "urllib3==2.8.0",
+   "virtualenv==21.14.13",
+   "webencodings==0.5.1",
+   "zipp==4.1.0 ; (python_full_version < '3.10.2' and platform_machine == 'ppc64le') or (python_full_version < '3.10.2' and platform_machine == 's390x') or (python_full_version < '3.12' and platform_machine != 'ppc64le' and platform_machine != 's390x')"
+  ],
+  "packages": {
+   "alabaster": "0.7.16",
+   "ast_serialize": "0.5.0",
+   "babel": "2.18.0",
+   "bleach": "6.4.0",
+   "build": "1.5.0",
+   "cachetools": "7.1.4",
+   "certifi": "2026.10.19",
+   "cffi": "2.0.0",
+   "charset-normalizer": "3.4.7",
+   "click": "8.4.2",
+   "colorama": "0.4.6",
+   "coverage": "7.14.3",
+   "cryptography": "50.0.0",
+   "distlib": "0.4.3",
+   "docutils": "0.20.1",
+   "fast-semver-rs-backend": "0.1.1",
+   "filelock": "3.29.4",
+   "id": "1.6.1",
+   "idna": "3.18",
+   "imagesize": "2.0.0",
+   "iniconfig": "2.3.0",
+   "jaraco.classes": "3.4.0",
+   "jaraco.context": "6.1.2",
+   "jaraco.functools": "4.5.0",
+   "jeepney": "0.9.0",
+   "Jinja2": "3.1.6",
+   "keyring": "25.7.0",
+   "librt": "0.11.0",
+   "markdown-it-py": "4.2.0",
+   "MarkupSafe": "3.0.3",
+   "mdurl": "0.1.2",
+   "more-itertools": "11.1.0",
+   "mypy": "2.1.0",
+   "mypy_extensions": "1.1.0",
+   "nodeenv": "1.10.0",
+   "packaging": "26.3",
+   "pathspec": "1.1.1",
+   "platformdirs": "4.10.0",
+   "pluggy": "1.6.0",
+   "pycparser": "3.0",
+   "Pygments": "2.20.0",
+   "pyproject-api": "1.10.1",
+   "pyproject_hooks": "1.2.0",
+   "pyright": "1.1.411",
+   "pytest": "9.1.1",
+   "pytest-cov": "7.1.0",
+   "python-discovery": "1.9.5",
+   "readme-renderer": "36.0",
+   "requests": "2.34.2",
+   "requests-toolbelt": "1.0.0",
+   "rfc3986": "2.0.0",
+   "rich": "15.0.0",
+   "roman-numerals": "4.1.0",
+   "ruff": "0.15.20",
+   "SecretStorage": "3.5.0",
+   "snowballstemmer": "3.1.1",
+   "Sphinx": "8.1.3",
+   "sphinx-argparse": "0.5.2",
+   "sphinx-autodoc-typehints": "3.0.1",
+   "sphinxcontrib-applehelp": "2.0.0",
+   "sphinxcontrib-devhelp": "2.0.0",
+   "sphinxcontrib-htmlhelp": "2.1.0",
+   "sphinxcontrib-jsmath": "1.0.1",
+   "sphinxcontrib-qthelp": "2.0.0",
+   "sphinxcontrib-serializinghtml": "2.0.0",
+   "tomli_w": "1.2.0",
+   "towncrier": "25.8.0",
+   "tox": "4.56.1",
+   "tox-gh-actions": "3.5.0",
+   "twine": "6.2.0",
+   "typing_extensions": "4.15.0",
+   "urllib3": "2.8.0",
+   "virtualenv": "21.14.13",
+   "webencodings": "0.5.1"
+  },
+  "pyrightconfig": {
+   "executionEnvironments": [
+    {
+     "root": "src"
+    },
+    {
+     "root": ".",
+     "extraPaths": [
+      "src"
+     ]
+    }
+   ]
+  },
+  "project": [
+   "semver",
+   "b6e83e3e40d3"
+  ],
+  "state": null,
+  "reason": null
+ },
+ "run": {
+  "case": "semver",
+  "repo": "https://github.com/python-semver/python-semver.git",
+  "commit": "b6e83e3e40d3a7570386e8d694ae8011477a55c1",
+  "adapter": "/daodan/map/scripts/indexers/python.py",
+  "adapter_sha256": "f201bd46a8654d60296c4d3e472a02bfc9f3a2276a2750550b17813d561f575d",
+  "code": {
+   "code_graph.py": "707e7bf514b1",
+   "indexers/__init__.py": "43bd620a8715",
+   "indexers/go.py": "6c3e9282cb2d",
+   "indexers/java.py": "0330519ae56a",
+   "indexers/jvm.py": "ba92cf1d583f",
+   "indexers/kotlin.py": "015ecf6ac276",
+   "indexers/python.py": "f201bd46a865",
+   "indexers/runtime.py": "2db68ac2bc24",
+   "indexers/rust.py": "f767b5e1e6ac",
+   "indexers/typescript.py": "1d5c694e219d",
+   "adapters/clang.py": "9b9536b26f29",
+   "adapters/css.py": "49854bf56415",
+   "adapters/css_astro.py": "83ae4f9723f2",
+   "adapters/css_less.py": "1f082b76eb1f",
+   "adapters/css_sass.py": "45180a7e614c",
+   "adapters/css_stylus.py": "bbe7cdfae4fe",
+   "adapters/css_svelte.py": "6c91a62cd587",
+   "adapters/css_tailwind.py": "c9419a41c53a",
+   "adapters/css_typescript.py": "6ff05448a8d6",
+   "adapters/css_vue.py": "93c02e4a9797",
+   "adapters/go_callgraph.py": "c9b877b12ede",
+   "adapters/java.py": "0861828a7eec",
+   "adapters/js_jelly.py": "e3ef3f9aa8cd",
+   "adapters/jvm_callgraph.py": "27d24421e478",
+   "adapters/jvm_here.py": "270cf27c8b04",
+   "adapters/kotlin.py": "09a12a6361f7",
+   "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+   "adapters/python_jedi.py": "9ff396b7438a",
+   "adapters/ts_compiler.py": "99c9e265cae2"
+  },
+  "symlinks_copied_for_snapshot": {
+   "tests/coerce.py": "../docs/advanced/coerce.py",
+   "tests/semverwithvprefix.py": "../docs/advanced/semverwithvprefix.py"
+  },
+  "snapshot_seconds": 2.3,
+  "seconds": 36.2
+ }
+}

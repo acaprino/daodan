@@ -1,10 +1,11 @@
 """Kotlin code graph from scip-java's whole-project index, on Modal: the wiring of adapter, reader and volume.
 
-`adapters/kotlin.py` runs scip-java and holds what this engine's index states its own way; `scip_graph.py`
-reads the index and assembles the graph. The volume keeps `inference-audit/graph-kotlin/klaxon/`: index.scip
-(as scip-java writes it), index-forward.scip (without the aggregator's reverse relationships), manifest.sqlite,
-indexer.json, kotlin-configs/ and graph.json (nodes, edges with chain and uncertainty, holes). `--stage graph`
-rebuilds the graph from them without the indexer; `graph` does the same locally.
+The plugin's `indexers/kotlin.py` runs scip-java (its two phases run by `adapters/jvm_here.py` in this
+function's container, on the plugin's image) and holds what this engine's index states its own way;
+`code_graph.py` reads the index and assembles the graph. The volume keeps `inference-audit/graph-kotlin/klaxon/`:
+index.scip (as scip-java writes it), index-forward.scip (without the aggregator's reverse relationships),
+manifest.sqlite, indexer.json, kotlin-configs/ and graph.json (nodes, edges with chain and uncertainty, holes).
+`--stage graph` rebuilds the graph from them without the indexer; `graph` does the same locally.
 
     modal deploy benchmarks/inference-audit/lang_kotlin.py
     python benchmarks/inference-audit/lang_kotlin.py spawn [--stage index|graph]
@@ -34,6 +35,7 @@ sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 import code_graph as scip_graph  # noqa: E402
 import indexers.kotlin  # noqa: E402
+from indexers import jvm  # noqa: E402
 from adapters import kotlin as adapter  # noqa: E402
 from modal_audit import CASES, _run, _source  # noqa: E402
 
@@ -114,10 +116,9 @@ HAND_CHECK = [
 
 def _image():
     return (
-        modal.Image.debian_slim(python_version="3.13")
-        .apt_install("git", "curl", "ca-certificates", "unzip")
+        # The plugin's image (JDK 17); scip-java and the build tool come from `jvm.tools`, as in the plugin.
+        modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git")  # the checkout
         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
-        .run_commands(*adapter.install_commands())
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
@@ -223,19 +224,26 @@ def kotlin_case(stage: str = "graph") -> dict:
               "--no-engine", "--no-index"])
         shutil.copyfile(manifest, store / "manifest.sqlite")
         ran = adapter.index(target, engine)
-        if (engine / "scip-java-0.scip").is_file():
-            shutil.copyfile(engine / "scip-java-0.scip", store / "index.scip")
+        if not ran["indexes"]:  # never the graph of an index an earlier run left on the volume
+            volume.commit()
+            return {"code": plugin_scripts.code_sha256(),
+                    **{key: ran.get(key) for key in ("state", "reason", "refused", "runs")}}
+        shutil.copyfile(engine / "scip-java-0.scip", store / "index.scip")
+        shutil.rmtree(store / "kotlin-configs", ignore_errors=True)
         if (engine / "kotlin-configs").is_dir():
-            shutil.copytree(engine / "kotlin-configs", store / "kotlin-configs", dirs_exist_ok=True)
-        (store / "indexer.json").write_text(json.dumps({**ran["indexer"], "runs": ran["runs"]}, indent=1),
+            shutil.copytree(engine / "kotlin-configs", store / "kotlin-configs")
+        (store / "indexer.json").write_text(json.dumps({**ran["indexer"], "runs": ran["runs"],
+                                                        "refused": ran.get("refused"), "state": ran.get("state"),
+                                                        "reason": ran.get("reason")}, indent=1),
                                             encoding="utf-8")
     else:
         shutil.copyfile(store / "manifest.sqlite", manifest)
     indexer = _indexer(json.loads((store / "indexer.json").read_text(encoding="utf-8")))
-    result = {"case": CASE, "commit": case["commit"], "stage": stage, "indexer": indexer}
+    result = {"case": CASE, "commit": case["commit"], "stage": stage, "indexer": indexer,
+              "code": plugin_scripts.code_sha256()}
     begun = time.time()
     forward = engine / "index-forward.scip"
-    result["reverse_relationships_dropped"] = adapter.forward_only(store / "index.scip", forward)
+    result["reverse_relationships_dropped"] = indexers.kotlin.forward_only(store / "index.scip", forward)
     shutil.copyfile(forward, store / "index-forward.scip")
     built, summary = graph(forward, manifest, target, store / "kotlin-configs", indexer)
     (store / "graph.json").write_text(json.dumps(built, ensure_ascii=False), encoding="utf-8")
@@ -278,10 +286,10 @@ if __name__ == "__main__":
                     print(path, path.stat().st_size)
     else:
         record = json.loads(Path(args.indexer).read_text(encoding="utf-8")) if args.indexer else None
-        indexer = _indexer(record) if record else {"name": "scip-java", "version": adapter.VERSION}
+        indexer = _indexer(record) if record else {"name": "scip-java", "version": jvm.VERSION}
         with tempfile.TemporaryDirectory() as folder:
             forward = Path(folder) / "index-forward.scip"
-            adapter.forward_only(Path(args.index), forward)
+            indexers.kotlin.forward_only(Path(args.index), forward)
             built, summary = graph(forward, Path(args.manifest), Path(args.source),
                                    Path(args.configs) if args.configs else None, indexer)
         out = Path(args.out)

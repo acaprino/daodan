@@ -1,5 +1,7 @@
 """The committed SCIP indexes of the code-graph fixtures (`tests/fixtures/code-graph/<language>/`), written once on
-Modal with each language's pinned indexer, through the adapters' `index()`. No model, snapshot or graph.
+Modal with each language's pinned indexer, through its `index()`: the plugin's for Go and Python, which install
+what they need themselves, the adapters' for Java and Kotlin, which run the plugin's two phases in the function's
+container, on the plugin's image (`adapters/jvm_here.py`). No model, snapshot or graph.
 
     modal deploy benchmarks/inference-audit/fixture_indexes.py
     python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin
@@ -26,13 +28,13 @@ STORE = "inference-audit/fixture-indexes"
 KEPT = {"index.scip", "expected.json"}  # the fixture's own files, never uploaded
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 import plugin_scripts  # noqa: E402
-from adapters import go, java, kotlin, python  # noqa: E402
+from adapters import java, kotlin  # noqa: E402
+from indexers import go, python  # noqa: E402
 
 PIP = ("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
-# scip-java finds `gradle` on the PATH when the project has no wrapper.
-GRADLE = ("8.10.2", "31c55713e40233a8303827ceb42ca48a47267a0ad4bab9177123121e71524c26")
-RUN_KEYS = ("prefix", "step", "fallback", "returncode", "seconds", "peak_mb", "index_bytes", "same_occurrences",
-            "reverse_relationships_dropped", "stderr_errors", "stderr_error_examples", "stderr_tail")
+RUN_KEYS = ("prefix", "phase", "step", "fallback", "returncode", "seconds", "peak_mb", "index_bytes",
+            "same_occurrences", "reverse_relationships_dropped", "stderr_errors", "stderr_error_examples",
+            "stderr_tail")
 
 
 def _mounted(image):
@@ -43,40 +45,14 @@ def _mounted(image):
                            ignore=["**/__pycache__/**"]))
 
 
-def _go_image():
-    import resolve_edges as rx
-    asset, sha = rx.GO_ASSETS["linux-x64"]
-    return _mounted(
-        modal.Image.debian_slim(python_version="3.13").apt_install("git", "curl", "ca-certificates")
-        .pip_install(*PIP)
-        .run_commands(f"curl -fsSL https://go.dev/dl/{asset} -o /tmp/{asset}",
-                      f"echo '{sha}  /tmp/{asset}' | sha256sum -c -",
-                      f"tar -xzf /tmp/{asset} -C /opt && rm /tmp/{asset}",
-                      f"GOBIN=/opt/scip/bin GOPATH=/tmp/gopath GOFLAGS= GOTOOLCHAIN=local /opt/go/bin/go install "
-                      f"github.com/scip-code/scip-go/cmd/scip-go@{go.VERSION} && rm -rf /tmp/gopath"))
+def _base_image():  # Go and Python: the plugin's index() installs its indexer
+    return _mounted(modal.Image.debian_slim(python_version="3.13").apt_install("git", "ca-certificates")
+                    .pip_install(*PIP))
 
 
-def _python_image():  # as lang_python.py's
-    return _mounted(modal.Image.debian_slim(python_version="3.13").apt_install(*python.APT).pip_install(*PIP)
-                    .run_commands(*python.install_commands()))
-
-
-def _java_image():  # as lang_java.py's
-    return _mounted(modal.Image.debian_slim(python_version="3.13").apt_install("git", "curl", "ca-certificates",
-                                                                               *java.APT)
-                    .pip_install(*PIP).run_commands(*java.install_commands()))
-
-
-def _kotlin_image():  # as lang_kotlin.py's, then Gradle
-    version, sha = GRADLE
-    return _mounted(
-        modal.Image.debian_slim(python_version="3.13").apt_install("git", "curl", "ca-certificates", "unzip")
-        .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
-        .run_commands(*kotlin.install_commands())
-        .run_commands(f"curl -fsSL https://services.gradle.org/distributions/gradle-{version}-bin.zip -o /tmp/g.zip",
-                      f"echo '{sha}  /tmp/g.zip' | sha256sum -c -",
-                      f"unzip -q /tmp/g.zip -d /opt && rm /tmp/g.zip && "
-                      f"ln -s /opt/gradle-{version}/bin/gradle /usr/local/bin/gradle"))
+def _jvm_image():  # Java and Kotlin, as lang_java.py's and lang_kotlin.py's: JDK 17, the tools from jvm.tools
+    from indexers import jvm
+    return _mounted(modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git").pip_install(*PIP))
 
 
 app = modal.App("daodan-fixture-indexes")
@@ -123,22 +99,22 @@ def _index(language: str, sources: dict[str, bytes]) -> dict:
 FUNCTION = dict(timeout=1800, volumes={"/results": volume})
 
 
-@app.function(image=_go_image(), cpu=2, memory=4096, **FUNCTION)
+@app.function(image=_base_image(), cpu=2, memory=4096, **FUNCTION)
 def index_go(sources: dict) -> dict:
     return _index("go", sources)
 
 
-@app.function(image=_python_image(), cpu=2, memory=4096, **FUNCTION)
+@app.function(image=_base_image(), cpu=2, memory=4096, **FUNCTION)
 def index_python(sources: dict) -> dict:
     return _index("python", sources)
 
 
-@app.function(image=_java_image(), cpu=2, memory=4096, **FUNCTION)
+@app.function(image=_jvm_image(), cpu=2, memory=4096, **FUNCTION)
 def index_java(sources: dict) -> dict:
     return _index("java", sources)
 
 
-@app.function(image=_kotlin_image(), cpu=4, memory=8192, **FUNCTION)
+@app.function(image=_jvm_image(), cpu=4, memory=8192, **FUNCTION)
 def index_kotlin(sources: dict) -> dict:
     return _index("kotlin", sources)
 

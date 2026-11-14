@@ -1,0 +1,1841 @@
+{
+ "case": "tududi",
+ "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
+ "inputs": "kept, /results/inference-audit/scip-inputs/tududi",
+ "snapshot_seconds": 74.2,
+ "road_a": {
+  "source": "answers-tududi-r1.sqlite",
+  "seconds": 2400.1,
+  "peak_rss_mb": null,
+  "coverage": {
+   "status": "complete",
+   "sampled": false,
+   "population": 65663,
+   "selected": 65663,
+   "asked": 65357,
+   "stride": 1,
+   "confirmed": 7895,
+   "candidates": 5174,
+   "no_edges_reason": null,
+   "resolution": {
+    "calls": 111367,
+    "resolved": 19790,
+    "lexical_resolved": 11895,
+    "engine_confirmed": 7895,
+    "external": 69669,
+    "external_by_class": {
+     "builtin": 33809,
+     "engine-external-definition": 35860
+    },
+    "resolvable": 41698,
+    "resolved_ratio": 0.475,
+    "dynamic": 306,
+    "askable": 65357,
+    "unasked": 0,
+    "engine_unresolved": 21550,
+    "by_language": {
+     "javascript": {
+      "calls": 72890,
+      "resolved": 12767,
+      "resolvable": 29350,
+      "resolved_ratio": 0.435,
+      "engine": "typescript-language-server@4.3.3"
+     },
+     "typescript": {
+      "calls": 38477,
+      "resolved": 7023,
+      "resolvable": 12348,
+      "resolved_ratio": 0.569,
+      "engine": "typescript-language-server@4.3.3"
+     }
+    },
+    "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol."
+   }
+  }
+ },
+ "indexers": {
+  "typescript": {
+   "indexes": [
+    [
+     "/results/inference-audit/scip-inputs/tududi/plugin/scip-typescript-0.scip",
+     ""
+    ]
+   ],
+   "runs": [
+    {
+     "prefix": "",
+     "command": [
+      "/root/.cache/daodan/engines/node/v22.23.4/node-v22.23.4-linux-x64/bin/node",
+      "/root/.cache/daodan/engines/scip-typescript/0.5.2/node_modules/@sourcegraph/scip-typescript/dist/src/main.js",
+      "index",
+      "--cwd",
+      "/tmp/daodan-scip-typescript-nzlvg4b4/src",
+      "--output",
+      "/work/tududi/scip-typescript-0.scip",
+      "--no-progress-bar"
+     ],
+     "returncode": 0,
+     "seconds": 54.6,
+     "peak_mb": 2133,
+     "stdout_tail": "........................................\n+ /tmp/daodan-scip-typescript-nzlvg4b4/src (42s 58ms)\ndone /work/tududi/scip-typescript-0.scip\n",
+     "stderr_tail": "DAODAN_MAXRSS_KB=2183828\n",
+     "stderr_errors": 0,
+     "stderr_error_examples": [],
+     "index": "/work/tududi/scip-typescript-0.scip",
+     "index_bytes": 44550679
+    }
+   ],
+   "indexer": {
+    "name": "scip-typescript",
+    "version": "0.5.2",
+    "seconds": 54.6,
+    "peak_mb": 2133
+   },
+   "node_modules": {
+    "": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules"
+   },
+   "tsconfig_extends": "./tsconfig.project.json"
+  }
+ },
+ "reindexed": {
+  "typescript": {
+   "error": null,
+   "indexer": {
+    "name": "scip-typescript",
+    "version": "0.5.2",
+    "seconds": 54.6,
+    "peak_mb": 2133
+   },
+   "state": null,
+   "reason": null,
+   "index_bytes": [
+    44550679
+   ],
+   "kept_bytes": [
+    44550689
+   ]
+  }
+ },
+ "code": {
+  "code_graph.py": "707e7bf514b1",
+  "indexers/__init__.py": "43bd620a8715",
+  "indexers/go.py": "6c3e9282cb2d",
+  "indexers/java.py": "75b02d325c43",
+  "indexers/jvm.py": "388a15c2899d",
+  "indexers/kotlin.py": "015ecf6ac276",
+  "indexers/python.py": "f201bd46a865",
+  "indexers/runtime.py": "2db68ac2bc24",
+  "indexers/rust.py": "f767b5e1e6ac",
+  "indexers/typescript.py": "1d5c694e219d",
+  "adapters/clang.py": "9b9536b26f29",
+  "adapters/css.py": "49854bf56415",
+  "adapters/css_astro.py": "83ae4f9723f2",
+  "adapters/css_less.py": "1f082b76eb1f",
+  "adapters/css_sass.py": "45180a7e614c",
+  "adapters/css_stylus.py": "bbe7cdfae4fe",
+  "adapters/css_svelte.py": "6c91a62cd587",
+  "adapters/css_tailwind.py": "c9419a41c53a",
+  "adapters/css_typescript.py": "6ff05448a8d6",
+  "adapters/css_vue.py": "93c02e4a9797",
+  "adapters/go_callgraph.py": "c9b877b12ede",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "1b791191f54f",
+  "adapters/kotlin.py": "09a12a6361f7",
+  "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+  "adapters/python_jedi.py": "9ff396b7438a",
+  "adapters/ts_compiler.py": "99c9e265cae2"
+ },
+ "join": {
+  "index_tools": [
+   [
+    "scip-typescript",
+    "0.5.2"
+   ]
+  ],
+  "documents_written_twice": 0,
+  "unknown_fields": {},
+  "hops": 8971,
+  "answers": 77199,
+  "languages": {
+   "javascript": {
+    "graph": {
+     "language": "javascript",
+     "indexer": {
+      "name": "scip-typescript",
+      "version": "0.5.2",
+      "seconds": 54.6,
+      "peak_mb": 2133
+     },
+     "files": {
+      "snapshot": 1038,
+      "indexed": 1038,
+      "missing": [],
+      "missing_count": 0
+     },
+     "nodes": 86225,
+     "edges": 182593,
+     "symbols_by_kind": {
+      "external class": 83,
+      "external function": 106,
+      "external method": 381,
+      "external module": 377,
+      "external property": 297,
+      "external variable": 103,
+      "project class": 85,
+      "project function": 1440,
+      "project method": 1255,
+      "project module": 2076,
+      "project parameter": 9557,
+      "project property": 42533,
+      "project variable": 25291,
+      "undefined module": 1,
+      "undefined other": 1,
+      "undefined variable": 2639
+     },
+     "edges_by_end": {
+      "dead-end call": 61,
+      "dead-end read": 1291,
+      "dead-end unknown": 7448,
+      "external call": 51083,
+      "external read": 3308,
+      "external unknown": 16553,
+      "project-callable call": 12850,
+      "project-callable read": 1548,
+      "project-callable unknown": 2009,
+      "project-value call": 1554,
+      "project-value read": 32961,
+      "project-value unknown": 51927
+     },
+     "callable_chain_hops": {
+      "0": 12608,
+      "1": 3774,
+      "2": 25
+     },
+     "hop_tags": {
+      "same-range": 7721,
+      "initializer": 897,
+      "value": 71,
+      "pattern-key": 20,
+      "implementation": 6
+     },
+     "edges_uncertain": {},
+     "edges_removed": {},
+     "holes_by_class": {
+      "dangling-local call": 61,
+      "dangling-local read": 1067,
+      "no-occurrence call": 15445,
+      "no-occurrence read": 24054,
+      "no-position call": 208,
+      "undefined-project-symbol read": 5
+     },
+     "holes": [
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 19621,
+       "examples": [
+        "backend/app.js:10 session.Store",
+        "backend/modules/tasks/core/builders.js:304 body.status",
+        "backend/tests/integration/landing.test.js:750 res.text"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "unknown-receiver",
+       "count": 9166,
+       "examples": [
+        "backend/app.js:110 req.path.startsWith",
+        "backend/modules/spreadsheets/importService.js:607 Project.findByPk",
+        "backend/tests/integration/mcp/mcp-tools.test.js:2914 project.reload"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "ambiguous-binding",
+       "count": 4134,
+       "examples": [
+        "backend/middleware/auth.js:98 payload.sub",
+        "backend/tests/integration/group-page.test.js:148 group.id",
+        "backend/tests/integration/shared-areas-access.test.js:163 area.id"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "dynamic-callee",
+       "count": 3698,
+       "examples": [
+        "backend/config/database-settings.js:39 (expr).trim",
+        "backend/tests/integration/caldav-protocol.test.js:57 (expr).propfind",
+        "backend/tests/integration/profile-ai-settings.test.js:153 (expr).send"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "ambiguous-binding",
+       "count": 2565,
+       "examples": [
+        "backend/modules/ai-assistant/service.js:839 parsed.insight.trim",
+        "backend/tests/integration/hosted-shared-roster.test.js:233 cAgent.post",
+        "backend/tests/integration/shared-areas-access.test.js:222 memberAgent.get"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "unbound-name",
+       "count": 701,
+       "examples": [
+        "babel.config.js:1 module",
+        "backend/models/groupShare.js:3 module",
+        "backend/modules/members/signInLinkService.js:258 module"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "unbound-name",
+       "count": 297,
+       "examples": [
+        "babel.config.js:8 process.env.NODE_ENV",
+        "backend/config/config.js:326 process.env.PORT",
+        "backend/shared/crypto/secretCipher.js:21 process.env.TUDUDI_OIDC_SECRET_ENCRYPTION_KEY"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 292,
+       "examples": [
+        "backend/migrations/archive/20251224000001-cleanup-unused-task-fields.js:10 tableInfo.uuid",
+        "backend/modules/everyone/routes.js:8 everyoneController.get",
+        "backend/modules/people/routes.js:36 peopleController.delete"
+       ]
+      },
+      {
+       "class": "no-position",
+       "kind": "call",
+       "reason": "dynamic-callee",
+       "count": 208,
+       "examples": [
+        "backend/app.js:10 ",
+        "backend/modules/billing/providers/index.js:70 ",
+        "backend/tests/integration/uploads-static.test.js:583 "
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "non-callable-binding",
+       "count": 74,
+       "examples": [
+        "backend/modules/admin/index.js:30 adminService",
+        "backend/modules/people/index.js:7 peopleService",
+        "backend/modules/url/index.js:6 urlService"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "call",
+       "reason": "unknown-receiver",
+       "count": 60,
+       "examples": [
+        "backend/modules/admin/service.js:1085 blogService.status",
+        "backend/modules/inbox/operations/attachments.js:59 inboxAttachments.removeAll",
+        "backend/modules/onboarding/controller.js:26 onboardingService.countExamples"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "unbound-name",
+       "count": 16,
+       "examples": [
+        "backend/modules/mcp/tools/taskTools.js:520 Object.hasOwn",
+        "public/sw.js:37 self.skipWaiting",
+        "public/sw.js:272 self.registration.sync.register"
+       ]
+      },
+      {
+       "class": "undefined-project-symbol",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 3,
+       "examples": [
+        "backend/modules/auth/service.js:37 packageJson.version",
+        "backend/services/backupService.js:95 packageJson.version",
+        "backend/services/userDataTransfer.js:295 packageJson.version"
+       ]
+      },
+      {
+       "class": "undefined-project-symbol",
+       "kind": "read",
+       "reason": "non-callable-binding",
+       "count": 2,
+       "examples": [
+        "backend/services/backupService.js:98 currentVersion",
+        "backend/services/backupService.js:103 currentVersion"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "import-target-missing-or-ambiguous",
+       "count": 2,
+       "examples": [
+        "eslint.config.mjs:10 pluginJs.configs.recommended",
+        "eslint.config.mjs:12 pluginReact.configs.flat.recommended"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "call",
+       "reason": "unique-lexical-binding",
+       "count": 1,
+       "examples": [
+        "backend/tests/integration/billing.test.js:28 StripeSignatureVerificationError"
+       ]
+      }
+     ],
+     "external_packages": {
+      "npm @types/jest@29.5.14": 28976,
+      "npm typescript@6.0.3": 24037,
+      "npm @types/node@20.19.43": 10600,
+      "npm sequelize@6.37.8": 2935,
+      "npm @types/express-serve-static-core@4.19.9": 886,
+      "npm @testing-library/jest-dom@6.9.1": 702,
+      "npm moment@2.31.0": 684,
+      "npm stripe@18.5.0": 566,
+      "npm moment-timezone@0.6.6": 326,
+      "npm @types/express@4.17.25": 324,
+      "npm axios@1.21.1": 199,
+      "npm .@.": 104,
+      "npm exceljs@4.4.0": 91,
+      "npm ical.js@2.2.1": 46,
+      "npm @faker-js/faker@10.6.0": 44,
+      "npm openid-client@5.7.1": 38,
+      "npm jose@6.2.17": 37,
+      "npm express-rate-limit@8.7.4": 30,
+      "npm marked@16.4.2": 27,
+      "npm @types/xml2js@0.4.14": 25
+     }
+    },
+    "road_a": {
+     "a": {
+      "not-asked": 25845,
+      "external": 17955,
+      "none": 15109,
+      "project-declaration": 12767,
+      "project-other": 1214
+     },
+     "a target source": {
+      "engine": 12766,
+      "lexical": 1
+     },
+     "b call": {
+      "external": 42794,
+      "no-occurrence": 15445,
+      "project-declaration": 12828,
+      "project-value variable": 905,
+      "project-value parameter": 649,
+      "no-position": 208,
+      "dangling-local": 61
+     },
+     "b read": {
+      "no-occurrence": 24054,
+      "project-value variable": 21821,
+      "project-value parameter": 9013,
+      "external": 2629,
+      "project-value property": 1856,
+      "project-declaration": 1546,
+      "dangling-local": 1067,
+      "project-value module": 68,
+      "undefined-project-symbol": 5
+     },
+     "cells": {
+      "mixed: A not-asked, B external": 25591,
+      "both external": 17170,
+      "mixed: A none, B no-occurrence": 15104,
+      "same project target": 12709,
+      "mixed: A project-other, B project-value": 1082,
+      "mixed: A external, B project-value": 471,
+      "mixed: A external, B no-occurrence": 311,
+      "mixed: A not-asked, B no-position": 208,
+      "only B has a project target": 119,
+      "only A has a project target": 58,
+      "mixed: A not-asked, B no-occurrence": 30,
+      "mixed: A project-other, B external": 28,
+      "mixed: A none, B external": 5,
+      "mixed: A external, B dangling-local": 3,
+      "mixed: A not-asked, B project-value": 1
+     },
+     "external packages call": {
+      "npm @types/jest@29.5.14": 28022,
+      "npm typescript@6.0.3": 8135,
+      "npm @types/node@20.19.43": 4653,
+      "npm @types/express-serve-static-core@4.19.9": 780,
+      "npm sequelize@6.37.8": 424,
+      "npm moment@2.31.0": 402,
+      "npm moment-timezone@0.6.6": 112,
+      "npm @types/express@4.17.25": 72,
+      "npm exceljs@4.4.0": 34,
+      "npm .@.": 30,
+      "npm express-rate-limit@8.7.4": 24,
+      "npm jose@6.2.17": 18,
+      "npm @faker-js/faker@10.6.0": 14,
+      "npm dotenv@16.5.0": 11,
+      "npm pino@9.14.0": 11,
+      "npm @types/xml2js@0.4.14": 6,
+      "npm iconv-lite@0.4.24": 6,
+      "npm jszip@3.10.2": 6,
+      "npm nanoid@3.3.20": 5,
+      "npm openid-client@5.7.1": 4,
+      "npm marked@16.4.2": 3,
+      "npm axios@1.21.1": 3,
+      "npm node-cron@4.1.1": 3,
+      "npm compromise@14.20.0": 3,
+      "npm helmet@8.1.0": 1,
+      "npm pino-http@10.5.0": 1,
+      "npm connect-session-sequelize@7.1.7": 1,
+      "npm pg-connection-string@2.14.1": 1,
+      "npm openai@6.49.0": 1,
+      "npm stripe@18.5.0": 1,
+      "npm slugify@1.6.9": 1,
+      "npm csv-parse@7.0.3": 1,
+      "npm disposable-email-domains-js@1.26.0": 1,
+      "npm fast-xml-parser@5.12.1": 1,
+      "npm @pmmmwh/react-refresh-webpack-plugin@0.5.17": 1,
+      "npm html-webpack-plugin@5.6.8": 1,
+      "npm copy-webpack-plugin@14.0.0": 1
+     },
+     "external packages read": {
+      "npm sequelize@6.37.8": 1094,
+      "npm typescript@6.0.3": 815,
+      "npm @types/node@20.19.43": 550,
+      "npm @types/express-serve-static-core@4.19.9": 42,
+      "npm @types/jest@29.5.14": 33,
+      "npm axios@1.21.1": 31,
+      "npm .@.": 21,
+      "npm exceljs@4.4.0": 17,
+      "npm marked@16.4.2": 8,
+      "npm jose@6.2.17": 6,
+      "npm openid-client@5.7.1": 6,
+      "npm pino@9.14.0": 2,
+      "npm compromise@14.20.0": 1,
+      "npm openai@6.49.0": 1,
+      "npm globals@15.15.0": 1,
+      "npm typescript-eslint@8.72.2": 1
+     },
+     "hop kinds call": {
+      "direct": 11022,
+      "same-range": 1686,
+      "initializer": 53,
+      "value": 43,
+      "same-range+same-range": 21,
+      "same-range+value": 3
+     },
+     "hop kinds read": {
+      "direct": 1476,
+      "same-range": 51,
+      "initializer": 14,
+      "value": 4,
+      "initializer+same-range": 1
+     },
+     "hops call": {
+      "0": 11022,
+      "1": 1782,
+      "2": 24
+     },
+     "hops read": {
+      "0": 1476,
+      "1": 69,
+      "2": 1
+     },
+     "implementations": {
+      "call implementations listed": 6,
+      "call with implementations": 3
+     },
+     "matrix": {
+      "A not-asked | B external": 25591,
+      "A external | B external": 17170,
+      "A none | B no-occurrence": 15104,
+      "A project-declaration | B project-declaration (direct or alias)": 12709,
+      "A project-other | B project-value": 1082,
+      "A external | B project-value": 471,
+      "A external | B no-occurrence": 311,
+      "A not-asked | B no-position": 208,
+      "A project-other | B project-declaration (direct or alias)": 104,
+      "A project-declaration | B dangling-local": 58,
+      "A not-asked | B no-occurrence": 30,
+      "A project-other | B external": 28,
+      "A not-asked | B project-declaration (direct or alias)": 15,
+      "A none | B external": 5,
+      "A external | B dangling-local": 3,
+      "A not-asked | B project-value": 1
+     },
+     "only A by B": {
+      "dangling-local dangling-local": 58
+     },
+     "reads vs lexical": {
+      "neither": 60513,
+      "same": 1125,
+      "only B": 421
+     },
+     "examples": {
+      "chain initializer": [
+       "backend/modules/quotes/controller.js:20 quotesService.getQuotesCount: initializer -> backend/modules/quotes/quotesService.js::function@105:17",
+       "backend/tests/unit/services/functional-services.test.js:24 taskScheduler._getCronExpression: initializer -> backend/modules/tasks/taskScheduler.js::function@22:26",
+       "backend/tests/unit/services/functional-services.test.js:51 telegramPoller._userExistsInList: initializer -> backend/modules/telegram/telegramPoller.js::function@22:25",
+       "backend/tests/unit/services/functional-services.test.js:54 telegramPoller._addUserToList: initializer -> backend/modules/telegram/telegramPoller.js::function@25:22",
+       "backend/tests/unit/services/functional-services.test.js:88 quotesService._validateQuotesData: initializer -> backend/modules/quotes/quotesService.js::function@33:27",
+       "backend/tests/unit/services/functional-services.test.js:119 taskSummaryService._escapeMarkdown: initializer -> backend/modules/tasks/taskSummaryService.js::function@6:23",
+       "backend/tests/unit/services/functional-services.test.js:125 taskSummaryService._getPriorityEmoji: initializer -> backend/modules/tasks/taskSummaryService.js::function@17:25",
+       "backend/tests/unit/services/jobLock.test.js:75 _lockKey: initializer -> backend/services/jobLock.js::function@11:16",
+       "backend/tests/unit/services/jobLock.test.js:76 _lockKey: initializer -> backend/services/jobLock.js::function@11:16",
+       "backend/tests/unit/services/jobLock.test.js:78 _lockKey: initializer -> backend/services/jobLock.js::function@11:16",
+       "backend/tests/unit/services/telegramAuth.test.js:25 _isAuthorizedTelegramUser: initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramAuth.test.js:46 _isAuthorizedTelegramUser: initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramAuth.test.js:60 _isAuthorizedTelegramUser: initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramAuth.test.js:81 _isAuthorizedTelegramUser: initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramAuth.test.js:104 _isAuthorizedTelegramUser: initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramPoller.test.js:87 telegramPoller._getHighestUpdateId: initializer -> backend/modules/telegram/telegramPoller.js::function@101:27",
+       "backend/tests/unit/services/telegramPoller.test.js:105 telegramPoller._addUserToList: initializer -> backend/modules/telegram/telegramPoller.js::function@25:22",
+       "backend/tests/unit/services/telegramPoller.test.js:129 telegramPoller._removeUserFromList: initializer -> backend/modules/telegram/telegramPoller.js::function@33:27",
+       "backend/tests/unit/services/telegramPoller.test.js:150 telegramPoller._createMessageParams: initializer -> backend/modules/telegram/telegramPoller.js::function@113:28",
+       "backend/tests/unit/services/telegramPoller.test.js:186 telegramPoller._createPollerState: initializer -> backend/modules/telegram/telegramPoller.js::function@8:26"
+      ],
+      "chain same-range": [
+       "backend/app.js:182 billingModule.webhookHandler: same-range -> backend/modules/billing/webhookRoutes.js::function@10:0",
+       "backend/modules/admin/userEmails.js:196 engagement.lastActivity: same-range -> backend/services/engagementEmailService.js::function@39:0",
+       "backend/modules/billing/service.js:202 providers.providerFor: same-range -> backend/modules/billing/providers/index.js::function@75:0",
+       "backend/modules/caldav/sync/push-phase.js:26 logger.logInfo: same-range -> backend/services/logService.js::function@110:16",
+       "backend/modules/daily-plan/controller.js:29 dailyPlanService.getCandidates: same-range -> backend/modules/daily-plan/service.js::function@364:0",
+       "backend/modules/mcp/tools/taskTools.js:225 permissionsService.ownershipOrPermissionWhere: same-range -> backend/services/permissionsService.js::function@277:0",
+       "backend/modules/oidc/controller.js:143 provisioningService.linkIdentityToUser: same-range -> backend/modules/oidc/provisioningService.js::function@240:0",
+       "backend/modules/spreadsheets/routes.js:156 importService.undo: same-range -> backend/modules/spreadsheets/importService.js::function@517:0",
+       "backend/modules/webhooks/index.js:7 taskEvents.register: same-range -> backend/modules/webhooks/taskEvents.js::function@144:0",
+       "backend/tests/integration/backup-instance.test.js:264 permissionsService.getAccess: same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/integration/cloud-trial.test.js:449 lifecycle.remindEndingTrials: same-range -> backend/services/trialLifecycleService.js::function@207:0",
+       "backend/tests/integration/members.test.js:40 rolesService.setCapabilities: same-range -> backend/services/rolesService.js::function@249:0",
+       "backend/tests/integration/subscription-required.test.js:28 entitlements.invalidate: same-range -> backend/services/entitlementsService.js::function@323:0",
+       "backend/tests/unit/modules/ai-assistant/ssrfGuard.test.js:54 secretCipher.encrypt: same-range -> backend/shared/crypto/secretCipher.js::function@45:0",
+       "backend/tests/unit/modules/mfa/totp.test.js:34 totp.verifyCode: same-range -> backend/modules/mfa/totp.js::function@73:0",
+       "backend/tests/unit/modules/oidc/controller-edge-cases.test.js:192 controller.initiateLink: same-range -> backend/modules/oidc/controller.js::function@214:0",
+       "backend/tests/unit/modules/oidc/provisioning-edge-cases.test.js:76 provisioning.findOrCreateIdentity: same-range -> backend/modules/oidc/provisioningService.js::function@71:0",
+       "backend/tests/unit/modules/oidc/stateManager.test.js:96 stateManager.validateState: same-range -> backend/modules/oidc/stateManager.js::function@37:0",
+       "backend/tests/unit/modules/tasks/recurringTaskService.test.js:463 calculateVirtualOccurrences: same-range -> backend/modules/tasks/recurringTaskService.js::function@273:36",
+       "backend/tests/unit/services/jobLock.test.js:71 isLeader: same-range -> backend/services/jobLock.js::function@90:0"
+      ],
+      "chain same-range+same-range": [
+       "backend/modules/admin/service.js:55 isAdmin: same-range -> same-range -> backend/services/rolesService.js::function@115:0",
+       "backend/modules/admin/service.js:87 isAdmin: same-range -> same-range -> backend/services/rolesService.js::function@115:0",
+       "backend/modules/admin/service.js:115 isAdmin: same-range -> same-range -> backend/services/rolesService.js::function@115:0",
+       "backend/modules/admin/service.js:125 isAdmin: same-range -> same-range -> backend/services/rolesService.js::function@115:0",
+       "backend/modules/mfa/controller.js:142 InvalidCodeError: same-range -> same-range -> backend/modules/mfa/service.js::class@38:0",
+       "backend/tests/unit/services/entitlementsService.test.js:84 resolvePlan: same-range -> same-range -> backend/services/entitlementsService.js::function@40:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:35 resourceExists: same-range -> same-range -> backend/services/permissionsService.js::function@119:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:36 resourceExists: same-range -> same-range -> backend/services/permissionsService.js::function@119:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:52 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:64 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:80 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:91 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:98 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:107 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:118 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:125 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:130 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:135 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:140 getAccess: same-range -> same-range -> backend/services/permissionsService.js::function@131:0",
+       "backend/tests/unit/services/permissionsService-edge-cases.test.js:150 ownershipOrPermissionWhere: same-range -> same-range -> backend/services/permissionsService.js::function@277:0"
+      ],
+      "chain same-range+value": [
+       "backend/tests/unit/services/logService.test.js:77 output: same-range -> value -> backend/tests/unit/services/logService.test.js::function@22:40",
+       "backend/tests/unit/services/logService.test.js:99 output: same-range -> value -> backend/tests/unit/services/logService.test.js::function@22:40",
+       "backend/tests/unit/services/logService.test.js:136 output: same-range -> value -> backend/tests/unit/services/logService.test.js::function@22:40"
+      ],
+      "chain value": [
+       "backend/modules/admin/userEmails.js:296 def.recorded: value -> backend/modules/admin/userEmails.js::function@214:18",
+       "backend/modules/admin/userEmails.js:358 def.note: value -> backend/modules/admin/userEmails.js::function@228:14",
+       "backend/modules/inbox/nlpParsers.js:218 rule.build: value -> backend/modules/inbox/nlpParsers.js::function@190:15",
+       "backend/modules/inbox/service.js:68 attachments.listForItem: value -> backend/modules/inbox/operations/attachments.js::function@57:17",
+       "backend/modules/inbox/service.js:125 attachments.removeAllFromItem: value -> backend/modules/inbox/operations/attachments.js::function@59:23",
+       "backend/modules/landing/routes.js:677 page.url: value -> backend/modules/landing/routes.js::function@656:36",
+       "backend/modules/tasks/taskSummaryService.js:144 calculations.daily: value -> backend/modules/tasks/taskSummaryService.js::function@82:15",
+       "backend/tests/integration/billing.test.js:284 stripeClient._reset: value -> backend/modules/billing/stripeClient.js::function@54:12",
+       "backend/tests/integration/cloud-account-isolation.test.js:81 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/cloud-accounts.test.js:71 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/cloud-seats.test.js:107 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/cloud-superadmin-isolation.test.js:192 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/cloud-trial.test.js:202 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/entitlements.test.js:74 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/members-removal-handoff.test.js:333 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/plan-enforcement.test.js:55 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/shares-account-admin.test.js:52 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/unit/modules/ai-assistant/aiCreditsQuota.test.js:49 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/unit/services/entitlementsService.test.js:53 plans._resetCache: value -> backend/config/plans.js::function@187:17",
+       "backend/tests/unit/services/entitlementsService.test.js:76 plans._resetCache: value -> backend/config/plans.js::function@187:17"
+      ],
+      "only A (B dangling-local)": [
+       "backend/modules/admin/service.js:1085 blogService.status | A project-declaration backend/modules/blog/service.js::method@287:4 | B dangling-local dangling-local",
+       "backend/modules/admin/service.js:1092 blogService.status | A project-declaration backend/modules/blog/service.js::method@287:4 | B dangling-local dangling-local",
+       "backend/modules/blog/hostSwitch.js:114 blogService.page | A project-declaration backend/modules/blog/service.js::method@317:4 | B dangling-local dangling-local",
+       "backend/modules/blog/hostSwitch.js:255 blogService.getIndex | A project-declaration backend/modules/blog/service.js::method@307:4 | B dangling-local dangling-local",
+       "backend/modules/comments/routes.js:24 commentsController.list | A project-declaration backend/modules/comments/controller.js::method@9:4 | B dangling-local dangling-local",
+       "backend/modules/comments/routes.js:53 commentsController.delete | A project-declaration backend/modules/comments/controller.js::method@64:4 | B dangling-local dangling-local",
+       "backend/modules/inbox/operations/attachments.js:42 inboxAttachments.moveAll | A project-declaration backend/services/entityAttachments.js::method@169:8 | B dangling-local dangling-local",
+       "backend/modules/inbox/operations/attachments.js:59 inboxAttachments.removeAll | A project-declaration backend/services/entityAttachments.js::method@150:8 | B dangling-local dangling-local",
+       "backend/modules/notes/controller.js:179 publicSharing.enable | A project-declaration backend/modules/notes/publicSharing.js::method@103:4 | B dangling-local dangling-local",
+       "backend/modules/notes/controller.js:221 publicSharing.disable | A project-declaration backend/modules/notes/publicSharing.js::method@130:4 | B dangling-local dangling-local",
+       "backend/modules/notes/routes.js:18 notesController.getNoteUidForAuth | A project-declaration backend/modules/notes/controller.js::method@277:4 | B dangling-local dangling-local",
+       "backend/modules/notes/routes.js:39 notesController.getNoteUidForAuth | A project-declaration backend/modules/notes/controller.js::method@277:4 | B dangling-local dangling-local",
+       "backend/modules/notes/routes.js:67 notesController.getNoteUidForAuth | A project-declaration backend/modules/notes/controller.js::method@277:4 | B dangling-local dangling-local",
+       "backend/modules/notes/routes.js:94 notesController.getNoteUidForAuth | A project-declaration backend/modules/notes/controller.js::method@277:4 | B dangling-local dangling-local",
+       "backend/modules/onboarding/controller.js:26 onboardingService.countExamples | A project-declaration backend/modules/onboarding/service.js::method@382:4 | B dangling-local dangling-local",
+       "backend/modules/projects/repository.js:332 projectAttachments.removeAll | A project-declaration backend/services/entityAttachments.js::method@150:8 | B dangling-local dangling-local",
+       "backend/modules/projects/routes.js:100 projectsController.getProjectUidForAuth | A project-declaration backend/modules/projects/controller.js::method@166:4 | B dangling-local dangling-local",
+       "backend/tests/unit/modules/auth/authController-edge-cases.test.js:81 controller.getPasswordAuthStatus | A project-declaration backend/modules/auth/controller.js::method@34:4 | B dangling-local dangling-local",
+       "backend/tests/unit/modules/auth/authController-edge-cases.test.js:116 controller.redeemSignInLink | A project-declaration backend/modules/auth/controller.js::method@102:4 | B dangling-local dangling-local",
+       "backend/tests/unit/modules/auth/authController-edge-cases.test.js:174 controller.login | A project-declaration backend/modules/auth/controller.js::method@129:4 | B dangling-local dangling-local"
+      ],
+      "only B has a project target (direct or alias)": [
+       "backend/modules/admin/userEmails.js:296 def.recorded | A project-other project-not-a-symbol | B project-declaration value -> backend/modules/admin/userEmails.js::function@214:18",
+       "backend/modules/billing/providers/stripe.js:198 configuredPrices | A project-other ambiguous-target | B project-declaration same-range -> backend/modules/billing/stripeClient.js::function@39:0",
+       "backend/modules/inbox/service.js:111 attachments.listForItem | A project-other project-not-a-symbol | B project-declaration value -> backend/modules/inbox/operations/attachments.js::function@57:17",
+       "backend/modules/tasks/taskSummaryService.js:144 calculations.daily | A project-other project-not-a-symbol | B project-declaration value -> backend/modules/tasks/taskSummaryService.js::function@82:15",
+       "backend/services/engagementEmailService.js:73 entitlements.isHostedMode | A not-asked - | B project-declaration same-range -> backend/services/entitlementsService.js::function@24:0",
+       "backend/services/engagementEmailService.js:130 entitlements.isHostedMode | A not-asked - | B project-declaration same-range -> backend/services/entitlementsService.js::function@24:0",
+       "backend/tests/integration/cloud-account-isolation.test.js:70 plans._resetCache | A project-other project-not-a-symbol | B project-declaration value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/cloud-superadmin-isolation.test.js:131 plans._resetCache | A project-other project-not-a-symbol | B project-declaration value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/hosted-shared-roster.test.js:30 plans._resetCache | A project-other project-not-a-symbol | B project-declaration value -> backend/config/plans.js::function@187:17",
+       "backend/tests/integration/shares-account-admin.test.js:52 plans._resetCache | A project-other project-not-a-symbol | B project-declaration value -> backend/config/plans.js::function@187:17",
+       "backend/tests/unit/services/entitlementsService.test.js:15 plans._resetCache | A project-other project-not-a-symbol | B project-declaration value -> backend/config/plans.js::function@187:17",
+       "backend/tests/unit/services/functional-services.test.js:24 taskScheduler._getCronExpression | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/tasks/taskScheduler.js::function@22:26",
+       "backend/tests/unit/services/functional-services.test.js:58 telegramPoller._removeUserFromList | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/telegram/telegramPoller.js::function@33:27",
+       "backend/tests/unit/services/functional-services.test.js:124 taskSummaryService._getPriorityEmoji | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/tasks/taskSummaryService.js::function@17:25",
+       "backend/tests/unit/services/jobLock.test.js:76 _lockKey | A project-other ambiguous-target | B project-declaration initializer -> backend/services/jobLock.js::function@11:16",
+       "backend/tests/unit/services/logService.test.js:136 output | A project-other project-not-a-symbol | B project-declaration same-range -> value -> backend/tests/unit/services/logService.test.js::function@22:40",
+       "backend/tests/unit/services/telegramAuth.test.js:46 _isAuthorizedTelegramUser | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramAuth.test.js:88 _isAuthorizedTelegramUser | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/telegram/telegramPoller.js::function@303:33",
+       "backend/tests/unit/services/telegramPoller.test.js:102 telegramPoller._userExistsInList | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/telegram/telegramPoller.js::function@22:25",
+       "backend/tests/unit/services/telegramPoller.test.js:150 telegramPoller._createMessageParams | A project-other ambiguous-target | B project-declaration initializer -> backend/modules/telegram/telegramPoller.js::function@113:28"
+      ]
+     },
+     "answer_file_mismatches": 0
+    },
+    "focus": {}
+   },
+   "typescript": {
+    "graph": {
+     "language": "typescript",
+     "indexer": {
+      "name": "scip-typescript",
+      "version": "0.5.2",
+      "seconds": 54.6,
+      "peak_mb": 2133
+     },
+     "files": {
+      "snapshot": 650,
+      "indexed": 650,
+      "missing": [],
+      "missing_count": 0
+     },
+     "nodes": 41107,
+     "edges": 171821,
+     "symbols_by_kind": {
+      "external class": 227,
+      "external function": 148,
+      "external method": 491,
+      "external module": 69,
+      "external property": 713,
+      "external variable": 352,
+      "project class": 18,
+      "project function": 230,
+      "project method": 60,
+      "project module": 1303,
+      "project parameter": 8818,
+      "project property": 13231,
+      "project type": 714,
+      "project variable": 12963,
+      "undefined other": 2,
+      "undefined variable": 1768
+     },
+     "edges_by_end": {
+      "dead-end call": 5291,
+      "dead-end read": 560,
+      "dead-end unknown": 1779,
+      "external call": 27377,
+      "external read": 5940,
+      "external unknown": 50750,
+      "project-callable call": 7178,
+      "project-callable read": 3480,
+      "project-callable unknown": 4489,
+      "project-value call": 3807,
+      "project-value read": 28991,
+      "project-value unknown": 32179
+     },
+     "callable_chain_hops": {
+      "0": 13324,
+      "1": 1753,
+      "2": 63,
+      "3+": 7
+     },
+     "hop_tags": {
+      "same-range": 10968,
+      "initializer": 1053,
+      "declared:@types/react.useCallback": 287,
+      "pattern-key": 54,
+      "value": 33,
+      "declared:@types/react.useMemo": 1
+     },
+     "edges_uncertain": {},
+     "edges_removed": {},
+     "holes_by_class": {
+      "dangling-local call": 3755,
+      "dangling-local read": 444,
+      "no-occurrence call": 1282,
+      "no-occurrence read": 1561,
+      "no-position call": 98,
+      "no-position read": 1
+     },
+     "holes": [
+      {
+       "class": "dangling-local",
+       "kind": "call",
+       "reason": "non-callable-binding",
+       "count": 3748,
+       "examples": [
+        "frontend/Layout.tsx:497 t",
+        "frontend/components/Habits/HabitDayPanel.tsx:189 t",
+        "frontend/components/Project/ProjectUnavailable.tsx:45 t"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 1499,
+       "examples": [
+        "e2e/tests/inbox-task-project.spec.ts:79 task.uid",
+        "frontend/components/Profile/ProfileSettings.tsx:796 bot.username",
+        "frontend/components/Task/TaskDetails.tsx:836 task.parent_task.uid"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "import-target-missing-or-ambiguous",
+       "count": 564,
+       "examples": [
+        "frontend/__tests__/Layout.test.tsx:262 fireEvent.click",
+        "frontend/components/Inbox/__tests__/QuickCaptureInput.nlp.test.tsx:73 fireEvent.change",
+        "frontend/components/Shared/__tests__/BlankSlate.test.tsx:39 fireEvent.click"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "unknown-receiver",
+       "count": 408,
+       "examples": [
+        "e2e/tests/inbox-task-project.spec.ts:59 tasks.filter",
+        "frontend/components/Inbox/__tests__/QuickCaptureInput.slash.test.tsx:305 areasStore.setAreas",
+        "frontend/components/Task/TaskDetails.tsx:663 tasksStore.tasks.findIndex"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 233,
+       "examples": [
+        "frontend/components/Admin/AdminBlogSettings.tsx:141 status.note.title",
+        "frontend/components/Inbox/QuickCaptureInput.tsx:286 error.kind",
+        "frontend/components/Shared/MermaidDiagram.tsx:13 module.default"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "non-callable-binding",
+       "count": 181,
+       "examples": [
+        "e2e/tests/calendar-toolbar.spec.ts:41 viewportWidth",
+        "frontend/components/Habits/HabitDetails.tsx:234 t",
+        "frontend/components/Project/Timeline/ProjectTimeline.tsx:288 items"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "unknown-receiver-or-import-form",
+       "count": 164,
+       "examples": [
+        "frontend/App.tsx:139 useStore.getState",
+        "frontend/components/Focus/__tests__/FocusChip.test.tsx:98 useStore.getState",
+        "frontend/components/Sidebar/SidebarResizeHandle.tsx:32 useStore.getState"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "dynamic-callee",
+       "count": 144,
+       "examples": [
+        "e2e/tests/inbox.spec.ts:11 (expr).fill",
+        "frontend/components/Focus/__tests__/FocusChip.test.tsx:187 (expr).setFocus",
+        "frontend/components/Sidebar/__tests__/AppLauncherModal.test.tsx:186 (expr).setSidebarOrder"
+       ]
+      },
+      {
+       "class": "no-position",
+       "kind": "call",
+       "reason": "dynamic-callee",
+       "count": 98,
+       "examples": [
+        "e2e/tests/notes-editor.spec.ts:76 ",
+        "frontend/components/Note/editor/widgets.tsx:52 ",
+        "frontend/hooks/__tests__/useSidebarSectionExpanded.test.ts:34 "
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "unbound-name",
+       "count": 49,
+       "examples": [
+        "e2e/helpers/testHelpers.ts:13 process.env.APP_URL",
+        "e2e/tests/inbox.spec.ts:121 process.env.APP_URL",
+        "e2e/tests/registration.spec.ts:132 process.env.APP_URL"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "ambiguous-binding",
+       "count": 11,
+       "examples": [
+        "frontend/components/Inbox/QuickCaptureInput.tsx:1916 analysis.parsed_area.uid",
+        "frontend/components/Project/Timeline/ProjectTimeline.tsx:153 day",
+        "frontend/components/Project/Timeline/ProjectTimeline.tsx:160 day"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "reexport-unsupported",
+       "count": 10,
+       "examples": [
+        "frontend/components/Eisenhower/EisenhowerMatrix.tsx:318 TaskItem",
+        "frontend/components/Task/GroupedTaskList.tsx:515 TaskItem",
+        "frontend/components/Task/GroupedTaskList.tsx:599 TaskItem"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "export-missing-or-ambiguous",
+       "count": 7,
+       "examples": [
+        "frontend/components/DailyPlan/AgendaList.tsx:227 TaskRow",
+        "frontend/components/Task/__tests__/TaskRow.test.tsx:173 TaskRow",
+        "frontend/components/Task/__tests__/TaskRow.test.tsx:367 TaskRow"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "call",
+       "reason": "scope-unresolved",
+       "count": 7,
+       "examples": [
+        "frontend/components/Everyone/PeopleBoard.tsx:453 t",
+        "frontend/components/Everyone/PeopleBoard.tsx:529 t",
+        "frontend/components/Everyone/PeopleBoard.tsx:568 t"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "ambiguous-binding",
+       "count": 6,
+       "examples": [
+        "frontend/components/Task/TaskDetails/__tests__/TaskContentCard.test.tsx:57 capturedMarkdownProps.onContentChange",
+        "frontend/utils/taskTokens.ts:44 analysis.parsed_projects",
+        "frontend/utils/taskTokens.ts:56 analysis.parsed_due_date"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "scope-unresolved",
+       "count": 4,
+       "examples": [
+        "frontend/utils/mfaService.ts:35 body.reauth_required",
+        "frontend/utils/mfaService.ts:36 body.method",
+        "frontend/utils/mfaService.ts:36 body.error"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "read",
+       "reason": "unknown-receiver-or-import-form",
+       "count": 3,
+       "examples": [
+        "frontend/components/Note/editor/widgets.tsx:103 CALLOUT_CONFIG.NOTE",
+        "frontend/utils/__tests__/sidebarLayout.test.ts:25 DEFAULT_SECTION_ORDER.length",
+        "frontend/utils/__tests__/tagsService.refreshTagCountsIfTagsChanged.test.ts:13 useStore.getState"
+       ]
+      },
+      {
+       "class": "dangling-local",
+       "kind": "read",
+       "reason": "scope-unresolved",
+       "count": 2,
+       "examples": [
+        "frontend/components/Everyone/PeopleBoard.tsx:460 t",
+        "frontend/components/Everyone/PeopleBoard.tsx:507 t"
+       ]
+      },
+      {
+       "class": "no-occurrence",
+       "kind": "call",
+       "reason": "ambiguous-binding",
+       "count": 2,
+       "examples": [
+        "frontend/components/Spreadsheet/__tests__/ImportWizard.test.tsx:29 template.replace",
+        "frontend/utils/taskTokens.ts:52 analysis.cleaned_content.trim"
+       ]
+      },
+      {
+       "class": "no-position",
+       "kind": "read",
+       "reason": "unknown-receiver",
+       "count": 1,
+       "examples": [
+        "frontend/components/Inbox/__tests__/QuickCaptureInput.slash.test.tsx:51 state.areasStore.areasStore"
+       ]
+      }
+     ],
+     "external_packages": {
+      "npm @types/react@18.3.31": 30064,
+      "npm typescript@6.0.3": 25244,
+      "npm @types/jest@29.5.14": 8879,
+      "npm @testing-library/dom@9.3.4": 4151,
+      "npm @types/node@20.19.43": 2733,
+      "npm @testing-library/jest-dom@6.9.1": 2328,
+      "npm react-i18next@15.7.4": 2020,
+      "npm .@.": 2015,
+      "npm react-router@7.18.5": 1396,
+      "npm playwright@1.65.1": 761,
+      "npm @testing-library/react@14.3.1": 654,
+      "npm @codemirror/state@6.7.6": 555,
+      "npm @codemirror/view@6.43.15": 475,
+      "npm playwright-core@1.65.1": 447,
+      "npm @dnd-kit/core@6.3.1": 416,
+      "npm csstype@3.2.3": 383,
+      "npm @lezer/common@1.5.5": 252,
+      "npm @dnd-kit/sortable@10.0.0": 223,
+      "npm i18next@24.2.3": 205,
+      "npm date-fns@4.4.0": 171
+     }
+    },
+    "road_a": {
+     "a": {
+      "external": 17905,
+      "not-asked": 8322,
+      "project-declaration": 7023,
+      "project-other": 3960,
+      "none": 1267
+     },
+     "a target source": {
+      "engine": 7023
+     },
+     "b call": {
+      "external": 22357,
+      "project-declaration": 7178,
+      "dangling-local": 3755,
+      "project-value variable": 3295,
+      "no-occurrence": 1282,
+      "project-value parameter": 281,
+      "project-value property": 231,
+      "no-position": 98
+     },
+     "b read": {
+      "project-value variable": 13254,
+      "project-value property": 9889,
+      "project-value parameter": 5510,
+      "external": 5295,
+      "project-declaration": 3465,
+      "no-occurrence": 1561,
+      "dangling-local": 444,
+      "no-position": 1,
+      "project-value module": 1
+     },
+     "cells": {
+      "both external": 14132,
+      "mixed: A not-asked, B external": 8219,
+      "same project target": 7023,
+      "mixed: A project-other, B project-value": 3807,
+      "mixed: A external, B dangling-local": 3755,
+      "mixed: A none, B no-occurrence": 1264,
+      "only B has a project target": 155,
+      "mixed: A not-asked, B no-position": 98,
+      "mixed: A external, B no-occurrence": 18,
+      "mixed: A project-other, B external": 3,
+      "mixed: A none, B external": 3
+     },
+     "external packages call": {
+      "npm typescript@6.0.3": 8456,
+      "npm @types/jest@29.5.14": 6983,
+      "npm @types/react@18.3.31": 2370,
+      "npm @testing-library/dom@9.3.4": 1787,
+      "npm @testing-library/jest-dom@6.9.1": 824,
+      "npm @testing-library/react@14.3.1": 375,
+      "npm playwright@1.65.1": 344,
+      "npm playwright-core@1.65.1": 332,
+      "npm react-i18next@15.7.4": 289,
+      "npm @codemirror/state@6.7.6": 123,
+      "npm @codemirror/view@6.43.15": 103,
+      "npm date-fns@4.4.0": 83,
+      "npm react-router@7.18.5": 78,
+      "npm i18next@24.2.3": 34,
+      "npm @types/react-dom@18.3.7": 34,
+      "npm @dnd-kit/core@6.3.1": 24,
+      "npm zustand@5.1.0": 18,
+      "npm @dnd-kit/sortable@10.0.0": 16,
+      "npm @lezer/common@1.5.5": 16,
+      "npm @codemirror/lang-markdown@6.5.2": 12,
+      "npm use-debounce@10.1.1": 12,
+      "npm @codemirror/language@6.13.1": 11,
+      "npm @testing-library/user-event@14.6.10": 8,
+      "npm @types/node@20.19.43": 7,
+      "npm @dnd-kit/utilities@3.2.2": 6,
+      "npm mermaid@12.3.0": 3,
+      "npm highlight.js@11.11.2": 2,
+      "npm swr@2.5.1": 2,
+      "npm .@.": 2,
+      "npm dotenv@16.5.0": 1,
+      "npm @codemirror/commands@6.11.1": 1,
+      "npm slugify@1.6.9": 1
+     },
+     "external packages read": {
+      "npm typescript@6.0.3": 2361,
+      "npm .@.": 966,
+      "npm @types/react@18.3.31": 516,
+      "npm react-router@7.18.5": 359,
+      "npm @types/jest@29.5.14": 249,
+      "npm @lezer/common@1.5.5": 175,
+      "npm @codemirror/state@6.7.6": 149,
+      "npm @dnd-kit/core@6.3.1": 104,
+      "npm @codemirror/view@6.43.15": 72,
+      "npm playwright@1.65.1": 71,
+      "npm @dnd-kit/sortable@10.0.0": 68,
+      "npm @types/node@20.19.43": 60,
+      "npm i18next@24.2.3": 41,
+      "npm csstype@3.2.3": 20,
+      "npm date-fns@4.4.0": 15,
+      "npm playwright-core@1.65.1": 13,
+      "npm @codemirror/lang-markdown@6.5.2": 12,
+      "npm @lezer/highlight@1.2.5": 11,
+      "npm @testing-library/react@14.3.1": 10,
+      "npm react-i18next@15.7.4": 9,
+      "npm @dnd-kit/utilities@3.2.2": 3,
+      "npm react-markdown@10.1.0": 3,
+      "npm @codemirror/commands@6.11.1": 2,
+      "npm remark-gfm@4.0.1": 1,
+      "npm rehype-highlight@7.0.2": 1,
+      "npm mermaid@12.3.0": 1,
+      "npm i18next-http-backend@4.0.10": 1,
+      "npm i18next-browser-languagedetector@8.3.0": 1,
+      "npm swr@2.5.1": 1
+     },
+     "hop kinds call": {
+      "direct": 6154,
+      "same-range": 856,
+      "declared:@types/react.useCallback": 138,
+      "same-range+same-range": 11,
+      "value": 5,
+      "same-range+same-range+declared:@types/react.useCallback": 5,
+      "same-range+initializer": 4,
+      "pattern-key+same-range": 2,
+      "pattern-key+same-range+declared:@types/react.useCallback": 1,
+      "same-range+declared:@types/react.useCallback": 1,
+      "pattern-key": 1
+     },
+     "hop kinds read": {
+      "direct": 2800,
+      "same-range": 443,
+      "declared:@types/react.useCallback": 125,
+      "initializer": 45,
+      "same-range+same-range": 34,
+      "value": 15,
+      "pattern-key+same-range": 2,
+      "same-range+same-range+declared:@types/react.useCallback": 1
+     },
+     "hops call": {
+      "0": 6154,
+      "1": 1000,
+      "2": 18,
+      "3+": 6
+     },
+     "hops read": {
+      "0": 2800,
+      "1": 628,
+      "2": 36,
+      "3+": 1
+     },
+     "matrix": {
+      "A external | B external": 14132,
+      "A not-asked | B external": 8219,
+      "A project-declaration | B project-declaration (direct or alias)": 7023,
+      "A project-other | B project-value": 3807,
+      "A external | B dangling-local": 3755,
+      "A none | B no-occurrence": 1264,
+      "A project-other | B project-declaration (direct or alias)": 150,
+      "A not-asked | B no-position": 98,
+      "A external | B no-occurrence": 18,
+      "A not-asked | B project-declaration (direct or alias)": 5,
+      "A project-other | B external": 3,
+      "A none | B external": 3
+     },
+     "reads vs lexical": {
+      "neither": 35955,
+      "same": 2740,
+      "only B": 725
+     },
+     "examples": {
+      "chain declared:@types/react.useCallback": [
+       "frontend/components/AI/DailyAssistant.tsx:72 generate: declared:@types/react.useCallback -> frontend/components/AI/DailyAssistant.tsx::function@43:33",
+       "frontend/components/Admin/AdminBillingPage.tsx:147 load: declared:@types/react.useCallback -> frontend/components/Admin/AdminBillingPage.tsx::function@59:8",
+       "frontend/components/Admin/AdminUsersPage.tsx:1365 loadRoles: declared:@types/react.useCallback -> frontend/components/Admin/AdminUsersPage.tsx::function@1350:34",
+       "frontend/components/DailyPlan/PlanMyDay.tsx:486 persist: declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@346:8",
+       "frontend/components/DailyPlan/PlanMyDay.tsx:878 addTask: declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@477:8",
+       "frontend/components/DailyPlan/TodayPage.tsx:257 syncCompletedTask: declared:@types/react.useCallback -> frontend/components/DailyPlan/TodayPage.tsx::function@234:8",
+       "frontend/components/DailyPlan/TodayPage.tsx:545 replaceItems: declared:@types/react.useCallback -> frontend/components/DailyPlan/TodayPage.tsx::function@179:8",
+       "frontend/components/Everyone/PeopleBoard.tsx:378 removeLocally: declared:@types/react.useCallback -> frontend/components/Everyone/PeopleBoard.tsx::function@356:38",
+       "frontend/components/Habits/HabitDetails.tsx:131 loadYear: declared:@types/react.useCallback -> frontend/components/Habits/HabitDetails.tsx::function@97:33",
+       "frontend/components/Inbox/QuickCaptureInput.tsx:1315 analyzeText: declared:@types/react.useCallback -> frontend/components/Inbox/QuickCaptureInput.tsx::function@1264:12",
+       "frontend/components/Note/MarkdownEditor.tsx:728 createLinkedNote: declared:@types/react.useCallback -> frontend/components/Note/MarkdownEditor.tsx::function@310:8",
+       "frontend/components/Note/NoteModal.tsx:467 handleClose: declared:@types/react.useCallback -> frontend/components/Note/NoteModal.tsx::function@184:36",
+       "frontend/components/Profile/ProfileSettings.tsx:278 loadApiKeys: declared:@types/react.useCallback -> frontend/components/Profile/ProfileSettings.tsx::function@263:36",
+       "frontend/components/Profile/tabs/ImportExportTab.tsx:39 loadHistory: declared:@types/react.useCallback -> frontend/components/Profile/tabs/ImportExportTab.tsx::function@32:36",
+       "frontend/components/Profile/tabs/TwoFactorCard.tsx:94 load: declared:@types/react.useCallback -> frontend/components/Profile/tabs/TwoFactorCard.tsx::function@55:29",
+       "frontend/components/Shared/ToastContext.tsx:71 removeToast: declared:@types/react.useCallback -> frontend/components/Shared/ToastContext.tsx::function@27:36",
+       "frontend/components/Task/TaskDetails/TaskRelationsCard.tsx:149 load: declared:@types/react.useCallback -> frontend/components/Task/TaskDetails/TaskRelationsCard.tsx::function@76:29",
+       "frontend/components/Task/TaskRow/useTaskRowSave.ts:100 save: declared:@types/react.useCallback -> frontend/components/Task/TaskRow/useTaskRowSave.ts::function@49:8",
+       "frontend/components/Task/TaskRow/useTaskRowSave.ts:165 save: declared:@types/react.useCallback -> frontend/components/Task/TaskRow/useTaskRowSave.ts::function@49:8",
+       "frontend/components/ViewDetail.tsx:398 handleSearchChange: declared:@types/react.useCallback -> frontend/components/ViewDetail.tsx::function@350:8"
+      ],
+      "chain pattern-key": [
+       "frontend/components/Inbox/InboxItemDetail.tsx:528 detectUrl: pattern-key -> frontend/utils/urlService.ts::function@58:21"
+      ],
+      "chain pattern-key+same-range": [
+       "frontend/components/Tag/TagDetails.tsx:287 openTagModal: pattern-key -> same-range -> frontend/hooks/usePersistedModal.ts::function@48:22",
+       "frontend/components/Tag/TagDetails.tsx:395 closeTagModal: pattern-key -> same-range -> frontend/hooks/usePersistedModal.ts::function@64:23"
+      ],
+      "chain pattern-key+same-range+declared:@types/react.useCallback": [
+       "frontend/components/DailyPlan/PlanMyDay.tsx:645 save: pattern-key -> same-range -> declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@346:8"
+      ],
+      "chain same-range": [
+       "frontend/Layout.tsx:561 deleteProject: same-range -> frontend/utils/projectsService.ts::function@143:29",
+       "frontend/components/Admin/AdminWaitlistPage.tsx:91 showErrorToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@16:4",
+       "frontend/components/CalDAV/ConflictResolver.tsx:152 showErrorToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@16:4",
+       "frontend/components/DailyPlan/DurationChips.tsx:50 onChange: same-range -> frontend/components/DailyPlan/DurationChips.tsx::method@7:4",
+       "frontend/components/Focus/FocusPopover.tsx:110 onClose: same-range -> frontend/components/Focus/FocusPopover.tsx::method@20:4",
+       "frontend/components/Inbox/InboxItemDetail.tsx:532 extractUrlTitle: same-range -> frontend/utils/urlService.ts::function@13:31",
+       "frontend/components/Inbox/QuickCaptureInput.tsx:1743 showErrorToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@16:4",
+       "frontend/components/Note/NoteModal.tsx:379 showSuccessToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@15:4",
+       "frontend/components/People/PersonModal.tsx:80 onSave: same-range -> frontend/components/People/PersonModal.tsx::method@13:4",
+       "frontend/components/Profile/tabs/ApiKeysTab.tsx:107 onUpdateNewExpiration: same-range -> frontend/components/Profile/tabs/ApiKeysTab.tsx::method@25:4",
+       "frontend/components/Profile/tabs/OidcProviderConfig.tsx:159 showSuccessToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@15:4",
+       "frontend/components/Project/ProjectHero.tsx:554 onImportClick: same-range -> frontend/components/Project/ProjectHero.tsx::method@48:4",
+       "frontend/components/Projects.tsx:537 showErrorToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@16:4",
+       "frontend/components/Shared/NumberSelectDropdown.tsx:75 onChange: same-range -> frontend/components/Shared/NumberSelectDropdown.tsx::method@7:4",
+       "frontend/components/Sidebar/SidebarNav.tsx:150 handleNavClick: same-range -> frontend/components/Sidebar/SidebarNav.tsx::method@19:4",
+       "frontend/components/Task/NewTask.tsx:27 onTaskCreate: same-range -> frontend/components/Task/NewTask.tsx::method@7:4",
+       "frontend/components/Task/TaskDetails.tsx:1377 showErrorToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@16:4",
+       "frontend/components/Task/TaskDetails/TaskProjectCard.tsx:143 getProjectLink: same-range -> frontend/components/Task/TaskDetails/TaskProjectCard.tsx::method@15:4",
+       "frontend/components/Task/TaskRow/TaskRowExpanded.tsx:232 onExited: same-range -> frontend/components/Task/TaskRow/TaskRowExpanded.tsx::method@37:4",
+       "frontend/components/Templates/MarketplaceTemplates.tsx:48 showErrorToast: same-range -> frontend/components/Shared/ToastContext.tsx::method@16:4"
+      ],
+      "chain same-range+declared:@types/react.useCallback": [
+       "frontend/components/DailyPlan/PlanMyDay.tsx:680 captureHandlers.current.addTasks: same-range -> declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@423:8"
+      ],
+      "chain same-range+initializer": [
+       "frontend/components/Project/ProjectDetails.tsx:749 requestComplete: same-range -> initializer -> frontend/components/Project/useCompleteProject.tsx::function@63:20",
+       "frontend/components/Project/__tests__/useCompleteProject.test.tsx:29 requestComplete: same-range -> initializer -> frontend/components/Project/useCompleteProject.tsx::function@63:20",
+       "frontend/components/Project/useProjectCardActions.tsx:78 requestComplete: same-range -> initializer -> frontend/components/Project/useCompleteProject.tsx::function@63:20",
+       "frontend/components/Projects.tsx:510 requestComplete: same-range -> initializer -> frontend/components/Project/useCompleteProject.tsx::function@63:20"
+      ],
+      "chain same-range+same-range": [
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:49 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:55 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:63 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:71 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:79 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:91 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:122 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:131 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:147 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:168 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20",
+       "frontend/components/Note/editor/__tests__/touchReading.test.ts:178 cleanup: same-range -> same-range -> frontend/components/Note/editor/__tests__/touchReading.test.ts::function@23:20"
+      ],
+      "chain same-range+same-range+declared:@types/react.useCallback": [
+       "frontend/components/Inbox/QuickCaptureInput.tsx:2090 addFiles: same-range -> same-range -> declared:@types/react.useCallback -> frontend/components/Capture/useCaptureFiles.ts::function@92:8",
+       "frontend/components/Inbox/QuickCaptureInput.tsx:2256 clearFiles: same-range -> same-range -> declared:@types/react.useCallback -> frontend/components/Capture/useCaptureFiles.ts::function@136:35",
+       "frontend/components/Profile/ProfileSettings.tsx:420 runWithReverify: same-range -> same-range -> declared:@types/react.useCallback -> frontend/components/Auth/useReverify.tsx::function@43:8",
+       "frontend/components/Profile/tabs/TwoFactorCard.tsx:100 runWithReverify: same-range -> same-range -> declared:@types/react.useCallback -> frontend/components/Auth/useReverify.tsx::function@43:8",
+       "frontend/components/Sidebar/SidebarNotesTree.tsx:282 toggle: same-range -> same-range -> declared:@types/react.useCallback -> frontend/hooks/useNotesTreeExpansion.ts::function@59:31"
+      ],
+      "chain value": [
+       "frontend/__tests__/serviceWorker.test.ts:94 db.transaction: value -> frontend/__tests__/serviceWorker.test.ts::function@70:21",
+       "frontend/__tests__/serviceWorker.test.ts:180 sw.idb.add: value -> frontend/__tests__/serviceWorker.test.ts::function@94:13",
+       "frontend/__tests__/serviceWorker.test.ts:198 sw.idb.add: value -> frontend/__tests__/serviceWorker.test.ts::function@94:13",
+       "frontend/__tests__/serviceWorker.test.ts:220 sw.idb.add: value -> frontend/__tests__/serviceWorker.test.ts::function@94:13",
+       "frontend/components/Everyone/PeopleBoard.tsx:473 sortableCursorHandlers.onDragStart: value -> frontend/components/Shared/sortableList.ts::function@36:17"
+      ],
+      "only B has a project target (direct or alias)": [
+       "frontend/__tests__/serviceWorker.test.ts:94 db.transaction | A project-other project-not-a-symbol | B project-declaration value -> frontend/__tests__/serviceWorker.test.ts::function@70:21",
+       "frontend/components/Admin/AdminBillingPage.tsx:81 load | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Admin/AdminBillingPage.tsx::function@59:8",
+       "frontend/components/Admin/AdminUserEmails.tsx:71 load | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Admin/AdminUserEmails.tsx::function@62:29",
+       "frontend/components/DailyPlan/PlanMyDay.tsx:351 flush | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@320:30",
+       "frontend/components/DailyPlan/PlanMyDay.tsx:716 persist | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@346:8",
+       "frontend/components/DailyPlan/PlanMyDay.tsx:1001 refreshEvents | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/DailyPlan/PlanMyDay.tsx::function@297:38",
+       "frontend/components/DailyPlan/TodayPage.tsx:298 mergePlannedTask | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/DailyPlan/TodayPage.tsx::function@207:8",
+       "frontend/components/Everyone/EveryoneTimeline.tsx:141 load | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Everyone/EveryoneTimeline.tsx::function@131:29",
+       "frontend/components/Everyone/PeopleBoard.tsx:505 load | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Everyone/PeopleBoard.tsx::function@341:29",
+       "frontend/components/Habits/HabitDetails.tsx:197 applyHabit | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Habits/HabitDetails.tsx::function@72:8",
+       "frontend/components/Inbox/QuickCaptureInput.tsx:2563 handleSubmit | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Inbox/QuickCaptureInput.tsx::function@1493:12",
+       "frontend/components/Note/NoteModal.tsx:434 handleClose | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Note/NoteModal.tsx::function@184:36",
+       "frontend/components/Profile/ProfileSettings.tsx:246 getTabFromQuery | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Profile/ProfileSettings.tsx::function@110:40",
+       "frontend/components/Profile/ProfileSettings.tsx:741 forceUpdate | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Profile/ProfileSettings.tsx::function@259:36",
+       "frontend/components/Profile/tabs/PushDeviceCard.tsx:57 update | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Profile/tabs/PushDeviceCard.tsx::function@23:8",
+       "frontend/components/Shared/ToastContext.tsx:46 removeToast | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Shared/ToastContext.tsx::function@27:36",
+       "frontend/components/Task/TaskDetails.tsx:1191 refreshRecurringSetup | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Task/TaskDetails.tsx::function@1081:8",
+       "frontend/components/Task/TaskRow/index.tsx:281 loadSubtasks | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Task/TaskRow/index.tsx::function@257:37",
+       "frontend/components/Task/TaskRow/useTaskRowSave.ts:153 save | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/Task/TaskRow/useTaskRowSave.ts::function@49:8",
+       "frontend/components/ViewDetail.tsx:380 handleStatusChange | A project-other project-not-a-symbol | B project-declaration declared:@types/react.useCallback -> frontend/components/ViewDetail.tsx::function@320:8"
+      ]
+     },
+     "answer_file_mismatches": 0
+    },
+    "focus": {}
+   }
+  },
+  "hand": [
+   {
+    "site": "backend/migrations/archive/20251023000001-add-unique-constraint-tags.js:162 addIndex",
+    "expected": "value",
+    "b": "no-occurrence",
+    "b_targets": [],
+    "b_detail": "no-occurrence",
+    "b_externals": [],
+    "b_chains": [],
+    "b_right": false,
+    "a": "none",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/migrations/archive/20261024100000-create-webhooks.js:162 addIndexOnce",
+    "expected": "decl backend/migrations/archive/20261024100000-create-webhooks.js:5",
+    "b": "project-declaration",
+    "b_targets": [
+     "backend/migrations/archive/20261024100000-create-webhooks.js::function@5:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "backend/migrations/archive/20261024100000-create-webhooks.js::function@5:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "backend/migrations/archive/20261024100000-create-webhooks.js::function@5:0",
+    "a_right": true
+   },
+   {
+    "site": "backend/modules/caldav/icalendar/vtodo-parser.js:189 toJSDate",
+    "expected": "external ical.js",
+    "b": "no-occurrence",
+    "b_targets": [],
+    "b_detail": "no-occurrence",
+    "b_externals": [],
+    "b_chains": [],
+    "b_right": false,
+    "a": "none",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/modules/caldav/services/safe-request.js:191 AppError",
+    "expected": "decl backend/shared/errors/AppError.js:7",
+    "b": "project-declaration",
+    "b_targets": [
+     "backend/shared/errors/AppError.js::class@7:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "backend/shared/errors/AppError.js::class@7:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "backend/shared/errors/AppError.js::class@7:0",
+    "a_right": true
+   },
+   {
+    "site": "backend/modules/daily-plan/routes.js:32 put",
+    "expected": "external express",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/express-serve-static-core@4.19.9",
+    "b_externals": [
+     "npm @types/express-serve-static-core@4.19.9"
+    ],
+    "b_chains": [
+     "external npm @types/express-serve-static-core@4.19.9"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "backend/modules/oidc/configService.js:95 require",
+    "expected": "external @types/node",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/node@20.19.43",
+    "b_externals": [
+     "npm @types/node@20.19.43"
+    ],
+    "b_chains": [
+     "external npm @types/node@20.19.43"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/modules/spreadsheets/analyze.js:750 key",
+    "expected": "decl backend/modules/spreadsheets/analyze.js:28",
+    "b": "project-declaration",
+    "b_targets": [
+     "backend/modules/spreadsheets/analyze.js::function@28:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "backend/modules/spreadsheets/analyze.js::function@28:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "backend/modules/spreadsheets/analyze.js::function@28:0",
+    "a_right": true
+   },
+   {
+    "site": "backend/modules/tasks/routes.js:654 findByIdAndUser",
+    "expected": "decl backend/modules/tasks/repository.js:13",
+    "b": "project-declaration",
+    "b_targets": [
+     "backend/modules/tasks/repository.js::method@13:4"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "backend/modules/tasks/repository.js::method@13:4"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "backend/modules/tasks/repository.js::method@13:4",
+    "a_right": true
+   },
+   {
+    "site": "backend/modules/tasks/taskReminderService.js:3 require",
+    "expected": "external @types/node",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/node@20.19.43",
+    "b_externals": [
+     "npm @types/node@20.19.43"
+    ],
+    "b_chains": [
+     "external npm @types/node@20.19.43"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/tests/integration/admin-users-cascade.test.js:16 require",
+    "expected": "external @types/node",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/node@20.19.43",
+    "b_externals": [
+     "npm @types/node@20.19.43"
+    ],
+    "b_chains": [
+     "external npm @types/node@20.19.43"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/tests/integration/recurring-tasks.test.js:365 create",
+    "expected": "external sequelize",
+    "b": "no-occurrence",
+    "b_targets": [],
+    "b_detail": "no-occurrence",
+    "b_externals": [],
+    "b_chains": [],
+    "b_right": false,
+    "a": "none",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/tests/integration/spreadsheets-formats.test.js:492 map",
+    "expected": "none",
+    "b": "no-occurrence",
+    "b_targets": [],
+    "b_detail": "no-occurrence",
+    "b_externals": [],
+    "b_chains": [],
+    "b_right": true,
+    "a": "none",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "backend/tests/unit/middleware/rateLimitStore.test.js:19 beforeAll",
+    "expected": "external @types/jest",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/jest@29.5.14",
+    "b_externals": [
+     "npm @types/jest@29.5.14"
+    ],
+    "b_chains": [
+     "external npm @types/jest@29.5.14"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/tests/unit/modules/tasks/recurringTaskService.test.js:677 expect",
+    "expected": "external @types/jest",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/jest@29.5.14",
+    "b_externals": [
+     "npm @types/jest@29.5.14"
+    ],
+    "b_chains": [
+     "external npm @types/jest@29.5.14"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "backend/utils/timezone-utils.js:69 getDayBoundsInUTC",
+    "expected": "decl backend/utils/timezone-utils.js:53",
+    "b": "project-declaration",
+    "b_targets": [
+     "backend/utils/timezone-utils.js::function@53:0"
+    ],
+    "b_detail": "",
+    "b_externals": [],
+    "b_chains": [
+     "backend/utils/timezone-utils.js::function@53:0"
+    ],
+    "b_right": true,
+    "a": "project-declaration",
+    "a_target": "backend/utils/timezone-utils.js::function@53:0",
+    "a_right": true
+   },
+   {
+    "site": "e2e/tests/notes-editor.spec.ts:106 log",
+    "expected": "external typescript|@types/node",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm typescript@6.0.3",
+    "b_externals": [
+     "npm @types/node@20.19.43",
+     "npm typescript@6.0.3"
+    ],
+    "b_chains": [
+     "external npm typescript@6.0.3",
+     "external npm @types/node@20.19.43"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "frontend/Layout.tsx:216 setSelectedArea",
+    "expected": "none",
+    "b": "project-value",
+    "b_targets": [],
+    "b_detail": "variable",
+    "b_externals": [],
+    "b_chains": [
+     "project-value variable"
+    ],
+    "b_right": true,
+    "a": "project-other",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/__tests__/Notes.staleCache.test.tsx:80 fn",
+    "expected": "external @types/jest",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/jest@29.5.14",
+    "b_externals": [
+     "npm @types/jest@29.5.14"
+    ],
+    "b_chains": [
+     "external npm @types/jest@29.5.14"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "frontend/components/Admin/AdminUsersPage.tsx:1353 setRolesError",
+    "expected": "none",
+    "b": "project-value",
+    "b_targets": [],
+    "b_detail": "variable",
+    "b_externals": [],
+    "b_chains": [
+     "project-value variable"
+    ],
+    "b_right": true,
+    "a": "project-other",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Admin/__tests__/AdminUserStatusTable.test.tsx:87 getAllByRole",
+    "expected": "external @testing-library",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @testing-library/dom@9.3.4",
+    "b_externals": [
+     "npm @testing-library/dom@9.3.4"
+    ],
+    "b_chains": [
+     "dead-end dangling-local",
+     "external npm @testing-library/dom@9.3.4"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:216 toBeEnabled",
+    "expected": "external jest",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @testing-library/jest-dom@6.9.1",
+    "b_externals": [
+     "npm @testing-library/jest-dom@6.9.1"
+    ],
+    "b_chains": [
+     "external npm @testing-library/jest-dom@6.9.1"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Billing/__tests__/UpgradeModal.test.tsx:75 getByTestId",
+    "expected": "external @testing-library",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @testing-library/dom@9.3.4",
+    "b_externals": [
+     "npm @testing-library/dom@9.3.4"
+    ],
+    "b_chains": [
+     "dead-end dangling-local",
+     "external npm @testing-library/dom@9.3.4"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Calendar.tsx:250 Date",
+    "expected": "external typescript",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm typescript@6.0.3",
+    "b_externals": [
+     "npm typescript@6.0.3"
+    ],
+    "b_chains": [
+     "external npm typescript@6.0.3",
+     "external npm typescript@6.0.3",
+     "external npm typescript@6.0.3",
+     "external npm typescript@6.0.3"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "frontend/components/DailyPlan/NowCard.tsx:75 push",
+    "expected": "external typescript",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm typescript@6.0.3",
+    "b_externals": [
+     "npm typescript@6.0.3"
+    ],
+    "b_chains": [
+     "external npm typescript@6.0.3"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/DailyPlan/PlanMyDay.tsx:797 useSensor",
+    "expected": "external @dnd-kit",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @dnd-kit/core@6.3.1",
+    "b_externals": [
+     "npm @dnd-kit/core@6.3.1"
+    ],
+    "b_chains": [
+     "external npm @dnd-kit/core@6.3.1"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Inbox/__tests__/QuickCaptureInput.focus.test.tsx:88 slice",
+    "expected": "external typescript",
+    "b": "no-occurrence",
+    "b_targets": [],
+    "b_detail": "no-occurrence",
+    "b_externals": [],
+    "b_chains": [],
+    "b_right": false,
+    "a": "none",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "frontend/components/Shared/ShareModal.tsx:308 trim",
+    "expected": "external typescript",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm typescript@6.0.3",
+    "b_externals": [
+     "npm typescript@6.0.3"
+    ],
+    "b_chains": [
+     "external npm typescript@6.0.3"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Shared/__tests__/MarkdownRenderer.mermaid.test.tsx:78 queryByTestId",
+    "expected": "external @testing-library",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @testing-library/dom@9.3.4",
+    "b_externals": [
+     "npm @testing-library/dom@9.3.4"
+    ],
+    "b_chains": [
+     "dead-end dangling-local",
+     "external npm @testing-library/dom@9.3.4"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   },
+   {
+    "site": "frontend/components/Task/TaskDetails/__tests__/TaskDetailsHeader.test.tsx:6 mock",
+    "expected": "external @types/jest",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm @types/jest@29.5.14",
+    "b_externals": [
+     "npm @types/jest@29.5.14"
+    ],
+    "b_chains": [
+     "external npm @types/jest@29.5.14"
+    ],
+    "b_right": true,
+    "a": "not-asked",
+    "a_target": null,
+    "a_right": false
+   },
+   {
+    "site": "frontend/utils/dailyPlanService.ts:311 map",
+    "expected": "external typescript",
+    "b": "external",
+    "b_targets": [],
+    "b_detail": "npm typescript@6.0.3",
+    "b_externals": [
+     "npm typescript@6.0.3"
+    ],
+    "b_chains": [
+     "external npm typescript@6.0.3"
+    ],
+    "b_right": true,
+    "a": "external",
+    "a_target": null,
+    "a_right": true
+   }
+  ],
+  "hand_score": {
+   "checks": 30,
+   "b_right": 26,
+   "a_right": 17
+  },
+  "seconds": {
+   "hops typescript": 4.7,
+   "graph javascript": 20.2,
+   "graph typescript": 15.0
+  },
+  "symbols_walked": 68974
+ },
+ "join_seconds": 47.5,
+ "seconds": 697.3
+}

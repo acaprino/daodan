@@ -1,7 +1,7 @@
 """The TypeScript compiler API in batch, for JavaScript and TypeScript: a second source beside the SCIP index.
 
-`analyze` builds one program over a copy of the checkout (`allowJs`, the generated tsconfig of
-`adapters/typescript.py`, the engine pass's package install) and asks the checker, in one Node process
+`analyze` builds one program over a copy of the checkout (`allowJs`, the generated tsconfig of the plugin's
+`indexers/typescript.py`, the engine pass's package install) and asks the checker, in one Node process
 (`ts_compiler.js`), for every call and `new`: `getResolvedSignature(call).declaration`, else the symbol at the
 callee's name through `getAliasedSymbol`. TypeScript 7.0 ships without a JavaScript API; `@typescript/typescript6`
 re-exports the 6.0 one (the TypeScript blog, 7.0 announcement). An edge's `callee` is `file:line:column` of the
@@ -107,7 +107,7 @@ def where(path: Path, root: Path, line: int, column: int, lines: Lines) -> tuple
 
 
 def analyze(project_dir: Path, work_dir: Path, files: list[str] | None = None, label: str = "") -> dict:
-    from adapters import typescript
+    from indexers import typescript
     work_dir = Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
     here = mirror(Path(project_dir), work_dir)
