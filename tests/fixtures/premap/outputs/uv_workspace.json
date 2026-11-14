@@ -1,0 +1,91 @@
+{
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "runs": [
+  {
+   "command": {
+    "tool": "renovate",
+    "argv": [
+     "renovate",
+     "--platform=local",
+     "--dry-run=extract",
+     "--report-type=file",
+     "--report-path=/dev/stdout"
+    ],
+    "cwd": ".",
+    "env": {
+     "LOG_LEVEL": "fatal",
+     "LOG_FILE": "/dev/stderr",
+     "LOG_FILE_LEVEL": "warn",
+     "NO_COLOR": "1",
+     "RENOVATE_ONBOARDING": "false",
+     "RENOVATE_REQUIRE_CONFIG": "ignored",
+     "RENOVATE_BASE_DIR": "/tmp/daodan-renovate"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"34589353-68d2-449f-b629-2d9fb7d52b0b\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{\"pep621\":[{\"extractedConstraints\":{\"python\":\">=3.10\"},\"deps\":[{\"packageName\":\"python\",\"depType\":\"requires-python\",\"currentValue\":\">=3.10\",\"commitMessageTopic\":\"Python\",\"datasource\":\"python-version\",\"versioning\":\"pep440\",\"depName\":\"python\"},{\"packageName\":\"ws-core\",\"depName\":\"ws-core\",\"datasource\":\"pypi\",\"depType\":\"tool.uv.sources\",\"skipReason\":\"inherited-dependency\",\"lockedVersion\":\"0.1.0\"},{\"packageName\":\"uv-build\",\"depName\":\"uv_build\",\"datasource\":\"pypi\",\"depType\":\"build-system.requires\",\"currentValue\":\">=0.8,<0.12\"}],\"packageFileVersion\":\"0.1.0\",\"lockFiles\":[\"uv.lock\"],\"packageFile\":\"packages/app/pyproject.toml\"},{\"extractedConstraints\":{\"python\":\">=3.10\"},\"deps\":[{\"packageName\":\"python\",\"depType\":\"requires-python\",\"currentValue\":\">=3.10\",\"commitMessageTopic\":\"Python\",\"datasource\":\"python-version\",\"versioning\":\"pep440\",\"depName\":\"python\"},{\"packageName\":\"uv-build\",\"depName\":\"uv_build\",\"datasource\":\"pypi\",\"depType\":\"build-system.requires\",\"currentValue\":\">=0.8,<0.12\"}],\"packageFileVersion\":\"0.1.0\",\"lockFiles\":[\"uv.lock\"],\"packageFile\":\"packages/core/pyproject.toml\"},{\"extractedConstraints\":{},\"deps\":[],\"lockFiles\":[\"uv.lock\"],\"packageFile\":\"pyproject.toml\"}]}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":226,\"level\":40,\"logContext\":\"34589353-68d2-449f-b629-2d9fb7d52b0b\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-14T20:25:52.628Z\",\"v\":0}\n",
+    "root": "/work/uv_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "uv",
+    "argv": [
+     "uv",
+     "export",
+     "--frozen",
+     "--all-packages",
+     "--no-hashes",
+     "--format",
+     "pylock.toml"
+    ],
+    "cwd": ".",
+    "env": {
+     "UV_OFFLINE": "1",
+     "UV_PYTHON_DOWNLOADS": "never",
+     "UV_NO_PROGRESS": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "# This file was autogenerated by uv via the following command:\n#    uv export --frozen --all-packages --no-hashes --format pylock.toml\nlock-version = \"1.0\"\ncreated-by = \"uv\"\nrequires-python = \">=3.10\"\n\n[[packages]]\nname = \"ws-app\"\ndirectory = { path = \"packages/app\", editable = true }\n\n[[packages]]\nname = \"ws-core\"\ndirectory = { path = \"packages/core\", editable = true }\n",
+    "stderr": "",
+    "root": "/work/uv_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "uv",
+    "argv": [
+     "uv",
+     "tree",
+     "--frozen",
+     "--depth",
+     "1"
+    ],
+    "cwd": ".",
+    "env": {
+     "UV_OFFLINE": "1",
+     "UV_PYTHON_DOWNLOADS": "never",
+     "UV_NO_PROGRESS": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "ws-core v0.1.0\nws-app v0.1.0\n└── ws-core v0.1.0\n",
+    "stderr": "Using CPython 3.12.10 interpreter at: /usr/local/bin/python3\n",
+    "root": "/work/uv_workspace"
+   }
+  }
+ ]
+}

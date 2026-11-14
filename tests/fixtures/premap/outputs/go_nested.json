@@ -1,0 +1,267 @@
+{
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "runs": [
+  {
+   "command": {
+    "tool": "renovate",
+    "argv": [
+     "renovate",
+     "--platform=local",
+     "--dry-run=extract",
+     "--report-type=file",
+     "--report-path=/dev/stdout"
+    ],
+    "cwd": ".",
+    "env": {
+     "LOG_LEVEL": "fatal",
+     "LOG_FILE": "/dev/stderr",
+     "LOG_FILE_LEVEL": "warn",
+     "NO_COLOR": "1",
+     "RENOVATE_ONBOARDING": "false",
+     "RENOVATE_REQUIRE_CONFIG": "ignored",
+     "RENOVATE_BASE_DIR": "/tmp/daodan-renovate"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"c34b9858-1c83-4dc7-a318-1c60c9c22e6d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{\"gomod\":[{\"deps\":[{\"datasource\":\"golang-version\",\"versioning\":\"go-mod-directive\",\"depType\":\"golang\",\"depName\":\"go\",\"currentValue\":\"1.22\",\"commitMessageTopic\":\"go module directive\",\"managerData\":{\"lineNumber\":2},\"packageName\":\"go\"},{\"datasource\":\"go\",\"depType\":\"require\",\"depName\":\"example.com/app\",\"currentValue\":\"v0.0.0\",\"managerData\":{\"lineNumber\":4},\"packageName\":\"example.com/app\"},{\"datasource\":\"go\",\"depType\":\"replace\",\"depName\":\"../..\",\"skipReason\":\"local-dependency\",\"managerData\":{\"lineNumber\":6},\"packageName\":\"../..\"}],\"extractedConstraints\":{\"%goMod\":\"<=1.22.x\"},\"constraintsVersioning\":{\"%goMod\":\"semver-coerced\"},\"packageFile\":\"_examples/demo/go.mod\"},{\"deps\":[{\"datasource\":\"golang-version\",\"versioning\":\"go-mod-directive\",\"depType\":\"golang\",\"depName\":\"go\",\"currentValue\":\"1.22\",\"commitMessageTopic\":\"go module directive\",\"managerData\":{\"lineNumber\":2},\"packageName\":\"go\"}],\"extractedConstraints\":{\"%goMod\":\"<=1.22.x\"},\"constraintsVersioning\":{\"%goMod\":\"semver-coerced\"},\"packageFile\":\"go.mod\"}]}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":39,\"level\":40,\"logContext\":\"c34b9858-1c83-4dc7-a318-1c60c9c22e6d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-14T20:25:40.404Z\",\"v\":0}\n",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "env",
+     "-json",
+     "GOPROXY"
+    ],
+    "cwd": ".",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"GOPROXY\": \"https://proxy.golang.org,direct\"\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "mod",
+     "edit",
+     "-json"
+    ],
+    "cwd": "_examples/demo",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Module\": {\n\t\t\"Path\": \"example.com/demo\"\n\t},\n\t\"Go\": \"1.22\",\n\t\"Require\": [\n\t\t{\n\t\t\t\"Path\": \"example.com/app\",\n\t\t\t\"Version\": \"v0.0.0\"\n\t\t}\n\t],\n\t\"Replace\": [\n\t\t{\n\t\t\t\"Old\": {\n\t\t\t\t\"Path\": \"example.com/app\"\n\t\t\t},\n\t\t\t\"New\": {\n\t\t\t\t\"Path\": \"../..\"\n\t\t\t}\n\t\t}\n\t]\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "list",
+     "-m",
+     "-json"
+    ],
+    "cwd": "_examples/demo",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Path\": \"example.com/demo\",\n\t\"Main\": true,\n\t\"Dir\": \"/work/go_nested/_examples/demo\",\n\t\"GoMod\": \"/work/go_nested/_examples/demo/go.mod\",\n\t\"GoVersion\": \"1.22\"\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "list",
+     "-m",
+     "-json",
+     "all"
+    ],
+    "cwd": "_examples/demo",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Path\": \"example.com/demo\",\n\t\"Main\": true,\n\t\"Dir\": \"/work/go_nested/_examples/demo\",\n\t\"GoMod\": \"/work/go_nested/_examples/demo/go.mod\",\n\t\"GoVersion\": \"1.22\"\n}\n{\n\t\"Path\": \"example.com/app\",\n\t\"Version\": \"v0.0.0\",\n\t\"Replace\": {\n\t\t\"Path\": \"../..\",\n\t\t\"Dir\": \"/work/go_nested\",\n\t\t\"GoMod\": \"/work/go_nested/go.mod\",\n\t\t\"GoVersion\": \"1.22\"\n\t},\n\t\"Dir\": \"/work/go_nested\",\n\t\"GoMod\": \"/work/go_nested/go.mod\",\n\t\"GoVersion\": \"1.22\"\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "list",
+     "-e",
+     "-json",
+     "./..."
+    ],
+    "cwd": "_examples/demo",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Dir\": \"/work/go_nested/_examples/demo\",\n\t\"ImportPath\": \"example.com/demo\",\n\t\"Name\": \"demo\",\n\t\"Root\": \"/work/go_nested/_examples/demo\",\n\t\"Module\": {\n\t\t\"Path\": \"example.com/demo\",\n\t\t\"Main\": true,\n\t\t\"Dir\": \"/work/go_nested/_examples/demo\",\n\t\t\"GoMod\": \"/work/go_nested/_examples/demo/go.mod\",\n\t\t\"GoVersion\": \"1.22\"\n\t},\n\t\"Match\": [\n\t\t\"./...\"\n\t],\n\t\"Stale\": true,\n\t\"StaleReason\": \"build ID mismatch\",\n\t\"GoFiles\": [\n\t\t\"demo.go\"\n\t]\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "mod",
+     "edit",
+     "-json"
+    ],
+    "cwd": ".",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Module\": {\n\t\t\"Path\": \"example.com/app\"\n\t},\n\t\"Go\": \"1.22\"\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "list",
+     "-m",
+     "-json"
+    ],
+    "cwd": ".",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Path\": \"example.com/app\",\n\t\"Main\": true,\n\t\"Dir\": \"/work/go_nested\",\n\t\"GoMod\": \"/work/go_nested/go.mod\",\n\t\"GoVersion\": \"1.22\"\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "list",
+     "-m",
+     "-json",
+     "all"
+    ],
+    "cwd": ".",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Path\": \"example.com/app\",\n\t\"Main\": true,\n\t\"Dir\": \"/work/go_nested\",\n\t\"GoMod\": \"/work/go_nested/go.mod\",\n\t\"GoVersion\": \"1.22\"\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  },
+  {
+   "command": {
+    "tool": "go",
+    "argv": [
+     "go",
+     "list",
+     "-e",
+     "-json",
+     "./..."
+    ],
+    "cwd": ".",
+    "env": {
+     "GOFLAGS": "-mod=readonly",
+     "GOTOOLCHAIN": "local",
+     "CGO_ENABLED": "1",
+     "GOWORK": "off"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n\t\"Dir\": \"/work/go_nested\",\n\t\"ImportPath\": \"example.com/app\",\n\t\"Name\": \"main\",\n\t\"Target\": \"/root/go/bin/app\",\n\t\"Root\": \"/work/go_nested\",\n\t\"Module\": {\n\t\t\"Path\": \"example.com/app\",\n\t\t\"Main\": true,\n\t\t\"Dir\": \"/work/go_nested\",\n\t\t\"GoMod\": \"/work/go_nested/go.mod\",\n\t\t\"GoVersion\": \"1.22\"\n\t},\n\t\"Match\": [\n\t\t\"./...\"\n\t],\n\t\"DefaultGODEBUG\": \"containermaxprocs=0,cryptocustomrand=1,decoratemappings=0,gotestjsonbuildtext=1,httpcookiemaxnum=0,httpservecontentkeepheaders=1,httpservecontentmaxranges=1,multipathtcp=0,randseednop=0,rsa1024min=0,tlsmlkem=0,tlssecpmlkem=0,tlssha1=1,tracebacklabels=0,updatemaxprocs=0,urlmaxqueryparams=0,urlstrictcolons=0,winreadlinkvolume=0,winsymlink=0,x509negativeserial=1,x509rsacrt=0,x509sha256skid=0,x509sslcertoverrideplatform=0,x509usepolicies=0\",\n\t\"Stale\": true,\n\t\"StaleReason\": \"stale dependency: internal/goarch\",\n\t\"GoFiles\": [\n\t\t\"main.go\"\n\t],\n\t\"IgnoredGoFiles\": [\n\t\t\"gen.go\"\n\t],\n\t\"Deps\": [\n\t\t\"internal/abi\",\n\t\t\"internal/asan\",\n\t\t\"internal/bytealg\",\n\t\t\"internal/byteorder\",\n\t\t\"internal/chacha8rand\",\n\t\t\"internal/coverage/rtcov\",\n\t\t\"internal/cpu\",\n\t\t\"internal/goarch\",\n\t\t\"internal/godebugs\",\n\t\t\"internal/goexperiment\",\n\t\t\"internal/goos\",\n\t\t\"internal/msan\",\n\t\t\"internal/profilerecord\",\n\t\t\"internal/race\",\n\t\t\"internal/runtime/atomic\",\n\t\t\"internal/runtime/cgroup\",\n\t\t\"internal/runtime/exithook\",\n\t\t\"internal/runtime/gc\",\n\t\t\"internal/runtime/gc/scan\",\n\t\t\"internal/runtime/maps\",\n\t\t\"internal/runtime/math\",\n\t\t\"internal/runtime/pprof/label\",\n\t\t\"internal/runtime/sys\",\n\t\t\"internal/runtime/syscall/linux\",\n\t\t\"internal/strconv\",\n\t\t\"internal/stringslite\",\n\t\t\"internal/trace/tracev2\",\n\t\t\"math/bits\",\n\t\t\"runtime\",\n\t\t\"unsafe\"\n\t]\n}\n",
+    "stderr": "",
+    "root": "/work/go_nested"
+   }
+  }
+ ]
+}

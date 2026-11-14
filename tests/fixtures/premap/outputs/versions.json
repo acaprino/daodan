@@ -1,0 +1,39 @@
+{
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "runs": [
+  {
+   "command": {
+    "tool": "renovate",
+    "argv": [
+     "renovate",
+     "--platform=local",
+     "--dry-run=extract",
+     "--report-type=file",
+     "--report-path=/dev/stdout"
+    ],
+    "cwd": ".",
+    "env": {
+     "LOG_LEVEL": "fatal",
+     "LOG_FILE": "/dev/stderr",
+     "LOG_FILE_LEVEL": "warn",
+     "NO_COLOR": "1",
+     "RENOVATE_ONBOARDING": "false",
+     "RENOVATE_REQUIRE_CONFIG": "ignored",
+     "RENOVATE_BASE_DIR": "/tmp/daodan-renovate"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"b1f38198-0337-4e61-a04e-f731d9860c4d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{\"npm\":[{\"deps\":[{\"depType\":\"dependencies\",\"depName\":\"ms\",\"currentValue\":\"^2.1.0\",\"datasource\":\"npm\",\"prettyDepType\":\"dependency\",\"lockedVersion\":\"2.1.3\",\"packageName\":\"ms\"},{\"depType\":\"engines\",\"depName\":\"node\",\"currentValue\":\">=20\",\"datasource\":\"node-version\",\"commitMessageTopic\":\"Node.js\",\"prettyDepType\":\"engine\",\"packageName\":\"node\"}],\"extractedConstraints\":{\"node\":\">=20\",\"npm\":\">=7\"},\"managerData\":{\"packageJsonName\":\"site\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"package.json\",\"lockFiles\":[\"package-lock.json\"]}],\"nvm\":[{\"deps\":[{\"depName\":\"node\",\"currentValue\":\"20.11.0\",\"datasource\":\"node-version\",\"packageName\":\"node\"}],\"packageFile\":\".nvmrc\"}]}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":256,\"level\":40,\"logContext\":\"b1f38198-0337-4e61-a04e-f731d9860c4d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-14T20:25:58.349Z\",\"v\":0}\n",
+    "root": "/work/versions"
+   }
+  }
+ ]
+}

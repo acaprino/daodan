@@ -1,0 +1,110 @@
+# Pre-map
+
+`scripts/premap/` writes `premap.json` (`daodan/premap/v1`) beside the
+manifest, in Daodan's store, never in the project: what the project holds and
+what each unit's analysis needs, before any indexer. The indexer stage and the
+container read it and decide nothing on their own.
+`premap.ensure(manifest, runner=None)` returns it, derived again when the
+snapshot or a source version changed, or when a runner is given and the model
+commands have not run; `premap.state(manifest, runner=None)` says `fresh`,
+`stale`, `missing` or `corrupt`.
+
+## Sources
+
+A source is a thin adapter in `scripts/premap/` (`NAME`, `VERSION`, `RANK`)
+that states facts in the shape below; Daodan detects nothing on its own. A
+reader reads files and runs nothing (`run(context)`). A model source is a
+build system's own command, run in Daodan's container: `commands(context)`
+describes it as data, `{tool, argv, cwd, env, network}` (`cwd` relative to the
+project's root; `network` `registries` for the preparation, `none` for the
+run), the caller's `runner(commands)` executes it and answers
+`{returncode, stdout, stderr, root}` per command (`root` the project's absolute
+path in the container), and `read(context, commands, results)` reads the
+answers. Without a runner a model source is `not_run`, with a `model_not_run`
+gap. `RANK` is `model`, `reader` or `scanner`.
+
+| Source | Rank | Facts |
+|---|---|---|
+| `modules.py` | reader | units, workspaces, `depends_on`, dependency names (`references/modules.md`) |
+| `python-build` | reader | `source_roots` of a Python unit where its build configuration declares the package folder: setuptools `package-dir` and `packages.find.where`, hatch's wheel `packages`, poetry `packages[].from`, pdm `package-dir`, uv's `module-root`, `setup.cfg` `package_dir`, a literal `package_dir` in `setup.py`; a backend's default is no fact of the file |
+| `npm-files` | reader | install scripts of `package.json` and the dependencies `package-lock.json` marks `hasInstallScript` (a `not_executed` gap: Daodan installs with `--ignore-scripts`); `registries`, the origins of the lockfile's `resolved` URLs |
+| `jvm-files` | reader | the wrapper of a Gradle build or a Maven project (`config.wrapper`: `file`, `distribution_url`, `distribution_sha256`; the build tool's version); the Java release and the Kotlin plugin version a pom writes, with `line`; a Gradle build's Java version is a `toolchain_undeclared` gap (only its scripts state it) |
+| `gitmodules` | reader | `.gitmodules`: submodules as excluded folders and dependencies (URL, branch) |
+| `renovate` 44.239.1 | reader | `renovate --platform=local --dry-run=extract`, run in the container as a separate program (AGPL-3.0: no code of it in Daodan), reading files only: toolchains every manager reports (version files, `engines`, `packageManager`, `go`, `requires-python`, wrappers) and dependencies with the range as written and the locked version, on the unit whose manifest the file is |
+| `snapshot.py` | scanner | languages from the suffix table, totals |
+| `go` 1.27.3 | model | per `go.mod`, nested ones too: `go env GOPROXY`, `go work edit`, `go mod edit`, `go list -m`, `go list -m all`, `go list -e ./...`, with `-mod=readonly`, `GOTOOLCHAIN=local`, `CGO_ENABLED=1`, in workspace mode for a module a `go.work` uses: units, packages, files the default build leaves out, cgo, `replace`, workspaces, Go versions, requirements with resolved versions, `registries` (`GOPROXY`) |
+| `cargo` 1.99.1 | model | `cargo metadata --locked`, else `--no-deps`, with `RUSTUP_TOOLCHAIN` pinned: crates, targets, edition, features, build script, `rust-version` (the workspace root's when inherited), dependencies with resolved versions, `registries` (the lockfile's package sources) |
+| `uv` 0.11.28 | model | `uv export --frozen` and `uv tree --frozen`, offline, where a `uv.lock` sits: units, workspace members, direct dependencies with locked versions, `registries` (the lock's indexes) |
+
+## The join
+
+Every entry carries `sources`, the `tool@version` of each source stating it.
+Two entries are one fact when their identity fields agree, from the strictest
+match to the loosest: units `root`+`kind`+`name`+`manifest`, then
+`root`+`kind`+`name`, then `root`+`kind`; workspaces `root`+`tool`, then
+`root`; toolchains `tool`+`declared_in`+`version`, then `tool`+`declared_in`;
+dependencies `unit`+`name`+`scope`+`declared_in`, then without `scope`, then
+`unit`+`name`; languages `language`; excluded `path`. Unit and dependency
+names compare after PEP 503 folding. Two entries of one source never merge.
+When two sources give a field different values, the value of the higher rank
+stays (between equal ranks, the earlier source in `SOURCES`) and the other goes
+to the entry's `conflicts` as `{field, value, source, kept_from}`; a field one
+source does not give is no conflict. `config` joins key by key
+(`config.<key>`).
+
+## Record
+
+| Field | Meaning |
+|---|---|
+| `binding`, `inputs_digest` | the manifest, its logical digest and root; what freshness compares |
+| `sources` | per source `{source, rank, state, seconds}`: `ran`, `not_needed` (nothing of its kind), `not_run` (model commands without a runner, with `commands`), `unavailable` (with `reason`, `install`) or `failed` (with `reason`) |
+| `languages` | `{language, files}`: Linguist's spelling where one exists; each file's language stays in the snapshot |
+| `excluded` | `{path, why}`: `vendored`, `generated`, `documentation`, `binary`, `submodule` |
+| `units` | `{name, kind, root, manifest, source_roots, depends_on, config, registries, run}`; `kind` one of `npm-package`, `deno-project`, `nx-project`, `python-project`, `cargo-crate`, `go-module`, `maven-module`, `gradle-project`, `sbt-project`, `dotnet-project`, `cmake-target`, `composer-package`, `gem`, `bundler-project`, `pub-package`, `swift-package`, `mix-project`, `cabal-package`, `dune-project`, `zig-package`, `julia-package`, `terraform-module`; `name` null when no file names the unit; `config` what an indexer reads (`tsconfig`, `paths`, `packages`, `ignored_files`, `build_script`, `wrapper`, ...); `registries` the origins the preparation reaches, when a source states them |
+| `units[].run` | `{executes_project_code, reason}`, below |
+| `workspace` | `{tool, root, members}`, members as resolved unit folders; a Gradle build, a Maven reactor or an included build is a workspace with its own `root` |
+| `toolchains` | `{tool, version, declared_in, line}`: `declared_in` the file and, after `#`, the field; a toolchain belongs to the nearest unit whose `root` holds `declared_in` |
+| `dependencies` | `{unit, name, declared, resolved, scope, declared_in}`; a field a source does not give is absent |
+| `gaps` | `{kind, source, detail, ...}`, below |
+
+A facet or field no source gives is absent, never empty.
+
+## Views for the indexer stage
+
+`premap.python_runs(record)`: one scip-python run per outermost Python root,
+a `python-project` unit or a uv workspace that no other one holds; the units
+inside fold into it, since a run reads its whole folder. Each run is
+`{root, name, manifests, source_roots}`: `root` relative to the checkout (`''`
+for its root), `name` the outer unit's (`None` for a virtual workspace),
+`manifests` the files declaring the packages of every folded unit (their
+manifests, the files their dependencies are declared in, `uv.lock` with the
+`pyproject.toml` beside it where uv read one), `source_roots` the declared ones,
+relative to the run's root.
+
+## What the run needs
+
+Every analysis runs in Daodan's container. `run.executes_project_code` is
+true for a unit of kind `gradle-project`, `maven-module`, `sbt-project`,
+`dotnet-project`, `msbuild-project`, `cmake-target`, `meson-target`,
+`make-target`, `bazel-target`, `bazel-module`, `swift-package`, `mix-project`
+or `xcode-target`: its model or index exists only when the build runs project
+code (`EXECUTES` in `premap/__init__.py`, the reason citing the manifest). It
+decides nothing about where the unit runs; it explains the preparation and the
+`not_executed` gaps. Where Daodan proceeds without running anything, a
+`not_executed` gap says what is skipped: a build script Cargo's metadata names,
+`setup.py`, npm install scripts. The benchmark's `needs` facet
+(`benchmarks/project-model/`) measures something else, whether a project's
+facts are literal in its files: the pre-map gives no `needs`.
+
+## Gaps
+
+| Kind | Meaning |
+|---|---|
+| `source_unavailable`, `source_failed` | a source that could not run (`remedy`) or failed (`detail`); it states nothing |
+| `model_not_run` | a model source whose commands have not run yet: its facts are missing until a runner runs them |
+| `model_failed`, `model_partial` | a model command that failed for a folder or answered without resolution (`detail`: the command and its stderr) |
+| `not_executed` | a file read and not run: what it computes at run time is unknown |
+| `toolchain_undeclared` | a toolchain version no file states as a literal: a Gradle build's Java, a pom property the pom does not define |
+| `submodule_absent` | a submodule `.gitmodules` declares whose folder is missing or empty: its code is not in the project |
+| `code_outside_units` | `{path, language, files}`: code of a language that no unit able to index it holds, per outermost folder (a Python folder without a manifest Daodan reads) |
+| module graph gaps | `manifest_unreadable`, `directory_missing`, `member_missing`, `dependency_unresolved`, ... as `modules.py` states them |

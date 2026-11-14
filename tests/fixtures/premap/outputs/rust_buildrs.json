@@ -1,0 +1,189 @@
+{
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "runs": [
+  {
+   "command": {
+    "tool": "renovate",
+    "argv": [
+     "renovate",
+     "--platform=local",
+     "--dry-run=extract",
+     "--report-type=file",
+     "--report-path=/dev/stdout"
+    ],
+    "cwd": ".",
+    "env": {
+     "LOG_LEVEL": "fatal",
+     "LOG_FILE": "/dev/stderr",
+     "LOG_FILE_LEVEL": "warn",
+     "NO_COLOR": "1",
+     "RENOVATE_ONBOARDING": "false",
+     "RENOVATE_REQUIRE_CONFIG": "ignored",
+     "RENOVATE_BASE_DIR": "/tmp/daodan-renovate"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"a853dd4d-2302-4539-ac88-d830f93cea3c\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":133,\"level\":40,\"logContext\":\"a853dd4d-2302-4539-ac88-d830f93cea3c\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-14T20:25:46.768Z\",\"v\":0}\n",
+    "root": "/work/rust_buildrs"
+   }
+  },
+  {
+   "command": {
+    "tool": "cargo",
+    "argv": [
+     "cargo",
+     "metadata",
+     "--format-version",
+     "1",
+     "--locked"
+    ],
+    "cwd": ".",
+    "env": {
+     "CARGO_TERM_COLOR": "never",
+     "RUSTUP_TOOLCHAIN": "1.99.1",
+     "RUSTUP_AUTO_INSTALL": "0"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"packages\":[{\"name\":\"flags\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"flags\",\"src_path\":\"/work/rust_buildrs/flags/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/flags/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/flags/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":\"1.80\"},{\"name\":\"gen\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"gen\",\"src_path\":\"/work/rust_buildrs/gen/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/gen/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/gen/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":null}],\"workspace_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"workspace_default_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"resolve\":{\"nodes\":[{\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"dependencies\":[],\"deps\":[],\"features\":[]},{\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"dependencies\":[],\"deps\":[],\"features\":[]}],\"root\":null},\"target_directory\":\"/work/rust_buildrs/target\",\"build_directory\":\"/work/rust_buildrs/target\",\"version\":1,\"workspace_root\":\"/work/rust_buildrs\",\"metadata\":null}\n",
+    "stderr": "",
+    "root": "/work/rust_buildrs"
+   }
+  },
+  {
+   "command": {
+    "tool": "cargo",
+    "argv": [
+     "cargo",
+     "metadata",
+     "--format-version",
+     "1",
+     "--no-deps"
+    ],
+    "cwd": ".",
+    "env": {
+     "CARGO_TERM_COLOR": "never",
+     "RUSTUP_TOOLCHAIN": "1.99.1",
+     "RUSTUP_AUTO_INSTALL": "0"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"packages\":[{\"name\":\"gen\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"gen\",\"src_path\":\"/work/rust_buildrs/gen/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/gen/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/gen/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":null},{\"name\":\"flags\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"flags\",\"src_path\":\"/work/rust_buildrs/flags/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/flags/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/flags/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":\"1.80\"}],\"workspace_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"workspace_default_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"resolve\":null,\"target_directory\":\"/work/rust_buildrs/target\",\"build_directory\":\"/work/rust_buildrs/target\",\"version\":1,\"workspace_root\":\"/work/rust_buildrs\",\"metadata\":null}\n",
+    "stderr": "",
+    "root": "/work/rust_buildrs"
+   }
+  },
+  {
+   "command": {
+    "tool": "cargo",
+    "argv": [
+     "cargo",
+     "metadata",
+     "--format-version",
+     "1",
+     "--locked"
+    ],
+    "cwd": "flags",
+    "env": {
+     "CARGO_TERM_COLOR": "never",
+     "RUSTUP_TOOLCHAIN": "1.99.1",
+     "RUSTUP_AUTO_INSTALL": "0"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"packages\":[{\"name\":\"flags\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"flags\",\"src_path\":\"/work/rust_buildrs/flags/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/flags/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/flags/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":\"1.80\"},{\"name\":\"gen\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"gen\",\"src_path\":\"/work/rust_buildrs/gen/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/gen/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/gen/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":null}],\"workspace_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"workspace_default_members\":[\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"resolve\":{\"nodes\":[{\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"dependencies\":[],\"deps\":[],\"features\":[]},{\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"dependencies\":[],\"deps\":[],\"features\":[]}],\"root\":\"path+file:///work/rust_buildrs/flags#0.1.0\"},\"target_directory\":\"/work/rust_buildrs/target\",\"build_directory\":\"/work/rust_buildrs/target\",\"version\":1,\"workspace_root\":\"/work/rust_buildrs\",\"metadata\":null}\n",
+    "stderr": "",
+    "root": "/work/rust_buildrs"
+   }
+  },
+  {
+   "command": {
+    "tool": "cargo",
+    "argv": [
+     "cargo",
+     "metadata",
+     "--format-version",
+     "1",
+     "--no-deps"
+    ],
+    "cwd": "flags",
+    "env": {
+     "CARGO_TERM_COLOR": "never",
+     "RUSTUP_TOOLCHAIN": "1.99.1",
+     "RUSTUP_AUTO_INSTALL": "0"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"packages\":[{\"name\":\"gen\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"gen\",\"src_path\":\"/work/rust_buildrs/gen/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/gen/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/gen/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":null},{\"name\":\"flags\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"flags\",\"src_path\":\"/work/rust_buildrs/flags/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/flags/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/flags/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":\"1.80\"}],\"workspace_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"workspace_default_members\":[\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"resolve\":null,\"target_directory\":\"/work/rust_buildrs/target\",\"build_directory\":\"/work/rust_buildrs/target\",\"version\":1,\"workspace_root\":\"/work/rust_buildrs\",\"metadata\":null}\n",
+    "stderr": "",
+    "root": "/work/rust_buildrs"
+   }
+  },
+  {
+   "command": {
+    "tool": "cargo",
+    "argv": [
+     "cargo",
+     "metadata",
+     "--format-version",
+     "1",
+     "--locked"
+    ],
+    "cwd": "gen",
+    "env": {
+     "CARGO_TERM_COLOR": "never",
+     "RUSTUP_TOOLCHAIN": "1.99.1",
+     "RUSTUP_AUTO_INSTALL": "0"
+    },
+    "network": "registries"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"packages\":[{\"name\":\"flags\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"flags\",\"src_path\":\"/work/rust_buildrs/flags/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/flags/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/flags/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":\"1.80\"},{\"name\":\"gen\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"gen\",\"src_path\":\"/work/rust_buildrs/gen/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/gen/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/gen/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":null}],\"workspace_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"workspace_default_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\"],\"resolve\":{\"nodes\":[{\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"dependencies\":[],\"deps\":[],\"features\":[]},{\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"dependencies\":[],\"deps\":[],\"features\":[]}],\"root\":\"path+file:///work/rust_buildrs/gen#0.1.0\"},\"target_directory\":\"/work/rust_buildrs/target\",\"build_directory\":\"/work/rust_buildrs/target\",\"version\":1,\"workspace_root\":\"/work/rust_buildrs\",\"metadata\":null}\n",
+    "stderr": "",
+    "root": "/work/rust_buildrs"
+   }
+  },
+  {
+   "command": {
+    "tool": "cargo",
+    "argv": [
+     "cargo",
+     "metadata",
+     "--format-version",
+     "1",
+     "--no-deps"
+    ],
+    "cwd": "gen",
+    "env": {
+     "CARGO_TERM_COLOR": "never",
+     "RUSTUP_TOOLCHAIN": "1.99.1",
+     "RUSTUP_AUTO_INSTALL": "0"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"packages\":[{\"name\":\"gen\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/gen#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"gen\",\"src_path\":\"/work/rust_buildrs/gen/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/gen/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/gen/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":null},{\"name\":\"flags\",\"version\":\"0.1.0\",\"id\":\"path+file:///work/rust_buildrs/flags#0.1.0\",\"license\":null,\"license_file\":null,\"description\":null,\"source\":null,\"dependencies\":[],\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"flags\",\"src_path\":\"/work/rust_buildrs/flags/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},{\"kind\":[\"custom-build\"],\"crate_types\":[\"bin\"],\"name\":\"build-script-build\",\"src_path\":\"/work/rust_buildrs/flags/build.rs\",\"edition\":\"2021\",\"doc\":false,\"doctest\":false,\"test\":false}],\"features\":{},\"manifest_path\":\"/work/rust_buildrs/flags/Cargo.toml\",\"metadata\":null,\"publish\":null,\"authors\":[],\"categories\":[],\"keywords\":[],\"readme\":null,\"repository\":null,\"homepage\":null,\"documentation\":null,\"edition\":\"2021\",\"links\":null,\"default_run\":null,\"rust_version\":\"1.80\"}],\"workspace_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\",\"path+file:///work/rust_buildrs/flags#0.1.0\"],\"workspace_default_members\":[\"path+file:///work/rust_buildrs/gen#0.1.0\"],\"resolve\":null,\"target_directory\":\"/work/rust_buildrs/target\",\"build_directory\":\"/work/rust_buildrs/target\",\"version\":1,\"workspace_root\":\"/work/rust_buildrs\",\"metadata\":null}\n",
+    "stderr": "",
+    "root": "/work/rust_buildrs"
+   }
+  }
+ ]
+}
