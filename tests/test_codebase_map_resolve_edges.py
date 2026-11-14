@@ -2225,5 +2225,183 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(payload["install"], resolve_edges.ENGINE_INSTALL)
 
 
+class FreeMemoryTests(unittest.TestCase):
+    """The memory a new process can have, which decides whether an engine or an indexer starts."""
+
+    @unittest.skipUnless(os.name == "nt", "the Windows memory status")
+    def test_on_windows_it_is_the_smaller_of_free_physical_memory_and_free_commit(self):
+        import ctypes
+        for physical, commit in ((5 * 2**30, 2 * 2**30), (2**30, 6 * 2**30)):
+            def status(reference, physical=physical, commit=commit):
+                reference._obj.available, reference._obj.page_free = physical, commit
+                return 1
+
+            with mock.patch.object(ctypes.windll.kernel32, "GlobalMemoryStatusEx", status):
+                self.assertEqual(resolve_edges.free_memory(), min(physical, commit))
+
+
+class IndexerStageTests(unittest.TestCase):
+    """An indexer's entry in the pass: the indexer's contract in, the language's entry and the store out."""
+
+    FIXTURES = Path(__file__).resolve().parent / "fixtures/code-graph"
+    PYTHON = {"app/use.py": "class User:\n    def go(self, helper):\n        return helper.run()\n",
+              "app/tool.py": "class Tool:\n    def run(self):\n        return 1\n"}
+
+    def project(self, which: str, extra: dict | None = None) -> tuple[Path, Path]:
+        import shutil
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name).resolve()
+        shutil.copytree(self.FIXTURES / which, root / which, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
+        for rel, text in (extra or {}).items():
+            (root / which / rel).parent.mkdir(parents=True, exist_ok=True)
+            (root / which / rel).write_text(text, encoding="utf-8")
+        manifest = root / "manifest.sqlite"
+        snapshot.write_snapshot(root / which, manifest)
+        return root / which, manifest
+
+    def contract(self, which: str, **outcome) -> dict:
+        indexer = {"name": "scip-go", "version": "v0.2.9", "seconds": 1.0, "peak_mb": None}
+        if outcome:
+            return {"indexes": [], "runs": [], "indexer": indexer, **outcome}
+        return {"indexes": [[str(self.FIXTURES / which / "index.scip"), ""]], "runs": [], "indexer": indexer}
+
+    def run_stage(self, name: str, manifest: Path, index, free: int = 64 * 2**30, **patches):
+        """The pass with `name`'s entry serving its languages and its stage run in this process, `index` standing
+        in for the indexer's `index()`: the pass's report, the stages started, the stand-in."""
+        import contextlib
+        import importlib
+        import io
+        spec = next(spec for spec in resolve_edges.ENGINES if spec.name == name)
+        module = importlib.import_module(f"indexers.{spec.indexer}")
+        started, real = [], subprocess.run
+
+        def stage(command, **options):
+            if command[1:2] != ["--engine"]:
+                return real(command, **options)  # what the stage itself starts, such as git
+            started.append(command)
+            with contextlib.redirect_stdout(io.StringIO()):
+                resolve_edges.main(command)
+            return subprocess.CompletedProcess(command, 0)
+
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch.object(resolve_edges, "ENGINES", (spec,)))
+            stack.enter_context(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES",
+                                                  {language: spec for language in spec.languages}))
+            stack.enter_context(mock.patch.object(
+                resolve_edges, "stage_command", side_effect=lambda spec, manifest, path, environments, offline=False:
+                [str(manifest), "--engine", spec.name, "--report-out", str(path)]))
+            stack.enter_context(mock.patch.object(resolve_edges, "cached_offline", return_value=False))
+            stack.enter_context(mock.patch.object(resolve_edges.subprocess, "run", side_effect=stage))
+            stack.enter_context(mock.patch.object(resolve_edges, "free_memory", return_value=free))
+            for target, attribute, value in patches.values():
+                stack.enter_context(mock.patch.object(target, attribute, value))
+            indexed = stack.enter_context(mock.patch.object(module, "index", side_effect=index))
+            result = resolve_edges.run_pass(manifest, manifest.with_name(resolve_edges.REPORT_NAME), [])
+        return result, started, indexed
+
+    def test_entry_is_fresh_with_its_resolver(self):
+        project, manifest = self.project("go")
+        seen = []
+
+        def index(project_dir, work_dir, files=None):
+            seen.append((Path(project_dir), Path(work_dir), Path(work_dir).is_dir()))
+            return self.contract("go")
+
+        result, started, _indexed = self.run_stage("scip-go", manifest, index)
+        self.assertEqual(len(started), 1)
+        self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
+        self.assertEqual((seen[0][0], seen[0][2]), (project, True))
+        self.assertFalse(seen[0][1].exists())  # the indexer's work directory goes with the stage
+        with open_snapshot(manifest) as store:
+            edges, binding, reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest), store)
+        self.assertIsNone(reason, reason)
+        self.assertTrue(edges)
+        self.assertEqual({edge["resolver"] for edge in edges}, {"scip-go@v0.2.9"})
+        self.assertEqual(binding["languages"]["go"]["engine"], "scip-go@v0.2.9")
+        self.assertEqual(binding["languages"]["go"]["indexer"]["name"], "scip-go")
+        self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "fresh")
+
+    def test_the_stage_keeps_the_entries_of_the_other_languages(self):
+        project, manifest = self.project("go", self.PYTHON)
+        engine = StubEngine({("use.py", 3): Definition(project / "app/tool.py", "run")})
+        self.assertTrue(resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)["available"])
+        self.run_stage("scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+        with open_snapshot(manifest) as store:
+            edges, binding, reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest), store)
+        self.assertIsNone(reason, reason)
+        self.assertEqual({language: entry["engine"] for language, entry in binding["languages"].items()},
+                         {"go": "scip-go@v0.2.9", "python": "stub@1.0"})
+        self.assertEqual({edge["resolver"] for edge in edges}, {"scip-go@v0.2.9", "stub@1.0"})
+
+    def test_failed_index_leaves_failed(self):
+        _project, manifest = self.project("go")
+        reason = "scip-go wrote no index (exit code 1): panic: no packages"
+        result, _started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract(
+                "go", state="failed", reason=reason, errors=2))
+        self.assertEqual(result["languages"]["go"], {"state": "failed", "engine": "scip-go", "reason": reason})
+        self.assertFalse(resolve_edges.default_edge_store(manifest).exists())
+        self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "failed")
+
+    def test_unavailable_index_leaves_unavailable_with_install(self):
+        _project, manifest = self.project("go")
+        reason = "Go 1.27.3 and scip-go v0.2.9 could not be downloaded: no network"
+        install = "check the network: Daodan downloads Go 1.27.3 and scip-go v0.2.9 from go.dev and proxy.golang.org"
+        result, _started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract(
+                "go", state="unavailable", reason=reason, install=install))
+        self.assertEqual(result["languages"]["go"],
+                         {"state": "unavailable", "engine": "scip-go", "reason": reason, "install": install})
+
+    def test_container_language_without_container_is_unavailable(self):
+        import container
+        _project, manifest = self.project("java")
+
+        def no_engine(*_args, **_kwargs):
+            raise container.Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
+
+        spec = next(spec for spec in resolve_edges.ENGINES if spec.name == "scip-java")
+        self.assertTrue(spec.needs_container)
+        result, started, indexed = self.run_stage("scip-java", manifest, lambda *args, **kwargs: {},
+                                                  engine=(container, "find_engine", no_engine))
+        self.assertEqual(len(started), 1)
+        indexed.assert_not_called()
+        self.assertEqual(result["languages"]["java"], {
+            "state": "unavailable", "engine": "scip-java",
+            "reason": "the build runs only in a container: no container engine answers: neither docker nor podman",
+            "install": "start Docker or Podman"})
+
+    def test_memory_under_min_free_starts_no_stage(self):
+        from indexers import go
+        _project, manifest = self.project("go")
+        spec = next(spec for spec in resolve_edges.ENGINES if spec.name == "scip-go")
+        self.assertEqual(spec.min_free, go.MIN_FREE)
+        result, started, indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"), free=go.MIN_FREE - 1)
+        self.assertEqual(started, [])
+        indexed.assert_not_called()
+        self.assertEqual(result["languages"]["go"]["state"], "failed")
+        self.assertIn("0.5 GB of memory free", result["languages"]["go"]["reason"])
+        # Above the indexer's own minimum and below every engine's, the stage starts.
+        self.assertLess(go.MIN_FREE, resolve_edges.ENGINE_MIN_FREE)
+        _result, started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"), free=go.MIN_FREE)
+        self.assertEqual(len(started), 1)
+
+    def test_every_language_stays_on_the_engine_of_today(self):
+        self.assertEqual({language: spec.name for language, spec in resolve_edges.ENGINE_LANGUAGES.items()},
+                         {"python": "jedi", "typescript": "typescript", "javascript": "typescript",
+                          "vue": "typescript", "svelte": "typescript", "java": "java", "kotlin": "kotlin",
+                          "rust": "rust", "go": "go"})
+        indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)
+                    for spec in resolve_edges.ENGINES if spec.indexer}
+        self.assertEqual(indexers, {
+            "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
+            "scip-typescript": (("typescript", "javascript"), "typescript", False),
+            "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
+            "scip-kotlin": (("kotlin",), "kotlin", True)})
+
+
 if __name__ == "__main__":
     unittest.main()

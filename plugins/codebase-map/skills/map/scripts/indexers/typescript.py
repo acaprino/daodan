@@ -1,4 +1,11 @@
-"""scip-typescript, for JavaScript and TypeScript: the aliases its index states its own way.
+"""scip-typescript, for JavaScript and TypeScript: how it runs, and the aliases its index states its own way.
+
+`index` runs scip-typescript (npm, without install scripts, on Daodan's Node) in a mirror of the project with
+the engine pass's package install linked as `node_modules` (`npm_modules`: `npm ci --ignore-scripts`; a
+project without a root `package.json` gets it in each outermost directory holding one) and a generated
+tsconfig that holds every JS/TS file of the snapshot (`allowJs`) and extends the project's own, or without a
+root `tsconfig.json` the nested one the caller names (where an app keeps its options and path aliases). No
+project code runs.
 
 `hops` reads the statement that defines a name: `a = b`, `k: b.c`, `exports.f = g` and `{ k: name } = …` lead
 to the symbol the index references at the value or the key (CommonJS `module.exports = { f }` needs none: the
@@ -9,10 +16,15 @@ library function whose documented contract returns its argument is a declared ho
 from __future__ import annotations
 
 import collections
-from pathlib import Path
+import json
+import subprocess
+from pathlib import Path, PurePosixPath
 
 import code_graph
 
+VERSION = "0.5.2"  # @sourcegraph/scip-typescript on npm
+MIN_FREE = 2304 * 2**20  # 2,264 MB peak on tududi (benchmarks/inference-audit, 13 November 2026)
+SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 GRAMMARS = {".ts": "typescript", ".mts": "typescript", ".cts": "typescript", ".tsx": "tsx", ".js": "javascript",
             ".jsx": "javascript", ".mjs": "javascript", ".cjs": "javascript"}
 PATTERNS = {"object_pattern", "array_pattern", "pair_pattern", "shorthand_property_identifier_pattern",
@@ -123,3 +135,78 @@ def hops(index) -> dict:
                 found = []
             out[occurrence.key] += [item for item in found if item[0] != occurrence.key]
     return {key: list(dict.fromkeys(items)) for key, items in out.items() if items}
+
+
+def _tsconfig(mirror: Path, files: list[str], base: str | None = None) -> str | None:
+    """Every JS/TS file of the snapshot in one program with `allowJs`; the project's own options kept."""
+    options = {"allowJs": True, "checkJs": False, "noEmit": True, "incremental": False, "skipLibCheck": True}
+    config = {"compilerOptions": options, "include": files, "exclude": []}
+    own = mirror / "tsconfig.json"
+    if own.is_file():
+        own.rename(mirror / "tsconfig.project.json")
+        config["extends"] = "./tsconfig.project.json"
+    elif base and (mirror / base).is_file():
+        config["extends"] = f"./{base}"
+    else:
+        options.update({"target": "es2022", "module": "esnext", "moduleResolution": "bundler", "jsx": "preserve",
+                        "esModuleInterop": True, "allowSyntheticDefaultImports": True, "resolveJsonModule": True})
+    own.write_text(json.dumps(config, indent=1), encoding="utf-8")
+    return config.get("extends")
+
+
+def _package_roots(project_dir: Path) -> list[str]:
+    """'' when the project's root has a package.json, else each outermost directory that has one."""
+    if (project_dir / "package.json").is_file():
+        return [""]
+    roots = sorted(code_graph.manifest_dirs(project_dir, "package.json"))
+    return [root for root in roots if not any(root.startswith(f"{other}/") for other in roots)]
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None) -> dict:
+    """The scip-typescript index of `project_dir` for `files` (default: every JS/TS file outside
+    `node_modules`), `tsconfig` the configuration a root without one extends; see the module's docstring."""
+    import resolve_edges as rx
+    from indexers import runtime
+    project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+    tool = runtime.Tool(project_dir, "scip-typescript", VERSION, skip=(".git", "node_modules"))
+    try:
+        runtime.memory("scip-typescript", MIN_FREE)
+        directory = runtime.node(project_dir)
+        script = runtime.npm_package(project_dir, directory, "@sourcegraph/scip-typescript", VERSION)
+        roots = _package_roots(project_dir)
+        for root in roots:
+            key = rx.npm_key(project_dir / root)
+            if key and not (rx.shared_cache_dir() / "npm" / key / "daodan-modules.json").is_file():
+                runtime.room()
+    except runtime.Unavailable as error:
+        return runtime.refused("scip-typescript", VERSION, error)
+    installs, links = {}, {}
+    for root in roots:
+        try:
+            with runtime.on_path(directory):
+                modules = rx.npm_modules(project_dir / root)  # the engine pass's own: npm ci --ignore-scripts
+        except (OSError, subprocess.SubprocessError) as error:
+            print(f"the project's JavaScript packages were not installed: {error}", flush=True)
+            modules = None
+        installs[root] = str(modules) if modules else None
+        for manifest in rx.npm_manifests(project_dir / root) if modules is not None else ():
+            installed = modules.parent / manifest.parent.relative_to(project_dir / root) / "node_modules"
+            if installed.is_dir():
+                relative = manifest.parent.relative_to(project_dir).as_posix()
+                links[(PurePosixPath(relative) / "node_modules").as_posix()] = installed
+    if files is None:
+        files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
+                       if path.suffix in SUFFIXES and "node_modules" not in path.relative_to(project_dir).parts)
+    output = work_dir / "scip-typescript-0.scip"
+    runtime.clear(work_dir, "scip-typescript")
+    env = runtime.environment(directory, NODE_OPTIONS="--max-old-space-size=12288")
+    with runtime.mirrored(tool, links) as mirror:
+        extends = _tsconfig(mirror, [rel for rel in files if rel.endswith(SUFFIXES)], tsconfig)
+        run = {"prefix": "", **code_graph.measured(
+            [str(directory / rx.executable_name("node")), str(script), "index", "--cwd", str(mirror), "--output",
+             str(output), "--no-progress-bar"], str(mirror), env, 3 * 3600)}
+    run["index"] = str(output) if output.is_file() else None
+    run["index_bytes"] = output.stat().st_size if output.is_file() else 0
+    return {**runtime.outcome("scip-typescript", VERSION, [run]), "node_modules": installs,
+            "tsconfig_extends": extends}

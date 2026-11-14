@@ -5,8 +5,9 @@ What is specific to an indexer lives in its adapter, `indexers/<language>.py`:
     hops(index) -> {symbol key: [(target, tag), ...]}
 
 A hop's target is another symbol key, or `(rel, line, byte column)` where a function the snapshot declares
-starts; its tag names the engine quirk it reads. An adapter may add, each passed by its driver to `Traversal`
-or `build`:
+starts; its tag names the engine quirk it reads. A hop tagged `rebinding`, to `(rel, line, byte column)`, takes
+the place of the symbol's definition: the adapter states that the symbol is bound there at run time, not where
+the index defines it. An adapter may add, each passed by its driver to `Traversal` or `build`:
 
     missing(index, rels) -> {rel: reason}       snapshot files the index holds no document for
     same_range(index) -> {(definition key, other key): bool}   at a shared range: True alias, False never
@@ -546,6 +547,13 @@ class Traversal:
         self.active.add(key)
         index, found, aliased, stated = self.index, [], False, self.stated(key)
         places = index.defs.get(key, ()) if stated in (None, "project") else ()
+        rebound = [target for target, tag in self.hops.get(key, ()) if tag == "rebinding"]
+        if rebound:  # where the symbol is bound at run time, in place of where the index defines it
+            places, aliased = (), True
+        for rel, line, column in rebound:
+            verdict, target = self.snapshot.grade(self.snapshot.rel.get(rel, rel), line, column)
+            found.append(End("project-callable", key, target, "", ("rebinding",)) if verdict == "callable" else
+                         End("project-value", key, None, "function the snapshot does not declare", ("rebinding",)))
         for rel, occurrence in places:
             verdict, target = self.snapshot.grade(
                 self.snapshot.rel.get(rel, rel), occurrence.line, index.to_bytes(rel, occurrence.line, occurrence.start))
@@ -564,8 +572,10 @@ class Traversal:
             for other in same:
                 found += [end._replace(chain=("same-range",) + end.chain) for end in self.ends(other)]
             aliased = aliased or bool(same)
-        if not any(end.cls in CALLABLE and not end.chain for end in found):
+        if not any(end.cls in CALLABLE and end.chain in ((), ("rebinding",)) for end in found):
             for target, tag in self.hops.get(key, ()):
+                if tag == "rebinding":
+                    continue
                 aliased = True
                 if isinstance(target, str):
                     found += [end._replace(chain=(tag,) + end.chain) for end in self.ends(target)]
@@ -735,7 +745,8 @@ def _refined(index: Index, graph: dict, refine) -> None:
 
 
 def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Path:
-    """Save `build`'s graphs, `{language: (graph, references)}`, as the snapshot's edge store, replacing it.
+    """Save `build`'s graphs, `{language: (graph, references)}`, as the snapshot's edge store, beside what it
+    already holds for other languages (`resolve_edges.kept_languages`).
 
     A snapshot reference's ends are its rows, `uncertain` where `refine` marked the edge of that end at its
     site; an end `refine` removed is counted in `edges_removed` and not saved. A reference the index answers
@@ -793,9 +804,10 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Pa
         entries[language] = {"engine": resolver, "state": "fresh", "indexer": graph["indexer"],
                              "files": graph["files"],
                              "edges_removed": dict(collections.Counter(edge["removed"] for edge in graph["removed"]))}
-    binding = rx.store_binding(snapshot.store, snapshot.manifest,
-                               snapshot.store.metadata.get("parser_fingerprint"), entries, {})
-    return rx.write_edge_store(out, edges, binding, holes)
+    kept_entries, kept_edges, kept_holes, kept_reports = rx.kept_languages(out, snapshot.store, built)
+    binding = rx.store_binding(snapshot.store, snapshot.manifest, snapshot.store.metadata.get("parser_fingerprint"),
+                               {**kept_entries, **entries}, kept_reports)
+    return rx.write_edge_store(out, kept_edges + edges, binding, kept_holes + holes)
 
 
 def _examples(items: list, size: int = 3) -> list:
@@ -916,4 +928,5 @@ def module_runs(tool: str, roots: set[str], command, files: list[str], mirror: P
 
 def indexer(name: str, version: str, runs: list[dict]) -> dict:
     return {"name": name, "version": version, "seconds": round(sum(run["seconds"] for run in runs), 1),
-            "peak_mb": max((run["peak_mb"] or 0 for run in runs), default=None)}
+            # None when no run's peak was measured (Windows), never 0.
+            "peak_mb": max((run["peak_mb"] for run in runs if run.get("peak_mb") is not None), default=None)}

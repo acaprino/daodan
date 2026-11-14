@@ -244,6 +244,26 @@ def test_static_sites_take_no_implementation(tmp_path):
     assert [end.target for end in references[1]["ends"]] == ["base", "sub"]
 
 
+# A `rebinding` hop takes the place of the definition, and its edge says so in its chain.
+
+def test_rebinding_takes_the_place_of_the_definition(tmp_path):
+    f, g = P + "f().", P + "g()."
+    (tmp_path / "a.x").write_text("f\ng\nf\nf()\n", encoding="utf-8")
+    index = load(tmp_path, document("a.x", [occurrence(1, 0, 1, f, True), occurrence(2, 0, 1, g, True),
+                                            occurrence(3, 0, 1, f), occurrence(4, 0, 1, f)]))
+    snapshot = Snapshot({("a.x", 1, 0): "first", ("a.x", 2, 0): "other", ("a.x", 3, 0): "bound"},
+                        [(1, "a.x", "call", 4, 0)])
+    hops = {f: [(("a.x", 3, 0), "rebinding"), (g, "alias")]}
+    graph, references = code_graph.build(index, snapshot, "x", hops, {})
+    assert [(end.cls, end.target, end.chain) for end in references[1]["ends"]] == \
+        [("project-callable", "bound", ("rebinding",))]
+    assert [(edge["site"], edge["target"], edge["chain"]) for edge in graph["edges"] if edge["symbol"] == f] == \
+        [("a.x:3", "bound", ["rebinding"]), ("a.x:4", "bound", ["rebinding"])]
+    nowhere = code_graph.Traversal(index, snapshot, {f: [(("a.x", 2, 2), "rebinding"), (g, "alias")]}).ends(f)
+    assert [(end.cls, end.target, end.chain) for end in nowhere] == \
+        [("project-value", None, ("rebinding",)), ("project-callable", "other", ("alias",))]
+
+
 # 6. SymbolInformation.signature_documentation is kept.
 
 def test_signature_documentation_is_kept(tmp_path):

@@ -1,4 +1,9 @@
-"""rust-analyzer's SCIP output: the aliases its index states its own way.
+"""rust-analyzer's SCIP output: how it runs, and the aliases its index states its own way.
+
+`index` runs `rust-analyzer scip` with the engine pass's binary, toolchain and options (`RustEngine`: all
+features, no build script, no procedural macro, so no project code runs) in a mirror of the project where every
+directory holding a `Cargo.toml` is real: at the root, then in each crate directory holding files the root run
+left out. What a macro generates is not seen.
 
 `hops` reads `let x = y` (the symbol the index references at the value) and a closure value (the function the
 snapshot declares there). A module several crates include (`mod util;` in each test crate) is written once,
@@ -9,7 +14,17 @@ those names lead there, tagged `rust:module-file`.
 from __future__ import annotations
 
 import collections
-from pathlib import PurePosixPath
+import json
+import os
+import shutil
+import subprocess
+from pathlib import Path, PurePosixPath
+
+import code_graph
+
+MIN_FREE = 1280 * 2**20  # 1,180 MB peak on semver (benchmarks/inference-audit, 13 November 2026)
+# The engine pass's own rust-analyzer options: all features, no build script, no procedural macro.
+CONFIG = {"cargo": {"buildScripts": {"enable": False}, "features": "all"}, "procMacro": {"enable": False}}
 
 PATTERNS = {"tuple_pattern", "struct_pattern", "tuple_struct_pattern", "field_pattern", "ref_pattern",
             "mut_pattern", "slice_pattern", "or_pattern"}
@@ -117,3 +132,52 @@ def missing(index, rels: list[str]) -> dict:
     return {rel: "no crate includes it: no `mod` item of an indexed file loads it" for rel in rels
             if rel not in loaded and PurePosixPath(rel).name not in ("lib.rs", "main.rs", "build.rs")
             and PurePosixPath(rel).parent.name not in ROOT_DIRECTORIES}
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> dict:
+    """The rust-analyzer index of `project_dir` for `files` (default: every `.rs` file outside `target`)."""
+    import resolve_edges as rx
+    from indexers import runtime
+    project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+    engine = rx.RustEngine(project_dir)
+    engine.target_dir = work_dir / "rust-target"
+    home = engine.home()
+    try:
+        runtime.memory("rust-analyzer", MIN_FREE)
+        if not (home / ".installed").is_file():
+            runtime.room()
+        with runtime.fetching(f"rust-analyzer {rx.RUST_ANALYZER_RELEASE} and Rust {rx.RUST_VERSION}",
+                              "github.com and static.rust-lang.org"):
+            ready, reason = engine.prepare(home)
+        if not ready:
+            raise runtime.Unavailable(reason, engine.install)
+    except runtime.Unavailable as error:
+        return runtime.refused("rust-analyzer", rx.RUST_ANALYZER_RELEASE, error)
+    launch, overrides = engine.command(home)
+    # On Windows rust-analyzer leaves a `proc-macro-srv*` directory per load in the temporary folder.
+    temp = work_dir / "rust-analyzer-temp"
+    temp.mkdir(exist_ok=True)
+    env = {**os.environ, **overrides, "TEMP": str(temp), "TMP": str(temp), "TMPDIR": str(temp)}
+    build = subprocess.run([launch[0], "--version"], env=env, stdin=subprocess.DEVNULL, capture_output=True,
+                           text=True, timeout=120).stdout.strip()
+    config = work_dir / "rust-analyzer.json"
+    config.write_text(json.dumps(CONFIG), encoding="utf-8")
+    if files is None:
+        files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*.rs")
+                       if "target" not in path.relative_to(project_dir).parts)
+    roots = code_graph.manifest_dirs(project_dir, "Cargo.toml")
+
+    def command(prefix, output):
+        return [launch[0], "scip", ".", "--output", str(output), "--config-path", str(config)]
+
+    runtime.clear(work_dir, "rust-analyzer")
+    try:
+        with runtime.mirrored(engine, runtime.real(roots, work_dir)) as mirror:
+            runs = code_graph.module_runs("rust-analyzer", roots, command, files, mirror, work_dir, env,
+                                          fallback=lambda prefix, output: command(prefix, output)[:-2])
+    finally:
+        shutil.rmtree(temp, ignore_errors=True)
+    # Named by its pinned release, like every indexer; `build` is what the binary states.
+    return {**runtime.outcome("rust-analyzer", rx.RUST_ANALYZER_RELEASE, runs), "build": build,
+            "toolchain": rx.RUST_VERSION, "config": CONFIG}

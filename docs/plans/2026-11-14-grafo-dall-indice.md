@@ -15,7 +15,7 @@ Fogli di stile e loro dialetti aggiunti il 14 novembre 2026 su richiesta del pro
 - Il risultato entra nello store degli archi con fonte, catena, incertezza, buchi ed esterni.
 - La vista degli archi resta l'unico punto da cui leggono i consumatori, con una sola fonte per riferimento.
 
-**Tecnologie** (versioni misurate il 13 novembre 2026): Python 3, libreria standard più i pacchetti di parsing dello snapshot; scip-go v0.2.9 con Go 1.27.3; rust-analyzer 2026-11-09 con Rust 1.99.1; scip-typescript 0.5.2 e scip-python 0.6.8 su Node 22.23.4; scip-java 0.13.2 (Java) e 0.14.2 (Kotlin) con coursier 2.1.24.
+**Tecnologie** (versioni misurate il 13 novembre 2026): Python 3, libreria standard più i pacchetti di parsing dello snapshot; scip-go v0.2.9 con Go 1.27.3; rust-analyzer 2026-11-09 con Rust 1.99.1; scip-typescript 0.5.2 e scip-python 0.6.8 su Node 22.23.4; scip-java 0.14.2 per Java e Kotlin su Temurin 17, con Maven e Gradle portati da Daodan (task 9).
 
 **Spec:**
 - `docs/specs/2026-11-08-risoluzione-chiamate-motore.md` resta. Cambiano i requisiti 5, 11, 12 (Node), 18 e 20: il task 6 li riscrive come revisione della stessa spec.
@@ -247,7 +247,7 @@ Percorsi `scripts/` = plugins/codebase-map/skills/map/scripts/.
 - `indexers/*.py`: `index()` riscritto sulle funzioni del prodotto. Spariscono i percorsi `/opt`, `apt-get` e `shutil.copytree` al posto dello specchio.
 - `lang_*.py` e `modal_scip.py`: chiamano `index()` del plugin. Le immagini Modal tengono solo il sistema di base.
 
-- [ ] **Test prima:** in `tests/test_codebase_map_resolve_edges.py`, la classe `IndexerStageTests`, con un indicizzatore finto che restituisce l'indice di una fixture. Controlla:
+- [x] **Test prima:** in `tests/test_codebase_map_resolve_edges.py`, la classe `IndexerStageTests`, con un indicizzatore finto che restituisce l'indice di una fixture. Controlla:
   - la voce del linguaggio è `fresh`, con il `resolver` giusto;
   - gli hash del progetto sono uguali prima e dopo, e lo specchio viene rimosso;
   - nel log c'è la riga d'installazione;
@@ -257,26 +257,48 @@ Percorsi `scripts/` = plugins/codebase-map/skills/map/scripts/.
   - un linguaggio che ha bisogno del container dà `unavailable` se il container manca;
   - con la memoria sotto `min_free` lo stage non parte.
 - [ ] Un test con l'indicizzatore vero in `tests/test_codebase_map_mcp_wire.py`, saltato quando lo strumento non è nella cache, come oggi.
-- [ ] **Verifica:** i test sopra, in pochi secondi. Un run vero su chi e semver in locale solo dopo aver chiesto, altrimenti su Modal.
-- [ ] **Si cancella:** `index()`, `install_commands()` e `_install()` del benchmark.
+- [x] **Verifica:** i test sopra, in pochi secondi. Un run vero su chi e semver in locale solo dopo aver chiesto, altrimenti su Modal.
+- [x] **Si cancella:** `index()`, `install_commands()` e `_install()` del benchmark.
 
 **Prima metà (14 novembre 2026): gli `index()` del plugin per Go, Rust, TypeScript e JavaScript, Python.**
 - [x] `index(project_dir, work_dir, files=None)` in `indexers/{go,rust,typescript,python}.py`, sulle funzioni del prodotto: `build_mirror` (specchio rimosso dopo il run), `GoEngine.go_environment`, `RustEngine.prepare`, `npm_modules`, `python_environment`. La parte comune è `indexers/runtime.py`: Node fissato con `SHASUMS256`, pacchetti npm con `--ignore-scripts`, `MIN_FREE` per indicizzatore (512, 1.280, 2.304 e 512 MB, dai picchi misurati), niente download sotto 1 GB di disco, `unavailable` con `install` e `failed` con coda dello stderr ed `errors`.
 - [x] Nello specchio è reale ogni cartella con un file Go e ogni cartella con un `Cargo.toml`: `./...` non segue i collegamenti, e `go.sum` e `Cargo.lock` finiscono in una copia.
-- [x] `tests/test_codebase_map_indexers.py`: 14 test in circa 1 s, con indicizzatore e download finti. Coprono hash del progetto, specchio rimosso, riga d'installazione, `failed`, download impossibile, checksum sbagliato, memoria, disco, e il contratto letto da `code_graph.build` sulle fixture committate.
+- [x] `tests/test_codebase_map_indexers.py`: 29 test in circa 1 s, con indicizzatore e download finti. Coprono hash del progetto, specchio rimosso, riga d'installazione, `failed`, download impossibile, checksum sbagliato, memoria, disco, e il contratto letto da `code_graph.build` sulle fixture committate.
+- [x] Cancellati `adapters/{go,rust,typescript,python}.py` del benchmark. `modal_scip.py` e `lang_python.py` chiamano gli `index()` del plugin e le loro immagini hanno solo il sistema di base. Un run con etichetta e `--reindex` tiene gli indici in `scip-inputs/<case>/<label>`.
+- [x] Conferma su Modal con il codice del plugin, hash uguali al locale, risultati `results/scip-{chi,semver,tududi}-plugin.json` e `results/graph-python-semver-plugin-checks.json`. Conteggi, report e verifica a mano sono uguali alle conferme:
+  - chi 4.847 / 20.102;
+  - semver 1.073 / 3.960;
+  - tududi javascript 86.225 / 182.593, typescript 41.107 / 171.821;
+  - python-semver 1.289 / 3.679 / 64 buchi.
 
-Resta per la seconda metà:
-- In `ENGINES` sei voci: `scip-go` (go), `scip-rust` (rust), `scip-typescript` (typescript, javascript), `scip-python` (python), `scip-java` (java), `scip-kotlin` (kotlin). Due campi nuovi in `EngineSpec`: `min_free`, il `MIN_FREE` del modulo, e `needs_container`, vero per Java e Kotlin. `ENGINE_LANGUAGES` resta sui motori di oggi fino al task 5.
-- Lo stage chiama `indexers.<modulo>.index(...)` e riporta `state`, `reason` e `install` come li restituisce.
-- In `tests/test_codebase_map_resolve_edges.py`, `IndexerStageTests`: `test_entry_is_fresh_with_its_resolver`, `test_failed_index_leaves_failed`, `test_unavailable_index_leaves_unavailable_with_install`, `test_container_language_without_container_is_unavailable`, `test_memory_under_min_free_starts_no_stage`. Hash, riga di log e checksum restano nei test sopra.
-- Node e npm passano da `indexers/runtime.py` a `resolve_edges.py` quando `TypeScriptEngine` e `npm_modules` usano il Node fissato invece di quello sul PATH (requisito 12).
+  Due differenze:
+  - in chi la versione del modulo nei simboli del progetto è `.` invece del commit, perché lo specchio salta `.git`;
+  - in python-semver fast-semver-rs-backend è 0.1.1, la versione dell'`uv.lock`, invece di 0.1.2: l'ambiente segue il lockfile.
+- [x] I simboli del progetto hanno `.` come versione del modulo, non il commit: gli id dei nodi restano uguali da uno snapshot all'altro e nessun processo git tocca il progetto. Un test indicizza la stessa fixture da due specchi con nomi diversi e ottiene gli stessi nodi del progetto. Python segue la stessa regola: `--project-version` è sempre `_`, senza `git rev-parse`.
 
-Su Windows nulla è misurato. Punti da verificare al primo run:
-- picco di memoria: `code_graph.measured` non lo misura (`peak_mb` nullo);
-- specchio di junction in `%TEMP%`: Go 1.23 legge una junction come cartella e la percorre; cargo e Node potrebbero risolverla nel progetto; un processo figlio sopravvissuto al timeout blocca la rimozione;
-- Node da `.zip`: `node.exe` e `node_modules/npm` in cima, `npm.cmd` per `npm_modules` (`shell=True`);
-- Python: `Scripts` e `Lib/site-packages`; i percorsi del file d'ambiente hanno `/`, mentre `pip show -f` su Windows darebbe `\`;
-- percorsi oltre 260 caratteri in `_install` e nella rimozione dello specchio; CRLF con `autocrlf=true`.
+**Seconda metà (14 novembre 2026): gli stage degli indicizzatori nel passaggio.**
+- [x] In `ENGINES` sei voci: `scip-go`, `scip-rust`, `scip-typescript` (typescript, javascript), `scip-python`, `scip-java` e `scip-kotlin`. `EngineSpec` ha due campi nuovi: `indexer`, il modulo sotto `indexers/`, e `needs_container`, vero per Java e Kotlin. `min_free` è il `MIN_FREE` del modulo, letto quando serve, altrimenti `ENGINE_MIN_FREE`.
+- [x] Un linguaggio resta sul motore della prima voce che lo elenca (`ENGINE_LANGUAGES`), e il passaggio lancia per lui solo quella. Nessun linguaggio ha cambiato fonte: per spostarlo basta toglierlo dalla voce di oggi.
+- [x] `index_stage` chiama `indexers.<modulo>.index()` in una cartella rimossa dopo. Costruisce il grafo con `hops`, `static`, `missing` e `refine` del modulo e lo salva con `code_graph.write_store`, che ora tiene le voci degli altri linguaggi (`kept_languages`, la stessa regola del passo per posizione). Il `resolver` è `nome@versione` dell'indicizzatore; rust-analyzer porta la release fissata e mette la riga di `--version` in `build`.
+- [x] Per uno stage che `needs_container`, il motore di container lo trova lo stage. Senza motore il linguaggio è `unavailable`, con causa «the build runs only in a container: …» e rimedio, e l'indicizzatore non parte.
+- [x] Test: 6 in `IndexerStageTests` (i cinque del piano e `test_the_stage_keeps_the_entries_of_the_other_languages`), con lo stage eseguito davvero nel processo del test e l'`index()` finto. `test_every_language_stays_on_the_engine_of_today` fissa linguaggio → motore.
+- Contratto di `indexers/{java,kotlin}.py`, diverso dagli altri: `index()` accetta `engine=`; Kotlin chiede a `missing` e `refine` anche le compile task (`tasks(result["configs"])`), che lo stage passa.
+- Restano: il test con l'indicizzatore vero in `tests/test_codebase_map_mcp_wire.py`; Node e npm da `indexers/runtime.py` a `resolve_edges.py` quando `TypeScriptEngine` e `npm_modules` useranno il Node fissato invece di quello sul PATH (requisito 12).
+
+Su Windows (14 novembre 2026: le quattro fixture, cache condivisa in una cartella di D:, un indicizzatore alla volta):
+- [x] Go: Go 1.27.3 e scip-go v0.2.9 si installano in 75 s, l'indice in 10,8 s. Rust: rust-analyzer, e Rust 1.99.1 quando rustup non è sul PATH; il primo indice di un sysroot richiede circa 95 s, il successivo 4,4 s. TypeScript e JavaScript: Node, scip-typescript e pacchetti del progetto in 46 s, l'indice in 2,3 s. I grafi sono uguali arco per arco a quelli degli indici committati, con `expected.json`, `RUST_ENDS` e `ts-ends.json` tutti verdi; il progetto resta invariato e lo specchio di junction viene rimosso.
+- [x] Python: scip-python 0.6.8 non parte su Windows, perché al caricamento esegue `new RegExp(path.sep, 'g')` e con `\` dà errore. Il difetto è noto e non corretto: la issue sourcegraph/scip-python#210 è aperta dal 4 aprile 2026, la PR #211 è stata chiusa senza merge, la #224 è aperta. La 0.6.8 (22 ottobre 2026) è l'ultima release, e sul branch `scip` la riga 4 di `PythonEnvironment.ts` è uguale dal 2022.
+- [x] Su Windows scip-python gira quindi nel container (`container.run_in_container`), senza rete, con l'immagine `python:3.13-slim` fissata per digest. La copia del progetto porta Node per Linux, verificato con `SHASUMS256` come quello dell'host, scip-python come l'ha installato npm sull'host e i site-packages dell'ambiente dell'host: il Python dell'immagine li aggiunge al suo percorso, e da lì Pyright li trova. Senza motore di container il linguaggio è `unavailable`, con causa e rimedio, e nulla si scarica. Sulla fixture `python`, con il motore dell'utente: 7,3 s nel container, picco 325 MB, 55 s in tutto con i download; grafo uguale arco per arco all'indice committato, 12 su 12 attesi.
+- [x] rust-analyzer lascia cartelle `proc-macro-srv*` nella cartella temporanea: il run usa una cartella sua in `work_dir`, rimossa dopo. `failed` e le installazioni fallite riportano inizio e fine dell'errore, perché un crash dichiara la causa in testa.
+- [x] Corretti nel prodotto, con test prima:
+  - `free_memory` su Windows è il minore fra memoria fisica libera e memoria impegnabile libera (`ullAvailPageFile`). Prima, con 5,3 GB fisici liberi e 2,0 GB impegnabili, il compilatore Go si era fermato per memoria esaurita. Su Linux resta `MemAvailable`; su macOS è `None`, quindi lì nessun controllo di memoria;
+  - `go install` di scip-go e di gopls lancia al massimo 4 compilatori (`-p`, `go_jobs`);
+  - Go tiene la sua configurazione nella cartella condivisa (`APPDATA`, `XDG_CONFIG_HOME` o `HOME` su macOS, la variabile che legge `os.UserConfigDir`), con la telemetria spenta da `go telemetry off`, una volta. `GOTELEMETRY` non serviva: Go lo tratta come sola lettura;
+  - npm e Node tengono la cache nella cartella condivisa (`npm_config_cache`, `NODE_COMPILE_CACHE`) per ogni processo che Daodan lancia: `npm_modules`, gli indicizzatori Node e gli stage del passaggio;
+  - `peak_mb` è `None` quando nessun run lo misura, mai 0.
+- [x] Riprova su Windows con `LOCALAPPDATA`, `APPDATA`, `USERPROFILE` e `TEMP` spostati in una cartella vuota. Go (81 s compresa l'installazione) e TypeScript (42 s) danno grafi uguali a quelli degli indici committati. Fuori dalla cartella condivisa e dalla cartella di lavoro non resta nulla; il vero `%APPDATA%\go` e il vero `%LOCALAPPDATA%\npm-cache` sono invariati.
+- La radice `file://D:%5C...` che scip-typescript scrive su Windows non è un URI valido. Non ha effetto: il grafo non la legge.
+- Gli indici committati delle fixture `rust` e `ts` vengono da questo PC Windows, come dice la loro radice; `go`, `python`, `java` e `kotlin` vengono da Linux. Non si rigenerano ora.
 
 ### Task 5: cambio di fonte, un linguaggio alla volta
 
@@ -341,10 +363,37 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 
 ### Task 9: Java e Kotlin (dopo la domanda 1)
 
-- [ ] **Con il container:** prima serve il Task 4 del piano del passo dinamico (`docs/plans/2026-11-12-passo-dinamico.md`), fatto una volta sola e usato da entrambi.
-  - Immagine con JDK 17 e scip-java fissato: una versione sola, 0.14.2, da riconfermare su javapoet.
-  - Preparazione con la rete aperta solo ai registri, poi l'indice.
-  - Escono `.scip` e `kotlin-configs/`, che servono a `refine`.
+- [x] **Immagine:** Temurin con JDK 17, fissata per digest (`IMAGE` in `scripts/indexers/jvm.py`): 190 MB compressi, 403 MB su disco. Il motore la scarica al primo `create` e la tiene. L'immagine di rilascio di scip-java pesava 2,7 GB su disco, di cui 1,5 GB per i JDK 17, 21 e 25.
+  - Cosa perde: gli altri JDK. Una build che chiede un JDK più nuovo (toolchain di Gradle, `release` di javac, versione dei file di classe) è `unavailable` con la causa (`newer_jdk`), finché non esiste un'immagine per quel JDK.
+  - Non ci sono scip-java, Maven e Gradle. Daodan li scarica sull'host nella cartella condivisa, verificati, e la copia li porta nel container (`tools`, `inputs` di `run_in_container`). scip-java 0.14.2 sono i 26 jar che coursier 2.1.24 risolve, ciascuno con il suo sha256.
+- [x] **Lo strumento di build lo porta Daodan:** quello che chiede il wrapper, cioè `distributionUrl` in `gradle/wrapper/gradle-wrapper.properties` o `.mvn/wrapper/maven-wrapper.properties`. Si verifica con `distributionSha256Sum`, altrimenti con il checksum pubblicato dal sito. Senza wrapper si usano Gradle 9.9.1 o Maven 3.10.0, fissati per sha256.
+  - Nel container il wrapper chiama solo quello strumento: nessuna build scarica una distribuzione.
+  - Un wrapper che indica un sito diverso da services.gradle.org o Maven Central è `unavailable`, e da lì non si scarica nulla. Un checksum diverso è rifiutato prima di ogni container.
+  - Fuori da ogni elenco: `services.gradle.org`, `github.com` e gli host dei suoi rilasci. Un GitHub raggiungibile lascerebbe uno script di build caricare la copia del progetto.
+- [x] **Due tempi:** `index()` in `scripts/indexers/{java,kotlin}.py`, sopra `container.run_in_container`.
+  - Preparazione, con la rete aperta solo ai registri (`registries()`): build e `scip-java index`.
+  - Esecuzione, senza rete: seconda aggregazione, `javap`, `kotlin-configs/`.
+  - Escono l'indice, l'aggregazione in avanti, `javap.json` e `kotlin-configs/`.
+  - Senza container il risultato è `unavailable`, con causa e rimedio; senza indice è `failed`, con la coda dell'output.
+  - Registri: `container.REGISTRIES` ora comprende anche `plugins-artifacts.gradle.org`, dove il portale dei plugin di Gradle manda i download; gli indicizzatori JVM aggiungono JCenter e il Maven di Google.
+  - La copia porta anche i file che Git traccia nelle cartelle con il punto, come `.mvn/`, con il bit di esecuzione che Git registra; restano fuori i file ignorati e i segreti.
+  - Test: `tests/test_codebase_map_indexers_jvm.py`, 17 prove con la riga di comando finta; in `tests/test_codebase_map_container.py` 3 prove nuove per la copia e `inputs`.
+- [x] **Una versione sola, 0.14.2:** confermata su Modal il 14 novembre 2026 con gli script del plugin, senza container (`benchmarks/inference-audit/adapters/jvm_here.py`).
+  - javapoet: resoconto del grafo uguale a quello della 0.13.2 (3.541 nodi, 19.189 archi, buchi e pacchetti), verifica a mano 20 su 20. Cambia solo l'accordo con il lessicale: i 25 casi diventano 19 uguali e 6 diversi, per la regola del costruttore del task 3, non per l'indicizzatore. Indicizzatore 28 s, picco 733 MB. Il proxy rifiuta solo `maven.java.net`, `oss.sonatype.org` e `repository.apache.org`, che la build chiede ma non usa.
+  - klaxon: ogni conteggio uguale (15.940 archi certi, 251 incerti, buchi, verifica a mano 16 su 20). Gradle 7.3 è quello del wrapper, portato da Daodan, e il proxy non rifiuta nulla. Indicizzatore 85 s, picco 1.636 MB; con l'immagine di rilascio erano 130 s e 4.050 MB.
+- [x] **Con il container vero:** provato il 14 novembre 2026 sul PC del proprietario, con Kiri 0.2.0 e la CLI docker 29.9.2. `RealContainerSmokeTest` usa un container e 2 GB.
+  - Fixture Java senza wrapper: Maven 3.10.0 portato da Daodan, le dipendenze da Maven Central attraverso il proxy, l'indice scritto e le 7 attese di `expected.json` tenute. 32 s, picco 346 MB.
+  - La stessa fixture con `mvnw` in CRLF, senza bit di esecuzione, e `.mvn/` tracciato da Git: la copia porta `.mvn/`, il container chiama solo il Maven portato e nessuna distribuzione si scarica. 16 s.
+  - Le impostazioni dell'utente restano uguali prima e dopo: PATH, configurazione e contesti di Docker, PATH dell'utente, distribuzioni WSL.
+  - In Kiri restano le due immagini per digest, Temurin (438 MB) e il proxy (53 MB).
+  - Ogni run lascia anche uno strato orfano in `/var/lib/kiri/layers`: è lo strato dell'immagine preparata, che Kiri 0.2.0 non cancella con `rmi -f`. La CLI non lo elenca e lo conta solo `system df`. Per Java pesa 118 MB, cioè `app/scip-java` 83, `root/.m2` 24 e `daodan/tools` 12.
+- [x] **Gradle in un container vero:** fixture Kotlin, provata il 14 novembre 2026 sullo stesso PC con un limite di 4 GB.
+  - Senza wrapper si usa il Gradle 9.9.1 portato da Daodan, verificato con il suo sha256. Il plugin Kotlin 2.1.0 della fixture compila con quel Gradle.
+  - Le 7 attese di `expected.json` tengono sull'indice scritto, quindi la fixture non va rigenerata.
+  - Tempi: 84 s; indicizzatore 63 s, picco 1.788 MB.
+  - Un wrapper che indica un altro sito risulta `unavailable`: nessun container, nessuna richiesta a quel sito.
+  - Lo strato orfano di questo run pesa 426 MB: `root/.gradle` 195, Gradle spacchettato 148, scip-java 83. Il disco di Kiri passa da 1,66 a 2,26 GB.
+- [ ] **Strati orfani di Kiri:** da togliere per nome, con il via del proprietario. Da correggere in `container.py`: gli strumenti portati non devono finire nello strato preparato.
 - [ ] **Soglia:** come nel task 5, su javapoet e klaxon, con il confronto fra passo per posizione e indice misurato.
 - [ ] **Si cancella:** `JavaEngine`, `KotlinEngine` e `engines/KotlinResolver.kt`, solo se la domanda 2 esclude le richieste mirate per la JVM.
 
@@ -387,7 +436,7 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - [x] **Regola di pagina:** un arco di classe, id, proprietà custom, keyframes, font-face o container è certo solo se un'unità del codice contiene il sito e il foglio del bersaglio: una pagina HTML/EJS con i suoi include, i fogli che linka o contiene e gli script che carica, oppure un bundle di moduli che nessuna pagina carica. Altrimenti resta, incerto, con `sheet-not-proven-loaded`.
 - [ ] **Adattatori nel plugin, dopo lo store del task 3:** la parte di lettura in `scripts/indexers/css*.py`; i motori Node installati da Daodan nella sua cache, mai dal progetto.
 - [ ] **Convenzioni dei framework per il caricamento:** il layout di Next.js sulle pagine del suo albero, `static/` di Sapper, `angular.json` `styles`, HtmlWebpackPlugin. Oggi i loro archi restano incerti.
-- [ ] **Soglia:** su tududi, Bulma, Bootstrap 3, hn.svelte.dev, saas-starter e styled-components-website i conteggi di `results/graph-css-<caso>-checks.json`, nessun file perso senza motivo, verifica a mano almeno 15 su 15 per caso; oggi 20 su 20 su tududi, 16 su 16 su hn.svelte.dev, 15 su 15 su saas-starter, 14 su 15 su Bootstrap 3 (`benchmarks/inference-audit/README.md`, «fogli di stile su progetti reali»). v3-admin-vite (Vue 3), Bulma e styled-components-website non sono ancora misurati.
+- [ ] **Soglia:** su v3-admin-vite, tududi, Bulma, Bootstrap 3, hn.svelte.dev, saas-starter e styled-components-website i conteggi di `results/graph-css-<caso>-checks.json`, nessun file perso senza motivo, verifica a mano almeno 15 su 15 per caso. Giro di conferma del 14 novembre 2026: v3-admin-vite 15 su 15, tududi 20 su 20, Bootstrap 3 15 su 15, hn.svelte.dev 16 su 16, saas-starter 15 su 15, Bulma 7 su 11 (quattro attese scritte male, nessun errore del grafo); styled-components-website non misurato (`benchmarks/inference-audit/README.md`, «fogli di stile su progetti reali»).
 - [ ] **Si cancella:** `adapters/css*.py` del benchmark, quando le parti di lettura sono nel plugin.
 
 ## 8. Rischi

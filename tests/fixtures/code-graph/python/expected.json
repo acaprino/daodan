@@ -16,5 +16,22 @@
  "fx/shapes.py:18 klass": {"kind": "call", "rule": "type-of-self", "ends": ["decl fx/shapes.py:1 via type-of-self"]},
  "fx/shapes.py:23 describe": {"kind": "call", "rule": "static: super()", "ends": ["decl fx/shapes.py:5 via -"]},
  "fx/shapes.py:27 cls": {"kind": "call", "rule": "classmethod-cls in a subclass",
-                         "ends": ["decl fx/shapes.py:21 via classmethod-cls"]}
+                         "ends": ["decl fx/shapes.py:21 via classmethod-cls"]},
+ "fx/held.py:8 calc": {"kind": "call", "rule": "initializer: a local holding an imported function",
+                       "ends": ["decl fx/shapes.py:30 via initializer"]},
+ "fx/held.py:13 calc": {"kind": "call", "rule": "initializer: the value is a module's attribute",
+                        "ends": ["decl fx/shapes.py:30 via initializer"]},
+ "fx/held.py:18 kind": {"kind": "call", "rule": "initializer: a local holding a class",
+                        "ends": ["decl fx/shapes.py:1 via initializer"]},
+ "fx/held.py:27 calc": {"kind": "call", "rule": "a call result is never an alias", "none": true},
+ "fx/held.py:34 ALIAS": {"kind": "call", "rule": "initializer: a module variable",
+                         "ends": ["decl fx/shapes.py:30 via initializer"]},
+ "fx/over.py:51 convert": {"kind": "call", "rule": "overload: the implementation, never the stubs",
+                           "ends": ["decl fx/over.py:15 via rebinding"]},
+ "fx/over.py:51 scale": {"kind": "call", "rule": "overload imported `as`: the decorator's symbol, not its name",
+                         "ends": ["decl fx/over.py:27 via rebinding"]},
+ "fx/over.py:51 encode": {"kind": "call", "rule": "overload of a method, `typing.overload`",
+                          "ends": ["decl fx/over.py:38 via rebinding"]},
+ "fx/over.py:51 read": {"kind": "call", "rule": "stub-only protocol: the stub the call matches stays",
+                        "ends": ["decl fx/over.py:44"]}
 }

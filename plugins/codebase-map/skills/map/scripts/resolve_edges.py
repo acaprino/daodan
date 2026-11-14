@@ -174,7 +174,11 @@ def shared_engine_dir(name: str) -> Path:
 
 
 def free_memory() -> int | None:
-    """Bytes of memory available to a new process, or None when the system does not say."""
+    """Bytes of memory available to a new process, or None when the system does not say (macOS).
+
+    On Windows the smaller of free physical memory and free commit: a process gets only what the page file
+    can still back, which can be far less than the free physical memory. On Linux `MemAvailable`.
+    """
     if os.name == "nt":
         import ctypes
 
@@ -187,7 +191,9 @@ def free_memory() -> int | None:
 
         status = Status()
         status.length = ctypes.sizeof(Status)
-        return status.available if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)) else None
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            return None
+        return min(status.available, status.page_free)
     try:
         with open("/proc/meminfo", encoding="ascii") as meminfo:
             for row in meminfo:
@@ -929,7 +935,8 @@ def _install_type_packages(npm: str, directory: Path) -> int:
 
     def run(names, timeout):
         return subprocess.run([*base, *names], cwd=directory, stdin=subprocess.DEVNULL, capture_output=True,
-                              text=True, timeout=timeout, shell=os.name == "nt").returncode == 0
+                              text=True, timeout=timeout, shell=os.name == "nt",
+                              env={**os.environ, **node_environment()}).returncode == 0
 
     if run(wanted, 900):
         return len(wanted)
@@ -976,6 +983,12 @@ def package_directories(root: Path, limit: int = 8) -> list[Path]:
     return sorted(found, key=lambda path: (len(path.relative_to(root).parts), path.as_posix()))[:limit]
 
 
+def node_environment() -> dict:
+    """Where npm and Node keep their caches for a process Daodan starts: in the shared directory."""
+    cache = shared_cache_dir()
+    return {"npm_config_cache": str(cache / "npm-cache"), "NODE_COMPILE_CACHE": str(cache / "node-compile-cache")}
+
+
 def npm_modules(root: Path) -> Path | None:
     """The project's packages installed once into the shared directory, without running any package script.
 
@@ -1010,12 +1023,12 @@ def npm_modules(root: Path) -> Path | None:
     command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
                "--loglevel=error", *([] if locked else ["--package-lock=false"])]
     completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                               timeout=1800, shell=os.name == "nt")
+                               timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment()})
     if completed.returncode != 0 and locked:
         # A lockfile out of step with its manifest still leaves the manifest to install from.
         command = [npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"]
         completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                                   timeout=1800, shell=os.name == "nt")
+                                   timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment()})
     if completed.returncode != 0 or not (partial / "node_modules").is_dir():
         print(f"the project's JavaScript packages were not installed: {(completed.stderr or '')[-300:]}", flush=True)
         shutil.rmtree(partial, ignore_errors=True)
@@ -1094,6 +1107,20 @@ def unpack(archive: Path, destination: Path) -> None:
 
 def executable_name(name: str) -> str:
     return name + (".exe" if os.name == "nt" else "")
+
+
+def go_jobs() -> str:
+    """How many compilers `go install` runs at once: one per CPU, at most 4, since each holds its own memory."""
+    return str(min(os.cpu_count() or 1, 4))
+
+
+def user_config(folder: Path) -> dict:
+    """The variable a tool's user configuration folder comes from (Go's `os.UserConfigDir`), set to `folder`."""
+    if os.name == "nt":
+        return {"APPDATA": str(folder)}
+    if sys.platform == "darwin":
+        return {"HOME": str(folder)}  # $HOME/Library/Application Support
+    return {"XDG_CONFIG_HOME": str(folder)}
 
 
 def go_toolchain() -> Path:
@@ -1360,11 +1387,22 @@ class GoEngine(MirroredEngine):
         return {"version": GOPLS_VERSION}
 
     def go_environment(self) -> dict:
+        """Go's variables, every folder Go writes in the shared directory, its telemetry turned off there."""
         root = go_toolchain()
         cache = shared_cache_dir() / "go"
-        return {"GOROOT": str(root), "GOPATH": str(cache / "path"), "GOCACHE": str(cache / "build"),
-                "GOTOOLCHAIN": "local", "GOFLAGS": "-mod=readonly", "GOTELEMETRY": "off",
-                "PATH": str(root / "bin") + os.pathsep + os.environ.get("PATH", "")}
+        environment = {"GOROOT": str(root), "GOPATH": str(cache / "path"), "GOCACHE": str(cache / "build"),
+                       "GOTOOLCHAIN": "local", "GOFLAGS": "-mod=readonly", **user_config(cache / "config"),
+                       "PATH": str(root / "bin") + os.pathsep + os.environ.get("PATH", "")}
+        # Go reads its telemetry mode from its configuration folder only: GOTELEMETRY is read-only.
+        off = cache / "config" / ".daodan-telemetry-off"
+        if not off.is_file():
+            done = subprocess.run([str(root / "bin" / executable_name("go")), "telemetry", "off"],
+                                  env={**os.environ, **environment}, stdin=subprocess.DEVNULL, capture_output=True,
+                                  timeout=120)
+            if done.returncode == 0:
+                off.parent.mkdir(parents=True, exist_ok=True)
+                off.touch()
+        return environment
 
     def prepare(self, home: Path) -> tuple[bool, str]:
         environment = self.go_environment()
@@ -1374,7 +1412,7 @@ class GoEngine(MirroredEngine):
             try:
                 build = {**os.environ, **environment, "GOBIN": str(partial), "GOPATH": str(scratch / "path"),
                          "GOCACHE": str(scratch / "cache"), "GOFLAGS": ""}
-                subprocess.run([str(go_toolchain() / "bin" / executable_name("go")), "install",
+                subprocess.run([str(go_toolchain() / "bin" / executable_name("go")), "install", "-p", go_jobs(),
                                 f"golang.org/x/tools/gopls@{GOPLS_VERSION}"], check=True, env=build,
                                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=1800)
             finally:
@@ -2977,6 +3015,23 @@ def read_edge_store(path: Path, store) -> tuple[list[dict] | None, dict | None, 
             connection.close()
 
 
+def kept_languages(destination: Path, store, replaced) -> tuple[dict, list[dict], list[dict], dict]:
+    """What the store already holds for the languages a write does not replace: their entries, edges, holes and
+    engine reports; nothing when there is no store or it belongs to another snapshot."""
+    if not Path(destination).is_file():
+        return {}, [], [], {}
+    previous, binding, reason = read_edge_store(destination, store)
+    if reason is not None:
+        return {}, [], [], {}
+    entries = {language: entry for language, entry in (binding.get("languages") or {}).items()
+               if language not in replaced}
+    edges = [edge for edge in previous if edge.get("language") in entries]
+    holes = [hole for hole in read_edge_holes(destination) if hole["language"] in entries]
+    reports = {key: value for key, value in (binding.get("engine_reports") or {}).items()
+               if key in {entry["engine"] for entry in entries.values()}}
+    return entries, edges, holes, reports
+
+
 def read_edge_holes(path: Path) -> list[dict]:
     """The holes of a store `read_edge_store` accepted: references with no answer, by class."""
     connection = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
@@ -3278,16 +3333,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         if limit is not None:
             selected = selected[:limit]
 
-        kept_entries, kept_edges, kept_holes, kept_reports = {}, [], [], {}
-        if destination.is_file():
-            previous, previous_binding, previous_reason = read_edge_store(destination, store)
-            if previous_reason is None:
-                kept_entries = {language: entry for language, entry in
-                                (previous_binding.get("languages") or {}).items() if language not in counts}
-                kept_edges = [edge for edge in previous if edge.get("language") in kept_entries]
-                kept_holes = [hole for hole in read_edge_holes(destination) if hole["language"] in kept_entries]
-                kept_reports = {key: value for key, value in (previous_binding.get("engine_reports") or {}).items()
-                                if key in {entry["engine"] for entry in kept_entries.values()}}
+        kept_entries, kept_edges, kept_holes, kept_reports = kept_languages(destination, store, counts)
 
         edges: list[dict] = []
         answers: list[dict] = []
@@ -3881,8 +3927,16 @@ def edge_state(manifest: Path) -> dict:
         return result
 
 
+INDEXER_INSTALL = "install uv, which runs the pass with the snapshot's parser"
+
+
 class EngineSpec(NamedTuple):
-    """One engine of the derived pass: its languages and what its stage environment needs."""
+    """One engine of the derived pass: its languages and what its stage environment needs.
+
+    An indexer's entry names its module under `indexers/` (`indexer`): its stage runs that indexer and builds
+    the graph of its languages (`index_stage`). One that `needs_container` builds the project, which happens
+    only in a container: the stage finds the container engine before the indexer starts.
+    """
 
     name: str
     languages: tuple[str, ...]
@@ -3890,6 +3944,13 @@ class EngineSpec(NamedTuple):
     module: str
     install: str
     environment: dict
+    indexer: str = ""
+    needs_container: bool = False
+
+    @property
+    def min_free(self) -> int:
+        """The free memory the stage starts with: its indexer's `MIN_FREE`, else `ENGINE_MIN_FREE`."""
+        return importlib.import_module(f"indexers.{self.indexer}").MIN_FREE if self.indexer else ENGINE_MIN_FREE
 
 
 ENGINES = (
@@ -3906,8 +3967,17 @@ ENGINES = (
                "install uv, which gives the pass multilspy; rust-analyzer installs itself", {}),
     EngineSpec("go", ("go",), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy; Go and gopls install themselves", {}),
+    # The indexers (docs/plans/2026-11-14-grafo-dall-indice.md). Their stage needs the snapshot's parser only;
+    # a language moves to its indexer when it leaves the entry above that lists it.
+    EngineSpec("scip-go", ("go",), (), "tree_sitter", INDEXER_INSTALL, {}, "go"),
+    EngineSpec("scip-rust", ("rust",), (), "tree_sitter", INDEXER_INSTALL, {}, "rust"),
+    EngineSpec("scip-typescript", ("typescript", "javascript"), (), "tree_sitter", INDEXER_INSTALL, {}, "typescript"),
+    EngineSpec("scip-python", ("python",), (), "tree_sitter", INDEXER_INSTALL, {}, "python"),
+    EngineSpec("scip-java", ("java",), (), "tree_sitter", INDEXER_INSTALL, {}, "java", needs_container=True),
+    EngineSpec("scip-kotlin", ("kotlin",), (), "tree_sitter", INDEXER_INSTALL, {}, "kotlin", needs_container=True),
 )
-ENGINE_LANGUAGES = {language: spec for spec in ENGINES for language in spec.languages}
+# Each language's engine: the first entry that lists it.
+ENGINE_LANGUAGES = {language: spec for spec in reversed(ENGINES) for language in spec.languages}
 # One engine runs at a time, and only with this much memory free.
 ENGINE_MIN_FREE = 2 * 2**30
 
@@ -4000,7 +4070,8 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
             if reason is None:
                 fresh = {language: entry for language, entry in (binding.get("languages") or {}).items()
                          if entry.get("state") == "fresh"}
-    plan = [(spec, [language for language in spec.languages if language in present]) for spec in ENGINES]
+    plan = [(spec, [language for language in spec.languages
+                    if language in present and ENGINE_LANGUAGES.get(language) is spec]) for spec in ENGINES]
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
 
 
@@ -4024,9 +4095,9 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
         free = free_memory()
         if exhausted:
             reason, state, install = f"not started: {exhausted}", "failed", None
-        elif free is not None and free < ENGINE_MIN_FREE:
-            reason, state, install = (f"{free / 2**30:.1f} GB of memory free; an engine starts with at least "
-                                      f"{ENGINE_MIN_FREE / 2**30:.0f} GB"), "failed", None
+        elif free is not None and free < spec.min_free:
+            reason, state, install = (f"{free / 2**30:.1f} GB of memory free; {spec.name} starts with at least "
+                                      f"{spec.min_free / 2**30:.1f} GB"), "failed", None
         else:
             stage_report = manifest.with_name(f".engine-stage-{spec.name}.json")
             stage_report.unlink(missing_ok=True)
@@ -4038,7 +4109,7 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
             else:
                 print(f"engine pass: {spec.name} for {', '.join(wanted)}", flush=True)
                 completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
-                                           env={**os.environ, **spec.environment})
+                                           env={**os.environ, **node_environment(), **spec.environment})
                 try:
                     stage = json.loads(stage_report.read_text(encoding="utf-8"))
                 except (OSError, ValueError):
@@ -4072,6 +4143,60 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
     report["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     _write_report(report_path, report)
     return report
+
+
+def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path | None = None) -> dict:
+    """An indexer's stage: its index of the project, the graph of each of its languages the snapshot holds,
+    saved in the store beside the other languages' entries (`code_graph.write_store`).
+
+    The indexer works in a directory removed after the stage. One that `needs_container` gets its engine here:
+    without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
+    `engine` (the resolver, `name@version`), `indexer` and `languages`; without an index, the indexer's
+    `reason` and, when it is `unavailable`, its `install`.
+    """
+    import code_graph
+    module = importlib.import_module(f"indexers.{spec.indexer}")
+    options = {}
+    if spec.needs_container:
+        import container
+        try:
+            options["engine"] = container.find_engine()
+        except container.Gap as gap:
+            return {"available": False, "engine": spec.name,
+                    "reason": f"the build runs only in a container: {gap.cause}", "install": gap.remedy}
+    work = Path(tempfile.mkdtemp(prefix=f"daodan-{spec.name}-"))
+    try:
+        result = module.index(Path(project_root), work, **options)
+        indexer = result.get("indexer") or {}
+        resolver = f"{indexer.get('name') or spec.name}@{indexer.get('version')}"
+        if result.get("state"):
+            return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),
+                    **({"install": result.get("install")} if result["state"] == "unavailable" else {})}
+        built = {}
+        with code_graph.Snapshot(manifest) as snap:
+            index = code_graph.Index(snap.root)
+            for path, prefix in result["indexes"]:
+                index.load(Path(path), prefix)
+            hops = module.hops(index)
+            traversal = code_graph.Traversal(index, snap, hops)
+            static = module.static(index) if hasattr(module, "static") else None
+            # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
+            extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
+            refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") else None
+            for language in spec.languages:
+                rels = sorted(snap.checkout[rel] for rel in snap.inventory
+                              if snap.languages.get(rel) == language and rel in snap.checkout)
+                if not rels:
+                    continue
+                absent = [rel for rel in rels if rel not in index.documents]
+                reasons = module.missing(index, absent, *extra) if hasattr(module, "missing") and absent else {}
+                built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal, static,
+                                                   refine=refine)
+            code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver)
+        return {"available": True, "engine": resolver, "indexer": indexer,
+                "languages": {language: {"state": "fresh"} for language in built}}
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
 
 
 def _log_tail(manifest: Path, size: int = 65536) -> str:
@@ -4210,7 +4335,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
             "excluded_classes", "resolution", "verdicts", "memory_exhausted",
             "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
             "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
-            "edges_store", "coverage",
+            "edges_store", "coverage", "indexer",
         )
         if key in report
     }
@@ -4226,7 +4351,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pass", dest="whole_pass", action="store_true",
                         help="run every engine the snapshot's languages need, one after another, as the "
                              "detached pass does")
-    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "kotlin", "rust", "go", "scip"), default="jedi")
+    indexers = {spec.name: spec for spec in ENGINES if spec.indexer}
+    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "kotlin", "rust", "go", "scip", *indexers),
+                        default="jedi")
     parser.add_argument("--scip-index", action="append", default=[], type=Path,
                         help="path to a precomputed SCIP index file (index.scip Protobuf or JSON) when --engine scip is used")
     parser.add_argument("--environment", action="append", default=[], type=Path,
@@ -4284,9 +4411,12 @@ def main(argv: list[str] | None = None) -> int:
         report = run_pass(manifest, (args.report_out or manifest.with_name(REPORT_NAME)).resolve(), environments)
         print(json.dumps({key: report[key] for key in ("available", "languages")}, indent=2, sort_keys=True))
         return 0 if report.get("available") else 1
-    engine = build_engine(args.engine, project_root, environments, [path.resolve() for path in args.scip_index])
-    report = resolve_edges(manifest, engine=engine, limit=args.limit,
-                           stride=args.stride, dry_run=args.dry_run, out=args.out)
+    if args.engine in indexers:
+        report = index_stage(indexers[args.engine], manifest, project_root, out=args.out)
+    else:
+        engine = build_engine(args.engine, project_root, environments, [path.resolve() for path in args.scip_index])
+        report = resolve_edges(manifest, engine=engine, limit=args.limit,
+                               stride=args.stride, dry_run=args.dry_run, out=args.out)
     report_out = None
     if args.report_out is not None:
         report_out = args.report_out.resolve()
