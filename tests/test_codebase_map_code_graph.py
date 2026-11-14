@@ -1,17 +1,28 @@
 """The code graph's mechanisms, on SCIP indexes written in memory and a stand-in snapshot; then the chain
-ends of two small projects in `fixtures/code-graph/`, each with the index its engine wrote, read with its
-indexer module.
+ends of six small projects in `fixtures/code-graph/`, each with the index its engine wrote, read with its
+indexer module, and the invariant that every call and read of their snapshots ends somewhere.
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_code_graph.py
 
 Rebuild a fixture's index after changing its sources (the snapshot is written by the test):
-`scip-typescript index --cwd . --output index.scip --no-progress-bar` (0.5.2, with `node_modules` beside
-`ts`, removed afterwards) in `fixtures/code-graph/ts`; `rust-analyzer scip . --output index.scip` in
-`fixtures/code-graph/rust`.
+- `ts`: `scip-typescript index --cwd . --output index.scip --no-progress-bar` (0.5.2, with `node_modules` beside
+  `ts`, removed afterwards) in `fixtures/code-graph/ts`;
+- `rust`: `rust-analyzer scip . --output index.scip` in `fixtures/code-graph/rust`;
+- `go`, `python`, `java`, `kotlin`: on Modal with the pinned indexers, since Java and Kotlin need their build,
+  from the checkout's root, with the proxy variables empty:
+
+      export HTTPS_PROXY= https_proxy= HTTP_PROXY= http_proxy= PYTHONIOENCODING=utf-8
+      modal deploy benchmarks/inference-audit/fixture_indexes.py
+      python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin
+      python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin
+
+  `fetch`, once the calls end, writes `index.scip` (and Kotlin's `kotlin-configs/`) into each fixture.
 """
 from __future__ import annotations
 
+import collections
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -250,7 +261,17 @@ def test_file_without_declarations_is_inside_the_snapshot(tmp_path):
     assert snapshot.grade("a.kt", 1, 0) == ("value", "file without declarations in the snapshot")
     assert snapshot.grade("b.kt", 1, 0) == ("outside", None)
 
-# The fixtures: 30 ends in a JS/TS project (`ts-ends.json`), 6 in two Rust test crates sharing one module file.
+# The fixtures: one small project per indexer in `fixtures/code-graph/<name>/`, with the index its engine wrote.
+# `ts-ends.json` and `RUST_ENDS` hold the ends of `ts` and `rust`; each other fixture has `expected.json`, ends
+# written from its sources before any index existed: `"FILE:LINE NAME"` (the snapshot reference whose name ends
+# with NAME there) to `kind`, then
+# - `ends`: `decl FILE:LINE` (exactly the project declarations reached), `external TEXT` (an external end whose
+#   package holds TEXT), `value KIND PATTERN` (a project value of that kind, `*` for any, whose symbol matches the
+#   regular expression); `via TAG+TAG` is the chain reaching it, `via -` none;
+# - `none`: no project declaration (a hole, a value or an external, never a guess);
+# - `uncertain`: every edge there is uncertain for that reason with exactly those candidates (without it, none is);
+# - `operator`: no snapshot reference, a graph hole of that class for an implicit call;
+# - `rule`: the adapter rule the case covers.
 
 FIXTURES = HERE / "fixtures/code-graph"
 TS_ENDS = json.loads((FIXTURES / "ts-ends.json").read_text(encoding="utf-8"))
@@ -262,14 +283,50 @@ RUST_ENDS = {  # site -> the snapshot declaration, or `external`, and the chain 
     "call tests/util/mod.rs:2 fxrs.parse": ("src/lib.rs::function@1:0", []),
     "call src/lib.rs:2 text.len": ("external", []),
 }
+LANGUAGES = {"ts": ("javascript", "typescript"), "rust": ("rust",), "go": ("go",), "python": ("python",),
+             "java": ("java",), "kotlin": ("kotlin",)}
+ADAPTERS = {"ts": "typescript"}
+CASES = {name: json.loads((FIXTURES / name / "expected.json").read_text(encoding="utf-8"))
+         for name in ("go", "python", "java", "kotlin")}
+KNOWN = {}  # (fixture, case) -> why the graph is wrong there, one line, until it is fixed
+
+
+def _built(name: str, source: Path, manifest: Path) -> dict:
+    """The fixture's graph per language, with what its driver passes from the adapter, and its snapshot rows."""
+    import importlib
+    adapter = importlib.import_module(f"indexers.{ADAPTERS.get(name, name)}")
+    with code_graph.Snapshot(manifest) as snapshot:
+        index = code_graph.Index(snapshot.root)
+        index.load(source / "index.scip")
+        hops, traversal_options, build_options = adapter.hops(index), {}, {}
+        if hasattr(adapter, "same_range"):
+            traversal_options["same_range"] = adapter.same_range(index)
+        if hasattr(adapter, "classify"):
+            traversal_options["classify"] = adapter.classify(index)
+        if hasattr(adapter, "static"):
+            build_options["static"] = adapter.static(index)
+        if hasattr(adapter, "refine"):
+            compiled = adapter.tasks(source / "kotlin-configs")
+            build_options["refine"] = lambda read, graph: adapter.refine(read, graph, compiled)
+        traversal = code_graph.Traversal(index, snapshot, hops, **traversal_options)
+        graphs, references = {}, {}
+        for language in LANGUAGES[name]:
+            graphs[language], found = code_graph.build(index, snapshot, language, hops, {}, None, traversal,
+                                                       **build_options)
+            references.update(found)
+        rows = snapshot.connection.execute(
+            "SELECT r.id, r.file, r.kind, c.language FROM sem_references r LEFT JOIN sem_coverage c ON c.file = r.file "
+            "WHERE r.kind IN ('call','read') ORDER BY r.file, r.l0, r.c0").fetchall()
+        declarations = {identity: f"{snapshot.checkout.get(rel, rel)}:{line}" for identity, rel, line in
+                        snapshot.connection.execute("SELECT id, file, l0 FROM sem_declarations")}
+    return {"index": index, "graphs": graphs, "references": references, "rows": rows, "declarations": declarations}
 
 
 @pytest.fixture(scope="module")
-def fixture_rows(tmp_path_factory):
-    """`{fixture: {"kind site name": reference}}`, each fixture copied out of the checkout and snapshotted."""
-    from indexers import rust, typescript
-    rows = {}
-    for name, adapter in (("ts", typescript), ("rust", rust)):
+def built(tmp_path_factory):
+    """`{fixture: built}`, each fixture copied out of the checkout and snapshotted."""
+    out = {}
+    for name in LANGUAGES:
         source = tmp_path_factory.mktemp(name) / name
         shutil.copytree(FIXTURES / name, source)
         manifest = source.parent / "manifest.sqlite"
@@ -277,16 +334,15 @@ def fixture_rows(tmp_path_factory):
                                "--no-engine", "--no-index", "--no-modules"], cwd=SCRIPTS,
                               capture_output=True, text=True, timeout=300)
         assert done.returncode == 0, done.stderr
-        found = rows[name] = {}
-        with code_graph.Snapshot(manifest) as snapshot:
-            index = code_graph.Index(snapshot.root)
-            index.load(source / "index.scip")
-            hops = adapter.hops(index)
-            traversal = code_graph.Traversal(index, snapshot, hops)
-            for language in sorted(set(snapshot.languages.values()) & {"javascript", "typescript", "rust"}):
-                _graph, references = code_graph.build(index, snapshot, language, hops, {}, {}, traversal)
-                found.update({f"{row['kind']} {row['site']} {row['name']}": row for row in references.values()})
-    return rows
+        out[name] = _built(name, source, manifest)
+    return out
+
+
+@pytest.fixture(scope="module")
+def fixture_rows(built):
+    """`{fixture: {"kind site name": reference}}`."""
+    return {name: {f"{row['kind']} {row['site']} {row['name']}": row for row in data["references"].values()}
+            for name, data in built.items()}
 
 
 @pytest.mark.parametrize("site", sorted(TS_ENDS))
@@ -314,3 +370,108 @@ def test_rust_fixture_end(fixture_rows, site):
     else:
         assert any(end.target == target and list(end.chain) == chain for end in ends)
 
+
+def _name(key: str) -> str | None:
+    parts = code_graph.split_symbol(code_graph._global(key))
+    items = code_graph.descriptors(parts[4]) if parts else []
+    return items[-1][0] if items else None
+
+
+def _spec(text: str) -> tuple[str, str, tuple | None]:
+    """`(kind, what, chain)` of an expected end: `decl a.go:3 via initializer` -> `decl`, `a.go:3`, the chain."""
+    kind, _, rest = text.partition(" ")
+    what, via, chain = rest.partition(" via ")
+    return kind, what, (() if chain == "-" else tuple(chain.split("+"))) if via else None
+
+
+def _case_params():
+    for name, cases in CASES.items():
+        for case in sorted(cases):
+            reason = KNOWN.get((name, case))
+            yield pytest.param(name, case, id=f"{name} {case}",
+                               marks=[pytest.mark.xfail(reason=reason, strict=True)] if reason else [])
+
+
+@pytest.mark.parametrize("name, case", list(_case_params()))
+def test_fixture_case(built, name, case):
+    want, data = CASES[name][case], built[name]
+    site, called = case.rsplit(" ", 1)
+    edges = [edge for graph in data["graphs"].values() for edge in graph["edges"]
+             if edge["site"] == site and _name(edge["symbol"]) == called]
+    if "operator" in want:
+        holes = [hole["class"] for graph in data["graphs"].values() for hole in graph["holes"]
+                 if hole["site"] == site and hole["name"] == called]
+        assert holes == [want["operator"]]
+        return
+    rows = [row for row in data["references"].values()
+            if row["site"] == site and row["kind"] == want["kind"] and row["name"].split(".")[-1] == called]
+    assert len(rows) == 1, f"{len(rows)} snapshot references"
+    row = rows[0]
+    seen = [(end.cls, data["declarations"].get(end.target, end.key), "+".join(end.chain) or "-", end.detail)
+            for end in row["ends"]]
+    declared = collections.defaultdict(set)
+    for end in row["ends"]:
+        if end.cls == "project-callable":
+            declared[data["declarations"].get(end.target, end.target)].add(end.chain)
+    wanted = [_spec(text) for text in want.get("ends", ())]
+    if "uncertain" not in want:
+        assert set(declared) == {what for kind, what, _chain in wanted if kind == "decl"}, seen
+    for kind, what, chain in wanted:
+        if kind == "decl":
+            assert chain is None or chain in declared[what], seen
+        elif kind == "external":
+            assert any(end.cls == "external" and what in end.detail and chain in (None, end.chain)
+                       for end in row["ends"]), seen
+        else:
+            node, pattern = what.split(" ", 1)
+            assert any(end.cls == "project-value" and node in ("*", end.detail) and re.search(pattern, end.key, re.I)
+                       for end in row["ends"]), seen
+    if want.get("none"):
+        assert not declared, seen
+    if "hole" in want:
+        assert row["hole"] == want["hole"], seen
+    marked = [edge["uncertain"] for edge in edges if edge.get("uncertain")]
+    if "uncertain" not in want:
+        assert not marked, marked
+        return
+    assert edges and len(marked) == len(edges), edges
+    assert {item["reason"] for item in marked} == {want["uncertain"]["reason"]}, marked
+    candidates = set()
+    for key in {key for item in marked for key in item["candidates"]}:
+        rel, occurrence = data["index"].defs[key][0]
+        candidates.add(f"{rel}:{occurrence.line}")
+    assert candidates == {_spec(text)[1] for text in want["uncertain"]["candidates"]}, marked
+
+
+# The invariant: every call and read of a snapshot ends in graph ends or in a hole with a class.
+
+def test_every_reference_ends_or_is_a_hole(built):
+    classes = set(code_graph.HOLES) | {"implicit-operator"}
+    violations = collections.defaultdict(list)
+    for name, data in sorted(built.items()):
+        graphs = data["graphs"].values()
+        edges = {(edge["site"], edge["to"]) for graph in graphs for edge in graph["edges"]}
+        holes = {(hole["site"], hole["name"], hole["class"]) for graph in graphs for hole in graph["holes"]}
+        for identity, rel, kind, language in data["rows"]:
+            row = data["references"].get(identity)
+            if row is None:
+                violations["not in a graph"].append(f"{name} {kind} {rel} ({language or 'no language'})")
+                continue
+            label = f"{name} {kind} {row['site']} {row['name']}"
+            if row["hole"]:
+                if row["hole"] not in classes:
+                    violations["hole of no known class"].append(f"{label}: {row['hole']}")
+                if (row["site"], row["name"], row["hole"]) not in holes:
+                    violations["hole missing from the graph"].append(label)
+            elif not any(end.cls != "dead-end" for end in row["ends"]):
+                violations["neither end nor hole"].append(label)
+            else:
+                absent = [end.key for end in row["ends"] if end.cls != "dead-end" and (row["site"], end.key) not in edges]
+                if absent:
+                    violations["end missing from the graph"].append(f"{label}: {absent[0]}")
+        for graph in graphs:
+            violations["graph hole of no known class"] += [f"{name} {hole['site']} {hole['name']}: {hole['class']}"
+                                                           for hole in graph["holes"] if hole["class"] not in classes]
+    found = {category: items for category, items in violations.items() if items}
+    assert not found, "\n".join(f"{category} ({len(items)}): " + "; ".join(items[:10])
+                                for category, items in sorted(found.items()))

@@ -1,0 +1,96 @@
+
+E
+	scip-java0.14.2,file:///work/kotlin/engine/mirror-scip-java/ ±
+
+src/test/kotlin/fx/UseTest.ktscip-java maven . . fx/B
+1scip-java maven . . fx/twice().B	R-9%scip-java maven . . fx/twice().(text)B
+R
+,"scip-java maven . . kotlin/String#B,"scip-java maven . . kotlin/String#B/%scip-java maven . . fx/twice().(text)B"&3)scip-java maven . . kotlin/String#plus().B'(/%scip-java maven . . fx/twice().(text)B)-<(scip-java maven . . fx/useAcrossTasks().BZ ,"scip-java maven . . kotlin/String#Blocal 0BR%scip-java maven . . fx/Fmt#B.$scip-java maven . . fx/Fmt#show(+1).B)scip-java maven . . fx/twice().Blocal 0B{
+scip-java maven . . fx/twice().(2twice:6"kotlin*,public final fun twice(text: String): StringBscip-java maven . . fx/h
+%scip-java maven . . fx/twice().(text)(%2text:"kotlin*text: StringBscip-java maven . . fx/twice().ä
+(scip-java maven . . fx/useAcrossTasks().(2useAcrossTasks:3"kotlin*)public final fun useAcrossTasks(): StringBscip-java maven . . fx/_
+local 0()2shown:!"kotlin*local val shown: StringB(scip-java maven . . fx/useAcrossTasks()."kotlin*ípackage fx
+
+fun twice(text: String): String = text + text
+
+fun useAcrossTasks(): String {
+    val shown = Fmt.show("a")
+    return twice(shown)
+}
+÷
+src/main/kotlin/fx/Main.ktscip-java maven . . fx/B
+,scip-java maven . . fx/op.BR!1scip-java maven . . fx/getOp().BR!)scip-java maven . . kotlin/Int#B	)scip-java maven . . kotlin/Int#Blocal 0B!R!local 0B2(scip-java maven . . kotlin/Int#plus(+2).B2scip-java maven . . fx/main().BZ local 1BR1'scip-java maven . . fx/Grid#`<init>`().Blocal 2BR0&scip-java maven . . fx/Box#`<init>`().B2(scip-java maven . . kotlin/io/println().B%scip-java maven . . fx/Fmt#B,"scip-java maven . . fx/Fmt#show().Blocal 3BRlocal 1Blocal 4B	R	local 2B	* scip-java maven . . fx/Box#size.B	/%scip-java maven . . fx/Box#getSize().B	4*scip-java maven . . kotlin/io/println(+1).B
+$scip-java maven . . fx/op.B
+)scip-java maven . . fx/getOp().B
+local 3B
+2(scip-java maven . . kotlin/Int#plus(+2).B
+local 4B
+h
+scip-java maven . . fx/op.()2op:+"kotlin*!public final val op: (Int) -> IntBscip-java maven . . fx/i
+scip-java maven . . fx/getOp().(2op:$"kotlin*public get(): (Int) -> IntBscip-java maven . . fx/op."
+local 0(%2it:"kotlin*it: Intj
+scip-java maven . . fx/main().(2main:'"kotlin*public final fun main(): UnitBscip-java maven . . fx/Q
+local 1()2grid:"kotlin*local val grid: GridBscip-java maven . . fx/main().N
+local 2()2box:"kotlin*local val box: BoxBscip-java maven . . fx/main().P
+local 3()2cell:"kotlin*local val cell: IntBscip-java maven . . fx/main().P
+local 4()2size:"kotlin*local val size: IntBscip-java maven . . fx/main()."kotlin*Õpackage fx
+
+val op: (Int) -> Int = { it + 1 }
+
+fun main() {
+    val grid = Grid()
+    val box = Box()
+    println(Fmt.show(1))
+    val cell = grid[2]
+    val size = box.size
+    println(op(cell + size))
+}
+è$
+src/main/kotlin/fx/Shapes.ktscip-java maven . . fx/B
+/scip-java maven . . fx/Fmt#B
+Z :&scip-java maven . . fx/Fmt#`<init>`().B
+Z 8$scip-java maven . . fx/Fmt#INSTANCE.B
+Z 6"scip-java maven . . fx/Fmt#show().BR$9%scip-java maven . . fx/Fmt#show().(n)BR)scip-java maven . . kotlin/Int#B,"scip-java maven . . kotlin/String#B/%scip-java maven . . fx/Fmt#show().(n)B"#8$scip-java maven . . fx/Fmt#show(+1).BR';'scip-java maven . . fx/Fmt#show(+1).(s)BR,"scip-java maven . . kotlin/String#B,"scip-java maven . . kotlin/String#B1'scip-java maven . . fx/Fmt#show(+1).(s)B%&1scip-java maven . . fx/Other#BZ
+ <(scip-java maven . . fx/Other#`<init>`().BZ
+ :&scip-java maven . . fx/Other#INSTANCE.BZ
+ 8$scip-java maven . . fx/Other#show().B	R	+;'scip-java maven . . fx/Other#show().(s)B	R	,"scip-java maven . . kotlin/String#B	,"scip-java maven . . kotlin/String#B	1'scip-java maven . . fx/Other#show().(s)B	)*/scip-java maven . . fx/Box#B	Z :&scip-java maven . . fx/Box#`<init>`().B	Z 4 scip-java maven . . fx/Box#size.BR9%scip-java maven . . fx/Box#getSize().BR)scip-java maven . . kotlin/Int#B0scip-java maven . . fx/Grid#B
+Z ;'scip-java maven . . fx/Grid#`<init>`().B
+Z 6"scip-java maven . . fx/Grid#get().BR)9%scip-java maven . . fx/Grid#get().(i)BR)scip-java maven . . kotlin/Int#B)scip-java maven . . kotlin/Int#B!/%scip-java maven . . fx/Grid#get().(i)B$%3)scip-java maven . . kotlin/Int#times(+2).B&'f
+scip-java maven . . fx/Fmt#(2Fmt:'"kotlin*public final object Fmt : AnyBscip-java maven . . fx/r
+&scip-java maven . . fx/Fmt#`<init>`().(	2Fmt:$"kotlin*private constructor(): FmtBscip-java maven . . fx/Fmt#Ä
+$scip-java maven . . fx/Fmt#INSTANCE.(O2INSTANCE:/"kotlin*%public final static val INSTANCE: FmtBscip-java maven . . fx/Fmt#z
+"scip-java maven . . fx/Fmt#show().(2show:/"kotlin*%public final fun show(n: Int): StringBscip-java maven . . fx/Fmt#b
+%scip-java maven . . fx/Fmt#show().(n)(%2n:"kotlin*n: IntB"scip-java maven . . fx/Fmt#show().
+$scip-java maven . . fx/Fmt#show(+1).(2show:2"kotlin*(public final fun show(s: String): StringBscip-java maven . . fx/Fmt#i
+'scip-java maven . . fx/Fmt#show(+1).(s)(%2s:"kotlin*	s: StringB$scip-java maven . . fx/Fmt#show(+1).ß
+scip-java maven . . fx/Other#9A decoy: the same name and parameter as Fmt.show(String).(2Other:)"kotlin*public final object Other : AnyBscip-java maven . . fx/µ
+(scip-java maven . . fx/Other#`<init>`().9A decoy: the same name and parameter as Fmt.show(String).(	2Other:&"kotlin*private constructor(): OtherBscip-java maven . . fx/Other#Ü
+&scip-java maven . . fx/Other#INSTANCE.(O2INSTANCE:1"kotlin*'public final static val INSTANCE: OtherBscip-java maven . . fx/Other#Å
+$scip-java maven . . fx/Other#show().(2show:2"kotlin*(public final fun show(s: String): StringBscip-java maven . . fx/Other#i
+'scip-java maven . . fx/Other#show().(s)(%2s:"kotlin*	s: StringB$scip-java maven . . fx/Other#show().e
+scip-java maven . . fx/Box#(2Box:&"kotlin*public final class Box : AnyBscip-java maven . . fx/q
+&scip-java maven . . fx/Box#`<init>`().(	2Box:#"kotlin*public constructor(): BoxBscip-java maven . . fx/Box#m
+ scip-java maven . . fx/Box#size.()2size:$"kotlin*public final val size: IntBscip-java maven . . fx/Box#n
+%scip-java maven . . fx/Box#getSize().(2size:"kotlin*public get(): IntB scip-java maven . . fx/Box#size.h
+scip-java maven . . fx/Grid#(2Grid:'"kotlin*public final class Grid : AnyBscip-java maven . . fx/u
+'scip-java maven . . fx/Grid#`<init>`().(	2Grid:$"kotlin*public constructor(): GridBscip-java maven . . fx/Grid#v
+"scip-java maven . . fx/Grid#get().(2get:+"kotlin*!public final fun get(i: Int): IntBscip-java maven . . fx/Grid#b
+%scip-java maven . . fx/Grid#get().(i)(%2i:"kotlin*i: IntB"scip-java maven . . fx/Grid#get()."kotlin*∆package fx
+
+object Fmt {
+    fun show(n: Int): String = "n$n"
+    fun show(s: String): String = "s$s"
+}
+
+/** A decoy: the same name and parameter as Fmt.show(String). */
+object Other {
+    fun show(s: String): String = "other$s"
+}
+
+class Box {
+    val size: Int = 3
+}
+
+class Grid {
+    operator fun get(i: Int): Int = i * 2
+}

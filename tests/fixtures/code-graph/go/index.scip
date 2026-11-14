@@ -1,0 +1,49 @@
+
+k@
+scip-go0.2.9'--output=/work/go/engine/scip-go-0.scip./...%file:///work/go/engine/mirror-scip-go †
+calls.go:0scip-go gomod example.com/fx . `example.com/fx`/B
+B6scip-go gomod github.com/golang/go/src go1.21 strings/BK9scip-go gomod example.com/fx . `example.com/fx`/helper().BRH6scip-go gomod example.com/fx . `example.com/fx`/one().BRH6scip-go gomod example.com/fx . `example.com/fx`/two().BRK9scip-go gomod example.com/fx . `example.com/fx`/triple().B
+R
+G5scip-go gomod example.com/fx . `example.com/fx`/pick.BRE9scip-go gomod example.com/fx . `example.com/fx`/triple().BJ6scip-go gomod example.com/fx . `example.com/fx`/Run().BZ local 0B	
+B6scip-go gomod example.com/fx . `example.com/fx`/Shape#Blocal 1Blocal 2BE9scip-go gomod example.com/fx . `example.com/fx`/helper().B	local 3Blocal 4BB6scip-go gomod example.com/fx . `example.com/fx`/one().BB6scip-go gomod example.com/fx . `example.com/fx`/two().Blocal 5B	B6scip-go gomod example.com/fx . `example.com/fx`/two().Blocal 6Blocal 7B	local 2Blocal 7B	local 3Blocal 7B	local 4Blocal 7B	local 5Blocal 7B	local 6Blocal 7B	A5scip-go gomod example.com/fx . `example.com/fx`/pick.Blocal 7B	local 0BG;scip-go gomod example.com/fx . `example.com/fx`/Shape#Area.Blocal 7B	local 1Blocal 7B	B6scip-go gomod github.com/golang/go/src go1.21 strings/BL@scip-go gomod github.com/golang/go/src go1.21 strings/ToUpper().B local 7BU
+6scip-go gomod example.com/fx . `example.com/fx`/two().(2two:"go*func two() intZ
+5scip-go gomod example.com/fx . `example.com/fx`/pick.(=2pick:"go*var pick func() int¦
+6scip-go gomod example.com/fx . `example.com/fx`/Run().:Run calls through every way Go binds a function to a name.(2Run:)"go*#func Run(s Shape, f func() int) intJ
+0scip-go gomod example.com/fx . `example.com/fx`/(#2fx:"go*
+package fxU
+6scip-go gomod example.com/fx . `example.com/fx`/one().(2one:"go*func one() int^
+9scip-go gomod example.com/fx . `example.com/fx`/triple().(2triple:"go*func triple() int^
+9scip-go gomod example.com/fx . `example.com/fx`/helper().(2helper:"go*func helper() int*
+local 6(=2lit:"go*var lit func() int'
+local 7(=2total:"go*var total int!
+local 0(=2s:"go*var s Shape&
+local 1(=2f:"go*var f func() int&
+local 2(=2h:"go*var h func() int&
+local 3(=2x:"go*var x func() int&
+local 4(=2y:"go*var y func() int&
+local 5(=2g:"go*var g func() int"go0ì
+	shapes.go:0scip-go gomod example.com/fx . `example.com/fx`/B
+J6scip-go gomod example.com/fx . `example.com/fx`/Shape#B
+Z O;scip-go gomod example.com/fx . `example.com/fx`/Shape#Area.BRI7scip-go gomod example.com/fx . `example.com/fx`/Circle#BRM9scip-go gomod example.com/fx . `example.com/fx`/Circle#R.BRlocal 0B	C7scip-go gomod example.com/fx . `example.com/fx`/Circle#B	P>scip-go gomod example.com/fx . `example.com/fx`/Circle#Area().B	R	7local 0B	,-E9scip-go gomod example.com/fx . `example.com/fx`/Circle#R.B	./local 0B	23E9scip-go gomod example.com/fx . `example.com/fx`/Circle#R.B	45I7scip-go gomod example.com/fx . `example.com/fx`/Square#BRM9scip-go gomod example.com/fx . `example.com/fx`/Square#S.BRlocal 1BC7scip-go gomod example.com/fx . `example.com/fx`/Square#BP>scip-go gomod example.com/fx . `example.com/fx`/Square#Area().BR3local 1B()E9scip-go gomod example.com/fx . `example.com/fx`/Square#S.B*+local 1B./E9scip-go gomod example.com/fx . `example.com/fx`/Square#S.B01I5scip-go gomod example.com/fx . `example.com/fx`/Plot#B	Z local 2BA5scip-go gomod example.com/fx . `example.com/fx`/Plot#BN<scip-go gomod example.com/fx . `example.com/fx`/Plot#Area().BR?local 3Blocal 3B7<local 4BA5scip-go gomod example.com/fx . `example.com/fx`/Plot#BP>scip-go gomod example.com/fx . `example.com/fx`/Plot#helper().BR'h
+;scip-go gomod example.com/fx . `example.com/fx`/Shape#Area.(C2Area:!"go*func (Shape).Area() float64¦
+7scip-go gomod example.com/fx . `example.com/fx`/Square#":
+6scip-go gomod example.com/fx . `example.com/fx`/Shape#(12Square:%"go*type Square struct{ S float64 }›
+6scip-go gomod example.com/fx . `example.com/fx`/Shape#*Shape is implemented by Circle and Square.(2Shape:,"go*&type Shape interface{ Area() float64 }^
+9scip-go gomod example.com/fx . `example.com/fx`/Square#S.(2S:"go*struct field S float64®
+5scip-go gomod example.com/fx . `example.com/fx`/Plot#SPlot is a decoy: an Area of another signature, so not a Shape, and a helper method.(12Plot:"go*type Plot struct{}­
+>scip-go gomod example.com/fx . `example.com/fx`/Square#Area()."?
+;scip-go gomod example.com/fx . `example.com/fx`/Shape#Area.(2Area:""go*func (Square).Area() float64q
+<scip-go gomod example.com/fx . `example.com/fx`/Plot#Area().(2Area:)"go*#func (Plot).Area(scale int) float64¦
+7scip-go gomod example.com/fx . `example.com/fx`/Circle#":
+6scip-go gomod example.com/fx . `example.com/fx`/Shape#(12Circle:%"go*type Circle struct{ R float64 }­
+>scip-go gomod example.com/fx . `example.com/fx`/Circle#Area()."?
+;scip-go gomod example.com/fx . `example.com/fx`/Shape#Area.(2Area:""go*func (Circle).Area() float64^
+9scip-go gomod example.com/fx . `example.com/fx`/Circle#R.(2R:"go*struct field R float64j
+>scip-go gomod example.com/fx . `example.com/fx`/Plot#helper().(2helper:"go*func (Plot).helper() int"
+local 0(=2c:"go*var c Circle"
+local 1(=2s:"go*var s Square 
+local 2(=2p:"go*
+var p Plot'
+local 3(=2scale:"go*var scale int 
+local 4(=2p:"go*
+var p Plot"go0

@@ -1,0 +1,8 @@
+sourceroot /work/kotlin/engine/mirror-scip-java
+classpath /work/kotlin/engine/mirror-scip-java/build/classes/java/main
+classpath /work/kotlin/engine/mirror-scip-java/build/classes/kotlin/main
+classpath /work/kotlin/engine/mirror-scip-java/build/resources/main
+classpath /tmp/scip-java17128391406062163545/scip-plugin.jar
+classpath /work/kotlin/engine/gradle-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.1.0/85f8b81009cda5890e54ba67d64b5e599c645020/kotlin-stdlib-2.1.0.jar
+classpath /work/kotlin/engine/gradle-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar
+source /work/kotlin/engine/mirror-scip-java/src/test/kotlin/fx/UseTest.kt

@@ -1,0 +1,14 @@
+{
+ "calls.go:21 h": {"kind": "call", "rule": ":=", "ends": ["decl calls.go:5 via initializer"]},
+ "calls.go:22 x": {"kind": "call", "rule": ":= by position", "ends": ["decl calls.go:7 via initializer"]},
+ "calls.go:23 y": {"kind": "call", "rule": ":= by position", "ends": ["decl calls.go:9 via initializer"]},
+ "calls.go:24 g": {"kind": "call", "rule": "var", "ends": ["decl calls.go:9 via initializer"]},
+ "calls.go:25 lit": {"kind": "call", "rule": "function literal", "ends": ["decl calls.go:20 via value"]},
+ "calls.go:26 pick": {"kind": "call", "rule": "package var", "ends": ["decl calls.go:11 via initializer"]},
+ "calls.go:27 Area": {"kind": "call", "rule": "interface implementations; Plot.Area is a decoy",
+                      "ends": ["decl shapes.go:5 via -", "decl shapes.go:10 via implementation",
+                               "decl shapes.go:14 via implementation"]},
+ "calls.go:28 f": {"kind": "call", "rule": "dynamic: a function parameter", "none": true},
+ "calls.go:29 len": {"kind": "call", "rule": "language builtin", "none": true},
+ "calls.go:29 ToUpper": {"kind": "call", "rule": "external", "ends": ["external golang/go via -"]}
+}

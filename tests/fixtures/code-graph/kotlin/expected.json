@@ -1,0 +1,15 @@
+{
+ "src/main/kotlin/fx/Main.kt:8 show": {"kind": "call", "rule": "overload in the same task; Other.show is a decoy",
+     "ends": ["decl src/main/kotlin/fx/Shapes.kt:4 via -"]},
+ "src/main/kotlin/fx/Main.kt:8 println": {"kind": "call", "rule": "packageless placeholder: a Kotlin library function",
+     "ends": ["external unknown kotlin/io via -"]},
+ "src/main/kotlin/fx/Main.kt:9 get": {"operator": "implicit-operator", "rule": "x[k]"},
+ "src/main/kotlin/fx/Main.kt:10 size": {"kind": "read", "rule": "property read: the property and its getter",
+     "ends": ["value property Box#size[.]$", "value method Box#.*size"]},
+ "src/main/kotlin/fx/Main.kt:11 op": {"kind": "call", "rule": "dynamic: a function-typed value", "none": true},
+ "src/test/kotlin/fx/UseTest.kt:6 show": {"kind": "call", "rule": "overload from another compile task",
+     "uncertain": {"reason": "overload-across-tasks",
+                   "candidates": ["decl src/main/kotlin/fx/Shapes.kt:4", "decl src/main/kotlin/fx/Shapes.kt:5"]}},
+ "src/test/kotlin/fx/UseTest.kt:7 twice": {"kind": "call", "rule": "packageless placeholder: a test-task function",
+     "ends": ["decl src/test/kotlin/fx/UseTest.kt:3 via -"]}
+}

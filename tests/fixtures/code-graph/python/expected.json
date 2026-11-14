@@ -1,0 +1,20 @@
+{
+ "fx/use.py:7 describe": {"kind": "call", "rule": "dispatch to the override",
+                          "ends": ["decl fx/shapes.py:5 via -", "decl fx/shapes.py:22 via implementation"]},
+ "fx/use.py:11 make": {"kind": "call", "rule": "static: class name", "ends": ["decl fx/shapes.py:9 via -"]},
+ "fx/use.py:11 len": {"kind": "call", "rule": "builtin", "ends": ["external python-stdlib via builtin"]},
+ "fx/use.py:12 describe": {"kind": "call", "rule": "static: class name", "ends": ["decl fx/shapes.py:5 via -"]},
+ "fx/use.py:13 patch": {"kind": "call", "rule": "import-binding",
+                        "ends": ["external python-stdlib via import-binding"]},
+ "fx/use.py:14 shape_area": {"kind": "call", "rule": "import with `as`; fx/other.py:13 is a decoy",
+                             "ends": ["decl fx/shapes.py:30"]},
+ "fx/use.py:19 perform": {"kind": "call", "rule": "dynamic: untyped parameter; Runner.perform is a decoy",
+                          "none": true},
+ "fx/shapes.py:10 cls": {"kind": "call", "rule": "classmethod-cls", "ends": ["decl fx/shapes.py:1 via classmethod-cls"]},
+ "fx/shapes.py:14 make": {"kind": "call", "rule": "cls.m() dispatches",
+                          "ends": ["decl fx/shapes.py:9 via -", "decl fx/shapes.py:26 via implementation"]},
+ "fx/shapes.py:18 klass": {"kind": "call", "rule": "type-of-self", "ends": ["decl fx/shapes.py:1 via type-of-self"]},
+ "fx/shapes.py:23 describe": {"kind": "call", "rule": "static: super()", "ends": ["decl fx/shapes.py:5 via -"]},
+ "fx/shapes.py:27 cls": {"kind": "call", "rule": "classmethod-cls in a subclass",
+                         "ends": ["decl fx/shapes.py:21 via classmethod-cls"]}
+}

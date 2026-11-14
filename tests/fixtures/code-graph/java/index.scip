@@ -1,0 +1,92 @@
+
+A
+	scip-java0.0.0-SNAPSHOT file:///work/java/engine/mirror/ ¿
+src/main/java/fx/Greeters.javaA-scip-java maven maven/fx/fixture 1.0 fx/Base#B
+Z D8scip-java maven maven/fx/fixture 1.0 fx/Base#`<init>`().B
+2(scip-java maven jdk 17 java/lang/String#B
+I5scip-java maven maven/fx/fixture 1.0 fx/Base#greet().BR%A-scip-java maven maven/fx/fixture 1.0 fx/Loud#B
+Z D8scip-java maven maven/fx/fixture 1.0 fx/Loud#`<init>`().B
+7-scip-java maven maven/fx/fixture 1.0 fx/Base#B2(scip-java maven jdk 17 java/lang/String#B
+I5scip-java maven maven/fx/fixture 1.0 fx/Loud#greet().BR:=3scip-java maven maven/fx/fixture 1.0 fx/Loud#super.B!?5scip-java maven maven/fx/fixture 1.0 fx/Base#greet().B"'B8scip-java maven jdk 17 java/lang/String#toUpperCase(+1).B*5B.scip-java maven maven/fx/fixture 1.0 fx/Quiet#B
+Z
+ E9scip-java maven maven/fx/fixture 1.0 fx/Quiet#`<init>`().B
+7-scip-java maven maven/fx/fixture 1.0 fx/Base#B
+2(scip-java maven jdk 17 java/lang/String#B
+J6scip-java maven maven/fx/fixture 1.0 fx/Quiet#greet().BR$D0scip-java maven maven/fx/fixture 1.0 fx/Printer#BZ G;scip-java maven maven/fx/fixture 1.0 fx/Printer#`<init>`().B2(scip-java maven jdk 17 java/lang/String#B
+K7scip-java maven maven/fx/fixture 1.0 fx/Printer#show().BR*local 0BRlocal 0B&'2(scip-java maven jdk 17 java/lang/String#B
+M9scip-java maven maven/fx/fixture 1.0 fx/Printer#show(+1).BR-2(scip-java maven jdk 17 java/lang/String#Blocal 1BRlocal 1B)*K
+-scip-java maven maven/fx/fixture 1.0 fx/Base#(2Base:"java*
+class BaseT
+8scip-java maven maven/fx/fixture 1.0 fx/Base#`<init>`().(	2<init>:"java*Base()X
+5scip-java maven maven/fx/fixture 1.0 fx/Base#greet().(2greet:"java*String greet()‹
+-scip-java maven maven/fx/fixture 1.0 fx/Loud#"1
+-scip-java maven maven/fx/fixture 1.0 fx/Base#(2Loud:"java*class Loud extends BaseT
+8scip-java maven maven/fx/fixture 1.0 fx/Loud#`<init>`().(	2<init>:"java*Loud()•
+5scip-java maven maven/fx/fixture 1.0 fx/Loud#greet().";
+5scip-java maven maven/fx/fixture 1.0 fx/Base#greet().(2greet:"java*String greet()Ž
+.scip-java maven maven/fx/fixture 1.0 fx/Quiet#"1
+-scip-java maven maven/fx/fixture 1.0 fx/Base#(2Quiet: "java*class Quiet extends BaseV
+9scip-java maven maven/fx/fixture 1.0 fx/Quiet#`<init>`().(	2<init>:"java*Quiet()–
+6scip-java maven maven/fx/fixture 1.0 fx/Quiet#greet().";
+5scip-java maven maven/fx/fixture 1.0 fx/Base#greet().(2greet:"java*String greet()T
+0scip-java maven maven/fx/fixture 1.0 fx/Printer#(2Printer:"java*class PrinterZ
+;scip-java maven maven/fx/fixture 1.0 fx/Printer#`<init>`().(	2<init>:"java*	Printer()]
+7scip-java maven maven/fx/fixture 1.0 fx/Printer#show().(2show:"java*String show(int n)T
+local 02n:"java*int nB7scip-java maven maven/fx/fixture 1.0 fx/Printer#show().b
+9scip-java maven maven/fx/fixture 1.0 fx/Printer#show(+1).(2show:"java*String show(String s)Y
+local 12s:"java*String sB9scip-java maven maven/fx/fixture 1.0 fx/Printer#show(+1)."java«
+src/main/java/fx/Use.java#scip-java maven . . java/B(scip-java maven . . java/lang/B0&scip-java maven . . java/lang/reflect/B:0scip-java maven jdk 17 java/lang/reflect/Method#B@,scip-java maven maven/fx/fixture 1.0 fx/Use#BZ C7scip-java maven maven/fx/fixture 1.0 fx/Use#`<init>`().BL6scip-java maven maven/fx/fixture 1.0 fx/Use#measure().BZ 8.scip-java maven maven/fx/fixture 1.0 fx/Shape#Blocal 0B !R!local 0B?5scip-java maven maven/fx/fixture 1.0 fx/Shape#area().B2(scip-java maven jdk 17 java/lang/String#B	J4scip-java maven maven/fx/fixture 1.0 fx/Use#hello().B	Z	 7-scip-java maven maven/fx/fixture 1.0 fx/Base#B	local 1B	R	local 1B
+?5scip-java maven maven/fx/fixture 1.0 fx/Base#greet().B
+2(scip-java maven jdk 17 java/lang/String#BJ4scip-java maven maven/fx/fixture 1.0 fx/Use#print().BZ :0scip-java maven maven/fx/fixture 1.0 fx/Printer#Blocal 2B !R!2(scip-java maven jdk 17 java/lang/String#Blocal 3BR"local 2BC9scip-java maven maven/fx/fixture 1.0 fx/Printer#show(+1).Blocal 3Blocal 2BA7scip-java maven maven/fx/fixture 1.0 fx/Printer#show().B8.scip-java maven maven/fx/fixture 1.0 fx/Color#BI3scip-java maven maven/fx/fixture 1.0 fx/Use#warm().BZ 8.scip-java maven maven/fx/fixture 1.0 fx/Color#B<2scip-java maven maven/fx/fixture 1.0 fx/Color#RED.B2(scip-java maven jdk 17 java/lang/Object#BL6scip-java maven maven/fx/fixture 1.0 fx/Use#dynamic().BZ :0scip-java maven jdk 17 java/lang/reflect/Method#B local 4B!"R"2(scip-java maven jdk 17 java/lang/Object#B$*local 5B+1R$15+scip-java maven jdk 17 java/lang/Exception#B:Clocal 4BC9scip-java maven jdk 17 java/lang/reflect/Method#invoke().Blocal 5BO
+,scip-java maven maven/fx/fixture 1.0 fx/Use#(2Use:"java*public class UseY
+7scip-java maven maven/fx/fixture 1.0 fx/Use#`<init>`().(	2<init>:"java*public Use()k
+6scip-java maven maven/fx/fixture 1.0 fx/Use#measure().(P2measure:&"java*static double measure(Shape s)U
+local 02s:"java*Shape sB6scip-java maven maven/fx/fixture 1.0 fx/Use#measure().d
+4scip-java maven maven/fx/fixture 1.0 fx/Use#hello().(P2hello:#"java*static String hello(Base b)R
+local 12b:"java*Base bB4scip-java maven maven/fx/fixture 1.0 fx/Use#hello().g
+4scip-java maven maven/fx/fixture 1.0 fx/Use#print().(P2print:&"java*static String print(Printer p)U
+local 22p:"java*	Printer pB4scip-java maven maven/fx/fixture 1.0 fx/Use#print().\
+local 3(=2text:"java*String textB4scip-java maven maven/fx/fixture 1.0 fx/Use#print().Z
+3scip-java maven maven/fx/fixture 1.0 fx/Use#warm().(P2warm:"java*static Color warm()Œ
+6scip-java maven maven/fx/fixture 1.0 fx/Use#dynamic().(P2dynamic:G"java*?static Object dynamic(Method m, Object target) throws ExceptionV
+local 42m:"java*Method mB6scip-java maven maven/fx/fixture 1.0 fx/Use#dynamic().`
+local 52target:"java*Object targetB6scip-java maven maven/fx/fixture 1.0 fx/Use#dynamic()."java‹%
+src/main/java/fx/Shapes.javaB.scip-java maven maven/fx/fixture 1.0 fx/Shape#B
+Z I5scip-java maven maven/fx/fixture 1.0 fx/Shape#area().BRC/scip-java maven maven/fx/fixture 1.0 fx/Circle#BZ 8.scip-java maven maven/fx/fixture 1.0 fx/Shape#BE1scip-java maven maven/fx/fixture 1.0 fx/Circle#r.BRN:scip-java maven maven/fx/fixture 1.0 fx/Circle#`<init>`().B	
+R	$local 0B	R	;1scip-java maven maven/fx/fixture 1.0 fx/Circle#r.B	local 0B	 !J6scip-java maven maven/fx/fixture 1.0 fx/Circle#area().BR.;1scip-java maven maven/fx/fixture 1.0 fx/Circle#r.B&';1scip-java maven maven/fx/fixture 1.0 fx/Circle#r.B*+C/scip-java maven maven/fx/fixture 1.0 fx/Square#BZ 8.scip-java maven maven/fx/fixture 1.0 fx/Shape#BE1scip-java maven maven/fx/fixture 1.0 fx/Square#s.BRN:scip-java maven maven/fx/fixture 1.0 fx/Square#`<init>`().B
+R$local 1BR;1scip-java maven maven/fx/fixture 1.0 fx/Square#s.Blocal 1B !J6scip-java maven maven/fx/fixture 1.0 fx/Square#area().BR*;1scip-java maven maven/fx/fixture 1.0 fx/Square#s.B"#;1scip-java maven maven/fx/fixture 1.0 fx/Square#s.B&'C/scip-java maven maven/fx/fixture 1.0 fx/Report#BZ F:scip-java maven maven/fx/fixture 1.0 fx/Report#`<init>`().BJ6scip-java maven maven/fx/fixture 1.0 fx/Report#area().BRB.scip-java maven maven/fx/fixture 1.0 fx/Color#B
+Z! F2scip-java maven maven/fx/fixture 1.0 fx/Color#RED.BRC9scip-java maven maven/fx/fixture 1.0 fx/Color#`<init>`().BH4scip-java maven maven/fx/fixture 1.0 fx/Color#GREEN.BRC9scip-java maven maven/fx/fixture 1.0 fx/Color#`<init>`().B2(scip-java maven jdk 17 java/lang/String#B
+G3scip-java maven maven/fx/fixture 1.0 fx/Color#code.BRM9scip-java maven maven/fx/fixture 1.0 fx/Color#`<init>`().B 	R ,2(scip-java maven jdk 17 java/lang/String#B 
+local 2B R 
+=3scip-java maven maven/fx/fixture 1.0 fx/Color#code.B "local 2B %)R
+.scip-java maven maven/fx/fixture 1.0 fx/Shape#(2Shape:"java*interface Shapef
+5scip-java maven maven/fx/fixture 1.0 fx/Shape#area().(B2area:%"java*public abstract double area()–
+/scip-java maven maven/fx/fixture 1.0 fx/Circle#"2
+.scip-java maven maven/fx/fixture 1.0 fx/Shape#(2Circle:%"java*class Circle implements ShapeP
+1scip-java maven maven/fx/fixture 1.0 fx/Circle#r.(2r:"java*final double r`
+:scip-java maven maven/fx/fixture 1.0 fx/Circle#`<init>`().(	2<init>:"java*Circle(double r)Z
+local 02r:"java*double rB:scip-java maven maven/fx/fixture 1.0 fx/Circle#`<init>`().›
+6scip-java maven maven/fx/fixture 1.0 fx/Circle#area().";
+5scip-java maven maven/fx/fixture 1.0 fx/Shape#area().(2area:"java*public double area()–
+/scip-java maven maven/fx/fixture 1.0 fx/Square#"2
+.scip-java maven maven/fx/fixture 1.0 fx/Shape#(2Square:%"java*class Square implements ShapeP
+1scip-java maven maven/fx/fixture 1.0 fx/Square#s.(2s:"java*final double s`
+:scip-java maven maven/fx/fixture 1.0 fx/Square#`<init>`().(	2<init>:"java*Square(double s)Z
+local 12s:"java*double sB:scip-java maven maven/fx/fixture 1.0 fx/Square#`<init>`().›
+6scip-java maven maven/fx/fixture 1.0 fx/Square#area().";
+5scip-java maven maven/fx/fixture 1.0 fx/Shape#area().(2area:"java*public double area()ˆ
+/scip-java maven maven/fx/fixture 1.0 fx/Report#5A decoy: an area method outside the Shape hierarchy. (2Report:"java*class ReportX
+:scip-java maven maven/fx/fixture 1.0 fx/Report#`<init>`().(	2<init>:"java*Report()W
+6scip-java maven maven/fx/fixture 1.0 fx/Report#area().(2area:"java*double area()—
+.scip-java maven maven/fx/fixture 1.0 fx/Color#"*
+&scip-java maven jdk 17 java/lang/Enum#"8
+4scip-java maven jdk 17 java/lang/constant/Constable#"0
+,scip-java maven jdk 17 java/lang/Comparable#"0
+,scip-java maven jdk 17 java/io/Serializable#(2Color:"java*
+enum Colorf
+2scip-java maven maven/fx/fixture 1.0 fx/Color#RED.2RED("r"):&"java*Color.RED("r") /* ordinal 0 */l
+4scip-java maven maven/fx/fixture 1.0 fx/Color#GREEN.2
+GREEN("g"):("java* Color.GREEN("g") /* ordinal 1 */X
+3scip-java maven maven/fx/fixture 1.0 fx/Color#code.(2code:"java*final String codei
+9scip-java maven maven/fx/fixture 1.0 fx/Color#`<init>`().(	2<init>:""java*private Color(String code)_
+local 22code:"java*String codeB9scip-java maven maven/fx/fixture 1.0 fx/Color#`<init>`()."java

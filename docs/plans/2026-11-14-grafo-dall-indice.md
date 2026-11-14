@@ -207,15 +207,15 @@ Percorsi `scripts/` = plugins/codebase-map/skills/map/scripts/.
 
 **File:** `tests/fixtures/code-graph/{go,python,java,kotlin}/`. Ognuna ha i sorgenti, l'indice committato e `expected.json`. Le attese si scrivono leggendo il sorgente, mai dal grafo.
 
-- [ ] **Test prima:** ogni regola di adattatore ha almeno un caso atteso.
+- [x] **Test prima:** ogni regola di adattatore ha almeno un caso atteso.
   - Go: `:=`, `var`, letterale di funzione, implementazioni.
   - Python: `import-binding`, `builtin`, `classmethod-cls`, `type-of-self`, `static`.
   - Java: `super.m()` statico, costanti enum con `same_range`.
   - Kotlin: `. .`, overload fra task (incerto), `implicit-operator`.
-- [ ] **Test prima:** un controllo d'invariante su ogni fixture. Ogni chiamata e lettura dello snapshot finisce in fini o in un buco con classe; le violazioni si elencano tutte insieme, per categoria.
-- [ ] Gli indici delle fixture si generano una volta con l'indicizzatore fissato, su Modal, perché Java e Kotlin richiedono la build. Il comando per rigenerarli va nella docstring del test.
-- [ ] **Verifica:** `tests/test_codebase_map_code_graph.py`, in pochi secondi.
-- [ ] **Si cancella:** nulla.
+- [x] **Test prima:** un controllo d'invariante su ogni fixture. Ogni chiamata e lettura dello snapshot finisce in fini o in un buco con classe; le violazioni si elencano tutte insieme, per categoria.
+- [x] Gli indici delle fixture si generano una volta con l'indicizzatore fissato, su Modal, perché Java e Kotlin richiedono la build. Il comando per rigenerarli va nella docstring del test.
+- [x] **Verifica:** `tests/test_codebase_map_code_graph.py`, in pochi secondi.
+- [x] **Si cancella:** nulla.
 
 ### Task 3: schema 5 dello store, una fonte per riferimento, flussi solo dalla vista
 

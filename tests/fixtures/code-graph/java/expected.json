@@ -1,0 +1,17 @@
+{
+ "src/main/java/fx/Use.java:7 area": {"kind": "call", "rule": "interface, two implementations; Report.area is a decoy",
+     "ends": ["decl src/main/java/fx/Shapes.java:4 via -", "decl src/main/java/fx/Shapes.java:12 via implementation",
+              "decl src/main/java/fx/Shapes.java:20 via implementation"]},
+ "src/main/java/fx/Use.java:11 greet": {"kind": "call", "rule": "dispatch to the overrides",
+     "ends": ["decl src/main/java/fx/Greeters.java:4 via -", "decl src/main/java/fx/Greeters.java:8 via implementation",
+              "decl src/main/java/fx/Greeters.java:12 via implementation"]},
+ "src/main/java/fx/Greeters.java:8 greet": {"kind": "call", "rule": "static: super.m()",
+     "ends": ["decl src/main/java/fx/Greeters.java:4 via -"]},
+ "src/main/java/fx/Use.java:15 show": {"kind": "call", "rule": "overload",
+     "ends": ["decl src/main/java/fx/Greeters.java:18 via -"]},
+ "src/main/java/fx/Use.java:16 show": {"kind": "call", "rule": "overload",
+     "ends": ["decl src/main/java/fx/Greeters.java:16 via -"]},
+ "src/main/java/fx/Use.java:20 RED": {"kind": "read", "rule": "same_range: an enum constant, not its constructor",
+     "ends": ["value * Color#RED[.]$"]},
+ "src/main/java/fx/Use.java:24 invoke": {"kind": "call", "rule": "dynamic: reflection", "none": true}
+}
