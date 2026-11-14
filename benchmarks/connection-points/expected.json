@@ -1,0 +1,33 @@
+{
+ "case": "chrisvel/tududi 71da9d7b34dfd1600657e9c5ddf40420206fd263",
+ "note": "Written by hand from the source before any extraction code. `handler`: the registration site (file:line of the route call); `symbol` when the handler is a named function. Paths as the client sends them, parameters as `:name` of the route.",
+ "links": [
+  {"id": 1, "call_site": "frontend/utils/tasksService.ts:44", "method": "GET", "path": "/api/tasks", "handler": "backend/modules/tasks/routes.js:180", "why": "`tasks${tasksQuery}`: a variable glued to the segment, a query string at run time"},
+  {"id": 2, "call_site": "frontend/utils/tasksService.ts:48", "method": "GET", "path": "/api/tasks/metrics", "handler": "backend/modules/tasks/routes.js:395"},
+  {"id": 3, "call_site": "frontend/utils/tasksService.ts:81", "method": "POST", "path": "/api/task", "handler": "backend/modules/tasks/routes.js:410"},
+  {"id": 4, "call_site": "frontend/utils/tasksService.ts:214", "method": "DELETE", "path": "/api/task/:uid", "handler": "backend/modules/tasks/routes.js:939"},
+  {"id": 5, "call_site": "frontend/utils/tasksService.ts:259", "method": "GET", "path": "/api/task/:uid/subtasks", "handler": "backend/modules/tasks/routes.js:994"},
+  {"id": 6, "call_site": "frontend/utils/taskEventService.ts:17", "method": "GET", "path": "/api/task/:uid/timeline", "handler": "backend/modules/tasks/events.js:18", "why": "prefix from a module constant `API_BASE`; sub-router mounted by `router.use(eventsRouter)`"},
+  {"id": 7, "call_site": "frontend/utils/projectsService.ts:18", "method": "GET", "path": "/api/projects", "handler": "backend/modules/projects/routes.js:58", "symbol": "projectsController.list", "why": "`let url` then `url += ?query`"},
+  {"id": 8, "call_site": "frontend/utils/projectsService.ts:112", "method": "POST", "path": "/api/project/:uid/complete", "handler": "backend/modules/projects/routes.js:95"},
+  {"id": 9, "call_site": "frontend/utils/projectsService.ts:129", "method": "PUT", "path": "/api/projects/order", "handler": "backend/modules/projects/routes.js:61", "symbol": "projectsController.reorder"},
+  {"id": 10, "call_site": "frontend/utils/areasService.ts:48", "method": "PATCH", "path": "/api/areas/:uid", "handler": "backend/modules/areas/routes.js:23", "symbol": "areasController.update"},
+  {"id": 11, "call_site": "frontend/utils/notesService.ts:39", "method": "POST", "path": "/api/note", "handler": "backend/modules/notes/routes.js:25", "symbol": "notesController.create"},
+  {"id": 12, "call_site": "frontend/utils/notesService.ts:103", "method": "GET", "path": "/api/note/:uid/backlinks", "handler": "backend/modules/notes/routes.js:46"},
+  {"id": 13, "call_site": "frontend/utils/tagsService.ts:131", "method": "GET", "path": "/api/tag", "handler": "backend/modules/tags/routes.js:10", "symbol": "tagsController.getOne", "why": "the key is in the query string `tag?uid=`"},
+  {"id": 14, "call_site": "frontend/utils/inboxService.ts:162", "method": "POST", "path": "/api/inbox", "handler": "backend/modules/inbox/routes.js:11", "symbol": "inboxController.create"},
+  {"id": 15, "call_site": "frontend/utils/inboxService.ts:196", "method": "PATCH", "path": "/api/inbox/:uid/process", "handler": "backend/modules/inbox/routes.js:16", "symbol": "inboxController.process"},
+  {"id": 16, "call_site": "frontend/utils/commentsService.ts:80", "method": "POST", "path": "/api/comment/:uid/reaction", "handler": "backend/modules/comments/routes.js:56"},
+  {"id": 17, "call_site": "frontend/utils/goalsService.ts:56", "method": "PUT", "path": "/api/goals/order", "handler": "backend/modules/goals/routes.js:10", "symbol": "goalsController.reorder"},
+  {"id": 18, "call_site": "frontend/utils/dailyPlanService.ts:204", "method": "PUT", "path": "/api/daily-plan/ranking", "handler": "backend/modules/daily-plan/routes.js:11", "symbol": "dailyPlanController.saveRanking"},
+  {"id": 19, "call_site": "frontend/utils/profileService.ts:104", "method": "PATCH", "path": "/api/profile", "handler": "backend/modules/users/routes.js:57", "symbol": "usersController.updateProfile"},
+  {"id": 20, "call_site": "frontend/utils/templatesService.ts:80", "method": "POST", "path": "/api/template/:uid/clone", "handler": "backend/modules/templates/routes.js:104"}
+ ],
+ "hard": [
+  {"id": "H1", "case": "path built in a variable", "call_site": "frontend/utils/tasksService.ts:283", "method": "GET", "path": "/api/task/:uid/next-iterations", "handler": "backend/modules/tasks/routes.js:1026", "why": "`const url = startFromDate ? getApiPath(`...?startFromDate=`) : getApiPath(`...`)`, then `fetch(url)`: two candidates, one route"},
+  {"id": "H2", "case": "prefix added by a client wrapper", "call_site": "frontend/components/Admin/AdminUsersPage.tsx:111", "method": "POST", "path": "/api/admin/users", "handler": "backend/modules/admin/routes.js:30", "symbol": "adminController.createUser", "why": "`fetchWithCsrf(getApiPath('admin/users'))`: `getApiPath` adds `/api/`, `fetchWithCsrf` (frontend/utils/csrfService.ts:71) passes its parameter to `fetch`"},
+  {"id": "H3", "case": "router mounted under a prefix", "call_site": "frontend/utils/caldavService.ts:93", "method": "GET", "path": "/api/caldav/calendars", "handler": "backend/modules/caldav/api/routes.js:7", "symbol": "calendarController.listCalendars", "why": "`router.use('/api/caldav', ...)` at backend/modules/caldav/routes.js:273, that router mounted at the root by `app.use(caldavRoutes)` (backend/app.js:261): served under /api only, not /api/v1"},
+  {"id": "H4", "case": "route with parameters", "call_site": "frontend/utils/tasksService.ts:352", "method": "DELETE", "path": "/api/task/:uid/relations/:relationUid", "handler": "backend/modules/tasks/relations/routes.js:70", "why": "two parameters"},
+  {"id": "H5", "case": "route nobody calls", "call_site": null, "method": "GET", "path": "/api/areas/:uid", "handler": "backend/modules/areas/routes.js:17", "symbol": "areasController.getOne", "why": "the front end sends only PATCH and DELETE to `areas/${uid}`"}
+ ]
+}

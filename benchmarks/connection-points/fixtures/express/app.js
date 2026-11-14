@@ -1,0 +1,11 @@
+const express = require('express');
+const tasks = require('./tasks');
+const app = express();
+const sub = express.Router();
+sub.get('/calendars', function listCalendars(req, res) { res.end(); });
+const caldav = express.Router();
+caldav.use('/api/caldav', (req, res, next) => next(), sub);
+app.use(caldav);
+['/api', '/api/v1'].forEach((base) => app.use(base, tasks));
+app.get('/api/health', (req, res) => res.end());
+module.exports = app;

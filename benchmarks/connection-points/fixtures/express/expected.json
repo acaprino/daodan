@@ -1,0 +1,12 @@
+[
+ ["GET", "/api/caldav/calendars", "app.js:5", "app.js:5"],
+ ["GET", "/api/health", "app.js:10", "app.js:10"],
+ ["GET", "/api/tasks", "tasks.js:4", "tasks.js:4"],
+ ["GET", "/api/v1/tasks", "tasks.js:4", "tasks.js:4"],
+ ["PATCH", "/api/task/:uid", "tasks.js:7", "controller.js:2"],
+ ["PATCH", "/api/v1/task/:uid", "tasks.js:7", "controller.js:2"],
+ ["ALL", "/api/a", "tasks.js:8", "tasks.js:8"],
+ ["ALL", "/api/b", "tasks.js:8", "tasks.js:8"],
+ ["ALL", "/api/v1/a", "tasks.js:8", "tasks.js:8"],
+ ["ALL", "/api/v1/b", "tasks.js:8", "tasks.js:8"]
+]

@@ -1,0 +1,4 @@
+{
+ "sink": {"name": "fetch", "symbol": "/fetch()."},
+ "prefix": [{"function": "getApiPath", "symbol": "frontend/config/`paths.ts`/getApiPath().", "prefix": "/api/"}]
+}
