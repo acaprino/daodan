@@ -277,6 +277,33 @@ def test_the_file_is_read_again_once_its_grammar_is_there(tmp_path, fresh_loader
     assert entry["status"] == "parsed" and "Pay" in entry["symbols"]
 
 
+@pytest.mark.parametrize("system, machine, expected", [
+    ("win32", "AMD64", "windows-x86_64"), ("win32", "ARM64", "windows-aarch64"), ("linux", "x86_64", "linux-x86_64"),
+    ("linux", "aarch64", "linux-aarch64"), ("darwin", "arm64", "macos-arm64"), ("darwin", "x86_64", "macos-x86_64")])
+def test_the_platform_names_the_pack_uses(system, machine, expected):
+    assert _treesitter.pack_platform(system, machine) == expected
+
+
+def test_the_windows_architecture_comes_from_the_process_environment(monkeypatch):
+    monkeypatch.setenv("PROCESSOR_ARCHITECTURE", "ARM64")
+    assert _treesitter.pack_platform("win32") == "windows-aarch64"
+
+
+def test_the_platform_starts_no_process_even_when_windows_does_not_answer():
+    """`platform.system()` and `platform.machine()` ask Windows through WMI and, when WMI fails (the commit
+    exhausted), run `ver` through the shell: the pack's platform asks nothing."""
+    import platform
+
+    def refuse(*args, **kwargs):
+        raise AssertionError(f"pack_platform started a process: {args[:1]}")
+
+    with mock.patch.object(platform, "_uname_cache", None), \
+            mock.patch.object(platform, "_wmi_query", side_effect=OSError("WMI did not answer"), create=True), \
+            mock.patch.object(subprocess, "Popen", refuse):
+        name = _treesitter.pack_platform()
+    assert name in _treesitter.PACK_BUNDLES
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # The real bundle, offline
 

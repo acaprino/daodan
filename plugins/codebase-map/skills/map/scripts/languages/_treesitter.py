@@ -32,6 +32,7 @@ from __future__ import annotations
 import hashlib
 import os
 import shutil
+import sys
 import threading
 from pathlib import Path
 from typing import Any, Callable
@@ -114,13 +115,18 @@ def bundle_url(platform: str) -> str:
     return f"{_PACK_RELEASE}/parsers-{platform}.tar.zst"
 
 
-def pack_platform() -> str:
-    """This machine's platform in the pack's names: `windows-x86_64`, `macos-arm64` and so on."""
-    import platform
+def pack_platform(system: str = sys.platform, machine: str | None = None) -> str:
+    """This process's platform in the pack's names: `windows-x86_64`, `macos-arm64` and so on.
 
-    system = {"Windows": "windows", "Linux": "linux", "Darwin": "macos"}.get(platform.system(), platform.system().lower())
-    arm = platform.machine().lower() in ("arm64", "aarch64")
-    return f"{system}-{('arm64' if system == 'macos' else 'aarch64') if arm else 'x86_64'}"
+    From `sys.platform` and the process's architecture (`PROCESSOR_ARCHITECTURE` on Windows, `os.uname`
+    elsewhere), the one whose libraries the process loads. Never from `platform`: it asks Windows through WMI
+    and, when WMI fails, runs `ver` through the shell.
+    """
+    if machine is None:
+        machine = os.environ.get("PROCESSOR_ARCHITECTURE", "") if system == "win32" else os.uname().machine
+    name = {"win32": "windows", "linux": "linux", "darwin": "macos"}.get(system, system)
+    arm = machine.lower() in ("arm64", "aarch64")
+    return f"{name}-{('arm64' if name == 'macos' else 'aarch64') if arm else 'x86_64'}"
 
 
 def _daodan_home() -> Path:
