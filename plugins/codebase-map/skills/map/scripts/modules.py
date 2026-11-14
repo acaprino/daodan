@@ -161,6 +161,17 @@ def _names(values) -> list[str]:
     return []
 
 
+def _family(ecosystem: str) -> str:
+    return {"pnpm": "npm", "lerna": "npm", "nx": "npm", "rubygems": "bundler",
+            "melos": "pub", "stack": "cabal"}.get(ecosystem, ecosystem)
+
+
+def _dependency_name(name: str, family: str) -> str:
+    if family == "python":
+        return re.sub(r"[-_.]+", "-", name).casefold()
+    return name
+
+
 class StaleSource(ValueError):
     """A file on disk no longer matches the snapshot; nothing derived from it is evidence."""
 
@@ -287,7 +298,7 @@ def _package_json(inv, rel, text):
 
 def _pnpm_workspace(inv, rel, text):
     data = _yaml(text)
-    packages = [p for p in (data.get("packages") or []) if isinstance(p, str) and not p.startswith("!")]
+    packages = [p for p in (data.get("packages") or []) if isinstance(p, str)]
     return [_unit(rel, "pnpm-workspace", None, members=packages)]
 
 
@@ -331,6 +342,9 @@ def _pyproject(inv, rel, text):
     if unit["description"] is None:
         _described(unit, poetry)
     deps = set(_names(project.get("dependencies")))
+    build = data.get("build-system")
+    if isinstance(build, dict):
+        deps.update(_names(build.get("requires")))
     for group in (project.get("optional-dependencies") or {}).values() if isinstance(project.get("optional-dependencies"), dict) else []:
         deps.update(_names(group))
     deps.update(d for d in _names(poetry.get("dependencies")) if d != "python")
@@ -339,6 +353,7 @@ def _pyproject(inv, rel, text):
     if isinstance(workspace.get("members"), list):
         unit["kind"] = "uv-workspace"
         unit["members"] = [m for m in workspace["members"] if isinstance(m, str)]
+        unit["members"].extend("!" + m for m in workspace.get("exclude", []) if isinstance(m, str))
     for dep, spec in (uv.get("sources") or {}).items() if isinstance(uv.get("sources"), dict) else []:
         if isinstance(spec, dict) and isinstance(spec.get("path"), str):
             unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
@@ -373,18 +388,36 @@ def _cargo(inv, rel, text):
                 deps.add(dep)
                 if isinstance(spec, dict) and isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
+                elif isinstance(spec, dict) and isinstance(spec.get("git"), str):
+                    unit["path_dependencies"].append({"name": dep, "path": "", "git": spec["git"]})
     unit["dependencies"] = sorted(deps)
     workspace = data.get("workspace") if isinstance(data.get("workspace"), dict) else {}
     if isinstance(workspace.get("members"), list):
         unit["kind"] = "cargo-workspace"
         unit["members"] = [m for m in workspace["members"] if isinstance(m, str)]
+        unit["members"].extend("!" + m for m in workspace.get("exclude", []) if isinstance(m, str))
     return [unit]
 
 
 def _go_mod(inv, rel, text):
     match = re.search(r"^module\s+(\S+)", text, re.M)
     unit = _unit(rel, "go-module", match.group(1).strip('"') if match else None)
-    deps = set(re.findall(r"^\s*([A-Za-z0-9][\w./-]*)\s+v[\w.+-]+", text, re.M))
+    deps = set()
+    requiring = False
+    for raw in text.splitlines():
+        line, _, comment = raw.partition("//")
+        line = line.strip()
+        require = re.match(r"require\s+(.+)", line)
+        if require and require.group(1) == "(":
+            requiring = True
+            continue
+        if line == ")":
+            requiring = False
+            continue
+        declaration = require.group(1) if require else line if requiring else ""
+        match = re.fullmatch(r'("[^"]+"|[^\s"]+)\s+v[^\s]+', declaration)
+        if match and comment.strip() != "indirect":
+            deps.add(match.group(1).strip('"'))
     unit["dependencies"] = sorted(deps)
     for dep, target in re.findall(r"^\s*(?:replace\s+)?(\S+)(?:\s+\S+)?\s+=>\s+(\.{1,2}/\S+|/\S+)", text, re.M):
         unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], target)})
@@ -393,7 +426,7 @@ def _go_mod(inv, rel, text):
 
 def _go_work(inv, rel, text):
     members = re.findall(r"^\s*(?:use\s+)?(\.{1,2}/[^\s)]+|\./?)\s*$", text, re.M)
-    return [_unit(rel, "go-workspace", None, members=[m for m in members if m != "./"])]
+    return [_unit(rel, "go-workspace", None, members=members)]
 
 
 def _pom(inv, rel, text):
@@ -414,15 +447,21 @@ def _pom(inv, rel, text):
     if group and artifact:
         unit["aliases"] = [f"{group}:{artifact}"]
     deps = set()
-    for dep in root.iter(ns + "dependency"):
+    for dep in root.findall(f"{ns}dependencies/{ns}dependency"):
         name = child(dep, "artifactId")
         if name:
-            deps.add(name)
+            dep_group = child(dep, "groupId")
+            if dep_group in ("${project.groupId}", "${pom.groupId}"):
+                dep_group = group
+            deps.add(f"{dep_group}:{name}" if dep_group else name)
     unit["dependencies"] = sorted(deps)
-    members = [m.text.strip() for m in root.iter(ns + "module") if m.text and m.text.strip()]
+    members = [m.text.strip() for m in root.findall(f"{ns}modules/{ns}module") if m.text and m.text.strip()]
     if members:
         unit["kind"] = "maven-aggregator"
         unit["members"] = members
+    if root.find(ns + "profiles") is not None:
+        unit["gaps"] = [{"kind": "profiles_not_evaluated",
+                         "detail": "Only unconditional Maven modules and dependencies are read; profiles are not evaluated"}]
     return [unit]
 
 
@@ -667,6 +706,7 @@ def _read_units(inventory: _Inventory) -> tuple[list[dict], list[dict]]:
             gaps.append({"kind": "manifest_unreadable", "path": rel, "detail": f"{type(error).__name__}: {error}"})
             continue
         for unit in found:
+            gaps.extend({"path": rel, **gap} for gap in unit.pop("gaps", []))
             if unit["directory"] != "." and unit["directory"] not in inventory.directories:
                 gaps.append({"kind": "directory_missing", "path": rel,
                              "detail": f"{unit['name'] or unit['kind']} at {unit['directory']}: {inventory.absence(unit['directory'])}"})
@@ -859,19 +899,20 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
     gaps: list[dict] = []
     modules: list[dict] = []
 
-    # 1. Build units, merged per directory, with workspace members resolved to directories.
+    # 1. Complementary manifests share a unit; independent build systems do not.
     units, unit_gaps = _read_units(inventory)
     gaps.extend(unit_gaps)
-    by_directory: dict[str, dict] = {}
+    by_directory: dict[tuple[str, str], dict] = {}
     for unit in sorted(units, key=lambda u: (u["directory"].count("/"), u["directory"], u["path"])):
-        merged = by_directory.get(unit["directory"])
+        key = (unit["directory"], _family(unit["ecosystem"]))
+        merged = by_directory.get(key)
         if merged is None:
-            by_directory[unit["directory"]] = merged = {
+            by_directory[key] = merged = {
                 "directory": unit["directory"], "name": unit["name"], "aliases": list(unit["aliases"]),
                 "kinds": [unit["kind"]], "ecosystems": [unit["ecosystem"]], "description": unit["description"],
                 "manifests": [unit["path"]], "evidence": [{"path": unit["path"], "line": unit["line"]}],
                 "dependencies": set(unit["dependencies"]), "path_dependencies": list(unit["path_dependencies"]),
-                "patterns": list(unit["members"]), "registered_by": []}
+                "patterns": [(pattern, unit["path"]) for pattern in unit["members"]], "registered_by": []}
             continue
         if merged["name"] is None:
             merged["name"] = unit["name"]
@@ -885,28 +926,36 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
         merged["evidence"].append({"path": unit["path"], "line": unit["line"]})
         merged["dependencies"].update(unit["dependencies"])
         merged["path_dependencies"].extend(unit["path_dependencies"])
-        merged["patterns"].extend(unit["members"])
-    for directory, merged in list(by_directory.items()):
-        for pattern in merged["patterns"]:
-            found = inventory.glob_directories(directory, pattern)
+        merged["patterns"].extend((pattern, unit["path"]) for pattern in unit["members"])
+    for key, merged in list(by_directory.items()):
+        directory, family = key
+        excluded_members = {d for pattern, _ in merged["patterns"] if pattern.startswith("!")
+                            for d in inventory.glob_directories(directory, pattern[1:])}
+        for pattern, manifest in dict.fromkeys(p for p in merged["patterns"] if not p[0].startswith("!")):
+            found = [directory] if _join(directory, pattern) == directory else inventory.glob_directories(directory, pattern)
             if not found and not any(ch in pattern for ch in "*?["):
-                gaps.append({"kind": "member_missing", "path": merged["manifests"][0],
+                gaps.append({"kind": "member_missing", "path": manifest,
                              "detail": f"workspace member {pattern}: {inventory.absence(_join(directory, pattern))}"})
             for member in found:
-                if member not in by_directory:
-                    by_directory[member] = {
+                if member in excluded_members:
+                    continue
+                member_key = (member, family)
+                if member_key not in by_directory:
+                    if any(ch in pattern for ch in "*?["):
+                        continue  # a glob selects the units it finds; it declares none
+                    by_directory[member_key] = {
                         "directory": member, "name": PurePosixPath(member).name, "aliases": [], "kinds": ["workspace-member"],
                         "ecosystems": [merged["ecosystems"][0]], "description": None, "manifests": [],
                         "evidence": [], "dependencies": set(), "path_dependencies": [], "patterns": [], "registered_by": []}
-                site = {"path": merged["manifests"][0], "line": _line_of(inventory.text(merged["manifests"][0]), pattern)}
-                by_directory[member]["registered_by"].append((directory, site))
-                by_directory[member]["evidence"].append(site)
+                site = {"path": manifest, "line": _line_of(inventory.text(manifest), pattern)}
+                by_directory[member_key]["registered_by"].append((key, site))
+                by_directory[member_key]["evidence"].append(site)
     for merged in by_directory.values():
         name = merged["name"] or PurePosixPath(merged["directory"]).name or PurePosixPath(inventory.root).name
         basename = PurePosixPath(merged["directory"]).name
         if basename and basename != name and basename not in merged["aliases"]:
             merged["aliases"].append(basename)
-        nested = sorted(d for d in by_directory if d != merged["directory"] and _inside(d, merged["directory"]))
+        nested = sorted({d for d, _ in by_directory if d != merged["directory"] and _inside(d, merged["directory"])})
         excluded = [d for d in nested if not any(_inside(d, other) for other in nested if other != d)]
         modules.append({
             "id": "", "name": name, "aliases": sorted(dict.fromkeys(merged["aliases"])), "provenance": "build",
@@ -915,7 +964,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
             "responsibility": "", "members": [{"id": merged["directory"], "kind": "directory",
                                                "path": merged["directory"], "resolved": True}],
             "excluded": excluded, "manifests": sorted(merged["manifests"]),
-            "registered_by": [d for d, _ in merged["registered_by"]], "registrations": merged["registered_by"],
+            "registered_by": sorted({key[0] for key, _ in merged["registered_by"]}), "registrations": merged["registered_by"],
             "evidence": merged["evidence"], "dependencies": sorted(merged["dependencies"]),
             "path_dependencies": merged["path_dependencies"], "conflicts": [], "gaps": [], "status": "confirmed",
         })
@@ -1000,7 +1049,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
 
     # 4. Ownership of files: the most specific directory or file member; symbols on their own.
     file_owner: dict[str, list[str]] = {}
-    specific: dict[str, tuple[int, str]] = {}
+    specific: dict[str, tuple[int, list[str]]] = {}
     symbol_owner: dict[str, dict[str, list[str]]] = {}
     for module in modules:
         for member in module["members"]:
@@ -1015,11 +1064,20 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
                     depth = -1 if member["path"] == "." else len(member["path"])
                     if module["provenance"] == "build":
                         if rel not in specific or depth > specific[rel][0]:
-                            specific[rel] = (depth, module["id"])
+                            specific[rel] = (depth, [module["id"]])
+                        elif depth == specific[rel][0]:
+                            specific[rel][1].append(module["id"])
                     else:
                         file_owner.setdefault(rel, []).append(module["id"])
-    for rel, (_, module_id) in specific.items():
-        file_owner.setdefault(rel, []).append(module_id)
+    ambiguous_owners = set()
+    for rel, (_, owners) in specific.items():
+        if len(owners) == 1:
+            file_owner.setdefault(rel, []).extend(owners)
+        else:
+            ambiguous_owners.add(tuple(sorted(owners)))
+    for owners in sorted(ambiguous_owners):
+        gaps.append({"kind": "ownership_ambiguous", "path": by_id[owners[0]]["members"][0]["path"],
+                     "detail": "Directory scope cannot distinguish build ownership: " + ", ".join(owners)})
     file_owner = {rel: sorted(set(ids)) for rel, ids in file_owner.items()}
 
     # 5. Edges.
@@ -1038,36 +1096,62 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
         if evidence not in record["evidence"] and len(record["evidence"]) < MAX_EDGE_EVIDENCE:
             record["evidence"].append(evidence)
 
-    by_name: dict[str, list[str]] = {}
-    build_by_dir = {m["members"][0]["path"]: m["id"] for m in modules if m["provenance"] == "build"}
-    for module in modules:
-        if module["provenance"] == "build":
-            for name in [module["name"], *module["aliases"]]:
-                by_name.setdefault(slug(name), []).append(module["id"])
+    by_name: dict[tuple[str, str], set[str]] = {}
+    build_by_dir = {(m["members"][0]["path"], _family(m["ecosystems"][0])): m["id"]
+                    for m in modules if m["provenance"] == "build"}
+    # Query aliases (including directory basenames) are not package identities.
+    for unit in units:
+        family = _family(unit["ecosystem"])
+        module_id = build_by_dir[(unit["directory"], family)]
+        for name in [unit["name"], *unit["aliases"]]:
+            if name:
+                by_name.setdefault((family, _dependency_name(name, family)), set()).add(module_id)
     for module in modules:
         if module["provenance"] != "build":
             continue
         text = inventory.text(module["manifests"][0]) if module["manifests"] else ""
+        family = _family(module["ecosystems"][0])
         external = []
+        path_names = set()  # settled by path; a path that holds no unit leaves its name a declared dependency
+        remote = set()  # taken from another repository: never the unit that has the same name here
         for item in module["path_dependencies"]:
-            target = build_by_dir.get(item["path"]) if item["path"] else (by_name.get(slug(item["name"]), [None])[0])
+            if item.get("git"):
+                remote.add(_dependency_name(item["name"], family))
+                continue
+            if item["path"]:
+                target = build_by_dir.get((item["path"], family))
+                targets = {target} if target else set()
+            else:
+                targets = by_name.get((family, _dependency_name(item["name"], family)), set())
+            targets = targets - {module["id"]}
             site = {"path": module["manifests"][0] if module["manifests"] else module["members"][0]["path"],
                     "line": _line_of(text, item["name"])}
-            if target and target != module["id"]:
-                edge("declares", module["id"], target, "confirmed", site)
-            elif target is None:
+            if len(targets) == 1:
+                edge("declares", module["id"], next(iter(targets)), "confirmed", site)
+            elif len(targets) > 1:
+                module["gaps"].append({"kind": "dependency_ambiguous", "detail": f"{item['name']}: several build units match"})
+            elif build_by_dir.get((item["path"], family)) != module["id"]:
                 module["gaps"].append({"kind": "dependency_unresolved",
                                        "detail": f"{item['name']} -> {item['path'] or 'no path'}: no build unit there"})
+                continue
+            path_names.add(_dependency_name(item["name"], family))
         for name in module["dependencies"]:
-            targets = [t for t in by_name.get(slug(name), []) if t != module["id"]]
+            if _dependency_name(name, family) in path_names:
+                continue
+            targets = (set() if _dependency_name(name, family) in remote
+                       else by_name.get((family, _dependency_name(name, family)), set()) - {module["id"]})
+            if family == "go":
+                targets = {t for t in targets if set(module["registered_by"]) & set(by_id[t]["registered_by"])}
             if len(targets) == 1:
-                edge("declares", module["id"], targets[0], "confirmed",
+                edge("declares", module["id"], next(iter(targets)), "confirmed",
                      {"path": module["manifests"][0], "line": _line_of(text, name)})
             elif not targets:
                 external.append(name)
+            else:
+                module["gaps"].append({"kind": "dependency_ambiguous", "detail": f"{name}: several build units match"})
         module["external"] = external
         for parent, site in module.pop("registrations"):
-            if parent in build_by_dir:
+            if parent in build_by_dir and build_by_dir[parent] != module["id"]:
                 edge("contains", build_by_dir[parent], module["id"], "confirmed", site)
     resolved_imports = snapshot.resolved_imports(store)
     for importer in sorted(resolved_imports):
@@ -1247,15 +1331,18 @@ def _match(module: dict, key: str) -> str | None:
     return None
 
 
-def _owner_of(graph: dict, rel: str) -> str | None:
-    """The most specific build unit whose directory holds a file."""
-    best, depth = None, -2
+def _owners_of(graph: dict, rel: str) -> list[str]:
+    """The most specific build scopes holding a file, including colocated units."""
+    best, depth = [], -2
     for module in graph["modules"]:
         if module["provenance"] != "build" or any(_inside(rel, p) for p in module["excluded"]):
             continue
         for path in module["paths"]:
-            if _inside(rel, path) and (-1 if path == "." else len(path)) > depth:
-                best, depth = module["id"], (-1 if path == "." else len(path))
+            candidate_depth = -1 if path == "." else len(path)
+            if _inside(rel, path) and candidate_depth > depth:
+                best, depth = [module["id"]], candidate_depth
+            elif _inside(rel, path) and candidate_depth == depth:
+                best.append(module["id"])
     return best
 
 
@@ -1286,7 +1373,7 @@ def query(graph: dict, name: str, *, state: str = "unverified", limit: int = 10)
                               "paths": by_id[other]["paths"], "excluded": by_id[other]["excluded"]})
         if module["provenance"] != "build":
             # The build units whose directories hold the member files: read scope, not target.
-            for owner in sorted({_owner_of(graph, rel) for rel in module["files"]} - {None}):
+            for owner in sorted({owner for rel in module["files"] for owner in _owners_of(graph, rel)}):
                 scope.append({"module": owner, "name": by_id[owner]["name"], "relation": "owned_by", "direction": "outgoing",
                               "status": by_id[owner]["status"], "paths": by_id[owner]["paths"], "excluded": by_id[owner]["excluded"]})
         candidates.append({**{k: module[k] for k in ("id", "name", "aliases", "provenance", "kind", "location", "description",

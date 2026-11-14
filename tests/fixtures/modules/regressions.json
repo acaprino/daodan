@@ -1,0 +1,447 @@
+{
+  "pnpm_explicit_exclusion": {
+    "files": {
+      "pnpm-workspace.yaml": "packages:\n  - 'packages/*'\n  - '!packages/skip'\n",
+      "packages/kept/package.json": "{\"name\":\"kept\"}",
+      "packages/skip/package.json": "{\"name\":\"skip\"}"
+    },
+    "units": [
+      [
+        "proj",
+        "pnpm-workspace",
+        ".",
+        []
+      ],
+      [
+        "kept",
+        "npm-package",
+        "packages/kept",
+        []
+      ],
+      [
+        "skip",
+        "npm-package",
+        "packages/skip",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "kept"
+      ]
+    ]
+  },
+  "uv_explicit_exclusion": {
+    "files": {
+      "pyproject.toml": "[project]\nname=\"hub\"\n[tool.uv.workspace]\nmembers=[\"packages/*\"]\nexclude=[\"packages/skip\"]\n",
+      "packages/kept/pyproject.toml": "[project]\nname=\"kept\"\n",
+      "packages/skip/pyproject.toml": "[project]\nname=\"skip\"\n"
+    },
+    "units": [
+      [
+        "hub",
+        "uv-workspace",
+        ".",
+        []
+      ],
+      [
+        "kept",
+        "python-package",
+        "packages/kept",
+        []
+      ],
+      [
+        "skip",
+        "python-package",
+        "packages/skip",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "kept"
+      ]
+    ]
+  },
+  "cargo_explicit_exclusion": {
+    "files": {
+      "Cargo.toml": "[workspace]\nmembers=[\"packages/*\"]\nexclude=[\"packages/skip\"]\n",
+      "packages/kept/Cargo.toml": "[package]\nname=\"kept\"\n",
+      "packages/skip/Cargo.toml": "[package]\nname=\"skip\"\n"
+    },
+    "units": [
+      [
+        "proj",
+        "cargo-workspace",
+        ".",
+        []
+      ],
+      [
+        "kept",
+        "cargo-crate",
+        "packages/kept",
+        []
+      ],
+      [
+        "skip",
+        "cargo-crate",
+        "packages/skip",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "kept"
+      ]
+    ]
+  },
+  "maven_inactive_profile": {
+    "files": {
+      "pom.xml": "<project><artifactId>hub</artifactId><modules><module>base</module></modules><profiles><profile><id>optional</id><modules><module>extra</module></modules><dependencies><dependency><artifactId>inactive</artifactId></dependency></dependencies></profile></profiles></project>",
+      "base/pom.xml": "<project><artifactId>base</artifactId></project>",
+      "extra/pom.xml": "<project><artifactId>extra</artifactId></project>"
+    },
+    "units": [
+      [
+        "hub",
+        "maven-aggregator",
+        ".",
+        []
+      ],
+      [
+        "base",
+        "maven-module",
+        "base",
+        []
+      ],
+      [
+        "extra",
+        "maven-module",
+        "extra",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "base"
+      ]
+    ]
+  },
+  "maven_management_is_not_dependency": {
+    "files": {
+      "pom.xml": "<project><artifactId>hub</artifactId><dependencyManagement><dependencies><dependency><artifactId>managed</artifactId></dependency></dependencies></dependencyManagement><dependencies><dependency><artifactId>live</artifactId></dependency></dependencies></project>"
+    },
+    "units": [
+      [
+        "hub",
+        "maven-module",
+        ".",
+        [
+          "live"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "go_single_require": {
+    "files": {
+      "go.mod": "module example/app\nrequire example/remote v1.0.0\n"
+    },
+    "units": [
+      [
+        "example/app",
+        "go-module",
+        ".",
+        [
+          "example/remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "go_indirect_is_not_direct": {
+    "files": {
+      "go.mod": "module example/app\nrequire (\n example/direct v1.0.0\n example/transitive v1.0.0 // indirect\n)\n"
+    },
+    "units": [
+      [
+        "example/app",
+        "go-module",
+        ".",
+        [
+          "example/direct"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "go_directives_are_not_dependencies": {
+    "files": {
+      "go.mod": "module versions\ngo 1.22\n"
+    },
+    "units": [
+      [
+        "versions",
+        "go-module",
+        ".",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "independent_builds_share_directory": {
+    "files": {
+      "package.json": "{\"name\":\"frontend\",\"dependencies\":{\"react\":\"19\"}}",
+      "composer.json": "{\"name\":\"acme/backend\",\"require\":{\"monolog/monolog\":\"3\"}}"
+    },
+    "units": [
+      [
+        "frontend",
+        "npm-package",
+        ".",
+        [
+          "react"
+        ]
+      ],
+      [
+        "acme/backend",
+        "composer-package",
+        ".",
+        [
+          "monolog/monolog"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "renamed_path_dependency_is_internal": {
+    "files": {
+      "Cargo.toml": "[package]\nname=\"app\"\n[dependencies]\nrenamed={package=\"core\",path=\"lib\"}\n",
+      "lib/Cargo.toml": "[package]\nname=\"core\"\n"
+    },
+    "units": [
+      [
+        "app",
+        "cargo-crate",
+        ".",
+        []
+      ],
+      [
+        "core",
+        "cargo-crate",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "app",
+        "core"
+      ]
+    ],
+    "contains": []
+  },
+  "slug_is_not_package_identity": {
+    "files": {
+      "package.json": "{\"name\":\"app\",\"dependencies\":{\"a-b\":\"1\"}}",
+      "lib/package.json": "{\"name\":\"a_b\"}"
+    },
+    "units": [
+      [
+        "app",
+        "npm-package",
+        ".",
+        [
+          "a-b"
+        ]
+      ],
+      [
+        "a_b",
+        "npm-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "dependencies_do_not_cross_ecosystems": {
+    "files": {
+      "package.json": "{\"name\":\"app\",\"dependencies\":{\"serde\":\"1\"}}",
+      "rust/Cargo.toml": "[package]\nname=\"serde\"\n"
+    },
+    "units": [
+      [
+        "app",
+        "npm-package",
+        ".",
+        [
+          "serde"
+        ]
+      ],
+      [
+        "serde",
+        "cargo-crate",
+        "rust",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "python_build_requirements": {
+    "files": {
+      "pyproject.toml": "[project]\nname=\"app\"\n[build-system]\nrequires=[\"setuptools>=70\", \"wheel\"]\nbuild-backend=\"setuptools.build_meta\"\n"
+    },
+    "units": [
+      [
+        "app",
+        "python-package",
+        ".",
+        [
+          "setuptools",
+          "wheel"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "maven_dependency_coordinates": {
+    "files": {
+      "pom.xml": "<project><groupId>app</groupId><artifactId>hub</artifactId><dependencies><dependency><groupId>org.acme</groupId><artifactId>remote</artifactId></dependency></dependencies></project>"
+    },
+    "units": [
+      [
+        "hub",
+        "maven-module",
+        ".",
+        [
+          "org.acme:remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "go_unrelated_module_is_not_a_local_dependency": {
+    "files": {
+      "go.mod": "module example/app\nrequire (\n example/core v1.0.0\n)\n",
+      "lib/go.mod": "module example/core\n"
+    },
+    "units": [
+      [
+        "example/app",
+        "go-module",
+        ".",
+        [
+          "example/core"
+        ]
+      ],
+      [
+        "example/core",
+        "go-module",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "directory_basename_is_not_package_name": {
+    "files": {
+      "package.json": "{\"name\":\"app\",\"dependencies\":{\"react\":\"19\"}}",
+      "lib/react/package.json": "{}"
+    },
+    "units": [
+      [
+        "app",
+        "npm-package",
+        ".",
+        [
+          "react"
+        ]
+      ],
+      [
+        "react",
+        "npm-package",
+        "lib/react",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "git_dependency_is_not_the_local_unit": {
+    "files": {
+      "Cargo.toml": "[package]\nname=\"app\"\n[dependencies]\nrelay={git=\"https://example.com/relay.git\"}\n",
+      "lib/Cargo.toml": "[package]\nname=\"relay\"\n"
+    },
+    "units": [
+      [
+        "app",
+        "cargo-crate",
+        ".",
+        [
+          "relay"
+        ]
+      ],
+      [
+        "relay",
+        "cargo-crate",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "workspace_glob_selects_units_of_its_build_system": {
+    "files": {
+      "pnpm-workspace.yaml": "packages:\n  - 'packages/**'\n",
+      "packages/web/package.json": "{\"name\":\"web\"}",
+      "packages/web/src/index.ts": "export const a = 1;\n",
+      "packages/core/Cargo.toml": "[package]\nname=\"core\"\n"
+    },
+    "units": [
+      [
+        "proj",
+        "pnpm-workspace",
+        ".",
+        []
+      ],
+      [
+        "web",
+        "npm-package",
+        "packages/web",
+        []
+      ],
+      [
+        "core",
+        "cargo-crate",
+        "packages/core",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "web"
+      ]
+    ]
+  }
+}

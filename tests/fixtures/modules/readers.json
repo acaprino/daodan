@@ -1,0 +1,855 @@
+{
+  "_package_json": {
+    "files": {
+      "package.json": "{\"name\":\"hub\",\"workspaces\":[\"lib\"]}",
+      "lib/package.json": "{\"name\":\"leaf\",\"dependencies\":{\"hub\":\"*\",\"remote\":\"1\"}}"
+    },
+    "units": [
+      [
+        "hub",
+        "npm-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "npm-package",
+        "lib",
+        [
+          "remote"
+        ]
+      ]
+    ],
+    "declares": [
+      [
+        "leaf",
+        "hub"
+      ]
+    ],
+    "contains": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ]
+  },
+  "_pnpm_workspace": {
+    "files": {
+      "pnpm-workspace.yaml": "packages:\n  - lib\n",
+      "lib/package.json": "{\"name\":\"leaf\"}"
+    },
+    "units": [
+      [
+        "proj",
+        "pnpm-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "npm-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "leaf"
+      ]
+    ]
+  },
+  "_lerna": {
+    "files": {
+      "lerna.json": "{\"packages\":[\"lib\"]}",
+      "lib/package.json": "{\"name\":\"leaf\"}"
+    },
+    "units": [
+      [
+        "proj",
+        "lerna-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "npm-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "leaf"
+      ]
+    ]
+  },
+  "_deno": {
+    "files": {
+      "deno.json": "{\"name\":\"hub\",\"workspace\":[\"lib\"]}",
+      "lib/deno.json": "{\"name\":\"leaf\"}"
+    },
+    "units": [
+      [
+        "hub",
+        "deno-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "deno-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ]
+  },
+  "_nx_project": {
+    "files": {
+      "project.json": "{\"name\":\"hub\",\"implicitDependencies\":[\"leaf\"]}",
+      "lib/project.json": "{\"name\":\"leaf\"}"
+    },
+    "units": [
+      [
+        "hub",
+        "nx-project",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "nx-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_pyproject": {
+    "files": {
+      "pyproject.toml": "[project]\nname=\"hub\"\ndependencies=[\"leaf\",\"httpx>=1\"]\n[tool.uv.workspace]\nmembers=[\"lib\"]\n",
+      "lib/pyproject.toml": "[project]\nname=\"leaf\"\n"
+    },
+    "units": [
+      [
+        "hub",
+        "uv-workspace",
+        ".",
+        [
+          "httpx"
+        ]
+      ],
+      [
+        "leaf",
+        "python-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ]
+  },
+  "_setup_cfg": {
+    "files": {
+      "setup.cfg": "[metadata]\nname=legacy\n"
+    },
+    "units": [
+      [
+        "legacy",
+        "python-package",
+        ".",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "_setup_py": {
+    "files": {
+      "setup.py": "from setuptools import setup\nsetup(name='legacy')\n"
+    },
+    "units": [
+      [
+        "legacy",
+        "python-package",
+        ".",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "_cargo": {
+    "files": {
+      "Cargo.toml": "[workspace]\nmembers=[\"lib\"]\n",
+      "lib/Cargo.toml": "[package]\nname=\"leaf\"\n[dependencies]\nserde=\"1\"\n"
+    },
+    "units": [
+      [
+        "proj",
+        "cargo-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "cargo-crate",
+        "lib",
+        [
+          "serde"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "leaf"
+      ]
+    ]
+  },
+  "_go_mod": {
+    "files": {
+      "go.mod": "module example/app\nrequire (\n example/core v1.0.0\n example/remote v1.0.0\n)\nreplace example/core => ./lib\n",
+      "lib/go.mod": "module example/core\n"
+    },
+    "units": [
+      [
+        "example/app",
+        "go-module",
+        ".",
+        [
+          "example/remote"
+        ]
+      ],
+      [
+        "example/core",
+        "go-module",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "example/app",
+        "example/core"
+      ]
+    ],
+    "contains": []
+  },
+  "_go_work": {
+    "files": {
+      "go.work": "go 1.22\nuse (\n ./lib\n)\n",
+      "lib/go.mod": "module example/core\n"
+    },
+    "units": [
+      [
+        "proj",
+        "go-workspace",
+        ".",
+        []
+      ],
+      [
+        "example/core",
+        "go-module",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "example/core"
+      ]
+    ]
+  },
+  "_pom": {
+    "files": {
+      "pom.xml": "<project><artifactId>hub</artifactId><modules><module>lib</module></modules></project>",
+      "lib/pom.xml": "<project><artifactId>leaf</artifactId><dependencies><dependency><artifactId>remote</artifactId></dependency></dependencies></project>"
+    },
+    "units": [
+      [
+        "hub",
+        "maven-aggregator",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "maven-module",
+        "lib",
+        [
+          "remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ]
+  },
+  "_gradle_settings": {
+    "files": {
+      "settings.gradle": "rootProject.name = \"hub\"\ninclude(\":lib\")\n",
+      "lib/build.gradle": ""
+    },
+    "units": [
+      [
+        "hub",
+        "gradle-build",
+        ".",
+        []
+      ],
+      [
+        "lib",
+        "gradle-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "lib"
+      ]
+    ]
+  },
+  "_gradle_build": {
+    "files": {
+      "build.gradle": "dependencies { implementation(project(\":lib\")) }\n",
+      "lib/build.gradle": ""
+    },
+    "units": [
+      [
+        "proj",
+        "gradle-project",
+        ".",
+        []
+      ],
+      [
+        "lib",
+        "gradle-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "proj",
+        "lib"
+      ]
+    ],
+    "contains": []
+  },
+  "_sln": {
+    "files": {
+      "Hub.sln": "Project(\"{A}\") = \"Leaf\", \"lib\\Leaf.csproj\", \"{B}\"\nEndProject\n",
+      "lib/Leaf.csproj": "<Project />"
+    },
+    "units": [
+      [
+        "Hub",
+        "dotnet-solution",
+        ".",
+        []
+      ],
+      [
+        "Leaf",
+        "dotnet-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "Hub",
+        "Leaf"
+      ]
+    ]
+  },
+  "_msbuild_project": {
+    "files": {
+      "Hub.csproj": "<Project><ItemGroup><ProjectReference Include=\"lib/Leaf.csproj\"/><PackageReference Include=\"Remote\"/></ItemGroup></Project>",
+      "lib/Leaf.csproj": "<Project />"
+    },
+    "units": [
+      [
+        "Hub",
+        "dotnet-project",
+        ".",
+        [
+          "Remote"
+        ]
+      ],
+      [
+        "Leaf",
+        "dotnet-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "Hub",
+        "Leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_composer": {
+    "files": {
+      "composer.json": "{\"name\":\"acme/hub\",\"require\":{\"acme/leaf\":\"*\",\"remote/lib\":\"1\"},\"repositories\":[{\"type\":\"path\",\"url\":\"lib\"}]}",
+      "lib/composer.json": "{\"name\":\"acme/leaf\"}"
+    },
+    "units": [
+      [
+        "acme/hub",
+        "composer-package",
+        ".",
+        [
+          "remote/lib"
+        ]
+      ],
+      [
+        "acme/leaf",
+        "composer-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "acme/hub",
+        "acme/leaf"
+      ]
+    ],
+    "contains": [
+      [
+        "acme/hub",
+        "acme/leaf"
+      ]
+    ]
+  },
+  "_gemspec": {
+    "files": {
+      "hub.gemspec": "Gem::Specification.new do |s|\n s.name = 'hub'\n s.add_dependency 'remote'\nend\n"
+    },
+    "units": [
+      [
+        "hub",
+        "ruby-gem",
+        ".",
+        [
+          "remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "_gemfile": {
+    "files": {
+      "Gemfile": "gem 'leaf', path: 'lib'\ngem 'remote'\n",
+      "lib/leaf.gemspec": "Gem::Specification.new do |s|\n s.name='leaf'\nend\n"
+    },
+    "units": [
+      [
+        "proj",
+        "ruby-bundle",
+        ".",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "leaf",
+        "ruby-gem",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "proj",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_pubspec": {
+    "files": {
+      "pubspec.yaml": "name: hub\ndependencies:\n  leaf:\n    path: lib\n  remote: ^1.0.0\n",
+      "lib/pubspec.yaml": "name: leaf\n"
+    },
+    "units": [
+      [
+        "hub",
+        "dart-package",
+        ".",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "leaf",
+        "dart-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_melos": {
+    "files": {
+      "melos.yaml": "name: hub\npackages:\n  - lib\n",
+      "lib/pubspec.yaml": "name: leaf\n"
+    },
+    "units": [
+      [
+        "hub",
+        "melos-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "dart-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ]
+  },
+  "_package_swift": {
+    "files": {
+      "Package.swift": "let package = Package(name: \"Hub\", dependencies: [.package(path: \"Leaf\"), .package(url: \"https://example.test/remote.git\", from: \"1.0.0\")])",
+      "Leaf/Package.swift": "let package = Package(name: \"Leaf\")"
+    },
+    "units": [
+      [
+        "Hub",
+        "swift-package",
+        ".",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "Leaf",
+        "swift-package",
+        "Leaf",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "Hub",
+        "Leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_mix": {
+    "files": {
+      "mix.exs": "def project, do: [app: :hub, apps_path: \"apps\", deps: [{:remote, \"~> 1.0\"}]]",
+      "apps/leaf/mix.exs": "def project, do: [app: :leaf]"
+    },
+    "units": [
+      [
+        "hub",
+        "mix-umbrella",
+        ".",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "leaf",
+        "mix-project",
+        "apps/leaf",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ]
+  },
+  "_cmake": {
+    "files": {
+      "CMakeLists.txt": "project(Hub)\nadd_subdirectory(lib)\n",
+      "lib/CMakeLists.txt": "project(Leaf)\n"
+    },
+    "units": [
+      [
+        "Hub",
+        "cmake-project",
+        ".",
+        []
+      ],
+      [
+        "Leaf",
+        "cmake-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "Hub",
+        "Leaf"
+      ]
+    ]
+  },
+  "_cabal": {
+    "files": {
+      "hub.cabal": "name: hub\nlibrary\n  build-depends: base, leaf\n",
+      "lib/leaf.cabal": "name: leaf\n"
+    },
+    "units": [
+      [
+        "hub",
+        "cabal-package",
+        ".",
+        [
+          "base"
+        ]
+      ],
+      [
+        "leaf",
+        "cabal-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_stack": {
+    "files": {
+      "stack.yaml": "resolver: lts-22.0\npackages:\n  - lib\n",
+      "lib/leaf.cabal": "name: leaf\n"
+    },
+    "units": [
+      [
+        "proj",
+        "stack-workspace",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "cabal-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "proj",
+        "leaf"
+      ]
+    ]
+  },
+  "_sbt": {
+    "files": {
+      "build.sbt": "lazy val leaf = (project in file(\"lib\"))\nlazy val hub = (project in file(\"app\")).dependsOn(leaf)\n",
+      "lib/README.md": "Leaf",
+      "app/README.md": "Hub"
+    },
+    "units": [
+      [
+        "hub",
+        "sbt-project",
+        "app",
+        []
+      ],
+      [
+        "leaf",
+        "sbt-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_terraform": {
+    "files": {
+      "main.tf": "module \"leaf\" { source = \"./lib\" }",
+      "lib/main.tf": "resource \"example\" \"leaf\" {}"
+    },
+    "units": [
+      [
+        "proj",
+        "terraform-root",
+        ".",
+        []
+      ],
+      [
+        "lib",
+        "workspace-member",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "proj",
+        "lib"
+      ]
+    ],
+    "contains": [
+      [
+        "proj",
+        "lib"
+      ]
+    ]
+  },
+  "_zig": {
+    "files": {
+      "build.zig.zon": ".{ .name = \"hub\", .dependencies = .{ .leaf = .{ .path = \"lib\" } } }",
+      "lib/build.zig.zon": ".{ .name = \"leaf\" }"
+    },
+    "units": [
+      [
+        "hub",
+        "zig-package",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "zig-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "_julia": {
+    "files": {
+      "Project.toml": "name=\"hub\"\n[deps]\nRemote=\"uuid\"\n"
+    },
+    "units": [
+      [
+        "hub",
+        "julia-package",
+        ".",
+        [
+          "Remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "_dune": {
+    "files": {
+      "dune-project": "(lang dune 3.0)\n(name hub)\n"
+    },
+    "units": [
+      [
+        "hub",
+        "dune-project",
+        ".",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "_daodan_plugin": {
+    "files": {
+      "plugin.toml": "schema=\"daodan/v1\"\nname=\"hub\"\n[dependencies]\nrequired=[\"leaf\"]\n",
+      "lib/plugin.toml": "schema=\"daodan/v1\"\nname=\"leaf\"\n"
+    },
+    "units": [
+      [
+        "hub",
+        "daodan-plugin",
+        ".",
+        []
+      ],
+      [
+        "leaf",
+        "daodan-plugin",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  }
+}
