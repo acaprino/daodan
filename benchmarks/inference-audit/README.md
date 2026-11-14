@@ -687,3 +687,107 @@ Non verificato:
 - uno per uno, i 62 bersagli di `chain.go:43` e i 46 di `mux.go:283`;
 - un secondo giro di VTA con il primo come grafo iniziale (solo da libreria, non dal comando), che potrebbe togliere l'errore di `maybe.go:13`;
 - i moduli annidati analizzati a parte, i generici (il pacchetto `vta` si dichiara sperimentale e ha un TODO sulle istanze), altri progetti Go.
+
+### 14 novembre 2026, domande mirate e grafo dal compilato: Java e Kotlin
+
+Verdetto:
+- Domande mirate (Kotlin Analysis API): sì, chiudono i casi di Kotlin. Tutti i 251 archi incerti di klaxon diventano certi e l'overload scelto è sempre fra i candidati del grafo; quello dell'indice è giusto solo in 14. Tutte le 93 chiamate implicite hanno un bersaglio. 2.258 domande in 9,5 s. Dei 2.104 riferimenti senza pacchetto, 831 finiscono in un jar con versione; 1.236 restano builtin di Kotlin, senza jar.
+- Grafo dal compilato (WALA): non vale come potatura della dispatch. Con il test runner modellato, RTA su javapoet non toglie nulla oltre CHA. Su klaxon toglie solo implementazioni create per riflessione, che a runtime girano. Vale invece come controllo economico sull'indice, sulla build già fatta (17-22 s, 2,5-2,8 GB): toglie la dispatch dove non c'è (`==` di Kotlin, `super`, metodi astratti, tipo statico del ricevente).
+
+Esecuzione: `modal deploy benchmarks/inference-audit/strong_jvm.py`, poi `python benchmarks/inference-audit/strong_jvm.py spawn` e `fetch --raw DIR`. `compare --raw DIR --graphs DIR --javapoet SRC --klaxon SRC` rifà il confronto in locale dalle risposte grezze, che restano sul volume in `inference-audit/strong-jvm/`. Risultato: `results/strong-jvm.json`.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | javapoet `b9017a9` e klaxon `1173bdc`, ricostruiti con la build dei grafi (`adapters/java.py`, `adapters/kotlin.py`); grafi e indice di klaxon presi dal volume |
+| domande mirate | `adapters/kotlin_analysis.py` con `adapters/KotlinAsk.kt`, una copia del resolver della mappa (Analysis API di KSP 2.3.13, Kotlin 2.4.21, standalone). Un modulo sorgente per task di compilazione e un modulo libreria per jar, letti dai `kotlin-configs/` di scip-java. Ogni risposta dice callable, parametri, origine, posizione o jar. Modi: `ref` sull'occorrenza, `implicit` sulla riga, `overridden` sulla dichiarazione |
+| grafo dal compilato | `adapters/jvm_callgraph.py` con `adapters/JvmCallGraph.java`, WALA 1.9.0 (30 ottobre 2026). Lambda e method reference passano da `LambdaMethodTargetSelector`; la riga viene dal program counter. SootUp 3.0.1 è scartato perché il suo CHA e RTA rilasciati non danno bersaglio a `invokedynamic` (`resolveCall` restituisce vuoto) |
+| algoritmi | CHA, con i soli bersagli del progetto. RTA: ogni metodo concreto del progetto è un entry point che non alloca nulla, quindi conta solo il `new` raggiungibile. RTAT: lo stesso RTA, più il test runner che crea ogni classe concreta con `@Test` (JUnit, TestNG) su di sé, su un metodo o su una superclasse. JDK dai jmods di Temurin 17, meno `EXCLUSIONS` |
+| confronto | per riga e nome del metodo. Un'implementazione dell'indice diventa una classe JVM dai descrittori se è globale, dalla posizione se è locale. Un `$default` si segue per un passo |
+| verifica a mano | 20 siti scritti dal sorgente prima di leggere le risposte (`HAND_CHECK` in `strong_jvm.py`) |
+
+Domande mirate su klaxon: 2.258 domande (2.166 `ref`, 86 righe `implicit`, 6 `overridden`).
+- Archi incerti: 251, tutti certi, l'overload scelto sempre fra i candidati.
+  - 238 `overload-across-tasks`: l'indice ha l'overload giusto in 14 (3 diretti, 11 implementazioni), un altro candidato in 224 (213 diretti, 11 implementazioni).
+  - 13 `override-across-tasks`: tutti verso l'altro candidato, `JacksonParser.parse(Reader)` a `JacksonParser.kt:38` e non `parse(StringBuilder)` a `:29`.
+  - Esempi: `JacksonParser.kt:86` `obj` va a `KlaxonJson.kt:19` (indice `:25`); `JacksonParser.kt:95` `array` a `KlaxonJson.kt:14` (indice `:17`); in `Klaxon.kt:24` l'implementazione è `JacksonParser.kt:38` (indice `:29`).
+- Chiamate implicite: 93, tutte con un bersaglio.
+  - kotlin-stdlib 1.6.0: 30 (`set` 21, `iterator` 4, `componentN` 2, `getValue` 2, `get` 1), per esempio `DefaultConverter.kt:198` → `kotlin.collections.set`, inline;
+  - builtin di Kotlin, senza jar: 43 (`Annotations.kt:37` `List.get`, `DefaultConverter.kt:206` `Array.get`);
+  - membro delegato del progetto: 11 (`JsonArray.kt:53` `JsonObject.get`, delegato alla mappa);
+  - JDK 8 (`Klaxon.kt:248` `HashMap.get`), progetto 1 (`Lookup.kt:14` `JsonArray.get`).
+- Riferimenti senza pacchetto: 2.104.
+  - In un jar con versione: 831. kotlin-stdlib 1.6.0 679, kotlin-reflect 1.6.0 84, kotlin-test 1.6.0 68 (`JacksonParser.kt:30` `KClass.java` → `kotlin/jvm/java`).
+  - Builtin senza jar: 1.236 (`kotlin/Any`, `String`, le interfacce delle collezioni). L'Analysis API li risolve nel suo modulo dei builtin, non nel kotlin-stdlib del classpath.
+  - Membri delegati del progetto 31 (`DefaultConverter.kt:189` `MutableMap#entries` → `JsonObject.entries`), costruttori SAM 2 (`Annotations.kt:48` `Comparator`), locali del progetto 2, nessuna risposta 2 (`Issue95Test.kt:39`, `component1` di una destrutturazione).
+- Tempo e memoria: compilazione del resolver 6,7 s, una volta sola; avvio 1,9 s; domande 9,5 s; RSS 1.043 MB con heap massimo 3 GB.
+
+Grafo dal compilato:
+
+| | javapoet | klaxon |
+| --- | --- | --- |
+| classi del progetto, entry point | 116, 1.030 | 437, 2.534 |
+| classi create dal test runner (RTAT) | 19 | 63 |
+| metodi del progetto con chiamate: CHA, RTA, RTAT | 951, 476, 922 | 1.891, 820, 1.546 |
+| archi CHA, RTA, RTAT (di cui esterni) | 7.669 (3.154), 19.816 (18.496), 34.702 (30.197) | 13.573 (4.746), 30.508 (28.659), 49.736 (44.586) |
+| secondi: gerarchia, CHA, RTA, RTAT, totale | 1,6, 0,9, 6,4, 7,1, 16,6 | 1,4, 0,7, 10,0, 9,7, 22,4 |
+| RSS del processo WALA | 2.510 MB | 2.819 MB |
+| build di scip-java riusata | 48,6 s | 98,9 s |
+
+RTA puro raggiunge circa metà dei metodi. Senza un `new`, i metodi delle classi di test non sono raggiungibili, perché JUnit e TestNG le creano per riflessione. Per questo il confronto usa anche RTAT.
+
+Dispatch: i candidati dell'indice in ogni sito, come classi JVM.
+- javapoet: 69 siti, 368 candidati.
+  - CHA e RTAT tengono 347 e ne tolgono 21, a ragione. 19 sono `MethodSpecTest$HasAnnotation#toString`, astratto (`AnnotationSpec.java:149`, `AnnotationSpec.java:177`, `ClassName.java:229`). 2 sono `ClassName#isAnnotated` dove il ricevente è un `ArrayTypeName` o un `ParameterizedTypeName` (`ArrayTypeName.java:67`, `ParameterizedTypeName.java:71`).
+  - RTA puro: in 33 siti il chiamante non è raggiunto (78 candidati). Sui 36 raggiunti tiene 233 e toglie 57; 37 di questi non sono mai creati da un `new` raggiungibile (`TypeSpecTest$1`, `TypeSpecTest$2`, `TestFiler` a `JavaFile.java:169`).
+  - Aggiunti dal compilato: 2, il metodo ereditato che il ricevente esegue davvero. RTAT aggiunge anche 7.820 bersagli esterni (JDK e jar), sommati sui siti.
+- klaxon: 104 siti con implementazioni.
+  - 49 siti sono `==` o `!=`, con 4.508 implementazioni di `Any#equals` nell'indice. In 26 il compilato fa un confronto senza chiamata, per `null` o identità (`Annotations.kt:26`, `Annotations.kt:33`, `Annotations.kt:113`). Negli altri 23 chiama `Intrinsics.areEqual`, e la dispatch avviene dentro la stdlib per tutti i siti insieme (`Annotations.kt:30`, `DefaultConverter.kt:102`, `DefaultConverter.kt:105`).
+  - 1 sito è `super.equals` (`Token.kt:13`): l'indice dà 92 implementazioni che non possono girare. 1 sito non ha la chiamata nel compilato (`Main.kt:52`).
+  - 53 siti di dispatch, 897 candidati. CHA tiene 805 e ne toglie 92, a ragione: in `Token.kt:16` `javaClass.hashCode()` ha ricevente `Class`.
+  - RTAT tiene 532 e toglie 365: quei 92 più 273 candidati di 52 classi che nessun `new` del progetto crea, perché nascono per riflessione e a runtime girano. Sono gli 8 TypeAdapter creati da `createInstance()` (`TypeFor.kt:8`, `JsonObjectConverter.kt:237`) e 44 data class dei test che crea solo il parser di Klaxon (`DefaultConverter.kt:55`, `DefaultConverter.kt:56`, `Render.kt:19`, `toString`, 44 ciascuno).
+  - RTA puro: 17 siti non raggiunti (314 candidati); sui 36 raggiunti toglie 486 candidati su 583.
+  - La dispatch che il compilato sposta in un `$default` si segue per un passo: `Parser.kt:22` `parse(it)` passa da `Parser$DefaultImpls.parse$default`.
+
+Lambda e method reference:
+- javapoet: 7 lambda e 6 method reference con `invokedynamic`. CHA raggiunge 7 lambda e 5 method reference, RTA e RTAT 6 e 5.
+  - Non raggiunte: `Method::getName` (`AnnotationSpec.java:118`), con bersaglio nel JDK, fuori da CHA e mai chiamato in RTA. La lambda di Mockito in `ClassNameTest.java:136` la raggiunge solo CHA.
+  - javac attribuisce le tre method reference di `Collector.of(...)` alla riga 123, non alle righe 124-126 del sorgente. L'indice nomina tutte e sei le method reference entro cinque righe.
+  - Le lambda diventano metodi propri (`CodeWriter.java:198` → `lambda$emitTypeVariables$0`); l'indice attribuisce il corpo al metodo che le contiene.
+- klaxon: Kotlin 1.6 compila le lambda in 96 classi `kotlin/jvm/internal/Lambda`.
+  - `invokedynamic` compare solo per 4 conversioni SAM (`Annotations.kt:48`, `PropertyOrderTest.kt:17`, `ParseFromEmptyNameTest.kt:25`): CHA e RTAT le raggiungono tutte e 4, RTA 1.
+  - Le 11 chiamate `FunctionN.invoke` (`block(it)`) hanno con CHA e RTAT in media 44,7 bersagli del progetto e fino a 59, cioè ogni lambda della stessa arità. L'indice lì ha solo la lettura del parametro.
+
+Cosa perde o distorce il compilato per Kotlin, su klaxon, con javapoet come riferimento:
+- Chiamate dell'indice ritrovate alla stessa riga: klaxon 1.773 su 2.211 (80%); javapoet 6.416 su 6.441 (99,6%), più 12 entro due righe e 13 creazioni di classi anonime.
+- Perse in klaxon:
+  - inline 346. Del progetto 110 (`Klaxon.parse<T>` 76, `parseArray` 12). Della libreria 236, inline secondo l'Analysis API (`arrayOf` 48, `forEach` 20, `use` 20, `map` 16; `JacksonParser.kt:44` `apply`, `JacksonParser.kt:99` `checkNotNull`);
+  - operatori e conversioni primitive, che diventano istruzioni JVM: 28 (`Annotations.kt:52` `compareTo`, `DefaultConverter.kt:28` `toFloat`, `DefaultConverter.kt:31` `toDouble`);
+  - altre 53 (`Annotations.kt:48` costruttore SAM `Comparator`, `JsonReader.kt:90`, `Render.kt:10`), più 10 che passano da un accessor sintetico (`JacksonParser.kt:72`, `JacksonParser.kt:76`, `JacksonParser.kt:84`).
+- Aggiunte o spostate dal compilato in klaxon, sui 7.656 siti di chiamata di CHA:
+  - 1.183 a righe oltre la fine del file: sono corpi inline copiati, con le righe della SMAP (`Issue236Test.kt:35`);
+  - 1.050 controlli di null (`Intrinsics.checkNotNull*`), 924 costruzioni di stringhe, 260 boxing;
+  - 300 chiamate a un metodo `$default` (`BindingTest.kt:28` `toJsonString$default`, `TestTypes.kt:31` `Parser$DefaultImpls.parse$default`), 39 a `DefaultImpls`, 19 ad accessor sintetici (`Debug.kt:5` `access$getVerbose$cp`);
+  - coroutine: klaxon non ne ha (0 metodi con `Continuation`), quindi non sono misurate.
+
+Verifica a mano, 20 siti:
+
+| Fonte | Giusti | Il resto |
+| --- | --- | --- |
+| grafo dell'indice | 8 | 10 sbagliati (overload e override fra task), 2 buchi |
+| Analysis API | 12 su 12 | gli 8 siti di dispatch e lambda non sono domande sue |
+| CHA | 17 | 2 distorti da `$default` (`BindingTest.kt:28`, `TestTypes.kt:31`), 1 sbagliato (`KlaxonJson.kt:30`: il `set` inline diventa `Map.put`) |
+| RTAT | 16 | 2 distorti, 2 sbagliati: `KlaxonJson.kt:30` e `TypeFor.kt:8`, con i TypeAdapter creati per riflessione |
+| RTA puro | 10 | 6 con il chiamante non raggiunto (test), 4 sbagliati: anche `Klaxon.kt:268` e `JavaFile.java:169` |
+
+I quattro errori dell'indice sono tutti risolti dall'Analysis API: `JacksonParser.kt:86` → `obj(Iterable)`, `Klaxon.kt:31` con l'implementazione `JacksonParser.kt:38`, `JsonArray.kt:53` → `JsonObject.get` delegato, `KlaxonJson.kt:30` → `kotlin.collections.set` in kotlin-stdlib 1.6.0. Il compilato ne risolve tre e il quarto lo trasforma in `Map.put`.
+
+Costo fatturato da Modal: 0,085 USD, per tre esecuzioni complete e una build dell'immagine fallita (`coursier --intransitive` vuole un argomento per ogni modulo). Nelle prime due il lettore del compilato sbagliava righe e file sorgente: il program counter è già l'indice nel bytecode, e l'attributo `SourceFile` va letto dal class file. `results/strong-jvm.json` viene dalla terza, ricalcolato in locale con `compare` dopo una correzione che cambia classe a 2 chiamate implicite (`componentN`). I bersagli attesi della verifica a mano non sono cambiati.
+
+Non verificato:
+- Gli overload scelti dall'Analysis API uno per uno, oltre i 20 siti: sono confrontati solo con i candidati dell'indice.
+- La regola che metterebbe i 1.236 builtin nel kotlin-stdlib 1.6.0 del classpath: è dedotta, non chiesta.
+- RTA con altri entry point (main, servizi, framework diversi da JUnit e TestNG) e con la riflessione modellata: qui i TypeAdapter e le data class di Klaxon cadono.
+- I bersagli nei pacchetti del JDK esclusi da `EXCLUSIONS`.
+- La corrispondenza fra implementazione locale e classe JVM, fatta per vicinanza di riga: in questi due casi nessuna resta senza classe.
+- Kotlin 2.x, che compila le lambda con `invokedynamic`; le coroutine; altri progetti; Gradle 8.
+- I picchi di RAM fra un campione e l'altro (due al secondo, sotto gVisor).
