@@ -1,0 +1,1127 @@
+{
+ "case": "bulma",
+ "commit": "e133d45b7a829b278d2613cd0591b793f2f69f13",
+ "code": {
+  "css.py": "49854bf56415",
+  "css_astro.js": "60aedc755928",
+  "css_astro.py": "83ae4f9723f2",
+  "css_engines.json": "2cf04c7179fb",
+  "css_expressions.js": "f576bae77c67",
+  "css_less.js": "7ea43d4fc4c2",
+  "css_less.py": "1f082b76eb1f",
+  "css_sass.js": "040e6256e5ac",
+  "css_sass.py": "45180a7e614c",
+  "css_stylus.js": "22c5cf93eff5",
+  "css_stylus.py": "bbe7cdfae4fe",
+  "css_svelte.js": "3814c915a7a8",
+  "css_svelte.py": "6c91a62cd587",
+  "css_tailwind.js": "4dca22ec9809",
+  "css_tailwind.py": "c9419a41c53a",
+  "css_typescript.js": "a8e11983317d",
+  "css_typescript.py": "6ff05448a8d6",
+  "css_vue.js": "4fbf1fcf22e4",
+  "css_vue.py": "93c02e4a9797"
+ },
+ "files_given": 602,
+ "npm_install_seconds": 7.0,
+ "node_modules": "/root/.cache/daodan/npm/204769d29f34d59d/node_modules",
+ "report": {
+  "language": "css",
+  "indexer": {
+   "name": "codebase-map stylesheet.py + sass-parser + typescript + tailwindcss",
+   "version": "e62b3f368913 + 0.5.6 + 5.9.3 + None",
+   "seconds": 13.1,
+   "peak_mb": 310
+  },
+  "files": {
+   "snapshot": 602,
+   "indexed": 602,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 109307,
+  "edges": 8852216,
+  "symbols_by_kind": {
+   "external module": 12,
+   "project container": 15,
+   "project custom-property": 56445,
+   "project function": 17,
+   "project keyframes": 86,
+   "project mixin": 62,
+   "project module": 507,
+   "project property": 12,
+   "project rule": 51160,
+   "project variable": 991
+  },
+  "edges_by_end": {
+   "external function": 188,
+   "external import": 36,
+   "project class": 5052873,
+   "project container": 807,
+   "project custom-property": 3791991,
+   "project function": 1520,
+   "project id": 35,
+   "project import": 359,
+   "project keyframes": 962,
+   "project mixin": 374,
+   "project module-member": 62,
+   "project placeholder": 103,
+   "project sass-variable": 2905,
+   "project script": 1
+  },
+  "callable_chain_hops": {},
+  "hop_tags": {
+   "classList": 7662,
+   "className=": 1689,
+   "literal-type": 506,
+   "loop": 503,
+   "parameter": 229,
+   "local": 221,
+   "css-text": 52,
+   "url-suffix": 3,
+   "configuration": 2
+  },
+  "edges_uncertain": {
+   "sheet-not-proven-loaded": 5042301,
+   "cascade and inheritance pick one per element; sheet-not-proven-loaded": 3356101,
+   "cascade and inheritance pick one per element": 435850,
+   "selector built at compile time from literal values; sheet-not-proven-loaded": 10479,
+   "the last in cascade order wins; sheet-not-proven-loaded": 872,
+   "the nearest ancestor container wins; sheet-not-proven-loaded": 736,
+   "the last in cascade order wins": 88,
+   "the nearest ancestor container wins": 71,
+   "a URL path several checkout files end with": 2
+  },
+  "edges_removed": {},
+  "holes_by_class": {
+   "call class": 11,
+   "dynamic-member module-member": 2,
+   "interpolated-selector class": 165,
+   "interpolated-selector id": 12,
+   "interpolated-selector rule": 1157,
+   "no-font-face font-face": 233,
+   "no-rule class": 1072,
+   "no-rule id": 268,
+   "not-read import": 6,
+   "parameter class": 2,
+   "parameter id": 33,
+   "property id": 1,
+   "template class": 3,
+   "template id": 3,
+   "template-tag class": 22,
+   "template-tag id": 2,
+   "template-tag-glued class": 219,
+   "template-tag-glued id": 39,
+   "undeclared custom-property": 4001,
+   "undeclared function": 246,
+   "undeclared mixin": 81,
+   "undeclared sass-variable": 23,
+   "unknown-member module-member": 1,
+   "unresolved-import import": 127,
+   "unresolved-import module-member": 34,
+   "unresolved-import script": 15
+  },
+  "holes": [
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "-",
+    "count": 3977,
+    "examples": [
+     "css/bulma.css:3336 --bulma-link-focus-border",
+     "css/versions/bulma-no-dark-mode.css:12855 --bulma-dark-10-invert-l",
+     "css/versions/bulma-prefixed.min.css:3 --bulma-black-75-l"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "rule",
+    "reason": "-",
+    "count": 1157,
+    "examples": [
+     "docs/_sass/docs/notification.scss:55 .bd-notification.is-#{$name}",
+     "sass/elements/button.scss:628 .#{iv.$class-prefix}buttons.#{iv.$class-prefix}has-addons .#{iv.$class-prefix}button.#{iv.$class-prefix}is-expanded",
+     "sass/grid/columns.scss:195 .#{iv.$class-prefix}column.#{iv.$class-prefix}is-three-fifths-mobile"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "class",
+    "reason": "-",
+    "count": 1072,
+    "examples": [
+     "docs/_includes/about/author.html:5 bd-footer-iframe",
+     "docs/_includes/library/layout/level.html:62 link",
+     "docs/documentation/elements/icon.html:521 fa-home"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "id",
+    "reason": "-",
+    "count": 268,
+    "examples": [
+     "docs/_includes/book/book-banner.html:1 bulma-book",
+     "docs/cyp/components/pagination.html:64 pagination-medium",
+     "docs/cyp/form/tools.html:57 field-is-grouped-centered"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "function",
+    "reason": "-",
+    "count": 246,
+    "examples": [
+     "docs/_sass/docs/backers.scss:27 cv.getVar",
+     "docs/_sass/docs/menu.scss:150 cv.getVar",
+     "docs/_sass/global/nav.scss:83 cv.getVar"
+    ]
+   },
+   {
+    "class": "no-font-face",
+    "kind": "font-face",
+    "reason": "-",
+    "count": 233,
+    "examples": [
+     "css/bulma.css:21044 Inter",
+     "css/versions/bulma-no-dark-mode.css:18249 Ubuntu",
+     "css/versions/bulma-prefixed.min.css:3 Arial"
+    ]
+   },
+   {
+    "class": "template-tag-glued",
+    "kind": "class",
+    "reason": "-",
+    "count": 219,
+    "examples": [
+     "docs/_includes/docs/components/call.html:1 bd-theme-{{ include.color }}",
+     "docs/_includes/docs/subnav/subnav-form.html:35 {% if page.doc-subtab == 'radio' %}is-active{% endif %}",
+     "docs/cyp/elements/button.html:56 is-{{ color }}"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "mixin",
+    "reason": "-",
+    "count": 81,
+    "examples": [
+     "docs/_sass/docs/backers.scss:139 mx.mobile",
+     "docs/_sass/docs/examples.scss:106 mx.ltr",
+     "docs/_sass/global/nav.scss:243 mx.from"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at docs/_sass/docs/notification.scss:55 may name it",
+    "count": 59,
+    "examples": [
+     "docs/_includes/book/book-content.html:20 is-paddingless",
+     "docs/cyp/grid/tiles.html:57 is-ancestor",
+     "docs/documentation/components/navbar.html:1299 is-paddingless"
+    ]
+   },
+   {
+    "class": "template-tag-glued",
+    "kind": "id",
+    "reason": "-",
+    "count": 39,
+    "examples": [
+     "docs/_includes/docs/examples/navbar-bottom.html:14 navbarExample{{ include.id }}",
+     "docs/cyp/elements/button.html:38 button-{{ color }}-active",
+     "docs/cyp/elements/title.html:21 subtitle-{{ i }}"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "import",
+    "reason": "root/App.module.css",
+    "count": 34,
+    "examples": [
+     "docs/_react/bulma-customizer/src/pages/Colors.jsx:5 root/App.module.css",
+     "docs/_react/bulma-customizer/src/pages/components/Modal.jsx:4 root/App.module.css",
+     "docs/_react/bulma-customizer/src/pages/elements/Table.jsx:4 root/App.module.css"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "module-member",
+    "reason": "root/App.module.css",
+    "count": 34,
+    "examples": [
+     "docs/_react/bulma-customizer/src/pages/Colors.jsx:9 .colors",
+     "docs/_react/bulma-customizer/src/pages/components/Modal.jsx:10 .items",
+     "docs/_react/bulma-customizer/src/pages/elements/Table.jsx:10 .items"
+    ]
+   },
+   {
+    "class": "parameter",
+    "kind": "id",
+    "reason": "-",
+    "count": 33,
+    "examples": [
+     "docs/_react/bulma-customizer/src/pages/Scheme.jsx:12 schemeId",
+     "docs/_react/bulma-customizer/src/pages/components/Navbar.jsx:12 id",
+     "docs/_react/bulma-customizer/src/pages/elements/Tag.jsx:12 id"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "fallback var(--bulma-grid-gap",
+    "count": 24,
+    "examples": [
+     "css/bulma.css:10380 --bulma-grid-column-gap",
+     "css/versions/bulma-no-helpers-prefixed.css:10380 --bulma-grid-column-gap",
+     "css/versions/bulma-prefixed.css:10380 --bulma-grid-column-gap"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/elements/image.scss:9 may name it",
+    "count": 23,
+    "examples": [
+     "docs/_includes/docs/elements/post.html:23 bd-post-image",
+     "docs/_includes/library/components/tabs.html:256 fa-image",
+     "docs/documentation/components/tabs.html:188 fa-image"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "sass-variable",
+    "reason": "-",
+    "count": 23,
+    "examples": [
+     "docs/_sass/docs/notification.scss:54 dv.$colors",
+     "docs/_sass/examples/custom.scss:9 $control-border-width",
+     "docs/website.scss:357 iv.$gap"
+    ]
+   },
+   {
+    "class": "template-tag",
+    "kind": "class",
+    "reason": "-",
+    "count": 22,
+    "examples": [
+     "docs/_includes/docs/components/heading.html:5 {{ include.icon }}",
+     "docs/_includes/docs/elements/snippet.html:18 {{ include.wrapper }}",
+     "docs/_includes/global/nav-item.html:5 {% if link.icon_only %}"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "import",
+    "reason": "sass/utilities/css-variables",
+    "count": 21,
+    "examples": [
+     "docs/_sass/docs/backers.scss:1 sass/utilities/css-variables",
+     "docs/_sass/docs/menu.scss:1 sass/utilities/css-variables",
+     "docs/_sass/global/native.scss:1 sass/utilities/css-variables"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "import",
+    "reason": "sass/utilities/mixins",
+    "count": 19,
+    "examples": [
+     "docs/_sass/docs/backers.scss:3 sass/utilities/mixins",
+     "docs/_sass/docs/examples.scss:3 sass/utilities/mixins",
+     "docs/_sass/global/nav.scss:2 sass/utilities/mixins"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/form/file.scss:127 may name it",
+    "count": 17,
+    "examples": [
+     "docs/_includes/docs/content/comparison.html:37 bd-is-empty",
+     "docs/_includes/docs/content/comparison.html:217 bd-is-empty",
+     "docs/_includes/docs/content/comparison.html:491 bd-is-empty"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "script",
+    "reason": "no file of the snapshot",
+    "count": 15,
+    "examples": [
+     "docs/_includes/docs/content/klmn.html:111 {{ site.url }}/assets/javascript/klmn.js",
+     "docs/_layouts/default.html:24 {{ site.url }}/assets/vendor/clipboard-2.0.11.min.js",
+     "docs/index.html:16 {{ site.url }}/assets/javascript/home.js"
+    ]
+   },
+   {
+    "class": "call",
+    "kind": "class",
+    "reason": "-",
+    "count": 11,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:150 classNames({ [cn.main]: true, [cn.moving]: isMoving, })",
+     "docs/_react/bulma-customizer/src/components/VarItem.jsx:78 classNames({ \"button is-small\": true, \"is-float-right\": true, \"ml-2\": true, \"is-danger is-outlined\": !isDisabled, })",
+     "docs/_react/bulma-customizer/src/App.jsx:575 classNames({ [cn.button]: true, \"is-hidden\": !context.isOpen, button: !context.showExport, \"button is-primary\": conte..."
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/components/message.scss:74 may name it",
+    "count": 11,
+    "examples": [
+     "docs/_includes/docs/elements/tw-button.html:1 bd-tw-button",
+     "docs/_includes/docs/examples/navbar.html:37 bd-tw-button",
+     "docs/cyp/components/navbar.html:146 bd-tw-button"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/elements/content.scss:29 may name it",
+    "count": 9,
+    "examples": [
+     "docs/_includes/book/book-banner.html:9 bd-is-content",
+     "docs/_includes/docs/content/pro.html:11 bd-pro-content",
+     "docs/bulma-start.html:24 bd-content"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/elements/notification.scss:68 may name it",
+    "count": 9,
+    "examples": [
+     "docs/_includes/docs/components/heading.html:10 bd-heading-title",
+     "docs/_includes/docs/elements/link.html:3 bd-link-surtitle",
+     "docs/documentation/start/installation.html:119 bd-option-title"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/components/breadcrumb.scss:77 may name it",
+    "count": 9,
+    "examples": [
+     "docs/_includes/global/navbar.html:7 bd-navbar-mobile-icon",
+     "docs/_includes/global/navbar.html:28 bd-navbar-search-icon",
+     "docs/_includes/global/navbar.html:51 bd-navbar-icon"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "import",
+    "reason": "sass/utilities/extends",
+    "count": 8,
+    "examples": [
+     "docs/_sass/docs/backers.scss:2 sass/utilities/extends",
+     "docs/_sass/docs/cupcake.scss:2 sass/utilities/extends",
+     "docs/_sass/docs/menu.scss:2 sass/utilities/extends"
+    ]
+   },
+   {
+    "class": "not-read",
+    "kind": "import",
+    "reason": "the sheet could not be downloaded",
+    "count": 6,
+    "examples": [
+     "docs/_includes/docs/snippets/getting-started.html:7 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
+     "docs/documentation/start/installation.html:23 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
+     "docs/_sass/examples/custom.scss:41 https://fonts.googleapis.com/css?family=Nunito:400,700"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/components/menu.scss:32 may name it",
+    "count": 5,
+    "examples": [
+     "docs/_includes/global/header.html:29 js-menu",
+     "docs/_includes/global/header.html:60 js-menu",
+     "docs/documentation/components/nav.html:88 nav-menu"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/grid/columns.scss:18 may name it",
+    "count": 4,
+    "examples": [
+     "docs/_includes/book/book-banner.html:6 bd-book-column",
+     "docs/_includes/book/book-banner.html:9 bd-book-column",
+     "docs/_includes/book/book-modal.html:5 bd-book-modal-column"
+    ]
+   },
+   {
+    "class": "template",
+    "kind": "id",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Color.jsx:201 ${color}-h",
+     "docs/_react/bulma-customizer/src/components/Color.jsx:218 ${color}-s",
+     "docs/_react/bulma-customizer/src/components/Color.jsx:235 ${color}-l"
+    ]
+   },
+   {
+    "class": "template",
+    "kind": "class",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Color.jsx:251 is-${color}",
+     "docs/assets/javascript/klmn.js:27 is-${n}",
+     "docs/assets/javascript/shop.js:398 shop-product-${getId(product.id)}"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/elements/table.scss:38 may name it",
+    "count": 3,
+    "examples": [
+     "docs/_includes/docs/components/spacing-table.html:1 bd-spacing-table",
+     "docs/alternative-to-bootstrap.html:74 bd-bootstrap-table",
+     "docs/made-with-bulma.html:73 bd-mwb-table"
+    ]
+   },
+   {
+    "class": "template-tag",
+    "kind": "id",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "docs/_includes/docs/elements/anchor-bis.html:1 {{ include.name | slugify }}",
+     "docs/_includes/docs/elements/anchor.html:1 {{ include.name | slugify }}"
+    ]
+   },
+   {
+    "class": "dynamic-member",
+    "kind": "module-member",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:133 cn[kind]",
+     "docs/_react/bulma-customizer/src/components/Picker.jsx:46 cn[kind]"
+    ]
+   },
+   {
+    "class": "parameter",
+    "kind": "class",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "docs/assets/javascript/shop.js:846 className",
+     "docs/assets/javascript/shop.js:854 icon"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/grid/columns.scss:25 may name it",
+    "count": 2,
+    "examples": [
+     "docs/_includes/book/book-banner.html:5 bd-book-columns",
+     "docs/_includes/book/book-modal.html:4 bd-book-modal-columns"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/components/menu.scss:79 may name it",
+    "count": 2,
+    "examples": [
+     "docs/_includes/docs/menu-list.html:3 js-menu-list",
+     "docs/_includes/docs/menu.html:34 js-menu-list"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "import",
+    "reason": "{{ site.url }}/vendor/fontawesome-free-6.5.2-web/css/all.min.css",
+    "count": 2,
+    "examples": [
+     "docs/_includes/global/head.html:18 {{ site.url }}/vendor/fontawesome-free-6.5.2-web/css/all.min.css",
+     "docs/_layouts/cypress.html:10 {{ site.url }}/vendor/fontawesome-free-6.5.2-web/css/all.min.css"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "class",
+    "reason": "a selector built at compile time at sass/components/navbar.scss:112 may name it",
+    "count": 2,
+    "examples": [
+     "docs/_includes/global/navbar.html:1 bd-navbar",
+     "docs/_includes/global/navbar.html:95 bd-navbar"
+    ]
+   }
+  ],
+  "external_packages": {
+   "sass sass:math@None": 62,
+   "sass sass:color@None": 57,
+   "sass sass:list@None": 44,
+   "sass sass:map@None": 26,
+   "sass sass:meta@None": 20,
+   "sass sass:string@None": 6,
+   "npm bulma@{{ site.data.meta.version }}": 3,
+   "cdn fonts.googleapis.com@unknown": 3,
+   "npm docsearch.js@2": 1,
+   "npm photoswipe@5.4.4": 1,
+   "npm sass@1.83.0": 1
+  }
+ },
+ "summary": {
+  "nodes_by_kind": {
+   "custom-property": 56445,
+   "rule": 51160,
+   "variable": 991,
+   "module": 507,
+   "keyframes": 86,
+   "mixin": 62,
+   "function": 17,
+   "container": 15,
+   "property": 12,
+   "module external": 12
+  },
+  "edges_by_kind_end": {
+   "class project": 5052873,
+   "container project": 807,
+   "custom-property project": 3791991,
+   "function external": 188,
+   "function project": 1520,
+   "id project": 35,
+   "import external": 36,
+   "import project": 359,
+   "keyframes project": 962,
+   "mixin project": 374,
+   "module-member project": 62,
+   "placeholder project": 103,
+   "sass-variable project": 2905,
+   "script project": 1
+  },
+  "edges_by_chain": {
+   "-": 8841855,
+   "classList": 7156,
+   "className=": 1689,
+   "classList > literal-type": 506,
+   "loop": 503,
+   "parameter": 229,
+   "local": 221,
+   "css-text": 52,
+   "url-suffix": 3,
+   "configuration": 2
+  },
+  "holes_by_class": {
+   "undeclared custom-property": {
+    "count": 4001,
+    "examples": [
+     "css/bulma.css:3336 --bulma-link-focus-border",
+     "css/versions/bulma-no-dark-mode.css:12863 --bulma-dark-15-l",
+     "css/versions/bulma-prefixed.min.css:3 --bulma-black-70-l"
+    ]
+   },
+   "interpolated-selector rule": {
+    "count": 1157,
+    "examples": [
+     "docs/_sass/docs/notification.scss:55 .bd-notification.is-#{$name}",
+     "sass/elements/button.scss:628 .#{iv.$class-prefix}buttons.#{iv.$class-prefix}has-addons .#{iv.$class-prefix}button.#{iv.$class-prefix}is-expanded",
+     "sass/grid/columns.scss:195 .#{iv.$class-prefix}column.#{iv.$class-prefix}is-three-fifths-mobile"
+    ]
+   },
+   "no-rule class": {
+    "count": 1072,
+    "examples": [
+     "docs/_includes/about/author.html:5 bd-footer-iframe",
+     "docs/_includes/library/layout/level.html:62 link",
+     "docs/documentation/elements/icon.html:521 fa-home"
+    ]
+   },
+   "no-rule id": {
+    "count": 268,
+    "examples": [
+     "docs/_includes/book/book-banner.html:1 bulma-book",
+     "docs/cyp/components/pagination.html:64 pagination-medium",
+     "docs/cyp/form/tools.html:57 field-is-grouped-centered"
+    ]
+   },
+   "undeclared function": {
+    "count": 246,
+    "examples": [
+     "docs/_sass/docs/backers.scss:27 cv.getVar",
+     "docs/_sass/docs/menu.scss:150 cv.getVar",
+     "docs/_sass/global/nav.scss:83 cv.getVar"
+    ]
+   },
+   "no-font-face font-face": {
+    "count": 233,
+    "examples": [
+     "css/bulma.css:21044 Inter",
+     "css/versions/bulma-no-dark-mode.css:18249 Ubuntu",
+     "css/versions/bulma-prefixed.min.css:3 Arial"
+    ]
+   },
+   "template-tag-glued class": {
+    "count": 219,
+    "examples": [
+     "docs/_includes/docs/components/call.html:1 bd-theme-{{ include.color }}",
+     "docs/_includes/docs/subnav/subnav-form.html:35 {% if page.doc-subtab == 'radio' %}is-active{% endif %}",
+     "docs/cyp/elements/button.html:56 is-{{ color }}"
+    ]
+   },
+   "interpolated-selector class": {
+    "count": 165,
+    "examples": [
+     "docs/_includes/book/book-banner.html:5 bd-book-columns",
+     "docs/_includes/global/navbar.html:1 bd-navbar",
+     "docs/documentation/components/navbar.html:733 is-paddingless"
+    ]
+   },
+   "unresolved-import import": {
+    "count": 127,
+    "examples": [
+     "docs/_includes/docs/snippets/custom-page.html:7 my-bulma-project.css",
+     "docs/_sass/docs/tw.scss:1 sass/utilities/mixins",
+     "test/ruby-sass/sass/customize.scss:32 ../../../sass/elements/container.sass"
+    ]
+   },
+   "undeclared mixin": {
+    "count": 81,
+    "examples": [
+     "docs/_sass/docs/backers.scss:139 mx.mobile",
+     "docs/_sass/docs/examples.scss:106 mx.ltr",
+     "docs/_sass/global/nav.scss:243 mx.from"
+    ]
+   },
+   "template-tag-glued id": {
+    "count": 39,
+    "examples": [
+     "docs/_includes/docs/examples/navbar-bottom.html:14 navbarExample{{ include.id }}",
+     "docs/cyp/elements/button.html:38 button-{{ color }}-active",
+     "docs/cyp/elements/title.html:21 subtitle-{{ i }}"
+    ]
+   },
+   "unresolved-import module-member": {
+    "count": 34,
+    "examples": [
+     "docs/_react/bulma-customizer/src/pages/Colors.jsx:9 .colors",
+     "docs/_react/bulma-customizer/src/pages/components/Modal.jsx:10 .items",
+     "docs/_react/bulma-customizer/src/pages/elements/Table.jsx:10 .items"
+    ]
+   },
+   "parameter id": {
+    "count": 33,
+    "examples": [
+     "docs/_react/bulma-customizer/src/pages/Scheme.jsx:12 schemeId",
+     "docs/_react/bulma-customizer/src/pages/components/Navbar.jsx:12 id",
+     "docs/_react/bulma-customizer/src/pages/elements/Tag.jsx:12 id"
+    ]
+   },
+   "undeclared sass-variable": {
+    "count": 23,
+    "examples": [
+     "docs/_sass/docs/notification.scss:54 dv.$colors",
+     "docs/_sass/examples/custom.scss:9 $control-border-width",
+     "docs/website.scss:357 iv.$gap"
+    ]
+   },
+   "template-tag class": {
+    "count": 22,
+    "examples": [
+     "docs/_includes/docs/components/heading.html:5 {{ include.icon }}",
+     "docs/_includes/docs/elements/snippet.html:18 {{ include.wrapper }}",
+     "docs/_includes/global/nav-item.html:5 {% if link.icon_only %}"
+    ]
+   },
+   "unresolved-import script": {
+    "count": 15,
+    "examples": [
+     "docs/_includes/docs/content/klmn.html:111 {{ site.url }}/assets/javascript/klmn.js",
+     "docs/_layouts/default.html:24 {{ site.url }}/assets/vendor/clipboard-2.0.11.min.js",
+     "docs/index.html:16 {{ site.url }}/assets/javascript/home.js"
+    ]
+   },
+   "interpolated-selector id": {
+    "count": 12,
+    "examples": [
+     "docs/_includes/library/components/modal.html:26 modal-box",
+     "docs/cyp/elements/container.html:18 container-widescreen",
+     "docs/cyp/grid/columns.html:107 columns-mobile"
+    ]
+   },
+   "call class": {
+    "count": 11,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:150 classNames({ [cn.main]: true, [cn.moving]: isMoving, })",
+     "docs/_react/bulma-customizer/src/components/VarItem.jsx:78 classNames({ \"button is-small\": true, \"is-float-right\": true, \"ml-2\": true, \"is-danger is-outlined\": !isDisabled, })",
+     "docs/_react/bulma-customizer/src/App.jsx:575 classNames({ [cn.button]: true, \"is-hidden\": !context.isOpen, button: !context.showExport, \"button is-primary\": conte..."
+    ]
+   },
+   "not-read import": {
+    "count": 6,
+    "examples": [
+     "docs/_includes/docs/snippets/getting-started.html:7 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
+     "docs/documentation/start/installation.html:23 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
+     "docs/_sass/examples/custom.scss:41 https://fonts.googleapis.com/css?family=Nunito:400,700"
+    ]
+   },
+   "template id": {
+    "count": 3,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Color.jsx:201 ${color}-h",
+     "docs/_react/bulma-customizer/src/components/Color.jsx:218 ${color}-s",
+     "docs/_react/bulma-customizer/src/components/Color.jsx:235 ${color}-l"
+    ]
+   },
+   "template class": {
+    "count": 3,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Color.jsx:251 is-${color}",
+     "docs/assets/javascript/klmn.js:27 is-${n}",
+     "docs/assets/javascript/shop.js:398 shop-product-${getId(product.id)}"
+    ]
+   },
+   "template-tag id": {
+    "count": 2,
+    "examples": [
+     "docs/_includes/docs/elements/anchor-bis.html:1 {{ include.name | slugify }}",
+     "docs/_includes/docs/elements/anchor.html:1 {{ include.name | slugify }}"
+    ]
+   },
+   "dynamic-member module-member": {
+    "count": 2,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:133 cn[kind]",
+     "docs/_react/bulma-customizer/src/components/Picker.jsx:46 cn[kind]"
+    ]
+   },
+   "parameter class": {
+    "count": 2,
+    "examples": [
+     "docs/assets/javascript/shop.js:846 className",
+     "docs/assets/javascript/shop.js:854 icon"
+    ]
+   },
+   "property id": {
+    "count": 1,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/VarItem.jsx:47 cssvar.id"
+    ]
+   },
+   "unknown-member module-member": {
+    "count": 1,
+    "examples": [
+     "docs/_react/bulma-customizer/src/components/Color.jsx:175 side"
+    ]
+   }
+  },
+  "uncertain": {
+   "edges": 8846500,
+   "references": 98895,
+   "examples": [
+    {
+     "site": "css/bulma.css:10157",
+     "symbol": "bulma-fixed-grid",
+     "to": "css/bulma.css:10113 container bulma-fixed-grid",
+     "uncertain": {
+      "reason": "the nearest ancestor container wins",
+      "candidates": [
+       "css/bulma.css:10113 container bulma-fixed-grid",
+       "css/bulma.min.css:3 container bulma-fixed-grid",
+       "css/versions/bulma-no-dark-mode.css:7310 container bulma-fixed-grid",
+       "css/versions/bulma-no-dark-mode.min.css:3 container bulma-fixed-grid",
+       "css/versions/bulma-no-helpers-prefixed.css:10113 container bulma-fixed-grid",
+       "css/versions/bulma-no-helpers-prefixed.min.css:3 container bulma-fixed-grid",
+       "css/versions/bulma-no-helpers.css:10113 container bulma-fixed-grid",
+       "css/versions/bulma-no-helpers.min.css:3 container bulma-fixed-grid",
+       "css/versions/bulma-prefixed.css:10113 container bulma-fixed-grid",
+       "css/versions/bulma-prefixed.min.css:3 container bulma-fixed-grid",
+       "docs/assets/css/website.css:14603 container bulma-fixed-grid",
+       "docs/assets/css/website.min.css:2 container bulma-fixed-grid"
+      ]
+     }
+    },
+    {
+     "site": "css/versions/bulma-no-helpers.css:13192",
+     "symbol": "--bulma-hero-s",
+     "to": "css/versions/bulma-no-helpers-prefixed.css:13551 --bulma-hero-s",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "css/bulma.css:13181 --bulma-hero-s",
+       "css/bulma.css:13218 --bulma-hero-s",
+       "css/bulma.css:13255 --bulma-hero-s",
+       "css/bulma.css:13292 --bulma-hero-s",
+       "css/bulma.css:13329 --bulma-hero-s",
+       "css/bulma.css:13366 --bulma-hero-s",
+       "css/bulma.css:13403 --bulma-hero-s",
+       "css/bulma.css:13440 --bulma-hero-s",
+       "css/bulma.css:13477 --bulma-hero-s",
+       "css/bulma.css:13514 --bulma-hero-s",
+       "css/bulma.css:13551 --bulma-hero-s",
+       "css/bulma.min.css:3 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10378 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10415 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10452 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10489 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10526 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10563 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10600 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10637 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10674 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10711 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.css:10748 --bulma-hero-s",
+       "css/versions/bulma-no-dark-mode.min.css:3 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13181 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13218 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13255 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13292 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13329 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13366 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13403 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13440 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13477 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13514 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.css:13551 --bulma-hero-s",
+       "css/versions/bulma-no-helpers-prefixed.min.css:3 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13181 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13218 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13255 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13292 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13329 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13366 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13403 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13440 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13477 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13514 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.css:13551 --bulma-hero-s",
+       "css/versions/bulma-no-helpers.min.css:3 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13181 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13218 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13255 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13292 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13329 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13366 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13403 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13440 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13477 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13514 --bulma-hero-s",
+       "css/versions/bulma-prefixed.css:13551 --bulma-hero-s",
+       "css/versions/bulma-prefixed.min.css:3 --bulma-hero-s",
+       "docs/assets/css/website.css:17671 --bulma-hero-s",
+       "docs/assets/css/website.css:17708 --bulma-hero-s",
+       "docs/assets/css/website.css:17745 --bulma-hero-s",
+       "docs/assets/css/website.css:17782 --bulma-hero-s",
+       "docs/assets/css/website.css:17819 --bulma-hero-s",
+       "docs/assets/css/website.css:17856 --bulma-hero-s",
+       "docs/assets/css/website.css:17893 --bulma-hero-s",
+       "docs/assets/css/website.css:17930 --bulma-hero-s",
+       "docs/assets/css/website.css:17967 --bulma-hero-s",
+       "docs/assets/css/website.css:18004 --bulma-hero-s",
+       "docs/assets/css/website.css:18041 --bulma-hero-s",
+       "docs/assets/css/website.css:18078 --bulma-hero-s",
+       "docs/assets/css/website.css:18115 --bulma-hero-s",
+       "docs/assets/css/website.css:18152 --bulma-hero-s",
+       "docs/assets/css/website.css:18189 --bulma-hero-s",
+       "docs/assets/css/website.css:18226 --bulma-hero-s",
+       "docs/assets/css/website.css:18263 --bulma-hero-s",
+       "docs/assets/css/website.css:18300 --bulma-hero-s",
+       "docs/assets/css/website.css:18337 --bulma-hero-s",
+       "docs/assets/css/website.css:18374 --bulma-hero-s",
+       "docs/assets/css/website.css:18411 --bulma-hero-s",
+       "docs/assets/css/website.min.css:2 --bulma-hero-s"
+      ]
+     }
+    },
+    {
+     "site": "docs/assets/css/website.css:110",
+     "symbol": "--bulma-dark-s",
+     "to": "css/versions/bulma-prefixed.min.css:2 --bulma-dark-s",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "css/bulma.css:1016 --bulma-dark-s",
+       "css/bulma.css:115 --bulma-dark-s",
+       "css/bulma.css:1934 --bulma-dark-s",
+       "css/bulma.min.css:2 --bulma-dark-s",
+       "css/versions/bulma-no-dark-mode.css:18854 --bulma-dark-s",
+       "css/versions/bulma-no-dark-mode.min.css:3 --bulma-dark-s",
+       "css/versions/bulma-no-helpers-prefixed.css:1016 --bulma-dark-s",
+       "css/versions/bulma-no-helpers-prefixed.css:115 --bulma-dark-s",
+       "css/versions/bulma-no-helpers-prefixed.css:1934 --bulma-dark-s",
+       "css/versions/bulma-no-helpers-prefixed.min.css:2 --bulma-dark-s",
+       "css/versions/bulma-no-helpers.css:1016 --bulma-dark-s",
+       "css/versions/bulma-no-helpers.css:115 --bulma-dark-s",
+       "css/versions/bulma-no-helpers.css:1934 --bulma-dark-s",
+       "css/versions/bulma-no-helpers.min.css:2 --bulma-dark-s",
+       "css/versions/bulma-prefixed.css:1016 --bulma-dark-s",
+       "css/versions/bulma-prefixed.css:115 --bulma-dark-s",
+       "css/versions/bulma-prefixed.css:1934 --bulma-dark-s",
+       "css/versions/bulma-prefixed.min.css:2 --bulma-dark-s",
+       "docs/assets/css/custom.css:3915 --bulma-dark-s",
+       "docs/assets/css/custom.css:4815 --bulma-dark-s",
+       "docs/assets/css/custom.css:5732 --bulma-dark-s",
+       "docs/assets/css/website.css:114 --bulma-dark-s",
+       "docs/assets/css/website.css:2035 --bulma-dark-s",
+       "docs/assets/css/website.css:3993 --bulma-dark-s",
+       "docs/assets/css/website.min.css:1 --bulma-dark-s"
+      ]
+     }
+    },
+    {
+     "site": "docs/documentation/columns/sizes.html:193",
+     "symbol": ".column",
+     "to": "docs/assets/css/website.css:14063 @media screen and (min-width: 1408px) { .column.is-5-fullhd }",
+     "uncertain": {
+      "reason": "sheet-not-proven-loaded"
+     }
+    },
+    {
+     "site": "docs/documentation/form/input.html:394",
+     "symbol": ".column",
+     "to": "docs/assets/css/website.min.css:2 @media screen and (min-width:1216px) { .column.is-2-widescreen }",
+     "uncertain": {
+      "reason": "sheet-not-proven-loaded"
+     }
+    }
+   ]
+  }
+ },
+ "hand_check": [
+  {
+   "site": "docs/_layouts/docs.html:13",
+   "kind": "class",
+   "symbol": ".bd-docs-overlay",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 7,
+   "graph_ends": 7
+  },
+  {
+   "site": "docs/_layouts/docs.html:13",
+   "kind": "class",
+   "symbol": ".js-toggle",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "docs/_layouts/docs.html:15",
+   "kind": "class",
+   "symbol": ".button",
+   "right": false,
+   "missing": {
+    ".button": [
+     "docs/_react/bulma-customizer/src/App.module.css:53"
+    ]
+   },
+   "extra": {},
+   "expected_ends": 830,
+   "graph_ends": 829
+  },
+  {
+   "site": "docs/_layouts/docs.html:15",
+   "kind": "class",
+   "symbol": ".bd-docs-button",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 11,
+   "graph_ends": 11
+  },
+  {
+   "site": "docs/_layouts/docs.html:16",
+   "kind": "class",
+   "symbol": ".fas",
+   "right": false,
+   "missing": {
+    ".fas": [
+     "hole:no-rule"
+    ]
+   },
+   "extra": {
+    ".fas": [
+     "docs/_sass/docs/docs.scss:124",
+     "docs/_sass/docs/docs.scss:162",
+     "docs/assets/css/website.css:33713",
+     "docs/assets/css/website.css:33745",
+     "docs/assets/css/website.min.css:2"
+    ]
+   },
+   "expected_ends": 1,
+   "graph_ends": 5
+  },
+  {
+   "site": "docs/_layouts/docs.html:16",
+   "kind": "class",
+   "symbol": ".fa-arrow-right-from-bracket",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "docs/_layouts/docs.html:19",
+   "kind": "class",
+   "symbol": ".bd-docs-menu",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 15,
+   "graph_ends": 15
+  },
+  {
+   "site": "docs/_layouts/docs.html:35",
+   "kind": "class",
+   "symbol": ".bd-docs-content",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 3,
+   "graph_ends": 3
+  },
+  {
+   "site": "docs/_layouts/docs.html:35",
+   "kind": "class",
+   "symbol": ".algolia-content",
+   "right": false,
+   "missing": {},
+   "extra": {
+    ".algolia-content": [
+     "hole:interpolated-selector"
+    ]
+   },
+   "expected_ends": 0,
+   "graph_ends": 1
+  },
+  {
+   "site": "docs/_layouts/docs.html:37",
+   "kind": "class",
+   "symbol": ".content",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 250,
+   "graph_ends": 250
+  },
+  {
+   "site": "docs/_layouts/docs.html:15",
+   "kind": "id",
+   "symbol": "#js-menu-toggle",
+   "right": false,
+   "missing": {},
+   "extra": {
+    "#js-menu-toggle": [
+     "hole:no-rule"
+    ]
+   },
+   "expected_ends": 0,
+   "graph_ends": 1
+  }
+ ],
+ "components": {},
+ "seconds": 117.8
+}

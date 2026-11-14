@@ -1,0 +1,504 @@
+{
+ "case": "v3-admin-vite",
+ "commit": "c2c895d71d571e9c18c2453fa85469a479c79fc6",
+ "code": {
+  "css.py": "49854bf56415",
+  "css_astro.js": "60aedc755928",
+  "css_astro.py": "83ae4f9723f2",
+  "css_engines.json": "2cf04c7179fb",
+  "css_expressions.js": "f576bae77c67",
+  "css_less.js": "7ea43d4fc4c2",
+  "css_less.py": "1f082b76eb1f",
+  "css_sass.js": "446f2ff01f26",
+  "css_sass.py": "45180a7e614c",
+  "css_stylus.js": "22c5cf93eff5",
+  "css_stylus.py": "bbe7cdfae4fe",
+  "css_svelte.js": "3814c915a7a8",
+  "css_svelte.py": "6c91a62cd587",
+  "css_tailwind.js": "4dca22ec9809",
+  "css_tailwind.py": "c9419a41c53a",
+  "css_typescript.js": "a8e11983317d",
+  "css_typescript.py": "6ff05448a8d6",
+  "css_vue.js": "4fbf1fcf22e4",
+  "css_vue.py": "93c02e4a9797"
+ },
+ "files_given": 131,
+ "npm_install_seconds": 29.9,
+ "node_modules": "/work/pnpm/src/node_modules",
+ "report": {
+  "language": "css",
+  "indexer": {
+   "name": "codebase-map stylesheet.py + sass-parser + @vue/compiler-sfc + sass-parser + typescript + tailwindcss",
+   "version": "e62b3f368913 + 0.5.6 + 3.5.45 + 0.5.6 + 5.9.3 + None",
+   "seconds": 6.0,
+   "peak_mb": 699
+  },
+  "files": {
+   "snapshot": 131,
+   "indexed": 131,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 624,
+  "edges": 952,
+  "symbols_by_kind": {
+   "external class": 6,
+   "external custom-property": 80,
+   "external module": 5,
+   "project custom-property": 167,
+   "project keyframes": 2,
+   "project mixin": 1,
+   "project module": 68,
+   "project rule": 284,
+   "project script-binding": 4,
+   "project variable": 7
+  },
+  "edges_by_end": {
+   "external class": 12,
+   "external custom-property": 222,
+   "external import": 5,
+   "project class": 392,
+   "project custom-property": 235,
+   "project id": 6,
+   "project import": 26,
+   "project keyframes": 2,
+   "project mixin": 6,
+   "project placeholder": 25,
+   "project sass-variable": 12,
+   "project script": 2,
+   "project v-bind": 7
+  },
+  "callable_chain_hops": {},
+  "hop_tags": {
+   ":class": 32,
+   "child-root": 10,
+   "paths": 8,
+   "import-group": 4,
+   "classList": 4,
+   "literal-type": 4,
+   "url-suffix": 3,
+   "parameter": 1
+  },
+  "edges_uncertain": {
+   "cascade and inheritance pick one per element": 421,
+   "Sass scope: several declarations": 4
+  },
+  "edges_removed": {},
+  "holes_by_class": {
+   "interpolated-selector rule": 1,
+   "no-font-face font-face": 8,
+   "no-rule class": 3,
+   "spread class": 1,
+   "undeclared custom-property": 5,
+   "url-scheme import": 1,
+   "variable class": 2
+  },
+  "holes": [
+   {
+    "class": "no-font-face",
+    "kind": "font-face",
+    "reason": "-",
+    "count": 8,
+    "examples": [
+     "src/common/assets/styles/index.scss:41 Inter",
+     "src/common/assets/styles/index.scss:41 Helvetica",
+     "src/common/assets/styles/index.scss:41 Microsoft YaHei"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "-",
+    "count": 5,
+    "examples": [
+     "src/common/assets/styles/view-transition.scss:15 --v3-theme-x",
+     "src/common/assets/styles/view-transition.scss:15 --v3-theme-y",
+     "src/common/assets/styles/view-transition.scss:18 --v3-theme-x"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "class",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "src/common/components/Notify/index.vue:55 notify",
+     "src/common/components/Notify/index.vue:67 demo-tabs",
+     "src/common/composables/useTheme.ts:52 normal"
+    ]
+   },
+   {
+    "class": "variable",
+    "kind": "class",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "src/layouts/modes/LeftMode.vue:36 layoutClasses",
+     "src/layouts/modes/LeftTopMode.vue:21 layoutClasses"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "rule",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "src/common/assets/styles/theme/core/index.scss:1 .#{$theme-name}"
+    ]
+   },
+   {
+    "class": "spread",
+    "kind": "class",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "src/common/composables/useTheme.ts:58 ...otherThemeNameList"
+    ]
+   },
+   {
+    "class": "url-scheme",
+    "kind": "import",
+    "reason": "virtual:uno.css",
+    "count": 1,
+    "examples": [
+     "src/main.ts:15 virtual:uno.css"
+    ]
+   }
+  ],
+  "external_packages": {
+   "npm element-plus@2.14.2": 236,
+   "npm normalize.css@8.0.1": 1,
+   "npm nprogress@0.2.0": 1,
+   "npm vxe-table@4.6.25": 1
+  }
+ },
+ "summary": {
+  "nodes_by_kind": {
+   "rule": 284,
+   "custom-property": 167,
+   "custom-property external": 80,
+   "module": 68,
+   "variable": 7,
+   "class external": 6,
+   "module external": 5,
+   "script-binding": 4,
+   "keyframes": 2,
+   "mixin": 1
+  },
+  "edges_by_kind_end": {
+   "class external": 12,
+   "class project": 392,
+   "custom-property external": 222,
+   "custom-property project": 235,
+   "id project": 6,
+   "import external": 5,
+   "import project": 26,
+   "keyframes project": 2,
+   "mixin project": 6,
+   "placeholder project": 25,
+   "sass-variable project": 12,
+   "script project": 2,
+   "v-bind project": 7
+  },
+  "edges_by_chain": {
+   "-": 890,
+   ":class": 32,
+   "child-root": 10,
+   "paths": 8,
+   "import-group": 4,
+   "classList > literal-type": 4,
+   "url-suffix": 3,
+   "parameter": 1
+  },
+  "holes_by_class": {
+   "no-font-face font-face": {
+    "count": 8,
+    "examples": [
+     "src/common/assets/styles/index.scss:41 Inter",
+     "src/common/assets/styles/index.scss:41 Helvetica",
+     "src/common/assets/styles/index.scss:41 Microsoft YaHei"
+    ]
+   },
+   "undeclared custom-property": {
+    "count": 5,
+    "examples": [
+     "src/common/assets/styles/view-transition.scss:15 --v3-theme-x",
+     "src/common/assets/styles/view-transition.scss:15 --v3-theme-y",
+     "src/common/assets/styles/view-transition.scss:18 --v3-theme-x"
+    ]
+   },
+   "no-rule class": {
+    "count": 3,
+    "examples": [
+     "src/common/components/Notify/index.vue:55 notify",
+     "src/common/components/Notify/index.vue:67 demo-tabs",
+     "src/common/composables/useTheme.ts:52 normal"
+    ]
+   },
+   "variable class": {
+    "count": 2,
+    "examples": [
+     "src/layouts/modes/LeftMode.vue:36 layoutClasses",
+     "src/layouts/modes/LeftTopMode.vue:21 layoutClasses"
+    ]
+   },
+   "interpolated-selector rule": {
+    "count": 1,
+    "examples": [
+     "src/common/assets/styles/theme/core/index.scss:1 .#{$theme-name}"
+    ]
+   },
+   "spread class": {
+    "count": 1,
+    "examples": [
+     "src/common/composables/useTheme.ts:58 ...otherThemeNameList"
+    ]
+   },
+   "url-scheme import": {
+    "count": 1,
+    "examples": [
+     "src/main.ts:15 virtual:uno.css"
+    ]
+   }
+  },
+  "uncertain": {
+   "edges": 425,
+   "references": 144,
+   "examples": [
+    {
+     "site": "src/common/assets/styles/variables.css:5",
+     "symbol": "--el-text-color-primary",
+     "to": "src/common/assets/styles/element-plus.css:58 --el-text-color-primary",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "element-plus/dist/index.css --el-text-color-primary",
+       "element-plus/theme-chalk/dark/css-vars.css --el-text-color-primary",
+       "src/common/assets/styles/element-plus.css:58 --el-text-color-primary"
+      ]
+     }
+    },
+    {
+     "site": "src/common/assets/styles/vxe-table.css:17",
+     "symbol": "--el-color-primary-light-3",
+     "to": "element-plus/theme-chalk/dark/css-vars.css --el-color-primary-light-3",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "element-plus/dist/index.css --el-color-primary-light-3",
+       "element-plus/theme-chalk/dark/css-vars.css --el-color-primary-light-3",
+       "src/common/assets/styles/element-plus.css:11 --el-color-primary-light-3"
+      ]
+     }
+    },
+    {
+     "site": "src/common/assets/styles/vxe-table.css:55",
+     "symbol": "--el-fill-color-light",
+     "to": "src/common/assets/styles/element-plus.css:74 --el-fill-color-light",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "element-plus/dist/index.css --el-fill-color-light",
+       "element-plus/theme-chalk/dark/css-vars.css --el-fill-color-light",
+       "src/common/assets/styles/element-plus.css:74 --el-fill-color-light"
+      ]
+     }
+    },
+    {
+     "site": "src/common/assets/styles/theme/core/layouts.scss:10",
+     "symbol": "--el-bg-color",
+     "to": "element-plus/theme-chalk/dark/css-vars.css --el-bg-color",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "element-plus/dist/index.css --el-bg-color",
+       "element-plus/theme-chalk/dark/css-vars.css --el-bg-color",
+       "src/common/assets/styles/element-plus.css:80 --el-bg-color"
+      ]
+     }
+    },
+    {
+     "site": "src/layouts/components/TagsView/ScrollPane.vue:142",
+     "symbol": "--el-border-color-darker",
+     "to": "element-plus/dist/index.css --el-border-color-darker",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "element-plus/dist/index.css --el-border-color-darker",
+       "element-plus/theme-chalk/dark/css-vars.css --el-border-color-darker",
+       "src/common/assets/styles/element-plus.css:64 --el-border-color-darker"
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "hand_check": [
+  {
+   "site": "src/layouts/components/Logo/index.vue:17",
+   "kind": "class",
+   "symbol": ".layout-logo-container",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 4,
+   "graph_ends": 4
+  },
+  {
+   "site": "src/layouts/components/Logo/index.vue:17",
+   "kind": "class",
+   "symbol": ".collapse",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 4,
+   "graph_ends": 4
+  },
+  {
+   "site": "src/layouts/components/Logo/index.vue:20",
+   "kind": "class",
+   "symbol": ".layout-logo",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/pages/login/index.vue:89",
+   "kind": "class",
+   "symbol": ".login-container",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 9,
+   "graph_ends": 9
+  },
+  {
+   "site": "src/pages/login/index.vue:90",
+   "kind": "class",
+   "symbol": ".theme-switch",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/layouts/components/AppMain/index.vue:12",
+   "kind": "class",
+   "symbol": ".app-main",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 10,
+   "graph_ends": 10
+  },
+  {
+   "site": "src/layouts/components/AppMain/index.vue:13",
+   "kind": "class",
+   "symbol": ".app-scrollbar",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/layouts/components/AppMain/index.vue:18",
+   "kind": "class",
+   "symbol": ".app-container-grow",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/layouts/components/Footer/index.vue:6",
+   "kind": "class",
+   "symbol": ".layout-footer",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/pages/error/components/Layout.vue:2",
+   "kind": "class",
+   "symbol": ".error",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/pages/error/components/Layout.vue:3",
+   "kind": "class",
+   "symbol": ".error-svg",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/layouts/modes/LeftMode.vue:38",
+   "kind": "class",
+   "symbol": ".drawer-bg",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/layouts/modes/LeftMode.vue:42",
+   "kind": "class",
+   "symbol": ".main-container",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 4,
+   "graph_ends": 4
+  },
+  {
+   "site": "src/layouts/components/Hamburger/index.vue:21",
+   "kind": "class",
+   "symbol": ".icon",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/pages/demo/level2/index.vue:2",
+   "kind": "class",
+   "symbol": ".app-container",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  }
+ ],
+ "components": {
+  "vue_found": 47,
+  "vue_read": 47,
+  "style_blocks": {
+   "scoped scss": 36,
+   "global scss": 1
+  },
+  "class_arcs": {
+   "another component certain": 11,
+   "external certain": 10,
+   "global sheet certain": 55,
+   "own component certain": 314,
+   "parent component (child-root) certain": 10
+  }
+ },
+ "seconds": 37.2
+}

@@ -294,6 +294,7 @@ SASS_EXPECTED = [
     *_rows(f"{ST}:26", "sass-variable", "$size", [f"{ST}:25 $size"], ("loop",)),
     *_rows(f"{ST}:29", "sass-variable", "$inner", [f"{ST}:16 $inner"]),
     *_rows(f"{ST}:31", "mixin", "legacy-pad", [S_LPAD]),
+    *_rows(f"{ST}:33", "keyframes", "pulse", [f"{ST}:32 @keyframes pulse"]),  # percentage keyframe selectors
     *_rows(f"{SX}:1", "import", "tokens", [SK]),
     *_rows(f"{SX}:2", "sass-variable", "tokens.$gap", [S_GAP]),
     *_rows(f"{SX}:3", "sass-variable", "$x", [S_PAD], ("parameter",)),

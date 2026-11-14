@@ -2,7 +2,7 @@
  "case": "tududi",
  "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
  "code": {
-  "css.py": "517c5214a3d8",
+  "css.py": "49854bf56415",
   "css_astro.js": "60aedc755928",
   "css_astro.py": "83ae4f9723f2",
   "css_engines.json": "2cf04c7179fb",
@@ -17,21 +17,21 @@
   "css_svelte.py": "6c91a62cd587",
   "css_tailwind.js": "4dca22ec9809",
   "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "198b20335c87",
+  "css_typescript.js": "a8e11983317d",
   "css_typescript.py": "6ff05448a8d6",
   "css_vue.js": "4fbf1fcf22e4",
   "css_vue.py": "93c02e4a9797"
  },
  "files_given": 1708,
- "npm_install_seconds": 475.4,
+ "npm_install_seconds": 536.4,
  "node_modules": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules",
  "report": {
   "language": "css",
   "indexer": {
    "name": "codebase-map stylesheet.py + typescript + tailwindcss",
    "version": "e62b3f368913 + 5.9.3 + 3.4.19",
-   "seconds": 18.0,
-   "peak_mb": 1529
+   "seconds": 23.0,
+   "peak_mb": 1450
   },
   "files": {
    "snapshot": 1708,
@@ -259,7 +259,7 @@
    {
     "class": "unresolved-import",
     "kind": "script",
-    "reason": "no checkout file",
+    "reason": "no file of the snapshot",
     "count": 1,
     "examples": [
      "backend/modules/landing/views/partials/head-assets.ejs:10 https://dyneteq.com/admin/s.js"
@@ -438,11 +438,7 @@
      "symbol": ".container",
      "to": "tailwindcss container",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "backend/modules/landing/views/partials/styles.ejs:261 .container",
-       "tailwindcss container"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
@@ -450,10 +446,7 @@
      "symbol": ".max-w-2xl",
      "to": "tailwindcss max-w-2xl",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "tailwindcss max-w-2xl"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
@@ -461,10 +454,7 @@
      "symbol": ".border",
      "to": "tailwindcss border",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "tailwindcss border"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
@@ -472,10 +462,7 @@
      "symbol": ".bg-red-100",
      "to": "tailwindcss bg-red-100",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "tailwindcss bg-red-100"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
@@ -483,45 +470,7 @@
      "symbol": ".markdown-content",
      "to": "frontend/styles/markdown.css:163 .dark .markdown-content .markdown-table thead th",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "frontend/styles/markdown.css:105 .markdown-content pre code",
-       "frontend/styles/markdown.css:112 .markdown-content code",
-       "frontend/styles/markdown.css:117 .markdown-content pre > code",
-       "frontend/styles/markdown.css:123 .markdown-content pre",
-       "frontend/styles/markdown.css:129 .markdown-content table",
-       "frontend/styles/markdown.css:136 .markdown-content .markdown-table-wrapper",
-       "frontend/styles/markdown.css:146 .dark .markdown-content .markdown-table-wrapper",
-       "frontend/styles/markdown.css:152 .markdown-content .markdown-table-wrapper .markdown-table",
-       "frontend/styles/markdown.css:157 .markdown-content .markdown-table thead th",
-       "frontend/styles/markdown.css:163 .dark .markdown-content .markdown-table thead th",
-       "frontend/styles/markdown.css:169 .markdown-content .markdown-table tbody tr:nth-child(odd) td",
-       "frontend/styles/markdown.css:173 .dark .markdown-content .markdown-table tbody tr:nth-child(odd) td",
-       "frontend/styles/markdown.css:177 .markdown-content .markdown-table th, .markdown-content .markdown-table td",
-       "frontend/styles/markdown.css:182 .markdown-content .markdown-table tr:last-child td",
-       "frontend/styles/markdown.css:186 .markdown-content .markdown-table td + td, .markdown-content .markdown-table th + th",
-       "frontend/styles/markdown.css:191 .dark .markdown-content .markdown-table th, .dark .markdown-content .markdown-table td",
-       "frontend/styles/markdown.css:196 .dark .markdown-content .markdown-table td + td, .dark .markdown-content .markdown-table th + th",
-       "frontend/styles/markdown.css:201 .markdown-content blockquote",
-       "frontend/styles/markdown.css:206 .dark .markdown-content blockquote",
-       "frontend/styles/markdown.css:211 .markdown-content ul li:has(input[type=\"checkbox\"])",
-       "frontend/styles/markdown.css:216 .markdown-content input[type=\"checkbox\"]",
-       "frontend/styles/markdown.css:222 .markdown-content li > p",
-       "frontend/styles/markdown.css:227 .markdown-content li:has(> p) + li",
-       "frontend/styles/markdown.css:232 .markdown-content ul ul",
-       "frontend/styles/markdown.css:236 .markdown-content ul ul ul",
-       "frontend/styles/markdown.css:240 .markdown-content ul ul ul ul",
-       "frontend/styles/markdown.css:245 .markdown-content ul ul, .markdown-content ol ol, .markdown-content ul ol, .markdown-content ol ul",
-       "frontend/styles/markdown.css:254 .markdown-content pre",
-       "frontend/styles/markdown.css:260 .dark .markdown-content pre",
-       "frontend/styles/markdown.css:266 @media (max-width: 768px) { .markdown-content table }",
-       "frontend/styles/markdown.css:270 @media (max-width: 768px) { .markdown-content th, .markdown-content td }",
-       "frontend/styles/markdown.css:3 .markdown-content pre code, .markdown-content pre code.hljs, .hljs",
-       "frontend/styles/markdown.css:59 .dark .hljs, .dark .markdown-content pre code, .dark .markdown-content pre code.hljs",
-       "frontend/styles/markdown.css:90 .markdown-content",
-       "frontend/styles/markdown.css:95 .markdown-content p:last-child",
-       "frontend/styles/markdown.css:99 .markdown-content pre"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     }
    ]
@@ -729,5 +678,6 @@
    "graph_ends": 1
   }
  ],
- "seconds": 498.2
+ "components": {},
+ "seconds": 565.6
 }

@@ -447,8 +447,9 @@ def _pnpm_modules(target: Path) -> Path | None:
     for name in ("package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"):
         if (target / name).is_file():
             shutil.copyfile(target / name, copy / name)
-    run = subprocess.run(["npx", "--yes", manager.split("+")[0], "install", "--frozen-lockfile", "--ignore-scripts"],
-                         cwd=copy, capture_output=True, text=True, timeout=1800)
+    # npx runs from a folder of its own: in the copy it would read the manifest npm refused and fail the same way.
+    run = subprocess.run(["npx", "--yes", manager.split("+")[0], "--dir", str(copy), "install", "--frozen-lockfile",
+                          "--ignore-scripts"], cwd="/", capture_output=True, text=True, timeout=1800)
     print("pnpm", run.returncode, run.stderr[-400:], flush=True)
     return copy / "node_modules" if run.returncode == 0 and (copy / "node_modules").is_dir() else None
 

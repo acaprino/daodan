@@ -144,11 +144,29 @@ function convert(node, text) {
   }
 }
 
+// sass-parser 0.5.6 refuses a percentage keyframe selector (`0% { ... }`, "expected selector"), which Dart Sass
+// reads. Inside each `@keyframes` block such a selector is written `to`, on the same line: the walker keeps no
+// keyframe selector, only the declarations under it.
+function keyframeSelectors(text) {
+  let out = text;
+  const head = /@(?:-[a-z]+-)?keyframes\b[^{;]*\{/gi;
+  let match;
+  while ((match = head.exec(out))) {
+    let depth = 1, i = match.index + match[0].length;
+    for (; i < out.length && depth; i++) depth += out[i] === "{" ? 1 : out[i] === "}" ? -1 : 0;
+    const body = out.slice(match.index + match[0].length, i - 1)
+      .replace(/(^\s*|[{};,]\s*)(\d+(?:\.\d+)?%)(?=\s*[,{])/g, (all, before, pct) => before + "to".padEnd(pct.length, " "));
+    out = out.slice(0, match.index + match[0].length) + body + out.slice(i - 1);
+    head.lastIndex = match.index + match[0].length + body.length;
+  }
+  return out;
+}
+
 const out = {};
 for (const item of cfg.items) {
   try {
     const text = item.text !== undefined ? item.text : fs.readFileSync(item.path, "utf8");
-    const root = (item.syntax === "sass" ? sp.sass : sp.scss).parse(text);
+    const root = (item.syntax === "sass" ? sp.sass : sp.scss).parse(keyframeSelectors(text));
     out[item.key] = { tree: root.nodes.map((n) => convert(n, text)).filter(Boolean) };
   } catch (error) {
     out[item.key] = { error: String((error && error.message) || error).split("\n")[0].slice(0, 200) };

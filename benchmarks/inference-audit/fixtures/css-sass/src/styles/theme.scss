@@ -29,3 +29,5 @@ $local-gap: kit.$gap;
 .uses-inner { margin: $inner; }
 .ghost { margin: kit.$private-x; }
 .from-import { @include legacy-pad(2px); }
+@keyframes pulse { 0% { opacity: 0; } 50.5%, 100% { opacity: 1; } }
+.pulse { animation: pulse 1s; }

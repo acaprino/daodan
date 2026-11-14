@@ -2,7 +2,7 @@
  "case": "saas-starter",
  "commit": "6e33e58b1e553a41fe22e6b941a7229a002de361",
  "code": {
-  "css.py": "517c5214a3d8",
+  "css.py": "49854bf56415",
   "css_astro.js": "60aedc755928",
   "css_astro.py": "83ae4f9723f2",
   "css_engines.json": "2cf04c7179fb",
@@ -17,21 +17,21 @@
   "css_svelte.py": "6c91a62cd587",
   "css_tailwind.js": "4dca22ec9809",
   "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "198b20335c87",
+  "css_typescript.js": "a8e11983317d",
   "css_typescript.py": "6ff05448a8d6",
   "css_vue.js": "4fbf1fcf22e4",
   "css_vue.py": "93c02e4a9797"
  },
  "files_given": 43,
- "npm_install_seconds": 37.1,
+ "npm_install_seconds": 36.2,
  "node_modules": "/root/.cache/daodan/npm/be8f5c5d84cc1467/node_modules",
  "report": {
   "language": "css",
   "indexer": {
    "name": "codebase-map stylesheet.py + typescript + tailwindcss",
    "version": "e62b3f368913 + 5.9.3 + 4.1.7",
-   "seconds": 5.4,
-   "peak_mb": 562
+   "seconds": 4.5,
+   "peak_mb": 579
   },
   "files": {
    "snapshot": 43,
@@ -39,12 +39,12 @@
    "missing": [],
    "missing_count": 0
   },
-  "nodes": 475,
-  "edges": 1061,
+  "nodes": 560,
+  "edges": 1310,
   "symbols_by_kind": {
-   "external class": 280,
+   "external class": 364,
    "external custom-property": 2,
-   "external layer": 2,
+   "external layer": 3,
    "external module": 2,
    "project custom-property": 177,
    "project module": 1,
@@ -52,41 +52,42 @@
    "project variant": 1
   },
   "edges_by_end": {
-   "external class": 818,
+   "external class": 1063,
    "external custom-property": 8,
    "external import": 2,
    "external layer": 5,
    "project custom-property": 222,
    "project import": 1,
-   "project variant": 5
+   "project variant": 9
   },
   "callable_chain_hops": {},
   "hop_tags": {
+   "tailwind-merge": 245,
    "cva": 65,
    "@apply": 7
   },
   "edges_uncertain": {
-   "sheet-not-proven-loaded": 805,
+   "sheet-not-proven-loaded": 1050,
    "cascade and inheritance pick one per element": 229
   },
   "edges_removed": {},
   "holes_by_class": {
-   "call class": 24,
    "no-font-face font-face": 3,
    "no-rule class": 1,
    "no-rule id": 11,
+   "parameter class": 23,
    "property class": 1
   },
   "holes": [
    {
-    "class": "call",
+    "class": "parameter",
     "kind": "class",
     "reason": "-",
-    "count": 24,
+    "count": 23,
     "examples": [
-     "components/ui/card.tsx:9 cn( \"bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm\", className )",
-     "components/ui/input.tsx:10 cn( \"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground da...",
-     "components/ui/dropdown-menu.tsx:76 cn( \"focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructi..."
+     "components/ui/card.tsx:9 className",
+     "components/ui/input.tsx:10 className",
+     "components/ui/dropdown-menu.tsx:76 className"
     ]
    },
    {
@@ -131,42 +132,43 @@
    }
   ],
   "external_packages": {
-   "npm tailwindcss@4.1.7": 832,
+   "npm tailwindcss@4.1.7": 1077,
    "npm tw-animate-css@1.4.0": 1
   }
  },
  "summary": {
   "nodes_by_kind": {
-   "class external": 280,
+   "class external": 364,
    "custom-property": 177,
    "rule": 10,
+   "layer external": 3,
    "module external": 2,
    "custom-property external": 2,
-   "layer external": 2,
    "variant": 1,
    "module": 1
   },
   "edges_by_kind_end": {
-   "class external": 818,
+   "class external": 1063,
    "custom-property external": 8,
    "custom-property project": 222,
    "import external": 2,
    "import project": 1,
    "layer external": 5,
-   "variant project": 5
+   "variant project": 9
   },
   "edges_by_chain": {
-   "-": 989,
+   "-": 993,
+   "tailwind-merge": 245,
    "cva": 65,
    "@apply": 7
   },
   "holes_by_class": {
-   "call class": {
-    "count": 24,
+   "parameter class": {
+    "count": 23,
     "examples": [
-     "components/ui/card.tsx:9 cn( \"bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm\", className )",
-     "components/ui/input.tsx:10 cn( \"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground da...",
-     "components/ui/dropdown-menu.tsx:76 cn( \"focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructi..."
+     "components/ui/card.tsx:9 className",
+     "components/ui/input.tsx:10 className",
+     "components/ui/dropdown-menu.tsx:76 className"
     ]
    },
    "no-rule id": {
@@ -199,8 +201,8 @@
    }
   },
   "uncertain": {
-   "edges": 1034,
-   "references": 868,
+   "edges": 1279,
+   "references": 1113,
    "examples": [
     {
      "site": "app/globals.css:12",
@@ -217,50 +219,35 @@
      }
     },
     {
-     "site": "app/globals.css:255",
-     "symbol": "--chart-3",
-     "to": "app/globals.css:143 --chart-3",
+     "site": "components/ui/card.tsx:56",
+     "symbol": ".justify-self-end",
+     "to": "tailwindcss justify-self-end",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element",
-      "candidates": [
-       "app/globals.css:107 --chart-3",
-       "app/globals.css:143 --chart-3",
-       "app/globals.css:192 --chart-3",
-       "app/globals.css:224 --chart-3"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
-     "site": "app/(dashboard)/dashboard/layout.tsx:50",
-     "symbol": ".overflow-y-auto",
-     "to": "tailwindcss overflow-y-auto",
+     "site": "components/ui/avatar.tsx:31",
+     "symbol": ".size-full",
+     "to": "tailwindcss size-full",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "tailwindcss overflow-y-auto"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
-     "site": "app/(dashboard)/layout.tsx:84",
-     "symbol": ".justify-between",
-     "to": "tailwindcss justify-between",
+     "site": "components/ui/dropdown-menu.tsx:131",
+     "symbol": ".data-[disabled]:pointer-events-none",
+     "to": "tailwindcss data-[disabled]:pointer-events-none",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "tailwindcss justify-between"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
-     "site": "app/(dashboard)/pricing/submit-button.tsx:19",
-     "symbol": ".animate-spin",
-     "to": "tailwindcss animate-spin",
+     "site": "app/(dashboard)/page.tsx:82",
+     "symbol": ".lg:mt-0",
+     "to": "tailwindcss lg:mt-0",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "tailwindcss animate-spin"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     }
    ]
@@ -418,5 +405,6 @@
    "graph_ends": 1
   }
  ],
- "seconds": 43.5
+ "components": {},
+ "seconds": 41.7
 }

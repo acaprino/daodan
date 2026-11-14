@@ -2,7 +2,7 @@
  "case": "hn-svelte",
  "commit": "0010bbea06781f11797c71a3497e7e0c1beff702",
  "code": {
-  "css.py": "517c5214a3d8",
+  "css.py": "49854bf56415",
   "css_astro.js": "60aedc755928",
   "css_astro.py": "83ae4f9723f2",
   "css_engines.json": "2cf04c7179fb",
@@ -17,21 +17,21 @@
   "css_svelte.py": "6c91a62cd587",
   "css_tailwind.js": "4dca22ec9809",
   "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "198b20335c87",
+  "css_typescript.js": "a8e11983317d",
   "css_typescript.py": "6ff05448a8d6",
   "css_vue.js": "4fbf1fcf22e4",
   "css_vue.py": "93c02e4a9797"
  },
  "files_given": 20,
- "npm_install_seconds": 43.8,
+ "npm_install_seconds": 61.7,
  "node_modules": "/root/.cache/daodan/npm/802e5e0ab784d2b7/node_modules",
  "report": {
   "language": "css",
   "indexer": {
    "name": "codebase-map stylesheet.py + svelte + typescript + tailwindcss",
    "version": "e62b3f368913 + 5.57.3 + 5.9.3 + None",
-   "seconds": 1.5,
-   "peak_mb": 298
+   "seconds": 1.9,
+   "peak_mb": 304
   },
   "files": {
    "snapshot": 20,
@@ -191,15 +191,7 @@
      "symbol": ".dark",
      "to": "static/global.css:7 html.dark",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded",
-      "candidates": [
-       "src/components/PreloadingIndicator.svelte:45 :global(html).dark .fade",
-       "src/components/ThemeToggler.svelte:74 .dark",
-       "src/components/ThemeToggler.svelte:78 :global(html).dark .dark",
-       "src/routes/item/[id].svelte:27 :global(html).dark .item",
-       "src/routes/item/_Comment.svelte:32 :global(html).dark .comment",
-       "static/global.css:7 html.dark"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
@@ -391,5 +383,6 @@
    "graph_ends": 1
   }
  ],
- "seconds": 46.1
+ "components": {},
+ "seconds": 64.1
 }
