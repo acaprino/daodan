@@ -3,6 +3,7 @@
 **Stato:** approvato il 14 novembre 2026; risposte del proprietario nella sezione 6.
 C e C++ aggiunti il 14 novembre 2026 su richiesta del proprietario: task 10.
 Fogli di stile e loro dialetti aggiunti il 14 novembre 2026 su richiesta del proprietario: task 11.
+Pre-mappa del progetto aggiunta il 14 novembre 2026 su richiesta del proprietario: task 12. Viene dopo il task 5 e prima dei task 6-9: è lei a dire agli indicizzatori cosa indicizzare e come.
 
 > **Per chi esegue:** un task alla volta, nell'ordine. Si segnano solo i passi verificati. Ogni task lascia il prodotto funzionante e non peggiore sulle misure indicate.
 
@@ -187,6 +188,13 @@ Per ogni linguaggio: nella voce di `meta`, in `edge_view.coverage` e negli strum
    - Alternativa: contarli per classe senza salvarli.
    - Quale scegli?
    - **Risposta del proprietario (14 novembre 2026):** la scelta consigliata.
+5. **Renovate nella pre-mappa (task 12).** È il lettore migliore di dipendenze e versioni dichiarate (673 su 861 e 122 su 381), ma ha licenza AGPL-3.0.
+   - Consiglio: Daodan lo scarica nella sua cache e lo lancia come processo separato, senza importarne il codice.
+   - Alternativa: rinunciare e tenere solo Trivy e i lettori di `modules.py` (versioni dichiarate: 25 su 381 con mise).
+   - Quale scegli?
+6. **Cosa è un modulo.** Nei repository veri ci sono unità che oggi nessuno riporta: codice senza build file, chart Helm, moduli buf, target Xcode.
+   - Consiglio: sono unità come le altre, con il loro tipo; il codice senza build file è un'unità `source-tree` senza nome.
+   - Sei d'accordo?
 
 ## 7. Task
 
@@ -438,6 +446,38 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - [ ] **Convenzioni dei framework per il caricamento:** il layout di Next.js sulle pagine del suo albero, `static/` di Sapper, `angular.json` `styles`, HtmlWebpackPlugin. Oggi i loro archi restano incerti.
 - [ ] **Soglia:** su v3-admin-vite, tududi, Bulma, Bootstrap 3, hn.svelte.dev, saas-starter e styled-components-website i conteggi di `results/graph-css-<caso>-checks.json`, nessun file perso senza motivo, verifica a mano almeno 15 su 15 per caso. Giro di conferma del 14 novembre 2026: v3-admin-vite 15 su 15, tududi 20 su 20, Bootstrap 3 15 su 15, hn.svelte.dev 16 su 16, saas-starter 15 su 15, Bulma 7 su 11 (quattro attese scritte male, nessun errore del grafo); styled-components-website non misurato (`benchmarks/inference-audit/README.md`, «fogli di stile su progetti reali»).
 - [ ] **Si cancella:** `adapters/css*.py` del benchmark, quando le parti di lettura sono nel plugin.
+
+### Task 12: la pre-mappa del progetto
+
+Prima di ogni indicizzatore Daodan scrive la pre-mappa: cosa c'è nel progetto e come va analizzato. Lo stage degli indicizzatori e il container la leggono e non decidono più da soli. Misure di partenza: `benchmarks/project-model/REPORT.md` (36 strumenti su 122 progetti); nessuno strumento la dà da solo.
+
+**Cosa contiene**, ogni fatto con la sua fonte (`strumento@versione`), come gli archi:
+- linguaggio di ogni file e file esclusi (generati, di terzi, documentazione);
+- unità del build system: tipo, radice, manifest, cartelle sorgente, dipendenze fra unità, workspace;
+- configurazione per gli indicizzatori: i `tsconfig` con alias e riferimenti, i moduli Go annidati, i workspace Cargo, i progetti e i source set di Gradle;
+- versioni di toolchain e di build tool che il progetto dichiara, con il file che le dichiara;
+- dipendenze esterne dichiarate e bloccate;
+- per ogni unità, se il suo modello o il suo indice chiede di eseguire codice del progetto, quindi il container, e perché;
+- i buchi: ciò che nessuna fonte stabilisce.
+
+**Cosa ne fa il grafo:** per ogni unità lo stage sceglie l'indicizzatore, la radice, la configurazione, la versione di toolchain da scaricare e se gira sull'host o nel container. Ciò che non può partire è `unavailable` con causa e rimedio prima di cominciare.
+
+**File:**
+- Base: `scripts/modules.py` (unità, workspace, dipendenze).
+- Nuovo: `scripts/premap.py` (unisce le fonti per unità) e un adattatore sottile per fonte in `scripts/premap/<fonte>.py`.
+- Lettori: `scripts/resolve_edges.py` (`index_stage`), `scripts/indexers/*.py`, `scripts/container.py`.
+
+- [ ] **Test prima, `modules.py`:** `tests/test_codebase_map_modules.py` con fixture proprie: un test per lettore, il contratto del record, un test per ogni causa corretta. Partenza: 197 unità esatte (266 abbinate) su 447, membri del workspace 64 su 114 con 486 in più, dipendenze fra unità 70 su 199.
+- [ ] **Test prima, pre-mappa:** `tests/test_codebase_map_premap.py`: forma del record, fonte su ogni fatto, due fonti in disaccordo restano entrambe con la loro fonte, ciò che manca è un buco con la sua classe.
+- [ ] **Linguaggi ed esclusi:** go-enry, compilato con il Go di Daodan come scip-go, al posto della tabella dei suffissi (190 linguaggi su 313 contro 305). Il perimetro resta quello di oggi: ciò che Git ignora e le cartelle punto.
+- [ ] **Versioni e dipendenze dichiarate:** Renovate in estrazione locale come processo separato (domanda 5) e Trivy per le versioni bloccate, con le opzioni di sola lettura misurate: nessuna rete, nessun processo di build. Su Windows non sono misurati: si misurano prima.
+- [ ] **Comandi di modello sull'host**, dove non eseguono codice del progetto: `go list` per ogni `go.mod` (anche annidato), `cargo metadata`, npm e pnpm dal solo lockfile, uv, `tsc --showConfig` seguendo i riferimenti, `.gitmodules`.
+- [ ] **Comandi di modello nel container**, dove lo eseguono: Gradle, Maven, .NET, CMake, Swift, con la toolchain che il progetto dichiara. La versione si legge dal file che la dichiara (`global.json`, wrapper); il messaggio d'errore dello strumento vale solo come riserva (kotlinconf: JDK 21).
+- [ ] **Bisogno di container:** regola per unità, scritta nella pre-mappa con il motivo. Oggi nessuno strumento lo dice (0 su 122).
+- [ ] **Buchi dichiarati:** moduli importati e non dichiarati (deptry per Python, dependency-cruiser senza configurazione per JavaScript: nessun nome inventato, nessun file eseguito); sottomoduli assenti; framework e servizi restano al registro, con i servizi di compose e dei manifest di deploy da aggiungere (persi 78 su 123).
+- [ ] **Lo stage legge la pre-mappa:** `index_stage` lancia un indicizzatore per unità con radice, configurazione e toolchain dalla pre-mappa. Prove: i moduli Go annidati di chi, l'alias `@/` dell'app React, le tre build Gradle di otel-demo.
+- [ ] **Soglia:** sul benchmark, per faccetta e per famiglia, mai sotto il `modules.py` di oggi e mai sotto la combinazione senza codice del progetto (unità 137, toolchain 128, dipendenze 716); con il container unità almeno 236 su 447. Tempo e picco annotati. Su kotlinconf e eShop oggi servono 334 s e 209 s: prima si misura quale passo li consuma, poi si fissa la soglia.
+- [ ] **Si cancella:** la tabella dei suffissi; il wrapper `stack_analyser.py`, dopo aver portato nel registro il solo servizio che aggiunge; la scoperta di radici e `tsconfig` dentro gli indicizzatori (`snapshot.py:1414-1581`); i lettori di `modules.py` che un comando di modello sull'host sostituisce senza perdere unità.
 
 ## 8. Rischi
 
