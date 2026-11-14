@@ -192,6 +192,7 @@ Per ogni linguaggio: nella voce di `meta`, in `edge_view.coverage` e negli strum
    - Consiglio: Daodan lo scarica nella sua cache e lo lancia come processo separato, senza importarne il codice.
    - Alternativa: rinunciare e tenere solo Trivy e i lettori di `modules.py` (versioni dichiarate: 25 su 381 con mise).
    - Quale scegli?
+   - **Risposta del proprietario (14 novembre 2026):** la scelta consigliata. Renovate è un programma separato: Daodan lo scarica, lo avvia, legge il risultato e lo chiude; il codice di Daodan non contiene nulla di Renovate.
 6. **Cosa è un modulo.** Nei repository veri ci sono unità che oggi nessuno riporta: codice senza build file, chart Helm, moduli buf, target Xcode.
    - Consiglio: sono unità come le altre, con il loro tipo; il codice senza build file è un'unità `source-tree` senza nome.
    - Sei d'accordo?
@@ -415,14 +416,16 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
   - La stessa fixture con `mvnw` in CRLF, senza bit di esecuzione, e `.mvn/` tracciato da Git: la copia porta `.mvn/`, il container chiama solo il Maven portato e nessuna distribuzione si scarica. 16 s.
   - Le impostazioni dell'utente restano uguali prima e dopo: PATH, configurazione e contesti di Docker, PATH dell'utente, distribuzioni WSL.
   - In Kiri restano le due immagini per digest, Temurin (438 MB) e il proxy (53 MB).
-  - Ogni run lascia anche uno strato orfano in `/var/lib/kiri/layers`: è lo strato dell'immagine preparata, che Kiri 0.2.0 non cancella con `rmi -f`. La CLI non lo elenca e lo conta solo `system df`. Per Java pesa 118 MB, cioè `app/scip-java` 83, `root/.m2` 24 e `daodan/tools` 12.
+  - Con il `commit` di allora ogni run lasciava uno strato orfano in `/var/lib/kiri/layers`: Kiri 0.2.0 non lo cancella con `rmi -f`, la CLI non lo elenca e lo conta solo `system df`. Per Java pesava 118 MB.
 - [x] **Gradle in un container vero:** fixture Kotlin, provata il 14 novembre 2026 sullo stesso PC con un limite di 4 GB.
   - Senza wrapper si usa il Gradle 9.9.1 portato da Daodan, verificato con il suo sha256. Il plugin Kotlin 2.1.0 della fixture compila con quel Gradle.
   - Le 7 attese di `expected.json` tengono sull'indice scritto, quindi la fixture non va rigenerata.
   - Tempi: 84 s; indicizzatore 63 s, picco 1.788 MB.
   - Un wrapper che indica un altro sito risulta `unavailable`: nessun container, nessuna richiesta a quel sito.
-  - Lo strato orfano di questo run pesa 426 MB: `root/.gradle` 195, Gradle spacchettato 148, scip-java 83. Il disco di Kiri passa da 1,66 a 2,26 GB.
-- [ ] **Strati orfani di Kiri:** da togliere per nome, con il via del proprietario. Da correggere in `container.py`: gli strumenti portati non devono finire nello strato preparato.
+  - Lo strato orfano di questo run pesava 426 MB: `root/.gradle` 195, Gradle spacchettato 148, scip-java 83. Il disco di Kiri è passato da 1,66 a 2,26 GB.
+- [x] **Strati orfani di Kiri:** la preparazione passa il suo stato all'esecuzione in due volumi con nome, senza `commit`. scip-java, gli strumenti, `HOME` con `~/.m2` e `~/.gradle` (`-Duser.home`, `GRADLE_USER_HOME`) e l'indice stanno in `/daodan/state`, e l'esecuzione copia l'indice in `/daodan/out`. Su richiesta del proprietario i tre strati lasciati prima (676.756 KB) sono stati tolti per nome il 14 novembre 2026: Images in `system df` da 1,317 GB a 624,4 MB, e Temurin e il proxy partono ancora.
+- [x] **Run reale senza resti, Java:** la fixture Java con i volumi, il 14 novembre 2026: 22 s in tutto, indicizzatore 13,5 s e 584 MB. `system df`, strati, volumi e container di Kiri e il suo disco (2.260.729.856 B) uguali prima e dopo; il registro dei volumi resta vuoto. Il commit di Windows sale di 0,62 GB al picco (da 39,01 a 39,63 GB su 43,46) e torna a 39,08 GB.
+- [ ] **Run reale senza resti, Kotlin e klaxon:** non ancora rifatti con i volumi; servono 6 GB di commit liberi.
 - [ ] **Soglia:** come nel task 5, su javapoet e klaxon, con il confronto fra passo per posizione e indice misurato.
 - [ ] **Si cancella:** `JavaEngine`, `KotlinEngine` e `engines/KotlinResolver.kt`, solo se la domanda 2 esclude le richieste mirate per la JVM.
 

@@ -1,7 +1,8 @@
 """The container operation: the five guarantees, each against a fake Docker-compatible command line.
 
 The fake never runs the command it is given: it records every call, keeps what `cp -`
-sends and plays a few scripted commands (`emit`, `sleep`, `exit`). Two smoke tests at
+sends and plays a few scripted commands (`emit`, `copy`, `sleep`, `exit`). A named volume is a
+folder: a container gets its content at create and gives it back at rm. Two smoke tests at
 the end use a real engine and run only with DAODAN_CONTAINER_SMOKE=1.
 """
 from __future__ import annotations
@@ -35,14 +36,18 @@ state = Path(sys.argv[1])
 args = sys.argv[2:]
 with (state / "calls.jsonl").open("a", encoding="utf-8") as log:
     log.write(json.dumps(args) + "\n")
-VALUED = {"--name", "--network", "--memory", "--memory-swap", "--pids-limit", "--cpus", "--security-opt", "-w", "-e"}
+VALUED = {"--name", "--network", "--memory", "--memory-swap", "--pids-limit", "--cpus", "--security-opt", "-w", "-e",
+          "-v"}
 box = lambda name: state / "containers" / name
+volume = lambda name: state / "volumes" / name
 verb = args[0] if args else ""
 if verb == "version" or verb == "info":
     print("linux")
 elif verb == "create":
-    rest = args[1:]
+    rest, mounts = args[1:], []
     while rest[0] in VALUED:
+        if rest[0] == "-v":
+            mounts.append(rest[1].split(":", 1))
         rest = rest[2:]
     image, command = rest[0], rest[1:]
     name = args[args.index("--name") + 1]
@@ -52,8 +57,32 @@ elif verb == "create":
         shutil.copytree(saved, box(name) / "fs")
     else:
         (box(name) / "fs").mkdir()
+    for source, target in mounts:
+        if not volume(source).is_dir():
+            sys.exit("Error: no such volume " + source)
+        shutil.copytree(volume(source), box(name) / "fs" / target.lstrip("/"), dirs_exist_ok=True)
     (box(name) / "command.json").write_text(json.dumps(command))
+    (box(name) / "mounts.json").write_text(json.dumps(mounts))
     print(name)
+elif verb == "rm":
+    name = args[-1]
+    mounts = json.loads((box(name) / "mounts.json").read_text()) if (box(name) / "mounts.json").is_file() else []
+    for source, target in mounts:
+        if volume(source).is_dir():
+            shutil.rmtree(volume(source))
+            held = box(name) / "fs" / target.lstrip("/")
+            shutil.copytree(held, volume(source)) if held.is_dir() else volume(source).mkdir()
+elif verb == "volume":
+    action, name = args[1], args[2]
+    if action == "create":
+        volume(name).mkdir(parents=True)
+        print(name)
+    elif action == "inspect":
+        sys.exit(0 if volume(name).is_dir() else 1)
+    elif action == "rm":
+        if not volume(name).is_dir():
+            sys.exit("Error: no such volume " + name)
+        shutil.rmtree(volume(name))
 elif verb == "cp" and args[1] == "-":
     name = args[2].split(":")[0]
     data = sys.stdin.buffer.read()
@@ -79,6 +108,11 @@ elif verb == "start":
         target = box(name) / "fs" / command[1].lstrip("/")
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(command[2])
+    elif command[:1] == ["copy"]:
+        for source, target in zip(command[1::2], command[2::2]):
+            target = box(name) / "fs" / target.lstrip("/")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(box(name) / "fs" / source.lstrip("/"), target)
     elif command[:1] == ["sleep"]:
         time.sleep(float(command[1]))
     elif command[:1] == ["exit"]:
@@ -106,6 +140,10 @@ class FakeEngineTest(unittest.TestCase):
         self.fake = self.scratch / "fake_docker.py"
         self.fake.write_text(FAKE_CLI, encoding="utf-8")
         self.engine = container.Engine("fake", (sys.executable, str(self.fake), str(self.state)))
+        self.registry = self.scratch / "registry"
+        patcher = mock.patch.object(container, "volume_registry", return_value=self.registry)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.project = self.scratch / "project"
         self.out = self.scratch / "out"
         files = {
@@ -134,6 +172,14 @@ class FakeEngineTest(unittest.TestCase):
 
     def created(self) -> list[list[str]]:
         return [call for call in self.calls() if call[0] == "create"]
+
+    def volumes(self) -> list[str]:
+        """The volumes the runs created, in order."""
+        return [call[2] for call in self.calls() if call[:2] == ["volume", "create"]]
+
+    @staticmethod
+    def mounts(call: list[str]) -> list[str]:
+        return [call[index + 1] for index, token in enumerate(call) if token == "-v"]
 
     def run_operation(self, command, **options):
         options.setdefault("image", "fake/runtime:1")
@@ -239,18 +285,114 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn("HTTPS_PROXY=http://proxy:3128", prepare)
         self.assertEqual(execute[execute.index("--network") + 1], "none")
         self.assertIn("HTTPS_PROXY=", execute)
-        committed = [call for call in calls if call[0] == "commit"]
-        self.assertEqual(len(committed), 1)
-        self.assertIn(committed[0][2], execute)
+        self.assertIn("fake/runtime:1", prepare)
+        self.assertIn("fake/runtime:1", execute)
+        self.assertEqual([call for call in calls if call[0] in ("commit", "rmi", "image")], [])
         self.assertEqual([call[:2] for call in calls if call[0] == "cp" and call[1] == "-"], [["cp", "-"]])
-        self.assertIn(["rmi", "-f", committed[0][2]], calls)
         self.assertIn(["network", "rm", network], calls)
+
+    def test_the_preparation_hands_its_state_to_execution_in_two_named_volumes(self):
+        seen, real = [], container.cli
+
+        def spy(engine, *args, **options):
+            if args[:2] == ("volume", "create"):  # the name is on record before the volume exists
+                seen.append(any(args[2] in entry.read_text(encoding="utf-8") for entry in self.registry.glob("*")))
+            return real(engine, *args, **options)
+
+        with mock.patch.object(container, "cli", spy):
+            result = self.run_operation(
+                ["copy", "/daodan/state/built.txt", "/out/built.txt", "/work/src/app.js", "/out/app.js"],
+                prepare=["emit", "/daodan/state/built.txt", "built"], outputs=["/out"])
+        self.assertEqual(result["state"], "done", result)
+        self.assertEqual((self.out / "out/built.txt").read_text(), "built")
+        self.assertEqual((self.out / "out/app.js").read_text(), "export const run = () => 1;\n")
+        work, state = self.volumes()
+        self.assertRegex(work, r"^daodan-work-[0-9a-f]{12}$")
+        self.assertEqual(state, "daodan-state-" + work.rsplit("-", 1)[1])
+        self.assertEqual(seen, [True, True])
+        proxy, prepare, execute = self.created()
+        self.assertEqual(self.mounts(proxy), [])
+        for call in (prepare, execute):
+            self.assertEqual(self.mounts(call), [f"{work}:/work", f"{state}:/daodan/state"])
+        calls = self.calls()
+        removed = [index for index, call in enumerate(calls) if call[:2] == ["volume", "rm"]]
+        self.assertEqual([calls[index][2] for index in removed], [work, state])
+        self.assertGreater(removed[0], calls.index(["rm", "-f", execute[execute.index("--name") + 1]]))
+        self.assertEqual(list(self.registry.glob("*")), [])
+
+    def test_the_volumes_are_removed_by_name_after_a_failed_preparation_or_a_timeout(self):
+        for prepare, command, timeout in ((["exit", "3"], ["exit", "0"], 600), (["exit", "0"], ["sleep", "30"], 2)):
+            with self.subTest(prepare=prepare, command=command):
+                held = len(self.volumes())
+                result = self.run_operation(command, prepare=prepare, timeout=timeout)
+                self.assertEqual(result["state"], "failed" if prepare == ["exit", "3"] else "timeout")
+                made = self.volumes()[held:]
+                self.assertEqual(len(made), 2)
+                self.assertEqual([call[2] for call in self.calls() if call[:2] == ["volume", "rm"]][-2:], made)
+                self.assertFalse((self.state / "volumes" / made[0]).exists())
+                self.assertEqual(list(self.registry.glob("*")), [])
+
+    def test_a_volume_that_cannot_be_removed_stays_on_record(self):
+        real = container.cli
+
+        def stuck(engine, *args, **options):
+            if args[:2] == ("volume", "rm"):
+                return subprocess.CompletedProcess([*engine.argv, *args], 1, b"", b"volume is in use")
+            return real(engine, *args, **options)
+
+        with mock.patch.object(container, "cli", stuck):
+            self.run_operation(["exit", "0"], prepare=["exit", "0"])
+        entries = [json.loads(entry.read_text(encoding="utf-8")) for entry in self.registry.glob("*")]
+        self.assertEqual([entry["volumes"] for entry in entries], [self.volumes()])
+        self.assertEqual((entries[0]["engine"], entries[0]["pid"]), ("fake", os.getpid()))
+
+    def test_the_volumes_a_killed_run_left_are_removed_by_name_at_the_next_run(self):
+        dead = int(subprocess.run([sys.executable, "-c", "import os; print(os.getpid())"], capture_output=True,
+                                  text=True, check=True).stdout)
+        entries = {"killed": ("fake", dead, ["daodan-work-aaaaaaaaaaaa", "daodan-state-aaaaaaaaaaaa"]),
+                   "running": ("fake", os.getpid(), ["daodan-work-bbbbbbbbbbbb", "daodan-state-bbbbbbbbbbbb"]),
+                   "other-engine": ("docker", dead, ["daodan-work-cccccccccccc"]),
+                   "not-daodan": ("fake", dead, ["projectdb", "daodan-state-dddddddddddd"])}
+        self.registry.mkdir()
+        for token, (engine, pid, names) in entries.items():
+            (self.registry / f"{token}.json").write_text(json.dumps({"engine": engine, "pid": pid, "volumes": names}),
+                                                         encoding="utf-8")
+            for name in names:
+                (self.state / "volumes" / name).mkdir(parents=True)
+        result = self.run_operation(["exit", "0"])
+        self.assertEqual(result["state"], "done", result)
+        volume_calls = [call for call in self.calls() if call[0] == "volume"]
+        self.assertEqual(sorted(call[2] for call in volume_calls if call[1] == "rm"),
+                         ["daodan-state-aaaaaaaaaaaa", "daodan-state-dddddddddddd", "daodan-work-aaaaaaaaaaaa"])
+        self.assertEqual({call[1] for call in volume_calls} - {"rm", "inspect"}, set())
+        self.assertFalse(any("projectdb" in call for call in self.calls()))
+        self.assertEqual(sorted(entry.stem for entry in self.registry.glob("*")), ["other-engine", "running"])
+        self.assertTrue((self.state / "volumes" / "projectdb").is_dir())
+
+    def test_an_input_outside_the_volumes_or_an_output_inside_them_is_refused(self):
+        tool = self.scratch / "tool.zip"
+        tool.write_bytes(b"the distribution")
+        with self.assertRaises(ValueError):  # it would stay in the preparation's container
+            self.run_operation(["exit", "0"], prepare=["exit", "0"], inputs={"/app/tool.zip": tool})
+        with self.assertRaises(ValueError):  # the engine cannot copy a file out of a volume
+            self.run_operation(["exit", "0"], prepare=["exit", "0"], outputs=["/daodan/state/out"])
+        self.assertEqual(self.created(), [])
+        self.assertEqual(self.volumes(), [])
+
+    def test_home_is_in_the_state_volume_unless_the_caller_gives_it(self):
+        self.run_operation(["exit", "0"], prepare=["exit", "0"])
+        self.run_operation(["exit", "0"], prepare=["exit", "0"], env={"HOME": "/root"})
+        self.run_operation(["exit", "0"])
+        homes = [[token for token in call if token.startswith("HOME=")] for call in self.created()
+                 if "--network" in call]
+        self.assertEqual(homes, [["HOME=/daodan/state/home"]] * 2 + [["HOME=/root"]] * 2 + [[]])
 
     def test_failed_preparation_stops_before_execution(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "3"])
         self.assertEqual(result["state"], "failed")
         self.assertIn("3", result["cause"])
         self.assertEqual(len(self.created()), 2)
+        self.assertEqual(len([call for call in self.calls() if call[:2] == ["volume", "rm"]]), 2)
 
     def test_proxy_refuses_every_host_outside_the_registries(self):
         server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
@@ -300,6 +442,50 @@ class FakeEngineTest(unittest.TestCase):
             self.assertFalse(any("host-value-7f3a" in token or "host-proxy" in token for token in call))
         execute = self.created()[-1]
         self.assertIn("CI=1", execute)
+
+    # Commands as data: one container run, the registries' commands in the preparation.
+    def test_commands_run_by_network_with_their_streams_apart_and_in_order(self):
+        seeded = self.state / "images" / "fake" / "runtime_1" / "daodan/out/results"  # what the scripts leave
+        for number, (code, out, err) in enumerate((("0", "go list\n", ""), ("3", "", "no such crate\n"))):
+            (seeded / str(number)).mkdir(parents=True)
+            for name, value in (("code", code + "\n"), ("stdout", out), ("stderr", err)):
+                (seeded / str(number) / name).write_text(value, encoding="utf-8")
+        commands = [{"tool": "go", "argv": ["go", "list", "-m", "all"], "cwd": ".", "network": "registries"},
+                    {"tool": "cargo", "argv": ["cargo", "metadata", "--offline"], "cwd": "sub dir",
+                     "env": {"CARGO_HOME": "/daodan/state/home/a b"}, "network": "none"}]
+        with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+            result = container.run_commands(self.project, commands, image="fake/runtime:1", out_dir=self.out,
+                                            engine=self.engine)
+        self.assertEqual(result["state"], "done", result)
+        self.assertEqual(result["root"], "/work")
+        self.assertEqual(result["results"], [{"returncode": 0, "stdout": "go list\n", "stderr": ""},
+                                             {"returncode": 3, "stdout": "", "stderr": "no such crate\n"}])
+        proxy, prepare, execute = self.created()
+        early, late = prepare[-1], execute[-1]
+        self.assertIn("go list -m all", early)
+        self.assertNotIn("cargo", early)
+        self.assertIn("cd '/work/sub dir'", late)
+        self.assertIn("'CARGO_HOME=/daodan/state/home/a b' cargo metadata --offline", late)
+        self.assertNotIn("go list", late)
+        self.assertIn(f"{container.STATE}/results/0/stdout", early)  # kept for execution, which brings it out
+        self.assertIn(f"cp -R {container.STATE}/results/. /daodan/out/results/", late)
+        self.assertEqual(execute[execute.index("--network") + 1], "none")
+
+    def test_without_a_registry_command_there_is_one_phase(self):
+        with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+            result = container.run_commands(self.project, [{"tool": "uv", "argv": ["uv", "tree", "--offline"]}],
+                                            image="fake/runtime:1", out_dir=self.out, engine=self.engine)
+        self.assertEqual(len(self.created()), 1)
+        self.assertEqual(self.volumes(), [])
+        self.assertEqual(result["results"], [{"returncode": None, "stdout": "", "stderr": ""}])
+
+    def test_a_command_outside_the_copy_or_with_an_unknown_network_is_refused(self):
+        for command in ({"argv": ["ls"], "cwd": "../elsewhere"}, {"argv": ["ls"], "cwd": "/etc"},
+                        {"argv": ["ls"], "network": "internet"}, {"argv": []}):
+            with self.subTest(command=command), self.assertRaises(ValueError):
+                container.run_commands(self.project, [command], image="fake/runtime:1", out_dir=self.out,
+                                       engine=self.engine)
+        self.assertEqual(self.calls(), [])
 
     # Guarantee 4: a record for every run.
     def test_every_run_is_recorded(self):
@@ -449,6 +635,33 @@ class RealEngineSmokeTest(unittest.TestCase):
         self.assertEqual((scratch / "out" / "out" / "listing.txt").read_text().split(), ["package.json", "src"])
         self.assertEqual(tree_digest(project), digest)
         self.assertEqual(user_settings(), before)
+
+    def test_commands_as_data_in_one_container(self):
+        free = container.free_memory()
+        if free is not None and free < 4 * 2**30:
+            self.skipTest(f"{free / 2**30:.1f} GB free, under 4 GB")
+        engine = container.find_engine()
+        scratch = Path(tempfile.mkdtemp(prefix="daodan-commands-smoke-"))
+        self.addCleanup(shutil.rmtree, scratch, ignore_errors=True)
+        (scratch / "project" / "src").mkdir(parents=True)
+        (scratch / "project" / "src" / "a.py").write_text("x = 1\n")
+        reach = "import urllib.request; urllib.request.urlopen('https://pypi.org/simple/', timeout=20); print('reached')"
+        commands = [{"tool": "sh", "argv": ["sh", "-c", "echo out; echo err >&2; exit 3"], "network": "none"},
+                    {"tool": "pwd", "argv": ["pwd"], "cwd": "src", "network": "none"},
+                    {"tool": "python", "argv": ["python", "-c", reach], "network": "registries"},
+                    {"tool": "python", "argv": ["python", "-c", reach], "network": "none"}]
+        held = container.cli(engine, "system", "df").stdout
+        result = container.run_commands(scratch / "project", commands, image=container.PROXY_IMAGE,
+                                        out_dir=scratch / "out", engine=engine, memory=256 * 2**20, pids=64,
+                                        timeout=120, prepare_timeout=120)
+        print(json.dumps(result, indent=1))
+        self.assertEqual(result["state"], "done", result)
+        first, folder, early, late = result["results"]
+        self.assertEqual((first["returncode"], first["stdout"], first["stderr"]), (3, "out\n", "err\n"))
+        self.assertEqual(folder["stdout"].strip(), "/work/src")
+        self.assertEqual((early["returncode"], early["stdout"].strip()), (0, "reached"))
+        self.assertNotEqual(late["returncode"], 0)
+        self.assertEqual(container.cli(engine, "system", "df").stdout, held)
 
     @unittest.skipUnless(os.name == "nt", "Daodan brings its own engine only on Windows")
     def test_own_engine_installs_into_the_shared_directory(self):

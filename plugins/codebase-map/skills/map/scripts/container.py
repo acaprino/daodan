@@ -10,18 +10,23 @@ sections 2-4). Its guarantees:
    tracks, dot directories included, minus the files the snapshot never reads, as a tar
    through `cp -`; what Git ignores stays out. The project is never mounted or written;
    declared outputs come back through `cp <container>:<path> -` into a folder outside it.
-3. Execution runs with `--network none`; an optional preparation runs on an internal
-   network whose only way out is a proxy that opens CONNECT to package registries on port
-   443, and is committed into the image execution starts from. Memory, swap, processes
-   and time are limited, and no host variable reaches the container: only the `env` given,
-   and the proxy variables set explicitly so the CLI's own proxy configuration adds none.
+3. Execution runs with `--network none`; an optional preparation runs before it on an
+   internal network whose only way out is a proxy that opens CONNECT to package registries
+   on port 443. The preparation hands execution only two named volumes, the copy at `/work`
+   and the state at `/daodan/state` (`HOME` is there unless the caller gives one), made for
+   the run and removed by name; execution starts from the same image, so anything else the
+   preparation wrote is gone, and the engine keeps no image or layer of the run. Each volume
+   name is on record in Daodan's cache before the volume exists: the next run removes by name
+   those a killed run left, never what a listing finds. Memory, swap, processes and time are
+   limited, and no host variable reaches the container: only the `env` given, and the proxy
+   variables set explicitly so the CLI's own proxy configuration adds none.
 4. Every phase appends a record (command, image, engine, limits, copy digest, duration,
    outcome) to `container-runs.jsonl` in the output folder.
 5. Without an engine that can run, the operation returns a declared gap with cause and
    remedy, and never falls back to the host.
 
 The engine is reached only through a Docker-compatible command line (`create`, `cp`,
-`start`, `commit`, `rm`, `network`), so it can be replaced. An engine the user already has
+`start`, `rm`, `network`, `volume`), so it can be replaced. An engine the user already has
 (`docker`, then `podman`) is used as found: no context, no configuration, no option of
 Daodan's. Otherwise, on Windows, Daodan runs Kiri at a pinned version in a WSL 2
 distribution of its own under the shared directory, never through Kiri's Windows app or
@@ -38,6 +43,9 @@ import io
 import json
 import lzma
 import os
+import posixpath
+import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -53,12 +61,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from resolve_edges import _platform, download, free_memory, shared_engine_dir  # noqa: E402
+from embedding_worker import shared_cache_dir  # noqa: E402
+from resolve_edges import _platform, _process_alive, download, free_memory, shared_engine_dir  # noqa: E402
 from snapshot import is_forbidden  # noqa: E402
 from tree_scope import Perimeter, git_executable  # noqa: E402
 
 RECORD_NAME = "container-runs.jsonl"
 WORKDIR = "/work"
+STATE = "/daodan/state"  # with WORKDIR, what a preparation hands to execution
+HOME = STATE + "/home"
+VOLUME_NAME = re.compile(r"daodan-(?:work|state)-[0-9a-f]{12}")  # the only names a run removes
+RESULTS = "/daodan/out/results"  # each command's code and streams, brought back by `run_commands`
+NETWORKS = ("none", "registries")
 # The registries a preparation may reach, by host; everything else is refused by the proxy.
 REGISTRIES = (
     "registry.npmjs.org", "registry.yarnpkg.com", "pypi.org", "files.pythonhosted.org",
@@ -463,10 +477,53 @@ def append_record(record: Path, row: dict) -> None:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+def kept(path: str) -> bool:
+    """Whether a container path lies in the volumes a preparation hands to execution."""
+    path = posixpath.normpath(path)
+    return any(path == root or path.startswith(root + "/") for root in (WORKDIR, STATE))
+
+
+def volume_registry() -> Path:
+    """One file per run holding volumes: the engine, the process and the volume names."""
+    return shared_cache_dir() / "container-volumes"
+
+
+def record_volumes(entry: Path, engine: str, pid: int, names: list[str]) -> None:
+    entry.parent.mkdir(parents=True, exist_ok=True)
+    partial = entry.with_suffix(".partial")
+    partial.write_text(json.dumps({"engine": engine, "pid": pid, "volumes": names}), encoding="utf-8")
+    os.replace(partial, entry)
+
+
+def remove_volumes(engine: Engine, entry: Path, pid: int, names: list[str]) -> None:
+    """Each volume removed by name; the entry keeps only those still there, and goes when none is."""
+    left = [name for name in names if cli(engine, "volume", "rm", name).returncode != 0
+            and cli(engine, "volume", "inspect", name).returncode == 0]
+    if left:
+        record_volumes(entry, engine.name, pid, left)
+    else:
+        entry.unlink(missing_ok=True)
+
+
+def sweep(engine: Engine) -> None:
+    """The volumes of this engine on record for a process that has ended, removed by name."""
+    folder = volume_registry()
+    for entry in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+        try:
+            held = json.loads(entry.read_text(encoding="utf-8"))
+            if held["engine"] != engine.name or _process_alive(held["pid"]):
+                continue
+            names = [name for name in held["volumes"] if isinstance(name, str) and VOLUME_NAME.fullmatch(name)]
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        remove_volumes(engine, entry, held["pid"], names)
+
+
 def phase(engine: Engine, name: str, *, image: str, command: list[str], network: str, env: dict[str, str],
           limits: dict, timeout: float, copy: Path | None, outputs: list[str], out_dir: Path,
-          commit: str | None = None) -> dict:
-    """One container from create to rm: its record, with the outputs brought back."""
+          volumes: list[str] = ()) -> dict:
+    """One container from create to rm, with the `name:path` volumes mounted: its record, with the outputs
+    brought back."""
     box = f"daodan-{uuid.uuid4().hex[:12]}"
     args = ["create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
             "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
@@ -475,8 +532,10 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
         args += ["--cpus", str(limits["cpus"])]
     for key, value in env.items():
         args += ["-e", f"{key}={value}"]
+    for mount in volumes:
+        args += ["-v", mount]
     row = {"phase": name, "engine": engine.name, "image": image, "command": list(command), "network": network,
-           "limits": {**limits, "seconds": timeout},
+           "limits": {**limits, "seconds": timeout}, "volumes": list(volumes),
            "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "outputs": []}
     started = time.monotonic()
     try:
@@ -496,8 +555,6 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
                 row["exit_code"], row["outcome"] = None, "timeout"
         for path in outputs:
             row["outputs"] += fetch(engine, box, path, out_dir)
-        if commit and row["outcome"] == "exited" and row["exit_code"] == 0:
-            checked(cli(engine, "commit", box, commit), "commit")
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         row["outcome"], row["cause"] = "failed", str(error)
     finally:
@@ -553,14 +610,18 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
-    called once an engine answers, which may raise Gap. `engine` is an Engine, "daodan" for Daodan's own, or
-    None to find one. The result's `state` is
+    called once an engine answers, which may raise Gap. With `prepare`, inputs lie under /work or /daodan/state
+    and outputs outside them (the engine copies no file out of a volume): ValueError otherwise. `engine` is an
+    Engine, "daodan" for Daodan's own, or None to find one. The result's `state` is
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
     (with `cause` and `remedy`); `outputs` lists the files brought back into `out_dir`.
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
         raise ValueError("the output folder must be outside the project")
+    if prepare and any(kept(path) for path in outputs):
+        raise ValueError(f"with a preparation, outputs lie outside {WORKDIR} and {STATE}: the engine copies no "
+                         "file out of a volume")
     out_dir.mkdir(parents=True, exist_ok=True)
     record = out_dir / RECORD_NAME
     limits = {"memory": int(memory), "pids": int(pids), "cpus": cpus}
@@ -574,29 +635,40 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
         return declared(record, image, command, gap)
     token = uuid.uuid4().hex[:12]
     cleanup: list[tuple[str, ...]] = []
+    held: tuple[Path, list[str]] | None = None
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": found.name}
     try:
+        sweep(found)
         with tempfile.TemporaryDirectory(prefix="daodan-copy-") as scratch:
             copy = Path(scratch) / "copy.tar"
-            digest = copy_perimeter(project, copy, inputs() if callable(inputs) else inputs)
-            run_image, run_copy = image, copy
+            given = inputs() if callable(inputs) else inputs
+            if prepare and not all(kept(path) for path in given or {}):
+                raise ValueError(f"with a preparation, inputs lie under {WORKDIR} or {STATE}, which execution sees")
+            digest = copy_perimeter(project, copy, given)
+            run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
             if prepare:
-                network, proxy, prepared = f"daodan-net-{token}", f"daodan-proxy-{token}", f"daodan-prepared:{token}"
+                names = [f"daodan-work-{token}", f"daodan-state-{token}"]
+                held = (volume_registry() / f"{token}.json", names)
+                record_volumes(held[0], found.name, os.getpid(), names)
+                for name in names:
+                    checked(cli(found, "volume", "create", name), "volume create")
+                mounts = [f"{names[0]}:{WORKDIR}", f"{names[1]}:{STATE}"]
+                network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
                 checked(cli(found, "network", "create", "--internal", network), "network create")
-                cleanup += [("rm", "-f", proxy), ("network", "rm", network), ("rmi", "-f", prepared)]
+                cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
                 start_proxy(found, proxy, network, tuple(registries))
                 row = phase(found, "prepare", image=image, command=prepare, network=network,
-                            env={**(env or {}), **proxy_environment(f"http://proxy:{PROXY_PORT}")}, limits=limits,
-                            timeout=prepare_timeout, copy=copy, outputs=[], out_dir=out_dir, commit=prepared)
+                            env={**env, **proxy_environment(f"http://proxy:{PROXY_PORT}")}, limits=limits,
+                            timeout=prepare_timeout, copy=copy, outputs=[], out_dir=out_dir, volumes=mounts)
                 append_record(record, {**row, "copy": digest})
                 if row["outcome"] != "exited" or row["exit_code"] != 0:
                     result["cause"] = row.get("cause") or (f"preparation {row['outcome']}" + (
                         f" with code {row['exit_code']}" if row["exit_code"] is not None else "") + f"; see {row['log']}")
                     return result
-                run_image, run_copy = prepared, None
-            row = phase(found, "execute", image=run_image, command=command, network="none",
-                        env={**(env or {}), **proxy_environment("")}, limits=limits, timeout=timeout,
-                        copy=run_copy, outputs=list(outputs), out_dir=out_dir)
+                run_copy = None
+            row = phase(found, "execute", image=image, command=command, network="none",
+                        env={**env, **proxy_environment("")}, limits=limits, timeout=timeout,
+                        copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
             append_record(record, {**row, "copy": digest})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],
                           state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
@@ -614,4 +686,51 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 cli(found, *args)
             except (OSError, subprocess.TimeoutExpired):
                 pass
+        if held:
+            try:
+                remove_volumes(found, held[0], os.getpid(), held[1])
+            except (OSError, subprocess.TimeoutExpired):
+                pass
         found.stop()
+
+
+def command_lines(commands: list[tuple[int, dict]], into: str) -> str:
+    """POSIX sh: each command in a subshell from its folder under the copy, its code and streams in `into/<n>/`."""
+    lines = []
+    for number, item in commands:
+        folder = f"{into}/{number}"
+        cwd = posixpath.normpath(posixpath.join(WORKDIR, item.get("cwd") or "."))
+        words = ["env", *(f"{key}={value}" for key, value in (item.get("env") or {}).items()), *item["argv"]]
+        lines.append(f"mkdir -p {folder}; (cd {shlex.quote(cwd)} && exec {shlex.join(map(str, words))}) "
+                     f"> {folder}/stdout 2> {folder}/stderr; echo $? > {folder}/code")
+    return "\n".join(lines) + "\nexit 0\n"
+
+
+def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Path, **options) -> dict:
+    """Commands as data, each `{tool, argv, cwd, env, network}`, in one container run over a copy of `project`:
+    those whose `network` is "registries" in the preparation, the others ("none", the default) in execution.
+    `cwd` is relative to the copy. The result of `run_in_container` (`options` are its own), with `root`, the
+    copy's folder, and `results`: each command's `returncode` (None when it did not run), `stdout` and `stderr`,
+    in the given order."""
+    for item in commands:
+        target = posixpath.normpath(posixpath.join(WORKDIR, item.get("cwd") or "."))
+        inside = target == WORKDIR or target.startswith(WORKDIR + "/")
+        if not item.get("argv") or posixpath.isabs(item.get("cwd") or ".") or not inside or (
+                item.get("network", "none") not in NETWORKS):
+            raise ValueError(f"a command needs an argv, a folder inside the copy and a network in {NETWORKS}: {item}")
+    early = [(n, item) for n, item in enumerate(commands) if item.get("network") == "registries"]
+    late = [(n, item) for n, item in enumerate(commands) if item.get("network", "none") == "none"]
+    kept_results = f"{STATE}/results"
+    carry = f"mkdir -p {RESULTS}\n" + (f"cp -R {kept_results}/. {RESULTS}/ 2>/dev/null\n" if early else "")
+    out_dir = Path(out_dir)
+    shutil.rmtree(out_dir / Path(RESULTS).name, ignore_errors=True)
+    result = run_in_container(project, ["sh", "-c", carry + command_lines(late, RESULTS)], image=image,
+                              out_dir=out_dir, prepare=["sh", "-c", command_lines(early, kept_results)] if early else None,
+                              outputs=[RESULTS], **options)
+    folder, results = out_dir / Path(RESULTS).name, []
+    for number in range(len(commands)):
+        read = {name: (folder / str(number) / name).read_text(encoding="utf-8", errors="replace")
+                if (folder / str(number) / name).is_file() else "" for name in ("code", "stdout", "stderr")}
+        code = read.pop("code").strip()
+        results.append({"returncode": int(code) if code.lstrip("-").isdigit() else None, **read})
+    return {**result, "root": WORKDIR, "results": results}

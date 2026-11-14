@@ -18,8 +18,10 @@ language is `unavailable`, with the gap's cause and remedy.
 - Preparation, on a network that reaches only `registries()` through the operation's proxy: the build and
   `scip-java index`. The build downloads the project's dependencies and its Gradle plugins; its scripts run
   there and stay in the container (spec, section 4).
-- Execution, with no network, from the image the preparation leaves: what reads the build's output, and
-  every output copied under `OUT`, which comes back into `<work_dir>/container/out`.
+- Execution, with no network, from the same image: what reads the build's output, and every output copied
+  under `OUT`, which comes back into `<work_dir>/container/out`. What the preparation keeps for it lies in the
+  operation's volumes (`container.STATE`): scip-java and the build tools, `HOME` with the dependency caches
+  (the JVM and Gradle are pointed there too), and the index under `KEPT`, copied into `OUT` first.
 
 A phase is one bash script (`script`). Each step prints `DAODAN_STEP` lines into the phase log, read back by
 `steps` as the runs of the contract, with the container's memory peak (cgroup `memory.peak`).
@@ -90,16 +92,16 @@ DISTRIBUTION = {
 # Repositories some builds declare beyond the operation's default registries: JCenter (read-only) and Google's
 # Maven under both its names.
 REGISTRIES_ADDED = ("jcenter.bintray.com", "dl.google.com", "maven.google.com")
-LIB, TOOLS, OUT = "/app/scip-java/lib", "/daodan/tools", "/daodan/out"
-ENV = {"HOME": "/root", "TERM": "dumb"}
+LIB, TOOLS, KEPT, OUT = "/daodan/state/scip-java/lib", "/daodan/state/tools", "/daodan/state/out", "/daodan/out"
+ENV = {"TERM": "dumb"}
 PIDS = 4096  # threads count: Gradle, the Kotlin daemon and scip-java each start a hundred or more
 
 HEAD = r'''set -u
 export LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 WORK=${DAODAN_WORK:-/work}
-OUT=${DAODAN_OUT:-/daodan/out}
+OUT=${DAODAN_OUT:-$PHASE_OUT}
 SCIP_JAVA=/app/scip-java/bin/scip-java
-mkdir -p "$OUT" /app/scip-java/bin
+mkdir -p "$OUT" /app/scip-java/bin "$HOME"
 cd "$WORK" || exit 70
 step() {
   local name=$1 code
@@ -123,10 +125,12 @@ for package in code model tree util; do
   JAVA_OPTS="$JAVA_OPTS --add-exports=jdk.compiler/com.sun.tools.javac.$package=ALL-UNNAMED"
 done
 export JAVA_OPTS
-printf '#!/bin/sh\nexec java $JAVA_OPTS -classpath "/app/scip-java/lib/*" org.scip_code.scip_java.ScipJava "$@"\n' \
-  > "$SCIP_JAVA"
+printf '#!/bin/sh\nexec java $JAVA_OPTS -classpath "%s/*" org.scip_code.scip_java.ScipJava "$@"\n' \
+  /daodan/state/scip-java/lib > "$SCIP_JAVA"
 chmod +x "$SCIP_JAVA"
-JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport"
+# The JVM reads user.home from the account, not HOME: Maven's repository and Gradle's home follow HOME.
+JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=$HOME"
+export GRADLE_USER_HOME="$HOME/.gradle"
 '''
 
 # The JVM ignores HTTPS_PROXY: Java tools get the proxy as system properties, Maven also in its settings. The
@@ -145,11 +149,11 @@ PREPARE = r'''if [ -n "${HTTPS_PROXY:-}" ]; then
     '</proxies></settings>' > "$HOME/.m2/settings.xml"
 fi
 export JAVA_TOOL_OPTIONS
-for zip in /daodan/tools/*.zip; do
+for zip in /daodan/state/tools/*.zip; do
   [ -f "$zip" ] || continue
   mkdir -p "${zip%.zip}" && (cd "${zip%.zip}" && jar xf "$zip") && rm -f "$zip" || exit 70
 done
-for tool in /daodan/tools/*/*/bin/gradle /daodan/tools/*/*/bin/mvn; do
+for tool in /daodan/state/tools/*/*/bin/gradle /daodan/state/tools/*/*/bin/mvn; do
   [ -f "$tool" ] || continue
   chmod +x "${tool%/*}"/*
   PATH="${tool%/*}:$PATH"
@@ -176,7 +180,10 @@ def registries() -> tuple[str, ...]:
 
 def script(phase: str, body: str) -> str:
     """The bash script of one phase: the shared head, the preparation's network setup, then `body`."""
-    return f"# daodan {phase}\n{HEAD}" + (PREPARE if phase == "prepare" else "export JAVA_TOOL_OPTIONS\n") + body
+    if phase == "prepare":
+        return f"# daodan {phase}\nPHASE_OUT={KEPT}\n{HEAD}{PREPARE}{body}"
+    carry = f'if [ -z "${{DAODAN_OUT:-}}" ] && [ -d {KEPT} ]; then cp -a {KEPT}/. "$OUT"/ || exit 70; fi\n'
+    return f"# daodan {phase}\nPHASE_OUT={OUT}\n{HEAD}{carry}export JAVA_TOOL_OPTIONS\n{body}"
 
 
 def properties(path: Path) -> dict[str, str]:

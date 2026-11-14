@@ -1579,6 +1579,9 @@ Risultati su Modal, con il codice del plugin verificato per hash. Costo di tutte
   - Indicizzatore 84,9 s, picco 1.636 MB.
   - Con l'immagine di rilascio di scip-java erano 130,2 s e 4.050 MB; nella misura salvata 107,2 s e 2.205 MB.
 - Con l'immagine di rilascio il wrapper di Gradle scaricava da `services.gradle.org`, che lo rimanda a `github.com`. Ora la distribuzione la porta Daodan, e nessun host di GitHub è aperto.
+- Rifatto su Modal dopo il passaggio ai volumi (scip-java, strumenti, `HOME` e indice in `/daodan/state`), con il codice verificato per hash, per 0,03 USD.
+  - javapoet: stesso resoconto e verifica a mano 20 su 20. Indicizzatore 20,0 s, picco 763 MB.
+  - klaxon: ogni conteggio identico. Indicizzatore 108,6 s, picco 1.813 MB.
 
 Peso su disco, misurato su Modal leggendo gli strati dal registro:
 - immagine di rilascio di scip-java: 1.700 MB compressi, 2.748 MB su disco. Di questi, 1.538 MB sono la cache di coursier (i JDK 17, 21 e 25 e le dipendenze), 251 MB il JDK 25 della base, 145 MB Gradle e 110 MB gcc.
@@ -1591,12 +1594,12 @@ Sul PC del proprietario (Kiri 0.2.0, CLI docker 29.9.2, un container da 2 GB, `R
 - in Kiri restano Temurin (438 MB) e il proxy `python:3.13-alpine` (53 MB). Il disco di Kiri resta di 1,66 GB.
 - fixture Kotlin, con un container da 4 GB: senza wrapper si usa il Gradle 9.9.1 portato da Daodan, verificato con il suo sha256. Il plugin Kotlin 2.1.0 compila, e le 7 attese di `expected.json` tengono. 84 s; indicizzatore 63,4 s, picco 1.788 MB.
 - wrapper di Gradle che indica `downloads.example.com`: risulta `unavailable`, senza container e senza richieste a quel sito.
-- ogni run lascia in `/var/lib/kiri/layers` lo strato dell'immagine preparata, che Kiri 0.2.0 non cancella con `rmi -f` e che la CLI non elenca. Pesa 118 MB per Java (scip-java 83, `.m2` 24, Maven 12) e 426 MB per Kotlin (`.gradle` 195, Gradle 148, scip-java 83). Il disco di Kiri passa da 1,66 a 2,26 GB.
+- con il `commit` di allora ogni run lasciava in `/var/lib/kiri/layers` lo strato dell'immagine preparata: Kiri 0.2.0 non lo cancella con `rmi -f` e la CLI non lo elenca. Pesava 118 MB per Java (scip-java 83, `.m2` 24, Maven 12) e 426 MB per Kotlin (`.gradle` 195, Gradle 148, scip-java 83), e il disco di Kiri è passato da 1,66 a 2,26 GB. Ora la preparazione passa all'esecuzione due volumi con nome, tolti per nome alla fine; i tre strati sono stati tolti per nome con il via del proprietario.
+- fixture Java con i volumi: indice e attese come prima, 22 s, indicizzatore 13,5 s e 584 MB. `system df`, strati, volumi e container di Kiri e il suo disco uguali prima e dopo, registro vuoto. Il commit di Windows sale di 0,62 GB al picco (da 39,01 a 39,63 GB su 43,46).
 
 Cosa manca a questa misura:
 - klaxon in un container vero;
-- la correzione di `container.py`, perché gli strumenti portati non restino nello strato preparato;
-- la rimozione per nome degli strati orfani già lasciati.
+- la fixture Kotlin con i volumi, con `system df` uguale prima e dopo.
 
 ## 14 novembre 2026, phazly nel grafo dall'indice
 

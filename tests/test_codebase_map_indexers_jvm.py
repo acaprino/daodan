@@ -18,6 +18,7 @@ import hashlib
 import io
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -121,6 +122,10 @@ class FakeEngineTest(unittest.TestCase):
         shutil.copytree(self.fixture, self.project, ignore=lambda folder, names: [
             name for name in names if name in OWN or name == "kotlin-configs"])
         self.work = self.scratch / "work"
+        # Python asks Windows its version once per process (`platform.uname`, which `shared_cache_dir` reaches);
+        # when WMI fails, as it does with the commit exhausted, it runs `ver` through the shell. Asked here,
+        # before the recorded window, so the guard below sees only the build's own processes.
+        platform.uname()
         Recorder.calls = []
         self.asked: list[str] = []
         self.served = {f"{resolve_edges.MAVEN_CENTRAL}/fx/test/tool/1.0/tool-1.0.jar": JAR, MAVEN_URL: MAVEN_ZIP,
@@ -169,15 +174,17 @@ class FakeEngineTest(unittest.TestCase):
 
     def play_success(self):
         """What a good build leaves: the fixture's committed index, and for Kotlin its compile tasks."""
-        out = jvm.OUT.lstrip("/")
-        self.play("prepare", files={f"{out}/index.scip": self.fixture / "index.scip"},
+        out, kept = jvm.OUT.lstrip("/"), jvm.KEPT.lstrip("/")
+        self.play("prepare", files={f"{kept}/index.scip": self.fixture / "index.scip"},
                   text=log(("index", 0, "[INFO] BUILD SUCCESS")))
         if self.language == "java":
-            self.play("execute", files={f"{out}/index-forward.scip": self.fixture / "index.scip",
+            self.play("execute", files={f"{out}/index.scip": self.fixture / "index.scip",  # as the script copies it
+                                        f"{out}/index-forward.scip": self.fixture / "index.scip",
                                         f"{out}/javap/project.txt": JAVAP},
                       text=log(("aggregate", 0, "done"), ("javap-project", 0, ""), peak=2**28))
         else:
-            self.play("execute", files={f"{out}/kotlin-configs": self.fixture / "kotlin-configs"},
+            self.play("execute", files={f"{out}/index.scip": self.fixture / "index.scip",
+                                        f"{out}/kotlin-configs": self.fixture / "kotlin-configs"},
                       text=log(("configs", 0, ""), peak=2**28))
 
     def index(self, **options) -> dict:
@@ -210,6 +217,19 @@ class JavaContainerTests(FakeEngineTest):
         self.assertIn("--no-emit-inverse-relationships", execute)
         self.assertNotIn("scip-java\" index", execute)
 
+    @unittest.skipUnless(os.name == "nt", "the shell fallback of Python's version query exists only on Windows")
+    def test_pythons_windows_version_query_is_the_process_the_guard_once_saw(self):
+        """The red of the guard under low memory: the first `platform` call of the process, with WMI failing,
+        runs `ver`. It is Python's, not the build's; with the answer cached the index starts no such process."""
+        self.play_success()
+        with mock.patch.object(platform, "_uname_cache", None), \
+                mock.patch.object(platform, "_wmi_query", side_effect=OSError("WMI did not answer")):
+            self.index()
+        self.assertIn(["ver"], Recorder.calls)
+        Recorder.calls = []
+        self.index()
+        self.assertNotIn(["ver"], Recorder.calls)
+
     def test_preparation_reaches_only_the_registries_and_execution_no_network(self):
         self.play_success()
         self.index()
@@ -227,8 +247,24 @@ class JavaContainerTests(FakeEngineTest):
         self.assertIn("HTTPS_PROXY=http://proxy:3128", prepare)
         self.assertEqual(execute[execute.index("--network") + 1], "none")
         self.assertIn("HTTPS_PROXY=", execute)
-        committed = [call for call in self.calls() if call[0] == "commit"][0][2]
-        self.assertIn(committed, execute)
+        self.assertIn(jvm.IMAGE, execute)
+        self.assertEqual([call for call in self.calls() if call[0] in ("commit", "rmi")], [])
+
+    def test_the_preparation_keeps_its_state_in_the_volume_execution_mounts(self):
+        self.play_success()
+        self.index()
+        proxy, prepare, execute = self.created()
+        mounts = [[call[index + 1] for index, token in enumerate(call) if token == "-v"] for call in (prepare, execute)]
+        self.assertEqual(mounts[0], mounts[1])
+        self.assertEqual([mount.split(":", 1)[1] for mount in mounts[0]], ["/work", container.STATE])
+        for path in (jvm.LIB, jvm.TOOLS, jvm.KEPT):
+            self.assertTrue(container.kept(path), path)
+        self.assertEqual((self.arrived(2) / jvm.KEPT.lstrip("/") / "index.scip").read_bytes(),
+                         (self.fixture / "index.scip").read_bytes())
+        self.assertIn(f"HOME={container.HOME}", prepare)
+        script = (self.state / "scripts/execute.sh").read_text(encoding="utf-8")
+        self.assertIn(f'cp -a {jvm.KEPT}/. "$OUT"/', script)
+        self.assertIn("-Duser.home=$HOME", script)
 
     def test_the_project_is_not_changed(self):
         before = tree_digest(self.project)
@@ -294,8 +330,8 @@ class JavaContainerTests(FakeEngineTest):
         self.play_success()
         self.index()
         fs = self.arrived()
-        self.assertEqual((fs / "app/scip-java/lib/tool-1.0.jar").read_bytes(), JAR)
-        self.assertEqual((fs / "daodan/tools/apache-maven-0.test-bin.zip").read_bytes(), MAVEN_ZIP)
+        self.assertEqual((fs / jvm.LIB.lstrip("/") / "tool-1.0.jar").read_bytes(), JAR)
+        self.assertEqual((fs / jvm.TOOLS.lstrip("/") / "apache-maven-0.test-bin.zip").read_bytes(), MAVEN_ZIP)
         self.assertEqual(sorted(self.asked), sorted([MAVEN_URL, f"{resolve_edges.MAVEN_CENTRAL}/fx/test/tool/1.0/"
                                                                 "tool-1.0.jar"]))
         self.index()
@@ -308,7 +344,7 @@ class JavaContainerTests(FakeEngineTest):
         (self.project / "mvnw").write_text("#!/bin/sh\ncurl https://example.com/maven.zip\n", encoding="utf-8")
         self.play_success()
         self.index()
-        self.assertEqual((self.arrived() / "daodan/tools/apache-maven-3.9.test-bin.zip").read_bytes(),
+        self.assertEqual((self.arrived() / jvm.TOOLS.lstrip("/") / "apache-maven-3.9.test-bin.zip").read_bytes(),
                          b"the wrapper's maven")
         self.assertNotIn(MAVEN_URL, self.asked)
         script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
@@ -371,7 +407,8 @@ class KotlinContainerTests(FakeEngineTest):
         self.play_success()
         result = self.index()
         self.assertTrue(result["indexes"], result)
-        self.assertEqual((self.arrived() / "daodan/tools/gradle-7.test-bin.zip").read_bytes(), b"the wrapper's gradle")
+        self.assertEqual((self.arrived() / jvm.TOOLS.lstrip("/") / "gradle-7.test-bin.zip").read_bytes(),
+                         b"the wrapper's gradle")
         self.assertNotIn(GRADLE_URL, self.asked)
 
     def test_a_build_without_an_index_is_failed(self):
@@ -527,7 +564,7 @@ class RealContainerSmokeTest(unittest.TestCase):
         started = time.monotonic()
         module = java if language == "java" else kotlin
         result = module.index(project, scratch / "work", engine=engine, memory=memory)
-        after = user_settings()
+        after, engine_after = user_settings(), engine_state(engine)
         records = [json.loads(row) for row in (scratch / "work" / "container" / container.RECORD_NAME).read_text(
             encoding="utf-8").splitlines()]
         tools = {name: str(path) for name, path in jvm.tools(project).items() if name.startswith(jvm.TOOLS)}
@@ -538,7 +575,7 @@ class RealContainerSmokeTest(unittest.TestCase):
                                    for run in result["runs"]],
                           "copies": [record.get("copy") for record in records],
                           "tools": {name: [path, jvm.sha256(Path(path))] for name, path in tools.items()},
-                          "engine before": held, "engine after": engine_state(engine),
+                          "engine before": held, "engine after": engine_after,
                           "system disk free GB": [round(disk / 2**30, 2),
                                                   round(shutil.disk_usage(system).free / 2**30, 2)],
                           "settings unchanged": after == before}, indent=1))
@@ -552,6 +589,7 @@ class RealContainerSmokeTest(unittest.TestCase):
         self.assertTrue(result["indexes"], result.get("reason"))
         self.assertEqual(tree_digest(project), before_project)
         self.assertEqual(after, before)
+        self.assertEqual(engine_after, held)  # no image, layer, volume or container left by the run
         self.assertEqual([(record["phase"], record["network"] == "none") for record in records],
                          [("prepare", False), ("execute", True)])
         self.assertNotRegex(prepared, r"Downloading https://services\.gradle\.org|apache-maven/[\d.]+/apache-maven")
