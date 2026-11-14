@@ -36,7 +36,7 @@ Il passo dinamico e la review usano la stessa operazione, con queste garanzie:
 
 1. Il codice del progetto gira solo nel container, mai sull'host.
 2. Il container riceve una copia usa e getta: i file del perimetro dello snapshot e ogni file che Git traccia, cartelle con il punto comprese (come `.mvn/`), tolti i file di segreti che lo snapshot non legge mai. Ciò che Git ignora non entra. Un file tracciato conserva il bit di esecuzione che Git registra. I file che Daodan porta (un indicizzatore, uno strumento di build) entrano con la copia, ciascuno nel suo percorso. Il progetto non viene scritto.
-3. Durante l'esecuzione la rete è chiusa. Tempo, memoria e numero di processi hanno un limite. Nessuna variabile d'ambiente dell'host passa al container.
+3. Il codice del progetto non gira mai con la rete aperta. Durante l'esecuzione la rete è chiusa; in preparazione uno strumento di build raggiunge solo i registri dei pacchetti (sezione 4). Tempo, memoria e numero di processi hanno un limite. Nessuna variabile d'ambiente dell'host passa al container.
 4. Ogni esecuzione registra comando, immagine, durata ed esito.
 5. Senza un motore di container l'operazione dichiara la lacuna, con la causa e il rimedio. Non ripiega mai su un'esecuzione sull'host.
 
@@ -58,12 +58,54 @@ Motori controllati il 12 novembre 2026 sui loro repository:
 
 Pesi di Kiri 0.2.0: installer per Windows 58 MB, il solo motore per Linux (`kiri-lite`) 2,4 MB, macOS 47-57 MB. Dentro WSL il motore sono due file, 8 MB in tutto; l'applicazione per Windows aggiunge un ponte di 6,8 MB e 71 MB di WebView2, che a Daodan non servono.
 
-### 4. Ambiente in due tempi
+### 4. Ambiente in tre tempi
 
-1. **Preparazione.** Nel container si installano i pacchetti dichiarati dal progetto. La rete è aperta solo verso i registri dei pacchetti. Gli script di installazione possono girare: restano nel container.
-2. **Esecuzione.** I test girano con la rete chiusa.
+1. **Scaricamento.** Si scarica ciò che il progetto dichiara, con gli strumenti che già lo leggono. Daodan non reimplementa un gestore di pacchetti.
+   - Comandi possibili:
+     - i gestori del progetto in modalità di solo scaricamento, con gli script spenti: `npm ci --ignore-scripts`, `pnpm fetch`, `go mod download`, `cargo fetch`, uv o pip con le sole wheel e senza build;
+     - scaricamenti semplici delle sorgenti che uno strumento indica: il registro dei provider di CMake, il link di una pagina a un foglio di stile.
+   - Un comando che non esegue codice del progetto può usare la rete pubblica, da qualsiasi sito. L'adattatore che lo emette dichiara per ogni comando se esegue codice del progetto, e perché.
+   - Un test per ogni gestore prova che la modalità di solo scaricamento non avvia nessuno script del progetto, con uno script sentinella nella fixture.
+   - Ogni indirizzo si registra. Un checksum dichiarato che non torna scarta il file.
+   - Un indirizzo non pubblico (rete privata, loopback, link-local, nome interno) non si raggiunge, e lo stesso vale per un nome che si risolve in uno di questi. È una lacuna dichiarata.
+2. **Preparazione.** Un comando che esegue codice del progetto per risolvere le dipendenze (Gradle e Maven, una build, un indicizzatore che lancia gli script di build) raggiunge solo i registri dei pacchetti. Gli script di installazione possono girare: restano nel container.
+3. **Esecuzione.** I test girano con la rete chiusa.
 
 L'ambiente del passo 2 resta com'è: lì nessuno script gira.
+
+#### Perimetro della regola di rete
+
+Gli script spenti non bastano: i file di configurazione del progetto possono far eseguire qualcosa a un comando di solo scaricamento, o cambiare dove si collega. Per ogni gestore:
+
+| Vettore | Neutralizzazione | Prova |
+| --- | --- | --- |
+| npm e pnpm, `.npmrc`: `script-shell`, il comando `git`, `registry` e registri per scope, token | `.npmrc` non entra mai nella copia: è fra i file di segreti (`snapshot.FORBIDDEN_GLOBS`). La configurazione dell'utente e quella globale sono file vuoti di Daodan (`npm_config_userconfig`, `npm_config_globalconfig`), con `ignore-scripts` acceso. Un pacchetto che chiede un registro per scope diventa `failed` con la causa. | Fixture con `.npmrc` che punta `script-shell` e `git` a una sentinella, un `preinstall` sentinella e una dipendenza git: dopo `npm ci --ignore-scripts` nessuna sentinella ha girato. |
+| pnpm, `.pnpmfile.cjs` (hook eseguiti alla risoluzione) e le impostazioni di `pnpm-workspace.yaml` | `pnpm fetch --ignore-pnpmfile --ignore-scripts`. Un'impostazione che nomina un comando (una shell, un eseguibile) rifiuta il comando. | `.pnpmfile.cjs` sentinella non eseguito. |
+| Yarn Berry, `.yarnrc.yml` con `yarnPath` e i plugin in `.yarn/plugins`, che sono codice del progetto | Yarn non è un comando di solo scaricamento: si ferma con `failed` e la causa, mai con la rete pubblica. | Un `yarnPath` sentinella non parte. |
+| Cargo, `.cargo/config.toml` del progetto: fornitori di credenziali, `net.git-fetch-with-cli`, sostituzione delle sorgenti, `build.rustc`, `rustc-wrapper`, `runner`, alias | `CARGO_HOME` è di Daodan, senza credenziali. Un `.cargo/config` o `.cargo/config.toml` nel progetto fa di `cargo fetch` un comando che esegue codice del progetto: va in preparazione, verso i soli registri. `cargo fetch` è un comando interno: un alias non lo sostituisce. | Fixture con un `rustc-wrapper` sentinella: classificata come codice del progetto. Senza configurazione, un `build.rs` sentinella non gira con `cargo fetch`. |
+| Go, `GOFLAGS`, `GOPROXY`, `GONOSUMDB`, `GOPRIVATE`, `GOINSECURE`, `GOVCS`, `GOTOOLCHAIN` dall'ambiente o dal file di `go env -w`; la riga `toolchain` di `go.mod` | Daodan li fissa tutti nel comando: `GOENV=off`, `GOPROXY=https://proxy.golang.org` senza `direct`, `GOSUMDB=sum.golang.org`, `GONOSUMDB`, `GOPRIVATE` e `GOINSECURE` vuoti, `GOVCS=*:off`, `GOTOOLCHAIN=local`. Nessuna variabile dell'host entra comunque (garanzia 3). | `go.mod` con un modulo raggiungibile solo da VCS, e `//go:generate` sentinella: `go mod download` non avvia git né la sentinella e fallisce con la causa. |
+| pip, opzioni dentro `requirements.txt` (`--index-url`, `--extra-index-url`, `--find-links`), righe `-e` e requisiti che esistono solo come sorgenti o da VCS (si costruiscono eseguendo `setup.py`) | `pip download --isolated --only-binary=:all:` con `PIP_CONFIG_FILE` vuoto. Gli indici indicati dal progetto passano solo se pubblici. Le righe che si dovrebbero costruire falliscono, e l'unità le elenca come causa. | `-e .` e un pacchetto solo sorgente con `setup.py` sentinella: nessuna sentinella, causa con i due requisiti. |
+| uv, `uv.toml` e `[tool.uv]`: indici, `find-links`, sorgenti git e locali, `no-build-isolation`, `keyring-provider` | `uv sync --frozen --no-build --no-install-project` con `UV_KEYRING_PROVIDER=disabled` e senza `.netrc` (`HOME` è di Daodan). `--no-build` vieta di costruire qualsiasi sorgente. | Sorgente locale con `setup.py` sentinella, e un indice su 127.0.0.1: nessuna sentinella, indice rifiutato. |
+| Scaricamento semplice di una sorgente indicata da uno strumento (registro dei provider di CMake, link di una pagina) | `curl` o `wget` in GET su https, con un tetto di dimensione; ogni redirect ripassa dal controllo dell'indirizzo. | Un redirect verso 127.0.0.1 rifiutato. |
+
+- **Il passo pubblico ha la copia montata.** Un lockfile ostile può far chiedere file a qualsiasi host pubblico che nomina. Così rivela che un'analisi è avvenuta, quando, da quale indirizzo pubblico e con quali versioni. Nessun file della sorgente viene inviato: questi comandi scaricano soltanto. La rete pubblica vale solo per un elenco chiuso di comandi (quelli della tabella). Pubblicazione e caricamento (`npm publish`, `cargo publish`, `uv publish` e simili) non sono mai emessi, e `run_commands` rifiuta ogni altro comando con la rete pubblica.
+- **Preparazione con codice del progetto (Gradle, Maven).** La rete è `--internal`, senza uscita.
+  - Il container non risolve nomi esterni: lo fa solo il proxy, e solo per i registri ammessi. Che il motore non inoltri le richieste DNS di una rete interna va misurato su ogni motore. Su Kiri 0.2.0 non è ancora misurato.
+  - Il proxy registra per ogni CONNECT host, porta, esito, byte e durata.
+  - Il percorso e il corpo delle richieste sono dentro TLS e il proxy non li vede: dati messi lì arrivano al registro ammesso e li vede solo chi lo gestisce. È un limite accettato e dichiarato.
+- **Credenziali.** Nessun token, chiave o helper di credenziali dell'utente o del progetto entra in nessuna fase.
+  - Le variabili dell'host non passano.
+  - `HOME` è la cartella di Daodan nel volume di stato.
+  - `.npmrc`, `.pypirc`, `.netrc` e le chiavi non entrano nella copia.
+  - Gli helper (keyring di uv, credenziali di Cargo e di git) sono spenti o assenti.
+  - Un registro privato che chiede credenziali rende l'unità `unavailable`, con la causa.
+- **Cosa torna sull'host.** Solo i file d'uscita dichiarati, come archivio tar estratto con il filtro `data` (niente collegamenti, niente percorsi assoluti), e letti come dati: SCIP, JSON, testo. Il tetto è 1 GiB per run: oltre, la run è `failed` con la causa. Niente di quello che esce dal container viene eseguito sull'host.
+- **Cosa la regola non copre.**
+  - Una fuga dal motore di container o dal kernel della VM di WSL, condiviso con le distribuzioni dell'utente.
+  - Un pacchetto ostile che agisce solo in esecuzione: senza rete può falsare le uscite (un indice sbagliato, quindi un grafo sbagliato) o consumare risorse fino ai limiti.
+  - Dati nei percorsi delle richieste a un registro ammesso.
+  - L'inoltro DNS del motore, finché non è misurato.
+  - Canali laterali come i tempi.
 
 Lo stesso container può preparare anche dati per il passo 2: le librerie che gli script di build calcolano (Gradle) e i file che i build script generano (Rust). Il passo 2 li legge come legge i file di build, e sull'host continua a non girare nulla. Le macro procedurali di Rust restano escluse: espanderle significa eseguirle.
 
