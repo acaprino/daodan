@@ -3,11 +3,13 @@ then scip-clang over its compilation database. Standard library only: the image'
 
     python3 clang_run.py UNITS_JSON OUT_DIR
 
-A unit is `{"root", "configure": [...], "generated": [...], "fetched": [{"name", "url"}]}`, as the pre-map
-states it. A dependency the project fetches is never downloaded: CMake runs with FETCHCONTENT_FULLY_DISCONNECTED
-and each fetched dependency's source directory on an empty one. A unit whose configure then fails is not indexed:
-`unavailable` when it fetches something (the dependency lies outside the allowed registries), else `failed`, with
-CMake's own output, unparsed, either way.
+A unit is `{"root"}`, the folder CMake configures. A dependency the project fetches is never downloaded: CMake
+runs with FETCHCONTENT_FULLY_DISCONNECTED, and CMake's dependency provider interface (`PROVIDER`, given through
+CMAKE_PROJECT_TOP_LEVEL_INCLUDES) records each dependency the project asks FetchContent_MakeAvailable for, with the
+URLs it declares, and supplies none. A unit whose configure then fails is not indexed: `unavailable` with what
+CMake recorded when it asked for a download, else `failed`; CMake's own output, unparsed, either way.
+`file(DOWNLOAD)` and ExternalProject are not recorded. Not yet verified on a real run: the provider path, until
+the smoke test of tests/test_codebase_map_indexers_clang.py passes.
 
 `OUT_DIR/result.json` holds, per unit, its state, its steps (`returncode`, `seconds`, the output's tail), the
 files of the compilation database with how many commands compile each, and the index it wrote
@@ -30,6 +32,16 @@ WORK = Path("/work")  # the project's copy
 SCRATCH = Path("/tmp/daodan-clang")
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
 ERROR_TAIL = 4000
+UNCOVERED = "FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
+PROVIDER = r"""# Written by Daodan: records each dependency the project asks FetchContent_MakeAvailable
+# for, with the URLs it declares, and supplies none, so FetchContent goes on with downloads disabled.
+cmake_language(SET_DEPENDENCY_PROVIDER daodan_record_fetch SUPPORTED_METHODS FETCHCONTENT_MAKEAVAILABLE_SERIAL)
+function(daodan_record_fetch method name)
+  cmake_parse_arguments(PARSE_ARGV 2 dep "" "GIT_REPOSITORY;SVN_REPOSITORY;HG_REPOSITORY" "URL")
+  string(JOIN "\t" line "${name}" ${dep_URL} ${dep_GIT_REPOSITORY} ${dep_SVN_REPOSITORY} ${dep_HG_REPOSITORY})
+  file(APPEND "${DAODAN_FETCH_LOG}" "${line}\n")
+endfunction()
+"""
 
 
 def run(command: list[str], cwd: Path, timeout: float = 3600) -> tuple[int | None, str, float]:
@@ -43,12 +55,23 @@ def run(command: list[str], cwd: Path, timeout: float = 3600) -> tuple[int | Non
     return code, output, round(time.monotonic() - started, 1)
 
 
-def configure_command(cmake: str, unit: dict, build: Path, empty: Path) -> list[str]:
-    command = [cmake, "-S", str(WORK / unit.get("root", ".")), "-B", str(build),
-               "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DFETCHCONTENT_FULLY_DISCONNECTED=ON"]
-    for item in unit.get("fetched", ()):
-        command.append(f"-DFETCHCONTENT_SOURCE_DIR_{item['name'].upper()}={empty / item['name']}")
-    return command + list(unit.get("configure", ()))
+def configure_command(cmake: str, unit: dict, build: Path, log: Path) -> list[str]:
+    return [cmake, "-S", str(WORK / unit.get("root", ".")), "-B", str(build), "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+            f"-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES={SCRATCH / 'provider.cmake'}", f"-DDAODAN_FETCH_LOG={log}"]
+
+
+def fetch_record(log: Path) -> list[dict]:
+    """What the provider recorded: each dependency once, `{name, urls}`; one declared without a URL downloads
+    nothing and is left out."""
+    if not log.is_file():
+        return []
+    out: dict[str, list[str]] = {}
+    for line in log.read_text(encoding="utf-8", errors="replace").split("\n"):
+        name, *urls = line.split("\t")
+        if name and urls:
+            out.setdefault(name, urls)
+    return [{"name": name, "urls": urls} for name, urls in out.items()]
 
 
 def _host(url: str) -> str:
@@ -62,14 +85,11 @@ def second_attempt(unit: dict, output: str) -> list[str] | None:
     return None
 
 
-def configure(runner, cmake: str, unit: dict, build: Path, empty: Path) -> tuple[list[dict], dict]:
+def configure(runner, cmake: str, unit: dict, build: Path, log: Path) -> tuple[list[dict], dict]:
     """One unit's configure steps and its state: `configured`, else `unavailable` or `failed` with the cause and
     CMake's output (`error`), as CMake wrote it."""
-    for item in unit.get("fetched", ()):
-        (empty / item["name"]).mkdir(parents=True, exist_ok=True)
-        (empty / item["name"] / "CMakeLists.txt").write_text(f"# Not downloaded by Daodan: {item['url']}\n",
-                                                            encoding="utf-8")
-    command = configure_command(cmake, unit, build, empty)
+    log.unlink(missing_ok=True)
+    command = configure_command(cmake, unit, build, log)
     code, output, seconds = runner(command, WORK)
     steps = [{"step": "configure", "returncode": code, "seconds": seconds, "tail": output[-2500:]}]
     again = second_attempt(unit, output) if code != 0 else None
@@ -78,14 +98,14 @@ def configure(runner, cmake: str, unit: dict, build: Path, empty: Path) -> tuple
         steps.append({"step": "configure again", "returncode": code, "seconds": seconds, "tail": output[-2500:]})
     if code == 0:
         return steps, {"state": "configured"}
-    error = output[-ERROR_TAIL:]
-    fetched = unit.get("fetched") or ()
+    error, fetched = output[-ERROR_TAIL:], fetch_record(log)
     if not fetched:
-        return steps, {"state": "failed", "error": error, "cause": "the configure timed out" if code is None
-                       else f"the configure ended with exit code {code}"}
-    hosts = ", ".join(sorted({_host(item["url"]) for item in fetched}))
-    return steps, {"state": "unavailable", "kind": OUTSIDE, "urls": [item["url"] for item in fetched], "error": error,
-                   "cause": f"the configure needs what the unit downloads from {hosts}, outside the allowed registries"}
+        ended = "timed out" if code is None else f"ended with exit code {code}"
+        return steps, {"state": "failed", "error": error, "cause": f"the configure {ended}; {UNCOVERED}"}
+    hosts = ", ".join(sorted({_host(url) for item in fetched for url in item["urls"]}))
+    return steps, {"state": "unavailable", "kind": OUTSIDE, "fetched": fetched, "error": error,
+                   "cause": f"the configure needs what FetchContent would download from {hosts}, outside the allowed "
+                            "registries"}
 
 
 def compiled(compdb: Path) -> dict[str, int]:
@@ -163,17 +183,14 @@ def main(argv: list[str]) -> int:
     scip_clang.chmod(0o755)
     packages = SCRATCH / "package-map.json"
     packages.write_text(json.dumps(package_map("project@0"), indent=1) + "\n", encoding="utf-8")
+    (SCRATCH / "provider.cmake").write_text(PROVIDER, encoding="utf-8")
     results = []
     for number, unit in enumerate(units):
         build = SCRATCH / f"build-{number}"
-        steps, state = configure(run, cmake, unit, build, SCRATCH / f"empty-{number}")
+        steps, state = configure(run, cmake, unit, build, SCRATCH / f"fetch-{number}.log")
         record = {"root": unit.get("root", "."), **state, "steps": steps, "compiled": {}, "index": None}
         compdb = build / "compile_commands.json"
         if state["state"] == "configured" and compdb.is_file():
-            for target in unit.get("generated", ()):
-                code, output, seconds = run([cmake, "--build", str(build), "--target", target], WORK)
-                steps.append({"step": f"build {target}", "returncode": code, "seconds": seconds,
-                              "tail": output[-2500:]})
             record["compiled"] = compiled(compdb)
             (WORK / "index.scip").unlink(missing_ok=True)
             code, output, seconds = run([str(scip_clang), f"--compdb-path={compdb}", f"--package-map-path={packages}",

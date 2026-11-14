@@ -1,5 +1,5 @@
-"""The C and C++ indexer's run: the units the pre-map gives, the container run with no network, the state of a
-unit whose configure needs a download outside the allowed registries, and the contract built from what comes back.
+"""The C and C++ indexer's run: the units the pre-map gives, the container run with no network, CMake's own
+record of what a unit asks FetchContent for, and the contract built from what comes back.
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_indexers_clang.py
 
@@ -24,7 +24,7 @@ if str(SCRIPTS) not in sys.path:
 import container  # noqa: E402
 from indexers import clang, clang_run  # noqa: E402
 
-FMT = {"name": "fmt", "url": "https://github.com/fmtlib/fmt.git"}
+FMT = {"name": "fmt", "urls": ["https://github.com/fmtlib/fmt.git"]}
 # CMake 3.28's message when a target links to a target nothing defines (policy CMP0028).
 LINK_ERROR = '''CMake Error at CMakeLists.txt:8 (target_link_libraries):
   Target "app" links to:
@@ -46,52 +46,83 @@ CMake Generate step failed.  Build files cannot be regenerated correctly.
 # In the container: clang_run.py
 
 
-def test_the_configure_never_downloads_and_points_each_fetched_dependency_at_an_empty_directory(tmp_path):
-    unit = {"root": "lib", "configure": ["-DWITH_TESTS=OFF"], "fetched": [FMT]}
-    command = clang_run.configure_command("cmake", unit, tmp_path / "build", tmp_path / "empty")
-    assert command[:5] == ["cmake", "-S", str(clang_run.WORK / "lib"), "-B", str(tmp_path / "build")]
-    assert "-DFETCHCONTENT_FULLY_DISCONNECTED=ON" in command and "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" in command
-    assert f"-DFETCHCONTENT_SOURCE_DIR_FMT={tmp_path / 'empty' / 'fmt'}" in command
-    assert command[-1] == "-DWITH_TESTS=OFF"
+def test_the_configure_never_downloads_and_hands_cmake_the_recording_provider(tmp_path):
+    command = clang_run.configure_command("cmake", {"root": "lib"}, tmp_path / "build", tmp_path / "fetch.log")
+    assert command == ["cmake", "-S", str(clang_run.WORK / "lib"), "-B", str(tmp_path / "build"),
+                       "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+                       f"-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES={clang_run.SCRATCH / 'provider.cmake'}",
+                       f"-DDAODAN_FETCH_LOG={tmp_path / 'fetch.log'}"]
 
 
-def _runner(code, output):
+def test_the_provider_records_each_fetchcontent_dependency_and_supplies_none():
+    """CMake's dependency provider is called for each FetchContent_MakeAvailable with the details the project
+    declared. It writes the name and the URLs and returns without populating, so FetchContent goes on with
+    downloads disabled."""
+    provider = clang_run.PROVIDER
+    assert "cmake_language(SET_DEPENDENCY_PROVIDER daodan_record_fetch" in provider
+    assert "SUPPORTED_METHODS FETCHCONTENT_MAKEAVAILABLE_SERIAL)" in provider
+    assert 'file(APPEND "${DAODAN_FETCH_LOG}"' in provider
+    assert "FetchContent_SetPopulated" not in provider and "file(DOWNLOAD" not in provider
+
+
+def test_the_record_gives_each_dependency_once_with_its_urls(tmp_path):
+    log = tmp_path / "fetch.log"
+    assert clang_run.fetch_record(log) == []
+    log.write_text("fmt\thttps://github.com/fmtlib/fmt.git\nlocal\nfmt\thttps://github.com/fmtlib/fmt.git\n"
+                   "zstd\thttps://a.example/zstd.tar.gz\thttps://b.example/zstd.tar.gz\n", encoding="utf-8")
+    assert clang_run.fetch_record(log) == [FMT, {"name": "zstd", "urls": ["https://a.example/zstd.tar.gz",
+                                                                       "https://b.example/zstd.tar.gz"]}]
+
+
+def _runner(code, output, record=""):
+    """A fake `run` answering each command with `(code, output)`; a configure writes `record` where the
+    provider would."""
     calls = []
 
     def run(command, cwd, timeout=3600):
         calls.append(command)
+        for argument in command:
+            if argument.startswith("-DDAODAN_FETCH_LOG=") and record:
+                Path(argument.split("=", 1)[1]).write_text(record, encoding="utf-8")
         return code, output, 1.0
     return run, calls
 
 
-def test_a_unit_that_needs_an_undownloaded_dependency_is_unavailable_with_cmakes_own_output(tmp_path):
-    run, calls = _runner(1, LINK_ERROR)
-    steps, state = clang_run.configure(run, "cmake", {"root": ".", "fetched": [FMT]}, tmp_path / "b", tmp_path / "e")
+RECORD = "fmt\thttps://github.com/fmtlib/fmt.git\n"
+
+
+def test_a_failed_configure_after_a_fetch_request_is_unavailable_with_what_cmake_recorded(tmp_path):
+    run, calls = _runner(1, LINK_ERROR, RECORD)
+    steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "fetch.log")
     assert len(calls) == 1 and [step["step"] for step in steps] == ["configure"]
-    assert state == {"state": "unavailable", "kind": "download-outside-registries", "urls": [FMT["url"]],
-                     "error": LINK_ERROR, "cause": "the configure needs what the unit downloads from github.com, "
-                                                   "outside the allowed registries"}
-    assert (tmp_path / "e" / "fmt" / "CMakeLists.txt").read_text(encoding="utf-8") == \
-        f"# Not downloaded by Daodan: {FMT['url']}\n"
+    assert state == {"state": "unavailable", "kind": "download-outside-registries", "fetched": [FMT],
+                     "error": LINK_ERROR, "cause": "the configure needs what FetchContent would download from "
+                                                   "github.com, outside the allowed registries"}
 
 
-def test_a_unit_that_fetches_nothing_and_cannot_configure_failed(tmp_path):
+def test_a_failed_configure_without_a_fetch_request_failed_and_names_what_is_not_recorded(tmp_path):
+    uncovered = "FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
     run, _calls = _runner(1, LINK_ERROR)
-    _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "e")
-    assert state == {"state": "failed", "cause": "the configure ended with exit code 1", "error": LINK_ERROR}
+    _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "fetch.log")
+    assert state == {"state": "failed", "error": LINK_ERROR,
+                     "cause": f"the configure ended with exit code 1; {uncovered}"}
     run, _calls = _runner(None, "")
-    _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "e")
-    assert state == {"state": "failed", "cause": "the configure timed out", "error": ""}
-    run, _calls = _runner(0, "-- Generating done\n")
-    assert clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "e")[1] == {"state": "configured"}
+    _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b2", tmp_path / "fetch2.log")
+    assert state == {"state": "failed", "error": "", "cause": f"the configure timed out; {uncovered}"}
+
+
+def test_a_configure_that_succeeds_is_configured_whatever_the_provider_recorded(tmp_path):
+    run, _calls = _runner(0, "-- Generating done\n", RECORD)
+    assert clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "fetch.log")[1] == \
+        {"state": "configured"}
 
 
 def test_no_second_attempt_is_taken_today(tmp_path):
     """The place for a second configure exists; until the map-driven round counts the units that need one, it
     gives no arguments, so a failed configure runs once."""
-    assert clang_run.second_attempt({"root": ".", "fetched": [FMT]}, LINK_ERROR) is None
-    run, calls = _runner(1, LINK_ERROR)
-    steps, _state = clang_run.configure(run, "cmake", {"root": ".", "fetched": [FMT]}, tmp_path / "b", tmp_path / "e")
+    assert clang_run.second_attempt({"root": "."}, LINK_ERROR) is None
+    run, calls = _runner(1, LINK_ERROR, RECORD)
+    steps, _state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "fetch.log")
     assert len(calls) == len(steps) == 1
 
 
@@ -108,14 +139,28 @@ def test_the_compilation_database_counts_the_commands_of_each_file(tmp_path):
 # On the host: index()
 
 
-UNIT = {"root": ".", "build": "cmake", "configure": [], "generated": [], "fetched": [FMT]}
+UNIT = {"name": "app", "kind": "cmake-target", "root": ".", "manifest": "CMakeLists.txt"}
 
 
 def test_without_a_cmake_unit_the_index_is_unavailable(tmp_path):
-    result = clang.index(tmp_path, tmp_path / "work", units=[])
+    result = clang.index(tmp_path, tmp_path / "work", units=[{"name": "web", "kind": "npm-package", "root": "web"}])
     assert result["state"] == "unavailable" and result["reason"].startswith("no C or C++ unit built with CMake")
-    meson = clang.index(tmp_path, tmp_path / "work", units=[{"root": ".", "build": "meson"}])
+    meson = clang.index(tmp_path, tmp_path / "work", units=[{"name": "m", "kind": "meson-target", "root": "."}])
     assert meson["state"] == "unavailable" and "built with meson" in meson["reason"]
+
+
+def test_a_workspace_is_configured_once_at_its_root():
+    """Members of a CMake workspace (`add_subdirectory`) are configured from the workspace's root; a unit in no
+    workspace from its own; units of other build tools and languages are left to their indexers."""
+    units = [UNIT, {**UNIT, "name": "lib", "root": "lib"}, {**UNIT, "name": "cli", "root": "apps/cli"},
+             {**UNIT, "name": "gen", "root": "tools/gen"}, {"name": "web", "kind": "npm-package", "root": "web"},
+             {"name": "m", "kind": "meson-target", "root": "m"}]
+    workspace = [{"tool": "cmake", "root": ".", "members": ["lib", "apps/cli"]},
+                 {"tool": "npm", "root": ".", "members": ["web"]}]
+    roots, states = clang.configure_roots(units, workspace)
+    assert roots == [".", "tools/gen"]
+    assert states == [{"root": "m", "state": "unavailable", "kind": "not-cmake",
+                       "cause": "built with meson: Daodan configures C and C++ units with CMake only"}]
 
 
 def test_scip_clang_needs_an_x86_64_machine(tmp_path):
@@ -144,18 +189,19 @@ def _fake_run(tmp_path, report: dict | None, state: str = "done", **extra):
 
 TOOLS = {f"{clang.TOOLS}/scip-clang": Path("scip-clang"), f"{clang.TOOLS}/cmake.tar.gz": Path("cmake.tar.gz"),
          f"{clang.TOOLS}/clang_run.py": Path("clang_run.py")}
-UNAVAILABLE = {"root": "vendor", "state": "unavailable", "kind": "download-outside-registries", "urls": [FMT["url"]],
-               "cause": "the configure needs what the unit downloads from github.com, outside the allowed registries",
-               "error": LINK_ERROR,
-               "steps": [{"step": "configure", "returncode": 1, "seconds": 2.0, "tail": LINK_ERROR}],
+UNAVAILABLE = {"root": "vendor", "state": "unavailable", "kind": "download-outside-registries", "fetched": [FMT],
+               "cause": "the configure needs what FetchContent would download from github.com, outside the allowed "
+                        "registries",
+               "error": LINK_ERROR, "steps": [{"step": "configure", "returncode": 1, "seconds": 2.0,
+                                               "tail": LINK_ERROR}],
                "compiled": {}, "index": None}
 
 
-def _index(tmp_path, report, units, state="done", **extra):
+def _index(tmp_path, report, units, workspace=None, state="done", **extra):
     run, seen = _fake_run(tmp_path, report, state, **extra)
     with mock.patch.object(container, "run_in_container", run), mock.patch.object(clang, "tools", return_value=TOOLS), \
             mock.patch.object(container, "architecture", return_value="x64"):
-        return clang.index(tmp_path / "project", tmp_path / "work", units=units), seen
+        return clang.index(tmp_path / "project", tmp_path / "work", units=units, workspace=workspace), seen
 
 
 def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the_others(tmp_path):
@@ -164,18 +210,18 @@ def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the
          "steps": [{"step": "configure", "returncode": 0, "seconds": 2.0, "tail": ""},
                    {"step": "index", "returncode": 0, "seconds": 4.0, "tail": "", "diagnostics": {"errors": 0}}]},
         UNAVAILABLE]}
-    units = [{"root": ".", "build": "cmake"}, {**UNIT, "root": "vendor"}, {"root": "m", "build": "meson"}]
+    units = [UNIT, {**UNIT, "name": "vendor", "root": "vendor"}, {"name": "m", "kind": "meson-target", "root": "m"}]
     result, seen = _index(tmp_path, report, units)
     assert seen["image"] == clang.IMAGE and seen["outputs"] == [clang.OUT] and "prepare" not in seen
     assert seen["command"] == ["python3", f"{clang.TOOLS}/clang_run.py", f"{clang.TOOLS}/units.json", clang.OUT]
     assert set(seen["inputs"]) == set(TOOLS) | {f"{clang.TOOLS}/units.json"}
     assert json.loads(seen["inputs"][f"{clang.TOOLS}/units.json"].read_text(encoding="utf-8")) == \
-        [{"root": ".", "configure": [], "generated": [], "fetched": []},
-         {"root": "vendor", "configure": [], "generated": [], "fetched": [FMT]}]
+        [{"root": "."}, {"root": "vendor"}]
     assert result["indexes"] == [[str((tmp_path / "work" / "index-0.scip").resolve()), ""]]
-    assert result["units"][2]["error"] == LINK_ERROR
+    assert result["units"][2]["error"] == LINK_ERROR and result["units"][2]["fetched"] == [FMT]
     assert [(unit["root"], unit["state"], unit.get("kind")) for unit in result["units"]] == \
-        [("m", "unavailable", "not-cmake"), (".", "indexed", None), ("vendor", "unavailable", "download-outside-registries")]
+        [("m", "unavailable", "not-cmake"), (".", "indexed", None),
+         ("vendor", "unavailable", "download-outside-registries")]
     assert result["configs"]["compiled"] == {"main.c": 1, "util.c": 2}
     assert [run["step"] for run in result["runs"]] == ["configure", "index", "configure"]
     assert result["indexer"] == {"name": "scip-clang", "version": clang.VERSION, "seconds": 8.0, "peak_mb": 210}
@@ -193,9 +239,9 @@ def test_without_an_index_the_result_is_unavailable_when_no_unit_failed(tmp_path
 
 
 def test_a_container_gap_is_unavailable_and_a_run_without_report_failed(tmp_path):
-    gap, _seen = _index(tmp_path, None, [UNIT], "gap", cause="no engine", remedy="install WSL")
+    gap, _seen = _index(tmp_path, None, [UNIT], None, "gap", cause="no engine", remedy="install WSL")
     assert (gap["state"], gap["reason"], gap["install"]) == ("unavailable", "no engine", "install WSL")
-    failed, _seen = _index(tmp_path / "again", None, [UNIT], "timeout")
+    failed, _seen = _index(tmp_path / "again", None, [UNIT], None, "timeout")
     assert failed["state"] == "failed" and "timeout" in failed["reason"]
 
 
@@ -228,17 +274,18 @@ def test_the_tools_are_downloaded_once_and_checked_each_time(tmp_path):
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# A real container, only on request.
+# A real container, only on request. Until it passes, the provider path is not verified on a real run.
 
 SMOKE = os.environ.get("DAODAN_CLANG_SMOKE") == "1"
 
 
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_CLANG_SMOKE=1 to index the fixture in a real container")
-def test_smoke_a_unit_that_fetches_fmt_from_github_is_unavailable_with_cmakes_own_output(tmp_path):
-    """fmt comes from github.com, outside the allowed registries: never downloaded, the unit is not indexed."""
-    unit = {"root": ".", "build": "cmake", "configure": [], "generated": [],
-            "fetched": [{"name": "fmt", "url": "https://github.com/fmtlib/fmt.git"}]}
+def test_smoke_cmake_records_fmt_from_github_and_the_unit_is_unavailable(tmp_path):
+    """fmt comes from github.com, outside the allowed registries: never downloaded. CMake's provider records it,
+    the configure fails on the missing target, the unit is not indexed."""
+    unit = {"name": "fetchfixture", "kind": "cmake-target", "root": ".", "manifest": "CMakeLists.txt"}
     result = clang.index(HERE / "fixtures/clang-index/fetch", tmp_path / "work", units=[unit])
     assert result["state"] == "unavailable", result
-    assert result["units"][0]["kind"] == "download-outside-registries"
-    assert "github.com" in result["reason"] and "CMake Error" in result["units"][0]["error"]
+    state = result["units"][0]
+    assert state["kind"] == "download-outside-registries" and state["fetched"] == [FMT]
+    assert "CMake Error" in state["error"] and "github.com" in result["reason"]

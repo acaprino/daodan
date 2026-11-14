@@ -1,15 +1,14 @@
 """scip-clang for C and C++: how it runs, and what its index leaves to the reader.
 
-`index` takes the units the pre-map states (`root`, `build`, `configure`, `generated`, `fetched`) and discovers
-nothing itself. A configure runs the project's CMake code, so it runs only in a container
-(`container.run_in_container`), in one phase with no network, over a copy of the project: `clang_run.py` there
-configures each unit (a fetched dependency is never downloaded: a unit that needs one to configure is not
-indexed, `unavailable` with the URL and CMake's own output), builds the `generated` targets, and runs scip-clang
-over the compilation database. CMake, scip-clang and that
-script are what the copy carries under `TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared
-directory and checked by sha256. The image (`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs
-to read the system includes, glibc 2.39 (scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package
-of each system header, and python3.
+`index` takes the pre-map's units and workspaces as they are and discovers nothing itself: each `cmake-target`
+is configured from the root of the CMake workspace holding it, or from its own. A configure runs the project's
+CMake code, so it runs only in a container (`container.run_in_container`), in one phase with no network, over a
+copy of the project: `clang_run.py` there configures each root (a fetched dependency is never downloaded: a unit
+that needs one to configure is not indexed, `unavailable` with what CMake recorded and its own output) and runs
+scip-clang over the compilation database. CMake, scip-clang and that script are what the copy carries under
+`TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared directory and checked by sha256. The image
+(`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs to read the system includes, glibc 2.39
+(scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package of each system header, and python3.
 
 Symbols carry no file: a function declared in a header and defined in a source file is one symbol, defined at
 its body; the declaration is a reference. Two `static` functions of one name in two files are one symbol too.
@@ -50,6 +49,8 @@ TOOLS = "/daodan/tools"  # where the copy carries the tools in the container (cl
 OUT = "/tmp/daodan-clang/out"
 MEMORY = 2 * 2**30
 PIDS = 1024
+CMAKE_UNIT = "cmake-target"
+OTHER_BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel"}  # not configured yet
 C_SOURCES = {".c"}
 CPP_SOURCES = {".cc", ".cpp", ".cxx", ".c++"}
 CALLABLES = ("function", "method", "class")
@@ -347,23 +348,36 @@ def failed(cause: str, runs: list[dict]) -> dict:
             "state": "failed", "reason": f"scip-clang wrote no index ({cause})" + (f": {tail}" if tail else "")}
 
 
+def _folder(path: str | None) -> str:
+    return (path or ".").strip("/").removeprefix("./") or "."
+
+
+def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
+    """The folders CMake configures, each once: a `cmake-target`'s CMake workspace root, else its own root; and
+    the state of each unit another native build declares."""
+    owner = {_folder(member): _folder(item["root"]) for item in workspace or () if item.get("tool") == "cmake"
+             for member in item.get("members", ())}
+    roots = list(dict.fromkeys(owner.get(_folder(unit.get("root")), _folder(unit.get("root")))
+                               for unit in units or () if unit.get("kind") == CMAKE_UNIT))
+    states = [{"root": _folder(unit.get("root")), "state": "unavailable", "kind": "not-cmake",
+               "cause": f"built with {OTHER_BUILDS[unit['kind']]}: Daodan configures C and C++ units with CMake "
+                        "only"}
+              for unit in units or () if unit.get("kind") in OTHER_BUILDS]
+    return roots, states
+
+
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
-          engine=None, memory: int = MEMORY, timeout: float = 3600) -> dict:
-    """The index of each unit the pre-map states, with its runs and each unit's state (`files` is not used: a
-    unit's compilation database decides what is indexed). A unit built otherwise than with CMake, or whose
-    configure needs a download outside the allowed registries, is `unavailable`; one whose configure fails
-    otherwise, `failed`; either keeps its static facts from the snapshot. Without a unit indexed, or without a
-    container, the result's state is `unavailable` (no unit failed) or `failed`."""
+          workspace: list[dict] | None = None, engine=None, memory: int = MEMORY, timeout: float = 3600) -> dict:
+    """The index of each configured root, with its runs and each root's state; `units` and `workspace` are the
+    pre-map's (`files` is not used: a unit's compilation database decides what is indexed). A unit built otherwise
+    than with CMake, or whose configure needs a download outside the allowed registries, is `unavailable`; one
+    whose configure fails otherwise, `failed`; either keeps its static facts from the snapshot. Without a unit
+    indexed, or without a container, the result's state is `unavailable` (no unit failed) or `failed`."""
     import container
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
-    states = [{"root": unit.get("root", "."), "state": "unavailable", "kind": "not-cmake",
-               "cause": f"built with {unit.get('build') or 'an unknown build'}: Daodan configures C and C++ units "
-                        "with CMake only"}
-              for unit in units or () if unit.get("build") != "cmake"]
-    chosen = [{key: unit.get(key, default) for key, default in (("root", "."), ("configure", []), ("generated", []),
-                                                                 ("fetched", []))}
-              for unit in units or () if unit.get("build") == "cmake"]
+    roots, states = configure_roots(units, workspace)
+    chosen = [{"root": root} for root in roots]
     if not chosen:
         return unavailable("no C or C++ unit built with CMake in the pre-map" + (
             "; " + "; ".join(item["cause"] for item in states) if states else ""),
@@ -391,7 +405,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
             runs.append({"unit": unit["root"], "step": step["step"], "returncode": step["returncode"],
                          "seconds": step["seconds"], "peak_mb": data.get("peak_mb"), "stderr_tail": step["tail"],
                          **({"diagnostics": step["diagnostics"]} if "diagnostics" in step else {})})
-        states.append({key: unit[key] for key in ("root", "state", "kind", "cause", "urls", "error") if key in unit})
+        states.append({key: unit[key] for key in ("root", "state", "kind", "cause", "fetched", "error")
+                       if key in unit})
         compiled.update(unit["compiled"])
         if unit["index"] and (back / unit["index"]).is_file():
             target = work_dir / unit["index"]
