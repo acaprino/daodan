@@ -50,14 +50,17 @@ MAX_TOKENS = 2048
 DIMENSIONS = 768
 
 
+# From os.name, not platform.system(): that asks Windows through WMI and, when WMI fails, runs `ver`.
+WINDOWS = os.name == 'nt'
+
+
 def shared_cache_dir():
     """The per-user directory Daodan shares across projects: models and language engines."""
-    windows = platform.system() == 'Windows'
-    fallback = Path.home() / ('AppData/Local' if windows else '.cache')
-    base = Path(os.environ.get('LOCALAPPDATA' if windows else 'XDG_CACHE_HOME') or fallback)
+    fallback = Path.home() / ('AppData/Local' if WINDOWS else '.cache')
+    base = Path(os.environ.get('LOCALAPPDATA' if WINDOWS else 'XDG_CACHE_HOME') or fallback)
     if not base.is_absolute():
         raise ValueError('shared cache must be an absolute path')
-    return base / ('Daodan' if windows else 'daodan')
+    return base / ('Daodan' if WINDOWS else 'daodan')
 
 
 def default_model_dir():

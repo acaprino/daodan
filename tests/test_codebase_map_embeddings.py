@@ -297,10 +297,28 @@ class EmbeddingTests(unittest.TestCase):
         for system, vendor in [('Windows', 'Daodan'), ('Linux', 'daodan')]:
             with self.subTest(system=system):
                 self.fake_model(self.root / system / vendor / 'models' / worker.MODEL_NAME / worker.MODEL_REVISION)
-                with mock.patch.object(worker.platform, 'system', return_value=system), mock.patch.dict(
+                with mock.patch.object(worker, 'WINDOWS', system == 'Windows'), mock.patch.dict(
                     os.environ, {'LOCALAPPDATA': str(self.root / system), 'XDG_CACHE_HOME': str(self.root / system)}):
                     with self.assertRaisesRegex(ValueError, 'digest'):
                         worker.GemmaProvider()
+
+    def test_the_shared_cache_starts_no_process_even_when_windows_does_not_answer(self):
+        """`platform.system()` asks Windows its version through WMI and, when WMI fails (the commit exhausted),
+        runs `ver` through the shell: the folder comes from `os.name`, which asks nothing."""
+        import platform
+        import subprocess
+        started = []
+
+        def refuse(*args, **kwargs):
+            started.append(args[0] if args else kwargs.get('args'))
+            raise AssertionError('shared_cache_dir started a process')
+
+        with mock.patch.object(platform, '_uname_cache', None), \
+                mock.patch.object(platform, '_wmi_query', side_effect=OSError('WMI did not answer'), create=True), \
+                mock.patch.object(subprocess, 'Popen', refuse):
+            folder = worker.shared_cache_dir()
+        self.assertEqual(started, [])
+        self.assertEqual(folder.name, 'Daodan' if os.name == 'nt' else 'daodan')
 
     def test_cli_report_never_overwrites_another_existing_json_artifact(self):
         request = self.manifest.with_name('index-request.json')
