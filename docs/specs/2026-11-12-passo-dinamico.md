@@ -35,7 +35,7 @@ Ogni passo legge ciò che gli altri hanno già prodotto. Solo il primo è un pre
 Il passo dinamico e la review usano la stessa operazione, con queste garanzie:
 
 1. Il codice del progetto gira solo nel container, mai sull'host.
-2. Il container riceve una copia usa e getta del perimetro dello snapshot. Ciò che Git ignora non entra, quindi nemmeno i file di segreti ignorati. Il progetto non viene scritto.
+2. Il container riceve una copia usa e getta: i file del perimetro dello snapshot e ogni file che Git traccia, cartelle con il punto comprese (come `.mvn/`), tolti i file di segreti che lo snapshot non legge mai. Ciò che Git ignora non entra. Un file tracciato conserva il bit di esecuzione che Git registra. I file che Daodan porta (un indicizzatore, uno strumento di build) entrano con la copia, ciascuno nel suo percorso. Il progetto non viene scritto.
 3. Durante l'esecuzione la rete è chiusa. Tempo, memoria e numero di processi hanno un limite. Nessuna variabile d'ambiente dell'host passa al container.
 4. Ogni esecuzione registra comando, immagine, durata ed esito.
 5. Senza un motore di container l'operazione dichiara la lacuna, con la causa e il rimedio. Non ripiega mai su un'esecuzione sull'host.

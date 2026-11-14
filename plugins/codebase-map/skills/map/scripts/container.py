@@ -6,8 +6,9 @@ project and the dynamic reviews share (spec `docs/specs/2026-11-12-passo-dinamic
 sections 2-4). Its guarantees:
 
 1. The project's code runs only in the container, never on the host.
-2. The container gets a copy of the files the snapshot perimeter walks, minus the files the
-   snapshot never reads, as a tar through `cp -`. The project is never mounted or written;
+2. The container gets a copy of the files the snapshot perimeter walks and of those Git
+   tracks, dot directories included, minus the files the snapshot never reads, as a tar
+   through `cp -`; what Git ignores stays out. The project is never mounted or written;
    declared outputs come back through `cp <container>:<path> -` into a folder outside it.
 3. Execution runs with `--network none`; an optional preparation runs on an internal
    network whose only way out is a proxy that opens CONNECT to package registries on port
@@ -54,7 +55,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from resolve_edges import _platform, download, free_memory, shared_engine_dir  # noqa: E402
 from snapshot import is_forbidden  # noqa: E402
-from tree_scope import Perimeter  # noqa: E402
+from tree_scope import Perimeter, git_executable  # noqa: E402
 
 RECORD_NAME = "container-runs.jsonl"
 WORKDIR = "/work"
@@ -63,6 +64,7 @@ REGISTRIES = (
     "registry.npmjs.org", "registry.yarnpkg.com", "pypi.org", "files.pythonhosted.org",
     "repo1.maven.org", "repo.maven.apache.org", "plugins.gradle.org", "proxy.golang.org",
     "sum.golang.org", "index.crates.io", "static.crates.io", "api.nuget.org", "rubygems.org",
+    "plugins-artifacts.gradle.org",
 )
 # Set on every container, empty when closed: the CLI adds its configured proxies only to unset names.
 PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PROXY",
@@ -395,28 +397,61 @@ def own_engine() -> Engine:
     raise Gap(f"Daodan's Kiri did not start: {tail[0]}", f"see {home / 'daemon.log'}")
 
 
-def copy_perimeter(project: Path, target: Path) -> dict:
-    """A tar under `work/` of the files the snapshot perimeter walks, minus those the snapshot never reads."""
-    count = 0
+def tracked(project: Path) -> dict[str, int]:
+    """The files Git tracks under `project`, dot directories included, with the mode Git records; none without Git."""
+    git = git_executable()
+    if git is None:
+        return {}
+    try:
+        listed = subprocess.run([git, "-C", str(project), "ls-files", "-z", "--stage"], stdin=subprocess.DEVNULL,
+                                capture_output=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    modes = {}
+    for entry in listed.stdout.split(b"\0") if listed.returncode == 0 else ():
+        info, _, name = entry.partition(b"\t")
+        if info[:6] in (b"100644", b"100755"):
+            modes[name.decode("utf-8", "surrogateescape")] = 0o755 if info[:6] == b"100755" else 0o644
+    return modes
+
+
+def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None = None) -> dict:
+    """A tar of what a build may need: under `work/`, the files the snapshot perimeter walks and the files Git
+    tracks (dot directories included), minus the files the snapshot never reads; `inputs` at their own paths.
+
+    What Git ignores stays out. A tracked file keeps the executable bit Git records, also where the disk has none.
+    """
+    modes = tracked(project)
+    folders, files = {"work"}, dict.fromkeys(modes)
+    for directory, names in Perimeter(project).walk():
+        relative = directory.relative_to(project).as_posix()
+        folders.add("work" if relative == "." else f"work/{relative}")
+        files.update((name if relative == "." else f"{relative}/{name}", None) for name in names)
+    kept = []
+    for relative in sorted(files):
+        path = project / relative
+        if path.is_symlink() or not path.is_file() or is_forbidden(path.name, path):
+            continue
+        kept.append((f"work/{relative}", path, modes.get(relative)))
+    for destination, path in sorted((inputs or {}).items()):
+        kept.append((destination.strip("/"), Path(path), 0o644))
+    for name, _, _ in kept:
+        folders.update(parent.as_posix() for parent in Path(name).parents if parent != Path("."))
     with tarfile.open(target, "w", format=tarfile.PAX_FORMAT) as bundle:
-        for directory, names in Perimeter(project).walk():
-            relative = directory.relative_to(project).as_posix()
-            folder = tarfile.TarInfo("work" if relative == "." else f"work/{relative}")
-            folder.type, folder.mode = tarfile.DIRTYPE, 0o755
-            bundle.addfile(folder)
-            for name in names:
-                path = directory / name
-                if path.is_symlink() or not path.is_file() or is_forbidden(name, path):
-                    continue
-                status = path.stat()
-                info = tarfile.TarInfo(f"{folder.name}/{name}")
-                info.size, info.mtime = status.st_size, int(status.st_mtime)
-                info.mode = 0o644 if os.name == "nt" else status.st_mode & 0o777
-                with path.open("rb") as handle:
-                    bundle.addfile(info, handle)
-                count += 1
+        for folder in sorted(folders):
+            entry = tarfile.TarInfo(folder)
+            entry.type, entry.mode = tarfile.DIRTYPE, 0o755
+            bundle.addfile(entry)
+        for name, path, mode in kept:
+            status = path.stat()
+            entry = tarfile.TarInfo(name)
+            entry.size, entry.mtime = status.st_size, int(status.st_mtime)
+            entry.mode = (mode or 0o644) if os.name == "nt" else status.st_mode & 0o777
+            with path.open("rb") as handle:
+                bundle.addfile(entry, handle)
     with target.open("rb") as handle:
-        return {"files": count, "sha256": hashlib.file_digest(handle, "sha256").hexdigest()}
+        return {"files": len(kept) - len(inputs or {}), "inputs": len(inputs or {}),
+                "sha256": hashlib.file_digest(handle, "sha256").hexdigest()}
 
 
 def proxy_environment(address: str) -> dict[str, str]:
@@ -500,14 +535,26 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
     raise RuntimeError("the registry proxy did not start")
 
 
+def declared(record: Path, image: str, command: list[str], gap: Gap) -> dict:
+    """The result of a run that cannot happen, recorded."""
+    append_record(record, {"phase": "execute", "image": image, "command": list(command), "outcome": "gap",
+                           "cause": gap.cause, "remedy": gap.remedy, "duration_seconds": 0,
+                           "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
+    return {"state": "gap", "cause": gap.cause, "remedy": gap.remedy, "exit_code": None, "outputs": [],
+            "record": str(record)}
+
+
 def run_in_container(project: Path, command: list[str], *, image: str, out_dir: Path, prepare: list[str] | None = None,
                      outputs: list[str] = (), env: dict[str, str] | None = None, timeout: float = 600,
                      prepare_timeout: float = 1800, memory: int = 2 * 2**30, pids: int = 1024,
                      cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
-                     engine: Engine | str | None = None) -> dict:
+                     engine: Engine | str | None = None,
+                     inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
-    `engine` is an Engine, "daodan" for Daodan's own, or None to find one. The result's `state` is
+    `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
+    called once an engine answers, which may raise Gap. `engine` is an Engine, "daodan" for Daodan's own, or
+    None to find one. The result's `state` is
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
     (with `cause` and `remedy`); `outputs` lists the files brought back into `out_dir`.
     """
@@ -524,18 +571,14 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                       "close programs or lower the memory limit")
         found = engine if isinstance(engine, Engine) else own_engine() if engine == "daodan" else find_engine()
     except Gap as gap:
-        append_record(record, {"phase": "execute", "image": image, "command": list(command), "outcome": "gap",
-                               "cause": gap.cause, "remedy": gap.remedy, "duration_seconds": 0,
-                               "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
-        return {"state": "gap", "cause": gap.cause, "remedy": gap.remedy, "exit_code": None, "outputs": [],
-                "record": str(record)}
+        return declared(record, image, command, gap)
     token = uuid.uuid4().hex[:12]
     cleanup: list[tuple[str, ...]] = []
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": found.name}
     try:
         with tempfile.TemporaryDirectory(prefix="daodan-copy-") as scratch:
             copy = Path(scratch) / "copy.tar"
-            digest = copy_perimeter(project, copy)
+            digest = copy_perimeter(project, copy, inputs() if callable(inputs) else inputs)
             run_image, run_copy = image, copy
             if prepare:
                 network, proxy, prepared = f"daodan-net-{token}", f"daodan-proxy-{token}", f"daodan-prepared:{token}"
@@ -560,6 +603,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             if "cause" in row:
                 result["cause"] = row["cause"]
             return result
+    except Gap as gap:
+        return {**declared(record, image, command, gap), "engine": found.name}
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         result["cause"] = str(error)
         return result

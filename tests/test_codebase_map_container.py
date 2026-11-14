@@ -169,6 +169,60 @@ class FakeEngineTest(unittest.TestCase):
             names = sorted(member.name for member in bundle.getmembers() if member.isfile())
         self.assertEqual(names, ["work/.gitignore", "work/data/fixture.csv", "work/package.json", "work/src/app.js"])
 
+    def test_copy_holds_what_git_tracks_in_dot_directories_with_the_mode_git_records(self):
+        if not self.git:
+            self.skipTest("git is needed to ask what Git tracks")
+        written = {".mvn/wrapper/maven-wrapper.properties": "distributionUrl=x\n", ".mvn/jvm.config": "-Xmx1g\n",
+                   "mvnw": "#!/bin/sh\n", ".mvn/cache/entry": "ignored by git\n"}
+        for name, text in written.items():
+            path = self.project / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        (self.project / "mvnw").chmod(0o755)
+        with (self.project / ".gitignore").open("a", encoding="utf-8") as handle:
+            handle.write(".mvn/cache/\n")
+        git = [self.git, "-C", str(self.project)]
+        subprocess.run([*git, "add", ".gitignore", ".mvn/wrapper/maven-wrapper.properties", ".mvn/jvm.config", ".env"],
+                       check=True)
+        subprocess.run([*git, "add", "--chmod=+x", "mvnw"], check=True)
+        self.run_operation(["exit", "0"])
+        name = self.created()[0][self.created()[0].index("--name") + 1]
+        with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
+            files = {member.name: member.mode for member in bundle.getmembers() if member.isfile()}
+        self.assertEqual(sorted(files), ["work/.gitignore", "work/.mvn/jvm.config",
+                                         "work/.mvn/wrapper/maven-wrapper.properties", "work/data/fixture.csv",
+                                         "work/mvnw", "work/package.json", "work/src/app.js"])
+        self.assertEqual(files["work/mvnw"], 0o755)
+        self.assertEqual(files["work/.mvn/jvm.config"], 0o644)
+
+    def test_inputs_reach_the_container_at_their_own_paths(self):
+        tool = self.scratch / "served" / "tool.zip"
+        tool.parent.mkdir()
+        tool.write_bytes(b"the distribution")
+        result = self.run_operation(["exit", "0"], inputs={"/daodan/tools/tool.zip": tool})
+        self.assertEqual(result["state"], "done", result)
+        name = self.created()[0][self.created()[0].index("--name") + 1]
+        self.assertEqual((self.state / "containers" / name / "fs" / "daodan/tools/tool.zip").read_bytes(),
+                         b"the distribution")
+
+    def test_inputs_are_asked_for_only_once_an_engine_answers_and_may_be_a_gap(self):
+        asked = []
+
+        def refuse():
+            asked.append(1)
+            raise container.Gap("the wrapper names a host that is not the distribution site", "fix the wrapper")
+
+        with mock.patch.object(container, "find_engine", side_effect=container.Gap("no engine", "start one")), \
+                mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+            result = container.run_in_container(self.project, ["exit", "0"], image="fake/runtime:1", out_dir=self.out,
+                                                inputs=refuse)
+        self.assertEqual((result["state"], result["cause"], asked), ("gap", "no engine", []))
+        result = self.run_operation(["exit", "0"], prepare=["exit", "0"], inputs=refuse)
+        self.assertEqual((result["state"], result["remedy"], asked), ("gap", "fix the wrapper", [1]))
+        self.assertEqual(self.created(), [])
+        rows = (self.out / container.RECORD_NAME).read_text(encoding="utf-8").splitlines()
+        self.assertEqual(json.loads(rows[-1])["outcome"], "gap")
+
     # Guarantee 3: network closed during execution, open only to registries during preparation.
     def test_execution_has_no_network_and_preparation_reaches_only_the_proxy(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=("registry.npmjs.org",))
