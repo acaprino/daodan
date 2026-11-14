@@ -24,6 +24,7 @@ const HELPERS = /[\\/]node_modules[\\/](clsx|classnames|tailwind-merge)[\\/]/;
 const MODULE = /\.module\.(css|scss|sass|less)(\?.*)?$/i;
 const SHEET = /\.(css|scss|sass|less)(\?.*)?$/i;
 const CLASS_ATTR = /^(class|className|[A-Za-z]+ClassName)$/;
+const SELECTOR_KEY = /(^|[\s>+~&,(:])[.#]-?[A-Za-z_]/;
 const CLASSLIST = { add: Infinity, remove: Infinity, replace: 2, toggle: 1, contains: 1 };
 const WRAPPERS = new Set([K.ParenthesizedExpression, K.AsExpression, K.NonNullExpression, K.SatisfiesExpression,
   K.TypeAssertionExpression]);
@@ -238,6 +239,10 @@ function visit(node) {
       for (const p of node.properties) {
         if (p.kind !== K.PropertyAssignment || !(ts.isIdentifier(p.name) || ts.isStringLiteralLike(p.name))) continue;
         const name = p.name.text;
+        // A selector key whose value is a declaration block: a CSS-in-JS rule (CodeMirror themes, JSS, emotion
+        // objects), read only to tell its class names apart from names no rule declares.
+        if (ts.isStringLiteralLike(p.name) && SELECTOR_KEY.test(name) && unwrap(p.initializer).kind === K.ObjectLiteralExpression)
+          out.push({ t: "css-in-js", file, line: line(p), selector: name });
         if (name.startsWith("--")) out.push({ t: "decl", file, line: line(p), property: name, value: literal(p.initializer), via: "object-key" });
         else if (style) {
           const v = literal(p.initializer);

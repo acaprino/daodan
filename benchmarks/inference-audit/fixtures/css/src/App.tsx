@@ -24,3 +24,7 @@ export const Wide = () => (
       shell`}
   />
 );
+import 'animate.css';
+
+const editorTheme = { '.cm-x': { color: 'red' } };
+export const Editor = () => <div className="cm-x group/tip" />;

@@ -2,22 +2,22 @@
  "case": "tududi",
  "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
  "code": {
-  "css.py": "4932545239f5",
+  "css.py": "d1e4c319a3ec",
   "css_typescript.py": "ee1da56caf29",
-  "css_typescript.js": "05d470ef8fa8",
+  "css_typescript.js": "6d12fd6caa80",
   "css_tailwind.py": "82004909d5cf",
   "css_tailwind.js": "33c379d02890"
  },
  "files_given": 1708,
- "npm_install_seconds": 582.2,
+ "npm_install_seconds": 695.0,
  "node_modules": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules",
  "report": {
   "language": "css",
   "indexer": {
    "name": "codebase-map stylesheet.py + typescript + tailwindcss",
    "version": "5986a74f4b18 + 5.9.3 + 3.4.19",
-   "seconds": 20.1,
-   "peak_mb": 1428
+   "seconds": 23.3,
+   "peak_mb": 1458
   },
   "files": {
    "snapshot": 1708,
@@ -25,12 +25,13 @@
    "missing": [],
    "missing_count": 0
   },
-  "nodes": 2537,
-  "edges": 39441,
+  "nodes": 2573,
+  "edges": 39544,
   "symbols_by_kind": {
-   "external class": 1815,
+   "external class": 1849,
+   "external font-face": 1,
    "external layer": 2,
-   "external module": 1,
+   "external module": 2,
    "project custom-property": 13,
    "project font-face": 69,
    "project keyframes": 9,
@@ -38,14 +39,15 @@
    "project rule": 608
   },
   "edges_by_end": {
-   "external class": 37056,
-   "external import": 3,
+   "external class": 37156,
+   "external font-face": 1,
+   "external import": 4,
    "external layer": 3,
    "project class": 1646,
    "project custom-property": 51,
    "project font-face": 670,
    "project id": 1,
-   "project import": 2,
+   "project import": 3,
    "project keyframes": 9
   },
   "callable_chain_hops": {},
@@ -56,7 +58,8 @@
    "css-text": 51,
    "className=": 14,
    "@apply": 11,
-   "style-object": 10
+   "style-object": 10,
+   "url-suffix": 2
   },
   "edges_uncertain": {
    "cascade and inheritance pick one per element": 27
@@ -64,33 +67,24 @@
   "edges_removed": {},
   "holes_by_class": {
    "call class": 67,
-   "ejs class": 8,
+   "css-in-js class": 24,
+   "ejs class": 3,
    "ejs id": 1,
+   "ejs-glued class": 5,
    "element-access class": 5,
-   "no-font-face font-face": 10,
-   "no-rule class": 175,
+   "no-font-face font-face": 9,
+   "no-rule class": 55,
    "no-rule id": 98,
    "parameter class": 68,
    "parameter id": 1,
    "property class": 28,
    "property id": 6,
+   "tailwind-named-group class": 2,
    "template class": 1,
    "template id": 1,
-   "url-path import": 2,
    "variable class": 1
   },
   "holes": [
-   {
-    "class": "no-rule",
-    "kind": "class",
-    "reason": "-",
-    "count": 175,
-    "examples": [
-     "backend/modules/landing/views/cloud.ejs:49 fas",
-     "backend/modules/landing/views/landing.ejs:844 fas",
-     "frontend/components/Note/editor/blockHandle.ts:226 cm-block-handle-menu"
-    ]
-   },
    {
     "class": "no-rule",
     "kind": "id",
@@ -125,6 +119,17 @@
     ]
    },
    {
+    "class": "no-rule",
+    "kind": "class",
+    "reason": "-",
+    "count": 55,
+    "examples": [
+     "frontend/components/Shared/MermaidDiagram.tsx:149 mermaid-diagram",
+     "frontend/components/Shared/BlankSlate.tsx:47 max-w",
+     "frontend/components/Views.tsx:216 task-list-container"
+    ]
+   },
+   {
     "class": "property",
     "kind": "class",
     "reason": "-",
@@ -139,22 +144,11 @@
     "class": "no-font-face",
     "kind": "font-face",
     "reason": "-",
-    "count": 10,
+    "count": 9,
     "examples": [
      "backend/modules/landing/views/partials/styles.ejs:6 -apple-system",
      "backend/modules/landing/views/partials/styles.ejs:679 -apple-system",
      "backend/modules/landing/views/partials/styles.ejs:740 SFMono-Regular"
-    ]
-   },
-   {
-    "class": "ejs",
-    "kind": "class",
-    "reason": "-",
-    "count": 8,
-    "examples": [
-     "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
-     "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
-     "backend/modules/landing/views/landing.ejs:910 lang-chip<%= l.code === i18n.locale ? ' is-current' : '' %>"
     ]
    },
    {
@@ -169,6 +163,17 @@
     ]
    },
    {
+    "class": "ejs-glued",
+    "kind": "class",
+    "reason": "-",
+    "count": 5,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:413 plan-step<%= i % 2 ? ' plan-step-flip' : '' %>",
+     "backend/modules/landing/views/landing.ejs:752 compare-cell<%= i === 0 ? ' compare-us' : '' %>",
+     "backend/modules/landing/views/partials/nav.ejs:34 nav-dd-item<%= l.code === i18n.locale ? ' is-current' : '' %>"
+    ]
+   },
+   {
     "class": "element-access",
     "kind": "class",
     "reason": "-",
@@ -180,13 +185,44 @@
     ]
    },
    {
-    "class": "url-path",
-    "kind": "import",
-    "reason": "a URL path the server maps, not a file",
+    "class": "ejs",
+    "kind": "class",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
+     "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
+     "backend/modules/landing/views/landing.ejs:462 <%= card.icon %>"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:42",
     "count": 2,
     "examples": [
-     "backend/modules/landing/views/partials/head-assets.ejs:11 /landing-assets/fonts/fonts.css",
-     "backend/modules/landing/views/partials/head-assets.ejs:12 /landing-assets/vendor/fontawesome/css/all.min.css"
+     "frontend/components/Note/editor/inlineMarkdown.ts:43 cm-md-wikilink-chip",
+     "frontend/components/Note/editor/linkClicks.ts:23 cm-md-wikilink-chip"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:403",
+    "count": 2,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:83 cm-block-handle-btn",
+     "frontend/components/Note/editor/blockHandle.ts:103 cm-block-handle-btn"
+    ]
+   },
+   {
+    "class": "tailwind-named-group",
+    "kind": "class",
+    "reason": "Tailwind 3.4.19: a variant anchor, not a utility",
+    "count": 2,
+    "examples": [
+     "frontend/components/Insights/ReportsOverview.tsx:129 group/tip",
+     "frontend/components/Everyone/BoardTaskRow.tsx:98 group/check"
     ]
    },
    {
@@ -233,36 +269,219 @@
     "examples": [
      "frontend/components/Habits/HabitHeatmap.tsx:127 className"
     ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:32",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/inlineMarkdown.ts:43 cm-md-wikilink"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:152",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:27 cm-md-hr"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:82",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:41 cm-md-bullet"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:94",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:61 cm-md-checkbox"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:75",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:105 cm-md-callout-label"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:120",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:135 cm-md-code-lang"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:131",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:142 cm-md-code-copy"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:160",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:187 cm-md-image"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:168",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:198 cm-md-image-broken"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:171",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:242 cm-md-table-wrap"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:176",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:244 cm-md-table"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:197",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:294 cm-md-mermaid"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:397",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:79 cm-block-handle-layer"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:437",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:83 cm-block-handle-plus"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:438",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:103 cm-block-handle-drag"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:439",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:117 cm-block-handle-dropline"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:450",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:226 cm-block-handle-menu"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:476",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:231 cm-block-handle-menu-item"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:495",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:245 cm-block-handle-menu-separator"
+    ]
+   },
+   {
+    "class": "css-in-js",
+    "kind": "class",
+    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:469",
+    "count": 1,
+    "examples": [
+     "frontend/components/Note/editor/blockHandle.ts:250 cm-block-handle-menu-label"
+    ]
    }
   ],
   "external_packages": {
-   "npm tailwindcss@3.4.19": 37062
+   "npm tailwindcss@3.4.19": 37062,
+   "checkout Font Awesome Free@6.4.0": 102
   }
  },
  "summary": {
   "nodes_by_kind": {
-   "class external": 1815,
+   "class external": 1849,
    "rule": 608,
    "font-face": 69,
    "module": 20,
    "custom-property": 13,
    "keyframes": 9,
+   "module external": 2,
    "layer external": 2,
-   "module external": 1
+   "font-face external": 1
   },
   "edges_by_kind_end": {
-   "class external": 37056,
+   "class external": 37156,
    "class project": 1646,
    "custom-property project": 51,
+   "font-face external": 1,
    "font-face project": 670,
    "id project": 1,
-   "import external": 3,
-   "import project": 2,
+   "import external": 4,
+   "import project": 3,
    "keyframes project": 9,
    "layer external": 3
   },
   "edges_by_chain": {
-   "-": 35375,
+   "-": 35476,
    "literal-type": 2736,
    "initializer > literal-type": 564,
    "initializer": 375,
@@ -272,17 +491,10 @@
    "className= > literal-type": 10,
    "style-object": 10,
    "className=": 4,
+   "url-suffix": 2,
    "classList > literal-type": 2
   },
   "holes_by_class": {
-   "no-rule class": {
-    "count": 175,
-    "examples": [
-     "backend/modules/landing/views/cloud.ejs:49 fas",
-     "backend/modules/landing/views/landing.ejs:844 fas",
-     "frontend/components/Note/editor/blockHandle.ts:226 cm-block-handle-menu"
-    ]
-   },
    "no-rule id": {
     "count": 98,
     "examples": [
@@ -307,6 +519,14 @@
      "frontend/components/Sidebar/SidebarNotesTree.tsx:284 itemClass(false)"
     ]
    },
+   "no-rule class": {
+    "count": 55,
+    "examples": [
+     "frontend/components/Shared/MermaidDiagram.tsx:149 mermaid-diagram",
+     "frontend/components/Shared/BlankSlate.tsx:47 max-w",
+     "frontend/components/Views.tsx:216 task-list-container"
+    ]
+   },
    "property class": {
     "count": 28,
     "examples": [
@@ -315,20 +535,20 @@
      "frontend/components/Kanban/KanbanBoard.tsx:371 cfg.bg"
     ]
    },
+   "css-in-js class": {
+    "count": 24,
+    "examples": [
+     "frontend/components/Note/editor/inlineMarkdown.ts:43 cm-md-wikilink",
+     "frontend/components/Note/editor/widgets.tsx:187 cm-md-image",
+     "frontend/components/Note/editor/blockHandle.ts:83 cm-block-handle-plus"
+    ]
+   },
    "no-font-face font-face": {
-    "count": 10,
+    "count": 9,
     "examples": [
      "backend/modules/landing/views/partials/styles.ejs:6 -apple-system",
      "backend/modules/landing/views/partials/styles.ejs:679 -apple-system",
      "backend/modules/landing/views/partials/styles.ejs:740 SFMono-Regular"
-    ]
-   },
-   "ejs class": {
-    "count": 8,
-    "examples": [
-     "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
-     "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
-     "backend/modules/landing/views/landing.ejs:910 lang-chip<%= l.code === i18n.locale ? ' is-current' : '' %>"
     ]
    },
    "property id": {
@@ -339,6 +559,14 @@
      "frontend/components/Goals.tsx:347 goal.uid"
     ]
    },
+   "ejs-glued class": {
+    "count": 5,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:413 plan-step<%= i % 2 ? ' plan-step-flip' : '' %>",
+     "backend/modules/landing/views/landing.ejs:752 compare-cell<%= i === 0 ? ' compare-us' : '' %>",
+     "backend/modules/landing/views/partials/nav.ejs:34 nav-dd-item<%= l.code === i18n.locale ? ' is-current' : '' %>"
+    ]
+   },
    "element-access class": {
     "count": 5,
     "examples": [
@@ -347,11 +575,19 @@
      "frontend/components/Goal/GoalHero.tsx:133 GOAL_STATUS_TINT[goal.status]"
     ]
    },
-   "url-path import": {
+   "ejs class": {
+    "count": 3,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
+     "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
+     "backend/modules/landing/views/landing.ejs:462 <%= card.icon %>"
+    ]
+   },
+   "tailwind-named-group class": {
     "count": 2,
     "examples": [
-     "backend/modules/landing/views/partials/head-assets.ejs:11 /landing-assets/fonts/fonts.css",
-     "backend/modules/landing/views/partials/head-assets.ejs:12 /landing-assets/vendor/fontawesome/css/all.min.css"
+     "frontend/components/Insights/ReportsOverview.tsx:129 group/tip",
+     "frontend/components/Everyone/BoardTaskRow.tsx:98 group/check"
     ]
    },
    "ejs id": {
@@ -689,5 +925,5 @@
    "graph_ends": 1
   }
  ],
- "seconds": 607.2
+ "seconds": 723.4
 }

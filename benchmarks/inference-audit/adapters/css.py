@@ -9,11 +9,16 @@ A stylesheet has no calls. Its references are names the cascade resolves at run 
 - `animation` names `@keyframes`, `font-family` every `@font-face` of the family, `@container` the
   `container-name` declarations, `@layer` the layer's first appearance in its file (that fixes the order);
 - `@import`, `@use`, `@forward`, `<link rel=stylesheet>` and a script's `import './x.css'` name a file of the
-  project, or of a package (external);
+  project; a URL path (`/assets/x.css`) the checkout files ending with its longest tail (`url-suffix`); a sheet the
+  markup loads from outside the snapshot (a package, a vendored file, a CDN link) is read as an external sheet:
+  the names it declares are external nodes, made when a reference reaches them, with the package and version its
+  path, `package.json`, URL or leading comment states (`unknown` otherwise);
 - in a CSS Module `styles.foo` names the module's local `.foo` rules and, through `composes`, the rules of what
   it composes; in Sass `$x`, `ns.$x` and `@include` name variables and mixins through `@use`, `@forward`, `@import`.
-A name nothing declares is a hole with its class; a class built at run time (template, concatenation, a value
-the TypeScript checker cannot state) is a hole, never a guess. An arc's `chain` lists the rules that led from
+A name nothing declares is a hole with its class (`css-in-js` when a script's object literal has a selector key
+naming it, `tailwind-named-group` for `group/x` and `peer/x`); a class built at run time (template,
+concatenation, a value the TypeScript checker cannot state, a token glued to an EJS tag) is a hole, never a guess.
+A stylesheet or markup file no reader here takes is listed in `files.missing` with the reason, never dropped. An arc's `chain` lists the rules that led from
 the site to the target (`literal-type`, `initializer`, `clsx`, `classList`, `@apply`, `composes`...).
 
 Three engines, an adapter each. This one: the product's stylesheet parser (`languages/stylesheet.py`, CSS, SCSS,
@@ -28,19 +33,37 @@ import collections
 import hashlib
 import html.parser
 import json
+import os
 import re
 import sys
 import time
+import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import scip_graph  # noqa: E402,F401  (puts the plugin's scripts on the path)
 from languages import stylesheet  # noqa: E402
+from tree_scope import DEPENDENCY_DIRS  # noqa: E402
 
 from . import css_tailwind, css_typescript  # noqa: E402
 
 STYLESHEETS = (".css", ".scss", ".less")
 MARKUP = (".html", ".htm", ".ejs")
+# Stylesheet and markup files no reader here takes, and why: listed in `files.missing`, never dropped.
+UNREAD = {**dict.fromkeys((".sass",), "indented Sass: no reader (the product's parser reads braces)"),
+          **dict.fromkeys((".styl", ".stylus"), "Stylus: no reader"),
+          **dict.fromkeys((".vue", ".svelte", ".astro"), "single-file component: no reader for its blocks"),
+          **dict.fromkeys((".erb", ".hbs", ".handlebars", ".mustache", ".njk", ".twig", ".pug", ".jade", ".liquid",
+                           ".jinja", ".j2"), "template language: no reader")}
+PARTLY = {".less": "partly read: rules and custom properties are in the graph, LESS variables (@x) and mixin calls "
+                   "are not"}
+NAMED_GROUP_RE = re.compile(r"^(?:group|peer)/[\w-]+$")  # Tailwind 3.2+: a variant anchor, never a utility
+# A leading comment naming a package and its version: "/*! Font Awesome Free 6.4.0 by ...", "Bootstrap v5.3.0".
+BANNER_RE = re.compile(r"^(?:@charset[^;]*;)?\s*/\*!?[\s*]*([A-Za-z@][^\n]*?)\s+v?(\d+\.\d+(?:\.\d+)?(?:-[\w.]+)?)\b")
+VERSIONED_RE = re.compile(r"^(.+?)[-_@]v?(\d+\.\d+(?:\.\d+)?)$")  # a path segment such as "bootstrap-5.3.0"
+CDN_RES = ((re.compile(r"^https?://cdn\.jsdelivr\.net/npm/((?:@[^/@]+/)?[^/@]+)@([^/]+)/"), "npm"),
+           (re.compile(r"^https?://unpkg\.com/((?:@[^/@]+/)?[^/@]+)@([^/]+)/"), "npm"),
+           (re.compile(r"^https?://cdnjs\.cloudflare\.com/ajax/libs/([^/]+)/([^/]+)/"), "cdnjs"))
 MODULE_RE = re.compile(r"\.module\.(?:css|scss|sass|less)$", re.I)
 CSS_WIDE = {"inherit", "initial", "unset", "revert", "revert-layer", "none"}
 # Keywords the `animation` shorthand gives its other longhands (CSS Animations 1, 2): never a keyframes name.
@@ -66,11 +89,12 @@ def _sha(path: Path) -> str:
 
 
 def walk(project_dir: Path) -> list[str]:
-    """The files the three adapters read, outside `node_modules` and dot directories."""
-    suffixes = STYLESHEETS + MARKUP + css_typescript.SUFFIXES
+    """The project's stylesheet, markup and script files, outside dot and dependency directories (the snapshot's
+    perimeter, `tree_scope.DEPENDENCY_DIRS`); the ones no reader takes included, to be listed as missing."""
+    suffixes = STYLESHEETS + MARKUP + css_typescript.SUFFIXES + tuple(UNREAD)
     return sorted(path.relative_to(project_dir).as_posix() for path in Path(project_dir).rglob("*")
                   if path.is_file() and path.suffix.lower() in suffixes
-                  and not any(part == "node_modules" or part.startswith(".")
+                  and not any(part in DEPENDENCY_DIRS or part.startswith(".")
                               for part in path.relative_to(project_dir).parts))
 
 
@@ -97,8 +121,14 @@ def index(project_dir: Path, work_dir: Path | None = None, files: list[str] | No
     records, missing = [], {}
     for rel in files if files is not None else walk(project_dir):
         lower = rel.lower()
+        suffix = Path(lower).suffix
+        if suffix in UNREAD:
+            missing[rel] = UNREAD[suffix]
+            continue
         if not lower.endswith(STYLESHEETS + MARKUP):
             continue
+        if suffix in PARTLY:
+            missing[rel] = PARTLY[suffix]
         try:
             text = (project_dir / rel).read_text(encoding="utf-8")
         except (OSError, UnicodeError) as error:
@@ -469,6 +499,7 @@ def tokens(alts: list) -> tuple[list[tuple[str, list, int | None]], list[tuple[s
                     holes.setdefault((atoms[0]["h"], atoms[0]["x"], line), None)
             else:
                 form = next((p["ctx"] for p in atoms if p.get("ctx")), "template")
+                form = "ejs-glued" if form == "ejs" else form  # text glued to an EJS tag: a class lost with it
                 holes.setdefault((form, "".join(p["s"] if "s" in p else p["x"] if p.get("ctx") == "ejs"
                                                 else "${" + p["x"] + "}" for p in current), line), None)
             current.clear()
@@ -518,20 +549,96 @@ def _file(path: Path, sass: bool) -> Path | None:
     return None
 
 
-def resolve(project_dir: Path, rel: str, spec: str, script: bool = False):
-    """Where an import leads: `("project", rel)`, `("external", id, package dict)` or `("hole", class, reason)`.
+_CHECKOUT: dict = {}
+
+
+def _checkout_files(project_dir: Path) -> list[str]:
+    """Every file of the checkout outside `node_modules` and dot directories, read once per project."""
+    if project_dir not in _CHECKOUT:
+        found = []
+        for folder, dirs, names in os.walk(project_dir):
+            dirs[:] = [d for d in dirs if d != "node_modules" and not d.startswith(".")]
+            found += [(Path(folder) / name).relative_to(project_dir).as_posix() for name in names]
+        _CHECKOUT[project_dir] = found
+    return _CHECKOUT[project_dir]
+
+
+def _url_path(project_dir: Path, path: str) -> list[str]:
+    """The checkout files a server can map a URL path to: those ending with its longest tail that any file ends
+    with, the whole path or at least its last two segments (one segment alone would match any file of that name)."""
+    parts = [part for part in path.split("/") if part]
+    for start in range(len(parts)):
+        if start and len(parts) - start < 2:
+            break
+        tail = "/".join(parts[start:])
+        found = [rel for rel in _checkout_files(project_dir) if rel == tail or rel.endswith("/" + tail)]
+        if found:
+            return found
+    return []
+
+
+def remote_package(url: str) -> dict:
+    """The package and version a CDN URL names, `unknown` when it names none."""
+    for pattern, manager in CDN_RES:
+        match = pattern.match(url)
+        if match:
+            return {"manager": manager, "package": match.group(1), "version": match.group(2), "from": "url"}
+    return {"manager": "cdn", "package": re.sub(r"^https?://", "", url).split("/")[0], "version": "unknown",
+            "from": "url"}
+
+
+def sheet_package(text: str, rel: str) -> dict:
+    """The package and version of a checkout file outside the snapshot: from its leading comment, else from the
+    folder after a dependency directory in its path (`vendor/bootstrap-5.3.0/`), else `unknown`."""
+    banner = BANNER_RE.match(text[:600].lstrip("﻿"))
+    if banner:
+        return {"manager": "checkout", "package": banner.group(1).strip(), "version": banner.group(2), "from": "banner"}
+    parts = rel.split("/")
+    for at in range(len(parts) - 2, -1, -1):
+        if parts[at] in DEPENDENCY_DIRS:
+            versioned = VERSIONED_RE.match(parts[at + 1])
+            return {"manager": "checkout", "package": versioned.group(1) if versioned else parts[at + 1],
+                    "version": versioned.group(2) if versioned else "unknown", "from": "path"}
+    return {"manager": "checkout", "package": "unknown", "version": "unknown", "from": None}
+
+
+def _download(url: str) -> str | None:
+    """A CDN sheet's text, None when it cannot be fetched. Nothing about the project is sent."""
+    import urllib.request
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": "daodan-graph"})
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return response.read(8 << 20).decode("utf-8", errors="replace")
+    except Exception:
+        return None
+
+
+def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: Path | None = None):
+    """Where an import leads: `("project", rel, chain)` (a checkout file, inside the snapshot or not),
+    `("ambiguous", [rel, ...], chain)`, `("external", id, package dict, path)`, `("remote", url, package dict)` or
+    `("hole", class, reason)`.
 
     A stylesheet or HTML file names a URL relative to itself (Sass and LESS also try partials and their own
-    extensions), then a package; a script's bare specifier is a package; `~` names a package."""
+    extensions), then a package; a script's bare specifier is a package; `~` names a package; a URL path names
+    the checkout files ending with its longest tail (`url-suffix`). `base`: the folder relative names start from,
+    when it is not the file's own (a sheet read from a package)."""
     clean = spec.split("?")[0].split("#")[0].strip()
     if clean.startswith("sass:"):
-        return "external", clean, {"manager": "sass", "package": clean, "version": None}
-    if re.match(r"^[A-Za-z][\w+.-]*:", clean) or clean.startswith("//"):
-        return "hole", "remote-url", clean
+        return "external", clean, {"manager": "sass", "package": clean, "version": None}, None
+    if re.match(r"^https?:", clean, re.I) or clean.startswith("//"):
+        url = "https:" + clean if clean.startswith("//") else clean
+        return "remote", url, remote_package(url)
+    if re.match(r"^[A-Za-z][\w+.-]*:", clean):
+        return "hole", "url-scheme", clean
     if clean.startswith("/"):
-        return "hole", "url-path", "a URL path the server maps, not a file"
+        found = _url_path(project_dir, clean)
+        if len(found) == 1:
+            return "project", found[0], "url-suffix"
+        if found:
+            return "ambiguous", found, "url-suffix"
+        return "hole", "url-path", "a URL path no checkout file ends with"
     sass = rel.lower().endswith((".scss", ".sass", ".less"))
-    base = (project_dir / rel).parent
+    base = base or (project_dir / rel).parent
     tilde = clean.startswith("~")
     clean = clean.lstrip("~")
     if not tilde and (clean.startswith(".") or not script):
@@ -542,7 +649,7 @@ def resolve(project_dir: Path, rel: str, spec: str, script: bool = False):
             except ValueError:
                 inside = None
             if inside and "node_modules" not in inside.split("/"):
-                return "project", inside
+                return "project", inside, None
     if clean.startswith(".") and not tilde:
         return "hole", "unresolved-import", spec
     parts = clean.split("/")
@@ -558,7 +665,7 @@ def resolve(project_dir: Path, rel: str, spec: str, script: bool = False):
     if found is None:
         return "hole", "unresolved-import", spec
     return "external", f"{name}/{found.resolve().relative_to(folder.resolve()).as_posix()}", \
-        {"manager": "npm", "package": name, "version": meta.get("version")}
+        {"manager": "npm", "package": name, "version": meta.get("version")}, found
 
 
 def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[str], engines: list[dict],
@@ -570,7 +677,8 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
     names = collections.defaultdict(list)
     tailwind = tailwind or {}
     valid, version = set(tailwind.get("valid") or ()), tailwind.get("version")
-    read = set()
+    in_snapshot, read, cssinjs = set(files), set(), {}
+    pending, sheets = {}, set()  # external names, made into nodes when a reference reaches them; sheets read
 
     def node(identity, kind, rel, line, external=None):
         return nodes.setdefault(identity, {"id": identity, "kind": kind, "file": rel, "line": line,
@@ -623,14 +731,74 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             refs += var_refs(record["text"], rel, record["line"], rel, ["css-text"], strings=False)
         elif kind == "import":
             refs.append(_ref("import", record["spec"], record["spec"], rel, record["line"], rel, script=True))
+        elif kind == "css-in-js":
+            text = stylesheet._without_strings_and_brackets(record["selector"])
+            for match in stylesheet._CLASS_OR_ID_RE.finditer(text):
+                key = ("class" if match.group(0)[0] == "." else "id", stylesheet._decode_escapes(match.group(1)))
+                cssinjs.setdefault(key, site)
     for rel in sorted(read):
         node(rel, "module", rel, 1)
 
+    def external_sheet(identity, external, text, rel, path, dialect):
+        """The names a sheet from outside the snapshot declares, as external nodes made when a reference reaches
+        them (`<sheet> .class`, `<sheet> --x`...); its own imports followed."""
+        if identity in sheets:
+            return
+        sheets.add(identity)
+        node(identity, "module", rel, 1 if rel else None, external)
+        for record in _sheet(identity, text, dialect):
+            if record["t"] == "ref" and record["kind"] == "import" and "package" not in record:
+                if re.match(r"^https?:", identity):  # a CDN sheet names its imports relative to its URL
+                    url = urllib.parse.urljoin(identity, record["name"])
+                    found = ("remote", url, remote_package(url))
+                else:
+                    found = resolve(project_dir, rel or identity, record["name"], base=Path(path).parent)
+                if found[0] == "hole":
+                    hole(record["site"], "import", found[1], record["symbol"], found[2])
+                load(found, record)
+            if record["t"] != "node":
+                continue
+            for key in map(tuple, record["names"]):
+                if key[0] not in ("class", "id", "custom-property", "keyframes", "font-face", "container"):
+                    continue  # a package's Sass variables and mixins: not read
+                label = ({"class": ".", "id": "#"}.get(key[0], "") + key[1]
+                         if key[0] in ("class", "id", "custom-property") else
+                         f"container {key[1]}" if key[0] == "container" else f"@{key[0]} {key[1]}")
+                target = f"{identity} {label}"
+                pending.setdefault(target, {"id": target, "kind": key[0], "file": rel,
+                                            "line": record["line"] if rel else None, "external": external})
+                if target not in names[key]:
+                    names[key].append(target)
+
+    def load(found, ref):
+        """Read the sheet an import reaches when it is outside the snapshot: a checkout file, a package, a URL."""
+        rels = [found[1]] if found[0] == "project" else found[1] if found[0] == "ambiguous" else []
+        for rel in rels:
+            if rel not in in_snapshot and rel.lower().endswith(STYLESHEETS):
+                try:
+                    text = (project_dir / rel).read_text(encoding="utf-8")
+                except (OSError, UnicodeError) as error:
+                    hole(ref["site"], "import", "not-read", ref["symbol"], repr(error)[:200])
+                    continue
+                external_sheet(rel, sheet_package(text, rel), text, rel, project_dir / rel, stylesheet.dialect_for(rel))
+        if found[0] == "external" and found[3] is not None and str(found[3]).lower().endswith(STYLESHEETS):
+            text = Path(found[3]).read_text(encoding="utf-8", errors="replace")
+            external_sheet(found[1], found[2], text, None, found[3], stylesheet.dialect_for(str(found[3])))
+        elif found[0] == "remote" and found[1] not in sheets:
+            text = _download(found[1])
+            if text is not None:
+                external = dict(found[2])
+                banner = BANNER_RE.match(text[:600])
+                if external["version"] == "unknown" and banner:
+                    external.update({"version": banner.group(2), "from": "banner"})
+                external_sheet(found[1], external, text, None, found[1], "css")
+
     sass = collections.defaultdict(lambda: {"use": {}, "forward": [], "import": []})
     imports = {}
-    for ref in refs:  # imports first: Sass scopes and CSS Module members need them
+    for ref in refs:  # imports first: Sass scopes, CSS Module members and external sheets need them
         if ref["kind"] == "import" and "package" not in ref:
             imports[id(ref)] = found = resolve(project_dir, ref["file"], ref["name"], ref.get("script", False))
+            load(found, ref)
             if found[0] == "project" and ref.get("sass"):
                 if ref["sass"] == "use":
                     sass[ref["file"]]["use"][ref["ns"]] = found[1]
@@ -685,14 +853,23 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
         if "to" in ref:
             targets = [(ref["to"], ())]
         elif kind == "import":
-            found = ("external", "tailwindcss", {"manager": "npm", "package": "tailwindcss", "version": version}) \
-                if ref.get("package") else imports[id(ref)]
+            found = ("external", "tailwindcss", {"manager": "npm", "package": "tailwindcss", "version": version},
+                     None) if ref.get("package") else imports[id(ref)]
             if found[0] == "hole":
                 hole(ref["site"], kind, found[1], ref["symbol"], found[2])
                 continue
-            if found[0] == "external":
+            if found[0] in ("external", "remote"):
                 node(found[1], "module", None, None, found[2])
-            targets = [(found[1], ())]
+                targets = [(found[1], ())]
+                if found[0] == "remote" and found[1] not in sheets:
+                    hole(ref["site"], kind, "not-read", ref["symbol"], "the sheet could not be downloaded")
+            else:  # checkout files: a project module, or a sheet outside the snapshot read as external
+                rels = [found[1]] if found[0] == "project" else found[1]
+                for rel in rels:
+                    node(rel, "module", rel, 1, None if rel in in_snapshot else
+                         {"manager": "checkout", "package": "unknown", "version": "unknown", "from": None})
+                targets = [(rel, (found[2],) if found[2] else ()) for rel in rels]
+                uncertain = "a URL path several checkout files end with" if found[0] == "ambiguous" else None
         elif kind == "layer":
             targets = [(tailwind_node(f"@layer {name}"), ())]
         elif kind in ("class", "id"):
@@ -732,10 +909,17 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                    "custom-property": "undeclared", "keyframes": "no-keyframes", "font-face": "no-font-face",
                    "container": "no-container", "sass-variable": "undeclared", "mixin": "undeclared"}[kind]
             reason = f"fallback {ref['fallback']}" if ref.get("fallback") else "-"
+            if kind in ("class", "id") and (kind, name) in cssinjs:
+                cls, reason = "css-in-js", f"a selector key of a script's object literal at {cssinjs[(kind, name)]}"
+            elif kind == "class" and tailwind.get("valid") is not None and NAMED_GROUP_RE.match(name):
+                cls, reason = "tailwind-named-group", f"Tailwind {version}: a variant anchor, not a utility"
             hole(ref["site"], kind, cls, name if kind in ("class", "id", "module-member", "composes") else ref["symbol"],
                  reason)
             continue
         candidates = sorted(dict.fromkeys(target for target, _ in targets))
+        for target, _ in targets:
+            if target not in nodes:
+                nodes[target] = dict(pending[target])
         for target, chain in dict.fromkeys(targets):
             chain = (*ref["chain"], *chain)
             if (ref["from"], target, ref["site"], kind, ref["symbol"], chain) in seen:
@@ -746,7 +930,8 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             if uncertain:
                 edge["uncertain"] = {"reason": uncertain, "candidates": candidates}
             edges.append(edge)
-    names_read = read | {rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)} - set(missing)
+    # Read completely: a file read in part (`PARTLY`) is listed as missing with what is left out.
+    names_read = (read | {rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)}) - set(missing)
     indexed = [rel for rel in files if rel in names_read]
     lost = [{"path": rel, "reason": missing.get(rel) or "not read"} for rel in files if rel not in names_read]
     return {"language": "css",

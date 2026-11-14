@@ -123,12 +123,12 @@ def code_sha256() -> dict:
 
 
 def inventory(manifest: Path) -> list[str]:
-    """The snapshot's stylesheets, HTML and EJS files, and scripts."""
+    """The snapshot's stylesheets, markup files and scripts, the ones no reader takes included (listed as missing)."""
     import sqlite3
     with sqlite3.connect(manifest) as connection:
         rows = connection.execute("SELECT file, language FROM sem_coverage").fetchall()
     return sorted(rel for rel, language in rows if language in ("css", "javascript", "typescript")
-                  or rel.lower().endswith(css.MARKUP))
+                  or rel.lower().endswith(css.MARKUP + tuple(css.UNREAD)))
 
 
 def _rules_naming(texts: dict, name: str) -> list[str]:

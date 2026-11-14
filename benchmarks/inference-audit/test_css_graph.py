@@ -3,7 +3,8 @@
     python -m pytest benchmarks/inference-audit/test_css_graph.py
 
 Needs Node and npm: the fixture's packages (`fixtures/css/package.json`) are installed once into a folder of the
-system temp directory and linked into a copy of the fixture; without npm the test is skipped.
+system temp directory and linked into a copy of the fixture; without npm the test is skipped. The CDN sheet the
+fixture links is served by a stand-in for the download, so the test needs no network beyond npm.
 """
 from __future__ import annotations
 
@@ -34,10 +35,14 @@ ACCENT = [f"{T}:6 --accent", f"{T}:11 --accent", f"{H}:11 --accent", f"{A}:12 --
 GAP = [f"{T}:7 --gap", f"{A}:10 --gap"]
 SIDEBAR, SHELL, SPIN = f"{T}:38 .sidebar", f"{H}:6 .shell", f"{T}:25 @keyframes spin"
 ANGLE, BRAND = f"{T}:14 @property --angle", f"{T}:20 @font-face Brand Sans"
+# Sheets outside the snapshot the markup loads: a vendored file, an npm package, a CDN link.
+ICONS, ANIMATE = "src/vendor/icons/icons.min.css", "animate.css/animate.css"
+CDN = "https://cdn.jsdelivr.net/npm/@acme/ui@1.2.3/dist/ui.css"
+EXTERNAL = (ICONS, ANIMATE, CDN, "tailwindcss")
 
 
 def _rows(site, kind, symbol, targets, chain=()):
-    return [(site, kind, symbol, target, "external" if target.startswith("tailwindcss") else "project", chain)
+    return [(site, kind, symbol, target, "external" if target.startswith(EXTERNAL) else "project", chain)
             for target in targets]
 
 
@@ -91,6 +96,13 @@ EXPECTED = [
     *_rows(f"{A}:16", "class", ".shell", [SHELL]),
     *_rows(f"{A}:23", "class", ".flex", ["tailwindcss flex"]),  # a template over two lines: each token on its line
     *_rows(f"{A}:24", "class", ".shell", [SHELL]),
+    *_rows(f"{A}:27", "import", "animate.css", [ANIMATE]),
+    *_rows(f"{H}:13", "import", "/assets/vendor/icons/icons.min.css", [ICONS], ("url-suffix",)),
+    *_rows(f"{H}:14", "import", CDN, [CDN]),
+    *_rows(f"{H}:15", "class", ".ic", [f"{ICONS} .ic"]),
+    *_rows(f"{H}:15", "class", ".ic-star", [f"{ICONS} .ic-star"]),
+    *_rows(f"{H}:15", "class", ".animate__animated", [f"{ANIMATE} .animate__animated"]),
+    *_rows(f"{H}:15", "class", ".ui-btn", [f"{CDN} .ui-btn"]),
 ]
 
 # (site, kind, class, name)
@@ -101,6 +113,9 @@ HOLES = {
     (f"{A}:12", "class", "no-rule", "ghost-x"),
     (f"{A}:14", "class", "template", "${size}-x"),
     (f"{A}:15", "module-member", "dynamic-member", "styles[size]"),
+    (f"{E}:2", "class", "ejs-glued", "tab<%= active ? ' tab-on' : '' %>"),
+    (f"{A}:30", "class", "css-in-js", "cm-x"),
+    (f"{A}:30", "class", "tailwind-named-group", "group/tip"),
 }
 
 # (site, symbol): the candidates every arc of that reference names.
@@ -131,7 +146,12 @@ def graph(tmp_path_factory):
     project = tmp_path_factory.mktemp("css") / "fixture"
     shutil.copytree(FIXTURE, project)
     _link(cache / "node_modules", project / "node_modules")
-    return css.run(project, project.parent / "work")
+    served = {CDN: ".ui-btn { color: red; }"}
+    download, css._download = css._download, served.get
+    try:
+        return css.run(project, project.parent / "work")
+    finally:
+        css._download = download
 
 
 def test_every_arc_and_nothing_else(graph):
@@ -167,5 +187,19 @@ def test_nodes(graph):
     assert (nodes[f"{S}:9 .panel__title"]["file"], nodes[f"{S}:9 .panel__title"]["line"]) == (S, 9)
 
 
+def test_external_sheets_name_package_and_version(graph):
+    nodes = {node["id"]: node for node in graph["nodes"]}
+    assert nodes[ICONS]["external"] == {"manager": "checkout", "package": "Icons Kit", "version": "2.1.0",
+                                        "from": "banner"}
+    assert nodes[f"{ICONS} .ic"]["external"] == nodes[ICONS]["external"]
+    assert nodes[ANIMATE]["external"] == {"manager": "npm", "package": "animate.css", "version": "4.1.1"}
+    assert nodes[CDN]["external"] == {"manager": "npm", "package": "@acme/ui", "version": "1.2.3", "from": "url"}
+    assert f"{ANIMATE} @keyframes bounce" not in nodes  # a name no reference reaches makes no node
+
+
 def test_files_read(graph):
-    assert graph["files"]["missing"] == [] and graph["files"]["indexed"] == 9
+    """Every stylesheet and markup file is read or listed with the reason: none dropped."""
+    missing = {item["path"]: item["reason"] for item in graph["files"]["missing"]}
+    assert set(missing) == {"src/legacy.sass", "src/Widget.vue", "src/Card.svelte", "src/styles/extra.less"}
+    assert missing["src/styles/extra.less"].startswith("partly read")
+    assert graph["files"]["indexed"] == 9 and graph["files"]["snapshot"] == 13
