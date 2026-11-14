@@ -7,6 +7,7 @@ import json
 import os
 import stat
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -18,17 +19,19 @@ import resolve_edges as rx  # noqa: E402
 from indexers import rust  # noqa: E402
 
 # rustup's proxy: a toolchain file in the folder or a parent names the toolchain; one not installed is installed
-# unless RUSTUP_AUTO_INSTALL is 0, and then the proxy stops with rustup's error.
+# unless RUSTUP_AUTO_INSTALL is 0 and rustup reads it (1.28.1 and later, `FAKE_RUSTUP_VERSION`), and then the proxy
+# stops with rustup's error. `rustup --version` resolves the active toolchain too, as rustup does.
 RUSTUP = r'''
 import json, os, sys
 from pathlib import Path
 tool, args = sys.argv[1], sys.argv[2:]
+version = os.environ.get("FAKE_RUSTUP_VERSION", "1.28.2")
 here = Path.cwd()
 pin = next((folder / name for folder in (here, *here.parents) for name in ("rust-toolchain.toml", "rust-toolchain")
             if (folder / name).is_file()), None)
 record = {"tool": tool, "args": args, "cwd": str(here), "auto_install": os.environ.get("RUSTUP_AUTO_INSTALL")}
 if pin is not None:
-    if os.environ.get("RUSTUP_AUTO_INSTALL") == "0":
+    if os.environ.get("RUSTUP_AUTO_INSTALL") == "0" and tuple(map(int, version.split("."))) >= (1, 28, 1):
         record["refused"] = str(pin)
     else:
         record["installed"] = str(pin)
@@ -39,6 +42,8 @@ if "refused" in record:
     sys.exit(1)
 if args[:2] == ["--print", "sysroot"]:
     print(os.environ["FAKE_SYSROOT"])
+if tool == "rustup" and args[:1] == ["--version"]:
+    print(f"rustup {version} (0123456 2026-01-01)")
 '''
 
 # uv: records each call; `venv` makes the environment's folder.
@@ -125,6 +130,28 @@ def test_a_project_pinning_a_toolchain_rustup_does_not_have_is_unavailable_and_n
     assert "rustup toolchain install" in result["install"]
 
 
+def test_a_rustup_without_the_auto_install_switch_and_a_pinned_project_is_unavailable_and_installs_nothing(
+        host, monkeypatch):
+    monkeypatch.setenv("FAKE_RUSTUP_VERSION", "1.27.1")
+    project = _pinned(host["root"])
+    monkeypatch.chdir(project)
+    result = rust.index(project, host["root"] / "work")
+    asked = _log(host["log"])
+    assert not [call for call in asked if "installed" in call], asked
+    assert result["state"] == "unavailable", result
+    assert "rust-toolchain.toml" in result["reason"]
+    assert "this rustup would install the toolchain the project pins" in result["reason"]
+    assert "rustup self update" in result["install"] and "rustup toolchain install" in result["install"]
+
+
+def test_without_a_toolchain_file_rustup_s_version_is_not_asked(host, monkeypatch):
+    monkeypatch.setenv("FAKE_RUSTUP_VERSION", "1.27.1")
+    project = _pinned(host["root"])
+    (project / "rust-toolchain.toml").unlink()
+    assert rx.RustEngine(project).missing_pin() == ""
+    assert _log(host["log"]) == []
+
+
 def test_rust_analyzer_s_own_cargo_calls_have_rustup_auto_install_off(host):
     engine = rx.RustEngine(_pinned(host["root"]))
     engine.toolchain, engine.target_dir = host["root"] / "toolchain", host["root"] / "target"
@@ -149,3 +176,51 @@ def test_the_project_environment_asks_uv_for_no_python_download_no_project_confi
         assert call["UV_CACHE_DIR"] and call["UV_CACHE_DIR"].startswith(cache), call
     venv = next(call["args"] for call in asked if call["args"][:1] == ["venv"])
     assert venv[venv.index("--python") + 1] == sys.executable
+
+
+@pytest.fixture
+def silent_windows(monkeypatch):
+    """`platform` with an empty cache and a WMI that does not answer, as with the commit exhausted: it would run
+    `ver` through the shell. Every process started is recorded and refused."""
+    import platform
+    import subprocess
+    started = []
+
+    def refuse(*args, **kwargs):
+        started.append(args[0] if args else kwargs.get("args"))
+        raise AssertionError("a process was started")
+
+    monkeypatch.setattr(platform, "_uname_cache", None)
+    monkeypatch.setattr(platform, "_wmi_query", lambda *args: (_ for _ in ()).throw(OSError("WMI did not answer")),
+                        raising=False)
+    monkeypatch.setattr(subprocess, "Popen", refuse)
+    return started
+
+
+@pytest.mark.parametrize("system, machine, key", [
+    ("win32", "AMD64", "win-x64"), ("win32", "ARM64", "win-arm64"), ("linux", "x86_64", "linux-x64"),
+    ("linux", "aarch64", "linux-arm64"), ("darwin", "arm64", "osx-arm64")])
+def test_the_platform_key_comes_from_the_process_and_starts_no_process(silent_windows, monkeypatch, system,
+                                                                         machine, key):
+    monkeypatch.setattr(rx.sys, "platform", system)
+    monkeypatch.setenv("PROCESSOR_ARCHITECTURE", machine)
+    monkeypatch.setattr(rx.os, "uname", lambda: types.SimpleNamespace(machine=machine), raising=False)
+    assert rx._platform() == key
+    assert silent_windows == []
+
+
+def test_the_java_runtime_download_names_the_process_platform_and_starts_no_process(silent_windows, host,
+                                                                                    monkeypatch):
+    asked = []
+
+    def opened(url, *args, **kwargs):
+        asked.append(url)
+        raise OSError("offline")
+
+    monkeypatch.setattr(rx.shutil, "which", lambda name: None)
+    monkeypatch.setattr(rx, "open_url", opened)
+    monkeypatch.setattr(rx, "_platform", lambda: "win-arm64")
+    with pytest.raises(OSError):
+        rx.java_runtime()
+    assert len(asked) == 1 and "/ga/windows/aarch64/" in asked[0], asked
+    assert silent_windows == []
