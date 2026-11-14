@@ -1,0 +1,726 @@
+{
+ "case": "chi",
+ "commit": "c64ed7d6635f33a8b2feaff7dcfa55677023ac7d",
+ "code": {
+  "scip_graph.py": "750af9f87f6b",
+  "adapters/go.py": "dbdf199f9e74",
+  "adapters/go_callgraph.py": "f4cc3f249243",
+  "adapters/java.py": "785ca14f9c45",
+  "adapters/js_jelly.py": "b5f14dcba7fe",
+  "adapters/kotlin.py": "499e0b2a692a",
+  "adapters/python.py": "b9a90540a243",
+  "adapters/python_jedi.py": "9ff396b7438a",
+  "adapters/rust.py": "a8d962bc3212",
+  "adapters/ts_compiler.py": "f1b267281fad",
+  "adapters/typescript.py": "59a5a73875a8"
+ },
+ "engine": {
+  "name": "golang.org/x/tools/cmd/callgraph -algo=vta -test",
+  "version": "v0.52.0",
+  "go": "go1.27.3",
+  "seconds": 5.5,
+  "peak_mb": 840,
+  "patterns": [
+   "./...",
+   "./_examples/custom-handler",
+   "./_examples/custom-method",
+   "./_examples/fileserver",
+   "./_examples/graceful",
+   "./_examples/hello-world",
+   "./_examples/limits",
+   "./_examples/logging",
+   "./_examples/pathvalue",
+   "./_examples/router-walk",
+   "./_examples/todos-resource"
+  ],
+  "lines": 84072
+ },
+ "engine_wall_seconds": 13.6,
+ "edges": {
+  "total": 5766,
+  "by_kind": {
+   "static": 2832,
+   "dynamic": 2934
+  },
+  "by_description": {
+   "static function call": 1197,
+   "dynamic function call": 284,
+   "dynamic method call": 2521,
+   "static method call": 1536,
+   "deferred dynamic method call": 118,
+   "deferred static function closure call": 24,
+   "deferred dynamic function call": 11,
+   "deferred static method call": 61,
+   "concurrent static function closure call": 11,
+   "concurrent static method call": 1,
+   "static function closure call": 2
+  },
+  "to_project": 2499,
+  "sites": 3512
+ },
+ "graph_check": {
+  "rebuilt_edges": 20102,
+  "stored_edges": 20102,
+  "same": true
+ },
+ "nested_modules": [
+  "_examples/rest",
+  "_examples/versions"
+ ],
+ "counts": {
+  "1 interface": {
+   "sites": 537,
+   "candidates": 1122,
+   "kept": 885,
+   "dropped": 237,
+   "added": 0,
+   "sites with a drop": 116,
+   "sites with an addition": 0,
+   "sites kept whole": 421,
+   "sites left with no project target": 25
+  },
+  "1 interface, no implementation in the index": {
+   "sites": 94,
+   "added": 0,
+   "sites with an addition": 0
+  },
+  "2 every dynamic function call": {
+   "sites": 48,
+   "with a project target": 43
+  },
+  "2 no name (index hole)": {
+   "joined": 42,
+   "with a project target": 42
+  },
+  "2 project value": {
+   "joined": 31,
+   "with a project target": 26
+  },
+  "2 value hop": {
+   "joined": 14,
+   "with a project target": 14,
+   "same targets as the index": 14
+  },
+  "3 static": {
+   "sites": 2832,
+   "agree": 2797,
+   "only the callgraph has a project target": 35
+  },
+  "4 index only": {
+   "conversion to a type | index project target": 4,
+   "conversion to a type | index external": 165,
+   "both silent: index hole no-occurrence | index nothing": 255,
+   "nested module | index external": 159,
+   "nested module | index nothing": 12,
+   "nested module | index project target": 26,
+   "other | index project target": 1
+  },
+  "callgraph sites without a snapshot call": {
+   "dynamic function call": 1
+  },
+  "calls": {
+   "joined": 3511,
+   "callgraph dynamic": 679,
+   "callgraph static": 2832
+  }
+ },
+ "static_disagreements": [
+  "only the callgraph has a project target | _examples/graceful/main.go:30  | index: direct  impl  ext  | callgraph static: _examples/graceful/main.go:26 ext ",
+  "only the callgraph has a project target | middleware/client_ip_test.go:181  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:177 ext ",
+  "only the callgraph has a project target | middleware/client_ip_test.go:190  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:186 ext ",
+  "only the callgraph has a project target | middleware/client_ip_test.go:199  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:195 ext ",
+  "only the callgraph has a project target | middleware/client_ip_test.go:302  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:298 ext ",
+  "only the callgraph has a project target | middleware/compress_test.go:194  | index: direct  impl  ext  | callgraph static: middleware/compress_test.go:187 ext ",
+  "only the callgraph has a project target | middleware/deprecation_test.go:72  | index: direct  impl  ext  | callgraph static: middleware/deprecation_test.go:68 ext ",
+  "only the callgraph has a project target | middleware/logger.go:53  | index: direct  impl  ext  | callgraph static: middleware/logger.go:51 ext ",
+  "only the callgraph has a project target | middleware/recoverer.go:43  | index: direct  impl  ext  | callgraph static: middleware/recoverer.go:24 ext ",
+  "only the callgraph has a project target | middleware/recoverer_test.go:23  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:23 ext ",
+  "only the callgraph has a project target | middleware/recoverer_test.go:54  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:54 ext ",
+  "only the callgraph has a project target | middleware/recoverer_test.go:57  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:57 ext ",
+  "only the callgraph has a project target | middleware/recoverer_test.go:84  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:79 ext ",
+  "only the callgraph has a project target | middleware/sunset_test.go:107  | index: direct  impl  ext  | callgraph static: middleware/sunset_test.go:103 ext ",
+  "only the callgraph has a project target | middleware/throttle.go:91  | index: direct  impl  ext  | callgraph static: middleware/throttle.go:89 ext ",
+  "only the callgraph has a project target | middleware/throttle.go:98  | index: direct  impl  ext  | callgraph static: middleware/throttle.go:96 ext ",
+  "only the callgraph has a project target | middleware/throttle.go:120  | index: direct  impl  ext  | callgraph static: middleware/throttle.go:117 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:52  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:42 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:84  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:80 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:119  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:113 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:138  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:128 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:176  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:166 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:196  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:186 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:237  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:233 ext ",
+  "only the callgraph has a project target | middleware/throttle_test.go:321  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:314 ext ",
+  "only the callgraph has a project target | middleware/timeout.go:41  | index: direct  impl  ext  | callgraph static: middleware/timeout.go:36 ext ",
+  "only the callgraph has a project target | mux_test.go:708  | index: direct  impl  ext  | callgraph static: mux_test.go:704 ext ",
+  "only the callgraph has a project target | mux_test.go:1467  | index: direct  impl  ext  | callgraph static: mux_test.go:1463 ext ",
+  "only the callgraph has a project target | mux_test.go:1481  | index: direct  impl  ext  | callgraph static: mux_test.go:1477 ext ",
+  "only the callgraph has a project target | mux_test.go:1528  | index: direct  impl  ext  | callgraph static: mux_test.go:1524 ext ",
+  "only the callgraph has a project target | mux_test.go:1542  | index: direct  impl  ext  | callgraph static: mux_test.go:1538 ext ",
+  "only the callgraph has a project target | mux_test.go:1602  | index: direct  impl  ext  | callgraph static: mux_test.go:1598 ext ",
+  "only the callgraph has a project target | mux_test.go:1615  | index: direct  impl  ext  | callgraph static: mux_test.go:1611 ext ",
+  "only the callgraph has a project target | mux_test.go:1757  | index: direct  impl  ext  | callgraph static: mux_test.go:1739 ext ",
+  "only the callgraph has a project target | mux_test.go:1754  | index: direct  impl  ext  | callgraph static: mux_test.go:1752 ext "
+ ],
+ "examples": {
+  "1 dropped": [
+   "_examples/fileserver/main.go:63 fs.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic: _examples/custom-handler/main.go:12,mux.go:63 ext github.com/golang/go/src (*net/http.fileHandler).ServeHTTP,github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP,github.com/golang/go/src (net/http/pprof.handler).ServeHTTP | dropped chain.go:30,middleware/middleware_test.go:27",
+   "middleware/compress_test.go:224 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8 | dropped middleware/compress.go:387",
+   "middleware/get_head.go:32 next.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic: _examples/custom-handler/main.go:12,mux.go:63 ext github.com/golang/go/src (*net/http.fileHandler).ServeHTTP,github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP,github.com/golang/go/src (net/http/pprof.handler).ServeHTTP | dropped chain.go:30,middleware/middleware_test.go:27",
+   "middleware/middleware.go:9 h.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic: middleware/middleware_test.go:27 ext  | dropped _examples/custom-handler/main.go:12,chain.go:30,mux.go:63",
+   "middleware/recoverer.go:66 recovererErrorWriter.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write,github.com/golang/go/src (*os.File).Write | dropped middleware/compress.go:338,middleware/wrap_writer.go:97",
+   "middleware/route_headers_test.go:57 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP | dropped _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63",
+   "middleware/route_headers_test.go:179 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP | dropped _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63",
+   "middleware/terminal.go:57 w.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write | dropped middleware/compress.go:338,middleware/wrap_writer.go:97",
+   "middleware/wrap_writer.go:111 io.Discard.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (io.discard).Write | dropped middleware/compress.go:338,middleware/wrap_writer.go:97",
+   "mux.go:90 mx.handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic: _examples/custom-handler/main.go:12,mux.go:63 ext github.com/golang/go/src (*net/http.fileHandler).ServeHTTP,github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP,github.com/golang/go/src (net/http/pprof.handler).ServeHTTP | dropped chain.go:30,middleware/middleware_test.go:27",
+   "mux_test.go:333 next.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic: _examples/custom-handler/main.go:12,mux.go:63 ext github.com/golang/go/src (*net/http.fileHandler).ServeHTTP,github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP,github.com/golang/go/src (net/http/pprof.handler).ServeHTTP | dropped chain.go:30,middleware/middleware_test.go:27",
+   "mux_test.go:849 next.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic: _examples/custom-handler/main.go:12,mux.go:63 ext github.com/golang/go/src (*net/http.fileHandler).ServeHTTP,github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP,github.com/golang/go/src (net/http/pprof.handler).ServeHTTP | dropped chain.go:30,middleware/middleware_test.go:27"
+  ],
+  "1 left with no project target": [
+   "middleware/compress_test.go:224 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "middleware/compress_test.go:248 reader.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*compress/flate.decompressor).Close,github.com/golang/go/src (*compress/gzip.Reader).Close,github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,+10",
+   "middleware/middleware_test.go:159 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "middleware/middleware_test.go:189 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "middleware/recoverer.go:66 recovererErrorWriter.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write,github.com/golang/go/src (*os.File).Write",
+   "middleware/route_headers.go:81 next.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers.go:103 next.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:24 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:57 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:83 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:114 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:141 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:153 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/route_headers_test.go:179 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/strip_test.go:298 h.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+   "middleware/strip_test.go:300 res.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "middleware/supress_notfound_test.go:66 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "middleware/terminal.go:57 w.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write",
+   "middleware/terminal.go:61 w.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write",
+   "middleware/wrap_writer.go:102 b.tee.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write",
+   "middleware/wrap_writer.go:109 b.tee.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*bytes.Buffer).Write",
+   "middleware/wrap_writer.go:111 io.Discard.Write | index: direct  impl middleware/compress.go:338,middleware/wrap_writer.go:97 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (io.discard).Write",
+   "middleware/wrap_writer_readfrom_test.go:59 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "mux_test.go:192 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8",
+   "mux_test.go:2093 resp.Body.Close | index: direct  impl middleware/compress.go:387 ext gomod github.com/golang/go/src@go1.24 method | callgraph dynamic:  ext github.com/golang/go/src (*crypto/tls.Conn).Close,github.com/golang/go/src (*internal/nettest.Conn).Close,github.com/golang/go/src (*io.PipeReader).Close,github.com/golang/go/src (*net.conn).Close,github.com/golang/go/src (*net/http.body).Close,github.com/golang/go/src (*net/http.bodyEOFSignal).Close,+8"
+  ],
+  "2 no name (index hole)": [
+   "_examples/graceful/main.go:30  | index: direct  impl  ext  | callgraph static: _examples/graceful/main.go:26 ext ",
+   "chain.go:43  | index: direct  impl  ext  | callgraph dynamic: middleware/basic_auth.go:11,middleware/clean_path.go:12,middleware/client_ip.go:126,middleware/client_ip.go:186,middleware/client_ip.go:220,middleware/client_ip.go:63,+56 ext ",
+   "middleware/client_ip_test.go:181  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:177 ext ",
+   "middleware/client_ip_test.go:190  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:186 ext ",
+   "middleware/client_ip_test.go:199  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:195 ext ",
+   "middleware/client_ip_test.go:302  | index: direct  impl  ext  | callgraph static: middleware/client_ip_test.go:298 ext ",
+   "middleware/compress_test.go:194  | index: direct  impl  ext  | callgraph static: middleware/compress_test.go:187 ext ",
+   "middleware/deprecation_test.go:72  | index: direct  impl  ext  | callgraph static: middleware/deprecation_test.go:68 ext ",
+   "middleware/deprecation_test.go:79  | index: direct  impl  ext  | callgraph dynamic: middleware/deprecation.go:30 ext ",
+   "middleware/deprecation_test.go:79  | index: direct  impl  ext  | callgraph dynamic: middleware/sunset.go:27 ext ",
+   "middleware/deprecation_test.go:97  | index: direct  impl  ext  | callgraph dynamic: middleware/deprecation.go:30 ext ",
+   "middleware/deprecation_test.go:97  | index: direct  impl  ext  | callgraph dynamic: middleware/sunset.go:27 ext ",
+   "middleware/logger.go:53  | index: direct  impl  ext  | callgraph static: middleware/logger.go:51 ext ",
+   "middleware/maybe_test.go:19  | index: direct  impl  ext  | callgraph dynamic: middleware/maybe.go:9 ext ",
+   "middleware/recoverer.go:43  | index: direct  impl  ext  | callgraph static: middleware/recoverer.go:24 ext ",
+   "middleware/recoverer_test.go:23  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:23 ext ",
+   "middleware/recoverer_test.go:54  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:54 ext ",
+   "middleware/recoverer_test.go:57  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:57 ext ",
+   "middleware/recoverer_test.go:84  | index: direct  impl  ext  | callgraph static: middleware/recoverer_test.go:79 ext ",
+   "middleware/request_id_test.go:48  | index: direct  impl  ext  | callgraph dynamic: middleware/request_id_test.go:15 ext ",
+   "middleware/sunset_test.go:107  | index: direct  impl  ext  | callgraph static: middleware/sunset_test.go:103 ext ",
+   "middleware/throttle.go:91  | index: direct  impl  ext  | callgraph static: middleware/throttle.go:89 ext ",
+   "middleware/throttle.go:98  | index: direct  impl  ext  | callgraph static: middleware/throttle.go:96 ext ",
+   "middleware/throttle.go:120  | index: direct  impl  ext  | callgraph static: middleware/throttle.go:117 ext ",
+   "middleware/throttle_test.go:52  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:42 ext ",
+   "middleware/throttle_test.go:84  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:80 ext ",
+   "middleware/throttle_test.go:119  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:113 ext ",
+   "middleware/throttle_test.go:138  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:128 ext ",
+   "middleware/throttle_test.go:176  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:166 ext ",
+   "middleware/throttle_test.go:196  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:186 ext ",
+   "middleware/throttle_test.go:237  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:233 ext ",
+   "middleware/throttle_test.go:321  | index: direct  impl  ext  | callgraph static: middleware/throttle_test.go:314 ext ",
+   "middleware/timeout.go:41  | index: direct  impl  ext  | callgraph static: middleware/timeout.go:36 ext ",
+   "mux_test.go:708  | index: direct  impl  ext  | callgraph static: mux_test.go:704 ext ",
+   "mux_test.go:1467  | index: direct  impl  ext  | callgraph static: mux_test.go:1463 ext ",
+   "mux_test.go:1481  | index: direct  impl  ext  | callgraph static: mux_test.go:1477 ext ",
+   "mux_test.go:1528  | index: direct  impl  ext  | callgraph static: mux_test.go:1524 ext ",
+   "mux_test.go:1542  | index: direct  impl  ext  | callgraph static: mux_test.go:1538 ext ",
+   "mux_test.go:1602  | index: direct  impl  ext  | callgraph static: mux_test.go:1598 ext ",
+   "mux_test.go:1615  | index: direct  impl  ext  | callgraph static: mux_test.go:1611 ext ",
+   "mux_test.go:1757  | index: direct  impl  ext  | callgraph static: mux_test.go:1739 ext ",
+   "mux_test.go:1754  | index: direct  impl  ext  | callgraph static: mux_test.go:1752 ext "
+  ],
+  "2 project value": [
+   "_examples/custom-handler/main.go:13 h | index: direct  impl  ext  | callgraph dynamic: _examples/custom-handler/main.go:26 ext ",
+   "middleware/client_ip.go:270 visit | index: direct  impl  ext  | callgraph dynamic: middleware/client_ip.go:132,middleware/client_ip.go:190,middleware/client_ip_bench_test.go:29,middleware/client_ip_bench_test.go:52 ext ",
+   "middleware/client_ip_test.go:832 buildReq | index: direct  impl  ext  | callgraph dynamic: middleware/client_ip_test.go:163,middleware/client_ip_test.go:224,middleware/client_ip_test.go:231,middleware/client_ip_test.go:285,middleware/client_ip_test.go:320,middleware/client_ip_test.go:43,+13 ext ",
+   "middleware/client_ip_test.go:848 buildReq | index: direct  impl  ext  | callgraph dynamic: middleware/client_ip_test.go:343,middleware/client_ip_test.go:358,middleware/client_ip_test.go:372 ext ",
+   "middleware/compress.go:182 fn | index: direct  impl  ext  | callgraph dynamic: middleware/compress.go:398,middleware/compress.go:406,middleware/compress_test.go:24 ext ",
+   "middleware/compress.go:186 fn | index: direct  impl  ext  | callgraph dynamic: middleware/compress.go:398,middleware/compress.go:406,middleware/compress_test.go:24 ext ",
+   "middleware/compress.go:223 cleanup | index: direct  impl  ext  | callgraph dynamic: middleware/compress.go:242,middleware/compress.go:250,middleware/compress.go:257 ext ",
+   "middleware/compress.go:250 fn | index: direct  impl  ext  | callgraph dynamic: middleware/compress.go:398,middleware/compress.go:406,middleware/compress_test.go:24 ext ",
+   "middleware/logger.go:40 DefaultLogger | index: direct  impl  ext  | callgraph dynamic: middleware/logger.go:45 ext ",
+   "middleware/logger_test.go:34 DefaultLogger | index: direct  impl  ext  | callgraph dynamic: middleware/logger.go:45 ext ",
+   "middleware/logger_test.go:47 DefaultLogger | index: direct  impl  ext  | callgraph dynamic: middleware/logger.go:45 ext ",
+   "middleware/maybe.go:10 mw | index: direct  impl  ext  | callgraph dynamic: middleware/maybe_test.go:11 ext ",
+   "middleware/maybe.go:12 maybeFn | index: direct  impl  ext  | callgraph dynamic: middleware/maybe_test.go:19 ext ",
+   "middleware/request_id_test.go:65 test.request | index: direct  impl  ext  | callgraph dynamic: middleware/request_id_test.go:28,middleware/request_id_test.go:38 ext ",
+   "middleware/route_headers.go:94 matcher.Middleware | index: direct  impl  ext  | callgraph dynamic: middleware/route_headers_test.go:125,middleware/route_headers_test.go:164,middleware/route_headers_test.go:35,middleware/route_headers_test.go:41,middleware/route_headers_test.go:68,middleware/route_headers_test.go:94,+1 ext ",
+   "middleware/route_headers.go:106 (expr).Middleware | index: direct  impl  ext  | callgraph dynamic: middleware/route_headers_test.go:125,middleware/route_headers_test.go:164,middleware/route_headers_test.go:35,middleware/route_headers_test.go:41,middleware/route_headers_test.go:68,middleware/route_headers_test.go:94,+1 ext ",
+   "middleware/throttle.go:155 t.retryAfterFn | index: direct  impl  ext  | callgraph dynamic: middleware/throttle_test.go:204,middleware/throttle_test.go:280 ext ",
+   "middleware/throttle_test.go:345 throttleMiddleware | index: direct  impl  ext  | callgraph dynamic: middleware/throttle.go:77 ext ",
+   "middleware/wrap_writer_test.go:68 writer.wrap | index: direct  impl  ext  | callgraph dynamic: middleware/wrap_writer_test.go:30,middleware/wrap_writer_test.go:33,middleware/wrap_writer_test.go:36,middleware/wrap_writer_test.go:39 ext ",
+   "mux.go:271 fn | index: direct  impl  ext  | callgraph dynamic: _examples/limits/main.go:41,_examples/limits/main.go:64,mux_test.go:1005,mux_test.go:1415,mux_test.go:1422,mux_test.go:1432,+8 ext ",
+   "mux.go:283 fn | index: direct  impl  ext  | callgraph dynamic: _examples/router-walk/main.go:17,_examples/todos-resource/todos.go:20,_examples/todos-resource/users.go:20,middleware/get_head_test.go:18,middleware/get_head_test.go:25,middleware/strip_test.go:118,+40 ext ",
+   "mux.go:517 fn | index: direct  impl  ext  | callgraph dynamic: mux.go:214,mux.go:234 ext ",
+   "tree.go:718 fn | index: direct  impl  ext  | callgraph dynamic: tree.go:636 ext ",
+   "tree.go:913 walkFn | index: direct  impl  ext  | callgraph dynamic: _examples/router-walk/main.go:28,mux_test.go:1831,tree_test.go:516,tree_test.go:567,tree_test.go:594,tree_test.go:692 ext ",
+   "tree.go:917 walkFn | index: direct  impl  ext  | callgraph dynamic: _examples/router-walk/main.go:28,mux_test.go:1831,tree_test.go:516,tree_test.go:567,tree_test.go:594,tree_test.go:692 ext ",
+   "tree_test.go:565 tt.setup | index: direct  impl  ext  | callgraph dynamic: tree_test.go:536,tree_test.go:549 ext "
+  ],
+  "2 project value, no project target": [
+   "_examples/graceful/main.go:23 stop | index: direct  impl  ext  | callgraph dynamic:  ext github.com/golang/go/src (*os/signal.signalCtx).stop",
+   "_examples/graceful/main.go:37 cancel | index: direct  impl  ext  | callgraph dynamic:  ext github.com/golang/go/src context.WithCancel$1,github.com/golang/go/src context.WithDeadlineCause$1,github.com/golang/go/src context.WithDeadlineCause$3",
+   "middleware/timeout.go:37 cancel | index: direct  impl  ext  | callgraph dynamic:  ext github.com/golang/go/src context.WithCancel$1,github.com/golang/go/src context.WithDeadlineCause$1,github.com/golang/go/src context.WithDeadlineCause$3",
+   "mux_test.go:1730 cancel | index: direct  impl  ext  | callgraph dynamic:  ext github.com/golang/go/src context.WithCancel$1,github.com/golang/go/src context.WithDeadlineCause$1,github.com/golang/go/src context.WithDeadlineCause$3",
+   "mux_test.go:1753 cancel | index: direct  impl  ext  | callgraph dynamic:  ext github.com/golang/go/src context.WithCancel$1"
+  ],
+  "2 value hop": [
+   "middleware/deprecation_test.go:31 serve | index: direct middleware/deprecation_test.go:15 impl  ext  | callgraph dynamic: middleware/deprecation_test.go:15 ext ",
+   "middleware/deprecation_test.go:46 serve | index: direct middleware/deprecation_test.go:15 impl  ext  | callgraph dynamic: middleware/deprecation_test.go:15 ext ",
+   "middleware/deprecation_test.go:59 serve | index: direct middleware/deprecation_test.go:15 impl  ext  | callgraph dynamic: middleware/deprecation_test.go:15 ext ",
+   "middleware/deprecation_test.go:78 serve | index: direct middleware/deprecation_test.go:15 impl  ext  | callgraph dynamic: middleware/deprecation_test.go:15 ext ",
+   "middleware/deprecation_test.go:96 serve | index: direct middleware/deprecation_test.go:15 impl  ext  | callgraph dynamic: middleware/deprecation_test.go:15 ext ",
+   "middleware/middleware_test.go:114 wmw | index: direct middleware/middleware_test.go:106 impl  ext  | callgraph static: middleware/middleware_test.go:106 ext ",
+   "middleware/throttle_test.go:336 waitResponse | index: direct middleware/throttle_test.go:324 impl  ext  | callgraph static: middleware/throttle_test.go:324 ext ",
+   "middleware/throttle_test.go:339 waitResponse | index: direct middleware/throttle_test.go:324 impl  ext  | callgraph static: middleware/throttle_test.go:324 ext ",
+   "middleware/value_test.go:28 request | index: direct middleware/value_test.go:14 impl  ext  | callgraph static: middleware/value_test.go:14 ext ",
+   "mux_test.go:579 decorateRouter | index: direct mux_test.go:502 impl  ext  | callgraph dynamic: mux_test.go:502 ext ",
+   "mux_test.go:580 testNotFound | index: direct mux_test.go:532 impl  ext  | callgraph dynamic: mux_test.go:532 ext ",
+   "mux_test.go:585 decorateRouter | index: direct mux_test.go:502 impl  ext  | callgraph dynamic: mux_test.go:502 ext ",
+   "mux_test.go:589 testNotFound | index: direct mux_test.go:532 impl  ext  | callgraph dynamic: mux_test.go:532 ext ",
+   "tree_test.go:695 mwName | index: direct tree_test.go:680 impl  ext  | callgraph dynamic: tree_test.go:680 ext "
+  ],
+  "4 both silent: index hole no-occurrence | index nothing": [
+   "_examples/fileserver/main.go:50 panic | index: direct  impl  ext ",
+   "middleware/client_ip.go:279 len | index: direct  impl  ext ",
+   "middleware/compress_test.go:20 len | index: direct  impl  ext ",
+   "middleware/middleware_test.go:161 string | index: direct  impl  ext ",
+   "middleware/route_headers.go:145 len | index: direct  impl  ext ",
+   "middleware/throttle_test.go:310 make | index: direct  impl  ext ",
+   "middleware/wrap_writer_test.go:215 int64 | index: direct  impl  ext ",
+   "mux_test.go:198 string | index: direct  impl  ext ",
+   "tree.go:202 len | index: direct  impl  ext ",
+   "tree.go:508 append | index: direct  impl  ext ",
+   "tree.go:797 len | index: direct  impl  ext ",
+   "tree_test.go:267 len | index: direct  impl  ext "
+  ],
+  "4 conversion to a type | index external": [
+   "_examples/fileserver/main.go:40 http.Dir | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "middleware/content_type.go:11 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "middleware/nocache.go:58 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "middleware/route_headers_test.go:95 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "middleware/throttle_test.go:345 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "mux_test.go:105 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "mux_test.go:966 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "mux_test.go:1194 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "pattern_test.go:48 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "tree_test.go:24 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "tree_test.go:161 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class",
+   "tree_test.go:274 http.HandlerFunc | index: direct  impl  ext gomod github.com/golang/go/src@go1.24 class"
+  ],
+  "4 conversion to a type | index project target": [
+   "_examples/custom-handler/main.go:22 Handler | index: direct _examples/custom-handler/main.go:10 impl  ext ",
+   "chain.go:7 Middlewares | index: direct chi.go:140 impl  ext ",
+   "tree.go:82 methodTyp | index: direct tree.go:18 impl  ext ",
+   "tree.go:415 nodeTyp | index: direct tree.go:88 impl  ext "
+  ],
+  "4 nested module | index external": [
+   "_examples/rest/main.go:53 flag.Bool | index: direct  impl  ext gomod github.com/golang/go/src@go1.22 function",
+   "_examples/rest/main.go:74 r.Get | index: direct  impl  ext gomod github.com/go-chi/chi/v5@v5.2.4 method",
+   "_examples/rest/main.go:97 r.Mount | index: direct  impl  ext gomod github.com/go-chi/chi/v5@v5.2.4 method",
+   "_examples/rest/main.go:143 next.ServeHTTP | index: direct  impl  ext gomod github.com/golang/go/src@go1.22 method",
+   "_examples/rest/main.go:191 render.Render | index: direct  impl  ext gomod github.com/go-chi/render@v1.0.1 function",
+   "_examples/rest/main.go:229 w.Write | index: direct  impl  ext gomod github.com/golang/go/src@go1.22 method",
+   "_examples/rest/main.go:264 w.WriteHeader | index: direct  impl  ext gomod github.com/golang/go/src@go1.22 method",
+   "_examples/rest/main.go:519 errors.New | index: direct  impl  ext gomod github.com/golang/go/src@go1.22 function",
+   "_examples/versions/main.go:38 r.Mount | index: direct  impl  ext gomod github.com/go-chi/chi/v5@v5.1.0 method",
+   "_examples/versions/main.go:63 r.Route | index: direct  impl  ext gomod github.com/go-chi/chi/v5@v5.1.0 method",
+   "_examples/versions/main.go:119 (expr).Get | index: direct  impl  ext gomod github.com/golang/go/src@go1.16 method",
+   "_examples/versions/main.go:139 render.Render | index: direct  impl  ext gomod github.com/go-chi/render@v1.0.3 function"
+  ],
+  "4 nested module | index nothing": [
+   "_examples/rest/main.go:75 panic | index: direct  impl  ext ",
+   "_examples/rest/main.go:268 err.Error | index: direct  impl  ext ",
+   "_examples/rest/main.go:381 append | index: direct  impl  ext ",
+   "_examples/rest/main.go:420 err.Error | index: direct  impl  ext ",
+   "_examples/rest/main.go:429 err.Error | index: direct  impl  ext ",
+   "_examples/rest/main.go:471 append | index: direct  impl  ext ",
+   "_examples/rest/main.go:506 append | index: direct  impl  ext ",
+   "_examples/versions/data/errors.go:27 err.Error | index: direct  impl  ext ",
+   "_examples/versions/main.go:72 make | index: direct  impl  ext ",
+   "_examples/versions/main.go:97  | index: direct  impl  ext ",
+   "_examples/versions/main.go:96 close | index: direct  impl  ext ",
+   "_examples/versions/main.go:149 len | index: direct  impl  ext "
+  ],
+  "4 nested module | index project target": [
+   "_examples/rest/main.go:97 adminRouter | index: direct _examples/rest/main.go:219 impl  ext ",
+   "_examples/rest/main.go:116 ErrRender | index: direct _examples/rest/main.go:424 impl  ext ",
+   "_examples/rest/main.go:132 dbGetArticleBySlug | index: direct _examples/rest/main.go:484 impl  ext ",
+   "_examples/rest/main.go:158 ErrInvalidRequest | index: direct _examples/rest/main.go:415 impl  ext ",
+   "_examples/rest/main.go:166 NewArticleResponse | index: direct _examples/rest/main.go:360 impl  ext ",
+   "_examples/rest/main.go:180 ErrRender | index: direct _examples/rest/main.go:424 impl  ext ",
+   "_examples/rest/main.go:197 NewArticleResponse | index: direct _examples/rest/main.go:360 impl  ext ",
+   "_examples/rest/main.go:211 ErrInvalidRequest | index: direct _examples/rest/main.go:415 impl  ext ",
+   "_examples/rest/main.go:364 dbGetUser | index: direct _examples/rest/main.go:513 impl  ext ",
+   "_examples/rest/main.go:381 NewArticleResponse | index: direct _examples/rest/main.go:360 impl  ext ",
+   "_examples/versions/main.go:32 articleRouter | index: direct _examples/versions/main.go:60 impl  ext ",
+   "_examples/versions/main.go:38 articleRouter | index: direct _examples/versions/main.go:60 impl  ext "
+  ],
+  "4 other | index project target": [
+   "middleware/page_route.go:14 handler.ServeHTTP | index: direct  impl _examples/custom-handler/main.go:12,chain.go:30,middleware/middleware_test.go:27,mux.go:63 ext gomod github.com/golang/go/src@go1.24 method"
+  ],
+  "callgraph sites without a snapshot call": [
+   "chain.go:45:21 -> middleware/basic_auth.go:11:9,middleware/clean_path.go:12:6,middleware/client_ip.go:126:9,middleware/client_ip.go:186:9,middleware/client_ip.go:220:6,middleware | snapshot calls on the line: []"
+  ]
+ },
+ "hand": [
+  {
+   "site": "mux.go:517 fn",
+   "expected": [
+    "decl mux.go:214",
+    "decl mux.go:234"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "mux.go:214",
+    "mux.go:234"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "tree.go:718 fn",
+   "expected": [
+    "decl tree.go:636"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "tree.go:636"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "tree.go:887 Routes",
+   "expected": [
+    "decl mux.go:358"
+   ],
+   "index": [
+    "mux.go:358"
+   ],
+   "index_interface": [
+    "chi.go:123"
+   ],
+   "index_externals": [],
+   "index_right": true,
+   "callgraph": [
+    "mux.go:358"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "tree.go:888 Middlewares",
+   "expected": [
+    "decl mux.go:363"
+   ],
+   "index": [
+    "mux.go:363"
+   ],
+   "index_interface": [
+    "chi.go:126"
+   ],
+   "index_externals": [],
+   "index_right": true,
+   "callgraph": [
+    "mux.go:363"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "tree.go:913 walkFn",
+   "expected": [
+    "decl mux_test.go:1831",
+    "decl tree_test.go:516",
+    "decl tree_test.go:567",
+    "decl tree_test.go:594",
+    "decl tree_test.go:692",
+    "decl _examples/router-walk/main.go:28"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "_examples/router-walk/main.go:28",
+    "mux_test.go:1831",
+    "tree_test.go:516",
+    "tree_test.go:567",
+    "tree_test.go:594",
+    "tree_test.go:692"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "tree.go:917 walkFn",
+   "expected": [
+    "decl mux_test.go:1831",
+    "decl tree_test.go:516",
+    "decl tree_test.go:567",
+    "decl tree_test.go:594",
+    "decl tree_test.go:692",
+    "decl _examples/router-walk/main.go:28"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "_examples/router-walk/main.go:28",
+    "mux_test.go:1831",
+    "tree_test.go:516",
+    "tree_test.go:567",
+    "tree_test.go:594",
+    "tree_test.go:692"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "middleware/maybe.go:10 mw",
+   "expected": [
+    "decl middleware/maybe_test.go:11"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "middleware/maybe_test.go:11"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "middleware/maybe.go:12 maybeFn",
+   "expected": [
+    "decl middleware/maybe_test.go:19"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "middleware/maybe_test.go:19"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "middleware/maybe.go:13 ServeHTTP",
+   "expected": [
+    "external"
+   ],
+   "index": [
+    "_examples/custom-handler/main.go:12",
+    "chain.go:30",
+    "middleware/middleware_test.go:27",
+    "mux.go:63"
+   ],
+   "index_interface": [],
+   "index_externals": [
+    "gomod github.com/golang/go/src@go1.24 method"
+   ],
+   "index_right": false,
+   "callgraph": [
+    "_examples/custom-handler/main.go:12",
+    "mux.go:63"
+   ],
+   "callgraph_externals": [
+    "github.com/golang/go/src (*net/http.fileHandler).ServeHTTP",
+    "github.com/golang/go/src (net/http.HandlerFunc).ServeHTTP",
+    "github.com/golang/go/src (net/http/pprof.handler).ServeHTTP"
+   ],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": false
+  },
+  {
+   "site": "middleware/compress.go:182 fn",
+   "expected": [
+    "decl middleware/compress.go:398",
+    "decl middleware/compress.go:406",
+    "decl middleware/compress_test.go:24"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "middleware/compress.go:398",
+    "middleware/compress.go:406",
+    "middleware/compress_test.go:24"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "middleware/compress.go:250 fn",
+   "expected": [
+    "decl middleware/compress.go:398",
+    "decl middleware/compress.go:406",
+    "decl middleware/compress_test.go:24"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "middleware/compress.go:398",
+    "middleware/compress.go:406",
+    "middleware/compress_test.go:24"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "middleware/logger.go:47 NewLogEntry",
+   "expected": [
+    "decl middleware/logger.go:98"
+   ],
+   "index": [
+    "middleware/logger.go:98"
+   ],
+   "index_interface": [
+    "middleware/logger.go:64"
+   ],
+   "index_externals": [],
+   "index_right": true,
+   "callgraph": [
+    "middleware/logger.go:98"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "middleware/logger.go:52 Status",
+   "expected": [
+    "decl middleware/wrap_writer.go:130"
+   ],
+   "index": [
+    "middleware/wrap_writer.go:130"
+   ],
+   "index_interface": [
+    "middleware/wrap_writer.go:52"
+   ],
+   "index_externals": [],
+   "index_right": true,
+   "callgraph": [
+    "middleware/wrap_writer.go:130"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "_examples/custom-handler/main.go:13 h",
+   "expected": [
+    "decl _examples/custom-handler/main.go:26"
+   ],
+   "index": [],
+   "index_interface": [],
+   "index_externals": [],
+   "index_right": false,
+   "callgraph": [
+    "_examples/custom-handler/main.go:26"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  },
+  {
+   "site": "_examples/router-walk/main.go:18 Get",
+   "expected": [
+    "decl mux.go:155"
+   ],
+   "index": [
+    "mux.go:155"
+   ],
+   "index_interface": [
+    "chi.go:101"
+   ],
+   "index_externals": [],
+   "index_right": true,
+   "callgraph": [
+    "mux.go:155"
+   ],
+   "callgraph_externals": [],
+   "callgraph_kinds": [
+    "dynamic"
+   ],
+   "callgraph_right": true
+  }
+ ],
+ "hand_score": {
+  "checks": 15,
+  "index_right": 5,
+  "callgraph_right": 14
+ },
+ "callgraph_files": 82,
+ "compare_seconds": 4.4,
+ "seconds": 19.2
+}

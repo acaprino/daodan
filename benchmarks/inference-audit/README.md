@@ -574,3 +574,116 @@ Non verificato:
 - Perché i task di scip-java non girano in buildSrc: lo dice solo il log.
 - I picchi di RAM fra un campione e l'altro, sotto gVisor.
 - Altri progetti Kotlin, Gradle 8 e oltre, Android, Kotlin Multiplatform.
+
+### 14 novembre 2026, seconda fonte in un colpo: Python
+
+Verdetto: Jedi in un solo processo sull'intero progetto chiude 2 dei 19 mancati veri e non contraddice mai l'indice su una chiamata (0 bersagli diversi su 468 chiamate con bersaglio del progetto), ma tace su 48 di quelle 468 e su tutte le 13 chiamate senza occorrenza dell'indice. Sui tre bersagli sbagliati dell'indice dà la risposta giusta o un valore, mai la classe sbagliata. La regola `goto` del prodotto, alla lettera, perde 103 chiamate a metodi `classmethod`: serve allargarla.
+
+Adattatore `adapters/python_jedi.py` (`analyze(project_dir, work_dir, environment)`, anche da riga di comando) e `strong_python.py` (collegamento: venv delle dipendenze, Jedi in un processo suo, confronto con il grafo salvato). Esecuzione: `modal deploy benchmarks/inference-audit/strong_python.py`, poi `spawn --cases semver` (con `--reuse` rifà solo il confronto sull'uscita di Jedi già salvata), `fetch --cases semver`, `report --cases semver`. Risultati: `results/strong-python-semver.json` (una riga per riferimento dello snapshot con le due risposte, conteggi, verifica a mano) e `results/strong-python-semver-jedi.json` (uscita dell'adattatore: archi, nomi senza risposta). Il grafo salvato, `scip_graph.py`, `adapters/python.py`, `lang_python.py` e `plugins/` non sono toccati.
+
+| Parametro | Valore |
+| --- | --- |
+| caso | lo stesso di `lang_python.py`: python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, 35 file, la copia dello snapshot (symlink come file normali) |
+| motore | Jedi 0.20.1, Python 3.13, `jedi.Project` con radici il progetto e `src` (come il `pyrightconfig.json` dell'indice), ambiente creato con `create_environment(safe=False)` |
+| ambiente | venv con le dipendenze dichiarate, installate come fa `adapters/python.py`: 87 pacchetti, `pip list` identico a quello dell'esecuzione dell'indice (stesse versioni) |
+| nomi | `get_names(all_scopes=True, definitions=False, references=True)` su ogni file, senza i nomi di argomenti per parola chiave: 3.125 nomi, 2.653 con risposta, 472 senza, 0 errori |
+| risposta | `infer()` alla posizione del nome; `goto(follow_imports=True)` ristretto a funzioni, classi e property quando nessun valore inferito è una funzione, classe o property del progetto. Ogni arco porta `via` e `product`: `product` marca i `goto` che la regola del prodotto (`JediEngine.definitions`: `goto` solo se nessun valore è funzione o classe) usa al posto dei valori inferiti. 3.865 archi, 2.885 da `infer`, 980 da `goto` |
+| confronto | i 2.343 riferimenti `call` e `read` dello snapshot (995 chiamate, 1.348 letture) alla posizione del nome, contro le fini del grafo salvato; un bersaglio di Jedi è del progetto quando lo snapshot riconosce alla posizione del suo nome una funzione, un metodo o una classe (`Snapshot.grade`, come il prodotto fa con i risultati di Jedi) |
+| archi | `caller` (definizione più interna), `callee`, `site` `file:riga:colonna` (colonna in caratteri, da 0), `kind` (`call` se il token dopo il nome è `(`), `external`; in più `at`, `type`, `via`, `product` |
+| tempo e memoria | Jedi 21,5 s in un processo a parte, 136 MB di picco; il processo con l'avvio 24,3 s |
+
+Perché serve allargare la regola: per un metodo `@classmethod` `infer()` dà la funzione `__get__` di `builtins`, che è una funzione, e la regola del prodotto non cerca altro. Sono le 103 chiamate che con la regola del prodotto non hanno bersaglio del progetto (`Version.parse` e `Version.is_valid` in `_deprecated.py` e `cli.py`, `cls.parse`, `cls._validate_identifiers`, `super().parse` in `tests/semverwithvprefix.py:23`). L'adattatore chiede `goto` anche quando nessun valore è del progetto: 418 chiamate sul bersaglio dell'indice invece di 317.
+
+1. I 19 mancati veri (`report` li elenca): 2 risolti, 1 parziale, 16 no.
+   - Risolti: `version.py:65` (due volte, `cls(**other)` e `cls(*other)` con `cls = type(self)` nel wrapper di `_comparator`): Jedi arriva alla classe `Version` (`version.py:78`).
+   - Parziale, non conta: `cli.py:46 func()` con `func = getattr(ver, maptable[...])`: Jedi dà solo `Version.bump_minor`, uno dei cinque metodi possibili.
+   - Valori creati da un decoratore, 7 (`tests/test_pysemver-cli.py:41, 109, 116, 124, 129, 133, 156`): Jedi dà istanze di `functools.partial` e `typing.Callable`, il tipo ritornato dal decoratore, non la funzione.
+   - Parametri chiamati, 4: `_deprecated.py:81` e `version.py:68` istanze `Callable` (e `NoneType`); `tests/test_deprecated_functions.py:63` e `tests/test_pysemver-cli.py:104` nessuna risposta.
+   - Attributo dinamico `cli.py:152 args.func(args)`: nessuna risposta. Callee calcolato, 2 (`version.py:556 getattr(...)()`, `:807 type(self)(**version)`): non c'è un nome a cui chiedere, Jedi per nome non ha niente da dire. Fixture senza tipo, 2 (`tests/test_semver.py:30`, `:36`): nessuna risposta.
+2. Le tre classi di bersaglio sbagliato e i 9 locali senza definizione.
+   - Attributi di `__slots__` (l'indice punta alla classe `Version`): 23 letture di `self._major` e degli altri quattro; 18 con il tipo del valore (`int`, `str`, `NoneType`), 5 senza risposta, nessuna alla classe. Qui Jedi ha ragione e l'indice no. Sono 23 e non i 29 del conteggio dell'indice, che conta anche altre forme.
+   - `operator.lt`, `operator.gt` (`tests/test_compare_invalid_operands.py:52`, `:67`): Jedi dà `_operator.lt` e `_operator.gt`, le funzioni giuste della libreria standard.
+   - `pytest.skip`, `pytest.fail` (`tests/test_optional_native_backend.py:16`, `tests/test_deprecated_functions.py:65`): Jedi dà il pacchetto giusto, `pytest`, con l'istanza `_pytest.outcomes._Skip` o `_Fail` e non con la funzione.
+   - I 9 locali senza definizione: 9 su 9 la funzione giusta della libreria (`builtins.str.format` 6, `sys.exit`, `importlib.util.find_spec`, `unittest.mock.NonCallableMock.assert_called_once`).
+3. Dove l'indice ha già un bersaglio del progetto: 468 chiamate, 131 letture.
+   - Chiamate: 418 stesso insieme di bersagli; 2 sovrapposte (`version.py:479`, `:833`, `cls.parse`: l'indice aggiunge i quattro override di `SemVerWithVPrefix.parse` per dispatch dinamico, Jedi solo `Version.parse`; tutte e due difendibili); 48 senza risposta di Jedi; 0 con bersaglio diverso, quindi nessun sito in cui decidere chi ha ragione. Delle 48: 44 sono metodi chiamati su `v = parse_version_info(...)` (`tests/test_bump.py`, 43; `tests/test_parsing.py:109`), funzione fatta da `deprecated` di cui Jedi non vede il tipo di ritorno (le 15 assegnazioni `v =` di `test_bump.py` sono tutte `parse_version_info(...)`); 4 in `version.py:584`-`590` (`version = self` più su, causa non indagata).
+   - Letture: 52 stesso insieme; 5 senza risposta (`version.py:455`-`460`, `self._x` di `__slots__`); 74 senza una funzione del progetto. Delle 74: 54 sono property: l'indice va alla funzione del getter, Jedi all'ultima `def` dello stesso nome (la riga `@x.setter`, per esempio `version.py:218` invece di `:213`), cioè alla stessa property; 18 sono gli attributi di `__slots__` del punto 2; 2 sono `return wrapper` (`_deprecated.py:83`, `version.py:70`), dove Jedi dà il tipo `Callable`.
+   - Pacchetti esterni: sulle 483 chiamate con pacchetto esterno in tutti e due, 482 identici e 1 (`version.py:769 _native_parse_parts`) con in più `python-stdlib` da Jedi (l'istanza `NoneType` dell'alias in `try`); sulle letture 312 identici e 5 con in più `python-stdlib` (`excinfo.value`, `actual.value`: Jedi dà anche il tipo del valore). Il pacchetto dell'indice è sempre dentro quelli di Jedi.
+4. Dove uno risponde e l'altro tace.
+   - Jedi risponde, l'indice no, 26 siti. Chiamate 11: i 9 locali del punto 2, `pytest.skip` e `pytest.fail`. Letture 15: sei `__file__`, `__package__`, `__doc__`, `__name__` come `str`; cinque `@x.setter` come `property.setter`; il modulo `semver` due volte; `_module.__name__`; `version_module._native_parse_parts`, dove Jedi dà la funzione `parse_parts` di `fast-semver-rs-backend`.
+   - L'indice risponde, Jedi tace. Chiamate 54: le 48 del punto 3, 4 con pacchetto esterno (`func.__name__.startswith` in `tests/test_docstrings.py:12` due volte, `m.__package__.startswith`, `resultdict.keys` in `tests/test_semver.py:32`), 2 parametri (`tests/test_deprecated_functions.py:63`, `tests/test_pysemver-cli.py:104`). Letture: 5 del progetto, 8 esterne (per esempio `sys.stderr` in `cli.py:173`), 301 di valori (locali e parametri).
+   - Tacciono tutti e due: le 13 chiamate senza occorrenza (`args.parser.parse_args`, `args.func`, `capsys.readouterr`, `captured.out.rstrip`, `version.to_dict`, `version.to_tuple`...) e 23 letture di `args.*` e simili. Jedi non chiude i buchi dell'indice.
+   - Siti di Jedi fuori dai riferimenti dello snapshot: 710 (ricevitori di catene come `Version` in `Version.parse`, annotazioni): 118 funzioni o classi del progetto, 393 esterni, 199 valori; non confrontati.
+   - Rumore di Jedi: su un parametro o un valore creato da decoratore risponde con un tipo (`Callable`, `functools.partial`, `NoneType`, `type` `instance`); sulle chiamate sono 195 bersagli `instance`, mai funzioni.
+5. Verifica a mano, gli stessi 20 siti di `HAND`, stesso criterio del testo atteso.
+
+| | giusti | note |
+| --- | --- | --- |
+| solo indice | 18 su 20 | mancano `version.py:65 cls` e `:769 _native_parse_parts` (arriva al modulo) |
+| solo Jedi, regola allargata | 19 su 20 | manca `tests/test_pysemver-cli.py:109 main` (tipi `partial` e `Callable`, non il valore); `:65` e `:769` giusti (`parse_parts`, pacchetto `fast-semver-rs-backend`); `_deprecated.py:81` e `version.py:68` senza funzione del progetto, come atteso |
+| solo Jedi, regola del prodotto | 16 su 20 | in più mancano `_deprecated.py:113 parse`, `tests/test_subclass.py:13` e `:62 parse` (solo `classmethod.__get__`) |
+| indice più Jedi | 20 su 20 | dove l'indice dà un valore o il modulo (`:65`, `:769`) vale Jedi, altrove l'indice; sui siti dove rispondono tutti e due non si contraddicono mai |
+
+Costo: cinque chiamate al container, stimate 0,025 USD dalla tariffa e dai secondi (cpu 2, 6 GiB, circa 2 minuti l'una, 0,005 USD a chiamata); non letto dal conto di Modal. Cinque perché la regola `goto` del prodotto si è dimostrata troppo stretta (103 `classmethod`), perché l'etichetta del pacchetto dei moduli compilati era sbagliata (`python-stdlib` per `fast-semver-rs-backend`), perché le property non erano accettate dal confronto e perché una chiamata, spawnata subito dopo un deploy, ha eseguito la versione precedente dell'adattatore (hash `bbbd7aa3ff3e`, causa non indagata; la sua uscita è stata sostituita). Nessun fallimento due volte per la stessa causa.
+
+Non verificato:
+- Le 4 chiamate senza risposta in `version.py:584`-`590`: causa non letta.
+- Perché `cli.py:46` dà `bump_minor` e non un altro dei cinque.
+- Il tempo della costruzione della venv e quello totale del container: non misurati.
+- Un solo progetto, 995 chiamate: l'accordo (418 su 468) e i silenzi (48) non valgono per altri progetti Python; httpx non è stato provato.
+- La verifica a mano di Jedi e di indice più Jedi è mia, sul testo atteso di `HAND`; per i due siti con atteso "vicolo cieco" (`_deprecated.py:81`, `version.py:68`) ho contato giusta l'assenza di una funzione del progetto, non il tipo dato da Jedi. Per `tests/test_pysemver-cli.py:109` l'indice vale giusto perché arriva alla variabile `main` del progetto, come nella verifica del 13 novembre.
+- Le chiamate con più bersagli di Jedi (`str.format` due volte) vengono da `infer` e `goto` insieme, non da due valori diversi.
+
+### 14 novembre 2026, grafo delle chiamate del programma intero: Go
+
+Domanda: l'analisi del programma intero di Go chiude i due buchi dell'indice di chi (quale funzione gira dietro un'interfaccia o un valore funzione) senza inventare archi?
+
+| Parametro | Valore |
+| --- | --- |
+| motore | `golang.org/x/tools/cmd/callgraph` v0.52.0 (10 ottobre 2026), `-algo=vta -test`, Go 1.27.3, installato con `go install` (somme controllate dal database dei checksum) |
+| perimetro | il modulo radice in un colpo: `./...` più le dieci cartelle `_examples/*` che il pattern salta; fuori i moduli annidati `_examples/rest` e `_examples/versions` |
+| caso | chi `c64ed7d6`, con snapshot, indici e grafo già sul volume (`scip-inputs/chi/`) |
+| unione | ogni chiamata dello snapshot va al sito che SSA dichiara: la `(` della chiamata, o la parola `go` / `defer` |
+| file | `adapters/go_callgraph.py`, `strong_go.py` (app `daodan-strong-go`), `results/strong-go-chi.json`; l'uscita dell'adattatore resta sul volume (`strong-go-chi-callgraph.json.gz`) |
+
+Esecuzione: `modal deploy benchmarks/inference-audit/strong_go.py`, poi `python benchmarks/inference-audit/strong_go.py spawn` e `fetch`.
+
+Il grafo dell'indice è rifatto nel container con `scip_graph.py` e `adapters/go.py` invariati: 20.102 archi, identici uno per uno a quelli sul volume.
+
+Verdetto: chiude il buco dei valori funzione e restringe le liste delle interfacce; sulle chiamate dirette non contraddice mai l'indice. Si può unire per aggiungere e confermare, non per togliere: VTA vede solo i tipi che il codice del modulo crea. Una funzione esportata che il modulo non chiama non riceve archi, e un candidato scartato è "non raggiunto da questo modulo", non "impossibile" per chi usa la libreria. VTA a volte tiene candidati impossibili (prova a mano, sotto).
+
+Uscita del motore: 84.072 archi (libreria standard compresa), 5.766 con il sito nel progetto, su 3.512 siti; 2.499 verso una funzione del progetto. Si legano 3.511 chiamate dello snapshot. Un solo sito non ha chiamata nello snapshot: `chain.go:45` `middlewares[i](h)`, 62 middleware; lo snapshot non registra quella chiamata.
+
+1. Interfacce con implementazioni nell'indice: 537 siti, 1.122 candidati. Il motore ne tiene 885, ne scarta 237 (in 116 siti) e non aggiunge nessuna funzione del progetto. In 25 siti restano solo tipi della libreria standard. Altre 94 chiamate su interfacce senza implementazioni nell'indice: nessuna aggiunta.
+   - `middleware/middleware.go:9` `h.ServeHTTP`: da 4 a 1, `middleware/middleware_test.go:27`, l'unico handler dato a `New`;
+   - `middleware/recoverer.go:66` `recovererErrorWriter.Write`: da 2 a 0, restano `*os.File` e `*bytes.Buffer`;
+   - `mux.go:90` `mx.handler.ServeHTTP`: da 4 a 2, via `chain.go:30` e `middleware/middleware_test.go:27`.
+2. Valori funzione:
+   - callee dinamici senza nome: 42 dei 43 analizzati (il 43° è in `_examples/versions`), 42 con un bersaglio del progetto. Sono 35 letterali chiamati sul posto (`defer func() {…}()`, `go func() {…}()`) e 7 chiamate di una funzione restituita: `chain.go:43` → 62 middleware, `middleware/request_id_test.go:48` `defer maintainDefaultRequestID()()` → `:15`, `middleware/maybe_test.go:19` → `middleware/maybe.go:9`;
+   - valori del progetto (variabili, parametri, campi): 26 su 31 con un bersaglio. Le altre 5 sono chiusure della libreria standard (`cancel` di `context.WithCancel`, `stop` di `signal.NotifyContext`), risposta giusta;
+   - funzioni tenute in un locale (salto `value`): 14 su 14, stesso bersaglio dell'indice;
+   - esempi: `tree.go:913` `walkFn` → i 6 `WalkFunc` del programma, `middleware/throttle.go:155` `t.retryAfterFn` → `middleware/throttle_test.go:204` e `:280`, `middleware/client_ip_test.go:848` `buildReq` → `:343`, `:358`, `:372`.
+3. Chiamate dirette: 2.832 siti, 2.797 uguali, 0 con bersagli diversi, 0 dove solo l'indice ha un bersaglio. I 35 dove solo il motore ne ha uno sono i letterali chiamati sul posto del punto 2, buchi per l'indice: `middleware/throttle.go:91` → `:89`, `middleware/timeout.go:41` → `:36`, `mux_test.go:1754` → `:1752`.
+4. Cosa ha l'indice e il motore no:
+   - moduli annidati: 197 chiamate in 7 file, 26 con un bersaglio del progetto (`_examples/rest/main.go:97` `adminRouter`, `_examples/rest/main.go:132` `dbGetArticleBySlug`, `_examples/versions/main.go:32` `articleRouter`);
+   - conversioni di tipo, che per SSA non sono chiamate: 169, di cui 4 verso tipi del progetto (`chain.go:7` `Middlewares(…)`, `_examples/custom-handler/main.go:22` `Handler(…)`, `middleware/content_type.go:11` `http.HandlerFunc(…)`);
+   - builtin: 255, muti per entrambi (`tree.go:202` `len`, `tree.go:508` `append`, `_examples/fileserver/main.go:50` `panic`);
+   - funzione esportata che il modulo non chiama: 1, `middleware/page_route.go:14` `handler.ServeHTTP`. Nessun tipo arriva al parametro di `PageRoute`; l'indice elenca 4 implementazioni;
+   - riflessione: nessuna perdita, chi usa `reflect` solo per confrontare funzioni (`tree.go:701`). Tag di build: solo `middleware/profiler.go` (`!tinygo`), compreso nella build di default. Il codice non raggiunto da un `main` è analizzato: VTA tipa ogni funzione;
+   - file: 82 su 90 hanno almeno un sito. Gli 8 senza sono i 7 dei moduli annidati e `_examples/logging/main.go`, un `main` vuoto.
+5. Prova a mano: 15 chiamate su interfacce o valori funzione, lette nel sorgente prima di ogni risultato (`HAND` in `strong_go.py`). Il bersaglio atteso è ogni funzione che può arrivare al valore chiamato lungo assegnamenti e chiamate, senza valutare le condizioni. Per l'indice contano le implementazioni, non il metodo dell'interfaccia.
+
+| Fonte | Giuste | Sbagliate |
+| --- | --- | --- |
+| indice | 5 / 15 | i 9 valori funzione (nessun bersaglio) e `middleware/maybe.go:13` `wrapped.ServeHTTP` (4 implementazioni dove gira solo `http.HandlerFunc`) |
+| motore | 14 / 15 | `middleware/maybe.go:13`: tiene anche `mux.go:63` e `_examples/custom-handler/main.go:12` |
+
+L'errore del motore viene da come VTA lega le chiamate fatte tramite un valore funzione: usa un grafo CHA, cioè ogni funzione con la stessa firma. Così il risultato di `mw(next)` riceve i ritorni di tutte le `func(http.Handler) http.Handler`.
+
+Motore: 5,5 s e 840 MB di picco (prima esecuzione 7,8 s e 879 MB); 13,6 s contando `go install` dello strumento; container 19,2 s. Costo fatturato da Modal: 0,016 USD per le due esecuzioni, fascia delle 23 UTC forse non chiusa. La prima esecuzione assegnava la parola `defer` di `defer f()()` alla chiamata interna; corretto, i numeri sopra sono della seconda.
+
+Non verificato:
+- i 237 candidati scartati uno per uno (letti 4: `middleware/middleware.go:9`, `middleware/recoverer.go:66`, `mux.go:90`, `middleware/wrap_writer.go:102`);
+- uno per uno, i 62 bersagli di `chain.go:43` e i 46 di `mux.go:283`;
+- un secondo giro di VTA con il primo come grafo iniziale (solo da libreria, non dal comando), che potrebbe togliere l'errore di `maybe.go:13`;
+- i moduli annidati analizzati a parte, i generici (il pacchetto `vta` si dichiara sperimentale e ha un TODO sulle istanze), altri progetti Go.
