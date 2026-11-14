@@ -1,0 +1,1216 @@
+{
+ "report": {
+  "language": "cpp",
+  "indexer": {
+   "name": "scip-clang",
+   "version": "v0.4.1",
+   "seconds": 2.9,
+   "peak_mb": 83
+  },
+  "files": {
+   "snapshot": 4,
+   "indexed": 3,
+   "missing": [
+    {
+     "path": "contrib/html5-printer.cpp",
+     "reason": "no compile command: not built by the default configuration"
+    }
+   ],
+   "missing_count": 1
+  },
+  "nodes": 2063,
+  "edges": 7978,
+  "symbols_by_kind": {
+   "external class": 2,
+   "external macro": 12,
+   "project class": 31,
+   "project function": 12,
+   "project macro": 11,
+   "project method": 412,
+   "project module": 7,
+   "project property": 88,
+   "project variable": 1448,
+   "undefined method": 26,
+   "undefined module": 14
+  },
+  "edges_by_end": {
+   "dead-end unknown": 8,
+   "external call": 6,
+   "external unknown": 74,
+   "namespace unknown": 21,
+   "project-callable call": 2245,
+   "project-callable unknown": 1491,
+   "project-value call": 342,
+   "project-value unknown": 3791
+  },
+  "callable_chain_hops": {
+   "0": 3573,
+   "1": 163
+  },
+  "hop_tags": {
+   "implementation": 139,
+   "declaration": 24
+  },
+  "edges_uncertain": {},
+  "edges_removed": {},
+  "holes_by_class": {
+   "no-document call": 10,
+   "no-occurrence call": 135
+  },
+  "holes": [
+   {
+    "class": "no-occurrence",
+    "kind": "call",
+    "reason": "identifier",
+    "count": 113,
+    "examples": [
+     "tinyxml2.cpp:47 va_start",
+     "tinyxml2.h:585 isdigit",
+     "xmltest.cpp:708 fgets"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "call",
+    "reason": "member",
+    "count": 22,
+    "examples": [
+     "tinyxml2.cpp:1199 ~XMLNode",
+     "tinyxml2.cpp:2249 CurrentAllocs",
+     "tinyxml2.cpp:2252 Untracked"
+    ]
+   },
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "member",
+    "count": 6,
+    "examples": [
+     "contrib/html5-printer.cpp:67 PeekTop",
+     "contrib/html5-printer.cpp:100 Print",
+     "contrib/html5-printer.cpp:104 Print"
+    ]
+   },
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "identifier",
+    "count": 3,
+    "examples": [
+     "contrib/html5-printer.cpp:67 isVoidElement",
+     "contrib/html5-printer.cpp:68 SealElementIfJustOpened",
+     "contrib/html5-printer.cpp:84 strcasecmp"
+    ]
+   },
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "qualified",
+    "count": 1,
+    "examples": [
+     "contrib/html5-printer.cpp:70 CloseElement"
+    ]
+   }
+  ],
+  "external_packages": {
+   "cxx libc6-dev@2.39-0ubuntu8.12": 58,
+   "cxx libgcc-13-dev@13.3.0-6ubuntu2_24.04.1": 12,
+   "cxx (none)@-": 10
+  }
+ },
+ "other_languages": {},
+ "index": {
+  "tools": [
+   [
+    "scip-clang",
+    "0.4.1"
+   ]
+  ],
+  "documents": 3,
+  "documents_outside_perimeter": [],
+  "documents_repeated": {},
+  "occurrences": 9849,
+  "definitions": 2010,
+  "symbol_informations": 845,
+  "unread_fields": {},
+  "roles": {
+   "none": 7854,
+   "definition": 2010
+  },
+  "relationships": {
+   "is_reference": 61,
+   "is_implementation": 70,
+   "external symbols": 247
+  },
+  "compilation_database": {
+   "generator": "CMake (cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON), then cmake --build",
+   "commands": 2,
+   "files": 2,
+   "compiled_more_than_once": {},
+   "outside_perimeter": [],
+   "perimeter_sources_without_command": 1,
+   "examples_without_command": [
+    "contrib/html5-printer.cpp"
+   ],
+   "removed_by_build": [],
+   "created_by_build": 221
+  },
+  "non_ascii_columns": {},
+  "enclosing_ranges_set": 439,
+  "occurrences_repeated_dropped": 15,
+  "generated_documents": []
+ },
+ "undeclared_definitions": {
+  "counts": {
+   "method declared": 424,
+   "type declared": 22,
+   "type not declared": 9
+  },
+  "examples": {
+   "type": [
+    "tinyxml2.h:136 Mode",
+    "tinyxml2.h:183 $anonymous_type_0",
+    "tinyxml2.h:434 $anonymous_type_1",
+    "tinyxml2.h:519 XMLError",
+    "tinyxml2.h:1243 $anonymous_type_2",
+    "tinyxml2.h:1673 ElementClosingType"
+   ]
+  }
+ },
+ "same_range": {
+  "alias": 0,
+  "never": 156
+ },
+ "calls": {
+  "sites": 2380,
+  "by_shape": {
+   "member": 1274,
+   "identifier": 1003,
+   "qualified": 83,
+   "template": 12,
+   "new": 8
+  },
+  "by_end": {
+   "project function, direct": 1999,
+   "value only": 155,
+   "hole no-occurrence": 135,
+   "project function, direct + implementations": 75,
+   "hole no-document": 10,
+   "external": 6
+  },
+  "value_only_sites": {
+   "macro expanding to no function call": 153,
+   "variable or parameter (function pointer)": 2
+  },
+  "examples": {
+   "hole no-document": [
+    "contrib/html5-printer.cpp:67 isVoidElement",
+    "contrib/html5-printer.cpp:67 PeekTop",
+    "contrib/html5-printer.cpp:68 SealElementIfJustOpened"
+   ],
+   "hole no-occurrence": [
+    "tinyxml2.cpp:47 va_start",
+    "tinyxml2.cpp:48 vsnprintf_s",
+    "tinyxml2.cpp:49 va_end"
+   ],
+   "value only": [
+    "tinyxml2.cpp:97 TIXMLASSERT",
+    "tinyxml2.cpp:166 TIXMLASSERT",
+    "tinyxml2.cpp:167 TIXMLASSERT"
+   ],
+   "project function, direct": [
+    "tinyxml2.cpp:154 Reset",
+    "tinyxml2.cpp:171 Reset",
+    "tinyxml2.cpp:197 Reset"
+   ],
+   "project function, direct + implementations": [
+    "tinyxml2.cpp:785 VisitEnter",
+    "tinyxml2.cpp:787 Accept",
+    "tinyxml2.cpp:792 VisitExit"
+   ],
+   "external": [
+    "tinyxml2.cpp:2517 va_start",
+    "tinyxml2.cpp:2519 va_end",
+    "tinyxml2.cpp:2611 va_start"
+   ]
+  }
+ },
+ "constructs": {
+  "syntax": {
+   "annotation macro blanked": 14,
+   "preproc_if": 27,
+   "preproc_def": 31,
+   "using_declaration": 3,
+   "virtual": 87,
+   "cast written as a call": 76,
+   "namespace_definition": 2,
+   "destructor_name": 24,
+   "preproc_ifdef": 8,
+   "preproc_function_def": 3,
+   "operator_name": 16,
+   "template_declaration": 5
+  },
+  "hops": {
+   "declaration": 24
+  },
+  "hop_examples": {
+   "cxx . . $ tinyxml2/StrPair#StrPair(70da401b8cb13f61).": [
+    [
+     [
+      "tinyxml2.h",
+      192,
+      4
+     ],
+     "declaration"
+    ]
+   ],
+   "cxx . . $ tinyxml2/StrPair#`operator=`(70da401b8cb13f61).": [
+    [
+     [
+      "tinyxml2.h",
+      193,
+      9
+     ],
+     "declaration"
+    ]
+   ],
+   "cxx . . $ tinyxml2/DynArray#`DynArray<T, INITIAL_SIZE>`(e69189ea3840cdc4).": [
+    [
+     [
+      "tinyxml2.h",
+      296,
+      4
+     ],
+     "declaration"
+    ]
+   ],
+   "cxx . . $ tinyxml2/DynArray#`operator=`(e69189ea3840cdc4).": [
+    [
+     [
+      "tinyxml2.h",
+      297,
+      9
+     ],
+     "declaration"
+    ]
+   ],
+   "cxx . . $ tinyxml2/MemPoolT#`MemPoolT<ITEM_SIZE>`(da7816c2084610f1).": [
+    [
+     [
+      "tinyxml2.h",
+      437,
+      4
+     ],
+     "declaration"
+    ]
+   ],
+   "cxx . . $ tinyxml2/MemPoolT#`operator=`(da7816c2084610f1).": [
+    [
+     [
+      "tinyxml2.h",
+      438,
+      9
+     ],
+     "declaration"
+    ]
+   ]
+  },
+  "macros_defined": 11,
+  "project_symbols_by_kind": {
+   "method": 412,
+   "property": 88,
+   "variable": 40,
+   "class": 31,
+   "function": 12,
+   "macro": 11,
+   "module": 4
+  },
+  "overloaded_names": 50,
+  "overload_examples": {
+   "tinyxml2/XMLUtil/ToStr": 7,
+   "tinyxml2/XMLNode/ChildElementCount": 2,
+   "tinyxml2/XMLNode/FirstChildElement": 2,
+   "tinyxml2/XMLNode/LastChildElement": 2,
+   "tinyxml2/XMLNode/NextSiblingElement": 2,
+   "tinyxml2/XMLNode/PreviousSiblingElement": 2,
+   "tinyxml2/XMLAttribute/SetAttribute": 8,
+   "tinyxml2/XMLElement/SetText": 8
+  },
+  "symbols_with_implementations": 34,
+  "implementation_examples": {
+   "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLVisitor#Visit(8feb9d1feca4d959).": [
+    "cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).TestUtil#Visit(8feb9d1feca4d959).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Visit(8feb9d1feca4d959)."
+   ],
+   "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#`~XMLNode`(ced63f7c635d850d).": [
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#`~XMLComment`(ced63f7c635d850d).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#`~XMLDeclaration`(ced63f7c635d850d).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#`~XMLDocument`(ced63f7c635d850d).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#`~XMLElement`(ced63f7c635d850d).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLText#`~XMLText`(ced63f7c635d850d).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUnknown#`~XMLUnknown`(ced63f7c635d850d)."
+   ],
+   "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#ShallowEqual(abee7078c90a495a).": [
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#ShallowEqual(abee7078c90a495a).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#ShallowEqual(abee7078c90a495a).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#ShallowEqual(abee7078c90a495a).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#ShallowEqual(abee7078c90a495a).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLText#ShallowEqual(abee7078c90a495a).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUnknown#ShallowEqual(abee7078c90a495a)."
+   ],
+   "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#ParseDeep(bd53509b11a84479).": [
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#ParseDeep(bd53509b11a84479).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#ParseDeep(bd53509b11a84479).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#ParseDeep(bd53509b11a84479).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLText#ParseDeep(bd53509b11a84479).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUnknown#ParseDeep(bd53509b11a84479)."
+   ],
+   "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLVisitor#Visit(91a25369aed0ec12).": [
+    "cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).TestUtil#Visit(91a25369aed0ec12).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Visit(91a25369aed0ec12)."
+   ],
+   "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#ShallowClone(fa8b02d728255140).": [
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#ShallowClone(fa8b02d728255140).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#ShallowClone(fa8b02d728255140).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#ShallowClone(fa8b02d728255140).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#ShallowClone(fa8b02d728255140).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLText#ShallowClone(fa8b02d728255140).",
+    "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUnknown#ShallowClone(fa8b02d728255140)."
+   ]
+  },
+  "occurrences": {
+   "destructor definition": 14,
+   "operator reference": 15,
+   "operator definition": 4,
+   "destructor reference": 7
+  }
+ },
+ "holes_by_cause": {
+  "counts": {
+   "other, callee identifier": 91,
+   "preprocessor branch without any occurrence": 29,
+   "inside a macro's arguments, reported at the macro's name": 13,
+   "other, callee member": 2
+  },
+  "examples": {
+   "preprocessor branch without any occurrence": [
+    "tinyxml2.cpp:47 va_start",
+    "tinyxml2.cpp:48 vsnprintf_s",
+    "tinyxml2.cpp:49 va_end"
+   ],
+   "other, callee identifier": [
+    "tinyxml2.cpp:96 vsnprintf",
+    "tinyxml2.cpp:198 strlen",
+    "tinyxml2.cpp:201 memcpy"
+   ],
+   "other, callee member": [
+    "tinyxml2.cpp:1199 ~XMLNode",
+    "tinyxml2.cpp:2024 ~XMLAttribute"
+   ],
+   "inside a macro's arguments, reported at the macro's name": [
+    "tinyxml2.cpp:2030 ItemSize",
+    "tinyxml2.cpp:2249 CurrentAllocs",
+    "tinyxml2.cpp:2249 Untracked"
+   ]
+  },
+  "names": {
+   "preprocessor branch without any occurrence": {
+    "Trace": 4,
+    "vsnprintf_s": 2,
+    "TIXMLASSERT": 2,
+    "_CrtMemCheckpoint": 2,
+    "_CrtSetDbgFlag": 2,
+    "_CrtDumpMemoryLeaks": 2,
+    "XMLTest": 2,
+    "QueryPerformanceCounter": 2,
+    "va_start": 1,
+    "va_end": 1,
+    "_vsnprintf": 1,
+    "fopen_s": 1,
+    "NewDeclaration": 1,
+    "NewComment": 1,
+    "NewElement": 1,
+    "SetAttribute": 1,
+    "QueryPerformanceFrequency": 1,
+    "_CrtMemDifference": 1,
+    "_CrtMemDumpStatistics": 1
+   },
+   "other, callee identifier": {
+    "printf": 28,
+    "fclose": 10,
+    "fopen": 9,
+    "strlen": 7,
+    "memcpy": 5,
+    "clock": 5,
+    "strncmp": 3,
+    "fgets": 3,
+    "fread": 2,
+    "memset": 2,
+    "strcmp": 2,
+    "exit": 2,
+    "fseek": 2,
+    "vsnprintf": 1,
+    "strchr": 1,
+    "fgetc": 1,
+    "ferror": 1,
+    "vfprintf": 1,
+    "fwrite": 1,
+    "fputc": 1,
+    "isspace": 1,
+    "isalpha": 1,
+    "isdigit": 1,
+    "ftell": 1
+   },
+   "other, callee member": {
+    "~XMLNode": 1,
+    "~XMLAttribute": 1
+   },
+   "inside a macro's arguments, reported at the macro's name": {
+    "CurrentAllocs": 4,
+    "Untracked": 4,
+    "ItemSize": 2,
+    "Size": 2,
+    "NoChildren": 1
+   }
+  }
+ },
+ "hand_check": {
+  "right": 16,
+  "total": 20,
+  "sites": [
+   {
+    "site": "tinyxml2.cpp:787",
+    "name": "Accept",
+    "nth": 0,
+    "why": "virtual, pure in XMLNode, six overrides",
+    "expected": [
+     "impl tinyxml2.cpp:1279",
+     "impl tinyxml2.cpp:1327",
+     "impl tinyxml2.cpp:1377",
+     "impl tinyxml2.cpp:1424",
+     "impl tinyxml2.cpp:2143",
+     "impl tinyxml2.cpp:782",
+     "tinyxml2.h:934"
+    ],
+    "verdict": "right",
+    "got": [
+     "impl tinyxml2.cpp:1279",
+     "impl tinyxml2.cpp:1327",
+     "impl tinyxml2.cpp:1377",
+     "impl tinyxml2.cpp:1424",
+     "impl tinyxml2.cpp:2143",
+     "impl tinyxml2.cpp:782",
+     "tinyxml2.h:934"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#Accept(73649879a03e260d)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#Accept(73649879a03e260d).",
+      [],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#Accept(73649879a03e260d).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#Accept(73649879a03e260d).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#Accept(73649879a03e260d).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#Accept(73649879a03e260d).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLText#Accept(73649879a03e260d).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUnknown#Accept(73649879a03e260d).",
+      [
+       "implementation"
+      ],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:1282",
+    "name": "Visit",
+    "nth": 0,
+    "why": "virtual and overloaded: Visit(const XMLText&)",
+    "expected": [
+     "impl tinyxml2.cpp:2993",
+     "impl xmltest.cpp:2584",
+     "tinyxml2.h:505"
+    ],
+    "verdict": "right",
+    "got": [
+     "impl tinyxml2.cpp:2993",
+     "impl xmltest.cpp:2584",
+     "tinyxml2.h:505"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLVisitor#Visit(1ef670f4daea8df1)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLVisitor#Visit(1ef670f4daea8df1).",
+      [],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).TestUtil#Visit(1ef670f4daea8df1).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Visit(1ef670f4daea8df1).",
+      [
+       "implementation"
+      ],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:785",
+    "name": "VisitEnter",
+    "nth": 0,
+    "why": "virtual and overloaded: VisitEnter(const XMLDocument&)",
+    "expected": [
+     "impl tinyxml2.cpp:2960",
+     "impl xmltest.cpp:2567",
+     "tinyxml2.h:483"
+    ],
+    "verdict": "right",
+    "got": [
+     "impl tinyxml2.cpp:2960",
+     "impl xmltest.cpp:2567",
+     "tinyxml2.h:483"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLVisitor#VisitEnter(9a6e7eba7fc912fd)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLVisitor#VisitEnter(9a6e7eba7fc912fd).",
+      [],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).TestUtil#VisitEnter(9a6e7eba7fc912fd).",
+      [
+       "implementation"
+      ],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#VisitEnter(9a6e7eba7fc912fd).",
+      [
+       "implementation"
+      ],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:1199",
+    "name": "~",
+    "nth": 0,
+    "why": "explicit call of a virtual destructor",
+    "expected": [
+     "impl tinyxml2.cpp:1293",
+     "impl tinyxml2.cpp:1341",
+     "impl tinyxml2.cpp:1390",
+     "impl tinyxml2.cpp:1606",
+     "impl tinyxml2.cpp:2205",
+     "impl tinyxml2.h:1020",
+     "tinyxml2.cpp:811"
+    ],
+    "verdict": "miss",
+    "got": [
+     "no occurrence"
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:1200",
+    "name": "Free",
+    "nth": 0,
+    "why": "pure virtual, override in a class template",
+    "expected": [
+     "impl tinyxml2.h:397",
+     "tinyxml2.h:334"
+    ],
+    "verdict": "right",
+    "got": [
+     "impl tinyxml2.h:397",
+     "tinyxml2.h:334"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPool#Free(5d22bdacc48458e8)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPool#Free(5d22bdacc48458e8).",
+      [],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#Free(5d22bdacc48458e8).",
+      [
+       "implementation"
+      ],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.h:1992",
+    "name": "Alloc",
+    "nth": 0,
+    "why": "member of a dependent type MemPoolT<PoolElementSize>",
+    "expected": [
+     "tinyxml2.h:371"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.h:371"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#Alloc(50c7df7de5344ebb)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#Alloc(50c7df7de5344ebb).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.h:1992",
+    "name": "NodeType",
+    "nth": 0,
+    "why": "placement new of a template parameter: no constructor before instantiation",
+    "expected": [
+     "value"
+    ],
+    "verdict": "right",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "tinyxml2.h#local 328"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "tinyxml2.h#local 328",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.h:1996",
+    "name": "Push",
+    "nth": 0,
+    "why": "member of a class template instance",
+    "expected": [
+     "tinyxml2.h:223"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.h:223"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#Push(9b289cee16747614)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#Push(9b289cee16747614).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:2217",
+    "name": "[",
+    "nth": 0,
+    "why": "operator[] of a class template, non-const",
+    "expected": [
+     "tinyxml2.h:253"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.h:253"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#`operator[]`(ec43b8547ac5c60)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#`operator[]`(ec43b8547ac5c60).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:560",
+    "name": "TIXML_SNPRINTF",
+    "nth": 0,
+    "why": "object-like macro for snprintf",
+    "expected": [
+     "external snprintf"
+    ],
+    "verdict": "wrong",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ `tinyxml2.cpp:92:10`!"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . tinyxml2 9148bdf719e9$ `tinyxml2.cpp:92:10`!",
+      [],
+      "macro"
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:1281",
+    "name": "TIXMLASSERT",
+    "nth": 0,
+    "why": "macro for assert, itself a macro calling __assert_fail",
+    "expected": [
+     "external __assert_fail"
+    ],
+    "verdict": "wrong",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ `tinyxml2.h:89:16`!",
+     "tinyxml2.cpp#local 171"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . tinyxml2 9148bdf719e9$ `tinyxml2.h:89:16`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-value",
+      "tinyxml2.cpp#local 171",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.h:1474",
+    "name": "SetAttribute",
+    "nth": 0,
+    "why": "overload (int) among eight",
+    "expected": [
+     "tinyxml2.cpp:1545"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.cpp:1545"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLAttribute#SetAttribute(d4f767463ce0a6b3)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLAttribute#SetAttribute(d4f767463ce0a6b3).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:708",
+    "name": "SkipWhiteSpace",
+    "nth": 0,
+    "why": "static, overloaded on const: char* argument",
+    "expected": [
+     "tinyxml2.h:562"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.h:562"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUtil#SkipWhiteSpace(5874cd7f0254925)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLUtil#SkipWhiteSpace(5874cd7f0254925).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "tinyxml2.cpp:2742",
+    "name": "PrintSpace",
+    "nth": 0,
+    "why": "virtual without override",
+    "expected": [
+     "tinyxml2.cpp:2656"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.cpp:2656"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#PrintSpace(d4f767463ce0a6b3)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#PrintSpace(d4f767463ce0a6b3).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "xmltest.cpp:117",
+    "name": "doc",
+    "nth": 0,
+    "why": "default constructor of a declared variable",
+    "expected": [
+     "tinyxml2.cpp:2183"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.cpp:2183"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#XMLDocument(a2190919d02f8d13)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#XMLDocument(a2190919d02f8d13).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "xmltest.cpp:118",
+    "name": "LoadFile",
+    "nth": 0,
+    "why": "overload (const char*)",
+    "expected": [
+     "tinyxml2.cpp:2344"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.cpp:2344"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#LoadFile(15d99b90f27bba38)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#LoadFile(15d99b90f27bba38).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "xmltest.cpp:164",
+    "name": "FirstChildElement",
+    "nth": 0,
+    "why": "const and non-const overloads, non-const object",
+    "expected": [
+     "tinyxml2.h:784"
+    ],
+    "verdict": "right",
+    "got": [
+     "tinyxml2.h:784"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#FirstChildElement(ca07ad1b52b83cf5)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLNode#FirstChildElement(ca07ad1b52b83cf5).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "xmltest.cpp:166",
+    "name": "printf",
+    "nth": 0,
+    "why": "C library",
+    "expected": [
+     "external printf"
+    ],
+    "verdict": "miss",
+    "got": [
+     "no occurrence"
+    ]
+   },
+   {
+    "site": "xmltest.cpp:489",
+    "name": "XMLTest",
+    "nth": 0,
+    "why": "overloads and a template: (int, int) picks the template",
+    "expected": [
+     "xmltest.cpp:75"
+    ],
+    "verdict": "right",
+    "got": [
+     "xmltest.cpp:75"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ XMLTest(6f1950cf12386d00)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ XMLTest(6f1950cf12386d00).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "xmltest.cpp:502",
+    "name": "XMLTest",
+    "nth": 0,
+    "why": "overloads and a template: (bool, bool) picks the overload",
+    "expected": [
+     "xmltest.cpp:70"
+    ],
+    "verdict": "right",
+    "got": [
+     "xmltest.cpp:70"
+    ],
+    "symbols": [
+     "cxx . tinyxml2 9148bdf719e9$ XMLTest(a8cc820920aa9ccb)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . tinyxml2 9148bdf719e9$ XMLTest(a8cc820920aa9ccb).",
+      [],
+      ""
+     ]
+    ]
+   }
+  ]
+ },
+ "run": {
+  "engine_runs": [
+   {
+    "step": "configure",
+    "command": [
+     "cmake",
+     "-S",
+     ".",
+     "-B",
+     "build",
+     "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+     "-DCMAKE_BUILD_TYPE=Debug"
+    ],
+    "returncode": 0,
+    "seconds": 1.0,
+    "peak_mb": 46,
+    "stdout_tail": "-- The C compiler identification is GNU 13.3.0\n-- The CXX compiler identification is GNU 13.3.0\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- Configuring done (0.9s)\n-- Generating done (0.0s)\n-- Build files have been written to: /work/tinyxml2/mirror/build\n",
+    "stderr_tail": "DAODAN_MAXRSS_KB=47516\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": []
+   },
+   {
+    "step": "build",
+    "command": [
+     "cmake",
+     "--build",
+     "build",
+     "-j",
+     "4"
+    ],
+    "returncode": 0,
+    "seconds": 1.5,
+    "peak_mb": 83,
+    "stdout_tail": "[ 25%] Building CXX object CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o\n[ 50%] Linking CXX static library libtinyxml2.a\n[ 50%] Built target tinyxml2\n[ 75%] Building CXX object CMakeFiles/xmltest.dir/xmltest.cpp.o\n[100%] Linking CXX executable xmltest\n[100%] Built target xmltest\n",
+    "stderr_tail": "DAODAN_MAXRSS_KB=85240\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": []
+   },
+   {
+    "step": "index",
+    "command": [
+     "sh",
+     "-c",
+     "/opt/scip-clang/scip-clang --compdb-path=/work/tinyxml2/mirror/build/compile_commands.json --package-map-path=/work/tinyxml2/package-map.json --jobs=4 --show-compiler-diagnostics > /work/tinyxml2/scip-clang.log 2>&1"
+    ],
+    "returncode": 0,
+    "seconds": 0.4,
+    "peak_mb": 61,
+    "stdout_tail": "",
+    "stderr_tail": "DAODAN_MAXRSS_KB=62960\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
+    "index_bytes": 606324,
+    "diagnostics": {
+     "errors": 0,
+     "warnings": 0,
+     "error_examples": [],
+     "tail": "[1/2] Indexed /work/tinyxml2/mirror/tinyxml2.cpp\n[2/2] Indexed /work/tinyxml2/mirror/xmltest.cpp\n[1/2] Merged partial index for /work/tinyxml2/mirror/tinyxml2.cpp\n[2/2] Merged partial index for /work/tinyxml2/mirror/xmltest.cpp\nFinished indexing 2 translation units in 0.3s (indexing: 0.3s, merging: 0.0s, num errored TUs: 0).\n"
+    }
+   }
+  ],
+  "package_map": {
+   "entries": 162,
+   "search_dirs": [
+    "/usr/lib/gcc/x86_64-linux-gnu/13/include",
+    "/usr/local/include",
+    "/usr/include/x86_64-linux-gnu",
+    "/usr/include",
+    "/usr/include/c++/13",
+    "/usr/include/x86_64-linux-gnu/c++/13",
+    "/usr/include/c++/13/backward"
+   ],
+   "mixed": [
+    {
+     "path": "/usr/include",
+     "package": "libc6-dev",
+     "files": 107,
+     "others": {
+      "make": 1,
+      "libcrypt-dev": 1
+     }
+    },
+    {
+     "path": "/usr/include/scsi",
+     "package": "linux-libc-dev",
+     "files": 6,
+     "others": {
+      "libc6-dev": 3
+     }
+    }
+   ],
+   "renamed": {
+    "libgcc-13-dev 13.3.0-6ubuntu2~24.04.1": "libgcc-13-dev@13.3.0-6ubuntu2_24.04.1",
+    "libstdc++-13-dev 13.3.0-6ubuntu2~24.04.1": "libstdc__-13-dev@13.3.0-6ubuntu2_24.04.1"
+   }
+  },
+  "case": "tinyxml2",
+  "commit": "9148bdf719e997d1f474be6bcc7943881046dba1",
+  "label": "r5",
+  "code": {
+   "scip_graph.py": "750af9f87f6b",
+   "adapters/clang.py": "2f6abc77a825",
+   "adapters/css.py": "4932545239f5",
+   "adapters/css_tailwind.py": "82004909d5cf",
+   "adapters/css_typescript.py": "ee1da56caf29",
+   "adapters/go.py": "dbdf199f9e74",
+   "adapters/go_callgraph.py": "f4cc3f249243",
+   "adapters/java.py": "785ca14f9c45",
+   "adapters/js_jelly.py": "b5f14dcba7fe",
+   "adapters/jvm_callgraph.py": "9052670ffacf",
+   "adapters/kotlin.py": "499e0b2a692a",
+   "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+   "adapters/python.py": "b9a90540a243",
+   "adapters/python_jedi.py": "9ff396b7438a",
+   "adapters/rust.py": "a8d962bc3212",
+   "adapters/ts_compiler.py": "f1b267281fad",
+   "adapters/typescript.py": "59a5a73875a8"
+  },
+  "snapshot": {
+   "command": [
+    "/usr/local/bin/python",
+    "/daodan/map/scripts/snapshot.py",
+    "write",
+    "/work/tinyxml2/src",
+    "--out",
+    "/work/tinyxml2/snapshot/manifest.sqlite",
+    "--no-engine",
+    "--no-index"
+   ],
+   "returncode": 0,
+   "seconds": 6.7,
+   "peak_mb": 99,
+   "stdout_tail": "snapshot: 206 files -> /work/tinyxml2/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/tinyxml2/snapshot/modules.json (2 modules)\n",
+   "stderr_tail": "DAODAN_MAXRSS_KB=101628\n",
+   "stderr_errors": 0,
+   "stderr_error_examples": []
+  },
+  "snapshot_facts": {
+   "files": 206,
+   "c_or_cpp_files": 0,
+   "examples": [],
+   "coverage_languages": {
+    "None": 139,
+    "javascript": 63,
+    "css": 3,
+    "python": 1
+   },
+   "references": 12696
+  },
+  "container_processes_peak_mb": 225,
+  "seconds": 15.8
+ }
+}

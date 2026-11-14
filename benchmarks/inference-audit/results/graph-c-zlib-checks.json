@@ -1,0 +1,1616 @@
+{
+ "report": {
+  "language": "c",
+  "indexer": {
+   "name": "scip-clang",
+   "version": "v0.4.1",
+   "seconds": 4.8,
+   "peak_mb": 69
+  },
+  "files": {
+   "snapshot": 69,
+   "indexed": 27,
+   "missing": [
+    {
+     "path": "contrib/blast/blast.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/blast/blast.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/infback9/infback9.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/infback9/infback9.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/infback9/inffix9.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/infback9/inflate9.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/infback9/inftree9.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/infback9/inftree9.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/iostream/zfstream.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/iostream2/zstream.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/iostream3/zfstream.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/minizip/crypt.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/minizip/ioapi.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/ioapi.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/minizip/iowin32.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/iowin32.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/minizip/miniunz.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/minizip.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/mztools.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/mztools.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/minizip/unzip.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/unzip.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/minizip/zip.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/minizip/zip.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/puff/puff.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/puff/puff.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "contrib/puff/pufftest.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/testzlib/testzlib.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "contrib/untgz/untgz.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/enough.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/fitblk.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/gun.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/gzappend.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/gzjoin.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/gzlog.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/gzlog.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "examples/gznorm.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/zpipe.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/zran.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "examples/zran.h",
+     "reason": "header no indexed translation unit includes in an active branch"
+    },
+    {
+     "path": "test/infcover.c",
+     "reason": "no compile command: not built by the default configuration"
+    },
+    {
+     "path": "zconf.h",
+     "reason": "removed from the copy by the build's configure step"
+    }
+   ],
+   "missing_count": 42
+  },
+  "nodes": 1874,
+  "edges": 14137,
+  "symbols_by_kind": {
+   "external class": 5,
+   "external function": 33,
+   "external macro": 29,
+   "external variable": 3,
+   "project class": 58,
+   "project function": 167,
+   "project macro": 209,
+   "project module": 55,
+   "project property": 167,
+   "project variable": 1137,
+   "undefined macro": 3,
+   "undefined module": 8
+  },
+  "edges_by_end": {
+   "dead-end call": 9,
+   "external call": 329,
+   "external unknown": 250,
+   "namespace unknown": 53,
+   "project-callable call": 399,
+   "project-callable unknown": 184,
+   "project-value call": 2305,
+   "project-value unknown": 10608
+  },
+  "callable_chain_hops": {
+   "0": 583
+  },
+  "hop_tags": {},
+  "edges_uncertain": {
+   "one symbol defined at several places": 4
+  },
+  "edges_removed": {},
+  "holes_by_class": {
+   "no-document call": 2125,
+   "no-occurrence call": 257,
+   "no-position call": 1
+  },
+  "holes": [
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "identifier",
+    "count": 2044,
+    "examples": [
+     "contrib/blast/blast.c:81 longjmp",
+     "contrib/minizip/zip.c:670 zip64local_getLong",
+     "examples/gzappend.c:399 fprintf"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "call",
+    "reason": "identifier",
+    "count": 237,
+    "examples": [
+     "crc32.c:237 atomic_load",
+     "deflate.c:1578 putc",
+     "test/minigzip.c:195 deflateEnd"
+    ]
+   },
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "member",
+    "count": 43,
+    "examples": [
+     "contrib/blast/blast.c:80 infun",
+     "contrib/iostream2/zstream.h:147 value",
+     "contrib/iostream2/zstream.h:247 width"
+    ]
+   },
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "parenthesized",
+    "count": 26,
+    "examples": [
+     "contrib/minizip/ioapi.c:58 uLong",
+     "contrib/minizip/unzip.c:1690 uInt",
+     "contrib/minizip/zip.c:1437 uInt"
+    ]
+   },
+   {
+    "class": "no-occurrence",
+    "kind": "call",
+    "reason": "parenthesized",
+    "count": 20,
+    "examples": [
+     "deflate.c:905 Byte",
+     "deflate.c:1161 Byte",
+     "deflate.c:1239 Byte"
+    ]
+   },
+   {
+    "class": "no-document",
+    "kind": "call",
+    "reason": "dereference",
+    "count": 12,
+    "examples": [
+     "contrib/iostream/zfstream.h:95 f",
+     "contrib/iostream3/zfstream.h:429 func",
+     "contrib/minizip/ioapi.c:36 zopen32_file"
+    ]
+   },
+   {
+    "class": "no-position",
+    "kind": "call",
+    "reason": "call_expression",
+    "count": 1,
+    "examples": [
+     "contrib/minizip/ioapi.c:58 "
+    ]
+   }
+  ],
+  "external_packages": {
+   "cxx (none)@-": 375,
+   "cxx libc6-dev@2.39-0ubuntu8.12": 195,
+   "cxx libgcc-13-dev@13.3.0-6ubuntu2_24.04.1": 9
+  }
+ },
+ "other_languages": {
+  "cpp": {
+   "language": "cpp",
+   "indexer": {
+    "name": "scip-clang",
+    "version": "v0.4.1",
+    "seconds": 4.8,
+    "peak_mb": 69
+   },
+   "files": {
+    "snapshot": 5,
+    "indexed": 0,
+    "missing": [
+     {
+      "path": "contrib/iostream/test.cpp",
+      "reason": "no compile command: not built by the default configuration"
+     },
+     {
+      "path": "contrib/iostream/zfstream.cpp",
+      "reason": "no compile command: not built by the default configuration"
+     },
+     {
+      "path": "contrib/iostream2/zstream_test.cpp",
+      "reason": "no compile command: not built by the default configuration"
+     },
+     {
+      "path": "contrib/iostream3/test.cc",
+      "reason": "no compile command: not built by the default configuration"
+     },
+     {
+      "path": "contrib/iostream3/zfstream.cc",
+      "reason": "no compile command: not built by the default configuration"
+     }
+    ],
+    "missing_count": 5
+   },
+   "nodes": 0,
+   "edges": 0,
+   "symbols_by_kind": {},
+   "edges_by_end": {},
+   "callable_chain_hops": {},
+   "hop_tags": {},
+   "edges_uncertain": {},
+   "edges_removed": {},
+   "holes_by_class": {
+    "no-document call": 221
+   },
+   "holes": [
+    {
+     "class": "no-document",
+     "kind": "call",
+     "reason": "member",
+     "count": 109,
+     "examples": [
+      "contrib/iostream/test.cpp:20 close",
+      "contrib/iostream3/zfstream.cc:115 sync",
+      "contrib/iostream3/zfstream.cc:324 setp"
+     ]
+    },
+    {
+     "class": "no-document",
+     "kind": "call",
+     "reason": "identifier",
+     "count": 77,
+     "examples": [
+      "contrib/iostream/test.cpp:14 setcompressionlevel",
+      "contrib/iostream/zfstream.cpp:175 is_open",
+      "contrib/iostream/zfstream.cpp:248 base"
+     ]
+    },
+    {
+     "class": "no-document",
+     "kind": "call",
+     "reason": "qualified",
+     "count": 33,
+     "examples": [
+      "contrib/iostream/zfstream.cpp:255 rdbuf",
+      "contrib/iostream3/zfstream.cc:22 openmode",
+      "contrib/iostream3/zfstream.cc:238 eof"
+     ]
+    },
+    {
+     "class": "no-document",
+     "kind": "call",
+     "reason": "new",
+     "count": 2,
+     "examples": [
+      "contrib/iostream3/zfstream.cc:317 char_type",
+      "contrib/iostream3/zfstream.cc:330 char_type"
+     ]
+    }
+   ],
+   "external_packages": {}
+  }
+ },
+ "index": {
+  "tools": [
+   [
+    "scip-clang",
+    "0.4.1"
+   ]
+  ],
+  "documents": 28,
+  "documents_outside_perimeter": [
+   "build/zconf.h"
+  ],
+  "documents_repeated": {
+   "compress.c": 2,
+   "adler32.c": 2,
+   "crc32.c": 2,
+   "deflate.c": 2,
+   "gzclose.c": 2,
+   "gzlib.c": 2,
+   "gzread.c": 2,
+   "gzwrite.c": 2,
+   "inflate.c": 2,
+   "inftrees.c": 2,
+   "infback.c": 2,
+   "inffast.c": 2,
+   "uncompr.c": 2,
+   "trees.c": 2,
+   "zutil.c": 2,
+   "test/minigzip.c": 2,
+   "test/example.c": 2
+  },
+  "occurrences": 15962,
+  "definitions": 1777,
+  "symbol_informations": 1427,
+  "unread_fields": {},
+  "roles": {
+   "none": 33047,
+   "definition": 2946
+  },
+  "relationships": {
+   "external symbols": 726
+  },
+  "compilation_database": {
+   "generator": "CMake (cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON), then cmake --build",
+   "commands": 34,
+   "files": 17,
+   "compiled_more_than_once": {
+    "adler32.c": 2,
+    "compress.c": 2,
+    "crc32.c": 2,
+    "deflate.c": 2,
+    "gzclose.c": 2,
+    "gzlib.c": 2,
+    "gzread.c": 2,
+    "gzwrite.c": 2,
+    "inflate.c": 2,
+    "infback.c": 2,
+    "inftrees.c": 2,
+    "inffast.c": 2,
+    "trees.c": 2,
+    "uncompr.c": 2,
+    "zutil.c": 2,
+    "test/example.c": 2,
+    "test/minigzip.c": 2
+   },
+   "outside_perimeter": [],
+   "perimeter_sources_without_command": 29,
+   "examples_without_command": [
+    "contrib/blast/blast.c",
+    "contrib/infback9/infback9.c",
+    "contrib/infback9/inftree9.c",
+    "contrib/iostream/test.cpp",
+    "contrib/iostream/zfstream.cpp",
+    "contrib/iostream2/zstream_test.cpp",
+    "contrib/iostream3/test.cc",
+    "contrib/iostream3/zfstream.cc",
+    "contrib/minizip/ioapi.c",
+    "contrib/minizip/iowin32.c",
+    "contrib/minizip/miniunz.c",
+    "contrib/minizip/minizip.c"
+   ],
+   "removed_by_build": [
+    "zconf.h"
+   ],
+   "created_by_build": 152
+  },
+  "non_ascii_columns": {},
+  "enclosing_ranges_set": 176,
+  "occurrences_repeated_dropped": 20031,
+  "generated_documents": [
+   "build/zconf.h"
+  ]
+ },
+ "undeclared_definitions": {
+  "counts": {
+   "method declared": 167,
+   "type not declared": 37,
+   "type declared": 9,
+   "method not declared": 2
+  },
+  "examples": {
+   "type": [
+    "zutil.h:39 uch",
+    "zutil.h:40 uchf",
+    "zutil.h:41 ush",
+    "zutil.h:42 ushf",
+    "zutil.h:43 ulg",
+    "crc32.c:91 z_word_t"
+   ],
+   "method": [
+    "deflate.c:635 deflateResetKeep",
+    "trees.c:995 _tr_flush_block"
+   ]
+  }
+ },
+ "same_range": {
+  "alias": 0,
+  "never": 770
+ },
+ "calls": {
+  "sites": 3396,
+  "by_shape": {
+   "identifier": 3282,
+   "parenthesized": 57,
+   "member": 43,
+   "dereference": 13,
+   "call_expression": 1
+  },
+  "by_end": {
+   "hole no-document": 2125,
+   "project function, direct": 386,
+   "value only": 370,
+   "hole no-occurrence": 257,
+   "external": 257,
+   "hole no-position": 1
+  },
+  "value_only_sites": {
+   "macro expanding to no function call": 356,
+   "C cast written as a call": 11,
+   "function": 1,
+   "struct field (function pointer)": 1,
+   "variable or parameter (function pointer)": 1
+  },
+  "examples": {
+   "value only": [
+    "adler32.c:92 MOD28",
+    "adler32.c:101 DO16",
+    "adler32.c:104 MOD"
+   ],
+   "project function, direct": [
+    "adler32.c:129 adler32_z",
+    "adler32.c:159 adler32_combine_",
+    "adler32.c:163 adler32_combine_"
+   ],
+   "hole no-document": [
+    "contrib/blast/blast.c:80 infun",
+    "contrib/blast/blast.c:81 longjmp",
+    "contrib/blast/blast.c:164 infun"
+   ],
+   "hole no-position": [
+    "contrib/minizip/ioapi.c:58 "
+   ],
+   "hole no-occurrence": [
+    "crc32.c:237 atomic_load",
+    "crc32.c:238 atomic_flag_test_and_set",
+    "crc32.c:239 atomic_load"
+   ],
+   "external": [
+    "deflate.c:226 zmemcpy",
+    "deflate.c:279 zmemcpy",
+    "deflate.c:350 zmemzero"
+   ]
+  }
+ },
+ "constructs": {
+  "syntax": {
+   "annotation macro blanked": 349,
+   "preproc_def": 592,
+   "preproc_function_def": 177,
+   "preproc_ifdef": 410,
+   "destructor_name": 5,
+   "preproc_if": 205
+  },
+  "hops": {},
+  "hop_examples": {},
+  "macros_defined": 214,
+  "project_symbols_by_kind": {
+   "macro": 214,
+   "function": 167,
+   "property": 167,
+   "variable": 67,
+   "class": 59,
+   "module": 28
+  },
+  "overloaded_names": 0,
+  "overload_examples": {},
+  "symbols_with_implementations": 0,
+  "implementation_examples": {},
+  "occurrences": {}
+ },
+ "holes_by_cause": {
+  "counts": {
+   "preprocessor branch without any occurrence": 234,
+   "inside a macro's arguments, reported at the macro's name": 16,
+   "inside a macro's arguments, absent from the expansion": 6,
+   "other, callee identifier": 1
+  },
+  "examples": {
+   "preprocessor branch without any occurrence": [
+    "crc32.c:237 atomic_load",
+    "crc32.c:238 atomic_flag_test_and_set",
+    "crc32.c:239 atomic_load"
+   ],
+   "inside a macro's arguments, reported at the macro's name": [
+    "deflate.c:905 Byte",
+    "deflate.c:906 Byte",
+    "deflate.c:1063 Byte"
+   ],
+   "inside a macro's arguments, absent from the expansion": [
+    "deflate.c:2073 uInt",
+    "trees.c:229 isgraph",
+    "trees.c:917 isgraph"
+   ],
+   "other, callee identifier": [
+    "gzlib.c:233 _wopen"
+   ]
+  },
+  "names": {
+   "preprocessor branch without any occurrence": {
+    "fprintf": 48,
+    "Assert": 14,
+    "puts": 11,
+    "multmodp": 6,
+    "printf": 6,
+    "SEPARATOR": 6,
+    "once": 5,
+    "sprintf": 5,
+    "strcpy": 5,
+    "free": 5,
+    "write_table": 4,
+    "fclose": 4,
+    "GetLastError": 4,
+    "wcstombs": 4,
+    "strcat": 4,
+    "inflate_table": 4,
+    "braid": 3,
+    "fopen": 3,
+    "gz_open": 3,
+    "atomic_load": 2,
+    "init": 2,
+    "byte_swap": 2,
+    "write_table64": 2,
+    "write_table32hi": 2,
+    "x2nmodp": 2,
+    "z_error": 2,
+    "FormatMessage": 2,
+    "LocalFree": 2,
+    "SetLastError": 2,
+    "vsprintf": 2
+   },
+   "inside a macro's arguments, reported at the macro's name": {
+    "Byte": 16
+   },
+   "inside a macro's arguments, absent from the expansion": {
+    "isgraph": 2,
+    "uInt": 1,
+    "MAX_DIST": 1,
+    "ush": 1,
+    "d_code": 1
+   },
+   "other, callee identifier": {
+    "_wopen": 1
+   }
+  }
+ },
+ "hand_check": {
+  "right": 20,
+  "total": 20,
+  "sites": [
+   {
+    "site": "deflate.c:373",
+    "name": "deflateInit2_",
+    "nth": 0,
+    "why": "exported function, same file",
+    "expected": [
+     "deflate.c:379"
+    ],
+    "verdict": "right",
+    "got": [
+     "deflate.c:379"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ deflateInit2_(e3796522b73a3800)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ deflateInit2_(e3796522b73a3800).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "deflate.c:432",
+    "name": "ZALLOC",
+    "nth": 0,
+    "why": "function-like macro calling through strm->zalloc",
+    "expected": [
+     "value"
+    ],
+    "verdict": "right",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ `zutil.h:245:9`!",
+     "cxx . zlib 51b7f2abdade$ deflate_state#",
+     "cxx . zlib 51b7f2abdade$ z_stream_s#opaque.",
+     "cxx . zlib 51b7f2abdade$ z_stream_s#zalloc.",
+     "deflate.c#local 32"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `zutil.h:245:9`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ deflate_state#",
+      [],
+      "class"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ z_stream_s#opaque.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ z_stream_s#zalloc.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "deflate.c#local 32",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "deflate.c:587",
+    "name": "fill_window",
+    "nth": 0,
+    "why": "static function (`local` is a macro for static)",
+    "expected": [
+     "deflate.c:251"
+    ],
+    "verdict": "right",
+    "got": [
+     "deflate.c:251"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ fill_window(5a134a6201984157)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ fill_window(5a134a6201984157).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "deflate.c:665",
+    "name": "_tr_init",
+    "nth": 0,
+    "why": "defined in trees.c, prototype in deflate.h",
+    "expected": [
+     "trees.c:455"
+    ],
+    "verdict": "right",
+    "got": [
+     "trees.c:455"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ _tr_init(5a134a6201984157)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ _tr_init(5a134a6201984157).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "deflate.c:1185",
+    "name": "func",
+    "nth": 0,
+    "why": "function pointer in a struct table, through `(*...)`",
+    "expected": [
+     "value"
+    ],
+    "verdict": "right",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ config_s#func."
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ config_s#func.",
+      [],
+      "property"
+     ]
+    ]
+   },
+   {
+    "site": "deflate.c:1888",
+    "name": "_tr_tally_lit",
+    "nth": 0,
+    "why": "macro with three definitions under #ifdef; the active one calls nothing",
+    "expected": [
+     "value"
+    ],
+    "verdict": "right",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ `deflate.h:351:10`!",
+     "cxx . zlib 51b7f2abdade$ ct_data_s#$anonymous_type_0#freq.",
+     "cxx . zlib 51b7f2abdade$ ct_data_s#fc.",
+     "cxx . zlib 51b7f2abdade$ internal_state#dyn_ltree.",
+     "cxx . zlib 51b7f2abdade$ internal_state#strstart.",
+     "cxx . zlib 51b7f2abdade$ internal_state#sym_buf.",
+     "cxx . zlib 51b7f2abdade$ internal_state#sym_end.",
+     "cxx . zlib 51b7f2abdade$ internal_state#sym_next.",
+     "cxx . zlib 51b7f2abdade$ internal_state#window.",
+     "cxx . zlib 51b7f2abdade$ uch#",
+     "deflate.c#local 140",
+     "deflate.c#local 143",
+     "deflate.c#local 146"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `deflate.h:351:10`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ ct_data_s#$anonymous_type_0#freq.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ ct_data_s#fc.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#dyn_ltree.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#strstart.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#sym_buf.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#sym_end.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#sym_next.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#window.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ uch#",
+      [],
+      "class"
+     ],
+     [
+      "project-value",
+      "deflate.c#local 140",
+      [],
+      "variable"
+     ],
+     [
+      "project-value",
+      "deflate.c#local 143",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "inflate.c:1257",
+    "name": "UPDATE_CHECK",
+    "nth": 0,
+    "why": "macro whose body calls crc32 or adler32",
+    "expected": [
+     "adler32.c:128",
+     "crc32.c:1015"
+    ],
+    "verdict": "right",
+    "got": [
+     "adler32.c:128",
+     "crc32.c:1015"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ `inflate.c:418:11`!",
+     "cxx . zlib 51b7f2abdade$ adler32(3ff2d47d027372c0).",
+     "cxx . zlib 51b7f2abdade$ crc32(3ff2d47d027372c0).",
+     "cxx . zlib 51b7f2abdade$ inflate_state#check.",
+     "cxx . zlib 51b7f2abdade$ inflate_state#flags.",
+     "cxx . zlib 51b7f2abdade$ z_stream_s#next_out.",
+     "inflate.c#local 29",
+     "inflate.c#local 31",
+     "inflate.c#local 39"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `inflate.c:418:11`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ adler32(3ff2d47d027372c0).",
+      [],
+      ""
+     ],
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ crc32(3ff2d47d027372c0).",
+      [],
+      ""
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ inflate_state#check.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ inflate_state#flags.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ z_stream_s#next_out.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "inflate.c#local 29",
+      [],
+      "variable"
+     ],
+     [
+      "project-value",
+      "inflate.c#local 31",
+      [],
+      "variable"
+     ],
+     [
+      "project-value",
+      "inflate.c#local 39",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "inflate.c:1029",
+    "name": "inflate_fast",
+    "nth": 0,
+    "why": "other file",
+    "expected": [
+     "inffast.c:50"
+    ],
+    "verdict": "right",
+    "got": [
+     "inffast.c:50"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ inflate_fast(3518e825092b9584)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ inflate_fast(3518e825092b9584).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "inflate.c:391",
+    "name": "zmemcpy",
+    "nth": 0,
+    "why": "object-like macro aliasing memcpy",
+    "expected": [
+     "external memcpy"
+    ],
+    "verdict": "right",
+    "got": [
+     "external memcpy"
+    ],
+    "symbols": [
+     "cxx . . $ memcpy(cc817cb175f282d).",
+     "cxx . zlib 51b7f2abdade$ `zutil.h:209:13`!"
+    ],
+    "ends": [
+     [
+      "external",
+      "cxx . . $ memcpy(cc817cb175f282d).",
+      [],
+      "cxx (none)@-"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `zutil.h:209:13`!",
+      [],
+      "macro"
+     ]
+    ]
+   },
+   {
+    "site": "crc32.c:1017",
+    "name": "crc32_z",
+    "nth": 0,
+    "why": "defined twice, under #ifdef ARMCRC32 and its #else",
+    "expected": [
+     "crc32.c:694"
+    ],
+    "verdict": "right",
+    "got": [
+     "crc32.c:694"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ crc32_z(f1362df98b691acb)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ crc32_z(f1362df98b691acb).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "infback.c:612",
+    "name": "out",
+    "nth": 0,
+    "why": "function pointer parameter (callback)",
+    "expected": [
+     "value"
+    ],
+    "verdict": "right",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "infback.c#local 10"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "infback.c#local 10",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "gzread.c:184",
+    "name": "gz_error",
+    "nth": 0,
+    "why": "ZLIB_INTERNAL function of another file",
+    "expected": [
+     "gzlib.c:529"
+    ],
+    "verdict": "right",
+    "got": [
+     "gzlib.c:529"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).",
+      [],
+      ""
+     ]
+    ]
+   },
+   {
+    "site": "gzread.c:28",
+    "name": "zstrerror",
+    "nth": 0,
+    "why": "macro: strerror(errno), errno a macro calling __errno_location",
+    "expected": [
+     "external __errno_location",
+     "external strerror"
+    ],
+    "verdict": "right",
+    "got": [
+     "external __errno_location",
+     "external strerror"
+    ],
+    "symbols": [
+     "cxx . . $ __errno_location(a7741f82f5fc3640).",
+     "cxx . . $ strerror(ff224f080444ee45).",
+     "cxx . zlib 51b7f2abdade$ `gzguts.h:132:13`!"
+    ],
+    "ends": [
+     [
+      "external",
+      "cxx . . $ __errno_location(a7741f82f5fc3640).",
+      [],
+      "cxx (none)@-"
+     ],
+     [
+      "external",
+      "cxx . . $ strerror(ff224f080444ee45).",
+      [],
+      "cxx (none)@-"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `gzguts.h:132:13`!",
+      [],
+      "macro"
+     ]
+    ]
+   },
+   {
+    "site": "gzlib.c:235",
+    "name": "open",
+    "nth": 0,
+    "why": "libc, after an #ifdef inside the expression",
+    "expected": [
+     "external open"
+    ],
+    "verdict": "right",
+    "got": [
+     "external open"
+    ],
+    "symbols": [
+     "cxx . . $ open(e156e3aa1e5c4ad1)."
+    ],
+    "ends": [
+     [
+      "external",
+      "cxx . . $ open(e156e3aa1e5c4ad1).",
+      [],
+      "cxx (none)@-"
+     ]
+    ]
+   },
+   {
+    "site": "zutil.c:288",
+    "name": "malloc",
+    "nth": 0,
+    "why": "libc",
+    "expected": [
+     "external malloc"
+    ],
+    "verdict": "right",
+    "got": [
+     "external malloc"
+    ],
+    "symbols": [
+     "cxx . . $ malloc(bfcfa4d6b7f7ef64)."
+    ],
+    "ends": [
+     [
+      "external",
+      "cxx . . $ malloc(bfcfa4d6b7f7ef64).",
+      [],
+      "cxx (none)@-"
+     ]
+    ]
+   },
+   {
+    "site": "zutil.c:123",
+    "name": "fprintf",
+    "nth": 0,
+    "why": "inside #ifdef ZLIB_DEBUG, not compiled",
+    "expected": [
+     "no occurrence"
+    ],
+    "verdict": "right",
+    "got": [
+     "no occurrence"
+    ]
+   },
+   {
+    "site": "trees.c:775",
+    "name": "send_bits",
+    "nth": 0,
+    "why": "macro chain send_bits, put_short, put_byte: no function",
+    "expected": [
+     "value"
+    ],
+    "verdict": "right",
+    "got": [
+     "value"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ Bytef#",
+     "cxx . zlib 51b7f2abdade$ `trees.c:273:9`!",
+     "cxx . zlib 51b7f2abdade$ internal_state#bi_buf.",
+     "cxx . zlib 51b7f2abdade$ internal_state#bi_valid.",
+     "cxx . zlib 51b7f2abdade$ internal_state#pending.",
+     "cxx . zlib 51b7f2abdade$ internal_state#pending_buf.",
+     "cxx . zlib 51b7f2abdade$ uch#",
+     "cxx . zlib 51b7f2abdade$ ush#",
+     "trees.c#local 55",
+     "trees.c#local 62",
+     "trees.c#local 71",
+     "trees.c#local 72"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ Bytef#",
+      [],
+      "class"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `trees.c:273:9`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#bi_buf.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#bi_valid.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#pending.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ internal_state#pending_buf.",
+      [],
+      "property"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ uch#",
+      [],
+      "class"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ ush#",
+      [],
+      "class"
+     ],
+     [
+      "project-value",
+      "trees.c#local 55",
+      [],
+      "variable"
+     ],
+     [
+      "project-value",
+      "trees.c#local 62",
+      [],
+      "variable"
+     ],
+     [
+      "project-value",
+      "trees.c#local 71",
+      [],
+      "variable"
+     ],
+     [
+      "project-value",
+      "trees.c#local 72",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "test/example.c:175",
+    "name": "deflateInit",
+    "nth": 0,
+    "why": "zlib.h macro for deflateInit_",
+    "expected": [
+     "deflate.c:371"
+    ],
+    "verdict": "right",
+    "got": [
+     "deflate.c:371"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ `zlib.h:1813:11`!",
+     "cxx . zlib 51b7f2abdade$ deflateInit_(103c4d60eb79a694).",
+     "cxx . zlib 51b7f2abdade$ z_stream#",
+     "test/example.c#local 15"
+    ],
+    "ends": [
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `zlib.h:1813:11`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ deflateInit_(103c4d60eb79a694).",
+      [],
+      ""
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ z_stream#",
+      [],
+      "class"
+     ],
+     [
+      "project-value",
+      "test/example.c#local 15",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "test/example.c:184",
+    "name": "CHECK_ERR",
+    "nth": 0,
+    "why": "macro calling fprintf and exit",
+    "expected": [
+     "external exit",
+     "external fprintf"
+    ],
+    "verdict": "right",
+    "got": [
+     "external exit",
+     "external fprintf"
+    ],
+    "symbols": [
+     "cxx . . $ exit(3ca292c338df9bb3).",
+     "cxx . . $ fprintf(bc216f8e5b1ebeac).",
+     "cxx . libc6-dev 2.39-0ubuntu8.12$ stderr.",
+     "cxx . zlib 51b7f2abdade$ `test/example.c:22:9`!",
+     "test/example.c#local 16"
+    ],
+    "ends": [
+     [
+      "external",
+      "cxx . . $ exit(3ca292c338df9bb3).",
+      [],
+      "cxx (none)@-"
+     ],
+     [
+      "external",
+      "cxx . . $ fprintf(bc216f8e5b1ebeac).",
+      [],
+      "cxx (none)@-"
+     ],
+     [
+      "external",
+      "cxx . libc6-dev 2.39-0ubuntu8.12$ stderr.",
+      [],
+      "cxx libc6-dev@2.39-0ubuntu8.12"
+     ],
+     [
+      "project-value",
+      "cxx . zlib 51b7f2abdade$ `test/example.c:22:9`!",
+      [],
+      "macro"
+     ],
+     [
+      "project-value",
+      "test/example.c#local 16",
+      [],
+      "variable"
+     ]
+    ]
+   },
+   {
+    "site": "test/example.c:523",
+    "name": "test_compress",
+    "nth": 0,
+    "why": "file compiled twice (example, example64)",
+    "expected": [
+     "test/example.c:60"
+    ],
+    "verdict": "right",
+    "got": [
+     "test/example.c:60"
+    ],
+    "symbols": [
+     "cxx . zlib 51b7f2abdade$ test_compress(29af2b5e6d398e7b)."
+    ],
+    "ends": [
+     [
+      "project-callable",
+      "cxx . zlib 51b7f2abdade$ test_compress(29af2b5e6d398e7b).",
+      [],
+      ""
+     ]
+    ]
+   }
+  ]
+ },
+ "run": {
+  "engine_runs": [
+   {
+    "step": "configure",
+    "command": [
+     "cmake",
+     "-S",
+     ".",
+     "-B",
+     "build",
+     "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+     "-DCMAKE_BUILD_TYPE=Debug"
+    ],
+    "returncode": 0,
+    "seconds": 2.0,
+    "peak_mb": 46,
+    "stdout_tail": "-- The C compiler identification is GNU 13.3.0\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Looking for sys/types.h\n-- Looking for sys/types.h - found\n-- Looking for stdint.h\n-- Looking for stdint.h - found\n-- Looking for stddef.h\n-- Looking for stddef.h - found\n-- Check size of off64_t\n-- Check size of off64_t - done\n-- Looking for fseeko\n-- Looking for fseeko - found\n-- Looking for unistd.h\n-- Looking for unistd.h - found\n-- Renaming\n--     /work/zlib/mirror/zconf.h\n-- to 'zconf.h.included' because this file is included with zlib\n-- but CMake generates it automatically in the build directory.\n-- Configuring done (1.8s)\n-- Generating done (0.0s)\n-- Build files have been written to: /work/zlib/mirror/build\n",
+    "stderr_tail": "DAODAN_MAXRSS_KB=46816\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": []
+   },
+   {
+    "step": "build",
+    "command": [
+     "cmake",
+     "--build",
+     "build",
+     "-j",
+     "4"
+    ],
+    "returncode": 0,
+    "seconds": 2.1,
+    "peak_mb": 52,
+    "stdout_tail": "CMakeFiles/zlib.dir/trees.c.o\n[ 45%] Building C object CMakeFiles/zlib.dir/uncompr.c.o\n[ 47%] Building C object CMakeFiles/zlibstatic.dir/gzclose.c.o\n[ 50%] Building C object CMakeFiles/zlib.dir/zutil.c.o\n[ 52%] Building C object CMakeFiles/zlibstatic.dir/gzlib.c.o\n[ 55%] Building C object CMakeFiles/zlibstatic.dir/gzread.c.o\n[ 57%] Building C object CMakeFiles/zlibstatic.dir/gzwrite.c.o\n[ 60%] Linking C shared library libz.so\n[ 62%] Building C object CMakeFiles/zlibstatic.dir/inflate.c.o\n[ 65%] Building C object CMakeFiles/zlibstatic.dir/infback.c.o\n[ 67%] Building C object CMakeFiles/zlibstatic.dir/inftrees.c.o\n[ 67%] Built target zlib\n[ 70%] Building C object CMakeFiles/zlibstatic.dir/inffast.c.o\n[ 72%] Building C object CMakeFiles/zlibstatic.dir/trees.c.o\n[ 75%] Building C object CMakeFiles/zlibstatic.dir/uncompr.c.o\n[ 77%] Building C object CMakeFiles/zlibstatic.dir/zutil.c.o\n[ 80%] Building C object CMakeFiles/example.dir/test/example.c.o\n[ 82%] Building C object CMakeFiles/minigzip.dir/test/minigzip.c.o\n[ 85%] Building C object CMakeFiles/example64.dir/test/example.c.o\n[ 87%] Linking C static library libz.a\n[ 90%] Linking C executable example\n[ 92%] Built target example\n[ 92%] Linking C executable minigzip\n[ 95%] Linking C executable example64\n[ 97%] Building C object CMakeFiles/minigzip64.dir/test/minigzip.c.o\n[ 97%] Built target zlibstatic\n[ 97%] Built target minigzip\n[100%] Linking C executable minigzip64\n[100%] Built target example64\n[100%] Built target minigzip64\n",
+    "stderr_tail": "DAODAN_MAXRSS_KB=53424\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": []
+   },
+   {
+    "step": "index",
+    "command": [
+     "sh",
+     "-c",
+     "/opt/scip-clang/scip-clang --compdb-path=/work/zlib/mirror/build/compile_commands.json --package-map-path=/work/zlib/package-map.json --jobs=4 --show-compiler-diagnostics > /work/zlib/scip-clang.log 2>&1"
+    ],
+    "returncode": 0,
+    "seconds": 0.7,
+    "peak_mb": 69,
+    "stdout_tail": "",
+    "stderr_tail": "DAODAN_MAXRSS_KB=70936\n",
+    "stderr_errors": 0,
+    "stderr_error_examples": [],
+    "index_bytes": 1600704,
+    "diagnostics": {
+     "errors": 0,
+     "warnings": 0,
+     "error_examples": [],
+     "tail": "[ 4/34] Merged partial index for /work/zlib/mirror/deflate.c\n[ 5/34] Merged partial index for /work/zlib/mirror/gzclose.c\n[ 6/34] Merged partial index for /work/zlib/mirror/gzlib.c\n[ 7/34] Merged partial index for /work/zlib/mirror/gzread.c\n[ 8/34] Merged partial index for /work/zlib/mirror/gzwrite.c\n[ 9/34] Merged partial index for /work/zlib/mirror/inflate.c\n[10/34] Merged partial index for /work/zlib/mirror/inftrees.c\n[11/34] Merged partial index for /work/zlib/mirror/infback.c\n[12/34] Merged partial index for /work/zlib/mirror/inffast.c\n[13/34] Merged partial index for /work/zlib/mirror/uncompr.c\n[14/34] Merged partial index for /work/zlib/mirror/trees.c\n[15/34] Merged partial index for /work/zlib/mirror/zutil.c\n[16/34] Merged partial index for /work/zlib/mirror/compress.c\n[17/34] Merged partial index for /work/zlib/mirror/adler32.c\n[18/34] Merged partial index for /work/zlib/mirror/crc32.c\n[19/34] Merged partial index for /work/zlib/mirror/gzclose.c\n[20/34] Merged partial index for /work/zlib/mirror/gzlib.c\n[21/34] Merged partial index for /work/zlib/mirror/deflate.c\n[22/34] Merged partial index for /work/zlib/mirror/gzread.c\n[23/34] Merged partial index for /work/zlib/mirror/gzwrite.c\n[24/34] Merged partial index for /work/zlib/mirror/infback.c\n[25/34] Merged partial index for /work/zlib/mirror/inflate.c\n[26/34] Merged partial index for /work/zlib/mirror/uncompr.c\n[27/34] Merged partial index for /work/zlib/mirror/inffast.c\n[28/34] Merged partial index for /work/zlib/mirror/inftrees.c\n[29/34] Merged partial index for /work/zlib/mirror/trees.c\n[30/34] Merged partial index for /work/zlib/mirror/zutil.c\n[31/34] Merged partial index for /work/zlib/mirror/test/minigzip.c\n[32/34] Merged partial index for /work/zlib/mirror/test/example.c\n[33/34] Merged partial index for /work/zlib/mirror/test/example.c\n[34/34] Merged partial index for /work/zlib/mirror/test/minigzip.c\nFinished indexing 34 translation units in 0.6s (indexing: 0.6s, merging: 0.0s, num errored TUs: 0).\n"
+    }
+   }
+  ],
+  "package_map": {
+   "entries": 162,
+   "search_dirs": [
+    "/usr/lib/gcc/x86_64-linux-gnu/13/include",
+    "/usr/local/include",
+    "/usr/include/x86_64-linux-gnu",
+    "/usr/include",
+    "/usr/include/c++/13",
+    "/usr/include/x86_64-linux-gnu/c++/13",
+    "/usr/include/c++/13/backward"
+   ],
+   "mixed": [
+    {
+     "path": "/usr/include",
+     "package": "libc6-dev",
+     "files": 107,
+     "others": {
+      "libcrypt-dev": 1,
+      "make": 1
+     }
+    },
+    {
+     "path": "/usr/include/scsi",
+     "package": "linux-libc-dev",
+     "files": 6,
+     "others": {
+      "libc6-dev": 3
+     }
+    }
+   ],
+   "renamed": {
+    "libgcc-13-dev 13.3.0-6ubuntu2~24.04.1": "libgcc-13-dev@13.3.0-6ubuntu2_24.04.1",
+    "libstdc++-13-dev 13.3.0-6ubuntu2~24.04.1": "libstdc__-13-dev@13.3.0-6ubuntu2_24.04.1"
+   }
+  },
+  "case": "zlib",
+  "commit": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+  "label": "r5",
+  "code": {
+   "scip_graph.py": "750af9f87f6b",
+   "adapters/clang.py": "2f6abc77a825",
+   "adapters/css.py": "4932545239f5",
+   "adapters/css_tailwind.py": "82004909d5cf",
+   "adapters/css_typescript.py": "ee1da56caf29",
+   "adapters/go.py": "dbdf199f9e74",
+   "adapters/go_callgraph.py": "f4cc3f249243",
+   "adapters/java.py": "785ca14f9c45",
+   "adapters/js_jelly.py": "b5f14dcba7fe",
+   "adapters/jvm_callgraph.py": "9052670ffacf",
+   "adapters/kotlin.py": "499e0b2a692a",
+   "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+   "adapters/python.py": "b9a90540a243",
+   "adapters/python_jedi.py": "9ff396b7438a",
+   "adapters/rust.py": "a8d962bc3212",
+   "adapters/ts_compiler.py": "f1b267281fad",
+   "adapters/typescript.py": "59a5a73875a8"
+  },
+  "snapshot": {
+   "command": [
+    "/usr/local/bin/python",
+    "/daodan/map/scripts/snapshot.py",
+    "write",
+    "/work/zlib/src",
+    "--out",
+    "/work/zlib/snapshot/manifest.sqlite",
+    "--no-engine",
+    "--no-index"
+   ],
+   "returncode": 0,
+   "seconds": 2.0,
+   "peak_mb": 99,
+   "stdout_tail": "snapshot: 42 files -> /work/zlib/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/zlib/snapshot/modules.json (10 modules)\n",
+   "stderr_tail": "DAODAN_MAXRSS_KB=100908\n",
+   "stderr_errors": 0,
+   "stderr_error_examples": []
+  },
+  "snapshot_facts": {
+   "files": 42,
+   "c_or_cpp_files": 0,
+   "examples": [],
+   "coverage_languages": {
+    "None": 33,
+    "csharp": 9
+   },
+   "references": 195
+  },
+  "container_processes_peak_mb": 402,
+  "seconds": 12.4
+ }
+}

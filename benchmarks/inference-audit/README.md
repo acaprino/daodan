@@ -927,3 +927,172 @@ Non verificato:
 - I 42 attributi `style` uno per uno, e quelli con EJS dentro.
 - Le tre regole di `tailwind.config.js` (`keyframes`, `animation`): stanno dentro l'esterno Tailwind, non sono nodi.
 - La fixture gira su Windows con un junction per `node_modules`; su Modal ha girato solo tududi.
+
+### 14 novembre 2026, grafo completo dall'indice: C
+
+scip-clang indicizza zlib con la build CMake del progetto; il suo indice si legge tutto, ogni documento, occorrenza e simbolo, e diventa il grafo del codice. È l'unico produttore SCIP mantenuto per C e C++: lsif-clang, il suo predecessore, scrive LSIF ed è fermo; clangd non esporta SCIP. Ciò che è proprio del motore sta in `adapters/clang.py`, che serve C e C++; `lang_clang.py` collega adattatore, lettura comune e volume. Esecuzione: `modal deploy benchmarks/inference-audit/lang_clang.py`, poi `python benchmarks/inference-audit/lang_clang.py spawn` e `fetch`; `fetch --files DIR` e `graph --case zlib --dir DIR` rifanno il grafo dai file sul volume (`inference-audit/graph-clang/<caso>/`) senza rieseguire l'indicizzatore. `spawn --fixtures` e `fetch --fixtures` rifanno gli indici delle fixture. Risultati: `results/graph-c-zlib.json` e `results/graph-c-zlib-checks.json`.
+
+| Parametro | Valore |
+| --- | --- |
+| caso | zlib 1.3.1 `51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf` (CMake): 3.396 chiamate, puntatori a funzione nello stream e nella tabella di configurazione, macro fitte, molti `#ifdef`, `contrib/` ed `examples/` che il build non compila |
+| indicizzatore | scip-clang v0.4.1 (LLVM 21, rilasciato il 22 ottobre 2026), binario della release con sha256 verificato, `--jobs=4`; Ubuntu 24.04 con gcc 13 e CMake. Le note dicono Debian 10 o più, ma il binario vuole glibc 2.38: su Debian 12 (2.36) non parte (prima esecuzione) |
+| database di compilazione | `cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug`, poi `cmake --build`, su una copia nel container: il configure esegue gli script del progetto. 34 comandi su 17 file: ogni file è compilato due volte (libreria condivisa e statica, `example` ed `example64`) |
+| pacchetti | una mappa di pacchetti: la radice è `zlib@51b7f2abdade`, ogni cartella delle include di sistema il pacchetto Debian che ne possiede più file (162 voci; due cartelle miste) |
+| snapshot del prodotto | nessun file C o C++: `snapshot.py write` elenca 42 file di zlib, nessuno `.c` o `.h` (33 senza linguaggio, 9 C#) |
+| riferimenti indipendenti | al posto dello snapshot, tree-sitter: perimetro (file tracciati da Git, cartelle punto escluse), funzioni, classi e prototipi dichiarati, chiamate (`call_expression`, `new_expression`, cast scritti come chiamate esclusi) |
+| verifica a mano | 20 chiamate lette nel sorgente prima del grafo (`HAND_CHECK` in `lang_clang.py`) |
+
+Cosa l'adattatore aggiunge a quello che scrive l'indice:
+- `SyntaxSnapshot`: lo snapshot del prodotto non legge C né C++, quindi tree-sitter ne fa le veci; le macro di annotazione (`int ZEXPORT inflate(`, `class TINYXML2_LIB XMLNode`) sono sostituite da spazi prima del parsing, posizioni invariate (349 in zlib);
+- `dedupe`: un file compilato da più unità arriva come più documenti, che la lettura comune accoda; 20.031 occorrenze ripetute su 35.993;
+- `utf8_columns`: l'indice non dichiara la codifica delle posizioni e le scrive in byte UTF-8, la lettura comune le prende come UTF-16 (provato sulle righe non ASCII delle fixture);
+- `enclose`: l'indice non scrive intervalli di definizione; ogni funzione e classe prende quello del suo nodo sintattico (176), così un arco parte dalla funzione e non dal file;
+- `same_range`: scip-clang scrive tutto ciò che una macro espande sul nome della macro, e il costruttore di una dichiarazione sul nome della variabile; una variabile definita lì non è mai alias (770 coppie), solo una using-declaration lo è;
+- `hops`: `declaration` (una funzione che l'indice non definisce va al suo prototipo nel progetto), `lambda` (C++, sotto); `refine`: un simbolo con corpi in più punti dà archi incerti con i candidati.
+
+Copertura: 69 file C nel perimetro, 27 con occorrenze, più `build/zconf.h` generato dal build. I 42 senza documento:
+- 24 sorgenti senza comando di compilazione: 14 in `contrib/`, 9 in `examples/`, `test/infcover.c`;
+- 17 intestazioni incluse solo da quelli;
+- `zconf.h`: il configure di zlib lo rinomina `zconf.h.included` nella copia e genera `build/zconf.h`, che è indicizzato al suo posto. I suoi simboli sono del progetto (valore, "generato dal build").
+- In più 5 file C++ di `contrib/iostream*`, senza comando.
+
+L'indice: 28 documenti, 15.962 occorrenze dopo la fusione, 1.777 definizioni, 1.427 `SymbolInformation`; nessuna relazione oltre a 726 simboli esterni, nessun ruolo oltre a `definition`.
+
+Nodi: 1.874. Simboli del progetto: funzioni 167, macro 209, campi 167, variabili 1.137 (quasi tutte locali), tipi 58, moduli 55 (file e intestazioni). Esterni: 33 funzioni, 29 macro, 5 tipi, 3 variabili.
+
+Archi: 14.137.
+
+| Fine | Archi | Catene |
+| --- | --- | --- |
+| funzione o tipo del progetto | 583 | tutte a 0 salti |
+| valore del progetto | 12.913 | |
+| esterno | 579 | |
+| namespace (file di intestazione) | 53 | |
+| vicolo cieco | 9 | |
+
+Le 3.396 chiamate:
+
+| Esito | Chiamate |
+| --- | --- |
+| file senza documento | 2.125 |
+| funzione del progetto | 386 |
+| esterna | 257 |
+| solo valori | 370: 356 macro che non espandono una chiamata a funzione, 11 cast C scritti come chiamata (`(Byte)(x)`), 1 campo, 1 parametro, 1 funzione che tree-sitter non riconosce |
+| nessuna occorrenza | 257 |
+| nessuna posizione | 1 (`contrib/minizip/ioapi.c:58`) |
+
+Buchi senza occorrenza, per causa:
+- 234 in un ramo `#if` senza alcuna occorrenza, cioè non compilato: `crc32.c:237` `atomic_load`, `deflate.c:1578` `putc`, `test/minigzip.c:195` `deflateEnd`;
+- 16 dentro gli argomenti di una macro: l'indice li scrive sul nome della macro, non dove stanno. `deflate.c:905`, `:1161`, `:1239`, il cast `(Byte)` dentro `put_byte(...)`;
+- 6 dentro argomenti che l'espansione scarta: `trees.c:229` e `:917` `isgraph` in `Tracecv`, vuota senza `ZLIB_DEBUG`;
+- 1 altro: `gzlib.c:233` `_wopen`, in un `#ifdef` dentro un'espressione.
+
+Casi propri di C:
+- Macro: una chiamata dentro una macro è scritta sulla chiamata della macro, quindi `UPDATE_CHECK(...)` arriva a `crc32` e `adler32`, `zmemcpy(...)` a `memcpy`, `deflateInit(...)` a `deflateInit_`; nessun salto serve.
+- Puntatori a funzione: 46 chiamate contate nel sorgente, tutte finiscono sul valore (campo o parametro), nessuna indovinata. 2 dirette (`deflate.c:1185` `func`, `infback.c:612` `out`), 44 attraverso macro (`ZALLOC` 15, `ZFREE` 7, `TRY_FREE` 4, in `infback.c` `PULL`, `PULLBYTE`, `NEEDBITS` e `ROOM` 18).
+- Dichiarazione e definizione: un simbolo per funzione, definito al corpo, il prototipo è un riferimento. Ogni funzione del progetto ha il corpo in un file compilato, quindi 0 salti `declaration`.
+- Rami non compilati: `crc32_z` ha due corpi, sotto `#ifdef ARMCRC32` e nel suo `#else`; l'indice tiene solo quello attivo (`crc32.c:694`).
+- Archi incerti: 4, su 2 chiamate. `fixedtables` è `static` sia in `infback.c:76` sia in `inflate.c:252`: scip-clang dà ai due un solo simbolo, quindi ogni chiamata porta i due candidati (`infback.c:296`, `inflate.c:843`).
+- Vicoli ciechi: 9, macro di `zlib.h:1878-1880` (`gzopen` per `gzopen64`), attive solo nelle unità `*64`. Di ogni intestazione l'indice tiene un solo documento, da un'unità dove quel ramo è spento.
+
+Esterni: 375 archi senza pacchetto, 195 `libc6-dev` 2.39, 9 `libgcc-13-dev`. Una funzione solo dichiarata in un'unità ha pacchetto vuoto (`cxx . . $`): `exit`, `fprintf`, `memcpy`, `free`, `strlen`. Dalla mappa ricevono il pacchetto solo tipi, macro e file di intestazione di sistema, quindi per le funzioni della libreria C l'indice non dà identità.
+
+Verifica a mano: 20 su 20.
+- I casi: funzioni `static` e di altri file, macro con e senza chiamate dentro, macro a tre definizioni sotto `#ifdef`, macro catena (`send_bits`, `put_short`, `put_byte`), puntatore in tabella e parametro callback, funzione con due corpi sotto `#ifdef`, chiamata in un ramo non compilato, libreria C (`malloc`, `open`, `strerror` con `__errno_location` da `errno`), file compilato due volte.
+- Una correzione dopo r1, solo al conteggio: `valore` vuol dire che nessuna funzione è raggiunta, e il primo conteggio trattava un tipo esterno come non valore (`trees.c:775`).
+
+Tempo e memoria, esecuzione r5:
+- configure 2,0 s, build 2,1 s, indice 0,7 s: 4,8 s in tutto;
+- snapshot 2,0 s, container 12,4 s;
+- RAM: 69 MB il processo più grande (scip-clang), 402 MB la somma dei processi del container.
+
+L'indice non è uguale da un'esecuzione all'altra: su cinque esecuzioni fino a 57 occorrenze su circa 16.000 cambiano (0,4%), perché di un file compilato più volte vince la copia di un'unità o dell'altra (`<limits.h>` di glibc o di gcc, le macro di `stddef.h`).
+
+Cosa manca al modulo comune, tenuto nell'adattatore:
+- uno snapshot per i linguaggi che il prodotto non legge: `Snapshot` vuole i fatti del prodotto, che per C e C++ non elenca neanche i file;
+- `Index.tree` usa `languages._treesitter.get_parser`, che non ha `c` né `cpp`;
+- un aggancio per l'unità delle posizioni, quando l'indicizzatore non la dichiara ma scrive byte;
+- un aggancio per gli intervalli di definizione, quando l'indicizzatore non li scrive: l'adattatore li sostituisce in `index.documents`;
+- `Index.load` accoda le occorrenze di un documento ripetuto: l'adattatore le fonde e ricostruisce `at` e `defs`;
+- un arco porta solo il simbolo d'arrivo: con più corpi per un simbolo, il grafo non sa quale (qui lo dice `refine`, incerto);
+- minore: `build` aggiunge i nodi dei moduli scorrendo un insieme, quindi l'ordine cambia da un processo all'altro; rifatto in locale dai file del volume, il grafo è uguale come insieme.
+
+Costo fatturato da Modal per l'app `daodan-graph-clang`: 0,088 USD in tutto, 0,009 nell'ora 23 UTC e 0,079 nell'ora 00 UTC, non ancora chiusa. Comprende l'esecuzione fallita su Debian 12, quattro indicizzazioni delle fixture e cinque esecuzioni per caso; ogni esecuzione di un caso costa meno di un centesimo.
+
+Non verificato:
+- altri generatori del database (Bear, Meson): i due casi usano CMake;
+- le opzioni di sviluppo di scip-clang (`--help-all`), fra cui una per indici stabili;
+- i 37 tipi che tree-sitter non dichiara: dagli esempi sono `typedef` (`zutil.h:39` `uch`), non tutti controllati;
+- i 2 corpi che tree-sitter non riconosce (`deflate.c:635` `deflateResetKeep`, `trees.c:995` `_tr_flush_block`): le loro chiamate finiscono su un valore;
+- i picchi di RAM fra un campione e l'altro (due al secondo).
+
+### 14 novembre 2026, grafo completo dall'indice: C++
+
+Stesso indicizzatore, adattatore e driver della sezione C; caso tinyxml2. Risultati: `results/graph-cpp-tinyxml2.json` e `results/graph-cpp-tinyxml2-checks.json`. Fixture: `fixtures/c` e `fixtures/cpp`, con l'indice scritto da scip-clang, provate in `test_clang_graph.py` (45 prove).
+
+| Parametro | Valore |
+| --- | --- |
+| caso | tinyxml2 11.0.0 `9148bdf719e997d1f474be6bcc7943881046dba1` (CMake, libreria e `xmltest`): 2.380 chiamate, gerarchia virtuale (`XMLNode`, `XMLVisitor`), 50 nomi sovraccaricati, template (`DynArray`, `MemPoolT`), operatori, costruttori e distruttori, namespace |
+| database di compilazione | 2 comandi su 2 file; `contrib/html5-printer.cpp` non è compilato |
+| snapshot del prodotto | 206 file, nessuno C o C++ |
+| verifica a mano | 20 chiamate lette nel sorgente prima del grafo |
+
+Copertura: 4 file nel perimetro, 3 con occorrenze; manca `contrib/html5-printer.cpp`, senza comando. L'indice: 3 documenti, 9.849 occorrenze (15 ripetute), 2.010 definizioni, 845 `SymbolInformation`. Relazioni: 70 `is_implementation`, 61 `is_reference` (la lettura comune non le legge), 247 simboli esterni.
+
+Nodi: 2.063. Simboli del progetto: metodi 412, classi 31, funzioni 12, campi 88, variabili 1.448, macro 11; 26 metodi riferiti e mai definiti.
+
+Archi: 7.978.
+
+| Fine | Archi | Catene |
+| --- | --- | --- |
+| funzione, metodo o classe del progetto | 3.736 | 3.573 a 0 salti, 163 a 1: implementazione 139, `declaration` 24 |
+| valore del progetto | 4.133 | |
+| esterno | 80 | |
+| namespace | 21 | |
+| vicolo cieco | 8 | |
+
+Le 2.380 chiamate (76 cast scritti come chiamata esclusi):
+
+| Esito | Chiamate |
+| --- | --- |
+| metodo o funzione del progetto | 1.999 |
+| del progetto, con le implementazioni | 75 |
+| esterna | 6 (`va_start`, `va_end`) |
+| solo valori | 155: 153 macro (`TIXMLASSERT`, sotto), 2 variabili |
+| nessuna occorrenza | 135 |
+| file senza documento | 10 |
+
+Buchi senza occorrenza, per causa:
+- 91 chiamate alla libreria C: `printf` 28, `fclose` 10, `fopen` 9, `strlen` 7, `memcpy` 5, `clock` 5 (`tinyxml2.cpp:198`, `:201`, `xmltest.cpp:708`). In C++ scip-clang non scrive nessuna occorrenza per una funzione dichiarata `extern "C"`, né la definizione, né il prototipo, né le chiamate. La fixture lo conferma con una funzione `extern "C"` del progetto (`c_helper`);
+- 29 in rami `#if` senza occorrenze, codice solo MSVC: `tinyxml2.cpp:47` `va_start`;
+- 13 dentro gli argomenti di una macro, scritti sul nome della macro: `tinyxml2.cpp:2249` `CurrentAllocs` e `Untracked` dentro `TIXMLASSERT(...)`;
+- 2 chiamate esplicite di distruttore: `tinyxml2.cpp:1199` `node->~XMLNode()`, `:2024`. L'indice riferisce la classe, non il distruttore.
+
+Casi propri di C++:
+- Virtuali: 34 simboli, classi e metodi, con implementazioni dichiarate. Le 75 chiamate con dispatch portano il metodo di base e ogni override (`node->Accept(visitor)` sei); una chiamata con tipo statico senza override porta solo quello (`PrintSpace`).
+- Overload: 50 nomi con più simboli; ogni simbolo ha un hash della firma, la scelta è del compilatore (`SetAttribute(int)` fra otto, `FirstChildElement` non const, `XMLTest` fra tre overload e un template).
+- Template: un simbolo per template, nessuna istanza. Membri di un template di classe giusti (`Push`, `Free` di `MemPoolT`), anche su un tipo dipendente (`pool.Alloc()`). `new (...) NodeType(this)` finisce sul parametro di template: il costruttore dipende dall'istanza, nessuno è scelto.
+- Costruttori: riferiti sul nome della variabile (`XMLDocument doc;`) o dove inizia il tipo in un `new`. Il costruttore di un template di classe ha due simboli, `DynArray<T, INITIAL_SIZE>` alla definizione e `DynArray(...)` ai riferimenti: 8 archi in vicolo cieco.
+- Distruttori: 14 definiti, 7 riferiti, scritti sul solo `~`.
+- Operatori: 4 definiti, 15 riferiti, sul simbolo dell'operatore (`_unlinked[i]`, `operator[]`).
+- Lambda: nessuna in tinyxml2. Sulla fixture, la variabile `auto` che tiene una lambda arriva alla lambda con il salto `lambda`; l'`operator()` della chiusura, riferito sulla parentesi, non è mai definito (vicolo cieco).
+- Using e namespace: 3 using-declaration, nessuna di nomi (alias 0); sulla fixture `using geo::twice;` arriva al template con un salto di intervallo condiviso. I namespace sono 21 archi `namespace`.
+- Prototipi senza corpo: 24 salti `declaration`, costruttori di copia e assegnazioni privati mai definiti. L'indice dà loro pacchetto vuoto come a ogni funzione solo dichiarata.
+
+Esterni: `libc6-dev` 58 archi, `libgcc-13-dev` 12, senza pacchetto 10. Le funzioni di `libstdc++` hanno il pacchetto (`std::printf`, `push_back` nella fixture); tinyxml2 non ne chiama.
+
+Verifica a mano: 16 su 20.
+- I quattro sbagliati: tre funzioni C dietro `extern "C"`, assenti dall'indice: `TIXML_SNPRINTF` per `snprintf`, `TIXMLASSERT` per `assert`, cioè `__assert_fail`, e `printf` (`xmltest.cpp:166`). Il quarto è la chiamata esplicita `node->~XMLNode()`, di cui l'indice riferisce la classe.
+- Giusti: dispatch con sei override, overload anche su `const`, template e membri dipendenti, operatore, costruttori, `static`, template contro overload.
+- Una correzione dopo r1: gli override di `Visit` e `VisitEnter` nella classe `TestUtil`, locale a `main` in `xmltest.cpp` (`:2567`, `:2584`), mi erano sfuggiti; confermati dal sorgente.
+
+Tempo e memoria, esecuzione r5:
+- configure 1,0 s, build 1,5 s, indice 0,4 s: 2,9 s in tutto;
+- snapshot 6,7 s, container 15,8 s;
+- RAM: 83 MB il processo più grande (il compilatore nel build), 61 MB scip-clang, 225 MB la somma del container.
+- Fra le esecuzioni cambiano fino a 8 occorrenze su 9.849.
+
+Non verificato:
+- un progetto C++ con template pesanti (fmt, nlohmann/json), lambda e `using` di nomi oltre alla fixture;
+- perché scip-clang perde `extern "C"`: visto sulla fixture e su tinyxml2, non cercato nel suo sorgente;
+- i 26 metodi riferiti e mai definiti, oltre ai costruttori dei template e ai prototipi privati.
