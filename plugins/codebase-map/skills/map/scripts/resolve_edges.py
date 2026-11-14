@@ -983,6 +983,12 @@ def package_directories(root: Path, limit: int = 8) -> list[Path]:
     return sorted(found, key=lambda path: (len(path.relative_to(root).parts), path.as_posix()))[:limit]
 
 
+def uv_environment() -> dict:
+    """uv for the project's packages: no Python downloaded, no configuration read from the folder it starts
+    in (a project's `uv.toml` or `[tool.uv]` could choose one), its cache in the shared directory."""
+    return {"UV_PYTHON_DOWNLOADS": "never", "UV_NO_CONFIG": "1", "UV_CACHE_DIR": str(shared_cache_dir() / "uv-cache")}
+
+
 def node_environment() -> dict:
     """Where npm and Node keep their caches for a process Daodan starts: in the shared directory."""
     cache = shared_cache_dir()
@@ -1148,10 +1154,17 @@ RUST_TARGETS = {"win-x64": "x86_64-pc-windows-msvc", "win-arm64": "aarch64-pc-wi
                 "osx-x64": "x86_64-apple-darwin", "osx-arm64": "aarch64-apple-darwin"}
 
 
+# Every cargo, rustc and rust-analyzer Daodan starts: rustup's proxy installs no toolchain, not even the one a
+# project's `rust-toolchain.toml` names (rustup 1.28.1 and later).
+RUSTUP_GUARD = {"RUSTUP_AUTO_INSTALL": "0"}
+RUST_PINS = ("rust-toolchain.toml", "rust-toolchain")
+
+
 def rust_toolchain() -> Path | None:
     """The directory whose `bin` holds cargo and rustc and whose sysroot holds the standard library's sources.
 
-    The toolchain on PATH when it is complete; otherwise cargo, rustc and rust-src
+    The toolchain on PATH when it is complete, asked from the root of its drive so no
+    project's toolchain file is read; otherwise cargo, rustc and rust-src
     at the pinned release, downloaded from static.rust-lang.org into the shared
     directory and checked against the sha256 of the release manifest. Without the
     standard library's sources every call into `std` stays unresolved (semver:
@@ -1161,7 +1174,8 @@ def rust_toolchain() -> Path | None:
     if cargo and rustc:
         try:
             sysroot = subprocess.run([rustc, "--print", "sysroot"], capture_output=True, text=True, timeout=60,
-                                     stdin=subprocess.DEVNULL).stdout.strip()
+                                     stdin=subprocess.DEVNULL, cwd=Path(rustc).anchor or None,
+                                     env={**os.environ, **RUSTUP_GUARD}).stdout.strip()
         except (OSError, subprocess.SubprocessError):
             sysroot = ""
         if sysroot and (Path(sysroot) / "lib" / "rustlib" / "src" / "rust" / "library").is_dir():
@@ -1287,6 +1301,10 @@ class RustEngine(MirroredEngine):
         if self.toolchain is None:
             self.install = "check the network: Daodan downloads cargo, rustc and rust-src from static.rust-lang.org"
             return False, "no Rust toolchain could be installed"
+        if self.toolchain != shared_engine_dir("rust") / RUST_VERSION:
+            missing = self.missing_pin()
+            if missing:
+                return False, missing
 
         def fill(partial):
             asset, digest = RUST_ANALYZER_ASSETS[_platform()]
@@ -1305,11 +1323,33 @@ class RustEngine(MirroredEngine):
         self._install(home, fill)
         return True, ""
 
+    def missing_pin(self) -> str:
+        """Why the project cannot be read with the toolchain on PATH: a folder of it pins, in a toolchain file,
+        one rustup does not have, and Daodan installs no toolchain a project names (`install` says how to);
+        '' otherwise."""
+        rustc = shutil.which("rustc")
+        for current, directories, files in os.walk(self.project_root):
+            directories[:] = sorted(name for name in directories
+                                    if not name.startswith(".") and name not in ("target", "node_modules"))
+            pin = next((name for name in RUST_PINS if name in files), None)
+            if pin is None or rustc is None:
+                continue
+            probe = subprocess.run([rustc, "--print", "sysroot"], capture_output=True, text=True, timeout=60,
+                                   stdin=subprocess.DEVNULL, cwd=current, env={**os.environ, **RUSTUP_GUARD})
+            if probe.returncode != 0:
+                where = (Path(current) / pin).relative_to(self.project_root).as_posix()
+                self.install = (f"install the toolchain {where} names with `rustup toolchain install`, run in "
+                                f"{current}, then analyze again")
+                return (f"the project pins its Rust toolchain in {where} and rustup does not have it; Daodan "
+                        f"installs no toolchain a project names: {probe.stderr.strip()[-300:]}")
+        return ""
+
     def command(self, home: Path) -> tuple[list[str], dict]:
         # Crates the project depends on land in the shared directory, not in the user's cargo home.
         return [str(home / executable_name("rust-analyzer"))], {
             "PATH": str(self.toolchain / "bin") + os.pathsep + os.environ.get("PATH", ""),
-            "CARGO_HOME": str(shared_cache_dir() / "cargo"), "CARGO_TARGET_DIR": str(self.target_dir)}
+            "CARGO_HOME": str(shared_cache_dir() / "cargo"), "CARGO_TARGET_DIR": str(self.target_dir),
+            **RUSTUP_GUARD}
 
     def initialization_options(self) -> dict:
         return {"cargo": {"buildScripts": {"enable": False}, "features": "all", "targetDir": str(self.target_dir)},
@@ -3747,9 +3787,11 @@ def python_environment(project_root: Path, names) -> Path | None:
     shutil.rmtree(destination, ignore_errors=True)
 
     def run(*arguments, timeout=1800):
-        return subprocess.run([uv, *arguments], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout)
+        return subprocess.run([uv, *arguments], stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                              timeout=timeout, env={**os.environ, **uv_environment()})
 
-    if run("venv", str(destination), "--python", version).returncode != 0:
+    # This interpreter, so uv never downloads one.
+    if run("venv", str(destination), "--python", sys.executable).returncode != 0:
         return None
     install = ("pip", "install", "--python", str(destination), "--only-binary", ":all:")
     listed = destination / "daodan-requirements.txt"
