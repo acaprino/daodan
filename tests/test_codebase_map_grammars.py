@@ -284,8 +284,13 @@ def test_the_platform_names_the_pack_uses(system, machine, expected):
     assert _treesitter.pack_platform(system, machine) == expected
 
 
-def test_the_windows_architecture_comes_from_the_process_environment(monkeypatch):
+def test_the_windows_architecture_is_the_process_s_not_the_machine_s(monkeypatch):
+    """The bundle's libraries load into this process: an x64 Python emulated on ARM64 Windows needs x86_64."""
+    monkeypatch.setenv("PROCESSOR_ARCHITECTURE", "AMD64")
+    monkeypatch.setenv("PROCESSOR_ARCHITEW6432", "ARM64")
+    assert _treesitter.pack_platform("win32") == "windows-x86_64"
     monkeypatch.setenv("PROCESSOR_ARCHITECTURE", "ARM64")
+    monkeypatch.delenv("PROCESSOR_ARCHITEW6432")
     assert _treesitter.pack_platform("win32") == "windows-aarch64"
 
 
