@@ -1,11 +1,12 @@
 """The committed SCIP indexes of the code-graph fixtures (`tests/fixtures/code-graph/<language>/`), written once on
 Modal with each language's pinned indexer, through its `index()`: the plugin's for Go and Python, which install
 what they need themselves, the adapters' for Java and Kotlin, which run the plugin's two phases in the function's
-container, on the plugin's image (`adapters/jvm_here.py`). No model, snapshot or graph.
+container, on the plugin's image (`adapters/jvm_here.py`), and the adapter's for C and C++ (`adapters/clang.py`:
+CMake's configure and build of the fixture, then scip-clang). No model, snapshot or graph.
 
     modal deploy benchmarks/inference-audit/fixture_indexes.py
-    python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin
-    python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin
+    python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp
+    python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp
 
 `spawn` uploads a fixture's sources, never its `index.scip`, `expected.json` or `kotlin-configs/`. The container
 runs the adapter's `index()` and keeps on the volume (`inference-audit/fixture-indexes/<language>/`) the index the
@@ -28,7 +29,7 @@ STORE = "inference-audit/fixture-indexes"
 KEPT = {"index.scip", "expected.json"}  # the fixture's own files, never uploaded
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 import plugin_scripts  # noqa: E402
-from adapters import java, kotlin  # noqa: E402
+from adapters import clang, java, kotlin  # noqa: E402
 from indexers import go, python  # noqa: E402
 
 PIP = ("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
@@ -55,9 +56,15 @@ def _jvm_image():  # Java and Kotlin, as lang_java.py's and lang_kotlin.py's: JD
     return _mounted(modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git").pip_install(*PIP))
 
 
+def _clang_image():  # C and C++: Ubuntu 24.04 (scip-clang v0.4.1 needs glibc 2.38; Debian 12 has 2.36), CMake and gcc
+    return _mounted(modal.Image.from_registry("ubuntu:24.04", add_python="3.13")
+                    .apt_install("git", "curl", "ca-certificates", *clang.APT).pip_install(*PIP)
+                    .run_commands(*clang.install_commands()))
+
+
 app = modal.App("daodan-fixture-indexes")
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
-ADAPTERS = {"go": go, "python": python, "java": java, "kotlin": kotlin}
+ADAPTERS = {"go": go, "python": python, "java": java, "kotlin": kotlin, "c": clang, "cpp": clang}
 
 
 def _index(language: str, sources: dict[str, bytes]) -> dict:
@@ -119,6 +126,16 @@ def index_kotlin(sources: dict) -> dict:
     return _index("kotlin", sources)
 
 
+@app.function(image=_clang_image(), cpu=2, memory=4096, **FUNCTION)
+def index_c(sources: dict) -> dict:
+    return _index("c", sources)
+
+
+@app.function(image=_clang_image(), cpu=2, memory=4096, **FUNCTION)
+def index_cpp(sources: dict) -> dict:
+    return _index("cpp", sources)
+
+
 def _sources(language: str) -> dict[str, bytes]:
     root = FIXTURES / language
     return {path.relative_to(root).as_posix(): path.read_bytes() for path in sorted(root.rglob("*"))
@@ -134,7 +151,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("spawn", "fetch"))
-    parser.add_argument("--languages", default="go,python,java,kotlin")
+    parser.add_argument("--languages", default="go,python,java,kotlin,c,cpp")
     args = parser.parse_args()
     chosen = [item.strip() for item in args.languages.split(",") if item.strip()]
     local = plugin_scripts.code_sha256()

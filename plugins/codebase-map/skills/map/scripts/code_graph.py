@@ -15,6 +15,10 @@ the index defines it. An adapter may add, each passed by its driver to `Traversa
     static(index) -> {(rel, line, byte column)}  member references dispatched statically
     refine(index, graph) -> None                 holes added, edges marked `uncertain` or `removed`
 
+and, run before anything reads the index (see `adapter_traversal`):
+
+    prepare(index, snapshot) -> {step: count}   what the index leaves to the reader, filled in place
+
 An indexer run gives `{"indexes": [[path, prefix], ...], "indexer": {...}, "runs": [...]}`: `prefix` is the
 checkout-relative directory a run names its documents from, `indexer` is `{"name", "version", "seconds",
 "peak_mb"}`; `measured`, `module_runs` and `indexer` build it.
@@ -611,6 +615,39 @@ class Traversal:
         return End("external", key, None, package_name(key))
 
 
+def unread(index: Index, snapshot: Snapshot, language: str) -> list[dict]:
+    """The language's files the snapshot holds but could not read whole, with the cause, and how many references
+    the index holds in each: their edges are of kind `unknown`, measured against no snapshot reference. A
+    stand-in snapshot without a store (the tests', the benchmarks') reads every file it lists."""
+    out = []
+    if getattr(snapshot, "connection", None) is None:
+        return out
+    for rel, status, blob in snapshot.connection.execute(
+            "SELECT file, status, payload FROM sem_coverage WHERE language = ? AND status NOT IN ('ast', 'excluded') "
+            "ORDER BY file", (language,)):
+        checkout = snapshot.checkout.get(rel)
+        if checkout is None:
+            continue
+        notes = (snapshot.store.get_file_header(rel) or {}).get("parser_notes") or []
+        reason = next((note for note in notes if note.startswith(("syntax error:", "grammar unavailable:"))), None)
+        out.append({"path": checkout, "reason": reason or (snapshot._unpack(blob) or {}).get("reason") or status,
+                    "references": sum(1 for item in index.documents.get(checkout, ()) if not item.definition)})
+    return out
+
+
+TRAVERSAL_HOOKS = ("prepare", "same_range", "classify")  # what `adapter_traversal` reaches; the driver the rest
+
+
+def adapter_traversal(module, index: Index, snapshot: Snapshot) -> tuple[dict, Traversal, dict | None]:
+    """What a driver passes from an indexer module before building: `prepare(index, snapshot)` first, when the
+    module defines it, then its hops, and the traversal with its `same_range` and `classify`, each when the
+    module defines it. Returns the hops, the traversal and what `prepare` reported (None without it)."""
+    prepared = module.prepare(index, snapshot) if hasattr(module, "prepare") else None
+    hops = module.hops(index)
+    options = {name: getattr(module, name)(index) for name in TRAVERSAL_HOOKS[1:] if hasattr(module, name)}
+    return hops, Traversal(index, snapshot, hops, **options), prepared
+
+
 def _enclosing(occurrences: list[Occurrence]) -> dict[int, str]:
     """For each reference (by position in the list), the innermost definition whose enclosing range holds it."""
     # Outer before inner at the same start, so the innermost holder is the last one opened.
@@ -645,6 +682,8 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
     holds it) to each end of its symbol (`symbol`, the key referenced there), with the snapshot reference's
     kind at that position; at a `static` site `(rel, line, byte column)` to no end reached through an
     implementation. Holes are the snapshot references the index answers nothing at, or only with a dead end.
+    `files` counts the snapshot's files of the language, the indexed ones, the `missing` ones (no document) and,
+    when there are any, the `unread` ones (`unread`): what the snapshot could not measure.
     `refine(index, graph)` runs last: an edge it gives `uncertain` (`{reason, candidates}`) stays, one it gives
     `removed` (a reason) moves to `graph["removed"]`, a hole or edge it adds carries `"by": "refine"`; it
     drops nothing otherwise.
@@ -719,9 +758,10 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
                for rel in inventory if rel not in index.documents]
     missing += [{"path": rel, "reason": "document without occurrences"} for rel in inventory
                 if rel in index.documents and not index.documents[rel]]
+    unmeasured = unread(index, snapshot, language)
     graph = {"language": language, "indexer": indexer,
              "files": {"snapshot": len(inventory), "indexed": sum(1 for rel in inventory if index.documents.get(rel)),
-                       "missing": missing},
+                       "missing": missing, **({"unread": unmeasured} if unmeasured else {})},
              "nodes": list(nodes.values()), "edges": edges, "holes": holes, "removed": []}
     if refine is not None:
         _refined(index, graph, refine)

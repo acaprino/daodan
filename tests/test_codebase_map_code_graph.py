@@ -1,5 +1,5 @@
 """The code graph's mechanisms, on SCIP indexes written in memory and a stand-in snapshot; then the chain
-ends of six small projects in `fixtures/code-graph/`, each with the index its engine wrote, read with its
+ends of eight small projects in `fixtures/code-graph/`, each with the index its engine wrote, read with its
 indexer module, and the invariant that every call and read of their snapshots ends somewhere.
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_code_graph.py
@@ -8,13 +8,13 @@ Rebuild a fixture's index after changing its sources (the snapshot is written by
 - `ts`: `scip-typescript index --cwd . --output index.scip --no-progress-bar` (0.5.2, with `node_modules` beside
   `ts`, removed afterwards) in `fixtures/code-graph/ts`;
 - `rust`: `rust-analyzer scip . --output index.scip` in `fixtures/code-graph/rust`;
-- `go`, `python`, `java`, `kotlin`: on Modal with the pinned indexers, since Java and Kotlin need their build,
-  from the checkout's root, with the proxy variables empty:
+- `go`, `python`, `java`, `kotlin`, `c`, `cpp`: on Modal with the pinned indexers, since Java, Kotlin, C and C++
+  need their build, from the checkout's root, with the proxy variables empty:
 
       export HTTPS_PROXY= https_proxy= HTTP_PROXY= http_proxy= PYTHONIOENCODING=utf-8
       modal deploy benchmarks/inference-audit/fixture_indexes.py
-      python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin
-      python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin
+      python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp
+      python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp
 
   `fetch`, once the calls end, writes `index.scip` (and Kotlin's `kotlin-configs/`) into each fixture.
 """
@@ -275,6 +275,50 @@ def test_signature_documentation_is_kept(tmp_path):
 
 # A file the snapshot holds without declarations (lexical coverage) is the project's, not outside it.
 
+def test_adapter_traversal_runs_prepare_first_and_passes_only_what_the_module_defines(tmp_path):
+    import types
+    index, snapshot, (q, g, _c, _d) = _shared_range(tmp_path)
+    calls = []
+    full = types.SimpleNamespace(
+        prepare=lambda read, snap: calls.append("prepare") or {"filled": 1},
+        hops=lambda read: calls.append("hops") or {},
+        same_range=lambda read: calls.append("same_range") or {(q, g): True},
+        classify=lambda read: calls.append("classify") or (lambda key: None))
+    hops, traversal, prepared = code_graph.adapter_traversal(full, index, snapshot)
+    assert calls[:2] == ["prepare", "hops"] and set(calls[2:]) == {"same_range", "classify"}
+    assert prepared == {"filled": 1} and traversal.same_range == {(q, g): True} and traversal.classify is not None
+    bare = types.SimpleNamespace(hops=lambda read: {})
+    _hops, traversal, prepared = code_graph.adapter_traversal(bare, index, snapshot)
+    assert prepared is None and traversal.same_range == {} and traversal.classify is None
+
+
+HOOKS = ("prepare", "same_range", "classify", "static", "refine", "missing", "tasks")  # the optional ones
+
+
+@pytest.mark.xfail(strict=True, reason="today's driver builds its Traversal itself and drops java.same_range and "
+                                       "kotlin.classify; clang-driver.patch makes it call adapter_traversal")
+def test_every_hook_an_indexer_defines_is_reached():
+    """A hook an indexer module defines and nothing calls is a silent difference between the measured graph and
+    the product's: each is reached through `adapter_traversal`, which the driver calls, or by the driver itself."""
+    import importlib
+    import inspect
+    import pkgutil
+    import resolve_edges
+    driver = inspect.getsource(resolve_edges.index_stage)
+    reached = set(re.findall(r'hasattr\(module, "(\w+)"\)', driver))
+    if "code_graph.adapter_traversal(module" in driver:
+        reached |= set(code_graph.TRAVERSAL_HOOKS)
+    unreached = {}
+    for item in pkgutil.iter_modules([str(SCRIPTS / "indexers")]):
+        module = importlib.import_module(f"indexers.{item.name}")
+        if not hasattr(module, "hops"):  # a helper the adapters share, no adapter
+            continue
+        defined = {name for name in HOOKS if callable(getattr(module, name, None))}
+        if defined - reached:
+            unreached[item.name] = sorted(defined - reached)
+    assert not unreached, unreached
+
+
 def test_file_without_declarations_is_inside_the_snapshot(tmp_path):
     snapshot = code_graph.Snapshot.__new__(code_graph.Snapshot)
     snapshot.paths, snapshot.inventory = {"a.kt": tmp_path / "a.kt"}, set()
@@ -329,10 +373,10 @@ RUST_ENDS = {  # site -> the snapshot declaration, or `external`, and the chain 
     "call src/lib.rs:2 text.len": ("external", []),
 }
 LANGUAGES = {"ts": ("javascript", "typescript"), "rust": ("rust",), "go": ("go",), "python": ("python",),
-             "java": ("java",), "kotlin": ("kotlin",)}
-ADAPTERS = {"ts": "typescript"}
+             "java": ("java",), "kotlin": ("kotlin",), "c": ("c",), "cpp": ("cpp",)}
+ADAPTERS = {"ts": "typescript", "c": "clang", "cpp": "clang"}
 CASES = {name: json.loads((FIXTURES / name / "expected.json").read_text(encoding="utf-8"))
-         for name in ("go", "python", "java", "kotlin")}
+         for name in ("go", "python", "java", "kotlin", "c", "cpp")}
 KNOWN = {}  # (fixture, case) -> why the graph is wrong there, one line, until it is fixed
 
 
@@ -343,17 +387,13 @@ def _built(name: str, source: Path, manifest: Path) -> dict:
     with code_graph.Snapshot(manifest) as snapshot:
         index = code_graph.Index(snapshot.root)
         index.load(source / "index.scip")
-        hops, traversal_options, build_options = adapter.hops(index), {}, {}
-        if hasattr(adapter, "same_range"):
-            traversal_options["same_range"] = adapter.same_range(index)
-        if hasattr(adapter, "classify"):
-            traversal_options["classify"] = adapter.classify(index)
+        hops, traversal, prepared = code_graph.adapter_traversal(adapter, index, snapshot)
+        build_options = {}
         if hasattr(adapter, "static"):
             build_options["static"] = adapter.static(index)
         if hasattr(adapter, "refine"):
-            compiled = adapter.tasks(source / "kotlin-configs")
-            build_options["refine"] = lambda read, graph: adapter.refine(read, graph, compiled)
-        traversal = code_graph.Traversal(index, snapshot, hops, **traversal_options)
+            extra = (adapter.tasks(source / "kotlin-configs"),) if hasattr(adapter, "tasks") else ()
+            build_options["refine"] = lambda read, graph: adapter.refine(read, graph, *extra)
         graphs, references = {}, {}
         for language in LANGUAGES[name]:
             graphs[language], found = code_graph.build(index, snapshot, language, hops, {}, None, traversal,
@@ -364,7 +404,8 @@ def _built(name: str, source: Path, manifest: Path) -> dict:
             "WHERE r.kind IN ('call','read') ORDER BY r.file, r.l0, r.c0").fetchall()
         declarations = {identity: f"{snapshot.checkout.get(rel, rel)}:{line}" for identity, rel, line in
                         snapshot.connection.execute("SELECT id, file, l0 FROM sem_declarations")}
-    return {"index": index, "graphs": graphs, "references": references, "rows": rows, "declarations": declarations}
+    return {"index": index, "graphs": graphs, "references": references, "rows": rows, "declarations": declarations,
+            "prepared": prepared}
 
 
 @pytest.fixture(scope="module")
@@ -483,6 +524,9 @@ def test_fixture_case(built, name, case):
     assert {item["reason"] for item in marked} == {want["uncertain"]["reason"]}, marked
     candidates = set()
     for key in {key for item in marked for key in item["candidates"]}:
+        if key not in data["index"].defs:  # a place, `rel:line`, as C and C++ name a symbol's several bodies
+            candidates.add(key)
+            continue
         rel, occurrence = data["index"].defs[key][0]
         candidates.add(f"{rel}:{occurrence.line}")
     assert candidates == {_spec(text)[1] for text in want["uncertain"]["candidates"]}, marked
@@ -520,3 +564,36 @@ def test_every_reference_ends_or_is_a_hole(built):
     found = {category: items for category, items in violations.items() if items}
     assert not found, "\n".join(f"{category} ({len(items)}): " + "; ".join(items[:10])
                                 for category, items in sorted(found.items()))
+
+
+# C and C++: what the clang adapter's `prepare` fills in, and what the snapshot cannot read.
+
+def test_clang_prepare_keeps_each_occurrence_once_and_encloses_definitions(built):
+    """util.c is compiled by two libraries: the index holds it twice, the graph once. A call's edge starts at
+    the function holding it (`enclose`), not at its file."""
+    data = built["c"]
+    assert data["prepared"]["deduplicated"] > 0
+    occurrences = data["index"].documents["util.c"]
+    assert len(occurrences) == len(set(occurrences))
+    edges = [edge for edge in data["graphs"]["c"]["edges"] if edge["site"] == "main.c:9" and _name(edge["symbol"]) == "add"]
+    assert edges and {data["index"].defs[edge["from"]][0][1].line for edge in edges} == {6}, edges
+
+
+def test_clang_a_file_the_snapshot_cannot_read_is_a_declared_gap_and_its_occurrences_are_kept(built):
+    """split.c has a statement split by `#ifdef`: the snapshot reads it lexically, without references. The graph
+    names it among the files it could not measure, with the cause, and keeps the index's references there as
+    edges of kind `unknown`."""
+    graph = built["c"]["graphs"]["c"]
+    unread = {item["path"]: item for item in graph["files"]["unread"]}
+    assert set(unread) == {"split.c"}
+    assert unread["split.c"]["reason"] == "syntax error: line 5"
+    kinds = {edge["kind"] for edge in graph["edges"] if edge["site"].startswith("split.c:")}
+    assert kinds == {"unknown"} and unread["split.c"]["references"] >= 2
+
+
+def test_clang_an_operator_call_is_an_edge_of_kind_unknown(built):
+    """`a + b` is no call the snapshot lists; the index names `Vec::operator+` there."""
+    data = built["cpp"]
+    edges = [edge for edge in data["graphs"]["cpp"]["edges"] if edge["site"] == "main.cpp:12"
+             and _name(edge["symbol"]) == "operator+"]
+    assert {(edge["kind"], data["declarations"].get(edge["target"])) for edge in edges} ==         {("unknown", "shapes.cpp:13")}, edges
