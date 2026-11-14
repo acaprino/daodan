@@ -232,18 +232,22 @@ class GoSnapshotAndReadingTests(unittest.TestCase):
 
         self.assertEqual(packet["files"][0]["blocks"][0]["reason"], "full-file-fallback")
 
-    def test_without_the_grammar_spans_are_inferred_and_the_reader_reads_the_file(self):
+    def test_without_the_grammar_the_file_is_a_declared_gap_and_is_read_whole(self):
+        """No weaker reading: no symbols to cut the file by, a note with the reason, the whole file on request."""
         with grammar_unavailable():
             manifest, key = self.manifest()
             entry = manifest["files"][key]
-            self.assertEqual(entry["parser_profile"]["backend"], "regex-fallback")
-            self.assertEqual(entry["symbols"]["Invoice.Pay"]["span_precision"], "inferred")
+            self.assertEqual(entry["parser_profile"]["backend"], "unavailable")
+            self.assertEqual(entry["status"], "parse-skipped")
+            self.assertEqual(entry["parser_notes"], ["grammar unavailable: go: no tree-sitter grammar installed"])
+            self.assertEqual(entry["symbols"], {})
+            with self.assertRaisesRegex(ValueError, "unknown symbol"):
+                source_reader.read_packet(manifest, [{"path": key, "symbols": ["Invoice.Pay"]}])
 
-            packet = source_reader.read_packet(manifest, [{"path": key, "symbols": ["Invoice.Pay"]}])
+            packet = source_reader.read_packet(manifest, [{"path": key, "full_file": True}])
 
         text = "\n".join(emitted_lines(packet).values())
-        self.assertIn("HELPER_BODY_MARKER", text, "an inferred span must not be trusted to cut the file")
-        self.assertEqual(packet["files"][0]["blocks"][0]["reason"], "full-file-fallback")
+        self.assertIn("HELPER_BODY_MARKER", text)
 
     def test_comments_use_the_c_style_lexer(self):
         comments = get_adapter("go").extract_comments('x := "// not a comment" // real\n/* block */\n')

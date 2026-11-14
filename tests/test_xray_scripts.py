@@ -194,14 +194,19 @@ def _spans(result) -> dict[tuple[str, str], tuple[int, int | None]]:
 
 
 def _unreachable_grammar_pack():
-    """A grammar pack that is installed but cannot fetch a grammar.
+    """The pinned grammar pack, configured on Daodan's cache, that cannot give a grammar.
 
-    It mirrors tree-sitter-language-pack 1.x: `get_parser` downloads a grammar
-    on first use and raises the pack's own `DownloadError`, a plain Exception
-    subclass, when the cache it looks in is empty and the network is not there.
+    It mirrors tree-sitter-language-pack 1.x: `get_parser` raises the pack's
+    own `DownloadError`, a plain Exception subclass, when the grammar is not in
+    the cache it looks in and it cannot fetch it.
     Returns the module and the list of languages it was asked for.
     """
+    from languages import _treesitter
+
     pack = types.ModuleType("tree_sitter_language_pack")
+    pack.__version__ = _treesitter.PACK_VERSION
+    pack.PackConfig = lambda **config: config
+    pack.configure = lambda config: None
     calls: list[str] = []
 
     class Error(Exception):
@@ -401,6 +406,13 @@ class GrammarPackFailureTests(unittest.TestCase):
         # fake pack's entries once the real modules are back.
         get_parser.cache_clear()
         self.addCleanup(get_parser.cache_clear)
+        # The pinned release is in Daodan's cache: what fails is the pack.
+        from languages import _treesitter
+
+        for name, value in (("place_grammars", lambda *args: None), ("_user_pack_home", lambda: None)):
+            patcher = mock.patch.object(_treesitter, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def _install(self, pack) -> None:
         # None in sys.modules makes an import raise ImportError, which keeps

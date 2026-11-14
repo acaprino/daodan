@@ -11,26 +11,24 @@
 #
 # Without these, the analysis scripts still work:
 #   - Python uses the stdlib `ast` module (always available).
-#   - Java / JavaScript / TypeScript / Rust / Go fall back to regex-based extraction.
+#   - A snapshot records every file of a tree-sitter language (Java, JavaScript,
+#     TypeScript, Rust, Go, Kotlin, C#, C, C++) as a declared gap, with the
+#     reason; a single-file parse falls back to regex-based extraction.
 #   - SQL / PL-SQL always use regex-based DDL extraction (tree-sitter is never
 #     used for them).
-#
-# With these installed, Java / JS / TS / Rust / Go get tree-sitter accuracy
-# (correct handling of nested classes, generics, JSX, decorators, lifetimes).
 #
 # Install with:
 #   pip install -r requirements.txt
 # or with uv:
 #   uv pip install -r requirements.txt
 
-# The Python bindings changed API incompatibly before 0.23 (Language/Parser
-# constructors). The loader in languages/_treesitter.py targets the >=0.23 API
-# and is tested through 0.26.
-tree-sitter>=0.23
+# Pinned: the grammars a snapshot reads with are part of its identity. The
+# loader in languages/_treesitter.py targets the >=0.23 bindings API.
+tree-sitter==0.26.0
 
-# >=1.0 is the Rust-core rewrite. The loader only calls get_parser(), which is
-# stable across the rewrite (get_language()'s return type changed in 1.9).
-tree-sitter-language-pack>=1.0
+# Pinned to the release whose bundle sha256 languages/_treesitter.py holds:
+# Daodan puts that bundle into its own cache and the pack never downloads.
+tree-sitter-language-pack==1.13.5
 
 # SQL: CTE names a regex misses (recursive, quoted) are not taken for table
 # references. Measured: `WITH RECURSIVE tree(...)` and `"Quoted Cte"` stop

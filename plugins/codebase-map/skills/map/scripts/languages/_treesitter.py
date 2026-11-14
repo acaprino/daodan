@@ -3,12 +3,14 @@ Optional tree-sitter loader.
 
 Returns a (parser, language) pair or None if tree-sitter or the requested
 grammar is unavailable. Adapters call this and fall back to regex parsing
-when it returns None.
+when it returns None; the snapshot instead records the file as a declared
+gap (`snapshot.parser_profile`).
 
-We prefer `tree-sitter-language-pack` (modern, single dependency, bundles
-many grammars) and fall back to per-grammar packages
-(`tree-sitter-python`, `tree-sitter-java`, etc.) if the user has installed
-those directly.
+We prefer `tree-sitter-language-pack`, pinned to `PACK_VERSION`: Daodan puts
+the release's bundle into its own cache, verified by sha256, and configures
+the pack on it, so the pack never downloads. Per-grammar packages
+(`tree-sitter-python`, `tree-sitter-java`, etc.) are used when the pack is
+not installed or gives no grammar.
 
 ## Caching and Thread-safety
 
@@ -27,7 +29,11 @@ load failures so the next `get_parser(language)` re-probes the install state.
 
 from __future__ import annotations
 
+import hashlib
+import os
+import shutil
 import threading
+from pathlib import Path
 from typing import Any, Callable
 
 __all__ = [
@@ -84,6 +90,136 @@ _GRAMMAR_MODULES = {
 # fallback instead of crashing the whole analysis run.
 _LOAD_ERRORS = (ImportError, AttributeError, TypeError, ValueError, LookupError)
 
+# The pinned tree-sitter-language-pack release. The pack loads a grammar from the directory it is configured
+# with, extracting it from the platform's bundle when the manifest sits beside it, and never verifies a bundle
+# already in place: these sha256 are the only guard. The release's own manifest (`parsers.json`) and bundles.
+PACK_VERSION = "1.13.5"
+_PACK_RELEASE = f"https://github.com/xberg-io/tree-sitter-language-pack/releases/download/v{PACK_VERSION}"
+PACK_MANIFEST = ("689db000f889084cc0e7052f031b277029fe893ab7846e51057822a3af997735", 25002)
+PACK_BUNDLES = {
+    "linux-aarch64": ("e47812e12009562b11e1362e503196ccb44c6f4f71ff794a611637e2e4d0897a", 18250861),
+    "linux-x86_64": ("d1b4c48c8f1eef894a2eaa31762da404a7eba62e15bc75a9cd3bde4af64db88a", 18698076),
+    "macos-arm64": ("74a576dbfd70bee0bfcdff7d2e0741b1078093500d6b3c36c52563ae81a7732a", 20918709),
+    "macos-x86_64": ("1086d3a23659dae7d43d774f7836e88e3e526ba1d0f4fa0ea9bcf2cc3e6e32a2", 18285977),
+    "windows-aarch64": ("1f7a4fa32d6a70da746a8595efed0b7c51e54050f2eac0d15edec76d1de9b3ff", 17671296),
+    "windows-x86_64": ("fb0042c7f4b9ec9383647f7b4e1eee97236e484b0950732c33faffc007c3716e", 18063968),
+}
+
+
+def manifest_url() -> str:
+    return f"{_PACK_RELEASE}/parsers.json"
+
+
+def bundle_url(platform: str) -> str:
+    return f"{_PACK_RELEASE}/parsers-{platform}.tar.zst"
+
+
+def pack_platform() -> str:
+    """This machine's platform in the pack's names: `windows-x86_64`, `macos-arm64` and so on."""
+    import platform
+
+    system = {"Windows": "windows", "Linux": "linux", "Darwin": "macos"}.get(platform.system(), platform.system().lower())
+    arm = platform.machine().lower() in ("arm64", "aarch64")
+    return f"{system}-{('arm64' if system == 'macos' else 'aarch64') if arm else 'x86_64'}"
+
+
+def _daodan_home() -> Path:
+    """Where Daodan keeps the pinned release: manifest.json, bundles/ and the libs/ the pack extracts into."""
+    from embedding_worker import shared_cache_dir
+
+    return shared_cache_dir() / "grammars" / "tree-sitter-language-pack" / f"v{PACK_VERSION}"
+
+
+_USER_PACK_HOME: list[Path | None] = []
+
+
+def _user_pack_home() -> Path | None:
+    """The pack's own cache of this release, read before Daodan configures the pack: copies come from it."""
+    if not _USER_PACK_HOME:
+        try:
+            import tree_sitter_language_pack as pack  # type: ignore
+
+            _USER_PACK_HOME.append(Path(pack.cache_dir()).parent)
+        except Exception:
+            _USER_PACK_HOME.append(None)
+    return _USER_PACK_HOME[0]
+
+
+def _fetch(url: str, target: Path, *, sha256: str) -> Path:
+    from resolve_edges import download
+
+    return download(url, target, sha256=sha256)
+
+
+def _matches(path: Path, digest: str, size: int) -> bool:
+    if not path.is_file() or path.stat().st_size != size:
+        return False
+    sha = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            sha.update(chunk)
+    return sha.hexdigest() == digest
+
+
+def place_grammars(home: Path, platform: str, user_home: Path | None, fetch) -> str | None:
+    """Put the pinned manifest and the platform's bundle into `home`, each verified by its sha256.
+
+    A file already there is verified and kept, or removed. A missing one is copied from `user_home`, the pack's
+    own cache, which is only read, else fetched through `fetch(url, target, sha256=)`; a copy or a download that
+    does not match its pin is removed. Returns why the release is not in place, or None.
+    """
+    if platform not in PACK_BUNDLES:
+        return f"no pinned grammar bundle for platform {platform}"
+    digest, size = PACK_BUNDLES[platform]
+    bundle = f"{platform}-{digest}.tar.zst"
+    wanted = [("manifest.json", manifest_url(), *PACK_MANIFEST), (f"bundles/{bundle}", bundle_url(platform), digest, size)]
+    (home / "libs").mkdir(parents=True, exist_ok=True)
+    for rel, url, digest, size in wanted:
+        target = home / rel
+        if _matches(target, digest, size):
+            continue
+        target.unlink(missing_ok=True)
+        source = user_home / rel if user_home is not None else None
+        if source is not None and source.is_file():
+            partial = target.with_name(target.name + ".partial")
+            partial.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, partial)
+            if _matches(partial, digest, size):
+                os.replace(partial, target)
+                continue
+            partial.unlink(missing_ok=True)
+        try:
+            fetch(url, target, sha256=digest)
+        except (OSError, ValueError) as error:
+            target.unlink(missing_ok=True)
+            return f"download failed: {error}"
+        if not _matches(target, digest, size):
+            target.unlink(missing_ok=True)
+            return f"download failed: checksum mismatch for {url}"
+    return None
+
+
+_PLACED: list[str | None] = []
+
+
+def _ensure_grammars(pack: Any) -> str | None:
+    """Once per process: the pinned release in Daodan's cache and the pack configured on it, or why not."""
+    if not _PLACED:
+        version = getattr(pack, "__version__", None)
+        if version != PACK_VERSION:
+            reason = f"tree-sitter-language-pack {version} is installed, Daodan reads with {PACK_VERSION}"
+        else:
+            user_home, home = _user_pack_home(), _daodan_home()
+            reason = place_grammars(home, pack_platform(), user_home, _fetch)
+            if reason is None:
+                try:
+                    pack.configure(pack.PackConfig(cache_dir=str(home / "libs")))
+                except Exception as exc:
+                    reason = f"{type(exc).__name__}: {exc}"
+        _PLACED.append(reason)
+    return _PLACED[0]
+
+
 _LOCAL = threading.local()
 _CACHE_EPOCH = 0
 _EPOCH_LOCK = threading.Lock()
@@ -113,7 +249,8 @@ def _load_parser_uncached(language: str, failures: dict[str, str]) -> tuple[Any,
     if pack_name is None:
         return None
 
-    # Strategy 1: tree-sitter-language-pack (preferred).
+    # Strategy 1: tree-sitter-language-pack (preferred), on the pinned release
+    # Daodan placed in its own cache (`_ensure_grammars`).
     #
     # Only `get_parser` is used. The pack's `get_language` returns a plain
     # capsule rather than a `tree_sitter.Language` on newer releases (the
@@ -121,18 +258,23 @@ def _load_parser_uncached(language: str, failures: dict[str, str]) -> tuple[Any,
     # `Parser(get_language(...))` would break there. The parser the pack hands
     # back already carries its language.
     try:
-        from tree_sitter_language_pack import get_parser as _pack_get_parser  # type: ignore
-
-        parser = _pack_get_parser(pack_name)
+        import tree_sitter_language_pack as _pack  # type: ignore
     except ImportError:
         pass
-    except Exception as exc:
-        # Installed but unusable: a version mismatch, or a grammar download
-        # that failed. Every such error means the fallback, never a crash, and
-        # the reason is kept for the result's notes.
-        failures[language] = f"{type(exc).__name__}: {exc}"
     else:
-        return parser, getattr(parser, "language", None)
+        reason = _ensure_grammars(_pack)
+        if reason is not None:
+            failures[language] = reason
+        else:
+            try:
+                parser = _pack.get_parser(pack_name)
+            except Exception as exc:
+                # Installed but unusable: a grammar missing from the bundle,
+                # or a library that does not load. The reason is kept for the
+                # result's notes and the snapshot's declared gap.
+                failures[language] = f"{type(exc).__name__}: {exc}"
+            else:
+                return parser, getattr(parser, "language", None)
 
     # Strategy 2: individual tree-sitter-<lang> package + tree-sitter core
     # (the >= 0.23 API, where Language() takes the grammar capsule and Parser()
@@ -207,6 +349,7 @@ def _cache_clear() -> None:
     with _EPOCH_LOCK:
         _CACHE_EPOCH += 1
         _GRAMMARS.clear()
+        _PLACED.clear()
 
 
 get_parser.cache_clear = _cache_clear  # type: ignore[attr-defined]

@@ -838,8 +838,10 @@ class SourceGraphTests(unittest.TestCase):
         with optional_native_backend_unavailable():
             self.manifest = snapshot.build_manifest(self.root)
             entry = self.manifest["files"][native.name]
-            self.assertEqual(entry["parser_profile"]["backend"], "regex-fallback")
-            self.assertIn("parser=regex-fallback", entry["parser_notes"])
+            self.assertEqual(entry["parser_profile"]["backend"], "unavailable")
+            self.assertEqual(entry["status"], "parse-skipped")
+            self.assertEqual(entry["parser_notes"],
+                             ["grammar unavailable: javascript: no tree-sitter grammar installed"])
             self.assertNotIn("semantic", entry)
 
             packet = self.graph([native.name])
@@ -949,34 +951,32 @@ class SourceGraphTests(unittest.TestCase):
         self.assertEqual(invalid.returncode, 2)
         self.assertIn("--hops", invalid.stderr)
 
-    def test_inventoried_alias_config_resolves_fallback_imports_and_changed_config_requires_refresh(self):
+    def test_inventoried_alias_config_resolves_imports_and_changed_config_requires_refresh(self):
         write(self.root, "lib/core.ts", "export function save() { return 7; }\n")
         write(self.root, "app.ts", 'import { save } from "@app/core";\nsave();\n')
         config = write(self.root, "tsconfig.json", json.dumps({
             "compilerOptions": {"baseUrl": ".", "paths": {"@app/*": ["lib/*"]}},
         }))
-        with optional_native_backend_unavailable():
-            self.manifest = snapshot.build_manifest(self.root)
+        self.manifest = snapshot.build_manifest(self.root)
 
-            packet = self.graph(["app.ts"])
+        packet = self.graph(["app.ts"])
 
-            self.assertIn({"source": "app.ts", "target": "lib/core.ts"}, packet["imports"])
-            config.write_text('{"compilerOptions":{"paths":{"@app/*":["other/*"]}}}', encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "refresh"):
-                self.graph(["app.ts"])
+        self.assertIn({"source": "app.ts", "target": "lib/core.ts"}, packet["imports"])
+        config.write_text('{"compilerOptions":{"paths":{"@app/*":["other/*"]}}}', encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "refresh"):
+            self.graph(["app.ts"])
 
     def test_new_uninventoried_alias_config_never_opens_or_changes_same_manifest_graph(self):
         write(self.root, "lib/core.ts", "export function save() { return 7; }\n")
         write(self.root, "app.ts", 'import { save } from "@app/core";\nsave();\n')
-        with optional_native_backend_unavailable():
-            self.manifest = snapshot.build_manifest(self.root)
-            before = self.graph(["app.ts"])
-            config = write(self.root, "tsconfig.json", json.dumps({
-                "compilerOptions": {"baseUrl": ".", "paths": {"@app/*": ["lib/*"]}},
-            }))
+        self.manifest = snapshot.build_manifest(self.root)
+        before = self.graph(["app.ts"])
+        config = write(self.root, "tsconfig.json", json.dumps({
+            "compilerOptions": {"baseUrl": ".", "paths": {"@app/*": ["lib/*"]}},
+        }))
 
-            with source_must_not_open([config]):
-                after = self.graph(["app.ts"])
+        with source_must_not_open([config]):
+            after = self.graph(["app.ts"])
 
         self.assertNotIn({"source": "app.ts", "target": "lib/core.ts"}, before["imports"])
         self.assertEqual(after, before)

@@ -311,6 +311,13 @@ def parser_fingerprint() -> str:
     return digest.hexdigest()
 
 
+def grammar_gaps(profiles) -> dict[str, str]:
+    """The grammars that were not available for these parser profiles, with the reason: a snapshot's
+    declared parsing gaps."""
+    return dict(sorted((profile["grammar"], profile["reason"]) for profile in profiles
+                       if isinstance(profile, dict) and profile.get("backend") == "unavailable"))
+
+
 def parser_profile(path: Path, language: str | None = None) -> dict:
     """Effective backend for this file, without reading its source bytes."""
     language = language or SUPPORTED_EXTENSIONS.get(path.suffix.lower())
@@ -318,14 +325,18 @@ def parser_profile(path: Path, language: str | None = None) -> dict:
         from languages._treesitter import get_parser
         grammar = "tsx" if path.suffix.lower() == ".tsx" else ("typescript" if language in {"vue", "svelte"} else language)
         loaded = get_parser(grammar)
-        profile = {"language": language, "backend": "tree-sitter" if loaded else "regex-fallback",
-                   "grammar": grammar}
-        if loaded:
-            lang = loaded[1]
-            for attribute in ("abi_version", "semantic_version"):
-                value = getattr(lang, attribute, None)
-                if value is not None:
-                    profile[attribute] = list(value) if isinstance(value, tuple) else value
+        if not loaded:
+            # A declared gap, never a weaker reading: the reason is part of the profile, so the file is read
+            # again once its grammar is there.
+            from languages._treesitter import load_failure
+            return {"language": language, "backend": "unavailable", "grammar": grammar,
+                    "reason": load_failure(grammar) or "no tree-sitter grammar installed"}
+        profile = {"language": language, "backend": "tree-sitter", "grammar": grammar}
+        lang = loaded[1]
+        for attribute in ("abi_version", "semantic_version"):
+            value = getattr(lang, attribute, None)
+            if value is not None:
+                profile[attribute] = list(value) if isinstance(value, tuple) else value
         return profile
     return {"language": language, "backend": {
         "python": "stdlib-ast", "css": "stylesheet", "markup": "stylesheet", "sql": "regex", "plsql": "regex",
@@ -559,6 +570,9 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
     if language and len(data) > MAX_PARSE_BYTES:
         entry["status"] = "parse-skipped"
         entry["parser_notes"] = ["source exceeds parsing size limit"]
+    elif language and parse_result is None and profile["backend"] == "unavailable":
+        entry["status"] = "parse-skipped"
+        entry["parser_notes"] = [f"grammar unavailable: {profile['grammar']}: {profile['reason']}"]
     elif language:
         try:
             data.decode("utf-8")  # Lossy decoding cannot supply precise source spans.
@@ -747,6 +761,9 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
             files[rel] = reused_entries[rel]
         elif rel in parsed_entries:
             files[rel] = parsed_entries[rel]
+    unavailable = grammar_gaps(entry.get("parser_profile") for entry in files.values())
+    if unavailable:
+        metrics["grammars_unavailable"] = unavailable
     from datetime import datetime, timezone
     return {
         "schema": SCHEMA,
@@ -811,6 +828,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
     exact_reused_paths: list[str] = []
     touched_reused_headers: dict[str, dict] = {}
     deferred: list[tuple[Path, str, float, bytes, object]] = []
+    profiles: list[dict] = []
     try:
         with SnapshotWriter(temporary, format) as writer:
             if format == "sqlite":
@@ -847,6 +865,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                             and old_h.get("parser_profile") == parser_profile(path, old_h.get("language"))
                             and old_h.get("status") in {"parsed", "file-level", "parse-skipped"}):
                         metrics["cache_hits"] += 1
+                        profiles.append(old_h["parser_profile"])
                         if old_h.get("size") == len(data) and old_h.get("mtime") == mtime:
                             exact_reused_paths.append(rel)
                         else:
@@ -870,6 +889,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                     entry = file_entry(path, data, mtime, parse_result=parsed)
                     if entry["status"] in {"parsed", "parse-error"} and parsed is None:
                         metrics["parsed_files"] += 1
+                profiles.append(entry.get("parser_profile"))
                 writer.put_file(rel, entry)
                 if format == "sqlite":
                     from semantic_store import observed_coverage
@@ -898,6 +918,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                     entry = file_entry(path, data, mtime, parse_result=parsed, macros=contexts[rel])
                     if entry["status"] in {"parsed", "parse-error"} and parsed is None:
                         metrics["parsed_files"] += 1
+                profiles.append(entry.get("parser_profile"))
                 writer.put_file(rel, entry)
                 if format == "sqlite":
                     from semantic_store import observed_coverage
@@ -908,6 +929,9 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                 count += 1
                 if progress is not None:
                     progress("parsing", count)
+            unavailable = grammar_gaps(profiles)
+            if unavailable:
+                metrics["grammars_unavailable"] = unavailable
             if exact_reused_paths or touched_reused_headers:
                 writer.bulk_copy_from_sqlite(previous, exact_reused_paths, touched_reused_headers)
             if progress is not None:
