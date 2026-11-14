@@ -98,6 +98,8 @@ Per ogni fixture conta la voce trovata dal migliore dell'insieme.
 | registro di Daodan | — | — | — | — | — | — | — | — | — | — | — | — | 45 +26 |
 | stack-analyser via Daodan | — | — | — | — | — | — | — | — | — | — | — | — | 27 +66 |
 | `modules.py` di Daodan | — | — | — | 197 (266) +4 | 70 +31 | — | — | 15 (19) +7 | 64 +486 | — | 508 (573) +332 | — | — |
+| `modules.py` rivisto (`daodan_modules_candidate`) | — | — | — | 200 (266) +4 | 81 +14 | — | — | 15 (20) +7 | 65 +1 | — | 574 (628) +52 | — | — |
+| affected 1.0.0 | — | — | — | 59 (75) +3 | 24 +4 | — | — | — | — | — | — | — | — |
 | npm (Node 22.23.4) | — | — | — | 52 (53) | 1 | — | 1 (2) | 2 (5) | 2 | 18 | 365 (374) +3 | — | — |
 | Go 1.27.3 | — | — | — | 19 | 2 | 19 | 19 (22) | 1 | 3 | 23 | 51 (53) | — | — |
 | Cargo 1.99.1 | — | — | — | 25 | 5 | 28 +1 | 35 (44) | 1 | 3 | 6 (7) +2 | 0 (31) | — | — |
@@ -232,6 +234,22 @@ Servizi del registro, letti voce per voce dal punteggio (`score.py daodan_regist
 | In più: veri, con un nome più generico dell'atteso | circa 11 | OpenTelemetry 3, AWS 2, Firebase, GCP, Google Compute, Kubernetes, OpenAI, Hugging Face, Prometheus |
 
 La divisione delle 26 voci in più nelle tre righe è una lettura a mano dei nomi, non un conteggio del punteggio.
+
+### affected come fonte della struttura dei moduli
+
+Misurato su richiesta del proprietario dopo il rapporto, con lo stesso punteggio (`python score.py affected all`).
+
+| Domanda | Esito |
+| --- | --- |
+| Unità e dipendenze fra unità | 59 (75) su 447 e 24 su 199, contro 200 (266) e 81 di `modules.py` rivisto. Non dà workspace, membri, versioni né dipendenze esterne |
+| Più ecosistemi affiancati | No: un solo ecosistema per radice. mix-poly-firebase, real-svc-otel-demo e real-app-jhipster-sample danno "nessun progetto supportato"; real-app-hoppscotch dà i 14 pacchetti npm senza i crate Cargo e il modulo Go |
+| Moduli Go annidati | Non li vede: sys-go-nested 1 unità su 2, mix-real-chi 1 su 3 |
+| Pacchetto singolo, senza workspace | Su 66 fixture con una sola unità ne elenca 16 (Go e Python) |
+| Bisogno di Git | Il grafo no; l'elenco dei pacchetti toccati sì, ed elenca solo quelli del diff |
+| Programmi avviati | `go` e `cargo` in 2 fixture su 122; nessuno script del progetto, nessuna scrittura; rete solo in quelle 2 |
+| Copertura | 85 fixture su 122 danno "nessun progetto supportato", nessuna dà errore |
+
+Versione 1.0.0 del 2 aprile 2026, ultimo commit 5 giugno 2026, licenza MIT; il binario Linux chiede glibc 2.39. Costo della misura 0,0135 USD. Come fonte accanto a `modules.py` aggiunge 2 unità e 2 dipendenze fra unità su tutto il corpus.
 
 ### `BuildTarget` di BSP come modello delle unità
 
