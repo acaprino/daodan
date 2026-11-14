@@ -1,6 +1,6 @@
 # Passo dinamico: i test del progetto in un container
 
-**Stato:** proposta, non applicata. Misurato su tududi, JavaScript: la copertura passa dal 37,9% al 47,1% con il profiler di V8 e al 72,2% con il registro esatto, sopra la soglia del 70%. Dettagli in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
+**Stato:** sezione 2 applicata in `plugins/codebase-map/skills/map/scripts/container.py` (`run_in_container`) e verificata con una riga di comando finta e con un container sul Kiri dell'utente; del motore proprio della sezione 3 è verificato solo lo scaricamento con il checksum; sezioni 5-7 non applicate, nessun passo dell'analisi usa ancora l'operazione. Misurato su tududi, JavaScript: la copertura passa dal 37,9% al 47,1% con il profiler di V8 e al 72,2% con il registro esatto, sopra la soglia del 70%. Dettagli in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
 
 Daodan deve saper rispondere a due domande che la lettura del codice lascia aperte: «quale funzione viene chiamata davvero, dove la destinazione si decide in esecuzione?» e «questo difetto si riproduce?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
 
@@ -115,7 +115,7 @@ Parametri e soglie in [`benchmarks/call-provenance`](../../benchmarks/call-prove
 
 - Quale registro adottare per ogni linguaggio (sezione 7). Il profiler di V8 dà coppie di funzioni senza la riga: la chiamata si ritrova dal nome, e due chiamate omonime nella stessa funzione restano ambigue. Su tududi vede il 35% delle chiamate senza risposta che stanno in file eseguiti. Il registro esatto (`benchmarks/call-provenance/dynamic_record.js`) le registra tutte e porta la copertura al 72,2%.
 - Se il motore del passo 2 di un linguaggio gira dentro il container quando deve eseguire codice del progetto, come per le macro procedurali di Rust.
-- Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL («another Kiri engine is running on this machine»); in una distribuzione propria i due motori convivono, ma quello di Daodan resta senza i domini dei container, perché le porte 80 e 443 sono già prese.
+- Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL («another Kiri engine is running on this machine»). Anche in distribuzioni diverse i due motori condividono la rete della VM di WSL, e ciascuno ricostruisce all'avvio e toglie all'arresto la stessa tabella nftables `kiri` (`crates/kiri-init/src/linux/net.rs`). Lettura applicata: Daodan usa il motore dell'utente quando risponde e non avvia il proprio accanto a un Kiri attivo; dichiara la lacuna.
 - Quale comando esegue i test e come si avviano i servizi che richiedono.
 - Quanto vale un arco osservato dopo una modifica al file del chiamante o della destinazione.
 - Come si accende il passo: un parametro del run o una domanda al primo uso.

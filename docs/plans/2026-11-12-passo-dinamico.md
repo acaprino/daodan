@@ -41,8 +41,9 @@ Eseguire i task nell'ordine e segnare solo i passi verificati. La Parte A misura
 
 ### Task 3: decisione
 
-- [ ] **Passo 1:** l'utente decide dai numeri del Task 2 se la Parte B parte, per quali linguaggi e con quale registratore.
+- [x] **Passo 1:** l'utente decide dai numeri del Task 2 se la Parte B parte, per quali linguaggi e con quale registratore.
   - Registratore per JavaScript, deciso il 12 novembre 2026: il registro esatto (`benchmarks/call-provenance/dynamic_record.js`), da misurare sullo stesso caso prima di decidere il resto. Misurato lo stesso giorno: 72,2%, soglia raggiunta (README del benchmark).
+  - Deciso il 14 novembre 2026: la Parte B parte e il container entra nel prodotto. È uno strato comune con tre utenti: il passo dinamico (JavaScript per primo, con il registro esatto), gli indicizzatori che devono costruire il progetto (scip-java per Java e Kotlin, il database di compilazione di scip-clang per C e C++: Task 9 e 10 di `docs/plans/2026-11-14-grafo-dall-indice.md`) e poi le review dinamiche.
 
 ## Parte B: nel plugin (dopo la misura)
 
@@ -51,6 +52,27 @@ I passi di ogni task si scrivono dopo il Task 3, perché dipendono dalle scelte 
 ### Task 4: operazione «esegui un comando in un container»
 
 Le cinque garanzie della sezione 2 della spec, ciascuna con il suo test; ricerca del motore presente e scaricamento di Kiri a versione fissata con checksum; lacuna dichiarata dove il motore manca.
+
+**File:**
+- Crea: `plugins/codebase-map/skills/map/scripts/container.py`, solo libreria standard; scaricamento, cartella condivisa e memoria libera vengono da `resolve_edges.py`.
+- Crea: `tests/test_codebase_map_container.py`, con una riga di comando finta compatibile con `docker`.
+
+**Letture delle scelte aperte.** Le altre voci di «Da decidere» non servono a questo task.
+- **Motore di Daodan e motore dell'utente.** Prima un motore dell'utente che risponde (`docker`, poi `podman`), usato com'è: nessun contesto, nessuna configurazione, nessuna opzione `--context`. Solo se nessuno risponde parte il Kiri di Daodan, nella sua distribuzione, con i router dei domini su 47080 e 47443 invece di 80 e 443. Non parte se un'altra distribuzione Kiri è attiva: le distribuzioni WSL 2 condividono la rete, e ogni motore Kiri ricostruisce all'avvio e toglie all'arresto la stessa tabella nftables `kiri` (Kiri 0.2.0, `crates/kiri-init/src/linux/net.rs`). Il demone parte con l'operazione e la distribuzione si ferma alla fine; se prima non c'era una distribuzione predefinita, quella di Daodan si toglie dopo l'uso, perché non diventi la predefinita dell'utente.
+- **Perimetro della copia.** I file che il perimetro dello snapshot attraversa (`tree_scope.Perimeter`), meno quelli che lo snapshot non legge mai (`snapshot.is_forbidden`). Non solo i file analizzati: i test leggono anche configurazione e dati.
+- **Come entra la copia.** Un archivio tar sullo standard input di `cp -`, in un container creato e non ancora avviato. Il progetto non viene mai montato; i file dichiarati escono con `cp <container>:<percorso> -`.
+- **Rete della preparazione.** Una rete `--internal` senza uscita e un proxy che apre `CONNECT` sulla porta 443 dei soli registri dei pacchetti, in un container dell'immagine `python` a digest fissato. Il risultato della preparazione si salva con `commit` e l'esecuzione parte da quell'immagine con `--network none`.
+- **Riga di comando per il Kiri di Daodan.** `kiri-lite` non ha la riga di comando `docker` e `kiri run` la richiede: Daodan prende `kiri`, `kiri-init` e `docker` dal pacchetto completo della stessa release (`kiri-0.2.0-1.<arch>.rpm`, 47 MB), verificato con il checksum di `SHA256SUMS`, e li estrae con `lzma` e il formato cpio, senza zstd.
+- **Linux e macOS.** Il Kiri di Daodan solo su Windows, nella sua distribuzione WSL. Su Linux Kiri gira come root e cambia le tabelle nftables dell'host; su macOS serve l'applicazione con la VM. Senza un motore dell'utente l'operazione dichiara la lacuna.
+
+- [x] **Passo 1:** test scritti prima del codice e visti rossi, uno per garanzia: hash del progetto identici prima e dopo, nessun montaggio; nella copia entra solo il perimetro, fuori i file ignorati da Git e quelli proibiti; esecuzione con `--network none`, preparazione sulla rete interna con il proxy; limiti di memoria, processi e tempo passati, e un container scaduto rimosso; nessuna variabile dell'host nella riga di comando; un record per ogni esecuzione; senza motore la lacuna con causa e rimedio e nessuna esecuzione sull'host; un checksum sbagliato rifiutato; il motore dell'utente usato e la sua configurazione identica byte per byte; il proxy rifiuta un host fuori dai registri. Verificato il 14 novembre 2026: 13 test rossi su uno stub dell'interfaccia, poi verdi; dopo la prova reale un test in più, sotto 1 GB liberi sul disco della cartella condivisa la lacuna prima di ogni scaricamento.
+- [x] **Passo 2:** copia del perimetro, `create`, `cp -`, `start -a` con il tempo massimo, file dichiarati riportati fuori in una cartella esterna al progetto, `rm -f` in ogni caso, record in JSON Lines. Test: le prime sei garanzie del passo 1.
+- [x] **Passo 3:** preparazione con rete interna, proxy e `commit`; alla fine `rm -f` del proxy, `network rm` e `rmi -f` dell'immagine preparata. Test: rete e proxy della preparazione, allowlist del proxy. Verificato con la riga di comando finta e con il proxy sull'host; su un motore reale la preparazione non è provata.
+- [ ] **Passo 4:** ricerca del motore, scaricamento di Alpine e Kiri a versione fissata con checksum nella cartella condivisa, distribuzione WSL importata dalla cartella di Daodan con `/etc/wsl.conf` senza unità di Windows né interop; memoria libera sotto il limite del container, WSL 2 assente, cgroup v1 o scaricamento fallito danno la lacuna. Test: motore dell'utente, lacuna, checksum.
+  - Verificato il 14 novembre 2026: ricerca del motore, lacune, checksum rifiutato; su questo PC lo scaricamento del pacchetto completo con il checksum e l'estrazione di `kiri`, `kiri-init` e `docker` (52 MB). Non verificati: l'import della distribuzione con i tre file, fallito con `Wsl/Service/RegisterDistro/E_FAIL` perché sul disco C: restavano 80 MB (senza i file l'import riesce), e il demone di Daodan, che qui non può partire accanto al Kiri dell'utente.
+- [x] **Passo 5:** prova reale su questo PC, con `DAODAN_CONTAINER_SMOKE=1`, saltata sotto 4 GB liberi o senza motore: un progetto minimo, un solo container con il motore che l'operazione trova, una richiesta di rete e una scrittura nel progetto che falliscono, un file riportato fuori. `PATH`, configurazione e contesti di Docker e distribuzione WSL predefinita confrontati prima e dopo.
+  - Eseguita il 14 novembre 2026 sul Kiri dell'utente, trovato come `docker`: richiesta di rete rifiutata, scrittura finita nella copia, progetto identico, tre file riportati fuori, 7-11 s; impostazioni identiche. Resta nel Kiri dell'utente l'immagine `alpine@sha256:f59abe65…`, scaricata dalla prova. Con il Kiri di Daodan la prova resta da fare (passo 4).
+- [x] **Passo 6:** stato della spec e del piano: applicato solo ciò che i passi 1-5 verificano.
 
 ### Task 5: archi osservati nello store
 
