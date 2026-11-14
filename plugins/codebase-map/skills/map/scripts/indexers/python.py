@@ -1,12 +1,16 @@
 """scip-python for Python: how it runs, and what its index leaves to the reader.
 
-`index` runs scip-python (npm, without install scripts, on Daodan's Node) in a mirror of the project, with
-the project's declared packages in the engine pass's environment (`python_environment`: wheels only) described
-to it as an environment file, so it never asks pip. A `src` layout is not found unless Pyright is told: without
-it no absolute import of the project's own package resolves. The mirror gets a `pyrightconfig.json` with `src`
-as a root and an extra path when `src` holds a package and the project declares no Pyright configuration. No
-project code runs. The project's version is `_` in every run: it is part of each project symbol, so node ids
-stay the same from one snapshot to the next.
+`index` runs scip-python (npm, without install scripts, on Daodan's Node) in a mirror of the project, once per
+Python project it is given (`units`; the whole checkout when none is), its documents named from the root by
+that project's folder. A file outside every project has no document. The adapter finds no project itself. Run
+from the root, a Python project kept in a folder (`svc/app`, imported as `app`) would name its modules
+differently where they are defined and where they are imported. Each run has that project's declared packages
+in the engine pass's environment (`python_environment`: wheels only) described to it as an environment file,
+so it never asks pip. A `src` layout is not found unless Pyright is told: without it no absolute import of the
+project's own package resolves. The mirror gets a `pyrightconfig.json` with `src` as a root and an extra path
+when `src` holds a package and the project declares no Pyright configuration. No project code runs. The
+project's version is `_` in every run: it is part of each project symbol, so node ids stay the same from one
+snapshot to the next.
 
 Where scip-python cannot start (Windows: `RUNS_HERE`), it runs in a container (`container.run_in_container`,
 `IMAGE`) over the copy of the project, with no network: the copy carries Node for Linux, checked like the
@@ -44,22 +48,22 @@ from pathlib import Path
 import code_graph
 
 VERSION = "0.6.8"  # @sourcegraph/scip-python on npm
-MIN_FREE = 512 * 2**20  # 369 MB peak on python-semver (benchmarks/inference-audit, 13 November 2026)
-SRC_LAYOUT = {"executionEnvironments": [{"root": "src"}, {"root": ".", "extraPaths": ["src"]}]}
+MIN_FREE = 1920 * 2**20  # 1,852 MB peak on phazly, 350 MB on python-semver (benchmarks/inference-audit, 14 November 2026)
 # scip-python builds `new RegExp(path.sep, 'g')` when it loads (`PythonEnvironment.ts`): with Windows' `\` it
 # stops there, before reading anything (0.6.8, 14 November 2026).
 RUNS_HERE = os.sep == "/"
 IMAGE = "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90"  # 3.13.18
+SRC_LAYOUT = {"executionEnvironments": [{"root": "src"}, {"root": ".", "extraPaths": ["src"]}]}
 CONTAINER_MEMORY = 2 * 2**30
 OUT = "/daodan/out"
-# The container's script: $1 the project's name, $2 its version. The image's Python adds the host environment's
-# site-packages (`/daodan/env`), where Pyright asks it for its search paths.
+# The container's script: $1 the project's name, $2 its version, $3 its folder. The image's Python adds the host
+# environment's site-packages (`/daodan/env`), where Pyright asks it for its search paths.
 BOX = r'''set -u
 mkdir -p /daodan/node /daodan/out || exit 70
 tar -xzf /daodan/tools/node.tar.gz -C /daodan/node --strip-components=1 || exit 70
 site=$(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])') || exit 70
 echo "import site; site.addsitedir('/daodan/env')" > "$site/daodan-env.pth" || exit 70
-cd /work || exit 70
+cd "/work/$3" || exit 70
 if [ -f /daodan/tools/pyrightconfig.json ] && [ ! -e pyrightconfig.json ]; then
   cp /daodan/tools/pyrightconfig.json . || exit 70
 fi
@@ -257,10 +261,12 @@ def _packages(environment: Path | None) -> list[dict]:
     return out
 
 
-def _identity(project: Path) -> tuple[str, str]:
-    """The project's declared name (else its directory's) and its version, always `_` (see the module's
-    docstring; scip-python stops on an undefined one, `normalizeNameOrVersion`)."""
+def _identity(project: Path, given: str | None = None) -> tuple[str, str]:
+    """The project's name, `given` else declared else its directory's, and its version, always `_` (see the
+    module's docstring; scip-python stops on an undefined one, `normalizeNameOrVersion`)."""
     import tomllib
+    if given:
+        return given, "_"
     name = project.name
     if (project / "pyproject.toml").is_file():
         try:
@@ -296,27 +302,29 @@ def _prepared(project_dir: Path, environment: Path | None) -> Path | None:
         return None
 
 
-def _contract(runs: list[dict], environment: Path | None, packages: list[dict], config: dict | None,
-              project: tuple[str, str]) -> dict:
-    from indexers import runtime
+def _facts(environment: Path | None, packages: list[dict], config: dict | None, project: tuple[str, str]) -> dict:
+    """What one run read: its project's name and version, environment, declared requirements, packages and
+    Pyright configuration."""
     listed = Path(environment) / "daodan-requirements.txt" if environment else None
-    return {**runtime.outcome("scip-python", VERSION, runs), "environment": str(environment) if environment else None,
+    return {"project": list(project), "environment": str(environment) if environment else None,
             "requirements": listed.read_text(encoding="utf-8").splitlines() if listed and listed.is_file() else [],
-            "packages": {package["name"]: package["version"] for package in packages}, "pyrightconfig": config,
-            "project": list(project)}
+            "packages": {package["name"]: package["version"] for package in packages}, "pyrightconfig": config}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, environment: Path | None = None,
-          *, engine=None) -> dict:
-    """The scip-python index of the whole of `project_dir` (`files` is not needed: scip-python reads the
-    project), with `environment`, else the one `python_environment` builds; in a container where scip-python
-    cannot start, or with `engine`, a container engine; see the module's docstring."""
+          *, engine=None, units: list[dict] | None = None) -> dict:
+    """The scip-python index of each Python project of `units` (`root`: its folder from the checkout's root, ''
+    for the root; `name`, else the one its `pyproject.toml` declares, else its folder's), the whole checkout when
+    none is given (`files` is not needed: scip-python reads each project); with `environment`, else the one
+    `python_environment` builds for each; in a container where scip-python cannot start, or with `engine`, a
+    container engine; see the module's docstring. Each run holds its project's facts (`_facts`)."""
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
+    units = units or [{"root": ""}]
     if not RUNS_HERE or engine is not None:
-        return _contained(project_dir, work_dir, environment, engine)
+        return _contained(project_dir, work_dir, environment, engine, units)
     tool = runtime.Tool(project_dir, "scip-python", VERSION)
     try:
         runtime.memory("scip-python", MIN_FREE)
@@ -324,33 +332,53 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
         script = runtime.npm_package(project_dir, directory, "@sourcegraph/scip-python", VERSION)
     except runtime.Unavailable as error:
         return runtime.refused("scip-python", VERSION, error)
-    environment = _prepared(project_dir, environment)
-    packages = _packages(environment)
-    described = work_dir / "scip-python-environment.json"
-    described.write_text(json.dumps(packages), encoding="utf-8")
-    name, version = _identity(project_dir)
-    output = work_dir / "scip-python-0.scip"
     runtime.clear(work_dir, "scip-python")
-    paths = [Path(environment) / ("Scripts" if os.name == "nt" else "bin")] if environment else []
-    variables = {"VIRTUAL_ENV": str(environment)} if environment else {}
-    env = runtime.environment(*paths, directory, NODE_OPTIONS="--max-old-space-size=4096", **variables)
-    with runtime.mirrored(tool) as mirror:
-        config = _pyright_config(mirror, mirror / "pyrightconfig.json")
-        run = {"prefix": "", **code_graph.measured(
-            [str(directory / rx.executable_name("node")), str(script), "index", ".", "--project-name", name,
-             "--project-version", version, "--output", str(output), "--environment", str(described)],
-            str(mirror), env, 3000)}
-    run["index"] = str(output) if output.is_file() and run["returncode"] == 0 else None
-    run["index_bytes"] = output.stat().st_size if output.is_file() else 0
-    return _contract([run], environment, packages, config, (name, version))
+    runs = []
+    with runtime.mirrored(tool, runtime.real([unit["root"] for unit in units], work_dir)) as mirror:
+        for number, unit in enumerate(units):
+            prefix = unit["root"]
+            here, cwd = project_dir / prefix, mirror / prefix
+            used = _prepared(here, environment)
+            packages = _packages(used)
+            described = work_dir / f"scip-python-environment-{number}.json"
+            described.write_text(json.dumps(packages), encoding="utf-8")
+            name, version = _identity(here, unit.get("name"))
+            output = work_dir / f"scip-python-{number}.scip"
+            # Read from the project: the mirror only links its folders, and a walk does not enter a link.
+            config = _pyright_config(here, cwd / "pyrightconfig.json")
+            paths = [Path(used) / ("Scripts" if os.name == "nt" else "bin")] if used else []
+            variables = {"VIRTUAL_ENV": str(used)} if used else {}
+            env = runtime.environment(*paths, directory, NODE_OPTIONS="--max-old-space-size=4096", **variables)
+            run = {"prefix": prefix, **code_graph.measured(
+                [str(directory / rx.executable_name("node")), str(script), "index", ".", "--project-name", name,
+                 "--project-version", version, "--output", str(output), "--environment", str(described)],
+                str(cwd), env, 3000)}
+            run["index"] = str(output) if output.is_file() and run["returncode"] == 0 else None
+            run["index_bytes"] = output.stat().st_size if output.is_file() else 0
+            runs.append({**run, **_facts(used, packages, config, (name, version))})
+    return runtime.outcome("scip-python", VERSION, runs)
 
 
-def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engine) -> dict:
-    """scip-python in a container over the copy of the project (`IMAGE`, `BOX`), with what the copy carries
-    prepared on the host only once an engine answers."""
+def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engine, units: list[dict]) -> dict:
+    """scip-python in a container over the copy of the project, a run per Python project (`_boxed`)."""
+    from indexers import runtime
+    runtime.clear(work_dir, "scip-python")
+    try:
+        runs = [_boxed(project_dir, unit, number, work_dir, environment, engine)
+                for number, unit in enumerate(units)]
+    except runtime.Unavailable as error:
+        return runtime.refused("scip-python", VERSION, error)
+    return runtime.outcome("scip-python", VERSION, runs)
+
+
+def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environment: Path | None, engine) -> dict:
+    """One project's run in a container (`IMAGE`, `BOX`), with what the copy carries prepared on the host only
+    once an engine answers; Unavailable when none answers."""
     import container
     from indexers import runtime
-    name, version = _identity(project_dir)
+    prefix = unit["root"]
+    here = project_dir / prefix
+    name, version = _identity(here, unit.get("name"))
     held: dict = {"environment": None, "packages": [], "config": None}
 
     def inputs() -> dict[str, Path]:
@@ -360,18 +388,19 @@ def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engi
             archive = runtime.node_archive(project_dir, f"linux-{container.architecture()}")
         except runtime.Unavailable as error:
             raise container.Gap(error.reason, error.install) from error
-        held["environment"] = _prepared(project_dir, environment)
+        held["environment"] = _prepared(here, environment)
         held["packages"] = _packages(held["environment"])
-        described = work_dir / "scip-python-environment.json"
+        described = work_dir / f"scip-python-environment-{number}.json"
         described.write_text(json.dumps(held["packages"]), encoding="utf-8")
         home = runtime.Tool(project_dir, "scip-python", VERSION).home()
         located = work_dir / "scip-python.path"
         located.write_text(f"/daodan/scip-python/{script.relative_to(home).as_posix()}", encoding="utf-8")
         carried = {"/daodan/tools/node.tar.gz": archive, "/daodan/tools/environment.json": described,
                    "/daodan/tools/scip-python.path": located}
-        held["config"] = _pyright_config(project_dir, work_dir / "pyrightconfig.json")
+        configured = work_dir / f"pyrightconfig-{number}.json"
+        held["config"] = _pyright_config(here, configured)
         if held["config"]:
-            carried["/daodan/tools/pyrightconfig.json"] = work_dir / "pyrightconfig.json"
+            carried["/daodan/tools/pyrightconfig.json"] = configured
         for path in (home / "node_modules").rglob("*"):
             if path.is_file():
                 carried[f"/daodan/scip-python/{path.relative_to(home).as_posix()}"] = path
@@ -381,16 +410,16 @@ def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engi
                     carried[f"/daodan/env/{path.relative_to(site).as_posix()}"] = path
         return carried
 
-    out = work_dir / "container"
+    out = work_dir / f"container-{number}"
     shutil.rmtree(out, ignore_errors=True)
-    command = ["bash", "-c", BOX, "scip-python", name, version]
+    command = ["bash", "-c", BOX, "scip-python", name, version, prefix]
     result = container.run_in_container(project_dir, command, image=IMAGE, out_dir=out, outputs=[OUT],
                                         env={"HOME": "/root"}, timeout=3000, memory=CONTAINER_MEMORY, engine=engine,
                                         inputs=inputs)
     if result["state"] == "gap":
         cause = (f"scip-python {VERSION} does not start on Windows (it builds a regular expression from the path "
                  f"separator `\\`), so it runs in a container: {result['cause']}")
-        return runtime.refused("scip-python", VERSION, runtime.Unavailable(cause, result["remedy"]))
+        raise runtime.Unavailable(cause, result["remedy"])
     log = out / "execute.log"
     text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
     record = out / container.RECORD_NAME
@@ -398,16 +427,15 @@ def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engi
             if line.strip()] if record.is_file() else []
     peak = re.findall(r"DAODAN_PEAK (\d+)", text)
     errors = [line[line.find(" ERROR ") + 7:][:200] for line in text.splitlines() if " ERROR " in line]
-    runtime.clear(work_dir, "scip-python")
-    output = work_dir / "scip-python-0.scip"
+    output = work_dir / f"scip-python-{number}.scip"
     if (out / "out/index.scip").is_file():
         os.replace(out / "out/index.scip", output)
     done = result["state"] == "done" and result.get("exit_code") == 0 and output.is_file()
-    run = {"prefix": "", "command": command[:2] + ["BOX", *command[3:]], "returncode": result.get("exit_code"),
+    run = {"prefix": prefix, "command": command[:2] + ["BOX", *command[3:]], "returncode": result.get("exit_code"),
            "seconds": rows[-1].get("duration_seconds", 0) if rows else 0,
            "peak_mb": round(int(peak[-1]) / 2**20) if peak else None, "stdout_tail": "",
            "stderr_tail": "\n".join(part for part in (result.get("cause"), text[-2500:]) if part),
            "stderr_errors": len(errors), "stderr_error_examples": list(dict.fromkeys(errors))[:5],
            "image": IMAGE, "index": str(output) if done else None,
            "index_bytes": output.stat().st_size if output.is_file() else 0}
-    return _contract([run], held["environment"], held["packages"], held["config"], (name, version))
+    return {**run, **_facts(held["environment"], held["packages"], held["config"], (name, version))}

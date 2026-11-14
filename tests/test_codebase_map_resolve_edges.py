@@ -2419,6 +2419,38 @@ class IndexerStageTests(unittest.TestCase):
             "reason": "the build runs only in a container: no container engine answers: neither docker nor podman",
             "install": "start Docker or Podman"})
 
+    def python_contract(self, **outcome) -> dict:
+        indexer = {"name": "scip-python", "version": "0.6.8", "seconds": 1.0, "peak_mb": None}
+        return self.contract("python", indexer, **outcome)
+
+    def test_python_without_a_container_engine_where_scip_python_cannot_start_is_unavailable_until_one_answers(self):
+        import container
+        from indexers import python, runtime
+        _project, manifest = self.project("python")
+        real_index = python.index
+
+        def no_engine(*_args, **_kwargs):
+            raise container.Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
+
+        node = mock.Mock(side_effect=AssertionError("nothing is downloaded without an engine"))
+        result, started, _indexed = self.run_stage(
+            "scip-python", manifest, real_index, here=(python, "RUNS_HERE", False),
+            engine=(container, "find_engine", no_engine), memory=(container, "free_memory", lambda: 64 * 2**30),
+            node=(runtime, "node", node))
+        self.assertEqual(len(started), 1)
+        node.assert_not_called()
+        entry = result["languages"]["python"]
+        self.assertEqual((entry["state"], entry["engine"], entry["install"]),
+                         ("unavailable", "scip-python", "start Docker or Podman"))
+        self.assertIn("path separator", entry["reason"])
+        self.assertIn("no container engine answers", entry["reason"])
+        self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["python"]["state"], "unavailable")
+        # The next pass asks again; with an engine that answers, the language is fresh.
+        result, started, _indexed = self.run_stage(
+            "scip-python", manifest, lambda project_dir, work_dir, files=None: self.python_contract())
+        self.assertEqual(len(started), 1)
+        self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "scip-python@0.6.8"})
+
     def test_memory_under_min_free_starts_no_stage(self):
         from indexers import go
         _project, manifest = self.project("go")

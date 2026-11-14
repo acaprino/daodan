@@ -1817,3 +1817,28 @@ Risultati, con il codice del plugin verificato per hash. Costo: 0,10 USD.
 - Indicizzatore: scip-go 10,1 s e 318 MB; rust-analyzer 9,7 s e 1.172 MB; scip-typescript 59,1 s e 2.116 MB.
 - Lo stage intero su una macchina nuova dura 54 s, 27 s e 885 s. Per tududi quasi tutto il tempo è installazione al primo uso: Node, scip-typescript e i pacchetti npm del progetto.
 - Il test del passaggio TypeScript attraverso MCP (`tests/test_codebase_map_mcp_wire.py`, con l'SDK MCP vero, su Modal) dà la voce `fresh` con `scip-typescript@0.5.2`. «Risolte su risolvibili» dà però 0 su 1: quel numero legge campi che solo il passo per posizione scrive, ed esce dal prodotto con il task 6.
+
+## 14 novembre 2026, Python dall'indice nello stage, senza cambio di fonte
+
+`modal_stage.py --entries scip-python` fa girare lo stage vero del prodotto con Python letto da scip-python, solo in quel container (`_serving`). Nel prodotto Python resta su Jedi finché la pre-mappa non dà le sue unità (task 12 del piano). Il driver dà a scip-python i progetti Python (`UNITS`), come farà la pre-mappa: l'adattatore non ne cerca.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, sulla copia con i link come file normali e sullo snapshot che `lang_python.py` tiene in `graph-python/semver-plugin` (`snapshot.py write` si ferma su un file linkato); phazly `46c92b28`, dall'archivio, con snapshot e passo per posizione in `scip-inputs/phazly` |
+| unità | python-semver la radice; phazly `functions-python`, come il risultato salvato; un'esecuzione di scip-python per unità, con prefisso, nome, ambiente e configurazione di Pyright suoi |
+| macchina | Modal, 4 CPU e 12 GB, solo il sistema di base |
+| soglia | conteggi uguali a `results/graph-python-semver-plugin-checks.json` e `results/scip-phazly-final.json`; celle del confronto con il passo uguali; store dello stage uguale riga per riga a quello del benchmark; ogni «solo passo per posizione» con una riga nello store; verifica a mano pari |
+| risultati | `results/scip-python-semver-stage.json`, `results/scip-phazly-stage.json` (phazly senza i log dell'indicizzatore) |
+
+Risultati, codice del plugin verificato per hash (`indexers/python.py` `3d8472aeb568`, `code_graph.py` `40bd846bcab4`):
+- python-semver: 1.289 nodi e 3.679 archi, 64 buchi, 35 file su 35, come il salvato. Il controllo a mano dei 20 siti è identico. Lo store dello stage è identico a quello del benchmark, riga per riga. Il report differisce solo nei salti `initializer` (28): il risultato salvato viene da un `indexers/python.py` precedente alle due regole del 14 novembre (`f201bd46a865`), e 11 archi passano da un valore a una funzione del progetto.
+- phazly: 35.662 nodi e 147.150 archi, 333 file su 336, come `scip-phazly-final.json`. Le celle del confronto con il passo sono identiche: stesso bersaglio 10.234, bersaglio diverso 1, solo passo 94, solo grafo 321. Verifica a mano 15 su 15. Lo store dello stage è identico a quello del benchmark, riga per riga.
+- Le 94 «solo passo» nello store dello stage: 56 buchi `no-occurrence`, 8 buchi `no-document` (gli script di `react-app/scripts`, fuori da ogni unità), 1 buco `undefined-project-symbol`, 29 archi che finiscono su un valore del progetto (`project-value`: spacchettamento di tupla, fixture pytest, attributo dal costruttore, nome preso da un indice). Nessuna resta senza riga.
+- Ambiente: 47 requisiti dichiarati, 116 pacchetti installati da Daodan (solo wheel) contro i 127 del benchmark, che installava anche da sorgenti. Mancano `aiohttp` e le sue dipendenze, `cbor2`, `grpclib`, `pip`; nessun esterno del grafo cambia.
+- Indicizzatore: python-semver 9,4 s e 347 MB; phazly 91,0 s e 1.815 MB (il 13 novembre 72,4 s e 1.850 MB). `MIN_FREE` di scip-python è 1.920 MB, dal picco di phazly. Lo stage intero: 41 s e 136 s.
+
+Cosa cambia negli id: la versione del progetto è `_` in ogni esecuzione, e il nome è quello dell'unità (`phazly-functions`, `semver`). Gli id del risultato salvato di python-semver contengono il commit (`semver b6e83e3e40d3`), quelli nuovi `semver _`: un confronto fra i due va fatto dopo aver sostituito la versione, come fa `against_confirm`.
+
+Una prova con una sola esecuzione dalla radice e un `executionEnvironments` di Pyright per ogni progetto non regge. Su phazly il modulo di `functions-python` ha un nome dove è definito e un altro dove è importato: `app.api.deps/__init__:` resta senza definizione, e circa 2.200 archi `unknown` passano da un valore a un vicolo cieco. Le chiamate cambiano in 222 siti, quasi tutti in `run_tests.py` e `test_bootstrap/`. Per questo ogni unità ha la sua esecuzione, come i moduli di Go.
+
+Costo fatturato da Modal: 0,192 USD. Nell'ora 19 UTC 0,162 (`daodan-stage-audit` 0,142, test MCP 0,015, confronto degli indici 0,006), con quattro giri di python-semver e phazly e la prova scartata; nell'ora 20 0,030 per il giro finale, con le unità date dal driver.

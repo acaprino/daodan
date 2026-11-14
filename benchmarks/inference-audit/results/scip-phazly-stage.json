@@ -1,0 +1,1509 @@
+{
+ "case": "phazly",
+ "commit": "46c92b28",
+ "code": {
+  "code_graph.py": "40bd846bcab4",
+  "indexers/__init__.py": "43bd620a8715",
+  "indexers/clang.py": "ccbd5105d911",
+  "indexers/clang_run.py": "414a8f7f9a6a",
+  "indexers/css.py": "09f84f846a6f",
+  "indexers/css_astro.py": "c8157d430209",
+  "indexers/css_less.py": "d74d9e3004ae",
+  "indexers/css_sass.py": "16adad4febc2",
+  "indexers/css_stylus.py": "a8d16d83fc4d",
+  "indexers/css_svelte.py": "10e35514b1c3",
+  "indexers/css_tailwind.py": "eef92242a8b4",
+  "indexers/css_typescript.py": "e10993ede13d",
+  "indexers/css_vue.py": "371de29e0479",
+  "indexers/go.py": "5ea1a3ef175a",
+  "indexers/java.py": "75b02d325c43",
+  "indexers/jvm.py": "760804e30fd4",
+  "indexers/kotlin.py": "015ecf6ac276",
+  "indexers/python.py": "3d8472aeb568",
+  "indexers/runtime.py": "f18cc0d06453",
+  "indexers/rust.py": "b06218df2682",
+  "indexers/typescript.py": "1d5c694e219d",
+  "adapters/clang.py": "9b9536b26f29",
+  "adapters/go_callgraph.py": "c9b877b12ede",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "1b791191f54f",
+  "adapters/kotlin.py": "09a12a6361f7",
+  "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+  "adapters/python_jedi.py": "9ff396b7438a",
+  "adapters/ts_compiler.py": "99c9e265cae2"
+ },
+ "stages": {
+  "scip-python": {
+   "seconds": 135.5,
+   "report": {
+    "available": true,
+    "engine": "scip-python@0.6.8",
+    "indexer": {
+     "name": "scip-python",
+     "version": "0.6.8",
+     "seconds": 91.0,
+     "peak_mb": 1815
+    },
+    "languages": {
+     "python": {
+      "state": "fresh"
+     }
+    },
+    "reason": null,
+    "install": null
+   }
+  }
+ },
+ "contracts": {
+  "scip-python": {
+   "runs": [
+    {
+     "prefix": "functions-python",
+     "command": [
+      "/root/.cache/daodan/engines/node/v22.23.4/node-v22.23.4-linux-x64/bin/node",
+      "/root/.cache/daodan/engines/scip-python/0.6.8/node_modules/@sourcegraph/scip-python/index.js",
+      "index",
+      ".",
+      "--project-name",
+      "phazly-functions",
+      "--project-version",
+      "_",
+      "--output",
+      "/tmp/daodan-scip-python-2kvi_2v_/scip-python-0.scip",
+      "--environment",
+      "/tmp/daodan-scip-python-2kvi_2v_/scip-python-environment-0.json"
+     ],
+     "returncode": 0,
+     "seconds": 91.0,
+     "peak_mb": 1815,
+     "stderr_errors": 0,
+     "stderr_error_examples": [],
+     "index": "/tmp/daodan-scip-python-2kvi_2v_/scip-python-0.scip",
+     "index_bytes": 15999686,
+     "project": [
+      "phazly-functions",
+      "_"
+     ],
+     "environment": "/root/.cache/daodan/python/00f0842905609fbd",
+     "requirements": [
+      "Pillow==13.0.0",
+      "bandit>=1.7.0",
+      "cachetools==5.5.2",
+      "cachetools>=5.5.0",
+      "fastapi==0.136.3",
+      "fastapi>=0.128.0",
+      "firebase-admin==7.1.0",
+      "firebase-admin>=7.1.0",
+      "firebase-functions>=0.5.0",
+      "google-cloud-secret-manager==2.26.0",
+      "google-cloud-secret-manager>=2.26.0",
+      "google-genai==2.3.0",
+      "google-genai>=1.0.0",
+      "httpx==0.28.1",
+      "httpx>=0.28.0",
+      "httpx>=0.28.1",
+      "huggingface-hub==1.32.0",
+      "jinja2==3.1.6",
+      "jinja2>=3.1.0",
+      "motor==3.7.0",
+      "mypy>=1.13.0",
+      "numpy>=2.0,<3",
+      "onnxruntime==1.30.0",
+      "ortools==9.12.4544",
+      "ortools>=9.12.0",
+      "prometheus-client==0.21.1",
+      "prometheus-client>=0.21.0",
+      "pydantic-settings==2.14.2",
+      "pydantic-settings>=2.12.0",
+      "pydantic==2.12.5",
+      "pydantic>=2.12.0",
+      "pymongo==4.18.3",
+      "pytest-asyncio>=0.24.0",
+      "pytest-cov>=6.0.0",
+      "pytest-mock>=3.14.0",
+      "pytest-timeout>=2.3.0",
+      "pytest>=8.3.0",
+      "resend==2.29.0",
+      "resend>=2.0.0",
+      "ruff>=0.8.0",
+      "starlette>=1.0.1",
+      "stripe==14.3.0",
+      "stripe>=14.3.0",
+      "tokenizers==0.23.2",
+      "types-requests>=2.32.0",
+      "uvicorn[standard]==0.40.0",
+      "uvicorn[standard]>=0.40.0"
+     ],
+     "packages": {
+      "absl-py": "2.5.1",
+      "annotated-doc": "0.0.6",
+      "annotated-types": "0.8.0",
+      "anyio": "4.16.0",
+      "ast_serialize": "0.13.1",
+      "bandit": "1.9.4",
+      "blinker": "1.9.0",
+      "CacheControl": "0.14.4",
+      "cachetools": "5.5.2",
+      "certifi": "2026.10.23",
+      "cffi": "2.1.1",
+      "charset-normalizer": "3.5.2",
+      "click": "8.5.1",
+      "cloudevents": "1.12.0",
+      "coverage": "7.17.3",
+      "cryptography": "50.0.2",
+      "deprecation": "2.1.0",
+      "distro": "1.9.0",
+      "dnspython": "2.9.2",
+      "fastapi": "0.136.3",
+      "filelock": "4.2.10",
+      "firebase_admin": "7.1.0",
+      "firebase_functions": "0.6.0",
+      "Flask": "3.1.3",
+      "flask-cors": "6.0.5",
+      "flatbuffers": "25.12.19",
+      "fsspec": "2026.9.0",
+      "functions-framework": "3.10.2",
+      "google-api-core": "2.33.0",
+      "google-auth": "2.62.2",
+      "google-cloud-core": "2.8.0",
+      "google-cloud-firestore": "2.27.0",
+      "google-cloud-secret-manager": "2.26.0",
+      "google-cloud-storage": "3.17.1",
+      "google-crc32c": "1.9.0",
+      "google-events": "0.5.0",
+      "google-genai": "2.3.0",
+      "google-resumable-media": "2.11.0",
+      "googleapis-common-protos": "1.75.0",
+      "grpc-google-iam-v1": "0.14.4",
+      "grpcio": "1.85.1",
+      "grpcio-status": "1.71.2",
+      "gunicorn": "27.0.1",
+      "h11": "0.16.0",
+      "h2": "4.4.1",
+      "hf-xet": "1.8.0",
+      "hpack": "4.2.0",
+      "httpcore": "1.0.9",
+      "httptools": "0.9.0",
+      "httpx": "0.28.1",
+      "huggingface_hub": "1.32.0",
+      "hyperframe": "6.1.0",
+      "idna": "3.20",
+      "immutabledict": "4.3.1",
+      "iniconfig": "2.3.1",
+      "itsdangerous": "2.2.0",
+      "Jinja2": "3.1.6",
+      "librt": "0.16.0",
+      "markdown-it-py": "4.3.0",
+      "MarkupSafe": "3.0.4",
+      "mdurl": "0.1.2",
+      "motor": "3.7.0",
+      "msgpack": "1.2.4",
+      "mypy": "2.4.1",
+      "mypy_extensions": "1.2.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.30.0",
+      "ortools": "9.12.4544",
+      "packaging": "26.3",
+      "pandas": "3.1.1",
+      "pathspec": "1.1.1",
+      "pillow": "13.0.0",
+      "pluggy": "1.7.0",
+      "prometheus_client": "0.21.1",
+      "proto-plus": "1.28.2",
+      "protobuf": "5.29.6",
+      "pyasn1": "0.6.5",
+      "pyasn1_modules": "0.4.2",
+      "pycparser": "3.12",
+      "pydantic": "2.12.5",
+      "pydantic_core": "2.41.5",
+      "pydantic-settings": "2.14.2",
+      "Pygments": "2.21.0",
+      "PyJWT": "2.15.1",
+      "pymongo": "4.18.3",
+      "pytest": "9.2.0",
+      "pytest-asyncio": "1.5.0",
+      "pytest-cov": "7.1.0",
+      "pytest-mock": "3.17.0",
+      "pytest-timeout": "2.4.0",
+      "python-dateutil": "4.0.0",
+      "python-dotenv": "1.2.4",
+      "PyYAML": "6.0.3",
+      "requests": "2.34.2",
+      "resend": "2.29.0",
+      "rich": "15.0.0",
+      "ruff": "0.17.5",
+      "sniffio": "1.3.1",
+      "starlette": "1.10.0",
+      "stevedore": "5.10.0",
+      "stripe": "14.3.0",
+      "tenacity": "9.1.4",
+      "tokenizers": "0.23.2",
+      "tqdm": "4.70.1",
+      "types-requests": "2.33.0.20261030",
+      "typing_extensions": "4.16.0",
+      "typing-inspection": "0.4.5",
+      "tzdata": "2026.6",
+      "urllib3": "2.8.0",
+      "uvicorn": "0.40.0",
+      "uvicorn-worker": "0.4.0",
+      "uvloop": "0.23.0",
+      "watchdog": "7.1.0",
+      "watchfiles": "1.3.0",
+      "websockets": "16.1.1",
+      "Werkzeug": "3.1.9"
+     },
+     "pyrightconfig": null
+    }
+   ],
+   "indexer": {
+    "name": "scip-python",
+    "version": "0.6.8",
+    "seconds": 91.0,
+    "peak_mb": 1815
+   }
+  }
+ },
+ "graphs": {
+  "python": {
+   "report": {
+    "language": "python",
+    "indexer": {
+     "name": "scip-python",
+     "version": "0.6.8",
+     "seconds": 91.0,
+     "peak_mb": 1815
+    },
+    "files": {
+     "snapshot": 336,
+     "indexed": 333,
+     "missing": [
+      {
+       "path": "react-app/scripts/generate-emoji-font.py",
+       "reason": "no document in the index"
+      },
+      {
+       "path": "react-app/scripts/store-art/finalize.py",
+       "reason": "no document in the index"
+      },
+      {
+       "path": "react-app/scripts/store-art/verify-gallery-png.py",
+       "reason": "no document in the index"
+      }
+     ],
+     "missing_count": 3
+    },
+    "nodes": 35662,
+    "edges": 147150,
+    "symbols_by_kind": {
+     "external class": 158,
+     "external function": 143,
+     "external method": 282,
+     "external other": 110,
+     "external parameter": 159,
+     "external property": 73,
+     "external variable": 55,
+     "project class": 667,
+     "project function": 2514,
+     "project method": 1173,
+     "project module": 334,
+     "project other": 333,
+     "project parameter": 7250,
+     "project property": 2541,
+     "project variable": 17827,
+     "undefined class": 26,
+     "undefined method": 10,
+     "undefined module": 136,
+     "undefined other": 54,
+     "undefined parameter": 21,
+     "undefined property": 4,
+     "undefined variable": 1792
+    },
+    "edges_by_end": {
+     "dead-end call": 408,
+     "dead-end read": 296,
+     "dead-end unknown": 2147,
+     "external call": 18260,
+     "external read": 16990,
+     "external unknown": 8497,
+     "project-callable call": 10747,
+     "project-callable read": 2939,
+     "project-callable unknown": 3298,
+     "project-value call": 100,
+     "project-value read": 49922,
+     "project-value unknown": 33546
+    },
+    "callable_chain_hops": {
+     "0": 16639,
+     "1": 337,
+     "2": 8
+    },
+    "hop_tags": {
+     "builtin": 2371,
+     "initializer": 1564,
+     "import-binding": 259,
+     "implementation": 201,
+     "rebinding": 26,
+     "classmethod-cls": 19
+    },
+    "edges_uncertain": {},
+    "edges_removed": {},
+    "holes_by_class": {
+     "dangling-local call": 255,
+     "dangling-local read": 53,
+     "no-document call": 202,
+     "no-document read": 326,
+     "no-occurrence call": 2584,
+     "no-occurrence read": 1814,
+     "no-position call": 6,
+     "undefined-project-symbol call": 153,
+     "undefined-project-symbol read": 243
+    },
+    "holes": [
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 1978,
+      "examples": [
+       "functions-python/app/api/deps.py:83 doc.get",
+       "functions-python/app/planner/solver.py:783 model.NewBoolVar",
+       "functions-python/tests/unit/test_billing_regressions.py:971 db.subscriptions.insert_one"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 1453,
+      "examples": [
+       "functions-python/app/api/deps.py:210 owner.custom_claims",
+       "functions-python/tests/unit/test_billing_regressions.py:1089 db.subscriptions.find_one",
+       "functions-python/tests/unit/test_planner_mutations.py:3866 parent.user_ref"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 335,
+      "examples": [
+       "functions-python/app/handlers/admin/analytics.py:141 (expr).to_list",
+       "functions-python/app/services/recipe_forge/campaign.py:428 (expr).find",
+       "functions-python/app/week_planner/insight_engine.py:994 (expr).get"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 271,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:103 dest",
+       "react-app/scripts/store-art/finalize.py:116 width",
+       "react-app/scripts/store-art/verify-gallery-png.py:26 width"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 268,
+      "examples": [
+       "functions-python/app/handlers/analyze_photo.py:368 vision_pre_fetch.text.text",
+       "functions-python/test_bootstrap/resource_limits.py:57 kernel.CreateIoCompletionPort",
+       "functions-python/tests/unit/test_planner_mutations.py:1976 parent.revision_id"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 267,
+      "examples": [
+       "functions-python/app/handlers/analyze_photo.py:493 response.get",
+       "functions-python/app/pipeline/element_routing.py:547 item.get",
+       "functions-python/test_bootstrap/resource_limits.py:90 kernel.CloseHandle"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "unbound-name",
+      "count": 144,
+      "examples": [
+       "functions-python/app/api/deps.py:51 __name__",
+       "functions-python/app/pipeline/brand_gate.py:39 __name__",
+       "functions-python/app/services/llm/parsing.py:14 __name__"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 141,
+      "examples": [
+       "functions-python/app/api/deps.py:227 task.add_done_callback",
+       "functions-python/tests/unit/test_billing_regressions.py:910 entered.wait",
+       "functions-python/tests/unit/test_meal_image_regressions.py:1209 loop.call_soon_threadsafe"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "call",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 125,
+      "examples": [
+       "functions-python/app/handlers/admin/meal_images.py:143 httpx.AsyncClient",
+       "functions-python/tests/unit/test_billing_regressions.py:743 asyncio.Event",
+       "functions-python/tests/unit/test_billing_regressions.py:3230 httpx.ASGITransport"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 92,
+      "examples": [
+       "functions-python/tests/unit/test_account_deletion_regressions.py:41 pytest.mark.asyncio",
+       "functions-python/tests/unit/test_billing_regressions.py:1531 pytest.mark.asyncio",
+       "functions-python/tests/unit/test_meal_image_regressions.py:420 pytest.mark.asyncio"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 87,
+      "examples": [
+       "functions-python/app/handlers/analyze_photo.py:360 asyncio.CancelledError",
+       "functions-python/app/services/llm/client.py:57 genai_types",
+       "functions-python/app/services/recipe_loader.py:729 asyncio.CancelledError"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 59,
+      "examples": [
+       "functions-python/app/handlers/process_meal_images.py:767 _worker_task.done",
+       "functions-python/app/services/recipe_loader.py:728 _warmer_task.cancel",
+       "functions-python/tests/unit/test_billing_regressions.py:3133 first_task.done"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unbound-name",
+      "count": 57,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:22 print",
+       "react-app/scripts/store-art/finalize.py:67 int",
+       "react-app/scripts/store-art/verify-gallery-png.py:25 round"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 55,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:102 dest.exists",
+       "react-app/scripts/store-art/finalize.py:88 render.convert",
+       "react-app/scripts/store-art/finalize.py:135 diff.crop"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 41,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:23 sys.exit",
+       "react-app/scripts/store-art/finalize.py:115 ImageChops.difference",
+       "react-app/scripts/store-art/verify-gallery-png.py:31 np.abs"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 40,
+      "examples": [
+       "functions-python/app/api/deps.py:225 (expr).create_task",
+       "functions-python/tests/generation_matrix.py:318 (expr).fetchone",
+       "functions-python/tests/unit/test_planner_execution.py:151 (expr).wait"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 34,
+      "examples": [
+       "functions-python/test_bootstrap/resource_limits.py:45 wintypes.LPCWSTR",
+       "functions-python/test_bootstrap/resource_limits.py:55 wintypes.HANDLE",
+       "functions-python/tests/unit/test_planner_application.py:1045 application"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 28,
+      "examples": [
+       "react-app/scripts/store-art/finalize.py:56 (expr).max",
+       "react-app/scripts/store-art/finalize.py:128 (expr).reshape",
+       "react-app/scripts/store-art/verify-gallery-png.py:36 (expr).mean"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 27,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:143 script_dir.parent",
+       "react-app/scripts/store-art/finalize.py:87 render.size",
+       "react-app/scripts/store-art/finalize.py:112 source.height"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 24,
+      "examples": [
+       "functions-python/app/handlers/admin/meal_images.py:144 client.get",
+       "functions-python/tests/unit/test_billing_regressions.py:2644 client.post",
+       "functions-python/tests/unit/test_billing_regressions.py:3064 client.post"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 16,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:100 Path",
+       "react-app/scripts/store-art/finalize.py:113 Image.Resampling.LANCZOS",
+       "react-app/scripts/store-art/verify-gallery-png.py:31 np.float32"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 14,
+      "examples": [
+       "functions-python/app/handlers/admin/llm_models.py:381 parsed.username",
+       "functions-python/app/schemas/stripe.py:15 parsed.scheme",
+       "functions-python/app/services/meal_images.py:514 parts.netloc"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 13,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:107 urllib.request.urlretrieve",
+       "react-app/scripts/store-art/finalize.py:101 failures.append",
+       "react-app/scripts/store-art/finalize.py:144 failures.append"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 12,
+      "examples": [
+       "functions-python/app/services/food_embeddings.py:65 ort.SessionOptions",
+       "functions-python/benchmarks/benchmark_cold_start_isolated.py:132 sys.exit",
+       "functions-python/test_bootstrap/resource_limits.py:107 wintypes.DWORD"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 8,
+      "examples": [
+       "functions-python/app/handlers/create_checkout_session.py:74 customer.id",
+       "functions-python/app/handlers/create_checkout_session.py:106 customer.id",
+       "functions-python/app/handlers/create_checkout_session.py:136 customer.id"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unique-lexical-binding",
+      "count": 8,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:152 download_font",
+       "react-app/scripts/generate-emoji-font.py:167 main",
+       "react-app/scripts/store-art/finalize.py:135 mean_rgb"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "unbound-name",
+      "count": 7,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:21 ImportError",
+       "react-app/scripts/generate-emoji-font.py:110 list",
+       "react-app/scripts/generate-emoji-font.py:142 __file__"
+      ]
+     },
+     {
+      "class": "no-position",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 6,
+      "examples": [
+       "functions-python/app/handlers/admin/llm_models.py:332 ",
+       "functions-python/app/planner/mutations.py:2517 ",
+       "functions-python/tests/unit/test_planner_mutations.py:1150 "
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 5,
+      "examples": [
+       "functions-python/test_bootstrap/resource_limits.py:26 wintypes.DWORD",
+       "functions-python/test_bootstrap/resource_limits.py:27 wintypes.DWORD",
+       "functions-python/test_bootstrap/resource_limits.py:29 wintypes.DWORD"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 5,
+      "examples": [
+       "react-app/scripts/generate-emoji-font.py:119 options",
+       "react-app/scripts/generate-emoji-font.py:120 options",
+       "react-app/scripts/store-art/finalize.py:152 failures"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "call",
+      "reason": "import-target-missing-or-ambiguous",
+      "count": 4,
+      "examples": [
+       "functions-python/tests/integration/test_generation_matrix.py:24 pytest.mark.timeout",
+       "functions-python/tests/unit/test_generated_draft_wire_contract.py:52 pytest.mark.timeout",
+       "functions-python/tests/unit/test_planner_mutations.py:123 pytest.mark.timeout"
+      ]
+     },
+     {
+      "class": "dangling-local",
+      "kind": "call",
+      "reason": "unbound-name",
+      "count": 3,
+      "examples": [
+       "functions-python/app/services/subscription_invalidation.py:103 __import__",
+       "functions-python/benchmarks/benchmark_cold_start.py:72 __import__",
+       "functions-python/benchmarks/benchmark_cold_start.py:81 __import__"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 2,
+      "examples": [
+       "functions-python/app/handlers/create_customer_portal_session.py:58 customer.deleted",
+       "functions-python/app/handlers/stripe_webhook.py:723 session.client_reference_id"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 2,
+      "examples": [
+       "functions-python/app/services/email_service.py:87 resend.Emails.send",
+       "functions-python/app/services/open_food_facts.py:51 _off_client.aclose"
+      ]
+     },
+     {
+      "class": "no-occurrence",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 1,
+      "examples": [
+       "functions-python/app/planner/assembly.py:851 breakfast_experiences_per_flavor"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 1,
+      "examples": [
+       "functions-python/app/planner/persistence.py:781 asyncio.Event"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 1,
+      "examples": [
+       "functions-python/app/services/llm/providers/openai_compat.py:77 (expr).copy_with"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "call",
+      "reason": "non-callable-binding",
+      "count": 1,
+      "examples": [
+       "functions-python/tests/unit/test_billing_regressions.py:2565 real_client_type"
+      ]
+     },
+     {
+      "class": "undefined-project-symbol",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 1,
+      "examples": [
+       "functions-python/tests/unit/test_planner_execution.py:231 semaphore"
+      ]
+     }
+    ],
+    "external_packages": {
+     "python python-stdlib@3.11": 37370,
+     "python pydantic@2.12.5": 2179,
+     "python pytest@9.2.0": 1543,
+     "python fastapi@0.136.3": 783,
+     "python ortools@9.12.4544": 345,
+     "python motor@3.7.0": 272,
+     "python starlette@1.10.0": 232,
+     "python firebase_admin@7.1.0": 231,
+     "python pymongo@4.18.3": 225,
+     "python httpx@0.28.1": 175,
+     "python stripe@14.3.0": 96,
+     "python google-api-core@2.33.0": 64,
+     "python google-cloud-storage@3.17.1": 47,
+     "python cachetools@5.5.2": 42,
+     "python numpy@2.5.4": 32,
+     "python pillow@13.0.0": 25,
+     "python google-auth@2.62.2": 20,
+     "python Jinja2@3.1.6": 13,
+     "python prometheus_client@0.21.1": 11,
+     "python tokenizers@0.23.2": 10
+    }
+   },
+   "folders": {
+    "functions-python": {
+     "edges": 147150,
+     "holes": 5108,
+     "edges_by_end": {
+      "dead-end call": 408,
+      "dead-end read": 296,
+      "dead-end unknown": 2147,
+      "external call": 18260,
+      "external read": 16990,
+      "external unknown": 8497,
+      "project-callable call": 10747,
+      "project-callable read": 2939,
+      "project-callable unknown": 3298,
+      "project-value call": 100,
+      "project-value read": 49922,
+      "project-value unknown": 33546
+     },
+     "holes_by_class": {
+      "dangling-local call": 255,
+      "dangling-local read": 53,
+      "no-occurrence call": 2584,
+      "no-occurrence read": 1814,
+      "no-position call": 6,
+      "undefined-project-symbol call": 153,
+      "undefined-project-symbol read": 243
+     }
+    },
+    "react-app": {
+     "edges": 0,
+     "holes": 528,
+     "edges_by_end": {},
+     "holes_by_class": {
+      "no-document call": 202,
+      "no-document read": 326
+     }
+    }
+   },
+   "road_a": {
+    "a": {
+     "external": 11239,
+     "project-declaration": 10329,
+     "not-asked": 7501,
+     "none": 2866,
+     "project-other": 181
+    },
+    "a target source": {
+     "engine": 10329
+    },
+    "b call": {
+     "external": 18260,
+     "project-declaration": 10556,
+     "no-occurrence": 2584,
+     "dangling-local": 255,
+     "no-document": 202,
+     "undefined-project-symbol": 153,
+     "project-value variable": 50,
+     "project-value parameter": 45,
+     "no-position": 6,
+     "project-value property": 5
+    },
+    "b read": {
+     "project-value variable": 32342,
+     "external": 16990,
+     "project-value parameter": 9244,
+     "project-value property": 8098,
+     "project-declaration": 2929,
+     "no-occurrence": 1814,
+     "no-document": 326,
+     "undefined-project-symbol": 243,
+     "project-value other": 186,
+     "dangling-local": 53,
+     "project-value module": 52
+    },
+    "cells": {
+     "same project target": 10234,
+     "both external": 9770,
+     "mixed: A not-asked, B external": 7434,
+     "mixed: A none, B no-occurrence": 1635,
+     "mixed: A none, B external": 1056,
+     "mixed: A external, B no-occurrence": 855,
+     "only B has a project target": 321,
+     "mixed: A external, B dangling-local": 249,
+     "mixed: A external, B undefined-project-symbol": 152,
+     "only A has a project target": 94,
+     "mixed: A none, B no-document": 75,
+     "mixed: A external, B no-document": 62,
+     "mixed: A not-asked, B no-document": 57,
+     "mixed: A external, B project-value": 37,
+     "mixed: A project-other, B no-occurrence": 37,
+     "mixed: A none, B project-value": 23,
+     "mixed: A project-other, B project-value": 11,
+     "mixed: A not-asked, B no-position": 6,
+     "mixed: A none, B dangling-local": 3,
+     "mixed: A not-asked, B dangling-local": 3,
+     "different project target": 1,
+     "mixed: A not-asked, B no-occurrence": 1
+    },
+    "external packages call": {
+     "python python-stdlib@3.11": 16079,
+     "python pydantic@2.12.5": 717,
+     "python fastapi@0.136.3": 454,
+     "python pytest@9.2.0": 449,
+     "python motor@3.7.0": 216,
+     "python ortools@9.12.4544": 113,
+     "python firebase_admin@7.1.0": 39,
+     "python pymongo@4.18.3": 33,
+     "python starlette@1.10.0": 31,
+     "python httpx@0.28.1": 28,
+     "python google-cloud-storage@3.17.1": 19,
+     "python cachetools@5.5.2": 15,
+     "python numpy@2.5.4": 14,
+     "python stripe@14.3.0": 12,
+     "python pillow@13.0.0": 9,
+     "python google-api-core@2.33.0": 6,
+     "python Jinja2@3.1.6": 5,
+     "python tokenizers@0.23.2": 5,
+     "python prometheus_client@0.21.1": 5,
+     "python google-auth@2.62.2": 4,
+     "python pydantic_core@2.41.5": 3,
+     "python python-dotenv@1.2.4": 2,
+     "python pydantic-settings@2.14.2": 1,
+     "python huggingface_hub@1.32.0": 1
+    },
+    "external packages read": {
+     "python python-stdlib@3.11": 16245,
+     "python pydantic@2.12.5": 189,
+     "python starlette@1.10.0": 122,
+     "python pymongo@4.18.3": 76,
+     "python ortools@9.12.4544": 75,
+     "python firebase_admin@7.1.0": 56,
+     "python httpx@0.28.1": 56,
+     "python pytest@9.2.0": 36,
+     "python fastapi@0.136.3": 34,
+     "python stripe@14.3.0": 30,
+     "python google-api-core@2.33.0": 24,
+     "python cachetools@5.5.2": 13,
+     "python google-cloud-storage@3.17.1": 9,
+     "python numpy@2.5.4": 7,
+     "python motor@3.7.0": 7,
+     "python pillow@13.0.0": 4,
+     "python google-auth@2.62.2": 3,
+     "python pydantic-settings@2.14.2": 1,
+     "python resend@2.29.0": 1,
+     "python prometheus_client@0.21.1": 1,
+     "python pytest-asyncio@1.5.0": 1
+    },
+    "hop kinds call": {
+     "direct": 10513,
+     "initializer": 24,
+     "rebinding": 12,
+     "classmethod-cls": 7
+    },
+    "hop kinds read": {
+     "direct": 2877,
+     "initializer": 51,
+     "classmethod-cls": 1
+    },
+    "hops call": {
+     "0": 10513,
+     "1": 43
+    },
+    "hops read": {
+     "0": 2877,
+     "1": 52
+    },
+    "implementations": {
+     "call implementations listed": 191,
+     "call with implementations": 130,
+     "read implementations listed": 7,
+     "read with implementations": 4
+    },
+    "matrix": {
+     "A project-declaration | B project-declaration (direct or alias)": 10235,
+     "A external | B external": 9770,
+     "A not-asked | B external": 7434,
+     "A none | B no-occurrence": 1635,
+     "A none | B external": 1056,
+     "A external | B no-occurrence": 855,
+     "A external | B dangling-local": 249,
+     "A external | B undefined-project-symbol": 152,
+     "A project-other | B project-declaration (direct or alias)": 133,
+     "A external | B project-declaration (direct or alias)": 114,
+     "A none | B no-document": 75,
+     "A none | B project-declaration (direct or alias)": 74,
+     "A external | B no-document": 62,
+     "A not-asked | B no-document": 57,
+     "A project-declaration | B no-occurrence": 56,
+     "A external | B project-value": 37,
+     "A project-other | B no-occurrence": 37,
+     "A project-declaration | B project-value": 29,
+     "A none | B project-value": 23,
+     "A project-other | B project-value": 11,
+     "A project-declaration | B no-document": 8,
+     "A not-asked | B no-position": 6,
+     "A none | B dangling-local": 3,
+     "A not-asked | B dangling-local": 3,
+     "A not-asked | B no-occurrence": 1,
+     "A project-declaration | B undefined-project-symbol": 1
+    },
+    "only A by B": {
+     "no-occurrence no-occurrence": 56,
+     "project-value variable": 15,
+     "project-value parameter": 14,
+     "no-document no-document": 8,
+     "undefined-project-symbol undefined-project-symbol": 1
+    },
+    "reads vs lexical": {
+     "neither": 69348,
+     "only B": 1529,
+     "same": 1400
+    },
+    "examples": {
+     "chain classmethod-cls": [
+      "functions-python/app/models/subscription.py:160 cls: classmethod-cls -> functions-python/app/models/subscription.py::class@73:0",
+      "functions-python/app/planner/assembly.py:329 cls: classmethod-cls -> functions-python/app/planner/assembly.py::class@310:0",
+      "functions-python/app/planner/nutrition.py:243 cls: classmethod-cls -> functions-python/app/planner/nutrition.py::class@184:0",
+      "functions-python/app/planner/nutrition.py:258 cls: classmethod-cls -> functions-python/app/planner/nutrition.py::class@184:0",
+      "functions-python/app/planner/nutrition.py:344 cls: classmethod-cls -> functions-python/app/planner/nutrition.py::class@270:0",
+      "functions-python/app/planner/nutrition.py:407 cls: classmethod-cls -> functions-python/app/planner/nutrition.py::class@360:0",
+      "functions-python/tests/integration/test_generation_matrix.py:54 cls: classmethod-cls -> functions-python/tests/integration/test_generation_matrix.py::class@51:4"
+     ],
+     "chain initializer": [
+      "functions-python/tests/unit/test_diary_days.py:219 real_update: initializer -> functions-python/tests/unit/test_planner_revision_repository.py::function@1279:4",
+      "functions-python/tests/unit/test_meal_image_regressions.py:964 original_delete: initializer -> functions-python/tests/unit/test_meal_image_regressions.py::function@68:4",
+      "functions-python/tests/unit/test_planner_compose.py:157 prepare: initializer -> functions-python/app/planner/context.py::function@936:0",
+      "functions-python/tests/unit/test_planner_compose.py:182 real: initializer -> functions-python/app/planner/application.py::function@843:0",
+      "functions-python/tests/unit/test_planner_context.py:581 make: initializer -> functions-python/app/planner/context.py::function@476:4",
+      "functions-python/tests/unit/test_planner_context.py:977 validate: initializer -> functions-python/app/planner/context.py::function@390:0",
+      "functions-python/tests/unit/test_planner_context.py:987 validate: initializer -> functions-python/app/planner/context.py::function@390:0",
+      "functions-python/tests/unit/test_planner_context.py:993 validate: initializer -> functions-python/app/planner/context.py::function@390:0",
+      "functions-python/tests/unit/test_planner_context.py:999 validate: initializer -> functions-python/app/planner/context.py::function@390:0",
+      "functions-python/tests/unit/test_planner_mutations.py:1640 original: initializer -> functions-python/app/week_planner/insight_engine.py::function@1011:0",
+      "functions-python/tests/unit/test_planner_revision_repository.py:1795 real: initializer -> functions-python/app/planner/nutrition.py::function@498:0",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2396 CreateAndActivatePlanRequest: initializer -> functions-python/app/handlers/meal_plan_data.py::class@105:0",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2463 CreateAndActivatePlanRequest: initializer -> functions-python/app/handlers/meal_plan_data.py::class@105:0",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2604 real_index: initializer -> functions-python/app/planner/persistence.py::function@1335:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2650 real_state: initializer -> functions-python/app/planner/persistence.py::function@1269:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2839 find_one: initializer -> functions-python/tests/unit/test_planner_revision_repository.py::function@1232:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2876 find_one: initializer -> functions-python/tests/unit/test_planner_revision_repository.py::function@1232:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2944 start_session: initializer -> functions-python/tests/unit/test_planner_revision_repository.py::function@1156:4",
+      "functions-python/tests/unit/test_planner_solver.py:1987 configure: initializer -> functions-python/app/planner/solver.py::function@1594:0",
+      "functions-python/tests/unit/test_planner_solver.py:2017 build: initializer -> functions-python/app/planner/solver.py::function@470:0"
+     ],
+     "chain rebinding": [
+      "functions-python/app/handlers/decompose_dish.py:84 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/handlers/estimate_macros.py:216 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/handlers/generate_shopping_list.py:195 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/handlers/transcribe_audio.py:122 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/pipeline/localize.py:151 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/pipeline/normalize.py:195 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/pipeline/oneshot.py:74 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/pipeline/steps.py:77 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/services/recipe_cards.py:326 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/services/recipe_forge/worker.py:814 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/services/recipe_forge/worker.py:1414 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0",
+      "functions-python/app/services/recipe_titles.py:168 generate: rebinding -> functions-python/app/services/llm/gateway.py::function@156:0"
+     ],
+     "different project target (direct or alias)": [
+      "functions-python/app/services/llm/providers/__init__.py:28 provider.handles | A project-declaration functions-python/app/services/llm/providers/base.py::function@37:4 | B project-declaration functions-python/app/services/llm/providers/vertex.py::function@229:4"
+     ],
+     "only A (B no-document)": [
+      "react-app/scripts/generate-emoji-font.py:152 download_font | A project-declaration react-app/scripts/generate-emoji-font.py::function@100:0 | B no-document no-document",
+      "react-app/scripts/generate-emoji-font.py:155 generate_subset | A project-declaration react-app/scripts/generate-emoji-font.py::function@110:0 | B no-document no-document",
+      "react-app/scripts/generate-emoji-font.py:167 main | A project-declaration react-app/scripts/generate-emoji-font.py::function@141:0 | B no-document no-document",
+      "react-app/scripts/store-art/finalize.py:107 check_content | A project-declaration react-app/scripts/store-art/finalize.py::function@46:0 | B no-document no-document",
+      "react-app/scripts/store-art/finalize.py:134 mean_rgb | A project-declaration react-app/scripts/store-art/finalize.py::function@42:0 | B no-document no-document",
+      "react-app/scripts/store-art/finalize.py:135 mean_rgb | A project-declaration react-app/scripts/store-art/finalize.py::function@42:0 | B no-document no-document",
+      "react-app/scripts/store-art/finalize.py:160 export | A project-declaration react-app/scripts/store-art/finalize.py::function@74:0 | B no-document no-document",
+      "react-app/scripts/store-art/finalize.py:164 main | A project-declaration react-app/scripts/store-art/finalize.py::function@156:0 | B no-document no-document"
+     ],
+     "only A (B no-occurrence)": [
+      "functions-python/app/services/meal_images.py:166 corpus.match | A project-declaration functions-python/app/services/recipe_loader.py::function@153:4 | B no-occurrence no-occurrence",
+      "functions-python/app/week_planner/proto_composition.py:116 registry.matches_breakfast_style | A project-declaration functions-python/app/week_planner/archetypes.py::function@142:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_api_keys.py:165 fake_db.apiKeys.count_documents | A project-declaration functions-python/tests/unit/forge_fakes.py::function@445:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_api_keys.py:274 api_keys.CreateApiKeyRequest | A project-declaration functions-python/app/handlers/admin/api_keys.py::class@34:0 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_api_keys.py:337 api_keys.RevokeApiKeyRequest | A project-declaration functions-python/app/handlers/admin/api_keys.py::class@38:0 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_meal_image_regressions.py:298 winner_blob.upload_from_string | A project-declaration functions-python/tests/unit/test_meal_image_regressions.py::function@53:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_application.py:809 seed_outcome.week.cell | A project-declaration functions-python/app/planner/solver.py::function@261:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_application.py:1109 week.cell | A project-declaration functions-python/app/planner/solver.py::function@261:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_mutations.py:3100 outcome.proof.as_dict | A project-declaration functions-python/app/planner/proof.py::function@281:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_mutations.py:4088 repository.activation_index | A project-declaration functions-python/app/planner/persistence.py::function@864:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_mutations.py:4103 repository.by_idempotency_key | A project-declaration functions-python/app/planner/persistence.py::function@823:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_plan_codec.py:28 audited_revision.inputs.as_dict | A project-declaration functions-python/app/planner/plan_inputs.py::function@185:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_plan_inputs.py:104 inputs.as_dict | A project-declaration functions-python/app/planner/plan_inputs.py::function@185:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_plan_inputs.py:133 inputs.as_dict | A project-declaration functions-python/app/planner/plan_inputs.py::function@185:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_plan_inputs.py:156 inputs.as_dict | A project-declaration functions-python/app/planner/plan_inputs.py::function@185:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2797 audited_revision.as_dict | A project-declaration functions-python/app/planner/revision.py::function@162:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_solver.py:1205 result.week.week_vector | A project-declaration functions-python/app/planner/solver.py::function@255:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_solver.py:1556 served.week.week_vector | A project-declaration functions-python/app/planner/solver.py::function@255:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_solver.py:1578 served.week.week_vector | A project-declaration functions-python/app/planner/solver.py::function@255:4 | B no-occurrence no-occurrence",
+      "functions-python/tests/unit/test_planner_solver.py:1632 (expr).closed | A project-declaration functions-python/app/planner/nutrition.py::function@311:4 | B no-occurrence no-occurrence"
+     ],
+     "only A (B project-value)": [
+      "functions-python/app/planner/mutations.py:1735 self._food_loader | A project-declaration functions-python/app/planner/manual_foods.py::function@30:0 | B project-value parameter",
+      "functions-python/tests/unit/test_billing_regressions.py:1978 seed | A project-declaration functions-python/tests/unit/test_billing_regressions.py::function@1940:4 | B project-value variable",
+      "functions-python/tests/unit/test_billing_regressions.py:2057 seed | A project-declaration functions-python/tests/unit/test_billing_regressions.py::function@1940:4 | B project-value variable",
+      "functions-python/tests/unit/test_billing_regressions.py:2104 seed | A project-declaration functions-python/tests/unit/test_billing_regressions.py::function@2080:4 | B project-value variable",
+      "functions-python/tests/unit/test_billing_regressions.py:2173 seed | A project-declaration functions-python/tests/unit/test_billing_regressions.py::function@2080:4 | B project-value variable",
+      "functions-python/tests/unit/test_billing_regressions.py:2618 configured_billing_app | A project-declaration functions-python/tests/unit/test_billing_regressions.py::function@2493:8 | B project-value parameter",
+      "functions-python/tests/unit/test_billing_regressions.py:2824 configured_billing_app | A project-declaration functions-python/tests/unit/test_billing_regressions.py::function@2493:8 | B project-value parameter",
+      "functions-python/tests/unit/test_generate_meal_alternatives.py:159 build | A project-declaration functions-python/tests/unit/test_generate_meal_alternatives.py::function@108:4 | B project-value variable",
+      "functions-python/tests/unit/test_generate_meal_alternatives.py:181 build | A project-declaration functions-python/tests/unit/test_generate_meal_alternatives.py::function@108:4 | B project-value variable",
+      "functions-python/tests/unit/test_generate_meal_alternatives.py:212 build | A project-declaration functions-python/tests/unit/test_generate_meal_alternatives.py::function@108:4 | B project-value variable",
+      "functions-python/tests/unit/test_planner_mutations.py:4831 request | A project-declaration functions-python/tests/unit/test_planner_mutations.py::function@4803:4 | B project-value variable",
+      "functions-python/tests/unit/test_planner_mutations.py:4861 request | A project-declaration functions-python/tests/unit/test_planner_mutations.py::function@4803:4 | B project-value variable",
+      "functions-python/tests/unit/test_planner_mutations.py:4919 request | A project-declaration functions-python/tests/unit/test_planner_mutations.py::function@4803:4 | B project-value variable",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2128 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2150 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2160 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2181 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2193 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2235 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2286 repo_at | A project-declaration functions-python/tests/unit/test_planner_revision_repository.py::function@2058:4 | B project-value parameter"
+     ],
+     "only A (B undefined-project-symbol)": [
+      "functions-python/tests/unit/test_billing_regressions.py:2539 play_billing.get_settings | A project-declaration functions-python/app/core/config.py::function@132:0 | B undefined-project-symbol undefined-project-symbol"
+     ],
+     "only B has a project target (direct or alias)": [
+      "functions-python/app/handlers/analyze_photo.py:476 wu.to_dict | A none unresolved | B project-declaration functions-python/app/pipeline/types.py::function@410:4",
+      "functions-python/app/planner/mutations.py:705 OptimizationVector.from_mapping | A external engine | B project-declaration functions-python/app/planner/nutrition.py::function@340:4",
+      "functions-python/app/planner/proof.py:298 b.as_dict | A none unresolved | B project-declaration functions-python/app/planner/proof.py::function@158:4",
+      "functions-python/app/planner/proof.py:941 Residual.between | A external engine | B project-declaration functions-python/app/planner/nutrition.py::function@392:4",
+      "functions-python/app/planner/witness.py:1011 Residual.between | A external engine | B project-declaration functions-python/app/planner/nutrition.py::function@392:4",
+      "functions-python/tests/unit/test_billing_regressions.py:1292 play_rtdn.play_rtdn | A project-other project-not-a-symbol | B project-declaration functions-python/app/handlers/play_rtdn.py::function@128:0",
+      "functions-python/tests/unit/test_billing_regressions.py:1770 subscription_status.get_subscription_status | A project-other project-not-a-symbol | B project-declaration functions-python/app/handlers/subscription_status.py::function@23:0",
+      "functions-python/tests/unit/test_billing_regressions.py:2392 _admin_db_browser.admin_browse_collection | A project-other project-not-a-symbol | B project-declaration functions-python/app/handlers/admin/db_browser.py::function@87:0",
+      "functions-python/tests/unit/test_generated_draft_wire_contract.py:317 self._meal | A external engine | B project-declaration functions-python/tests/unit/test_generated_draft_wire_contract.py::function@269:4",
+      "functions-python/tests/unit/test_planner_assembly.py:900 CorpusIndex.build | A external engine | B project-declaration functions-python/app/planner/assembly.py::function@320:4",
+      "functions-python/tests/unit/test_planner_context.py:431 PlanInputs.from_context_body | A external engine | B project-declaration functions-python/app/planner/plan_inputs.py::function@168:4",
+      "functions-python/tests/unit/test_planner_mutations.py:1551 cls._schedule | A external engine | B project-declaration functions-python/tests/unit/test_planner_mutations.py::function@1516:4",
+      "functions-python/tests/unit/test_planner_mutations.py:1953 (expr).as_dict | A none unresolved | B project-declaration functions-python/app/planner/application.py::function@238:4",
+      "functions-python/tests/unit/test_planner_mutations.py:4860 handler.rebalance_week_plan | A project-other project-not-a-symbol | B project-declaration functions-python/app/handlers/rebalance_week_plan.py::function@113:0",
+      "functions-python/tests/unit/test_planner_resolution.py:127 repository.stencil_for_date | A project-other ambiguous-target | B project-declaration functions-python/app/planner/persistence.py::function@896:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:1383 repo.commit_active | A project-other ambiguous-target | B project-declaration functions-python/app/planner/persistence.py::function@1114:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:1543 repo.active | A project-other ambiguous-target | B project-declaration functions-python/app/planner/persistence.py::function@838:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:1619 repo.commit_active | A project-other ambiguous-target | B project-declaration functions-python/app/planner/persistence.py::function@1114:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:1684 repo.stencil_for_date | A project-other ambiguous-target | B project-declaration functions-python/app/planner/persistence.py::function@896:4",
+      "functions-python/tests/unit/test_planner_revision_repository.py:2671 repository.commit_active | A project-other ambiguous-target | B project-declaration functions-python/app/planner/persistence.py::function@1114:4"
+     ]
+    },
+    "answer_file_mismatches": 0
+   }
+  }
+ },
+ "hand": [
+  {
+   "site": "functions-python/app/handlers/account_deletion.py:58 log_handler",
+   "expected": "decl functions-python/app/utils/log_decorator.py:17",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/utils/log_decorator.py::function@17:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/utils/log_decorator.py::function@17:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/utils/log_decorator.py::function@17:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/handlers/account_deletion.py:62 rate_limit",
+   "expected": "decl functions-python/app/api/deps.py:326",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/api/deps.py::function@326:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/api/deps.py::function@326:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/api/deps.py::function@326:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/handlers/account_deletion.py:62 Depends",
+   "expected": "external fastapi",
+   "b": "external",
+   "b_targets": [],
+   "b_detail": "python fastapi@0.136.3",
+   "b_externals": [
+    "python fastapi@0.136.3"
+   ],
+   "b_chains": [
+    "external python fastapi@0.136.3"
+   ],
+   "b_right": true,
+   "a": "external",
+   "a_target": null,
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/handlers/account_deletion.py:66 request_soft_delete",
+   "expected": "decl functions-python/app/services/account_deletion.py:63",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/services/account_deletion.py::function@63:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/services/account_deletion.py::function@63:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/services/account_deletion.py::function@63:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/food_query/resolver.py:183 search_filter",
+   "expected": "decl functions-python/app/food_query/adapter.py:45",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/food_query/adapter.py::function@45:4"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/food_query/adapter.py::function@45:4"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/food_query/adapter.py::function@45:4",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/food_query/resolver.py:189 rank_round",
+   "expected": "decl functions-python/app/services/food_search.py:1386",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/services/food_search.py::function@1386:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/services/food_search.py::function@1386:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/services/food_search.py::function@1386:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/food_query/resolver.py:190 _judge",
+   "expected": "decl functions-python/app/food_query/resolver.py:205",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/food_query/resolver.py::function@205:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/food_query/resolver.py::function@205:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/food_query/resolver.py::function@205:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/food_query/resolver.py:193 one",
+   "expected": "decl functions-python/app/food_query/resolver.py:187",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/food_query/resolver.py::function@187:4"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/food_query/resolver.py::function@187:4"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/food_query/resolver.py::function@187:4",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/api/deps.py:204 to_thread",
+   "expected": "external python-stdlib",
+   "b": "external",
+   "b_targets": [],
+   "b_detail": "python python-stdlib@3.11",
+   "b_externals": [
+    "python python-stdlib@3.11"
+   ],
+   "b_chains": [
+    "external python python-stdlib@3.11"
+   ],
+   "b_right": true,
+   "a": "external",
+   "a_target": null,
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/services/stripe_client.py:57 _get_stripe_secret_key_from_sm",
+   "expected": "none",
+   "b": "dangling-local",
+   "b_targets": [],
+   "b_detail": "dangling-local",
+   "b_externals": [],
+   "b_chains": [
+    "dead-end dangling-local"
+   ],
+   "b_right": true,
+   "a": "none",
+   "a_target": null,
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/core/config.py:138 get_settings",
+   "expected": "decl functions-python/app/core/config.py:132",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/core/config.py::function@132:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/core/config.py::function@132:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/core/config.py::function@132:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/core/exceptions.py:74 __init__",
+   "expected": "decl functions-python/app/core/exceptions.py:35",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/core/exceptions.py::function@35:4"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/core/exceptions.py::function@35:4"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/core/exceptions.py::function@35:4",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/app/food_query/description.py:52 _words",
+   "expected": "decl functions-python/app/food_query/description.py:32",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/food_query/description.py::function@32:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/food_query/description.py::function@32:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/food_query/description.py::function@32:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/tests/unit/test_api_keys.py:25 FakeDb",
+   "expected": "decl functions-python/tests/unit/forge_fakes.py:488",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/tests/unit/forge_fakes.py::class@488:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/tests/unit/forge_fakes.py::class@488:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/tests/unit/forge_fakes.py::class@488:0",
+   "a_right": true
+  },
+  {
+   "site": "functions-python/tests/unit/test_api_keys.py:78 resolve_principal",
+   "expected": "decl functions-python/app/api/deps.py:257",
+   "b": "project-declaration",
+   "b_targets": [
+    "functions-python/app/api/deps.py::function@257:0"
+   ],
+   "b_detail": "",
+   "b_externals": [],
+   "b_chains": [
+    "functions-python/app/api/deps.py::function@257:0"
+   ],
+   "b_right": true,
+   "a": "project-declaration",
+   "a_target": "functions-python/app/api/deps.py::function@257:0",
+   "a_right": true
+  }
+ ],
+ "hand_score": {
+  "checks": 15,
+  "b_right": 15,
+  "a_right": 15
+ },
+ "stores": {
+  "equal": true,
+  "stage": {
+   "edges": {
+    "python dead-end": 2147,
+    "python external": 43747,
+    "python project-callable": 16984,
+    "python project-value": 83568
+   },
+   "holes": {
+    "python dangling-local": 308,
+    "python no-document": 528,
+    "python no-occurrence": 4398,
+    "python no-position": 6,
+    "python undefined-project-symbol": 396
+   }
+  },
+  "bench": {
+   "edges": {
+    "python dead-end": 2147,
+    "python external": 43747,
+    "python project-callable": 16984,
+    "python project-value": 83568
+   },
+   "holes": {
+    "python dangling-local": 308,
+    "python no-document": 528,
+    "python no-occurrence": 4398,
+    "python no-position": 6,
+    "python undefined-project-symbol": 396
+   }
+  },
+  "differences": {
+   "edges": {
+    "only_stage": 0,
+    "only_bench": 0
+   },
+   "holes": {
+    "only_stage": 0,
+    "only_bench": 0
+   },
+   "externals": {
+    "only_stage": 0,
+    "only_bench": 0
+   }
+  }
+ },
+ "only_a": {
+  "by_store": {
+   "hole no-occurrence": 56,
+   "edge project-value": 29,
+   "hole no-document": 8,
+   "hole undefined-project-symbol": 1
+  },
+  "examples": {
+   "edge project-value": [
+    "functions-python/app/planner/mutations.py:1735 self._food_loader",
+    "functions-python/tests/unit/test_billing_regressions.py:1978 seed",
+    "functions-python/tests/unit/test_billing_regressions.py:2057 seed",
+    "functions-python/tests/unit/test_billing_regressions.py:2081 seed",
+    "functions-python/tests/unit/test_billing_regressions.py:2104 seed"
+   ],
+   "hole no-occurrence": [
+    "functions-python/app/services/meal_images.py:166 corpus.match",
+    "functions-python/app/services/meal_images.py:273 corpus.match",
+    "functions-python/app/week_planner/proto_composition.py:116 registry.matches_breakfast_style",
+    "functions-python/tests/unit/test_api_keys.py:86 fake_db.apiKeys.find_one",
+    "functions-python/tests/unit/test_api_keys.py:144 fake_db.apiKeys.update_one"
+   ],
+   "hole undefined-project-symbol": [
+    "functions-python/tests/unit/test_billing_regressions.py:2539 play_billing.get_settings"
+   ],
+   "hole no-document": [
+    "react-app/scripts/generate-emoji-font.py:152 download_font",
+    "react-app/scripts/generate-emoji-font.py:155 generate_subset",
+    "react-app/scripts/generate-emoji-font.py:167 main",
+    "react-app/scripts/store-art/finalize.py:107 check_content",
+    "react-app/scripts/store-art/finalize.py:134 mean_rgb"
+   ]
+  }
+ },
+ "seconds": 164.4,
+ "against_confirm": {
+  "python": {
+   "nodes": [
+    35662,
+    35662
+   ],
+   "edges": [
+    147150,
+    147150
+   ],
+   "road_a_cells_equal": true
+  },
+  "hand_b_right": [
+   15,
+   15
+  ]
+ }
+}

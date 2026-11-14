@@ -1,7 +1,9 @@
 """The engine pass's indexer stages on Modal, against the graph the benchmark builds from the same index. No model.
 
-One container per case (`chi`, `semver`, `tududi`), with the base system only, over the snapshot and road A that
-`modal_scip.py` keeps under `scip-inputs/<case>` and the case's checkout at its commit:
+One container per case (`chi`, `semver`, `tududi`, `phazly`), with the base system only, over the snapshot and
+road A that `modal_scip.py` keeps under `scip-inputs/<case>` and the case's checkout at its commit (phazly from its
+archive there); `python-semver` over the checkout, its copy with each link a regular file and the snapshot of that
+copy that `lang_python.py` keeps (`snapshot.py write` stops on a linked file), without road A:
 1. the stage of each indexer entry of `resolve_edges.ENGINES` serving a language of the snapshot
    (`resolve_edges.index_stage`): it installs and runs the indexer, builds the graph and writes the store; a copy of
    each index it reads is kept;
@@ -10,10 +12,17 @@ One container per case (`chi`, `semver`, `tududi`), with the base system only, o
    `results/scip-<case>-confirm.json`;
 3. the store the benchmark writes from that build (`code_graph.write_store`) beside the stage's, row by row;
 4. every call only road A resolves, and what the stage's store holds for it: a hole with its class, or an edge
-   with its verdict.
+   with its verdict;
+5. each graph's edges and holes per top folder of the checkout.
+
+`--entries` limits the stages to those entries, and each language an entry lists reads from it in this run
+(`_serving`): `--entries scip-python` measures Python from its index while the product keeps it on Jedi. The
+driver gives scip-python its Python projects (`UNITS`), as the pre-map will. A private case's result keeps no
+indexer log. `fetch` sets beside each result the stored one it confirms: `results/scip-<case>-confirm.json`,
+`CONFIRM` for the others.
 
     modal deploy benchmarks/inference-audit/modal_stage.py
-    python benchmarks/inference-audit/modal_stage.py spawn --cases chi,semver,tududi
+    python benchmarks/inference-audit/modal_stage.py spawn --cases chi,semver,tududi [--entries scip-python]
     python benchmarks/inference-audit/modal_stage.py fetch --cases chi,semver,tududi
 """
 from __future__ import annotations
@@ -37,7 +46,24 @@ sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
-AUDIT = ("modal_audit.py", "modal_scip.py", "plugin_scripts.py", "probe.py")
+AUDIT = ("modal_audit.py", "modal_scip.py", "plugin_scripts.py", "probe.py", "lang_python.py")
+# The cases `lang_python.py` keeps on the volume: its work folder (checkout, copy, snapshot) and its case there.
+KEPT = {"python-semver": ("graph-python/semver-plugin/work.tar.gz", "semver")}
+# The stored result each case's run is set beside, when it is not `scip-<case>-confirm.json`.
+CONFIRM = {"phazly": "scip-phazly-final.json", "python-semver": "graph-python-semver-plugin-checks.json"}
+# Each case's Python projects, given to scip-python: phazly's as the stored run gave them.
+UNITS = {"phazly": [{"root": "functions-python"}], "python-semver": [{"root": ""}]}
+# What a run's log holds: a private case's result keeps neither.
+LOGS = ("stdout_tail", "stderr_tail")
+
+
+def _serving(rx, entries: set[str]) -> None:
+    """Each language an entry of `entries` lists reads from that entry, in this container only."""
+    chosen = [spec for spec in rx.ENGINES if spec.name in entries]
+    taken = {language for spec in chosen for language in spec.languages}
+    rx.ENGINES = tuple(spec if spec in chosen else spec._replace(
+        languages=tuple(language for language in spec.languages if language not in taken)) for spec in rx.ENGINES)
+    rx.ENGINE_LANGUAGES = {language: spec for spec in reversed(rx.ENGINES) for language in spec.languages}
 
 
 def _image():
@@ -112,10 +138,23 @@ def _only_a(references: dict, answers: dict, store: Path) -> dict:
     return {"by_store": dict(found.most_common()), "examples": dict(examples)}
 
 
+def _folders(graph: dict) -> dict:
+    """The graph's edges by end and holes by class, per top folder of the sites."""
+    out = collections.defaultdict(lambda: {"edges": collections.Counter(), "holes": collections.Counter()})
+    for edge in graph["edges"]:
+        out[edge["site"].split("/", 1)[0]]["edges"][f"{edge['end']} {edge['kind']}"] += 1
+    for hole in graph["holes"]:
+        out[hole["site"].split("/", 1)[0]]["holes"][f"{hole['class']} {hole['kind']}"] += 1
+    return {folder: {"edges": sum(counts["edges"].values()), "holes": sum(counts["holes"].values()),
+                     "edges_by_end": dict(sorted(counts["edges"].items())),
+                     "holes_by_class": dict(sorted(counts["holes"].items()))} for folder, counts in sorted(out.items())}
+
+
 @app.function(cpu=4, memory=12288, timeout=1800, volumes={"/results": volume})
-def stage_case(name: str) -> dict:
+def stage_case(name: str, entries: str = "") -> dict:
     """One case: the product's stages, the benchmark's build of the same index, the two stores, road A's own."""
     import shutil
+    import tarfile
     import time
     import code_graph
     import modal_scip as ms
@@ -124,33 +163,57 @@ def stage_case(name: str) -> dict:
     code = plugin_scripts.code_sha256()
     print("code", code, flush=True)  # compared with the checkout before trusting the run
     started = time.time()
-    work = Path("/work") / name  # the kept snapshot binds its sources here
-    shutil.rmtree(work, ignore_errors=True)
-    kept = Path("/results") / TAG / "scip-inputs" / name
-    case = CASES[name]
-    target = _source(work / "src", case, None)
-    manifest = work / "snapshot/manifest.sqlite"
-    manifest.parent.mkdir(parents=True)
-    shutil.copyfile(kept / "manifest.sqlite", manifest)
-    answers_path = work / "answers.sqlite"
-    shutil.copyfile(kept / "answers.sqlite", answers_path)
+    if name in KEPT:  # the folder the kept snapshot binds its sources in
+        stored, folder = KEPT[name]
+        work = Path("/work") / folder
+        shutil.rmtree(work, ignore_errors=True)
+        work.mkdir(parents=True)
+        with tarfile.open(Path("/results") / TAG / stored) as tar:
+            tar.extractall(work, filter="tar")
+        target, manifest, answers_path = work / "src", work / "snapshot/manifest.sqlite", None
+        commit = json.loads((Path("/results") / TAG / Path(stored).parent / "run.json").read_text())["commit"]
+        private = False
+    else:
+        work = Path("/work") / name  # the kept snapshot binds its sources here
+        shutil.rmtree(work, ignore_errors=True)
+        kept = Path("/results") / TAG / "scip-inputs" / name
+        case = {**CASES[name], "commit": CASES[name].get("commit") or ms.OPTIONS.get(name, {}).get("commit")}
+        archive = (kept / "source.tar").read_bytes() if case.get("tar") else None
+        target, commit, private = _source(work / "src", case, archive), case["commit"], archive is not None
+        manifest = work / "snapshot/manifest.sqlite"
+        manifest.parent.mkdir(parents=True)
+        shutil.copyfile(kept / "manifest.sqlite", manifest)
+        answers_path = work / "answers.sqlite"
+        shutil.copyfile(kept / "answers.sqlite", answers_path)
     with open_snapshot(manifest) as store:
         present = rx.snapshot_languages(store.connection)
-    specs = [spec for spec in rx.ENGINES if spec.indexer
+    chosen = {entry for entry in entries.split(",") if entry}
+    _serving(rx, chosen)
+    specs = [spec for spec in rx.ENGINES if spec.indexer and (not chosen or spec.name in chosen)
              and any(rx.ENGINE_LANGUAGES.get(language) is spec for language in present)]
-    result = {"case": name, "commit": case["commit"], "code": code, "stages": {}}
+    result = {"case": name, "commit": commit, "code": code, "stages": {}, "contracts": {}}
     stage_store, copies = work / "stage-edges.sqlite", []
     for spec in specs:
         module = importlib.import_module(f"indexers.{spec.indexer}")
         original = module.index
 
         def keeping(*args, _original=original, _spec=spec, **kwargs):
+            if _spec.indexer == "python" and name in UNITS:
+                kwargs.setdefault("units", UNITS[name])
             out = _original(*args, **kwargs)
+            kept_here = Path("/results") / TAG / "stage-indexes" / name / _spec.name
+            kept_here.mkdir(parents=True, exist_ok=True)
             for number, (path, prefix) in enumerate(out.get("indexes", ())):
                 copy = work / "indexes" / _spec.name / f"{number}.scip"
                 copy.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, copy)
+                shutil.copyfile(path, kept_here / f"{number}.scip")
                 copies.append((copy, prefix, _spec, out.get("indexer")))
+            # What the indexer's contract says beyond the index: its environment, its runs.
+            result["contracts"][_spec.name] = {key: value for key, value in out.items() if key != "indexes"}
+            if private:
+                result["contracts"][_spec.name]["runs"] = [{key: value for key, value in run.items()
+                                                            if key not in LOGS} for run in out.get("runs", ())]
             return out
 
         module.index = keeping
@@ -167,19 +230,22 @@ def stage_case(name: str) -> dict:
         result["error"] = "no stage wrote an index"
         return _save(name, result, started)
     import sqlite3
-    db = sqlite3.connect(answers_path)
-    answers = {row[0]: row[1:] for row in db.execute(
-        "SELECT reference_id, verdict, target_id, file, line, column FROM answers")}
-    db.close()
+    answers = {}
+    if answers_path is not None:
+        db = sqlite3.connect(answers_path)
+        answers = {row[0]: row[1:] for row in db.execute(
+            "SELECT reference_id, verdict, target_id, file, line, column FROM answers")}
+        db.close()
     bench_store = work / "bench-edges.sqlite"
     with code_graph.Snapshot(manifest) as snap:
         index = code_graph.Index(snap.root)
         for path, prefix, _spec, _indexer in copies:
             index.load(path, prefix)
+        ran = {spec.name for spec in specs}
         languages = sorted({language for rel, language in snap.languages.items()
                             if language in ms.ADAPTERS and rel in snap.inventory
                             and rx.ENGINE_LANGUAGES.get(language) is not None
-                            and rx.ENGINE_LANGUAGES[language].indexer})
+                            and rx.ENGINE_LANGUAGES[language].name in ran})
         hops = {}
         for adapter in sorted({ms.ADAPTERS[language] for language in languages}):
             hops.update(importlib.import_module(f"indexers.{adapter}").hops(index))
@@ -197,15 +263,20 @@ def stage_case(name: str) -> dict:
                                                  reasons, traversal, static)
             built[language] = (graph, references)
             references_all.update(references)
-            result["graphs"][language] = {"report": code_graph.report(graph),
-                                          "road_a": ms._compare(references, answers)}
+            result["graphs"][language] = {"report": code_graph.report(graph), "folders": _folders(graph),
+                                          "road_a": ms._compare(references, answers) if answers else None}
         resolver = {language: rx.ENGINE_LANGUAGES[language].name for language in languages}
         for spec_name in sorted(set(resolver.values())):
             engine = result["stages"][spec_name]["report"]["engine"]
             code_graph.write_store(snap, bench_store,
                                    {language: built[language] for language in languages
                                     if resolver[language] == spec_name}, engine)
-    result["hand"] = ms._hand(list(ms.HAND.get(name, ())), references_all, answers)
+        hand = [check for check in ms.HAND.get(name, ()) if snap.languages.get(check[0]) in languages]
+        if name in KEPT:  # lang_python's hand check: the graph's ends at twenty sites read in the source
+            import lang_python
+            sites = importlib.import_module("indexers.python").static(index)
+            result["hand_check"] = lang_python.hand_check(index, traversal, lang_python.HAND, sites)
+    result["hand"] = ms._hand(hand, references_all, answers)
     result["hand_score"] = {"checks": len(result["hand"]), "b_right": sum(row["b_right"] for row in result["hand"]),
                             "a_right": sum(row["a_right"] for row in result["hand"])}
     stage_rows, bench_rows = _rows(stage_store), _rows(bench_store)
@@ -214,7 +285,7 @@ def stage_case(name: str) -> dict:
                         "differences": {table: {"only_stage": len(set(stage_rows[table]) - set(bench_rows[table])),
                                                 "only_bench": len(set(bench_rows[table]) - set(stage_rows[table]))}
                                         for table in stage_rows}}
-    result["only_a"] = _only_a(references_all, answers, stage_store)
+    result["only_a"] = _only_a(references_all, answers, stage_store) if answers else None
     return _save(name, result, started)
 
 
@@ -229,13 +300,25 @@ def _save(name: str, result: dict, started: float) -> dict:
 
 
 def against_confirm(result: dict, confirm: dict) -> dict:
-    """The stage run's graph counts, road A cells and hand score beside the confirmation's."""
+    """The stage run's graph counts, road A cells and hand score beside the confirmation's: a `modal_scip.py`
+    result, or `lang_python.py`'s checks (its report and its hand check, the project's version set to `_`)."""
     out = {}
+    if "report" in confirm:
+        graph, before = result["graphs"]["python"]["report"], confirm["report"]
+        out["python"] = {key: [graph[key], before[key]] for key in ("nodes", "edges")}
+        out["python"]["report_keys_differing"] = sorted(key for key in before if key != "indexer"
+                                                        and graph.get(key) != before[key])
+        version = f" {confirm['engine']['project'][1]} "
+        stored = json.loads(json.dumps(confirm["hand_check"]).replace(version, " _ "))
+        out["hand_check_equal"] = result.get("hand_check") == stored
+        return out
     for language, graph in result.get("graphs", {}).items():
         before = confirm["join"]["languages"][language]
         out[language] = {key: [graph["report"][key], before["graph"][key]] for key in ("nodes", "edges")}
         out[language]["road_a_cells_equal"] = graph["road_a"]["cells"] == before["road_a"]["cells"]
-    out["hand_b_right"] = [result.get("hand_score", {}).get("b_right"), confirm["join"]["hand_score"]["b_right"]]
+    sites = {row["site"] for row in result.get("hand", ())}
+    out["hand_b_right"] = [result.get("hand_score", {}).get("b_right"),
+                           sum(row["b_right"] for row in confirm["join"]["hand"] if row["site"] in sites)]
     return out
 
 
@@ -245,23 +328,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("spawn", "fetch"))
     parser.add_argument("--cases", default="chi,semver,tududi")
+    parser.add_argument("--entries", default="")
     args = parser.parse_args()
     chosen = [c.strip() for c in args.cases.split(",") if c.strip()]
     if args.command == "spawn":
         print("local code", plugin_scripts.code_sha256(), flush=True)
         function = modal.Function.from_name("daodan-stage-audit", "stage_case")
         for name in chosen:
-            print(name, function.spawn(name).object_id)
+            print(name, function.spawn(name, args.entries).object_id)
     else:
         RESULTS.mkdir(parents=True, exist_ok=True)
         for name in chosen:
             result = json.loads(b"".join(volume.read_file(f"{TAG}/scip-{name}-stage.json")))
-            confirm = json.loads((RESULTS / f"scip-{name}-confirm.json").read_text(encoding="utf-8"))
+            confirm = json.loads((RESULTS / CONFIRM.get(name, f"scip-{name}-confirm.json")).read_text(
+                encoding="utf-8"))
             result["against_confirm"] = against_confirm(result, confirm)
             (RESULTS / f"scip-{name}-stage.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n",
                                                              encoding="utf-8", newline="\n")
             print(name, json.dumps({"stores_equal": result.get("stores", {}).get("equal"),
-                                    "only_a": result.get("only_a", {}).get("by_store"),
+                                    "only_a": (result.get("only_a") or {}).get("by_store"),
                                     "against_confirm": result["against_confirm"],
                                     "stages": {key: {"seconds": value["seconds"],
                                                      "indexer": value["report"].get("indexer")}

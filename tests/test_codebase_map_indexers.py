@@ -426,8 +426,74 @@ def test_python_names_its_project_by_a_constant_version_and_runs_no_git(sandbox)
     result = python.index(project, sandbox["root"] / "work")
     assert "state" not in result, result.get("reason")
     command = sandbox["fake"].runs()[0][0]
-    assert command[command.index("--project-version") + 1] == "_" and result["project"][1] == "_"
+    assert command[command.index("--project-version") + 1] == "_" and result["runs"][0]["project"][1] == "_"
     assert not [command for command, _cwd in sandbox["fake"].calls if Path(command[0]).stem == "git"]
+
+
+SRC_LAYOUT = {"executionEnvironments": [{"root": "src"}, {"root": ".", "extraPaths": ["src"]}]}
+LAYOUTS = {
+    # No unit given: the whole checkout is one, here in a `src` layout.
+    "root": ({"pyproject.toml": '[project]\nname = "app"\n', "src/app/__init__.py": "", "tests/test_app.py": ""},
+             None, {"": ("app", SRC_LAYOUT)}),
+    # Two units given: a run each, with its prefix; a given name wins over the manifest's; the nested
+    # `svc/inner` and the folder outside both (`tools`) have no run of their own.
+    "nested": ({"svc/pyproject.toml": '[project]\nname = "svc-api"\n', "svc/api/__init__.py": "",
+                "svc/inner/requirements.txt": "attrs\n", "lib/requirements.txt": "attrs\n",
+                "lib/src/pkg/__init__.py": "", "tools/x.py": "print(1)\n"},
+               [{"root": "lib", "name": "lib-tools"}, {"root": "svc"}],
+               {"lib": ("lib-tools", SRC_LAYOUT), "svc": ("svc-api", None)}),
+}
+
+
+def _layout(sandbox, layout: str) -> Path:
+    project = sandbox["root"] / "project" / layout
+    for rel, text in LAYOUTS[layout][0].items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    return project
+
+
+@pytest.mark.parametrize("layout", sorted(LAYOUTS))
+def test_each_given_python_project_is_a_run_of_its_own(sandbox, layout):
+    project = _layout(sandbox, layout)
+    _files, units, expected = LAYOUTS[layout]
+    _tools(project, "python")
+    sandbox["fake"].index = FIXTURES / "python/index.scip"
+    seen = []
+    real = python._pyright_config
+    sandbox["monkeypatch"].setattr(python, "_pyright_config", lambda root, target: seen.append(
+        (Path(root), Path(target))) or real(root, target))
+    before = _hashes(project)
+    result = python.index(project, sandbox["root"] / "work", environment=_environment(sandbox["root"]), units=units)
+    assert "state" not in result, result.get("reason")
+    runs = result["runs"]
+    assert {run["prefix"]: (run["project"][0], run["pyrightconfig"]) for run in runs} == expected
+    assert all(run["project"][1] == "_" and run["packages"] == {"pkg": "1.0"} for run in runs)
+    assert [prefix for _path, prefix in result["indexes"]] == list(expected)
+    # Each run starts in its folder of the mirror; Pyright's configuration is read from the project, whose
+    # folders the mirror only links (a walk does not enter a link), and written in the mirror.
+    for (_command, cwd), run, (root, target) in zip(sandbox["fake"].runs(), runs, seen):
+        assert Path(cwd).name == (run["prefix"] or Path(cwd).name) and not Path(cwd).exists()
+        assert root == (project / run["prefix"] if run["prefix"] else project)
+        assert target.parent == Path(cwd) and project not in target.parents
+    assert _hashes(project) == before
+
+
+def test_in_a_container_each_given_python_project_is_a_run_of_its_own(sandbox):
+    import container
+    project = _layout(sandbox, "nested")
+    _tools(project, "python")
+    sandbox["web"].pages.update(_node_release(platform=f"linux-{container.architecture()}"))
+    box = Box(FIXTURES / "python/index.scip")
+    sandbox["monkeypatch"].setattr(python, "RUNS_HERE", False)
+    sandbox["monkeypatch"].setattr(container, "run_in_container", box)
+    result = python.index(project, sandbox["root"] / "work", environment=_environment(sandbox["root"]),
+                          units=LAYOUTS["nested"][1])
+    assert "state" not in result, result.get("reason")
+    assert [asked["command"][-3:] for asked in box.asked] == [["lib-tools", "_", "lib"], ["svc-api", "_", "svc"]]
+    assert [prefix for _path, prefix in result["indexes"]] == ["lib", "svc"]
+    assert "/daodan/tools/pyrightconfig.json" in box.asked[0]["inputs"]  # lib's `src` layout
+    assert "/daodan/tools/pyrightconfig.json" not in box.asked[1]["inputs"]
 
 
 class Box:
@@ -482,7 +548,7 @@ def test_where_scip_python_cannot_start_it_runs_in_a_container_over_the_host_env
     assert _hashes(project) == before and sandbox["fake"].runs() == []  # nothing ran on the host
     asked = box.asked[0]
     assert asked["project"] == project and asked["image"] == python.IMAGE and asked["outputs"] == ["/daodan/out"]
-    assert asked["command"][:2] == ["bash", "-c"] and asked["command"][-2:] == [result["project"][0], "_"]
+    assert asked["command"][:2] == ["bash", "-c"] and asked["command"][-3:] == [result["runs"][0]["project"][0], "_", ""]
     inputs = asked["inputs"]
     archive = f"node-{runtime.NODE_VERSION}-{runtime.NODE_PLATFORMS[platform]}.tar.gz"
     assert Path(inputs["/daodan/tools/node.tar.gz"]).name == archive  # Node for Linux, checked like the host's
@@ -623,4 +689,4 @@ def test_the_peak_is_none_when_no_run_measured_it():
 
 
 def test_every_indexer_declares_the_memory_it_needs():
-    assert [MODULES[name].MIN_FREE // 2**20 for name in ("go", "rust", "ts", "python")] == [512, 1280, 2304, 512]
+    assert [MODULES[name].MIN_FREE // 2**20 for name in ("go", "rust", "ts", "python")] == [512, 1280, 2304, 1920]

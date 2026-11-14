@@ -339,6 +339,16 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
   - tempo e picco dell'indicizzatore: scip-go 10,1 s e 318 MB; rust-analyzer 9,7 s e 1.172 MB; scip-typescript 59,1 s e 2.116 MB. Lo stage intero su una macchina nuova: 54 s, 27 s e 885 s; per tududi la parte grossa sono le installazioni al primo uso (Node, scip-typescript e i pacchetti del progetto).
 - [x] **Cambio** di Go, TypeScript, JavaScript e Rust: tre righe di `ENGINES`, consegnate insieme al task 6. Con la copertura vecchia il test vero su Modal (`test_a_typescript_pass_resolves_…`, SDK MCP e scip-typescript) dava la voce `fresh` con `scip-typescript@0.5.2` ma «risolte su risolvibili» 0 su 1: quel numero leggeva campi che una voce di indicizzatore non ha.
 
+**Secondo giro (14 novembre 2026): Python, misurato; il cambio aspetta il task 12.**
+- [x] Adattatore: `indexers/python.py` riceve i progetti Python (`units`: radice e nome; senza, tutto il checkout) e non ne cerca. Un'esecuzione di scip-python per unità, con prefisso, nome, ambiente e configurazione di Pyright suoi; nel container lo stesso. `MIN_FREE` 1.920 MB, dal picco di phazly. Test: `test_each_given_python_project_is_a_run_of_its_own`, `test_in_a_container_each_given_python_project_is_a_run_of_its_own`, `test_python_without_a_container_engine_where_scip_python_cannot_start_is_unavailable_until_one_answers` (il caso di Windows: nessun download senza un motore, poi `fresh` quando uno risponde).
+- [x] Soglia su Modal (`modal_stage.py --entries scip-python`, unità date dal driver, risultati `results/scip-{python-semver,phazly}-stage.json`):
+  - conteggi uguali ai salvati: python-semver 1.289 / 3.679 / 64 buchi, phazly 35.662 / 147.150; celle del confronto con il passo uguali su phazly (diverso 1, solo passo 94);
+  - lo store dello stage è uguale, riga per riga, a quello del benchmark;
+  - le 94 «solo passo» di phazly hanno tutte una riga: 65 buchi con classe (`no-occurrence` 56, `no-document` 8, `undefined-project-symbol` 1), 29 archi su un valore del progetto;
+  - verifica a mano: python-semver 20 siti identici, phazly 15 su 15;
+  - indicizzatore: python-semver 9,4 s e 347 MB, phazly 91,0 s e 1.815 MB.
+- [ ] **Cambio** di Python, nel giro guidato dalla pre-mappa (task 12): la pre-mappa dà le unità e lo stage le passa a `index()`. La patch tenuta per il giro contiene la voce di Jedi senza `python` in `ENGINES`, i test adattati (`PassLifecycleTests` e `DistributionTests` tengono Python su Jedi fino al task 8), `test_python_reads_from_its_index_and_a_jedi_entry_is_not_fresh`, il test vero `test_a_python_pass_resolves_a_method_on_a_typed_receiver` (verde su Modal), i documenti, e la regola che trovava i progetti Python (`_python_roots`, con il suo test), che passa alla pre-mappa.
+
 ### Task 6: copertura e stato (dopo la domanda 3)
 
 **File:**
@@ -503,6 +513,10 @@ Prima di ogni indicizzatore Daodan scrive la pre-mappa: cosa c'è nel progetto e
 - [ ] **Lo stage legge la pre-mappa:** `index_stage` lancia un indicizzatore per unità con radice, configurazione e toolchain dalla pre-mappa. Prove: i moduli Go annidati di chi, l'alias `@/` dell'app React, le tre build Gradle di otel-demo.
 - [ ] **Soglia:** sul benchmark, per faccetta e per famiglia, mai sotto il `modules.py` di oggi e mai sotto la combinazione senza codice del progetto (unità 137, toolchain 128, dipendenze 716); con il container unità almeno 236 su 447. Tempo e picco annotati. Su kotlinconf e eShop oggi servono 334 s e 209 s: prima si misura quale passo li consuma, poi si fissa la soglia.
 - [ ] **Giro completo guidato dalla pre-mappa** (deciso dal proprietario il 14 novembre 2026): i cambi di fonte ancora da fare (Python, Java, Kotlin, C, C++, fogli di stile) aspettano la pre-mappa, senza regole provvisorie negli indicizzatori. Poi un solo giro su tutti i linguaggi e su progetti misti: pre-mappa, un indicizzatore per unità, grafo, verifica. Casi: quelli già misurati per linguaggio (chi, semver, tududi, python-semver, javapoet, klaxon, zlib, tinyxml2, i sei dei fogli di stile, phazly) e i repository veri con più linguaggi di `benchmarks/project-model/fixtures/real-*`. Per ogni caso: conteggi contro i risultati salvati, ogni differenza spiegata, nessun riferimento senza riga nello store.
+  Da fare nel giro, nel driver degli indicizzatori (`index_stage`):
+  - passa a `index()` le unità della pre-mappa (`units`) e scrive nella voce del linguaggio gli stati e i buchi per unità che `index()` restituisce: oggi li scarta;
+  - usa `code_graph.adapter_traversal`, così valgono `java.same_range`, `kotlin.classify` e `prepare`, `same_range` e `classify` di clang; lo stato è `lower-bound` quando un file non è letto, e il test di guardia `test_every_hook_an_indexer_defines_is_reached` perde lo `xfail`. Oggi il grafo di produzione di Java e Kotlin non usa i due hook che i benchmark misurano;
+  - applica il cambio di Python (task 5, «Secondo giro»).
 - [ ] **Si cancella:** la tabella dei suffissi; il wrapper `stack_analyser.py`, dopo aver portato nel registro il solo servizio che aggiunge; la scoperta di radici e `tsconfig` dentro gli indicizzatori (`snapshot.py:1414-1581`); i lettori di `modules.py` che un comando di modello sull'host sostituisce senza perdere unità.
 
 ## 8. Rischi

@@ -135,8 +135,8 @@ def write(folder: Path, manifest: Path, source: Path, name: str) -> tuple[dict, 
         checks = {"report": scip_graph.report(graph),
                   "hand_check": hand_check(index, traversal, HAND if name == "semver" else [], sites),
                   "static_sites": len(sites), "unknown_fields": dict(index.unknown),
-                  "engine": {key: engine.get(key) for key in ("runs", "environment", "requirements", "packages",
-                                                              "pyrightconfig", "project", "state", "reason")}}
+                  # Each run holds its project's facts: name, environment, requirements, packages, configuration.
+                  "engine": {key: engine.get(key) for key in ("runs", "state", "reason")}}
     run = folder / "run.json"
     checks["run"] = json.loads(run.read_text(encoding="utf-8")) if run.is_file() else None
     return graph, checks
