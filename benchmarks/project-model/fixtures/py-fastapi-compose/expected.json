@@ -126,5 +126,6 @@
     "the Dockerfile base image python:3.12-slim and requires-python >=3.11 are two different declarations",
     "extras are part of the requirement: uvicorn[standard], psycopg[binary]",
     "the connection URL scheme postgresql+psycopg selects driver psycopg 3, not psycopg2"
-  ]
+  ],
+  "cases": ["version-in-image", "no-lockfile", "build-only-dependency", "service-in-infra"]
 }

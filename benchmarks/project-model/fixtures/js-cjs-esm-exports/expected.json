@@ -79,5 +79,6 @@
     "src/index.d.ts is hand-written type declarations, not generated",
     "bin/cli.js is the executable entry (shebang) and imports the ESM entry",
     "no lockfile, so resolved is null"
-  ]
+  ],
+  "cases": ["no-lockfile", "ambiguous-extension", "false-generated"]
 }

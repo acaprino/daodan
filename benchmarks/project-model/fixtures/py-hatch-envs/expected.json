@@ -103,5 +103,6 @@
     "Python 3.10, 3.11 and 3.12 come from the test env matrix, requires-python only states >=3.10",
     "Hatch has no lockfile: every resolved value is null",
     "coverage[toml]: the extra is part of the requirement, the package is coverage"
-  ]
+  ],
+  "cases": ["version-matrix", "no-lockfile", "scope-from-groups", "build-only-dependency"]
 }

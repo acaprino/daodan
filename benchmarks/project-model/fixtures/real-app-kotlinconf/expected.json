@@ -1345,5 +1345,6 @@
   "source_sets are given only for the JVM and Android modules, where the plugin conventions fix them; the KMP modules list their existing kotlin folders as source roots and the targets as build_tags",
   "languages lists programming and markup languages only; XML, JSON, YAML, TOML, SVG and Markdown files are present and not listed",
   "connections is a sample of 26 points: the backend routes with the shared and admin clients that call them, the admin bundle served by the backend, :core shared by three units, the iOS framework, Firebase, the database, Sessionize and the production base URL"
- ]
+ ],
+ "cases": ["virtual-root", "targets-as-units", "source-sets", "version-disagree", "version-in-image", "platform-sdk", "locked-versions", "version-indirect", "build-only-dependency", "generated-file", "vendored-code", "documentation-tree", "binary-file", "dot-folder-facts", "needs-build", "build-generates-code", "service-from-config", "undeclared-connections"]
 }

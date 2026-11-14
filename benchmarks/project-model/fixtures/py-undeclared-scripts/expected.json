@@ -50,5 +50,6 @@
     "helpers is a local module in tools/ (script directory on sys.path), not a package from PyPI",
     "os and json are standard library: a tool that lists them as dependencies is wrong",
     "no file states a project name: the unit name is null (the folder name is not a name)"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "name-mismatch", "undeclared-imports"]
 }

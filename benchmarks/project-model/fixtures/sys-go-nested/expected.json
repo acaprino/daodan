@@ -84,5 +84,6 @@
     "example.com/tool/plugins/extra looks like a package of example.com/tool by its path; it is not, the nested go.mod cuts it out",
     "the nested module reaches the root through replace => ../..: the edge is local, so there is no go.sum and no external dependency",
     "there is no go.work: the two modules are not a workspace"
-  ]
+  ],
+  "cases": ["nested-module", "independent-units", "internal-link", "documentation-tree"]
 }

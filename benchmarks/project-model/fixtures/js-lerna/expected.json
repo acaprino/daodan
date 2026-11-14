@@ -84,5 +84,6 @@
     "@lrn/a in @lrn/b is an internal link (depends_on), not a registry dependency",
     "no lockfile (the lerna install tree is too large to write by hand), so resolved is null",
     "npmClient is npm but no npm version is declared"
-  ]
+  ],
+  "cases": ["workspace-glob", "version-absent", "no-lockfile", "internal-link"]
 }

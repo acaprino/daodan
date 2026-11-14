@@ -62,5 +62,6 @@
     "describe.go mentions \"Code generated\" in a comment after the package clause and without DO NOT EDIT: it is hand-written; a reader that matches the words anywhere in the first lines marks it generated",
     "the //go:generate line names stringer, a tool that is not a dependency in go.mod: nothing is required, and go generate is not needed to read the project",
     "Color.String is defined only in the generated file: dropping generated files from the index breaks every call to String"
-  ]
+  ],
+  "cases": ["generated-file", "false-generated"]
 }

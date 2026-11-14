@@ -89,5 +89,6 @@
     "src/generated/graphql.ts is generated (its header says so) but is still imported by src/index.ts: excluded from analysis, not unreferenced",
     "schema.graphql is a source file (GraphQL), the input of the generator",
     "no lockfile, so resolved is null"
-  ]
+  ],
+  "cases": ["no-lockfile", "generated-file", "vendored-code"]
 }

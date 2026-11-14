@@ -67,5 +67,6 @@
     "CI runs a matrix of four Go lines on ubuntu-latest and windows-latest, with GOPATH set to the workspace and the checkout placed under src/github.com/<repository>",
     "Makefile's docs target runs npx docsify-cli over ./docs, a folder that does not exist at this commit; no Node version is declared",
     "testdata/cert.pem and key.pem are test certificates, not code"
-  ]
+  ],
+  "cases": ["nested-module", "version-matrix", "transitive-not-direct", "generated-file", "dot-folder-facts", "missing-file"]
 }

@@ -484,5 +484,6 @@
      "evidence": ["compose.observability.yaml", "compose.agent.yaml"]},
     {"kind": "address", "key": "LOCUST_HOST=http://frontend-proxy:8080", "provided_by": [], "used_by": ["src/load-generator"],
      "evidence": [".env", "compose.yaml", "src/frontend-proxy/envoy.tmpl.yaml"]}
-  ]
+  ],
+  "cases": ["independent-units", "shared-root", "no-build-file", "unit-no-name", "shared-name", "name-mismatch", "custom-source-roots", "build-variants", "version-disagree", "version-in-image", "toolchain-in-dependencies", "locked-versions", "transitive-not-direct", "computed-dependencies", "ambiguous-extension", "generated-file", "vendored-code", "documentation-tree", "binary-file", "needs-build", "build-generates-code", "missing-file", "service-in-infra", "saas-service", "undeclared-connections", "shared-contract"]
 }

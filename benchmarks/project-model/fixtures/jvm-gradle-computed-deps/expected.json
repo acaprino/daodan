@@ -86,5 +86,6 @@
     "jackson-dataformat-yaml is present only because gradle.properties sets withYaml=true; with -PwithYaml=false the build has three dependencies, and src/main/java/com/example/computed/Config.java no longer compiles.",
     "No Java version and no Gradle version are declared: toolchains is empty and the build uses the JDK that runs Gradle.",
     "build.gradle writes the placeholder ${jacksonVersion}; declared is its value 2.18.1 from gradle.properties#jacksonVersion, and resolved stays null because no lockfile or BOM fixes it."
-  ]
+  ],
+  "cases": ["version-absent", "no-lockfile", "version-indirect", "computed-dependencies", "needs-build"]
 }

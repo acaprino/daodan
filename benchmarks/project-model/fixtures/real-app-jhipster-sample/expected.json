@@ -1380,5 +1380,6 @@
   "the cypress fixture integration-test.png and the TLS keystore keystore.p12 are binary files inside source folders",
   "languages lists programming and markup languages only; JSON, YAML, XML, CSV and properties files are present and not listed",
   "connections is a sample of 27 points: the REST resources with the Angular services that call them, the management endpoints used by the admin screens, the OpenAPI groups, the static build output, the two build tools calling each other and the two databases"
- ]
+ ],
+ "cases": ["shared-root", "targets-as-units", "shared-name", "custom-source-roots", "path-alias", "version-disagree", "version-in-wrapper", "version-in-image", "no-lockfile", "version-from-bom", "vendored-code", "documentation-tree", "binary-file", "dot-folder-facts", "needs-build", "service-in-infra", "undeclared-connections"]
 }

@@ -84,5 +84,6 @@
     "the Deno version is declared only in .tool-versions (mise/asdf), never in deno.json",
     "no deno.lock, so resolved is null where the specifier is a range",
     "deno.json has no name: the unit name is null (the directory name is not stated by any file)"
-  ]
+  ],
+  "cases": ["unit-no-name", "path-alias", "no-lockfile"]
 }

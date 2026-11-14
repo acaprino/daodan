@@ -250,5 +250,6 @@
      "evidence": ["shipping/src/main/java/com/instana/robotshop/shipping/Code.java"]},
     {"kind": "table", "key": "mysql ratings.ratings", "provided_by": ["mysql"], "used_by": ["ratings/html"],
      "evidence": ["mysql/scripts/20-ratings.sql", "ratings/html/src/Service/RatingsService.php"]}
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "version-disagree", "version-in-image", "toolchain-in-dependencies", "version-from-bom", "build-only-dependency", "vendored-code", "documentation-tree", "binary-file", "build-generates-code", "service-in-infra", "service-from-config", "undeclared-connections"]
 }

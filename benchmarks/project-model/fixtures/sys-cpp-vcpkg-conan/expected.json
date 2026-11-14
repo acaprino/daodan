@@ -105,5 +105,6 @@
     "cmake/3.28.1 is a tool_requires: a build tool Conan downloads, not a library linked into imgtool, and it differs from cmake_minimum_required 3.24",
     "the vcpkg.json name imgtool is the manifest's own name, not a dependency",
     "fmt::fmt and ZLIB::ZLIB are imported targets from find_package, not units of this project"
-  ]
+  ],
+  "cases": ["targets-as-units", "locked-versions", "build-only-dependency", "two-package-managers"]
 }

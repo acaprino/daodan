@@ -68,5 +68,6 @@
     "the integrity element of each package tuple is left empty (hashes not fabricated): a real bun.lock has them",
     "Bun.version and bun:test are runtime built-ins, not dependencies",
     "tsconfig types is [] on purpose: no @types/bun is declared"
-  ]
+  ],
+  "cases": ["locked-versions", "templated-config"]
 }

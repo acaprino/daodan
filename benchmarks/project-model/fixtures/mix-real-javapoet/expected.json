@@ -175,5 +175,6 @@
     "maven-checkstyle-plugin runs the checkstyle goal in the verify phase with checkstyle.xml; CI also runs source:jar and javadoc:jar, plugins with no version in the pom",
     "src/test/java/ClassNameNoPackageTest.java is a test in the default package",
     "no lock file: every resolved is null"
-  ]
+  ],
+  "cases": ["inherited-settings", "no-lockfile", "version-indirect", "build-only-dependency", "dot-folder-facts", "needs-build"]
 }

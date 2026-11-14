@@ -68,5 +68,6 @@
     "Linguist classifies SQL as data and the three procedural dialects as programming: a language bar that keeps only programming languages hides the plain DDL",
     "Oracle files use / lines as statement terminators for SQL*Plus; T-SQL uses GO, which is a client batch separator, not SQL",
     "the three folders target three different database servers: no migration tool configuration"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "ambiguous-extension"]
 }

@@ -78,5 +78,6 @@
     "the [tool.uv] table inside the report.py block configures uv for that script only",
     "the unit is one folder, but dependencies belong to single files (see declared_in)",
     "no file states a project name: the unit name is null (the folder name is not a name)"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "no-lockfile", "declared-in-source"]
 }

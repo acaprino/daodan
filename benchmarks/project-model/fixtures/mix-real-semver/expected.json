@@ -59,5 +59,6 @@
     "features: default = [\"std\"], serde = [\"dep:serde\"], std = []; the crate is no_std without std",
     "besides the matrix, other CI jobs pick toolchains through action refs: dtolnay/rust-toolchain@stable (node, outdated), @nightly (minimal, doc, fuzz), @clippy and @miri",
     "rust-version 1.68 and the 1.68.0 matrix entry agree; on 1.68.0 CI skips cargo test (if: matrix.rust != '1.68.0')"
-  ]
+  ],
+  "cases": ["nested-module", "name-mismatch", "file-in-several-units", "build-variants", "version-matrix", "no-lockfile", "dot-folder-facts", "needs-build"]
 }

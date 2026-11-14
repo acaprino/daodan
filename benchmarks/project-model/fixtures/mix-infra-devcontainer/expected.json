@@ -82,5 +82,6 @@
     "the dev container is for development only: no Dockerfile for production, and the database exists only as the db service of the dev compose file",
     "postCreateCommand npm ci needs a package-lock.json that is not in the fixture",
     "every dev container fact lives under .devcontainer/: a reader whose perimeter skips dot folders never sees them"
-  ]
+  ],
+  "cases": ["version-in-image", "no-lockfile", "templated-config", "dot-folder-facts", "missing-file", "service-in-infra"]
 }

@@ -84,5 +84,6 @@
     "cfg-if comes from git, not crates.io: the lock source is git+https://github.com/rust-lang/cfg-if?tag=1.0.0 pinned at commit e60fa1efeab0ec6e90c50d93ec526e1410459c23, and has no checksum",
     "no version requirement is written for cfg-if (declared null); 1.0.0 is the version in the Cargo.toml of the tagged commit",
     "reading the git dependency's own manifest needs a git fetch; the lock alone gives name, version and commit"
-  ]
+  ],
+  "cases": ["independent-units", "locked-versions", "internal-link", "git-dependency"]
 }

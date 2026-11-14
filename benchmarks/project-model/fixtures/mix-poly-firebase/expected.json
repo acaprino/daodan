@@ -618,5 +618,6 @@
         "functions/src/index.ts"
       ]
     }
-  ]
+  ],
+  "cases": ["nested-module", "independent-units", "no-build-file", "unit-no-name", "file-in-several-units", "platform-sdk", "no-lockfile", "build-only-dependency", "binary-file", "needs-build", "build-generates-code", "missing-file", "saas-service", "undeclared-connections"]
 }

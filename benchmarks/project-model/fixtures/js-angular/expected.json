@@ -244,5 +244,6 @@
     "Linguist calls the component template HTML, not Angular",
     "no lockfile, so resolved is null",
     "node is not declared anywhere"
-  ]
+  ],
+  "cases": ["targets-as-units", "path-alias", "version-absent", "no-lockfile", "build-generates-code"]
 }

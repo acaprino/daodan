@@ -114,5 +114,6 @@
     "example.com/ws/api is a workspace member, not an external dependency, even though svc/go.mod requires it with a version",
     "go.work.sum is not a lockfile of a module: it only holds hashes the workspace needs beyond the modules' go.sum files",
     "there is no go.mod at the root: the root is a workspace, not a module"
-  ]
+  ],
+  "cases": ["virtual-root", "locked-versions", "internal-link"]
 }

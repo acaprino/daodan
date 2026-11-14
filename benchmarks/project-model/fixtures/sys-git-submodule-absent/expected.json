@@ -72,5 +72,6 @@
     "fmt::fmt is the target defined by the missing subdirectory, not by find_package: no system fmt is looked up",
     "a reader that walks the tree finds no fmt sources and no fmt manifest; only .gitmodules declares the dependency",
     "getting fmt needs a git fetch, not running project code: needs.container stays false"
-  ]
+  ],
+  "cases": ["targets-as-units", "git-dependency", "submodule-absent"]
 }

@@ -33,5 +33,6 @@
     "// swift-tools-version:5.9 is the minimum tools version, a comment that is part of the manifest; .swift-version asks 5.10.1",
     "platforms .macOS(.v13) is a deployment target, not a toolchain version",
     "@main in Sources/ShopCLI/Shop.swift is the entry point: there is no main.swift"
-  ]
+  ],
+  "cases": ["name-mismatch", "source-sets", "version-range", "locked-versions", "needs-build"]
 }

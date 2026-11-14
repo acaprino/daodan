@@ -98,5 +98,6 @@
     "root pyrightconfig.json extraPaths is the only config that makes both roots visible to a type checker; there is no workspace tool",
     "app/main.py belongs to no unit: it has no manifest",
     "packages lists the shared namespace package acme for both units; the submodules are acme.core and acme.plugins"
-  ]
+  ],
+  "cases": ["independent-units", "name-mismatch", "custom-source-roots", "no-lockfile", "build-only-dependency"]
 }

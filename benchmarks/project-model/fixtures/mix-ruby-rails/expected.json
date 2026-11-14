@@ -177,5 +177,6 @@
     "bin/rails has no extension: Ruby by its shebang; Gemfile, Rakefile and config.ru are Ruby too",
     "config/database.yml is ERB-templated YAML: the production database URL comes from DATABASE_URL at runtime",
     "Redis is reached only through Sidekiq (REDIS_URL with a default), Active Job is wired to Sidekiq in config/application.rb"
-  ]
+  ],
+  "cases": ["unit-no-name", "no-lockfile", "scope-from-groups", "shebang-only", "templated-config", "service-from-config"]
 }

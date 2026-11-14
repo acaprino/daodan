@@ -118,5 +118,6 @@
     "The unit name is the Gradle path ':'; rootProject.name 'hello-groovy' is the project's display name and artifact base name.",
     "The application plugin's mainClass makes App.java the entry file.",
     "resolved for junit-jupiter (5.11.3) and junit-platform-launcher (1.11.3) is read from junit-bom 5.11.3 as published on Maven Central."
-  ]
+  ],
+  "cases": ["name-mismatch", "version-in-wrapper", "version-from-bom", "vendored-code", "needs-build", "missing-file"]
 }

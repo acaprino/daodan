@@ -105,5 +105,6 @@
     "The protobuf plugin adds src/main/proto to the main source set: the .proto file is a build input, Protocol Buffer for Linguist.",
     "protoc 4.28.3 is a Maven artifact the plugin downloads for the platform, so it is a build dependency, not a toolchain to install.",
     "The checked-in header reads NO CHECKED-IN PROTOBUF GENCODE: protoc 4.x writes it in every Java file, a hint that this copy should not be in the repository."
-  ]
+  ],
+  "cases": ["custom-source-roots", "no-lockfile", "build-only-dependency", "generated-file", "build-generates-code"]
 }

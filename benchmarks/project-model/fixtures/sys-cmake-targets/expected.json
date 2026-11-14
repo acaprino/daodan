@@ -111,5 +111,6 @@
     "calc compiles with core/include and CALC_WITH_ZLIB=1 only because they are PUBLIC on calc_core: app/CMakeLists.txt states neither",
     "core/src/archive.h is a C++ header (namespace calc::detail) with a .h extension",
     "CMAKE_CXX_STANDARD is set in the root and inherited by every target created after it"
-  ]
+  ],
+  "cases": ["targets-as-units", "inherited-settings", "version-range", "no-lockfile", "ambiguous-extension"]
 }

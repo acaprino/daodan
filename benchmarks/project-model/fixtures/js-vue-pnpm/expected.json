@@ -131,5 +131,6 @@
     "pnpm is declared by packageManager only: there is no pnpm-lock.yaml and no pnpm-workspace.yaml, so this is a single package, not a workspace",
     "no lockfile, so resolved is null",
     "node is not declared anywhere"
-  ]
+  ],
+  "cases": ["version-absent", "no-lockfile", "ambiguous-extension"]
 }

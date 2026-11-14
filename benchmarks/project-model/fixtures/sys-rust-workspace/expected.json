@@ -144,5 +144,6 @@
     "ledger-macros is a proc-macro crate (proc-macro = true): it is compiled for the host and its target kind is proc-macro, not lib",
     "the binary of ledger-cli is named ledger by [[bin]], not ledger-cli",
     "ledger-core and ledger-macros are path dependencies inside the workspace: edges in depends_on, not external dependencies"
-  ]
+  ],
+  "cases": ["workspace-glob", "virtual-root", "nested-module", "name-mismatch", "inherited-settings", "locked-versions", "version-indirect", "internal-link"]
 }

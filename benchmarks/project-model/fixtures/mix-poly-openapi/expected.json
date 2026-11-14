@@ -179,5 +179,6 @@
         "frontend/src/api/schema.d.ts"
       ]
     }
-  ]
+  ],
+  "cases": ["no-lockfile", "undeclared-imports", "build-only-dependency", "ambiguous-extension", "generated-file", "undeclared-connections", "shared-contract"]
 }

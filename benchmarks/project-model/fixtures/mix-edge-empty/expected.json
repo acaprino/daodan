@@ -15,5 +15,6 @@
     "no code: the right pre-map is empty everywhere, and an empty result is not a failure",
     "README.md is Markdown and LICENSE is plain text: prose, not code languages, so languages is empty",
     "a reader that needs at least one unit or one language to proceed must stop cleanly here"
-  ]
+  ],
+  "cases": ["no-build-file", "documentation-tree"]
 }

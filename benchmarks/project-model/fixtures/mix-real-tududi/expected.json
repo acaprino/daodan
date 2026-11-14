@@ -1300,5 +1300,6 @@
     "linguaisync.config.js configures linguaisync, a dependency that translates public/locales with the model gpt-4o-mini: an OpenAI call made by a developer tool, not by the app",
     "billing exists only in hosted mode (TUDUDI_HOSTED_MODE=true): backend/modules/billing/providers holds three providers, Stripe (the default of hosted.billing.provider), Lemon Squeezy and Paddle, called over their HTTP APIs with keys from backend/config/config.js; only Stripe has an npm package",
     "docs/examples/docker-compose.hosted.yml (with Caddy) is a documentation example under docs/, excluded: its services are not the project's"
-  ]
+  ],
+  "cases": ["one-unit-many-parts", "path-alias", "version-in-image", "locked-versions", "vendored-code", "documentation-tree", "binary-file", "service-in-infra", "saas-service"]
 }

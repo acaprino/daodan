@@ -110,5 +110,6 @@
     "dev tools sit in PEP 735 [dependency-groups], not in optional-dependencies",
     "uv version is a constraint (tool.uv.required-version), not an installed version",
     "hand-written lock without wheel or sdist hashes (not fabricated): name, version and source only"
-  ]
+  ],
+  "cases": ["custom-source-roots", "locked-versions", "transitive-not-direct", "scope-from-groups", "build-only-dependency"]
 }

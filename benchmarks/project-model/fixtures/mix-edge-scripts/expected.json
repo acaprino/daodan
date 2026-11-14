@@ -74,5 +74,6 @@
     "log.bash is sourced by deploy.sh: a .bash library without a shebang",
     "build.bat and setup.cmd use CRLF line endings; .cmd is Batchfile like .bat",
     "rsync and pwsh are tools the scripts call, not toolchains the project declares"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "shebang-only", "saas-service"]
 }

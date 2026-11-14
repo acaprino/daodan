@@ -40,5 +40,6 @@
     "install_requires is computed by a function reading platform.system() and the DYN_EXTRAS environment variable: the dependency list is unknown without running setup.py",
     "a regex over setup.py finds 'requests' and 'pywin32>=300' but the real list also depends on DYN_EXTRAS: any static answer is incomplete",
     "dependencies is left empty on purpose: expected truth is 'unknown', not 'requests'"
-  ]
+  ],
+  "cases": ["computed-dependencies", "needs-build"]
 }

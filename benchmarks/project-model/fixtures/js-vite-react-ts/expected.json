@@ -146,5 +146,6 @@
     "no lockfile, so resolved is null for every dependency",
     "node is not declared anywhere",
     "src/vite-env.d.ts is a hand-kept declaration file, not generated"
-  ]
+  ],
+  "cases": ["path-alias", "version-absent", "no-lockfile", "false-generated"]
 }

@@ -70,5 +70,6 @@
     "empty=annotationProcessor,testAnnotationProcessor records locked configurations with no dependency; it is not a package.",
     "No wrapper and no Gradle version anywhere: the Gradle that runs is whichever is installed.",
     "The lockfile is the project's single lock file (Gradle 7+ format); there are no per-configuration files under gradle/dependency-locks/."
-  ]
+  ],
+  "cases": ["version-range", "version-absent", "locked-versions"]
 }

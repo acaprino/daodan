@@ -70,5 +70,6 @@
     "env!(\"OPCODES_MODERN_RUSTC\") is set by a cargo:rustc-env line of build.rs; without running it the crate does not even compile",
     "version_check is a build dependency: it is linked into build.rs, not into the library, and is not a runtime dependency",
     "opcodes.txt is an input of the build script (rerun-if-changed), not documentation"
-  ]
+  ],
+  "cases": ["locked-versions", "build-only-dependency", "needs-build", "build-generates-code"]
 }

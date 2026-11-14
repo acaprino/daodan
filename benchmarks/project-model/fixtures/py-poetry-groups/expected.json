@@ -106,5 +106,6 @@
     "the Poetry version is only visible in the poetry.lock header, nowhere else",
     "poetry.lock is hand-written: files = [] and content-hash is a placeholder of zeros (not computed); 'poetry check --lock' would flag it",
     "lock also holds transitive packages (certifi, idna, urllib3, markdown-it-py, pygments, mdurl...) that are not declared"
-  ]
+  ],
+  "cases": ["toolchain-in-dependencies", "locked-versions", "transitive-not-direct", "scope-from-groups", "build-only-dependency"]
 }

@@ -71,5 +71,6 @@
     "the version is read from the URL path (vue@3.5.12): it is pinned, so resolved equals the pin",
     "app.js uses the Chart global without importing it: it comes from the chart.js script tag",
     "no framework is present as a package: Vue is loaded from a CDN"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "declared-in-source"]
 }

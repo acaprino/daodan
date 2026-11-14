@@ -100,5 +100,6 @@
     "no yarnPath and no .yarn/ directory: the Yarn version is declared only by packageManager",
     "node is not declared anywhere",
     "lock has no checksum fields (not fabricated)"
-  ]
+  ],
+  "cases": ["workspace-glob", "unit-no-name", "version-absent", "locked-versions", "internal-link"]
 }

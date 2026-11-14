@@ -123,5 +123,6 @@
     "m is found with find_library and required: false: libm is optional, not a package dependency",
     "the tests directory is entered only when the tests option is true; it is true by default in meson.options (the Meson 1.1 name of meson_options.txt)",
     "libimg_dep is a declare_dependency, an internal handle, not an external package"
-  ]
+  ],
+  "cases": ["targets-as-units", "name-mismatch", "build-variants"]
 }

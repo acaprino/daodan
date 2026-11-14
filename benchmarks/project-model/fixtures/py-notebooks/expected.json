@@ -97,5 +97,6 @@
     "the notebook kernel metadata gives Python 3.11.4, which pyproject does not state",
     "Linguist counts .ipynb as language 'Jupyter Notebook', not Python",
     "src/nbproj/helpers.py is imported by the notebook through the installed package"
-  ]
+  ],
+  "cases": ["no-lockfile", "declared-in-source", "build-only-dependency"]
 }

@@ -40,5 +40,6 @@
     "shop_core is reached by path from two units: it goes in depends_on, not in dependencies",
     "the Flutter version is in .fvmrc at the repository root (FVM), not next to the app; app/pubspec.yaml only asks >=3.24.0",
     "shop_core has no dependencies and no lock: its sdk constraint is still a toolchain request"
-  ]
+  ],
+  "cases": ["independent-units", "inherited-settings", "toolchain-in-dependencies", "platform-sdk", "locked-versions", "internal-link"]
 }

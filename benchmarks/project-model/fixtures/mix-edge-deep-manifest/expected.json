@@ -49,5 +49,6 @@
     "Cargo.lock version 4 lists only the crate itself: it has no dependencies",
     "platform/ and platform/services/ are plain folders, not a Cargo workspace",
     "edition 2021 is a language edition, not a toolchain version"
-  ]
+  ],
+  "cases": ["inherited-settings", "documentation-tree"]
 }

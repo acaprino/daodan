@@ -125,5 +125,6 @@
     "Two JVM targets are set independently: kotlin.compiler.jvmTarget=17 for kotlinc and maven.compiler.release=17 for javac.",
     "src/test/java is declared in the Kotlin test sourceDirs but does not exist.",
     "kotlin-stdlib, kotlin-test-junit5 and kotlin-maven-plugin write ${kotlin.version}; declared is the property value 2.0.21, declared_in pom.xml#properties.kotlin.version."
-  ]
+  ],
+  "cases": ["custom-source-roots", "no-lockfile", "version-indirect", "build-only-dependency", "missing-file"]
 }

@@ -37,5 +37,6 @@
     "# syntax=docker/dockerfile:1.7 selects the BuildKit frontend, not a project toolchain",
     "the deps stage installs with --omit=dev: there are no devDependencies anyway",
     "the queue name 'orders' joins server.js and worker.js only through a string"
-  ]
+  ],
+  "cases": ["one-unit-many-parts", "version-in-image", "no-lockfile", "missing-file", "service-in-infra"]
 }

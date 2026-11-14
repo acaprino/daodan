@@ -98,5 +98,6 @@
     "@repo/typescript-config is a unit with no sources, only a shared config file",
     "no lockfile: turbo pulls platform-specific optional binaries that cannot be written faithfully by hand, so resolved is null",
     "the dependsOn ^build in turbo.json is a task-graph edge between units, derived from the package edges"
-  ]
+  ],
+  "cases": ["workspace-glob", "no-lockfile", "internal-link"]
 }
