@@ -411,9 +411,10 @@ def check_fixture(test: unittest.TestCase, name: str, result: dict) -> None:
 
 
 SMOKE = os.environ.get("DAODAN_JVM_SMOKE") == "1"
-MIN_PHYSICAL = MIN_COMMIT = 3 * 2**30  # free before the run starts, both
-MIN_SYSTEM_DISK = 8 * 2**30  # free on the system disk after the run, whatever the engine and downloads add
-ADDED_AT_MOST = 2 * 2**30  # the image (0.4 GB), the proxy image, scip-java, Maven, the prepared image
+HOST_MEMORY = 2 * 2**30  # free memory the host keeps beside a container at its limit
+HOST_DISK = 3 * 2**30  # free on the system disk after the run
+ADDED_AT_MOST = 2 * 2**30  # the image (0.4 GB), the proxy image, the tools, the layer the engine keeps
+MEMORY = {"java": 2 * 2**30, "kotlin": 4 * 2**30}  # the container's limit for each fixture
 
 
 def free_commit() -> int | None:
@@ -435,44 +436,82 @@ def free_commit() -> int | None:
 
 
 def engine_state(engine) -> dict:
-    """What the engine holds, for the report: its images and its disk use."""
-    images = container.cli(engine, "image", "ls", "--format", "{{.Repository}}:{{.Tag}}@{{.ID}} {{.Size}}")
-    usage = container.cli(engine, "system", "df", "--format", "{{.Type}} {{.Size}} {{.Reclaimable}}")
-    return {"images": images.stdout.decode("utf-8", "replace").split("\n"),
-            "df": usage.stdout.decode("utf-8", "replace").split("\n")}
+    """What the engine holds, for the report: its images, its containers and its disk use."""
+    def listed(*args: str) -> list[str]:
+        return [line for line in container.cli(engine, *args).stdout.decode("utf-8", "replace").split("\n") if line]
+    return {"images": listed("image", "ls", "--format", "{{.Repository}}@{{.ID}} {{.Size}}"),
+            "containers": listed("ps", "-a", "--format", "{{.Names}}"),
+            "df": listed("system", "df", "--format", "{{.Type}} {{.Size}} {{.Reclaimable}}")}
 
 
-@unittest.skipUnless(SMOKE, "set DAODAN_JVM_SMOKE=1 to index the Java fixture in a real container")
+@unittest.skipUnless(SMOKE, "set DAODAN_JVM_SMOKE=1 to index the fixtures in a real container")
 class RealContainerSmokeTest(unittest.TestCase):
     def test_java_fixture_in_one_container(self):
-        self.index_fixture(wrapper=False)
+        self.index_fixture("java")
 
     def test_java_fixture_with_a_maven_wrapper_made_on_windows(self):
         """The wrapper as a Windows checkout leaves it: CRLF and no executable bit on disk, `.mvn/` tracked by Git.
         Run as written it would fail; the build passes only if the container calls the Maven Daodan brought."""
-        self.index_fixture(wrapper=True)
+        self.index_fixture("java", wrapper=True)
 
-    def index_fixture(self, *, wrapper: bool):
-        from test_codebase_map_container import user_settings
-        memory = 2 * 2**30
-        free, commit = container.free_memory(), free_commit()
-        if free is not None and free < MIN_PHYSICAL or commit is not None and commit < MIN_COMMIT:
-            self.skipTest(f"{(free or 0) / 2**30:.1f} GB physical and {(commit or 0) / 2**30:.1f} GB commit free, "
-                          f"under {MIN_PHYSICAL / 2**30:.0f} GB")
-        system = Path(os.environ.get("SystemDrive", "C:") + "\\") if os.name == "nt" else Path("/")
-        disk = shutil.disk_usage(system).free
-        if disk - ADDED_AT_MOST < MIN_SYSTEM_DISK:
-            self.skipTest(f"{disk / 2**30:.1f} GB free on {system}: the run could leave under 8 GB")
-        before = user_settings()
-        try:
-            engine = container.find_engine()
-        except container.Gap as gap:
-            self.skipTest(f"no engine: {gap.cause}")
+    def test_kotlin_fixture_in_one_container(self):
+        """No wrapper: the Gradle Daodan pins, downloaded and checked on the host, builds the fixture."""
+        self.index_fixture("kotlin")
+
+    def test_a_wrapper_naming_another_site_starts_no_container(self):
+        engine = self.engine()
         held = engine_state(engine)
         scratch = Path(tempfile.mkdtemp(prefix="daodan-jvm-smoke-"))
         self.addCleanup(shutil.rmtree, scratch, ignore_errors=True)
-        project = scratch / "project" / "java"
-        shutil.copytree(FIXTURES / "java", project, ignore=lambda folder, names: [n for n in names if n in OWN])
+        project = self.fixture(scratch, "kotlin")
+        (project / "gradle/wrapper").mkdir(parents=True)
+        (project / "gradle/wrapper/gradle-wrapper.properties").write_text(
+            "distributionUrl=https\\://downloads.example.com/gradle-9.9.1-bin.zip\n", encoding="utf-8")
+        asked = []
+        real_open = resolve_edges.open_url
+
+        def spy(url, timeout):
+            asked.append(url)
+            return real_open(url, timeout)
+
+        with mock.patch.object(resolve_edges, "open_url", spy):
+            result = kotlin.index(project, scratch / "work", engine=engine, memory=MEMORY["kotlin"])
+        print(json.dumps({"state": result.get("state"), "reason": result.get("reason"), "asked": asked}, indent=1))
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("downloads.example.com", result["reason"])
+        self.assertFalse(any("example.com" in url for url in asked))
+        self.assertEqual(engine_state(engine)["containers"], held["containers"])
+
+    def engine(self):
+        try:
+            return container.find_engine()
+        except container.Gap as gap:
+            self.skipTest(f"no engine: {gap.cause}")
+
+    @staticmethod
+    def fixture(scratch: Path, language: str) -> Path:
+        project = scratch / "project" / language
+        shutil.copytree(FIXTURES / language, project, ignore=lambda folder, names: [
+            name for name in names if name in OWN or name == "kotlin-configs"])
+        return project
+
+    def index_fixture(self, language: str, *, wrapper: bool = False):
+        from test_codebase_map_container import user_settings
+        memory = MEMORY[language]
+        free, commit = container.free_memory(), free_commit()
+        if free is not None and free < memory + HOST_MEMORY or commit is not None and commit < memory + HOST_MEMORY:
+            self.skipTest(f"{(free or 0) / 2**30:.1f} GB physical and {(commit or 0) / 2**30:.1f} GB commit free, "
+                          f"under the container's {memory / 2**30:.0f} GB plus {HOST_MEMORY / 2**30:.0f} GB")
+        system = Path(os.environ.get("SystemDrive", "C:") + "\\") if os.name == "nt" else Path("/")
+        disk = shutil.disk_usage(system).free
+        if disk - ADDED_AT_MOST < HOST_DISK:
+            self.skipTest(f"{disk / 2**30:.1f} GB free on {system}: the run could leave under 3 GB")
+        before = user_settings()
+        engine = self.engine()
+        held = engine_state(engine)
+        scratch = Path(tempfile.mkdtemp(prefix="daodan-jvm-smoke-"))
+        self.addCleanup(shutil.rmtree, scratch, ignore_errors=True)
+        project = self.fixture(scratch, language)
         if wrapper:
             url = f"{jvm.MAVEN_SITE}{jvm.MAVEN[0]}/apache-maven-{jvm.MAVEN[0]}-bin.zip"
             (project / ".mvn/wrapper").mkdir(parents=True)
@@ -486,15 +525,19 @@ class RealContainerSmokeTest(unittest.TestCase):
                 subprocess.run([git, "-C", str(project), *args], check=True, capture_output=True)
         before_project = tree_digest(project)
         started = time.monotonic()
-        result = java.index(project, scratch / "work", engine=engine, memory=memory)
+        module = java if language == "java" else kotlin
+        result = module.index(project, scratch / "work", engine=engine, memory=memory)
         after = user_settings()
         records = [json.loads(row) for row in (scratch / "work" / "container" / container.RECORD_NAME).read_text(
             encoding="utf-8").splitlines()]
-        print(json.dumps({"engine": engine.name, "wrapper": wrapper, "seconds": round(time.monotonic() - started, 1),
-                          "indexer": result["indexer"], "state": result.get("state"), "reason": result.get("reason"),
+        tools = {name: str(path) for name, path in jvm.tools(project).items() if name.startswith(jvm.TOOLS)}
+        print(json.dumps({"engine": engine.name, "language": language, "wrapper": wrapper,
+                          "seconds": round(time.monotonic() - started, 1), "indexer": result["indexer"],
+                          "state": result.get("state"), "reason": result.get("reason"),
                           "runs": [{key: run.get(key) for key in ("phase", "step", "returncode", "seconds", "peak_mb")}
                                    for run in result["runs"]],
                           "copies": [record.get("copy") for record in records],
+                          "tools": {name: [path, jvm.sha256(Path(path))] for name, path in tools.items()},
                           "engine before": held, "engine after": engine_state(engine),
                           "system disk free GB": [round(disk / 2**30, 2),
                                                   round(shutil.disk_usage(system).free / 2**30, 2)],
@@ -505,18 +548,18 @@ class RealContainerSmokeTest(unittest.TestCase):
             if log.is_file():
                 text = log.read_text(encoding="utf-8", errors="replace")
                 prepared = text if phase == "prepare" else prepared
-                print(f"--- {phase}.log tail\n" + "\n".join(text.splitlines()[-25:]))
+                print(f"--- {phase}.log tail\n" + "\n".join(text.splitlines()[-40:]))
         self.assertTrue(result["indexes"], result.get("reason"))
         self.assertEqual(tree_digest(project), before_project)
         self.assertEqual(after, before)
         self.assertEqual([(record["phase"], record["network"] == "none") for record in records],
                          [("prepare", False), ("execute", True)])
+        self.assertNotRegex(prepared, r"Downloading https://services\.gradle\.org|apache-maven/[\d.]+/apache-maven")
         if wrapper:
             self.assertNotIn("the project wrapper ran", prepared)
-            self.assertNotIn("apache-maven/", prepared)  # no build downloaded a distribution
             files = [path for path in project.rglob("*") if path.is_file() and ".git" not in path.parts]
             self.assertEqual(records[0]["copy"]["files"], len(files))  # `.mvn/` included: Git tracks it
-        check_fixture(self, "java", result)
+        check_fixture(self, language, result)
 
 
 if __name__ == "__main__":
