@@ -74,9 +74,9 @@ creating an unowned index; a worker reports the gap to its coordinator.
    read-only, checks source identity and parser fingerprint, and neither
    reparses nor writes. Its `xray/source-graph/v1` packet binds manifest and
    query, declarations, callsite spans, target identities, resolution and
-   reasons, imports, coverage and diagnostics. Report call coverage as
-   `edge_view.coverage.resolution`: resolved over resolvable, never resolved over
-   all calls, per language from `by_language`, and name the engine state of a
+   reasons, imports, coverage and diagnostics. Report coverage per language from
+   `edge_view.coverage.languages`: sites with an answer by class, holes by class,
+   uncertain arcs and `complete` or `lower-bound`; name the engine state of a
    language whose stage is still running or unavailable. Narrow or split a `truncated`
    query before raising its limit; retain gaps. Static resolution does not cover
    dynamic dispatch or arbitrary receiver types, and a resolved edge verifies no

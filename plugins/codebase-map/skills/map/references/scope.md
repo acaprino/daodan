@@ -53,7 +53,7 @@ caller obligations, even when the supplied diff is narrower.
 Optional `indexes` keys are `retrieval`, `engine`, `base_engine`, `cards` and
 `embedding_result`. Dense results must already have been produced and receipted
 by the embedding worker. Default engine paths are bound even when absent. A
-missing, sampled, conflicting or valid empty engine pass stays distinguishable.
+missing, lower-bound, conflicting or complete engine pass stays distinguishable.
 Text search verifies its entire inventory; a narrower read boundary suppresses
 that search with an explicit gap. Graph metadata can report pointers outside the
 read boundary, but source bytes outside it are never read by this planner.

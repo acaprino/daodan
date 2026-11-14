@@ -1761,3 +1761,27 @@ uguale al worktree):
   - 1 da un nome preso da un indice (`find_user`, `functions-python/tests/unit/test_planner_revision_repository.py:2920`);
   - 1 da una riesportazione via attributo di modulo (`play_billing.get_settings`).
 - Controllo a mano Python: 15 su 15, prima e dopo. Costo: circa 0,02 USD.
+
+## 14 novembre 2026, gli stage degli indicizzatori nel passaggio
+
+Il passaggio del prodotto legge Go, TypeScript e JavaScript, Rust dai loro indicizzatori (`ENGINES` di `resolve_edges.py`, task 5 del piano `docs/plans/2026-11-14-grafo-dall-indice.md`). `modal_stage.py` fa girare lo stage vero (`index_stage`) sul caso e, dallo stesso indice, scrive lo store come lo scrive il benchmark; poi li confronta.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | chi, semver e tududi ai commit sopra, con snapshot e passo per posizione tenuti in `scip-inputs/<caso>` |
+| voci | `scip-go`, `scip-rust`, `scip-typescript`; resolver `nome della voce@versione` |
+| macchina | Modal, 4 CPU e 12 GB, solo il sistema di base: ogni stage scarica il suo indicizzatore |
+| soglia | conteggi del grafo e celle del confronto con il passo per posizione uguali a `results/scip-<caso>-confirm.json`; store dello stage uguale riga per riga a quello del benchmark; ogni «solo passo per posizione» con una riga nello store; verifica a mano pari |
+| risultati | `results/scip-{chi,semver,tududi}-stage.json` |
+
+Risultati, con il codice del plugin verificato per hash. Costo: 0,10 USD.
+- Conteggi uguali: chi 4.847 nodi e 20.102 archi; semver 1.073 e 3.960; tududi JavaScript 86.225 e 182.593, TypeScript 41.107 e 171.821. Anche le celle del confronto con il passo per posizione sono identiche.
+- Lo store dello stage è identico a quello del benchmark, riga per riga, in archi, buchi ed esterni.
+- «Solo passo per posizione»:
+  - chi 0 e tududi TypeScript 0;
+  - semver 5: 3 archi esterni (`string.parse`, che l'indice porta a `core`) e 2 buchi `no-document` (`tests/node/mod.rs`);
+  - tududi JavaScript 58, tutti buchi `dangling-local` (per esempio `backend/modules/admin/service.js:1085` `blogService.status`).
+- Verifica a mano: chi 15 su 15, semver 15 su 15, tududi 26 su 30, come prima.
+- Indicizzatore: scip-go 10,1 s e 318 MB; rust-analyzer 9,7 s e 1.172 MB; scip-typescript 59,1 s e 2.116 MB.
+- Lo stage intero su una macchina nuova dura 54 s, 27 s e 885 s. Per tududi quasi tutto il tempo è installazione al primo uso: Node, scip-typescript e i pacchetti npm del progetto.
+- Il test del passaggio TypeScript attraverso MCP (`tests/test_codebase_map_mcp_wire.py`, con l'SDK MCP vero, su Modal) dà la voce `fresh` con `scip-typescript@0.5.2`. «Risolte su risolvibili» dà però 0 su 1: quel numero legge campi che solo il passo per posizione scrive, ed esce dal prodotto con il task 6.

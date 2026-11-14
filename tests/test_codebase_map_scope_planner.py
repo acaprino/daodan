@@ -378,7 +378,7 @@ class ScopePlannerTests(unittest.TestCase):
         resolve_edges.resolve_edges(self.current, engine=EmptyEngine(), limit=None, stride=1)
         empty = self.prepare(request)
         self.assertTrue(empty['resolver_profile']['profile']['engine_available'])
-        self.assertEqual(empty['coverage']['engine']['status'], 'completed_empty')
+        self.assertEqual(empty['coverage']['engine']['status'], 'lower-bound')
         self.assertTrue(empty['unresolved'])
         with self.assertRaisesRegex(ValueError, 'stale'):
             self.advance(missing, request)

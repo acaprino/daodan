@@ -752,13 +752,16 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Pa
     site; an end `refine` removed is counted in `edges_removed` and not saved. A reference the index answers
     nothing at, or only with removed ends, is a hole, like an implicit call an adapter adds. An occurrence the
     snapshot lists no reference for is a row of kind `unknown`, which no consumer reads. `symbol` is the key
-    the end is at; an external end's package goes to `externals`.
+    the end is at; an external end's package goes to `externals`. Each language's entry holds its coverage
+    (`resolve_edges.language_coverage`) over every call and read the snapshot lists for it: a store that would
+    hold nothing for one of them is not written, and the ValueError lists those sites by kind.
     """
     import resolve_edges as rx
     known = {identity: (caller, l0, c0) for identity, caller, l0, c0 in snapshot.connection.execute(
         "SELECT id, caller, l0, c0 FROM sem_references")}
     edges, holes, entries = [], [], {}
     for language, (graph, references) in sorted(built.items()):
+        first_edge, first_hole = len(edges), len(holes)
         packages = {node["id"]: node["external"] for node in graph["nodes"]}
         kept = {(edge["site"], edge["to"], tuple(edge["chain"])) for edge in graph["edges"]}
         doubts = {(edge["site"], edge["to"], tuple(edge["chain"])): edge["uncertain"]
@@ -801,8 +804,15 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Pa
                 holes.append({"reference_id": None, "file": snapshot.rel.get(rel, rel), "language": language,
                               "kind": hole["kind"], "l0": int(line), "c0": None, "class": hole["class"],
                               "reason": hole["reason"], "resolver": resolver})
-        entries[language] = {"engine": resolver, "state": "fresh", "indexer": graph["indexer"],
-                             "files": graph["files"],
+        sites = [{"reference_id": identity, "kind": kind, "site": f"{snapshot.checkout.get(rel, rel)}:{span[0]} "
+                                                                  f"{parts[-1] if parts else ''}".rstrip(),
+                  "lexical": resolution == "resolved"}
+                 for identity, rel, kind, resolution, _target, span, parts, _reason in snapshot.references(language)]
+        coverage = rx.language_coverage(sites, edges[first_edge:], holes[first_hole:], graph["files"])
+        broken = rx.coverage_violation(language, coverage)
+        if broken:
+            raise ValueError(broken)
+        entries[language] = {"engine": resolver, "state": "fresh", "indexer": graph["indexer"], "coverage": coverage,
                              "edges_removed": dict(collections.Counter(edge["removed"] for edge in graph["removed"]))}
     kept_entries, kept_edges, kept_holes, kept_reports = rx.kept_languages(out, snapshot.store, built)
     binding = rx.store_binding(snapshot.store, snapshot.manifest, snapshot.store.metadata.get("parser_fingerprint"),

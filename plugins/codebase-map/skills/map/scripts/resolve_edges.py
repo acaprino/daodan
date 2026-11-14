@@ -2704,100 +2704,6 @@ def classify_reference(payload: dict, names: set[str]) -> str:
     return "askable"
 
 
-REFERENCE_CLASSES = ("builtin", "dynamic", "askable")
-
-
-class ResolutionCounter:
-    """Per-language counts of a snapshot's calls, fed one reference at a time."""
-
-    def __init__(self, names: set[str]):
-        self.names = names
-        self.languages: dict[str, dict] = {}
-
-    def add(self, language: str | None, res_state: str, payload: dict, *, engine_resolved: bool = False,
-            engine_external: bool = False) -> None:
-        counts = self.languages.setdefault(language or "unknown", {
-            "calls": 0, "lexical_resolved": 0, "engine_confirmed": 0, "engine_refuted": 0,
-            **dict.fromkeys(REFERENCE_CLASSES, 0)})
-        counts["calls"] += 1
-        if res_state == "resolved":
-            # A bound call the engine places outside the project is external; one it rebinds is the engine's.
-            counts["engine_refuted" if engine_external else
-                   "engine_confirmed" if engine_resolved else "lexical_resolved"] += 1
-            return
-        counts["engine_confirmed"] += int(engine_resolved)
-        counts[classify_reference(payload, self.names)] += 1
-
-    def summary(self, binding: dict | None, *, stored_confirmed: bool = False) -> dict:
-        """Resolved over resolvable, overall and per language.
-
-        `external` counts the calls that cannot arrive at a project symbol under
-        proven origin: builtins and the positions an engine inferred to a definition outside
-        the inventory. `resolvable` is every other call, dynamic callees included;
-        `unasked` is the askable remainder no engine pass has inferred. Each
-        language reads its own entry of the edge store; its `engine` is None when
-        no pass covers it. `stored_confirmed` counts the store's confirmed edges
-        and its checks of the bound calls when the caller did not feed them
-        reference by reference.
-        """
-        entries = (binding or {}).get("languages") or {}
-        keys = ("calls", "lexical_resolved", "engine_confirmed", "engine_external", "asked", "engine_unresolved",
-                *REFERENCE_CLASSES)
-        total = dict.fromkeys(keys, 0)
-        by_language = {}
-        for language, counts in sorted(self.languages.items()):
-            entry = entries.get(language) or {}
-            verdicts = entry.get("verdicts") or {}
-            row = {**counts,
-                   "asked": int(entry.get("asked", 0)) + int(entry.get("reused", 0)),
-                   "engine_unresolved": sum(int(verdicts.get(key, 0)) for key in
-                                            ("unresolved", "ambiguous-target", "project-not-a-symbol"))}
-            if stored_confirmed:
-                checked = entry.get("checked") or {}
-                corrected, refuted = int(checked.get("corrected", 0)), int(checked.get("external", 0))
-                row["lexical_resolved"] -= corrected + refuted
-                row["engine_confirmed"] += int(entry.get("confirmed", 0)) + corrected
-                row["engine_refuted"] += refuted
-            row["engine_external"] = int(verdicts.get("external-definition", 0)) + row["engine_refuted"]
-            for key in keys:
-                total[key] += row[key]
-            resolvable = row["calls"] - row["builtin"] - row["engine_external"]
-            resolved = row["lexical_resolved"] + row["engine_confirmed"]
-            by_language[language] = {"calls": row["calls"], "resolved": resolved, "resolvable": resolvable,
-                                     "resolved_ratio": round(resolved / resolvable, 3) if resolvable else None,
-                                     "engine": entry.get("engine")}
-        external = total["builtin"] + total["engine_external"]
-        resolvable = total["calls"] - external
-        resolved = total["lexical_resolved"] + total["engine_confirmed"]
-        return {
-            "calls": total["calls"],
-            "resolved": resolved,
-            "lexical_resolved": total["lexical_resolved"],
-            "engine_confirmed": total["engine_confirmed"],
-            "external": external,
-            "external_by_class": {"builtin": total["builtin"],
-                                  "engine-external-definition": total["engine_external"]},
-            "resolvable": resolvable,
-            "resolved_ratio": round(resolved / resolvable, 3) if resolvable else None,
-            "dynamic": total["dynamic"],
-            "askable": total["askable"],
-            "unasked": max(total["askable"] - total["asked"], 0),
-            "engine_unresolved": total["engine_unresolved"],
-            "by_language": by_language,
-            "note": "resolved_ratio is resolved over resolvable; external calls never arrive at a project symbol.",
-        }
-
-
-def resolution_summary(connection, binding: dict | None) -> dict:
-    """Resolved over resolvable for a snapshot's call references and a bound edge store."""
-    counter = ResolutionCounter(project_callee_names(connection))
-    for res_state, blob, language in connection.execute(
-            "SELECT r.resolution, r.payload, c.language FROM sem_references r "
-            "LEFT JOIN sem_coverage c ON c.file=r.file WHERE r.kind='call'"):
-        counter.add(language, res_state, _unpack(blob))
-    return counter.summary(binding, stored_confirmed=True)
-
-
 def verify_sources(store, languages=None) -> tuple[Path, dict[str, Path], int]:
     """Check the sources an engine can read, including dependencies inferred indirectly.
 
@@ -3030,6 +2936,71 @@ def kept_languages(destination: Path, store, replaced) -> tuple[dict, list[dict]
     reports = {key: value for key, value in (binding.get("engine_reports") or {}).items()
                if key in {entry["engine"] for entry in entries.values()}}
     return entries, edges, holes, reports
+
+
+# The class a site is answered under: the first of these its store rows hold.
+END_ORDER = ("project-callable", "external", "project-value")
+
+
+def language_coverage(sites, edges, holes, files: dict | None = None) -> dict:
+    """One language's coverage: what the store answers at each call and read the snapshot lists for it.
+
+    `sites` are `{reference_id, kind, site, lexical}` (`site` names the place in examples, `lexical` is true when
+    the lexical resolver resolved it); `edges` and `holes` are the store's rows. A site with an end other than a
+    dead end is `answered` under the first class of `END_ORDER` it holds; one without, that the lexical resolver
+    resolved, is answered `lexical`; any other is a hole, by its hole row's class, `dead-end` when only dead ends
+    answer it, with up to three examples. `uncertain` counts the sites with an uncertain edge, `externals` the
+    sites per package, and `files` is the index's (snapshot files, indexed files, the missing ones with their
+    reason), None without an index. `state` is `complete` when no file is missing, no site is a hole and no call
+    ends only in a value, else `lower-bound`. A site the store holds nothing for breaks sites = answered + holes:
+    it is listed in `violations`, by kind, and never counted.
+    """
+    import collections
+    rows = collections.defaultdict(list)
+    for edge in edges:
+        if edge.get("reference_id") is not None:
+            rows[edge["reference_id"]].append(edge)
+    holed = {hole["reference_id"]: hole["class"] for hole in holes if hole.get("reference_id") is not None}
+    answered, counted, examples = collections.Counter(), collections.Counter(), collections.defaultdict(list)
+    externals, violations = collections.Counter(), collections.defaultdict(list)
+    uncertain = values = 0
+    for site in sites:
+        found = rows.get(site["reference_id"], ())
+        classes = {row["verdict"] for row in found} - {"dead-end"}
+        end = next((name for name in END_ORDER if name in classes), min(classes) if classes else None)
+        uncertain += any(row.get("confidence") == "uncertain" for row in found)
+        externals.update({f"{package['manager']} {package['package']}@{package['version']}"
+                          for package in (row.get("external") for row in found if row["verdict"] == "external")
+                          if package})
+        if end is not None:
+            answered[end] += 1
+            values += end == "project-value" and site["kind"] == "call"
+        elif site["lexical"]:
+            answered["lexical"] += 1
+        elif site["reference_id"] in holed or found:
+            name = holed.get(site["reference_id"], "dead-end")
+            counted[name] += 1
+            if len(examples[name]) < 3:
+                examples[name].append(site["site"])
+        else:
+            violations[site["kind"]].append(site["site"])
+    complete = not counted and not values and not (files or {}).get("missing")
+    out = {"sites": len(sites), "answered": dict(sorted(answered.items())),
+           "holes": {name: {"count": counted[name], "examples": examples[name]} for name in sorted(counted)},
+           "uncertain": uncertain, "externals": dict(externals.most_common()), "files": files,
+           "state": "complete" if complete else "lower-bound"}
+    if violations:
+        out["violations"] = dict(sorted(violations.items()))
+    return out
+
+
+def coverage_violation(language: str, coverage: dict) -> str | None:
+    """Why a store may not be written: the sites it would hold nothing for, by kind."""
+    found = coverage.get("violations")
+    if not found:
+        return None
+    return (f"{language}: the store breaks sites = answered + holes; "
+            + "; ".join(f"{kind} {len(items)}: {', '.join(items[:5])}" for kind, items in found.items()))
 
 
 def read_edge_holes(path: Path) -> list[dict]:
@@ -3409,9 +3380,12 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             return engine.identity() if progress["probed"] else (progress["reused_identity"] or engine.name)
 
         def holes():
+            # A call the limit or the stride left out is `not-selected`; what no rule asks is `not-asked`.
             answered = {edge["reference_id"] for edge in edges}
             return [{"reference_id": reference_id, "file": rel, "language": language, "kind": kind, "l0": l0, "c0": c0,
-                     "class": holes_of.get(reference_id, ("not-asked",))[0], "resolver": identity(),
+                     "class": holes_of[reference_id][0] if reference_id in holes_of else
+                     "not-selected" if kind != "read" and resolution in ("unresolved", "resolved") else "not-asked",
+                     "resolver": identity(),
                      "reason": holes_of[reference_id][1] if reference_id in holes_of else
                      "read" if kind == "read" else "not-selected" if resolution in ("unresolved", "resolved")
                      else resolution}
@@ -3419,6 +3393,15 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
 
         def publish(partial):
             """Verify the sources, then write the store and the new answers; a failure or None."""
+            written_holes = holes()
+            covered = {language: language_coverage(
+                [{"reference_id": reference_id, "kind": kind, "site": f"{rel}:{l0}", "lexical": resolution == "resolved"}
+                 for reference_id, rel, kind, l0, _c0, site_language, resolution in sites if site_language == language],
+                [edge for edge in edges if edge["language"] == language],
+                [hole for hole in written_holes if hole["language"] == language]) for language in counts}
+            broken = [coverage_violation(language, coverage) for language, coverage in covered.items()]
+            if any(broken):
+                return {"reason": "; ".join(reason for reason in broken if reason), "stage": "coverage"}
             try:
                 _root, _paths, verified_after = verify_sources(store, languages)
                 edge_destination(destination, manifest, source_paths)
@@ -3435,9 +3418,8 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                     no_edges_reason = "not-sampled"
                 else:
                     no_edges_reason = "no-project-targets"
-                complete = numbers["selected"] >= numbers["population"]
                 entries[language] = {
-                    "engine": identity(), "state": "partial" if partial else "fresh" if complete else "sampled",
+                    "engine": identity(), "state": "partial" if partial else "fresh", "coverage": covered[language],
                     **numbers, "stride": stride, "verdicts": dict(sorted(numbers["verdicts"].items())),
                     "excluded_classes": dict(sorted(numbers["excluded_classes"].items())),
                     "no_edges_reason": no_edges_reason, "created_at": created,
@@ -3449,7 +3431,8 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             if dry_run:
                 return None
             try:
-                progress["written"] = write_edge_store(destination, kept_edges + edges, binding, kept_holes + holes())
+                progress["written"] = write_edge_store(destination, kept_edges + edges, binding,
+                                                       kept_holes + written_holes)
             except (OSError, sqlite3.Error, ValueError) as error:
                 return {"reason": f"could not publish the engine edge store: {error}", "stage": "write"}
             if cache_path is not None:
@@ -3600,7 +3583,6 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             return {"engine": identity(), "available": False, "languages": list(languages),
                     "edges_store": None, **failure}
         binding = progress["binding"]
-        summary = resolution_summary(connection, binding)
     latencies.sort()
     entries = {language: binding["languages"][language] for language in counts}
     asked = sum(entry["asked"] for entry in entries.values())
@@ -3637,7 +3619,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         (reasons.pop() if len(reasons) == 1 else "no-project-targets"),
         "position_unverified": skipped_position,
         "excluded_classes": excluded_classes,
-        "resolution": summary,
+        "coverage": {language: entry["coverage"] for language, entry in entries.items()},
         "source_verification": {"before_inference": verified_before,
                                 "after_inference": progress["verified_after"]},
         "verdicts": verdicts,
@@ -3658,8 +3640,6 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         },
         "dry_run": dry_run,
         "edges_store": progress["written"].as_posix() if progress["written"] else None,
-        "coverage": f"{asked + totals['reused']} of {totals['population']} unresolved call references"
-                    + (f" ({totals['reused']} reused)" if totals["reused"] else ""),
         "note": "Engine edges live in a derived store bound to this snapshot; the "
                 "snapshot itself is unchanged. Every edge names payload.resolver, so "
                 "engine edges are never counted together with builtin-lexical ones.",
@@ -3854,18 +3834,19 @@ def pass_state(manifest: Path) -> dict | None:
     return None
 
 
-STATE_ORDER = ("missing", "failed", "sampled", "fresh", "unavailable")
+STATE_ORDER = ("missing", "failed", "fresh", "unavailable")
 
 
 def edge_state(manifest: Path) -> dict:
     """Report the derived edge store and its pass without touching either.
 
     `languages` holds one state per snapshot language an engine covers: `fresh`
-    or `sampled` from the store, `unavailable` or `failed` from the last pass,
-    `running` while a pass may still reach it, `missing` otherwise. The overall
-    state is `running`, `stopped` or `stale` (store bound to another revision)
-    when one applies, else the first of missing, failed, sampled, fresh and
-    unavailable that a language holds. Every state carries `resolution`.
+    from the store, with its `coverage`; `unavailable` or `failed` from the last
+    pass; `running` while a pass may still reach it; `missing` otherwise, also when
+    the store's entry came from a former source. The overall state is `running`,
+    `stopped` or `stale` (store bound to another revision) when one applies, else
+    the first of missing, failed, fresh and unavailable that a language holds.
+    Every state carries `coverage`, each store entry's by language.
     """
     manifest = Path(manifest)
     store_path = default_edge_store(manifest)
@@ -3886,18 +3867,19 @@ def edge_state(manifest: Path) -> dict:
         for language in snapshot_languages(store.connection):
             if language not in ENGINE_LANGUAGES:
                 continue
-            if language in entries:
+            if language in entries and from_source(language, entries[language]):
                 entry = entries[language]
                 state, outcome = entry["state"], outcomes.get(language) or {}
                 if state == "partial":
                     # A pass publishes as it goes: running, then what its stage ended as.
-                    state = "running" if running else                         outcome["state"] if outcome.get("state") in ("failed", "unavailable") else "sampled"
-                languages[language] = {"state": state, "engine": entry["engine"],
-                                       "answered": entry.get("asked", 0) + entry.get("reused", 0),
-                                       "population": entry.get("population", 0)}
-                if state in ("failed", "unavailable") and outcome.get("reason"):
-                    languages[language]["reason"] = outcome["reason"]
-            elif language in outcomes and not running and outcomes[language]["state"] not in ("fresh", "sampled"):
+                    state = "running" if running else \
+                        outcome["state"] if outcome.get("state") in ("failed", "unavailable") else "failed"
+                languages[language] = {"state": state, "engine": entry["engine"], "coverage": entry.get("coverage")}
+                if state in ("failed", "unavailable"):
+                    languages[language]["reason"] = outcome.get("reason") or (
+                        "the pass ended before this language's stage finished; the next pass resumes from what it "
+                        "proved")
+            elif language in outcomes and not running and outcomes[language]["state"] != "fresh":
                 # Only the store proves edges; a report can only say why there are none.
                 languages[language] = dict(outcomes[language])
             elif last.get("state") == "failed":
@@ -3923,7 +3905,8 @@ def edge_state(manifest: Path) -> dict:
         if binding is not None:
             result.update(engine=binding.get("engine"), created_at=binding.get("created_at"))
         result["languages"] = languages
-        result["resolution"] = resolution_summary(store.connection, binding)
+        result["coverage"] = {language: entry["coverage"] for language, entry in entries.items()
+                              if entry.get("coverage")}
         return result
 
 
@@ -3957,15 +3940,15 @@ ENGINES = (
     EngineSpec("jedi", ("python",), ("jedi>=0.19",), "jedi", ENGINE_INSTALL, {}),
     # multilspy pins jedi-language-server, which would downgrade Jedi: each engine
     # runs in an environment of its own.
-    EngineSpec("typescript", ("typescript", "javascript", "vue", "svelte"), ("multilspy==0.1.1",), "multilspy",
+    EngineSpec("typescript", ("vue", "svelte"), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy and its pinned typescript-language-server", {}),
     EngineSpec("java", ("java",), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy and its pinned Eclipse JDT LS", {}),
     # Kotlin needs nothing in Python: its engine is a JVM process that installs itself.
     EngineSpec("kotlin", ("kotlin",), (), "json", "install uv, which runs the pass", {}),
-    EngineSpec("rust", ("rust",), ("multilspy==0.1.1",), "multilspy",
+    EngineSpec("rust", (), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy; rust-analyzer installs itself", {}),
-    EngineSpec("go", ("go",), ("multilspy==0.1.1",), "multilspy",
+    EngineSpec("go", (), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy; Go and gopls install themselves", {}),
     # The indexers (docs/plans/2026-11-14-grafo-dall-indice.md). Their stage needs the snapshot's parser only;
     # a language moves to its indexer when it leaves the entry above that lists it.
@@ -3978,6 +3961,17 @@ ENGINES = (
 )
 # Each language's engine: the first entry that lists it.
 ENGINE_LANGUAGES = {language: spec for spec in reversed(ENGINES) for language in spec.languages}
+
+
+def from_source(language: str, entry: dict) -> bool:
+    """Whether a store entry came from the entry that serves `language` now. An indexer's stage names its entry
+    (`scip-go@v0.2.9`); an engine's names no indexer. An entry from a former source is not fresh, so the next
+    pass replaces it."""
+    spec = ENGINE_LANGUAGES.get(language)
+    name = str(entry.get("engine") or "").split("@", 1)[0]
+    if spec is None:
+        return False
+    return name == spec.name if spec.indexer else name not in {other.name for other in ENGINES if other.indexer}
 # One engine runs at a time, and only with this much memory free.
 ENGINE_MIN_FREE = 2 * 2**30
 
@@ -4069,7 +4063,7 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
             _edges, binding, reason = read_edge_store(default_edge_store(manifest), store)
             if reason is None:
                 fresh = {language: entry for language, entry in (binding.get("languages") or {}).items()
-                         if entry.get("state") == "fresh"}
+                         if entry.get("state") == "fresh" and from_source(language, entry)}
     plan = [(spec, [language for language in spec.languages
                     if language in present and ENGINE_LANGUAGES.get(language) is spec]) for spec in ENGINES]
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
@@ -4139,7 +4133,7 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
                                   (("state", state), ("engine", spec.name), ("reason", reason), ("install", install))
                                   if value is not None}
         _write_report(report_path, report)
-    report["available"] = any(outcome["state"] in ("fresh", "sampled") for outcome in outcomes.values())
+    report["available"] = any(outcome["state"] == "fresh" for outcome in outcomes.values())
     report["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     _write_report(report_path, report)
     return report
@@ -4151,8 +4145,8 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
 
     The indexer works in a directory removed after the stage. One that `needs_container` gets its engine here:
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
-    `engine` (the resolver, `name@version`), `indexer` and `languages`; without an index, the indexer's
-    `reason` and, when it is `unavailable`, its `install`.
+    `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
+    an index, the indexer's `reason` and, when it is `unavailable`, its `install`.
     """
     import code_graph
     module = importlib.import_module(f"indexers.{spec.indexer}")
@@ -4168,31 +4162,36 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     try:
         result = module.index(Path(project_root), work, **options)
         indexer = result.get("indexer") or {}
-        resolver = f"{indexer.get('name') or spec.name}@{indexer.get('version')}"
+        # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
+        resolver = f"{spec.name}@{indexer.get('version')}"
         if result.get("state"):
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),
                     **({"install": result.get("install")} if result["state"] == "unavailable" else {})}
         built = {}
-        with code_graph.Snapshot(manifest) as snap:
-            index = code_graph.Index(snap.root)
-            for path, prefix in result["indexes"]:
-                index.load(Path(path), prefix)
-            hops = module.hops(index)
-            traversal = code_graph.Traversal(index, snap, hops)
-            static = module.static(index) if hasattr(module, "static") else None
-            # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
-            extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
-            refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") else None
-            for language in spec.languages:
-                rels = sorted(snap.checkout[rel] for rel in snap.inventory
-                              if snap.languages.get(rel) == language and rel in snap.checkout)
-                if not rels:
-                    continue
-                absent = [rel for rel in rels if rel not in index.documents]
-                reasons = module.missing(index, absent, *extra) if hasattr(module, "missing") and absent else {}
-                built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal, static,
-                                                   refine=refine)
-            code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver)
+        try:
+            with code_graph.Snapshot(manifest) as snap:
+                index = code_graph.Index(snap.root)
+                for path, prefix in result["indexes"]:
+                    index.load(Path(path), prefix)
+                hops = module.hops(index)
+                traversal = code_graph.Traversal(index, snap, hops)
+                static = module.static(index) if hasattr(module, "static") else None
+                # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
+                extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
+                refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") \
+                    else None
+                for language in spec.languages:
+                    rels = sorted(snap.checkout[rel] for rel in snap.inventory
+                                  if snap.languages.get(rel) == language and rel in snap.checkout)
+                    if not rels:
+                        continue
+                    absent = [rel for rel in rels if rel not in index.documents]
+                    reasons = module.missing(index, absent, *extra) if hasattr(module, "missing") and absent else {}
+                    built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal,
+                                                       static, refine=refine)
+                code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver)
+        except ValueError as error:  # a changed source, or a store that would break sites = answered + holes
+            return {"available": False, "engine": resolver, "indexer": indexer, "reason": str(error)}
         return {"available": True, "engine": resolver, "indexer": indexer,
                 "languages": {language: {"state": "fresh"} for language in built}}
     finally:
@@ -4332,7 +4331,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
             "engine", "available", "reason", "stage", "install", "project_root", "languages",
             "population", "population_language", "selected", "asked", "reused", "answer_cache", "stride",
             "confirmed_edges", "candidates", "no_edges_reason", "position_unverified",
-            "excluded_classes", "resolution", "verdicts", "memory_exhausted",
+            "excluded_classes", "coverage", "verdicts", "memory_exhausted",
             "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
             "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
             "edges_store", "coverage", "indexer",

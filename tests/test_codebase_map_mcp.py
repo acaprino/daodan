@@ -44,7 +44,7 @@ class MapServiceTests(unittest.TestCase):
                 mock.patch.object(resolve_edges, "_spawn_detached", return_value=child):
             created = self.create(engine=True)
         self.assertEqual(created["engine"]["state"], "running")
-        self.assertIn("resolved_ratio", created["engine"]["resolution"])
+        self.assertIn("coverage", created["engine"])
         events = [item["event"] for item in self.service.events("example")["events"]]
         self.assertIn("engine_started", events)
         self.assertEqual(self.service.status("example")["engine"]["state"], "running")

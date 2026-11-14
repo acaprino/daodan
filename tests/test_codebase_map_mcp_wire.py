@@ -220,7 +220,7 @@ class CodebaseMapWireTests(unittest.TestCase):
             time.sleep(1)
             state = self.data(self.call("codebase_map_status", {"run_id": "engine-live"}))["engine"]
         self.assertIn(state["state"], {"fresh", "unavailable"}, state)
-        self.assertIn("resolved_ratio", state["resolution"])
+        self.assertIn("coverage", state)
 
     def test_a_typescript_pass_resolves_what_the_lexical_resolver_cannot(self):
         (self.project / "web").mkdir()
@@ -230,7 +230,7 @@ class CodebaseMapWireTests(unittest.TestCase):
             "import { Tool } from './tool';\nexport function go(tool: Tool) {\n  return tool.run();\n}\n",
             encoding="utf-8")
         state = self.data(self.call("codebase_map_create_run", {"target": "web", "run_id": "ts-live"}))["engine"]
-        # The first pass on a machine installs typescript-language-server.
+        # The first pass on a machine installs Node and scip-typescript.
         deadline = time.monotonic() + 300
         while state["state"] == "running" and time.monotonic() < deadline:
             time.sleep(1)
@@ -239,9 +239,11 @@ class CodebaseMapWireTests(unittest.TestCase):
         if language["state"] == "unavailable":
             self.skipTest(language.get("install"))
         self.assertEqual(language["state"], "fresh", state)
-        self.assertTrue(language["engine"].startswith("typescript-language-server@"), language)
-        typescript = state["resolution"]["by_language"]["typescript"]
-        self.assertEqual((typescript["resolved"], typescript["resolvable"]), (1, 1), typescript)
+        self.assertTrue(language["engine"].startswith("scip-typescript@"), language)
+        typescript = state["coverage"]["typescript"]
+        self.assertGreaterEqual(typescript["answered"].get("project-callable", 0), 1, typescript)
+        self.assertEqual(typescript["sites"], sum(typescript["answered"].values()) + sum(
+            hole["count"] for hole in typescript["holes"].values()), typescript)
 
     def test_a_java_pass_resolves_a_method_on_a_typed_receiver(self):
         package = self.project / "jvm/src/main/java/demo"
@@ -261,8 +263,8 @@ class CodebaseMapWireTests(unittest.TestCase):
             self.skipTest(language.get("install"))
         self.assertEqual(language["state"], "fresh", state)
         self.assertTrue(language["engine"].startswith("eclipse-jdtls@"), language)
-        java = state["resolution"]["by_language"]["java"]
-        self.assertEqual((java["resolved"], java["resolvable"]), (1, 1), java)
+        java = state["coverage"]["java"]
+        self.assertGreaterEqual(java["answered"].get("project-callable", 0), 1, java)
 
     def pass_state(self, run_id, language, seconds):
         state = self.data(self.call("codebase_map_status", {"run_id": run_id}))["engine"]
@@ -274,7 +276,7 @@ class CodebaseMapWireTests(unittest.TestCase):
         if entry["state"] == "unavailable":
             self.skipTest(entry.get("install"))
         self.assertEqual(entry["state"], "fresh", state)
-        return entry, state["resolution"]["by_language"][language]
+        return entry, state["coverage"][language]
 
     def test_a_go_pass_resolves_a_method_on_a_typed_receiver(self):
         (self.project / "mod").mkdir()
@@ -286,11 +288,11 @@ class CodebaseMapWireTests(unittest.TestCase):
             "package demo\n\nfunc Make() Tool { return Tool{} }\n\nfunc Go() int {\n\treturn Make().Run()\n}\n",
             encoding="utf-8")
         self.call("codebase_map_create_run", {"target": "mod", "run_id": "go-live"})
-        # The first pass on a machine installs Go and builds gopls.
+        # The first pass on a machine installs Go and builds scip-go.
         entry, go = self.pass_state("go-live", "go", 420)
-        self.assertTrue(entry["engine"].startswith("gopls@"), entry)
+        self.assertTrue(entry["engine"].startswith("scip-go@"), entry)
         # `Make()` is lexical; `Make().Run()` is the engine's, and `Other.Run` shares its name.
-        self.assertEqual((go["resolved"], go["resolvable"]), (2, 2), go)
+        self.assertGreaterEqual(go["answered"].get("project-callable", 0), 2, go)
 
     def test_a_rust_pass_resolves_a_method_on_a_typed_receiver(self):
         (self.project / "crate/src").mkdir(parents=True)
@@ -302,8 +304,8 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.call("codebase_map_create_run", {"target": "crate", "run_id": "rust-live"})
         # The first pass on a machine installs rust-analyzer and, without one on PATH, a Rust toolchain.
         entry, rust = self.pass_state("rust-live", "rust", 480)
-        self.assertTrue(entry["engine"].startswith("rust-analyzer@"), entry)
-        self.assertEqual((rust["resolved"], rust["resolvable"]), (1, 1), rust)
+        self.assertTrue(entry["engine"].startswith("scip-rust@"), entry)
+        self.assertGreaterEqual(rust["answered"].get("project-callable", 0), 1, rust)
 
     def test_scope_streams_monotonic_request_progress_and_structured_result(self):
         result = self.data(self.call("codebase_map_scope", {"target": "src"}, token="scope-1"))

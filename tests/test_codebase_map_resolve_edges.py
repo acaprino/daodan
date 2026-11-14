@@ -22,6 +22,12 @@ import snapshot
 from snapshot_store import _unpack, open_snapshot
 
 
+def coverage_sums(coverage: dict) -> tuple[int, int]:
+    """(sites, answered + holes) of one language's coverage: the invariant says they are equal."""
+    return coverage["sites"], sum(coverage["answered"].values()) + sum(
+        hole["count"] for hole in coverage["holes"].values())
+
+
 class Definition:
     """An engine's answer: a path and the exact position of a name, in UTF-8 bytes.
 
@@ -383,8 +389,10 @@ class ResolveEdgesTests(unittest.TestCase):
         report = self.run_engine(StubEngine(), limit=1)
         self.assertEqual(report["asked"], 1)
         self.assertGreaterEqual(report["population"], 1)
-        self.assertEqual(report["coverage"],
-                         f"1 of {report['population']} unresolved call references")
+        python = report["coverage"]["python"]
+        # The positions a limit leaves are holes: the coverage is a lower bound.
+        self.assertEqual((python["state"], python["sites"]), ("lower-bound", 1))
+        self.assertEqual(python["holes"]["engine-unresolved"]["count"], 1)
         self.assertIn("builtin-lexical", report["note"])
 
     def test_selected_dynamic_references_are_not_counted_as_engine_invocations(self):
@@ -395,8 +403,6 @@ class ResolveEdgesTests(unittest.TestCase):
         report = self.run_engine(engine)
         self.assertGreater(report["selected"], report["asked"], report)
         self.assertEqual(report["asked"], len(engine.asked))
-        self.assertEqual(report["coverage"],
-                         f"{len(engine.asked)} of {report['population']} unresolved call references")
         self.assertEqual(report["verdicts"].get("dynamic-callee"), 1)
 
     def test_failed_inferences_are_counted_as_actual_requests(self):
@@ -580,8 +586,8 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
 
 
-class ResolvabilityTests(unittest.TestCase):
-    """Resolved over resolvable, the engine kept on project names, and the store lifecycle."""
+class PassLifecycleTests(unittest.TestCase):
+    """The engine asked first about project names, its coverage, and the store's lifecycle."""
 
     SOURCES = {
         # One call of each kind: a builtin, a callee named after nothing the
@@ -613,24 +619,17 @@ class ResolvabilityTests(unittest.TestCase):
         return resolve_edges.resolve_edges(self.manifest, engine=engine or self.confirming_engine(),
                                            limit=None, stride=1)
 
-    def test_only_proven_external_calls_leave_the_denominator(self):
-        with open_snapshot(self.manifest) as store:
-            summary = resolve_edges.resolution_summary(store.connection, None)
-        self.assertEqual((summary["calls"], summary["resolved"], summary["external"], summary["resolvable"]),
-                         (3, 0, 1, 2))
-        self.assertEqual(summary["external_by_class"],
-                         {"builtin": 1, "engine-external-definition": 0})
-        self.assertEqual((summary["askable"], summary["unasked"], summary["resolved_ratio"]), (2, 2, 0.0))
-
     def test_project_names_are_prioritized_but_other_names_are_asked(self):
         engine = self.confirming_engine()
         report = self.run_pass(engine)
         self.assertTrue(report["available"], report)
         self.assertEqual([line for _name, line, _column in engine.asked], [self.run_line(), self.run_line() - 1])
         self.assertEqual(report["excluded_classes"], {"builtin": 1})
-        resolution = report["resolution"]
-        self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["resolved_ratio"]),
-                         (1, 2, 0.5))
+        python = report["coverage"]["python"]
+        self.assertEqual(python["answered"]["project-callable"], 1)
+        self.assertEqual({name: hole["count"] for name, hole in python["holes"].items()},
+                         {"engine-unresolved": 1, "not-asked": 2})  # `len`, a builtin, and a read are not asked
+        self.assertEqual((coverage_sums(python)[0], python["state"]), (coverage_sums(python)[1], "lower-bound"))
 
     def test_an_alias_absent_from_project_names_can_resolve_internally(self):
         (self.root / "app/use.py").write_text(
@@ -640,17 +639,19 @@ class ResolvabilityTests(unittest.TestCase):
         with open_snapshot(self.manifest) as store:
             self.assertNotIn("alias", resolve_edges.project_callee_names(store.connection))
         engine = StubEngine({("use.py", 4): Definition(self.root / "app/tool.py", "run")})
-        resolution = self.run_pass(engine)["resolution"]
-        self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["external"]), (1, 1, 0))
+        python = self.run_pass(engine)["coverage"]["python"]
+        self.assertEqual((python["answered"].get("project-callable"), python["answered"].get("external")), (1, None))
 
     def test_each_language_says_whether_an_engine_covers_it(self):
         (self.root / "app/use.ts").write_text(
             "function use(helper) { return helper.run(); }\n", encoding="utf-8")
         snapshot.write_snapshot(self.root, self.manifest)
-        by_language = self.run_pass()["resolution"]["by_language"]
-        self.assertEqual((by_language["python"]["engine"], by_language["python"]["resolved"]), ("stub@1.0", 1))
-        self.assertEqual(by_language["typescript"],
-                         {"calls": 1, "resolved": 0, "resolvable": 1, "resolved_ratio": 0.0, "engine": None})
+        report = self.run_pass()
+        self.assertEqual(list(report["coverage"]), ["python"])
+        state = resolve_edges.edge_state(self.manifest)
+        self.assertEqual((state["languages"]["python"]["engine"], state["languages"]["typescript"]["state"]),
+                         ("stub@1.0", "missing"))
+        self.assertEqual(state["coverage"]["python"]["answered"]["project-callable"], 1)
 
     def test_the_engine_sees_the_directories_the_project_puts_on_sys_path(self):
         (self.root / "tools").mkdir()
@@ -678,7 +679,8 @@ class ResolvabilityTests(unittest.TestCase):
         self.run_pass()
         state = resolve_edges.edge_state(self.manifest)
         self.assertEqual(state["state"], "fresh")
-        self.assertEqual(state["resolution"]["resolved"], 1)
+        self.assertEqual(state["coverage"]["python"]["answered"]["project-callable"], 1)
+        self.assertEqual(state["languages"]["python"]["coverage"], state["coverage"]["python"])
         (self.root / "app/tool.py").write_text("class Tool:\n    def run(self):\n        return 2\n",
                                                 encoding="utf-8")
         snapshot.write_snapshot(self.root, self.manifest)
@@ -736,7 +738,7 @@ class ResolvabilityTests(unittest.TestCase):
         self.assertEqual(state["state"], "failed")
         self.assertIn(resolve_edges.LOG_NAME, state["reason"])
 
-    def test_the_edge_view_carries_resolution_and_names_a_running_pass(self):
+    def test_the_edge_view_carries_coverage_and_names_a_running_pass(self):
         import edge_view
         self.manifest.with_name(resolve_edges.RUNNING_NAME).write_text(
             json.dumps({"pid": os.getpid(), "started_at": "2026-11-08T00:00:00Z"}), encoding="utf-8")
@@ -744,8 +746,7 @@ class ResolvabilityTests(unittest.TestCase):
         self.assertEqual(view["coverage"]["status"], "missing_store")
         self.assertEqual(view["coverage"]["engine_pass"]["state"], "running")
         self.assertTrue(any(gap.startswith("engine pass running") for gap in view["gaps"]), view["gaps"])
-        resolution = view["coverage"]["resolution"]
-        self.assertEqual((resolution["resolvable"], resolution["resolved"]), (2, 0))
+        self.assertEqual(view["coverage"]["languages"], {})
 
     def test_rewriting_a_manifest_first_ends_the_pass_over_its_old_revision(self):
         import contextlib
@@ -894,16 +895,16 @@ class HomonymHolderTests(unittest.TestCase):
     def test_following_a_holder_uses_the_callable_not_the_factory(self):
         for language, rel in (("typescript", "web/label.ts"), ("python", "app/label.py")):
             before = resolve_edges.resolve_edges(self.manifest, engine=self.engine(language),
-                                                 limit=None, stride=1, out=self.edges)["resolution"]
+                                                 limit=None, stride=1, out=self.edges)["coverage"][language]
             engine = self.engine(language)
             for key, answer in list(engine.answers.items()):
                 if len(key) == 3 and answer.module_path == self.root / rel:
                     engine.answers[key] = Definition(self.root.parent / "packages/translate", "translate")
             after = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None,
-                                                stride=1, out=self.edges)["resolution"]
-            self.assertEqual(after["external"], before["external"] + 1)
-            self.assertEqual(after["resolvable"], before["resolvable"] - 1)
-            self.assertEqual(after["resolved"], before["resolved"])
+                                                stride=1, out=self.edges)["coverage"][language]
+            # An answer outside the project is a hole that names it (`engine-unresolved`, reason external-definition).
+            outside = [coverage["holes"].get("engine-unresolved", {}).get("count", 0) for coverage in (before, after)]
+            self.assertEqual((outside[1], after["sites"]), (outside[0] + 1, before["sites"]))
         with open_snapshot(self.manifest) as store:
             edges, _, reason = resolve_edges.read_edge_store(self.edges, store)
         self.assertIsNone(reason)
@@ -1108,9 +1109,8 @@ class MultiLanguageTests(unittest.TestCase):
                          {"python": "stub@1.0", "typescript": "tsstub@1.0"})
         self.assertEqual({language: entry["engine"] for language, entry in binding["languages"].items()},
                          {"python": "stub@1.0", "typescript": "tsstub@1.0"})
-        by_language = resolve_edges.edge_state(self.manifest)["resolution"]["by_language"]
-        self.assertEqual((by_language["typescript"]["engine"], by_language["python"]["engine"]),
-                         ("tsstub@1.0", "stub@1.0"))
+        coverage = resolve_edges.edge_state(self.manifest)["coverage"]
+        self.assertEqual(sorted(coverage), ["python", "typescript"])
 
     def stage_runner(self, outcomes, calls):
         """A fake `subprocess.run` writing each stage's report as the stage would."""
@@ -1137,9 +1137,9 @@ class MultiLanguageTests(unittest.TestCase):
     def test_the_pass_runs_one_engine_at_a_time_and_records_each_language(self):
         result, calls = self.run_whole_pass({
             "jedi": {"available": True, "engine": "jedi@0.20.1", "languages": {"python": {"state": "fresh"}}},
-            "typescript": {"available": False, "reason": "node and npm are needed",
+            "scip-typescript": {"available": False, "reason": "node and npm are needed",
                            "install": "install Node.js 18 or later with npm (https://nodejs.org)"}})
-        self.assertEqual(calls, ["jedi", "typescript"])
+        self.assertEqual(calls, ["jedi", "scip-typescript"])
         self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "jedi@0.20.1"})
         self.assertEqual(result["languages"]["typescript"]["state"], "unavailable")
         self.assertIn("Node.js", result["languages"]["typescript"]["install"])
@@ -1151,22 +1151,22 @@ class MultiLanguageTests(unittest.TestCase):
     def test_an_engine_that_runs_out_of_memory_starts_no_other(self):
         result, calls = self.run_whole_pass({
             "jedi": {"available": False, "reason": "MemoryError during inference", "memory_exhausted": True},
-            "typescript": {"available": True}})
+            "scip-typescript": {"available": True}})
         self.assertEqual(calls, ["jedi"])
         self.assertEqual(result["languages"]["python"]["state"], "failed")
         self.assertEqual(result["languages"]["typescript"],
-                         {"state": "failed", "engine": "typescript",
+                         {"state": "failed", "engine": "scip-typescript",
                           "reason": "not started: the jedi engine ran out of memory"})
 
     def test_an_engine_waits_for_free_memory(self):
-        result, calls = self.run_whole_pass({"jedi": None, "typescript": None}, free=2**30)
+        result, calls = self.run_whole_pass({"jedi": None, "scip-typescript": None}, free=2**30)
         self.assertEqual(calls, [])
         self.assertTrue(all(outcome["state"] == "failed" and "GB of memory free" in outcome["reason"]
                             for outcome in result["languages"].values()), result)
         self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "failed")
 
     def test_a_stage_without_a_report_failed_and_says_where_to_look(self):
-        result, _calls = self.run_whole_pass({"jedi": None, "typescript": {"available": True}})
+        result, _calls = self.run_whole_pass({"jedi": None, "scip-typescript": {"available": True}})
         self.assertEqual(result["languages"]["python"]["state"], "failed")
         self.assertIn(resolve_edges.LOG_NAME, result["languages"]["python"]["reason"])
 
@@ -1229,7 +1229,7 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual((again.asked, type(again).probes), ([], 0))
         self.assertEqual(second["languages"]["python"]["state"], "fresh")
         self.assertEqual(Path(second["answer_cache"]).name, resolve_edges.ANSWERS_NAME)
-        self.assertEqual(second["resolution"]["unasked"], 0)
+        self.assertEqual(second["coverage"]["python"]["answered"]["project-callable"], 3)
 
     def test_an_edit_reasks_its_file_and_every_file_that_imports_it(self):
         self.run_engine(self.engine())
@@ -1281,7 +1281,9 @@ class DistributionTests(unittest.TestCase):
                 resolve_edges.default_edge_store(self.manifest), store)
         self.assertIsNone(reason, reason)
         self.assertEqual((len(edges), binding["languages"]["python"]["state"]), (2, "partial"))
-        self.assertEqual(resolve_edges.edge_state(self.manifest)["languages"]["python"]["state"], "sampled")
+        resumable = resolve_edges.edge_state(self.manifest)["languages"]["python"]
+        self.assertEqual(resumable["state"], "failed")
+        self.assertIn("the next pass resumes", resumable["reason"])
         engine = self.engine()
         resumed = self.run_engine(engine)
         self.assertEqual((resumed["asked"], resumed["reused"], resumed["confirmed_edges"]), (1, 2, 3))
@@ -2154,8 +2156,8 @@ class LexicalCheckTests(unittest.TestCase):
         with open_snapshot(self.manifest) as store:
             view = edge_view.load_edge_view(store, engine_store=self.edges)
         self.assertEqual(view["conflicts"], [])
-        # The pass and the view count the same calls.
-        self.assertEqual(report["resolution"], view["coverage"]["resolution"])
+        # The pass and the view give the same coverage.
+        self.assertEqual(report["coverage"], view["coverage"]["languages"])
         return report, view, {item["id"]: item for item in view["references"]}[identity]
 
     def test_the_same_answer_adds_the_engine_to_the_provenance(self):
@@ -2166,9 +2168,7 @@ class LexicalCheckTests(unittest.TestCase):
         self.assertEqual(report["confirmed_edges"], 0)
         self.assertEqual(reference["target_id"], self.declaration("free"))
         self.assertEqual(reference["provenance"], [resolve_edges.resolution.LEXICAL_RESOLVER, "stub@1.0"])
-        resolution = view["coverage"]["resolution"]
-        self.assertEqual((resolution["resolved"], resolution["lexical_resolved"], resolution["engine_confirmed"]),
-                         (1, 1, 0))
+        self.assertEqual(view["coverage"]["languages"]["python"]["answered"].get("project-callable"), 1)
 
     def test_another_project_declaration_replaces_the_lexical_target(self):
         report, view, reference = self.check(Definition(self.root / "app/tool.py", "other", line=5, column=4))
@@ -2177,9 +2177,7 @@ class LexicalCheckTests(unittest.TestCase):
         self.assertEqual((reference["target_id"], reference["resolver"], reference["provenance"]),
                          (self.declaration("other"), "stub@1.0", ["stub@1.0"]))
         self.assertEqual(reference["lexical_target_id"], self.declaration("free"))
-        resolution = view["coverage"]["resolution"]
-        self.assertEqual((resolution["resolved"], resolution["lexical_resolved"], resolution["engine_confirmed"]),
-                         (1, 0, 1))
+        self.assertEqual(view["coverage"]["languages"]["python"]["answered"].get("project-callable"), 1)
 
     def test_a_definition_outside_the_project_removes_the_lexical_edge(self):
         vendor = self.root.parent / "vendor/lib.py"
@@ -2191,9 +2189,8 @@ class LexicalCheckTests(unittest.TestCase):
         self.assertEqual((reference["target_id"], reference["resolution"], reference["reason"]),
                          (None, "unresolved", "engine-external-definition"))
         self.assertEqual(reference["lexical_target_id"], self.declaration("free"))
-        resolution = view["coverage"]["resolution"]
-        self.assertEqual((resolution["resolved"], resolution["resolvable"], resolution["external_by_class"]),
-                         (0, 0, {"builtin": 0, "engine-external-definition": 1}))
+        answered = view["coverage"]["languages"]["python"]["answered"]
+        self.assertEqual((answered.get("external"), answered.get("project-callable")), (1, None))
 
     def test_no_engine_answer_keeps_the_lexical_target(self):
         report, view, reference = self.check(None)
@@ -2201,8 +2198,8 @@ class LexicalCheckTests(unittest.TestCase):
                          {"population": 1, "asked": 1, "same": 0, "corrected": 0, "external": 0})
         self.assertEqual((reference["target_id"], reference["provenance"]),
                          (self.declaration("free"), [resolve_edges.resolution.LEXICAL_RESOLVER]))
-        resolution = view["coverage"]["resolution"]
-        self.assertEqual((resolution["resolved"], resolution["lexical_resolved"]), (1, 1))
+        answered = view["coverage"]["languages"]["python"]["answered"]
+        self.assertEqual((answered.get("lexical"), answered.get("project-callable")), (1, None))
 
 
 class CommandLineTests(unittest.TestCase):
@@ -2223,6 +2220,56 @@ class CommandLineTests(unittest.TestCase):
         self.assertFalse(payload["available"])
         self.assertIn("uv run --with jedi", payload["reason"])
         self.assertEqual(payload["install"], resolve_edges.ENGINE_INSTALL)
+
+
+class CoverageTests(unittest.TestCase):
+    """What one language's store entry covers (`language_coverage`): the owner's answer to question 3."""
+
+    @staticmethod
+    def site(identity, kind="call", lexical=False):
+        return {"reference_id": identity, "kind": kind, "site": f"a.go:{identity} f", "lexical": lexical}
+
+    @staticmethod
+    def edge(identity, verdict, confidence="confirmed", external=None):
+        return {"reference_id": identity, "verdict": verdict, "confidence": confidence, "external": external}
+
+    FILES = {"snapshot": 1, "indexed": 1, "missing": []}
+
+    def test_a_language_all_indexed_without_holes_is_complete(self):
+        package = {"manager": "gomod", "package": "std", "version": "go1.24"}
+        coverage = resolve_edges.language_coverage(
+            [self.site(1), self.site(2, "read"), self.site(3, lexical=True), self.site(4)],
+            [self.edge(1, "project-callable"), self.edge(1, "dead-end"), self.edge(2, "external", external=package),
+             self.edge(4, "project-callable", "uncertain")],
+            [{"reference_id": 3, "class": "not-asked"}], self.FILES)
+        self.assertEqual(coverage["state"], "complete")
+        self.assertEqual(coverage["answered"], {"external": 1, "lexical": 1, "project-callable": 2})
+        self.assertEqual((coverage["sites"], coverage["holes"], coverage["uncertain"]), (4, {}, 1))
+        self.assertEqual((coverage["externals"], coverage["files"]), ({"gomod std@go1.24": 1}, self.FILES))
+        self.assertNotIn("violations", coverage)
+
+    def test_a_value_a_dead_end_a_hole_or_a_missing_file_leaves_a_lower_bound(self):
+        missing = {"snapshot": 2, "indexed": 1, "missing": [{"path": "b.go", "reason": "no document in the index"}]}
+        cases = {
+            "value": ([self.edge(1, "project-value")], [], self.FILES, {"answered": {"project-value": 1}}),
+            "dead end": ([self.edge(1, "dead-end")], [], self.FILES,
+                         {"holes": {"dead-end": {"count": 1, "examples": ["a.go:1 f"]}}}),
+            "hole": ([], [{"reference_id": 1, "class": "no-occurrence"}], self.FILES,
+                     {"holes": {"no-occurrence": {"count": 1, "examples": ["a.go:1 f"]}}}),
+            "missing file": ([self.edge(1, "project-callable")], [], missing, {"files": missing}),
+        }
+        for name, (edges, holes, files, expected) in cases.items():
+            with self.subTest(name):
+                coverage = resolve_edges.language_coverage([self.site(1)], edges, holes, files)
+                self.assertEqual(coverage["state"], "lower-bound")
+                self.assertEqual({key: coverage[key] for key in expected}, expected)
+                self.assertEqual(*coverage_sums(coverage))
+
+    def test_a_site_the_store_holds_nothing_for_is_listed_never_counted(self):
+        coverage = resolve_edges.language_coverage([self.site(1), self.site(2, "read")], [self.edge(1, "external")],
+                                                   [], self.FILES)
+        self.assertEqual(coverage["violations"], {"read": ["a.go:2 f"]})
+        self.assertEqual((coverage["sites"], coverage_sums(coverage)[1]), (2, 1))
 
 
 class FreeMemoryTests(unittest.TestCase):
@@ -2260,8 +2307,8 @@ class IndexerStageTests(unittest.TestCase):
         snapshot.write_snapshot(root / which, manifest)
         return root / which, manifest
 
-    def contract(self, which: str, **outcome) -> dict:
-        indexer = {"name": "scip-go", "version": "v0.2.9", "seconds": 1.0, "peak_mb": None}
+    def contract(self, which: str, indexer: dict | None = None, **outcome) -> dict:
+        indexer = indexer or {"name": "scip-go", "version": "v0.2.9", "seconds": 1.0, "peak_mb": None}
         if outcome:
             return {"indexes": [], "runs": [], "indexer": indexer, **outcome}
         return {"indexes": [[str(self.FIXTURES / which / "index.scip"), ""]], "runs": [], "indexer": indexer}
@@ -2389,11 +2436,49 @@ class IndexerStageTests(unittest.TestCase):
             "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"), free=go.MIN_FREE)
         self.assertEqual(len(started), 1)
 
-    def test_every_language_stays_on_the_engine_of_today(self):
+    def test_a_missing_file_and_a_hole_give_lower_bound_with_the_counts(self):
+        _project, manifest = self.project("go", {"extra.go": "package fx\n\nfunc Extra() int { return len(\"x\") }\n"})
+        result, _started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+        self.assertEqual(result["languages"]["go"]["state"], "fresh")
+        state = resolve_edges.edge_state(manifest)
+        go = state["coverage"]["go"]
+        self.assertEqual(go["state"], "lower-bound")
+        self.assertIn({"path": "extra.go", "reason": "no document in the index"}, go["files"]["missing"])
+        self.assertEqual((go["files"]["snapshot"], go["files"]["indexed"]), (3, 2))
+        with open_snapshot(manifest) as store:
+            sites = store.connection.execute(
+                "SELECT count(*) FROM sem_references r JOIN sem_coverage c ON c.file=r.file "
+                "WHERE r.kind IN ('call','read') AND c.language='go'").fetchone()[0]
+        self.assertEqual(coverage_sums(go), (sites, sites))
+        self.assertTrue(go["holes"] and go["answered"]["project-callable"])
+        self.assertTrue(all(len(hole["examples"]) <= 3 for hole in go["holes"].values()))
+
+    def test_a_broken_invariant_fails_the_stage_with_the_list(self):
+        import code_graph
+        _project, manifest = self.project("go")
+        real = code_graph.build
+
+        def dropping(*args, **kwargs):
+            graph, references = real(*args, **kwargs)
+            references.pop(next(identity for identity, reference in references.items()
+                                if reference["kind"] == "call"))  # a call the store would hold nothing for
+            return graph, references
+
+        result, _started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"),
+            build=(code_graph, "build", dropping))
+        go = result["languages"]["go"]
+        self.assertEqual(go["state"], "failed")
+        self.assertIn("sites = answered + holes", go["reason"])
+        self.assertRegex(go["reason"], r"call 1: \S+\.go:\d+")
+        self.assertFalse(resolve_edges.default_edge_store(manifest).exists())
+
+    def test_each_language_reads_from_its_source(self):
         self.assertEqual({language: spec.name for language, spec in resolve_edges.ENGINE_LANGUAGES.items()},
-                         {"python": "jedi", "typescript": "typescript", "javascript": "typescript",
+                         {"python": "jedi", "typescript": "scip-typescript", "javascript": "scip-typescript",
                           "vue": "typescript", "svelte": "typescript", "java": "java", "kotlin": "kotlin",
-                          "rust": "rust", "go": "go"})
+                          "rust": "scip-rust", "go": "scip-go"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)
                     for spec in resolve_edges.ENGINES if spec.indexer}
         self.assertEqual(indexers, {
@@ -2402,6 +2487,32 @@ class IndexerStageTests(unittest.TestCase):
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True)})
 
+    def test_the_resolver_names_the_entry_not_the_indexer(self):
+        # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.
+        _project, manifest = self.project("rust")
+        indexer = {"name": "rust-analyzer", "version": "2026-11-09", "seconds": 1.0, "peak_mb": None}
+        result, _started, _indexed = self.run_stage(
+            "scip-rust", manifest, lambda project_dir, work_dir, files=None: self.contract("rust", indexer))
+        self.assertEqual(result["languages"]["rust"], {"state": "fresh", "engine": "scip-rust@2026-11-09"})
+
+    def test_an_entry_from_the_former_source_is_not_fresh(self):
+        project, manifest = self.project("go")
+        engine = StubEngine({})
+        engine.languages, engine.identity = ("go",), lambda: "gopls@0.20.0"
+        resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)
+        with open_snapshot(manifest) as store:
+            _edges, binding, _reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest), store)
+        self.assertEqual(binding["languages"]["go"]["engine"], "gopls@0.20.0")
+        self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "missing")
+        self.assertEqual(resolve_edges.ensure_edges(manifest, check=True)["action"], "reported")
+        _result, started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+        self.assertEqual(len(started), 1)
+        self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "fresh")
+        # From the source that serves it, the entry is fresh: no stage starts again.
+        _result, started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+        self.assertEqual(started, [])
 
 if __name__ == "__main__":
     unittest.main()

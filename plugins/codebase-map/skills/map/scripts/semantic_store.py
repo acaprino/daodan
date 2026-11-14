@@ -1941,13 +1941,14 @@ def _engine_comparison(before, after):
         return "incomparable", "only one snapshot has a verified engine pass"
     if before["profile"]["engine"] != after["profile"]["engine"]:
         return "incomparable", "engine versions differ"
-    sampled = [v["coverage"]["sampled"] for v in (before, after)]
-    if any(sampled):
-        keys = ("sampled", "population", "selected", "stride")
-        if any(before["coverage"][k] != after["coverage"][k] for k in keys):
-            return "incomparable", "sampled coverage differs"
-        return "partial", "only positively resolved witnesses are comparable; absence is not evidence"
-    return "complete", None
+    # The calls a pass's limit or stride left out, per language (`not-selected` holes of its coverage).
+    left_out = [{language: (entry.get("holes") or {}).get("not-selected", {}).get("count", 0)
+                 for language, entry in (view["coverage"].get("languages") or {}).items()} for view in (before, after)]
+    if not any(any(counts.values()) for counts in left_out):
+        return "complete", None
+    if left_out[0] != left_out[1]:
+        return "incomparable", "sampled coverage differs"
+    return "partial", "only positively resolved witnesses are comparable; absence is not evidence"
 
 
 def build_stale_callers(base, candidate, *, limit=100,

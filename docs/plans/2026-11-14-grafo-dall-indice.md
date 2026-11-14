@@ -317,14 +317,26 @@ Su Windows (14 novembre 2026: le quattro fixture, cache condivisa in una cartell
 
 Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non legge `.vue` né `.svelte` (assunto). C#, SQL e PL/SQL restano lessicali.
 
-- [ ] **Test prima:** un test che fissa linguaggio → fonte per ogni linguaggio, così ogni cambio è esplicito.
-- [ ] **Soglia per linguaggio:** una conferma su Modal con il codice del plugin. Deve valere tutto questo:
+- [x] **Test prima:** un test che fissa linguaggio → fonte per ogni linguaggio, così ogni cambio è esplicito.
+- [x] **Soglia per linguaggio:** una conferma su Modal con il codice del plugin. Deve valere tutto questo:
   - conteggi uguali a `results/scip-*-confirm.json` e `results/graph-*.json`;
   - nel confronto, ogni riga «solo passo per posizione» è classificata come buco dichiarato;
   - verifica a mano almeno pari a quella del README;
   - tempo e picco annotati.
-- [ ] **Cambio:** il linguaggio passa alla voce del suo indicizzatore in `ENGINES`. È una riga.
+- [x] **Cambio:** il linguaggio passa alla voce del suo indicizzatore in `ENGINES`. È una riga.
 - [ ] **Si cancella:** nulla. Per quel linguaggio lo stage per posizione semplicemente non parte più.
+
+**Primo giro (14 novembre 2026): Go, TypeScript e JavaScript, Rust.**
+- [x] Test: `test_each_language_reads_from_its_source`, `test_the_resolver_names_the_entry_not_the_indexer`, `test_an_entry_from_the_former_source_is_not_fresh`, più le chiavi di `MultiLanguageTests` e il test TypeScript di `tests/test_codebase_map_mcp_wire.py`.
+- [x] Il resolver è `nome della voce@versione`: `scip-rust@2026-11-09`, `scip-kotlin@0.14.2`. Prima Rust usava lo stesso nome del motore per posizione, e Kotlin quello di Java.
+- [x] Una voce dello store vale `fresh` solo se viene dalla fonte che oggi serve il linguaggio (`from_source`). Una voce del motore di prima è `missing`, e il passaggio la rifà; altrimenti nasconderebbe la nuova fonte fino allo snapshot successivo.
+- [x] Soglia su Modal (`benchmarks/inference-audit/modal_stage.py`, risultati `results/scip-{chi,semver,tududi}-stage.json`, 0,10 USD), con lo stage vero del prodotto (`index_stage`):
+  - conteggi uguali alle conferme: chi 4.847 / 20.102, semver 1.073 / 3.960, tududi javascript 86.225 / 182.593 e typescript 41.107 / 171.821; anche le celle del confronto con il passo per posizione sono uguali;
+  - lo store dello stage è uguale, riga per riga, a quello che il benchmark scrive dallo stesso indice;
+  - «solo passo per posizione»: chi 0; semver 5, cioè 3 archi esterni (`string.parse` di `core`) e 2 buchi `no-document` (`tests/node/mod.rs`); tududi JavaScript 58, tutti buchi `dangling-local`; TypeScript 0;
+  - verifica a mano: chi 15/15, semver 15/15, tududi 26/30, pari al README;
+  - tempo e picco dell'indicizzatore: scip-go 10,1 s e 318 MB; rust-analyzer 9,7 s e 1.172 MB; scip-typescript 59,1 s e 2.116 MB. Lo stage intero su una macchina nuova: 54 s, 27 s e 885 s; per tududi la parte grossa sono le installazioni al primo uso (Node, scip-typescript e i pacchetti del progetto).
+- [x] **Cambio** di Go, TypeScript, JavaScript e Rust: tre righe di `ENGINES`, consegnate insieme al task 6. Con la copertura vecchia il test vero su Modal (`test_a_typescript_pass_resolves_…`, SDK MCP e scip-typescript) dava la voce `fresh` con `scip-typescript@0.5.2` ma «risolte su risolvibili» 0 su 1: quel numero leggeva campi che una voce di indicizzatore non ha.
 
 ### Task 6: copertura e stato (dopo la domanda 3)
 
@@ -336,12 +348,20 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - Documenti: `docs/plugins/codebase-map.md` (sezione Risolvibilità), `docs/plugins/codebase-map-linguaggi.md`, `mcp.md`, `evidence.md`.
 - Spec del motore: una revisione che riscrive i requisiti 5, 11, 12 (Node), 18 e 20.
 
-- [ ] **Test prima:** tre casi.
+- [x] **Test prima:** tre casi.
   - Una fixture con un file mancante e un buco dà `lower-bound`, con i conteggi.
   - Una fixture tutta indicizzata e senza buchi dà `complete`.
   - Una violazione dell'invariante dà uno stage `failed`, con l'elenco.
-- [ ] **Verifica:** `tests/test_codebase_map_resolve_edges.py`, `tests/test_codebase_map_edge_view.py`, `tests/test_codebase_map_mcp.py`.
-- [ ] **Si cancella:** `ResolutionCounter` :2669, `resolution_summary` :2750, `classify_reference` :2656, `project_callee_names` :2645, `REFERENCE_CLASSES` :2666, lo stato `sampled`, e `ResolvabilityTests`, sostituiti dai test nuovi.
+- [x] **Verifica:** `tests/test_codebase_map_resolve_edges.py`, `tests/test_codebase_map_edge_view.py`, `tests/test_codebase_map_mcp.py`.
+- [x] **Si cancella:** `ResolutionCounter` :2669, `resolution_summary` :2750, `classify_reference` :2656, `project_callee_names` :2645, `REFERENCE_CLASSES` :2666, lo stato `sampled`, e `ResolvabilityTests`, sostituiti dai test nuovi.
+
+**Fatto (14 novembre 2026).**
+- Una funzione sola, `resolve_edges.language_coverage`, calcola la copertura di un linguaggio dalle righe che lo stage sta per scrivere. Ogni scrittore la mette nella voce del linguaggio: `code_graph.write_store` per un indicizzatore, la publish del passo per posizione. `edge_view.coverage.languages`, `edge_state` e gli strumenti MCP riportano quella voce; `edge_view.coverage.status` è `complete` solo se ogni linguaggio lo è.
+- Un sito senza righe nello store rompe l'invariante: lo store non si scrive, e lo stage è `failed` con i siti elencati per tipo.
+- `sampled` sparisce. Una voce `partial` di un passaggio che non c'è più è `failed`, con il motivo «the next pass resumes from what it proved».
+- Le chiamate lasciate fuori da limite o stride sono buchi `not-selected`, a parte i `not-asked` che nessuna regola chiede. `semantic_store._engine_comparison` le legge dalla copertura: senza `not-selected` il confronto è `complete`; con gli stessi conteggi per linguaggio è `partial`; altrimenti `incomparable`.
+- Restano `classify_reference` e `project_callee_names`: il passo per posizione li usa ancora per escludere i builtin e per l'ordine delle domande. Si cancellano con il task 8, alla fine del passo per posizione.
+- Test: `CoverageTests` (3), `IndexerStageTests` con file mancante e invariante rotta, la vista sulla fixture TS, il confronto di drift nei suoi tre esiti; `ResolvabilityTests` diventa `PassLifecycleTests`. Documenti: spec del motore (requisiti 2, 4, 5, 11, 12, 18, 20), `docs/plugins/codebase-map.md` (sezione Copertura), `docs/plugins/codebase-map-linguaggi.md`, `references/{mcp,evidence,scope}.md`.
 
 ### Task 7: aggiornamento incrementale
 
@@ -366,6 +386,7 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - [ ] **Si cancella:**
   - popolazione, `stride`, `--limit`, rango e pubblicazione del passaggio completo;
   - `ScipEngine` e l'opzione `--engine scip`;
+  - `classify_reference` e `project_callee_names`, che escludono i builtin e ordinano le domande;
   - le parti di `MultiLanguageTests` e `DistributionTests` sulla popolazione;
   - `benchmarks/inference-audit/modal_audit.py` e `probe.py`, che usano `--pass`. Una riga nel README lo annota; i risultati restano.
 

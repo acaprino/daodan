@@ -36,9 +36,6 @@ class StorageQueryTests(unittest.TestCase):
         """Preserve every lexical field and verify the additive engine-view contract."""
         if format == "sqlite":
             actual = copy.deepcopy(actual)
-            resolution = actual["edge_view"]["coverage"].pop("resolution")
-            self.assertEqual(resolution["resolvable"], resolution["calls"] - resolution["external"])
-            self.assertEqual(resolution["resolved"], resolution["lexical_resolved"] + resolution["engine_confirmed"])
         expected = copy.deepcopy(reference)
         sqlite = format == "sqlite"
         expected["edge_view"] = {
@@ -47,10 +44,7 @@ class StorageQueryTests(unittest.TestCase):
                         "engine_available": False, **({"engine_store": None} if sqlite else {})},
             "coverage": {
                 "status": "missing_store" if sqlite else "unsupported_format",
-                "sampled": False, "population": 0, "selected": 0, "asked": 0,
-                "stride": 1, "confirmed": 0, "candidates": 0,
-                "no_edges_reason": None if sqlite else "json-manifest",
-                "lexical_disagreements": 0,
+                "languages": {}, "lexical_disagreements": 0,
                 **({"engine_pass": None} if sqlite else {}),
             },
             "gaps": [] if sqlite else ["JSON snapshot holds no semantic reference table"],

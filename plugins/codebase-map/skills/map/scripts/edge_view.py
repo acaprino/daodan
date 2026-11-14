@@ -214,18 +214,7 @@ def load_edge_view(
                     "engine": None,
                     "engine_available": False,
                 },
-                "coverage": {
-                    "status": "unsupported_format",
-                    "sampled": False,
-                    "population": 0,
-                    "selected": 0,
-                    "asked": 0,
-                    "stride": 1,
-                    "confirmed": 0,
-                    "candidates": 0,
-                    "no_edges_reason": "json-manifest",
-                    "lexical_disagreements": 0,
-                },
+                "coverage": {"status": "unsupported_format", "languages": {}, "lexical_disagreements": 0},
                 "references": [],
                 "reads": [],
                 "candidates": [],
@@ -242,6 +231,7 @@ def load_edge_view(
         binding: dict | None = None
 
         engine_pass = None
+        languages_covered: dict[str, dict] = {}
         if not edge_path.is_file():
             coverage_status = "missing_store"
             engine_pass = resolve_edges.pass_state(store.path)
@@ -257,20 +247,11 @@ def load_edge_view(
                 engine_edges = loaded_edges
                 holes = {hole["reference_id"]: hole["class"] for hole in resolve_edges.read_edge_holes(edge_path)
                          if hole["reference_id"] is not None}
-                population = int(binding.get("population", 0))
-                selected = int(binding.get("selected", 0))
-                asked = int(binding.get("asked", 0))
-                stride = int(binding.get("stride", 1))
-                sampled = selected < population
-                if sampled:
-                    coverage_status = "sampled"
-                    gaps.append(
-                        f"engine pass sampled {selected} of {population} unresolved call references (stride={stride})"
-                    )
-                elif not engine_edges:
-                    coverage_status = "completed_empty"
-                else:
-                    coverage_status = "complete"
+                # Each language's coverage, as its stage wrote it beside its rows (`resolve_edges.language_coverage`).
+                languages_covered = {language: entry["coverage"] for language, entry in
+                                     sorted((binding.get("languages") or {}).items()) if entry.get("coverage")}
+                coverage_status = "complete" if languages_covered and all(
+                    entry["state"] == "complete" for entry in languages_covered.values()) else "lower-bound"
 
         rows_by_ref: dict[str, list[dict]] = {}
         for edge in engine_edges:
@@ -287,8 +268,6 @@ def load_edge_view(
             "SELECT id, kind, file, caller, target_id, resolution, payload FROM sem_references "
             "WHERE kind IN ('call','read') ORDER BY file, l0, c0, id"
         ).fetchall()
-        counter = resolve_edges.ResolutionCounter(resolve_edges.project_callee_names(sem_db))
-        languages = dict(sem_db.execute("SELECT file, language FROM sem_coverage"))
 
         for ref_id, kind, file_rel, caller, target_id, res_state, blob in rows:
             payload = _unpack(blob)
@@ -377,18 +356,7 @@ def load_edge_view(
             if kind == "read":
                 reads.append(record)
                 continue
-            counter.add(languages.get(file_rel), res_state, payload,
-                        engine_resolved=record["resolution"] == "resolved" and record["target_id"] != target_id,
-                        engine_external=res_state == "resolved" and record["resolution"] != "resolved")
             references.append(record)
-
-        population = int(binding.get("population", 0)) if binding else 0
-        selected = int(binding.get("selected", 0)) if binding else 0
-        asked = int(binding.get("asked", 0)) if binding else 0
-        stride = int(binding.get("stride", 1)) if binding else 1
-        confirmed = int(binding.get("confirmed", 0)) if binding else 0
-        cand_count = int(binding.get("candidates", 0)) if binding else 0
-        no_edges_reason = binding.get("no_edges_reason") if binding else None
 
         return {
             "schema": EDGE_VIEW_SCHEMA,
@@ -399,23 +367,15 @@ def load_edge_view(
             "profile": {
                 "lexical_resolver": resolution.LEXICAL_RESOLVER,
                 "engine": binding.get("engine") if binding else None,
-                "engine_available": coverage_status in {"complete", "sampled", "completed_empty"},
+                "engine_available": coverage_status in {"complete", "lower-bound"},
                 "engine_store": edge_path.as_posix() if edge_path.is_file() else None,
                 "engine_reports": binding.get("engine_reports", {}) if binding else {},
             },
             "coverage": {
                 "status": coverage_status,
-                "sampled": coverage_status == "sampled",
-                "population": population,
-                "selected": selected,
-                "asked": asked,
-                "stride": stride,
-                "confirmed": confirmed,
-                "candidates": cand_count,
-                "no_edges_reason": no_edges_reason,
+                "languages": languages_covered,
                 "lexical_disagreements": disagreements,
                 "engine_pass": engine_pass,
-                "resolution": counter.summary(None if coverage_status == "rejected_store" else binding),
             },
             "references": references,
             "reads": reads,

@@ -294,7 +294,7 @@ class MapService:
         a path, `none`, or nothing for the one Daodan finds or builds."""
         if state.get("engine", True) is False:
             return {"state": "off", "action": "none", "reason": "the run was created with engine=false",
-                    "resolution": resolve_edges.edge_state(manifest).get("resolution")}
+                    "coverage": resolve_edges.edge_state(manifest).get("coverage")}
         if not repair:
             return resolve_edges.edge_state(manifest)
         offered = None if environment in (None, "auto") else [Path(environment)]

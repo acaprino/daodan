@@ -21,7 +21,7 @@ Verifica il requisito 23 di `docs/specs/2026-11-08-risoluzione-chiamate-motore.m
 Python 3.13, tree-sitter 0.26.0 e grammatica TypeScript 0.23.2. Le fixture Python usano AST stdlib. I test sono in `tests/test_codebase_map_resolve_edges.py`:
 
 ```powershell
-python -m unittest discover -s tests -p test_codebase_map_resolve_edges.py -k ResolvabilityTests
+python -m unittest discover -s tests -p test_codebase_map_resolve_edges.py -k PassLifecycleTests
 python -m unittest discover -s tests -p test_codebase_map_resolve_edges.py -k HomonymHolderTests
 python -m unittest discover -s tests -p test_codebase_map_resolve_edges.py -k ProvenanceGradingTests
 ```

@@ -128,7 +128,11 @@ class EdgeViewTests(unittest.TestCase):
 
         self.assertEqual(view["schema"], edge_view.EDGE_VIEW_SCHEMA)
         self.assertEqual(view["version"], edge_view.EDGE_VIEW_VERSION)
-        self.assertEqual(view["coverage"]["status"], "complete")
+        # The reads and the calls no engine answered are holes: a lower bound.
+        self.assertEqual(view["coverage"]["status"], "lower-bound")
+        python = view["coverage"]["languages"]["python"]
+        # The three confirmed edges and the candidate, uncertain.
+        self.assertEqual((python["answered"].get("project-callable"), python["uncertain"]), (4, 1))
         self.assertEqual(view["profile"]["engine"], "stub@1.0")
         self.assertEqual(view["conflicts"], [])
 
@@ -160,7 +164,7 @@ class EdgeViewTests(unittest.TestCase):
 
         self.assertEqual(hashlib.sha256(self.manifest.read_bytes()).hexdigest(), manifest_digest_before)
 
-    def test_load_edge_view_distinguishes_missing_empty_sampled_and_rejected_stores(self):
+    def test_load_edge_view_distinguishes_missing_lower_bound_and_rejected_stores(self):
         import edge_view
 
         with open_snapshot(self.manifest) as store:
@@ -170,14 +174,13 @@ class EdgeViewTests(unittest.TestCase):
         resolve_edges.resolve_edges(self.manifest, engine=StubEngine(), limit=1, stride=2, out=self.edges)
         with open_snapshot(self.manifest) as store:
             sampled_view = edge_view.load_edge_view(store, engine_store=self.edges)
-        self.assertEqual(sampled_view["coverage"]["status"], "sampled")
-        self.assertTrue(sampled_view["coverage"]["sampled"])
-
-        resolve_edges.resolve_edges(self.manifest, engine=StubEngine(), limit=None, stride=1, out=self.edges)
-        with open_snapshot(self.manifest) as store:
-            empty_view = edge_view.load_edge_view(store, engine_store=self.edges)
-        self.assertEqual(empty_view["coverage"]["status"], "completed_empty")
-        self.assertFalse(empty_view["coverage"]["sampled"])
+        # A pass that asks one position of two leaves the others as holes: a lower bound.
+        self.assertEqual(sampled_view["coverage"]["status"], "lower-bound")
+        python = sampled_view["coverage"]["languages"]["python"]
+        # What the limit left out reads apart from what is never asked.
+        self.assertEqual((python["state"], python["holes"]["not-selected"]["count"] > 0), ("lower-bound", True))
+        self.assertNotIn("sampled", sampled_view["coverage"])
+        self.assertTrue(sampled_view["profile"]["engine_available"])
 
         self.edges.write_bytes(b"corrupted")
         with open_snapshot(self.manifest) as store:
@@ -252,7 +255,7 @@ class MethodTargetTests(unittest.TestCase):
         self.assertTrue(by_line[5]["target_id"].startswith("app/contracts.ts::"))
         self.assertEqual((by_line[6]["resolution"], by_line[6]["target_kind"]), ("resolved", "concrete"))
         self.assertTrue(by_line[6]["target_id"].startswith("app/shop.ts::"))
-        self.assertEqual(view["coverage"]["resolution"]["engine_confirmed"], 2)
+        self.assertEqual(view["coverage"]["languages"]["typescript"]["answered"]["project-callable"], 2)
 
     def test_graph_from_a_method_file_keeps_its_incoming_calls(self):
         import source_reader
@@ -417,6 +420,25 @@ class IndexStoreTests(unittest.TestCase):
                     self.assertEqual((ref["resolution"], ref["reason"], ref["resolver"]),
                                      ("unresolved", "project-value", self.RESOLVER))
         self.assertEqual(self.record("call src/web/store.ts:15 store.save")["target_kind"], "interface")
+
+    def test_the_view_reports_each_languages_coverage_from_the_store(self):
+        coverage = self.view["coverage"]
+        self.assertEqual(sorted(coverage["languages"]), ["javascript", "typescript"])
+        for language, entry in coverage["languages"].items():
+            with self.subTest(language):
+                sites = sum(1 for identity in self.refs if self.language_of(identity) == language)
+                self.assertEqual(entry["sites"], sites)
+                self.assertEqual(sum(entry["answered"].values()) + sum(hole["count"] for hole in entry["holes"].values()),
+                                 sites)
+                self.assertEqual((entry["state"], entry["files"]["missing"]), ("lower-bound", []))
+        self.assertEqual(coverage["languages"]["typescript"]["uncertain"], 1)  # the edge `refine` marked
+        self.assertEqual(coverage["status"], "lower-bound")
+
+    def language_of(self, identity):
+        with open_snapshot(self.manifest) as store:
+            return store.connection.execute(
+                "SELECT c.language FROM sem_references r JOIN sem_coverage c ON c.file=r.file WHERE r.id=?",
+                (identity,)).fetchone()[0]
 
     def test_an_uncertain_end_is_a_candidate_and_no_target(self):
         ref = self.record(self.UNCERTAIN)
