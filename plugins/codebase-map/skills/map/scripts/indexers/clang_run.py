@@ -7,7 +7,7 @@ A unit is `{"root", "configure": [...], "generated": [...], "fetched": [{"name",
 states it. A dependency the project fetches is never downloaded: CMake runs with FETCHCONTENT_FULLY_DISCONNECTED
 and each fetched dependency's source directory on an empty one. A unit whose configure then fails is not indexed:
 `unavailable` when it fetches something (the dependency lies outside the allowed registries), else `failed`, with
-CMake's own error line either way.
+CMake's own output, unparsed, either way.
 
 `OUT_DIR/result.json` holds, per unit, its state, its steps (`returncode`, `seconds`, the output's tail), the
 files of the compilation database with how many commands compile each, and the index it wrote
@@ -29,6 +29,7 @@ TOOLS = Path("/daodan/tools")  # where the copy carries CMake and scip-clang (in
 WORK = Path("/work")  # the project's copy
 SCRATCH = Path("/tmp/daodan-clang")
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
+ERROR_TAIL = 4000
 
 
 def run(command: list[str], cwd: Path, timeout: float = 3600) -> tuple[int | None, str, float]:
@@ -50,40 +51,41 @@ def configure_command(cmake: str, unit: dict, build: Path, empty: Path) -> list[
     return command + list(unit.get("configure", ()))
 
 
-def error_line(output: str) -> str | None:
-    """CMake's first error: its `CMake Error` line and the message line under it."""
-    lines = output.split("\n")
-    for number, line in enumerate(lines):
-        if line.startswith("CMake Error"):
-            message = next((item.strip() for item in lines[number + 1:] if item.strip()), "")
-            return f"{line.strip()} {message}".strip()
-    return None
-
-
 def _host(url: str) -> str:
     match = re.match(r"(?:[a-z+]+://)?(?:[^@/]+@)?([^/:]+)", url)
     return match.group(1) if match else url
 
 
+def second_attempt(unit: dict, output: str) -> list[str] | None:
+    """The arguments a second configure would add after a failed one, or None for no second attempt: always None
+    until the map-driven round measures how many units would need one."""
+    return None
+
+
 def configure(runner, cmake: str, unit: dict, build: Path, empty: Path) -> tuple[list[dict], dict]:
-    """One unit's configure steps and its state: `configured`, else `unavailable` or `failed` with the cause.
-    One attempt; a second one, if ever measured worth it, belongs here."""
+    """One unit's configure steps and its state: `configured`, else `unavailable` or `failed` with the cause and
+    CMake's output (`error`), as CMake wrote it."""
     for item in unit.get("fetched", ()):
         (empty / item["name"]).mkdir(parents=True, exist_ok=True)
         (empty / item["name"] / "CMakeLists.txt").write_text(f"# Not downloaded by Daodan: {item['url']}\n",
                                                             encoding="utf-8")
-    code, output, seconds = runner(configure_command(cmake, unit, build, empty), WORK)
+    command = configure_command(cmake, unit, build, empty)
+    code, output, seconds = runner(command, WORK)
     steps = [{"step": "configure", "returncode": code, "seconds": seconds, "tail": output[-2500:]}]
+    again = second_attempt(unit, output) if code != 0 else None
+    if again is not None:
+        code, output, seconds = runner(command + again, WORK)
+        steps.append({"step": "configure again", "returncode": code, "seconds": seconds, "tail": output[-2500:]})
     if code == 0:
         return steps, {"state": "configured"}
-    error = error_line(output) or ("timed out" if code is None else f"exit code {code}")
+    error = output[-ERROR_TAIL:]
     fetched = unit.get("fetched") or ()
     if not fetched:
-        return steps, {"state": "failed", "cause": f"the configure failed: {error}"}
+        return steps, {"state": "failed", "error": error, "cause": "the configure timed out" if code is None
+                       else f"the configure ended with exit code {code}"}
     hosts = ", ".join(sorted({_host(item["url"]) for item in fetched}))
-    return steps, {"state": "unavailable", "kind": OUTSIDE, "urls": [item["url"] for item in fetched],
-                   "cause": f"the configure needs what the unit downloads from {hosts}, outside the allowed "
-                            f"registries: {error}"}
+    return steps, {"state": "unavailable", "kind": OUTSIDE, "urls": [item["url"] for item in fetched], "error": error,
+                   "cause": f"the configure needs what the unit downloads from {hosts}, outside the allowed registries"}
 
 
 def compiled(compdb: Path) -> dict[str, int]:

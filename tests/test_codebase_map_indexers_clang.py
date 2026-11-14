@@ -64,14 +64,13 @@ def _runner(code, output):
     return run, calls
 
 
-def test_a_unit_that_needs_an_undownloaded_dependency_is_unavailable_with_cmakes_error(tmp_path):
+def test_a_unit_that_needs_an_undownloaded_dependency_is_unavailable_with_cmakes_own_output(tmp_path):
     run, calls = _runner(1, LINK_ERROR)
     steps, state = clang_run.configure(run, "cmake", {"root": ".", "fetched": [FMT]}, tmp_path / "b", tmp_path / "e")
     assert len(calls) == 1 and [step["step"] for step in steps] == ["configure"]
     assert state == {"state": "unavailable", "kind": "download-outside-registries", "urls": [FMT["url"]],
-                     "cause": "the configure needs what the unit downloads from github.com, outside the allowed "
-                              "registries: CMake Error at CMakeLists.txt:8 (target_link_libraries): "
-                              "Target \"app\" links to:"}
+                     "error": LINK_ERROR, "cause": "the configure needs what the unit downloads from github.com, "
+                                                   "outside the allowed registries"}
     assert (tmp_path / "e" / "fmt" / "CMakeLists.txt").read_text(encoding="utf-8") == \
         f"# Not downloaded by Daodan: {FMT['url']}\n"
 
@@ -79,13 +78,21 @@ def test_a_unit_that_needs_an_undownloaded_dependency_is_unavailable_with_cmakes
 def test_a_unit_that_fetches_nothing_and_cannot_configure_failed(tmp_path):
     run, _calls = _runner(1, LINK_ERROR)
     _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "e")
-    assert state == {"state": "failed", "cause": "the configure failed: CMake Error at CMakeLists.txt:8 "
-                                                 "(target_link_libraries): Target \"app\" links to:"}
+    assert state == {"state": "failed", "cause": "the configure ended with exit code 1", "error": LINK_ERROR}
     run, _calls = _runner(None, "")
     _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "e")
-    assert state == {"state": "failed", "cause": "the configure failed: timed out"}
+    assert state == {"state": "failed", "cause": "the configure timed out", "error": ""}
     run, _calls = _runner(0, "-- Generating done\n")
     assert clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "e")[1] == {"state": "configured"}
+
+
+def test_no_second_attempt_is_taken_today(tmp_path):
+    """The place for a second configure exists; until the map-driven round counts the units that need one, it
+    gives no arguments, so a failed configure runs once."""
+    assert clang_run.second_attempt({"root": ".", "fetched": [FMT]}, LINK_ERROR) is None
+    run, calls = _runner(1, LINK_ERROR)
+    steps, _state = clang_run.configure(run, "cmake", {"root": ".", "fetched": [FMT]}, tmp_path / "b", tmp_path / "e")
+    assert len(calls) == len(steps) == 1
 
 
 def test_the_compilation_database_counts_the_commands_of_each_file(tmp_path):
@@ -138,8 +145,8 @@ def _fake_run(tmp_path, report: dict | None, state: str = "done", **extra):
 TOOLS = {f"{clang.TOOLS}/scip-clang": Path("scip-clang"), f"{clang.TOOLS}/cmake.tar.gz": Path("cmake.tar.gz"),
          f"{clang.TOOLS}/clang_run.py": Path("clang_run.py")}
 UNAVAILABLE = {"root": "vendor", "state": "unavailable", "kind": "download-outside-registries", "urls": [FMT["url"]],
-               "cause": "the configure needs what the unit downloads from github.com, outside the allowed registries: "
-                        "CMake Error at CMakeLists.txt:8 (target_link_libraries): Target \"app\" links to:",
+               "cause": "the configure needs what the unit downloads from github.com, outside the allowed registries",
+               "error": LINK_ERROR,
                "steps": [{"step": "configure", "returncode": 1, "seconds": 2.0, "tail": LINK_ERROR}],
                "compiled": {}, "index": None}
 
@@ -166,6 +173,7 @@ def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the
         [{"root": ".", "configure": [], "generated": [], "fetched": []},
          {"root": "vendor", "configure": [], "generated": [], "fetched": [FMT]}]
     assert result["indexes"] == [[str((tmp_path / "work" / "index-0.scip").resolve()), ""]]
+    assert result["units"][2]["error"] == LINK_ERROR
     assert [(unit["root"], unit["state"], unit.get("kind")) for unit in result["units"]] == \
         [("m", "unavailable", "not-cmake"), (".", "indexed", None), ("vendor", "unavailable", "download-outside-registries")]
     assert result["configs"]["compiled"] == {"main.c": 1, "util.c": 2}
@@ -226,11 +234,11 @@ SMOKE = os.environ.get("DAODAN_CLANG_SMOKE") == "1"
 
 
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_CLANG_SMOKE=1 to index the fixture in a real container")
-def test_smoke_a_unit_that_fetches_fmt_from_github_is_unavailable_with_cmakes_error(tmp_path):
+def test_smoke_a_unit_that_fetches_fmt_from_github_is_unavailable_with_cmakes_own_output(tmp_path):
     """fmt comes from github.com, outside the allowed registries: never downloaded, the unit is not indexed."""
     unit = {"root": ".", "build": "cmake", "configure": [], "generated": [],
             "fetched": [{"name": "fmt", "url": "https://github.com/fmtlib/fmt.git"}]}
     result = clang.index(HERE / "fixtures/clang-index/fetch", tmp_path / "work", units=[unit])
     assert result["state"] == "unavailable", result
     assert result["units"][0]["kind"] == "download-outside-registries"
-    assert "github.com" in result["reason"] and "CMake Error" in result["reason"]
+    assert "github.com" in result["reason"] and "CMake Error" in result["units"][0]["error"]

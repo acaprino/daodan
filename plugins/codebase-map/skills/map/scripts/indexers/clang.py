@@ -4,8 +4,8 @@
 nothing itself. A configure runs the project's CMake code, so it runs only in a container
 (`container.run_in_container`), in one phase with no network, over a copy of the project: `clang_run.py` there
 configures each unit (a fetched dependency is never downloaded: a unit that needs one to configure is not
-indexed, `unavailable` with the URL and CMake's error), builds the `generated` targets, and runs scip-clang over
-the compilation database. CMake, scip-clang and that
+indexed, `unavailable` with the URL and CMake's own output), builds the `generated` targets, and runs scip-clang
+over the compilation database. CMake, scip-clang and that
 script are what the copy carries under `TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared
 directory and checked by sha256. The image (`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs
 to read the system includes, glibc 2.39 (scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package
@@ -391,7 +391,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
             runs.append({"unit": unit["root"], "step": step["step"], "returncode": step["returncode"],
                          "seconds": step["seconds"], "peak_mb": data.get("peak_mb"), "stderr_tail": step["tail"],
                          **({"diagnostics": step["diagnostics"]} if "diagnostics" in step else {})})
-        states.append({key: unit[key] for key in ("root", "state", "kind", "cause", "urls") if key in unit})
+        states.append({key: unit[key] for key in ("root", "state", "kind", "cause", "urls", "error") if key in unit})
         compiled.update(unit["compiled"])
         if unit["index"] and (back / unit["index"]).is_file():
             target = work_dir / unit["index"]
