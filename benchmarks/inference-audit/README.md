@@ -1122,3 +1122,162 @@ Non verificato:
 - un progetto C++ con template pesanti (fmt, nlohmann/json), lambda e `using` di nomi oltre alla fixture;
 - perché scip-clang perde `extern "C"`: visto sulla fixture e su tinyxml2, non cercato nel suo sorgente;
 - i 26 metodi riferiti e mai definiti, oltre ai costruttori dei template e ai prototipi privati.
+
+## 14 novembre 2026, fonti del programma intero: JavaScript e TypeScript
+
+Accanto al grafo letto dall'indice SCIP ci sono due seconde fonti, ciascuna in un suo adapter con la stessa forma
+(`analyze(project_dir, work_dir) -> {"edges", "engine"}`). Le ho provate su `fixtures/ts` e poi su tududi (commit
+`71da9d7b`, 1.688 file JS/TS) su Modal con `strong_js.py`, app `daodan-strong-js`: una sola esecuzione completa,
+più una ripresa del solo confronto sugli archi tenuti (`--reuse`, 65 s).
+
+- `adapters/ts_compiler.py` con `adapters/ts_compiler.js`: un processo Node, `ts.createProgram` con `allowJs`;
+  per ogni chiamata `checker.getResolvedSignature(call).declaration`, altrimenti `getSymbolAtLocation` +
+  `getAliasedSymbol`. TypeScript 7.0 è uscito senza API JavaScript ("it does not ship with an API", annuncio
+  ufficiale); l'API sta in `@typescript/typescript6@6.0.2`, che carica TypeScript 6.0.3.
+- `adapters/js_jelly.py`: `@cs-au-dk/jelly@0.13.0`, solo modo statico (`-j`, `--diagnostics-json`, `-i` timeout,
+  `--no-callgraph-external`; mai `--approx`, `-d`, `--npm-test`). Due giri: solo file del progetto
+  (`--ignore-dependencies`) e con `node_modules`.
+- Il confronto è fatto chiamata per chiamata sul grafo dell'indice, ricostruito dagli input tenuti sul volume
+  (`scip-inputs/tududi`). I risultati sono in `results/strong-js-tududi.json` e
+  `results/strong-js-tududi-split.json`: stessi archi, ma il secondo separa le funzioni che Jelly trova dentro
+  gli argomenti della chiamata.
+
+### Motori
+
+| fonte | secondi | RAM di picco | note |
+|---|---:|---:|---|
+| compilatore TS | 35 | 1,8 GB | 111.366 chiamate: 93.241 per firma, 1.089 per simbolo, 17.036 senza dichiarazione |
+| compilatore TS + 22 `@types/*` mancanti | 35 | 1,8 GB | per firma 96.070 |
+| Jelly solo progetto | 35 | 2,4 GB | 1.688 moduli, 23.495 funzioni, nessun timeout |
+| Jelly con `node_modules` | 1.286 | 21,4 GB | fermato dal suo timeout di 1.200 s: 702 pacchetti, 10.425 moduli, 161 errori; grafo parziale |
+
+Costo fatturato da Modal per l'app: 0,085 USD (ora 23 UTC) + 0,056 USD (ora 00 UTC) = 0,14 USD.
+
+### Per classe di buco (chiamate dove l'indice non ha un obiettivo del progetto)
+
+"Callback" vuol dire che Jelly collega la chiamata alla funzione passata come argomento: `tasks.map(fn)` diventa
+`tasks.map -> fn`. L'arco è vero, perché il codice nativo chiama `fn`, ma `fn` non è il chiamato.
+
+| buco (indice) | chiamate | TS | TS + `@types` | Jelly solo progetto | Jelly con dipendenze |
+|---|---:|---|---|---|---|
+| JS ricevitore senza tipo | 9.166 | 0 | 767 esterni | 44 progetto + 231 callback | 3 progetto + 31 callback + 297 esterni |
+| JS chiamato dinamico | 3.698 | 0 | 1.455 esterni | 10 progetto + 84 callback | 36 callback + 1 esterno |
+| JS legame ambiguo | 2.565 | 0 | 121 esterni | 40 progetto + 18 callback | 14 callback + 1 esterno |
+| JS metodo abbreviato di un oggetto in un altro file | 60 | 57 progetto + 3 esterni | uguale | 57 progetto | 48 progetto + 1 esterno |
+| TS `t` di `useTranslation` | 3.748 | 3.748 esterni (`i18next`) | uguale | 0 | 0 |
+| TS `fireEvent.*` | 564 | 564 esterni (`@testing-library/dom`) | uguale | 0 | 0 |
+| TS ricevitore senza tipo | 408 | 0 | 0 | 4 progetto | 4 progetto |
+| TS `useCallback` (salto dichiarato dell'indice) | 145 | 145 uguali, senza salto | uguale | 0 | 0 |
+
+Esempi per classe:
+- Metodo abbreviato:
+  - `backend/modules/blog/hostSwitch.js:79` `blogService.page` -> `backend/modules/blog/service.js:317`;
+  - `backend/modules/notes/routes.js:76` `notesController.getNoteUidForAuth` -> `notes/controller.js:277`;
+  - `backend/modules/quotes/quotesService.js:26` `yaml.load` -> js-yaml, un esterno che l'indice prendeva per
+    un metodo del progetto.
+- `t`: `frontend/components/Admin/AdminUsersPage.tsx:634`, `AdminFeedbackPage.tsx:162`,
+  `AdminRolesPanel.tsx:88` -> `i18next@24.2.3`.
+- `fireEvent`: `frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx:163`,
+  `Shared/__tests__/ShareModal.test.tsx:204`, `Admin/__tests__/AdminUserStatusTable.test.tsx:183` ->
+  `@testing-library/dom@9.3.4`. Il compilatore li risolve tutti, quindi il buco è di scip-typescript.
+- `useCallback`: `frontend/components/Everyone/PeopleBoard.tsx:483` -> `:433`, `Note/NoteModal.tsx:255` ->
+  `:184`, `Admin/AdminFeedbackPage.tsx:128` -> `:109`. La firma risolta arriva alla funzione freccia da sola.
+- Esterni dopo `@types`:
+  - `backend/tests/integration/demo.test.js:71` `agent.get` -> `@types/supertest@7.2.1`;
+  - `caldav-projects.test.js:15` `bcrypt.hash` -> `@types/bcrypt@6.0.0`;
+  - `caldav-protocol.test.js:102` `.set` -> `@types/superagent`.
+
+  Il pacchetto identificato è quello dei tipi: per fonderlo serve la regola `@types/x -> x`.
+- Jelly, chiamato vero su un ricevitore senza tipo:
+  - `backend/modules/billing/service.js:156` `provider.configuredPrices` -> `billing/stripeClient.js:39`;
+  - `backend/services/entityAttachments.js:350` `store.add` -> `:89`;
+  - `backend/modules/mcp/server.js:85` `tool.handler` -> `mcp/tools/taskTools.js:223`.
+
+Con `node_modules` Jelly peggiora, perché il timeout taglia l'analisi. Dove l'indice ha già un obiettivo del
+progetto, 5.384 chiamate restano senza obiettivo, contro 1.047 nel giro solo progetto.
+
+### Dove l'indice ha già un obiettivo del progetto
+
+- Compilatore TS: 19.105 uguali, nessun disaccordo.
+  - 882 casi si fermano su un parametro o su un tipo funzione: è il caso della callback, che il compilatore
+    non segue.
+  - 12 casi danno un esterno, 6 meno obiettivi, 1 più obiettivi.
+- Jelly solo progetto: 18.939 uguali, 1.047 senza obiettivo, 13 disaccordi (12 disgiunti, 1 sovrapposto).
+- Jelly con dipendenze: 3 disaccordi, già compresi nei 13.
+
+Ho letto nel sorgente tutti i 13 disaccordi, e hanno la stessa forma: l'indice (e con lui il compilatore) punta
+alla firma di un membro d'interfaccia o di una prop, Jelly alla funzione che quel membro contiene davvero.
+
+Jelly ha ragione in 11:
+- `frontend/components/Admin/AdminUserFilter.tsx:132` `choice.matches` -> le frecce `:101`, `:106`, `:111`;
+- `DailyPlan/tips.ts:132` e `:141` `durationFor` -> `PlanMyDay.tsx:414`, `TodayPage.tsx:399`;
+- `Inbox/QuickCaptureInput.tsx:2141` e `Note/MarkdownEditor.tsx:380` `upload` -> `utils/attachmentsService.ts:220`;
+- `Note/SlashCommandMenu.tsx:300` e `:341` `cmd.insert` -> `:16` (`makeInserter`) e `:210`;
+- `Note/editor/linkClicks.ts:30` `onOpenWikilink` -> `MarkdownEditor.tsx:478`;
+- `Shared/UsageBar.tsx:29` e `:32` `format` -> il default `:15` (nessun chiamante passa `format`);
+- `utils/slashMenu.ts:145` `labels.create` -> `QuickCaptureInput.tsx:2341`.
+
+Jelly è parziale in 2:
+- `Shared/MarkdownRenderer.tsx:420` `publicNoteHref`: dà solo il default `:158`; mancano le frecce di
+  `Blog/BlogIndexPage.tsx:108` e `PublicNote/PublicNoteArticle.tsx:84`.
+- `backend/shared/middleware/errorHandler.js:20` `err.toJSON`: l'indice dà `AppError.js:18` e gli override di
+  `shared/errors/index.js`, Jelly dà `AppError.js:18` e la freccia assegnata in `spreadsheets/core/errors.js:8`.
+  La verità è l'unione delle due.
+
+Il grafo dell'indice tratta come funzione chiamata la firma di un tipo: è un difetto dell'indice, non di Jelly.
+
+### Precisione di Jelly: 20 archi letti su ricevitori senza tipo
+
+Solo progetto: 20 archi, nessuno inventato.
+- 15 sono callback negli argomenti: veri come flusso, ma non sono il chiamato. Per esempio
+  `backend/modules/tasks/core/serializers.js:243` `tasks.map`, `backend/modules/people/service.js:27`
+  `people.map`, `backend/services/accountsService.js:157` `ids.filter`.
+- 4 sono `tool.handler` verso gli handler registrati con `tools.push`: veri. Sono `mcp/tools/habitTools.js:99`,
+  `taskTools.js:223`, `taskTools.js:1372`, `tagTools.js:87`.
+- 1 è `backend/modules/auth/service.js:389` `session.destroy` verso lo stub di
+  `tests/unit/modules/auth/authService-edge-cases.test.js:264`: vero, ma solo nel test.
+
+Con dipendenze: 20 su 20 veri.
+- 16 sono esterni: `request.agent` -> supertest 11 volte, `bcrypt.hash`/`compare` -> bcrypt 4 volte,
+  `ejs.renderFile` -> ejs.
+- 4 sono callback negli argomenti, per esempio `backend/services/userDataTransfer.js:283` `linkedUsers.map`.
+
+Non ho misurato il richiamo di Jelly, cioè quante chiamate gli mancano: non è completo per costruzione.
+
+### Controllo a mano (20 casi, attese scritte prima dei risultati)
+
+Corretti: indice 3, TS 3, TS + `@types` 4, Jelly solo progetto 3, Jelly con dipendenze 3.
+
+- Nessuna fonte risolve i 4 casi che l'indice sbagliava: `queryInterface.addIndex`, `lastModified.toJSDate`,
+  `Task.create`, `tag.slice`.
+- Lo stesso vale per altri 6: `findAll` (2 casi), `findOrCreate`, `update`, `toJSON` dei modelli Sequelize,
+  `req.get` di Express. Il ricevitore è `any` anche per il compilatore, e Jelly non segue gli oggetti Sequelize.
+- Callback:
+  - Jelly trova tutte le 7 frecce di `backend/modules/webhooks/controller.js:15` e tutte le 3 di
+    `webhooks/taskEvents.js:88`.
+  - Per `frontend/components/Habits/HabitDayPanel.tsx:94` ne trova 2 su 3: manca `HabitDetails.tsx:446`.
+  - Su `caldav/services/safe-request.js:107` Jelly solo progetto aggiunge la freccia del test
+    `caldav-safe-request.test.js:257`.
+  - Nessuna fonte trova le callback passate come prop (`MissingNotePrompt.tsx:75`, `TagModal.tsx:76`); l'indice
+    lì punta alla firma della prop.
+- `@types/multer` fa trovare a TS il `cb` di `backend/modules/backup/routes.js:27`.
+- `res.status` (`tasks/routes.js:612`) era già esterno, perché i tipi di Express ci sono.
+
+### Verdetto
+
+- Compilatore TS: chiude il metodo abbreviato (57 di 60), `t` (3.748), `fireEvent` (564) e `useCallback` senza
+  salto dichiarato. Non chiude i ricevitori `any`: 0 obiettivi del progetto; 767 esterni se si installano i
+  `@types` mancanti. Nessun disaccordo: i suoi archi si fondono come certi, con la regola `@types/x -> x` per gli
+  esterni.
+- Jelly solo progetto: è l'unica fonte per callback e valori funzione (le 7 + 3 frecce dei webhooks, le 11
+  correzioni ai membri d'interfaccia). Sui ricevitori senza tipo dà poco: 44 chiamati veri su 9.166. Non ha
+  inventato archi nei 20 letti, ma non è completo per costruzione: va fuso come candidato marcato, separando le
+  callback negli argomenti dal chiamato.
+- Jelly con `node_modules`: no, perché costa 21 GB, va in timeout e dà meno archi.
+
+Non verificato:
+- il richiamo di Jelly;
+- gli 882 casi TS fermi su un parametro;
+- se le versioni `@types` installate (le ultime) corrispondono a quelle dei pacchetti;
+- 198 siti TS e 72 di Jelly che non trovano la chiamata nello snapshot (0,2%);
+- test automatici per i due adapter.

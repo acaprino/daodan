@@ -1,0 +1,2307 @@
+{
+ "code": {
+  "scip_graph.py": "750af9f87f6b",
+  "adapters/clang.py": "ed69f40fac71",
+  "adapters/css.py": "4932545239f5",
+  "adapters/css_tailwind.py": "82004909d5cf",
+  "adapters/css_typescript.py": "ee1da56caf29",
+  "adapters/go.py": "dbdf199f9e74",
+  "adapters/go_callgraph.py": "f4cc3f249243",
+  "adapters/java.py": "785ca14f9c45",
+  "adapters/js_jelly.py": "b5f14dcba7fe",
+  "adapters/jvm_callgraph.py": "9052670ffacf",
+  "adapters/kotlin.py": "499e0b2a692a",
+  "adapters/kotlin_analysis.py": "c4bf3fe76db8",
+  "adapters/python.py": "b9a90540a243",
+  "adapters/python_jedi.py": "9ff396b7438a",
+  "adapters/rust.py": "a8d962bc3212",
+  "adapters/ts_compiler.py": "f1b267281fad",
+  "adapters/typescript.py": "59a5a73875a8"
+ },
+ "index_groups": {
+  "javascript": {
+   "index: external": 42794,
+   "hole: no-position / dynamic-callee": 208,
+   "index: project function": 12828,
+   "index: project value, variable": 905,
+   "index: project value, parameter": 649,
+   "hole: no-occurrence / unknown-receiver": 9166,
+   "hole: no-occurrence / dynamic-callee": 3698,
+   "hole: dangling-local / unknown-receiver": 60,
+   "hole: no-occurrence / ambiguous-binding": 2565,
+   "hole: no-occurrence / unbound-name": 16,
+   "hole: dangling-local / unique-lexical-binding": 1
+  },
+  "typescript": {
+   "index: external": 22357,
+   "index: project function": 7033,
+   "hole: no-occurrence / unknown-receiver": 408,
+   "hole: no-occurrence / dynamic-callee": 144,
+   "hole: no-position / dynamic-callee": 98,
+   "index: project value, variable": 3295,
+   "hole: no-occurrence / unknown-receiver-or-import-form": 164,
+   "hole: dangling-local / non-callable-binding": 3748,
+   "hole: no-occurrence / import-target-missing-or-ambiguous": 564,
+   "index: project value, parameter": 281,
+   "index: project function via declared hop": 145,
+   "index: project value, property": 231,
+   "hole: dangling-local / scope-unresolved": 7,
+   "hole: no-occurrence / ambiguous-binding": 2
+  }
+ },
+ "ts": {
+  "reused": "/results/inference-audit/strong-js/tududi/ts.jsonl.gz"
+ },
+ "jelly-own": {
+  "reused": "/results/inference-audit/strong-js/tududi/jelly-own.jsonl.gz"
+ },
+ "ts-types": {
+  "reused": "/results/inference-audit/strong-js/tududi/ts-types.jsonl.gz"
+ },
+ "jelly-deps": {
+  "reused": "/results/inference-audit/strong-js/tududi/jelly-deps.jsonl.gz"
+ },
+ "compare": {
+  "table": {
+   "javascript | hole: dangling-local / unique-lexical-binding": {
+    "ts": {
+     "project function": 1
+    },
+    "jelly-own": {
+     "project function": 1
+    },
+    "ts-types": {
+     "project function": 1
+    },
+    "jelly-deps": {
+     "project function": 1
+    }
+   },
+   "javascript | hole: dangling-local / unknown-receiver": {
+    "ts": {
+     "project function": 57,
+     "external": 3
+    },
+    "jelly-own": {
+     "project function": 57,
+     "none": 3
+    },
+    "ts-types": {
+     "project function": 57,
+     "external": 3
+    },
+    "jelly-deps": {
+     "none": 11,
+     "project function": 48,
+     "external": 1
+    }
+   },
+   "javascript | hole: no-occurrence / ambiguous-binding": {
+    "ts": {
+     "none": 2565
+    },
+    "jelly-own": {
+     "none": 2507,
+     "callback in the arguments": 18,
+     "project function": 40
+    },
+    "ts-types": {
+     "none": 2444,
+     "external": 121
+    },
+    "jelly-deps": {
+     "none": 2550,
+     "callback in the arguments": 14,
+     "external": 1
+    }
+   },
+   "javascript | hole: no-occurrence / dynamic-callee": {
+    "ts": {
+     "none": 3698
+    },
+    "jelly-own": {
+     "none": 3604,
+     "callback in the arguments": 84,
+     "project function": 10
+    },
+    "ts-types": {
+     "none": 2243,
+     "external": 1455
+    },
+    "jelly-deps": {
+     "none": 3661,
+     "callback in the arguments": 36,
+     "external": 1
+    }
+   },
+   "javascript | hole: no-occurrence / unbound-name": {
+    "ts": {
+     "none": 16
+    },
+    "jelly-own": {
+     "none": 16
+    },
+    "ts-types": {
+     "none": 16
+    },
+    "jelly-deps": {
+     "none": 16
+    }
+   },
+   "javascript | hole: no-occurrence / unknown-receiver": {
+    "ts": {
+     "none": 9166
+    },
+    "jelly-own": {
+     "none": 8891,
+     "project function": 44,
+     "callback in the arguments": 231
+    },
+    "ts-types": {
+     "external": 767,
+     "none": 8399
+    },
+    "jelly-deps": {
+     "none": 8835,
+     "external": 297,
+     "project function": 3,
+     "callback in the arguments": 31
+    }
+   },
+   "javascript | hole: no-position / dynamic-callee": {
+    "ts": {
+     "none": 208
+    },
+    "jelly-own": {
+     "none": 208
+    },
+    "ts-types": {
+     "none": 208
+    },
+    "jelly-deps": {
+     "none": 208
+    }
+   },
+   "javascript | index: external": {
+    "ts": {
+     "external": 42732,
+     "project function": 62
+    },
+    "jelly-own": {
+     "none": 40409,
+     "project function": 818,
+     "callback in the arguments": 505,
+     "project, not a function": 1062
+    },
+    "ts-types": {
+     "external": 42732,
+     "project function": 62
+    },
+    "jelly-deps": {
+     "none": 40765,
+     "external": 420,
+     "project function": 294,
+     "callback in the arguments": 253,
+     "project, not a function": 1062
+    }
+   },
+   "javascript | index: project function": {
+    "ts": {
+     "project function": 12816,
+     "external": 12
+    },
+    "jelly-own": {
+     "project function": 12828
+    },
+    "ts-types": {
+     "project function": 12816,
+     "external": 12
+    },
+    "jelly-deps": {
+     "none": 4284,
+     "project function": 8544
+    }
+   },
+   "javascript | index: project value, parameter": {
+    "ts": {
+     "external": 82,
+     "project, not a function": 563,
+     "project function": 4
+    },
+    "jelly-own": {
+     "none": 534,
+     "project function": 115
+    },
+    "ts-types": {
+     "external": 94,
+     "project, not a function": 551,
+     "project function": 4
+    },
+    "jelly-deps": {
+     "none": 627,
+     "project function": 22
+    }
+   },
+   "javascript | index: project value, variable": {
+    "ts": {
+     "external": 19,
+     "none": 832,
+     "project, not a function": 18,
+     "project function": 36
+    },
+    "jelly-own": {
+     "none": 865,
+     "project function": 40
+    },
+    "ts-types": {
+     "external": 490,
+     "project, not a function": 17,
+     "none": 362,
+     "project function": 36
+    },
+    "jelly-deps": {
+     "none": 422,
+     "external": 469,
+     "project function": 14
+    }
+   },
+   "typescript | hole: dangling-local / non-callable-binding": {
+    "ts": {
+     "external": 3748
+    },
+    "jelly-own": {
+     "none": 3748
+    },
+    "ts-types": {
+     "external": 3748
+    },
+    "jelly-deps": {
+     "none": 3748
+    }
+   },
+   "typescript | hole: dangling-local / scope-unresolved": {
+    "ts": {
+     "external": 7
+    },
+    "jelly-own": {
+     "none": 7
+    },
+    "ts-types": {
+     "external": 7
+    },
+    "jelly-deps": {
+     "none": 7
+    }
+   },
+   "typescript | hole: no-occurrence / ambiguous-binding": {
+    "ts": {
+     "none": 2
+    },
+    "jelly-own": {
+     "none": 2
+    },
+    "ts-types": {
+     "none": 2
+    },
+    "jelly-deps": {
+     "none": 2
+    }
+   },
+   "typescript | hole: no-occurrence / dynamic-callee": {
+    "ts": {
+     "none": 144
+    },
+    "jelly-own": {
+     "none": 137,
+     "project function": 3,
+     "callback in the arguments": 4
+    },
+    "ts-types": {
+     "none": 144
+    },
+    "jelly-deps": {
+     "none": 138,
+     "project function": 2,
+     "callback in the arguments": 4
+    }
+   },
+   "typescript | hole: no-occurrence / import-target-missing-or-ambiguous": {
+    "ts": {
+     "external": 564
+    },
+    "jelly-own": {
+     "none": 564
+    },
+    "ts-types": {
+     "external": 564
+    },
+    "jelly-deps": {
+     "none": 564
+    }
+   },
+   "typescript | hole: no-occurrence / unknown-receiver": {
+    "ts": {
+     "none": 406,
+     "project, not a function": 2
+    },
+    "jelly-own": {
+     "none": 404,
+     "callback in the arguments": 4
+    },
+    "ts-types": {
+     "none": 406,
+     "project, not a function": 2
+    },
+    "jelly-deps": {
+     "none": 404,
+     "callback in the arguments": 4
+    }
+   },
+   "typescript | hole: no-occurrence / unknown-receiver-or-import-form": {
+    "ts": {
+     "none": 164
+    },
+    "jelly-own": {
+     "none": 164
+    },
+    "ts-types": {
+     "none": 164
+    },
+    "jelly-deps": {
+     "none": 164
+    }
+   },
+   "typescript | hole: no-position / dynamic-callee": {
+    "ts": {
+     "none": 98
+    },
+    "jelly-own": {
+     "none": 98
+    },
+    "ts-types": {
+     "none": 98
+    },
+    "jelly-deps": {
+     "none": 98
+    }
+   },
+   "typescript | index: external": {
+    "ts": {
+     "external": 22348,
+     "project, not a function": 6,
+     "project function": 3
+    },
+    "jelly-own": {
+     "none": 20384,
+     "project function": 721,
+     "project, not a function": 347,
+     "callback in the arguments": 905
+    },
+    "ts-types": {
+     "external": 22348,
+     "project, not a function": 6,
+     "project function": 3
+    },
+    "jelly-deps": {
+     "none": 18410,
+     "external": 2910,
+     "project, not a function": 347,
+     "project function": 337,
+     "callback in the arguments": 353
+    }
+   },
+   "typescript | index: project function": {
+    "ts": {
+     "project function": 6151,
+     "project, not a function": 882
+    },
+    "jelly-own": {
+     "project function": 6131,
+     "none": 902
+    },
+    "ts-types": {
+     "project function": 6151,
+     "project, not a function": 882
+    },
+    "jelly-deps": {
+     "project function": 6078,
+     "none": 955
+    }
+   },
+   "typescript | index: project function via declared hop": {
+    "ts": {
+     "project function": 145
+    },
+    "jelly-own": {
+     "none": 145
+    },
+    "ts-types": {
+     "project function": 145
+    },
+    "jelly-deps": {
+     "none": 145
+    }
+   },
+   "typescript | index: project value, parameter": {
+    "ts": {
+     "project, not a function": 207,
+     "external": 74
+    },
+    "jelly-own": {
+     "none": 244,
+     "project function": 37
+    },
+    "ts-types": {
+     "project, not a function": 207,
+     "external": 74
+    },
+    "jelly-deps": {
+     "none": 252,
+     "project function": 29
+    }
+   },
+   "typescript | index: project value, property": {
+    "ts": {
+     "external": 210,
+     "project, not a function": 21
+    },
+    "jelly-own": {
+     "none": 229,
+     "project function": 2
+    },
+    "ts-types": {
+     "external": 210,
+     "project, not a function": 21
+    },
+    "jelly-deps": {
+     "none": 229,
+     "project function": 2
+    }
+   },
+   "typescript | index: project value, variable": {
+    "ts": {
+     "external": 3022,
+     "project, not a function": 273
+    },
+    "jelly-own": {
+     "none": 3293,
+     "project function": 2
+    },
+    "ts-types": {
+     "external": 3022,
+     "project, not a function": 273
+    },
+    "jelly-deps": {
+     "none": 3295
+    }
+   }
+  },
+  "examples": {
+   "javascript | hole: dangling-local / unique-lexical-binding | jelly-deps | project function": [
+    "backend/tests/integration/billing.test.js:28:34 StripeSignatureVerificationError -> ['backend/tests/integration/billing.test.js::class@14:4']"
+   ],
+   "javascript | hole: dangling-local / unique-lexical-binding | jelly-own | project function": [
+    "backend/tests/integration/billing.test.js:28:34 StripeSignatureVerificationError -> ['backend/tests/integration/billing.test.js::class@14:4']"
+   ],
+   "javascript | hole: dangling-local / unique-lexical-binding | ts | project function": [
+    "backend/tests/integration/billing.test.js:28:34 StripeSignatureVerificationError -> ['backend/tests/integration/billing.test.js::class@14:4']"
+   ],
+   "javascript | hole: dangling-local / unique-lexical-binding | ts-types | project function": [
+    "backend/tests/integration/billing.test.js:28:34 StripeSignatureVerificationError -> ['backend/tests/integration/billing.test.js::class@14:4']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | jelly-deps | external": [
+    "backend/modules/quotes/quotesService.js:26:20 yaml.load -> ['npm js-yaml@5.5.0']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | jelly-deps | project function": [
+    "backend/modules/blog/hostSwitch.js:79:43 blogService.page -> ['backend/modules/blog/service.js::method@317:4']",
+    "backend/modules/notes/routes.js:76:53 notesController.getNoteUidForAuth -> ['backend/modules/notes/controller.js::method@277:4']",
+    "backend/modules/notes/controller.js:165:41 publicSharing.get -> ['backend/modules/notes/publicSharing.js::method@96:4']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | jelly-own | project function": [
+    "backend/modules/notes/controller.js:240:41 publicSharing.getPublicNote -> ['backend/modules/notes/publicSharing.js::method@156:4']",
+    "backend/modules/projects/routes.js:113:36 projectsController.getProjectUidForAuth -> ['backend/modules/projects/controller.js::method@166:4']",
+    "backend/modules/blog/routes.js:15:40 blogService.getIndex -> ['backend/modules/blog/service.js::method@307:4']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | ts | external": [
+    "backend/modules/quotes/quotesService.js:26:20 yaml.load -> ['npm js-yaml@5.5.0']",
+    "webpack.config.js:95:37 webpack.HotModuleReplacementPlugin -> ['npm webpack@5.112.2']",
+    "webpack.config.js:96:20 webpack.DefinePlugin -> ['npm webpack@5.112.2']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | ts | project function": [
+    "backend/modules/notes/controller.js:207:41 publicSharing.rotate -> ['backend/modules/notes/publicSharing.js::method@143:4']",
+    "backend/modules/projects/routes.js:69:36 projectsController.getProjectUidForAuth -> ['backend/modules/projects/controller.js::method@166:4']",
+    "backend/modules/inbox/operations/attachments.js:42:41 inboxAttachments.moveAll -> ['backend/services/entityAttachments.js::method@169:8']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | ts-types | external": [
+    "backend/modules/quotes/quotesService.js:26:20 yaml.load -> ['npm js-yaml@5.5.0']",
+    "webpack.config.js:96:20 webpack.DefinePlugin -> ['npm webpack@5.112.2']",
+    "webpack.config.js:95:37 webpack.HotModuleReplacementPlugin -> ['npm webpack@5.112.2']"
+   ],
+   "javascript | hole: dangling-local / unknown-receiver | ts-types | project function": [
+    "backend/modules/blog/routes.js:15:40 blogService.getIndex -> ['backend/modules/blog/service.js::method@307:4']",
+    "backend/modules/onboarding/controller.js:34:45 onboardingService.removeExamples -> ['backend/modules/onboarding/service.js::method@393:4']",
+    "backend/modules/notes/routes.js:59:53 notesController.getNoteUidForAuth -> ['backend/modules/notes/controller.js::method@277:4']"
+   ],
+   "javascript | hole: no-occurrence / ambiguous-binding | jelly-deps | external": [
+    "backend/services/emailService.js:108:39 transporter.sendMail -> ['npm nodemailer@10.5.0']"
+   ],
+   "javascript | hole: no-occurrence / ambiguous-binding | jelly-own | project function": [
+    "backend/tests/unit/shared/BaseRepository.test.js:63:23 repo.create -> ['backend/shared/database/BaseRepository.js::method@24:4']",
+    "backend/tests/unit/middleware/rateLimitStore.test.js:64:20 store.increment -> ['backend/middleware/rateLimitStore.js::method@23:4']",
+    "backend/tests/unit/shared/BaseRepository.test.js:71:35 repo.findAll -> ['backend/shared/database/BaseRepository.js::method@20:4']"
+   ],
+   "javascript | hole: no-occurrence / ambiguous-binding | ts-types | external": [
+    "backend/tests/integration/profile-ui-settings.test.js:13:20 agent.post -> ['npm @types/supertest@7.2.1']",
+    "backend/tests/integration/inbox-analyze-nlp.test.js:64:25 ownerAgent.post -> ['npm @types/supertest@7.2.1']",
+    "backend/tests/integration/task-user-isolation.test.js:27:21 agentA.post -> ['npm @types/supertest@7.2.1']"
+   ],
+   "javascript | hole: no-occurrence / dynamic-callee | jelly-deps | external": [
+    "backend/tests/integration/user-create-script.test.js:165:57 (expr).hash -> ['npm bcrypt@6.0.0']"
+   ],
+   "javascript | hole: no-occurrence / dynamic-callee | jelly-own | project function": [
+    "backend/modules/billing/providers/index.js:117:46 (expr).configuredPrices -> ['backend/modules/billing/stripeClient.js::function@39:0']",
+    "backend/modules/billing/service.js:134:39 (expr).configuredPrices -> ['backend/modules/billing/stripeClient.js::function@39:0']",
+    "backend/modules/spreadsheets/core/files.js:80:57 (expr).map -> ['backend/modules/spreadsheets/core/files.js::function@55:0']"
+   ],
+   "javascript | hole: no-occurrence / dynamic-callee | ts-types | external": [
+    "backend/tests/integration/caldav-projects.test.js:137:21 (expr).set -> ['npm @types/superagent@8.1.11']",
+    "backend/tests/integration/caldav-protocol.test.js:120:17 (expr).mkcol -> ['npm @types/supertest@7.2.1']",
+    "backend/tests/integration/caldav-projects.test.js:55:17 (expr).expect -> ['npm @types/supertest@7.2.1']"
+   ],
+   "javascript | hole: no-occurrence / unknown-receiver | jelly-deps | external": [
+    "backend/tests/integration/caldav-sync-engine.test.js:39:42 bcrypt.hash -> ['npm bcrypt@6.0.0']",
+    "backend/tests/integration/admin-oidc-config.test.js:8:26 request.agent -> ['npm supertest@7.1.4']",
+    "backend/tests/integration/groups-admin.test.js:14:26 request.agent -> ['npm supertest@7.1.4']"
+   ],
+   "javascript | hole: no-occurrence / unknown-receiver | jelly-deps | project function": [
+    "backend/emails/layout.js:51:21 all.map -> ['backend/emails/layout.js::function@21:0']",
+    "backend/modules/blog/hostSwitch.js:82:32 blogService.coverOf -> ['backend/modules/blog/service.js::function@201:0']",
+    "backend/emails/layout.js:52:21 all.map -> ['backend/emails/layout.js::function@28:0']"
+   ],
+   "javascript | hole: no-occurrence / unknown-receiver | jelly-own | project function": [
+    "backend/modules/mfa/session.js:16:16 session.regenerate -> ['backend/tests/unit/modules/auth/authService-edge-cases.test.js::function@249:32']",
+    "backend/modules/billing/service.js:156:22 provider.configuredPrices -> ['backend/modules/billing/stripeClient.js::function@39:0']",
+    "backend/services/entityAttachments.js:350:28 store.add -> ['backend/services/entityAttachments.js::method@89:8']"
+   ],
+   "javascript | hole: no-occurrence / unknown-receiver | ts-types | external": [
+    "backend/tests/integration/cloud-accounts.test.js:241:17 partnerAgent.put -> ['npm @types/supertest@7.2.1']",
+    "backend/tests/integration/landing.test.js:532:22 mobile.match -> ['npm typescript@6.0.3']",
+    "backend/tests/integration/account-erasure.test.js:267:13 adminAgent.delete -> ['npm @types/supertest@7.2.1']"
+   ],
+   "javascript | index: external | jelly-deps | external": [
+    "backend/modules/spreadsheets/core/files.js:354:33 ExcelJS.Workbook -> ['npm exceljs@4.4.0']",
+    "backend/modules/feature-flags/routes.js:4:23 express.Router -> ['npm express@4.22.3']",
+    "backend/modules/caldav/icalendar/vtodo-parser.js:352:16 console.error -> ['npm react-dom@18.3.1', 'npm react@18.3.1']"
+   ],
+   "javascript | index: external | jelly-deps | project function": [
+    "backend/models/index.js:30:21 require -> ['backend/models/notification.js::function@4:17']",
+    "backend/scripts/preview-emails.js:213:12 console.log -> ['backend/tests/integration/telegram-duplicate-scenario.test.js::function@60:22', 'backend/tests/integration/telegram-duplicates.test.js::function@15:22']",
+    "backend/modules/tasks/operations/completion.js:10:12 console.log -> ['backend/tests/integration/telegram-duplicate-scenario.test.js::function@60:22', 'backend/tests/integration/telegram-duplicates.test.js::function@15:22']"
+   ],
+   "javascript | index: external | jelly-own | project function": [
+    "backend/models/index.js:20:15 require -> ['backend/models/action.js::function@3:17']",
+    "backend/models/index.js:62:22 require -> ['backend/models/email_delivery.js::function@8:17']",
+    "backend/models/index.js:37:21 require -> ['backend/models/oidc_identity.js::function@3:17']"
+   ],
+   "javascript | index: external | ts | external": [
+    "backend/app.js:53:4 helmet -> ['npm helmet@8.1.0']",
+    "backend/app.js:325:24 res.setHeader -> ['npm @types/node@20.19.43']",
+    "backend/app.js:592:4 app.get -> ['npm @types/express-serve-static-core@4.19.9']"
+   ],
+   "javascript | index: external | ts | project function": [
+    "backend/models/index.js:38:23 require -> ['backend/models/oidc_state_nonce.js::function@3:17']",
+    "backend/models/index.js:40:23 require -> ['backend/models/caldav_calendar.js::function@4:17']",
+    "backend/models/index.js:35:23 require -> ['backend/models/note_attachment.js::function@4:17']"
+   ],
+   "javascript | index: external | ts-types | external": [
+    "backend/app.js:550:8 app.use -> ['npm @types/express-serve-static-core@4.19.9']",
+    "backend/app.js:568:8 app.use -> ['npm @types/express-serve-static-core@4.19.9']",
+    "backend/config/config.js:387:13 isNaN -> ['npm typescript@6.0.3']"
+   ],
+   "javascript | index: external | ts-types | project function": [
+    "backend/models/index.js:71:16 require -> ['backend/models/account.js::function@8:17']",
+    "backend/models/index.js:64:17 require -> ['backend/models/feedback.js::function@6:17']",
+    "backend/models/index.js:17:16 require -> ['backend/models/comment.js::function@4:17']"
+   ],
+   "javascript | index: project function | jelly-deps | project function": [
+    "backend/migrations/archive/20260922000001-create-comments.js:64:14 addIndexOnce -> ['backend/migrations/archive/20260922000001-create-comments.js::function@5:0']",
+    "backend/modules/admin/service.js:155:27 rolesService.describeRoles -> ['backend/services/rolesService.js::function@295:0']",
+    "backend/migrations/archive/20260924000002-create-daily-plans.js:55:14 addIndexOnce -> ['backend/migrations/archive/20260924000002-create-daily-plans.js::function@5:0']"
+   ],
+   "javascript | index: project function | jelly-own | project function": [
+    "backend/modules/admin-ai-usage/service.js:57:21 AdminAiUsageService -> ['backend/modules/admin-ai-usage/service.js::class@9:0']",
+    "backend/modules/admin/service.js:65:57 adminRepository.countRoles -> ['backend/modules/admin/repository.js::method@276:4']",
+    "backend/migrations/archive/20260908000001-billing-provider-columns.js:31:18 renameIfPresent -> ['backend/migrations/archive/20260908000001-billing-provider-columns.js::function@17:0']"
+   ],
+   "javascript | index: project function | ts | external": [
+    "backend/modules/calendar-feeds/fetcher.js:138:14 FeedFetchError -> ['npm typescript@6.0.3']",
+    "backend/modules/calendar-feeds/fetcher.js:50:18 FeedFetchError -> ['npm typescript@6.0.3']",
+    "backend/modules/calendar-feeds/fetcher.js:133:22 FeedFetchError -> ['npm typescript@6.0.3']"
+   ],
+   "javascript | index: project function | ts | project function": [
+    "backend/migrations/archive/20261010100000-create-user-goal-orders.js:62:14 addIndexOnce -> ['backend/migrations/archive/20261010100000-create-user-goal-orders.js::function@5:0']",
+    "backend/middleware/auth.js:100:55 providerConfig.getAllProviders -> ['backend/modules/oidc/providerConfig.js::function@167:0']",
+    "backend/middleware/uploadsAccess.js:62:11 hasReadAccess -> ['backend/middleware/uploadsAccess.js::function@18:22']"
+   ],
+   "javascript | index: project function | ts-types | external": [
+    "backend/modules/calendar-feeds/fetcher.js:133:22 FeedFetchError -> ['npm typescript@6.0.3']",
+    "backend/modules/calendar-feeds/fetcher.js:43:22 FeedFetchError -> ['npm typescript@6.0.3']",
+    "backend/modules/calendar-feeds/fetcher.js:138:14 FeedFetchError -> ['npm typescript@6.0.3']"
+   ],
+   "javascript | index: project function | ts-types | project function": [
+    "backend/modules/admin/controller.js:111:43 adminService.exportWaitlist -> ['backend/modules/admin/service.js::method@1023:4']",
+    "backend/modules/admin/repository.js:309:14 eraseUserAccount -> ['backend/services/accountErasureService.js::function@220:0']",
+    "backend/migrations/archive/20260922000004-create-comment-reactions.js:54:14 addIndexOnce -> ['backend/migrations/archive/20260922000004-create-comment-reactions.js::function@5:0']"
+   ],
+   "javascript | index: project value, parameter | jelly-deps | project function": [
+    "backend/modules/habits/controller.js:7:14 fn -> ['backend/modules/habits/controller.js::function@109:20', 'backend/modules/habits/controller.js::function@119:22', 'backend/modules/habits/controller.js::function@129:19']",
+    "backend/modules/webhooks/taskEvents.js:88:10 fn -> ['backend/modules/webhooks/taskEvents.js::function@105:32', 'backend/modules/webhooks/taskEvents.js::function@124:32', 'backend/modules/webhooks/taskEvents.js::function@136:32']",
+    "backend/services/entityAttachments.js:325:18 fn -> ['backend/services/entityAttachments.js::function@336:15', 'backend/services/entityAttachments.js::function@348:15', 'backend/services/entityAttachments.js::function@360:15']"
+   ],
+   "javascript | index: project value, parameter | jelly-own | project function": [
+    "backend/seeders/massive-tasks.js:714:26 getPastDate -> ['backend/seeders/dev-seeder.js::function@235:28']",
+    "backend/seeders/massive-tasks.js:474:22 getRandomDate -> ['backend/seeders/dev-seeder.js::function@230:30']",
+    "backend/modules/webhooks/taskEvents.js:85:46 fn -> ['backend/modules/webhooks/taskEvents.js::function@105:32', 'backend/modules/webhooks/taskEvents.js::function@124:32', 'backend/modules/webhooks/taskEvents.js::function@136:32']"
+   ],
+   "javascript | index: project value, parameter | ts | external": [
+    "public/sw.js:92:27 reject -> ['npm typescript@6.0.3']",
+    "backend/tests/unit/modules/caldav-safe-request.test.js:258:16 resolve -> ['npm typescript@6.0.3']",
+    "backend/scripts/with-db-lock.js:28:35 resolve -> ['npm typescript@6.0.3']"
+   ],
+   "javascript | index: project value, parameter | ts | project function": [
+    "backend/tests/unit/modules/oidc/audit-edge-cases.test.js:60:18 log -> ['backend/tests/unit/modules/oidc/audit-edge-cases.test.js::function@30:12']",
+    "backend/tests/unit/modules/auth/authController-edge-cases.test.js:62:8 service -> ['backend/tests/unit/modules/auth/authController-edge-cases.test.js::function@57:34']",
+    "backend/middleware/entitlements.js:25:41 countFromReq -> ['backend/middleware/entitlements.js::function@22:30']"
+   ],
+   "javascript | index: project value, parameter | ts-types | external": [
+    "backend/tests/unit/modules/caldav-safe-request.test.js:258:16 resolve -> ['npm typescript@6.0.3']",
+    "backend/app.js:278:11 next -> ['npm @types/express-serve-static-core@4.19.9']",
+    "public/sw.js:92:27 reject -> ['npm typescript@6.0.3']"
+   ],
+   "javascript | index: project value, parameter | ts-types | project function": [
+    "backend/tests/unit/modules/oidc/audit-edge-cases.test.js:60:18 log -> ['backend/tests/unit/modules/oidc/audit-edge-cases.test.js::function@30:12']",
+    "backend/tests/integration/caldav-two-way-sync.test.js:91:34 formatEtag -> ['backend/tests/integration/caldav-two-way-sync.test.js::function@77:23']",
+    "backend/middleware/entitlements.js:25:41 countFromReq -> ['backend/middleware/entitlements.js::function@22:30']"
+   ],
+   "javascript | index: project value, variable | jelly-deps | external": [
+    "backend/tests/integration/landing.test.js:556:28 request -> ['npm supertest@7.1.4']",
+    "backend/tests/integration/password-reset.test.js:115:14 request -> ['npm supertest@7.1.4']",
+    "backend/tests/integration/landing.test.js:496:26 request -> ['npm supertest@7.1.4']"
+   ],
+   "javascript | index: project value, variable | jelly-deps | project function": [
+    "backend/modules/tasks/queries/metrics-computation.js:148:15 keep -> ['backend/modules/tasks/queries/metrics-computation.js::function@122:10', 'backend/modules/tasks/queries/metrics-computation.js::function@123:10']",
+    "backend/services/userDataTransfer.js:1134:35 resolve -> ['backend/services/userDataTransfer.js::function@670:11']",
+    "backend/services/userDataTransfer.js:942:31 resolve -> ['backend/services/userDataTransfer.js::function@670:11']"
+   ],
+   "javascript | index: project value, variable | jelly-own | project function": [
+    "backend/tests/unit/middleware/authorize.test.js:220:14 mw -> ['backend/middleware/authorize.js::function@10:11']",
+    "backend/tests/unit/middleware/authorize.test.js:79:14 mw -> ['backend/middleware/authorize.js::function@10:11']",
+    "backend/tests/unit/middleware/authorize.test.js:88:14 mw -> ['backend/middleware/authorize.js::function@10:11']"
+   ],
+   "javascript | index: project value, variable | ts | external": [
+    "backend/modules/billing/webhookRoutes.js:16:8 raw -> ['npm @types/connect@3.4.38']",
+    "backend/app.js:36:25 SequelizeStore -> ['npm connect-session-sequelize@7.1.7']",
+    "backend/migrations/archive/20260720000001-add-linked-user-to-people.js:63:24 generate -> ['npm nanoid@3.3.20']"
+   ],
+   "javascript | index: project value, variable | ts | project function": [
+    "backend/tests/unit/middleware/authorize.test.js:152:14 mw -> ['backend/middleware/authorize.js::function@10:11']",
+    "backend/services/userDataTransfer.js:1207:38 resolve -> ['backend/services/userDataTransfer.js::function@670:11']",
+    "backend/tests/unit/middleware/authorize.test.js:192:14 mw -> ['backend/middleware/authorize.js::function@10:11']"
+   ],
+   "javascript | index: project value, variable | ts-types | external": [
+    "backend/tests/integration/landing.test.js:402:30 request -> ['npm @types/supertest@7.2.1']",
+    "backend/tests/integration/api-tokens.test.js:499:35 request -> ['npm @types/supertest@7.2.1']",
+    "backend/tests/integration/areas.test.js:201:35 request -> ['npm @types/supertest@7.2.1']"
+   ],
+   "javascript | index: project value, variable | ts-types | project function": [
+    "backend/tests/unit/middleware/authorize.test.js:42:14 mw -> ['backend/middleware/authorize.js::function@10:11']",
+    "backend/tests/unit/middleware/authorize.test.js:192:14 mw -> ['backend/middleware/authorize.js::function@10:11']",
+    "backend/services/userDataTransfer.js:1140:35 resolve -> ['backend/services/userDataTransfer.js::function@670:11']"
+   ],
+   "typescript | hole: dangling-local / non-callable-binding | ts | external": [
+    "frontend/components/Admin/AdminTrends.tsx:400:33 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Admin/AdminBlogSettings.tsx:84:21 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Admin/AdminUsersPage.tsx:695:33 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | hole: dangling-local / non-callable-binding | ts-types | external": [
+    "frontend/components/Admin/AdminBillingPage.tsx:340:49 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Admin/AdminTrends.tsx:368:27 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Admin/AdminUserFilter.tsx:240:29 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | hole: dangling-local / scope-unresolved | ts | external": [
+    "frontend/components/Everyone/PeopleBoard.tsx:581:43 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Everyone/PeopleBoard.tsx:572:43 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Everyone/PeopleBoard.tsx:529:21 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | hole: dangling-local / scope-unresolved | ts-types | external": [
+    "frontend/components/Everyone/PeopleBoard.tsx:572:43 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Everyone/PeopleBoard.tsx:529:21 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Everyone/PeopleBoard.tsx:564:43 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | hole: no-occurrence / dynamic-callee | jelly-deps | project function": [
+    "frontend/__tests__/serviceWorker.test.ts:94:46 (expr).objectStore -> ['frontend/__tests__/serviceWorker.test.ts::function@72:29']",
+    "frontend/components/Shared/MermaidDiagram.tsx:34:33 (expr).map -> ['frontend/components/Shared/MermaidDiagram.tsx::function@31:20']"
+   ],
+   "typescript | hole: no-occurrence / dynamic-callee | jelly-own | project function": [
+    "frontend/__tests__/serviceWorker.test.ts:94:46 (expr).objectStore -> ['frontend/__tests__/serviceWorker.test.ts::function@72:29']",
+    "frontend/__tests__/serviceWorker.test.ts:94:60 (expr).add -> ['frontend/__tests__/serviceWorker.test.ts::function@73:21']",
+    "frontend/components/Shared/MermaidDiagram.tsx:34:33 (expr).map -> ['frontend/components/Shared/MermaidDiagram.tsx::function@31:20']"
+   ],
+   "typescript | hole: no-occurrence / import-target-missing-or-ambiguous | ts | external": [
+    "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:161:18 fireEvent.click -> ['npm @testing-library/dom@9.3.4']",
+    "frontend/components/Inbox/__tests__/QuickCaptureInput.unified.test.tsx:470:36 fireEvent.keyDown -> ['npm @testing-library/dom@9.3.4']",
+    "frontend/components/Inbox/__tests__/InboxItemDetail.attachments.test.tsx:69:18 fireEvent.click -> ['npm @testing-library/dom@9.3.4']"
+   ],
+   "typescript | hole: no-occurrence / import-target-missing-or-ambiguous | ts-types | external": [
+    "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:531:22 fireEvent.click -> ['npm @testing-library/dom@9.3.4']",
+    "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx:242:22 fireEvent.click -> ['npm @testing-library/dom@9.3.4']",
+    "frontend/components/Profile/tabs/__tests__/TwoFactorCard.test.tsx:58:18 fireEvent.click -> ['npm @testing-library/dom@9.3.4']"
+   ],
+   "typescript | index: external | jelly-deps | external": [
+    "frontend/components/AI/DailyAssistant.tsx:39:50 useState -> ['npm react@18.3.1']",
+    "frontend/components/Admin/AdminBillingPage.tsx:38:50 useState -> ['npm react@18.3.1']",
+    "frontend/App.tsx:254:4 useEffect -> ['npm react@18.3.1']"
+   ],
+   "typescript | index: external | jelly-deps | project function": [
+    "frontend/components/Profile/ProfileSettings.tsx:1088:41 fetch -> ['backend/tests/integration/billing-lemonsqueezy.test.js::function@22:0', 'backend/tests/integration/billing-paddle.test.js::function@26:0', 'backend/tests/integration/captcha.test.js::function@23:0']",
+    "frontend/utils/peopleService.ts:57:27 fetch -> ['backend/tests/integration/billing-lemonsqueezy.test.js::function@22:0', 'backend/tests/integration/billing-paddle.test.js::function@26:0', 'backend/tests/integration/captcha.test.js::function@23:0']",
+    "frontend/utils/inboxService.ts:213:27 fetch -> ['backend/tests/integration/billing-lemonsqueezy.test.js::function@22:0', 'backend/tests/integration/billing-paddle.test.js::function@26:0', 'backend/tests/integration/captcha.test.js::function@23:0']"
+   ],
+   "typescript | index: external | jelly-own | project function": [
+    "frontend/components/Project/BannerEditModal.tsx:109:35 fetch -> ['backend/tests/integration/billing-lemonsqueezy.test.js::function@22:0', 'backend/tests/integration/billing-paddle.test.js::function@26:0', 'backend/tests/integration/captcha.test.js::function@23:0']",
+    "frontend/utils/backupService.ts:112:27 fetch -> ['backend/tests/integration/billing-lemonsqueezy.test.js::function@22:0', 'backend/tests/integration/billing-paddle.test.js::function@26:0', 'backend/tests/integration/captcha.test.js::function@23:0']",
+    "frontend/utils/adminBillingService.ts:100:27 fetch -> ['backend/tests/integration/billing-lemonsqueezy.test.js::function@22:0', 'backend/tests/integration/billing-paddle.test.js::function@26:0', 'backend/tests/integration/captcha.test.js::function@23:0']"
+   ],
+   "typescript | index: external | ts | external": [
+    "e2e/tests/inbox.spec.ts:82:44 (expr).toBeVisible -> ['npm playwright@1.65.1']",
+    "e2e/tests/caldav-client.spec.ts:220:10 Date -> ['npm typescript@6.0.3']",
+    "e2e/tests/calendar-toolbar.spec.ts:34:28 (expr).toBeVisible -> ['npm playwright@1.65.1']"
+   ],
+   "typescript | index: external | ts | project function": [
+    "frontend/components/Note/NoteModal.tsx:252:41 hasUnsavedChangesRef.current -> ['frontend/components/Note/NoteModal.tsx::function@157:30']",
+    "frontend/components/Note/MarkdownEditor.tsx:452:49 uploadIntoEditorRef.current -> ['frontend/components/Note/MarkdownEditor.tsx::function@337:29']",
+    "frontend/components/Note/MarkdownEditor.tsx:470:49 uploadIntoEditorRef.current -> ['frontend/components/Note/MarkdownEditor.tsx::function@337:29']"
+   ],
+   "typescript | index: external | ts-types | external": [
+    "e2e/tests/caldav-client.spec.ts:149:43 request.fetch -> ['npm playwright-core@1.65.1']",
+    "e2e/tests/caldav-client.spec.ts:279:52 (expr).replace -> ['npm typescript@6.0.3']",
+    "e2e/tests/caldav-client.spec.ts:221:21 (expr).toISOString -> ['npm typescript@6.0.3']"
+   ],
+   "typescript | index: external | ts-types | project function": [
+    "frontend/components/Note/MarkdownEditor.tsx:470:49 uploadIntoEditorRef.current -> ['frontend/components/Note/MarkdownEditor.tsx::function@337:29']",
+    "frontend/components/Note/MarkdownEditor.tsx:452:49 uploadIntoEditorRef.current -> ['frontend/components/Note/MarkdownEditor.tsx::function@337:29']",
+    "frontend/components/Note/NoteModal.tsx:252:41 hasUnsavedChangesRef.current -> ['frontend/components/Note/NoteModal.tsx::function@157:30']"
+   ],
+   "typescript | index: project function | jelly-deps | project function": [
+    "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx:100:8 renderPage -> ['frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx::function@59:19']",
+    "frontend/components/Admin/AdminUsersPage.tsx:646:39 roleName -> ['frontend/components/Admin/roleLabels.ts::function@7:24']",
+    "frontend/components/Admin/__tests__/AdminDashboardPage.test.tsx:407:8 mockFetch -> ['frontend/components/Admin/__tests__/AdminDashboardPage.test.tsx::function@115:18']"
+   ],
+   "typescript | index: project function | jelly-own | project function": [
+    "frontend/components/Admin/__tests__/AdminDashboardPage.test.tsx:347:8 mockFetch -> ['frontend/components/Admin/__tests__/AdminDashboardPage.test.tsx::function@115:18']",
+    "e2e/tests/inbox.spec.ts:93:18 loginViaUI -> ['e2e/tests/inbox.spec.ts::function@4:4']",
+    "frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx:321:32 openMembers -> ['frontend/components/Admin/__tests__/AdminGroupsPanel.test.tsx::function@267:28']"
+   ],
+   "typescript | index: project function | ts | project function": [
+    "frontend/components/Admin/AdminUsersPage.tsx:363:25 isValidEmail -> ['frontend/components/Admin/AdminUsersPage.tsx::function@252:25']",
+    "frontend/components/Admin/AdminUserEmails.tsx:294:45 statusOf -> ['frontend/components/Admin/AdminUserEmails.tsx::function@113:21']",
+    "frontend/components/AI/ProjectAIInsights.tsx:91:25 updateProjectInsightsDismissed -> ['frontend/utils/aiAssistantService.ts::function@221:46']"
+   ],
+   "typescript | index: project function | ts-types | project function": [
+    "frontend/components/AI/TaskAIInsights.tsx:175:25 useTrialLock -> ['frontend/hooks/useTrialStatus.ts::function@66:28']",
+    "frontend/Layout.tsx:321:31 createTag -> ['frontend/utils/tagsService.ts::function@57:25']",
+    "frontend/components/Admin/__tests__/AdminUsersPage.test.tsx:184:12 renderPage -> ['frontend/components/Admin/__tests__/AdminUsersPage.test.tsx::function@109:19']"
+   ],
+   "typescript | index: project function via declared hop | ts | project function": [
+    "frontend/components/DailyPlan/TodayPage.tsx:553:28 replaceCandidate -> ['frontend/components/DailyPlan/TodayPage.tsx::function@304:8']",
+    "frontend/components/DailyPlan/TodayPage.tsx:558:28 replaceItems -> ['frontend/components/DailyPlan/TodayPage.tsx::function@179:8']",
+    "frontend/components/Profile/tabs/ImportExportTab.tsx:238:24 loadHistory -> ['frontend/components/Profile/tabs/ImportExportTab.tsx::function@32:36']"
+   ],
+   "typescript | index: project function via declared hop | ts-types | project function": [
+    "frontend/components/DailyPlan/TodayPage.tsx:562:45 handleAdd -> ['frontend/components/DailyPlan/TodayPage.tsx::function@355:8']",
+    "frontend/components/Inbox/QuickCaptureInput.tsx:2090:18 addFiles -> ['frontend/components/Capture/useCaptureFiles.ts::function@92:8']",
+    "frontend/components/Habits/HabitDetails.tsx:168:12 applyHabit -> ['frontend/components/Habits/HabitDetails.tsx::function@72:8']"
+   ],
+   "typescript | index: project value, parameter | jelly-deps | project function": [
+    "frontend/components/Project/useProjectCardActions.tsx:85:18 refresh -> ['frontend/components/Area/AreaDetails.tsx::function@111:73', 'frontend/components/Goal/GoalDetails.tsx::function@85:73']",
+    "frontend/components/Admin/roleLabels.ts:12:23 t -> ['frontend/components/Admin/__tests__/roleLabels.test.ts::function@4:11']",
+    "frontend/components/Spreadsheet/errorText.ts:12:32 t -> ['frontend/components/Spreadsheet/__tests__/errorText.test.ts::function@4:11']"
+   ],
+   "typescript | index: project value, parameter | jelly-own | project function": [
+    "frontend/components/Project/useProjectMetrics.ts:443:18 handleTaskUpdate -> ['frontend/components/Project/ProjectDetails.tsx::function@257:29']",
+    "frontend/components/Admin/roleLabels.ts:10:14 t -> ['frontend/components/Admin/__tests__/roleLabels.test.ts::function@4:11']",
+    "frontend/utils/habitUtils.ts:175:15 t -> ['frontend/utils/__tests__/habitUtils.test.ts::function@12:11']"
+   ],
+   "typescript | index: project value, parameter | ts | external": [
+    "frontend/components/Profile/tabs/WebhooksCard.tsx:70:28 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Profile/tabs/WebhooksCard.tsx:46:25 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Profile/tabs/WebhooksCard.tsx:94:14 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | index: project value, parameter | ts-types | external": [
+    "frontend/components/Admin/roleLabels.ts:14:15 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Profile/tabs/WebhooksCard.tsx:70:28 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Profile/tabs/WebhooksCard.tsx:78:24 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | index: project value, property | jelly-deps | project function": [
+    "frontend/components/Inbox/QuickCaptureInput.tsx:2519:20 select -> ['frontend/components/Inbox/QuickCaptureInput.tsx::function@2437:30', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2442:32', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2448:34']",
+    "frontend/components/Inbox/QuickCaptureInput.tsx:2510:20 select -> ['frontend/components/Inbox/QuickCaptureInput.tsx::function@2437:30', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2442:32', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2448:34']"
+   ],
+   "typescript | index: project value, property | jelly-own | project function": [
+    "frontend/components/Inbox/QuickCaptureInput.tsx:2510:20 select -> ['frontend/components/Inbox/QuickCaptureInput.tsx::function@2437:30', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2442:32', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2448:34']",
+    "frontend/components/Inbox/QuickCaptureInput.tsx:2519:20 select -> ['frontend/components/Inbox/QuickCaptureInput.tsx::function@2437:30', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2442:32', 'frontend/components/Inbox/QuickCaptureInput.tsx::function@2448:34']"
+   ],
+   "typescript | index: project value, property | ts | external": [
+    "frontend/components/Project/ProjectInsightsPanel.tsx:211:25 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Project/ProjectInsightsPanel.tsx:203:37 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Project/ProjectInsightsPanel.tsx:346:37 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | index: project value, property | ts-types | external": [
+    "frontend/components/Project/ProjectHero.tsx:510:44 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Project/ProjectHero.tsx:603:45 t -> ['npm i18next@24.2.3']",
+    "frontend/components/Project/ProjectHero.tsx:450:36 t -> ['npm i18next@24.2.3']"
+   ],
+   "typescript | index: project value, variable | jelly-own | project function": [
+    "frontend/utils/paddleCheckout.ts:52:54 onClosed -> ['frontend/components/Billing/SubscriptionRequired.tsx::function@85:50', 'frontend/components/Profile/tabs/BillingTab.tsx::function@105:48']",
+    "frontend/components/Capture/__tests__/CaptureHost.test.tsx:219:8 stop -> ['frontend/utils/captureUi.ts::function@87:11']"
+   ],
+   "typescript | index: project value, variable | ts | external": [
+    "frontend/components/Admin/AdminUserEmails.tsx:78:12 setPreview -> ['npm @types/react@18.3.31']",
+    "frontend/components/AI/TaskAIInsights.tsx:207:12 setError -> ['npm @types/react@18.3.31']",
+    "frontend/components/Admin/AdminFeedbackPage.tsx:420:39 setPage -> ['npm @types/react@18.3.31']"
+   ],
+   "typescript | index: project value, variable | ts-types | external": [
+    "frontend/components/Admin/AdminUsersPage.tsx:533:45 setSurname -> ['npm @types/react@18.3.31']",
+    "frontend/components/Admin/AdminUsersPage.tsx:946:28 setEditingUser -> ['npm @types/react@18.3.31']",
+    "frontend/components/Area/AreaModal.tsx:108:8 setSelectedGoalUids -> ['npm @types/react@18.3.31']"
+   ]
+  },
+  "relation_where_index_has_target": {
+   "ts": {
+    "same": 19105,
+    "source within index": 6,
+    "source external": 12,
+    "index within source": 1,
+    "source project, not a function": 882
+   },
+   "jelly-own": {
+    "same": 18939,
+    "index within source": 5,
+    "source within index": 2,
+    "overlap": 1,
+    "source none": 1047,
+    "disjoint": 12
+   },
+   "ts-types": {
+    "same": 19105,
+    "source within index": 6,
+    "source external": 12,
+    "index within source": 1,
+    "source project, not a function": 882
+   },
+   "jelly-deps": {
+    "source none": 5384,
+    "same": 14618,
+    "index within source": 1,
+    "disjoint": 3
+   }
+  },
+  "disagreements": {
+   "jelly-own": [
+    {
+     "site": "backend/shared/middleware/errorHandler.js:20:51",
+     "name": "err.toJSON",
+     "kind": "overlap",
+     "index": [
+      "backend/shared/errors/AppError.js::method@18:4",
+      "backend/shared/errors/index.js::method@50:4",
+      "backend/shared/errors/index.js::method@65:4"
+     ],
+     "index_chains": [
+      "",
+      "implementation"
+     ],
+     "source": [
+      "backend/modules/spreadsheets/core/errors.js::function@8:19",
+      "backend/shared/errors/AppError.js::method@18:4"
+     ]
+    },
+    {
+     "site": "frontend/components/Admin/AdminUserFilter.tsx:132:66",
+     "name": "choice.matches",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Admin/AdminUserFilter.tsx::method@9:4"
+     ],
+     "index_chains": [
+      ""
+     ],
+     "source": [
+      "frontend/components/Admin/AdminUserFilter.tsx::function@101:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@106:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@111:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@30:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@36:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@41:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@53:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@58:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@69:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@77:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@91:29",
+      "frontend/components/Admin/AdminUserFilter.tsx::function@96:29"
+     ]
+    },
+    {
+     "site": "frontend/components/DailyPlan/tips.ts:132:53",
+     "name": "durationFor",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/DailyPlan/tips.ts::method@83:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/DailyPlan/PlanMyDay.tsx::function@414:24",
+      "frontend/components/DailyPlan/TodayPage.tsx::function@399:31",
+      "frontend/components/DailyPlan/__tests__/tips.test.ts::function@42:20"
+     ]
+    },
+    {
+     "site": "frontend/components/DailyPlan/tips.ts:141:26",
+     "name": "durationFor",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/DailyPlan/tips.ts::method@83:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/DailyPlan/PlanMyDay.tsx::function@414:24",
+      "frontend/components/DailyPlan/TodayPage.tsx::function@399:31",
+      "frontend/components/DailyPlan/__tests__/tips.test.ts::function@42:20"
+     ]
+    },
+    {
+     "site": "frontend/components/Inbox/QuickCaptureInput.tsx:2141:61",
+     "name": "(expr).upload",
+     "kind": "disjoint",
+     "index": [
+      "frontend/utils/attachmentsService.ts::method@182:4"
+     ],
+     "index_chains": [
+      ""
+     ],
+     "source": [
+      "frontend/utils/attachmentsService.ts::function@220:16"
+     ]
+    },
+    {
+     "site": "frontend/components/Note/MarkdownEditor.tsx:380:45",
+     "name": "api.upload",
+     "kind": "disjoint",
+     "index": [
+      "frontend/utils/attachmentsService.ts::method@182:4"
+     ],
+     "index_chains": [
+      ""
+     ],
+     "source": [
+      "frontend/utils/attachmentsService.ts::function@220:16"
+     ]
+    },
+    {
+     "site": "frontend/components/Note/SlashCommandMenu.tsx:300:24",
+     "name": "cmd.insert",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Note/SlashCommandMenu.tsx::method@12:4"
+     ],
+     "index_chains": [
+      ""
+     ],
+     "source": [
+      "frontend/components/Note/SlashCommandMenu.tsx::function@16:11",
+      "frontend/components/Note/SlashCommandMenu.tsx::function@210:16"
+     ]
+    },
+    {
+     "site": "frontend/components/Note/SlashCommandMenu.tsx:341:28",
+     "name": "cmd.insert",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Note/SlashCommandMenu.tsx::method@12:4"
+     ],
+     "index_chains": [
+      ""
+     ],
+     "source": [
+      "frontend/components/Note/SlashCommandMenu.tsx::function@16:11",
+      "frontend/components/Note/SlashCommandMenu.tsx::function@210:16"
+     ]
+    },
+    {
+     "site": "frontend/components/Note/editor/linkClicks.ts:30:16",
+     "name": "onOpenWikilink",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Note/editor/linkClicks.ts::method@5:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Note/MarkdownEditor.tsx::function@478:36"
+     ]
+    },
+    {
+     "site": "frontend/components/Shared/MarkdownRenderer.tsx:420:44",
+     "name": "publicNoteHref",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Shared/MarkdownRenderer.tsx::method@149:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Shared/MarkdownRenderer.tsx::function@158:23"
+     ]
+    },
+    {
+     "site": "frontend/components/Shared/UsageBar.tsx:29:21",
+     "name": "format",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Shared/UsageBar.tsx::method@8:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Shared/UsageBar.tsx::function@15:13"
+     ]
+    },
+    {
+     "site": "frontend/components/Shared/UsageBar.tsx:32:32",
+     "name": "format",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Shared/UsageBar.tsx::method@8:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Shared/UsageBar.tsx::function@15:13"
+     ]
+    },
+    {
+     "site": "frontend/utils/slashMenu.ts:145:26",
+     "name": "labels.create",
+     "kind": "disjoint",
+     "index": [
+      "frontend/utils/slashMenu.ts::method@51:4"
+     ],
+     "index_chains": [
+      ""
+     ],
+     "source": [
+      "frontend/components/Inbox/QuickCaptureInput.tsx::function@2341:20",
+      "frontend/utils/__tests__/slashMenu.test.ts::function@24:12"
+     ]
+    }
+   ],
+   "jelly-deps": [
+    {
+     "site": "frontend/components/Shared/MarkdownRenderer.tsx:420:44",
+     "name": "publicNoteHref",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Shared/MarkdownRenderer.tsx::method@149:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Shared/MarkdownRenderer.tsx::function@158:23"
+     ]
+    },
+    {
+     "site": "frontend/components/Shared/UsageBar.tsx:29:21",
+     "name": "format",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Shared/UsageBar.tsx::method@8:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Shared/UsageBar.tsx::function@15:13"
+     ]
+    },
+    {
+     "site": "frontend/components/Shared/UsageBar.tsx:32:32",
+     "name": "format",
+     "kind": "disjoint",
+     "index": [
+      "frontend/components/Shared/UsageBar.tsx::method@8:4"
+     ],
+     "index_chains": [
+      "same-range"
+     ],
+     "source": [
+      "frontend/components/Shared/UsageBar.tsx::function@15:13"
+     ]
+    }
+   ]
+  },
+  "source_sites_outside_snapshot": {
+   "ts": {
+    "sites": 94266,
+    "outside": 198,
+    "examples": [
+     "backend/tests/unit/services/emailDomainService.test.js:14:4",
+     "frontend/components/Sidebar/__tests__/SidebarNavAdminVisibility.test.tsx:132:4",
+     "backend/tests/unit/modules/tasks/builders.test.js:45:24",
+     "backend/tests/unit/modules/oidc/controller-edge-cases.test.js:183:33",
+     "frontend/components/Inbox/InboxItems.tsx:676:25",
+     "backend/tests/integration/auth.test.js:50:8",
+     "backend/tests/unit/modules/tasks/builders.test.js:270:24",
+     "backend/tests/unit/modules/tasks/builders.test.js:137:24"
+    ]
+   },
+   "jelly-own": {
+    "sites": 24081,
+    "outside": 72,
+    "examples": [
+     "frontend/components/DailyPlan/TodayPage.tsx:143:9",
+     "backend/modules/notes/repository.js:42:8",
+     "backend/shared/errors/index.js:25:8",
+     "backend/shared/errors/index.js:75:8",
+     "backend/shared/errors/index.js:13:8",
+     "frontend/components/Inbox/InboxItems.tsx:676:25",
+     "backend/tests/unit/modules/tasks/builders.test.js:77:24",
+     "backend/config/config.js:366:17"
+    ]
+   },
+   "ts-types": {
+    "sites": 97082,
+    "outside": 201,
+    "examples": [
+     "frontend/components/Note/editor/widgets.tsx:229:8",
+     "backend/modules/daily-plan/planningSettings.js:59:34",
+     "frontend/components/DailyPlan/TodayPage.tsx:104:9",
+     "backend/modules/mfa/session.js:85:5",
+     "backend/tests/unit/modules/tasks/builders.test.js:167:24",
+     "backend/tests/integration/daily-plan.test.js:461:4",
+     "backend/tests/unit/modules/tasks/builders.test.js:233:24",
+     "frontend/components/Note/editor/widgets.tsx:281:8"
+    ]
+   },
+   "jelly-deps": {
+    "sites": 21606,
+    "outside": 29,
+    "examples": [
+     "frontend/components/DailyPlan/useDailyQuote.ts:21:9",
+     "frontend/components/DailyPlan/AgendaList.tsx:77:22",
+     "frontend/components/Inbox/InboxItems.tsx:673:18",
+     "backend/config/config.js:366:17",
+     "frontend/components/Task/TaskRow/index.tsx:535:17",
+     "frontend/components/DailyPlan/PlanMyDay.tsx:237:9",
+     "backend/modules/daily-plan/ranking.js:65:17",
+     "frontend/components/Shared/MermaidDiagram.tsx:12:25"
+    ]
+   }
+  }
+ },
+ "jelly_sample": {
+  "jelly-deps": [
+   {
+    "site": "backend/modules/landing/routes.js:375:31",
+    "name": "ejs.renderFile",
+    "external": "npm ejs@3.1.10"
+   },
+   {
+    "site": "backend/tests/integration/csrf-errors.test.js:50:30",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/user-create-script.test.js:198:41",
+    "name": "bcrypt.compare",
+    "external": "npm bcrypt@6.0.0"
+   },
+   {
+    "site": "backend/tests/unit/models/notification.test.js:10:42",
+    "name": "bcrypt.hash",
+    "external": "npm bcrypt@6.0.0"
+   },
+   {
+    "site": "backend/tests/integration/tags.test.js:15:24",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/task-user-isolation.test.js:37:25",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/services/userDataTransfer.js:283:20",
+    "name": "linkedUsers.map",
+    "target": "backend/services/userDataTransfer.js::function@283:24",
+    "argument": true
+   },
+   {
+    "site": "backend/tests/integration/task-edit-shared-project.test.js:27:29",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/modules/ai-assistant/service.js:845:9",
+    "name": "rawLinks.filter",
+    "target": "backend/modules/ai-assistant/service.js::function@846:12",
+    "argument": true
+   },
+   {
+    "site": "backend/tests/integration/recurring-tasks-timezone-weekday.test.js:15:24",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/csrf-errors.test.js:24:30",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/quotes.test.js:14:24",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/ai-assistant-not-configured.test.js:17:24",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/modules/areas/service.js:74:38",
+    "name": "areas.map",
+    "target": "backend/modules/areas/service.js::function@74:42",
+    "argument": true
+   },
+   {
+    "site": "backend/tests/integration/projects.test.js:183:46",
+    "name": "bcrypt.hash",
+    "external": "npm bcrypt@6.0.0"
+   },
+   {
+    "site": "backend/tests/unit/modules/tasks/dueTime.test.js:117:46",
+    "name": "bcrypt.hash",
+    "external": "npm bcrypt@6.0.0"
+   },
+   {
+    "site": "frontend/utils/calloutParser.ts:16:34",
+    "name": "children.find",
+    "target": "frontend/utils/calloutParser.ts::function@16:39",
+    "argument": true
+   },
+   {
+    "site": "backend/tests/integration/uploads-static.test.js:281:34",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/people-unified.test.js:14:26",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   },
+   {
+    "site": "backend/tests/integration/profile-today-settings.test.js:12:24",
+    "name": "request.agent",
+    "external": "npm supertest@7.1.4"
+   }
+  ],
+  "jelly-own": [
+   {
+    "site": "backend/modules/auth/service.js:389:20",
+    "name": "session.destroy",
+    "target": "backend/tests/unit/modules/auth/authService-edge-cases.test.js::function@264:29",
+    "argument": false
+   },
+   {
+    "site": "backend/modules/mcp/httpTransport.js:58:42",
+    "name": "tool.handler",
+    "target": "backend/modules/mcp/tools/habitTools.js::function@99:17",
+    "argument": false
+   },
+   {
+    "site": "backend/modules/spreadsheets/core/files.js:405:20",
+    "name": "extra.lines.forEach",
+    "target": "backend/modules/spreadsheets/core/files.js::function@405:28",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/tasks/core/serializers.js:243:29",
+    "name": "tasks.map",
+    "target": "backend/modules/tasks/core/serializers.js::function@243:33",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/people/service.js:27:22",
+    "name": "people.map",
+    "target": "backend/modules/people/service.js::function@27:26",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/projects/service.js:207:30",
+    "name": "taskList.filter",
+    "target": "backend/modules/projects/service.js::function@207:37",
+    "argument": true
+   },
+   {
+    "site": "backend/tests/integration/tasks-metrics.test.js:110:55",
+    "name": "metrics.suggested_tasks.map",
+    "target": "backend/tests/integration/tasks-metrics.test.js::function@110:59",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/daily-plan/ai.js:267:36",
+    "name": "planned.forEach",
+    "target": "backend/modules/daily-plan/ai.js::function@267:44",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/projects/dueProjectService.js:246:28",
+    "name": "overdueItems.map",
+    "target": "backend/modules/projects/dueProjectService.js::function@246:32",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/admin/service.js:853:41",
+    "name": "accounts.map",
+    "target": "backend/modules/admin/service.js::function@853:45",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/mcp/server.js:85:42",
+    "name": "tool.handler",
+    "target": "backend/modules/mcp/tools/taskTools.js::function@223:17",
+    "argument": false
+   },
+   {
+    "site": "backend/tests/integration/tasks-metrics.test.js:93:46",
+    "name": "metrics.suggested_tasks.map",
+    "target": "backend/tests/integration/tasks-metrics.test.js::function@93:50",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/mcp/httpTransport.js:58:42",
+    "name": "tool.handler",
+    "target": "backend/modules/mcp/tools/habitTools.js::function@296:17",
+    "argument": false
+   },
+   {
+    "site": "backend/modules/mcp/server.js:85:42",
+    "name": "tool.handler",
+    "target": "backend/modules/mcp/tools/taskTools.js::function@1372:17",
+    "argument": false
+   },
+   {
+    "site": "backend/services/visitService.js:223:26",
+    "name": "days.map",
+    "target": "backend/services/visitService.js::function@223:30",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/daily-plan/service.js:213:13",
+    "name": "items.filter",
+    "target": "backend/modules/daily-plan/service.js::function@213:20",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/admin/service.js:871:38",
+    "name": "plans.map",
+    "target": "backend/modules/admin/service.js::function@871:42",
+    "argument": true
+   },
+   {
+    "site": "backend/modules/mcp/server.js:85:42",
+    "name": "tool.handler",
+    "target": "backend/modules/mcp/tools/tagTools.js::function@87:17",
+    "argument": false
+   },
+   {
+    "site": "backend/modules/tasks/queries/metrics-computation.js:100:25",
+    "name": "tasksDueToday.map",
+    "target": "backend/modules/tasks/queries/metrics-computation.js::function@100:29",
+    "argument": true
+   },
+   {
+    "site": "backend/services/accountsService.js:157:12",
+    "name": "ids.filter",
+    "target": "backend/services/accountsService.js::function@157:19",
+    "argument": true
+   }
+  ]
+ },
+ "hand": [
+  {
+   "site": "backend/migrations/archive/20251023000001-add-unique-constraint-tags.js:162:33 addIndex",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/caldav/icalendar/vtodo-parser.js:189:46 toJSDate",
+   "expected": "external ical.js",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/tests/integration/recurring-tasks.test.js:365:40 create",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "frontend/components/Inbox/__tests__/QuickCaptureInput.focus.test.tsx:88:67 slice",
+   "expected": "external typescript",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/admin/service.js:840:26 findAll",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/tasks/taskReminderService.js:14:29 findAll",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/services/entitlementsService.js:144:43 findOrCreate",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/caldav/api/calendar-controller.js:106:54 create",
+   "expected": "decl backend/shared/database/BaseRepository.js:24",
+   "index": {
+    "group": "index: project function",
+    "targets": [
+     "backend/shared/database/BaseRepository.js::method@24:4"
+    ],
+    "externals": [],
+    "right": true
+   },
+   "ts": {
+    "targets": [
+     "backend/shared/database/BaseRepository.js::method@24:4"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   },
+   "jelly-own": {
+    "targets": [
+     "backend/shared/database/BaseRepository.js::method@24:4"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   },
+   "ts-types": {
+    "targets": [
+     "backend/shared/database/BaseRepository.js::method@24:4"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/inbox/repository.js:77:19 update",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/projects/service.js:462:36 toJSON",
+   "expected": "external sequelize",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/tasks/routes.js:612:12 status",
+   "expected": "external express",
+   "index": {
+    "group": "index: external",
+    "targets": [],
+    "externals": [
+     "npm @types/express-serve-static-core@4.19.9"
+    ],
+    "right": true
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [
+     "npm @types/express-serve-static-core@4.19.9"
+    ],
+    "other": [],
+    "right": true
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [
+     "npm @types/express-serve-static-core@4.19.9"
+    ],
+    "other": [],
+    "right": true
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/oidc/auditService.js:121:23 get",
+   "expected": "external express",
+   "index": {
+    "group": "hole: no-occurrence / unknown-receiver",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "frontend/components/Habits/HabitDayPanel.tsx:94:18 fn",
+   "expected": "decl frontend/components/Habits/HabitDayPanel.tsx:104,frontend/components/Habits/HabitDayPanel.tsx:187,frontend/components/Habits/HabitDetails.tsx:446",
+   "index": {
+    "group": "index: project value, parameter",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "frontend/components/Habits/HabitDayPanel.tsx:90:29 FunctionType"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [
+     "frontend/components/Habits/HabitDayPanel.tsx::function@104:14",
+     "frontend/components/Habits/HabitDayPanel.tsx::function@187:53"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "frontend/components/Habits/HabitDayPanel.tsx:90:29 FunctionType"
+    ],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [
+     "frontend/components/Habits/HabitDayPanel.tsx::function@104:14",
+     "frontend/components/Habits/HabitDayPanel.tsx::function@187:53"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "frontend/components/Note/MissingNotePrompt.tsx:75:24 onClose",
+   "expected": "decl frontend/components/Note/MarkdownEditor.tsx:298",
+   "index": {
+    "group": "index: project function",
+    "targets": [
+     "frontend/components/Note/MissingNotePrompt.tsx::method@10:4"
+    ],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "frontend/components/Note/MissingNotePrompt.tsx:10:13 FunctionType"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "frontend/components/Note/MissingNotePrompt.tsx:10:13 FunctionType"
+    ],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "frontend/components/Tag/TagModal.tsx:76:12 onClose",
+   "expected": "decl frontend/hooks/usePersistedModal.ts:64,frontend/components/Tags.tsx:231,frontend/Layout.tsx:238",
+   "index": {
+    "group": "index: project function",
+    "targets": [
+     "frontend/components/Tag/TagModal.tsx::method@15:4"
+    ],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "frontend/components/Tag/TagModal.tsx:15:13 FunctionType"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "frontend/components/Tag/TagModal.tsx:15:13 FunctionType"
+    ],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/groups/controller.js:34:12 next",
+   "expected": "external express",
+   "index": {
+    "group": "index: project value, parameter",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/groups/controller.js:25:28 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/groups/controller.js:25:28 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  },
+  {
+   "site": "backend/modules/webhooks/controller.js:15:23 fn",
+   "expected": "decl backend/modules/webhooks/controller.js:22,backend/modules/webhooks/controller.js:23,backend/modules/webhooks/controller.js:24,backend/modules/webhooks/controller.js:27,backend/modules/webhooks/controller.js:28,backend/modules/webhooks/controller.js:31,backend/modules/webhooks/controller.js:34",
+   "index": {
+    "group": "index: project value, parameter",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/webhooks/controller.js:13:16 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [
+     "backend/modules/webhooks/controller.js::function@22:17",
+     "backend/modules/webhooks/controller.js::function@23:19",
+     "backend/modules/webhooks/controller.js::function@24:19",
+     "backend/modules/webhooks/controller.js::function@27:19",
+     "backend/modules/webhooks/controller.js::function@28:25",
+     "backend/modules/webhooks/controller.js::function@31:23",
+     "backend/modules/webhooks/controller.js::function@34:17"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/webhooks/controller.js:13:16 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [
+     "backend/modules/webhooks/controller.js::function@22:17",
+     "backend/modules/webhooks/controller.js::function@23:19",
+     "backend/modules/webhooks/controller.js::function@24:19",
+     "backend/modules/webhooks/controller.js::function@27:19",
+     "backend/modules/webhooks/controller.js::function@28:25",
+     "backend/modules/webhooks/controller.js::function@31:23",
+     "backend/modules/webhooks/controller.js::function@34:17"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   }
+  },
+  {
+   "site": "backend/modules/webhooks/taskEvents.js:88:10 fn",
+   "expected": "decl backend/modules/webhooks/taskEvents.js:105,backend/modules/webhooks/taskEvents.js:124,backend/modules/webhooks/taskEvents.js:136",
+   "index": {
+    "group": "index: project value, parameter",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/webhooks/taskEvents.js:83:36 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [
+     "backend/modules/webhooks/taskEvents.js::function@105:32",
+     "backend/modules/webhooks/taskEvents.js::function@124:32",
+     "backend/modules/webhooks/taskEvents.js::function@136:32"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/webhooks/taskEvents.js:83:36 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-deps": {
+    "targets": [
+     "backend/modules/webhooks/taskEvents.js::function@105:32",
+     "backend/modules/webhooks/taskEvents.js::function@124:32",
+     "backend/modules/webhooks/taskEvents.js::function@136:32"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   }
+  },
+  {
+   "site": "backend/modules/caldav/services/safe-request.js:107:19 callback",
+   "expected": "none",
+   "index": {
+    "group": "index: project value, parameter",
+    "targets": [],
+    "externals": [],
+    "right": true
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/caldav/services/safe-request.js:95:42 Parameter"
+    ],
+    "right": true
+   },
+   "jelly-own": {
+    "targets": [
+     "backend/tests/unit/modules/caldav-safe-request.test.js::function@257:45"
+    ],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/caldav/services/safe-request.js:95:42 Parameter"
+    ],
+    "right": true
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": true
+   }
+  },
+  {
+   "site": "backend/modules/backup/routes.js:27:12 cb",
+   "expected": "external multer",
+   "index": {
+    "group": "index: project value, parameter",
+    "targets": [],
+    "externals": [],
+    "right": false
+   },
+   "ts": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [
+     "backend/modules/backup/routes.js:14:28 Parameter"
+    ],
+    "right": false
+   },
+   "jelly-own": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   },
+   "ts-types": {
+    "targets": [],
+    "arguments": [],
+    "externals": [
+     "npm @types/multer@2.3.0"
+    ],
+    "other": [],
+    "right": true
+   },
+   "jelly-deps": {
+    "targets": [],
+    "arguments": [],
+    "externals": [],
+    "other": [],
+    "right": false
+   }
+  }
+ ],
+ "hand_score": {
+  "index": 3,
+  "ts": 3,
+  "jelly-own": 3,
+  "ts-types": 4,
+  "jelly-deps": 3
+ },
+ "seconds": {
+  "index graph": 38.2,
+  "compare": 21.6
+ },
+ "case": "tududi",
+ "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
+ "container_seconds": 64.7
+}
