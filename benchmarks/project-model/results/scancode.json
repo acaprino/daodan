@@ -5294,7 +5294,7 @@
     },
     "excluded": {
      "given": false,
-     "expected": 0
+     "expected": 2
     },
     "units": {
      "given": true,
@@ -5333,13 +5333,15 @@
     },
     "dependencies": {
      "given": true,
-     "expected": 5,
+     "expected": 7,
      "found": 2,
      "found_normalised": 2,
      "missed": [
       "proto-py (kiosk-sync)",
       "httpx (kiosk-sync)",
-      "hatchling (kiosk-sync)"
+      "hatchling (kiosk-sync)",
+      "https://github.com/acme/ui-kit.git (kiosk)",
+      "../proto-py.git (kiosk-sync)"
      ],
      "extra": [],
      "wrong": []
@@ -7348,25 +7350,27 @@
     },
     "units": {
      "given": true,
-     "expected": 4,
+     "expected": 6,
      "found": 0,
      "found_normalised": 0,
      "missed": [
       "gradle-project@.",
       "gradle-project@klaxon",
       "gradle-project@klaxon-jackson",
-      "gradle-project@buildSrc"
+      "gradle-project@buildSrc",
+      "kobalt-project@klaxon",
+      "kobalt-project@klaxon-jackson"
      ],
      "extra": [],
      "wrong": []
     },
     "units.depends_on": {
      "given": false,
-     "expected": 3
+     "expected": 4
     },
     "units.source_roots": {
      "given": false,
-     "expected": 5
+     "expected": 9
     },
     "units.config": {
      "given": false,
@@ -7382,11 +7386,11 @@
     },
     "toolchains": {
      "given": false,
-     "expected": 7
+     "expected": 8
     },
     "dependencies": {
      "given": true,
-     "expected": 13,
+     "expected": 19,
      "found": 1,
      "found_normalised": 1,
      "missed": [
@@ -7399,7 +7403,13 @@
       "org.jetbrains.kotlin:kotlin-reflect (:klaxon)",
       "org.jetbrains.kotlin:kotlin-test (:klaxon)",
       "org.assertj:assertj-core (:klaxon)",
-      "org.jetbrains.kotlin:kotlin-stdlib (:klaxon-jackson)"
+      "org.jetbrains.kotlin:kotlin-stdlib (:klaxon-jackson)",
+      "org.jetbrains.kotlin:kotlin-reflect (klaxon)",
+      "org.jetbrains.kotlin:kotlin-stdlib (klaxon)",
+      "org.testng:testng (klaxon)",
+      "org.assertj:assertj-core (klaxon)",
+      "org.jetbrains.kotlin:kotlin-test (klaxon)",
+      "com.fasterxml.jackson.core:jackson-databind (klaxon-jackson)"
      ],
      "extra": [
       "$it",
@@ -8958,7 +8968,7 @@
     },
     "services": {
      "given": false,
-     "expected": 8
+     "expected": 10
     },
     "needs": {
      "given": false,
@@ -9001,7 +9011,7 @@
     },
     "units": {
      "given": true,
-     "expected": 23,
+     "expected": 122,
      "found": 0,
      "found_normalised": 0,
      "missed": [
@@ -9026,23 +9036,122 @@
       "make-target@contrib/untgz:untgz",
       "make-target@contrib/minizip:miniunz",
       "make-target@contrib/minizip:minizip",
+      "make-target@contrib/minizip:libminizip.la",
+      "make-target@contrib/minizip:miniunzip",
+      "make-target@contrib/minizip:minizip",
+      "make-target@contrib/untgz:untgz.exe",
       "dotnet-project@contrib/dotzlib/DotZLib",
-      "dotnet-project@contrib/nuget"
+      "dotnet-project@contrib/nuget",
+      "make-target@msdos:zlib_l.lib",
+      "make-target@msdos:example.exe",
+      "make-target@msdos:minigzip.exe",
+      "make-target@msdos:libz.a",
+      "make-target@msdos:example.exe",
+      "make-target@msdos:minigzip.exe",
+      "make-target@msdos:zlib.a",
+      "make-target@msdos:example.exe",
+      "make-target@msdos:minigzip.exe",
+      "make-target@msdos:zlib_L.lib",
+      "make-target@msdos:example.exe",
+      "make-target@msdos:minigzip.exe",
+      "make-target@msdos:zlib_l.lib",
+      "make-target@msdos:example.exe",
+      "make-target@msdos:minigzip.exe",
+      "make-target@win32:zlib.lib",
+      "make-target@win32:example.exe",
+      "make-target@win32:minigzip.exe",
+      "make-target@amiga:libzip.a",
+      "make-target@amiga:example",
+      "make-target@amiga:minigzip",
+      "make-target@amiga:z.lib",
+      "make-target@amiga:example",
+      "make-target@amiga:minigzip",
+      "make-target@old:zlib.a",
+      "make-target@old:example.exe",
+      "make-target@old:minigzip.exe",
+      "make-target@old:@.lib",
+      "make-target@old:@.example",
+      "make-target@old:@.minigzip",
+      "make-target@old:libz.olb",
+      "make-target@old:example.exe",
+      "make-target@old:minigzip.exe",
+      "make-target@watcom:zlib_f.lib",
+      "make-target@watcom:example.exe",
+      "make-target@watcom:minigzip.exe",
+      "make-target@watcom:zlib_l.lib",
+      "make-target@watcom:example.exe",
+      "make-target@watcom:minigzip.exe",
+      "make-target@win32:libz.a",
+      "make-target@win32:zlib1.dll",
+      "make-target@win32:libz.dll.a",
+      "make-target@win32:example.exe",
+      "make-target@win32:minigzip.exe",
+      "make-target@win32:example_d.exe",
+      "make-target@win32:minigzip_d.exe",
+      "make-target@win32:zlib.lib",
+      "make-target@win32:zlib1.dll",
+      "make-target@win32:zdll.lib",
+      "make-target@win32:example.exe",
+      "make-target@win32:minigzip.exe",
+      "make-target@win32:example_d.exe",
+      "make-target@win32:minigzip_d.exe",
+      "make-target@old/os2:z.lib",
+      "make-target@old/os2:z.dll",
+      "make-target@old/os2:zdll.lib",
+      "make-target@old/os2:example.exe",
+      "make-target@old/os2:minigzip.exe",
+      "make-target@nintendods:libz.a",
+      "msbuild-project@contrib/vstudio/vc9",
+      "msbuild-project@contrib/vstudio/vc9",
+      "msbuild-project@contrib/vstudio/vc9",
+      "msbuild-project@contrib/vstudio/vc9",
+      "msbuild-project@contrib/vstudio/vc9",
+      "msbuild-project@contrib/vstudio/vc9",
+      "msbuild-project@contrib/vstudio/vc10",
+      "msbuild-project@contrib/vstudio/vc10",
+      "msbuild-project@contrib/vstudio/vc10",
+      "msbuild-project@contrib/vstudio/vc10",
+      "msbuild-project@contrib/vstudio/vc10",
+      "msbuild-project@contrib/vstudio/vc10",
+      "msbuild-project@contrib/vstudio/vc11",
+      "msbuild-project@contrib/vstudio/vc11",
+      "msbuild-project@contrib/vstudio/vc11",
+      "msbuild-project@contrib/vstudio/vc11",
+      "msbuild-project@contrib/vstudio/vc11",
+      "msbuild-project@contrib/vstudio/vc11",
+      "msbuild-project@contrib/vstudio/vc12",
+      "msbuild-project@contrib/vstudio/vc12",
+      "msbuild-project@contrib/vstudio/vc12",
+      "msbuild-project@contrib/vstudio/vc12",
+      "msbuild-project@contrib/vstudio/vc12",
+      "msbuild-project@contrib/vstudio/vc12",
+      "msbuild-project@contrib/vstudio/vc14",
+      "msbuild-project@contrib/vstudio/vc14",
+      "msbuild-project@contrib/vstudio/vc14",
+      "msbuild-project@contrib/vstudio/vc14",
+      "msbuild-project@contrib/vstudio/vc14",
+      "msbuild-project@contrib/vstudio/vc14",
+      "msbuild-project@contrib/vstudio/vc17",
+      "msbuild-project@contrib/vstudio/vc17",
+      "msbuild-project@contrib/vstudio/vc17",
+      "msbuild-project@contrib/vstudio/vc17",
+      "msbuild-project@contrib/vstudio/vc17",
+      "msbuild-project@contrib/vstudio/vc17"
      ],
      "extra": [],
      "wrong": []
     },
     "units.depends_on": {
      "given": false,
-     "expected": 14
+     "expected": 73
     },
     "units.source_roots": {
      "given": false,
-     "expected": 22
+     "expected": 85
     },
     "units.config": {
      "given": false,
-     "expected": 70
+     "expected": 189
     },
     "workspace": {
      "given": false,
@@ -15760,5 +15869,6 @@
    "shims": [],
    "executed_project_code": "no"
   }
- }
+ },
+ "notes": "Not measured on the eight real repositories added last: real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop (skipped for the budget). Its 114 fixtures include real-app-full-stack-fastapi and real-svc-voting-app."
 }

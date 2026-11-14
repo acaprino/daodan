@@ -164,6 +164,11 @@ DEFAULT_FIXTURES = ("js-npm-workspaces", "py-poetry-groups", "sys-go-single", "s
 BUILD_TOOLS = set(SHIMS) - {"git"}
 WORK = Path("/work")
 COMMIT_EVERY = 10
+# Facts about a tool's coverage of the corpus that its results file must say itself.
+NOTES = {"scancode": "Not measured on the eight real repositories added last: real-app-hoppscotch, "
+                     "real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, "
+                     "real-svc-petclinic-microservices, real-svc-robot-shop (skipped for the budget). Its 114 fixtures "
+                     "include real-app-full-stack-fastapi and real-svc-voting-app."}
 BATCH = 8  # fixtures per offline call: fewer container starts, a result still small
 MEMORY = {"scancode": 3072, "cdxgen": 1536, "component_detection": 1536}  # MB per container; the others peak near 250 MB
 
@@ -694,6 +699,8 @@ def fetch(tools: list) -> None:
                     for name, rec in sorted(_records(tool, "default").items())}
         doc = {"tool": tool.replace("_", "-"), "version": adapter.VERSION, "group": "sbom", "command": adapter.COMMAND,
                "fixtures": fixtures, "defaults": defaults}
+        if tool in NOTES:
+            doc["notes"] = NOTES[tool]
         target = HERE / "results" / f"{tool}.json"
         target.parent.mkdir(exist_ok=True)
         target.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")

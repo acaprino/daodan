@@ -221,6 +221,18 @@ Dalla nota del runner nativo, misurata nel container.
 | Tabella dei linguaggi | 190 linguaggi su 313 e 323 file su 486, contro 305-308 e 460-463 di go-enry e Linguist | la tabella dei suffissi non ha euristiche |
 | Wrapper `stack_analyser.py` | Sui servizi, contro il registro: 48 servizi che il registro non ha, di cui 1 vero (Redis in mix-php-laravel) e 47 in più; il registro da solo ne trova 45 | il CLI di Specfy rilegge le stesse regole già nel registro: tenerlo aggiunge un servizio e 47 errori |
 
+Servizi del registro, letti voce per voce dal punteggio (`score.py daodan_registry all --json`):
+
+| Voci | Quante | Quali |
+| --- | --- | --- |
+| Trovate | 45 su 123 | |
+| Perse | 78 | PostgreSQL 7, SMTP 6, Redis 3; SQLite, H2, Prometheus, Grafana, Cloud Firestore e Firebase Hosting 2 ciascuno: servizi dichiarati in compose, nei manifest di deploy o usati nel codice, non in un pacchetto |
+| In più: errori | circa 6 | Zoom 2, Ghost e Discord dal nome di una variabile d'ambiente; Caddy da un esempio nella documentazione |
+| In più: strumenti, non servizi | circa 9 | Playwright 3, Cypress 2, Travis CI, Renovate, Postman, GitHub Pages |
+| In più: veri, con un nome più generico dell'atteso | circa 11 | OpenTelemetry 3, AWS 2, Firebase, GCP, Google Compute, Kubernetes, OpenAI, Hugging Face, Prometheus |
+
+La divisione delle 26 voci in più nelle tre righe è una lettura a mano dei nomi, non un conteggio del punteggio.
+
 ### `BuildTarget` di BSP come modello delle unità
 
 Campi letti dallo spec al tag `v2.2.0-M3` del repository. Il file `version` dice 2.2.0; su Maven Central l'ultimo `bsp4j` è `2.2.0-M4.TEST`.
@@ -248,11 +260,11 @@ Da `modal billing report --for today --resolution h`, cifre per app riportate da
 | Gruppo | Speso letto (USD) | Tetto (USD) | Note |
 | --- | --- | --- | --- |
 | lang | 0,3216 | 0,25 + 0,15 per i repository veri | sopra il primo tetto: una scrittura del volume per fixture (circa 12 s l'una), un repository Git nuovo per fixture |
-| sbom | 0,3197, ora ancora aperta | 0,30 + 0,40 | corpus e repository veri nella stessa esecuzione; cifre chiuse **in corso** |
+| sbom | 0,3755 | 0,30 + 0,40 per i repository veri + 0,06 per gli strumenti aggiunti | primo passaggio 0,3197, appena sopra il suo tetto, con i repository veri dentro (il tetto di 0,40 non è stato usato a parte); strumenti aggiunti (component-detection, deptry, dependency-cruiser, uv, correzione di cdxgen) 0,0558 |
 | native | 0,5182, ultima ora aperta | 0,40 + 1,00 | 0,389 corpus, 0,129 repository veri, compresa una chiamata a build-server-for-gradle bloccata e annullata |
 | versions | 0,406, ore recenti fatturate in ritardo | 0,30 + 0,10 + 0,25 | la riesecuzione del corpus ha superato il suo tetto (circa 0,17 contro 0,10): quattro container invece di uno |
 | frameworks | 0,5905 (0,5872 dell'app più 0,0033 di sei app di sonda) | 0,25 + 0,25 per i repository veri | sopra il primo tetto: due giri completi con una scrittura del volume per fixture; il passaggio sui repository veri è costato 0,078 |
-| **Totale** | **2,156** (sbom con l'ultima ora aperta) | 3,65 | tre gruppi su cinque sopra il primo tetto: lang, versions (riesecuzione), frameworks |
+| **Totale** | **2,212** | 3,71 | quattro gruppi su cinque sopra il primo tetto: lang, sbom (di 0,02), versions (riesecuzione), frameworks |
 
 ## 8. Cosa non è stato misurato
 
