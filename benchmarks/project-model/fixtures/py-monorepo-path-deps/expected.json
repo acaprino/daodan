@@ -1,0 +1,153 @@
+{
+  "languages": [
+    {
+      "path": "apps/api/src/mono_api/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "libs/common/src/mono_common/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "libs/models/src/mono_models/__init__.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "mono-common",
+      "kind": "python-project",
+      "root": "libs/common",
+      "manifest": "libs/common/pyproject.toml",
+      "source_roots": [
+        "libs/common/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "mono_common"
+        ]
+      }
+    },
+    {
+      "name": "mono-models",
+      "kind": "python-project",
+      "root": "libs/models",
+      "manifest": "libs/models/pyproject.toml",
+      "source_roots": [
+        "libs/models/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "mono_models"
+        ]
+      }
+    },
+    {
+      "name": "mono-api",
+      "kind": "python-project",
+      "root": "apps/api",
+      "manifest": "apps/api/pyproject.toml",
+      "source_roots": [
+        "apps/api/src"
+      ],
+      "depends_on": [
+        "mono-common"
+      ],
+      "config": {
+        "packages": [
+          "mono_api"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "libs/common/pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "libs/models/pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "apps/api/pyproject.toml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "mono-common",
+      "name": "attrs",
+      "declared": ">=23.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "libs/common/pyproject.toml"
+    },
+    {
+      "unit": "mono-common",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "libs/common/pyproject.toml"
+    },
+    {
+      "unit": "mono-models",
+      "name": "pydantic",
+      "declared": ">=2.9",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "libs/models/pyproject.toml"
+    },
+    {
+      "unit": "mono-models",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "libs/models/pyproject.toml"
+    },
+    {
+      "unit": "mono-api",
+      "name": "fastapi",
+      "declared": ">=0.115",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "apps/api/pyproject.toml"
+    },
+    {
+      "unit": "mono-api",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "apps/api/pyproject.toml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "FastAPI",
+      "unit": "mono-api",
+      "evidence": "apps/api/src/mono_api/__init__.py"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "no root manifest and no workspace tool: three independent pyproject.toml files",
+    "mono-api depends on mono-common only through tool.uv.sources path = ../../libs/common: only a depends_on edge, never a dependency",
+    "mono-models is depended on by nobody",
+    "mono-common is a repo unit, not a package to fetch from PyPI",
+    "no lockfile: resolved is null everywhere"
+  ]
+}

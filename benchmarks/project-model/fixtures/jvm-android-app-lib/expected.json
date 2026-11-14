@@ -1,0 +1,284 @@
+{
+  "languages": [
+    {
+      "path": "app/src/main/java/com/example/notes/MainActivity.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "app/src/paid/java/com/example/notes/FeatureGate.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "core/src/main/java/com/example/notes/core/NoteFormatter.kt",
+      "language": "Kotlin"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "gradle/wrapper/",
+      "why": "vendored"
+    }
+  ],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle.kts",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": ":app",
+      "kind": "gradle-project",
+      "root": "app",
+      "manifest": "app/build.gradle.kts",
+      "source_roots": [
+        "app/src/main/java",
+        "app/src/free/java",
+        "app/src/paid/java"
+      ],
+      "depends_on": [
+        ":core"
+      ],
+      "config": {
+        "source_sets": {
+          "main": [
+            "app/src/main/java",
+            "app/src/main/kotlin"
+          ],
+          "free": [
+            "app/src/free/java",
+            "app/src/free/kotlin"
+          ],
+          "paid": [
+            "app/src/paid/java",
+            "app/src/paid/kotlin"
+          ],
+          "debug": [
+            "app/src/debug/java",
+            "app/src/debug/kotlin"
+          ],
+          "release": [
+            "app/src/release/java",
+            "app/src/release/kotlin"
+          ],
+          "test": [
+            "app/src/test/java",
+            "app/src/test/kotlin"
+          ],
+          "androidTest": [
+            "app/src/androidTest/java",
+            "app/src/androidTest/kotlin"
+          ]
+        },
+        "compile_tasks": [
+          ":app:compileFreeDebugKotlin",
+          ":app:compileFreeReleaseKotlin",
+          ":app:compilePaidDebugKotlin",
+          ":app:compilePaidReleaseKotlin",
+          ":app:compileFreeDebugJavaWithJavac",
+          ":app:compileFreeReleaseJavaWithJavac",
+          ":app:compilePaidDebugJavaWithJavac",
+          ":app:compilePaidReleaseJavaWithJavac"
+        ],
+        "build_tags": [
+          "free",
+          "paid",
+          "debug",
+          "release"
+        ],
+        "entry_files": [
+          "app/src/main/AndroidManifest.xml",
+          "app/src/main/java/com/example/notes/MainActivity.kt"
+        ]
+      }
+    },
+    {
+      "name": ":core",
+      "kind": "gradle-project",
+      "root": "core",
+      "manifest": "core/build.gradle.kts",
+      "source_roots": [
+        "core/src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "core/src/main/java",
+            "core/src/main/kotlin"
+          ],
+          "debug": [
+            "core/src/debug/java",
+            "core/src/debug/kotlin"
+          ],
+          "release": [
+            "core/src/release/java",
+            "core/src/release/kotlin"
+          ],
+          "test": [
+            "core/src/test/java",
+            "core/src/test/kotlin"
+          ],
+          "androidTest": [
+            "core/src/androidTest/java",
+            "core/src/androidTest/kotlin"
+          ]
+        },
+        "compile_tasks": [
+          ":core:compileDebugKotlin",
+          ":core:compileReleaseKotlin",
+          ":core:compileDebugJavaWithJavac",
+          ":core:compileReleaseJavaWithJavac"
+        ],
+        "build_tags": [
+          "debug",
+          "release"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "gradle",
+    "root": ".",
+    "members": [
+      "app",
+      "core"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "gradle",
+      "version": "8.11.1",
+      "declared_in": "gradle/wrapper/gradle-wrapper.properties"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "app/build.gradle.kts"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "core/build.gradle.kts"
+    },
+    {
+      "tool": "android-sdk",
+      "version": "35",
+      "declared_in": "app/build.gradle.kts"
+    },
+    {
+      "tool": "android-sdk",
+      "version": "35",
+      "declared_in": "core/build.gradle.kts"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "com.android.application",
+      "declared": "8.7.3",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "com.android.library",
+      "declared": "8.7.3",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin.android",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "com.google.gms.google-services",
+      "declared": "4.4.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":app",
+      "name": "androidx.appcompat:appcompat",
+      "declared": "1.7.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "app/build.gradle.kts"
+    },
+    {
+      "unit": ":app",
+      "name": "com.google.firebase:firebase-analytics",
+      "declared": null,
+      "resolved": "22.1.2",
+      "scope": "runtime",
+      "declared_in": "app/build.gradle.kts"
+    },
+    {
+      "unit": ":app",
+      "name": "androidx.biometric:biometric",
+      "declared": "1.1.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "app/build.gradle.kts"
+    },
+    {
+      "unit": ":core",
+      "name": "androidx.core:core-ktx",
+      "declared": "1.15.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "core/build.gradle.kts"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Android",
+      "unit": ":app",
+      "evidence": "app/build.gradle.kts"
+    },
+    {
+      "name": "Android",
+      "unit": ":core",
+      "evidence": "core/build.gradle.kts"
+    },
+    {
+      "name": "Firebase",
+      "unit": ":app",
+      "evidence": "app/build.gradle.kts"
+    }
+  ],
+  "services": [
+    {
+      "name": "Firebase Analytics",
+      "kind": "analytics",
+      "evidence": "app/build.gradle.kts"
+    }
+  ],
+  "needs": {
+    "container": true,
+    "reason": "firebase-analytics has no version: firebase-bom 33.7.0 fixes it to 22.1.2 (checked on Google Maven). Variants, their source sets and tasks exist only once the Android Gradle Plugin evaluates the build, which needs the Android SDK platform 35 installed with its licence accepted. A full build also fails without app/google-services.json."
+  },
+  "traps": [
+    "app/google-services.json is deliberately absent although :app applies com.google.gms.google-services: process<Variant>GoogleServices fails with 'File google-services.json is missing', so configuration succeeds but assembling any variant does not.",
+    "The flavor dimension tier (free, paid) times the build types (debug, release) makes four variants of :app; the same class com.example.notes.FeatureGate exists twice, in app/src/free/java and app/src/paid/java, and only one is compiled per variant.",
+    "androidx.biometric is declared on paidImplementation: it is a runtime dependency of the paid variants only.",
+    "Kotlin sources sit in java/ directories, which AGP compiles as Kotlin; the kotlin/ directories are also registered but absent.",
+    "Plugin versions are declared once in the root build file with apply false; :app and :core apply the plugins without a version.",
+    "compileSdk 35 is the Android SDK platform to install, not a dependency; minSdk 24 and targetSdk 35 are runtime targets, not toolchains. The build-tools version is not declared: AGP 8.7.3 picks its default.",
+    "jvmToolchain(17) sets the JDK for Kotlin and, through AGP, the Java compile options; there is no compileOptions block.",
+    "The Gradle path names are :app and :core; rootProject.name NotesApp is only the display name.",
+    "AGP 8.7.3 requires Gradle 8.9 or later: the wrapper's 8.11.1 satisfies it.",
+    "resolved for firebase-analytics (22.1.2) is read from firebase-bom 33.7.0 as published on Google Maven."
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "languages": [
+    {
+      "path": "src/acme_cli/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/acme_cli/main.py",
+      "language": "Python"
+    },
+    {
+      "path": "tests/test_main.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "acme-cli",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src",
+        "tests"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "acme_cli"
+        ],
+        "entry_files": [
+          "src/acme_cli/main.py"
+        ],
+        "entry_points": {
+          "acme": "acme_cli.main:cli"
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": ".python-version"
+    },
+    {
+      "tool": "uv",
+      "version": ">=0.4.20",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "acme-cli",
+      "name": "click",
+      "declared": ">=8.1,<9",
+      "resolved": "8.1.7",
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "acme-cli",
+      "name": "attrs",
+      "declared": ">=23.1",
+      "resolved": "24.2.0",
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "acme-cli",
+      "name": "colorama",
+      "declared": ">=0.4",
+      "resolved": "0.4.6",
+      "scope": "optional",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "acme-cli",
+      "name": "ruff",
+      "declared": ">=0.6",
+      "resolved": "0.6.9",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "acme-cli",
+      "name": "hatchling",
+      "declared": ">=1.25",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "src layout: the package root is src/, not the repo root; tests/ imports acme_cli through the installed package",
+    "colorama is declared only as extra 'color' but the lock also pulls it for click on win32",
+    "dev tools sit in PEP 735 [dependency-groups], not in optional-dependencies",
+    "uv version is a constraint (tool.uv.required-version), not an installed version",
+    "hand-written lock without wheel or sdist hashes (not fabricated): name, version and source only"
+  ]
+}

@@ -1,0 +1,1 @@
+{"repo": "https://github.com/usememos/memos", "commit": "509e41bd1a1b2882404ad804ce2f2954cfad236a", "licence": "MIT", "why": "Go back end and React TypeScript front end joined only by a buf module that generates Go and TypeScript Connect clients, and by a front-end build embedded into the Go binary"}

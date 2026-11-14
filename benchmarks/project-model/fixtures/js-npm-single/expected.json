@@ -1,0 +1,68 @@
+{
+  "languages": [
+    {
+      "path": "src/index.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "test/index.test.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "npm-single",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src",
+        "test"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/index.js"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": ">=18",
+      "declared_in": "package.json#engines"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "npm-single",
+      "name": "lodash",
+      "declared": "^4.17.21",
+      "resolved": "4.17.21",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "npm-single",
+      "name": "ms",
+      "declared": "^2.1.3",
+      "resolved": "2.1.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "lockfileVersion 3 implies npm 7+ but no npm version is declared anywhere: do not invent one",
+    "ms is imported only by the test file and is a devDependency",
+    "lock has no integrity hashes (not fabricated); a real npm would add them"
+  ]
+}

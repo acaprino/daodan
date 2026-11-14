@@ -1,0 +1,53 @@
+{
+  "languages": [
+    {
+      "path": "platform/services/billing/src/lib.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "README.md",
+      "why": "documentation"
+    },
+    {
+      "path": "docs/",
+      "why": "documentation"
+    }
+  ],
+  "units": [
+    {
+      "name": "billing",
+      "kind": "cargo-crate",
+      "root": "platform/services/billing",
+      "manifest": "platform/services/billing/Cargo.toml",
+      "source_roots": [
+        "platform/services/billing/src"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "rust",
+      "version": "1.83.0",
+      "declared_in": "rust-toolchain.toml"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the only manifest is three folders deep (platform/services/billing/Cargo.toml): a reader that looks only at the root, or one level down, finds no unit",
+    "rust-toolchain.toml sits at the repository root, far from the crate: rustup finds it by walking up from the crate's folder, so it applies",
+    "Cargo.lock version 4 lists only the crate itself: it has no dependencies",
+    "platform/ and platform/services/ are plain folders, not a Cargo workspace",
+    "edition 2021 is a language edition, not a toolchain version"
+  ]
+}

@@ -1,0 +1,1349 @@
+{
+ "languages": [
+  {
+   "path": "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+   "language": "Kotlin"
+  },
+  {
+   "path": "app/shared/build.gradle.kts",
+   "language": "Kotlin"
+  },
+  {
+   "path": "app/iosApp/iosApp/iOSApp.swift",
+   "language": "Swift"
+  },
+  {
+   "path": "app/webApp/src/webMain/resources/index.html",
+   "language": "HTML"
+  },
+  {
+   "path": "app/webApp/src/webMain/resources/service-worker.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "backend/src/main/resources/db/migrations/V001__initial_schema.sql",
+   "language": "SQL"
+  },
+  {
+   "path": "cleanup.sh",
+   "language": "Shell"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "gradlew",
+   "why": "vendored"
+  },
+  {
+   "path": "gradlew.bat",
+   "why": "vendored"
+  },
+  {
+   "path": "gradle/wrapper/",
+   "why": "vendored"
+  },
+  {
+   "path": "app/iosApp/KotlinMultiplatformLinkedPackage/",
+   "why": "generated"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/files/aboutlibraries.json",
+   "why": "generated"
+  },
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "CONTRIBUTING.md",
+   "why": "documentation"
+  },
+  {
+   "path": "CODE_OF_CONDUCT.md",
+   "why": "documentation"
+  },
+  {
+   "path": "CLAUDE.md",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE",
+   "why": "documentation"
+  },
+  {
+   "path": "docs/",
+   "why": "documentation"
+  },
+  {
+   "path": "app/androidApp/src/main/ic_launcher-playstore.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-20@2x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-20@2x~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-20@3x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-20~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-29.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-29@2x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-29@2x~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-29@3x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-29~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-40@2x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-40@2x~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-40@3x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-40~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-60@2x~car.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-60@3x~car.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-83.5@2x~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon@2x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon@2x~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon@3x.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon~ios-marketing.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon~ipad.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/drawable/golden_kodee_backdrop.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/drawable/golden_kodee_banner.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/drawable/golden_kodee_winner.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/drawable/golden_kodee_winner_background.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/drawable/kodee_frightened.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/font/jetbrains_sans_bold.ttf",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/font/jetbrains_sans_regular.ttf",
+   "why": "binary"
+  },
+  {
+   "path": "app/shared/src/commonMain/composeResources/font/jetbrains_sans_semibold.ttf",
+   "why": "binary"
+  },
+  {
+   "path": "app/ui-components/src/commonMain/composeResources/font/jetbrains_sans_bold.ttf",
+   "why": "binary"
+  },
+  {
+   "path": "app/ui-components/src/commonMain/composeResources/font/jetbrains_sans_regular.ttf",
+   "why": "binary"
+  },
+  {
+   "path": "app/ui-components/src/commonMain/composeResources/font/jetbrains_sans_semibold.ttf",
+   "why": "binary"
+  },
+  {
+   "path": "app/webApp/src/webMain/resources/images/KotlinConf-icon-360.png",
+   "why": "binary"
+  },
+  {
+   "path": "app/webApp/src/webMain/resources/images/KotlinConf-icon-512.png",
+   "why": "binary"
+  }
+ ],
+ "units": [
+  {
+   "name": ":",
+   "kind": "gradle-project",
+   "root": ".",
+   "manifest": "build.gradle.kts",
+   "source_roots": [],
+   "depends_on": [],
+   "config": {
+    "applied_scripts": [
+     "gradle/releases.gradle.kts"
+    ]
+   }
+  },
+  {
+   "name": ":core",
+   "kind": "gradle-project",
+   "root": "core",
+   "manifest": "core/build.gradle.kts",
+   "source_roots": [
+    "core/src/commonMain/kotlin"
+   ],
+   "depends_on": [],
+   "config": {
+    "build_tags": [
+     "target:android",
+     "target:jvm",
+     "target:iosArm64",
+     "target:iosSimulatorArm64",
+     "target:wasmJs",
+     "target:js"
+    ]
+   }
+  },
+  {
+   "name": ":backend",
+   "kind": "gradle-project",
+   "root": "backend",
+   "manifest": "backend/build.gradle.kts",
+   "source_roots": [
+    "backend/src/main/kotlin",
+    "backend/src/test/kotlin"
+   ],
+   "depends_on": [
+    ":core",
+    ":app:adminApp"
+   ],
+   "config": {
+    "source_sets": {
+     "main": [
+      "backend/src/main/kotlin",
+      "backend/src/main/java"
+     ],
+     "test": [
+      "backend/src/test/kotlin",
+      "backend/src/test/java"
+     ]
+    },
+    "compile_tasks": [
+     ":backend:compileKotlin",
+     ":backend:compileJava",
+     ":backend:compileTestKotlin",
+     ":backend:compileTestJava"
+    ],
+    "entry_files": [
+     "backend/src/main/resources/application.yaml"
+    ],
+    "main_class": "io.ktor.server.netty.EngineMain",
+    "ktor_modules": [
+     "org.jetbrains.kotlinconf.backend.DiModuleKt.diModule",
+     "org.jetbrains.kotlinconf.backend.StartupModuleKt.startupModule",
+     "org.jetbrains.kotlinconf.backend.PluginsModuleKt.pluginsSetup",
+     "org.jetbrains.kotlinconf.backend.RoutesModuleKt.routesModule"
+    ]
+   }
+  },
+  {
+   "name": ":app",
+   "kind": "gradle-project",
+   "root": "app",
+   "manifest": null,
+   "source_roots": [],
+   "depends_on": [],
+   "config": {}
+  },
+  {
+   "name": ":app:shared",
+   "kind": "gradle-project",
+   "root": "app/shared",
+   "manifest": "app/shared/build.gradle.kts",
+   "source_roots": [
+    "app/shared/src/androidMain/kotlin",
+    "app/shared/src/commonMain/kotlin",
+    "app/shared/src/commonTest/kotlin",
+    "app/shared/src/iosMain/kotlin",
+    "app/shared/src/jsMain/kotlin",
+    "app/shared/src/jvmMain/kotlin",
+    "app/shared/src/jvmTest/kotlin",
+    "app/shared/src/nonAndroidMain/kotlin",
+    "app/shared/src/nonWebMain/kotlin",
+    "app/shared/src/wasmJsMain/kotlin",
+    "app/shared/src/webMain/kotlin"
+   ],
+   "depends_on": [
+    ":core",
+    ":app:ui-components"
+   ],
+   "config": {
+    "build_tags": [
+     "target:android",
+     "target:jvm",
+     "target:iosArm64",
+     "target:iosSimulatorArm64",
+     "target:wasmJs",
+     "target:js"
+    ],
+    "custom_source_sets": {
+     "nonAndroidMain": [
+      "iosMain",
+      "jvmMain",
+      "webMain"
+     ],
+     "nonWebMain": [
+      "androidMain",
+      "iosMain",
+      "jvmMain"
+     ]
+    },
+    "apple_framework": {
+     "baseName": "shared",
+     "isStatic": true
+    },
+    "compose_resources_package": "org.jetbrains.kotlinconf.generated.resources"
+   }
+  },
+  {
+   "name": ":app:ui-components",
+   "kind": "gradle-project",
+   "root": "app/ui-components",
+   "manifest": "app/ui-components/build.gradle.kts",
+   "source_roots": [
+    "app/ui-components/src/androidMain/kotlin",
+    "app/ui-components/src/commonMain/kotlin",
+    "app/ui-components/src/jsMain/kotlin",
+    "app/ui-components/src/nonAndroidMain/kotlin",
+    "app/ui-components/src/wasmJsMain/kotlin",
+    "app/ui-components/src/webMain/kotlin"
+   ],
+   "depends_on": [],
+   "config": {
+    "build_tags": [
+     "target:android",
+     "target:jvm",
+     "target:iosArm64",
+     "target:iosSimulatorArm64",
+     "target:wasmJs",
+     "target:js"
+    ],
+    "custom_source_sets": {
+     "nonAndroidMain": [
+      "iosMain",
+      "jvmMain",
+      "webMain"
+     ]
+    },
+    "compose_resources_package": "org.jetbrains.kotlinconf.ui.generated.resources"
+   }
+  },
+  {
+   "name": ":app:androidApp",
+   "kind": "gradle-project",
+   "root": "app/androidApp",
+   "manifest": "app/androidApp/build.gradle.kts",
+   "source_roots": [
+    "app/androidApp/src/main/kotlin"
+   ],
+   "depends_on": [
+    ":app:shared"
+   ],
+   "config": {
+    "source_sets": {
+     "main": [
+      "app/androidApp/src/main/java",
+      "app/androidApp/src/main/kotlin"
+     ],
+     "debug": [
+      "app/androidApp/src/debug/java",
+      "app/androidApp/src/debug/kotlin"
+     ],
+     "release": [
+      "app/androidApp/src/release/java",
+      "app/androidApp/src/release/kotlin"
+     ],
+     "test": [
+      "app/androidApp/src/test/java",
+      "app/androidApp/src/test/kotlin"
+     ],
+     "androidTest": [
+      "app/androidApp/src/androidTest/java",
+      "app/androidApp/src/androidTest/kotlin"
+     ]
+    },
+    "compile_tasks": [
+     ":app:androidApp:compileDebugKotlin",
+     ":app:androidApp:compileDebugJavaWithJavac",
+     ":app:androidApp:compileReleaseKotlin",
+     ":app:androidApp:compileReleaseJavaWithJavac"
+    ],
+    "build_tags": [
+     "debug",
+     "release"
+    ],
+    "entry_files": [
+     "app/androidApp/src/main/AndroidManifest.xml",
+     "app/androidApp/src/main/kotlin/org/jetbrains/kotlinconf/android/MainActivity.kt"
+    ]
+   }
+  },
+  {
+   "name": ":app:desktopApp",
+   "kind": "gradle-project",
+   "root": "app/desktopApp",
+   "manifest": "app/desktopApp/build.gradle.kts",
+   "source_roots": [
+    "app/desktopApp/src/main/kotlin"
+   ],
+   "depends_on": [
+    ":app:shared"
+   ],
+   "config": {
+    "source_sets": {
+     "main": [
+      "app/desktopApp/src/main/kotlin",
+      "app/desktopApp/src/main/java"
+     ],
+     "test": [
+      "app/desktopApp/src/test/kotlin",
+      "app/desktopApp/src/test/java"
+     ]
+    },
+    "compile_tasks": [
+     ":app:desktopApp:compileKotlin",
+     ":app:desktopApp:compileJava",
+     ":app:desktopApp:compileTestKotlin",
+     ":app:desktopApp:compileTestJava"
+    ],
+    "entry_files": [
+     "app/desktopApp/src/main/kotlin/org/jetbrains/kotlinconf/main.kt"
+    ],
+    "main_class": "org.jetbrains.kotlinconf.MainKt"
+   }
+  },
+  {
+   "name": ":app:webApp",
+   "kind": "gradle-project",
+   "root": "app/webApp",
+   "manifest": "app/webApp/build.gradle.kts",
+   "source_roots": [
+    "app/webApp/src/webMain/kotlin"
+   ],
+   "depends_on": [
+    ":app:shared"
+   ],
+   "config": {
+    "build_tags": [
+     "target:wasmJs",
+     "target:js"
+    ],
+    "entry_files": [
+     "app/webApp/src/webMain/kotlin/org/jetbrains/kotlinconf/main.kt",
+     "app/webApp/src/webMain/resources/index.html"
+    ]
+   }
+  },
+  {
+   "name": ":app:adminApp",
+   "kind": "gradle-project",
+   "root": "app/adminApp",
+   "manifest": "app/adminApp/build.gradle.kts",
+   "source_roots": [
+    "app/adminApp/src/jsMain/kotlin"
+   ],
+   "depends_on": [
+    ":core"
+   ],
+   "config": {
+    "build_tags": [
+     "target:js"
+    ],
+    "entry_files": [
+     "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Main.kt",
+     "app/adminApp/src/jsMain/resources/index.html"
+    ]
+   }
+  },
+  {
+   "name": "iosApp",
+   "kind": "xcode-target",
+   "root": "app/iosApp",
+   "manifest": "app/iosApp/KotlinConf.xcodeproj/project.pbxproj",
+   "source_roots": [
+    "app/iosApp/iosApp"
+   ],
+   "depends_on": [
+    "KotlinMultiplatformLinkedPackage",
+    ":app:shared"
+   ],
+   "config": {
+    "entry_files": [
+     "app/iosApp/iosApp/iOSApp.swift"
+    ],
+    "scheme": "KotlinConfAppScheme",
+    "workspace": "app/iosApp/KotlinConf.xcworkspace"
+   }
+  },
+  {
+   "name": "KotlinMultiplatformLinkedPackage",
+   "kind": "swift-package",
+   "root": "app/iosApp/KotlinMultiplatformLinkedPackage",
+   "manifest": "app/iosApp/KotlinMultiplatformLinkedPackage/Package.swift",
+   "source_roots": [
+    "app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage"
+   ],
+   "depends_on": [
+    "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2"
+   ],
+   "config": {
+    "source_sets": {
+     "KotlinMultiplatformLinkedPackage": [
+      "app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage"
+     ]
+    },
+    "packages": [
+     "KotlinMultiplatformLinkedPackage"
+    ]
+   }
+  },
+  {
+   "name": "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2",
+   "kind": "swift-package",
+   "root": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2",
+   "manifest": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Package.swift",
+   "source_roots": [
+    "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Sources/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2"
+   ],
+   "depends_on": [],
+   "config": {
+    "source_sets": {
+     "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2": [
+      "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Sources/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2"
+     ]
+    },
+    "packages": [
+     "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2"
+    ]
+   }
+  }
+ ],
+ "workspace": {
+  "tool": "gradle",
+  "root": ".",
+  "members": [
+   "core",
+   "backend",
+   "app",
+   "app/shared",
+   "app/ui-components",
+   "app/androidApp",
+   "app/desktopApp",
+   "app/webApp",
+   "app/adminApp"
+  ]
+ },
+ "toolchains": [
+  {
+   "tool": "gradle",
+   "version": "9.9.1",
+   "declared_in": "gradle/wrapper/gradle-wrapper.properties"
+  },
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": "core/build.gradle.kts"
+  },
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": "app/shared/build.gradle.kts"
+  },
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": "app/ui-components/build.gradle.kts"
+  },
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": "app/desktopApp/build.gradle.kts"
+  },
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": ".github/workflows/build-all.yml"
+  },
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": ".github/workflows/web-deploy.yml"
+  },
+  {
+   "tool": "java",
+   "version": "1-21",
+   "declared_in": ".devcontainer/devcontainer.json#image"
+  },
+  {
+   "tool": "maven",
+   "version": "3.8.6",
+   "declared_in": ".devcontainer/devcontainer.json#features.mavenVersion"
+  },
+  {
+   "tool": "node",
+   "version": "22.22.0",
+   "declared_in": "build.gradle.kts"
+  },
+  {
+   "tool": "android-sdk",
+   "version": "37",
+   "declared_in": "gradle/libs.versions.toml#versions.android-compileSdk"
+  },
+  {
+   "tool": "xcode",
+   "version": "26.2",
+   "declared_in": ".github/workflows/build-all.yml"
+  },
+  {
+   "tool": "swift",
+   "version": "5.9",
+   "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/Package.swift"
+  },
+  {
+   "tool": "swift",
+   "version": "5.9",
+   "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Package.swift"
+  },
+  {
+   "tool": "swift",
+   "version": "5.0",
+   "declared_in": "app/iosApp/KotlinConf.xcodeproj/project.pbxproj#SWIFT_VERSION"
+  }
+ ],
+ "dependencies": [
+  {
+   "unit": ":core",
+   "name": "org.jetbrains.kotlin.multiplatform",
+   "declared": "2.5.0-RC",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":core",
+   "name": "org.jetbrains.kotlin.plugin.serialization",
+   "declared": "2.5.0-RC",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":core",
+   "name": "com.android.kotlin.multiplatform.library",
+   "declared": "9.3.3",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":core",
+   "name": "org.jetbrains.kotlinx:kotlinx-datetime",
+   "declared": "0.8.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":core",
+   "name": "org.jetbrains.kotlinx:kotlinx-serialization-core",
+   "declared": "1.12.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":core",
+   "name": "org.jetbrains.kotlinx:kotlinx-serialization-json",
+   "declared": "1.12.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":app:webApp",
+   "name": "org.jetbrains.kotlin.multiplatform",
+   "declared": "2.5.0-RC",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":app:webApp",
+   "name": "org.jetbrains.compose",
+   "declared": "1.13.0-beta02",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":app:webApp",
+   "name": "org.jetbrains.kotlin.plugin.compose",
+   "declared": "2.5.0-RC",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":app:webApp",
+   "name": "dev.zacsweers.metro",
+   "declared": "1.5.2",
+   "resolved": null,
+   "scope": "build",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": ":app:webApp",
+   "name": "org.jetbrains.compose.components:components-resources",
+   "declared": "1.13.0-beta02",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "gradle/libs.versions.toml"
+  },
+  {
+   "unit": "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2",
+   "name": "firebase-ios-sdk",
+   "declared": "from: \"12.14.0\"",
+   "resolved": "12.19.3",
+   "scope": "runtime",
+   "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Package.swift"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":core",
+   "evidence": "core/build.gradle.kts"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":app:shared",
+   "evidence": "app/shared/build.gradle.kts"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":app:ui-components",
+   "evidence": "app/ui-components/build.gradle.kts"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":app:webApp",
+   "evidence": "app/webApp/build.gradle.kts"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":app:adminApp",
+   "evidence": "app/adminApp/build.gradle.kts"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":app:shared",
+   "evidence": "app/shared/build.gradle.kts"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":app:ui-components",
+   "evidence": "app/ui-components/build.gradle.kts"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":app:androidApp",
+   "evidence": "app/androidApp/build.gradle.kts"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":app:desktopApp",
+   "evidence": "app/desktopApp/build.gradle.kts"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":app:webApp",
+   "evidence": "app/webApp/build.gradle.kts"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":app:adminApp",
+   "evidence": "app/adminApp/build.gradle.kts"
+  },
+  {
+   "name": "Ktor",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts"
+  },
+  {
+   "name": "Ktor",
+   "unit": ":app:shared",
+   "evidence": "app/shared/build.gradle.kts"
+  },
+  {
+   "name": "Ktor",
+   "unit": ":app:adminApp",
+   "evidence": "app/adminApp/build.gradle.kts"
+  },
+  {
+   "name": "Exposed",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts"
+  },
+  {
+   "name": "Koin",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts"
+  },
+  {
+   "name": "Metro",
+   "unit": ":app:shared",
+   "evidence": "app/shared/build.gradle.kts"
+  },
+  {
+   "name": "Metro",
+   "unit": ":app:androidApp",
+   "evidence": "app/androidApp/build.gradle.kts"
+  },
+  {
+   "name": "Metro",
+   "unit": ":app:desktopApp",
+   "evidence": "app/desktopApp/build.gradle.kts"
+  },
+  {
+   "name": "Metro",
+   "unit": ":app:webApp",
+   "evidence": "app/webApp/build.gradle.kts"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":core",
+   "evidence": "core/build.gradle.kts"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":app:shared",
+   "evidence": "app/shared/build.gradle.kts"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":app:adminApp",
+   "evidence": "app/adminApp/build.gradle.kts"
+  },
+  {
+   "name": "Android",
+   "unit": ":app:androidApp",
+   "evidence": "app/androidApp/src/main/AndroidManifest.xml"
+  },
+  {
+   "name": "JUnit",
+   "unit": ":app:androidApp",
+   "evidence": "app/androidApp/build.gradle.kts"
+  },
+  {
+   "name": "Firebase",
+   "unit": ":app:androidApp",
+   "evidence": "app/androidApp/google-services.json"
+  },
+  {
+   "name": "Firebase",
+   "unit": "iosApp",
+   "evidence": "app/iosApp/iosApp/iOSApp.swift"
+  },
+  {
+   "name": "SwiftUI",
+   "unit": "iosApp",
+   "evidence": "app/iosApp/iosApp/ContentView.swift"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/repositories/KotlinConfRepository.kt"
+  },
+  {
+   "name": "H2",
+   "kind": "database",
+   "evidence": "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/repositories/KotlinConfRepository.kt"
+  },
+  {
+   "name": "Sessionize",
+   "kind": "api",
+   "evidence": "backend/src/main/resources/application.yaml"
+  },
+  {
+   "name": "Firebase Cloud Messaging",
+   "kind": "push",
+   "evidence": "app/androidApp/google-services.json"
+  },
+  {
+   "name": "Heroku",
+   "kind": "hosting",
+   "evidence": "app.json"
+  },
+  {
+   "name": "GitHub Pages",
+   "kind": "hosting",
+   "evidence": ".github/workflows/web-deploy.yml"
+  }
+ ],
+ "needs": {
+  "container": true,
+  "reason": "Kotlin Multiplatform source sets, their intermediate default-hierarchy sets (nativeMain, appleMain, iosMain, webMain, ...) and compile tasks exist only once the Kotlin Gradle plugin 2.5.0-RC evaluates the build; the Android modules need the Android SDK platform 37 (minor 2) with its licence accepted; the iOS app needs macOS with Xcode 26.2, and its build phase runs ./gradlew :app:shared:embedAndSignAppleFrameworkForXcode"
+ },
+ "unknown": [
+  {
+   "facet": "dependencies",
+   "known": [
+    ":core",
+    ":app:webApp",
+    "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2"
+   ]
+  }
+ ],
+ "connections": [
+  {
+   "kind": "http-route",
+   "key": "GET /time",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/TimeRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/ApplicationApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /time/{timestamp}",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/TimeRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /config",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/ConfigRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/ApplicationApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /sessionizeSync",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/AdminRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/conference",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared",
+    ":app:adminApp"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/ScheduleRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt",
+    "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/AdminApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/conference-info",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/ConferenceInfoRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/golden-kodee",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/GoldenKodeeRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /{year}/sign",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/UserRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/sign",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/UserRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/vote",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/VotingRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /{year}/vote",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/VotingRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/vote/all",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:adminApp"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/VotingRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/AdminApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /{year}/feedback",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/VotingRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/feedback/summary",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:adminApp"
+   ],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/VotingRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt",
+    "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/AdminApi.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/documents/{name}",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/DocumentsRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/partner-logos/{filename}",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/ConferenceInfoRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/maps/{filename}",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/ConferenceInfoRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /{year}/sessionize/image/{imageId}",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/ImageProxyRoutes.kt",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /healthz",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [],
+   "evidence": [
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/RoutesModule.kt"
+   ]
+  },
+  {
+   "kind": "static-assets",
+   "key": "/admin",
+   "provided_by": [
+    ":app:adminApp"
+   ],
+   "used_by": [
+    ":backend"
+   ],
+   "evidence": [
+    "app/adminApp/build.gradle.kts",
+    "backend/build.gradle.kts",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/routes/AdminPanelRoutes.kt"
+   ]
+  },
+  {
+   "kind": "shared-package",
+   "key": ":core",
+   "provided_by": [
+    ":core"
+   ],
+   "used_by": [
+    ":backend",
+    ":app:shared",
+    ":app:adminApp"
+   ],
+   "evidence": [
+    "core/src/commonMain/kotlin/org/jetbrains/kotlinconf/SharedModel.kt",
+    "backend/build.gradle.kts",
+    "app/shared/build.gradle.kts",
+    "app/adminApp/build.gradle.kts"
+   ]
+  },
+  {
+   "kind": "native-framework",
+   "key": "shared",
+   "provided_by": [
+    ":app:shared"
+   ],
+   "used_by": [
+    "iosApp"
+   ],
+   "evidence": [
+    "app/shared/build.gradle.kts",
+    "app/iosApp/KotlinConf.xcodeproj/project.pbxproj",
+    "app/iosApp/iosApp/ContentView.swift"
+   ]
+  },
+  {
+   "kind": "shared-package",
+   "key": "firebase-ios-sdk",
+   "provided_by": [],
+   "used_by": [
+    "iosApp",
+    "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2"
+   ],
+   "evidence": [
+    "app/iosApp/KotlinConf.xcodeproj/project.pbxproj",
+    "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Package.swift"
+   ]
+  },
+  {
+   "kind": "database",
+   "key": "jdbc:postgresql://$DB0_HOST/$DB0_NAME",
+   "provided_by": [],
+   "used_by": [
+    ":backend"
+   ],
+   "evidence": [
+    "backend/src/main/resources/application.yaml",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/repositories/KotlinConfRepository.kt"
+   ]
+  },
+  {
+   "kind": "http-api",
+   "key": "https://sessionize.com/api/v2/2r0suvtg/view/All",
+   "provided_by": [],
+   "used_by": [
+    ":backend"
+   ],
+   "evidence": [
+    "backend/src/main/resources/application.yaml",
+    "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/services/SessionizeService.kt"
+   ]
+  },
+  {
+   "kind": "base-url",
+   "key": "https://kotlinconf-app-prod.labs.jb.gg",
+   "provided_by": [
+    ":backend"
+   ],
+   "used_by": [
+    ":app:shared"
+   ],
+   "evidence": [
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/URLs.kt",
+    "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/di/AppBindings.kt"
+   ]
+  }
+ ],
+ "traps": [
+  "include(\":app:shared\") and its siblings create the intermediate project :app at app/ without any build file: it is a unit with a null manifest and a workspace member",
+  "the root build.gradle.kts applies every plugin with apply false and pins Node.js 22.22.0 for the Kotlin/JS and Kotlin/Wasm plugins; it also applies gradle/releases.gradle.kts, a script that runs git",
+  "every version lives in gradle/libs.versions.toml: the build files only name catalog accessors (libs.ktor.server.netty, libs.plugins.kotlinMultiplatform), and Kotlin is 2.5.0-RC, Compose Multiplatform 1.13.0-beta02, AGP 9.3.3",
+  "compileSdk is release(37) with minorApiLevel 2, both read from the catalog; minSdk 28 and targetSdk 37 are not machine toolchains",
+  ":app:androidApp applies com.android.application without org.jetbrains.kotlin.android: AGP 9 compiles Kotlin itself",
+  ":core, :app:shared and :app:ui-components use com.android.kotlin.multiplatform.library, the KMP Android library plugin, inside kotlin { android { } }",
+  "jvmToolchain(21) is in four build files, while jvmTarget is JVM_11 for Android: 21 is the JDK on the machine, 11 is only the bytecode target",
+  ":app:shared adds two hand-made source sets, nonAndroidMain (for iosMain, jvmMain, webMain) and nonWebMain (for androidMain, iosMain, jvmMain); :app:ui-components adds nonAndroidMain",
+  ":backend depends on :app:adminApp through a custom configuration adminPanel that pulls the jsBrowserDistribution output into the backend resources under admin/: a Kotlin/JS front end is packed inside the Ktor jar",
+  "the backend main class is io.ktor.server.netty.EngineMain, a library class: the real entry points are the four modules listed in backend/src/main/resources/application.yaml",
+  "the iOS app is an Xcode project, not a Gradle project: its Compile Kotlin build phase calls ./gradlew :app:shared:embedAndSignAppleFrameworkForXcode and Swift imports the framework as shared",
+  "app/iosApp/KotlinMultiplatformLinkedPackage holds empty .m, .h and module.modulemap stubs and a subpackage named after the Maven coordinate io.github.mirzemehdi:kmpnotifier-push-firebase:2.0.2, which asks for firebase-ios-sdk from 12.14.0: the folder is written by a tool, not by hand; its empty Objective-C stubs carry no language",
+  "the two Package.resolved files (KotlinConf.xcodeproj/project.xcworkspace and KotlinConf.xcworkspace) disagree: grpc-binary 1.69.1 against 1.69.0 and gtm-session-fetcher 4.5.0 against 4.4.0; firebase-ios-sdk is 12.19.3 in both",
+  "kotlin-js-store/yarn.lock and kotlin-js-store/wasm/yarn.lock are lockfiles the Kotlin Gradle plugin keeps for the npm packages of the JS and Wasm targets (npm(\"@js-joda/timezone\", \"3.2.1\") in :app:shared); there is no package.json in the repository",
+  "Procfile and app.json describe a Heroku deploy of the backend jar with -Dorg.gradle.project.INCLUDE_ANDROID=false, a property no build file reads",
+  "the devcontainer image is mcr.microsoft.com/devcontainers/java:1-21 and its feature installs Maven 3.8.6, although nothing in the project uses Maven",
+  "backend/src/main/resources/years/ and backend/src/test/resources/years/ hold Markdown documents and JSON the API serves as content: they are data, not documentation of the project",
+  "the backend reaches PostgreSQL when DB0_HOST is set and otherwise opens an H2 file database in PostgreSQL mode",
+  "app/webApp/src/webMain/resources/service-worker.js is entirely commented out",
+  "source_sets are given only for the JVM and Android modules, where the plugin conventions fix them; the KMP modules list their existing kotlin folders as source roots and the targets as build_tags",
+  "languages lists programming and markup languages only; XML, JSON, YAML, TOML, SVG and Markdown files are present and not listed",
+  "connections is a sample of 26 points: the backend routes with the shared and admin clients that call them, the admin bundle served by the backend, :core shared by three units, the iOS framework, Firebase, the database, Sessionize and the production base URL"
+ ]
+}

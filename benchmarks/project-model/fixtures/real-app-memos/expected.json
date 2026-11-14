@@ -1,0 +1,1624 @@
+{
+ "languages": [
+  {
+   "path": "cmd/memos/main.go",
+   "language": "Go"
+  },
+  {
+   "path": "web/src/connect.ts",
+   "language": "TypeScript"
+  },
+  {
+   "path": "web/src/main.tsx",
+   "language": "TSX"
+  },
+  {
+   "path": "web/src/index.css",
+   "language": "CSS"
+  },
+  {
+   "path": "web/index.html",
+   "language": "HTML"
+  },
+  {
+   "path": "web/scripts/generate-tag-unicode-data.mjs",
+   "language": "JavaScript"
+  },
+  {
+   "path": "proto/api/memo_service.proto",
+   "language": "Protocol Buffer"
+  },
+  {
+   "path": "scripts/build.sh",
+   "language": "Shell"
+  },
+  {
+   "path": "scripts/Dockerfile",
+   "language": "Dockerfile"
+  },
+  {
+   "path": "store/migration/sqlite/LATEST.sql",
+   "language": "SQL"
+  },
+  {
+   "path": "store/migration/postgres/LATEST.sql",
+   "language": "SQL"
+  },
+  {
+   "path": "store/migration/mysql/LATEST.sql",
+   "language": "SQL"
+  },
+  {
+   "path": "web/vite.config.mts",
+   "language": "TypeScript"
+  },
+  {
+   "path": "server/frontend/dist/index.html",
+   "language": "HTML"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "proto/gen/",
+   "why": "generated"
+  },
+  {
+   "path": "web/src/types/proto/",
+   "why": "generated"
+  },
+  {
+   "path": "server/frontend/dist/",
+   "why": "generated"
+  },
+  {
+   "path": "docs/",
+   "why": "documentation"
+  },
+  {
+   "path": "web/docs/",
+   "why": "documentation"
+  },
+  {
+   "path": ".agents/",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE",
+   "why": "documentation"
+  },
+  {
+   "path": "AGENTS.md",
+   "why": "documentation"
+  },
+  {
+   "path": "CONTEXT.md",
+   "why": "documentation"
+  },
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "SECURITY.md",
+   "why": "documentation"
+  },
+  {
+   "path": "core/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "core/configuration/testdata/compat/unreleased/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "filter/MAINTENANCE.md",
+   "why": "documentation"
+  },
+  {
+   "path": "filter/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "internal/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "internal/email/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "proto/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "proto/api/CHANGELOG.md",
+   "why": "documentation"
+  },
+  {
+   "path": "proto/api/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "provider/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "server/fileserver/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "server/mcp/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "server/mcp/evals/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "server/testdata/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "store/migration/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "store/test/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "web/src/components/ConfirmDialog/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "web/src/components/MemoEditor/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "web/src/themes/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "core/memoexport/testdata/1.0/golden.zip",
+   "why": "binary"
+  },
+  {
+   "path": "core/memoexport/testdata/1.0/legacy.zip",
+   "why": "binary"
+  },
+  {
+   "path": "server/fileserver/testdata/v1.canvas.png",
+   "why": "binary"
+  },
+  {
+   "path": "web/public/android-chrome-192x192.png",
+   "why": "binary"
+  },
+  {
+   "path": "web/public/android-chrome-512x512.png",
+   "why": "binary"
+  },
+  {
+   "path": "web/public/apple-touch-icon.png",
+   "why": "binary"
+  },
+  {
+   "path": "web/public/logo.webp",
+   "why": "binary"
+  },
+  {
+   "path": "web/tests/fixtures/canvas/v1.canvas.png",
+   "why": "binary"
+  }
+ ],
+ "units": [
+  {
+   "name": "github.com/usememos/memos",
+   "kind": "go-module",
+   "root": ".",
+   "manifest": "go.mod",
+   "source_roots": [
+    "."
+   ],
+   "depends_on": [],
+   "config": {
+    "entry_files": [
+     "cmd/memos/main.go"
+    ],
+    "packages": [
+     "github.com/usememos/memos/cmd/memos",
+     "github.com/usememos/memos/core/access",
+     "github.com/usememos/memos/core/configuration",
+     "github.com/usememos/memos/core/identityprovider",
+     "github.com/usememos/memos/core/instancesetting",
+     "github.com/usememos/memos/core/memoexport",
+     "github.com/usememos/memos/core/memopayload",
+     "github.com/usememos/memos/core/notification",
+     "github.com/usememos/memos/core/usagelimit",
+     "github.com/usememos/memos/core/user",
+     "github.com/usememos/memos/filter",
+     "github.com/usememos/memos/internal/clientip",
+     "github.com/usememos/memos/internal/email",
+     "github.com/usememos/memos/internal/httphandler",
+     "github.com/usememos/memos/internal/identifier",
+     "github.com/usememos/memos/internal/imagelimit",
+     "github.com/usememos/memos/internal/linkmeta",
+     "github.com/usememos/memos/internal/motionphoto",
+     "github.com/usememos/memos/internal/profile",
+     "github.com/usememos/memos/internal/random",
+     "github.com/usememos/memos/internal/ratelimit",
+     "github.com/usememos/memos/internal/testutil",
+     "github.com/usememos/memos/internal/testutil/fakes3",
+     "github.com/usememos/memos/internal/version",
+     "github.com/usememos/memos/internal/webhook",
+     "github.com/usememos/memos/markdown",
+     "github.com/usememos/memos/markdown/ast",
+     "github.com/usememos/memos/markdown/extensions",
+     "github.com/usememos/memos/markdown/parser",
+     "github.com/usememos/memos/markdown/parser/tagdata",
+     "github.com/usememos/memos/markdown/renderer",
+     "github.com/usememos/memos/proto",
+     "github.com/usememos/memos/proto/gen/api",
+     "github.com/usememos/memos/proto/gen/api/apiconnect",
+     "github.com/usememos/memos/proto/gen/store",
+     "github.com/usememos/memos/provider/ai",
+     "github.com/usememos/memos/provider/ai/audio",
+     "github.com/usememos/memos/provider/ai/audiollm",
+     "github.com/usememos/memos/provider/ai/audiollm/gemini",
+     "github.com/usememos/memos/provider/ai/stt",
+     "github.com/usememos/memos/provider/ai/stt/openai",
+     "github.com/usememos/memos/provider/idp",
+     "github.com/usememos/memos/provider/idp/oauth2",
+     "github.com/usememos/memos/provider/storage",
+     "github.com/usememos/memos/provider/storage/s3",
+     "github.com/usememos/memos/server",
+     "github.com/usememos/memos/server/api",
+     "github.com/usememos/memos/server/api/test",
+     "github.com/usememos/memos/server/auth",
+     "github.com/usememos/memos/server/fileserver",
+     "github.com/usememos/memos/server/frontend",
+     "github.com/usememos/memos/server/mcp",
+     "github.com/usememos/memos/store",
+     "github.com/usememos/memos/store/cache",
+     "github.com/usememos/memos/store/db",
+     "github.com/usememos/memos/store/db/mysql",
+     "github.com/usememos/memos/store/db/postgres",
+     "github.com/usememos/memos/store/db/sqlite",
+     "github.com/usememos/memos/store/test"
+    ],
+    "build_tags": [
+     "netgo",
+     "osusergo"
+    ],
+    "embed": [
+     "server/frontend/dist",
+     "proto/gen/openapi.yaml"
+    ]
+   }
+  },
+  {
+   "name": "memos",
+   "kind": "npm-package",
+   "root": "web",
+   "manifest": "web/package.json",
+   "source_roots": [
+    "web/src",
+    "web/tests"
+   ],
+   "depends_on": [],
+   "config": {
+    "tsconfig": [
+     "web/tsconfig.json"
+    ],
+    "paths": {
+     "@/*": [
+      "web/src/*"
+     ],
+     "@/": [
+      "web/src/"
+     ]
+    },
+    "entry_files": [
+     "web/index.html",
+     "web/src/main.tsx"
+    ],
+    "out_dir": "server/frontend/dist"
+   }
+  },
+  {
+   "name": null,
+   "kind": "buf-module",
+   "root": "proto",
+   "manifest": "proto/buf.yaml",
+   "source_roots": [
+    "proto"
+   ],
+   "depends_on": [],
+   "config": {
+    "buf_gen": "proto/buf.gen.yaml",
+    "out_dirs": [
+     "proto/gen",
+     "web/src/types/proto"
+    ]
+   }
+  }
+ ],
+ "workspace": null,
+ "toolchains": [
+  {
+   "tool": "go",
+   "version": "1.27.2",
+   "declared_in": "go.mod"
+  },
+  {
+   "tool": "go",
+   "version": "1.27.2-alpine",
+   "declared_in": "scripts/Dockerfile"
+  },
+  {
+   "tool": "pnpm",
+   "version": "11.0.1",
+   "declared_in": "web/package.json#packageManager"
+  },
+  {
+   "tool": "node",
+   "version": ">=24",
+   "declared_in": "web/package.json#engines"
+  },
+  {
+   "tool": "node",
+   "version": "24",
+   "declared_in": ".github/actions/setup-web/action.yml"
+  },
+  {
+   "tool": "golangci-lint",
+   "version": "v2.14.0",
+   "declared_in": ".github/workflows/backend-tests.yml"
+  }
+ ],
+ "dependencies": [
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "connectrpc.com/connect",
+   "declared": "v1.20.0",
+   "resolved": "v1.20.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/at-wat/ebml-go",
+   "declared": "v0.19.0",
+   "resolved": "v0.19.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/aws/aws-sdk-go-v2",
+   "declared": "v1.43.6",
+   "resolved": "v1.43.6",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/aws/aws-sdk-go-v2/config",
+   "declared": "v1.32.37",
+   "resolved": "v1.32.37",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/aws/aws-sdk-go-v2/credentials",
+   "declared": "v1.19.36",
+   "resolved": "v1.19.36",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/aws/aws-sdk-go-v2/service/s3",
+   "declared": "v1.107.2",
+   "resolved": "v1.107.2",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/aws/smithy-go",
+   "declared": "v1.27.8",
+   "resolved": "v1.27.8",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/disintegration/imaging",
+   "declared": "v1.6.2",
+   "resolved": "v1.6.2",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/go-sql-driver/mysql",
+   "declared": "v1.10.0",
+   "resolved": "v1.10.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/golang-jwt/jwt/v5",
+   "declared": "v5.3.1",
+   "resolved": "v5.3.1",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/google/cel-go",
+   "declared": "v0.31.0",
+   "resolved": "v0.31.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/google/jsonschema-go",
+   "declared": "v0.4.3",
+   "resolved": "v0.4.3",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/grpc-ecosystem/grpc-gateway/v2",
+   "declared": "v2.30.0",
+   "resolved": "v2.30.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/johannesboyne/gofakes3",
+   "declared": "v1.2.0",
+   "resolved": "v1.2.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/joho/godotenv",
+   "declared": "v1.5.1",
+   "resolved": "v1.5.1",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/lib/pq",
+   "declared": "v1.12.3",
+   "resolved": "v1.12.3",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/lithammer/shortuuid/v4",
+   "declared": "v4.2.0",
+   "resolved": "v4.2.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/moby/moby/api",
+   "declared": "v1.55.0",
+   "resolved": "v1.55.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/modelcontextprotocol/go-sdk",
+   "declared": "v1.7.0",
+   "resolved": "v1.7.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/openai/openai-go/v3",
+   "declared": "v3.51.0",
+   "resolved": "v3.51.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/pion/opus",
+   "declared": "v0.1.0",
+   "resolved": "v0.1.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/pkg/errors",
+   "declared": "v0.9.1",
+   "resolved": "v0.9.1",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/spf13/cobra",
+   "declared": "v1.10.2",
+   "resolved": "v1.10.2",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/spf13/viper",
+   "declared": "v1.21.0",
+   "resolved": "v1.21.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/stretchr/testify",
+   "declared": "v1.11.1",
+   "resolved": "v1.11.1",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/testcontainers/testcontainers-go",
+   "declared": "v0.44.0",
+   "resolved": "v0.44.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/testcontainers/testcontainers-go/modules/mysql",
+   "declared": "v0.44.0",
+   "resolved": "v0.44.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/testcontainers/testcontainers-go/modules/postgres",
+   "declared": "v0.44.0",
+   "resolved": "v0.44.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "github.com/yuin/goldmark",
+   "declared": "v1.8.5",
+   "resolved": "v1.8.5",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "golang.org/x/crypto",
+   "declared": "v0.58.0",
+   "resolved": "v0.58.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "golang.org/x/mod",
+   "declared": "v0.41.0",
+   "resolved": "v0.41.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "golang.org/x/net",
+   "declared": "v0.61.0",
+   "resolved": "v0.61.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "golang.org/x/oauth2",
+   "declared": "v0.36.0",
+   "resolved": "v0.36.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "golang.org/x/sync",
+   "declared": "v0.24.0",
+   "resolved": "v0.24.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "golang.org/x/text",
+   "declared": "v0.43.0",
+   "resolved": "v0.43.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "google.golang.org/genai",
+   "declared": "v1.68.0",
+   "resolved": "v1.68.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "google.golang.org/genproto",
+   "declared": "v0.0.0-20260810153831-ec0a7760b754",
+   "resolved": "v0.0.0-20260810153831-ec0a7760b754",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "google.golang.org/genproto/googleapis/api",
+   "declared": "v0.0.0-20260810153831-ec0a7760b754",
+   "resolved": "v0.0.0-20260810153831-ec0a7760b754",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "google.golang.org/genproto/googleapis/rpc",
+   "declared": "v0.0.0-20260810153831-ec0a7760b754",
+   "resolved": "v0.0.0-20260810153831-ec0a7760b754",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "google.golang.org/grpc",
+   "declared": "v1.84.0",
+   "resolved": "v1.84.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "google.golang.org/protobuf",
+   "declared": "v1.36.12",
+   "resolved": "v1.36.12",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "gopkg.in/yaml.v3",
+   "declared": "v3.0.1",
+   "resolved": "v3.0.1",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "github.com/usememos/memos",
+   "name": "modernc.org/sqlite",
+   "declared": "v1.56.0",
+   "resolved": "v1.56.0",
+   "scope": "runtime",
+   "declared_in": "go.mod"
+  },
+  {
+   "unit": "memos",
+   "name": "@base-ui/react",
+   "declared": "1.9.0",
+   "resolved": "1.9.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@connectrpc/connect",
+   "declared": "^2.1.1",
+   "resolved": "2.1.1",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@connectrpc/connect-web",
+   "declared": "^2.1.1",
+   "resolved": "2.1.1",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@github/relative-time-element",
+   "declared": "^5.0.0",
+   "resolved": "5.0.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@maplibre/maplibre-gl-leaflet",
+   "declared": "^0.1.4",
+   "resolved": "0.1.4",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@pierre/highlights",
+   "declared": "0.3.0",
+   "resolved": "0.3.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@tailwindcss/vite",
+   "declared": "^4.2.4",
+   "resolved": "4.2.4",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@tanstack/react-query",
+   "declared": "^5.100.9",
+   "resolved": "5.100.9",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@tanstack/react-query-devtools",
+   "declared": "^5.100.9",
+   "resolved": "5.100.9",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@usememos/canvas",
+   "declared": "26.11.2",
+   "resolved": "26.11.2",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@usememos/editor",
+   "declared": "26.11.3",
+   "resolved": "26.11.3",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@usememos/ui",
+   "declared": "26.11.20",
+   "resolved": "26.11.20",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "class-variance-authority",
+   "declared": "^0.7.1",
+   "resolved": "0.7.1",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "clsx",
+   "declared": "^2.1.1",
+   "resolved": "2.1.1",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "copy-to-clipboard",
+   "declared": "^4.0.2",
+   "resolved": "4.0.2",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "dayjs",
+   "declared": "^1.11.20",
+   "resolved": "1.11.20",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "dompurify",
+   "declared": "^3.4.17",
+   "resolved": "3.4.17",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "exifr",
+   "declared": "^7.1.3",
+   "resolved": "7.1.3",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "html-to-image",
+   "declared": "^1.11.13",
+   "resolved": "1.11.13",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "i18next",
+   "declared": "^26.3.6",
+   "resolved": "26.3.6",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "katex",
+   "declared": "^0.16.45",
+   "resolved": "0.16.45",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "leaflet",
+   "declared": "^1.9.4",
+   "resolved": "1.9.4",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "leaflet.markercluster",
+   "declared": "^1.5.3",
+   "resolved": "1.5.3",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "lodash-es",
+   "declared": "^4.18.1",
+   "resolved": "4.18.1",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "lucide-react",
+   "declared": "^1.34.0",
+   "resolved": "1.34.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "maplibre-gl",
+   "declared": "^6.8.0",
+   "resolved": "6.8.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "pele",
+   "declared": "1.13.0",
+   "resolved": "1.13.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "react",
+   "declared": "^19.2.6",
+   "resolved": "19.2.6",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "react-dom",
+   "declared": "^19.2.6",
+   "resolved": "19.2.6",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "react-i18next",
+   "declared": "^17.0.11",
+   "resolved": "17.0.11",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "react-leaflet",
+   "declared": "^5.0.0",
+   "resolved": "5.0.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "react-leaflet-cluster",
+   "declared": "^4.1.3",
+   "resolved": "4.1.3",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "react-router-dom",
+   "declared": "^7.15.0",
+   "resolved": "7.15.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "tailwind-merge",
+   "declared": "^3.5.0",
+   "resolved": "3.5.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "tailwindcss",
+   "declared": "^4.2.4",
+   "resolved": "4.2.4",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "uuid",
+   "declared": "^11.1.0",
+   "resolved": "11.1.0",
+   "scope": "runtime",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@babel/core",
+   "declared": "7.29.0",
+   "resolved": "7.29.0",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@biomejs/biome",
+   "declared": "^2.4.14",
+   "resolved": "2.4.14",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@bufbuild/protobuf",
+   "declared": "^2.12.0",
+   "resolved": "2.12.0",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@rolldown/plugin-babel",
+   "declared": "0.2.3",
+   "resolved": "0.2.3",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@testing-library/jest-dom",
+   "declared": "^6.9.1",
+   "resolved": "6.9.1",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@testing-library/react",
+   "declared": "^16.3.2",
+   "resolved": "16.3.2",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@types/babel__core",
+   "declared": "7.20.5",
+   "resolved": "7.20.5",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@types/leaflet",
+   "declared": "^1.9.21",
+   "resolved": "1.9.21",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@types/lodash-es",
+   "declared": "^4.17.12",
+   "resolved": "4.17.12",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@types/node",
+   "declared": "^24.12.2",
+   "resolved": "24.12.2",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@types/react",
+   "declared": "^19.2.14",
+   "resolved": "19.2.14",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@types/react-dom",
+   "declared": "^19.2.3",
+   "resolved": "19.2.3",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "@vitejs/plugin-react",
+   "declared": "^6.0.1",
+   "resolved": "6.0.1",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "babel-plugin-react-compiler",
+   "declared": "1.0.0",
+   "resolved": "1.0.0",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "jsdom",
+   "declared": "^29.1.1",
+   "resolved": "29.1.1",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "typescript",
+   "declared": "^7.0.2",
+   "resolved": "7.0.2",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "vite",
+   "declared": "^8.0.11",
+   "resolved": "8.0.11",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  },
+  {
+   "unit": "memos",
+   "name": "vitest",
+   "declared": "^4.1.5",
+   "resolved": "4.1.5",
+   "scope": "dev",
+   "declared_in": "web/package.json"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "Connect",
+   "unit": "github.com/usememos/memos",
+   "evidence": "server/api/connect_handler.go"
+  },
+  {
+   "name": "gRPC",
+   "unit": "github.com/usememos/memos",
+   "evidence": "go.mod"
+  },
+  {
+   "name": "gRPC-Gateway",
+   "unit": "github.com/usememos/memos",
+   "evidence": "server/api/api.go"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "github.com/usememos/memos",
+   "evidence": "proto/buf.gen.yaml"
+  },
+  {
+   "name": "Cobra",
+   "unit": "github.com/usememos/memos",
+   "evidence": "cmd/memos/main.go"
+  },
+  {
+   "name": "testify",
+   "unit": "github.com/usememos/memos",
+   "evidence": "go.mod"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": "github.com/usememos/memos",
+   "evidence": "go.mod"
+  },
+  {
+   "name": "React",
+   "unit": "memos",
+   "evidence": "web/src/main.tsx"
+  },
+  {
+   "name": "Vite",
+   "unit": "memos",
+   "evidence": "web/vite.config.mts"
+  },
+  {
+   "name": "Vitest",
+   "unit": "memos",
+   "evidence": "web/vitest.config.mts"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "memos",
+   "evidence": "web/vite.config.mts"
+  },
+  {
+   "name": "React Router",
+   "unit": "memos",
+   "evidence": "web/package.json"
+  },
+  {
+   "name": "Connect",
+   "unit": "memos",
+   "evidence": "web/src/connect.ts"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "store/db/sqlite/sqlite.go"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "store/db/postgres/postgres.go"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "store/db/mysql/mysql.go"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "provider/storage/s3/s3.go"
+  },
+  {
+   "name": "OpenAI",
+   "kind": "ai",
+   "evidence": "provider/ai/stt/openai/openai.go"
+  },
+  {
+   "name": "Google Gemini",
+   "kind": "ai",
+   "evidence": "provider/ai/audiollm/gemini/gemini.go"
+  },
+  {
+   "name": "OAuth2",
+   "kind": "authentication",
+   "evidence": "provider/idp/oauth2/oauth2.go"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "internal/email/client.go"
+  }
+ ],
+ "needs": {
+  "container": false,
+  "reason": ""
+ },
+ "unknown": [
+  {
+   "facet": "dependencies",
+   "known": [
+    "github.com/usememos/memos",
+    "memos"
+   ]
+  }
+ ],
+ "connections": [
+  {
+   "kind": "rpc",
+   "key": "memos.api.MemoService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/memo_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/memo_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.AttachmentService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/attachment_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/attachment_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.AuthService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/auth_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/auth_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.UserService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/user_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/user_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.InstanceService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/instance_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/instance_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.SpaceService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/space_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/space_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.AIService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/ai_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/ai_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "rpc",
+   "key": "memos.api.IdentityProviderService",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "proto/api/idp_service.proto",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts",
+    "web/src/types/proto/api/idp_service_pb.ts"
+   ]
+  },
+  {
+   "kind": "generates",
+   "key": "proto/api/*.proto",
+   "provided_by": [
+    "proto"
+   ],
+   "used_by": [
+    "github.com/usememos/memos",
+    "memos"
+   ],
+   "evidence": [
+    "proto/buf.gen.yaml",
+    "server/api/connect_handler.go",
+    "web/src/connect.ts"
+   ]
+  },
+  {
+   "kind": "generates",
+   "key": "proto/gen/openapi.yaml",
+   "provided_by": [
+    "proto"
+   ],
+   "used_by": [
+    "github.com/usememos/memos"
+   ],
+   "evidence": [
+    "proto/buf.gen.yaml",
+    "proto/openapi_embed.go",
+    "server/mcp/openapi.go"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /api/sse",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "server/api/sse_handler.go",
+    "web/src/hooks/useLiveMemoRefresh.ts",
+    "web/vite.config.mts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /file/attachments/{uid}",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "server/fileserver/fileserver.go",
+    "web/src/utils/managed-attachment.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /file/attachments/{uid}/{filename}",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "server/fileserver/fileserver.go",
+    "web/src/utils/managed-attachment.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /file/users/{identifier}/export",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "server/fileserver/memo_export.go",
+    "web/src/lib/memo-export.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /file/users/{identifier}/avatar",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [],
+   "evidence": [
+    "server/fileserver/fileserver.go"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/api/* (gRPC-Gateway REST)",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [],
+   "evidence": [
+    "server/api/api.go",
+    "proto/gen/openapi.yaml"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /healthz",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [],
+   "evidence": [
+    "server/server.go",
+    "scripts/release_smoke_test.sh"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/mcp",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [],
+   "evidence": [
+    "server/mcp/service.go"
+   ]
+  },
+  {
+   "kind": "static-assets",
+   "key": "server/frontend/dist",
+   "provided_by": [
+    "memos"
+   ],
+   "used_by": [
+    "github.com/usememos/memos"
+   ],
+   "evidence": [
+    "web/package.json",
+    "server/frontend/frontend.go",
+    "scripts/Dockerfile"
+   ]
+  },
+  {
+   "kind": "dev-proxy",
+   "key": "http://localhost:8081",
+   "provided_by": [
+    "github.com/usememos/memos"
+   ],
+   "used_by": [
+    "memos"
+   ],
+   "evidence": [
+    "web/vite.config.mts",
+    "cmd/memos/main.go"
+   ]
+  },
+  {
+   "kind": "database",
+   "key": "sqlite",
+   "provided_by": [],
+   "used_by": [
+    "github.com/usememos/memos"
+   ],
+   "evidence": [
+    "store/db/sqlite/sqlite.go"
+   ]
+  },
+  {
+   "kind": "database",
+   "key": "postgres",
+   "provided_by": [],
+   "used_by": [
+    "github.com/usememos/memos"
+   ],
+   "evidence": [
+    "store/db/postgres/postgres.go"
+   ]
+  },
+  {
+   "kind": "database",
+   "key": "mysql",
+   "provided_by": [],
+   "used_by": [
+    "github.com/usememos/memos"
+   ],
+   "evidence": [
+    "store/db/mysql/mysql.go"
+   ]
+  }
+ ],
+ "traps": [
+  "one Go module at the root and one npm package in web/: nothing joins them in a manifest; they meet through proto/ (buf generates Go into proto/gen and TypeScript into web/src/types/proto) and through server/frontend/dist, which pnpm release fills and go:embed bakes into the binary",
+  "proto/buf.yaml is a v2 buf module with no name and no modules list: the module is the proto/ directory, its only dependency buf.build/googleapis/googleapis is pinned by commit in buf.lock",
+  "buf.gen.yaml uses remote plugins (buf.build/protocolbuffers/go, connectrpc/go:v1.20.0, bufbuild/es:v2.12.1, ...): regenerating needs the Buf Schema Registry; the outputs are checked in",
+  "web/pnpm-workspace.yaml holds only settings (allowBuilds, patchedDependencies) and no packages: web/ is a single pnpm project, not a workspace with members",
+  "@bufbuild/protobuf 2.12.0 is patched through web/patches/@bufbuild__protobuf@2.12.0.patch: the lockfile version carries a patch_hash",
+  ".gitignore ignores dist/, yet server/frontend/dist/index.html is committed as a placeholder so go:embed dist/* compiles before the front end is built",
+  "the web unit is named memos, like the Go binary and the Docker image, while the Go module is github.com/usememos/memos",
+  "the Connect path is /memos.api.<Service>/<Method> (package memos.api, no version), the REST gateway is /api/..., and /api/v1/ and /memos.api.v1. are kept only to answer that the API version was removed",
+  "the web dev server proxies /api, /api/sse, /memos.api and /file to http://localhost:8081, the default port in cmd/memos/main.go; the Docker image sets MEMOS_PORT=5230",
+  "store/migration/ ships three SQL dialects (sqlite, postgres, mysql) side by side; none carries a PL/pgSQL, T-SQL or PL/SQL marker, so Linguist calls all of them SQL",
+  "the Docker build passes -tags netgo,osusergo; there is no build-tag split in the project sources themselves",
+  "go.mod declares go 1.27.2 and no toolchain line; CI reads go.mod through go-version-file and pnpm through package_json_file, so the only written CI versions are Node 24 and golangci-lint v2.14.0",
+  "testify, testcontainers-go and gofakes3 are test-only but go.mod has no scopes: they are runtime requirements like the others",
+  "scripts/ holds only _test.go files beside shell scripts: it is a test-only Go package",
+  "the MCP endpoint /mcp and the REST gateway have no client in the repository; the MCP adapter calls the REST routes in-process through the embedded proto/gen/openapi.yaml",
+  "languages lists programming and markup languages only; JSON, YAML and Markdown files are present and not listed",
+  "connections is a sample of 23 points: the eight Connect services, the code and OpenAPI document generated by the buf module (referred to by its root proto, since it has no name), the file and SSE routes, the embedded front end, the dev proxy and the three database drivers"
+ ]
+}

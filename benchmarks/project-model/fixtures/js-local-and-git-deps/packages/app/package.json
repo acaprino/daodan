@@ -1,0 +1,9 @@
+{
+  "name": "@acme/app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "@acme/lib": "file:../lib",
+    "is-number": "git+https://github.com/jonschlinkert/is-number.git#7.0.0"
+  }
+}

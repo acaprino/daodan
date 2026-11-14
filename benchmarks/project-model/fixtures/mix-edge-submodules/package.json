@@ -1,0 +1,11 @@
+{
+  "name": "kiosk",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "main": "src/main.js",
+  "dependencies": {
+    "@acme/ui-kit": "file:vendor/ui-kit",
+    "preact": "^10.24.3"
+  }
+}

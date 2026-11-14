@@ -1,0 +1,115 @@
+{
+  "languages": [
+    {
+      "path": "packages/shared/src/index.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "apps/web/src/index.ts",
+      "language": "TypeScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "acme-pnpm",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "@acme/shared",
+      "kind": "npm-package",
+      "root": "packages/shared",
+      "manifest": "packages/shared/package.json",
+      "source_roots": [
+        "packages/shared/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "packages/shared/src/index.ts"
+        ]
+      }
+    },
+    {
+      "name": "@acme/web",
+      "kind": "npm-package",
+      "root": "apps/web",
+      "manifest": "apps/web/package.json",
+      "source_roots": [
+        "apps/web/src"
+      ],
+      "depends_on": [
+        "@acme/shared"
+      ],
+      "config": {
+        "tsconfig": [
+          "apps/web/tsconfig.json"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "pnpm",
+    "root": ".",
+    "members": [
+      "packages/shared",
+      "apps/web"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "pnpm",
+      "version": "9.12.0",
+      "declared_in": "package.json#packageManager"
+    },
+    {
+      "tool": "node",
+      "version": ">=20",
+      "declared_in": "package.json#engines"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "@acme/shared",
+      "name": "ms",
+      "declared": "^2.1.3",
+      "resolved": "2.1.3",
+      "scope": "runtime",
+      "declared_in": "pnpm-workspace.yaml"
+    },
+    {
+      "unit": "@acme/web",
+      "name": "clsx",
+      "declared": "^2.1.1",
+      "resolved": "2.1.1",
+      "scope": "runtime",
+      "declared_in": "pnpm-workspace.yaml"
+    },
+    {
+      "unit": "@acme/web",
+      "name": "typescript",
+      "declared": "^5.6.2",
+      "resolved": "5.6.3",
+      "scope": "dev",
+      "declared_in": "pnpm-workspace.yaml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the manifests say catalog: with no version: the range lives in pnpm-workspace.yaml (declared_in names that file; the manifest only points at it)",
+    "workspace:* is an internal link (depends_on), not a registry dependency",
+    "the TypeScript range is declared only in the catalog (dependencies names pnpm-workspace.yaml), the manifest says catalog:",
+    "packages globs: packages/* and apps/*, in that order; members are listed in directory order",
+    "lock has no integrity hashes (not fabricated)"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "languages": [
+    {
+      "path": "src/vers_demo/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/vers_demo/mod.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "vers-demo",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "vers_demo"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.9",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.10.14",
+      "declared_in": ".python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.11.9",
+      "declared_in": "runtime.txt"
+    },
+    {
+      "tool": "python",
+      "version": "3.8.18",
+      "declared_in": ".tool-versions"
+    },
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": "pyproject.toml#tool.pyright.pythonVersion"
+    },
+    {
+      "tool": "python",
+      "version": "3.9",
+      "declared_in": "pyproject.toml#tool.mypy.python_version"
+    },
+    {
+      "tool": "python",
+      "version": "py310",
+      "declared_in": "pyproject.toml#tool.ruff.target-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "vers-demo",
+      "name": "setuptools",
+      "declared": ">=64",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "seven declarations disagree: requires-python >=3.9, .python-version 3.10.14, runtime.txt python-3.11.9, .tool-versions 3.8.18, pyright pythonVersion 3.12, mypy python_version 3.9, ruff target-version py310",
+    "runtime.txt spells the version as 'python-3.11.9' (prefix), .tool-versions as 'python 3.8.18' (tool name then version), ruff as 'py310'",
+    ".tool-versions 3.8.18 even falls outside requires-python",
+    "pyright, mypy and ruff entries are the Python version each tool is told to target, not an installed tool; they are python toolchains with a #field fragment in declared_in",
+    "the truth records every declaration; picking one winner is a policy, not a fact in the files"
+  ]
+}

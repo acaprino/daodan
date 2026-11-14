@@ -1,0 +1,54 @@
+{
+  "languages": [
+    {
+      "path": "tools/config.py",
+      "language": "Python"
+    },
+    {
+      "path": "tools/helpers.py",
+      "language": "Python"
+    },
+    {
+      "path": "tools/model.py",
+      "language": "Python"
+    },
+    {
+      "path": "tools/photos.py",
+      "language": "Python"
+    },
+    {
+      "path": "tools/vision.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": "",
+      "manifest": null,
+      "source_roots": [
+        "tools"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "nothing declares any dependency: the expected dependency list is UNKNOWN, not empty",
+    "third-party imports whose import name differs from the package name: yaml -> PyYAML, cv2 -> opencv-python, PIL -> Pillow, sklearn -> scikit-learn; numpy matches its name",
+    "helpers is a local module in tools/ (script directory on sys.path), not a package from PyPI",
+    "os and json are standard library: a tool that lists them as dependencies is wrong",
+    "no file states a project name: the unit name is null (the folder name is not a name)"
+  ]
+}

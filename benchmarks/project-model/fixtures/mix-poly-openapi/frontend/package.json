@@ -1,0 +1,17 @@
+{
+  "name": "orders-frontend",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen:api": "openapi-typescript ../openapi/openapi.yaml -o src/api/schema.d.ts",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.1"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.4.3",
+    "typescript": "~5.6.3"
+  }
+}

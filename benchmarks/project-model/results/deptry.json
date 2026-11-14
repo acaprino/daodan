@@ -1,0 +1,540 @@
+{
+ "tool": "deptry",
+ "version": "0.25.1",
+ "group": "sbom",
+ "command": "deptry . --json-output <out> --no-ansi, in the project folder; --requirements-files <empty> when no declaration file",
+ "fixtures": {
+  "js-node-scripts": {
+   "output": {},
+   "raw": "2 bytes",
+   "seconds": 0.17,
+   "peak_mb": 27.7,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 2
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 5
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 2
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 0
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 1
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [],
+    "undeclared_missed": [
+     "ms"
+    ],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 4,
+    "canary_fired": [],
+    "findings": [],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "js-static-html": {
+   "output": {},
+   "raw": "2 bytes",
+   "seconds": 0.17,
+   "peak_mb": 28.2,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 3
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 4
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 0
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 3
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [],
+    "undeclared_missed": [
+     "vue"
+    ],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 1,
+    "canary_fired": [],
+    "findings": [],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "py-notebooks": {
+   "output": {},
+   "raw": "1272 bytes",
+   "seconds": 0.17,
+   "peak_mb": 28.8,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 2
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 3
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 1
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 2
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 5
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [
+     "seaborn"
+    ],
+    "undeclared_missed": [],
+    "wrongly_undeclared": [
+     "nbproj"
+    ],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 3,
+    "canary_fired": [],
+    "findings": [
+     {
+      "code": "DEP001",
+      "module": "seaborn",
+      "file": "notebooks/analysis.ipynb",
+      "line": 4
+     },
+     {
+      "code": "DEP001",
+      "module": "nbproj",
+      "file": "notebooks/analysis.ipynb",
+      "line": 5
+     },
+     {
+      "code": "DEP002",
+      "module": "matplotlib",
+      "file": "pyproject.toml",
+      "line": null
+     },
+     {
+      "code": "DEP002",
+      "module": "jupyterlab",
+      "file": "pyproject.toml",
+      "line": null
+     }
+    ],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "py-pep723-scripts": {
+   "output": {},
+   "raw": "925 bytes",
+   "seconds": 0.17,
+   "peak_mb": 29.1,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 1
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 3
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 2
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 3
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [],
+    "undeclared_missed": [],
+    "wrongly_undeclared": [
+     "pandas",
+     "requests",
+     "rich"
+    ],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 3,
+    "canary_fired": [],
+    "findings": [
+     {
+      "code": "DEP001",
+      "module": "requests",
+      "file": "scripts/fetch.py",
+      "line": 9
+     },
+     {
+      "code": "DEP001",
+      "module": "rich",
+      "file": "scripts/fetch.py",
+      "line": 10
+     },
+     {
+      "code": "DEP001",
+      "module": "pandas",
+      "file": "scripts/report.py",
+      "line": 9
+     }
+    ],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "py-undeclared-scripts": {
+   "output": {},
+   "raw": "1822 bytes",
+   "seconds": 0.17,
+   "peak_mb": 27.6,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 1
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 5
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 0
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 0
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [
+     "PIL",
+     "cv2",
+     "numpy",
+     "sklearn",
+     "yaml"
+    ],
+    "undeclared_missed": [],
+    "wrongly_undeclared": [
+     "helpers"
+    ],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 5,
+    "canary_fired": [],
+    "findings": [
+     {
+      "code": "DEP001",
+      "module": "yaml",
+      "file": "tools/config.py",
+      "line": 4
+     },
+     {
+      "code": "DEP001",
+      "module": "numpy",
+      "file": "tools/model.py",
+      "line": 4
+     },
+     {
+      "code": "DEP001",
+      "module": "sklearn",
+      "file": "tools/model.py",
+      "line": 5
+     },
+     {
+      "code": "DEP001",
+      "module": "PIL",
+      "file": "tools/photos.py",
+      "line": 2
+     },
+     {
+      "code": "DEP001",
+      "module": "helpers",
+      "file": "tools/photos.py",
+      "line": 4
+     },
+     {
+      "code": "DEP001",
+      "module": "cv2",
+      "file": "tools/vision.py",
+      "line": 2
+     }
+    ],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  }
+ },
+ "defaults": {}
+}

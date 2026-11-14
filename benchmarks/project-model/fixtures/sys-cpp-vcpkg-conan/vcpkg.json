@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "imgtool",
+  "version": "0.4.0",
+  "dependencies": [
+    "fmt",
+    { "name": "zlib", "version>=": "1.3.1" }
+  ],
+  "overrides": [
+    { "name": "fmt", "version": "10.1.1" }
+  ],
+  "builtin-baseline": "01f602195983451bc83e72f4214af2cbc495aa94"
+}

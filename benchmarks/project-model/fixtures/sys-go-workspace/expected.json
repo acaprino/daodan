@@ -1,0 +1,118 @@
+{
+  "languages": [
+    {
+      "path": "svc/main.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "example.com/ws/api",
+      "kind": "go-module",
+      "root": "api",
+      "manifest": "api/go.mod",
+      "source_roots": [
+        "api"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/ws/api"
+        ]
+      }
+    },
+    {
+      "name": "example.com/ws/svc",
+      "kind": "go-module",
+      "root": "svc",
+      "manifest": "svc/go.mod",
+      "source_roots": [
+        "svc"
+      ],
+      "depends_on": [
+        "example.com/ws/api"
+      ],
+      "config": {
+        "packages": [
+          "example.com/ws/svc"
+        ],
+        "entry_files": [
+          "svc/main.go"
+        ]
+      }
+    },
+    {
+      "name": "example.com/ws/tools",
+      "kind": "go-module",
+      "root": "tools",
+      "manifest": "tools/go.mod",
+      "source_roots": [
+        "tools"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/ws/tools"
+        ],
+        "entry_files": [
+          "tools/main.go"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "go",
+    "root": "",
+    "members": [
+      "api",
+      "svc",
+      "tools"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.work"
+    },
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "api/go.mod"
+    },
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "svc/go.mod"
+    },
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "tools/go.mod"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "example.com/ws/svc",
+      "name": "github.com/google/uuid",
+      "declared": "v1.6.0",
+      "resolved": "v1.5.0",
+      "scope": "runtime",
+      "declared_in": "svc/go.mod"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the replace in go.work downgrades uuid for the whole workspace: svc/go.mod asks v1.6.0 and svc/go.sum proves v1.6.0, but the build uses v1.5.0 (hashes in go.work.sum)",
+    "built alone, outside the workspace, svc would use uuid v1.6.0 and fail on example.com/ws/api v0.0.0, which no proxy serves: the version only resolves to the workspace member",
+    "example.com/ws/api is a workspace member, not an external dependency, even though svc/go.mod requires it with a version",
+    "go.work.sum is not a lockfile of a module: it only holds hashes the workspace needs beyond the modules' go.sum files",
+    "there is no go.mod at the root: the root is a workspace, not a module"
+  ]
+}

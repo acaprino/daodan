@@ -1,0 +1,52 @@
+version = 1
+requires-python = ">=3.11"
+
+[manifest]
+members = [
+    "ws-app",
+    "ws-core",
+]
+
+[[package]]
+name = "attrs"
+version = "24.2.0"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "click"
+version = "8.1.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "ws-app"
+version = "0.1.0"
+source = { editable = "packages/app" }
+dependencies = [
+    { name = "click" },
+    { name = "ws-core" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "click", specifier = ">=8.1" },
+    { name = "ws-core", editable = "packages/core" },
+]
+
+[[package]]
+name = "ws-core"
+version = "0.1.0"
+source = { editable = "packages/core" }
+dependencies = [
+    { name = "attrs" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "attrs", specifier = ">=23.1" }]

@@ -1,0 +1,122 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/hello/App.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/hello/AppTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "gradlew",
+      "why": "vendored"
+    },
+    {
+      "path": "gradlew.bat",
+      "why": "vendored"
+    },
+    {
+      "path": "gradle/wrapper/",
+      "why": "vendored"
+    }
+  ],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ],
+        "entry_files": [
+          "src/main/java/com/example/hello/App.java"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "gradle",
+      "version": "8.11.1",
+      "declared_in": "gradle/wrapper/gradle-wrapper.properties"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "build.gradle#java.sourceCompatibility"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "build.gradle#java.targetCompatibility"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "com.google.guava:guava",
+      "declared": "33.3.1-jre",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "build.gradle"
+    },
+    {
+      "unit": ":",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": null,
+      "resolved": "5.11.3",
+      "scope": "test",
+      "declared_in": "build.gradle"
+    },
+    {
+      "unit": ":",
+      "name": "org.junit.platform:junit-platform-launcher",
+      "declared": null,
+      "resolved": "1.11.3",
+      "scope": "test",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit Jupiter",
+      "unit": ":",
+      "evidence": "build.gradle"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "junit-jupiter and junit-platform-launcher carry no version: junit-bom 5.11.3, imported with platform(), fixes them to 5.11.3 and 1.11.3 (checked on Maven Central). Only a Gradle resolution, or a reader that fetches the BOM, knows them."
+  },
+  "traps": [
+    "The wrapper declares Gradle 8.11.1 but gradle/wrapper/gradle-wrapper.jar is not in the fixture: ./gradlew cannot start until someone runs gradle wrapper or supplies the jar.",
+    "gradlew, gradlew.bat and gradle/wrapper/ are vendored for Linguist: they are not project Shell or Batchfile code.",
+    "Java 17 is sourceCompatibility/targetCompatibility, not a toolchain: Gradle compiles with whatever JDK runs it, with -source 17 -target 17 (no --release).",
+    "platform('org.junit:junit-bom:5.11.3') is a version source, not a dependency of the project; it is not listed.",
+    "The launcher's version 1.11.3 is not 5.11.3: the JUnit Platform has its own numbering inside the same BOM.",
+    "The unit name is the Gradle path ':'; rootProject.name 'hello-groovy' is the project's display name and artifact base name.",
+    "The application plugin's mainClass makes App.java the entry file.",
+    "resolved for junit-jupiter (5.11.3) and junit-platform-launcher (1.11.3) is read from junit-bom 5.11.3 as published on Maven Central."
+  ]
+}

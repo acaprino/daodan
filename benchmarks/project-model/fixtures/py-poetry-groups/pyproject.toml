@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "poetry-demo"
+version = "1.2.0"
+description = "Poetry project with dependency groups"
+authors = ["Example Author <author@example.com>"]
+packages = [{ include = "poetry_demo", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.32"
+rich = { version = "^13.9", optional = true }
+
+[tool.poetry.extras]
+pretty = ["rich"]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.9"
+
+[tool.poetry.group.test.dependencies]
+pluggy = "^1.5"
+
+[tool.poetry.scripts]
+poetry-demo = "poetry_demo.cli:main"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"

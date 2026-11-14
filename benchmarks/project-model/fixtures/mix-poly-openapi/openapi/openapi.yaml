@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Orders API
+  version: 1.2.0
+paths:
+  /orders:
+    get:
+      operationId: listOrders
+      responses:
+        "200":
+          description: The orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewOrder"
+      responses:
+        "201":
+          description: The created order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+components:
+  schemas:
+    Order:
+      type: object
+      required: [id, total]
+      properties:
+        id:
+          type: string
+        total:
+          type: number
+    NewOrder:
+      type: object
+      required: [total]
+      properties:
+        total:
+          type: number

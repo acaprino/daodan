@@ -1,0 +1,8 @@
+[submodule "vendor/ui-kit"]
+	path = vendor/ui-kit
+	url = https://github.com/acme/ui-kit.git
+	branch = main
+[submodule "libs/proto-py"]
+	path = libs/proto-py
+	url = ../proto-py.git
+	shallow = true

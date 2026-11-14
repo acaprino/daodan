@@ -1,0 +1,82 @@
+{
+  "languages": [
+    {
+      "path": "scripts/fetch.py",
+      "language": "Python"
+    },
+    {
+      "path": "scripts/plain.py",
+      "language": "Python"
+    },
+    {
+      "path": "scripts/report.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": "scripts",
+      "manifest": null,
+      "source_roots": [
+        "scripts"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "scripts/fetch.py"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "scripts/report.py"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": null,
+      "name": "requests",
+      "declared": "<3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "scripts/fetch.py"
+    },
+    {
+      "unit": null,
+      "name": "rich",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "scripts/fetch.py"
+    },
+    {
+      "unit": null,
+      "name": "pandas",
+      "declared": ">=2.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "scripts/report.py"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "no manifest in the repo: dependencies are PEP 723 comment blocks (# /// script) at the top of each script",
+    "each script has its own interpreter constraint and dependency set; plain.py has no block and uses only the standard library",
+    "the [tool.uv] table inside the report.py block configures uv for that script only",
+    "the unit is one folder, but dependencies belong to single files (see declared_in)",
+    "no file states a project name: the unit name is null (the folder name is not a name)"
+  ]
+}

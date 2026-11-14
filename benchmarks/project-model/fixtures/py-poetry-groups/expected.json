@@ -1,0 +1,110 @@
+{
+  "languages": [
+    {
+      "path": "src/poetry_demo/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/poetry_demo/cli.py",
+      "language": "Python"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "poetry-demo",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src",
+        "tests"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "poetry_demo"
+        ],
+        "entry_files": [
+          "src/poetry_demo/cli.py"
+        ],
+        "entry_points": {
+          "poetry-demo": "poetry_demo.cli:main"
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": "^3.10",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "poetry",
+      "version": "1.8.4",
+      "declared_in": "poetry.lock"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "poetry-demo",
+      "name": "requests",
+      "declared": "^2.32",
+      "resolved": "2.32.3",
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "poetry-demo",
+      "name": "rich",
+      "declared": "^13.9",
+      "resolved": "13.9.2",
+      "scope": "optional",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "poetry-demo",
+      "name": "ruff",
+      "declared": "^0.6.9",
+      "resolved": "0.6.9",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "poetry-demo",
+      "name": "pluggy",
+      "declared": "^1.5",
+      "resolved": "1.5.0",
+      "scope": "test",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "poetry-demo",
+      "name": "poetry-core",
+      "declared": ">=1.9.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "'python' under [tool.poetry.dependencies] is the interpreter constraint, not a package",
+    "rich is optional (extra 'pretty'), not runtime",
+    "groups dev and test are Poetry dependency groups under [tool.poetry.group.*]",
+    "the Poetry version is only visible in the poetry.lock header, nowhere else",
+    "poetry.lock is hand-written: files = [] and content-hash is a placeholder of zeros (not computed); 'poetry check --lock' would flag it",
+    "lock also holds transitive packages (certifi, idna, urllib3, markdown-it-py, pygments, mdurl...) that are not declared"
+  ]
+}

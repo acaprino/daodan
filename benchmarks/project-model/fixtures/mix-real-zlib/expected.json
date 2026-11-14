@@ -1,0 +1,2087 @@
+{
+  "languages": [
+    {
+      "path": "adler32.c",
+      "language": "C"
+    },
+    {
+      "path": "zconf.h",
+      "language": "C"
+    },
+    {
+      "path": "contrib/iostream/zfstream.h",
+      "language": "C++"
+    },
+    {
+      "path": "contrib/iostream/test.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "contrib/dotzlib/DotZLib/DotZLib.cs",
+      "language": "C#"
+    },
+    {
+      "path": "contrib/ada/zlib.adb",
+      "language": "Ada"
+    },
+    {
+      "path": "contrib/delphi/ZLib.pas",
+      "language": "Pascal"
+    },
+    {
+      "path": "contrib/gcc_gvmat64/gvmat64.S",
+      "language": "Assembly"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    },
+    {
+      "path": "Makefile.in",
+      "language": "Makefile"
+    },
+    {
+      "path": "amiga/Makefile.sas",
+      "language": "Makefile"
+    },
+    {
+      "path": "configure",
+      "language": "Shell"
+    },
+    {
+      "path": "os400/make.sh",
+      "language": "Shell"
+    },
+    {
+      "path": "make_vms.com",
+      "language": "DIGITAL Command Language"
+    },
+    {
+      "path": "old/descrip.mms",
+      "language": "Module Management System"
+    },
+    {
+      "path": "contrib/minizip/configure.ac",
+      "language": "M4Sugar"
+    },
+    {
+      "path": "examples/zlib_how.html",
+      "language": "HTML"
+    },
+    {
+      "path": "zlib.3",
+      "language": "Roff Manpage"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "doc/",
+      "why": "documentation"
+    },
+    {
+      "path": "zlib.3.pdf",
+      "why": "documentation"
+    },
+    {
+      "path": "contrib/dotzlib/DotZLib.chm",
+      "why": "binary"
+    }
+  ],
+  "units": [
+    {
+      "name": "zlib",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "SHARED_LIBRARY",
+        "sources": [
+          "adler32.c",
+          "compress.c",
+          "crc32.c",
+          "deflate.c",
+          "gzclose.c",
+          "gzlib.c",
+          "gzread.c",
+          "gzwrite.c",
+          "inflate.c",
+          "infback.c",
+          "inftrees.c",
+          "inffast.c",
+          "trees.c",
+          "uncompr.c",
+          "zutil.c"
+        ],
+        "include_dirs": [
+          ".",
+          "build"
+        ],
+        "build_tags": [
+          "_LARGEFILE64_SOURCE=1",
+          "NO_FSEEKO",
+          "_CRT_SECURE_NO_DEPRECATE",
+          "_CRT_NONSTDC_NO_DEPRECATE",
+          "ZLIB_DLL"
+        ]
+      }
+    },
+    {
+      "name": "zlibstatic",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "STATIC_LIBRARY",
+        "sources": [
+          "adler32.c",
+          "compress.c",
+          "crc32.c",
+          "deflate.c",
+          "gzclose.c",
+          "gzlib.c",
+          "gzread.c",
+          "gzwrite.c",
+          "inflate.c",
+          "infback.c",
+          "inftrees.c",
+          "inffast.c",
+          "trees.c",
+          "uncompr.c",
+          "zutil.c"
+        ],
+        "include_dirs": [
+          ".",
+          "build"
+        ],
+        "build_tags": [
+          "_LARGEFILE64_SOURCE=1",
+          "NO_FSEEKO",
+          "_CRT_SECURE_NO_DEPRECATE",
+          "_CRT_NONSTDC_NO_DEPRECATE"
+        ]
+      }
+    },
+    {
+      "name": "example",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "test/example.c"
+        ],
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "test/minigzip.c"
+        ],
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "example64",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "test/example.c"
+        ],
+        "entry_files": [
+          "test/example.c"
+        ],
+        "build_tags": [
+          "_FILE_OFFSET_BITS=64"
+        ]
+      }
+    },
+    {
+      "name": "minigzip64",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "test/minigzip.c"
+        ],
+        "entry_files": [
+          "test/minigzip.c"
+        ],
+        "build_tags": [
+          "_FILE_OFFSET_BITS=64"
+        ]
+      }
+    },
+    {
+      "name": "libz.a",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static library",
+        "sources": [
+          "adler32.c",
+          "compress.c",
+          "crc32.c",
+          "deflate.c",
+          "gzclose.c",
+          "gzlib.c",
+          "gzread.c",
+          "gzwrite.c",
+          "inflate.c",
+          "infback.c",
+          "inftrees.c",
+          "inffast.c",
+          "trees.c",
+          "uncompr.c",
+          "zutil.c"
+        ]
+      }
+    },
+    {
+      "name": "libz.so.1.3.1",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "shared library",
+        "sources": [
+          "adler32.c",
+          "compress.c",
+          "crc32.c",
+          "deflate.c",
+          "gzclose.c",
+          "gzlib.c",
+          "gzread.c",
+          "gzwrite.c",
+          "inflate.c",
+          "infback.c",
+          "inftrees.c",
+          "inffast.c",
+          "trees.c",
+          "uncompr.c",
+          "zutil.c"
+        ]
+      }
+    },
+    {
+      "name": "example",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/example.c"
+        ],
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/minigzip.c"
+        ],
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "examplesh",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.so.1.3.1"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/example.c"
+        ],
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzipsh",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.so.1.3.1"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/minigzip.c"
+        ],
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "example64",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/example.c"
+        ],
+        "entry_files": [
+          "test/example.c"
+        ],
+        "build_tags": [
+          "_FILE_OFFSET_BITS=64"
+        ]
+      }
+    },
+    {
+      "name": "minigzip64",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/minigzip.c"
+        ],
+        "entry_files": [
+          "test/minigzip.c"
+        ],
+        "build_tags": [
+          "_FILE_OFFSET_BITS=64"
+        ]
+      }
+    },
+    {
+      "name": "infcover",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile.in",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "test/infcover.c"
+        ],
+        "entry_files": [
+          "test/infcover.c"
+        ]
+      }
+    },
+    {
+      "name": "blast",
+      "kind": "make-target",
+      "root": "contrib/blast",
+      "manifest": "contrib/blast/Makefile",
+      "source_roots": [
+        "contrib/blast"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "contrib/blast/blast.c"
+        ],
+        "entry_files": [
+          "contrib/blast/blast.c"
+        ]
+      }
+    },
+    {
+      "name": "puff",
+      "kind": "make-target",
+      "root": "contrib/puff",
+      "manifest": "contrib/puff/Makefile",
+      "source_roots": [
+        "contrib/puff"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "contrib/puff/puff.c",
+          "contrib/puff/pufftest.c"
+        ],
+        "entry_files": [
+          "contrib/puff/pufftest.c"
+        ]
+      }
+    },
+    {
+      "name": "puft",
+      "kind": "make-target",
+      "root": "contrib/puff",
+      "manifest": "contrib/puff/Makefile",
+      "source_roots": [
+        "contrib/puff"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "contrib/puff/puff.c",
+          "contrib/puff/pufftest.c"
+        ],
+        "entry_files": [
+          "contrib/puff/pufftest.c"
+        ]
+      }
+    },
+    {
+      "name": "untgz",
+      "kind": "make-target",
+      "root": "contrib/untgz",
+      "manifest": "contrib/untgz/Makefile",
+      "source_roots": [
+        "contrib/untgz"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "contrib/untgz/untgz.c"
+        ],
+        "entry_files": [
+          "contrib/untgz/untgz.c"
+        ],
+        "include_dirs": [
+          "."
+        ]
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "make-target",
+      "root": "contrib/minizip",
+      "manifest": "contrib/minizip/Makefile",
+      "source_roots": [
+        "contrib/minizip"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "contrib/minizip/miniunz.c",
+          "contrib/minizip/unzip.c",
+          "contrib/minizip/ioapi.c"
+        ],
+        "entry_files": [
+          "contrib/minizip/miniunz.c"
+        ],
+        "include_dirs": [
+          "."
+        ]
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "make-target",
+      "root": "contrib/minizip",
+      "manifest": "contrib/minizip/Makefile",
+      "source_roots": [
+        "contrib/minizip"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "contrib/minizip/minizip.c",
+          "contrib/minizip/zip.c",
+          "contrib/minizip/ioapi.c"
+        ],
+        "entry_files": [
+          "contrib/minizip/minizip.c"
+        ],
+        "include_dirs": [
+          "."
+        ]
+      }
+    },
+    {
+      "name": "libminizip.la",
+      "kind": "make-target",
+      "root": "contrib/minizip",
+      "manifest": "contrib/minizip/Makefile.am",
+      "source_roots": [
+        "contrib/minizip"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "libtool library",
+        "sources": [
+          "contrib/minizip/ioapi.c",
+          "contrib/minizip/mztools.c",
+          "contrib/minizip/unzip.c",
+          "contrib/minizip/zip.c"
+        ]
+      }
+    },
+    {
+      "name": "miniunzip",
+      "kind": "make-target",
+      "root": "contrib/minizip",
+      "manifest": "contrib/minizip/Makefile.am",
+      "source_roots": [
+        "contrib/minizip"
+      ],
+      "depends_on": [
+        "libminizip.la"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "contrib/minizip/miniunz.c"
+        ]
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "make-target",
+      "root": "contrib/minizip",
+      "manifest": "contrib/minizip/Makefile.am",
+      "source_roots": [
+        "contrib/minizip"
+      ],
+      "depends_on": [
+        "libminizip.la"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "contrib/minizip/minizip.c"
+        ]
+      }
+    },
+    {
+      "name": "untgz.exe",
+      "kind": "make-target",
+      "root": "contrib/untgz",
+      "manifest": "contrib/untgz/Makefile.msc",
+      "source_roots": [
+        "contrib/untgz"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "contrib/untgz/untgz.c"
+        ]
+      }
+    },
+    {
+      "name": "DotZLib",
+      "kind": "dotnet-project",
+      "root": "contrib/dotzlib/DotZLib",
+      "manifest": "contrib/dotzlib/DotZLib/DotZLib.csproj",
+      "source_roots": [
+        "contrib/dotzlib/DotZLib"
+      ],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "nuget",
+      "kind": "dotnet-project",
+      "root": "contrib/nuget",
+      "manifest": "contrib/nuget/nuget.csproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "zlib_l.lib",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.bor",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.bor",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_l.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.bor",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_l.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "libz.a",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.dj2",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.dj2",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.dj2",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "zlib.a",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.emx",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.emx",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.emx",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "zlib_L.lib",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.msc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.msc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_L.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.msc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_L.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "zlib_l.lib",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.tc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.tc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_l.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "msdos",
+      "manifest": "msdos/Makefile.tc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_l.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "zlib.lib",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.bor",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.bor",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.bor",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "libzip.a",
+      "kind": "make-target",
+      "root": "amiga",
+      "manifest": "amiga/Makefile.pup",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example",
+      "kind": "make-target",
+      "root": "amiga",
+      "manifest": "amiga/Makefile.pup",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libzip.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip",
+      "kind": "make-target",
+      "root": "amiga",
+      "manifest": "amiga/Makefile.pup",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libzip.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "z.lib",
+      "kind": "make-target",
+      "root": "amiga",
+      "manifest": "amiga/Makefile.sas",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example",
+      "kind": "make-target",
+      "root": "amiga",
+      "manifest": "amiga/Makefile.sas",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "z.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip",
+      "kind": "make-target",
+      "root": "amiga",
+      "manifest": "amiga/Makefile.sas",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "z.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "zlib.a",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/Makefile.emx",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/Makefile.emx",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/Makefile.emx",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.a"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "@.lib",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/Makefile.riscos",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "@.example",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/Makefile.riscos",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "@.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "@.minigzip",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/Makefile.riscos",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "@.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "libz.olb",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/descrip.mms",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/descrip.mms",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.olb"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "old",
+      "manifest": "old/descrip.mms",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.olb"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "zlib_f.lib",
+      "kind": "make-target",
+      "root": "watcom",
+      "manifest": "watcom/watcom_f.mak",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "watcom",
+      "manifest": "watcom/watcom_f.mak",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_f.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "watcom",
+      "manifest": "watcom/watcom_f.mak",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_f.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "zlib_l.lib",
+      "kind": "make-target",
+      "root": "watcom",
+      "manifest": "watcom/watcom_l.mak",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "watcom",
+      "manifest": "watcom/watcom_l.mak",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_l.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "watcom",
+      "manifest": "watcom/watcom_l.mak",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib_l.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "libz.a",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static library"
+      }
+    },
+    {
+      "name": "zlib1.dll",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "shared library"
+      }
+    },
+    {
+      "name": "libz.dll.a",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "zlib1.dll"
+      ],
+      "config": {
+        "type": "import library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.a"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "example_d.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.dll.a"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip_d.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.gcc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "libz.dll.a"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "zlib.lib",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static library"
+      }
+    },
+    {
+      "name": "zlib1.dll",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "shared library"
+      }
+    },
+    {
+      "name": "zdll.lib",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "zlib1.dll"
+      ],
+      "config": {
+        "type": "import library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zlib.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "example_d.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zdll.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/example.c"
+        ]
+      }
+    },
+    {
+      "name": "minigzip_d.exe",
+      "kind": "make-target",
+      "root": "win32",
+      "manifest": "win32/Makefile.msc",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "zdll.lib"
+      ],
+      "config": {
+        "type": "executable",
+        "entry_files": [
+          "test/minigzip.c"
+        ]
+      }
+    },
+    {
+      "name": "z.lib",
+      "kind": "make-target",
+      "root": "old/os2",
+      "manifest": "old/os2/Makefile.os2",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static library"
+      }
+    },
+    {
+      "name": "z.dll",
+      "kind": "make-target",
+      "root": "old/os2",
+      "manifest": "old/os2/Makefile.os2",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "shared library"
+      }
+    },
+    {
+      "name": "zdll.lib",
+      "kind": "make-target",
+      "root": "old/os2",
+      "manifest": "old/os2/Makefile.os2",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "z.dll"
+      ],
+      "config": {
+        "type": "import library"
+      }
+    },
+    {
+      "name": "example.exe",
+      "kind": "make-target",
+      "root": "old/os2",
+      "manifest": "old/os2/Makefile.os2",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "z.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "minigzip.exe",
+      "kind": "make-target",
+      "root": "old/os2",
+      "manifest": "old/os2/Makefile.os2",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "z.lib"
+      ],
+      "config": {
+        "type": "executable"
+      }
+    },
+    {
+      "name": "libz.a",
+      "kind": "make-target",
+      "root": "nintendods",
+      "manifest": "nintendods/Makefile",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static library"
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc9",
+      "manifest": "contrib/vstudio/vc9/miniunz.vcproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc9",
+      "manifest": "contrib/vstudio/vc9/minizip.vcproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlib",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc9",
+      "manifest": "contrib/vstudio/vc9/testzlib.vcproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlibdll",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc9",
+      "manifest": "contrib/vstudio/vc9/testzlibdll.vcproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "zlibstat",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc9",
+      "manifest": "contrib/vstudio/vc9/zlibstat.vcproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "StaticLibrary"
+      }
+    },
+    {
+      "name": "zlibvc",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc9",
+      "manifest": "contrib/vstudio/vc9/zlibvc.vcproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "DynamicLibrary"
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc10",
+      "manifest": "contrib/vstudio/vc10/miniunz.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc10",
+      "manifest": "contrib/vstudio/vc10/minizip.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlib",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc10",
+      "manifest": "contrib/vstudio/vc10/testzlib.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlibdll",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc10",
+      "manifest": "contrib/vstudio/vc10/testzlibdll.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "zlibstat",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc10",
+      "manifest": "contrib/vstudio/vc10/zlibstat.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "StaticLibrary"
+      }
+    },
+    {
+      "name": "zlibvc",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc10",
+      "manifest": "contrib/vstudio/vc10/zlibvc.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "DynamicLibrary"
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc11",
+      "manifest": "contrib/vstudio/vc11/miniunz.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc11",
+      "manifest": "contrib/vstudio/vc11/minizip.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlib",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc11",
+      "manifest": "contrib/vstudio/vc11/testzlib.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlibdll",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc11",
+      "manifest": "contrib/vstudio/vc11/testzlibdll.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "zlibstat",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc11",
+      "manifest": "contrib/vstudio/vc11/zlibstat.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "StaticLibrary"
+      }
+    },
+    {
+      "name": "zlibvc",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc11",
+      "manifest": "contrib/vstudio/vc11/zlibvc.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "DynamicLibrary"
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc12",
+      "manifest": "contrib/vstudio/vc12/miniunz.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc12",
+      "manifest": "contrib/vstudio/vc12/minizip.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlib",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc12",
+      "manifest": "contrib/vstudio/vc12/testzlib.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlibdll",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc12",
+      "manifest": "contrib/vstudio/vc12/testzlibdll.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "zlibstat",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc12",
+      "manifest": "contrib/vstudio/vc12/zlibstat.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "StaticLibrary"
+      }
+    },
+    {
+      "name": "zlibvc",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc12",
+      "manifest": "contrib/vstudio/vc12/zlibvc.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "DynamicLibrary"
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc14",
+      "manifest": "contrib/vstudio/vc14/miniunz.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc14",
+      "manifest": "contrib/vstudio/vc14/minizip.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlib",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc14",
+      "manifest": "contrib/vstudio/vc14/testzlib.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlibdll",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc14",
+      "manifest": "contrib/vstudio/vc14/testzlibdll.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "zlibstat",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc14",
+      "manifest": "contrib/vstudio/vc14/zlibstat.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "StaticLibrary"
+      }
+    },
+    {
+      "name": "zlibvc",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc14",
+      "manifest": "contrib/vstudio/vc14/zlibvc.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "DynamicLibrary"
+      }
+    },
+    {
+      "name": "miniunz",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc17",
+      "manifest": "contrib/vstudio/vc17/miniunz.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "minizip",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc17",
+      "manifest": "contrib/vstudio/vc17/minizip.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlib",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc17",
+      "manifest": "contrib/vstudio/vc17/testzlib.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "testzlibdll",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc17",
+      "manifest": "contrib/vstudio/vc17/testzlibdll.vcxproj",
+      "source_roots": [],
+      "depends_on": [
+        "zlibvc"
+      ],
+      "config": {
+        "type": "Application"
+      }
+    },
+    {
+      "name": "zlibstat",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc17",
+      "manifest": "contrib/vstudio/vc17/zlibstat.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "StaticLibrary"
+      }
+    },
+    {
+      "name": "zlibvc",
+      "kind": "msbuild-project",
+      "root": "contrib/vstudio/vc17",
+      "manifest": "contrib/vstudio/vc17/zlibvc.vcxproj",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "DynamicLibrary"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "2.4.4...3.15.0",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "gcc",
+      "version": "11",
+      "declared_in": ".github/workflows/cmake.yml#jobs.ci-cmake.strategy.matrix.include.compiler"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "DotZLib",
+      "name": "nunit.framework",
+      "declared": null,
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "contrib/dotzlib/DotZLib/DotZLib.csproj"
+    },
+    {
+      "unit": "nuget",
+      "name": "Microsoft.Build.NoTargets",
+      "declared": "3.5.6",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "contrib/nuget/nuget.csproj"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "NUnit",
+      "unit": "DotZLib",
+      "evidence": "contrib/dotzlib/DotZLib/UnitTests.cs"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "configure (a shell script) and cmake configure run project scripts and write zconf.h into the build folder; Daodan runs builds only in a container"
+  },
+  "traps": [
+    "two primary builds of the same library at the root: CMakeLists.txt (targets zlib, zlibstatic, example, minigzip, example64, minigzip64) and configure + Makefile.in (libz.a, libz.so.1.3.1 and test programs, including infcover that CMake does not build); the root Makefile is only a stub that asks to run ./configure",
+    "under CMake the shared and the static library compile the same 15 sources, and example64 and minigzip64 exist only when HAVE_OFF64_T is found; under configure the test programs link the static library, the *sh variants the shared one",
+    "CMake renames a zconf.h found in the source folder to zconf.h.included and writes zconf.h into the build folder from zconf.h.cmakein: the header the build uses is generated, which is why build is an include folder",
+    "contrib/ and examples/ are not compiled by either primary build: contrib/blast, puff and untgz have their own Makefiles (untgz also Makefile.msc), and contrib/minizip has a plain Makefile and an Automake build (Makefile.am: libminizip.la, miniunzip, minizip); untgz and minizip's Makefile link ../../libz.a, so they need the configure build first",
+    "platform makefiles are units too, rooted in their own folder although they are run from the zlib root (make -f win32/Makefile.gcc): msdos/ (five compilers, each declaring example.exe and minigzip.exe), win32/, amiga/, old/, old/os2/, watcom/ and nintendods/; the library names come from variables (ZLIB_LIB = zlib_$(MODEL).lib with MODEL=l or L, STATICLIB, SHAREDLIB, IMPLIB, OUTPUT)",
+    "old/Makefile.riscos, old/os2/Makefile.os2 and old/descrip.mms still list gzio.c, a file that no longer exists: they cannot build this commit; make_vms.com is a DCL script that builds libz.olb, example and minigzip by commands, like configure, and is not a unit",
+    "contrib/vstudio holds six Visual Studio projects per version: 30 MSBuild .vcxproj (vc10, vc11, vc12, vc14, vc17) and 6 older .vcproj (vc9); zlibvc builds the DLL zlibwapi, zlibstat the static library, miniunz, minizip and testzlibdll reference zlibvc (ProjectReference, or the solution's ProjectDependencies in vc9), testzlib compiles the sources itself",
+    "contrib/ada/zlib.gpr (GNAT project) and contrib/dotzlib/DotZLib.build (NAnt) are build files with no unit kind; os400/ builds with a shell script (make.sh) on IBM i, where make is not standard",
+    "contrib/dotzlib/DotZLib/DotZLib.csproj is a Visual Studio .NET 2003 project (VisualStudioProject XML, not MSBuild) that references nunit.framework through a HintPath on drive E: with no version; contrib/nuget/nuget.csproj uses the MSBuild SDK Microsoft.Build.NoTargets/3.5.6 to pack prebuilt native binaries and compiles no code",
+    "Ada (contrib/ada), Pascal and Delphi bindings (contrib/pascal, contrib/delphi) and C++ wrappers (contrib/iostream*) are code that no listed build compiles",
+    "amiga/Makefile.sas is an SAS/C makefile: Linguist names it SAS by its extension",
+    "contrib/gcc_gvmat64/gvmat64.S switches to .intel_syntax noprefix: Assembly, not Unix Assembly",
+    "os400/zlib.inc is an ILE RPG copy member, not a C include; Linguist has no candidate for it",
+    "the cmake_minimum_required range 2.4.4...3.15.0 sets policies up to 3.15; CI picks compilers through a matrix (gcc, clang, cl, gcc-11) and installs Ninja on Windows",
+    "no external dependency in the C builds"
+  ]
+}

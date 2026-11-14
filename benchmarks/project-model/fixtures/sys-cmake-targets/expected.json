@@ -1,0 +1,115 @@
+{
+  "languages": [
+    {
+      "path": "app/main.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "core/include/calc/expr.hpp",
+      "language": "C++"
+    },
+    {
+      "path": "core/src/archive.h",
+      "language": "C++"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "calc_core",
+      "kind": "cmake-target",
+      "root": "core",
+      "manifest": "core/CMakeLists.txt",
+      "source_roots": [
+        "core/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "STATIC_LIBRARY",
+        "sources": [
+          "core/src/expr.cpp",
+          "core/src/archive.cpp"
+        ],
+        "include_dirs": [
+          "core/include",
+          "core/src"
+        ],
+        "build_tags": [
+          "CALC_WITH_ZLIB=1"
+        ],
+        "imported_links": [
+          "ZLIB::ZLIB"
+        ]
+      }
+    },
+    {
+      "name": "calc",
+      "kind": "cmake-target",
+      "root": "app",
+      "manifest": "app/CMakeLists.txt",
+      "source_roots": [
+        "app"
+      ],
+      "depends_on": [
+        "calc_core"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "app/main.cpp"
+        ],
+        "entry_files": [
+          "app/main.cpp"
+        ],
+        "include_dirs": [
+          "core/include"
+        ],
+        "build_tags": [
+          "CALC_WITH_ZLIB=1"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.20",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "c++",
+      "version": "17",
+      "declared_in": "CMakeLists.txt#CMAKE_CXX_STANDARD"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "calc_core",
+      "name": "ZLIB",
+      "declared": "1.2.11",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "CMakeLists.txt"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the project and the executable are both named calc: project(calc) is the project, calc is the target in app/",
+    "find_package(ZLIB) is in the root CMakeLists.txt but only calc_core links ZLIB::ZLIB; calc gets it transitively through the PUBLIC link",
+    "ZLIB::ZLIB is an imported target of the system package, not a unit of this project",
+    "1.2.11 in find_package is a minimum version, not a pin; nothing in the tree locks the zlib version",
+    "calc compiles with core/include and CALC_WITH_ZLIB=1 only because they are PUBLIC on calc_core: app/CMakeLists.txt states neither",
+    "core/src/archive.h is a C++ header (namespace calc::detail) with a .h extension",
+    "CMAKE_CXX_STANDARD is set in the root and inherited by every target created after it"
+  ]
+}

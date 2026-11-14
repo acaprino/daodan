@@ -1,0 +1,74 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/locked/Slugger.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle",
+      "source_roots": [
+        "src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "org.slf4j:slf4j-api",
+      "declared": "[2.0,2.1)",
+      "resolved": "2.0.16",
+      "scope": "runtime",
+      "declared_in": "build.gradle"
+    },
+    {
+      "unit": ":",
+      "name": "org.apache.commons:commons-lang3",
+      "declared": "3.+",
+      "resolved": "3.17.0",
+      "scope": "runtime",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "The lockfile pins both dynamic versions; a reader of gradle.lockfile has the resolved versions without running Gradle."
+  },
+  "traps": [
+    "The build file asks for ranges ('3.+' and '[2.0,2.1)'); the versions are in gradle.lockfile: commons-lang3 3.17.0 and slf4j-api 2.0.16. Maven Central already has newer matches (commons-lang3 3.22.0, slf4j-api 2.0.20 as of 2026-11-14), so a resolution that ignores the lockfile gives different versions.",
+    "gradle.lockfile lists configurations, not scopes: both libraries are on compileClasspath and runtimeClasspath, so both are runtime; the test classpaths only inherit them.",
+    "empty=annotationProcessor,testAnnotationProcessor records locked configurations with no dependency; it is not a package.",
+    "No wrapper and no Gradle version anywhere: the Gradle that runs is whichever is installed.",
+    "The lockfile is the project's single lock file (Gradle 7+ format); there are no per-configuration files under gradle/dependency-locks/."
+  ]
+}

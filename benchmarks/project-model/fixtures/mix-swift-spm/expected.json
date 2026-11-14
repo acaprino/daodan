@@ -1,0 +1,37 @@
+{
+  "languages": [
+    {"path": "Sources/ShopKit/Price.swift", "language": "Swift"},
+    {"path": "Package.swift", "language": "Swift"}
+  ],
+  "excluded": [],
+  "units": [
+    {"name": "Shop", "kind": "swift-package", "root": ".", "manifest": "Package.swift",
+     "source_roots": ["Sources/ShopKit", "Sources/ShopCLI", "Tests/ShopKitTests"], "depends_on": [],
+     "config": {"entry_files": ["Sources/ShopCLI/Shop.swift"],
+                "source_sets": {"ShopKit": ["Sources/ShopKit"], "ShopCLI": ["Sources/ShopCLI"],
+                                "ShopKitTests": ["Tests/ShopKitTests"]},
+                "packages": ["ShopKit"]}}
+  ],
+  "workspace": null,
+  "toolchains": [
+    {"tool": "swift", "version": "5.9", "declared_in": "Package.swift"},
+    {"tool": "swift", "version": "5.10.1", "declared_in": ".swift-version"}
+  ],
+  "dependencies": [
+    {"unit": "Shop", "name": "swift-argument-parser", "declared": "from: \"1.5.0\"", "resolved": "1.5.0", "scope": "runtime",
+     "declared_in": "Package.swift"}
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {"container": true, "reason": "Package.swift is Swift code that SwiftPM compiles and runs to read the package; indexing needs swift build"},
+  "traps": [
+    "the package is the unit; its modules are the targets ShopKit, ShopCLI and ShopKitTests, given as source_sets",
+    "the executable product is named shop while its target is ShopCLI; the library product and target are both ShopKit",
+    "the dependency's identity is swift-argument-parser but the targets import the product ArgumentParser",
+    "from: \"1.5.0\" means up to the next major version (1.5.0 ..< 2.0.0)",
+    "Package.resolved is format version 2 (no originHash); the pin carries the tag's commit 41982a3656a71c768319979febd796c6fd111d5c",
+    "// swift-tools-version:5.9 is the minimum tools version, a comment that is part of the manifest; .swift-version asks 5.10.1",
+    "platforms .macOS(.v13) is a deployment target, not a toolchain version",
+    "@main in Sources/ShopCLI/Shop.swift is the entry point: there is no main.swift"
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "languages": [
+    {
+      "path": "app/Http/Controllers/Controller.php",
+      "language": "PHP"
+    },
+    {
+      "path": "artisan",
+      "language": "PHP"
+    },
+    {
+      "path": "resources/views/welcome.blade.php",
+      "language": "Blade"
+    },
+    {
+      "path": "vite.config.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "resources/css/app.css",
+      "language": "CSS"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "acme/shop",
+      "kind": "composer-package",
+      "root": ".",
+      "manifest": "composer.json",
+      "source_roots": [
+        "app",
+        "database/seeders",
+        "tests"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "artisan"
+        ],
+        "paths": {
+          "App\\": [
+            "app"
+          ],
+          "Database\\Factories\\": [
+            "database/factories"
+          ],
+          "Database\\Seeders\\": [
+            "database/seeders"
+          ],
+          "Tests\\": [
+            "tests"
+          ]
+        }
+      }
+    },
+    {
+      "name": null,
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "resources/js",
+        "resources/css"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "resources/css/app.css",
+          "resources/js/app.js"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "php",
+      "version": "^8.2",
+      "declared_in": "composer.json"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "acme/shop",
+      "name": "laravel/framework",
+      "declared": "^11.31",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": "acme/shop",
+      "name": "laravel/tinker",
+      "declared": "^2.9",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": "acme/shop",
+      "name": "fakerphp/faker",
+      "declared": "^1.23",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": "acme/shop",
+      "name": "laravel/pint",
+      "declared": "^1.13",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": "acme/shop",
+      "name": "mockery/mockery",
+      "declared": "^1.6",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": "acme/shop",
+      "name": "nunomaduro/collision",
+      "declared": "^8.1",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": "acme/shop",
+      "name": "phpunit/phpunit",
+      "declared": "^11.0.1",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "composer.json"
+    },
+    {
+      "unit": ".",
+      "name": "autoprefixer",
+      "declared": "^10.4.20",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": ".",
+      "name": "axios",
+      "declared": "^1.7.4",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": ".",
+      "name": "laravel-vite-plugin",
+      "declared": "^1.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": ".",
+      "name": "postcss",
+      "declared": "^8.4.47",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": ".",
+      "name": "tailwindcss",
+      "declared": "^3.4.13",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": ".",
+      "name": "vite",
+      "declared": "^5.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Laravel",
+      "unit": "acme/shop",
+      "evidence": "composer.json"
+    },
+    {
+      "name": "Vite",
+      "unit": ".",
+      "evidence": "vite.config.js"
+    },
+    {
+      "name": "Tailwind CSS",
+      "unit": ".",
+      "evidence": "resources/css/app.css"
+    }
+  ],
+  "services": [
+    {
+      "name": "MySQL",
+      "kind": "database",
+      "evidence": ".env.example"
+    },
+    {
+      "name": "Redis",
+      "kind": "cache",
+      "evidence": ".env.example"
+    },
+    {
+      "name": "SMTP",
+      "kind": "mail",
+      "evidence": ".env.example"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "composer.lock is left out: a Laravel lock pins about a hundred packages with source references and dist checksums and weighs some 300 KB, so every resolved is null",
+    "two units share the root: the Composer app and the Vite asset build; package.json has no name, so that unit's name is null and it is referred to by its root",
+    "\"php\": \"^8.2\" inside require is a platform requirement, a toolchain, not a package dependency",
+    "artisan has no extension: it is PHP by its shebang",
+    "welcome.blade.php is Blade, not PHP, although it ends in .php",
+    "axios ships in the browser bundle but is declared in devDependencies: scope is dev as declared",
+    "the PSR-4 root database/factories/ is declared in composer.json but the folder does not exist",
+    "services come from .env.example, a template: the real .env is absent; Redis serves both cache and queue (QUEUE_CONNECTION, CACHE_STORE)",
+    "phpunit.xml switches tests to SQLite in memory: an embedded engine, not an external service",
+    "vendor/ is absent: composer.json post-autoload-dump runs project code (artisan package:discover) on install"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "languages": [
+    {
+      "path": "packages/a/index.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "packages/b/index.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "lerna-root",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "@lrn/a",
+      "kind": "npm-package",
+      "root": "packages/a",
+      "manifest": "packages/a/package.json",
+      "source_roots": [
+        "packages/a"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "packages/a/index.js"
+        ]
+      }
+    },
+    {
+      "name": "@lrn/b",
+      "kind": "npm-package",
+      "root": "packages/b",
+      "manifest": "packages/b/package.json",
+      "source_roots": [
+        "packages/b"
+      ],
+      "depends_on": [
+        "@lrn/a"
+      ],
+      "config": {
+        "entry_files": [
+          "packages/b/index.js"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "lerna",
+    "root": ".",
+    "members": [
+      "packages/a",
+      "packages/b"
+    ]
+  },
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "lerna-root",
+      "name": "lerna",
+      "declared": "^8.1.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the member list lives in lerna.json (packages), not in package.json: the root has no workspaces field, so npm itself does not link the packages",
+    "version is independent: the units have different versions (2.3.0 and 0.4.1)",
+    "@lrn/a in @lrn/b is an internal link (depends_on), not a registry dependency",
+    "no lockfile (the lerna install tree is too large to write by hand), so resolved is null",
+    "npmClient is npm but no npm version is declared"
+  ]
+}

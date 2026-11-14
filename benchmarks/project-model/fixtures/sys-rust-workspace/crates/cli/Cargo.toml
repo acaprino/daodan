@@ -1,0 +1,13 @@
+[package]
+name = "ledger-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "ledger"
+path = "src/main.rs"
+
+[dependencies]
+ledger-core.workspace = true

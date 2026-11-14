@@ -1,0 +1,82 @@
+{
+  "languages": [
+    {
+      "path": "src/lib.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "textscan",
+      "kind": "cargo-crate",
+      "root": "",
+      "manifest": "Cargo.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "textscan",
+            "path": "src/lib.rs"
+          }
+        ],
+        "default_features": [
+          "std"
+        ],
+        "build_tags": [
+          "std",
+          "fast",
+          "float",
+          "itoa"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "textscan",
+      "name": "itoa",
+      "declared": "1.0",
+      "resolved": "1.0.19",
+      "scope": "optional",
+      "declared_in": "Cargo.toml"
+    },
+    {
+      "unit": "textscan",
+      "name": "memchr",
+      "declared": "2.7",
+      "resolved": "2.8.3",
+      "scope": "optional",
+      "declared_in": "Cargo.toml"
+    },
+    {
+      "unit": "textscan",
+      "name": "ryu",
+      "declared": "1.0",
+      "resolved": "1.0.23",
+      "scope": "optional",
+      "declared_in": "Cargo.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "all three dependencies are optional and none is in the default build: default = [\"std\"] and std only touches memchr if something else enabled it",
+    "Cargo.lock lists the optional crates anyway: the lock is resolved with every feature of the package, so being locked does not mean being built",
+    "itoa has an implicit feature named itoa (no dep:itoa anywhere); memchr and ryu have none, because dep: in fast and float suppresses it: --features memchr is an error",
+    "memchr?/std is a weak feature: it turns on memchr's std only when memchr is already enabled by fast",
+    "memchr = \"2.7\" is a caret range: 2.8.3 satisfies it",
+    "which functions exist depends on the features: int_text and float_text vanish from the default build, an indexer with default features misses them"
+  ]
+}

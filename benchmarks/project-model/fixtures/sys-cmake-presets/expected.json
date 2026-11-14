@@ -1,0 +1,141 @@
+{
+  "languages": [
+    {
+      "path": "driver/driver.c",
+      "language": "C"
+    },
+    {
+      "path": "driver/driver.h",
+      "language": "C"
+    },
+    {
+      "path": "cmake/arm-none-eabi.cmake",
+      "language": "CMake"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "sensor_driver",
+      "kind": "cmake-target",
+      "root": "driver",
+      "manifest": "driver/CMakeLists.txt",
+      "source_roots": [
+        "driver"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "STATIC_LIBRARY",
+        "sources": [
+          "driver/driver.c"
+        ],
+        "include_dirs": [
+          "driver"
+        ],
+        "build_tags": [
+          "SENSOR_BOARD_NAME=\"${SENSOR_BOARD}\""
+        ],
+        "presets": [
+          "host",
+          "cortex-m4"
+        ],
+        "compile_definitions_by_preset": {
+          "host": [
+            "SENSOR_BOARD_NAME=\"host\""
+          ],
+          "cortex-m4": [
+            "SENSOR_BOARD_NAME=\"nucleo_f401re\""
+          ]
+        }
+      }
+    },
+    {
+      "name": "sensor_fw",
+      "kind": "cmake-target",
+      "root": "firmware",
+      "manifest": "firmware/CMakeLists.txt",
+      "source_roots": [
+        "firmware"
+      ],
+      "depends_on": [
+        "sensor_driver"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "firmware/main.c"
+        ],
+        "entry_files": [
+          "firmware/main.c"
+        ],
+        "include_dirs": [
+          "driver"
+        ],
+        "presets": [
+          "cortex-m4"
+        ]
+      }
+    },
+    {
+      "name": "sensor_tests",
+      "kind": "cmake-target",
+      "root": "tests",
+      "manifest": "tests/CMakeLists.txt",
+      "source_roots": [
+        "tests"
+      ],
+      "depends_on": [
+        "sensor_driver"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "tests/test_driver.c"
+        ],
+        "entry_files": [
+          "tests/test_driver.c"
+        ],
+        "include_dirs": [
+          "driver"
+        ],
+        "presets": [
+          "host"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.25.0",
+      "declared_in": "CMakePresets.json"
+    },
+    {
+      "tool": "cmake",
+      "version": "3.21",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "c",
+      "version": "11",
+      "declared_in": "CMakeLists.txt#CMAKE_C_STANDARD"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the set of targets depends on the preset: host builds sensor_driver and sensor_tests, cortex-m4 builds sensor_driver and sensor_fw; no configuration has all three",
+    "the cortex-m4 preset sets the toolchain file, which makes CMAKE_CROSSCOMPILING true; the if() in CMakeLists.txt reads that, not the preset name",
+    "the compiler is arm-none-eabi-gcc only under cortex-m4, named in cmake/arm-none-eabi.cmake, with no version written anywhere; host uses whatever compiler is found",
+    "CMakeLists.txt asks CMake 3.21, but CMakePresets.json version 6 needs 3.25: the presets raise the real minimum",
+    "SENSOR_BOARD_NAME is a string definition whose value comes from the SENSOR_BOARD cache variable: \"host\" by default, \"nucleo_f401re\" under cortex-m4",
+    "the hidden preset base is not a preset anyone can select; it only carries the generator, binaryDir and build type",
+    "cmake/arm-none-eabi.cmake is a toolchain file, not a module of the project: it declares no target"
+  ]
+}

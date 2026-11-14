@@ -1,0 +1,127 @@
+{
+  "languages": [
+    {
+      "path": "src/main.c",
+      "language": "C"
+    },
+    {
+      "path": "libimg/include/img.h",
+      "language": "C"
+    },
+    {
+      "path": "meson.build",
+      "language": "Meson"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "imgconv",
+      "kind": "meson-target",
+      "root": "",
+      "manifest": "meson.build",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [
+        "img"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "src/main.c"
+        ],
+        "entry_files": [
+          "src/main.c"
+        ],
+        "include_dirs": [
+          "libimg/include"
+        ]
+      }
+    },
+    {
+      "name": "img",
+      "kind": "meson-target",
+      "root": "libimg",
+      "manifest": "libimg/meson.build",
+      "source_roots": [
+        "libimg"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static_library",
+        "sources": [
+          "libimg/img.c"
+        ],
+        "include_dirs": [
+          "libimg/include"
+        ],
+        "build_tags": [
+          "IMG_MAX_SIDE=4096"
+        ]
+      }
+    },
+    {
+      "name": "roundtrip",
+      "kind": "meson-target",
+      "root": "tests",
+      "manifest": "tests/meson.build",
+      "source_roots": [
+        "tests"
+      ],
+      "depends_on": [
+        "img"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "tests/roundtrip.c"
+        ],
+        "entry_files": [
+          "tests/roundtrip.c"
+        ],
+        "include_dirs": [
+          "libimg/include"
+        ],
+        "condition": "get_option('tests')"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "meson",
+      "version": ">=1.1.0",
+      "declared_in": "meson.build#meson_version"
+    },
+    {
+      "tool": "c",
+      "version": "c11",
+      "declared_in": "meson.build#default_options.c_std"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "img",
+      "name": "zlib",
+      "declared": ">=1.2.11",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "meson.build"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the static library target is named img (static_library('img', ...)), not libimg: libimg is the directory and the file name prefix",
+    "zlib is looked up on the system first; subprojects/zlib.wrap (WrapDB 1.3.1-1) is only the fallback, so the version used is not fixed by any file and resolved is null",
+    "dependency('zlib') is declared in the root meson.build, but only img uses zlib_dep; imgconv and roundtrip get it through libimg_dep",
+    "m is found with find_library and required: false: libm is optional, not a package dependency",
+    "the tests directory is entered only when the tests option is true; it is true by default in meson.options (the Meson 1.1 name of meson_options.txt)",
+    "libimg_dep is a declare_dependency, an internal handle, not an external package"
+  ]
+}

@@ -1,0 +1,622 @@
+{
+  "languages": [
+    {
+      "path": "react-app/src/App.tsx",
+      "language": "TSX"
+    },
+    {
+      "path": "react-app/src/checkout.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "shared/collections.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "react-app/src-tauri/src/lib.rs",
+      "language": "Rust"
+    },
+    {
+      "path": "functions-python/main.py",
+      "language": "Python"
+    },
+    {
+      "path": "android/app/src/main/java/com/acme/shop/MainActivity.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "android/app/build.gradle.kts",
+      "language": "Kotlin"
+    },
+    {
+      "path": "react-app/index.html",
+      "language": "HTML"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "react-app/src-tauri/icons/icon.png",
+      "why": "binary"
+    }
+  ],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": "shared",
+      "manifest": null,
+      "source_roots": [
+        "shared"
+      ],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "shop-web",
+      "kind": "npm-package",
+      "root": "react-app",
+      "manifest": "react-app/package.json",
+      "source_roots": [
+        "react-app/src"
+      ],
+      "depends_on": [
+        "shared"
+      ],
+      "config": {
+        "tsconfig": [
+          "react-app/tsconfig.json"
+        ],
+        "paths": {
+          "@shared/*": [
+            "shared/*"
+          ],
+          "@shared": [
+            "shared"
+          ]
+        },
+        "entry_files": [
+          "react-app/index.html"
+        ]
+      }
+    },
+    {
+      "name": "shop-desktop",
+      "kind": "cargo-crate",
+      "root": "react-app/src-tauri",
+      "manifest": "react-app/src-tauri/Cargo.toml",
+      "source_roots": [
+        "react-app/src-tauri/src"
+      ],
+      "depends_on": [
+        "shop-web"
+      ],
+      "config": {
+        "entry_files": [
+          "react-app/src-tauri/src/main.rs"
+        ]
+      }
+    },
+    {
+      "name": "shop-functions-ts",
+      "kind": "npm-package",
+      "root": "functions",
+      "manifest": "functions/package.json",
+      "source_roots": [
+        "functions/src"
+      ],
+      "depends_on": [
+        "shared"
+      ],
+      "config": {
+        "tsconfig": [
+          "functions/tsconfig.json"
+        ],
+        "entry_files": [
+          "functions/src/index.ts"
+        ]
+      }
+    },
+    {
+      "name": "shop-functions",
+      "kind": "python-project",
+      "root": "functions-python",
+      "manifest": "functions-python/pyproject.toml",
+      "source_roots": [
+        "functions-python"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "functions-python/main.py"
+        ]
+      }
+    },
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": "android",
+      "manifest": "android/build.gradle.kts",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": ":app",
+      "kind": "gradle-project",
+      "root": "android/app",
+      "manifest": "android/app/build.gradle.kts",
+      "source_roots": [
+        "android/app/src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "android/app/src/main/java",
+            "android/app/src/main/kotlin"
+          ],
+          "debug": [
+            "android/app/src/debug/java",
+            "android/app/src/debug/kotlin"
+          ],
+          "release": [
+            "android/app/src/release/java",
+            "android/app/src/release/kotlin"
+          ],
+          "test": [
+            "android/app/src/test/java",
+            "android/app/src/test/kotlin"
+          ],
+          "androidTest": [
+            "android/app/src/androidTest/java",
+            "android/app/src/androidTest/kotlin"
+          ]
+        },
+        "compile_tasks": [
+          ":app:compileDebugKotlin",
+          ":app:compileReleaseKotlin",
+          ":app:compileDebugJavaWithJavac",
+          ":app:compileReleaseJavaWithJavac"
+        ],
+        "build_tags": [
+          "debug",
+          "release"
+        ],
+        "entry_files": [
+          "android/app/src/main/AndroidManifest.xml",
+          "android/app/src/main/java/com/acme/shop/MainActivity.kt"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "gradle",
+    "root": "android",
+    "members": [
+      "android",
+      "android/app"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": "20",
+      "declared_in": "functions/package.json"
+    },
+    {
+      "tool": "node",
+      "version": "nodejs20",
+      "declared_in": "firebase.json"
+    },
+    {
+      "tool": "python",
+      "version": "python312",
+      "declared_in": "firebase.json"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.12",
+      "declared_in": "functions-python/pyproject.toml"
+    },
+    {
+      "tool": "rust",
+      "version": "1.77.2",
+      "declared_in": "react-app/src-tauri/Cargo.toml"
+    },
+    {
+      "tool": "gradle",
+      "version": "8.10.2",
+      "declared_in": "android/gradle/wrapper/gradle-wrapper.properties"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "android/app/build.gradle.kts"
+    },
+    {
+      "tool": "android-sdk",
+      "version": "35",
+      "declared_in": "android/app/build.gradle.kts"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "shop-web",
+      "name": "@stripe/stripe-js",
+      "declared": "^4.9.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "@tauri-apps/api",
+      "declared": "^2.1.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "firebase",
+      "declared": "^11.0.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "react",
+      "declared": "^18.3.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "react-dom",
+      "declared": "^18.3.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "@tauri-apps/cli",
+      "declared": "^2.1.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "@types/node",
+      "declared": "^22.9.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "@types/react",
+      "declared": "^18.3.12",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "@types/react-dom",
+      "declared": "^18.3.1",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "@vitejs/plugin-react",
+      "declared": "^4.3.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "typescript",
+      "declared": "~5.6.2",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-web",
+      "name": "vite",
+      "declared": "^5.4.10",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "react-app/package.json"
+    },
+    {
+      "unit": "shop-desktop",
+      "name": "tauri-build",
+      "declared": "2.0.3",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "react-app/src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "shop-desktop",
+      "name": "tauri",
+      "declared": "2.1.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "shop-desktop",
+      "name": "serde",
+      "declared": "1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "shop-desktop",
+      "name": "serde_json",
+      "declared": "1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "react-app/src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "shop-functions-ts",
+      "name": "firebase-admin",
+      "declared": "^12.7.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "functions/package.json"
+    },
+    {
+      "unit": "shop-functions-ts",
+      "name": "firebase-functions",
+      "declared": "^6.1.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "functions/package.json"
+    },
+    {
+      "unit": "shop-functions-ts",
+      "name": "stripe",
+      "declared": "^17.4.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "functions/package.json"
+    },
+    {
+      "unit": "shop-functions-ts",
+      "name": "typescript",
+      "declared": "~5.6.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "functions/package.json"
+    },
+    {
+      "unit": "shop-functions",
+      "name": "firebase-functions",
+      "declared": "~=0.4.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "functions-python/pyproject.toml"
+    },
+    {
+      "unit": "shop-functions",
+      "name": "firebase-admin",
+      "declared": ">=6.6.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "functions-python/pyproject.toml"
+    },
+    {
+      "unit": "shop-functions",
+      "name": "stripe",
+      "declared": ">=11.3.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "functions-python/pyproject.toml"
+    },
+    {
+      "unit": "shop-functions",
+      "name": "pytest",
+      "declared": ">=8.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "functions-python/pyproject.toml"
+    },
+    {
+      "unit": ":",
+      "name": "com.android.application",
+      "declared": "8.7.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "android/build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin.android",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "android/build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "com.google.gms.google-services",
+      "declared": "4.4.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "android/build.gradle.kts"
+    },
+    {
+      "unit": ":app",
+      "name": "com.google.firebase:firebase-firestore",
+      "declared": null,
+      "resolved": "25.1.1",
+      "scope": "runtime",
+      "declared_in": "android/app/build.gradle.kts"
+    },
+    {
+      "unit": ":app",
+      "name": "androidx.core:core-ktx",
+      "declared": "1.15.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "android/app/build.gradle.kts"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "React",
+      "unit": "shop-web",
+      "evidence": "react-app/src/main.tsx"
+    },
+    {
+      "name": "Vite",
+      "unit": "shop-web",
+      "evidence": "react-app/vite.config.ts"
+    },
+    {
+      "name": "Firebase",
+      "unit": "shop-web",
+      "evidence": "react-app/src/firebase.ts"
+    },
+    {
+      "name": "Tauri",
+      "unit": "shop-desktop",
+      "evidence": "react-app/src-tauri/tauri.conf.json"
+    },
+    {
+      "name": "Firebase",
+      "unit": "shop-functions-ts",
+      "evidence": "functions/src/index.ts"
+    },
+    {
+      "name": "Firebase",
+      "unit": "shop-functions",
+      "evidence": "functions-python/main.py"
+    },
+    {
+      "name": "Android",
+      "unit": ":app",
+      "evidence": "android/app/build.gradle.kts"
+    },
+    {
+      "name": "Firebase",
+      "unit": ":app",
+      "evidence": "android/app/build.gradle.kts"
+    }
+  ],
+  "services": [
+    {
+      "name": "Cloud Firestore",
+      "kind": "database",
+      "evidence": "firestore.rules"
+    },
+    {
+      "name": "Firebase Authentication",
+      "kind": "authentication",
+      "evidence": "firestore.rules"
+    },
+    {
+      "name": "Cloud Functions for Firebase",
+      "kind": "compute",
+      "evidence": "firebase.json"
+    },
+    {
+      "name": "Firebase Hosting",
+      "kind": "hosting",
+      "evidence": "firebase.json"
+    },
+    {
+      "name": "Stripe",
+      "kind": "payments",
+      "evidence": "functions-python/pyproject.toml"
+    }
+  ],
+  "needs": {
+    "container": true,
+    "reason": "the Android build evaluates Gradle scripts, needs the Android SDK platform 35 and android/app/google-services.json, a secret that is not in the repository; the Tauri crate needs the system WebView libraries to build"
+  },
+  "traps": [
+    "the callable function is joined only by a string: functions-python/main.py exports create_checkout_session (the Python function name is the deployed name), react-app/src/checkout.ts calls httpsCallable(functions, \"create_checkout_session\")",
+    "the Tauri command is joined only by a string: #[tauri::command] save_receipt in react-app/src-tauri/src/lib.rs, invoke(\"save_receipt\", { orderId }) in checkout.ts; orderId becomes order_id by Tauri's argument renaming",
+    "the collection name orders is written five times: shared/collections.ts (ORDERS), functions-python/main.py, MainActivity.kt, firestore.rules and firestore.indexes.json; the TypeScript trigger builds the path from ORDERS plus /{orderId}",
+    "shared/ has no manifest: it is a source-tree unit (name null, named by its root) that two units compile and neither owns; shop-web reaches it through the @shared alias (tsconfig paths and Vite alias), shop-functions-ts through relative imports and rootDir \"..\" in functions/tsconfig.json, so both list it in depends_on",
+    "functions/package.json main is lib/functions/src/index.js, the compiled output (rootDir \"..\" keeps shared/ in the output); the source entry is functions/src/index.ts",
+    "the Tauri crate lives inside the npm unit's folder (react-app/src-tauri); its depends_on shop-web comes from tauri.conf.json (beforeBuildCommand npm run build, frontendDist ../dist), not from Cargo",
+    "two Cloud Functions codebases in one firebase.json: ts (Node 20) and py (Python 3.12); nodejs20 and python312 are written only in firebase.json and functions/package.json engines",
+    "the Firebase CLI installs Python functions from requirements.txt; this codebase declares its dependencies only in pyproject.toml",
+    "Stripe appears with three packages: @stripe/stripe-js (browser), stripe on npm (TypeScript functions), stripe on PyPI (Python functions)",
+    "android/app/google-services.json is absent although the google-services plugin needs it; firebase-firestore has no version: the platform firebase-bom 33.6.0 fixes it to 25.1.1 (read from the BOM on Google Maven), and the BOM itself is a constraint, not listed; the Gradle wrapper jar and gradlew scripts are absent",
+    "no lockfile anywhere: npm, Cargo and uv locks are not reproducible by hand, every resolved is null",
+    "no workspace joins the units: the only one is the Gradle build under android/; firebase.json deploys units but does not build them"
+  ],
+  "connections": [
+    {
+      "kind": "rpc",
+      "key": "create_checkout_session",
+      "provided_by": [
+        "shop-functions"
+      ],
+      "used_by": [
+        "shop-web"
+      ],
+      "evidence": [
+        "functions-python/main.py",
+        "react-app/src/checkout.ts"
+      ]
+    },
+    {
+      "kind": "ipc-command",
+      "key": "save_receipt",
+      "provided_by": [
+        "shop-desktop"
+      ],
+      "used_by": [
+        "shop-web"
+      ],
+      "evidence": [
+        "react-app/src-tauri/src/lib.rs",
+        "react-app/src/checkout.ts"
+      ]
+    },
+    {
+      "kind": "table",
+      "key": "orders",
+      "provided_by": [],
+      "used_by": [
+        "shop-web",
+        "shop-functions-ts",
+        "shop-functions",
+        ":app"
+      ],
+      "evidence": [
+        "shared/collections.ts",
+        "functions-python/main.py",
+        "android/app/src/main/java/com/acme/shop/MainActivity.kt",
+        "firestore.rules",
+        "firestore.indexes.json"
+      ]
+    },
+    {
+      "kind": "event",
+      "key": "orders/{orderId} updated",
+      "provided_by": [],
+      "used_by": [
+        "shop-functions-ts"
+      ],
+      "evidence": [
+        "functions/src/index.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/greeter/Greeter.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/greeter/GreeterTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "mvnw",
+      "why": "vendored"
+    },
+    {
+      "path": "mvnw.cmd",
+      "why": "vendored"
+    },
+    {
+      "path": ".mvn/wrapper/",
+      "why": "vendored"
+    }
+  ],
+  "units": [
+    {
+      "name": "com.example:greeter",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "maven-compiler-plugin:compile@default-compile",
+          "maven-compiler-plugin:testCompile@default-testCompile"
+        ],
+        "entry_files": [
+          "src/main/java/com/example/greeter/Greeter.java"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "maven",
+      "version": "3.9.9",
+      "declared_in": ".mvn/wrapper/maven-wrapper.properties"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "pom.xml#maven.compiler.release"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.example:greeter",
+      "name": "org.apache.commons:commons-lang3",
+      "declared": "3.17.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:greeter",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": "5.11.3",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:greeter",
+      "name": "org.apache.maven.plugins:maven-surefire-plugin",
+      "declared": "3.5.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit Jupiter",
+      "unit": "com.example:greeter",
+      "evidence": "pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every fact above is literal in the files. Only an evaluated model adds the versions of the plugins the pom does not name (compiler, resources, jar), which the default lifecycle of Maven 3.9.9 binds."
+  },
+  "traps": [
+    "The Maven version is declared only by the wrapper (distributionUrl names apache-maven 3.9.9); the pom says nothing about it. The wrapper script itself is version 3.3.2, which is not a toolchain.",
+    "distributionType=only-script: there is no maven-wrapper.jar and none is expected; mvnw downloads Maven itself.",
+    "mvnw, mvnw.cmd and .mvn/wrapper/ are vendored for Linguist and must not count as project Shell or Batchfile code.",
+    "The Java level is maven.compiler.release=17 (javac --release 17); the pom has no maven-compiler-plugin element, so the plugin version comes from the default lifecycle.",
+    "resolved is null for every dependency: the versions are literal and there is no lockfile."
+  ]
+}

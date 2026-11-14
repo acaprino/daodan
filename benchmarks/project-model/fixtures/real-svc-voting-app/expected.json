@@ -1,0 +1,95 @@
+{
+  "languages": [
+    {"path": "vote/app.py", "language": "Python"},
+    {"path": "seed-data/make-data.py", "language": "Python"},
+    {"path": "result/server.js", "language": "JavaScript"},
+    {"path": "result/views/app.js", "language": "JavaScript"},
+    {"path": "worker/Program.cs", "language": "C#"},
+    {"path": "vote/templates/index.html", "language": "HTML"},
+    {"path": "result/views/index.html", "language": "HTML"},
+    {"path": "result/views/stylesheets/style.css", "language": "CSS"},
+    {"path": "vote/Dockerfile", "language": "Dockerfile"},
+    {"path": "healthchecks/postgres.sh", "language": "Shell"}
+  ],
+  "excluded": [
+    {"path": "result/views/angular.min.js", "why": "vendored"},
+    {"path": "result/views/socket.io.js", "why": "vendored"},
+    {"path": "architecture.excalidraw.png", "why": "binary"}
+  ],
+  "units": [
+    {"name": "result", "kind": "npm-package", "root": "result", "manifest": "result/package.json",
+     "source_roots": ["result"], "depends_on": [],
+     "config": {"entry_files": ["result/server.js", "result/views/index.html"]}},
+    {"name": "Worker", "kind": "dotnet-project", "root": "worker", "manifest": "worker/Worker.csproj",
+     "source_roots": ["worker"], "depends_on": [],
+     "config": {"entry_files": ["worker/Program.cs"]}},
+    {"name": null, "kind": "python-project", "root": "vote", "manifest": "vote/requirements.txt",
+     "source_roots": ["vote"], "depends_on": [],
+     "config": {"entry_files": ["vote/app.py"]}},
+    {"name": null, "kind": "source-tree", "root": "seed-data", "manifest": null,
+     "source_roots": ["seed-data"], "depends_on": [],
+     "config": {"entry_files": ["seed-data/make-data.py", "seed-data/generate-votes.sh"]}}
+  ],
+  "workspace": null,
+  "toolchains": [
+    {"tool": "node", "version": "18-slim", "declared_in": "result/Dockerfile"},
+    {"tool": "node", "version": "8.9-slim", "declared_in": "result/tests/Dockerfile"},
+    {"tool": "python", "version": "3.11-slim", "declared_in": "vote/Dockerfile"},
+    {"tool": "python", "version": "3.9-slim", "declared_in": "seed-data/Dockerfile"},
+    {"tool": "dotnet", "version": "7.0", "declared_in": "worker/Dockerfile"}
+  ],
+  "dependencies": [
+    {"unit": "result", "name": "async", "declared": "^3.1.0", "resolved": "3.2.4", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "result", "name": "cookie-parser", "declared": "^1.4.6", "resolved": "1.4.6", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "result", "name": "express", "declared": "^4.18.2", "resolved": "4.18.2", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "result", "name": "method-override", "declared": "^3.0.0", "resolved": "3.0.0", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "result", "name": "pg", "declared": "^8.8.0", "resolved": "8.11.3", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "result", "name": "socket.io", "declared": "^4.7.2", "resolved": "4.7.2", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "result", "name": "stoppable", "declared": "^1.1.0", "resolved": "1.1.0", "scope": "runtime", "declared_in": "result/package.json"},
+    {"unit": "Worker", "name": "StackExchange.Redis", "declared": "2.2.4", "resolved": null, "scope": "runtime", "declared_in": "worker/Worker.csproj"},
+    {"unit": "Worker", "name": "Npgsql", "declared": "4.1.9", "resolved": null, "scope": "runtime", "declared_in": "worker/Worker.csproj"},
+    {"unit": "Worker", "name": "Newtonsoft.Json", "declared": "13.0.1", "resolved": null, "scope": "runtime", "declared_in": "worker/Worker.csproj"},
+    {"unit": null, "name": "Flask", "declared": null, "resolved": null, "scope": "runtime", "declared_in": "vote/requirements.txt"},
+    {"unit": null, "name": "Redis", "declared": null, "resolved": null, "scope": "runtime", "declared_in": "vote/requirements.txt"},
+    {"unit": null, "name": "gunicorn", "declared": null, "resolved": null, "scope": "runtime", "declared_in": "vote/requirements.txt"}
+  ],
+  "frameworks": [
+    {"name": "Express", "unit": "result", "evidence": "result/server.js"},
+    {"name": "Socket.IO", "unit": "result", "evidence": "result/server.js"},
+    {"name": "AngularJS", "unit": "result", "evidence": "result/views/index.html"},
+    {"name": "Flask", "unit": null, "evidence": "vote/app.py"}
+  ],
+  "services": [
+    {"name": "Redis", "kind": "queue", "evidence": "docker-compose.yml"},
+    {"name": "PostgreSQL", "kind": "database", "evidence": "docker-compose.yml"}
+  ],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "vote and seed-data have no project name: vote's only manifest is requirements.txt with three unpinned names, seed-data has no manifest at all and is a unit only because docker-compose.yml builds it as the seed service",
+    "the Python dependencies of vote have unit null because the unit has no name; requirements.txt writes Redis with a capital R, the PyPI project redis",
+    "the three services never name each other in a manifest: vote pushes JSON to the Redis list votes, the .NET worker pops it and writes the Postgres table votes, result polls that table; depends_on is empty everywhere",
+    "Redis works here as a queue (rpush in vote/app.py, ListLeftPopAsync in worker/Program.cs), not as a cache",
+    "the host names redis and db are Compose and Kubernetes service names written into the code (Redis(host=\"redis\"), Server=db, postgres://postgres:postgres@db/postgres); no environment variable carries them",
+    "result/views is browser code inside the result npm unit: AngularJS 1.4.14 and the Socket.IO 4.7.2 client are checked-in copies, while socket.io in package.json is the server package",
+    "vote/templates/index.html is a Jinja2 template with an .html extension; jQuery and jquery-cookie come from CDNs and are not dependencies",
+    "watchdog is installed only by the dev stage of vote/Dockerfile, which docker-compose.yml selects with target: dev; gunicorn serves only the final stage",
+    "two Pythons (3.11-slim for vote, 3.9-slim for seed-data) and two Nodes (18-slim for result, 8.9-slim for result/tests with PhantomJS); result/docker-compose.test.yml runs postgres:9.4 while the main Compose file and Kubernetes run postgres:15-alpine",
+    "worker/Dockerfile pins sdk:7.0 for the build stage and runtime:7.0 for the final one; Worker.csproj targets net7.0 and there is no global.json",
+    "docker-stack.yml version 3.9 is the Compose file format for Swarm, not a tool version",
+    "the three workflows call a reusable workflow in dockersamples/.github: no toolchain version is set in this repository's CI"
+  ],
+  "connections": [
+    {"kind": "queue", "key": "redis list votes", "provided_by": ["vote"], "used_by": ["Worker"],
+     "evidence": ["vote/app.py", "worker/Program.cs"]},
+    {"kind": "table", "key": "postgres table votes", "provided_by": ["Worker"], "used_by": ["result"],
+     "evidence": ["worker/Program.cs", "result/server.js"]},
+    {"kind": "address", "key": "redis", "provided_by": [], "used_by": ["vote", "Worker"],
+     "evidence": ["docker-compose.yml", "k8s-specifications/redis-service.yaml", "vote/app.py", "worker/Program.cs"]},
+    {"kind": "address", "key": "db", "provided_by": [], "used_by": ["Worker", "result"],
+     "evidence": ["docker-compose.yml", "k8s-specifications/db-service.yaml", "worker/Program.cs", "result/server.js"]},
+    {"kind": "http-route", "key": "POST http://vote/", "provided_by": ["vote"], "used_by": ["seed-data", "result"],
+     "evidence": ["vote/app.py", "seed-data/generate-votes.sh", "result/tests/tests.sh"]},
+    {"kind": "event", "key": "socket.io scores", "provided_by": ["result"], "used_by": ["result"],
+     "evidence": ["result/server.js", "result/views/app.js"]}
+  ]
+}

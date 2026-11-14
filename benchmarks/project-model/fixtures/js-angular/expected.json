@@ -1,0 +1,248 @@
+{
+  "languages": [
+    {
+      "path": "projects/storefront/src/main.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "projects/storefront/src/app/app.component.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "projects/ui-kit/src/lib/button.component.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "projects/storefront/src/app/app.component.html",
+      "language": "HTML"
+    },
+    {
+      "path": "projects/storefront/src/index.html",
+      "language": "HTML"
+    },
+    {
+      "path": "projects/storefront/src/styles.css",
+      "language": "CSS"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "ng-workspace",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json"
+        ]
+      }
+    },
+    {
+      "name": "storefront",
+      "kind": "angular-project",
+      "root": "projects/storefront",
+      "manifest": "angular.json",
+      "source_roots": [
+        "projects/storefront/src"
+      ],
+      "depends_on": [
+        "ui-kit"
+      ],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json",
+          "projects/storefront/tsconfig.app.json"
+        ],
+        "paths": {
+          "ui-kit": [
+            "dist/ui-kit"
+          ]
+        },
+        "entry_files": [
+          "projects/storefront/src/main.ts",
+          "projects/storefront/src/index.html"
+        ]
+      }
+    },
+    {
+      "name": "ui-kit",
+      "kind": "angular-project",
+      "root": "projects/ui-kit",
+      "manifest": "angular.json",
+      "source_roots": [
+        "projects/ui-kit/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json",
+          "projects/ui-kit/tsconfig.lib.json"
+        ],
+        "entry_files": [
+          "projects/ui-kit/src/public-api.ts"
+        ],
+        "ng_package": "projects/ui-kit/ng-package.json",
+        "package_json": "projects/ui-kit/package.json"
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "angular",
+    "root": ".",
+    "members": [
+      "projects/storefront",
+      "projects/ui-kit"
+    ]
+  },
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "ng-workspace",
+      "name": "@angular/common",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "@angular/compiler",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "@angular/core",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "@angular/platform-browser",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "rxjs",
+      "declared": "~7.8.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "tslib",
+      "declared": "^2.3.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "zone.js",
+      "declared": "~0.14.10",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "@angular-devkit/build-angular",
+      "declared": "^18.2.9",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "@angular/cli",
+      "declared": "^18.2.9",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "@angular/compiler-cli",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "ng-packagr",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ng-workspace",
+      "name": "typescript",
+      "declared": "~5.5.2",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "ui-kit",
+      "name": "@angular/common",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "peer",
+      "declared_in": "projects/ui-kit/package.json"
+    },
+    {
+      "unit": "ui-kit",
+      "name": "@angular/core",
+      "declared": "^18.2.0",
+      "resolved": null,
+      "scope": "peer",
+      "declared_in": "projects/ui-kit/package.json"
+    },
+    {
+      "unit": "ui-kit",
+      "name": "tslib",
+      "declared": "^2.3.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "projects/ui-kit/package.json"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Angular",
+      "unit": "storefront",
+      "evidence": "angular.json"
+    },
+    {
+      "name": "Angular",
+      "unit": "ui-kit",
+      "evidence": "angular.json"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "angular.json, not package.json, declares the units: storefront has no package.json of its own, ui-kit has one but it is the library manifest, not the unit definition",
+    "storefront depends on ui-kit through the tsconfig path alias ui-kit -> ./dist/ui-kit, which points at a build output that does not exist: the edge is real but only visible in the alias and the import",
+    "the peer dependencies of ui-kit have scope peer",
+    "Linguist calls the component template HTML, not Angular",
+    "no lockfile, so resolved is null",
+    "node is not declared anywhere"
+  ]
+}

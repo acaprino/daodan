@@ -1,0 +1,76 @@
+{
+  "languages": [
+    {
+      "path": "src/main.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "third_party/fmt/",
+      "why": "submodule"
+    }
+  ],
+  "units": [
+    {
+      "name": "logfmt",
+      "kind": "cmake-target",
+      "root": "",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "src/main.cpp"
+        ],
+        "entry_files": [
+          "src/main.cpp"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.16",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "c++",
+      "version": "17",
+      "declared_in": "CMakeLists.txt#CMAKE_CXX_STANDARD"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "logfmt",
+      "name": "https://github.com/fmtlib/fmt.git",
+      "declared": "10.x",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": ".gitmodules#submodule.third_party/fmt"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "third_party/fmt does not exist: the submodule was never checked out, and add_subdirectory(third_party/fmt) fails at configure time",
+    "the pinned fmt commit is not in any file: it is the gitlink in the parent repository's index, so resolved is null even though git pins it exactly",
+    "declared is the branch 10.x from .gitmodules: it only says which branch git submodule update --remote follows, not the checked-out version",
+    "fmt::fmt is the target defined by the missing subdirectory, not by find_package: no system fmt is looked up",
+    "a reader that walks the tree finds no fmt sources and no fmt manifest; only .gitmodules declares the dependency",
+    "getting fmt needs a git fetch, not running project code: needs.container stays false"
+  ]
+}

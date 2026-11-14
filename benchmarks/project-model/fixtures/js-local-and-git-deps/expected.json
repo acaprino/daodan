@@ -1,0 +1,71 @@
+{
+  "languages": [
+    {
+      "path": "packages/lib/index.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "packages/app/index.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "@acme/lib",
+      "kind": "npm-package",
+      "root": "packages/lib",
+      "manifest": "packages/lib/package.json",
+      "source_roots": [
+        "packages/lib"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "packages/lib/index.js"
+        ]
+      }
+    },
+    {
+      "name": "@acme/app",
+      "kind": "npm-package",
+      "root": "packages/app",
+      "manifest": "packages/app/package.json",
+      "source_roots": [
+        "packages/app"
+      ],
+      "depends_on": [
+        "@acme/lib"
+      ],
+      "config": {
+        "entry_files": [
+          "packages/app/index.js"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "@acme/app",
+      "name": "is-number",
+      "declared": "git+https://github.com/jonschlinkert/is-number.git#7.0.0",
+      "resolved": "7.0.0",
+      "scope": "runtime",
+      "declared_in": "packages/app/package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "there is no workspace: no root manifest, no workspaces field; the two packages are independent npm packages that happen to live in one folder, and @acme/app has its own lockfile",
+    "file:../lib is an internal link by path (depends_on), not a registry dependency; the lock records it as a link to ../lib",
+    "is-number comes from a git URL, not from the registry: the lock pins it to commit 98e8ff1da1a89f93d1397a24d7413ed15421c139 and rewrites the URL to git+ssh; resolved is the version at that commit (7.0.0)",
+    "the lock has no integrity hashes (not fabricated); @acme/lib has no lockfile of its own and no dependencies"
+  ]
+}

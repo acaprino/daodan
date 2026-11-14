@@ -1,0 +1,64 @@
+{
+  "languages": [
+    {
+      "path": "scripts/fetch.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "scripts/lib.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "scripts/report.mjs",
+      "language": "JavaScript"
+    },
+    {
+      "path": "bin/run",
+      "language": "JavaScript"
+    },
+    {
+      "path": "README.md",
+      "language": "Markdown"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": ".",
+      "manifest": null,
+      "source_roots": [
+        "scripts",
+        "bin"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": null,
+      "name": "ms",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "scripts/fetch.js"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "no package.json anywhere: units is empty; the only external package (ms) is imported by scripts/fetch.js and mentioned in README.md, and declared nowhere (declared is null)",
+    "node:fs and ./lib.js are not dependencies",
+    "bin/run has no extension: it is JavaScript only by its shebang",
+    "scripts/lib.js is CommonJS (exports.) and report.mjs is ESM: with no package.json there is no type field, so .js is CommonJS by default",
+    "no Node version is declared"
+  ]
+}

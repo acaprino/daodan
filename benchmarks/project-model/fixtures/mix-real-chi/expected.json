@@ -1,0 +1,71 @@
+{
+  "languages": [
+    {"path": "mux.go", "language": "Go"},
+    {"path": "_examples/rest/main.go", "language": "Go"},
+    {"path": "Makefile", "language": "Makefile"}
+  ],
+  "excluded": [
+    {"path": "_examples/rest/routes.json", "why": "generated"},
+    {"path": "_examples/rest/routes.md", "why": "generated"}
+  ],
+  "units": [
+    {"name": "github.com/go-chi/chi/v5", "kind": "go-module", "root": ".", "manifest": "go.mod",
+     "source_roots": ["."], "depends_on": [],
+     "config": {
+       "packages": ["github.com/go-chi/chi/v5", "github.com/go-chi/chi/v5/middleware"],
+       "nested_modules": ["_examples/rest", "_examples/versions"],
+       "build_tags": ["tinygo"],
+       "entry_files": ["_examples/custom-handler/main.go", "_examples/custom-method/main.go",
+                       "_examples/fileserver/main.go", "_examples/graceful/main.go",
+                       "_examples/hello-world/main.go", "_examples/limits/main.go", "_examples/logging/main.go",
+                       "_examples/pathvalue/main.go", "_examples/router-walk/main.go",
+                       "_examples/todos-resource/main.go"],
+       "skipped_by_pattern": ["_examples/custom-handler", "_examples/custom-method", "_examples/fileserver",
+                              "_examples/graceful", "_examples/hello-world", "_examples/limits",
+                              "_examples/logging", "_examples/pathvalue", "_examples/router-walk",
+                              "_examples/todos-resource"]}},
+    {"name": "rest-example", "kind": "go-module", "root": "_examples/rest", "manifest": "_examples/rest/go.mod",
+     "source_roots": ["_examples/rest"], "depends_on": [],
+     "config": {"packages": ["rest-example"], "entry_files": ["_examples/rest/main.go"]}},
+    {"name": "versions", "kind": "go-module", "root": "_examples/versions", "manifest": "_examples/versions/go.mod",
+     "source_roots": ["_examples/versions"], "depends_on": [],
+     "config": {"packages": ["versions", "versions/data", "versions/presenter/v1", "versions/presenter/v2",
+                             "versions/presenter/v3"],
+                "entry_files": ["_examples/versions/main.go"]}}
+  ],
+  "workspace": null,
+  "toolchains": [
+    {"tool": "go", "version": "1.24", "declared_in": "go.mod"},
+    {"tool": "go", "version": "1.22", "declared_in": "_examples/rest/go.mod"},
+    {"tool": "go", "version": "1.16", "declared_in": "_examples/versions/go.mod"},
+    {"tool": "go", "version": "1.24.x", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.go-version"},
+    {"tool": "go", "version": "1.25.x", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.go-version"},
+    {"tool": "go", "version": "1.26.x", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.go-version"},
+    {"tool": "go", "version": "1.27.x", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.go-version"}
+  ],
+  "dependencies": [
+    {"unit": "rest-example", "name": "github.com/go-chi/chi/v5", "declared": "v5.2.4", "resolved": "v5.2.4", "scope": "runtime", "declared_in": "_examples/rest/go.mod"},
+    {"unit": "rest-example", "name": "github.com/go-chi/docgen", "declared": "v1.2.0", "resolved": "v1.2.0", "scope": "runtime", "declared_in": "_examples/rest/go.mod"},
+    {"unit": "rest-example", "name": "github.com/go-chi/render", "declared": "v1.0.1", "resolved": "v1.0.1", "scope": "runtime", "declared_in": "_examples/rest/go.mod"},
+    {"unit": "versions", "name": "github.com/go-chi/chi/v5", "declared": "v5.1.0", "resolved": "v5.1.0", "scope": "runtime", "declared_in": "_examples/versions/go.mod"},
+    {"unit": "versions", "name": "github.com/go-chi/render", "declared": "v1.0.3", "resolved": "v1.0.3", "scope": "runtime", "declared_in": "_examples/versions/go.mod"}
+  ],
+  "frameworks": [
+    {"name": "chi", "unit": "rest-example", "evidence": "_examples/rest/main.go"},
+    {"name": "chi", "unit": "versions", "evidence": "_examples/versions/main.go"}
+  ],
+  "services": [],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "the root module github.com/go-chi/chi/v5 requires nothing: go.mod has no require block and there is no go.sum",
+    "two nested modules with their own go.mod: _examples/rest (module rest-example, go 1.22) and _examples/versions (module versions, go 1.16); module paths without a domain, so nothing outside can import them",
+    "the nested modules require the published github.com/go-chi/chi/v5 (v5.2.4 and v5.1.0) with no replace directive: they compile against the module proxy's copy, not against the root module's code in the same checkout, so depends_on is empty and chi is an external dependency of theirs",
+    "the other ten _examples/* folders have no go.mod: their main packages belong to the root module and import only github.com/go-chi/chi/v5 and its middleware; ./... skips them because their names start with _, so they compile only when named one by one",
+    "versions requires github.com/ajg/form v1.5.1 as // indirect: not a direct dependency",
+    "_examples/rest/routes.json and routes.md are the output of docgen, written by running the example with -routes",
+    "the only build constraint is //go:build !tinygo in middleware/profiler.go, true in the default build",
+    "CI runs a matrix of four Go lines on ubuntu-latest and windows-latest, with GOPATH set to the workspace and the checkout placed under src/github.com/<repository>",
+    "Makefile's docs target runs npx docsify-cli over ./docs, a folder that does not exist at this commit; no Node version is declared",
+    "testdata/cert.pem and key.pem are test certificates, not code"
+  ]
+}

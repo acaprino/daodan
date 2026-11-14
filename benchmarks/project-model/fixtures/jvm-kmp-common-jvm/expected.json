@@ -1,0 +1,112 @@
+{
+  "languages": [
+    {
+      "path": "src/commonMain/kotlin/com/example/greeting/Greeting.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "src/jvmMain/kotlin/com/example/greeting/Platform.jvm.kt",
+      "language": "Kotlin"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle.kts",
+      "source_roots": [
+        "src/commonMain/kotlin",
+        "src/jvmMain/kotlin",
+        "src/commonTest/kotlin"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "commonMain": [
+            "src/commonMain/kotlin"
+          ],
+          "commonTest": [
+            "src/commonTest/kotlin"
+          ],
+          "jvmMain": [
+            "src/jvmMain/kotlin"
+          ],
+          "jvmTest": [
+            "src/jvmTest/kotlin"
+          ]
+        },
+        "compile_tasks": [
+          "compileKotlinJvm",
+          "compileTestKotlinJvm"
+        ],
+        "build_tags": [
+          "target:jvm"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin.multiplatform",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlinx:kotlinx-coroutines-core",
+      "declared": "1.9.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.slf4j:slf4j-api",
+      "declared": "2.0.16",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin:kotlin-test",
+      "declared": null,
+      "resolved": "2.0.21",
+      "scope": "test",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Kotlin Multiplatform",
+      "unit": ":",
+      "evidence": "build.gradle.kts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Targets, source sets and dependencies are literal in the kotlin {} block. Only Gradle resolves kotlinx-coroutines-core to the JVM variant artifact kotlinx-coroutines-core-jvm and kotlin-test to its JVM and JUnit variants."
+  },
+  "traps": [
+    "The one Gradle project has four Kotlin source sets, and dependencies are per source set: kotlinx-coroutines-core belongs to commonMain (seen by every target), slf4j-api only to jvmMain. Neither is on a configuration named implementation.",
+    "Source directories are src/<sourceSet>/kotlin, not src/main/kotlin: a reader expecting the JVM layout finds no sources.",
+    "Greeting.kt declares expect fun platformName(); its actual is in src/jvmMain/kotlin/com/example/greeting/Platform.jvm.kt. The .jvm.kt suffix is a naming convention, not a language or a target selector.",
+    "kotlinx-coroutines-core is a multiplatform coordinate: on the JVM target Gradle module metadata redirects it to org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0. The declared name stays kotlinx-coroutines-core.",
+    "jvmTest exists by convention (src/jvmTest/kotlin) although no file is there; commonTest compiles into the JVM test compilation.",
+    "kotlin(\"test\") has no version: the plugin aligns it to 2.0.21. The Kotlin compiler and kotlin-stdlib 2.0.21 come from the plugin, not from a toolchain or a declared dependency."
+  ]
+}

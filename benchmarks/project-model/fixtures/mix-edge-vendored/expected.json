@@ -1,0 +1,39 @@
+{
+  "languages": [
+    {"path": "src/app.js", "language": "JavaScript"},
+    {"path": "public/index.html", "language": "HTML"},
+    {"path": "third_party/lz4/lz4.c", "language": "C"},
+    {"path": "docs/conf.py", "language": "Python"}
+  ],
+  "excluded": [
+    {"path": "vendor/", "why": "vendored"},
+    {"path": "third_party/", "why": "vendored"},
+    {"path": "node_modules/", "why": "vendored"},
+    {"path": "public/css/normalize.min.css", "why": "vendored"},
+    {"path": "public/js/app.min.js", "why": "generated"},
+    {"path": "docs/", "why": "documentation"},
+    {"path": "assets/logo.png", "why": "binary"}
+  ],
+  "units": [
+    {"name": "atlas-web", "kind": "npm-package", "root": ".", "manifest": "package.json",
+     "source_roots": ["src"], "depends_on": [], "config": {"entry_files": ["src/app.js"]}}
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {"unit": "atlas-web", "name": "left-pad", "declared": "^1.3.0", "resolved": null, "scope": "runtime", "declared_in": "package.json"}
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "node_modules/ is committed by mistake although .gitignore lists it: a reader that honours .gitignore without git skips it, a reader of the tree counts it; either way it is vendored",
+    "left-pad 1.3.0 is installed in node_modules but there is no lockfile: resolved stays null",
+    "public/js/app.min.js is the project's own bundle (npm run build): generated, while public/css/normalize.min.css is a third-party file: vendored; Linguist calls both vendored by the .min. rule",
+    "third_party/lz4 is C code that nothing compiles: no C unit",
+    "vendor/leaflet/leaflet.js is used through a script tag and the global L, not through a declared dependency",
+    "docs/conf.py is Python but it is Sphinx configuration inside documentation; myst_parser in it is not a dependency of any unit",
+    "esbuild is named in the build script but not declared anywhere",
+    "public/index.html is the page that loads the app; it is not excluded"
+  ]
+}

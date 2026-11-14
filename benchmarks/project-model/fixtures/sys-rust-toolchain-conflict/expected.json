@@ -1,0 +1,67 @@
+{
+  "languages": [
+    {
+      "path": "src/main.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "pinned",
+      "kind": "cargo-crate",
+      "root": "",
+      "manifest": "Cargo.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "bin",
+            "name": "pinned",
+            "path": "src/main.rs"
+          }
+        ],
+        "effective_toolchain": "1.79.0",
+        "entry_files": [
+          "src/main.rs"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "rust",
+      "version": "1.80",
+      "declared_in": "Cargo.toml"
+    },
+    {
+      "tool": "rust",
+      "version": "1.82.0",
+      "declared_in": "rust-toolchain.toml"
+    },
+    {
+      "tool": "rust",
+      "version": "1.79.0",
+      "declared_in": "rust-toolchain"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "both rust-toolchain and rust-toolchain.toml are in the same directory: rustup uses rust-toolchain (the legacy file) and warns, so the toolchain is 1.79.0, not 1.82.0",
+    "rust-version = \"1.80\" is the minimum supported Rust version, a check, not a toolchain choice: with 1.79.0 selected, cargo refuses the package",
+    "src/main.rs uses std::sync::LazyLock, stable since 1.80: the toolchain rustup picks cannot compile it",
+    "the legacy rust-toolchain file is a bare channel name, not TOML; components and targets exist only in the .toml file, which is ignored",
+    "three versions, three meanings: a reader that takes the first file found reports a different toolchain depending on file order"
+  ]
+}

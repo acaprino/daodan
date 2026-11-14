@@ -1,0 +1,1384 @@
+{
+ "languages": [
+  {
+   "path": "src/main/java/io/github/jhipster/sample/JhipsterSampleApplicationApp.java",
+   "language": "Java"
+  },
+  {
+   "path": "src/main/webapp/main.ts",
+   "language": "TypeScript"
+  },
+  {
+   "path": "src/main/webapp/index.html",
+   "language": "HTML"
+  },
+  {
+   "path": "src/main/webapp/content/scss/global.scss",
+   "language": "SCSS"
+  },
+  {
+   "path": "src/main/webapp/content/css/loading.css",
+   "language": "CSS"
+  },
+  {
+   "path": "proxy.config.mjs",
+   "language": "JavaScript"
+  },
+  {
+   "path": ".lintstagedrc.cjs",
+   "language": "JavaScript"
+  },
+  {
+   "path": "src/main/docker/jib/entrypoint.sh",
+   "language": "Shell"
+  },
+  {
+   "path": ".devcontainer/Dockerfile",
+   "language": "Dockerfile"
+  },
+  {
+   "path": "src/main/resources/templates/mail/activationEmail.html",
+   "language": "HTML"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "mvnw",
+   "why": "vendored"
+  },
+  {
+   "path": "mvnw.cmd",
+   "why": "vendored"
+  },
+  {
+   "path": ".mvn/wrapper/",
+   "why": "vendored"
+  },
+  {
+   "path": "npmw",
+   "why": "vendored"
+  },
+  {
+   "path": "npmw.cmd",
+   "why": "vendored"
+  },
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE.txt",
+   "why": "documentation"
+  },
+  {
+   "path": "src/main/resources/config/tls/keystore.p12",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_0_head-192.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_0_head-256.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_0_head-384.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_0_head-512.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_1_head-192.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_1_head-256.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_1_head-384.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_1_head-512.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_2_head-192.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_2_head-256.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_2_head-384.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_2_head-512.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_3_head-192.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_3_head-256.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_3_head-384.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/jhipster_family_member_3_head-512.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/content/images/logo-jhipster.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/main/webapp/favicon.ico",
+   "why": "binary"
+  },
+  {
+   "path": "src/test/javascript/cypress/fixtures/integration-test.png",
+   "why": "binary"
+  }
+ ],
+ "units": [
+  {
+   "name": "jhipster-sample-application",
+   "kind": "npm-package",
+   "root": ".",
+   "manifest": "package.json",
+   "source_roots": [
+    "src/main/webapp",
+    "src/test/javascript",
+    "build-plugins"
+   ],
+   "depends_on": [],
+   "config": {
+    "tsconfig": [
+     "tsconfig.json",
+     "tsconfig.app.json",
+     "tsconfig.spec.json"
+    ],
+    "paths": {
+     "app/config": [
+      "src/main/webapp/app/config/index.ts"
+     ],
+     "app/core/auth": [
+      "src/main/webapp/app/core/auth/index.ts"
+     ],
+     "app/core/request": [
+      "src/main/webapp/app/core/request/index.ts"
+     ],
+     "app/core/util": [
+      "src/main/webapp/app/core/util/index.ts"
+     ],
+     "app/shared/alert": [
+      "src/main/webapp/app/shared/alert/index.ts"
+     ],
+     "app/shared/auth": [
+      "src/main/webapp/app/shared/auth/index.ts"
+     ],
+     "app/shared/date": [
+      "src/main/webapp/app/shared/date/index.ts"
+     ],
+     "app/shared/language": [
+      "src/main/webapp/app/shared/language/index.ts"
+     ],
+     "app/shared/pagination": [
+      "src/main/webapp/app/shared/pagination/index.ts"
+     ],
+     "app/shared/sort": [
+      "src/main/webapp/app/shared/sort/index.ts"
+     ],
+     "*": [
+      "src/main/webapp/*"
+     ]
+    }
+   }
+  },
+  {
+   "name": "jhipster-sample-application",
+   "kind": "angular-project",
+   "root": ".",
+   "manifest": "angular.json",
+   "source_roots": [
+    "src/main/webapp"
+   ],
+   "depends_on": [],
+   "config": {
+    "tsconfig": [
+     "tsconfig.json",
+     "tsconfig.app.json",
+     "tsconfig.spec.json"
+    ],
+    "paths": {
+     "app/config": [
+      "src/main/webapp/app/config/index.ts"
+     ],
+     "app/core/auth": [
+      "src/main/webapp/app/core/auth/index.ts"
+     ],
+     "app/core/request": [
+      "src/main/webapp/app/core/request/index.ts"
+     ],
+     "app/core/util": [
+      "src/main/webapp/app/core/util/index.ts"
+     ],
+     "app/shared/alert": [
+      "src/main/webapp/app/shared/alert/index.ts"
+     ],
+     "app/shared/auth": [
+      "src/main/webapp/app/shared/auth/index.ts"
+     ],
+     "app/shared/date": [
+      "src/main/webapp/app/shared/date/index.ts"
+     ],
+     "app/shared/language": [
+      "src/main/webapp/app/shared/language/index.ts"
+     ],
+     "app/shared/pagination": [
+      "src/main/webapp/app/shared/pagination/index.ts"
+     ],
+     "app/shared/sort": [
+      "src/main/webapp/app/shared/sort/index.ts"
+     ],
+     "*": [
+      "src/main/webapp/*"
+     ]
+    },
+    "entry_files": [
+     "src/main/webapp/main.ts",
+     "src/main/webapp/index.html"
+    ],
+    "out_dir": "target/classes/static",
+    "esbuild_plugins": [
+     "build-plugins/i18n-esbuild.ts",
+     "build-plugins/define-esbuild.ts"
+    ]
+   }
+  },
+  {
+   "name": "io.github.jhipster.sample:jhipster-sample-application",
+   "kind": "maven-module",
+   "root": ".",
+   "manifest": "pom.xml",
+   "source_roots": [
+    "src/main/java",
+    "src/test/java"
+   ],
+   "depends_on": [],
+   "config": {
+    "source_sets": {
+     "main": [
+      "src/main/java"
+     ],
+     "test": [
+      "src/test/java"
+     ]
+    },
+    "entry_files": [
+     "src/main/java/io/github/jhipster/sample/JhipsterSampleApplicationApp.java"
+    ],
+    "profiles": {
+     "active_by_default": [
+      "dev",
+      "docker-compose",
+      "webapp"
+     ],
+     "other": [
+      "api-docs",
+      "e2e",
+      "eclipse",
+      "IDE",
+      "no-liquibase",
+      "prod",
+      "tls",
+      "war"
+     ]
+    },
+    "parent": "org.springframework.boot:spring-boot-starter-parent:4.1.1"
+   }
+  }
+ ],
+ "workspace": {
+  "tool": "angular",
+  "root": ".",
+  "members": [
+   "."
+  ]
+ },
+ "toolchains": [
+  {
+   "tool": "java",
+   "version": "21",
+   "declared_in": "pom.xml#properties.java.version"
+  },
+  {
+   "tool": "java",
+   "version": "25-jre-noble",
+   "declared_in": "pom.xml#properties.jib-maven-plugin.image"
+  },
+  {
+   "tool": "maven",
+   "version": "3.9.16",
+   "declared_in": ".mvn/wrapper/maven-wrapper.properties"
+  },
+  {
+   "tool": "maven",
+   "version": "3.2.5",
+   "declared_in": "pom.xml#properties.maven.version"
+  },
+  {
+   "tool": "node",
+   "version": "v24.21.0",
+   "declared_in": "pom.xml#properties.node.version"
+  },
+  {
+   "tool": "npm",
+   "version": "12.0.2",
+   "declared_in": "pom.xml#properties.npm.version"
+  },
+  {
+   "tool": "node",
+   "version": ">=24.21.0",
+   "declared_in": "package.json#engines"
+  },
+  {
+   "tool": "node",
+   "version": "20.15.0",
+   "declared_in": ".github/workflows/github-actions.yml"
+  },
+  {
+   "tool": "java",
+   "version": "17.x",
+   "declared_in": ".github/workflows/github-actions.yml"
+  },
+  {
+   "tool": "java",
+   "version": "21-bullseye",
+   "declared_in": ".devcontainer/devcontainer.json#build.args.VARIANT"
+  },
+  {
+   "tool": "node",
+   "version": "24.21.0",
+   "declared_in": ".devcontainer/devcontainer.json#build.args.NODE_VERSION"
+  },
+  {
+   "tool": "java",
+   "version": "17",
+   "declared_in": ".devcontainer/Dockerfile"
+  }
+ ],
+ "dependencies": [
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/common",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/compiler",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/core",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/forms",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/localize",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/platform-browser",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/router",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@fortawesome/angular-fontawesome",
+   "declared": "5.1.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@fortawesome/free-solid-svg-icons",
+   "declared": "7.3.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@ng-bootstrap/ng-bootstrap",
+   "declared": "21.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@ngx-translate/core",
+   "declared": "18.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "bootstrap",
+   "declared": "5.3.8",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "dayjs",
+   "declared": "1.11.23",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "ngx-infinite-scroll",
+   "declared": "22.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "rxjs",
+   "declared": "7.8.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "tslib",
+   "declared": "2.8.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular-builders/custom-esbuild",
+   "declared": "22.0.1",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/build",
+   "declared": "22.1.8",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/cli",
+   "declared": "22.1.8",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/compiler-cli",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@angular/service-worker",
+   "declared": "22.1.6",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@cypress/schematic",
+   "declared": "6.0.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@eslint/js",
+   "declared": "10.0.1",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@types/folder-hash",
+   "declared": "4.0.4",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@types/node",
+   "declared": "22.20.2",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "@vitest/coverage-v8",
+   "declared": "4.1.11",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "angular-eslint",
+   "declared": "22.5.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "axios",
+   "declared": "1.20.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "concurrently",
+   "declared": "10.0.5",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "cypress",
+   "declared": "16.0.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "cypress-audit",
+   "declared": "1.1.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "cypress-terminal-report",
+   "declared": "7.3.3",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "deepmerge",
+   "declared": "4.3.1",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "eslint",
+   "declared": "10.10.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "eslint-config-prettier",
+   "declared": "10.1.8",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "eslint-plugin-cypress",
+   "declared": "7.0.2",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "eslint-plugin-prettier",
+   "declared": "5.5.6",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "folder-hash",
+   "declared": "4.1.3",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "generator-jhipster",
+   "declared": "9.4.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "globals",
+   "declared": "17.12.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "husky",
+   "declared": "9.1.7",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "jiti",
+   "declared": "2.7.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "jsdom",
+   "declared": "30.0.1",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "lighthouse",
+   "declared": "13.4.1",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "lint-staged",
+   "declared": "17.5.1",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "prettier",
+   "declared": "3.9.6",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "prettier-plugin-java",
+   "declared": "2.10.3",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "prettier-plugin-packagejson",
+   "declared": "3.0.2",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "rimraf",
+   "declared": "6.1.3",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "swagger-ui-dist",
+   "declared": "5.32.15",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "tinyglobby",
+   "declared": "0.2.17",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "typescript",
+   "declared": "6.0.3",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "typescript-eslint",
+   "declared": "8.70.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "vitest",
+   "declared": "4.1.11",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "vitest-sonar-reporter",
+   "declared": "3.0.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "jhipster-sample-application",
+   "name": "wait-on",
+   "declared": "9.1.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "package.json"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "Spring Boot",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "pom.xml"
+  },
+  {
+   "name": "Spring MVC",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "src/main/java/io/github/jhipster/sample/web/rest/BankAccountResource.java"
+  },
+  {
+   "name": "Spring Data JPA",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "pom.xml"
+  },
+  {
+   "name": "Spring Security",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "pom.xml"
+  },
+  {
+   "name": "Hibernate",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "pom.xml"
+  },
+  {
+   "name": "Liquibase",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "src/main/resources/config/liquibase/master.xml"
+  },
+  {
+   "name": "MapStruct",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "pom.xml"
+  },
+  {
+   "name": "Thymeleaf",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "src/main/resources/templates/mail/activationEmail.html"
+  },
+  {
+   "name": "JHipster",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": ".yo-rc.json"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "src/test/resources/junit-platform.properties"
+  },
+  {
+   "name": "ArchUnit",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "src/test/java/io/github/jhipster/sample/TechnicalStructureTest.java"
+  },
+  {
+   "name": "Gatling",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "src/test/java/gatling/simulations/BankAccountGatlingTest.java"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": "io.github.jhipster.sample:jhipster-sample-application",
+   "evidence": "pom.xml"
+  },
+  {
+   "name": "Angular",
+   "unit": "jhipster-sample-application",
+   "evidence": "angular.json"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "jhipster-sample-application",
+   "evidence": "src/main/webapp/content/scss/vendor.scss"
+  },
+  {
+   "name": "Vitest",
+   "unit": "jhipster-sample-application",
+   "evidence": "vitest-base.config.ts"
+  },
+  {
+   "name": "Cypress",
+   "unit": "jhipster-sample-application",
+   "evidence": "cypress.config.ts"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "src/main/docker/postgresql.yml"
+  },
+  {
+   "name": "H2",
+   "kind": "database",
+   "evidence": "src/main/resources/config/application-dev.yml"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "src/main/docker/monitoring.yml"
+  },
+  {
+   "name": "Grafana",
+   "kind": "monitoring",
+   "evidence": "src/main/docker/monitoring.yml"
+  },
+  {
+   "name": "JHipster Control Center",
+   "kind": "admin",
+   "evidence": "src/main/docker/jhipster-control-center.yml"
+  },
+  {
+   "name": "SonarQube",
+   "kind": "analysis",
+   "evidence": "src/main/docker/sonar.yml"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "src/main/resources/config/application-dev.yml"
+  }
+ ],
+ "needs": {
+  "container": true,
+  "reason": "every Maven dependency but jhipster-framework, springdoc, archunit, gatling, liquibase-core and mapstruct has no version: spring-boot-starter-parent 4.1.1 and the imported spring-cloud-dependencies 2025.1.3 BOM fix them, and ${liquibase.version} is defined only in the parent; profiles dev, docker-compose and webapp are active by default and add h2, spring-boot-devtools and spring-boot-docker-compose, prod swaps in postgresql; the default build runs frontend-maven-plugin, which downloads Node v24.21.0 and npm 12.0.2 into target/node and runs the Angular build"
+ },
+ "unknown": [
+  {
+   "facet": "dependencies",
+   "known": [
+    "jhipster-sample-application"
+   ]
+  }
+ ],
+ "connections": [
+  {
+   "kind": "http-route",
+   "key": "POST /api/authenticate",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AuthenticateController.java",
+    "src/main/webapp/app/core/auth/auth-jwt.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /api/account",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/core/auth/account.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /api/account",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/core/auth/account.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /api/register",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/account/register/register.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /api/activate",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/account/activate/activate.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /api/account/change-password",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/account/password/password.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /api/account/reset-password/init",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/account/password-reset/init/password-reset-init.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "POST /api/account/reset-password/finish",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AccountResource.java",
+    "src/main/webapp/app/account/password-reset/finish/password-reset-finish.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/api/bank-accounts (GET, POST, PUT, PATCH, DELETE)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/BankAccountResource.java",
+    "src/main/webapp/app/entities/bank-account/service/bank-account.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/api/labels (GET, POST, PUT, PATCH, DELETE)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/LabelResource.java",
+    "src/main/webapp/app/entities/label/service/label.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/api/operations (GET, POST, PUT, PATCH, DELETE)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/OperationResource.java",
+    "src/main/webapp/app/entities/operation/service/operation.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/api/authorities (GET, POST, DELETE)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/AuthorityResource.java",
+    "src/main/webapp/app/entities/admin/authority/service/authority.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/api/admin/users (GET, POST, PUT, DELETE)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/UserResource.java",
+    "src/main/webapp/app/entities/admin/user-management/service/user-management.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /api/users",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/java/io/github/jhipster/sample/web/rest/PublicUserResource.java",
+    "src/main/webapp/app/entities/user/service/user.service.ts",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /management/health",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/admin/health/health.service.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /management/jhimetrics",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/admin/metrics/metrics.service.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /management/threaddump",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/admin/metrics/metrics.service.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "/management/loggers (GET, POST)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/admin/logs/logs.service.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /management/configprops",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/admin/configuration/configuration.service.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /management/env",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/admin/configuration/configuration.service.ts"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /management/info",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/resources/config/application.yml",
+    "src/main/webapp/app/layouts/profiles/profile.service.ts"
+   ]
+  },
+  {
+   "kind": "openapi-operation",
+   "key": "GET /management/jhiopenapigroups and /v3/api-docs",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "src/main/webapp/swagger-ui/index.html",
+    "proxy.config.mjs"
+   ]
+  },
+  {
+   "kind": "static-assets",
+   "key": "target/classes/static",
+   "provided_by": [
+    "jhipster-sample-application"
+   ],
+   "used_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "evidence": [
+    "angular.json",
+    "pom.xml"
+   ]
+  },
+  {
+   "kind": "build-call",
+   "key": "frontend-maven-plugin: install-node-and-npm, npm run webapp:build",
+   "provided_by": [
+    "jhipster-sample-application"
+   ],
+   "used_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "evidence": [
+    "pom.xml",
+    "npmw"
+   ]
+  },
+  {
+   "kind": "build-call",
+   "key": "./mvnw (app:start, backend:*, java:*)",
+   "provided_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "used_by": [
+    "jhipster-sample-application"
+   ],
+   "evidence": [
+    "package.json"
+   ]
+  },
+  {
+   "kind": "database",
+   "key": "jdbc:postgresql://postgresql:5432/jhipsterSampleApplication",
+   "provided_by": [],
+   "used_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/docker/app.yml",
+    "src/main/resources/config/application-prod.yml"
+   ]
+  },
+  {
+   "kind": "database",
+   "key": "jdbc:h2:mem:jhipsterSampleApplication",
+   "provided_by": [],
+   "used_by": [
+    "io.github.jhipster.sample:jhipster-sample-application"
+   ],
+   "evidence": [
+    "src/main/resources/config/application-dev.yml"
+   ]
+  }
+ ],
+ "traps": [
+  "three build systems share the root: pom.xml (Maven, Spring Boot), package.json (npm) and angular.json (one Angular project with root \"\" and sourceRoot src/main/webapp); the npm package and the Angular project have the same name jhipster-sample-application; references by that name mean the npm package for dependencies, Vitest, Cypress and the build calls, and the angular-project for Angular, Bootstrap and the HTTP clients in connections",
+  "the two halves call each other: package.json scripts run ./mvnw, and the Maven webapp profile (active by default) runs npm through frontend-maven-plugin with its own Node v24.21.0 and npm 12.0.2",
+  "the Angular build writes to target/classes/static/, the Maven output folder, so the Spring Boot jar serves the front end",
+  "there is no package-lock.json in the repository: every npm version is written exact in package.json, but resolved stays null",
+  "Java is asked five ways: java.version 21 in pom.xml, the jib base image eclipse-temurin:25-jre-noble, the workflow's java-version 17.x, the devcontainer VARIANT 21-bullseye and the devcontainer Dockerfile default VARIANT 17",
+  "Node is asked four ways: node.version v24.21.0 in pom.xml, engines >=24.21.0, NODE_VERSION 24.21.0 in the devcontainer and 20.15.0 in the workflow (both as env NODE_VERSION and setup-node)",
+  "maven.version 3.2.5 is the minimum checked by the enforcer; the wrapper asks for Maven 3.9.16 with distributionType only-script, yet .mvn/wrapper/maven-wrapper.jar is committed",
+  "npmw and npmw.cmd are generator wrappers like mvnw: they install Node through ./mvnw -Pwebapp frontend:install-node-and-npm before running npm",
+  "the whole repository is the output of generator-jhipster 9.4.0 (.yo-rc.json, .jhipster/*.json, GeneratedByJHipster.java): it is kept and edited as project code, not excluded as generated",
+  "tsconfig.json maps eleven aliases, among them a catch-all * to src/main/webapp/*, so app/... imports resolve from the source root",
+  "the Angular build uses @angular-builders/custom-esbuild with two esbuild plugins in build-plugins/, and defines SERVER_API_URL as an empty string: every client call is relative to the page origin",
+  "the dev server on port 9060 proxies /api, /management, /v3/api-docs and /h2-console to the back end on 127.0.0.1:8080 (proxy.config.mjs)",
+  "src/test/java holds two source trees with different roots: io.github.jhipster.sample tests and the Gatling simulations in package gatling.simulations",
+  "Spring Boot's docker compose support starts src/main/docker/services.yml (PostgreSQL) when the app starts; Prometheus, Grafana, JHipster Control Center and SonarQube are in separate compose files that nothing starts automatically",
+  "Ehcache is the Hibernate second-level cache inside the JVM, not an external service",
+  "the cypress fixture integration-test.png and the TLS keystore keystore.p12 are binary files inside source folders",
+  "languages lists programming and markup languages only; JSON, YAML, XML, CSV and properties files are present and not listed",
+  "connections is a sample of 27 points: the REST resources with the Angular services that call them, the management endpoints used by the admin screens, the OpenAPI groups, the static build output, the two build tools calling each other and the two databases"
+ ]
+}

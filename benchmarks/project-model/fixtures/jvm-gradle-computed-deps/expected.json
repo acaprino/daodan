@@ -1,0 +1,90 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/computed/Config.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle",
+      "source_roots": [
+        "src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "com.fasterxml.jackson.core:jackson-core",
+      "declared": "2.18.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "gradle.properties#jacksonVersion"
+    },
+    {
+      "unit": ":",
+      "name": "com.fasterxml.jackson.core:jackson-databind",
+      "declared": "2.18.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "gradle.properties#jacksonVersion"
+    },
+    {
+      "unit": ":",
+      "name": "com.fasterxml.jackson.core:jackson-annotations",
+      "declared": "2.18.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "gradle.properties#jacksonVersion"
+    },
+    {
+      "unit": ":",
+      "name": "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml",
+      "declared": "2.18.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "gradle.properties#jacksonVersion"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Jackson",
+      "unit": ":",
+      "evidence": "build.gradle"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "The coordinates exist only when Gradle runs the script: the artifact names come from a Groovy loop over a list, the version from the project property jacksonVersion, and jackson-dataformat-yaml from an if on the property withYaml. Both properties can be overridden from outside the files (-P, ORG_GRADLE_PROJECT_*, ~/.gradle/gradle.properties)."
+  },
+  "traps": [
+    "No dependency coordinate is written out: a text scan of build.gradle finds the template com.fasterxml.jackson.core:jackson-${module}:${jacksonVersion}, not three artifacts.",
+    "jacksonVersion is a Gradle project property from gradle.properties, visible as a plain variable in the Groovy script.",
+    "jackson-dataformat-yaml is present only because gradle.properties sets withYaml=true; with -PwithYaml=false the build has three dependencies, and src/main/java/com/example/computed/Config.java no longer compiles.",
+    "No Java version and no Gradle version are declared: toolchains is empty and the build uses the JDK that runs Gradle.",
+    "build.gradle writes the placeholder ${jacksonVersion}; declared is its value 2.18.1 from gradle.properties#jacksonVersion, and resolved stays null because no lockfile or BOM fixes it."
+  ]
+}

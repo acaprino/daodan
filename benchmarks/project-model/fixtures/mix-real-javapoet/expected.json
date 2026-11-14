@@ -1,0 +1,179 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/squareup/javapoet/JavaFile.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/ClassNameNoPackageTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.squareup:javapoet",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "maven-compiler-plugin:compile@default-compile",
+          "maven-compiler-plugin:testCompile@default-testCompile"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "maven",
+    "root": ".",
+    "members": [
+      "."
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "1.8",
+      "declared_in": "pom.xml#java.version"
+    },
+    {
+      "tool": "java",
+      "version": "8",
+      "declared_in": ".github/workflows/build.yml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "com.google.truth:truth",
+      "declared": "1.4.4",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml#properties.truth.version"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "com.google.testing.compile:compile-testing",
+      "declared": "0.21.0",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml#properties.compile-testing.version"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "junit:junit",
+      "declared": "4.13.2",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml#properties.junit.version"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "com.google.jimfs:jimfs",
+      "declared": "1.3.0",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "org.mockito:mockito-core",
+      "declared": "4.11.0",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "org.eclipse.jdt.core.compiler:ecj",
+      "declared": "4.6.1",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "org.apache.maven.plugins:maven-compiler-plugin",
+      "declared": "3.12.1",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "org.codehaus.plexus:plexus-compiler-javac-errorprone",
+      "declared": "2.8.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "com.google.errorprone:error_prone_core",
+      "declared": "2.3.1",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "org.apache.maven.plugins:maven-checkstyle-plugin",
+      "declared": "3.5.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "com.puppycrawl.tools:checkstyle",
+      "declared": "8.18",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
+      "name": "org.apache.maven.plugins:maven-jar-plugin",
+      "declared": "3.4.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit",
+      "unit": "com.squareup:javapoet",
+      "evidence": "pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "the Maven build runs plugins (compiler with Error Prone, checkstyle) to compile the project for an index, and Daodan runs builds only in a container"
+  },
+  "traps": [
+    "one Maven module, com.squareup:javapoet 1.14.0-SNAPSHOT, with no dependency at compile scope: every declared dependency is test scope",
+    "the compiler plugin sets <compilerId>javac-with-errorprone</compilerId> and <forceJavacCompilerUse>true</forceJavacCompilerUse>, with plexus-compiler-javac-errorprone 2.8.2 and error_prone_core 2.3.1 as plugin dependencies: Error Prone 2.3.1 predates Java 17, so the unmodified pom does not compile on a Java 17 JDK (class file has wrong version 61.0, should be 53.0)",
+    "the Java level is the property java.version = 1.8, read by <source> and <target> of the compiler plugin; CI builds on Zulu JDK 8",
+    "truth, compile-testing and junit take their versions from properties (truth.version, compile-testing.version, junit.version): declared is the property value, declared_in names the property",
+    "the parent org.sonatype.oss:oss-parent 7 is inherited configuration fetched from Maven Central, not a dependency; it is where the build's extra repositories come from",
+    "maven-checkstyle-plugin runs the checkstyle goal in the verify phase with checkstyle.xml; CI also runs source:jar and javadoc:jar, plugins with no version in the pom",
+    "src/test/java/ClassNameNoPackageTest.java is a test in the default package",
+    "no lock file: every resolved is null"
+  ]
+}

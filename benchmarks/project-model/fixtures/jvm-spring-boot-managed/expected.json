@@ -1,0 +1,164 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/billing/BillingApplication.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/main/java/com/example/billing/Invoice.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle.kts",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ],
+        "entry_files": [
+          "src/main/java/com/example/billing/BillingApplication.java"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "org.springframework.boot",
+      "declared": "3.4.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "io.spring.dependency-management",
+      "declared": "1.1.6",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.springframework.boot:spring-boot-starter-web",
+      "declared": null,
+      "resolved": "3.4.0",
+      "scope": "runtime",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.springframework.boot:spring-boot-starter-data-jpa",
+      "declared": null,
+      "resolved": "3.4.0",
+      "scope": "runtime",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.springframework.boot:spring-boot-docker-compose",
+      "declared": null,
+      "resolved": "3.4.0",
+      "scope": "dev",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.postgresql:postgresql",
+      "declared": null,
+      "resolved": "42.7.4",
+      "scope": "runtime",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.springframework.boot:spring-boot-starter-test",
+      "declared": null,
+      "resolved": "3.4.0",
+      "scope": "test",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.junit.platform:junit-platform-launcher",
+      "declared": null,
+      "resolved": "1.11.3",
+      "scope": "test",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Spring Boot",
+      "unit": ":",
+      "evidence": "build.gradle.kts"
+    },
+    {
+      "name": "Spring MVC",
+      "unit": ":",
+      "evidence": "src/main/java/com/example/billing/InvoiceController.java"
+    },
+    {
+      "name": "Spring Data JPA",
+      "unit": ":",
+      "evidence": "src/main/java/com/example/billing/InvoiceRepository.java"
+    },
+    {
+      "name": "Hibernate",
+      "unit": ":",
+      "evidence": "build.gradle.kts"
+    },
+    {
+      "name": "JUnit Jupiter",
+      "unit": ":",
+      "evidence": "build.gradle.kts"
+    }
+  ],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "compose.yaml"
+    }
+  ],
+  "needs": {
+    "container": true,
+    "reason": "No library version is written: the dependency-management plugin imports the spring-boot-dependencies BOM matching the Boot plugin version 3.4.0, which fixes the starters to 3.4.0, postgresql to 42.7.4 and, through the junit-bom it imports, junit-platform-launcher to 1.11.3 (checked in spring-boot-dependencies-3.4.0.pom: postgresql.version 42.7.4, junit-jupiter.version 5.11.3, hibernate.version 6.6.2.Final). Only a resolution, or a reader of that BOM, knows them."
+  },
+  "traps": [
+    "Every library version comes from the Boot plugin version 3.4.0 through io.spring.dependency-management: change the plugin version and every library moves.",
+    "developmentOnly is a configuration created by the Boot plugin: spring-boot-docker-compose is on the classpath of bootRun but not packaged in bootJar, so it is a dev dependency.",
+    "The database is configured nowhere in application.yml: at startup spring-boot-docker-compose reads compose.yaml, starts postgres:16 and supplies the JDBC URL, user and password. A reader of the Spring configuration alone finds no service.",
+    "Hibernate ORM 6.6.2.Final arrives only through spring-boot-starter-data-jpa; no line names it.",
+    "junit-platform-launcher 1.11.3 is managed by the junit-bom imported by spring-boot-dependencies, not by the Boot version itself.",
+    "compose.yaml names port 5432 on the container side only: the host port is random.",
+    "resolved for every library is read from spring-boot-dependencies 3.4.0 (and the junit-bom 5.11.3 it imports) as published on Maven Central."
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "languages": [
+    {
+      "path": "src/hatch_demo/__about__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/hatch_demo/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/hatch_demo/show.py",
+      "language": "Python"
+    },
+    {
+      "path": "tests/test_show.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "hatch-demo",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src",
+        "tests"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "hatch_demo"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.10, 3.11, 3.12",
+      "declared_in": "pyproject.toml#tool.hatch.envs.test.matrix"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "hatch-demo",
+      "name": "rich",
+      "declared": ">=13",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "hatch-demo",
+      "name": "pytest",
+      "declared": ">=8",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "hatch-demo",
+      "name": "coverage",
+      "declared": ">=7",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "hatch-demo",
+      "name": "ruff",
+      "declared": ">=0.6",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "hatch-demo",
+      "name": "hatchling",
+      "declared": ">=1.25",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "project version is dynamic (tool.hatch.version path), so [project] has no version",
+    "pytest and coverage belong to Hatch env 'default', ruff to env 'lint': environments are not extras or groups",
+    "Python 3.10, 3.11 and 3.12 come from the test env matrix, requires-python only states >=3.10",
+    "Hatch has no lockfile: every resolved value is null",
+    "coverage[toml]: the extra is part of the requirement, the package is coverage"
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "languages": [
+    {
+      "path": "core/src/main/scala/com/example/ledger/core/Ledger.scala",
+      "language": "Scala"
+    },
+    {
+      "path": "build.sbt",
+      "language": "Scala"
+    },
+    {
+      "path": "project/plugins.sbt",
+      "language": "Scala"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "root",
+      "kind": "sbt-project",
+      "root": ".",
+      "manifest": "build.sbt",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "Compile": [
+            "src/main/scala",
+            "src/main/scala-3",
+            "src/main/java"
+          ],
+          "Test": [
+            "src/test/scala",
+            "src/test/scala-3",
+            "src/test/java"
+          ]
+        }
+      }
+    },
+    {
+      "name": "core",
+      "kind": "sbt-project",
+      "root": "core",
+      "manifest": "build.sbt",
+      "source_roots": [
+        "core/src/main/scala",
+        "core/src/test/scala"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "Compile": [
+            "core/src/main/scala",
+            "core/src/main/scala-3",
+            "core/src/main/java"
+          ],
+          "Test": [
+            "core/src/test/scala",
+            "core/src/test/scala-3",
+            "core/src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "core/Compile/compile",
+          "core/Test/compile"
+        ]
+      }
+    },
+    {
+      "name": "app",
+      "kind": "sbt-project",
+      "root": "app",
+      "manifest": "build.sbt",
+      "source_roots": [
+        "app/src/main/scala"
+      ],
+      "depends_on": [
+        "core"
+      ],
+      "config": {
+        "source_sets": {
+          "Compile": [
+            "app/src/main/scala",
+            "app/src/main/scala-3",
+            "app/src/main/java"
+          ],
+          "Test": [
+            "app/src/test/scala",
+            "app/src/test/scala-3",
+            "app/src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "app/Compile/compile",
+          "app/Test/compile"
+        ],
+        "entry_files": [
+          "app/src/main/scala/com/example/ledger/app/Main.scala"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "sbt",
+    "root": ".",
+    "members": [
+      "core",
+      "app"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "sbt",
+      "version": "1.10.5",
+      "declared_in": "project/build.properties"
+    },
+    {
+      "tool": "scala",
+      "version": "3.3.4",
+      "declared_in": "build.sbt"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "core",
+      "name": "org.typelevel:cats-core_3",
+      "declared": "2.12.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "build.sbt"
+    },
+    {
+      "unit": "core",
+      "name": "org.scalatest:scalatest_3",
+      "declared": "3.2.19",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "build.sbt"
+    },
+    {
+      "unit": "root",
+      "name": "org.scalameta:sbt-scalafmt",
+      "declared": "2.5.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "project/plugins.sbt"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Cats",
+      "unit": "core",
+      "evidence": "build.sbt"
+    },
+    {
+      "name": "ScalaTest",
+      "unit": "core",
+      "evidence": "build.sbt"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Projects, their folders, dependsOn and the versions are literal in build.sbt and project/. Only sbt, which compiles build.sbt and project/*.sbt as Scala, gives the evaluated settings: the cross-versioned artifact names, the implicit scala3-library dependency and the default source directories."
+  },
+  "traps": [
+    "The three sbt projects are all declared in one file, build.sbt; core and app have no manifest of their own. The unit names are the lazy val ids (root, core, app); ledger, ledger-core and ledger-app are the artifact names set by name :=.",
+    "%% appends the Scala binary version: cats-core becomes the artifact cats-core_3, scalatest becomes scalatest_3. A text reader that keeps the written name cats-core misses the artifact.",
+    "ThisBuild / scalaVersion sets Scala 3.3.4 for all three projects; sbt downloads that compiler and adds org.scala-lang:scala3-library_3:3.3.4 to each project without any line naming it.",
+    "app gets cats-core only transitively through dependsOn(core); it declares no library.",
+    "aggregate(core, app) makes root run the tasks of both but is not a classpath dependency: root depends_on nothing.",
+    "project/ is the meta-build, itself an sbt build compiled with Scala 2.12: project/plugins.sbt adds sbt-scalafmt (artifact sbt-scalafmt_2.12_1.0) and project/build.properties pins sbt 1.10.5.",
+    "project/build.properties has no comment line, so Linguist classifies it as INI, not Java Properties.",
+    "The scalafmt version 3.8.3 in .scalafmt.conf is downloaded by the plugin at format time; it is neither a toolchain nor a declared dependency.",
+    "Java has no version anywhere: sbt runs on whatever JDK is installed.",
+    "root is the aggregating project at the workspace root; the members are core and app."
+  ]
+}

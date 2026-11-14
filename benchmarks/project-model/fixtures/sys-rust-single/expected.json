@@ -1,0 +1,63 @@
+{
+  "languages": [
+    {
+      "path": "src/lib.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "hello-rs",
+      "kind": "cargo-crate",
+      "root": "",
+      "manifest": "Cargo.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "hello_rs",
+            "path": "src/lib.rs"
+          },
+          {
+            "kind": "bin",
+            "name": "hello-rs",
+            "path": "src/main.rs"
+          }
+        ],
+        "entry_files": [
+          "src/main.rs"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "hello-rs",
+      "name": "itoa",
+      "declared": "1.0",
+      "resolved": "1.0.19",
+      "scope": "runtime",
+      "declared_in": "Cargo.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "one package, two targets: src/lib.rs and src/main.rs are found by convention, no [lib] or [[bin]] section names them",
+    "the library crate is hello_rs (hyphen becomes underscore), the binary keeps hello-rs; main.rs calls the library by hello_rs",
+    "itoa = \"1.0\" is a caret range (^1.0), not an exact pin: the lock picks 1.0.19",
+    "no rust-version and no toolchain file: no Rust version is declared, edition 2021 is not a toolchain version"
+  ]
+}

@@ -1,0 +1,1 @@
+{"repo": "https://github.com/fastapi/full-stack-fastapi-template", "commit": "aabb90126964a164e02aff39e7c385bb0598236d", "licence": "MIT", "why": "Python FastAPI back end in a uv workspace and a React TypeScript front end in a Bun workspace at the same root, joined by a generated OpenAPI client and by build outputs written into the back end"}

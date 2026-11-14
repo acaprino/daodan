@@ -1,0 +1,1 @@
+{"repo": "https://github.com/spring-petclinic/spring-petclinic-microservices", "commit": "e8b747ab522721076cacb5cf688eb8a54ba8c5c9", "licence": "Apache-2.0", "why": "Maven multi-module Spring Cloud system: eight services joined only by Eureka service ids, gateway routes and a config server whose data lives in another repository, with a Vue front end inside a Java module"}

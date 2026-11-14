@@ -1,0 +1,62 @@
+{
+  "languages": [
+    {
+      "path": "main.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "example.com/iterdemo",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/iterdemo",
+          "example.com/iterdemo/seq"
+        ],
+        "entry_files": [
+          "main.go"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.23.4",
+      "declared_in": "go.mod#go"
+    },
+    {
+      "tool": "go",
+      "version": "go1.24.1",
+      "declared_in": "go.mod#toolchain"
+    },
+    {
+      "tool": "go",
+      "version": "1.22.5",
+      "declared_in": ".tool-versions"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "three Go versions are declared and none is wrong: go 1.23.4 is the minimum the module needs, toolchain go1.24.1 is the preferred toolchain, .tool-versions pins golang 1.22.5 for asdf or mise",
+    "the pinned 1.22.5 is older than the go line: with GOTOOLCHAIN=auto it downloads go1.24.1 and runs that; with GOTOOLCHAIN=local it refuses the module",
+    "an indexer that runs the pinned Go 1.22.5 cannot type-check seq/seq.go: the iter package and range over a func arrive in Go 1.23",
+    ".tool-versions names the tool golang (the asdf plugin); the tool is go",
+    "the toolchain value keeps its go prefix (go1.24.1); the go line has none"
+  ]
+}

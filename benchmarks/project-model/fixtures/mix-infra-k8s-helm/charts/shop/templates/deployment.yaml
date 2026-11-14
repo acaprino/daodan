@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shop.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "shop.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "shop.fullname" . }}
+    spec:
+      containers:
+        - name: api
+          image: {{ include "shop.image" . | quote }}
+          env:
+            - name: DATABASE_HOST
+              value: {{ printf "%s-postgresql" .Release.Name | quote }}

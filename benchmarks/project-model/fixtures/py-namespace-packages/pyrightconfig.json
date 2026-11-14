@@ -1,0 +1,3 @@
+{
+  "extraPaths": ["packages/acme-core/src", "packages/acme-plugins/src"]
+}

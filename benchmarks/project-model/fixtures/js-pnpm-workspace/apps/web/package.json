@@ -1,0 +1,12 @@
+{
+  "name": "@acme/web",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@acme/shared": "workspace:*",
+    "clsx": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

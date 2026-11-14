@@ -1,0 +1,1 @@
+{"repo": "https://github.com/open-telemetry/opentelemetry-demo", "commit": "b825c7c257268081dcfeff52d0f053fce1ef2561", "licence": "Apache-2.0", "why": "widest real polyglot system: 27 units in C#, Java, Kotlin, Go, C++, Ruby, Elixir, TypeScript, JavaScript, PHP, Rust and Python joined by one shared demo.proto, a Kafka topic, HTTP routes and Compose addresses"}

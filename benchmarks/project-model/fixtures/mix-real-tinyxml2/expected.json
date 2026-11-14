@@ -1,0 +1,249 @@
+{
+  "languages": [
+    {
+      "path": "tinyxml2.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "tinyxml2.h",
+      "language": "C++"
+    },
+    {
+      "path": "contrib/html5-printer.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    },
+    {
+      "path": "meson.build",
+      "language": "Meson"
+    },
+    {
+      "path": "Makefile",
+      "language": "Makefile"
+    },
+    {
+      "path": "setversion.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "docs/",
+      "why": "documentation"
+    },
+    {
+      "path": "TinyXML2_small.png",
+      "why": "binary"
+    }
+  ],
+  "units": [
+    {
+      "name": "tinyxml2",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library",
+        "sources": [
+          "tinyxml2.cpp",
+          "tinyxml2.h"
+        ],
+        "include_dirs": [
+          "."
+        ],
+        "build_tags": [
+          "_FILE_OFFSET_BITS=64",
+          "TINYXML2_DEBUG",
+          "TINYXML2_IMPORT",
+          "TINYXML2_EXPORT"
+        ]
+      }
+    },
+    {
+      "name": "xmltest",
+      "kind": "cmake-target",
+      "root": ".",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "tinyxml2"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "xmltest.cpp"
+        ],
+        "entry_files": [
+          "xmltest.cpp"
+        ]
+      }
+    },
+    {
+      "name": "xmltest",
+      "kind": "cmake-target",
+      "root": "test",
+      "manifest": "test/CMakeLists.txt",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "xmltest.cpp"
+        ],
+        "entry_files": [
+          "xmltest.cpp"
+        ]
+      }
+    },
+    {
+      "name": "tinyxml2",
+      "kind": "meson-target",
+      "root": ".",
+      "manifest": "meson.build",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "library",
+        "sources": [
+          "tinyxml2.cpp"
+        ],
+        "include_dirs": [
+          "."
+        ],
+        "build_tags": [
+          "_CRT_SECURE_NO_WARNINGS",
+          "TINYXML2_EXPORT",
+          "TINYXML2_DEBUG"
+        ]
+      }
+    },
+    {
+      "name": "xmltest",
+      "kind": "meson-target",
+      "root": ".",
+      "manifest": "meson.build",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "tinyxml2"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "xmltest.cpp"
+        ],
+        "entry_files": [
+          "xmltest.cpp"
+        ]
+      }
+    },
+    {
+      "name": "libtinyxml2.a",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static library",
+        "sources": [
+          "tinyxml2.cpp"
+        ],
+        "build_tags": [
+          "_FILE_OFFSET_BITS=64"
+        ]
+      }
+    },
+    {
+      "name": "xmltest",
+      "kind": "make-target",
+      "root": ".",
+      "manifest": "Makefile",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "libtinyxml2.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "xmltest.cpp"
+        ],
+        "entry_files": [
+          "xmltest.cpp"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.15",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "cmake",
+      "version": "3.15",
+      "declared_in": "test/CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "meson",
+      "version": ">= 0.49.0",
+      "declared_in": "meson.build#meson_version"
+    },
+    {
+      "tool": "cmake",
+      "version": "3.15",
+      "declared_in": ".github/workflows/test.yml#jobs.test.strategy.matrix.cmake"
+    },
+    {
+      "tool": "cmake",
+      "version": "3.x",
+      "declared_in": ".github/workflows/test.yml#jobs.test.strategy.matrix.cmake"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "xmltest",
+      "name": "tinyxml2",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "test/CMakeLists.txt"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "the compile database comes from cmake configure, which runs the project's CMake scripts; Daodan runs builds only in a container"
+  },
+  "traps": [
+    "three build systems describe the same two artifacts: CMakeLists.txt (tinyxml2 and xmltest), meson.build (library tinyxml2 and executable xmltest) and a plain Makefile (libtinyxml2.a and xmltest); each is a unit of its own kind at the root",
+    "test/CMakeLists.txt is a separate CMake project (tinyxml2-test) that builds ../xmltest.cpp against an installed tinyxml2 found with find_package(tinyxml2 REQUIRED): an external dependency on the package this repository builds, which CI installs first with cmake --install",
+    "the CMake library is static or shared by BUILD_SHARED_LIBS (or tinyxml2_SHARED_LIBS); its defines are generator expressions: TINYXML2_DEBUG only in Debug, TINYXML2_IMPORT only for consumers of a shared build, TINYXML2_EXPORT as DEFINE_SYMBOL, _CRT_SECURE_NO_WARNINGS only with MSVC, _FILE_OFFSET_BITS=64 always",
+    "xmltest under CMake exists only when tinyxml2_BUILD_TESTING is on (default BUILD_TESTING from include(CTest)); under Meson only with the tests option (default true)",
+    "tinyxml2.h is C++ (namespace tinyxml2, classes) although .h is also a C and Objective-C extension; its classes carry the export macro TINYXML2_LIB (class TINYXML2_LIB XMLNode)",
+    "contrib/html5-printer.cpp is compiled by no build",
+    "no C++ standard is declared by any build file",
+    "docs/ is Doxygen output (HTML, JavaScript, CSS) checked in; dox is the Doxygen configuration; resources/ holds XML test inputs that xmltest reads from the working directory",
+    "setversion.py is a release helper that rewrites the version in the sources and build files; it is not part of any build",
+    "CI runs a matrix of three operating systems and two CMake versions (3.15 and the latest 3.x), with Ninja"
+  ]
+}

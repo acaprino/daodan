@@ -1,0 +1,8 @@
+[package]
+name = "app"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+helper = { path = "helper", version = "0.2" }
+cfg-if = { git = "https://github.com/rust-lang/cfg-if", tag = "1.0.0" }

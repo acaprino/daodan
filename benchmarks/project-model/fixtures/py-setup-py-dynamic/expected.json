@@ -1,0 +1,44 @@
+{
+  "languages": [
+    {
+      "path": "dyn_pkg/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "setup.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "dyn-pkg",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "setup.py",
+      "source_roots": [
+        ""
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "dyn_pkg"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "install_requires is computed at run time from the platform and an environment variable; only executing setup.py yields the list"
+  },
+  "traps": [
+    "install_requires is computed by a function reading platform.system() and the DYN_EXTRAS environment variable: the dependency list is unknown without running setup.py",
+    "a regex over setup.py finds 'requests' and 'pywin32>=300' but the real list also depends on DYN_EXTRAS: any static answer is incomplete",
+    "dependencies is left empty on purpose: expected truth is 'unknown', not 'requests'"
+  ]
+}

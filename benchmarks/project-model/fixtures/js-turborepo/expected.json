@@ -1,0 +1,102 @@
+{
+  "languages": [
+    {
+      "path": "apps/web/build.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "packages/ui/src/index.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "turbo-root",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "web",
+      "kind": "npm-package",
+      "root": "apps/web",
+      "manifest": "apps/web/package.json",
+      "source_roots": [
+        "apps/web"
+      ],
+      "depends_on": [
+        "@repo/ui"
+      ],
+      "config": {}
+    },
+    {
+      "name": "@repo/ui",
+      "kind": "npm-package",
+      "root": "packages/ui",
+      "manifest": "packages/ui/package.json",
+      "source_roots": [
+        "packages/ui/src"
+      ],
+      "depends_on": [
+        "@repo/typescript-config"
+      ],
+      "config": {
+        "entry_files": [
+          "packages/ui/src/index.js"
+        ]
+      }
+    },
+    {
+      "name": "@repo/typescript-config",
+      "kind": "npm-package",
+      "root": "packages/typescript-config",
+      "manifest": "packages/typescript-config/package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": {
+    "tool": "npm",
+    "root": ".",
+    "members": [
+      "apps/web",
+      "packages/ui",
+      "packages/typescript-config"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "npm",
+      "version": "10.8.2",
+      "declared_in": "package.json#packageManager"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "turbo-root",
+      "name": "turbo",
+      "declared": "^2.1.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "Turborepo is a task runner layered on top of npm workspaces: workspace.tool is npm, not turbo; turbo.json declares tasks, not units",
+    "the internal ranges '*' are workspace links, not registry dependencies",
+    "@repo/typescript-config is a unit with no sources, only a shared config file",
+    "no lockfile: turbo pulls platform-specific optional binaries that cannot be written faithfully by hand, so resolved is null",
+    "the dependsOn ^build in turbo.json is a task-graph edge between units, derived from the package edges"
+  ]
+}

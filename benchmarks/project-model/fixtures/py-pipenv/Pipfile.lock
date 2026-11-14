@@ -1,0 +1,41 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.11"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "attrs": {
+            "index": "pypi",
+            "markers": "python_version >= '3.7'",
+            "version": "==24.2.0"
+        },
+        "click": {
+            "index": "pypi",
+            "markers": "python_version >= '3.7'",
+            "version": "==8.1.7"
+        },
+        "colorama": {
+            "markers": "platform_system == 'Windows'",
+            "version": "==0.4.6"
+        }
+    },
+    "develop": {
+        "ruff": {
+            "index": "pypi",
+            "markers": "python_version >= '3.7'",
+            "version": "==0.6.9"
+        }
+    }
+}

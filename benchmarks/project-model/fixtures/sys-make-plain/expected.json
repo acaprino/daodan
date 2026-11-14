@@ -1,0 +1,97 @@
+{
+  "languages": [
+    {
+      "path": "app/main.c",
+      "language": "C"
+    },
+    {
+      "path": "include/mini.h",
+      "language": "C"
+    },
+    {
+      "path": "Makefile",
+      "language": "Makefile"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "build/libmini.a",
+      "kind": "make-target",
+      "root": "",
+      "manifest": "Makefile",
+      "source_roots": [
+        "lib"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "static_library",
+        "sources": [
+          "lib/vec.c",
+          "lib/log.c"
+        ],
+        "include_dirs": [
+          "include"
+        ],
+        "build_tags": [
+          "MINI_LOG_LEVEL=2"
+        ]
+      }
+    },
+    {
+      "name": "build/mini",
+      "kind": "make-target",
+      "root": "",
+      "manifest": "Makefile",
+      "source_roots": [
+        "app"
+      ],
+      "depends_on": [
+        "build/libmini.a"
+      ],
+      "config": {
+        "type": "executable",
+        "sources": [
+          "app/main.c"
+        ],
+        "entry_files": [
+          "app/main.c"
+        ],
+        "include_dirs": [
+          "include"
+        ],
+        "build_tags": [
+          "MINI_LOG_LEVEL=2"
+        ],
+        "link_libraries": [
+          "m"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "c",
+      "version": "c99",
+      "declared_in": "Makefile"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "all, test, install and clean are .PHONY: commands, not build units",
+    "the units are the file targets $(APP) and $(LIB); their names exist only after expanding the variables to build/mini and build/libmini.a",
+    "the library's sources are named by a pattern rule build/%.o: lib/%.c plus the OBJS list: no line lists lib/vec.c by name",
+    "the include directory and the definition come from CFLAGS and CPPFLAGS shared by every rule, not from a per-target setting",
+    "CC ?= cc and CFLAGS ?= -O2 are defaults the environment overrides; the += lines are always appended",
+    "-lm is a system library (libm), not a dependency to download",
+    "there is no other manifest: no configure, no CMake, no pkg-config file",
+    "both targets are declared by the one Makefile at the root, so both units have root . ; their sources live in lib/ and app/"
+  ]
+}

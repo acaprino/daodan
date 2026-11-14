@@ -1,0 +1,82 @@
+{
+  "languages": [
+    {
+      "path": "main.go",
+      "language": "Go"
+    },
+    {
+      "path": "sum/fastsum.c",
+      "language": "C"
+    },
+    {
+      "path": "sum/fastsum.h",
+      "language": "C"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "example.com/fastsum",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/fastsum",
+          "example.com/fastsum/sum"
+        ],
+        "entry_files": [
+          "main.go"
+        ],
+        "build_tags": [
+          "cgo",
+          "FASTSUM_UNROLL=4"
+        ],
+        "include_dirs": [
+          "sum"
+        ],
+        "cgo": {
+          "c_files": [
+            "sum/fastsum.c"
+          ],
+          "cflags": [
+            "-O2",
+            "-DFASTSUM_UNROLL=4"
+          ],
+          "ldflags": {
+            "linux": [
+              "-lm"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.mod"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "sum/fastsum.c is not a C unit and has no build file: the go command compiles it as part of package sum because the directory has a file that imports \"C\"",
+    "the C flags live in #cgo comment lines of sum/sum.go, not in a Makefile or CMake file; FASTSUM_UNROLL=4 is defined there and changes which loop fastsum.c compiles",
+    "-lm is linked only on linux (#cgo linux LDFLAGS)",
+    "with CGO_ENABLED=0 (the default when cross-compiling) sum.go is dropped and sum_nocgo.go defines Floats: the C files are then unused",
+    "C.fastsum and C.size_t are not Go declarations anywhere: a Go indexer without cgo preprocessing sees unresolved names",
+    "fastsum.h is a C header"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "languages": [
+    {"path": "src/lib.rs", "language": "Rust"},
+    {"path": "build.rs", "language": "Rust"}
+  ],
+  "excluded": [],
+  "units": [
+    {"name": "semver", "kind": "cargo-crate", "root": ".", "manifest": "Cargo.toml",
+     "source_roots": ["src", "tests", "benches"], "depends_on": [],
+     "config": {
+       "build_tags": ["std", "serde", "test_node_semver"],
+       "build_script": "build.rs",
+       "targets": [
+         {"kind": "lib", "name": "semver", "path": "src/lib.rs"},
+         {"kind": "test", "name": "test_autotrait", "path": "tests/test_autotrait.rs"},
+         {"kind": "test", "name": "test_identifier", "path": "tests/test_identifier.rs"},
+         {"kind": "test", "name": "test_version", "path": "tests/test_version.rs"},
+         {"kind": "test", "name": "test_version_req", "path": "tests/test_version_req.rs"},
+         {"kind": "bench", "name": "parse", "path": "benches/parse.rs"}],
+       "shared_modules": {
+         "tests/util/mod.rs": ["tests/test_identifier.rs", "tests/test_version.rs", "tests/test_version_req.rs"],
+         "tests/node/mod.rs": ["tests/test_version_req.rs"]}}},
+    {"name": "semver-fuzz", "kind": "cargo-crate", "root": "fuzz", "manifest": "fuzz/Cargo.toml",
+     "source_roots": ["fuzz"], "depends_on": ["semver"],
+     "config": {
+       "entry_files": ["fuzz/parse_version.rs", "fuzz/parse_version_req.rs", "fuzz/sort_version.rs"],
+       "targets": [
+         {"kind": "bin", "name": "parse_version", "path": "fuzz/parse_version.rs"},
+         {"kind": "bin", "name": "parse_version_req", "path": "fuzz/parse_version_req.rs"},
+         {"kind": "bin", "name": "sort_version", "path": "fuzz/sort_version.rs"}]}}
+  ],
+  "workspace": {"tool": "cargo", "root": "fuzz", "members": ["fuzz"]},
+  "toolchains": [
+    {"tool": "rust", "version": "1.68", "declared_in": "Cargo.toml#package.rust-version"},
+    {"tool": "rust", "version": "nightly", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.rust"},
+    {"tool": "rust", "version": "beta", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.rust"},
+    {"tool": "rust", "version": "stable", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.rust"},
+    {"tool": "rust", "version": "1.86.0", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.rust"},
+    {"tool": "rust", "version": "1.68.0", "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.rust"}
+  ],
+  "dependencies": [
+    {"unit": "semver", "name": "serde_core", "declared": "1.0.220", "resolved": null, "scope": "optional", "declared_in": "Cargo.toml"},
+    {"unit": "semver", "name": "serde", "declared": "1.0.220", "resolved": null, "scope": "optional", "declared_in": "Cargo.toml#target.'cfg(any())'.dependencies"},
+    {"unit": "semver", "name": "criterion", "declared": "0.8", "resolved": null, "scope": "dev", "declared_in": "Cargo.toml#target.'cfg(not(miri))'.dev-dependencies"},
+    {"unit": "semver-fuzz", "name": "libfuzzer-sys", "declared": "0.4", "resolved": null, "scope": "runtime", "declared_in": "fuzz/Cargo.toml"}
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {"container": true, "reason": "build.rs is project code that Cargo compiles and runs before the crate (it runs rustc --version to emit check-cfg); rust-analyzer runs build scripts too"},
+  "traps": [
+    "the dependency written serde is the package serde_core, renamed: serde = { package = \"serde_core\", ... }; a reader that takes the key as the name says serde",
+    "a second serde entry sits under [target.'cfg(any())'.dependencies]: cfg(any()) is never true, so that dependency never builds; it only makes the published manifest name serde",
+    "criterion is a dev-dependency only for targets where cfg(not(miri)) holds",
+    "no Cargo.lock in the repository: every resolved is null",
+    "tests/util/mod.rs is not a crate: three integration-test crates include it with mod util;, so the same file is compiled three times",
+    "tests/node/mod.rs is included by test_version_req.rs with mod node; but starts with #![cfg(test_node_semver)]: it compiles only when RUSTFLAGS carries --cfg test_node_semver, which only the Node CI job sets (that job also runs npm install semver and calls node)",
+    "build.rs only declares the custom cfg test_node_semver to rustc >= 1.80 (cargo:rustc-check-cfg); it is excluded from the published package (exclude = [\"build.rs\"])",
+    "fuzz/ is its own crate (semver-fuzz, publish = false) with an empty [workspace] table: it is a workspace root of its own, so the root package is not a workspace and does not see fuzz/ as a member; semver-fuzz depends on semver by path = \"..\"",
+    "features: default = [\"std\"], serde = [\"dep:serde\"], std = []; the crate is no_std without std",
+    "besides the matrix, other CI jobs pick toolchains through action refs: dtolnay/rust-toolchain@stable (node, outdated), @nightly (minimal, doc, fuzz), @clippy and @miri",
+    "rust-version 1.68 and the 1.68.0 matrix entry agree; on 1.68.0 CI skips cargo test (if: matrix.rust != '1.68.0')"
+  ]
+}

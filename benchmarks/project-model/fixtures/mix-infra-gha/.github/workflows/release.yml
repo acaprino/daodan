@@ -1,0 +1,17 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+      - run: python scripts/changelog.py

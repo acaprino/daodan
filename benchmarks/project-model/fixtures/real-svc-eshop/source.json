@@ -1,0 +1,1 @@
+{"repo": "https://github.com/dotnet/eShop", "commit": "913acea66708a59595351174cee9b29f37179d29", "licence": "MIT", "why": "real .NET service system: 28 projects in three solutions under central package management, an Aspire AppHost that launches services by folder path, RabbitMQ integration events, gRPC, Blazor and MAUI clients, Playwright tests in npm"}

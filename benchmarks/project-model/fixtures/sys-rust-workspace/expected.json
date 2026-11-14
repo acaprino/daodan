@@ -1,0 +1,148 @@
+{
+  "languages": [
+    {
+      "path": "crates/core/src/lib.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "ledger-core",
+      "kind": "cargo-crate",
+      "root": "crates/core",
+      "manifest": "crates/core/Cargo.toml",
+      "source_roots": [
+        "crates/core/src"
+      ],
+      "depends_on": [
+        "ledger-macros"
+      ],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "ledger_core",
+            "path": "crates/core/src/lib.rs"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ledger-macros",
+      "kind": "cargo-crate",
+      "root": "crates/macros",
+      "manifest": "crates/macros/Cargo.toml",
+      "source_roots": [
+        "crates/macros/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "proc-macro",
+            "name": "ledger_macros",
+            "path": "crates/macros/src/lib.rs"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ledger-cli",
+      "kind": "cargo-crate",
+      "root": "crates/cli",
+      "manifest": "crates/cli/Cargo.toml",
+      "source_roots": [
+        "crates/cli/src"
+      ],
+      "depends_on": [
+        "ledger-core"
+      ],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "bin",
+            "name": "ledger",
+            "path": "crates/cli/src/main.rs"
+          }
+        ],
+        "entry_files": [
+          "crates/cli/src/main.rs"
+        ]
+      }
+    },
+    {
+      "name": "ledger-experimental",
+      "kind": "cargo-crate",
+      "root": "crates/experimental",
+      "manifest": "crates/experimental/Cargo.toml",
+      "source_roots": [
+        "crates/experimental/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "ledger_experimental",
+            "path": "crates/experimental/src/lib.rs"
+          }
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "cargo",
+    "root": "",
+    "members": [
+      "crates/core",
+      "crates/macros",
+      "crates/cli"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "rust",
+      "version": "1.74",
+      "declared_in": "Cargo.toml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "ledger-core",
+      "name": "cfg-if",
+      "declared": "1.0",
+      "resolved": "1.0.0",
+      "scope": "runtime",
+      "declared_in": "crates/core/Cargo.toml"
+    },
+    {
+      "unit": "ledger-core",
+      "name": "itoa",
+      "declared": "1.0",
+      "resolved": "1.0.19",
+      "scope": "runtime",
+      "declared_in": "crates/core/Cargo.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the root Cargo.toml is a virtual manifest: it has [workspace] and no [package], so the root is not a crate",
+    "members is the glob crates/*, and exclude removes crates/experimental: the glob matches four directories, the workspace has three members",
+    "crates/experimental is a package of its own outside the workspace: it is absent from Cargo.lock and is not built by cargo build at the root",
+    "the version requirements of cfg-if and itoa are written in [workspace.dependencies] of the root; the member only says workspace = true. declared_in is the member manifest, declared is the inherited requirement",
+    "version, edition and rust-version of every member come from [workspace.package]: no member writes a number",
+    "ledger-macros is a proc-macro crate (proc-macro = true): it is compiled for the host and its target kind is proc-macro, not lib",
+    "the binary of ledger-cli is named ledger by [[bin]], not ledger-cli",
+    "ledger-core and ledger-macros are path dependencies inside the workspace: edges in depends_on, not external dependencies"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "languages": [
+    {
+      "path": "src/index.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "version-drift",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/index.js"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": ">=18.17 <21",
+      "declared_in": "package.json#engines"
+    },
+    {
+      "tool": "node",
+      "version": "22.1.0",
+      "declared_in": ".nvmrc"
+    },
+    {
+      "tool": "node",
+      "version": "20.11.1",
+      "declared_in": "package.json#volta"
+    },
+    {
+      "tool": "pnpm",
+      "version": "9.1.0",
+      "declared_in": "package.json#packageManager"
+    },
+    {
+      "tool": "pnpm",
+      "version": "8.15.4",
+      "declared_in": "package.json#volta"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "version-drift",
+      "name": "@types/node",
+      "declared": "^18.19.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the four declarations disagree and the truth lists all of them: Node is >=18.17 <21 (engines), 22.1.0 (.nvmrc, outside the engines range) and 20.11.1 (volta); pnpm is 9.1.0 (packageManager) and 8.15.4 (volta)",
+    "no declaration is the right one: a tool must report every source, or choose by a stated precedence, never silently pick one",
+    "declared_in carries a #field fragment for the declarations that live in package.json (engines, packageManager, volta)",
+    "@types/node ^18 matches the engines floor, not .nvmrc",
+    "no lockfile, so resolved is null"
+  ]
+}

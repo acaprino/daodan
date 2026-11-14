@@ -1,0 +1,130 @@
+{
+  "languages": [
+    {
+      "path": "app/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "app/main.py",
+      "language": "Python"
+    },
+    {
+      "path": "Dockerfile",
+      "language": "Dockerfile"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "orders-api",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        ""
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "app"
+        ],
+        "entry_files": [
+          "app/main.py"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.12-slim",
+      "declared_in": "Dockerfile"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "orders-api",
+      "name": "fastapi",
+      "declared": ">=0.115",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "orders-api",
+      "name": "uvicorn",
+      "declared": ">=0.30",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "orders-api",
+      "name": "sqlalchemy",
+      "declared": ">=2.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "orders-api",
+      "name": "psycopg",
+      "declared": ">=3.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "orders-api",
+      "name": "redis",
+      "declared": ">=5.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "orders-api",
+      "name": "setuptools",
+      "declared": ">=64",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "FastAPI",
+      "unit": "orders-api",
+      "evidence": "app/main.py"
+    }
+  ],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "docker-compose.yml"
+    },
+    {
+      "name": "Redis",
+      "kind": "cache",
+      "evidence": "docker-compose.yml"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "Postgres and Redis are not Python dependencies of the app: they are services named only in docker-compose.yml (images postgres:16, redis:7); the Python clients are psycopg and redis",
+    "'api' in docker-compose.yml is the project itself (build: .), not an external service",
+    "the Dockerfile base image python:3.12-slim and requires-python >=3.11 are two different declarations",
+    "extras are part of the requirement: uvicorn[standard], psycopg[binary]",
+    "the connection URL scheme postgresql+psycopg selects driver psycopg 3, not psycopg2"
+  ]
+}

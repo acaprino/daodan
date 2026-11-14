@@ -1,0 +1,140 @@
+{
+  "languages": [
+    {
+      "path": "src/main.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "api/dashboard_api/__init__.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "dashboard",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/main.js"
+        ]
+      }
+    },
+    {
+      "name": "dashboard-api",
+      "kind": "python-project",
+      "root": "api",
+      "manifest": "api/pyproject.toml",
+      "source_roots": [
+        "api"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "dashboard_api"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": "20.11.1",
+      "declared_in": ".tool-versions"
+    },
+    {
+      "tool": "python",
+      "version": "3.11.9",
+      "declared_in": ".tool-versions"
+    },
+    {
+      "tool": "node",
+      "version": "22.12.0",
+      "declared_in": "mise.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": "mise.toml"
+    },
+    {
+      "tool": "node",
+      "version": "^20.11.0",
+      "declared_in": "package.json#engines"
+    },
+    {
+      "tool": "node",
+      "version": "20.18.1",
+      "declared_in": "package.json#volta"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.10,<3.12",
+      "declared_in": "api/pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.11.9",
+      "declared_in": "api/.python-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "dashboard",
+      "name": "chart.js",
+      "declared": "^4.4.6",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "dashboard-api",
+      "name": "flask",
+      "declared": ">=3.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "api/pyproject.toml"
+    },
+    {
+      "unit": "dashboard-api",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "api/pyproject.toml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Flask",
+      "unit": "dashboard-api",
+      "evidence": "api/dashboard_api/__init__.py"
+    }
+  ],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "mise.toml"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "eight version declarations disagree: mise reads both files and mise.toml wins over .tool-versions in the same folder, so mise gives node 22.12.0 and python 3.12; asdf reads only .tool-versions (node 20.11.1, python 3.11.9)",
+    "node 22.12.0 from mise violates engines ^20.11.0; volta pins yet another node, 20.18.1, inside package.json",
+    "python 3.12 from mise violates requires-python >=3.10,<3.12 of the API; api/.python-version asks 3.11.9",
+    ".tool-versions calls the tool nodejs (the asdf plugin name), mise.toml calls it node",
+    "the database URL is set only in mise.toml [env]: the code reads it from the environment",
+    "hatchling in build-system.requires is a build dependency installed by the build front end, not a toolchain"
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "languages": [
+    {
+      "path": "c/zmini.c",
+      "language": "C"
+    },
+    {
+      "path": "c/zutil.h",
+      "language": "C"
+    },
+    {
+      "path": "include/zmconf.h",
+      "language": "C"
+    },
+    {
+      "path": "include/zmini.h",
+      "language": "C"
+    },
+    {
+      "path": "cpp/checksum.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "cpp/checksum.hpp",
+      "language": "C++"
+    },
+    {
+      "path": "cpp/detail.h",
+      "language": "C++"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "zmini",
+      "kind": "cmake-target",
+      "root": "c",
+      "manifest": "c/CMakeLists.txt",
+      "source_roots": [
+        "c"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "STATIC_LIBRARY unless BUILD_SHARED_LIBS",
+        "sources": [
+          "c/zmini.c"
+        ],
+        "include_dirs": [
+          "include"
+        ],
+        "build_tags": [
+          "ZMINI_DLL (WIN32 and BUILD_SHARED_LIBS only)"
+        ],
+        "annotation_macros": {
+          "ZEXPORT": "",
+          "ZEXTERN": "extern",
+          "FAR": "",
+          "local": "static",
+          "OF(args)": "args"
+        },
+        "knr_definitions": [
+          "mod_base",
+          "zm_adler",
+          "zm_version"
+        ]
+      }
+    },
+    {
+      "name": "zminipp",
+      "kind": "cmake-target",
+      "root": "cpp",
+      "manifest": "cpp/CMakeLists.txt",
+      "source_roots": [
+        "cpp"
+      ],
+      "depends_on": [
+        "zmini"
+      ],
+      "config": {
+        "type": "STATIC_LIBRARY",
+        "sources": [
+          "cpp/checksum.cpp"
+        ],
+        "include_dirs": [
+          "cpp",
+          "include"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.16",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "c",
+      "version": "90",
+      "declared_in": "CMakeLists.txt#CMAKE_C_STANDARD"
+    },
+    {
+      "tool": "c++",
+      "version": "17",
+      "declared_in": "CMakeLists.txt#CMAKE_CXX_STANDARD"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "ZEXPORT, ZEXTERN, FAR and local stand before or inside the declarators: a parser without the macros of include/zmconf.h reads local uLong FAR mod_base as a declaration of a variable named FAR or mod_base of type local",
+    "OF((args)) wraps parameter lists: zm_adler OF((uLong adler, ...)) is a prototype, not a call",
+    "the definitions in c/zmini.c are K&R style (parameter types declared between ) and {): legal in C90, gone in C23",
+    "ZEXPORT expands to __stdcall only on Windows with ZMINI_DLL, which is defined only for a shared build: the macro value depends on platform and BUILD_SHARED_LIBS",
+    "include/zmini.h is one C header compiled by both languages: extern \"C\" guards make it valid C++, it is still C",
+    "cpp/detail.h is C++ (namespace, template) with a .h extension; c/zutil.h and include/*.h are C",
+    "#define local static leaks into every C++ file that includes zmini.h; checksum.cpp includes the standard headers first for that reason",
+    "add_library(zmini zmini.c) has no STATIC or SHARED: its kind follows BUILD_SHARED_LIBS"
+  ]
+}

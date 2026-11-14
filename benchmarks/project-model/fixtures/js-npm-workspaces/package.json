@@ -1,0 +1,11 @@
+{
+  "name": "acme-root",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "ms": "^2.1.3"
+  }
+}

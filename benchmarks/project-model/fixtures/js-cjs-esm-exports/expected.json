@@ -1,0 +1,83 @@
+{
+  "languages": [
+    {
+      "path": "src/index.mjs",
+      "language": "JavaScript"
+    },
+    {
+      "path": "src/index.cjs",
+      "language": "JavaScript"
+    },
+    {
+      "path": "src/util.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "bin/cli.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "src/index.d.ts",
+      "language": "TypeScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "dual-pkg",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src",
+        "bin"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/index.cjs",
+          "src/index.mjs",
+          "src/index.d.ts",
+          "src/util.js",
+          "bin/cli.js"
+        ],
+        "type": "module",
+        "exports": {
+          ".": {
+            "types": "src/index.d.ts",
+            "import": "src/index.mjs",
+            "require": "src/index.cjs"
+          },
+          "./util": "src/util.js",
+          "./package.json": "package.json"
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "dual-pkg",
+      "name": "ms",
+      "declared": "^2.1.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "type is module: src/util.js and bin/cli.js are ESM, src/index.cjs is CommonJS, src/index.mjs is ESM; the extension .js alone does not tell",
+    "one package exposes the same API through two files (import and require conditions): both are entry points, and exports overrides main for modern resolvers",
+    "the subpath ./util is public only through exports",
+    "src/index.d.ts is hand-written type declarations, not generated",
+    "bin/cli.js is the executable entry (shebang) and imports the ESM entry",
+    "no lockfile, so resolved is null"
+  ]
+}

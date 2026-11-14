@@ -1,0 +1,94 @@
+{
+  "languages": [
+    {
+      "path": "lib/legacy_tool/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "lib/legacy_tool/cli.py",
+      "language": "Python"
+    },
+    {
+      "path": "setup.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "legacy-tool",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "setup.py",
+      "source_roots": [
+        "lib"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "legacy_tool"
+        ],
+        "entry_files": [
+          "lib/legacy_tool/cli.py"
+        ],
+        "entry_points": {
+          "legacy": "legacy_tool.cli:main"
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.8",
+      "declared_in": "setup.py"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "legacy-tool",
+      "name": "requests",
+      "declared": ">=2.20",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "setup.py"
+    },
+    {
+      "unit": "legacy-tool",
+      "name": "six",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "setup.py"
+    },
+    {
+      "unit": "legacy-tool",
+      "name": "PyYAML",
+      "declared": ">=5.1",
+      "resolved": null,
+      "scope": "optional",
+      "declared_in": "setup.py"
+    },
+    {
+      "unit": "legacy-tool",
+      "name": "nose",
+      "declared": null,
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "setup.py"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "package_dir maps the root package to lib/: source root is lib, not the repo root",
+    "install_requires is a literal list: statically readable, no execution needed",
+    "tests_require (nose) is a deprecated test dependency declared in setup.py",
+    "no pyproject.toml: build backend is implicit setuptools, so no build dependency is declared"
+  ]
+}

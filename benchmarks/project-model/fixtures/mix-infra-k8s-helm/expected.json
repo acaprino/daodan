@@ -1,0 +1,34 @@
+{
+  "languages": [
+    {"path": "charts/shop/templates/_helpers.tpl", "language": "Go Template"},
+    {"path": "k8s/deployment.yaml", "language": "YAML"}
+  ],
+  "excluded": [],
+  "units": [
+    {"name": "shop", "kind": "helm-chart", "root": "charts/shop", "manifest": "charts/shop/Chart.yaml",
+     "source_roots": ["charts/shop/templates"], "depends_on": [], "config": {}}
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {"unit": "shop", "name": "postgresql", "declared": "16.2.1", "resolved": null, "scope": "runtime", "declared_in": "charts/shop/Chart.yaml"}
+  ],
+  "frameworks": [],
+  "services": [
+    {"name": "PostgreSQL", "kind": "database", "evidence": "charts/shop/Chart.yaml"},
+    {"name": "Redis", "kind": "cache", "evidence": "k8s/redis.yaml"},
+    {"name": "Kubernetes", "kind": "platform", "evidence": "k8s/deployment.yaml"}
+  ],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "_helpers.tpl is a Go template (Helm); Linguist's other candidate for .tpl is Smarty",
+    "templates/deployment.yaml is Go-templated YAML: not valid YAML until Helm renders it",
+    "the chart's postgresql dependency is a Bitnami chart from an OCI registry; the database itself is deployed by it (condition postgresql.enabled, true in values.yaml)",
+    "Chart.lock is left out: its digest is computed by helm dependency update; resolved is null",
+    "version 0.3.0 is the chart's version, appVersion 1.4.2 the application image tag it defaults to",
+    "k8s/ is a Kustomize base, not a chart: kustomization.yaml overrides the image tag to 1.4.3 while deployment.yaml says 1.4.2",
+    "kubeVersion >=1.27.0-0 constrains the cluster, not a tool on the machine: no toolchain",
+    "the application image ghcr.io/acme/shop-api is built elsewhere: no code unit in this repository",
+    "the database URL comes from a Secret (shop-db) that is not in the repository"
+  ]
+}

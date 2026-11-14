@@ -1,0 +1,239 @@
+{
+  "languages": [
+    {
+      "path": "domain/src/main/java/com/example/inventory/domain/Item.java",
+      "language": "Java"
+    },
+    {
+      "path": "libs/money/src/main/java/com/example/money/Money.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "gradle/wrapper/",
+      "why": "vendored"
+    }
+  ],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "settings.gradle.kts",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": ":domain",
+      "kind": "gradle-project",
+      "root": "domain",
+      "manifest": "domain/build.gradle.kts",
+      "source_roots": [
+        "domain/src/main/java",
+        "domain/src/test/java"
+      ],
+      "depends_on": [
+        ":money"
+      ],
+      "config": {
+        "source_sets": {
+          "main": [
+            "domain/src/main/java"
+          ],
+          "test": [
+            "domain/src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          ":domain:compileJava",
+          ":domain:compileTestJava"
+        ]
+      }
+    },
+    {
+      "name": ":api",
+      "kind": "gradle-project",
+      "root": "api",
+      "manifest": "api/build.gradle.kts",
+      "source_roots": [
+        "api/src/main/java"
+      ],
+      "depends_on": [
+        ":domain"
+      ],
+      "config": {
+        "source_sets": {
+          "main": [
+            "api/src/main/java"
+          ],
+          "test": [
+            "api/src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          ":api:compileJava",
+          ":api:compileTestJava"
+        ],
+        "entry_files": [
+          "api/src/main/java/com/example/inventory/api/Main.java"
+        ]
+      }
+    },
+    {
+      "name": ":buildSrc",
+      "kind": "gradle-project",
+      "root": "buildSrc",
+      "manifest": "buildSrc/build.gradle.kts",
+      "source_roots": [
+        "buildSrc/src/main/kotlin"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "buildSrc/src/main/kotlin",
+            "buildSrc/src/main/java"
+          ],
+          "test": [
+            "buildSrc/src/test/kotlin",
+            "buildSrc/src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          ":buildSrc:compileKotlin",
+          ":buildSrc:compileJava"
+        ]
+      }
+    },
+    {
+      "name": ":money",
+      "kind": "gradle-project",
+      "root": "libs/money",
+      "manifest": "libs/money/build.gradle.kts",
+      "source_roots": [
+        "libs/money/src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "libs/money/src/main/java"
+          ],
+          "test": [
+            "libs/money/src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          ":money:compileJava",
+          ":money:compileTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "gradle",
+    "root": ".",
+    "members": [
+      "domain",
+      "api"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "gradle",
+      "version": "8.11.1",
+      "declared_in": "gradle/wrapper/gradle-wrapper.properties"
+    },
+    {
+      "tool": "java",
+      "version": "21",
+      "declared_in": "buildSrc/src/main/kotlin/inventory.java-conventions.gradle.kts"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "libs/money/build.gradle.kts"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "org.gradle.toolchains.foojay-resolver-convention",
+      "declared": "0.8.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "settings.gradle.kts"
+    },
+    {
+      "unit": ":money",
+      "name": "org.gradle.toolchains.foojay-resolver-convention",
+      "declared": "0.8.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "libs/money/settings.gradle.kts"
+    },
+    {
+      "unit": ":domain",
+      "name": "com.google.guava:guava",
+      "declared": "33.3.1-jre",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "gradle/libs.versions.toml"
+    },
+    {
+      "unit": ":domain",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": null,
+      "resolved": "5.11.3",
+      "scope": "test",
+      "declared_in": "gradle/libs.versions.toml"
+    },
+    {
+      "unit": ":domain",
+      "name": "org.junit.platform:junit-platform-launcher",
+      "declared": null,
+      "resolved": "1.11.3",
+      "scope": "test",
+      "declared_in": "gradle/libs.versions.toml"
+    },
+    {
+      "unit": ":api",
+      "name": "com.fasterxml.jackson.core:jackson-databind",
+      "declared": "2.18.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "gradle/libs.versions.toml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit Jupiter",
+      "unit": ":domain",
+      "evidence": "domain/build.gradle.kts"
+    },
+    {
+      "name": "Jackson",
+      "unit": ":api",
+      "evidence": "api/build.gradle.kts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "junit-jupiter and junit-platform-launcher get their versions from junit-bom 5.11.3 (5.11.3 and 1.11.3, checked on Maven Central). Which plugins and which Java toolchain :domain and :api receive is decided by the precompiled script plugin in buildSrc, which Gradle compiles and applies; a static reader must follow the plugin id inventory.java-conventions to the file name."
+  },
+  "traps": [
+    "Versions are in gradle/libs.versions.toml, not in the build files: libs.guava, libs.jackson.databind and libs.junit.bom are accessors generated from the aliases guava, jackson-databind and junit-bom (dashes become dots). junit-jupiter and junit-launcher have no version in the catalog: the BOM gives it.",
+    "The root project has no build.gradle.kts: settings.gradle.kts declares it and its two subprojects.",
+    "The Java 21 toolchain is not in any project build file: it comes from the convention plugin buildSrc/src/main/kotlin/inventory.java-conventions.gradle.kts, applied by id inventory.java-conventions (the file name without .gradle.kts).",
+    "libs/money is an included build (includeBuild), not a subproject: it has its own settings file, its own Java 17 toolchain and version 0.3.0. :domain asks for com.example.money:money with no version and Gradle substitutes the included build because its group and name match; outside the composite that coordinate does not resolve.",
+    "buildSrc is a separate build of build logic, compiled before the main build; its source set holds Gradle Kotlin DSL script plugins, not application code, and it is not a workspace member.",
+    "The kotlin-dsl plugin in buildSrc has no version: it is embedded in Gradle 8.11.1.",
+    "The foojay resolver plugin lets Gradle download the JDKs 21 and 17 it does not find on the machine.",
+    "There is no wrapper in libs/money: inside the composite it runs with the main build's Gradle 8.11.1.",
+    "resolved for junit-jupiter (5.11.3) and junit-platform-launcher (1.11.3) is read from junit-bom 5.11.3 as published on Maven Central; guava and jackson-databind have their versions written in the catalog, so they are declared there and resolved stays null.",
+    "Workspace members are the subprojects of settings.gradle.kts (domain, api): the root is the workspace root, buildSrc and the included build libs/money are separate builds, not members."
+  ]
+}

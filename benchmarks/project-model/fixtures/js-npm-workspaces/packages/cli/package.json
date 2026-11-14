@@ -1,0 +1,11 @@
+{
+  "name": "@acme/cli",
+  "version": "1.0.0",
+  "bin": {
+    "acme": "bin.js"
+  },
+  "dependencies": {
+    "@acme/core": "^1.2.0",
+    "kleur": "^4.1.5"
+  }
+}

@@ -1,0 +1,12 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mono-api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["mono-common", "fastapi>=0.115"]
+
+[tool.uv.sources]
+mono-common = { path = "../../libs/common", editable = true }

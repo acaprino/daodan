@@ -1,0 +1,41 @@
+{
+  "languages": [
+    {"path": "src/server.js", "language": "JavaScript"},
+    {"path": "Dockerfile", "language": "Dockerfile"}
+  ],
+  "excluded": [],
+  "units": [
+    {"name": "orders-service", "kind": "npm-package", "root": ".", "manifest": "package.json",
+     "source_roots": ["src"], "depends_on": [],
+     "config": {"entry_files": ["src/server.js", "src/worker.js"]}}
+  ],
+  "workspace": null,
+  "toolchains": [
+    {"tool": "node", "version": ">=20", "declared_in": "package.json"},
+    {"tool": "node", "version": "20.18.1-alpine", "declared_in": "Dockerfile"}
+  ],
+  "dependencies": [
+    {"unit": "orders-service", "name": "amqplib", "declared": "^0.10.4", "resolved": null, "scope": "runtime", "declared_in": "package.json"},
+    {"unit": "orders-service", "name": "express", "declared": "^4.21.1", "resolved": null, "scope": "runtime", "declared_in": "package.json"},
+    {"unit": "orders-service", "name": "ioredis", "declared": "^5.4.1", "resolved": null, "scope": "runtime", "declared_in": "package.json"},
+    {"unit": "orders-service", "name": "pg", "declared": "^8.13.1", "resolved": null, "scope": "runtime", "declared_in": "package.json"}
+  ],
+  "frameworks": [
+    {"name": "Express", "unit": "orders-service", "evidence": "src/server.js"}
+  ],
+  "services": [
+    {"name": "PostgreSQL", "kind": "database", "evidence": "docker-compose.yml"},
+    {"name": "Redis", "kind": "cache", "evidence": "docker-compose.yml"},
+    {"name": "RabbitMQ", "kind": "queue", "evidence": "docker-compose.yml"}
+  ],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "api and worker are two Compose services built from the same image (target runtime): one code unit, two entry points",
+    "db, cache and queue are service names; the products are in the image names postgres:16.4, redis:7.4-alpine, rabbitmq:3.13-management",
+    "the Dockerfile copies package-lock.json, which is not in the fixture (an npm lock needs an integrity hash per package): resolved is null and the image would not build as is",
+    "node 20.18.1-alpine is the base image of both stages; package.json engines only asks >=20",
+    "# syntax=docker/dockerfile:1.7 selects the BuildKit frontend, not a project toolchain",
+    "the deps stage installs with --omit=dev: there are no devDependencies anyway",
+    "the queue name 'orders' joins server.js and worker.js only through a string"
+  ]
+}

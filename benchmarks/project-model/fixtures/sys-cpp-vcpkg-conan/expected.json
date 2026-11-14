@@ -1,0 +1,109 @@
+{
+  "languages": [
+    {
+      "path": "src/main.cpp",
+      "language": "C++"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "imgtool",
+      "kind": "cmake-target",
+      "root": "src",
+      "manifest": "src/CMakeLists.txt",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "src/main.cpp"
+        ],
+        "entry_files": [
+          "src/main.cpp"
+        ],
+        "imported_links": [
+          "fmt::fmt",
+          "ZLIB::ZLIB"
+        ],
+        "vcpkg_baseline": "01f602195983451bc83e72f4214af2cbc495aa94"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.24",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "c++",
+      "version": "20",
+      "declared_in": "CMakeLists.txt#CMAKE_CXX_STANDARD"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "imgtool",
+      "name": "fmt",
+      "declared": null,
+      "resolved": "10.1.1",
+      "scope": "runtime",
+      "declared_in": "vcpkg.json"
+    },
+    {
+      "unit": "imgtool",
+      "name": "zlib",
+      "declared": ">=1.3.1",
+      "resolved": "1.3.1",
+      "scope": "runtime",
+      "declared_in": "vcpkg.json"
+    },
+    {
+      "unit": "imgtool",
+      "name": "fmt",
+      "declared": "10.2.1",
+      "resolved": "10.2.1",
+      "scope": "runtime",
+      "declared_in": "conanfile.txt"
+    },
+    {
+      "unit": "imgtool",
+      "name": "zlib",
+      "declared": "1.3.1",
+      "resolved": "1.3.1",
+      "scope": "runtime",
+      "declared_in": "conanfile.txt"
+    },
+    {
+      "unit": "imgtool",
+      "name": "cmake",
+      "declared": "3.28.1",
+      "resolved": "3.28.1",
+      "scope": "build",
+      "declared_in": "conanfile.txt"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "two package managers declare the same libraries for one target, and they disagree: vcpkg builds fmt 10.1.1, Conan fmt 10.2.1; which one is used depends on the toolchain file passed to CMake",
+    "vcpkg's fmt has no version constraint, so the builtin-baseline would give 10.2.1, but the override pins 10.1.1 even though it is lower",
+    "zlib under vcpkg resolves from the baseline commit 01f602195983451bc83e72f4214af2cbc495aa94 (zlib 1.3.1 there); vcpkg has no lockfile, the baseline is the lock",
+    "conan.lock pins recipe revisions (after #) with a timestamp (after %): the version is the part before #",
+    "cmake/3.28.1 is a tool_requires: a build tool Conan downloads, not a library linked into imgtool, and it differs from cmake_minimum_required 3.24",
+    "the vcpkg.json name imgtool is the manifest's own name, not a dependency",
+    "fmt::fmt and ZLIB::ZLIB are imported targets from find_package, not units of this project"
+  ]
+}

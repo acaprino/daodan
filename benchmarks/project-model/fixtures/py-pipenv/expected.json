@@ -1,0 +1,80 @@
+{
+  "languages": [
+    {
+      "path": "app/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "app/__main__.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "python-project",
+      "root": "",
+      "manifest": "Pipfile",
+      "source_roots": [
+        ""
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "app"
+        ],
+        "entry_files": [
+          "app/__main__.py"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": "3.11",
+      "declared_in": "Pipfile"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": null,
+      "name": "click",
+      "declared": "==8.1.7",
+      "resolved": "8.1.7",
+      "scope": "runtime",
+      "declared_in": "Pipfile"
+    },
+    {
+      "unit": null,
+      "name": "attrs",
+      "declared": ">=23.1",
+      "resolved": "24.2.0",
+      "scope": "runtime",
+      "declared_in": "Pipfile"
+    },
+    {
+      "unit": null,
+      "name": "ruff",
+      "declared": "*",
+      "resolved": "0.6.9",
+      "scope": "dev",
+      "declared_in": "Pipfile"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "Pipfile has no project name: the unit name is the folder name",
+    "[dev-packages] maps to Pipfile.lock key 'develop', not 'dev'",
+    "colorama appears only in Pipfile.lock (transitive, Windows marker)",
+    "Pipfile.lock is hand-written: no per-package hashes and _meta.hash.sha256 is a placeholder of zeros (not computed)",
+    "no file states a project name: the unit name is null (the folder name is not a name)"
+  ]
+}

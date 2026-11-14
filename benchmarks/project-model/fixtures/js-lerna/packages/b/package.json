@@ -1,0 +1,8 @@
+{
+  "name": "@lrn/b",
+  "version": "0.4.1",
+  "main": "index.js",
+  "dependencies": {
+    "@lrn/a": "^2.0.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "npm-single",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "ms": "^2.1.3"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "languages": [
+    {
+      "path": "src/index.ts",
+      "language": "TypeScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "invoices",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": "20",
+      "declared_in": ".devcontainer/docker-compose.yml"
+    },
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": ".devcontainer/devcontainer.json"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "invoices",
+      "name": "pg",
+      "declared": "^8.13.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "invoices",
+      "name": "@types/pg",
+      "declared": "^8.11.10",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "invoices",
+      "name": "typescript",
+      "declared": "~5.6.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": ".devcontainer/docker-compose.yml"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "devcontainer.json is JSON with Comments: line comments and a trailing comma; a strict JSON parser fails on it",
+    "the image is not in devcontainer.json: dockerComposeFile and service point to .devcontainer/docker-compose.yml, whose app image typescript-node:1-20-bookworm carries Node 20 (the 1 is the image version, bookworm the Debian release)",
+    "Python 3.12 comes from a dev container feature, not from any manifest: no Python code in the repository",
+    "docker-in-docker:2 is a feature version, not a Docker version; it installs the latest Docker by default",
+    "the dev container is for development only: no Dockerfile for production, and the database exists only as the db service of the dev compose file",
+    "postCreateCommand npm ci needs a package-lock.json that is not in the fixture",
+    "every dev container fact lives under .devcontainer/: a reader whose perimeter skips dot folders never sees them"
+  ]
+}

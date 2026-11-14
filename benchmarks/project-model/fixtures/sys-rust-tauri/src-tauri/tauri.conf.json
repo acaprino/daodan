@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "notes-desk",
+  "version": "0.1.0",
+  "identifier": "com.example.notesdesk",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      { "title": "Notes Desk", "width": 800, "height": 600 }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": false
+  }
+}

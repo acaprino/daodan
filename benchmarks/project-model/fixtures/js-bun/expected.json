@@ -1,0 +1,72 @@
+{
+  "languages": [
+    {
+      "path": "src/index.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/index.test.ts",
+      "language": "TypeScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "bun-app",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json"
+        ],
+        "entry_files": [
+          "src/index.ts"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "bun",
+      "version": "1.2.2",
+      "declared_in": ".bun-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "bun-app",
+      "name": "zod",
+      "declared": "^3.23.8",
+      "resolved": "3.23.8",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "bun-app",
+      "name": "typescript",
+      "declared": "^5.6.0",
+      "resolved": "5.6.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the manager is Bun although package.json has no packageManager and there is no package-lock.json: the evidence is bun.lock and .bun-version",
+    "bun.lock is the text lockfile (JSONC with trailing commas), not the binary bun.lockb",
+    "the integrity element of each package tuple is left empty (hashes not fabricated): a real bun.lock has them",
+    "Bun.version and bun:test are runtime built-ins, not dependencies",
+    "tsconfig types is [] on purpose: no @types/bun is declared"
+  ]
+}

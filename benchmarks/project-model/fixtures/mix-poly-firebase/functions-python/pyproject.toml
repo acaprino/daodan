@@ -1,0 +1,14 @@
+[project]
+name = "shop-functions"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "firebase-functions~=0.4.2",
+    "firebase-admin>=6.6.0",
+    "stripe>=11.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]

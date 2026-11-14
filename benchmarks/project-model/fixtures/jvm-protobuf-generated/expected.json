@@ -1,0 +1,109 @@
+{
+  "languages": [
+    {
+      "path": "src/main/proto/greeting.proto",
+      "language": "Protocol Buffer"
+    },
+    {
+      "path": "src/main/java/com/example/greeting/Greeter.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "src/generated/",
+      "why": "generated"
+    }
+  ],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle",
+      "source_roots": [
+        "src/main/java",
+        "src/main/proto"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java",
+            "src/main/proto",
+            "build/generated/source/proto/main/java"
+          ],
+          "test": [
+            "src/test/java",
+            "src/test/proto",
+            "build/generated/source/proto/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "generateProto",
+          "compileJava",
+          "generateTestProto",
+          "compileTestJava"
+        ],
+        "generated_dirs": [
+          "build/generated/source/proto/main/java",
+          "build/generated/source/proto/test/java"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "com.google.protobuf",
+      "declared": "0.9.4",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle"
+    },
+    {
+      "unit": ":",
+      "name": "com.google.protobuf:protobuf-java",
+      "declared": "4.28.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "build.gradle"
+    },
+    {
+      "unit": ":",
+      "name": "com.google.protobuf:protoc",
+      "declared": "4.28.3",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Protocol Buffers",
+      "unit": ":",
+      "evidence": "build.gradle"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Versions are literal. The classes Greeter.java imports (HelloRequest, HelloReply) exist only after generateProto writes them into build/generated/source/proto/main/java: a static index of the fixture finds no declaration for them."
+  },
+  "traps": [
+    "src/generated/java/com/example/greeting/v1/GreetingProto.java is protoc output checked in by hand: its first line is the protoc header that Linguist uses to mark it generated. It is in no source set, and it is a stale partial copy (only the outer class of the five files protoc writes for greeting.proto).",
+    "A reader that infers source sets from src/<name>/java takes src/generated as a source set named generated; Gradle does not.",
+    "The code that Greeter.java compiles against is regenerated at every build into build/generated/source/proto/main/java (plugin 0.9.4 layout: source, not sources), which does not exist in the fixture.",
+    "The protobuf plugin adds src/main/proto to the main source set: the .proto file is a build input, Protocol Buffer for Linguist.",
+    "protoc 4.28.3 is a Maven artifact the plugin downloads for the platform, so it is a build dependency, not a toolchain to install.",
+    "The checked-in header reads NO CHECKED-IN PROTOBUF GENCODE: protoc 4.x writes it in every Java file, a hint that this copy should not be in the repository."
+  ]
+}

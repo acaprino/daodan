@@ -1,0 +1,142 @@
+{
+  "languages": [
+    {
+      "path": "src/main.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "kiosk_sync/__init__.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "vendor/ui-kit/",
+      "why": "submodule"
+    },
+    {
+      "path": "libs/proto-py/",
+      "why": "submodule"
+    }
+  ],
+  "units": [
+    {
+      "name": "kiosk",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/main.js"
+        ]
+      }
+    },
+    {
+      "name": "kiosk-sync",
+      "kind": "python-project",
+      "root": ".",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "kiosk_sync"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "kiosk_sync"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "kiosk",
+      "name": "@acme/ui-kit",
+      "declared": "file:vendor/ui-kit",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "kiosk",
+      "name": "preact",
+      "declared": "^10.24.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "kiosk-sync",
+      "name": "proto-py",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "kiosk-sync",
+      "name": "httpx",
+      "declared": ">=0.27.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "kiosk-sync",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "kiosk",
+      "name": "https://github.com/acme/ui-kit.git",
+      "declared": "main",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": ".gitmodules#submodule.vendor/ui-kit"
+    },
+    {
+      "unit": "kiosk-sync",
+      "name": "../proto-py.git",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": ".gitmodules#submodule.libs/proto-py"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Preact",
+      "unit": "kiosk",
+      "evidence": "src/main.js"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    ".gitmodules names two submodules, vendor/ui-kit and libs/proto-py, and neither folder exists: the submodules were never initialised",
+    "both manifests point into the missing folders: @acme/ui-kit is file:vendor/ui-kit, proto-py comes from [tool.uv.sources] path libs/proto-py; both are other repositories, so they are external dependencies, not units, and nothing can be resolved",
+    "proto-py is listed in dependencies without a version: declared is null, the path source is in tool.uv.sources",
+    "libs/proto-py has a relative URL (../proto-py.git): it resolves against the parent repository's remote, which a fixture without .git does not have",
+    "two units share the root: an npm package and a Python project",
+    "each submodule is also a dependency named by its URL as .gitmodules writes it: declared is the branch (main) or null, resolved would be the gitlink commit, which lives only in the parent repository's index: this fixture has no .git, so resolved is null",
+    "vendor/ui-kit is reached twice: as the submodule and as @acme/ui-kit (file:vendor/ui-kit) in package.json; libs/proto-py as the submodule and as proto-py in [tool.uv.sources]",
+    "shallow = true only steers git submodule update"
+  ]
+}

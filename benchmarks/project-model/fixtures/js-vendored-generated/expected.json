@@ -1,0 +1,93 @@
+{
+  "languages": [
+    {
+      "path": "src/index.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "codegen.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "schema.graphql",
+      "language": "GraphQL"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "vendor/jquery.min.js",
+      "why": "vendored"
+    },
+    {
+      "path": "public/chart.min.js",
+      "why": "vendored"
+    },
+    {
+      "path": "src/generated/graphql.ts",
+      "why": "generated"
+    }
+  ],
+  "units": [
+    {
+      "name": "gql-client",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/index.ts"
+        ],
+        "codegen": "codegen.ts",
+        "generated": [
+          "src/generated/graphql.ts"
+        ],
+        "schema": "schema.graphql"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "gql-client",
+      "name": "graphql",
+      "declared": "^16.9.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "gql-client",
+      "name": "@graphql-codegen/cli",
+      "declared": "^5.0.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "gql-client",
+      "name": "typescript",
+      "declared": "^5.6.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "vendor/jquery.min.js sits in a vendor directory and carries the jQuery banner; public/chart.min.js is vendored too but sits outside any vendor directory: only the .min.js name and the banner show it",
+    "both vendored files hold a short stand-in body under the real banner: they are not the real libraries",
+    "src/generated/graphql.ts is generated (its header says so) but is still imported by src/index.ts: excluded from analysis, not unreferenced",
+    "schema.graphql is a source file (GraphQL), the input of the generator",
+    "no lockfile, so resolved is null"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "languages": [
+    {
+      "path": "src/lib.rs",
+      "language": "Rust"
+    },
+    {
+      "path": "build.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "opcodes",
+      "kind": "cargo-crate",
+      "root": "",
+      "manifest": "Cargo.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "opcodes",
+            "path": "src/lib.rs"
+          },
+          {
+            "kind": "custom-build",
+            "name": "build-script-build",
+            "path": "build.rs"
+          }
+        ],
+        "build_script_inputs": [
+          "opcodes.txt"
+        ],
+        "generated_in_out_dir": [
+          "opcodes.rs"
+        ],
+        "build_script_env": [
+          "OPCODES_MODERN_RUSTC"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "opcodes",
+      "name": "version_check",
+      "declared": "0.9",
+      "resolved": "0.9.5",
+      "scope": "build",
+      "declared_in": "Cargo.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "the Opcode enum exists only after build.rs runs: its variants come from opcodes.txt through code the project executes at build time"
+  },
+  "traps": [
+    "build.rs is found by convention, no build = key names it: it is a custom-build target compiled and run on the host before the library",
+    "src/lib.rs never defines Opcode: include! pulls $OUT_DIR/opcodes.rs, which does not exist in the tree",
+    "env!(\"OPCODES_MODERN_RUSTC\") is set by a cargo:rustc-env line of build.rs; without running it the crate does not even compile",
+    "version_check is a build dependency: it is linked into build.rs, not into the library, and is not a runtime dependency",
+    "opcodes.txt is an input of the build script (rerun-if-changed), not documentation"
+  ]
+}

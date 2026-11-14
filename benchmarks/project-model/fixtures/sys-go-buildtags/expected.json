@@ -1,0 +1,63 @@
+{
+  "languages": [
+    {
+      "path": "main.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "example.com/tags",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/tags",
+          "example.com/tags/store"
+        ],
+        "entry_files": [
+          "main.go"
+        ],
+        "build_tags": [
+          "integration",
+          "ignore",
+          "linux",
+          "windows"
+        ],
+        "test_packages": [
+          "example.com/tags/store",
+          "example.com/tags/store_test"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.mod"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "backend_linux.go and backend_windows.go carry no //go:build line: the _linux and _windows file-name suffixes are the constraint",
+    "on any one platform exactly one backend() exists; an indexer that loads every file sees three definitions of the same function",
+    "store/gen.go says package main inside package store's directory: the ignore tag keeps it out of every build, it is not a second package",
+    "open_test.go and integration_test.go declare package store_test, an external test package beside store; it is not a separate directory or unit",
+    "integration_test.go only builds with -tags integration: the default go test ./... does not compile TestOpenTwice",
+    "ignore and integration are both build tags, but only integration selects a build variant; ignore means never"
+  ]
+}

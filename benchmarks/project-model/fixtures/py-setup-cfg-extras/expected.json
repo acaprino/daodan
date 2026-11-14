@@ -1,0 +1,112 @@
+{
+  "languages": [
+    {
+      "path": "src/cfg_lib/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/cfg_lib/cli.py",
+      "language": "Python"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "cfg-lib",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "setup.cfg",
+      "source_roots": [
+        "src",
+        "tests"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "cfg_lib"
+        ],
+        "entry_files": [
+          "src/cfg_lib/cli.py"
+        ],
+        "entry_points": {
+          "cfglib": "cfg_lib.cli:main"
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.9",
+      "declared_in": "setup.cfg"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "cfg-lib",
+      "name": "packaging",
+      "declared": ">=23",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "setup.cfg"
+    },
+    {
+      "unit": "cfg-lib",
+      "name": "typing-extensions",
+      "declared": ">=4.5",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "setup.cfg"
+    },
+    {
+      "unit": "cfg-lib",
+      "name": "click",
+      "declared": ">=8",
+      "resolved": null,
+      "scope": "optional",
+      "declared_in": "setup.cfg"
+    },
+    {
+      "unit": "cfg-lib",
+      "name": "sphinx",
+      "declared": ">=7",
+      "resolved": null,
+      "scope": "optional",
+      "declared_in": "setup.cfg"
+    },
+    {
+      "unit": "cfg-lib",
+      "name": "pluggy",
+      "declared": ">=1.0",
+      "resolved": null,
+      "scope": "optional",
+      "declared_in": "setup.cfg"
+    },
+    {
+      "unit": "cfg-lib",
+      "name": "setuptools",
+      "declared": ">=64",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "pyproject.toml holds only [build-system]: project metadata lives in setup.cfg",
+    "version is 'attr: cfg_lib.__version__', read from source, not written in setup.cfg",
+    "typing-extensions has the marker python_version < \"3.11\" on the same line",
+    "extras named 'test' and 'docs' are optional-dependencies (scope optional), not dev groups",
+    "[tool:pytest] and [flake8] in setup.cfg are tool configuration, not metadata"
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "languages": [
+    {
+      "path": "main.tf",
+      "language": "HCL"
+    },
+    {
+      "path": "modules/network/main.tf",
+      "language": "HCL"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "terraform-module",
+      "root": ".",
+      "manifest": "versions.tf",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [
+        "modules/network"
+      ],
+      "config": {}
+    },
+    {
+      "name": null,
+      "kind": "terraform-module",
+      "root": "modules/network",
+      "manifest": "modules/network/main.tf",
+      "source_roots": [
+        "modules/network"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "terraform",
+      "version": ">= 1.6.0",
+      "declared_in": "versions.tf"
+    },
+    {
+      "tool": "terraform",
+      "version": "1.9.8",
+      "declared_in": ".terraform-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ".",
+      "name": "hashicorp/random",
+      "declared": "~> 3.6",
+      "resolved": "3.6.3",
+      "scope": "runtime",
+      "declared_in": "versions.tf"
+    },
+    {
+      "unit": ".",
+      "name": "cloudposse/label/null",
+      "declared": "0.25.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "main.tf"
+    },
+    {
+      "unit": "modules/network",
+      "name": "hashicorp/random",
+      "declared": ">= 3.5",
+      "resolved": "3.6.3",
+      "scope": "runtime",
+      "declared_in": "modules/network/main.tf"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "a Terraform module is a folder of .tf files: there is no single manifest; the root module's terraform block is in versions.tf, the child's in modules/network/main.tf",
+    "no file names a module: both units have name null and are referred to by their root; network is only the label of the call in main.tf",
+    "./modules/network is a local module: depends_on; cloudposse/label/null is a registry module: an external dependency",
+    ".terraform.lock.hcl locks providers only: the registry module version 0.25.0 is exact in main.tf but never locked",
+    "one provider, two constraints: the lock records the union \">= 3.5.0, ~> 3.6\" and one version 3.6.3 for both modules",
+    "the lock carries only zh: hashes (the SHA256SUMS of the release zips); a lock written by terraform init also has an h1: hash per platform used",
+    "the provider is named by its source address hashicorp/random, which stands for registry.terraform.io/hashicorp/random",
+    ".terraform-version (tfenv) pins 1.9.8 while required_version only asks >= 1.6.0"
+  ]
+}

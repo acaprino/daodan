@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+click = "==8.1.7"
+attrs = ">=23.1"
+
+[dev-packages]
+ruff = "*"
+
+[requires]
+python_version = "3.11"
+
+[scripts]
+start = "python -m app"

@@ -1,0 +1,9 @@
+{
+  "name": "@acme/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "ms": "catalog:"
+  }
+}

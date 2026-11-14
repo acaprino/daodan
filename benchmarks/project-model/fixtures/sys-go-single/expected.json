@@ -1,0 +1,75 @@
+{
+  "languages": [
+    {
+      "path": "main.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "example.com/hello",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/hello",
+          "example.com/hello/internal/greet"
+        ],
+        "entry_files": [
+          "main.go"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.mod"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "example.com/hello",
+      "name": "github.com/go-chi/chi/v5",
+      "declared": "v5.1.0",
+      "resolved": "v5.1.0",
+      "scope": "runtime",
+      "declared_in": "go.mod"
+    },
+    {
+      "unit": "example.com/hello",
+      "name": "github.com/google/uuid",
+      "declared": "v1.6.0",
+      "resolved": "v1.6.0",
+      "scope": "runtime",
+      "declared_in": "go.mod"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "chi",
+      "unit": "example.com/hello",
+      "evidence": "main.go"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "go.sum has two lines per module (the h1: hash of the zip and the /go.mod hash): four lines are two dependencies",
+    "the go directive 1.22 is the minimum language version, not a pinned toolchain",
+    "internal/greet is a package of the same module, not a second unit",
+    "the /v5 suffix is part of the module path: the dependency name is github.com/go-chi/chi/v5, not github.com/go-chi/chi",
+    "resolved equals declared because Go picks the minimal version selected by go.mod; go.sum only proves the hashes"
+  ]
+}

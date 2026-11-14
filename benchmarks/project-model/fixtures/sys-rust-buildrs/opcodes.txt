@@ -1,0 +1,5 @@
+# name=code, one per line; build.rs turns this into the Opcode enum
+Nop=0
+Push=1
+Pop=2
+Add=3

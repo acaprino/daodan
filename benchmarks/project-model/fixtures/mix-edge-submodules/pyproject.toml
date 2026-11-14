@@ -1,0 +1,18 @@
+[project]
+name = "kiosk-sync"
+version = "0.3.0"
+requires-python = ">=3.11"
+dependencies = [
+    "proto-py",
+    "httpx>=0.27.2",
+]
+
+[tool.uv.sources]
+proto-py = { path = "libs/proto-py", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kiosk_sync"]

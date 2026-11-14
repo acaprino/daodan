@@ -1,0 +1,21 @@
+source "https://rubygems.org"
+
+ruby file: ".ruby-version"
+
+gem "rails", "~> 8.0.1"
+gem "propshaft"
+gem "pg", "~> 1.1"
+gem "puma", ">= 5.0"
+gem "importmap-rails"
+gem "turbo-rails"
+gem "sidekiq", "~> 7.3"
+gem "bootsnap", require: false
+
+group :development, :test do
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+  gem "rspec-rails", "~> 7.1"
+end
+
+group :test do
+  gem "capybara"
+end

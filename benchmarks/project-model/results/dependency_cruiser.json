@@ -1,0 +1,467 @@
+{
+ "tool": "dependency-cruiser",
+ "version": "18.7.2",
+ "group": "sbom",
+ "command": "node bin/dependency-cruiser.mjs --no-config --output-type json --output-to <out> . (in the project folder)",
+ "fixtures": {
+  "js-node-scripts": {
+   "output": {},
+   "raw": "7338 bytes",
+   "seconds": 0.38,
+   "peak_mb": 155.2,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 2
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 5
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 2
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 0
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 1
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [
+     "ms"
+    ],
+    "undeclared_missed": [],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 4,
+    "canary_fired": [],
+    "findings": [
+     {
+      "module": "ms",
+      "file": "scripts/fetch.js",
+      "types": [
+       "unknown"
+      ]
+     }
+    ],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "js-static-html": {
+   "output": {},
+   "raw": "5194 bytes",
+   "seconds": 0.37,
+   "peak_mb": 157.7,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 3
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 4
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 0
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 3
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [
+     "vue"
+    ],
+    "undeclared_missed": [],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 1,
+    "canary_fired": [],
+    "findings": [
+     {
+      "module": "vue",
+      "file": "app.js",
+      "types": [
+       "unknown"
+      ]
+     }
+    ],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "py-notebooks": {
+   "output": {},
+   "raw": "4289 bytes",
+   "seconds": 0.32,
+   "peak_mb": 153.7,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 2
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 3
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 1
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 2
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 5
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [],
+    "undeclared_missed": [
+     "seaborn"
+    ],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 3,
+    "canary_fired": [],
+    "findings": [],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "py-pep723-scripts": {
+   "output": {},
+   "raw": "4304 bytes",
+   "seconds": 0.33,
+   "peak_mb": 147.9,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 1
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 3
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 2
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 3
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [],
+    "undeclared_missed": [],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 3,
+    "canary_fired": [],
+    "findings": [],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  },
+  "py-undeclared-scripts": {
+   "output": {},
+   "raw": "4316 bytes",
+   "seconds": 0.33,
+   "peak_mb": 148.7,
+   "network_attempts": 0,
+   "network_endpoints": {},
+   "offline_second_run": true,
+   "executed_project_code": "no",
+   "started": [],
+   "build_tools_called": [],
+   "wrote_in_fixture": {},
+   "traced_same_output": true,
+   "error": null,
+   "stderr_tail": null,
+   "score": {
+    "languages": {
+     "given": false,
+     "expected": 1
+    },
+    "languages.files": {
+     "given": false,
+     "expected": 5
+    },
+    "excluded": {
+     "given": false,
+     "expected": 0
+    },
+    "units": {
+     "given": false,
+     "expected": 1
+    },
+    "units.depends_on": {
+     "given": false,
+     "expected": 0
+    },
+    "units.source_roots": {
+     "given": false,
+     "expected": 1
+    },
+    "units.config": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace": {
+     "given": false,
+     "expected": 0
+    },
+    "workspace.members": {
+     "given": false,
+     "expected": 0
+    },
+    "toolchains": {
+     "given": false,
+     "expected": 0
+    },
+    "dependencies": {
+     "given": false,
+     "expected": 0
+    },
+    "frameworks": {
+     "given": false,
+     "expected": 0
+    },
+    "services": {
+     "given": false,
+     "expected": 0
+    },
+    "needs": {
+     "given": false,
+     "expected": 1
+    }
+   },
+   "honesty": {
+    "undeclared_reported": [],
+    "undeclared_missed": [
+     "PIL",
+     "cv2",
+     "numpy",
+     "sklearn",
+     "yaml"
+    ],
+    "wrongly_undeclared": [],
+    "unexpected": [],
+    "invented_names": [],
+    "canary_planted": 5,
+    "canary_fired": [],
+    "findings": [],
+    "traced_canary_fired": [],
+    "offline_canary_fired": []
+   }
+  }
+ },
+ "defaults": {}
+}

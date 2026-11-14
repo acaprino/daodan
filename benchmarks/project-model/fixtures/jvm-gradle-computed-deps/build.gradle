@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+def jacksonModules = ['core', 'databind', 'annotations']
+
+dependencies {
+    jacksonModules.each { module ->
+        implementation "com.fasterxml.jackson.core:jackson-${module}:${jacksonVersion}"
+    }
+    if (findProperty('withYaml') == 'true') {
+        implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    }
+}

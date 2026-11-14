@@ -1,0 +1,1 @@
+{"repo": "https://github.com/jhipster/jhipster-sample-app", "commit": "6b000b5d23a36c45e01472471b84a44fa2464044", "licence": "Apache-2.0", "why": "Spring Boot Maven back end and Angular front end in the same root folder, three build systems (Maven, npm, Angular CLI) that call each other"}

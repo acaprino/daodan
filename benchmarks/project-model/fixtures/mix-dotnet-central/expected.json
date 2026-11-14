@@ -1,0 +1,122 @@
+{
+  "languages": [
+    {
+      "path": "src/Shop.Api/Program.cs",
+      "language": "C#"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "Shop.Api",
+      "kind": "dotnet-project",
+      "root": "src/Shop.Api",
+      "manifest": "src/Shop.Api/Shop.Api.csproj",
+      "source_roots": [
+        "src/Shop.Api"
+      ],
+      "depends_on": [
+        "Shop.Core"
+      ],
+      "config": {
+        "entry_files": [
+          "src/Shop.Api/Program.cs"
+        ]
+      }
+    },
+    {
+      "name": "Shop.Core",
+      "kind": "dotnet-project",
+      "root": "src/Shop.Core",
+      "manifest": "src/Shop.Core/Shop.Core.csproj",
+      "source_roots": [
+        "src/Shop.Core"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": {
+    "tool": "dotnet",
+    "root": ".",
+    "members": [
+      "src/Shop.Api",
+      "src/Shop.Core"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "dotnet",
+      "version": "8.0.404",
+      "declared_in": "global.json"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "Shop.Api",
+      "name": "Serilog.AspNetCore",
+      "declared": "8.0.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Directory.Packages.props"
+    },
+    {
+      "unit": "Shop.Api",
+      "name": "Swashbuckle.AspNetCore",
+      "declared": "6.9.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Directory.Packages.props"
+    },
+    {
+      "unit": "Shop.Core",
+      "name": "Microsoft.EntityFrameworkCore",
+      "declared": "8.0.10",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "src/Shop.Core/Shop.Core.csproj"
+    },
+    {
+      "unit": "Shop.Core",
+      "name": "Npgsql.EntityFrameworkCore.PostgreSQL",
+      "declared": "8.0.11",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Directory.Packages.props"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "ASP.NET Core",
+      "unit": "Shop.Api",
+      "evidence": "src/Shop.Api/Shop.Api.csproj"
+    },
+    {
+      "name": "Entity Framework Core",
+      "unit": "Shop.Core",
+      "evidence": "src/Shop.Core/Shop.Core.csproj"
+    }
+  ],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "src/Shop.Api/appsettings.json"
+    }
+  ],
+  "needs": {
+    "container": true,
+    "reason": "indexing C# needs dotnet restore and build; MSBuild evaluates project files and runs their targets"
+  },
+  "traps": [
+    "central package management: PackageReference carries no Version; the version is written in Directory.Packages.props, so declared comes from there and declared_in is that file, as for a catalog",
+    "Shop.Core overrides the central version with VersionOverride=\"8.0.10\": declared is 8.0.10 and declared_in is src/Shop.Core/Shop.Core.csproj, not the 8.0.11 of Directory.Packages.props",
+    "Microsoft.EntityFrameworkCore 8.0.11 in Directory.Packages.props is never used at that version: only Shop.Core references it, with the override",
+    "a NuGet version written as 8.0.3 means the minimum 8.0.3, not an exact pin",
+    "TargetFramework net8.0 sits in Directory.Build.props, not in either csproj",
+    "Shop.Api gets Entity Framework Core only through the ProjectReference: it is not a direct dependency of Shop.Api",
+    "no packages.lock.json: every resolved is null (a NuGet lock file needs a contentHash per package, not written by hand)",
+    "the solution folder 'src' in Shop.sln is a virtual folder, not a project",
+    "Microsoft.NET.Sdk.Web is the evidence of ASP.NET Core: there is no PackageReference for it"
+  ]
+}

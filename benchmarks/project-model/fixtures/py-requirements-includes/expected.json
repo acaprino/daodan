@@ -1,0 +1,118 @@
+{
+  "languages": [
+    {
+      "path": "app/main.py",
+      "language": "Python"
+    },
+    {
+      "path": "libs/localpkg/localpkg/__init__.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "python-project",
+      "root": "",
+      "manifest": "requirements.txt",
+      "source_roots": [
+        "app"
+      ],
+      "depends_on": [
+        "localpkg"
+      ],
+      "config": {}
+    },
+    {
+      "name": "localpkg",
+      "kind": "python-project",
+      "root": "libs/localpkg",
+      "manifest": "libs/localpkg/pyproject.toml",
+      "source_roots": [
+        "libs/localpkg"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "localpkg"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": null,
+      "name": "requests",
+      "declared": ">=2.31,<3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "requirements/base.txt"
+    },
+    {
+      "unit": null,
+      "name": "click",
+      "declared": "==8.1.7",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "requirements/base.txt"
+    },
+    {
+      "unit": null,
+      "name": "numpy",
+      "declared": ">=1.26",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "requirements/base.txt"
+    },
+    {
+      "unit": null,
+      "name": "mylib",
+      "declared": "git+https://github.com/example/mylib.git@v1.4.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "requirements/base.txt"
+    },
+    {
+      "unit": null,
+      "name": "gunicorn",
+      "declared": "==22.0.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "requirements.txt"
+    },
+    {
+      "unit": null,
+      "name": "pytest",
+      "declared": "==8.3.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "requirements-dev.txt"
+    },
+    {
+      "unit": "localpkg",
+      "name": "setuptools",
+      "declared": ">=64",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "libs/localpkg/pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "requirements.txt holds one package of its own: the real list is spread over -r includes (requirements/base.txt, and requirements-dev.txt includes requirements.txt)",
+    "constraints.txt (-c) restricts urllib3 and numpy but adds no dependency: urllib3 is NOT a dependency here",
+    "extras (requests[socks]) and markers (numpy, gunicorn) are part of the line; the package name is the bare one",
+    "the git URL and the editable path (-e ./libs/localpkg) is another unit of the repo: only a depends_on edge, never a dependency; the git URL is an external dependency without a version",
+    "an exact pin (==) is a declared specifier, not a lock: resolved stays null without a lockfile",
+    "no Python version declared anywhere",
+    "no file states a project name: the unit name is null (the folder name is not a name)"
+  ]
+}

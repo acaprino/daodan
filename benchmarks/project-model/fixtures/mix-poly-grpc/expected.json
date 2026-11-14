@@ -1,0 +1,194 @@
+{
+  "languages": [
+    {
+      "path": "proto/shop/v1/order.proto",
+      "language": "Protocol Buffer"
+    },
+    {
+      "path": "server/main.go",
+      "language": "Go"
+    },
+    {
+      "path": "client-py/src/shop_client/client.py",
+      "language": "Python"
+    },
+    {
+      "path": "client-py/src/shop_client/gen/shop/v1/order_pb2.pyi",
+      "language": "Python"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "server/gen/",
+      "why": "generated"
+    },
+    {
+      "path": "client-py/src/shop_client/gen/",
+      "why": "generated"
+    }
+  ],
+  "units": [
+    {
+      "name": null,
+      "kind": "buf-module",
+      "root": "proto",
+      "manifest": "buf.yaml",
+      "source_roots": [
+        "proto"
+      ],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "github.com/acme/shop/server",
+      "kind": "go-module",
+      "root": "server",
+      "manifest": "server/go.mod",
+      "source_roots": [
+        "server"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "server/main.go"
+        ],
+        "packages": [
+          "github.com/acme/shop/server",
+          "github.com/acme/shop/server/gen/shop/v1"
+        ]
+      }
+    },
+    {
+      "name": "shop-client",
+      "kind": "python-project",
+      "root": "client-py",
+      "manifest": "client-py/pyproject.toml",
+      "source_roots": [
+        "client-py/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "shop_client"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.23",
+      "declared_in": "server/go.mod"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "client-py/pyproject.toml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "github.com/acme/shop/server",
+      "name": "google.golang.org/grpc",
+      "declared": "v1.68.0",
+      "resolved": "v1.68.0",
+      "scope": "runtime",
+      "declared_in": "server/go.mod"
+    },
+    {
+      "unit": "github.com/acme/shop/server",
+      "name": "google.golang.org/protobuf",
+      "declared": "v1.35.2",
+      "resolved": "v1.35.2",
+      "scope": "runtime",
+      "declared_in": "server/go.mod"
+    },
+    {
+      "unit": "shop-client",
+      "name": "grpcio",
+      "declared": ">=1.68.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "client-py/pyproject.toml"
+    },
+    {
+      "unit": "shop-client",
+      "name": "protobuf",
+      "declared": ">=5.28.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "client-py/pyproject.toml"
+    },
+    {
+      "unit": "shop-client",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "client-py/pyproject.toml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "gRPC",
+      "unit": "github.com/acme/shop/server",
+      "evidence": "server/main.go"
+    },
+    {
+      "name": "gRPC",
+      "unit": "shop-client",
+      "evidence": "client-py/src/shop_client/client.py"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the contract is proto/shop/v1/order.proto, a buf module declared in buf.yaml (no name: null); buf.gen.yaml writes the Go code into server/gen and the Python code into client-py/src/shop_client/gen: a generates connection, not a depends_on, since no build of either unit reads the proto",
+    "generated code is checked in: order.pb.go and order_grpc.pb.go carry 'Code generated ... DO NOT EDIT', order_pb2.py and order_pb2_grpc.py their protoc headers; order_pb2.pyi has no marker at all and is generated too",
+    "the generated files are abbreviated: the serialized descriptors and protoimpl tables of the real output are left out",
+    "the gRPC method is joined by the string /shop.v1.OrderService/GetOrder on both sides",
+    "the generated Python imports 'from shop.v1 import order_pb2': client.py puts gen/ on sys.path to make it importable; a reader that resolves imports from src/ finds no shop package",
+    "go_package names the Go import path github.com/acme/shop/server/gen/shop/v1, a package of the server module",
+    "go.sum is absent and go mod tidy would add the indirect requirements of grpc: go.mod holds only the two direct ones",
+    "the buf remote plugins (protocolbuffers/go v1.35.2, grpc/go v1.5.1, protocolbuffers/python and pyi v28.3, grpc/python v1.68.0) are code generators pinned in buf.gen.yaml, not dependencies of a unit",
+    "Linguist counts .proto as Protocol Buffer, a data language"
+  ],
+  "connections": [
+    {
+      "kind": "rpc",
+      "key": "/shop.v1.OrderService/GetOrder",
+      "provided_by": [
+        "github.com/acme/shop/server"
+      ],
+      "used_by": [
+        "shop-client"
+      ],
+      "evidence": [
+        "proto/shop/v1/order.proto",
+        "server/main.go",
+        "client-py/src/shop_client/client.py"
+      ]
+    },
+    {
+      "kind": "generates",
+      "key": "proto/shop/v1/order.proto",
+      "provided_by": [
+        "proto"
+      ],
+      "used_by": [
+        "github.com/acme/shop/server",
+        "shop-client"
+      ],
+      "evidence": [
+        "buf.gen.yaml",
+        "proto/shop/v1/order.proto",
+        "server/gen/shop/v1/order.pb.go",
+        "client-py/src/shop_client/gen/shop/v1/order_pb2.py"
+      ]
+    }
+  ]
+}

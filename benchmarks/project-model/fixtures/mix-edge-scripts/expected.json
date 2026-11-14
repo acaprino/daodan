@@ -1,0 +1,78 @@
+{
+  "languages": [
+    {
+      "path": "install",
+      "language": "Shell"
+    },
+    {
+      "path": "scripts/deploy.sh",
+      "language": "Shell"
+    },
+    {
+      "path": "scripts/lib/log.bash",
+      "language": "Shell"
+    },
+    {
+      "path": "scripts/backup.ps1",
+      "language": "PowerShell"
+    },
+    {
+      "path": "scripts/Common.psm1",
+      "language": "PowerShell"
+    },
+    {
+      "path": "scripts/build.bat",
+      "language": "Batchfile"
+    },
+    {
+      "path": "scripts/setup.cmd",
+      "language": "Batchfile"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": ".",
+      "manifest": null,
+      "source_roots": [
+        ".",
+        "scripts"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "powershell",
+      "version": "7.2",
+      "declared_in": "scripts/backup.ps1"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [
+    {
+      "name": "Azure Blob Storage",
+      "kind": "storage",
+      "evidence": "scripts/backup.ps1"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "no build file at all: the code is one source-tree unit with name and manifest null",
+    "install has no extension: Shell by its #!/bin/sh shebang",
+    "the only declared version is #Requires -Version 7.2 in backup.ps1; build.bat checks that pwsh exists but not its version",
+    "#Requires -Modules asks Az.Storage 6.1.0 or later inside a script, not in a manifest: not a declared dependency",
+    "deploy.sh needs bash 4 (associative arrays, checked at run time through BASH_VERSINFO): a runtime check, not a declaration",
+    "log.bash is sourced by deploy.sh: a .bash library without a shebang",
+    "build.bat and setup.cmd use CRLF line endings; .cmd is Batchfile like .bat",
+    "rsync and pwsh are tools the scripts call, not toolchains the project declares"
+  ]
+}

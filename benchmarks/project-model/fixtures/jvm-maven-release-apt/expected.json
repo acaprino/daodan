@@ -1,0 +1,164 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/mapping/Customer.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/main/java/com/example/mapping/CustomerMapper.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.example:mapping-demo",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java",
+            "target/generated-sources/annotations"
+          ],
+          "test": [
+            "src/test/java",
+            "target/generated-test-sources/test-annotations"
+          ]
+        },
+        "compile_tasks": [
+          "maven-compiler-plugin:compile@default-compile",
+          "maven-compiler-plugin:testCompile@default-testCompile"
+        ],
+        "annotation_processors": [
+          "org.projectlombok:lombok:1.18.36",
+          "org.mapstruct:mapstruct-processor:1.6.3",
+          "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+        ],
+        "annotation_processor_options": {
+          "mapstruct.defaultComponentModel": "default"
+        },
+        "generated_dirs": [
+          "target/generated-sources/annotations",
+          "target/generated-test-sources/test-annotations"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "21",
+      "declared_in": "pom.xml#maven-compiler-plugin.configuration.release"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "pom.xml#java.version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.mapstruct:mapstruct",
+      "declared": "1.6.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pom.xml#properties.mapstruct.version"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.projectlombok:lombok",
+      "declared": "1.18.36",
+      "resolved": null,
+      "scope": "provided",
+      "declared_in": "pom.xml#properties.lombok.version"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": "5.11.3",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.apache.maven.plugins:maven-compiler-plugin",
+      "declared": "3.13.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.apache.maven.plugins:maven-surefire-plugin",
+      "declared": "3.5.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.projectlombok:lombok",
+      "declared": "1.18.36",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml#properties.lombok.version"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.mapstruct:mapstruct-processor",
+      "declared": "1.6.3",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml#properties.mapstruct.version"
+    },
+    {
+      "unit": "com.example:mapping-demo",
+      "name": "org.projectlombok:lombok-mapstruct-binding",
+      "declared": "0.2.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Lombok",
+      "unit": "com.example:mapping-demo",
+      "evidence": "pom.xml"
+    },
+    {
+      "name": "MapStruct",
+      "unit": "com.example:mapping-demo",
+      "evidence": "pom.xml"
+    },
+    {
+      "name": "JUnit Jupiter",
+      "unit": "com.example:mapping-demo",
+      "evidence": "pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "All versions are literal or properties of the same pom. Only a compilation produces target/generated-sources/annotations/com/example/mapping/CustomerMapperImpl.java and the accessors Lombok adds, which an indexer needs to resolve calls such as dto.getFullName()."
+  },
+  "traps": [
+    "Two Java levels are written and only one counts: <release>21</release> in the maven-compiler-plugin configuration drives javac; the property java.version=17 is read by nothing (without the Spring Boot parent it configures no plugin). Both are listed in toolchains, each with its fragment; a tool that reports 17 as the build's level is wrong.",
+    "Annotation processors are exactly the three annotationProcessorPaths entries (lombok 1.18.36, mapstruct-processor 1.6.3, lombok-mapstruct-binding 0.2.0, in this order): with the path set, javac discovers no processor on the classpath.",
+    "lombok is listed twice on purpose: scope provided for the <scope>provided</scope> dependency (compile classpath only, not packaged) and scope build for its annotationProcessorPaths entry. mapstruct-processor and lombok-mapstruct-binding are only on the processor path, never on the classpath.",
+    "compilerArgs carry -parameters (a javac flag) and -Amapstruct.defaultComponentModel=default (a processor option, not a compiler flag).",
+    "Processors write into target/generated-sources/annotations (main) and target/generated-test-sources/test-annotations (test), which maven-compiler-plugin adds to the compile source roots; they do not exist before a build.",
+    "CustomerMapperImpl and the Lombok getters and constructor exist only after compilation: a static index sees calls to getFullName(), getEmail() and new Customer(String, String, String) with no declaration in source.",
+    "mapstruct, mapstruct-processor and both lombok entries write ${mapstruct.version} or ${lombok.version}; declared holds the property values 1.6.3 and 1.18.36, with declared_in the property that writes them."
+  ]
+}

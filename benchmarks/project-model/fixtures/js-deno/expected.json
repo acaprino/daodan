@@ -1,0 +1,88 @@
+{
+  "languages": [
+    {
+      "path": "main.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/util.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/util_test.ts",
+      "language": "TypeScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "deno-project",
+      "root": ".",
+      "manifest": "deno.json",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "paths": {
+          "@/": [
+            "src/"
+          ]
+        },
+        "entry_files": [
+          "main.ts"
+        ],
+        "import_map": "import_map.json"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "deno",
+      "version": "2.0.2",
+      "declared_in": ".tool-versions"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": null,
+      "name": "@std/assert",
+      "declared": "jsr:@std/assert@^1.0.0",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "import_map.json"
+    },
+    {
+      "unit": null,
+      "name": "chalk",
+      "declared": "npm:chalk@5.3.0",
+      "resolved": "5.3.0",
+      "scope": "runtime",
+      "declared_in": "import_map.json"
+    },
+    {
+      "unit": null,
+      "name": "ms",
+      "declared": "https://esm.sh/ms@2.1.3",
+      "resolved": "2.1.3",
+      "scope": "runtime",
+      "declared_in": "import_map.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "there is no package.json: a detector that looks only for package.json sees no project",
+    "deno.json declares no dependency itself: all of them are in import_map.json, one per registry scheme (jsr:, npm:, https://)",
+    "@/ in the import map is a path alias to ./src/, not a package",
+    "the Deno version is declared only in .tool-versions (mise/asdf), never in deno.json",
+    "no deno.lock, so resolved is null where the specifier is a range",
+    "deno.json has no name: the unit name is null (the directory name is not stated by any file)"
+  ]
+}

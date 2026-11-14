@@ -1,0 +1,149 @@
+{
+  "languages": [
+    {
+      "path": "src/routes/+layout.svelte",
+      "language": "Svelte"
+    },
+    {
+      "path": "src/routes/+page.svelte",
+      "language": "Svelte"
+    },
+    {
+      "path": "src/routes/+page.server.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/lib/index.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "vite.config.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "svelte.config.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "src/app.html",
+      "language": "HTML"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "svelte-notes",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json",
+          ".svelte-kit/tsconfig.json"
+        ],
+        "paths": {
+          "$lib": [
+            "src/lib"
+          ]
+        },
+        "entry_files": [
+          "src/app.html",
+          "src/routes/+layout.svelte",
+          "src/routes/+page.svelte",
+          "src/routes/+page.server.ts"
+        ],
+        "svelte_config": "svelte.config.js"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": ">=18.13",
+      "declared_in": "package.json#engines"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "svelte-notes",
+      "name": "@sveltejs/adapter-auto",
+      "declared": "^3.2.5",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "svelte-notes",
+      "name": "@sveltejs/kit",
+      "declared": "^2.7.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "svelte-notes",
+      "name": "@sveltejs/vite-plugin-svelte",
+      "declared": "^4.0.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "svelte-notes",
+      "name": "svelte",
+      "declared": "^5.0.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "svelte-notes",
+      "name": "typescript",
+      "declared": "^5.0.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "svelte-notes",
+      "name": "vite",
+      "declared": "^5.4.10",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "SvelteKit",
+      "unit": "svelte-notes",
+      "evidence": "package.json"
+    },
+    {
+      "name": "Svelte",
+      "unit": "svelte-notes",
+      "evidence": "package.json"
+    },
+    {
+      "name": "Vite",
+      "unit": "svelte-notes",
+      "evidence": "vite.config.ts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "tsconfig.json extends ./.svelte-kit/tsconfig.json, which svelte-kit sync generates: the file does not exist in the fixture, so the $lib alias and the compiler options are not visible in any tsconfig on disk; the alias is a SvelteKit default",
+    "everything is a devDependency, including svelte and the kit, because the app is bundled at build time",
+    "route files (+page.svelte, +page.server.ts) are routes by naming convention, not by any manifest",
+    "no lockfile, so resolved is null"
+  ]
+}

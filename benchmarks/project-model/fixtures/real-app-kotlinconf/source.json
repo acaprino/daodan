@@ -1,0 +1,1 @@
+{"repo": "https://github.com/JetBrains/kotlinconf-app", "commit": "146e891c150cd1062c6f6c78847ea0aa17fb379d", "licence": "Apache-2.0", "why": "Kotlin Multiplatform app (Android, iOS through Xcode and SwiftPM, desktop, Wasm/JS web) with a Ktor back end that embeds a Kotlin/JS admin front end, all in one Gradle build"}

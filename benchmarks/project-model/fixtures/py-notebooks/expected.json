@@ -1,0 +1,101 @@
+{
+  "languages": [
+    {
+      "path": "notebooks/analysis.ipynb",
+      "language": "Jupyter Notebook"
+    },
+    {
+      "path": "src/nbproj/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/nbproj/helpers.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "nbproj",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "nbproj"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.11.4",
+      "declared_in": "notebooks/analysis.ipynb"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "nbproj",
+      "name": "pandas",
+      "declared": ">=2.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "nbproj",
+      "name": "matplotlib",
+      "declared": ">=3.9",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "nbproj",
+      "name": "jupyterlab",
+      "declared": ">=4.2",
+      "resolved": null,
+      "scope": "optional",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "nbproj",
+      "name": "seaborn",
+      "declared": "==0.13.2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "notebooks/analysis.ipynb"
+    },
+    {
+      "unit": "nbproj",
+      "name": "setuptools",
+      "declared": ">=64",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "seaborn is installed by a '%pip install seaborn==0.13.2' cell and imported in the notebook, but declared in no manifest",
+    "the notebook kernel metadata gives Python 3.11.4, which pyproject does not state",
+    "Linguist counts .ipynb as language 'Jupyter Notebook', not Python",
+    "src/nbproj/helpers.py is imported by the notebook through the installed package"
+  ]
+}

@@ -1,0 +1,7 @@
+module(
+    name = "greeter",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True)

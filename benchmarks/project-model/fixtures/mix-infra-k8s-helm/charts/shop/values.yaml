@@ -1,0 +1,9 @@
+image:
+  repository: ghcr.io/acme/shop-api
+  tag: ""
+replicaCount: 2
+postgresql:
+  enabled: true
+  auth:
+    database: shop
+    username: shop

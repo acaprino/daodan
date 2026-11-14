@@ -1,0 +1,181 @@
+{
+  "languages": [
+    {
+      "path": "app/models/order.rb",
+      "language": "Ruby"
+    },
+    {
+      "path": "Gemfile",
+      "language": "Ruby"
+    },
+    {
+      "path": "bin/rails",
+      "language": "Ruby"
+    },
+    {
+      "path": "config.ru",
+      "language": "Ruby"
+    },
+    {
+      "path": "app/views/orders/index.html.erb",
+      "language": "HTML+ERB"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "bundler-project",
+      "root": ".",
+      "manifest": "Gemfile",
+      "source_roots": [
+        "app",
+        "config",
+        "spec"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "config.ru",
+          "bin/rails"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "ruby",
+      "version": "3.3.6",
+      "declared_in": ".ruby-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ".",
+      "name": "rails",
+      "declared": "~> 8.0.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "propshaft",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "pg",
+      "declared": "~> 1.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "puma",
+      "declared": ">= 5.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "importmap-rails",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "turbo-rails",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "sidekiq",
+      "declared": "~> 7.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "bootsnap",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "debug",
+      "declared": null,
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "rspec-rails",
+      "declared": "~> 7.1",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "Gemfile"
+    },
+    {
+      "unit": ".",
+      "name": "capybara",
+      "declared": null,
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "Gemfile"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Ruby on Rails",
+      "unit": ".",
+      "evidence": "config/application.rb"
+    },
+    {
+      "name": "Sidekiq",
+      "unit": ".",
+      "evidence": "config/initializers/sidekiq.rb"
+    }
+  ],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "config/database.yml"
+    },
+    {
+      "name": "Redis",
+      "kind": "queue",
+      "evidence": "config/initializers/sidekiq.rb"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "Gemfile.lock is left out: a Rails 8 lock lists about ninety gems with each one's dependency constraints, which cannot be reproduced by hand; every resolved is null",
+    "the app is a Bundler project, not a gem: there is no .gemspec and the Gemfile declares no name, so the unit's name is null (the Rails module is Shop in config/application.rb)",
+    "the Ruby version is in .ruby-version and the Gemfile only points to it with ruby file: \".ruby-version\"",
+    "debug and rspec-rails sit in group :development, :test (scope dev); capybara only in :test",
+    "bootsnap has require: false: still a runtime dependency",
+    "bin/rails has no extension: Ruby by its shebang; Gemfile, Rakefile and config.ru are Ruby too",
+    "config/database.yml is ERB-templated YAML: the production database URL comes from DATABASE_URL at runtime",
+    "Redis is reached only through Sidekiq (REDIS_URL with a default), Active Job is wired to Sidekiq in config/application.rb"
+  ]
+}

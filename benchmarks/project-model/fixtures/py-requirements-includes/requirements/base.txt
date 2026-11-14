@@ -1,0 +1,6 @@
+--extra-index-url https://pypi.example.org/simple
+requests[socks]>=2.31,<3
+click==8.1.7
+numpy>=1.26 ; python_version >= "3.9"
+mylib @ git+https://github.com/example/mylib.git@v1.4.0
+-e ./libs/localpkg

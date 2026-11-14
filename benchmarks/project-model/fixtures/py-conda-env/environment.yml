@@ -1,0 +1,13 @@
+name: geo-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy=1.26.*
+  - pandas>=2.0
+  - pip
+  - pip:
+      - requests==2.32.3
+      - git+https://github.com/example/geotools.git@v2.1#egg=geotools
+      - -r requirements-extra.txt

@@ -1,0 +1,3 @@
+-r requirements/base.txt
+-c constraints.txt
+gunicorn==22.0.0 ; sys_platform != "win32"

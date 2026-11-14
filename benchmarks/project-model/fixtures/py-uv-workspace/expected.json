@@ -1,0 +1,133 @@
+{
+  "languages": [
+    {
+      "path": "packages/app/src/ws_app/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "packages/app/src/ws_app/cli.py",
+      "language": "Python"
+    },
+    {
+      "path": "packages/core/src/ws_core/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "packages/core/src/ws_core/model.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "ws-core",
+      "kind": "python-project",
+      "root": "packages/core",
+      "manifest": "packages/core/pyproject.toml",
+      "source_roots": [
+        "packages/core/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "ws_core"
+        ]
+      }
+    },
+    {
+      "name": "ws-app",
+      "kind": "python-project",
+      "root": "packages/app",
+      "manifest": "packages/app/pyproject.toml",
+      "source_roots": [
+        "packages/app/src"
+      ],
+      "depends_on": [
+        "ws-core"
+      ],
+      "config": {
+        "packages": [
+          "ws_app"
+        ],
+        "entry_files": [
+          "packages/app/src/ws_app/cli.py"
+        ],
+        "entry_points": {
+          "ws-app": "ws_app.cli:main"
+        }
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "uv",
+    "root": "",
+    "members": [
+      "packages/core",
+      "packages/app"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "packages/core/pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.11",
+      "declared_in": "packages/app/pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": ".python-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "ws-core",
+      "name": "attrs",
+      "declared": ">=23.1",
+      "resolved": "24.2.0",
+      "scope": "runtime",
+      "declared_in": "packages/core/pyproject.toml"
+    },
+    {
+      "unit": "ws-core",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "packages/core/pyproject.toml"
+    },
+    {
+      "unit": "ws-app",
+      "name": "click",
+      "declared": ">=8.1",
+      "resolved": "8.1.7",
+      "scope": "runtime",
+      "declared_in": "packages/app/pyproject.toml"
+    },
+    {
+      "unit": "ws-app",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "packages/app/pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "root pyproject.toml has no [project]: it is a virtual workspace root, not a unit",
+    "ws-core is a workspace member (tool.uv.sources workspace=true), not a PyPI package: only a depends_on edge, never a dependency; console script ws-app points to ws_app.cli:main",
+    "one uv.lock at the root serves both members; colorama is transitive (click on win32) and declared nowhere",
+    "workspace members are listed explicitly, not by glob",
+    "hand-written lock without wheel or sdist hashes (not fabricated): name, version and source only"
+  ]
+}

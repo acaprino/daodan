@@ -1,0 +1,12 @@
+apiVersion: v2
+name: shop
+description: Shop API with its database.
+type: application
+version: 0.3.0
+appVersion: "1.4.2"
+kubeVersion: ">=1.27.0-0"
+dependencies:
+  - name: postgresql
+    version: 16.2.1
+    repository: oci://registry-1.docker.io/bitnamicharts
+    condition: postgresql.enabled

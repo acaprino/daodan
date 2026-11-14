@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: billing
+  jpa:
+    open-in-view: false

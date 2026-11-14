@@ -1,0 +1,38 @@
+{
+  "languages": [
+    {"path": "src/lib.rs", "language": "Rust"}
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "tally",
+      "kind": "cargo-crate",
+      "root": "",
+      "manifest": "Cargo.toml",
+      "source_roots": ["src", "tests"],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {"kind": "lib", "name": "tally", "path": "src/lib.rs"},
+          {"kind": "test", "name": "api", "path": "tests/api.rs"},
+          {"kind": "test", "name": "cli", "path": "tests/cli.rs"}
+        ],
+        "shared_modules": {"tests/util/mod.rs": ["tests/api.rs", "tests/cli.rs"]}
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "each file directly under tests/ is its own test crate: api and cli are two targets, auto-discovered, with no [[test]] section",
+    "tests/util/mod.rs is not a target: it lives in a subdirectory, and both test crates include it with mod util;",
+    "util is compiled twice, once inside each test crate: util::sample in api and in cli are two distinct items, and a symbol index that keys by file merges them",
+    "the test crates reach the library as an external crate (tally::words), not through crate::",
+    "no dependency at all: the lock has only the package itself"
+  ]
+}

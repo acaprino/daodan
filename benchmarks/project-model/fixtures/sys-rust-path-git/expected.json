@@ -1,0 +1,88 @@
+{
+  "languages": [
+    {
+      "path": "src/main.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "app",
+      "kind": "cargo-crate",
+      "root": "",
+      "manifest": "Cargo.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [
+        "helper"
+      ],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "bin",
+            "name": "app",
+            "path": "src/main.rs"
+          }
+        ],
+        "git_sources": {
+          "cfg-if": {
+            "url": "https://github.com/rust-lang/cfg-if",
+            "tag": "1.0.0",
+            "commit": "e60fa1efeab0ec6e90c50d93ec526e1410459c23"
+          }
+        },
+        "entry_files": [
+          "src/main.rs"
+        ]
+      }
+    },
+    {
+      "name": "helper",
+      "kind": "cargo-crate",
+      "root": "helper",
+      "manifest": "helper/Cargo.toml",
+      "source_roots": [
+        "helper/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "helper",
+            "path": "helper/src/lib.rs"
+          }
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "app",
+      "name": "cfg-if",
+      "declared": null,
+      "resolved": "1.0.0",
+      "scope": "runtime",
+      "declared_in": "Cargo.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "two Cargo.toml files but no [workspace]: helper is a path dependency, a local unit of the project, not a workspace member",
+    "helper = { path, version = \"0.2\" }: the version is only used when publishing; the build takes the local crate at 0.2.1",
+    "cfg-if comes from git, not crates.io: the lock source is git+https://github.com/rust-lang/cfg-if?tag=1.0.0 pinned at commit e60fa1efeab0ec6e90c50d93ec526e1410459c23, and has no checksum",
+    "no version requirement is written for cfg-if (declared null); 1.0.0 is the version in the Cargo.toml of the tagged commit",
+    "reading the git dependency's own manifest needs a git fetch; the lock alone gives name, version and commit"
+  ]
+}

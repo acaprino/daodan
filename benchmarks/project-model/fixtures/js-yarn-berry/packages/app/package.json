@@ -1,0 +1,9 @@
+{
+  "name": "@acme/app",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "dependencies": {
+    "@acme/lib": "workspace:^",
+    "clsx": "^2.1.1"
+  }
+}

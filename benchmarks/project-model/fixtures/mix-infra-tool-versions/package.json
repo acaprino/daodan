@@ -1,0 +1,16 @@
+{
+  "name": "dashboard",
+  "version": "2.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/main.js",
+  "engines": {
+    "node": "^20.11.0"
+  },
+  "volta": {
+    "node": "20.18.1"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.6"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "languages": [
+    {
+      "path": "src/index.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "tools/main.go",
+      "language": "Go"
+    },
+    {
+      "path": "scripts/changelog.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "web-tools",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src",
+        "test"
+      ],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "example.com/web/tools",
+      "kind": "go-module",
+      "root": "tools",
+      "manifest": "tools/go.mod",
+      "source_roots": [
+        "tools"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "tools/main.go"
+        ],
+        "packages": [
+          "example.com/web/tools"
+        ]
+      }
+    },
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": "scripts",
+      "manifest": null,
+      "source_roots": [
+        "scripts"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "scripts/changelog.py"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": ">=18.18",
+      "declared_in": "package.json#engines"
+    },
+    {
+      "tool": "pnpm",
+      "version": "9.12.3",
+      "declared_in": "package.json#packageManager"
+    },
+    {
+      "tool": "node",
+      "version": "20.18.1",
+      "declared_in": ".nvmrc"
+    },
+    {
+      "tool": "node",
+      "version": "18.x",
+      "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.node"
+    },
+    {
+      "tool": "node",
+      "version": "20.x",
+      "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.node"
+    },
+    {
+      "tool": "node",
+      "version": "22.x",
+      "declared_in": ".github/workflows/ci.yml#jobs.test.strategy.matrix.node"
+    },
+    {
+      "tool": "pnpm",
+      "version": "9.15.0",
+      "declared_in": ".github/workflows/ci.yml"
+    },
+    {
+      "tool": "go",
+      "version": "1.23",
+      "declared_in": "tools/go.mod#go"
+    },
+    {
+      "tool": "go",
+      "version": "go1.23.4",
+      "declared_in": "tools/go.mod#toolchain"
+    },
+    {
+      "tool": "python",
+      "version": "3.12.7",
+      "declared_in": ".github/workflows/release.yml"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "CI pins pnpm 9.15.0 in pnpm/action-setup while package.json says packageManager pnpm@9.12.3: action-setup v4 stops on two different versions, so the test job fails as written",
+    "the test job runs a matrix of three Node lines (18.x, 20.x, 22.x); the lint job reads .nvmrc through node-version-file; package.json only asks >=18.18",
+    "setup-go reads the version from tools/go.mod (go-version-file): go 1.23 is the language minimum, toolchain go1.23.4 the toolchain asked",
+    "Python 3.12.7 is asked only by the release workflow, for scripts/changelog.py, which has no manifest: a source-tree unit",
+    "actions/checkout@v4 and the other uses: refs pin CI actions, not project dependencies",
+    "runs-on: ubuntu-24.04 is the runner image, not a toolchain",
+    "the project has no dependencies: pnpm-lock.yaml has only the empty root importer",
+    "the CI pins live under .github/: a reader whose perimeter skips dot folders never sees them"
+  ]
+}

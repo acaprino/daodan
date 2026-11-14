@@ -1,0 +1,104 @@
+{
+  "languages": [
+    {
+      "path": "packages/lib/src/index.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "packages/app/src/index.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "@acme/lib",
+      "kind": "npm-package",
+      "root": "packages/lib",
+      "manifest": "packages/lib/package.json",
+      "source_roots": [
+        "packages/lib/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "packages/lib/src/index.js"
+        ]
+      }
+    },
+    {
+      "name": "@acme/app",
+      "kind": "npm-package",
+      "root": "packages/app",
+      "manifest": "packages/app/package.json",
+      "source_roots": [
+        "packages/app/src"
+      ],
+      "depends_on": [
+        "@acme/lib"
+      ],
+      "config": {
+        "entry_files": [
+          "packages/app/src/index.js"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "yarn",
+    "root": ".",
+    "members": [
+      "packages/lib",
+      "packages/app"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "yarn",
+      "version": "4.5.0",
+      "declared_in": "package.json#packageManager"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "@acme/lib",
+      "name": "ms",
+      "declared": "^2.1.3",
+      "resolved": "2.1.3",
+      "scope": "runtime",
+      "declared_in": "packages/lib/package.json"
+    },
+    {
+      "unit": "@acme/app",
+      "name": "clsx",
+      "declared": "^2.1.1",
+      "resolved": "2.1.1",
+      "scope": "runtime",
+      "declared_in": "packages/app/package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the root package.json has no name and no dependencies: Yarn computes the name root-workspace-0b6124 for it (the lockfile uses it), no file states it, so the unit name is null",
+    "yarn.lock is Berry (__metadata version 8), not Yarn Classic: its entries are keyed 'name@npm:range'",
+    "workspace:^ is an internal link (depends_on), not a registry dependency",
+    ".yarnrc.yml sets nodeLinker: node-modules: there is no .pnp.cjs",
+    "no yarnPath and no .yarn/ directory: the Yarn version is declared only by packageManager",
+    "node is not declared anywhere",
+    "lock has no checksum fields (not fabricated)"
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "languages": [
+    {
+      "path": "src/App.vue",
+      "language": "Vue"
+    },
+    {
+      "path": "src/components/Counter.vue",
+      "language": "Vue"
+    },
+    {
+      "path": "src/components/Legacy.vue",
+      "language": "Vue"
+    },
+    {
+      "path": "src/main.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/env.d.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "vite.config.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "index.html",
+      "language": "HTML"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "vue-counter",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json"
+        ],
+        "paths": {
+          "@/*": [
+            "src/*"
+          ],
+          "@": [
+            "src"
+          ]
+        },
+        "entry_files": [
+          "src/main.ts",
+          "index.html"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "pnpm",
+      "version": "9.12.2",
+      "declared_in": "package.json#packageManager"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "vue-counter",
+      "name": "vue",
+      "declared": "^3.5.12",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vue-counter",
+      "name": "@vitejs/plugin-vue",
+      "declared": "^5.1.4",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vue-counter",
+      "name": "typescript",
+      "declared": "~5.6.2",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vue-counter",
+      "name": "vite",
+      "declared": "^5.4.10",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vue-counter",
+      "name": "vue-tsc",
+      "declared": "^2.1.6",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Vue",
+      "unit": "vue-counter",
+      "evidence": "package.json"
+    },
+    {
+      "name": "Vite",
+      "unit": "vue-counter",
+      "evidence": "vite.config.ts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "Linguist calls every .vue file Vue, but App.vue and Counter.vue carry TypeScript (lang=\"ts\") and Legacy.vue carries plain JavaScript: the language of the script block is not the file language",
+    "pnpm is declared by packageManager only: there is no pnpm-lock.yaml and no pnpm-workspace.yaml, so this is a single package, not a workspace",
+    "no lockfile, so resolved is null",
+    "node is not declared anywhere"
+  ]
+}

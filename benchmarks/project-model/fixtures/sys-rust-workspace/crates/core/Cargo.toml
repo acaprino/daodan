@@ -1,0 +1,11 @@
+[package]
+name = "ledger-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+cfg-if.workspace = true
+itoa = { workspace = true }
+ledger-macros.workspace = true

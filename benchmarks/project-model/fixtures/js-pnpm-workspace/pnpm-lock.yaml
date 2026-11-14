@@ -1,0 +1,62 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+catalogs:
+  default:
+    clsx:
+      specifier: ^2.1.1
+      version: 2.1.1
+    ms:
+      specifier: ^2.1.3
+      version: 2.1.3
+    typescript:
+      specifier: ^5.6.2
+      version: 5.6.3
+
+importers:
+
+  .: {}
+
+  apps/web:
+    dependencies:
+      '@acme/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      clsx:
+        specifier: 'catalog:'
+        version: 2.1.1
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.3
+
+  packages/shared:
+    dependencies:
+      ms:
+        specifier: 'catalog:'
+        version: 2.1.3
+
+packages:
+
+  clsx@2.1.1:
+    resolution: {tarball: https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz}
+    engines: {node: '>=6'}
+
+  ms@2.1.3:
+    resolution: {tarball: https://registry.npmjs.org/ms/-/ms-2.1.3.tgz}
+
+  typescript@5.6.3:
+    resolution: {tarball: https://registry.npmjs.org/typescript/-/typescript-5.6.3.tgz}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+snapshots:
+
+  clsx@2.1.1: {}
+
+  ms@2.1.3: {}
+
+  typescript@5.6.3: {}

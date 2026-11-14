@@ -1,0 +1,67 @@
+{
+  "languages": [
+    {
+      "path": "main.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "vendor/",
+      "why": "vendored"
+    }
+  ],
+  "units": [
+    {
+      "name": "example.com/fetcher",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/fetcher",
+          "example.com/fetcher/internal/fetch"
+        ],
+        "mod": "vendor",
+        "entry_files": [
+          "main.go"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.mod"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "example.com/fetcher",
+      "name": "golang.org/x/sync",
+      "declared": "v0.8.0",
+      "resolved": "v0.8.0",
+      "scope": "runtime",
+      "declared_in": "go.mod"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "vendor/ holds the source of golang.org/x/sync, not code of this project: it is not a package of example.com/fetcher and its go:build files are not the project's build tags",
+    "with go 1.14 or later and vendor/modules.txt present, the go command builds with -mod=vendor by default: the module cache and the network are not needed",
+    "only the imported package golang.org/x/sync/errgroup is vendored; semaphore and singleflight of the same module are absent, and that is correct",
+    "vendor/golang.org/x/sync/go.mod is never copied: the module's go version 1.18 is only in the ## explicit line of modules.txt",
+    "LICENSE and PATENTS under vendor/ belong to the dependency, not to the project"
+  ]
+}

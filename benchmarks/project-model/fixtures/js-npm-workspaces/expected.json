@@ -1,0 +1,105 @@
+{
+  "languages": [
+    {
+      "path": "packages/core/index.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "packages/cli/bin.js",
+      "language": "JavaScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "acme-root",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "@acme/core",
+      "kind": "npm-package",
+      "root": "packages/core",
+      "manifest": "packages/core/package.json",
+      "source_roots": [
+        "packages/core"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "packages/core/index.js"
+        ]
+      }
+    },
+    {
+      "name": "@acme/cli",
+      "kind": "npm-package",
+      "root": "packages/cli",
+      "manifest": "packages/cli/package.json",
+      "source_roots": [
+        "packages/cli"
+      ],
+      "depends_on": [
+        "@acme/core"
+      ],
+      "config": {
+        "entry_files": [
+          "packages/cli/bin.js"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "npm",
+    "root": ".",
+    "members": [
+      "packages/core",
+      "packages/cli"
+    ]
+  },
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "acme-root",
+      "name": "ms",
+      "declared": "^2.1.3",
+      "resolved": "2.1.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "@acme/core",
+      "name": "lodash",
+      "declared": "^4.17.21",
+      "resolved": "4.17.21",
+      "scope": "runtime",
+      "declared_in": "packages/core/package.json"
+    },
+    {
+      "unit": "@acme/cli",
+      "name": "kleur",
+      "declared": "^4.1.5",
+      "resolved": "4.1.5",
+      "scope": "runtime",
+      "declared_in": "packages/cli/package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "convention: dependencies lists external packages only; the workspace edge @acme/cli -> @acme/core is in depends_on",
+    "the root package.json is the workspace root (an npm-package, the workspace facet marks it as root): it owns ms and has no sources",
+    "@acme/core is resolved by the workspace link, not from the registry, even though the range ^1.2.0 looks like a registry range",
+    "all dependencies are hoisted to the root node_modules in the lock: the per-unit owner is only in the manifests",
+    "lock has no integrity hashes (not fabricated)",
+    "no packageManager or engines declared: npm is implied by package-lock.json only"
+  ]
+}

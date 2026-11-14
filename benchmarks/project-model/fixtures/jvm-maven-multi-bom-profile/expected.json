@@ -1,0 +1,244 @@
+{
+  "languages": [
+    {
+      "path": "model/src/main/java/com/example/shop/model/Product.java",
+      "language": "Java"
+    },
+    {
+      "path": "service/src/main/java/com/example/shop/service/Catalog.java",
+      "language": "Java"
+    },
+    {
+      "path": "service/src/test/java/com/example/shop/service/CatalogTest.java",
+      "language": "Java"
+    },
+    {
+      "path": "cli/src/main/java/com/example/shop/cli/ShopCommand.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.example.shop:shop-parent",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "nested_modules": [
+          "model",
+          "service",
+          "cli"
+        ]
+      }
+    },
+    {
+      "name": "com.example.shop:shop-model",
+      "kind": "maven-module",
+      "root": "model",
+      "manifest": "model/pom.xml",
+      "source_roots": [
+        "model/src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "model/src/main/java"
+          ],
+          "test": [
+            "model/src/test/java"
+          ]
+        }
+      }
+    },
+    {
+      "name": "com.example.shop:shop-service",
+      "kind": "maven-module",
+      "root": "service",
+      "manifest": "service/pom.xml",
+      "source_roots": [
+        "service/src/main/java",
+        "service/src/test/java"
+      ],
+      "depends_on": [
+        "com.example.shop:shop-model"
+      ],
+      "config": {
+        "source_sets": {
+          "main": [
+            "service/src/main/java"
+          ],
+          "test": [
+            "service/src/test/java"
+          ]
+        }
+      }
+    },
+    {
+      "name": "com.example.shop:shop-cli",
+      "kind": "maven-module",
+      "root": "cli",
+      "manifest": "cli/pom.xml",
+      "source_roots": [
+        "cli/src/main/java"
+      ],
+      "depends_on": [
+        "com.example.shop:shop-service"
+      ],
+      "config": {
+        "source_sets": {
+          "main": [
+            "cli/src/main/java"
+          ],
+          "test": [
+            "cli/src/test/java"
+          ]
+        },
+        "build_tags": [
+          "profile:cli"
+        ],
+        "entry_files": [
+          "cli/src/main/java/com/example/shop/cli/ShopCommand.java"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "maven",
+    "root": ".",
+    "members": [
+      "model",
+      "service"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "21",
+      "declared_in": "pom.xml#maven.compiler.release"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "model/pom.xml#maven.compiler.release"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.example.shop:shop-parent",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": null,
+      "resolved": "5.11.3",
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-parent",
+      "name": "org.apache.maven.plugins:maven-compiler-plugin",
+      "declared": "3.13.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-parent",
+      "name": "org.apache.maven.plugins:maven-surefire-plugin",
+      "declared": "3.5.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-model",
+      "name": "com.fasterxml.jackson.core:jackson-annotations",
+      "declared": null,
+      "resolved": "2.18.1",
+      "scope": "runtime",
+      "declared_in": "model/pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-model",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": null,
+      "resolved": "5.11.3",
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-service",
+      "name": "com.google.guava:guava",
+      "declared": null,
+      "resolved": "33.3.1-jre",
+      "scope": "runtime",
+      "declared_in": "service/pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-service",
+      "name": "com.fasterxml.jackson.core:jackson-databind",
+      "declared": null,
+      "resolved": "2.18.1",
+      "scope": "runtime",
+      "declared_in": "service/pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-service",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": null,
+      "resolved": "5.11.3",
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example.shop:shop-cli",
+      "name": "info.picocli:picocli",
+      "declared": "4.7.6",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pom.xml#properties.picocli.version"
+    },
+    {
+      "unit": "com.example.shop:shop-cli",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": null,
+      "resolved": "5.11.3",
+      "scope": "test",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit Jupiter",
+      "unit": "com.example.shop:shop-service",
+      "evidence": "pom.xml"
+    },
+    {
+      "name": "Jackson",
+      "unit": "com.example.shop:shop-service",
+      "evidence": "service/pom.xml"
+    },
+    {
+      "name": "picocli",
+      "unit": "com.example.shop:shop-cli",
+      "evidence": "cli/pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "The versions of jackson-annotations, jackson-databind and junit-jupiter are in no file of the project: they come from the imported jackson-bom 2.18.1 and junit-bom 5.11.3 published on Maven Central (checked: each pins its artifacts to its own version). Only the effective POM, which fetches those BOMs, states them. Whether shop-cli is built depends on the command line (-Dwith-cli)."
+  },
+  "traps": [
+    "Module directories (model, service, cli) differ from artifactIds (shop-model, shop-service, shop-cli).",
+    "shop-cli is a module only under the profile cli, activated by -Dwith-cli: the default reactor has two member modules (model, service), a reader that takes every pom.xml on disk finds three. build_tags records the profile that selects it; the aggregator at the root is the workspace root, not a member.",
+    "junit-jupiter is declared once in the parent's dependencies and inherited by every child and by the pom-packaged parent itself; declared_in stays pom.xml.",
+    "No child declares a version: guava and the sibling modules get theirs from the parent's dependencyManagement (guava.version, project.version), jackson and junit from the imported BOMs.",
+    "The sibling modules (shop-model, shop-service) are written as coordinates in the child poms but are units of this project: they belong in depends_on, not dependencies.",
+    "The BOM imports (jackson-bom, junit-bom, scope import) are not dependencies of any unit. The pluginManagement entries only fix the versions of plugins the default lifecycle runs in every module; they are listed once, under the parent, with scope build.",
+    "The Java level differs per module: the parent sets maven.compiler.release 21, inherited by shop-parent, shop-service and shop-cli; model/pom.xml overrides it with 17 for shop-model. A reader that stops at the parent gives 21 everywhere.",
+    "resolved for jackson-annotations, jackson-databind and junit-jupiter is read from jackson-bom 2.18.1 and junit-bom 5.11.3 as published on Maven Central at those versions; guava's comes from the parent's dependencyManagement.",
+    "cli/pom.xml writes <version>${picocli.version}</version>; the value 4.7.6 is a property of the parent pom, so declared is 4.7.6 with declared_in pom.xml#properties.picocli.version, not the child file."
+  ]
+}

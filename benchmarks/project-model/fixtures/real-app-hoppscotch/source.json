@@ -1,0 +1,1 @@
+{"repo": "https://github.com/hoppscotch/hoppscotch", "commit": "55908a76a1d0555c9bbb5d74244c14173df95b06", "licence": "MIT", "why": "pnpm monorepo with a NestJS GraphQL back end, Vue web apps, Tauri desktop and agent apps with Rust cores, eight independent Cargo crates and a nested Go module"}

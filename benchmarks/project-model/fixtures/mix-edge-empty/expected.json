@@ -1,0 +1,19 @@
+{
+  "languages": [],
+  "excluded": [
+    {"path": "README.md", "why": "documentation"},
+    {"path": "LICENSE", "why": "documentation"}
+  ],
+  "units": [],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "no code: the right pre-map is empty everywhere, and an empty result is not a failure",
+    "README.md is Markdown and LICENSE is plain text: prose, not code languages, so languages is empty",
+    "a reader that needs at least one unit or one language to proceed must stop cleanly here"
+  ]
+}

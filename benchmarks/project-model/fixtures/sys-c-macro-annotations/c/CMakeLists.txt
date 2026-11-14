@@ -1,0 +1,5 @@
+add_library(zmini zmini.c)
+target_include_directories(zmini PUBLIC ${PROJECT_SOURCE_DIR}/include)
+if(WIN32 AND BUILD_SHARED_LIBS)
+  target_compile_definitions(zmini PUBLIC ZMINI_DLL)
+endif()

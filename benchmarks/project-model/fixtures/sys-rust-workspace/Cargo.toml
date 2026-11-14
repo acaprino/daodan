@@ -1,0 +1,16 @@
+[workspace]
+members = ["crates/*"]
+exclude = ["crates/experimental"]
+resolver = "2"
+
+[workspace.package]
+version = "0.3.0"
+edition = "2021"
+rust-version = "1.74"
+license = "MIT"
+
+[workspace.dependencies]
+cfg-if = "1.0"
+itoa = "1.0"
+ledger-core = { path = "crates/core" }
+ledger-macros = { path = "crates/macros" }

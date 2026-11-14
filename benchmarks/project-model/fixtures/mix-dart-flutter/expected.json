@@ -1,0 +1,44 @@
+{
+  "languages": [
+    {"path": "app/lib/main.dart", "language": "Dart"}
+  ],
+  "excluded": [],
+  "units": [
+    {"name": "shop_app", "kind": "pub-package", "root": "app", "manifest": "app/pubspec.yaml",
+     "source_roots": ["app/lib", "app/test"], "depends_on": ["shop_core"],
+     "config": {"entry_files": ["app/lib/main.dart"]}},
+    {"name": "shop_core", "kind": "pub-package", "root": "packages/shop_core", "manifest": "packages/shop_core/pubspec.yaml",
+     "source_roots": ["packages/shop_core/lib"], "depends_on": [], "config": {"packages": ["shop_core"]}},
+    {"name": "shop_codegen", "kind": "pub-package", "root": "tools/codegen", "manifest": "tools/codegen/pubspec.yaml",
+     "source_roots": ["tools/codegen/bin"], "depends_on": ["shop_core"],
+     "config": {"entry_files": ["tools/codegen/bin/codegen.dart"]}}
+  ],
+  "workspace": null,
+  "toolchains": [
+    {"tool": "flutter", "version": "3.24.5", "declared_in": ".fvmrc"},
+    {"tool": "flutter", "version": ">=3.24.0", "declared_in": "app/pubspec.yaml"},
+    {"tool": "dart", "version": "^3.5.0", "declared_in": "app/pubspec.yaml"},
+    {"tool": "dart", "version": "^3.5.0", "declared_in": "packages/shop_core/pubspec.yaml"},
+    {"tool": "dart", "version": "^3.5.0", "declared_in": "tools/codegen/pubspec.yaml"}
+  ],
+  "dependencies": [
+    {"unit": "shop_app", "name": "cupertino_icons", "declared": "^1.0.8", "resolved": null, "scope": "runtime", "declared_in": "app/pubspec.yaml"},
+    {"unit": "shop_app", "name": "http", "declared": "^1.2.2", "resolved": null, "scope": "runtime", "declared_in": "app/pubspec.yaml"},
+    {"unit": "shop_app", "name": "flutter_lints", "declared": "^5.0.0", "resolved": null, "scope": "dev", "declared_in": "app/pubspec.yaml"},
+    {"unit": "shop_codegen", "name": "args", "declared": "^2.6.0", "resolved": "2.6.0", "scope": "runtime", "declared_in": "tools/codegen/pubspec.yaml"}
+  ],
+  "frameworks": [
+    {"name": "Flutter", "unit": "shop_app", "evidence": "app/pubspec.yaml"}
+  ],
+  "services": [],
+  "needs": {"container": false, "reason": ""},
+  "traps": [
+    "three separate pub packages, not a pub workspace: no root pubspec.yaml with workspace:, each package resolves on its own",
+    "app/pubspec.lock is left out: a Flutter app's lock pins the SDK-bundled packages (characters, collection, vector_math, sky_engine...) at the versions of one Flutter release, not reproducible by hand; shop_app's resolved are null",
+    "tools/codegen/pubspec.lock is real: args 2.6.0 with its pub.dev sha256, and shop_core as a relative path package",
+    "flutter and flutter_test are SDK packages (sdk: flutter): part of the toolchain, not dependencies",
+    "shop_core is reached by path from two units: it goes in depends_on, not in dependencies",
+    "the Flutter version is in .fvmrc at the repository root (FVM), not next to the app; app/pubspec.yaml only asks >=3.24.0",
+    "shop_core has no dependencies and no lock: its sdk constraint is still a toolchain request"
+  ]
+}

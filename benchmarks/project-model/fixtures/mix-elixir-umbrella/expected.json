@@ -1,0 +1,117 @@
+{
+  "languages": [
+    {
+      "path": "apps/shop_core/lib/shop_core.ex",
+      "language": "Elixir"
+    },
+    {
+      "path": "apps/shop_core/test/shop_core_test.exs",
+      "language": "Elixir"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "mix-project",
+      "root": ".",
+      "manifest": "mix.exs",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "shop_core",
+      "kind": "mix-project",
+      "root": "apps/shop_core",
+      "manifest": "apps/shop_core/mix.exs",
+      "source_roots": [
+        "apps/shop_core/lib",
+        "apps/shop_core/test"
+      ],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "shop_web",
+      "kind": "mix-project",
+      "root": "apps/shop_web",
+      "manifest": "apps/shop_web/mix.exs",
+      "source_roots": [
+        "apps/shop_web/lib"
+      ],
+      "depends_on": [
+        "shop_core"
+      ],
+      "config": {
+        "entry_files": [
+          "apps/shop_web/lib/shop_web/application.ex"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "mix",
+    "root": ".",
+    "members": [
+      "apps/shop_core",
+      "apps/shop_web"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "erlang",
+      "version": "27.1.2",
+      "declared_in": ".tool-versions"
+    },
+    {
+      "tool": "elixir",
+      "version": "1.17.3-otp-27",
+      "declared_in": ".tool-versions"
+    },
+    {
+      "tool": "elixir",
+      "version": "~> 1.17",
+      "declared_in": "apps/shop_core/mix.exs"
+    },
+    {
+      "tool": "elixir",
+      "version": "~> 1.17",
+      "declared_in": "apps/shop_web/mix.exs"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "shop_core",
+      "name": "jason",
+      "declared": "~> 1.4",
+      "resolved": "1.4.5",
+      "scope": "runtime",
+      "declared_in": "apps/shop_core/mix.exs"
+    },
+    {
+      "unit": "shop_web",
+      "name": "telemetry",
+      "declared": "~> 1.3",
+      "resolved": "1.4.2",
+      "scope": "runtime",
+      "declared_in": "apps/shop_web/mix.exs"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "mix.exs files are Elixir code that Mix evaluates; compiling for an index expands the project's macros"
+  },
+  "traps": [
+    "umbrella: the root mix.exs has apps_path and no app, so the root unit's name is null",
+    "each app points lockfile: to ../../mix.lock: one lock at the root serves both apps",
+    "{:shop_core, in_umbrella: true} is a dependency between units of the project: depends_on, not dependencies",
+    "jason's optional dependency on decimal is in mix.lock but nobody declares decimal: not a direct dependency and not locked",
+    "telemetry is an Erlang package built with rebar3 ([:rebar3] in mix.lock)",
+    "the mix.lock entries are copied from a real lock (inner and outer Hex checksums), not recomputed",
+    "elixir 1.17.3-otp-27 in .tool-versions names the OTP major the build was made for; erlang is its own toolchain",
+    "shop_web's entry point is the mod: in application/0, not a file named main"
+  ]
+}

@@ -1,0 +1,21 @@
+// Dev container for the invoices app: Node from the base image, Python from a feature.
+{
+  "name": "invoices",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [3000, 5432],
+  "postCreateCommand": "npm ci",
+  "customizations": {
+    "vscode": {
+      // Lint on save.
+      "extensions": ["dbaeumer.vscode-eslint"]
+    }
+  },
+}

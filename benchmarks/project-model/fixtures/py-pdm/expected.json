@@ -1,0 +1,89 @@
+{
+  "languages": [
+    {
+      "path": "src/pdm_demo/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "src/pdm_demo/core.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "pdm-demo",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "pdm_demo"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.9",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": "3.11",
+      "declared_in": ".python-version"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "pdm-demo",
+      "name": "attrs",
+      "declared": ">=23.1",
+      "resolved": "24.2.0",
+      "scope": "runtime",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "pdm-demo",
+      "name": "pyyaml",
+      "declared": ">=6.0",
+      "resolved": "6.0.2",
+      "scope": "optional",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "pdm-demo",
+      "name": "ruff",
+      "declared": ">=0.6",
+      "resolved": "0.6.9",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "pdm-demo",
+      "name": "pdm-backend",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "dev dependencies live in [tool.pdm.dev-dependencies], a PDM table, not PEP 621 or PEP 735",
+    "pyyaml is optional (extra 'yaml'): in pdm.lock it is in group 'yaml', not 'default'",
+    "no PDM version is declared anywhere (lock_version 4.5.0 is the file format, not the tool)",
+    "pdm.lock is hand-written: files = [] and content_hash is a placeholder of zeros (not computed)"
+  ]
+}

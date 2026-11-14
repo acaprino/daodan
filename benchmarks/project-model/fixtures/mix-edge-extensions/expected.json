@@ -1,0 +1,64 @@
+{
+  "languages": [
+    {
+      "path": "include/Widget.h",
+      "language": "Objective-C"
+    },
+    {
+      "path": "src/Widget.m",
+      "language": "Objective-C"
+    },
+    {
+      "path": "matlab/solve_system.m",
+      "language": "MATLAB"
+    },
+    {
+      "path": "logic/family.pl",
+      "language": "Prolog"
+    },
+    {
+      "path": "bin/report",
+      "language": "Python"
+    },
+    {
+      "path": "i18n/app_it.ts",
+      "language": "XML"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": ".",
+      "manifest": null,
+      "source_roots": [
+        "include",
+        "src",
+        "matlab",
+        "logic",
+        "bin",
+        "i18n"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "no build file at all: the code is one source-tree unit with name and manifest null",
+    "include/Widget.h is Objective-C (#import, @interface), not C or C++: the extension says nothing",
+    "two .m files, two languages: src/Widget.m is Objective-C (#import, @implementation), matlab/solve_system.m is MATLAB (% comment lines, function ... end)",
+    "logic/family.pl is Prolog (facts and a :- rule), not Perl",
+    "bin/report has no extension: Python by its #!/usr/bin/env python3 shebang",
+    "i18n/app_it.ts is a Qt Linguist translation file (<!DOCTYPE TS>, <TS version>): XML, not TypeScript"
+  ]
+}

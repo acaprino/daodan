@@ -1,0 +1,72 @@
+{
+  "languages": [
+    {
+      "path": "db/postgres/001_create_orders.sql",
+      "language": "SQL"
+    },
+    {
+      "path": "db/postgres/002_order_total.sql",
+      "language": "PLpgSQL"
+    },
+    {
+      "path": "db/oracle/pkg_orders.sql",
+      "language": "PLSQL"
+    },
+    {
+      "path": "db/sqlserver/usp_get_orders.sql",
+      "language": "TSQL"
+    },
+    {
+      "path": "db/sqlserver/vw_open_orders.sql",
+      "language": "TSQL"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": "db",
+      "manifest": null,
+      "source_roots": [
+        "db"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "db/postgres/002_order_total.sql"
+    },
+    {
+      "name": "Oracle Database",
+      "kind": "database",
+      "evidence": "db/oracle/pkg_orders.sql"
+    },
+    {
+      "name": "Microsoft SQL Server",
+      "kind": "database",
+      "evidence": "db/sqlserver/usp_get_orders.sql"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "no build file at all: the code is one source-tree unit with name and manifest null",
+    "every file ends in .sql; the dialect is in the content: Linguist's heuristics give PLpgSQL for LANGUAGE plpgsql, PLSQL for AUTHID DEFINER and .nextval, TSQL for a GO line and [dbo]",
+    "db/sqlserver/vw_open_orders.sql is T-SQL (TOP (100), the N'open' literal, dbo. schema) but matches none of Linguist's T-SQL patterns, so Linguist says SQL: the truth here is TSQL",
+    "db/postgres/001_create_orders.sql is plain DDL in the PostgreSQL dialect (BIGSERIAL, TIMESTAMPTZ, JSONB); Linguist has no PostgreSQL language and says SQL, which is right; wrapping it in BEGIN; ... COMMIT; would flip Linguist to PLpgSQL",
+    "Linguist classifies SQL as data and the three procedural dialects as programming: a language bar that keeps only programming languages hides the plain DDL",
+    "Oracle files use / lines as statement terminators for SQL*Plus; T-SQL uses GO, which is a client batch separator, not SQL",
+    "the three folders target three different database servers: no migration tool configuration"
+  ]
+}

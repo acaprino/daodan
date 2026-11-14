@@ -1,0 +1,115 @@
+{
+  "languages": [
+    {
+      "path": "apps/api/src/main.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "libs/util/src/index.ts",
+      "language": "TypeScript"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "@acme/source",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.base.json"
+        ]
+      }
+    },
+    {
+      "name": "api",
+      "kind": "nx-project",
+      "root": "apps/api",
+      "manifest": "apps/api/project.json",
+      "source_roots": [
+        "apps/api/src"
+      ],
+      "depends_on": [
+        "util"
+      ],
+      "config": {
+        "tsconfig": [
+          "apps/api/tsconfig.app.json"
+        ],
+        "paths": {
+          "@acme/util": [
+            "libs/util/src/index.ts"
+          ]
+        },
+        "entry_files": [
+          "apps/api/src/main.ts"
+        ]
+      }
+    },
+    {
+      "name": "util",
+      "kind": "nx-project",
+      "root": "libs/util",
+      "manifest": "libs/util/project.json",
+      "source_roots": [
+        "libs/util/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "libs/util/tsconfig.lib.json"
+        ],
+        "paths": {
+          "@acme/util": [
+            "libs/util/src/index.ts"
+          ]
+        },
+        "entry_files": [
+          "libs/util/src/index.ts"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "nx",
+    "root": ".",
+    "members": [
+      "apps/api",
+      "libs/util"
+    ]
+  },
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "@acme/source",
+      "name": "nx",
+      "declared": "20.0.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "@acme/source",
+      "name": "typescript",
+      "declared": "~5.6.2",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "integrated Nx style: the projects have project.json and no package.json; the only package.json is the root one",
+    "the dependency api -> util exists only as the import '@acme/util' resolved by tsconfig.base.json paths: no manifest declares it",
+    "no lockfile (the Nx install tree is too large to write faithfully), so resolved is null",
+    "node is not declared anywhere"
+  ]
+}

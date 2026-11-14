@@ -1,0 +1,19 @@
+{
+  "name": "shop-functions-ts",
+  "private": true,
+  "main": "lib/functions/src/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.1",
+    "stripe": "^17.4.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.3"
+  }
+}

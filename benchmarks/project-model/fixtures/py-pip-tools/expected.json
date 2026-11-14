@@ -1,0 +1,68 @@
+{
+  "languages": [
+    {
+      "path": "site/settings.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "python-project",
+      "root": "",
+      "manifest": "requirements.in",
+      "source_roots": [
+        "site"
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": "requirements.txt"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": null,
+      "name": "django",
+      "declared": ">=4.2,<5.1",
+      "resolved": "4.2.16",
+      "scope": "runtime",
+      "declared_in": "requirements.in"
+    },
+    {
+      "unit": null,
+      "name": "ruff",
+      "declared": null,
+      "resolved": "0.6.9",
+      "scope": "dev",
+      "declared_in": "dev-requirements.in"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Django",
+      "unit": null,
+      "evidence": "requirements.in"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "requirements.in is the declaration, requirements.txt is the compiled lock: asgiref, sqlparse and tzdata are transitive ('# via django'), not declared",
+    "the pip-compile header gives the interpreter (Python 3.12) and nothing else about tooling versions",
+    "dev-requirements.in constrains itself with -c requirements.txt: the file is a constraint, not a dependency",
+    "a reader of requirements.txt alone sees four 'direct' packages",
+    "Django is a framework of this project (site/settings.py is a settings module) even without manage.py",
+    "no file states a project name: the unit name is null (the folder name is not a name)"
+  ]
+}

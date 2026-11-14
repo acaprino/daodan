@@ -1,0 +1,158 @@
+{
+  "languages": [
+    {
+      "path": "lib/greet.cc",
+      "language": "C++"
+    },
+    {
+      "path": "lib/greet.h",
+      "language": "C++"
+    },
+    {
+      "path": "lib/BUILD",
+      "language": "Starlark"
+    },
+    {
+      "path": "MODULE.bazel",
+      "language": "Starlark"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "greeter",
+      "kind": "bazel-module",
+      "root": "",
+      "manifest": "MODULE.bazel",
+      "source_roots": [],
+      "depends_on": [],
+      "config": {}
+    },
+    {
+      "name": "//lib:greet",
+      "kind": "bazel-target",
+      "root": "lib",
+      "manifest": "lib/BUILD",
+      "source_roots": [
+        "lib"
+      ],
+      "depends_on": [],
+      "config": {
+        "rule": "cc_library",
+        "sources": [
+          "lib/greet.cc",
+          "lib/greet.h"
+        ],
+        "include_dirs": [
+          "."
+        ],
+        "build_tags": [
+          "GREET_LOUD=1"
+        ]
+      }
+    },
+    {
+      "name": "//app:app",
+      "kind": "bazel-target",
+      "root": "app",
+      "manifest": "app/BUILD",
+      "source_roots": [
+        "app"
+      ],
+      "depends_on": [
+        "//lib:greet"
+      ],
+      "config": {
+        "rule": "cc_binary",
+        "sources": [
+          "app/main.cc"
+        ],
+        "entry_files": [
+          "app/main.cc"
+        ],
+        "include_dirs": [
+          "."
+        ]
+      }
+    },
+    {
+      "name": "//test:greet_test",
+      "kind": "bazel-target",
+      "root": "test",
+      "manifest": "test/BUILD",
+      "source_roots": [
+        "test"
+      ],
+      "depends_on": [
+        "//lib:greet"
+      ],
+      "config": {
+        "rule": "cc_test",
+        "sources": [
+          "test/greet_test.cc"
+        ],
+        "include_dirs": [
+          "."
+        ],
+        "external_deps": [
+          "@googletest//:gtest_main"
+        ]
+      }
+    }
+  ],
+  "workspace": {
+    "tool": "bazel",
+    "root": "",
+    "members": [
+      "lib",
+      "app",
+      "test"
+    ]
+  },
+  "toolchains": [
+    {
+      "tool": "bazel",
+      "version": "7.4.1",
+      "declared_in": ".bazelversion"
+    },
+    {
+      "tool": "c++",
+      "version": "17",
+      "declared_in": ".bazelrc"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "greeter",
+      "name": "rules_cc",
+      "declared": "0.0.9",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "MODULE.bazel"
+    },
+    {
+      "unit": "greeter",
+      "name": "googletest",
+      "declared": "1.14.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "MODULE.bazel"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the build files are named BUILD, without .bazel: every directory with one is a package, the root has none and is not a package",
+    "bazel_dep versions are minimums for Bazel's minimal version selection, not pins; there is no MODULE.bazel.lock, so resolved is null",
+    "googletest is a dev_dependency: it is ignored when greeter is used as a dependency of another module; only //test uses it",
+    "rules_cc is a build-rule dependency (load of @rules_cc//cc:defs.bzl), not a library linked into the binaries",
+    "includes are repository-relative: main.cc includes \"lib/greet.h\", not \"greet.h\"",
+    "GREET_LOUD=1 is a local_defines entry: it applies to greet.cc only and does not reach //app or //test",
+    "the C++17 flag lives in .bazelrc as --cxxopt, not in any BUILD file",
+    "@googletest//:gtest_main is a label of an external repository, not a package of this project"
+  ]
+}

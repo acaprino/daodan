@@ -1,0 +1,102 @@
+{
+  "languages": [
+    {
+      "path": "app/main.py",
+      "language": "Python"
+    },
+    {
+      "path": "packages/acme-core/src/acme/core/__init__.py",
+      "language": "Python"
+    },
+    {
+      "path": "packages/acme-plugins/src/acme/plugins/__init__.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "acme-core",
+      "kind": "python-project",
+      "root": "packages/acme-core",
+      "manifest": "packages/acme-core/pyproject.toml",
+      "source_roots": [
+        "packages/acme-core/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "acme"
+        ],
+        "namespace_packages": [
+          "acme"
+        ]
+      }
+    },
+    {
+      "name": "acme-plugins",
+      "kind": "python-project",
+      "root": "packages/acme-plugins",
+      "manifest": "packages/acme-plugins/pyproject.toml",
+      "source_roots": [
+        "packages/acme-plugins/src"
+      ],
+      "depends_on": [
+        "acme-core"
+      ],
+      "config": {
+        "packages": [
+          "acme"
+        ],
+        "namespace_packages": [
+          "acme"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "packages/acme-core/pyproject.toml"
+    },
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "packages/acme-plugins/pyproject.toml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "acme-core",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "packages/acme-core/pyproject.toml"
+    },
+    {
+      "unit": "acme-plugins",
+      "name": "hatchling",
+      "declared": null,
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "packages/acme-plugins/pyproject.toml"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "'acme' is a PEP 420 namespace package split across two units: there is no acme/__init__.py anywhere",
+    "import acme.core resolves to packages/acme-core/src, import acme.plugins to packages/acme-plugins/src: two source roots, one top-level name",
+    "the unit name (acme-core) is the distribution name, the import name is acme.core",
+    "root pyrightconfig.json extraPaths is the only config that makes both roots visible to a type checker; there is no workspace tool",
+    "app/main.py belongs to no unit: it has no manifest",
+    "packages lists the shared namespace package acme for both units; the submodules are acme.core and acme.plugins"
+  ]
+}

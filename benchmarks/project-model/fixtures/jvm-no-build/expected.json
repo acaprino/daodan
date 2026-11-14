@@ -1,0 +1,47 @@
+{
+  "languages": [
+    {
+      "path": "src/com/example/tally/Main.java",
+      "language": "Java"
+    },
+    {
+      "path": "test/com/example/tally/CounterCheck.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": null,
+      "kind": "source-tree",
+      "root": ".",
+      "manifest": null,
+      "source_roots": [
+        "src",
+        "test"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/com/example/tally/Main.java",
+          "test/com/example/tally/CounterCheck.java"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "There is no build to evaluate: the only facts are the files and their package declarations."
+  },
+  "traps": [
+    "No build file of any kind: the code is one source-tree unit at the root, with no name and no manifest; no tool should invent a Maven or Gradle project for it.",
+    "The source roots src and test can only be inferred from the package declarations (package com.example.tally sits in com/example/tally under each); they are not src/main/java.",
+    "test/com/example/tally/CounterCheck.java is a check run through its own main method; there is no test framework and no dependency, only java.util imports.",
+    "No Java version is declared anywhere; the code needs Java 8 or later (Map.merge, diamond operator)."
+  ]
+}

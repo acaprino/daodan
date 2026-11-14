@@ -1,0 +1,129 @@
+{
+  "languages": [
+    {
+      "path": "src/main/kotlin/com/example/pricing/Discount.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "src/main/java/com/example/pricing/PriceCalculator.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.example:pricing",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/kotlin",
+        "src/main/java",
+        "src/test/kotlin"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/kotlin",
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/kotlin",
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "kotlin-maven-plugin:compile@kotlin-compile",
+          "maven-compiler-plugin:compile@java-compile",
+          "kotlin-maven-plugin:test-compile@kotlin-test-compile",
+          "maven-compiler-plugin:testCompile@java-test-compile"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "pom.xml#maven.compiler.release"
+    },
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": "pom.xml#kotlin.compiler.jvmTarget"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.example:pricing",
+      "name": "org.jetbrains.kotlin:kotlin-stdlib",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "pom.xml#properties.kotlin.version"
+    },
+    {
+      "unit": "com.example:pricing",
+      "name": "org.jetbrains.kotlin:kotlin-test-junit5",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml#properties.kotlin.version"
+    },
+    {
+      "unit": "com.example:pricing",
+      "name": "org.junit.jupiter:junit-jupiter",
+      "declared": "5.11.3",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:pricing",
+      "name": "org.jetbrains.kotlin:kotlin-maven-plugin",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml#properties.kotlin.version"
+    },
+    {
+      "unit": "com.example:pricing",
+      "name": "org.apache.maven.plugins:maven-compiler-plugin",
+      "declared": "3.13.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:pricing",
+      "name": "org.apache.maven.plugins:maven-surefire-plugin",
+      "declared": "3.5.2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit Jupiter",
+      "unit": "com.example:pricing",
+      "evidence": "pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Source directories, compile order and versions are literal in pom.xml (the versions through the kotlin.version property of the same file). Only the effective model shows that build.sourceDirectory is still the default src/main/java while the Kotlin roots live in plugin configuration."
+  },
+  "traps": [
+    "The Maven model has one source directory per scope (build.sourceDirectory defaults to src/main/java); src/main/kotlin and src/test/kotlin are declared only in the sourceDirs of the kotlin-maven-plugin executions. A reader of the model, not of the plugin configuration, misses the Kotlin sources.",
+    "Compile order matters: kotlin-compile runs before java-compile because the default-compile and default-testCompile executions are disabled with phase none and the Kotlin plugin is declared first. Java code (PriceCalculator) calls Kotlin code (Discount) and the Kotlin test calls Java.",
+    "The Kotlin compilation reads src/main/java too, to resolve Java symbols; the Java files are still compiled by javac.",
+    "Kotlin 2.0.21 is the version of kotlin-maven-plugin and kotlin-stdlib, both from the kotlin.version property: Maven downloads the compiler as a plugin, so it is a build dependency, not a toolchain.",
+    "Two JVM targets are set independently: kotlin.compiler.jvmTarget=17 for kotlinc and maven.compiler.release=17 for javac.",
+    "src/test/java is declared in the Kotlin test sourceDirs but does not exist.",
+    "kotlin-stdlib, kotlin-test-junit5 and kotlin-maven-plugin write ${kotlin.version}; declared is the property value 2.0.21, declared_in pom.xml#properties.kotlin.version."
+  ]
+}

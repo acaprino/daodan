@@ -1,0 +1,88 @@
+{
+  "languages": [
+    {
+      "path": "tool.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "_examples/",
+      "why": "documentation"
+    }
+  ],
+  "units": [
+    {
+      "name": "example.com/tool",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/tool",
+          "example.com/tool/cmd/tool"
+        ],
+        "nested_modules": [
+          "plugins/extra"
+        ],
+        "skipped_by_pattern": [
+          "_examples/basic"
+        ],
+        "entry_files": [
+          "cmd/tool/main.go"
+        ]
+      }
+    },
+    {
+      "name": "example.com/tool/plugins/extra",
+      "kind": "go-module",
+      "root": "plugins/extra",
+      "manifest": "plugins/extra/go.mod",
+      "source_roots": [
+        "plugins/extra"
+      ],
+      "depends_on": [
+        "example.com/tool"
+      ],
+      "config": {
+        "packages": [
+          "example.com/tool/plugins/extra"
+        ],
+        "replace": {
+          "example.com/tool": "../.."
+        }
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.mod"
+    },
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "plugins/extra/go.mod"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "plugins/extra has its own go.mod: it is a second module, and go list ./... from the root does not list it",
+    "_examples/basic has no go.mod, so it belongs to the root module, but ./... skips every directory starting with _ (or .), and testdata",
+    "example.com/tool/plugins/extra looks like a package of example.com/tool by its path; it is not, the nested go.mod cuts it out",
+    "the nested module reaches the root through replace => ../..: the edge is local, so there is no go.sum and no external dependency",
+    "there is no go.work: the two modules are not a workspace"
+  ]
+}

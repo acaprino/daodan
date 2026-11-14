@@ -1,0 +1,14 @@
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.35.2
+    out: server/gen
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go:v1.5.1
+    out: server/gen
+    opt: paths=source_relative
+  - remote: buf.build/protocolbuffers/python:v28.3
+    out: client-py/src/shop_client/gen
+  - remote: buf.build/protocolbuffers/pyi:v28.3
+    out: client-py/src/shop_client/gen
+  - remote: buf.build/grpc/python:v1.68.0
+    out: client-py/src/shop_client/gen

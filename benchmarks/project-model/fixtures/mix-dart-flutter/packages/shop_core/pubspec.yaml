@@ -1,0 +1,7 @@
+name: shop_core
+description: Prices and orders shared by the app and the tools.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0

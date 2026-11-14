@@ -1,0 +1,273 @@
+{
+  "languages": [
+    {
+      "path": "src/semver/version.py",
+      "language": "Python"
+    },
+    {
+      "path": "tests/coerce.py",
+      "language": "Python"
+    },
+    {
+      "path": "Makefile",
+      "language": "Makefile"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "docs/",
+      "why": "documentation"
+    },
+    {
+      "path": "changelog.d/",
+      "why": "documentation"
+    }
+  ],
+  "units": [
+    {
+      "name": "semver",
+      "kind": "python-project",
+      "root": ".",
+      "manifest": "pyproject.toml",
+      "source_roots": [
+        "src",
+        "tests"
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "semver"
+        ],
+        "entry_files": [
+          "src/semver/cli.py",
+          "src/semver/__main__.py"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": ">=3.10",
+      "declared_in": "pyproject.toml#project.requires-python"
+    },
+    {
+      "tool": "python",
+      "version": "3.10",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.tests.strategy.matrix.python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.11",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.tests.strategy.matrix.python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.12",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.tests.strategy.matrix.python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.13",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.tests.strategy.matrix.python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.14",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.tests.strategy.matrix.python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.15",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.tests.strategy.matrix.python-version"
+    },
+    {
+      "tool": "python",
+      "version": "3.10",
+      "declared_in": ".github/workflows/python-testing.yml#jobs.check.steps"
+    },
+    {
+      "tool": "python",
+      "version": "3.11",
+      "declared_in": ".readthedocs.yaml#build.tools.python"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "semver",
+      "name": "fast-semver-rs-backend",
+      "declared": ">=0.1.1",
+      "resolved": "0.1.1",
+      "scope": "optional",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "mypy",
+      "declared": "<=2.1.0",
+      "resolved": "2.1.0",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "pyright",
+      "declared": "<=1.2",
+      "resolved": "1.1.411",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "ruff",
+      "declared": "<=0.16",
+      "resolved": "0.15.20",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "tox",
+      "declared": "<=4.56.1",
+      "resolved": "4.56.1",
+      "scope": "test",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "pytest",
+      "declared": "<=9.1.1",
+      "resolved": "9.1.1",
+      "scope": "test",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "pytest-cov",
+      "declared": "<=7.1.0",
+      "resolved": "7.1.0",
+      "scope": "test",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "twine",
+      "declared": "<=6.2.0",
+      "resolved": "6.2.0",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "build",
+      "declared": "<=1.5.0",
+      "resolved": "1.5.0",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "towncrier",
+      "declared": "==25.8.0",
+      "resolved": "25.8.0",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "sphinx",
+      "declared": "<=8.1.3",
+      "resolved": "8.1.3",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "sphinx-argparse",
+      "declared": "<=0.5.2",
+      "resolved": "0.5.2",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "sphinx-autodoc-typehints",
+      "declared": "==3.0.1",
+      "resolved": "3.0.1",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "tox-gh-actions",
+      "declared": null,
+      "resolved": "3.5.0",
+      "scope": "dev",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "setuptools",
+      "declared": ">= 77.0.3",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pyproject.toml"
+    },
+    {
+      "unit": "semver",
+      "name": "sphinx",
+      "declared": "==7.0.1",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "docs/requirements.txt"
+    },
+    {
+      "unit": "semver",
+      "name": "sphinx-argparse",
+      "declared": "==0.4.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "docs/requirements.txt"
+    },
+    {
+      "unit": "semver",
+      "name": "sphinx-autodoc-typehints",
+      "declared": "==1.24.0",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "docs/requirements.txt"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "pytest",
+      "unit": "semver",
+      "evidence": ".pytest.ini"
+    },
+    {
+      "name": "Sphinx",
+      "unit": "semver",
+      "evidence": "docs/conf.py"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "src layout: setuptools finds the package semver under src (package-dir and packages.find where = [\"src\"]); no Pyright configuration, so a reader that does not add src as a root resolves no absolute import of semver",
+    "the version is dynamic: setuptools reads attr semver.__about__.__version__; [tool.setuptools_scm] is configured but setuptools-scm is commented out of build-system.requires",
+    "the only optional dependency, fast-semver-rs-backend, carries the marker platform_python_implementation == 'CPython'",
+    "PEP 735 dependency groups: test (tox, pytest, pytest-cov) is test, typing, formatting, publish, changelog and docs are dev; devel includes six groups and gh-action includes devel plus tox-gh-actions, so the 14 names appear once each",
+    "tox-gh-actions is declared without a version: declared is null, uv.lock pins 3.5.0",
+    "resolved comes from uv.lock (lock version 1, four resolution markers on the Python version): one version per package",
+    "docs/requirements.txt pins sphinx 7.0.1, sphinx-argparse 0.4.0 and sphinx-autodoc-typehints 1.24.0, used by the tox docs env; the docs group of pyproject.toml asks <= 8.1.3, <= 0.5.2 and == 3.0.1, and Read the Docs builds from uv export --only-group docs, not from that file",
+    "tests/coerce.py and tests/semverwithvprefix.py are symlinks (mode 120000) to ../docs/advanced/coerce.py and ../docs/advanced/semverwithvprefix.py: documentation code that the test suite runs; a reader that skips docs/ and follows the links meets the files twice",
+    "tox.ini asks interpreters py310 to py315 (envlist py3{10,11,12,13,14,15}, skip_missing_interpreters = True) and installs its own deps per env (pytest, pytest-cov, setuptools>=70, setuptools-scm, mypy, docformatter, ruff): tool environments, not declared dependencies",
+    "[tool.black] target-version lists py37 to py311 while requires-python is >=3.10; black is not declared anywhere",
+    "CI installs Python with uv python install, not setup-python: the check job pins 3.10, the tests job takes the matrix",
+    "the Makefile only runs python setup.py sdist bdist_wheel --universal, and there is no setup.py"
+  ]
+}

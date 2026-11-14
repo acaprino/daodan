@@ -1,0 +1,113 @@
+{
+  "languages": [
+    {
+      "path": "src/main/kotlin/com/example/orders/OrderService.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "src/integrationTest/kotlin/com/example/orders/OrderFlowIT.kt",
+      "language": "Kotlin"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle.kts",
+      "source_roots": [
+        "src/main/kotlin",
+        "src/test/kotlin",
+        "src/integrationTest/kotlin"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/kotlin",
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/kotlin",
+            "src/test/java"
+          ],
+          "integrationTest": [
+            "src/integrationTest/kotlin",
+            "src/integrationTest/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileKotlin",
+          "compileJava",
+          "compileTestKotlin",
+          "compileTestJava",
+          "compileIntegrationTestKotlin",
+          "compileIntegrationTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "21",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin.jvm",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlinx:kotlinx-coroutines-core",
+      "declared": "1.9.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin:kotlin-test",
+      "declared": null,
+      "resolved": "2.0.21",
+      "scope": "test",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.assertj:assertj-core",
+      "declared": "3.26.3",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit Jupiter",
+      "unit": ":",
+      "evidence": "build.gradle.kts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every declared version is literal except kotlin-test, whose version is the Kotlin plugin's (2.0.21). The source set integrationTest and its task are declared in the script but are plain to read; only the evaluated model lists the derived configurations and tasks."
+  },
+  "traps": [
+    "integrationTest is a third source set: its sources are in src/integrationTest/kotlin, compiled by compileIntegrationTestKotlin and run by the task integrationTest, which check depends on. A reader that knows only main and test misses it.",
+    "integrationTest sees main through compileClasspath += main.output, not through a project dependency, and inherits testImplementation (kotlin-test) through extendsFrom.",
+    "kotlin(\"test\") carries no version: the Kotlin Gradle plugin aligns it to 2.0.21 and, because the test tasks use the JUnit Platform, also adds kotlin-test-junit5, which pulls JUnit Jupiter.",
+    "The plugin adds org.jetbrains.kotlin:kotlin-stdlib 2.0.21 to implementation without any line in the build file; it is not a declared dependency.",
+    "The Kotlin compiler version is the plugin version 2.0.21: Gradle downloads it, so it is a build dependency, not a toolchain. jvmToolchain(21) is the JDK for both the Kotlin and the Java compilation.",
+    "Each Kotlin source set also has a java directory (src/main/java and so on) that does not exist on disk."
+  ]
+}

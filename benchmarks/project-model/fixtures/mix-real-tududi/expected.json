@@ -1,0 +1,1304 @@
+{
+  "languages": [
+    {
+      "path": "backend/app.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "frontend/index.tsx",
+      "language": "TSX"
+    },
+    {
+      "path": "e2e/playwright.config.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "backend/modules/landing/views/landing.ejs",
+      "language": "EJS"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/fonts.css",
+      "language": "CSS"
+    },
+    {
+      "path": "public/index.html",
+      "language": "HTML"
+    },
+    {
+      "path": "scripts/docker-entrypoint.sh",
+      "language": "Shell"
+    },
+    {
+      "path": "Dockerfile",
+      "language": "Dockerfile"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "docs/",
+      "why": "documentation"
+    },
+    {
+      "path": "backend/modules/landing/public/vendor/",
+      "why": "vendored"
+    },
+    {
+      "path": "backend/modules/landing/public/favicon.ico",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-cyrillic-ext.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-cyrillic.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-greek-ext.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-greek.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-latin-ext.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-latin.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/inter-vietnamese.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/manrope-cyrillic-ext.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/manrope-cyrillic.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/manrope-greek.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/manrope-latin-ext.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/manrope-latin.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/fonts/manrope-vietnamese.woff2",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/icon-logo.png",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/og-2.png",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/screenshots/",
+      "why": "binary"
+    },
+    {
+      "path": "backend/modules/landing/public/wide-logo-dark.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/apple-touch-icon.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/backgrounds/",
+      "why": "binary"
+    },
+    {
+      "path": "public/banners/",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon-16.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon-32.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon-48.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon-dark.ico",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon-light.ico",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon.ico",
+      "why": "binary"
+    },
+    {
+      "path": "public/favicon.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/fonts/",
+      "why": "binary"
+    },
+    {
+      "path": "public/icon-logo.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/login-gfx.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/wide-logo-dark.png",
+      "why": "binary"
+    },
+    {
+      "path": "public/wide-logo-light.png",
+      "why": "binary"
+    },
+    {
+      "path": "screenshots/",
+      "why": "binary"
+    }
+  ],
+  "units": [
+    {
+      "name": "tududi",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "frontend",
+        "backend",
+        "e2e"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json"
+        ],
+        "paths": {
+          "@/*": [
+            "frontend/*"
+          ]
+        },
+        "entry_files": [
+          "frontend/index.tsx",
+          "public/index.html",
+          "backend/app.js"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "node",
+      "version": "22-alpine",
+      "declared_in": "Dockerfile"
+    },
+    {
+      "tool": "node",
+      "version": "22",
+      "declared_in": ".github/workflows/ci.yml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "tududi",
+      "name": "@codemirror/commands",
+      "declared": "^6.10.4",
+      "resolved": "6.11.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@codemirror/lang-markdown",
+      "declared": "^6.5.1",
+      "resolved": "6.5.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@codemirror/language",
+      "declared": "^6.12.4",
+      "resolved": "6.12.4",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@codemirror/state",
+      "declared": "^6.7.1",
+      "resolved": "6.7.4",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@codemirror/view",
+      "declared": "^6.43.6",
+      "resolved": "6.43.11",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@lezer/highlight",
+      "declared": "^1.2.5",
+      "resolved": "1.2.5",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@modelcontextprotocol/sdk",
+      "declared": "^1.29.0",
+      "resolved": "1.32.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@playwright/test",
+      "declared": "^1.57.0",
+      "resolved": "1.63.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "axios",
+      "declared": "^1.16.0",
+      "resolved": "1.20.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "bcrypt",
+      "declared": "~6.0.0",
+      "resolved": "6.0.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "chrono-node",
+      "declared": "^2.10.1",
+      "resolved": "2.10.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "compression",
+      "declared": "~1.8.0",
+      "resolved": "1.8.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "compromise",
+      "declared": "^14.14.4",
+      "resolved": "14.17.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "connect-session-sequelize",
+      "declared": "~7.1.7",
+      "resolved": "7.1.7",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "cors",
+      "declared": "~2.8.5",
+      "resolved": "2.8.6",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "csv-parse",
+      "declared": "^7.0.3",
+      "resolved": "7.0.3",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "date-fns",
+      "declared": "^4.1.0",
+      "resolved": "4.4.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "date-fns-tz",
+      "declared": "^3.2.0",
+      "resolved": "3.2.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "disposable-email-domains-js",
+      "declared": "^1.26.0",
+      "resolved": "1.26.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "dotenv",
+      "declared": "~16.5.0",
+      "resolved": "16.5.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "ejs",
+      "declared": "^3.1.10",
+      "resolved": "3.1.10",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "exceljs",
+      "declared": "^4.4.0",
+      "resolved": "4.4.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "express",
+      "declared": "^4.21.2",
+      "resolved": "4.22.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "express-rate-limit",
+      "declared": "^8.6.2",
+      "resolved": "8.7.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "express-session",
+      "declared": "~1.18.1",
+      "resolved": "1.18.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "helmet",
+      "declared": "~8.1.0",
+      "resolved": "8.1.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "ical.js",
+      "declared": "^2.1.0",
+      "resolved": "2.2.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "jose",
+      "declared": "^6.0.0",
+      "resolved": "6.2.12",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "js-yaml",
+      "declared": "^5.2.3",
+      "resolved": "5.4.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "linguaisync",
+      "declared": "^0.1.2",
+      "resolved": "0.1.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "lodash",
+      "declared": "~4.18.1",
+      "resolved": "4.18.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "lusca",
+      "declared": "^1.7.0",
+      "resolved": "1.7.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "marked",
+      "declared": "^16.4.2",
+      "resolved": "16.4.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "mermaid",
+      "declared": "^12.0.0",
+      "resolved": "12.0.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "moment-timezone",
+      "declared": "~0.6.0",
+      "resolved": "0.6.3",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "multer",
+      "declared": "^2.5.0",
+      "resolved": "2.5.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "nanoid",
+      "declared": "^3.3.18",
+      "resolved": "3.3.19",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "node-cron",
+      "declared": "~4.1.0",
+      "resolved": "4.1.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "nodemailer",
+      "declared": "^10.2.1",
+      "resolved": "10.2.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "openai",
+      "declared": "^6.45.0",
+      "resolved": "6.49.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "openid-client",
+      "declared": "^5.7.1",
+      "resolved": "5.7.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "pg",
+      "declared": "^8.23.0",
+      "resolved": "8.23.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "pg-connection-string",
+      "declared": "^2.14.1",
+      "resolved": "2.14.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "pg-hstore",
+      "declared": "^2.3.4",
+      "resolved": "2.3.4",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "pino",
+      "declared": "^9.14.0",
+      "resolved": "9.14.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "pino-http",
+      "declared": "^10.5.0",
+      "resolved": "10.5.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "qrcode",
+      "declared": "^1.5.4",
+      "resolved": "1.5.4",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "sequelize",
+      "declared": "~6.37.7",
+      "resolved": "6.37.8",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "sequelize-cli",
+      "declared": "~6.6.2",
+      "resolved": "6.6.5",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "slugify",
+      "declared": "^1.6.6",
+      "resolved": "1.6.9",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "stripe",
+      "declared": "^18.5.0",
+      "resolved": "18.5.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "swagger-jsdoc",
+      "declared": "^6.2.8",
+      "resolved": "6.3.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "swagger-ui-express",
+      "declared": "^5.0.1",
+      "resolved": "5.0.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "umzug",
+      "declared": "^2.3.0",
+      "resolved": "2.3.0",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "use-debounce",
+      "declared": "^10.0.6",
+      "resolved": "10.1.1",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "web-push",
+      "declared": "^3.6.7",
+      "resolved": "3.6.7",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "xml2js",
+      "declared": "^0.6.0",
+      "resolved": "0.6.2",
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@babel/core",
+      "declared": "^7.29.6",
+      "resolved": "7.29.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@babel/preset-env",
+      "declared": "^7.25.7",
+      "resolved": "7.29.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@babel/preset-react",
+      "declared": "^7.25.7",
+      "resolved": "7.29.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@babel/preset-typescript",
+      "declared": "^7.25.7",
+      "resolved": "7.29.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@dnd-kit/core",
+      "declared": "^6.3.1",
+      "resolved": "6.3.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@dnd-kit/sortable",
+      "declared": "^10.0.0",
+      "resolved": "10.0.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@dnd-kit/utilities",
+      "declared": "^3.2.2",
+      "resolved": "3.2.2",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@faker-js/faker",
+      "declared": "^10.5.0",
+      "resolved": "10.6.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@heroicons/react",
+      "declared": "^2.1.5",
+      "resolved": "2.2.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@pmmmwh/react-refresh-webpack-plugin",
+      "declared": "^0.5.15",
+      "resolved": "0.5.17",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@swc/core",
+      "declared": "^1.13.3",
+      "resolved": "1.16.2",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@testing-library/jest-dom",
+      "declared": "^6.0.0",
+      "resolved": "6.9.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@testing-library/react",
+      "declared": "^14.0.0",
+      "resolved": "14.3.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@testing-library/user-event",
+      "declared": "^14.0.0",
+      "resolved": "14.6.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@types/jest",
+      "declared": "^29.0.0",
+      "resolved": "29.5.14",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@types/node",
+      "declared": "^20.0.0",
+      "resolved": "20.19.43",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@types/react",
+      "declared": "^18.3.10",
+      "resolved": "18.3.31",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "@types/react-dom",
+      "declared": "^18.3.0",
+      "resolved": "18.3.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "autoprefixer",
+      "declared": "^10.4.20",
+      "resolved": "10.6.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "babel-jest",
+      "declared": "^29.0.0",
+      "resolved": "29.7.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "copy-webpack-plugin",
+      "declared": "^14.0.0",
+      "resolved": "14.0.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "cross-env",
+      "declared": "~7.0.3",
+      "resolved": "7.0.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "css-loader",
+      "declared": "^7.1.2",
+      "resolved": "7.1.5",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "eslint",
+      "declared": "^8.0.0",
+      "resolved": "8.57.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "eslint-plugin-jest",
+      "declared": "^29.0.1",
+      "resolved": "29.16.6",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "eslint-plugin-prettier",
+      "declared": "^5.5.1",
+      "resolved": "5.5.6",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "eslint-plugin-react",
+      "declared": "^7.37.5",
+      "resolved": "7.37.5",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "fast-xml-parser",
+      "declared": "^5.11.1",
+      "resolved": "5.11.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "globals",
+      "declared": "^15.11.0",
+      "resolved": "15.15.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "highlight.js",
+      "declared": "^11.11.1",
+      "resolved": "11.12.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "html-webpack-plugin",
+      "declared": "^5.6.3",
+      "resolved": "5.6.8",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "i18next",
+      "declared": "^24.2.3",
+      "resolved": "24.2.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "i18next-browser-languagedetector",
+      "declared": "^8.0.4",
+      "resolved": "8.2.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "i18next-http-backend",
+      "declared": "^4.0.10",
+      "resolved": "4.0.10",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "identity-obj-proxy",
+      "declared": "^3.0.0",
+      "resolved": "3.0.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "jest",
+      "declared": "^29.0.0",
+      "resolved": "29.7.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "jest-environment-jsdom",
+      "declared": "^30.3.0",
+      "resolved": "30.5.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "lint-staged",
+      "declared": "^16.2.7",
+      "resolved": "16.4.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "nodemon",
+      "declared": "~3.0.1",
+      "resolved": "3.0.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "pino-pretty",
+      "declared": "^13.1.3",
+      "resolved": "13.1.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "postcss",
+      "declared": "^8.5.23",
+      "resolved": "8.5.28",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "postcss-loader",
+      "declared": "^8.1.1",
+      "resolved": "8.2.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "prettier",
+      "declared": "^3.6.2",
+      "resolved": "3.9.6",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "react",
+      "declared": "^18.3.1",
+      "resolved": "18.3.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "react-dom",
+      "declared": "^18.3.1",
+      "resolved": "18.3.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "react-i18next",
+      "declared": "^15.4.1",
+      "resolved": "15.7.4",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "react-markdown",
+      "declared": "^10.1.0",
+      "resolved": "10.1.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "react-refresh",
+      "declared": "^0.14.2",
+      "resolved": "0.14.2",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "react-router-dom",
+      "declared": "^7.18.2",
+      "resolved": "7.18.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "rehype-highlight",
+      "declared": "^7.0.2",
+      "resolved": "7.0.2",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "remark-gfm",
+      "declared": "^4.0.1",
+      "resolved": "4.0.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "rimraf",
+      "declared": "^6.0.1",
+      "resolved": "6.1.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "style-loader",
+      "declared": "^4.0.0",
+      "resolved": "4.0.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "supertest",
+      "declared": "~7.1.1",
+      "resolved": "7.1.4",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "swc-loader",
+      "declared": "^0.2.6",
+      "resolved": "0.2.7",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "swr",
+      "declared": "^2.2.5",
+      "resolved": "2.5.1",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "tailwindcss",
+      "declared": "^3.4.13",
+      "resolved": "3.4.19",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "ts-jest",
+      "declared": "^29.0.0",
+      "resolved": "29.4.12",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "typescript",
+      "declared": "^5.6.2",
+      "resolved": "5.9.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "typescript-eslint",
+      "declared": "^8.36.0",
+      "resolved": "8.70.0",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "webpack",
+      "declared": "^5.95.0",
+      "resolved": "5.110.3",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "webpack-cli",
+      "declared": "^5.1.4",
+      "resolved": "5.1.4",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "webpack-dev-server",
+      "declared": "^5.2.6",
+      "resolved": "5.2.6",
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "tududi",
+      "name": "zustand",
+      "declared": "^5.0.3",
+      "resolved": "5.0.15",
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "React",
+      "unit": "tududi",
+      "evidence": "frontend/index.tsx"
+    },
+    {
+      "name": "Express",
+      "unit": "tududi",
+      "evidence": "backend/app.js"
+    },
+    {
+      "name": "Sequelize",
+      "unit": "tududi",
+      "evidence": "backend/config/db.js"
+    },
+    {
+      "name": "Tailwind CSS",
+      "unit": "tududi",
+      "evidence": "tailwind.config.js"
+    },
+    {
+      "name": "webpack",
+      "unit": "tududi",
+      "evidence": "webpack.config.js"
+    },
+    {
+      "name": "Jest",
+      "unit": "tududi",
+      "evidence": "jest.config.js"
+    },
+    {
+      "name": "Playwright",
+      "unit": "tududi",
+      "evidence": "e2e/playwright.config.ts"
+    }
+  ],
+  "services": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "evidence": "docker-compose.yml"
+    },
+    {
+      "name": "SMTP",
+      "kind": "mail",
+      "evidence": "backend/services/emailService.js"
+    },
+    {
+      "name": "Telegram Bot API",
+      "kind": "messaging",
+      "evidence": "backend/modules/telegram/telegramApi.js"
+    },
+    {
+      "name": "Stripe",
+      "kind": "payments",
+      "evidence": "backend/modules/billing/providers/stripe.js"
+    },
+    {
+      "name": "Lemon Squeezy",
+      "kind": "payments",
+      "evidence": "backend/modules/billing/providers/lemonsqueezy.js"
+    },
+    {
+      "name": "Paddle",
+      "kind": "payments",
+      "evidence": "backend/modules/billing/providers/paddle.js"
+    },
+    {
+      "name": "OpenAI",
+      "kind": "ai",
+      "evidence": "backend/modules/ai-assistant/service.js"
+    },
+    {
+      "name": "OpenID Connect provider",
+      "kind": "authentication",
+      "evidence": "backend/modules/oidc/service.js"
+    },
+    {
+      "name": "Web Push",
+      "kind": "notifications",
+      "evidence": "backend/modules/push/vapid.js"
+    },
+    {
+      "name": "Apprise",
+      "kind": "notifications",
+      "evidence": "backend/modules/apprise/service.js"
+    }
+  ],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "one npm package at the root (tududi, version v2.0.0) holds the React frontend, the Express backend and the Playwright tests: frontend/, backend/ and e2e/ have no package.json of their own, and there is no workspace",
+    "tsconfig.json includes only frontend/**/* and excludes backend: the backend is plain CommonJS JavaScript outside the TypeScript program, e2e/ is TypeScript that only Playwright compiles",
+    "the alias @/* -> frontend/* exists only in jest.config.js moduleNameMapper: neither tsconfig.json nor webpack.config.js declares it",
+    "webpack's entry is ./frontend/index.tsx with public/index.html as the HTML template; the backend starts from backend/app.js (nodemon app.js, scripts/docker-entrypoint.sh in the image)",
+    "react, react-dom, react-router-dom, i18next and the other browser libraries are devDependencies because webpack bundles them; @playwright/test and sequelize-cli are dependencies: scope is as declared",
+    "package.json has an overrides block that forces versions of transitive packages (tar, ws, qs, js-yaml under eslint and swagger-jsdoc, ...): they are not direct dependencies; resolved comes from package-lock.json (lockfileVersion 3)",
+    "no engines, packageManager or .nvmrc: the Node version comes only from the Dockerfile (node:22-alpine for the builder and production stages) and CI (setup-node 22)",
+    "Sequelize is configured for postgres only (backend/config/db.js); backend/config/legacySqlite.js only guards against SQLite files left by a 1.x install; .sequelizerc at the root and in backend/ point sequelize-cli at backend/config/database.js",
+    "docker-compose.yml runs the published image chrisvel/tududi:latest with postgres:16-alpine, docker-compose.dev.yml builds the Dockerfile; CI runs postgres:16-alpine as a service",
+    "the EJS landing pages under backend/modules/landing/views are server-rendered by Express and load Font Awesome Free from backend/modules/landing/public/vendor/fontawesome, a checked-in copy",
+    "Apprise is reached through the base URL of a user-configured apprise-api server; the CalDAV module serves calendars and also syncs remote calendars whose servers the user configures",
+    "backend/modules/mcp serves the Model Context Protocol through @modelcontextprotocol/sdk: tududi is the server, not a client of an external service",
+    "linguaisync.config.js configures linguaisync, a dependency that translates public/locales with the model gpt-4o-mini: an OpenAI call made by a developer tool, not by the app",
+    "billing exists only in hosted mode (TUDUDI_HOSTED_MODE=true): backend/modules/billing/providers holds three providers, Stripe (the default of hosted.billing.provider), Lemon Squeezy and Paddle, called over their HTTP APIs with keys from backend/config/config.js; only Stripe has an npm package",
+    "docs/examples/docker-compose.hosted.yml (with Caddy) is a documentation example under docs/, excluded: its services are not the project's"
+  ]
+}

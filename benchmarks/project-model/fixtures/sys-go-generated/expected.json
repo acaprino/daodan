@@ -1,0 +1,66 @@
+{
+  "languages": [
+    {
+      "path": "main.go",
+      "language": "Go"
+    },
+    {
+      "path": "color/describe.go",
+      "language": "Go"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "color/color_string.go",
+      "why": "generated"
+    }
+  ],
+  "units": [
+    {
+      "name": "example.com/palette",
+      "kind": "go-module",
+      "root": "",
+      "manifest": "go.mod",
+      "source_roots": [
+        "."
+      ],
+      "depends_on": [],
+      "config": {
+        "packages": [
+          "example.com/palette",
+          "example.com/palette/color"
+        ],
+        "go_generate": [
+          {
+            "file": "color/color.go",
+            "command": "stringer -type=Color"
+          }
+        ],
+        "entry_files": [
+          "main.go"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "go",
+      "version": "1.22",
+      "declared_in": "go.mod"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "color_string.go is generated (its first line matches ^// Code generated .* DO NOT EDIT\\.$) but checked in and compiled: excluded from the project's own code, still part of package color for the type checker",
+    "describe.go mentions \"Code generated\" in a comment after the package clause and without DO NOT EDIT: it is hand-written; a reader that matches the words anywhere in the first lines marks it generated",
+    "the //go:generate line names stringer, a tool that is not a dependency in go.mod: nothing is required, and go generate is not needed to read the project",
+    "Color.String is defined only in the generated file: dropping generated files from the index breaks every call to String"
+  ]
+}

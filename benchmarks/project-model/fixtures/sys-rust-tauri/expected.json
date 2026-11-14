@@ -1,0 +1,140 @@
+{
+  "languages": [
+    {
+      "path": "src/main.js",
+      "language": "JavaScript"
+    },
+    {
+      "path": "src/index.html",
+      "language": "HTML"
+    },
+    {
+      "path": "src-tauri/src/lib.rs",
+      "language": "Rust"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "notes-desk",
+      "kind": "npm-package",
+      "root": "",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "entry_files": [
+          "src/index.html"
+        ],
+        "frontend_dist": "src"
+      }
+    },
+    {
+      "name": "notes-desk",
+      "kind": "cargo-crate",
+      "root": "src-tauri",
+      "manifest": "src-tauri/Cargo.toml",
+      "source_roots": [
+        "src-tauri/src"
+      ],
+      "depends_on": [],
+      "config": {
+        "edition": "2021",
+        "targets": [
+          {
+            "kind": "lib",
+            "name": "notes_desk_lib",
+            "path": "src-tauri/src/lib.rs",
+            "crate_types": [
+              "staticlib",
+              "cdylib",
+              "rlib"
+            ]
+          },
+          {
+            "kind": "bin",
+            "name": "notes-desk",
+            "path": "src-tauri/src/main.rs"
+          },
+          {
+            "kind": "custom-build",
+            "name": "build-script-build",
+            "path": "src-tauri/build.rs"
+          }
+        ],
+        "tauri_config": "src-tauri/tauri.conf.json",
+        "entry_files": [
+          "src-tauri/src/main.rs"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "notes-desk",
+      "name": "@tauri-apps/cli",
+      "declared": "^2",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "notes-desk",
+      "name": "tauri",
+      "declared": "2",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "notes-desk",
+      "name": "serde",
+      "declared": "1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "notes-desk",
+      "name": "serde_json",
+      "declared": "1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "src-tauri/Cargo.toml"
+    },
+    {
+      "unit": "notes-desk",
+      "name": "tauri-build",
+      "declared": "2",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "src-tauri/Cargo.toml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "Tauri",
+      "unit": "notes-desk",
+      "evidence": "src-tauri/tauri.conf.json"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": true,
+    "reason": "src-tauri/build.rs runs tauri-build, which writes gen/schemas and the permission manifests, and tauri::generate_context! reads tauri.conf.json and embeds the frontend at compile time"
+  },
+  "traps": [
+    "two units share the name notes-desk: the npm package at the root and the Cargo crate under src-tauri; only root and kind tell them apart",
+    "the root has no Cargo.toml: the crate lives in src-tauri/, and a reader that looks for Cargo files only at the root finds no Rust unit",
+    "the frontend has no build step: frontendDist points at ../src (resolved from src-tauri/), so src/ is served as is",
+    "main.js calls window.__TAURI__ (withGlobalTauri): there is no @tauri-apps/api import, and that package is not a dependency",
+    "the crate has three targets: a library notes_desk_lib built as staticlib, cdylib and rlib for mobile, a binary notes-desk and the build script",
+    "no Cargo.lock and no package-lock.json: a real Tauri lock is over 100 KB, beyond the fixture budget, so every resolved version is null rather than invented",
+    "icons/ is absent: tauri-build needs icons/icon.ico to build on Windows; the fixture is never built",
+    "capabilities/default.json points its $schema at gen/, a folder that exists only after the build script runs"
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "languages": [
+    {
+      "path": "analysis.py",
+      "language": "Python"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "geo-env",
+      "kind": "python-project",
+      "root": "",
+      "manifest": "environment.yml",
+      "source_roots": [
+        ""
+      ],
+      "depends_on": [],
+      "config": {}
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "python",
+      "version": "3.11",
+      "declared_in": "environment.yml"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "geo-env",
+      "name": "numpy",
+      "declared": "=1.26.*",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "environment.yml"
+    },
+    {
+      "unit": "geo-env",
+      "name": "pandas",
+      "declared": ">=2.0",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "environment.yml"
+    },
+    {
+      "unit": "geo-env",
+      "name": "pip",
+      "declared": null,
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "environment.yml"
+    },
+    {
+      "unit": "geo-env",
+      "name": "requests",
+      "declared": "==2.32.3",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "environment.yml"
+    },
+    {
+      "unit": "geo-env",
+      "name": "geotools",
+      "declared": "git+https://github.com/example/geotools.git@v2.1#egg=geotools",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "environment.yml"
+    },
+    {
+      "unit": "geo-env",
+      "name": "tqdm",
+      "declared": ">=4.66",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "requirements-extra.txt"
+    }
+  ],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "conda dependencies (numpy, pandas, python) and the nested 'pip:' list (requests, geotools, tqdm) use different spec syntax: '=1.26.*' vs '==2.32.3'",
+    "'python=3.11' is the interpreter, a toolchain entry, not a package",
+    "'-r requirements-extra.txt' inside the pip section pulls tqdm from another file",
+    "numpy and pandas are conda packages, requests is a PyPI package: the same file mixes two ecosystems",
+    "no conda lockfile written (cannot be written faithfully by hand): resolved versions are unknown unless pinned"
+  ]
+}

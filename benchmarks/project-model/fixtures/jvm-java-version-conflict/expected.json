@@ -1,0 +1,104 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/clock/Clock.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.example:clock",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "maven-compiler-plugin:compile@default-compile",
+          "maven-compiler-plugin:testCompile@default-testCompile"
+        ],
+        "entry_files": [
+          "src/main/java/com/example/clock/Clock.java"
+        ]
+      }
+    },
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle.kts",
+      "source_roots": [
+        "src/main/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ],
+        "entry_files": [
+          "src/main/java/com/example/clock/Clock.java"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "17",
+      "declared_in": ".java-version"
+    },
+    {
+      "tool": "java",
+      "version": "21.0.5-tem",
+      "declared_in": ".sdkmanrc"
+    },
+    {
+      "tool": "java",
+      "version": "11",
+      "declared_in": "pom.xml#maven.compiler.release"
+    },
+    {
+      "tool": "java",
+      "version": "23",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "The four declarations are literal. Which JDK actually runs depends on the shell, not on the build: sdkman auto-env reads .sdkmanrc, jenv and some mise or asdf setups read .java-version, Maven compiles with that JDK for release 11, Gradle looks for a JDK 23 toolchain."
+  },
+  "traps": [
+    "Four files ask for four different Java versions and none overrides another: .java-version 17 (jenv, mise or asdf with idiomatic files), .sdkmanrc java=21.0.5-tem (SDKMAN), pom.xml maven.compiler.release 11 (the bytecode level javac targets, with whatever JDK runs Maven), build.gradle.kts toolchain 23 (the JDK Gradle compiles with).",
+    "21.0.5-tem is an SDKMAN candidate identifier (Temurin 21.0.5), not a plain version number; keep it as written.",
+    "The folder is two builds at once: a Maven module and a Gradle project share the same root and the same src/main/java. Each tool sees only its own file.",
+    "The Gradle build has no foojay resolver: if no JDK 23 is installed, Gradle fails to find the toolchain instead of downloading it.",
+    "There is no wrapper for either tool, so neither the Maven nor the Gradle version is declared.",
+    "Clock.java uses only Java 8 API, so it compiles at every level declared.",
+    "Neither build has modules or subprojects, so there is no workspace: two single-project builds share the folder."
+  ]
+}

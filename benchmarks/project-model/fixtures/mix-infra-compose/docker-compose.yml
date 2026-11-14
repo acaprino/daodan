@@ -1,0 +1,47 @@
+services:
+  api:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://shop:shop@db:5432/shop
+      REDIS_URL: redis://cache:6379
+      AMQP_URL: amqp://guest:guest@queue:5672
+    depends_on:
+      - db
+      - cache
+      - queue
+
+  worker:
+    build:
+      context: .
+      target: runtime
+    command: ["node", "src/worker.js"]
+    environment:
+      DATABASE_URL: postgres://shop:shop@db:5432/shop
+      AMQP_URL: amqp://guest:guest@queue:5672
+    depends_on:
+      - db
+      - queue
+
+  db:
+    image: postgres:16.4
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+      POSTGRES_DB: shop
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  cache:
+    image: redis:7.4-alpine
+
+  queue:
+    image: rabbitmq:3.13-management
+    ports:
+      - "15672:15672"
+
+volumes:
+  pgdata:

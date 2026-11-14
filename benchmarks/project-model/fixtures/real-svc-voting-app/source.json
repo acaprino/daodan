@@ -1,0 +1,1 @@
+{"repo": "https://github.com/dockersamples/example-voting-app", "commit": "63e9150ca17af4ed05880d4245e486481f73fcb4", "licence": "Apache-2.0", "why": "smallest real polyglot system: Python, Node.js and .NET services joined only by a Redis list, a Postgres table and host names written in code"}

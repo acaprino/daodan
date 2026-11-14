@@ -1,0 +1,90 @@
+{
+  "languages": [
+    {
+      "path": "include/ringbuf/ringbuf.hpp",
+      "language": "C++"
+    },
+    {
+      "path": "include/ringbuf/config.h",
+      "language": "C++"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "language": "CMake"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "ringbuf",
+      "kind": "cmake-target",
+      "root": "",
+      "manifest": "CMakeLists.txt",
+      "source_roots": [
+        "include"
+      ],
+      "depends_on": [],
+      "config": {
+        "type": "INTERFACE_LIBRARY",
+        "alias": "ringbuf::ringbuf",
+        "sources": [],
+        "include_dirs": [
+          "include"
+        ]
+      }
+    },
+    {
+      "name": "ringbuf_tests",
+      "kind": "cmake-target",
+      "root": "tests",
+      "manifest": "tests/CMakeLists.txt",
+      "source_roots": [
+        "tests"
+      ],
+      "depends_on": [
+        "ringbuf"
+      ],
+      "config": {
+        "type": "EXECUTABLE",
+        "sources": [
+          "tests/test_ring.cpp"
+        ],
+        "entry_files": [
+          "tests/test_ring.cpp"
+        ],
+        "include_dirs": [
+          "include"
+        ],
+        "condition": "PROJECT_IS_TOP_LEVEL"
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "cmake",
+      "version": "3.21",
+      "declared_in": "CMakeLists.txt#cmake_minimum_required"
+    },
+    {
+      "tool": "c++",
+      "version": "20",
+      "declared_in": "CMakeLists.txt#target_compile_features"
+    }
+  ],
+  "dependencies": [],
+  "frameworks": [],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the library has no source file to compile: an INTERFACE target carries only headers, include paths and the C++20 requirement",
+    "include/ringbuf/config.h is C++ (namespace, inline constexpr) with a .h extension; a reader that maps .h to C gets it wrong",
+    "C++20 is required through target_compile_features(cxx_std_20), not CMAKE_CXX_STANDARD: it propagates to every consumer",
+    "ringbuf_tests links the alias ringbuf::ringbuf; the alias is the same unit as ringbuf, not a second one",
+    "the tests exist only when ringbuf is the top-level project; consumed through add_subdirectory or FetchContent they are skipped",
+    "the header's include path is <ringbuf/ringbuf.hpp>, relative to include/, not to the header's own directory"
+  ]
+}

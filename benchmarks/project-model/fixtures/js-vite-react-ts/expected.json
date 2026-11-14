@@ -1,0 +1,150 @@
+{
+  "languages": [
+    {
+      "path": "src/main.tsx",
+      "language": "TSX"
+    },
+    {
+      "path": "src/App.tsx",
+      "language": "TSX"
+    },
+    {
+      "path": "src/components/Button.tsx",
+      "language": "TSX"
+    },
+    {
+      "path": "src/lib/format.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "vite.config.ts",
+      "language": "TypeScript"
+    },
+    {
+      "path": "index.html",
+      "language": "HTML"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "vite-react-app",
+      "kind": "npm-package",
+      "root": ".",
+      "manifest": "package.json",
+      "source_roots": [
+        "src"
+      ],
+      "depends_on": [],
+      "config": {
+        "tsconfig": [
+          "tsconfig.json",
+          "tsconfig.app.json",
+          "tsconfig.node.json"
+        ],
+        "paths": {
+          "@/*": [
+            "src/*"
+          ],
+          "@": [
+            "src"
+          ]
+        },
+        "entry_files": [
+          "src/main.tsx",
+          "index.html"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [],
+  "dependencies": [
+    {
+      "unit": "vite-react-app",
+      "name": "react",
+      "declared": "^18.3.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vite-react-app",
+      "name": "react-dom",
+      "declared": "^18.3.1",
+      "resolved": null,
+      "scope": "runtime",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vite-react-app",
+      "name": "@types/react",
+      "declared": "^18.3.12",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vite-react-app",
+      "name": "@types/react-dom",
+      "declared": "^18.3.1",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vite-react-app",
+      "name": "@vitejs/plugin-react",
+      "declared": "^4.3.3",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vite-react-app",
+      "name": "typescript",
+      "declared": "~5.6.2",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    },
+    {
+      "unit": "vite-react-app",
+      "name": "vite",
+      "declared": "^5.4.10",
+      "resolved": null,
+      "scope": "dev",
+      "declared_in": "package.json"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "React",
+      "unit": "vite-react-app",
+      "evidence": "package.json"
+    },
+    {
+      "name": "Vite",
+      "unit": "vite-react-app",
+      "evidence": "vite.config.ts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": ""
+  },
+  "traps": [
+    "the root tsconfig.json has files: [] and only references: the real compiler options (paths, jsx) are in tsconfig.app.json, the Vite config file is covered by tsconfig.node.json only",
+    "the @/ alias is declared twice, in tsconfig.app.json paths (for the type checker) and in vite.config.ts resolve.alias (for the bundler): both map @ to src",
+    "imports like @/App are not packages: they must not be reported as dependencies",
+    ".tsx is TSX in Linguist, not TypeScript; vite.config.ts and the .d.ts file are TypeScript",
+    "no lockfile, so resolved is null for every dependency",
+    "node is not declared anywhere",
+    "src/vite-env.d.ts is a hand-kept declaration file, not generated"
+  ]
+}

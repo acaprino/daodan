@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package shop.v1;
+
+option go_package = "github.com/acme/shop/server/gen/shop/v1;shopv1";
+
+service OrderService {
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message GetOrderResponse {
+  string id = 1;
+  int64 total_cents = 2;
+}
