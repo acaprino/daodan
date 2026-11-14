@@ -225,3 +225,93 @@ Prova 5 della spec, solo la parte Linux: un container Modal (gVisor, root, senza
 - **Scaricare e usare senza installare: funziona.** Il pacchetto estratto pesa 8,2 MB. `kiri daemon` parte senza finestre in 3 ms e serve l'API di Docker su `$HOME/.kiri/run/docker.sock`.
 - **Eseguire un container: non funziona su Modal.** `kiri raw run --rm alpine echo` si ferma dopo 0,9 s con «Kiri needs cgroup v2 at /sys/fs/cgroup (this machine has cgroup v1 or a hybrid tree there)».
 - **Conseguenza.** Su Modal il passo dinamico usa i container di Modal, come in `modal_dynamic.py`. La parte Windows della prova 5, con una distribuzione WSL propria, è ancora da fare sul PC.
+
+## Registro esatto per Python su python-semver, 14 novembre 2026
+
+**Verdetto.** Il registro esatto chiude ciò che l'analisi statica lascia aperto: 16 mancati veri su 16 ricevono la destinazione osservata, e anche 31 dei 64 buchi. Non contraddice mai un arco statico, né dell'indice né di Jedi. Costa da 6 a 10 volte il tempo della suite: 534 test passano in 16 s invece che in 2,5 s. Tace dove a runtime non gira codice Python: attributi di `__slots__`, attributi semplici, rami che i test non percorrono.
+
+| Parametro | Valore |
+| --- | --- |
+| caso | python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, lo stesso del grafo dall'indice; copia dall'archivio che `lang_python.py` ha lasciato sul volume (`inference-audit/graph-python/semver/work.tar.gz`, symlink compresi) |
+| registro | `dynamic_record.py`: `sys.monitoring`, eventi `CALL` (istruzione, oggetto chiamato) e `PY_START` (funzione Python avviata da un'istruzione che non è una chiamata: property, `__lt__`, `__enter__`, `__hash__`) |
+| caricamento | `sitecustomize.py` scritto da `dynamic_record.py site <dir>` e messo in `PYTHONPATH`: parte prima del codice del progetto, vale anche per i sottoprocessi e non tocca progetto né venv. `-X` non carica moduli; un plugin di pytest partirebbe dopo e solo sotto pytest |
+| sito | istruzione di un file del progetto; `co_positions` dà inizio e fine dell'espressione, in righe e colonne UTF-8, quindi due chiamate sulla stessa riga sono due siti. Il solo offset non dice dove si trova sulla riga. Il sito si pone con `ast` sul nome della chiamata con quello span; il formato è quello di `dynamic_record.js`, con in più `role`, `wraps` e `mock` |
+| preparazione | immagine Modal con la rete aperta: Python 3.13.3, venv con le 14 dipendenze dichiarate e le versioni dell'esecuzione dell'indice come vincoli (72 pacchetti, nessuna versione diversa, 6,9 s) |
+| esecuzione | funzione Modal con `block_network=True`, 2 CPU, 4 GB: il container di Modal è l'isolamento. Una connessione a `1.1.1.1:443` fallisce con «Network is unreachable». La suite parte come la configura il progetto (`.pytest.ini`, copertura e doctest compresi): una corsa di riscaldamento, tre coppie senza e con registro, poi due coppie con `--no-cov` |
+| unione | `modal_dynamic_python.py`: le 2.343 righe di `inference-audit/strong-python/semver.json` (ogni riferimento dello snapshot, con le fini dell'indice e i bersagli di Jedi) e i 64 buchi di `graph-python-semver.json`, alla stessa posizione e con lo stesso nome |
+| verifica a mano | 16 mancati veri e 4 siti, attese scritte in `HAND` prima della prima esecuzione |
+
+Comandi: `modal deploy benchmarks/call-provenance/modal_dynamic_python.py`, poi `python benchmarks/call-provenance/modal_dynamic_python.py spawn --tag exact-20261114c`, `fetch --tag exact-20261114c` e `report`. Risultato in `results/dynamic-python-semver.json`; registri, junit e log sul volume in `dynamic/python-exact-20261114c/`. Test del registro: `python -m unittest benchmarks/call-provenance/test_dynamic_record.py` (8 test, meno di un secondo, Python 3.12 o successivo).
+
+**Test.** 534 su 534 passati in tutte le 11 corse, 6 senza registro (il controllo) e 5 con: nessun fallimento, nessun errore, nessun salto. Il salto di `test_optional_native_backend.py` non scatta perché `fast-semver-rs-backend` è installato. Le 5 corse con il registro danno gli stessi siti.
+
+**Costo.** Mediane della corsa buona; le due corse precedenti, su altre macchine, danno rapporti da 6,2 a 6,3 e da 8,9 a 9,3.
+
+| Suite | Senza registro | Con registro | Rapporto | Memoria di picco |
+| --- | --- | --- | --- | --- |
+| come configurata, con copertura | 2,52 s | 16,27 s | 6,5 | 60 → 79 MB |
+| `--no-cov` | 1,55 s | 15,15 s | 9,8 | 59 → 70 MB |
+
+Il tempo comprende l'avvio di pytest e la scrittura del file all'uscita. Registrati 26.999 eventi `CALL` dal codice del progetto e 9.349 chiamate implicite; 1.559 siti, 226 destinazioni, 0 errori.
+
+**I 16 mancati veri: tutti con destinazione osservata.**
+- Valori creati da `deprecated`, 7 (`tests/test_pysemver-cli.py:41 createparser`; `main` alle righe 109, 116, 124, 129, 133, 156): `deprecated.<locals>.wrapper`, con `wraps` su `cli.createparser` e `cli.main`.
+- Parametri chiamati, 4. `tests/test_pysemver-cli.py:104 func`: il wrapper di quattro `cli.cmd_*`. `src/semver/_deprecated.py:81 func`: 24 funzioni, tutte quelle decorate con `deprecated` più tre `mock_func` dei test. `src/semver/version.py:68 operator`: i sei metodi di confronto di `Version`. `tests/test_deprecated_functions.py:63 func`: il wrapper di 20 funzioni.
+- Attributi dinamici, 2. `src/semver/cli.py:152 args.func`: `cmd_bump`, `cmd_check`, `cmd_compare` e il wrapper di `cmd_compare`. `src/semver/version.py:556 getattr(...)()`: `bump_major`, `bump_minor`, `bump_patch`.
+- `src/semver/version.py:807 type(self)(**version)`: `Version` e due sottoclassi definite nei test.
+- Fixture senza tipo, 2: `tests/test_semver.py:30 version.to_dict` e `:36 version.to_tuple` vanno a `Version.to_dict` e `Version.to_tuple`.
+
+**Buchi: 31 su 64 con destinazione osservata.**
+- Chiamate, 21 su 26. Al progetto 5: `cli.py:152`, `version.py:556`, `:807`, `test_semver.py:30`, `:36`. Esterne 16: `str.format` 4 (`_deprecated.py:72`, `version.py:134`, `:139`, `:157`), `argparse.ArgumentParser.parse_args` 2 e `print_help` 1, `_pytest.capture.CaptureFixture.readouterr` 4, `str.startswith` 2, `str.rstrip` 1, `importlib.util.find_spec` 1, `unittest.mock.NonCallableMock.assert_called_once` 1.
+- Le altre 5 chiamate non vengono eseguite: `__main__.py:29 sys.exit`, `pytest.fail` e il suo `.format` (`test_deprecated_functions.py:65`), `pytest.skip`, `test_subclass.py:11 .format`.
+- Letture, 10 su 38: le cinque property lette su una fixture (`tests/test_semver.py:43`-`47`) e i cinque `@x.setter` (`version.py:217`-`253`, `property.setter`). Le altre 28 sono letture di attributi semplici e di nomi di modulo (`args.*`, `__file__`, `func.__name__`): lì non gira codice Python e il registro tace.
+
+**Contraddizioni con un arco statico: nessuna.** Dove l'indice ha un bersaglio del progetto (468 chiamate) il registro concorda su 460. In altre 3 vede anche sottoclassi definite nei test (`cls` in `version.py:373`, `:769`, `:788`): bersaglio giusto ma incompleto. Una è un mock (`__main__.py:25 cli.main`, sostituito da `patch`), 4 non vengono eseguite. Dove l'indice dà un esterno (487 chiamate), 474 hanno lo stesso pacchetto e 13 non vengono eseguite. Delle 474:
+- 396 nominano la stessa funzione.
+- 73 sono `pytest.mark.parametrize`: l'indice si ferma all'attributo `MARK_GEN.parametrize`, il registro vede l'istanza `MarkDecorator` chiamata. È lo stesso oggetto.
+- 5 nominano una funzione precisa dove l'indice si ferma al modulo o sbaglia simbolo: `patch` ×2 (`unittest.mock/__init__`), `_native_parse_parts` (`parse_parts`), `operator.lt` e `operator.gt`.
+
+Gli archi dell'indice che il registro non vede non sono contraddizioni: in `version.py:479` e `:833` l'indice dà a `cls.parse` anche i quattro override di `SemVerWithVPrefix.parse`, e nessun test arriva lì con una sottoclasse. Jedi, senza le sue risposte che sono tipi di valori (`int`, `Callable`, `partial`, `NoneType`): 0 contraddizioni, 414 chiamate concordi.
+
+La prima corsa (`python-exact-20261114`) contava 10 contraddizioni. Erano un difetto dell'unione: `does_not_raise` (`tests/test_pysemver-cli.py:52`-`88`) è avvolta da `contextlib.contextmanager`, e il wrapper fuori dal progetto non veniva riportato alla funzione che avvolge. C'erano anche due difetti del registro:
+- `functools.wraps` copia `__module__`, quindi il wrapper prendeva il modulo del test;
+- in 3.13 l'uscita da un blocco `with` è un'istruzione `CALL` posta sull'espressione del contesto, quindi `__exit__` finiva nel sito del costruttore (per esempio `pytest.warns` con `WarningsChecker.__exit__`).
+
+La seconda corsa (`python-exact-20261114b`) ha mostrato che `super()` cadeva sull'attributo `super().parse`: `LOAD_SUPER_ATTR` porta lo span dell'attributo. Tutti e tre i difetti hanno un test nella fixture, visto fallire prima della correzione.
+
+**I tre bersagli sbagliati dell'indice.**
+- Attributi di `__slots__` (23 letture, l'indice punta alla classe `Version`): nulla di osservato, perché un attributo di slot si legge in C. Il registro non conferma né smentisce; il sorgente dà ragione a Jedi (un valore).
+- `operator.lt`, `operator.gt` (`tests/test_compare_invalid_operands.py:52`, `:67`): osservate le funzioni C `_operator.lt` e `_operator.gt` della libreria standard, non `_operator/index()`.
+- `pytest.skip`, `pytest.fail`: non eseguite in questo ambiente, quindi nulla di osservato.
+
+**Polimorfismo reale: 12 siti con più di una destinazione.**
+- `_deprecated.py:81 func` 24, `version.py:68 operator` 6, `cli.py:46 func` 5 (`bump_*`), `cli.py:152 args.func` 4, `version.py:769 cls` 4, `version.py:556` 3, `:788 cls` 3, `:807` 3, `:373 cls` 2.
+- Tre chiamate implicite: `__hash__` e il wrapper di `__eq__` in `tests/test_parsing.py:159` (scrittura in un dict) e `:163` (`in`); due `__enter__` diversi in `tests/test_pysemver-cli.py:103` (`with expectation`).
+- In più, lo stesso wrapper ne avvolge molte: 20 funzioni in `tests/test_deprecated_functions.py:63` e 4 in `tests/test_pysemver-cli.py:104`.
+
+**Quanto eseguono i test.** 973 chiamate su 995 (97,8%): `src` 291 su 293, `tests` 673 su 681, `docs` 9 su 21. Le 22 non eseguite:
+- le 11 chiamate delle copie in `docs/advanced/` dei due file collegati da symlink, che girano dal percorso `tests/`;
+- la guardia `__main__` (2);
+- rami di errore mai percorsi (`docs/conf.py:43`, `test_subclass.py:10`, `:11`, `:41`);
+- `pytest.fail` e il suo `.format`, `pytest.skip`;
+- `getmodules` in `test_docstrings.py:18`-`19`, che nessuno chiama.
+
+Delle 1.348 letture se ne vedono solo 90: le altre non eseguono codice Python e il registro non sa se sono state lette. I 496 siti osservati senza riferimento nello snapshot sono chiamate implicite: confronti 127, decoratori 92, property 77, indici 71, ingressi e uscite di `with` 103, `__build_class__` 8, un'espressione generatrice e 17 fra operatori, slice e scritture di attributi o indici. Nessuno è una chiamata esplicita che manca allo snapshot.
+
+**Verifica a mano: 19 giusti su 20.** Il parziale è `version.py:807`: mi aspettavo solo `Version`, e il registro vede anche `SemVerWithVPrefix` di `tests/test_subclass.py:26` e `Release` di `tests/test_next_version_legacy_order.py:36`. `replace` chiamato su un'istanza di sottoclasse costruisce la sottoclasse: l'attesa era troppo stretta, il registro ha ragione.
+
+**Limiti del registro.**
+- Non vede le funzioni Python chiamate da una funzione C: la chiave di `sorted`, `__init__` sotto la chiamata della classe; il sito tiene la funzione C o la classe.
+- Non vede le letture di attributi senza codice Python, i passi di un generatore dopo la chiamata, gli import, il codice senza file (doctest, `exec` di una stringa), i processi avviati con `-I` o `-E` e quanto segue `os._exit`.
+- Il riconoscimento dell'uscita da `with` dipende dal bytecode di CPython 3.12-3.13.
+
+**Costo fatturato.** 0,019 USD per l'app `daodan-dynamic-python` (`modal billing report`): tre deploy e tre corse, di cui le prime due da rifare per i difetti sopra.
+
+**Non verificato.**
+- Un altro progetto Python. semver ha test che eseguono quasi tutto (97,8% delle chiamate), quindi la quota di buchi chiusi non vale per un progetto meno coperto.
+- La causa del sovraccosto: non è profilato. Probabilmente pesa `PY_START`, che scatta a ogni avvio di funzione, anche in pytest.
+- Quanti dei 534 test sono doctest, le cui chiamate non diventano siti.
+- Python 3.14, dove l'uscita da `with` si compila diversamente.
+- Dopo la terza corsa `modal_dynamic_python.py` è cambiato solo in una lambda diventata funzione (stesso comportamento), e `dynamic_record.py` solo nel docstring: non rieseguiti.
+
+**Deviazioni dalla spec.** Durante la preparazione la rete era aperta verso tutto, non solo verso i registri dei pacchetti. La copia viene dall'archivio salvato dal benchmark dell'indice, non dal perimetro dello snapshot.
