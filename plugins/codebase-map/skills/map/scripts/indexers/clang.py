@@ -1,4 +1,15 @@
-"""scip-clang for C and C++: what its index leaves to the reader.
+"""scip-clang for C and C++: how it runs, and what its index leaves to the reader.
+
+`index` takes the units the pre-map states (`root`, `build`, `configure`, `generated`, `fetched`) and discovers
+nothing itself. A configure runs the project's CMake code, so it runs only in a container
+(`container.run_in_container`), in one phase with no network, over a copy of the project: `clang_run.py` there
+configures each unit (a fetched dependency is never downloaded: a unit that needs one to configure is not
+indexed, `unavailable` with the URL and CMake's error), builds the `generated` targets, and runs scip-clang over
+the compilation database. CMake, scip-clang and that
+script are what the copy carries under `TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared
+directory and checked by sha256. The image (`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs
+to read the system includes, glibc 2.39 (scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package
+of each system header, and python3.
 
 Symbols carry no file: a function declared in a header and defined in a source file is one symbol, defined at
 its body; the declaration is a reference. Two `static` functions of one name in two files are one symbol too.
@@ -23,6 +34,8 @@ when its symbol has bodies at several places, each place a candidate.
 from __future__ import annotations
 
 import collections
+import json
+import shutil
 from pathlib import Path
 
 import code_graph
@@ -30,6 +43,13 @@ import code_graph
 VERSION = "v0.4.1"  # github.com/sourcegraph/scip-clang, released 2026-10-22, LLVM 21
 URL = f"https://github.com/sourcegraph/scip-clang/releases/download/{VERSION}/scip-clang-x86_64-linux"
 SHA256 = "a434d26a079fd80e1996ba79276cb1ef86b2b2ad28b13e24386285db32c59046"  # the release asset's digest
+IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"
+CMAKE = ("3.28.3", "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.tar.gz",
+         "804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6")  # Ubuntu 24.04's own CMake
+TOOLS = "/daodan/tools"  # where the copy carries the tools in the container (clang_run.py reads them there)
+OUT = "/tmp/daodan-clang/out"
+MEMORY = 2 * 2**30
+PIDS = 1024
 C_SOURCES = {".c"}
 CPP_SOURCES = {".cc", ".cpp", ".cxx", ".c++"}
 CALLABLES = ("function", "method", "class")
@@ -240,7 +260,7 @@ def classify(index):
     return stated
 
 
-def refine(index, graph: dict) -> None:
+def refine(index, graph: dict, configs: dict | None = None) -> None:
     """An edge to a symbol with bodies at several places is `uncertain`: each place, `rel:line`, a candidate."""
     places = {}
     for edge in graph["edges"]:
@@ -253,12 +273,25 @@ def refine(index, graph: dict) -> None:
             edge["uncertain"] = {"reason": "one symbol defined at several places", "candidates": places[key]}
 
 
-def missing(index, rels: list[str], compiled: dict = (), removed: list = ()) -> dict:
+def tasks(configs) -> dict:
+    """What the run brought back for `missing`: `{"compiled": {rel: commands}, "units": [state]}`, empty without
+    it."""
+    return configs if isinstance(configs, dict) else {}
+
+
+def _unit(rel: str, units: list[dict]) -> dict | None:
+    """The innermost unit holding a file, by its root."""
+    holding = [unit for unit in units if unit["root"] in (".", "") or rel.startswith(unit["root"].rstrip("/") + "/")]
+    return max(holding, key=lambda unit: len(unit["root"]), default=None)
+
+
+def missing(index, rels: list[str], configs: dict | None = None) -> dict:
     """Why a C or C++ file of the snapshot has no document."""
-    reasons = {}
+    reasons, compiled = {}, (configs or {}).get("compiled") or {}
     for rel in rels:
-        if rel in removed:
-            reasons[rel] = "removed from the copy by the build's configure step"
+        unit = _unit(rel, (configs or {}).get("units") or [])
+        if unit is not None and unit["state"] != "indexed":
+            reasons[rel] = f"the index of unit {unit['root']} is {unit['state']}: {unit['cause']}"
         elif rel in compiled:
             reasons[rel] = "compiled, yet no document in the index"
         elif Path(rel).suffix.lower() in C_SOURCES | CPP_SOURCES:
@@ -266,3 +299,109 @@ def missing(index, rels: list[str], compiled: dict = (), removed: list = ()) -> 
         else:
             reasons[rel] = "header no indexed translation unit includes in an active branch"
     return reasons
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Running the indexer
+
+
+def _sha256(path: Path) -> str:
+    import hashlib
+    with path.open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
+
+
+def tools() -> dict[str, Path]:
+    """The container paths and host files the copy carries: CMake and scip-clang, downloaded once into the shared
+    directory and checked by sha256 each time, and `clang_run.py`. A Gap when one cannot be downloaded and
+    verified."""
+    import container
+    from resolve_edges import download, shared_engine_dir
+    version, cmake_url, cmake_sha = CMAKE
+    wanted = (("scip-clang", URL, SHA256, shared_engine_dir("scip-clang") / VERSION / "scip-clang-x86_64-linux"),
+              ("cmake.tar.gz", cmake_url, cmake_sha, shared_engine_dir("cmake") / version / Path(cmake_url).name))
+    inputs = {}
+    for name, url, digest, target in wanted:
+        try:
+            if target.is_file() and _sha256(target) != digest:
+                target.unlink()
+            if not target.is_file():
+                download(url, target, sha256=digest)
+        except (OSError, ValueError) as error:
+            raise container.Gap(f"{url} could not be downloaded and verified: {error}",
+                                "check the network, then index again") from error
+        inputs[f"{TOOLS}/{name}"] = target
+    inputs[f"{TOOLS}/clang_run.py"] = Path(__file__).with_name("clang_run.py")
+    return inputs
+
+
+def unavailable(cause: str, remedy: str) -> dict:
+    return {"indexes": [], "runs": [], "indexer": {"name": "scip-clang", "version": VERSION, "seconds": 0,
+                                                   "peak_mb": None},
+            "state": "unavailable", "reason": cause, "install": remedy}
+
+
+def failed(cause: str, runs: list[dict]) -> dict:
+    tail = (runs[-1].get("stderr_tail") or "").strip()[-800:] if runs else ""
+    return {"indexes": [], "runs": runs, "indexer": code_graph.indexer("scip-clang", VERSION, runs),
+            "state": "failed", "reason": f"scip-clang wrote no index ({cause})" + (f": {tail}" if tail else "")}
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
+          engine=None, memory: int = MEMORY, timeout: float = 3600) -> dict:
+    """The index of each unit the pre-map states, with its runs and each unit's state (`files` is not used: a
+    unit's compilation database decides what is indexed). A unit built otherwise than with CMake, or whose
+    configure needs a download outside the allowed registries, is `unavailable`; one whose configure fails
+    otherwise, `failed`; either keeps its static facts from the snapshot. Without a unit indexed, or without a
+    container, the result's state is `unavailable` (no unit failed) or `failed`."""
+    import container
+    project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
+    work_dir.mkdir(parents=True, exist_ok=True)
+    states = [{"root": unit.get("root", "."), "state": "unavailable", "kind": "not-cmake",
+               "cause": f"built with {unit.get('build') or 'an unknown build'}: Daodan configures C and C++ units "
+                        "with CMake only"}
+              for unit in units or () if unit.get("build") != "cmake"]
+    chosen = [{key: unit.get(key, default) for key, default in (("root", "."), ("configure", []), ("generated", []),
+                                                                 ("fetched", []))}
+              for unit in units or () if unit.get("build") == "cmake"]
+    if not chosen:
+        return unavailable("no C or C++ unit built with CMake in the pre-map" + (
+            "; " + "; ".join(item["cause"] for item in states) if states else ""),
+            "none: the project's C and C++ files keep their static facts")
+    if container.architecture() != "x64":
+        return unavailable(f"scip-clang {VERSION} has an x86_64 Linux build only", "index on an x86_64 machine")
+    plan = work_dir / "units.json"
+    plan.write_text(json.dumps(chosen, indent=1) + "\n", encoding="utf-8")
+    out_dir = work_dir / "container"
+    back = out_dir / Path(OUT).name
+    shutil.rmtree(back, ignore_errors=True)
+    result = container.run_in_container(
+        project_dir, ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT], image=IMAGE,
+        out_dir=out_dir, outputs=[OUT], env={"TERM": "dumb"}, timeout=timeout, memory=memory, pids=PIDS,
+        engine=engine, inputs=lambda: {**tools(), f"{TOOLS}/units.json": plan})
+    if result["state"] == "gap":
+        return unavailable(result["cause"], result["remedy"])
+    report = back / "result.json"
+    if result["state"] != "done" or not report.is_file():
+        return failed(result.get("cause") or f"the container run ended {result['state']}", [])
+    data = json.loads(report.read_text(encoding="utf-8"))
+    indexes, runs, compiled = [], [], collections.Counter()
+    for unit in data["units"]:
+        for step in unit["steps"]:
+            runs.append({"unit": unit["root"], "step": step["step"], "returncode": step["returncode"],
+                         "seconds": step["seconds"], "peak_mb": data.get("peak_mb"), "stderr_tail": step["tail"],
+                         **({"diagnostics": step["diagnostics"]} if "diagnostics" in step else {})})
+        states.append({key: unit[key] for key in ("root", "state", "kind", "cause", "urls") if key in unit})
+        compiled.update(unit["compiled"])
+        if unit["index"] and (back / unit["index"]).is_file():
+            target = work_dir / unit["index"]
+            target.unlink(missing_ok=True)
+            shutil.move(str(back / unit["index"]), str(target))
+            indexes.append([str(target), ""])
+    if not indexes:
+        causes = "; ".join(f"{item['root']}: {item['cause']}" for item in states)
+        if all(item["state"] == "unavailable" for item in states):
+            return {**unavailable(causes, "none: the units keep their static facts"), "runs": runs, "units": states}
+        return {**failed(causes, runs), "units": states}
+    return {"indexes": indexes, "runs": runs, "indexer": code_graph.indexer("scip-clang", VERSION, runs),
+            "units": states, "configs": {"compiled": dict(sorted(compiled.items())), "units": states}}
