@@ -284,6 +284,18 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
             return None, "unsupported-target-kind"
         return value, None
 
+    functions = None
+
+    def declarations_named(name):
+        nonlocal functions
+        if functions is None:
+            functions = defaultdict(list)
+            for _, item in sorted(declarations.items()):
+                language = manifest["files"][item["file"]].get("language")
+                if item["kind"] == "function" and language in resolution.C_FAMILY:
+                    functions[item["name"]].append(item)
+        return functions.get(name, [])
+
     class Lookup:
         """The shared policy's view of this in-memory index.
 
@@ -312,6 +324,9 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
         def exported_target(self, rel, exported):
             return exported_target(rel, exported)
 
+        def declarations_named(self, name):
+            return declarations_named(name)
+
     lookup = Lookup()
     references = []
     for rel, payload in sorted(payloads.items()):
@@ -329,6 +344,13 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
                 continue
             parts = item["parts"]
             binding, reason = lexical(rel, item["scope"], parts[0])
+            if reason == "scope-unresolved" and len(parts) == 1:
+                identity, included = resolution.included_definition(lookup, rel, item["scope"], parts[0])
+                if identity is not None:
+                    record.update(target_id=identity, resolution="resolved", reason=included)
+                    resolved_count += 1
+                    continue
+                reason = included or reason
             if reason:
                 record["reason"] = reason
                 record["candidate_bindings"] = uncertain_imports(rel, item["scope"], parts)

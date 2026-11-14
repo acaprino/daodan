@@ -232,6 +232,8 @@ def _coverage(store, rel, entry, root, target, perimeter, fingerprint, observed=
 class _Resolver:
     def __init__(self, database):
         self.db = database
+        self._languages: dict[str, str | None] = {}
+        self._functions: dict[str, list[dict]] | None = None
 
     def scope(self, rel, identity):
         record = self.scope_record(rel, identity)
@@ -271,8 +273,20 @@ class _Resolver:
             "SELECT target FROM sem_modules WHERE file=? AND module=? ORDER BY target", (rel, module))]
 
     def language(self, rel):
-        row = self.db.execute("SELECT language FROM sem_coverage WHERE file=?", (rel,)).fetchone()
-        return row[0] if row else None
+        if rel not in self._languages:
+            row = self.db.execute("SELECT language FROM sem_coverage WHERE file=?", (rel,)).fetchone()
+            self._languages[rel] = row[0] if row else None
+        return self._languages[rel]
+
+    def declarations_named(self, name):
+        """The functions of C and C++ files named `name`, read once on the first question."""
+        if self._functions is None:
+            self._functions = {}
+            for identity, rel, function, payload in self.db.execute(
+                    "SELECT d.id, d.file, d.name, d.payload FROM sem_declarations d JOIN sem_coverage c "
+                    "ON c.file=d.file WHERE d.kind='function' AND c.language IN ('c','cpp') ORDER BY d.id"):
+                self._functions.setdefault(function, []).append({**_unpack(payload), "id": identity, "file": rel})
+        return self._functions.get(name, [])
 
     def bindings_named(self, rel, scope_id, name):
         """Every binding is relevant: a non-callable member blocks a base member."""
@@ -344,6 +358,12 @@ class _Resolver:
             return record
         parts = item["parts"]
         binding, reason = self.lexical(rel, item["scope"], parts[0])
+        if reason == "scope-unresolved" and len(parts) == 1:
+            identity, included = resolution.included_definition(self, rel, item["scope"], parts[0])
+            if identity is not None:
+                record.update(target_id=identity, resolution="resolved", reason=included)
+                return record
+            reason = included or reason
         if reason:
             record["reason"] = reason
             record["candidate_bindings"] = self.uncertain_imports(rel, item["scope"], parts)
@@ -876,6 +896,9 @@ def build_semantic_store(
                 }
                 ref_reused_set = sem_reused_set - dirty_importers
 
+        if ref_reused_set and any(path.lower().endswith(snapshot._C_FAMILY_SUFFIXES) for path in changed_or_removed):
+            # The include rule reads the functions of every C and C++ file: their references are answered again.
+            ref_reused_set = {path for path in ref_reused_set if not path.lower().endswith(snapshot._C_FAMILY_SUFFIXES)}
         if ref_reused_set:
             db.execute("CREATE TEMP TABLE _sem_ref_reused(file TEXT PRIMARY KEY)")
             db.executemany("INSERT INTO _sem_ref_reused VALUES(?)", ((rel,) for rel in ref_reused_set))

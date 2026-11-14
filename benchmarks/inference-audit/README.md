@@ -1151,6 +1151,17 @@ Lo snapshot del prodotto legge C e C++ (`languages/cfamily.py`, prove in `tests/
 | tinyxml2 `9148bdf719e9` | 4 file C++, fatti semantici per 2 (`tinyxml2.h` e `xmltest.cpp` hanno errori di sintassi); 706 chiamate, nessuna risolta nel file; 12,2 s |
 | file con errori | 51 file C di zlib: macro come `local int f(`, `uch FAR uchf`, `z_const`. Togliendo sei nomi di zlib (`local`, `FAR`, `z_const`, `ZEXTERN`, `ZEXPORTVA`, `OF`) i file interi diventano 39 su 66 |
 
+### 14 novembre 2026, macro e include nello snapshot
+
+Lo snapshot passa al lettore le macro dei file con cui un file condivide un'unità di traduzione: ciò che include e chi lo include. Il lettore toglie le macro che il sorgente definisce come decorazione (`#define local static`, `FAR`) o come involucro di un prototipo (`OF((args))`). Un nome che arriva da un header incluso porta alla sua unica definizione con collegamento esterno. Misurato in locale, prima e dopo sullo stesso sorgente.
+
+| Parametro | Valore |
+| --- | --- |
+| zlib `51b7f2abdade` | file C senza fatti semantici: 37 su 66 prima, 12 dopo; chiamate nei file con fatti 1.523 prima, 2.278 dopo; risolte 303 prima, 510 dopo (470 nel file, 40 per include); 9,7 s contro 4,7 |
+| chiamate senza definizione | 198, verso funzioni di `zlib.h` definite in uno dei 12 file senza fatti (`inflateEnd`, `inflate`, `gz_error`, `deflate`) |
+| tinyxml2 `9148bdf719e9` | invariato: fatti per 3 file su 4 (`xmltest.cpp:336` diviso da un `#if`); nessuna chiamata risolta per include, perché le funzioni libere stanno nel namespace `tinyxml2` o nei corpi dei membri |
+| cosa resta | 9 file per un `#if` che divide un'istruzione (`gzlib.c:187`, `inflate.c:196`, `infback.c:45`, `puff.c:494`, `miniunz.c:630`, `unzip.c:1897`, `deflate.c:184`, una funzione di `trees.c` e una di `zip.c`); 3 per parole di un compilatore in un ramo spento (`ioapi.h:87`, `zutil.h:98`, `testzlib.c:20`). Per entrambi serve il ramo che il build sceglie, cioè l'indice |
+
 ## 14 novembre 2026, fonti del programma intero: JavaScript e TypeScript
 
 Accanto al grafo letto dall'indice SCIP ci sono due seconde fonti, ciascuna in un suo adapter con la stessa forma

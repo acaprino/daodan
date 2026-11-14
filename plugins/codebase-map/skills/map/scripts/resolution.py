@@ -76,7 +76,7 @@ class ResolutionLookup(Protocol):
         """`(identity, None)` for a file's exported name, `(None, reason)` otherwise."""
 
     def declarations_named(self, name: str) -> list[dict]:
-        """Every declaration of kind `function` named `name`, in any file: payloads with `id` and `file`."""
+        """Every declaration of kind `function` named `name` in a C or C++ file: payloads with `id` and `file`."""
 
 
 def class_named(lookup: ResolutionLookup, rel: str, scope_id: str, dotted: str) -> str | None:
@@ -305,7 +305,9 @@ def included_definition(lookup: ResolutionLookup, rel: str, scope_id: str,
     brings: `(None, None)` anywhere else, so the lexical reason stands. The file must see a file-scope declaration
     of the name with external linkage in a project header it includes, directly or not; exactly one project
     file must define the name with external linkage. A `static` namesake has internal linkage and is never a
-    candidate. Several definitions give no target: which one links depends on the build.
+    candidate. Several definitions give no target: which one links depends on the build. In C++ a function of
+    the same name declared in a namespace the file sees gives no target either: inside that namespace it hides
+    the global one, outside it the namespaces of the arguments' types can bring it in, and both need types.
     """
     if lookup.language(rel) not in C_FAMILY:
         return None, None
@@ -332,7 +334,13 @@ def included_definition(lookup: ResolutionLookup, rel: str, scope_id: str,
                 if target not in visible and target != rel:
                     visible.add(target)
                     stack.append(target)
-    external = [item for item in lookup.declarations_named(name) if item.get("linkage") == "external"
+    declared = lookup.declarations_named(name)
+    for item in declared:
+        if item["file"] in visible or item["file"] == rel:
+            scope = lookup.scope_record(item["file"], item["scope"])
+            if scope is not None and scope.get("kind") == "block" and scope.get("declaration"):
+                return None, "included-namespace-member"  # a namespace body is the one block with a declaration
+    external = [item for item in declared if item.get("linkage") == "external"
                 and lookup.language(item["file"]) in C_FAMILY]
     if not any(item["file"] in visible for item in external):
         return None, "included-name-undeclared"

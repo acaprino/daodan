@@ -92,29 +92,31 @@ INCLUDES = {
 
 # What a name from the translation unit reaches is not read: the lookup stops there, never at a builtin.
 OUTSIDE = "scope-unresolved"
+UNDECLARED = "included-name-undeclared"
+NAMESPACED = "included-namespace-member"
 CALLS = {
-    "util.c": {"8 twice": "util.c:10", "10 add": "util.c:6", "12 printf": OUTSIDE, "15 h.on_event": "unknown-receiver",
-               "17 fast_path": OUTSIDE, "19 log_message": "util.c:12"},
-    "main.c": {"4 LOG": OUTSIDE, "9 add": OUTSIDE, "10 SQUARE": OUTSIDE, "11 h.compute": "unknown-receiver",
-               "12 fp": "dynamic-callee", "13 run_callback": OUTSIDE, "14 strlen": OUTSIDE, "15 SQUARE": OUTSIDE,
-               "15 add": OUTSIDE, "16 platform_init": OUTSIDE},
-    "platform_win.c": {"3 add": OUTSIDE},
+    "util.c": {"8 twice": "util.c:10", "10 add": "util.c:6", "12 printf": UNDECLARED,
+               "15 h.on_event": "unknown-receiver", "17 fast_path": UNDECLARED, "19 log_message": "util.c:12"},
+    "main.c": {"4 LOG": UNDECLARED, "9 add": "util.c:6", "10 SQUARE": UNDECLARED, "11 h.compute": "unknown-receiver",
+               "12 fp": "dynamic-callee", "13 run_callback": "util.c:14", "14 strlen": UNDECLARED,
+               "15 SQUARE": UNDECLARED, "15 add": "util.c:6", "16 platform_init": "platform_win.c:3"},
+    "platform_win.c": {"3 add": "util.c:6"},
     "decoy.c": {"3 twice": "decoy.c:1", "3 twice#2": "decoy.c:1"},
-    "caller.c": {"3 twice": OUTSIDE},  # neither `static int twice` of util.c nor that of decoy.c
+    "caller.c": {"3 twice": UNDECLARED},  # neither `static int twice` of util.c nor that of decoy.c
     "util.h": {},
     "shapes.hpp": {},
-    "shapes.cpp": {"15 twice": OUTSIDE, "21 shape.area": "unknown-receiver"},
+    "shapes.cpp": {"15 twice": NAMESPACED, "21 shape.area": "unknown-receiver"},
     "main.cpp": {"8 geo.Square": OUTSIDE, "10 geo.scale": OUTSIDE, "13 geo.total": OUTSIDE,
                  "13 shape.area": "unknown-receiver", "13 circle.area": "unknown-receiver",
                  "14 twice": "import-target-missing-or-ambiguous", "14 geo.scale": OUTSIDE,
                  "14 doubled": "non-callable-binding", "15 std.printf": OUTSIDE, "15 shape.name": "unknown-receiver",
-                 "16 shapes.push_back": "unknown-receiver", "17 c_helper": OUTSIDE, "18 printf": OUTSIDE},
+                 "16 shapes.push_back": "unknown-receiver", "17 c_helper": "shapes.cpp:27", "18 printf": UNDECLARED},
 }
 # A variable assigned after its declaration has two binding sites, so a read of it is ambiguous, as in every
 # language (`n += ...` in main.c, `sum += ...` in shapes.cpp).
 READS = {
     "util.c": {"6 a#2": "non-callable-binding", "10 v#2": "non-callable-binding", "15 value": "non-callable-binding"},
-    "main.c": {"7 on_event_impl": "main.c:4", "7 add": OUTSIDE, "8 on_event_impl": "main.c:4",
+    "main.c": {"7 on_event_impl": "main.c:4", "7 add": "util.c:6", "8 on_event_impl": "main.c:4",
                "13 h": "non-callable-binding", "16 n": "ambiguous-binding"},
     "shapes.hpp": {"20 side#3": "non-callable-binding", "21 side": OUTSIDE, "30 value#2": "non-callable-binding"},
     "shapes.cpp": {"7 radius#3": "non-callable-binding", "9 radius": OUTSIDE, "13 x": OUTSIDE,
@@ -391,10 +393,8 @@ def _sources(root: Path) -> dict:
 
 
 def _contexts(root: Path) -> dict:
-    """The macros of each file's included project headers, as the snapshot would hand them to the reader."""
-    files = _sources(root)
-    known = snapshot._by_basename(files)
-    return cfamily.include_contexts(files, lambda module, importer: snapshot.resolve_module(module, importer, known))
+    """Each file's include context, as the snapshot hands it to the reader."""
+    return snapshot.c_family_contexts({rel: text.encode("utf-8") for rel, text in _sources(root).items()})
 
 
 def _parse(root: Path, rel: str, context: bool = True):
@@ -405,7 +405,8 @@ def _parse(root: Path, rel: str, context: bool = True):
 
 def test_a_macro_is_blanked_only_when_its_definitions_decorate_a_declaration():
     definitions = {"far_ptr": ["far", ""], "local": ["static"], "zextern": ["extern __declspec(dllexport)", "extern"],
-                   "zlimit": ["15"], "word": ["unsigned"], "ROUND": [None], "noop": [""], "ptr": ["char *"],
+                   "zlimit": ["15"], "word": ["unsigned"], "ROUND": [(("a",), "do { (a) %= zlimit; } while (0)")],
+                   "noop": [""], "ptr": ["char *"],
                    "api": ["__attribute__((visibility(\"default\")))", ""], "conv": ["WINAPI", ""]}
     assert cfamily.decorating(definitions) == ({"far_ptr", "local", "zextern", "noop", "api", "conv"}, {"local"})
 
@@ -420,12 +421,34 @@ def test_blanking_keeps_every_position():
 
 
 def test_each_cause_parses_whole_with_the_macros_of_its_headers():
-    """An included header's annotation macro (`local`, `far_ptr`, `zextern`), the file's own (`api_local`), a
-    comment in a continued `#define`, a null directive, the `__cplusplus` guards and a K&R definition. A statement
-    split by `#ifdef` branches still breaks the grammar."""
+    """An included header's annotation macro (`local`, `far_ptr`, `zextern`), the file's own (`api_local`), an
+    includer's (`local` in tables.h, from crc.c), a comment in a continued `#define`, a null directive, the
+    `__cplusplus` guards and a K&R definition. A statement split by `#ifdef` branches still breaks the grammar."""
     whole = {rel: _parse(MACROS, rel).semantic is not None for rel in _sources(MACROS)}
-    assert whole == {"checksum.c": True, "guard.hpp": True, "kr.c": True, "own.c": True, "split.c": False,
-                     "zdefs.h": True}
+    assert whole == {"checksum.c": True, "crc.c": True, "guard.hpp": True, "kr.c": True, "own.c": True,
+                     "split.c": False, "tables.h": True, "zdefs.h": True}
+
+
+def test_a_header_reads_with_the_macros_of_every_file_that_includes_it():
+    """A header is read inside the translation units of the files that include it, directly or not: their macros
+    reach it, for the names it uses. Includers that disagree give two definitions: the macro decorates nothing."""
+    files = {"t.h": "local int g(void);\n", "inner.h": '#include "t.h"\nlocal int k(void);\n',
+             "a.c": '#define local static\n#include "inner.h"\n', "b.c": '#include "inner.h"\n',
+             "u.h": "local int h(void);\n", "c.c": '#define local 2\n#include "u.h"\n',
+             "d.c": '#define local static\n#include "u.h"\n'}
+    contexts = cfamily.include_contexts(files, lambda module, importer: module if module in files else None)
+    assert contexts["t.h"] == contexts["inner.h"] == {"local": ["static"]}
+    assert contexts["a.c"] == contexts["b.c"] == contexts["c.c"] == {}
+    assert sorted(contexts["u.h"]["local"]) == ["2", "static"] and cfamily.decorating(contexts["u.h"])[0] == set()
+
+
+def test_the_annotation_guess_is_left_out_when_the_include_context_is_known():
+    """Without the include context an upper-case word between a return type and a name is taken for a macro.
+    With it only the macros the sources define are blanked, so a type such as `BOOL` stays."""
+    src = b"static BOOL set_pointer(HANDLE h);\nint ZEXPORT inflate(int v);\n"
+    assert cfamily.prepare(src, "c")[0] == b"static      set_pointer(HANDLE h);\nint         inflate(int v);\n"
+    assert cfamily.prepare(src, "c", {"ZEXPORT": [""]})[0] == \
+        b"static BOOL set_pointer(HANDLE h);\nint         inflate(int v);\n"
 
 
 def test_without_its_headers_a_file_using_their_macros_is_not_read():
@@ -469,10 +492,12 @@ def macro_snapshot(tmp_path_factory):
     return _built(source, source.parent / "manifest.sqlite")
 
 
-def test_the_snapshot_reads_what_needs_no_other_file(macro_snapshot):
-    """checksum.c needs the macros of zdefs.h, which the snapshot does not hand the reader yet."""
-    assert macro_snapshot["status"] == {"checksum.c": "lexical", "guard.hpp": "ast", "kr.c": "ast", "own.c": "ast",
-                                        "split.c": "lexical", "zdefs.h": "ast"}
+def test_the_snapshot_reads_each_file_with_its_include_context(macro_snapshot):
+    """checksum.c needs the macros of zdefs.h, tables.h those of crc.c: the snapshot hands both to the reader."""
+    assert macro_snapshot["status"] == {"checksum.c": "ast", "crc.c": "ast", "guard.hpp": "ast", "kr.c": "ast",
+                                        "own.c": "ast", "split.c": "lexical", "tables.h": "ast", "zdefs.h": "ast"}
+    assert _outcome(macro_snapshot, _found(macro_snapshot, "checksum.c", "call", "15 fold")) == "checksum.c:10"
+    assert macro_snapshot["exports"]["checksum.c"] == {"checksum"}
     assert _outcome(macro_snapshot, _found(macro_snapshot, "own.c", "call", "5 helper")) == "own.c:3"
     assert _outcome(macro_snapshot, _found(macro_snapshot, "kr.c", "call", "8 add")) == "kr.c:1"
     assert macro_snapshot["exports"]["own.c"] == {"run"}
@@ -481,74 +506,30 @@ def test_the_snapshot_reads_what_needs_no_other_file(macro_snapshot):
 # ---------------------------------------------------------------------------------------------------------------
 # A name from an included project header: `resolution.included_definition`, over the snapshot's tables.
 
-class TableLookup:
-    """The lookups the rule asks, answered from a snapshot's tables as `semantic_store._Resolver` would."""
-
-    def __init__(self, db):
-        self.db = db
-
-    def language(self, rel):
-        row = self.db.execute("SELECT language FROM sem_coverage WHERE file=?", (rel,)).fetchone()
-        return row[0] if row else None
-
-    def scope_record(self, rel, scope_id):
-        row = self.db.execute("SELECT payload FROM sem_scopes WHERE file=? AND id=?", (rel, scope_id)).fetchone()
-        return _unpack(row[0]) if row else None
-
-    def bindings_named(self, rel, scope_id, name):
-        return [(kind, identity if kind == "declaration" else _unpack(blob)) for kind, identity, blob in self.db.execute(
-            "SELECT kind, identity, payload FROM sem_bindings WHERE file=? AND scope=? AND name=? ORDER BY rowid",
-            (rel, scope_id, name))]
-
-    def targets(self, rel, module):
-        return [row[0] for row in self.db.execute(
-            "SELECT target FROM sem_modules WHERE file=? AND module=? ORDER BY target", (rel, module))]
-
-    def declarations_named(self, name):
-        return [_unpack(row[0]) for row in self.db.execute(
-            "SELECT payload FROM sem_declarations WHERE name=? AND kind='function' ORDER BY id", (name,))]
-
-
 def _rule(source: Path) -> dict:
-    """`{file: {"LINE NAME": outcome}}` of the rule on every unresolved reference it applies to."""
-    manifest = source.parent / f"{source.name}.sqlite"
-    snapshot.write_snapshot(source, manifest)
-    db = sqlite3.connect(manifest)
-    try:
-        lookup, out, rows = TableLookup(db), {}, []
-        for rel, l1, blob in db.execute("SELECT file, l1, payload FROM sem_references WHERE resolution='unresolved' "
-                                        "ORDER BY file, l0, c0"):
-            rows.append((rel, l1, _unpack(blob)))
-        for rel, line, item in rows:
-            # Where the call site in both owners asks the rule: the lexical walk stopped at a blocked scope.
-            if len(item["parts"]) != 1 or item.get("reason") != "scope-unresolved":
+    """`{file: {"LINE NAME": outcome}}` of every single name the snapshot answered with the include rule."""
+    data = _built(source, source.parent / f"{source.name}.sqlite")
+    out = {}
+    for rel, references in data["references"].items():
+        for item in references:
+            if len(item["parts"]) != 1 or not (item.get("reason") or "").startswith("included-"):
                 continue
-            identity, reason = resolution.included_definition(lookup, rel, item["scope"], item["parts"][0])
-            if reason is None:
-                continue
-            if identity is not None:
-                found = lookup.declarations_named(item["parts"][0])
-                target = next(d for d in found if d["id"] == identity)
-                reason = f"{target['file']}:{target['name_span'][0]}"
-            key = f"{line} {item['parts'][0]}"
+            key = f"{item['span'][2]} {item['parts'][0]}"
             key = key if key not in out.setdefault(rel, {}) else f"{key}#2"
-            out[rel][key] = reason
-    finally:
-        db.close()
-    return out
+            out[rel][key] = _outcome(data, item)
+    return {rel: keys for rel, keys in out.items() if keys}
 
 
 @pytest.fixture(scope="module")
 def ruled(tmp_path_factory):
     out = {}
-    for root in (LINK, FIXTURES / "c", FIXTURES / "cpp"):
+    for root in (LINK, FIXTURES / "c", FIXTURES / "cpp", FIXTURES / "namespaces"):
         source = tmp_path_factory.mktemp(root.name) / root.name
         shutil.copytree(root, source)
         out[root.name] = _rule(source)
     return out
 
 
-UNDECLARED = "included-name-undeclared"
 RULED = {
     "link": {"main.c": {"5 add": "math.c:3", "6 deep": "deep.c:1", "7 helper": "included-definition-ambiguous",
                         "8 quiet": "included-definition-missing", "9 hidden": UNDECLARED, "10 printf": UNDECLARED}},
@@ -557,12 +538,154 @@ RULED = {
                      "15 add": "util.c:6", "16 platform_init": "platform_win.c:3"},
           "util.c": {"12 printf": UNDECLARED, "17 fast_path": UNDECLARED},
           "platform_win.c": {"3 add": "util.c:6"}, "caller.c": {"3 twice": UNDECLARED}},
-    # A name in a namespace, a member and a qualified call are no file-scope names: the rule does not apply.
+    # A member and a qualified call are no file-scope names: the rule does not apply. A function of the same
+    # name in a namespace the file sees can be what the call reaches: no target.
     "cpp": {"main.cpp": {"17 c_helper": "shapes.cpp:27", "18 printf": UNDECLARED},
-            "shapes.cpp": {"15 twice": UNDECLARED}},
+            "shapes.cpp": {"15 twice": NAMESPACED}},
+    # Inside `namespace geo`, geo::area hides ::area. Outside it, geo::area and geo::size can still be reached
+    # through the namespaces of the arguments' types, which a lexical reader does not know.
+    "namespaces": {"main.cpp": {"5 area": NAMESPACED, "8 area": NAMESPACED, "9 size": NAMESPACED,
+                                "10 square": "area.cpp:4"}},
 }
 
 
 @pytest.mark.parametrize("project", sorted(RULED))
 def test_included_name_reaches_its_one_external_definition(ruled, project):
     assert ruled[project] == RULED[project]
+
+
+# ---------------------------------------------------------------------------
+# `fixtures/clang-reader/annotations`: the sources of `benchmarks/project-model/fixtures/sys-c-macro-annotations`,
+# a C library in the declarator style of zlib (`ZEXPORT`, `ZEXTERN`, `FAR`, `local`, `OF((args))`, K&R
+# definitions) and its C++ wrapper.
+# ---------------------------------------------------------------------------
+
+ANNOTATED = FIXTURES / "annotations"
+
+
+def _declared_functions(result) -> list:
+    """`(qualified name, name line, name column, linkage, prototype)` of every function, in source order."""
+    return [(d["qualified_name"], *d["name_span"][:2], d.get("linkage"), bool(d.get("contract")))
+            for d in result.semantic["declarations"] if d["kind"] == "function"]
+
+
+def _calls(result) -> list:
+    return [(".".join(r["parts"]), r["span"][0], r.get("reason")) for r in result.semantic["references"]
+            if r["kind"] == "call"]
+
+
+def test_a_header_with_extern_c_guards_stays_c_and_a_header_with_namespaces_is_cpp():
+    assert {rel: detect_language(Path(rel), text) for rel, text in _sources(ANNOTATED).items()} == {
+        "c/zmini.c": "c", "c/zutil.h": "c", "include/zmconf.h": "c", "include/zmini.h": "c",
+        "cpp/checksum.cpp": "cpp", "cpp/checksum.hpp": "cpp", "cpp/detail.h": "cpp"}
+
+
+def test_a_one_parameter_macro_that_expands_to_its_argument_or_to_no_parameters_wraps_a_prototype():
+    """`#define OF(args) args`, and `__P(protos)` that is `protos` or `()` for compilers without prototypes."""
+    definitions = cfamily.macro_definitions(_sources(ANNOTATED)["include/zmconf.h"])
+    assert cfamily.decorating(definitions) == ({"ZMCONF_H", "ZEXPORT", "ZEXTERN", "FAR", "local"}, {"local"})
+    assert cfamily.wrappers(definitions) == {"OF"}
+    assert cfamily.wrappers(cfamily.macro_definitions(
+        "#ifdef __STDC__\n#define __P(protos) protos\n#else\n#define __P(protos) ()\n#endif\n"
+        "#define TWICE(x) ((x) * 2)\n#define FIRST(a, b) a\n#define SAME(x) x\n#define SAME(x) (x)\n")) == {"__P"}
+
+
+def test_a_wrapper_call_keeps_its_argument_and_every_position():
+    src = (b"int f OF((int a,\n           int b));\n#define OF(args) args\n"
+           b"int g OF((const char *s /* ) */, char c = ')'));\nint h(int OF_x) { return OF_x; }\n")
+    macros = cfamily.macro_definitions("#define OF(args) args\n")
+    out = cfamily.prepare(src, "c", macros)[0]
+    assert out == (b"int f    (int a,\n           int b) ;\n#define OF(args) args\n"
+                   b"int g    (const char *s /* ) */, char c = ')') ;\nint h(int OF_x) { return OF_x; }\n")
+
+
+def test_every_annotated_file_parses_whole_with_the_macros_of_its_headers():
+    assert {rel: _parse(ANNOTATED, rel).semantic is not None for rel in _sources(ANNOTATED)} == dict.fromkeys(
+        _sources(ANNOTATED), True)
+    # Without its headers, what uses their macros breaks: the reader alone cannot know `local` or `ZEXPORT`.
+    assert {rel for rel in _sources(ANNOTATED) if _parse(ANNOTATED, rel, context=False).semantic is None} == {
+        "c/zmini.c", "include/zmini.h"}
+
+
+def test_annotated_prototypes_and_kr_definitions_declare_their_functions():
+    assert _declared_functions(_parse(ANNOTATED, "include/zmini.h")) == [
+        ("zm_adler", 13, 22, "external", True), ("zm_version", 14, 29, "external", True)]
+    zmini = _parse(ANNOTATED, "c/zmini.c")
+    assert _declared_functions(zmini) == [
+        ("mod_base", 4, 16, "internal", True), ("mod_base", 6, 16, "internal", False),
+        ("zm_adler", 12, 14, "external", False), ("zm_version", 27, 21, "external", False)]
+    assert [(f.name, f.visibility) for f in zmini.functions] == [
+        ("mod_base", "private"), ("zm_adler", "public"), ("zm_version", "public")]
+    assert [e["exported"] for e in zmini.semantic["exports"]] == ["zm_adler", "zm_version"]
+    assert {"x", "adler", "buf", "len"} <= {d["name"] for d in zmini.semantic["declarations"]
+                                           if d["kind"] == "parameter"}
+    # A wrapped parameter list is no call, and neither is a macro used as a value.
+    assert _calls(zmini) == [("mod_base", 21, None), ("mod_base", 22, None)]
+    assert _calls(_parse(ANNOTATED, "include/zmini.h")) == []
+
+
+def test_the_cpp_wrapper_declares_its_namespaced_functions_and_calls_the_c_api():
+    assert _declared_functions(_parse(ANNOTATED, "cpp/detail.h")) == [("zminipp.detail.data_of", 9, 19, None, False)]
+    assert _declared_functions(_parse(ANNOTATED, "cpp/checksum.hpp")) == [("zminipp.adler32", 9, 14, None, True)]
+    checksum = _parse(ANNOTATED, "cpp/checksum.cpp")
+    assert _declared_functions(checksum) == [("zminipp.adler32", 8, 14, None, False)]
+    # Casts are conversions, not calls.
+    assert _calls(checksum) == [("detail.data_of", 9, None), ("zm_adler", 10, None), ("bytes.size", 10, None)]
+    # Without the build's include paths an angle include is never taken for a project header: `<zmini.h>` is
+    # include/zmini.h only because CMake puts include/ on the path.
+    assert [(i.module, i.is_internal) for i in checksum.imports] == [
+        ("checksum.hpp", True), ("detail.h", True), ("<zmini.h>", False)]
+
+
+@pytest.fixture(scope="module")
+def annotated_snapshot(tmp_path_factory):
+    source = tmp_path_factory.mktemp("annotations") / "annotations"
+    shutil.copytree(ANNOTATED, source)
+    return _built(source, source.parent / "manifest.sqlite")
+
+
+def test_the_snapshot_reads_every_annotated_file(annotated_snapshot):
+    assert set(annotated_snapshot["status"].values()) == {"ast"}
+    assert _outcome(annotated_snapshot, _found(annotated_snapshot, "c/zmini.c", "call", "21 mod_base")) == \
+        "c/zmini.c:6"
+    # `<zmini.h>` is an angle include, never a project header without the build's include paths: the C API the
+    # wrapper calls stays without a target.
+    assert _outcome(annotated_snapshot, _found(annotated_snapshot, "cpp/checksum.cpp", "call", "10 zm_adler")) == \
+        UNDECLARED
+
+
+def test_a_changed_header_reparses_the_files_whose_context_it_changes(tmp_path):
+    """The reuse key of a C or C++ file holds its include context: a header that changes a macro the file uses
+    reparses the file, the others are reused."""
+    source = tmp_path / "macros"
+    shutil.copytree(MACROS, source)
+    first = snapshot.write_snapshot(source, tmp_path / "first.sqlite")
+    header = source / "zdefs.h"
+    header.write_bytes(header.read_bytes().replace(b"#define local static", b"#define local"))
+    with open_snapshot(tmp_path / "first.sqlite") as previous:
+        second = snapshot.write_snapshot(source, tmp_path / "second.sqlite", previous=previous)
+    # zdefs.h changed; checksum.c, crc.c and tables.h use its `local`; split.c does not parse, so it is never kept.
+    assert first["metrics"]["cache_hits"] == 0 and second["metrics"]["cache_hits"] == 3
+    db = sqlite3.connect(tmp_path / "second.sqlite")
+    try:
+        exported = {name for (name,) in db.execute("SELECT name FROM sem_exports WHERE file='checksum.c'")}
+    finally:
+        db.close()
+    assert exported == {"checksum", "fold"}  # `local` no longer makes fold static
+
+
+def test_the_index_and_the_store_answer_the_rule_alike(tmp_path):
+    """`semantic_index` asks the same rule as the snapshot's store, over the manifest it builds."""
+    import semantic_index
+
+    for root in (LINK, FIXTURES / "namespaces"):
+        source = tmp_path / root.name
+        shutil.copytree(root, source)
+        index = semantic_index.build_semantic_index(snapshot.build_manifest(source))
+        found = {}
+        for item in index["references"]:
+            if len(item["parts"]) == 1 and (item.get("reason") or "").startswith("included-"):
+                target = index["declarations"].get(item["target_id"]) if item["target_id"] else None
+                outcome = f"{target['file']}:{target['name_span'][0]}" if target else item["reason"]
+                found.setdefault(item["file"], {})[f"{item['span'][2]} {item['parts'][0]}"] = outcome
+        assert found == RULED[root.name], root.name

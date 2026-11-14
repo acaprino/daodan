@@ -525,8 +525,12 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
 
 
 def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None,
-               *, parse_result=None) -> dict:
-    """One manifest row, parsed from the same bytes whose identity it records."""
+               *, parse_result=None, macros: dict | None = None) -> dict:
+    """One manifest row, parsed from the same bytes whose identity it records.
+
+    `macros` is a C or C++ file's include context (`c_family_contexts`): the entry records its key, because the
+    same bytes read with other macros give other facts.
+    """
     if mtime is None or data is None:
         stat = path.stat()
         mtime = round(stat.st_mtime, 3) if mtime is None else mtime
@@ -548,6 +552,8 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
         "parser_notes": [],
         "status": "file-level",
     }
+    if macros is not None and parse_result is None:
+        entry["macro_context"] = context_key(macros)
     if path.suffix.lower() in UNREAD_STYLESHEETS:
         entry["parser_notes"] = [UNREAD_STYLESHEETS[path.suffix.lower()]]
     if language and len(data) > MAX_PARSE_BYTES:
@@ -556,7 +562,9 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
     elif language:
         try:
             data.decode("utf-8")  # Lossy decoding cannot supply precise source spans.
-            result = parse_result if parse_result is not None else get_adapter(language).parse(text, str(path))
+            adapter = get_adapter(language) if parse_result is None else None
+            result = (parse_result if adapter is None else adapter.parse(text, str(path)) if macros is None
+                      else adapter.parse(text, str(path), macros=macros))
         except Exception as exc:  # a parser failure degrades to a file-level entry
             entry["status"] = "parse-error"
             entry["parser_notes"] = [f"{type(exc).__name__}: {exc}"]
@@ -650,7 +658,8 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
     metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
     perimeter = Perimeter(target)
     supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
-    pending: list[tuple[str, Path, bytes, float, object]] = []
+    pending: list[tuple[str, Path, bytes, float, object, dict | None]] = []
+    deferred: list[tuple[str, Path, bytes, float, object]] = []
     ordered_rels: list[str] = []
     reused_entries: dict[str, dict] = {}
     for path in iter_files(target, perimeter):
@@ -673,6 +682,10 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
             if source_observations is not None:
                 source_observations[rel] = data
             mtime = round(st.st_mtime, 3)
+            if rel.lower().endswith(_C_FAMILY_SUFFIXES):
+                deferred.append((rel, path, data, mtime, parsed))
+                ordered_rels.append(rel)
+                continue
             old = old_files.get(rel)
             raw_hash = hashlib.sha256(data).hexdigest()
             if (isinstance(old, dict) and old.get("raw_hash") == raw_hash
@@ -684,18 +697,32 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
                 metrics["cache_hits"] += 1
                 reused_entries[rel] = entry
             else:
-                pending.append((rel, path, data, mtime, parsed))
+                pending.append((rel, path, data, mtime, parsed, None))
             ordered_rels.append(rel)
         except OSError:
             continue
+    contexts = c_family_contexts({rel: data for rel, _, data, _, _ in deferred})
+    for rel, path, data, mtime, parsed in deferred:
+        old, key = old_files.get(rel), context_key(contexts[rel])
+        if (isinstance(old, dict) and old.get("raw_hash") == hashlib.sha256(data).hexdigest()
+                and old.get("macro_context") == key
+                and old.get("parser_profile") == parser_profile(path, old.get("language"))
+                and old.get("status") in {"parsed", "file-level", "parse-skipped"}):
+            entry = copy.deepcopy(old)
+            entry["size"] = len(data)
+            entry["mtime"] = mtime
+            metrics["cache_hits"] += 1
+            reused_entries[rel] = entry
+        else:
+            pending.append((rel, path, data, mtime, parsed, contexts[rel]))
 
     parsed_entries: dict[str, dict] = {}
     if len(pending) >= 8:
         workers = min(8, (os.cpu_count() or 2))
         with ThreadPoolExecutor(max_workers=workers) as pool:
             futures = [
-                (rel, parsed is None, pool.submit(file_entry, path, data, mtime, parse_result=parsed))
-                for rel, path, data, mtime, parsed in pending
+                (rel, parsed is None, pool.submit(file_entry, path, data, mtime, parse_result=parsed, macros=macros))
+                for rel, path, data, mtime, parsed, macros in pending
             ]
             for rel, needs_parse, fut in futures:
                 try:
@@ -706,9 +733,9 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
                     metrics["parsed_files"] += 1
                 parsed_entries[rel] = entry
     else:
-        for rel, path, data, mtime, parsed in pending:
+        for rel, path, data, mtime, parsed, macros in pending:
             try:
-                entry = file_entry(path, data, mtime, parse_result=parsed)
+                entry = file_entry(path, data, mtime, parse_result=parsed, macros=macros)
             except OSError:
                 continue
             if entry["status"] in {"parsed", "parse-error"} and parsed is None:
@@ -783,6 +810,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
     verified_headers = previous.verified_reusable_headers() if sqlite_fast_reuse else {}
     exact_reused_paths: list[str] = []
     touched_reused_headers: dict[str, dict] = {}
+    deferred: list[tuple[Path, str, float, bytes, object]] = []
     try:
         with SnapshotWriter(temporary, format) as writer:
             if format == "sqlite":
@@ -808,6 +836,10 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                     progress("reading", count + 1)
                 rel = relative_to_root(path, root)
                 mtime = round(st.st_mtime, 3)
+                if rel.lower().endswith(_C_FAMILY_SUFFIXES):
+                    deferred.append((path, rel, mtime, data, parsed))
+                    del data
+                    continue
                 raw_digest = hashlib.sha256(data).hexdigest()
                 if sqlite_fast_reuse and rel in verified_headers:
                     old_h = verified_headers[rel]
@@ -836,6 +868,34 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                 else:
                     del old
                     entry = file_entry(path, data, mtime, parse_result=parsed)
+                    if entry["status"] in {"parsed", "parse-error"} and parsed is None:
+                        metrics["parsed_files"] += 1
+                writer.put_file(rel, entry)
+                if format == "sqlite":
+                    from semantic_store import observed_coverage
+                    from snapshot_store import _pack
+                    writer.connection.execute("INSERT INTO observed_coverage VALUES(?,?)",
+                                              (rel, _pack(observed_coverage(entry, data))))
+                del entry, data
+                count += 1
+                if progress is not None:
+                    progress("parsing", count)
+            contexts = c_family_contexts({rel: data for _, rel, _, data, _ in deferred})
+            deferred.reverse()  # popped from the end, in reading order, each source released once written
+            while deferred:
+                path, rel, mtime, data, parsed = deferred.pop()
+                key = context_key(contexts[rel])
+                old = previous.get_file(rel) if reusable else None
+                if (old is not None and old.get("raw_hash") == hashlib.sha256(data).hexdigest()
+                        and old.get("macro_context") == key
+                        and old.get("parser_profile") == parser_profile(path, old.get("language"))
+                        and old.get("status") in {"parsed", "file-level", "parse-skipped"}):
+                    old["size"], old["mtime"] = len(data), mtime
+                    entry = old
+                    metrics["cache_hits"] += 1
+                else:
+                    del old
+                    entry = file_entry(path, data, mtime, parse_result=parsed, macros=contexts[rel])
                     if entry["status"] in {"parsed", "parse-error"} and parsed is None:
                         metrics["parsed_files"] += 1
                 writer.put_file(rel, entry)
@@ -1332,6 +1392,24 @@ _PACKAGE_FILES = ("__init__.py", "index.ts", "index.tsx", "index.js", "index.jsx
 # means `app/static/app.css`, so none of this is tried for any other importer.
 _STYLESHEET_SUFFIXES = (".css", ".scss", ".sass", ".less", ".pcss", ".postcss")
 _C_FAMILY_SUFFIXES = (".c", ".h", ".cc", ".cpp", ".cxx", ".hpp", ".hh", ".hxx")
+
+
+def c_family_contexts(sources: dict[str, bytes]) -> dict[str, dict]:
+    """Each C or C++ file's include context: the macros of the snapshot's files it shares a translation unit with,
+    its includes resolved as the snapshot resolves them (see `languages.cfamily.include_contexts`)."""
+    if not sources:
+        return {}
+    from languages import cfamily
+
+    texts = {rel: data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
+             for rel, data in sources.items()}
+    known = _by_basename(texts)
+    return cfamily.include_contexts(texts, lambda module, importer: resolve_module(module, importer, known))
+
+
+def context_key(macros: dict) -> str:
+    """The identity of an include context, part of a C or C++ file's reuse key."""
+    return hashlib.sha256(json.dumps(macros, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()[:16]
 
 
 def _by_basename(paths) -> dict[str, list[str]]:

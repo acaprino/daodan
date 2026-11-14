@@ -6,16 +6,20 @@ methods defined in their body, namespaces qualifying what they hold (`geo.Circle
 its class is a function named `Circle.area`, as Go names a method by its receiver. A prototype has no body, so
 it is no symbol of the outline; the semantic facts declare it, with `contract`.
 
-Which headers are C++ is decided by `languages.detect_language`. Annotation macros (`int ZEXPORT inflate(`,
-`class TINYXML2_LIB XMLNode {`) break the grammar, so they are blanked before parsing, positions unchanged.
-Any other macro the grammar cannot read leaves a syntax error: the outline keeps what parses and the file gets
-no semantic facts, as for every language.
+Which headers are C++ is decided by `languages.detect_language`. A macro the grammar cannot read is blanked
+before parsing, positions unchanged, when the sources define it as a decoration (`#define local static`) or as a
+prototype wrapper (`OF((args))`): the file's own macros and, given its include context, those of the files it
+shares a translation unit with (`include_contexts`). Without that context an upper-case word where an annotation
+stands (`int ZEXPORT inflate(`, `class TINYXML2_LIB XMLNode {`) is taken for one. Any other macro the grammar
+cannot read leaves a syntax error: the outline keeps what parses and the file gets no semantic facts, as for
+every language.
 """
 
 from __future__ import annotations
 
+import bisect
 import re
-from typing import Any
+from typing import Any, Union
 
 from ._treesitter import (
     check_syntax_errors,
@@ -30,10 +34,11 @@ from .comments import CommentToken, extract_c_style_comments
 from .semantic import c_callable_name, c_declarator, c_is_static, c_semantics, cpp_semantics
 
 __all__ = ["blank_annotations", "c_adapter", "cpp_adapter", "decorating", "include_contexts", "macro_definitions",
-           "prepare"]
+           "prepare", "wrappers"]
 
-# An upper-case word between `class` and the name, or, on a line that starts a top-level definition, between
-# the return type and the name, can only be a macro.
+# Without the include context: an upper-case word between `class` and the name, or, on a line that starts a
+# top-level definition, between the return type and the name, is taken for a macro. A type named so (`BOOL`) is
+# what this guess gets wrong.
 ANNOTATIONS = (
     re.compile(rb"\b(?:class|struct|union)\s+([A-Z][A-Z0-9_]*)\s+(?=[A-Za-z_]\w*\s*(?:final\s*)?[:{])"),
     re.compile(rb"(?m)^[A-Za-z_][\w \t*]*?[\w*][ \t]+([A-Z][A-Z0-9_]*)[ \t]+(?=\**[ \t]*[A-Za-z_]\w*[ \t]*\()"),
@@ -41,6 +46,7 @@ ANNOTATIONS = (
 _RECORD_KINDS = {"struct_specifier": "struct", "union_specifier": "union", "class_specifier": "class",
                  "enum_specifier": "enum"}
 _INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*([<"])([^>"\n]+)[>"]', re.MULTILINE)
+_WORD_RE = re.compile(r"[A-Za-z_]\w*")
 
 _FS_RE = re.compile(r"\b(?:fopen|freopen|fread|fwrite|fclose|open|openat|creat|unlink|remove|rename|mkdir|"
                     r"rmdir|opendir|readdir|stat|lstat|fstat)\s*\(")
@@ -80,12 +86,21 @@ _CPLUSPLUS_RE = re.compile(rb"[ \t]*#[ \t]*(?:(?P<pos>ifdef[ \t]+__cplusplus|if[
 _EXTERN_C_BRACE_RE = re.compile(rb'[ \t]*(?:extern[ \t]+"C"[ \t]*\{|\})[ \t]*$')
 
 
-def macro_definitions(content: str) -> dict[str, list[str | None]]:
-    """Every `#define` of a source: the name to each body, comments left out, None for a function-like one."""
-    out: dict[str, list[str | None]] = {}
+# A macro definition: the body of an object-like one, `(parameters, body)` of a function-like one.
+Definition = Union[str, tuple[tuple[str, ...], str]]
+
+
+def macro_definitions(content: str) -> dict[str, list[Definition]]:
+    """Every `#define` of a source: the name to each definition, comments left out."""
+    out: dict[str, list[Definition]] = {}
     for m in _DEFINE_RE.finditer(content):
-        body = None if m.group(2) else _COMMENT_IN_RE.sub(" ", m.group(3).replace("\\\n", " ")).strip()
-        out.setdefault(m.group(1), []).append(body)
+        text = " ".join(_COMMENT_IN_RE.sub(" ", m.group(3).replace("\\\n", " ")).split())
+        if m.group(2):
+            parameters, _, body = text.partition(")")
+            out.setdefault(m.group(1), []).append(
+                (tuple(p.strip() for p in parameters.split(",") if p.strip()), body.strip()))
+        else:
+            out.setdefault(m.group(1), []).append(text)
     return out
 
 
@@ -114,7 +129,7 @@ def _shape(body: str) -> str:
     return "specifiers" if kinds == {"specifier"} else "words"
 
 
-def decorating(definitions: dict[str, list[str | None]]) -> tuple[set[str], set[str]]:
+def decorating(definitions: dict[str, list[Definition]]) -> tuple[set[str], set[str]]:
     """The macros that only decorate a declaration, and those of them that can make it `static`.
 
     A macro decorates when no definition is function-like or an expression and at least one expands to nothing
@@ -123,7 +138,7 @@ def decorating(definitions: dict[str, list[str | None]]) -> tuple[set[str], set[
     """
     names, statics = set(), set()
     for name, bodies in definitions.items():
-        if any(body is None for body in bodies):
+        if any(not isinstance(body, str) for body in bodies):
             continue
         shapes = {_shape(body) for body in bodies}
         if "expression" in shapes or not shapes & {"empty", "specifiers"}:
@@ -134,29 +149,58 @@ def decorating(definitions: dict[str, list[str | None]]) -> tuple[set[str], set[
     return names, statics
 
 
-def include_contexts(files: dict[str, str], resolve) -> dict[str, dict[str, list[str | None]]]:
-    """For each file, the macro definitions of the project headers it includes, directly or not.
+def wrappers(definitions: dict[str, list[Definition]]) -> set[str]:
+    """The macros that wrap a prototype's parameter list: `#define OF(args) args`.
 
-    `files` maps project paths to their text; `resolve(module, importer)` maps an `#include "module"` to a
-    project path or None, as the snapshot resolves includes.
+    Every definition is function-like with one parameter and expands to its argument or, for compilers without
+    prototypes, to `()`; at least one expands to its argument. A call of one reads as its argument.
+    """
+    names = set()
+    for name, bodies in definitions.items():
+        shapes = {"other" if isinstance(body, str) or len(body[0]) != 1 else
+                  "argument" if body[1] == body[0][0] else "empty" if body[1] == "()" else "other" for body in bodies}
+        if "argument" in shapes and "other" not in shapes:
+            names.add(name)
+    return names
+
+
+def include_contexts(files: dict[str, str], resolve) -> dict[str, dict[str, list[Definition]]]:
+    """For each file, the macro definitions other project files give it, for the names its text uses.
+
+    A file sees the macros of every file it shares a translation unit with: what it includes, directly or not,
+    and every file that includes it, with all they include. `files` maps project paths to their text;
+    `resolve(module, importer)` maps an `#include "module"` to a project path or None, as the snapshot resolves
+    includes. A file's own macros are not in its context: `prepare` reads them from its text.
     """
     definitions = {rel: macro_definitions(text) for rel, text in files.items()}
-    includes = {rel: [target for target in (resolve(m.group(2), rel) for m in _INCLUDE_RE.finditer(text)
-                                            if m.group(1) == '"') if target in files]
-                for rel, text in files.items()}
-    out = {}
+    includers: dict[str, list[str]] = {rel: [] for rel in files}
+    for rel, text in files.items():
+        for m in _INCLUDE_RE.finditer(text):
+            target = resolve(m.group(2), rel) if m.group(1) == '"' else None
+            if target in includers and target != rel:
+                includers[target].append(rel)
+    # `above[rel]`: rel and every file that includes it, directly or not. Two files share a translation unit
+    # when some file is above both.
+    above = {}
     for rel in files:
-        seen, stack = [], list(includes[rel])
+        seen, stack = {rel}, list(includers[rel])
         while stack:
             item = stack.pop()
-            if item in seen or item == rel:
-                continue
-            seen.append(item)
-            stack.extend(includes[item])
-        context: dict[str, list[str | None]] = {}
-        for item in sorted(seen):
-            for name, bodies in definitions[item].items():
-                context.setdefault(name, []).extend(bodies)
+            if item not in seen:
+                seen.add(item)
+                stack.extend(includers[item])
+        above[rel] = seen
+    defined: dict[str, list[str]] = {}
+    for rel in sorted(definitions):
+        for name in definitions[rel]:
+            defined.setdefault(name, []).append(rel)
+    out = {}
+    for rel, text in files.items():
+        context: dict[str, list[Definition]] = {}
+        for name in sorted(set(_WORD_RE.findall(text)) & defined.keys()):
+            for item in defined[name]:
+                if item != rel and not above[rel].isdisjoint(above[item]):
+                    context.setdefault(name, []).extend(definitions[item][name])
         out[rel] = context
     return out
 
@@ -181,12 +225,15 @@ def _directives(lines: list[bytes]) -> list[tuple[int, int]]:
 def prepare(src: bytes, language: str, macros: dict | None = None) -> tuple[bytes, list[int]]:
     """The bytes tree-sitter reads, and where a blanked macro could have made a declaration `static`.
 
-    Each change keeps lengths and line breaks: annotation macros of the shape `int ZEXPORT f(`; comments inside
-    a continued `#define`; a null directive (`#` alone); in C the `#ifdef __cplusplus` branches, which a C
-    compiler never reads, and in C++ the `extern "C" {` and `}` those branches open and close; every macro the
-    file or its included headers (`macros`) define as a decoration (see `decorating`).
+    Each change keeps lengths and line breaks. Without the include context (`macros` None), the annotation
+    macros of the shape `int ZEXPORT f(`. Comments inside a continued `#define`, and a null directive (`#`
+    alone). In C the `#ifdef __cplusplus` branches, which a C compiler never reads; in C++ the `extern "C" {`
+    and `}` those branches open and close. Every macro the file or its context (`macros`) defines as a
+    decoration (see `decorating`). The name and the parentheses of a call of a prototype wrapper (see
+    `wrappers`), so `f OF((int a))` reads `f    (int a) `.
     """
-    src = blank_annotations(src)
+    if macros is None:
+        src = blank_annotations(src)
     lines = src.split(b"\n")
     directives = _directives(lines)
     in_directive = set()
@@ -225,8 +272,9 @@ def prepare(src: bytes, language: str, macros: dict | None = None) -> tuple[byte
             blanked.update(range(start + 1, end))
     for index in blanked:
         lines[index] = _spaces(lines[index])
-    names, statics = decorating({**(macros or {}), **{k: (macros or {}).get(k, []) + v for k, v in
-                                                     macro_definitions(src.decode("utf-8", "replace")).items()}})
+    definitions = {**(macros or {}), **{k: (macros or {}).get(k, []) + v for k, v in
+                                        macro_definitions(src.decode("utf-8", "replace")).items()}}
+    names, statics = decorating(definitions)
     offsets: list[int] = []
     if names:
         pattern = re.compile(rb"(?<![\w#])(?:" + b"|".join(re.escape(n.encode()) for n in sorted(names)) + rb")(?!\w)")
@@ -239,7 +287,57 @@ def prepare(src: bytes, language: str, macros: dict | None = None) -> tuple[byte
                     return b" " * len(m.group(0))
                 lines[index] = pattern.sub(blank, line)
             position += len(line) + 1
-    return b"\n".join(lines), offsets
+    out = b"\n".join(lines)
+    wrapping = wrappers(definitions)
+    if wrapping:
+        out = _unwrap(out, wrapping, in_directive | blanked)
+    return out, offsets
+
+
+def _unwrap(src: bytes, names: set[str], skipped: set[int]) -> bytes:
+    """`src` with each call of a wrapper read as its argument: the name and its two parentheses blanked."""
+    literals = [m.span() for m in _STRING_OR_COMMENT_RE.finditer(src)]
+    starts = [0] + [i + 1 for i, b in enumerate(src) if b == 10]
+    out = bytearray(src)
+    pattern = re.compile(rb"(?<![\w#])(?:" + b"|".join(re.escape(n.encode()) for n in sorted(names)) + rb")(?!\w)")
+    for m in pattern.finditer(src):
+        if bisect.bisect_right(starts, m.start()) - 1 in skipped or _inside(literals, m.start()):
+            continue
+        opening = m.end()
+        while opening < len(src) and src[opening] in b" \t\r\n":
+            opening += 1
+        closing = _matching(src, opening) if opening < len(src) and src[opening] == 40 else None
+        if closing is None:
+            continue
+        out[m.start():m.end()] = b" " * (m.end() - m.start())
+        out[opening] = out[closing] = 32
+    return bytes(out)
+
+
+def _inside(spans: list[tuple[int, int]], offset: int) -> bool:
+    """Whether `offset` falls in one of the sorted, disjoint `spans`."""
+    index = bisect.bisect_right(spans, (offset, float("inf"))) - 1
+    return index >= 0 and spans[index][0] <= offset < spans[index][1]
+
+
+def _matching(src: bytes, opening: int) -> int | None:
+    """The offset of the parenthesis that closes the one at `opening`, strings and comments skipped."""
+    depth, index = 0, opening
+    while index < len(src):
+        byte = src[index]
+        if byte in b"\"'/":
+            literal = _STRING_OR_COMMENT_RE.match(src, index)
+            if literal is not None and literal.end() > index:
+                index = literal.end()
+                continue
+        elif byte == 40:
+            depth += 1
+        elif byte == 41:
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    return None
 
 
 def _scan_external_calls(content: str) -> list[ExternalCallInfo]:
