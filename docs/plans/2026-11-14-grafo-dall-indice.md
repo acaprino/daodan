@@ -196,6 +196,10 @@ Per ogni linguaggio: nella voce di `meta`, in `edge_view.coverage` e negli strum
 6. **Cosa è un modulo.** Nei repository veri ci sono unità che oggi nessuno riporta: codice senza build file, chart Helm, moduli buf, target Xcode.
    - Consiglio: sono unità come le altre, con il loro tipo; il codice senza build file è un'unità `source-tree` senza nome.
    - Sei d'accordo?
+   - **Risposta del proprietario (15 novembre 2026):** chart Helm, moduli buf e target Xcode non sono moduli. Misurato sul corpus: 2, 2 e 1 unità attese su 447.
+     - Un'unità è ciò su cui gira un indicizzatore. Un chart Helm non ha codice da indicizzare: resta nella pre-mappa come fatto di deploy. Un modulo buf è un contratto da cui più linguaggi generano codice: resta come punto di connessione fra unità, non come unità.
+     - Un target Xcode è l'unità di build del codice Swift, che Daodan oggi non indicizza: la scelta si riapre con Swift.
+     - Il codice senza build file (16 unità attese su 447) resta un'unità `source-tree`: senza, nessun indicizzatore lo legge e il grafo lo perde.
 
 ## 7. Task
 
