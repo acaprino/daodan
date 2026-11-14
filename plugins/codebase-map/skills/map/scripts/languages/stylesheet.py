@@ -30,8 +30,9 @@ does: a browser reads it as an invalid token and drops the declaration, rule or
 media block it sits in, and so does this parser. Nesting in plain CSS gives `&`
 the meaning of `:is(<parent list>)`, where Sass substitutes each parent in
 turn. SCSS alone has nested properties, LESS alone detached rulesets and
-guards. Indented Sass (`.sass`) has no braces and is not handled here; it stays
-a file-level entry in the manifest.
+guards. Indented Sass (`.sass`) is SCSS written with indentation: each line is
+given the brace or semicolon its indentation implies, on that same line, so
+every fact keeps its line, and the result is read as SCSS.
 """
 
 from __future__ import annotations
@@ -93,10 +94,12 @@ _URL_RE = re.compile(r"url\([^)]*\)", re.IGNORECASE)
 
 
 def dialect_for(file_path: str) -> str:
-    """"css", "scss" or "less", from a file name."""
+    """"css", "scss", "sass" or "less", from a file name."""
     lowered = str(file_path).lower()
     if lowered.endswith(".scss"):
         return "scss"
+    if lowered.endswith(".sass"):
+        return "sass"
     if lowered.endswith(".less"):
         return "less"
     return "css"
@@ -748,10 +751,134 @@ def _balanced_end(content: str, start: int) -> int:
     return n
 
 
+def _trailing_comment(line: str) -> int:
+    """Where a `//` comment starts on a line of indented Sass, outside strings, `url(...)` and `#{...}`; -1 if none."""
+    quote = ""
+    depth = 0
+    i = 0
+    while i < len(line):
+        ch = line[i]
+        if ch == "\\":
+            i += 2
+            continue
+        if quote:
+            if ch == quote:
+                quote = ""
+        elif ch in "\"'":
+            quote = ch
+        elif line.startswith("#{", i):
+            depth += 1
+            i += 2
+            continue
+        elif ch == "}" and depth:
+            depth -= 1
+        elif not depth and line[i:i + 4].lower() == "url(":
+            end = line.find(")", i)
+            i = len(line) if end < 0 else end + 1
+            continue
+        elif not depth and line.startswith("//", i):
+            return i
+        i += 1
+    return -1
+
+
+def _bracket_balance(code: str) -> int:
+    """Open parentheses and brackets minus closed ones, outside strings."""
+    balance = 0
+    for part in _STRING_RE.split(code):
+        balance += part.count("(") + part.count("[") - part.count(")") - part.count("]")
+    return balance
+
+
+def _indented_to_scss(content: str) -> str:
+    """
+    Indented Sass as SCSS, line for line: a line followed by deeper lines opens
+    a block (`{` at its end), any other statement ends with `;`, and a block
+    closes (`}`) at the end of its last line of code. `=name` is `@mixin name`
+    and `+name` is `@include name`. A statement continues over the next lines
+    while it ends with a comma or leaves a parenthesis open. A `//` comment runs
+    over the deeper lines below it, and so does a `/*` comment left open.
+    """
+    lines = content.split("\n")
+    code = list(lines)
+    tail = [""] * len(lines)
+    suffix = [""] * len(lines)
+
+    def indent(text: str) -> int:
+        return len(text) - len(text.lstrip(" \t"))
+
+    def is_comment(text: str) -> bool:
+        return text.lstrip().startswith(("//", "/*"))
+
+    for index, text in enumerate(lines):
+        at = _trailing_comment(text) if not is_comment(text) else -1
+        if at >= 0:
+            code[index], tail[index] = text[:at].rstrip(), text[at:]
+    blocks: list[int] = []
+    last_code = -1
+    comment: tuple[str, int, int] | None = None  # (kind, indent, its last line)
+    i = 0
+    while i < len(lines):
+        text = lines[i]
+        if not text.strip():
+            i += 1
+            continue
+        level = indent(text)
+        if comment is not None:
+            if level > comment[1]:
+                if comment[0] == "//":
+                    code[i] = text[:level] + "//" + text[level:]
+                comment = (comment[0], comment[1], i)
+                i += 1
+                continue
+            if comment[0] == "/*":
+                suffix[comment[2]] += " */"
+            comment = None
+        while blocks and blocks[-1] >= level:
+            blocks.pop()
+            suffix[last_code] += " }"
+        stripped = text.strip()
+        if stripped.startswith("//"):
+            comment = ("//", level, i)
+            i += 1
+            continue
+        if stripped.startswith("/*"):
+            comment = ("/*", level, i) if "*/" not in stripped else None
+            i += 1
+            continue
+        head = code[i][level:]
+        if len(head) > 1 and head[0] == "=" and (head[1].isalpha() or head[1] in "_-"):
+            code[i] = code[i][:level] + "@mixin " + head[1:]
+        elif len(head) > 1 and head[0] == "+" and (head[1].isalpha() or head[1] in "_-"):
+            code[i] = code[i][:level] + "@include " + head[1:]
+        end = i
+        balance = _bracket_balance(code[i])
+        while end + 1 < len(lines) and (balance > 0 or code[end].rstrip().endswith(",")):
+            end += 1
+            balance += _bracket_balance(code[end])
+        following = end + 1
+        while following < len(lines) and (not lines[following].strip() or is_comment(lines[following])):
+            following += 1
+        if following < len(lines) and indent(lines[following]) > level:
+            suffix[end] += " {"
+            blocks.append(level)
+        else:
+            suffix[end] += ";"
+        last_code = end
+        i = end + 1
+    if comment is not None and comment[0] == "/*":
+        suffix[comment[2]] += " */"
+    if last_code >= 0:
+        suffix[last_code] += " }" * len(blocks)
+    return "\n".join(f"{c}{s} {t}" if t else f"{c}{s}" for c, s, t in zip(code, suffix, tail))
+
+
 def parse_sheet(content: str, dialect: str = "scss") -> Sheet:
     """Tokenize a stylesheet into its block tree, imports, constants, layers and comments."""
     if content.startswith("\ufeff"):
         content = content[1:]
+    if dialect == "sass":
+        content, dialect = _indented_to_scss(content), "scss"
     sheet = Sheet()
     stack: list[Node] = []
     buf: list[str] = []

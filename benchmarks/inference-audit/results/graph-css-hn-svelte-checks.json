@@ -1,0 +1,395 @@
+{
+ "case": "hn-svelte",
+ "commit": "0010bbea06781f11797c71a3497e7e0c1beff702",
+ "code": {
+  "css.py": "517c5214a3d8",
+  "css_astro.js": "60aedc755928",
+  "css_astro.py": "83ae4f9723f2",
+  "css_engines.json": "2cf04c7179fb",
+  "css_expressions.js": "f576bae77c67",
+  "css_less.js": "7ea43d4fc4c2",
+  "css_less.py": "1f082b76eb1f",
+  "css_sass.js": "446f2ff01f26",
+  "css_sass.py": "45180a7e614c",
+  "css_stylus.js": "22c5cf93eff5",
+  "css_stylus.py": "bbe7cdfae4fe",
+  "css_svelte.js": "3814c915a7a8",
+  "css_svelte.py": "6c91a62cd587",
+  "css_tailwind.js": "4dca22ec9809",
+  "css_tailwind.py": "c9419a41c53a",
+  "css_typescript.js": "198b20335c87",
+  "css_typescript.py": "6ff05448a8d6",
+  "css_vue.js": "4fbf1fcf22e4",
+  "css_vue.py": "93c02e4a9797"
+ },
+ "files_given": 20,
+ "npm_install_seconds": 43.8,
+ "node_modules": "/root/.cache/daodan/npm/802e5e0ab784d2b7/node_modules",
+ "report": {
+  "language": "css",
+  "indexer": {
+   "name": "codebase-map stylesheet.py + svelte + typescript + tailwindcss",
+   "version": "e62b3f368913 + 5.57.3 + 5.9.3 + None",
+   "seconds": 1.5,
+   "peak_mb": 298
+  },
+  "files": {
+   "snapshot": 20,
+   "indexed": 20,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 81,
+  "edges": 73,
+  "symbols_by_kind": {
+   "project custom-property": 6,
+   "project keyframes": 1,
+   "project module": 14,
+   "project rule": 60
+  },
+  "edges_by_end": {
+   "project class": 48,
+   "project custom-property": 24,
+   "project keyframes": 1
+  },
+  "callable_chain_hops": {},
+  "hop_tags": {
+   "class:": 15
+  },
+  "edges_uncertain": {
+   "cascade and inheritance pick one per element; sheet-not-proven-loaded": 20,
+   "cascade and inheritance pick one per element": 4,
+   "sheet-not-proven-loaded": 3
+  },
+  "edges_removed": {},
+  "holes_by_class": {
+   "no-font-face font-face": 12,
+   "no-rule class": 3,
+   "no-rule id": 1,
+   "unresolved-import import": 1
+  },
+  "holes": [
+   {
+    "class": "no-font-face",
+    "kind": "font-face",
+    "reason": "-",
+    "count": 12,
+    "examples": [
+     "static/global.css:15 Roboto",
+     "static/global.css:15 Oxygen",
+     "static/global.css:15 Droid Sans"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "class",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "src/components/ThemeToggler.svelte:39 light",
+     "src/routes/[list]/[page].svelte:55 more",
+     "src/routes/user/[name].svelte:37 about"
+    ]
+   },
+   {
+    "class": "unresolved-import",
+    "kind": "import",
+    "reason": "global.css",
+    "count": 1,
+    "examples": [
+     "src/template.html:24 global.css"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "id",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "src/template.html:45 sapper"
+    ]
+   }
+  ],
+  "external_packages": {}
+ },
+ "summary": {
+  "nodes_by_kind": {
+   "rule": 60,
+   "module": 14,
+   "custom-property": 6,
+   "keyframes": 1
+  },
+  "edges_by_kind_end": {
+   "class project": 48,
+   "custom-property project": 24,
+   "keyframes project": 1
+  },
+  "edges_by_chain": {
+   "-": 58,
+   "class:": 15
+  },
+  "holes_by_class": {
+   "no-font-face font-face": {
+    "count": 12,
+    "examples": [
+     "static/global.css:15 Roboto",
+     "static/global.css:15 Oxygen",
+     "static/global.css:15 Droid Sans"
+    ]
+   },
+   "no-rule class": {
+    "count": 3,
+    "examples": [
+     "src/components/ThemeToggler.svelte:39 light",
+     "src/routes/[list]/[page].svelte:55 more",
+     "src/routes/user/[name].svelte:37 about"
+    ]
+   },
+   "unresolved-import import": {
+    "count": 1,
+    "examples": [
+     "src/template.html:24 global.css"
+    ]
+   },
+   "no-rule id": {
+    "count": 1,
+    "examples": [
+     "src/template.html:45 sapper"
+    ]
+   }
+  },
+  "uncertain": {
+   "edges": 27,
+   "references": 13,
+   "examples": [
+    {
+     "site": "static/global.css:18",
+     "symbol": "--bg",
+     "to": "static/global.css:2 --bg",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "static/global.css:2 --bg",
+       "static/global.css:8 --bg"
+      ]
+     }
+    },
+    {
+     "site": "src/components/Nav.svelte:9",
+     "symbol": "--fg-light",
+     "to": "static/global.css:10 --fg-light",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "static/global.css:10 --fg-light",
+       "static/global.css:4 --fg-light"
+      ]
+     }
+    },
+    {
+     "site": "src/components/ThemeToggler.svelte:40",
+     "symbol": ".dark",
+     "to": "static/global.css:7 html.dark",
+     "uncertain": {
+      "reason": "sheet-not-proven-loaded",
+      "candidates": [
+       "src/components/PreloadingIndicator.svelte:45 :global(html).dark .fade",
+       "src/components/ThemeToggler.svelte:74 .dark",
+       "src/components/ThemeToggler.svelte:78 :global(html).dark .dark",
+       "src/routes/item/[id].svelte:27 :global(html).dark .item",
+       "src/routes/item/_Comment.svelte:32 :global(html).dark .comment",
+       "static/global.css:7 html.dark"
+      ]
+     }
+    },
+    {
+     "site": "src/routes/[list]/_ItemSummary.svelte:26",
+     "symbol": "--fg-light",
+     "to": "static/global.css:4 --fg-light",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "static/global.css:10 --fg-light",
+       "static/global.css:4 --fg-light"
+      ]
+     }
+    },
+    {
+     "site": "src/routes/[list]/_ItemSummary.svelte:40",
+     "symbol": "--fg-light",
+     "to": "static/global.css:10 --fg-light",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "static/global.css:10 --fg-light",
+       "static/global.css:4 --fg-light"
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "hand_check": [
+  {
+   "site": "src/components/Nav.svelte:82",
+   "kind": "class",
+   "symbol": ".icon",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/components/Nav.svelte:85",
+   "kind": "class",
+   "symbol": ".selected",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/components/Nav.svelte:91",
+   "kind": "class",
+   "symbol": ".about",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/routes/item/_Comment.svelte:8",
+   "kind": "class",
+   "symbol": ".comment",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 6,
+   "graph_ends": 6
+  },
+  {
+   "site": "src/routes/item/_Comment.svelte:8",
+   "kind": "class",
+   "symbol": ".hidden",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/routes/item/_Comment.svelte:9",
+   "kind": "class",
+   "symbol": ".meta-bar",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/routes/item/_Comment.svelte:10",
+   "kind": "class",
+   "symbol": ".meta",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/routes/item/_Comment.svelte:13",
+   "kind": "class",
+   "symbol": ".body",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/routes/item/_Comment.svelte:18",
+   "kind": "class",
+   "symbol": ".children",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 3,
+   "graph_ends": 3
+  },
+  {
+   "site": "src/routes/item/[id].svelte:57",
+   "kind": "class",
+   "symbol": ".item",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/routes/item/[id].svelte:58",
+   "kind": "class",
+   "symbol": ".main-link",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/components/PreloadingIndicator.svelte:56",
+   "kind": "class",
+   "symbol": ".progress-container",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/components/PreloadingIndicator.svelte:62",
+   "kind": "class",
+   "symbol": ".fade",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "src/components/ThemeToggler.svelte:39",
+   "kind": "class",
+   "symbol": ".light",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "src/components/ThemeToggler.svelte:40",
+   "kind": "class",
+   "symbol": ".dark",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 6,
+   "graph_ends": 6
+  },
+  {
+   "site": "src/components/ThemeToggler.svelte:31",
+   "kind": "class",
+   "symbol": ".nice",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  }
+ ],
+ "seconds": 46.1
+}

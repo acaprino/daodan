@@ -1,0 +1,26 @@
+@import 'vars'
+pad(n = 2px)
+  padding n
+.card
+  color brand
+  pad(4px)
+  &:hover
+    color red
+  .title, .sub
+    margin 0
+  @extend .base
+.base
+  border 0
+for i in 1..2
+  .m-{i}
+    margin i * 4px
+@media (min-width: 600px)
+  .card
+    display grid
+@keyframes spin
+  from
+    opacity 0
+.anim
+  animation spin 1s
+  width $w
+  height $missing

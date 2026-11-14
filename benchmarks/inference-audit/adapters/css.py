@@ -45,18 +45,16 @@ import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path
 from languages import stylesheet  # noqa: E402
 from tree_scope import DEPENDENCY_DIRS  # noqa: E402
 
-from . import css_tailwind, css_typescript  # noqa: E402
+from . import css_astro, css_less, css_sass, css_stylus, css_svelte, css_tailwind, css_typescript, css_vue  # noqa: E402
 
-STYLESHEETS = (".css", ".scss", ".less")
+STYLESHEETS = (".css", ".scss", ".sass", ".less", ".pcss", ".postcss", ".styl", ".stylus")
 MARKUP = (".html", ".htm", ".ejs")
+COMPONENTS = {".vue": css_vue, ".svelte": css_svelte, ".astro": css_astro}
 # Stylesheet and markup files no reader here takes, and why: listed in `files.missing`, never dropped.
-UNREAD = {**dict.fromkeys((".sass",), "indented Sass: no reader (the product's parser reads braces)"),
-          **dict.fromkeys((".styl", ".stylus"), "Stylus: no reader"),
-          **dict.fromkeys((".vue", ".svelte", ".astro"), "single-file component: no reader for its blocks"),
+UNREAD = {
           **dict.fromkeys((".erb", ".hbs", ".handlebars", ".mustache", ".njk", ".twig", ".pug", ".jade", ".liquid",
                            ".jinja", ".j2"), "template language: no reader")}
-PARTLY = {".less": "partly read: rules and custom properties are in the graph, LESS variables (@x) and mixin calls "
-                   "are not"}
+PARTLY: dict[str, str] = {}  # suffix -> what a file of it leaves out of the graph
 NAMED_GROUP_RE = re.compile(r"^(?:group|peer)/[\w-]+$")  # Tailwind 3.2+: a variant anchor, never a utility
 # A leading comment naming a package and its version: "/*! Font Awesome Free 6.4.0 by ...", "Bootstrap v5.3.0".
 BANNER_RE = re.compile(r"^(?:@charset[^;]*;)?\s*/\*!?[\s*]*([A-Za-z@][^\n]*?)\s+v?(\d+\.\d+(?:\.\d+)?(?:-[\w.]+)?)\b")
@@ -64,7 +62,10 @@ VERSIONED_RE = re.compile(r"^(.+?)[-_@]v?(\d+\.\d+(?:\.\d+)?)$")  # a path segme
 CDN_RES = ((re.compile(r"^https?://cdn\.jsdelivr\.net/npm/((?:@[^/@]+/)?[^/@]+)@([^/]+)/"), "npm"),
            (re.compile(r"^https?://unpkg\.com/((?:@[^/@]+/)?[^/@]+)@([^/]+)/"), "npm"),
            (re.compile(r"^https?://cdnjs\.cloudflare\.com/ajax/libs/([^/]+)/([^/]+)/"), "cdnjs"))
-MODULE_RE = re.compile(r"\.module\.(?:css|scss|sass|less)$", re.I)
+MODULE_RE = re.compile(r"\.module\.(?:css|scss|sass|less|styl|pcss)$", re.I)
+# `@value brand: #0af;` and `@value brand, accent as a from "./colors.module.css";` (CSS Modules values).
+VALUE_RE = re.compile(r"^\s*(?P<names>[^:]+?)\s+from\s+(['\"])(?P<origin>[^'\"]+)\2\s*$|^\s*(?P<name>[\w-]+)\s*:")
+CUSTOM_SELECTOR_RE = re.compile(r":--[\w-]+")
 CSS_WIDE = {"inherit", "initial", "unset", "revert", "revert-layer", "none"}
 # Keywords the `animation` shorthand gives its other longhands (CSS Animations 1, 2): never a keyframes name.
 ANIMATION_WORDS = {"linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end", "infinite",
@@ -77,11 +78,30 @@ TAILWIND_LAYERS = {"v3": {"base", "components", "utilities"}, "v4": {"theme", "b
 IDENT = re.compile(r"-?[A-Za-z_][\w-]*$")
 VAR_RE = re.compile(r"var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,\s*([^)]*))?")
 SASS_REF_RE = re.compile(r"(?:\b([A-Za-z_][\w-]*)\.)?\$([A-Za-z_][\w-]*)")
-MODE_RE = re.compile(r":(global|local)\b(\()?|(\()|(\))")
+# `:global` and `:local` of CSS Modules; Vue's `:deep()`, `::v-deep` and `:slotted()` reach past the component.
+MODE_RE = re.compile(r"::?(global|local|deep|slotted|v-deep)\b(\()?|(\()|(\))")
+SVELTE_GLOBAL_RE = re.compile(r":global\(([^()]*)\)([^\s>+~,()]+)")
+VBIND_RE = re.compile(r"v-bind\(\s*(['\"]?)([^)'\"]+?)\1\s*\)")
 WORD_RE = re.compile(r"\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|[^\s(]+(?:\([^)]*\))?|\([^)]*\)")
 SIZE_RE = re.compile(r"(?:^|\s)(?:[+-]?[\d.]+[a-z%]*|xx-small|x-small|small|medium|large|x-large|xx-large|"
                      r"xxx-large|smaller|larger)(?:\s*/\s*[^\s,]+)?\s+(?=\S)", re.I)
 EJS_RE = re.compile(r"<%.*?%>", re.S)
+TAG_RE = re.compile(r"<%.*?%>|\{\{.*?\}\}|\{%.*?%\}", re.S)  # EJS, and `{{ }}` / `{% %}` of Liquid and its kin
+# An EJS include: `<%- include('partials/head', {...}) %>` or the old `<% include partials/head %>`.
+CUSTOM_MEDIA_RE = re.compile(r"\(\s*(--[\w-]+)\s*\)")
+SCOPE_RE = re.compile(r"^@scope\s*(?:\((?P<root>[^)]*)\))?\s*(?:to\s*\((?P<limit>[^)]*)\))?", re.I)
+INCLUDE_RE = re.compile(r"<%[-=_]?\s*include\s*(?:\(\s*(['\"])(?P<call>[^'\"]+)\1|(?P<bare>[\w./-]+))")
+SCRIPT_SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".vue", ".svelte", ".astro")
+# Arcs whose target styles a page only where the page loads its sheet (compile-time ones excluded).
+LOADED_KINDS = {"class", "id", "custom-property", "keyframes", "font-face", "container"}
+COMPILE_TIME = {"@apply", "@extend", ":extend", "composes", "safelist", "@source inline"}
+PLACEHOLDER_RE = re.compile(r"%([A-Za-z_][\w-]*)")
+# A class or id with one compile-time interpolation in it: `.size-#{$x}`, `.@{name}-x`, `.{$x}-y`.
+INTERPOLATED_RE = re.compile(r"([.#])([\w-]*)(?:#\{[^}]*\}|@\{[^}]*\}|\{[^}]*\})([\w-]*)")
+INTERPOLATION_RE = re.compile(r"#\{\s*(?:[\w-]+\.)?(\$[\w-]+)\s*\}")
+LESS_INTERPOLATION_RE = re.compile(r"@\{([\w-]+)\}")
+STYLUS_INTERPOLATION_RE = re.compile(r"\{([\w$-]+)\}")
+CALLABLE_RE = re.compile(r"^[.#][\w-]+$")  # a Less ruleset a mixin call can name
 
 
 def _sha(path: Path) -> str:
@@ -91,7 +111,7 @@ def _sha(path: Path) -> str:
 def walk(project_dir: Path) -> list[str]:
     """The project's stylesheet, markup and script files, outside dot and dependency directories (the snapshot's
     perimeter, `tree_scope.DEPENDENCY_DIRS`); the ones no reader takes included, to be listed as missing."""
-    suffixes = STYLESHEETS + MARKUP + css_typescript.SUFFIXES + tuple(UNREAD)
+    suffixes = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + tuple(UNREAD)
     return sorted(path.relative_to(project_dir).as_posix() for path in Path(project_dir).rglob("*")
                   if path.is_file() and path.suffix.lower() in suffixes
                   and not any(part in DEPENDENCY_DIRS or part.startswith(".")
@@ -104,12 +124,168 @@ def run(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> di
     work_dir.mkdir(parents=True, exist_ok=True)
     files = walk(project_dir) if files is None else files
     own = index(project_dir, work_dir, files)
-    scripts = css_typescript.index(project_dir, work_dir, [rel for rel in files
-                                                           if rel.lower().endswith(css_typescript.SUFFIXES)])
-    records = own["records"] + scripts["records"]
-    tailwind = css_tailwind.index(project_dir, work_dir, sorted(class_tokens(records)))
-    return graph(project_dir, records, tailwind, files, [own["indexer"], scripts["indexer"], tailwind["indexer"]],
-                 {**own["missing"], **scripts["missing"]})
+    sass = sass_sheets(project_dir, work_dir, files)
+    less = less_sheets(project_dir, work_dir, files)
+    stylus = engine_sheets(css_stylus, "stylus", project_dir, work_dir, files)
+    components = component_files(project_dir, work_dir, files)
+    script_files = [rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)]
+    scripts = css_typescript.index(project_dir, work_dir, script_files) if script_files else \
+        {"indexer": None, "records": [], "missing": {}}
+    records = (own["records"] + sass["records"] + less["records"] + stylus["records"] + components["records"] +
+               scripts["records"])
+    entries = sorted({r["file"] for r in records if r["t"] == "ref" and r["kind"] == "import"
+                      and r["name"] == "tailwindcss" and r["file"].lower().endswith(STYLESHEETS)})
+    tailwind = css_tailwind.index(project_dir, work_dir, sorted(class_tokens(records)), entries)
+    engines = [engine for engine in (own["indexer"], sass["indexer"], less["indexer"], stylus["indexer"],
+                                     *components["indexers"], scripts["indexer"], tailwind["indexer"]) if engine]
+    return graph(project_dir, records, tailwind, files, engines,
+                 {**own["missing"], **sass["missing"], **less["missing"], **stylus["missing"],
+                  **components["missing"], **scripts["missing"]})
+
+
+def component_files(project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+    """Vue, Svelte and Astro files through their own compilers: their style blocks read by the reader of each block's
+    dialect (scoped to the component, or a CSS Module of it), their class and id sites, `$style.x` members, `v-bind()`
+    to the script binding it reads, and the scoped rules of a Vue parent on its child's root element."""
+    records, missing, indexers, found = [], {}, [], {}
+    for suffix, engine in COMPONENTS.items():
+        items = [{"key": rel, "path": str(Path(project_dir) / rel)} for rel in files if rel.lower().endswith(suffix)]
+        result = engine.index(work_dir, items)
+        indexers.append(result["indexer"])
+        for item in items:
+            data = result["components"].get(item["key"], {"error": "not parsed"})
+            if "error" in data:
+                missing[item["key"]] = f"not parsed: {data['error']}"[:200]
+            else:
+                found[item["key"]] = data
+    sass_items, less_items, stylus_items, owners = [], [], [], {}
+    for rel, data in found.items():
+        records.append({"t": "file", "file": rel})
+        for index_, block in enumerate(data["blocks"]):
+            scope = (f"{rel}?module" if block["module"] == "$style" else f"{rel}?module={block['module']}") \
+                if block.get("module") else f"scoped:{rel}" if block.get("scoped") else None
+            offset, lang = block["line"] - 1, block["lang"]
+            key = f"{rel}#{index_}"
+            owners[key] = (rel, offset, scope)
+            if lang in ("scss", "sass"):
+                sass_items.append({"key": key, "text": block["text"], "syntax": lang})
+            elif lang == "less":
+                less_items.append({"key": key, "text": block["text"]})
+            elif lang in ("stylus", "styl"):
+                stylus_items.append({"key": key, "text": block["text"]})
+            elif lang in ("css", "postcss", "pcss"):
+                records += _sheet(rel, block["text"], "css", offset=offset, scope=scope)
+            else:
+                missing[rel] = f"partly read: a style block in {lang} at line {block['line']} has no reader"
+            for name in block.get("vars") or ():
+                records.append(_node(f"{rel}:{block['line']} --{name}", "custom-property", rel, block["line"],
+                                     [("custom-property", f"--{name}")]))
+            bindings = {b["name"]: b["line"] for b in data.get("bindings", ())}
+            for match in VBIND_RE.finditer(block["text"]):
+                name = match.group(2).strip()
+                line = offset + block["text"][:match.start()].count("\n") + 1
+                if name in bindings:
+                    target = f"{rel}:{bindings[name]} {name}"
+                    records.append(_node(target, "script-binding", rel, bindings[name]))
+                    records.append(_ref("v-bind", name, name, rel, line, rel, to=target))
+                else:
+                    records.append({"t": "hole", "file": rel, "line": line, "kind": "v-bind", "cls": "undeclared",
+                                    "name": name})
+        for site in data.get("styles", ()):
+            records += _sheet(rel, "x{" + site["text"] + "}", "css", offset=site["line"] - 1, inline=True)
+        own = [[f"scoped:{rel}", []]]
+        for site in data["classes"]:
+            records.append({"t": "classes", "kind": site["kind"], "file": rel, "line": site["line"], "from": rel,
+                            "chain": site["chain"], "alts": site["alts"], "scopes": own,
+                            "root": site["line"] in data.get("roots", ())})
+        for member in data.get("members", ()):
+            scope = f"{rel}?module" if member["scope"] == "$style" else f"{rel}?module={member['scope']}"
+            records.append({"t": "member", "file": rel, "line": member["line"], "spec": None, "name": member["name"],
+                            "scope": scope})
+        for item in data.get("imports", ()):
+            if re.search(r"\.(css|scss|sass|less|styl|stylus|pcss|postcss)(\?.*)?$", item["spec"], re.I):
+                records.append({"t": "import", "file": rel, "line": item["line"], "spec": item["spec"]})
+            else:
+                records.append({"t": "module", "file": rel, "line": item["line"], "spec": item["spec"], "to": None})
+    # A Vue parent's scoped rules style the root element of each child component its template renders, and its
+    # `:deep()` names reach every element of the components below it.
+    snapshot_files = set(files)
+    children = collections.defaultdict(set)
+    for parent, data in found.items():
+        if not parent.endswith(".vue"):
+            continue
+        rendered = set(data.get("components", ()))
+        for item in data.get("imports", ()):
+            for name in set(item["names"]) & rendered:
+                child = _component_file(project_dir, parent, item["spec"], name, snapshot_files)
+                if child and child.endswith(".vue"):
+                    children[parent].add(child)
+    parents_of = collections.defaultdict(set)
+    for parent, kids in children.items():
+        for child in kids:
+            parents_of[child].add(parent)
+    for record in records:
+        if record["t"] != "classes" or not record["file"].endswith(".vue"):
+            continue
+        ancestors, queue = set(), [record["file"]]
+        while queue:
+            current = queue.pop()
+            for parent in parents_of[current] - ancestors:
+                ancestors.add(parent)
+                queue.append(parent)
+        record["scopes"] = [*record["scopes"], *([f"deep:{f}", []] for f in sorted(ancestors | {record["file"]}))]
+        if record.get("root"):
+            record["scopes"] += [[f"scoped:{parent}", ["child-root"]] for parent in sorted(parents_of[record["file"]])]
+    for engine, items in ((css_sass, sass_items), (css_less, less_items), (css_stylus, stylus_items)):
+        parsed = engine.index(work_dir, items)
+        if items:
+            indexers.append(parsed["indexer"])
+        for item in items:
+            rel, offset, scope = owners[item["key"]]
+            sheet = parsed["sheets"].get(item["key"], {"error": "not parsed"})
+            if "error" in sheet:
+                missing[rel] = f"partly read: a style block is not parsed: {sheet['error']}"[:200]
+                continue
+            dialect = {css_less: "less", css_stylus: "stylus"}.get(engine, "scss")
+            records += tree_records(rel, sheet["tree"], dialect, offset=offset, module=scope)
+    return {"records": records, "missing": missing, "indexers": indexers}
+
+
+def less_sheets(project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+    """The Less files through Less's own parser (`css_less`), as records."""
+    return engine_sheets(css_less, "less", project_dir, work_dir, files)
+
+
+def engine_sheets(engine, dialect: str, project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+    """The files of one dialect through its own parser, as records."""
+    items = [{"key": rel, "path": str(Path(project_dir) / rel)} for rel in files
+             if rel.lower().endswith(engine.SUFFIXES)]
+    parsed = engine.index(work_dir, items)
+    records, missing = [], {}
+    for item in items:
+        rel, sheet = item["key"], parsed["sheets"].get(item["key"], {"error": "not parsed"})
+        if "error" in sheet:
+            missing[rel] = f"not parsed: {sheet['error']}"[:200]
+            continue
+        records += tree_records(rel, sheet["tree"], dialect, module=rel if MODULE_RE.search(rel) else None)
+        records.append({"t": "file", "file": rel})
+    return {"indexer": parsed["indexer"], "records": records, "missing": missing}
+
+
+def sass_sheets(project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+    """The SCSS and indented Sass files through the official Sass parser (`css_sass`), as records."""
+    items = [{"key": rel, "path": str(Path(project_dir) / rel), "syntax": "sass" if rel.lower().endswith(".sass")
+              else "scss"} for rel in files if rel.lower().endswith(css_sass.SUFFIXES)]
+    parsed = css_sass.index(work_dir, items)
+    records, missing = [], {}
+    for item in items:
+        rel, sheet = item["key"], parsed["sheets"].get(item["key"], {"error": "not parsed"})
+        if "error" in sheet:
+            missing[rel] = f"not parsed: {sheet['error']}"[:200]
+            continue
+        records += tree_records(rel, sheet["tree"], "scss", module=rel if MODULE_RE.search(rel) else None)
+        records.append({"t": "file", "file": rel})
+    return {"indexer": parsed["indexer"], "records": records, "missing": missing}
 
 
 # Reading: stylesheets and markup into records.
@@ -125,8 +301,9 @@ def index(project_dir: Path, work_dir: Path | None = None, files: list[str] | No
         if suffix in UNREAD:
             missing[rel] = UNREAD[suffix]
             continue
-        if not lower.endswith(STYLESHEETS + MARKUP):
-            continue
+        if not lower.endswith(STYLESHEETS + MARKUP) or lower.endswith(css_sass.SUFFIXES + css_less.SUFFIXES +
+                                                                      css_stylus.SUFFIXES):
+            continue  # Sass, Less and Stylus are read by their own parsers
         if suffix in PARTLY:
             missing[rel] = PARTLY[suffix]
         try:
@@ -146,8 +323,9 @@ def index(project_dir: Path, work_dir: Path | None = None, files: list[str] | No
             "records": records, "missing": missing}
 
 
-def _sheet(rel: str, text: str, dialect: str, offset: int = 0, inline: bool = False) -> list[dict]:
-    """One stylesheet, or a `<style>` block (`offset` lines down) or a style attribute (`inline`)."""
+def _sheet(rel: str, text: str, dialect: str, offset: int = 0, inline: bool = False, scope=None) -> list[dict]:
+    """One stylesheet, or a `<style>` block (`offset` lines down) or a style attribute (`inline`); `scope`: the
+    component a scoped block belongs to, or the CSS Module a module block is."""
     statements = []
     original = stylesheet._statement
 
@@ -159,7 +337,7 @@ def _sheet(rel: str, text: str, dialect: str, offset: int = 0, inline: bool = Fa
         sheet = stylesheet.parse_sheet(text, dialect)
     finally:
         stylesheet._statement = original
-    module = rel if MODULE_RE.search(rel) else None
+    module = scope or (rel if MODULE_RE.search(rel) else None)
     out, owner, parents, local, layers = [], {}, {}, collections.defaultdict(dict), []
 
     def visit(nodes, parent, current):
@@ -173,7 +351,10 @@ def _sheet(rel: str, text: str, dialect: str, offset: int = 0, inline: bool = Fa
                 for prelude in reversed(node.context):
                     label = f"{prelude} {{ {label} }}"
                 here = f"{rel}:{line} {label}"
-                out.append(_node(here, "rule", rel, line, _selector_names(node.selectors, module)))
+                out.extend(_ref("custom-selector", word, word, rel, line, here) for word in
+                           dict.fromkeys(CUSTOM_SELECTOR_RE.findall(" ".join(node.selectors))))
+                out.append(_node(here, "rule", rel, line, list(dict.fromkeys(_selector_names(node.selectors, module) +
+                                                                     _scope_names(node.context, module)))))
             elif node.kind == "definition":
                 kind = "function" if node.prelude.startswith("@function") else "mixin"
                 here = f"{rel}:{line} @{kind} {node.name}"
@@ -190,6 +371,374 @@ def _sheet(rel: str, text: str, dialect: str, offset: int = 0, inline: bool = Fa
         out += _statement(statement, line, node, source, rel, dialect, module, parents, local, layers, owner, sheet)
     out += _layers(rel, layers, sheet)
     return out
+
+
+class _Frame:
+    """A block of a parsed tree as the walker stands in it: what `&` names, the at-rules around, the graph node later
+    statements belong to, the variables declared here, and a loop's literal iterations."""
+
+    def __init__(self, parent=None, here=None, selectors=None, context=None, **flags):
+        self.parent, self.here = parent, here if here is not None else parent.here
+        self.selectors = selectors if selectors is not None or parent is None else parent.selectors
+        self.context = context if context is not None else (parent.context if parent else [])
+        self.face = flags.get("face", parent.face if parent else False)
+        self.keyframes = flags.get("keyframes", parent.keyframes if parent else False)
+        self.loop = flags.get("loop")  # (variables, iterations or None)
+        # Less: the namespace path a mixin call names this block by, None when it cannot be called.
+        self.path = flags.get("path", parent.path if parent else [])
+        self.root = parent is None
+        self.vars, self.literals = {}, {}
+
+    def find(self, name):
+        frame = self
+        while frame is not None:
+            if name in frame.vars:
+                return frame.vars[name]
+            frame = frame.parent
+        return None
+
+    def literal(self, name):
+        frame = self
+        while frame is not None:
+            if name in frame.vars or name in frame.literals:
+                return frame.literals.get(name)
+            frame = frame.parent
+        return None
+
+    def loop_of(self, name):
+        frame = self
+        while frame is not None:
+            if frame.loop and name in frame.loop[0]:
+                return frame
+            frame = frame.parent
+        return None
+
+
+def tree_records(rel: str, tree: list, dialect: str, offset: int = 0, module: str | None = None) -> list[dict]:
+    """The records of a sheet an engine parsed into the neutral tree (`css_sass.js`): rules, variables, mixins,
+    functions and placeholders as nodes; imports, `$x`, `@include`, `@extend`, function calls and every CSS fact of a
+    declaration as references. A selector built by interpolation is generated only from a loop over literal values
+    written in the loop itself (each name it yields is uncertain); otherwise the rule is a hole with its shape."""
+    out, layers = [], []
+    less, styl = dialect == "less", dialect == "stylus"
+    variable = "less-variable" if less else "stylus-variable" if styl else "sass-variable"
+    interpolation = "@{" if less else "{" if styl else "#{"
+    root = _Frame(here=rel, selectors=None, context=[])
+
+    def line_of(n):
+        return n["line"] + offset
+
+    def refs(items, frame, line):
+        for item in items or ():
+            name, ns = item["name"], item.get("ns")
+            site = (item.get("line") or line - offset) + offset
+            symbol = f"{ns}.{name}" if ns else name
+            kind = variable if item["k"] == "var" else "function"
+            found = frame.find(name) if ns is None and kind == variable and not name.startswith("@@") else None
+            if found:
+                out.append(_ref(kind, name, symbol, rel, site, frame.here, (found[1],), to=found[0]))
+            elif styl:
+                out.append(_ref(kind, name, symbol, rel, site, frame.here, stylus=kind, optional=item.get("optional")
+                                or kind == "function"))
+            else:
+                out.append(_ref(kind, name, symbol, rel, site, frame.here, ns=ns))
+
+    def label(selectors, context):
+        text = ", ".join(selectors)
+        for prelude in reversed(context):
+            text = f"{prelude} {{ {text} }}"
+        return text
+
+    def placeholders(selectors):
+        return [("placeholder", m.group(1), None) for selector in selectors
+                for m in PLACEHOLDER_RE.finditer(stylesheet._without_strings_and_brackets(selector))]
+
+    def generated(selectors, frame):
+        """Every concrete selector list of the loops the interpolations name, or None when one is not literal. In
+        Less an interpolation names a variable: one list, from the literal value its scope gives it."""
+        if less:
+            values = {}
+            for selector in selectors:
+                for match in LESS_INTERPOLATION_RE.finditer(selector):
+                    values[match.group(0)] = frame.literal("@" + match.group(1))
+            if any(value is None for value in values.values()):
+                return None
+            return [[LESS_INTERPOLATION_RE.sub(lambda m: values[m.group(0)], s) for s in selectors]]
+        pattern = STYLUS_INTERPOLATION_RE if styl else INTERPOLATION_RE
+        needed = {m.group(1) for selector in selectors for m in pattern.finditer(selector)}
+        loops = []
+        for name in needed:
+            loop = frame.loop_of(name)
+            if loop is None or loop.loop[1] is None:
+                return None
+            position = loop.loop[0].index(name)
+            if any(values[position] is None for values in loop.loop[1]):
+                return None
+            if loop not in loops:
+                loops.append(loop)
+        combos = [{}]
+        for loop in loops:
+            combos = [{**combo, **dict(zip(loop.loop[0], values))} for combo in combos for values in loop.loop[1]]
+            if len(combos) > 256:
+                return None
+        variants = []
+        for combo in combos:
+            concrete = [pattern.sub(lambda m: combo.get(m.group(1), m.group(0)), s) for s in selectors]
+            if any(interpolation in s for s in concrete):
+                return None
+            variants.append(concrete)
+        return variants
+
+    def rule(n, frame):
+        line = line_of(n)
+        raw = "".join(part if isinstance(part, str) else
+                      "@{" + part["v"][1:] + "}" if "v" in part and less else
+                      "{" + part["v"] + "}" if "v" in part and styl else
+                      "#{" + ((part["ns"] + ".") if part.get("ns") else "") + part["v"] + "}" if "v" in part else
+                      "#{" + part["x"] + "}" for part in n["sel"])
+        selectors = stylesheet._flatten(raw, frame.selectors, "scss")
+        here = frame.here if frame.keyframes else f"{rel}:{line} {label(selectors, frame.context)}"
+        own = raw.strip()
+        path = [*frame.path, own] if less and frame.path is not None and CALLABLE_RE.match(own) else None
+        inner = _Frame(frame, here=here, selectors=selectors, path=path)
+        refs(n.get("refs"), inner, line)
+        for item in n.get("extends") or ():
+            out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": here,
+                        "chain": [":extend"], "alts": [[{"s": " ".join(
+                            m.group(1) for m in stylesheet._CLASS_OR_ID_RE.finditer(item["sel"])
+                            if m.group(0)[0] == ".")}]]})
+        for part in n["sel"]:
+            if isinstance(part, dict) and "v" in part:
+                refs([{"k": "var", "name": part["v"], "ns": part.get("ns")}], inner, line)
+            elif isinstance(part, dict):
+                refs(part.get("refs"), inner, line)
+        if frame.keyframes:
+            walk(n.get("kids") or [], inner)
+            return
+        names = _selector_names(selectors, module) + placeholders(selectors) + _scope_names(frame.context, module)
+        if path is not None:
+            names.append(("less-mixin", " ".join(path), rel))
+        record = _node(here, "rule", rel, line, names)
+        if any(interpolation in s for s in selectors):
+            variants = generated(selectors, frame)
+            if variants is None:
+                out.append({"t": "hole", "file": rel, "line": line, "kind": "rule", "cls": "interpolated-selector",
+                            "name": ", ".join(selectors)})
+                out.append({"t": "interpolated", "file": rel, "line": line, "patterns": [
+                    [m.group(1), m.group(2), m.group(3)] for s in selectors
+                    for m in INTERPOLATED_RE.finditer(stylesheet._without_strings_and_brackets(s))]})
+            else:
+                static = {tuple(name) for name in names}
+                extra = sorted({name for variant in variants for name in _selector_names(variant, module)} - static,
+                               key=lambda item: (item[0], item[1], item[2] or ""))
+                record["names"] += [list(name) for name in extra]
+                record["generated"] = [list(name) for name in extra]
+                if not extra:  # nothing new from the values: what it names is still not known
+                    out.append({"t": "hole", "file": rel, "line": line, "kind": "rule",
+                                "cls": "interpolated-selector", "name": ", ".join(selectors)})
+        out.append(record)
+        walk(n.get("kids") or [], inner)
+
+    def decl(n, frame, prefix=""):
+        line = line_of(n)
+        prop = prefix + n["prop"]
+        if module and frame.selectors == [":export"]:
+            out.append(_node(f"{rel}:{line} :export {prop}", "export", rel, line, [("export", prop, module)]))
+            refs(n.get("refs"), frame, line)
+            return
+        if n.get("value"):
+            out.extend(declaration(rel, line, frame.here, prop, n["value"], in_face=frame.face, module=module))
+        refs(n.get("refs"), frame, line)
+        for kid in n.get("kids") or ():
+            if kid["t"] == "decl":
+                decl(kid, frame, prop + "-")
+
+    def at(n, frame):
+        name, params, line = n["name"].lower(), n.get("params", ""), line_of(n)
+        refs(n.get("refs"), frame, line)
+        kids = n.get("kids")
+        if name.endswith("keyframes"):
+            word = _unquote(params)
+            here = f"{rel}:{line} @{name} {word}"
+            out.append(_node(here, "keyframes", rel, line, [("keyframes", word)]))
+            walk(kids or [], _Frame(frame, here=here, keyframes=True))
+            return
+        if name == "font-face":
+            family = next((_unquote(k["value"]) for k in kids or () if k["t"] == "decl"
+                           and k["prop"].lower() == "font-family"), "")
+            here = f"{rel}:{line} @font-face {family}"
+            out.append(_node(here, "font-face", rel, line, [("font-face", family.lower())]))
+            walk(kids or [], _Frame(frame, here=here, face=True))
+            return
+        if name == "property":
+            here = f"{rel}:{line} @property {params}"
+            out.append(_node(here, "property", rel, line, [("custom-property", params)]))
+            walk(kids or [], _Frame(frame, here=here))
+            return
+        if name == "import":
+            for spec in stylesheet._import_specs(params, "import"):
+                out.append(_ref("import", spec, spec, rel, line, rel))
+            return
+        if name == "value":
+            out.extend(css_value(params, rel, line, frame.here, module))
+            return
+        if name == "custom-selector":
+            word = params.split()[0] if params else ""
+            out.append(_node(f"{rel}:{line} @custom-selector {word}", "custom-selector", rel, line,
+                             [("custom-selector", word)]))
+            return
+        if name == "tailwind":
+            out.append(_ref("import", "tailwindcss", f"@tailwind {params}", rel, line, rel, package="tailwindcss"))
+            return
+        if name == "apply":
+            out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": frame.here,
+                        "chain": ["@apply"], "alts": [[{"s": stylesheet._IMPORTANT_RE.sub("", params)}]]})
+            return
+        if name == "layer":
+            for segment in stylesheet.split_top_level(params) or ([] if kids is None else ["(anonymous)"]):
+                layers.append((line, segment, frame.here))
+        elif name == "container":
+            for condition in stylesheet.split_top_level(params):
+                match = re.match(r"\s*(-?[A-Za-z_][\w-]*)(\()?", condition)
+                if match and not match.group(2) and match.group(1).lower() not in ("not", "and", "or"):
+                    out.append(_ref("container", match.group(1), match.group(1), rel, line, frame.here))
+        elif name == "media":
+            out.extend(_ref("custom-media", w, w, rel, line, frame.here) for w in CUSTOM_MEDIA_RE.findall(params))
+        elif name == "custom-media" and kids is None:
+            word = params.split()[0] if params else ""
+            out.append(_node(f"{rel}:{line} @custom-media {word}", "custom-media", rel, line, [("custom-media", word)]))
+        if kids is None:
+            return
+        if name == "at-root":
+            if params and not params.startswith("("):
+                parents = frame.selectors if "&" in params else None
+                rule({"line": n["line"], "sel": [stylesheet._flatten(params, parents, "scss", prefix=False)[0]
+                                                 if parents else params], "kids": kids}, _Frame(frame, selectors=[]))
+                return
+            walk(kids, _Frame(frame, selectors=[]))
+            return
+        walk(kids, _Frame(frame, context=[*frame.context, f"@{n['name']} {params}".strip()]))
+
+    def walk(nodes, frame):
+        if less:  # Less evaluates lazily: a block's variables are visible in all of it, the last one winning
+            for n in nodes:
+                if n["t"] == "var":
+                    if not frame.root:
+                        frame.vars[n["name"]] = (f"{rel}:{line_of(n)} {n['name']}", "local")
+                    frame.literals[n["name"]] = n.get("literal")
+        for n in nodes:
+            t, line = n["t"], line_of(n)
+            if t == "rule":
+                rule(n, frame)
+            elif t == "decl":
+                decl(n, frame)
+            elif t == "var":
+                here = f"{rel}:{line} {n['name']}"
+                top = frame.root or "global" in n.get("flags", ())
+                refs(n.get("refs"), frame, line)
+                if n.get("ns"):
+                    out.append(_ref("sass-variable", n["name"], f"{n['ns']}.{n['name']}", rel, line, frame.here,
+                                    ("assignment",), ns=n["ns"]))
+                    continue
+                if not top and not less and not styl and frame.find(n["name"]):
+                    continue  # an assignment to a variable already declared in an enclosing block
+                record = _node(here, "variable", rel, line, [(variable, n["name"], rel)] if top else [])
+                if less:
+                    record["literal"] = n.get("literal")
+                out.append(record)
+                if not top and not less:
+                    frame.vars[n["name"]] = (here, "local")
+                if n.get("kids"):
+                    walk(n["kids"], _Frame(frame, here=here, selectors=[], path=None))
+            elif t == "import" and (less or styl):  # an import Less and Stylus inline: one compilation
+                kind = "plugin" if n["kind"] == "plugin" else "import"
+                out.append(_ref(kind, n["url"], n["url"], rel, line, rel, less=kind, options=n.get("options") or []))
+            elif t == "import":
+                ns = n.get("ns")
+                if n["kind"] == "use" and ns is None:
+                    ns = "*"
+                out.append(_ref("import", n["url"], n["url"], rel, line, rel, sass=n["kind"], ns=ns,
+                                prefix=n.get("prefix") or "", show=n.get("show"), hide=n.get("hide")))
+                for name in n.get("config") or ():
+                    out.append(_ref("sass-variable", name, name, rel, line, rel, ("configuration",), ns=ns))
+            elif t == "def" and less:
+                here = f"{rel}:{line} @mixin {n['name']}"
+                path = [*frame.path, n["name"]] if frame.path is not None else None
+                record = _node(here, "mixin", rel, line, [("less-mixin", " ".join(path), rel)] if path else [])
+                record["guard"] = bool(n.get("refs"))
+                out.append(record)
+                inner = _Frame(frame, here=here, selectors=[], path=path)
+                for param in n.get("params") or ():
+                    inner.vars[param] = (here, "parameter")
+                refs(n.get("refs"), inner, line)
+                walk(n.get("kids") or [], inner)
+            elif t == "include" and styl:
+                out.append(_ref("mixin", n["name"], n["name"], rel, line, frame.here, stylus="mixin"))
+                refs(n.get("refs"), frame, line)
+            elif t == "include" and less:
+                scope = frame.path or []
+                alts = [" ".join([*scope[:end], *n["path"]]) for end in range(len(scope), -1, -1)]
+                out.append(_ref("mixin", " ".join(n["path"]), n["symbol"], rel, line, frame.here, less="mixin",
+                                alts=alts))
+                refs(n.get("refs"), frame, line)
+            elif t == "def":
+                here = f"{rel}:{line} @{n['kind']} {n['name']}"
+                key = "stylus-mixin" if styl else n["kind"]
+                out.append(_node(here, n["kind"], rel, line, [(key, n["name"], rel)] if frame.root else []))
+                inner = _Frame(frame, here=here, selectors=[])
+                for param in n.get("params") or ():
+                    inner.vars[param] = (here, "parameter")
+                refs(n.get("refs"), inner, line)
+                walk(n.get("kids") or [], inner)
+            elif t == "include":
+                symbol = f"{n['ns']}.{n['name']}" if n.get("ns") else n["name"]
+                out.append(_ref("mixin", n["name"], symbol, rel, line, frame.here, ns=n.get("ns")))
+                refs(n.get("refs"), frame, line)
+                inner = _Frame(frame)
+                for param in n.get("using") or ():
+                    inner.vars[param] = (frame.here, "parameter")
+                walk(n.get("kids") or [], inner)
+            elif t == "extend":
+                text = re.sub(r"!optional\s*$", "", n["sel"]).strip()
+                for part in stylesheet.split_top_level(text):
+                    for match in PLACEHOLDER_RE.finditer(part):
+                        out.append(_ref("placeholder", match.group(1), "%" + match.group(1), rel, line, frame.here))
+                classes = " ".join(m.group(1) for m in stylesheet._CLASS_OR_ID_RE.finditer(text)
+                                   if m.group(0)[0] == ".")
+                if classes:
+                    out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": frame.here,
+                                "chain": [":extend" if less else "@extend"], "alts": [[{"s": classes}]]})
+            elif t == "loop":
+                refs(n.get("refs"), frame, line)
+                inner = _Frame(frame, loop=(n["vars"], n.get("values")))
+                for name in n["vars"]:
+                    here = f"{rel}:{line} {name}"
+                    out.append(_node(here, "variable", rel, line))
+                    inner.vars[name] = (here, "loop")
+                walk(n.get("kids") or [], inner)
+            elif t == "block":
+                refs(n.get("refs"), frame, line)
+                walk(n.get("kids") or [], _Frame(frame))
+            elif t == "ref":
+                refs(n.get("refs"), frame, line)
+            elif t == "at":
+                at(n, frame)
+
+    walk(tree, root)
+    out += _layers(rel, layers, _tailwind_of(tree))
+    return out
+
+
+def _tailwind_of(tree: list):
+    """What `_layers` needs to know of a parsed tree: which Tailwind it loads."""
+    class Sheet:
+        tailwind = None
+    for n in tree:
+        if n["t"] == "at" and n["name"].lower() == "tailwind":
+            Sheet.tailwind = "v3"
+        elif n["t"] == "import" and str(n.get("url", "")).startswith("tailwindcss"):
+            Sheet.tailwind = "v4"
+    return Sheet
 
 
 def _node(identity: str, kind: str, rel: str, line: int, names=()) -> dict:
@@ -218,6 +767,20 @@ def _at_rule(node, rel, line, out, local, layers, current) -> str | None:
         here = f"{rel}:{line} @property {rest}"
         out.append(_node(here, "property", rel, line, [("custom-property", rest)]))
         return here
+    if name == "media":
+        out += [_ref("custom-media", word, word, rel, line, current) for word in CUSTOM_MEDIA_RE.findall(rest)]
+    if name == "utility":
+        here = f"{rel}:{line} @utility {rest}"
+        names = [("utility-pattern", rest[:-1])] if rest.endswith("*") else [("utility", rest)]
+        out.append(_node(here, "rule", rel, line, names))
+        return here
+    if name == "custom-variant":
+        word = rest.split()[0] if rest else ""
+        here = f"{rel}:{line} @custom-variant {word}"
+        out.append(_node(here, "variant", rel, line, [("variant", word)]))
+        return here
+    if name == "variant":
+        out.append(_ref("variant", rest.split()[0] if rest else "", rest, rel, line, current, optional=True))
     if name == "layer" and node.layer:
         layers.append((line, node.layer, current))
     elif name == "container":
@@ -254,6 +817,28 @@ def _statement(text, line, node, source, rel, dialect, module, parents, local, l
             return out
         if name == "tailwind":
             return [_ref("import", "tailwindcss", f"@tailwind {rest}", rel, line, rel, package="tailwindcss")]
+        if name == "custom-variant":
+            word = rest.split()[0] if rest else ""
+            return [_node(f"{rel}:{line} @custom-variant {word}", "variant", rel, line, [("variant", word)])]
+        if name == "custom-media":
+            word = rest.split()[0] if rest else ""
+            return [_node(f"{rel}:{line} @custom-media {word}", "custom-media", rel, line, [("custom-media", word)])]
+        if name == "custom-selector":
+            word = rest.split()[0] if rest else ""
+            return [_node(f"{rel}:{line} @custom-selector {word}", "custom-selector", rel, line,
+                          [("custom-selector", word)])]
+        if name == "value":
+            return css_value(rest, rel, line, source, module)
+        if name in ("plugin", "config"):
+            spec = _unquote(rest)
+            return [_ref("plugin" if name == "plugin" else "config", spec, spec, rel, line, rel)]
+        if name == "source":
+            inline = re.match(r"(?:not\s+)?inline\(\s*([\"'])(.*?)\1\s*\)", rest)
+            if inline:
+                return [{"t": "classes", "kind": "class", "file": rel, "line": line, "from": rel,
+                         "chain": ["@source inline"], "alts": [[{"s": inline.group(2)}]]}]
+            spec = _unquote(re.sub(r"^not\s+", "", rest))
+            return [_ref("source", spec, spec, rel, line, rel)]
         if name == "apply" and node is not None:
             return [{"t": "classes", "kind": "class", "file": rel, "line": line, "from": source, "chain": ["@apply"],
                      "alts": [[{"s": stylesheet._IMPORTANT_RE.sub("", rest)}]]}]
@@ -281,6 +866,8 @@ def _statement(text, line, node, source, rel, dialect, module, parents, local, l
     if not stylesheet._PROPERTY_RE.match(prop):
         return []
     in_face = node.kind == "at-rule" and node.name == "font-face"
+    if module and node.kind == "rule" and node.selectors == [":export"]:
+        return [_node(f"{rel}:{line} :export {prop}", "export", rel, line, [("export", prop, module)])]
     out = declaration(rel, line, source, prop, stylesheet._IMPORTANT_RE.sub("", value).strip(), in_face=in_face,
                       module=module)
     if dialect == "scss":
@@ -353,6 +940,26 @@ def declaration(rel: str, line: int, source: str, prop: str, value: str | None, 
         origin = (match.group(4) or "global") if match else None
         for name in (match.group(1) if match else value).split():
             out.append(_ref("composes", name, "." + name, rel, line, source, chain, module=module, origin=origin))
+    if module and lower != "composes" and not script:  # a word may be one of the module's `@value` names
+        plain = stylesheet._STRING_RE.sub(" ", stylesheet._URL_RE.sub(" ", value))
+        for word in dict.fromkeys(re.findall(r"(?<![\w$@#.-])([A-Za-z_][\w-]*)(?![\w(-])", plain)):
+            out.append(_ref("css-value", word, word, rel, line, source, chain, module=module, optional=True))
+    return out
+
+
+def css_value(rest: str, rel: str, line: int, source: str, module: str | None) -> list[dict]:
+    """The records of a CSS Modules `@value`: a declaration, or names imported from another module."""
+    match = VALUE_RE.match(rest)
+    if not match or not module:
+        return []
+    if match.group("name"):
+        return [_node(f"{rel}:{line} @value {match.group('name')}", "css-value", rel, line,
+                      [("css-value", match.group("name"), module)])]
+    out = []
+    for item in match.group("names").split(","):
+        origin, _, local = (part.strip() for part in item.partition(" as "))
+        out.append(_ref("css-value", origin, origin, rel, line, source, ("from",), module=module,
+                        origin=match.group("origin"), local=local or origin))
     return out
 
 
@@ -401,25 +1008,40 @@ def _families(prop: str, value: str) -> list[str]:
     return out
 
 
+def _scope_names(context: list[str], module: str | None) -> list[tuple]:
+    """The classes and ids an enclosing `@scope (root) to (limit)` names: a rule inside styles only within them."""
+    found = []
+    for prelude in context:
+        match = SCOPE_RE.match(prelude)
+        if match:
+            found += _selector_names([s for part in (match.group("root"), match.group("limit")) if part
+                                      for s in stylesheet.split_top_level(part)], module)
+    return found
+
+
 def _selector_names(selectors: list[str], module: str | None) -> list[tuple]:
     """(class or id, name, scope) of every class and id a rule's selectors name: scope None for a global name, the
     module's path for a CSS Module's local one (`:global(...)` and `:global` make it global)."""
     names = set()
+    svelte = bool(module) and module.startswith("scoped:") and module.endswith(".svelte")
     for selector in selectors:
         text = stylesheet._without_strings_and_brackets(selector)
+        if svelte:  # Svelte: a compound selector led by `:global(...)` is global as a whole (`:global(html).dark`)
+            text = SVELTE_GLOBAL_RE.sub(r":global(\1\2)", text)
         events = sorted([(m.start(), 0, m) for m in MODE_RE.finditer(text)] +
                         [(m.start(), 1, m) for m in stylesheet._CLASS_OR_ID_RE.finditer(text)
                          if not text.startswith(("#{", "@{"), m.end())], key=lambda item: item[:2])
         mode, stack = "local", []
+        deep = module.replace("scoped:", "deep:", 1) if module and module.startswith("scoped:") else None
         for _, kind, match in events:
             if kind == 1:
-                scope = module if module and mode == "local" else None
+                scope = module if module and mode == "local" else deep if mode == "deep" else None
                 names.add(("class" if match.group(0)[0] == "." else "id",
                            stylesheet._decode_escapes(match.group(1)), scope))
             elif match.group(1):
                 if match.group(2):
                     stack.append(mode)
-                mode = match.group(1)
+                mode = {"local": "local", "deep": "deep", "v-deep": "deep"}.get(match.group(1), "global")
             elif match.group(3):
                 stack.append(mode)
             elif stack:
@@ -441,14 +1063,25 @@ class _Markup(html.parser.HTMLParser):
             found = re.search(r"(?<![\w-])" + re.escape(name) + r"\s*=", raw, re.I)
             return line + raw[:found.start()].count("\n") if found else line
         values = {}
+        # Angular bindings keep their case only in the raw tag: `[class.isActive]`, `[ngClass]`, `[class]`.
+        for match in re.finditer(r"\[(ngClass|class(?:\.([\w-]+))?)\]\s*=\s*(\"([^\"]*)\"|'([^']*)')", raw):
+            expr = match.group(4) if match.group(4) is not None else match.group(5)
+            where = line + raw[:match.start()].count("\n")
+            if match.group(2):
+                alts, chain = [[{"s": match.group(2)}]], ["[class.x]"]
+            else:
+                alts, chain = ng_class(expr), ["[ngClass]" if match.group(1) == "ngClass" else "[class]"]
+            self.out.append({"t": "classes", "kind": "class", "file": self.rel, "line": where, "from": self.rel,
+                             "chain": chain, "alts": alts})
         for name, value in attrs:
             if value is None:
                 continue
             values[name] = value
             if name in ("class", "id"):
                 parts, last = [], 0
-                for match in EJS_RE.finditer(value):
-                    parts += [{"s": value[last:match.start()]}, {"h": "ejs", "x": match.group(), "ctx": "ejs"}]
+                for match in TAG_RE.finditer(value):
+                    tag = "ejs" if match.group().startswith("<%") else "template-tag"
+                    parts += [{"s": value[last:match.start()]}, {"h": tag, "x": match.group(), "ctx": tag}]
                     last = match.end()
                 parts.append({"s": value[last:]})
                 self.out.append({"t": "classes", "kind": name, "file": self.rel, "line": at(name), "from": self.rel,
@@ -457,6 +1090,8 @@ class _Markup(html.parser.HTMLParser):
                 self.out += _sheet(self.rel, "x{" + value + "}", "css", offset=at(name) - 1, inline=True)
         if tag == "link" and "stylesheet" in values.get("rel", "").lower().split() and values.get("href"):
             self.out.append(_ref("import", values["href"], values["href"], self.rel, at("href"), self.rel))
+        if tag == "script" and values.get("src"):
+            self.out.append(_ref("script", values["src"], values["src"], self.rel, at("src"), self.rel))
         self.in_style = tag == "style"
 
     def handle_endtag(self, tag):
@@ -468,10 +1103,49 @@ class _Markup(html.parser.HTMLParser):
             self.out += _sheet(self.rel, data, "css", offset=self.getpos()[0] - 1)
 
 
+def ng_class(expr: str) -> list:
+    """An Angular class binding's alternatives, read as `css_typescript.js` reads a class expression: a string, an
+    array (side by side), an object (each key), a condition, `+`; any other value is a hole of its kind."""
+    expr = expr.strip()
+    while expr.startswith("(") and expr.endswith(")"):
+        expr = expr[1:-1].strip()
+    quoted = re.fullmatch(r"'([^']*)'|\"([^\"]*)\"", expr)
+    if quoted:
+        return [[{"s": quoted.group(1) if quoted.group(1) is not None else quoted.group(2)}]]
+    if expr.startswith("[") and expr.endswith("]"):
+        parts = []
+        for item in stylesheet.split_top_level(expr[1:-1]):
+            for alt in ng_class(item):
+                parts += [{"s": " "}, *alt]
+        return [parts]
+    if expr.startswith("{") and expr.endswith("}"):
+        alts = []
+        for item in stylesheet.split_top_level(expr[1:-1]):
+            key = item.split(":", 1)[0].strip().strip("'\"")
+            alts.append([{"s": key}] if re.fullmatch(r"[\w-]+(?:\s+[\w-]+)*", key) else [{"h": "computed-key", "x": item}])
+        return alts
+    ternary = stylesheet.split_top_level(expr, "?")
+    if len(ternary) == 2 and len(stylesheet.split_top_level(ternary[1], ":")) == 2:
+        yes, no = stylesheet.split_top_level(ternary[1], ":")
+        return ng_class(yes) + ng_class(no)
+    terms = stylesheet.split_top_level(expr, "+")
+    if len(terms) > 1:
+        alts = [[]]
+        for term in terms:
+            alts = [a + [p if "s" in p else {**p, "ctx": "concatenation"} for p in b] for a in alts for b in ng_class(term)]
+        return alts
+    kind = "variable" if re.fullmatch(r"[A-Za-z_$][\w$]*", expr) else \
+        "property" if re.fullmatch(r"[\w$.]+", expr) else "expression"
+    return [[{"h": kind, "x": expr[:120]}]]
+
+
 def _markup(rel: str, text: str) -> list[dict]:
     parser = _Markup(rel)
     parser.feed(text)
     parser.close()
+    for match in INCLUDE_RE.finditer(text) if rel.lower().endswith(".ejs") else ():
+        spec = match.group("call") or match.group("bare")
+        parser.out.append(_ref("include", spec, spec, rel, text.count("\n", 0, match.start()) + 1, rel))
     return parser.out
 
 
@@ -499,8 +1173,9 @@ def tokens(alts: list) -> tuple[list[tuple[str, list, int | None]], list[tuple[s
                     holes.setdefault((atoms[0]["h"], atoms[0]["x"], line), None)
             else:
                 form = next((p["ctx"] for p in atoms if p.get("ctx")), "template")
-                form = "ejs-glued" if form == "ejs" else form  # text glued to an EJS tag: a class lost with it
-                holes.setdefault((form, "".join(p["s"] if "s" in p else p["x"] if p.get("ctx") == "ejs"
+                # text glued to a template tag: a class lost with it
+                form = f"{form}-glued" if form in ("ejs", "template-tag") else form
+                holes.setdefault((form, "".join(p["s"] if "s" in p else p["x"] if p.get("ctx") in ("ejs", "template-tag")
                                                 else "${" + p["x"] + "}" for p in current), line), None)
             current.clear()
         for part in alt:
@@ -536,7 +1211,7 @@ def _package(project_dir: Path, start: Path, name: str) -> Path | None:
 
 
 def _file(path: Path, sass: bool) -> Path | None:
-    extensions = ("", ".scss", ".sass", ".css", ".less") if sass else ("", ".css")
+    extensions = ("", ".scss", ".sass", ".css", ".less", ".styl") if sass else ("", ".css")
     for name in ([path.name, "_" + path.name] if sass else [path.name]):
         for extension in extensions:
             candidate = path.with_name(name + extension)
@@ -613,7 +1288,8 @@ def _download(url: str) -> str | None:
         return None
 
 
-def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: Path | None = None):
+def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: Path | None = None,
+            sass: bool | None = None):
     """Where an import leads: `("project", rel, chain)` (a checkout file, inside the snapshot or not),
     `("ambiguous", [rel, ...], chain)`, `("external", id, package dict, path)`, `("remote", url, package dict)` or
     `("hole", class, reason)`.
@@ -637,7 +1313,15 @@ def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: 
         if found:
             return "ambiguous", found, "url-suffix"
         return "hole", "url-path", "a URL path no checkout file ends with"
-    sass = rel.lower().endswith((".scss", ".sass", ".less"))
+    if sass is None:
+        sass = rel.lower().endswith((".scss", ".sass", ".less", ".styl", ".stylus"))
+    for candidate in _aliased(project_dir, clean.lstrip("~")):  # a bundler alias the tsconfig declares too
+        found = _file(candidate.resolve(), sass)
+        if found is not None:
+            try:
+                return "project", found.relative_to(project_dir).as_posix(), "paths"
+            except ValueError:
+                break
     base = base or (project_dir / rel).parent
     tilde = clean.startswith("~")
     clean = clean.lstrip("~")
@@ -650,6 +1334,15 @@ def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: 
                 inside = None
             if inside and "node_modules" not in inside.split("/"):
                 return "project", inside, None
+            parts_ = found.resolve().as_posix().split("/")
+            if "node_modules" in parts_:
+                at = len(parts_) - 1 - parts_[::-1].index("node_modules")
+                name = "/".join(parts_[at + 1:at + 3]) if parts_[at + 1].startswith("@") else parts_[at + 1]
+                folder = Path("/".join(parts_[:at + 1])) / name
+                meta = json.loads((folder / "package.json").read_text(encoding="utf-8")) \
+                    if (folder / "package.json").is_file() else {}
+                return "external", f"{name}/{found.resolve().relative_to(folder.resolve()).as_posix()}", \
+                    {"manager": "npm", "package": name, "version": meta.get("version")}, found
     if clean.startswith(".") and not tilde:
         return "hole", "unresolved-import", spec
     parts = clean.split("/")
@@ -668,6 +1361,178 @@ def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: 
         {"manager": "npm", "package": name, "version": meta.get("version")}, found
 
 
+_ALIASES: dict = {}
+
+
+def aliases(project_dir: Path) -> list[tuple[str, list[Path]]]:
+    """The path aliases the project's tsconfig or jsconfig declares (`compilerOptions.paths`, against `baseUrl`), in
+    the root config, the configs it extends and the ones it references: [(prefix, [target folders])], longest first."""
+    project_dir = Path(project_dir)
+    if project_dir in _ALIASES:
+        return _ALIASES[project_dir]
+    import snapshot  # the product's JSONC reader
+    found, seen = {}, set()
+
+    def read(path: Path, depth: int = 0) -> None:
+        if depth > 4 or path in seen or not path.is_file():
+            return
+        seen.add(path)
+        try:
+            data = json.loads(snapshot._strip_jsonc_comments(path.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            return
+        options = data.get("compilerOptions") or {}
+        base = (path.parent / options.get("baseUrl", ".")).resolve()
+        for pattern, targets in (options.get("paths") or {}).items():
+            if isinstance(targets, list) and pattern not in found:
+                found[pattern.rstrip("*")] = [(base / target.rstrip("*")).resolve() for target in targets
+                                              if isinstance(target, str)]
+        extends = data.get("extends")
+        for parent in ([extends] if isinstance(extends, str) else extends or []):
+            if isinstance(parent, str) and parent.startswith("."):
+                read((path.parent / parent).resolve(), depth + 1)
+        for reference in data.get("references") or []:
+            if isinstance(reference, dict) and isinstance(reference.get("path"), str):
+                target = (path.parent / reference["path"]).resolve()
+                read(target / "tsconfig.json" if target.is_dir() else target, depth + 1)
+    for name in ("tsconfig.json", "jsconfig.json"):
+        read((project_dir / name).resolve())
+    _ALIASES[project_dir] = sorted(found.items(), key=lambda item: -len(item[0]))
+    return _ALIASES[project_dir]
+
+
+def _aliased(project_dir: Path, spec: str) -> list[Path]:
+    """The paths an aliased specifier names (`@/x` with `"@/*": ["src/*"]`), or [] when no alias matches."""
+    for prefix, targets in aliases(project_dir):
+        if prefix and spec.startswith(prefix):
+            return [target / spec[len(prefix):] for target in targets]
+    return []
+
+
+def _module_file(project_dir: Path, rel: str, spec: str, resolved: str | None, in_snapshot: set) -> str | None:
+    """The project module a script's import loads: TypeScript's resolution, else a relative path with the script
+    extensions tried in order (a component, which TypeScript does not resolve)."""
+    if resolved:
+        try:
+            target = Path(resolved).resolve().relative_to(project_dir).as_posix()
+        except ValueError:
+            return None
+        return target if target in in_snapshot else None
+    spec = spec.split("?")[0]
+    bases = [(project_dir / rel).parent / spec] if spec.startswith(".") else _aliased(project_dir, spec)
+    for candidate in [found for base in bases for found in
+                      [base, *(base.with_name(base.name + ext) for ext in SCRIPT_SUFFIXES),
+                       *(base / f"index{ext}" for ext in SCRIPT_SUFFIXES)]]:
+        try:
+            target = candidate.resolve().relative_to(project_dir).as_posix()
+        except ValueError:
+            continue
+        if target in in_snapshot and candidate.is_file():
+            return target
+    return None
+
+
+def _component_file(project_dir: Path, importer: str, spec: str, name: str, in_snapshot: set) -> str | None:
+    """The component file an import binds `name` to: the module itself, or, through a barrel
+    (`export { default as Name } from "./Name/index.vue"`), the file the barrel re-exports."""
+    target = _module_file(project_dir, importer, spec, None, in_snapshot)
+    if target is None or target.endswith((".vue", ".svelte", ".astro")):
+        return target
+    try:
+        text = (project_dir / target).read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return None
+    for match in re.finditer(r"export\s*\{([^}]*)\}\s*from\s*['\"]([^'\"]+)['\"]", text):
+        if re.search(r"\bdefault\s+as\s+" + re.escape(name) + r"\b", match.group(1)):
+            return _module_file(project_dir, target, match.group(2), None, in_snapshot)
+    return None
+
+
+def _page_file(project_dir: Path, ref: dict, in_snapshot: set):
+    """(file, chain) an EJS include or a `<script src>` loads, or None: an include is relative to the including
+    template (`.ejs` added when it has no extension); a script source is a URL, relative or a path (`url-suffix`)."""
+    spec = ref["name"].split("?")[0].split("#")[0]
+    if ref["kind"] in ("include", "template"):
+        base = (project_dir / ref["file"]).parent / spec
+        for candidate in (base, base.with_name(base.name + ".ejs")):
+            try:
+                target = candidate.resolve().relative_to(project_dir).as_posix()
+            except ValueError:
+                continue
+            if target in in_snapshot:
+                return target, None
+        return None
+    if re.match(r"^[a-z][\w+.-]*:|^//", spec, re.I):
+        return None
+    if spec.startswith("/"):
+        found = [rel for rel in _url_path(project_dir, spec) if rel in in_snapshot]
+        return (found[0], "url-suffix") if len(found) == 1 else None
+    try:
+        target = ((project_dir / ref["file"]).parent / spec).resolve().relative_to(project_dir).as_posix()
+    except ValueError:
+        return None
+    return (target, None) if target in in_snapshot else None
+
+
+def load_units(refs: list, imports: dict, loads: dict, in_snapshot: set, read: set) -> dict:
+    """For every file, the sets of what is loaded together with it, each set one unit stated by the code: a page
+    (an HTML or EJS file no template includes, with its includes, the sheets they link or hold, the scripts they
+    load and what those import) or a module bundle no page loads (a script or component nothing imports, with every
+    module it imports, the sheets those import and the component style blocks among them). A sheet brings what it
+    imports. Tailwind's utilities (`tailwindcss`) come with any sheet that loads Tailwind."""
+    includes, scripts, sheets = collections.defaultdict(set), collections.defaultdict(set), collections.defaultdict(set)
+    for ref in refs:
+        found = imports.get(id(ref))
+        if ref["kind"] == "include" and found:
+            includes[ref["file"]].add(found[0])
+        elif ref["kind"] == "script" and found:
+            scripts[ref["file"]].add(found[0])
+        elif ref["kind"] == "import" and ref.get("package") == "tailwindcss":
+            sheets[ref["file"]].add("tailwindcss")
+        elif ref["kind"] == "import" and found:
+            if found[0] == "project":
+                sheets[ref["file"]].add(found[1])
+            elif found[0] == "ambiguous":
+                sheets[ref["file"]].update(found[1])
+            elif found[0] in ("external", "remote"):
+                sheets[ref["file"]].add(found[1])
+                if isinstance(found[2], dict) and found[2].get("package") == "tailwindcss":
+                    sheets[ref["file"]].add("tailwindcss")
+
+    def closure(starts, edges):
+        seen, queue = set(), list(starts)
+        while queue:
+            current = queue.pop()
+            if current not in seen:
+                seen.add(current)
+                queue += sorted(edges.get(current, ()))
+        return seen
+
+    def unit(files):
+        members = set(files)
+        for f in files:
+            members |= closure(sheets.get(f, ()), sheets)
+        return frozenset(members)
+
+    markup = {rel for rel in read if rel.lower().endswith(MARKUP)}
+    included = {target for targets in includes.values() for target in targets}
+    entries = {target for targets in scripts.values() for target in targets}
+    modules = {rel for rel in in_snapshot if rel.lower().endswith(SCRIPT_SUFFIXES)}
+    imported = {target for targets in loads.values() for target in targets}
+    units = []
+    for page in sorted(markup - included):
+        templates = closure([page], includes)
+        bundle = closure([s for t in templates for s in scripts.get(t, ())], loads)
+        units.append(unit(templates | bundle))
+    for root in sorted(modules - imported - entries):
+        units.append(unit(closure([root], loads)))
+    by_file = collections.defaultdict(list)
+    for members in units:
+        for member in members:
+            by_file[member].append(members)
+    return by_file
+
+
 def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[str], engines: list[dict],
           missing: dict) -> dict:
     """The common graph from the three adapters' records: nodes, arcs (`uncertain` with every candidate when the
@@ -679,6 +1544,7 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
     valid, version = set(tailwind.get("valid") or ()), tailwind.get("version")
     in_snapshot, read, cssinjs = set(files), set(), {}
     pending, sheets = {}, set()  # external names, made into nodes when a reference reaches them; sheets read
+    sheet_of = {}  # an external name: the sheet that declares it
 
     def node(identity, kind, rel, line, external=None):
         return nodes.setdefault(identity, {"id": identity, "kind": kind, "file": rel, "line": line,
@@ -696,6 +1562,9 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
     def hole(site, kind, cls, name, reason="-"):
         holes.append({"site": site, "name": name, "kind": kind, "class": cls, "reason": reason})
 
+    generated, interpolated = {}, []  # (node, name key): the loop it came from; compile-time selector patterns
+    loads = collections.defaultdict(set)  # a script module: the project modules it loads
+    literals, guarded = {}, set()  # Less: a variable node's literal value; mixins with a guard
     for record in records:  # first pass: every declaration, so that the second resolves against all of them
         kind, rel = record["t"], record.get("file")
         site = f"{rel}:{record['line']}" if "line" in record else None
@@ -703,6 +1572,20 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             read.add(rel)
         elif kind == "node":
             add(record)
+            for key in map(tuple, record.get("generated", ())):
+                generated[(record["id"], key)] = "selector built at compile time from literal values"
+            if record.get("literal") is not None:
+                literals[record["id"]] = record["literal"]
+            if record.get("guard"):
+                guarded.add(record["id"])
+        elif kind == "interpolated":
+            interpolated += [(pattern, site) for pattern in record["patterns"]]
+        elif kind == "module":
+            target = _module_file(project_dir, rel, record["spec"], record.get("to"), in_snapshot)
+            if target:
+                loads[rel].add(target)
+        elif kind == "template":
+            refs.append(_ref("template", record["spec"], record["spec"], rel, record["line"], rel))
         elif kind == "ref":
             refs.append(record)
         elif kind == "hole":
@@ -712,7 +1595,8 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             for token, chain, line in found:
                 line = line or record["line"]
                 refs.append(_ref(record["kind"], token, ("." if record["kind"] == "class" else "#") + token, rel,
-                                 line, record.get("from", rel), [*record["chain"], *chain]))
+                                 line, record.get("from", rel), [*record["chain"], *chain],
+                                 scopes=record.get("scopes") or []))
                 utility = stylesheet._split_variant(token.lstrip("!"))[1]
                 custom = re.match(r"!?\[(--[A-Za-z0-9_-]+):.+\]!?$", utility)
                 if record["kind"] == "class" and token in valid and custom:  # a Tailwind arbitrary property
@@ -722,7 +1606,7 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 hole(f"{rel}:{line or record['line']}", record["kind"], cls, name)
         elif kind == "member":
             refs.append(_ref("module-member", record["name"], "." + record["name"], rel, record["line"], rel,
-                             spec=record["spec"]))
+                             spec=record["spec"], scope=record.get("scope")))
         elif kind == "decl":
             for item in declaration(rel, record["line"], rel, record["property"], record["value"],
                                     chain=[record["via"]], script=True):
@@ -731,6 +1615,27 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             refs += var_refs(record["text"], rel, record["line"], rel, ["css-text"], strings=False)
         elif kind == "import":
             refs.append(_ref("import", record["spec"], record["spec"], rel, record["line"], rel, script=True))
+        elif kind == "cssinjs":
+            tree = [{"t": "rule", "line": record["line"], "sel": [record["root"]], "kids": record["tree"]}] \
+                if record["root"] else record["tree"]
+            for item in tree_records(rel, tree, "css"):
+                if item["t"] == "node":
+                    add(item)
+                elif item["t"] == "ref":
+                    refs.append(item)
+        elif kind == "cssinjs-text":
+            text = record["text"] if record["global"] else "&{" + record["text"] + "}"
+            for item in _sheet(rel, text, "scss", offset=record["line"] - 1):
+                if item["t"] == "node" and "__dd" in item["id"]:
+                    label = item["id"].split(" ", 1)[1]
+                    for key, expression in record["holes"].items():
+                        label = label.replace(key, "${" + expression + "}")
+                    hole(f"{rel}:{item['line']}", "rule", "interpolated-selector", label)
+                    item = {**item, "names": [n for n in item["names"] if "__dd" not in n[1]]}
+                if item["t"] == "node":
+                    add(item)
+                elif item["t"] == "ref":
+                    refs.append(item)
         elif kind == "css-in-js":
             text = stylesheet._without_strings_and_brackets(record["selector"])
             for match in stylesheet._CLASS_OR_ID_RE.finditer(text):
@@ -767,6 +1672,7 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 target = f"{identity} {label}"
                 pending.setdefault(target, {"id": target, "kind": key[0], "file": rel,
                                             "line": record["line"] if rel else None, "external": external})
+                sheet_of[target] = identity
                 if target not in names[key]:
                     names[key].append(target)
 
@@ -793,17 +1699,31 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                     external.update({"version": banner.group(2), "from": "banner"})
                 external_sheet(found[1], external, text, None, found[1], "css")
 
-    sass = collections.defaultdict(lambda: {"use": {}, "forward": [], "import": []})
+    sass = collections.defaultdict(lambda: {"use": {}, "forward": [], "import": [], "builtin": {}})
+    less_imports, options = collections.defaultdict(list), collections.defaultdict(list)
     imports = {}
     for ref in refs:  # imports first: Sass scopes, CSS Module members and external sheets need them
+        if ref["kind"] in ("include", "script", "template"):
+            imports[id(ref)] = _page_file(project_dir, ref, in_snapshot)
+            if ref["kind"] == "template" and imports[id(ref)]:
+                loads[ref["file"]].add(imports[id(ref)][0])
         if ref["kind"] == "import" and "package" not in ref:
-            imports[id(ref)] = found = resolve(project_dir, ref["file"], ref["name"], ref.get("script", False))
+            imports[id(ref)] = found = resolve(project_dir, ref["file"], ref["name"], ref.get("script", False),
+                                               sass=True if ref.get("sass") or ref.get("less") else None)
             load(found, ref)
+            if found[0] == "external" and ref.get("sass") == "use" and found[2].get("manager") == "sass":
+                sass[ref["file"]]["builtin"][ref["ns"]] = found[1]
+            if found[0] == "project" and ref.get("less") == "import":
+                less_imports[ref["file"]].append(found[1])
+                options[found[1]].append(set(ref.get("options") or ()))
             if found[0] == "project" and ref.get("sass"):
                 if ref["sass"] == "use":
                     sass[ref["file"]]["use"][ref["ns"]] = found[1]
+                elif ref["sass"] == "forward":
+                    sass[ref["file"]]["forward"].append((found[1], ref.get("prefix") or "", ref.get("show"),
+                                                         ref.get("hide")))
                 else:
-                    sass[ref["file"]][ref["sass"]].append(found[1])
+                    sass[ref["file"]]["import"].append(found[1])
     def composes_scope(ref):
         """Where a `composes` names its classes: the module itself, global (None) or another file."""
         if ref["origin"] is None:
@@ -819,6 +1739,23 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 if key[0] == "class" and key[2] == ref["module"]:
                     composes[(key[2], key[1])].append((composes_scope(ref), ref["name"]))
 
+    units = load_units(refs, imports, loads, in_snapshot, read)
+    patterns = {key: found for key, found in names.items() if key[0] == "utility-pattern"}
+    patterns = {(key[0], key[1]): found for key, found in patterns.items()}
+    for ref in list(refs):  # a class token's custom variants (`pointer-coarse:p-2`) name them
+        if ref["kind"] == "class" and ":" in ref["name"]:
+            chain_ = stylesheet._split_variant(ref["name"].lstrip("!"))[0]
+            for variant in dict.fromkeys(part for part in chain_.split(":") if ("variant", part) in names):
+                refs.append(_ref("variant", variant, variant, ref["file"], int(ref["site"].rsplit(":", 1)[1]),
+                                 ref["from"]))
+
+    def loaded(site_file, target):
+        sheet = sheet_of.get(target) or ("tailwindcss" if target.startswith("tailwindcss ") else
+                                         nodes[target]["file"] if target in nodes else None)
+        if sheet is None or sheet == site_file:
+            return True
+        return any(sheet in unit for unit in units.get(site_file, ()))
+
     def tailwind_node(name):
         return node(f"tailwindcss {name}", "class" if not name.startswith("@") else "layer", None, None,
                     {"manager": "npm", "package": "tailwindcss", "version": version})["id"]
@@ -831,11 +1768,100 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 continue
             seen.append(current)
             for key in keys:
-                queue += sass[current][key]
+                queue += [item[0] if isinstance(item, tuple) else item for item in sass[current][key]]
         return seen
+
+    def members(module, name, key, seen=None):
+        """A module's members of that name: its own, then those its `@forward`s make visible (prefix, show, hide)."""
+        seen = set() if seen is None else seen
+        if (module, name) in seen:
+            return []
+        seen.add((module, name))
+        found = list(names[(key, name, module)])
+        bare = name[1:] if name.startswith("$") else name
+        for target, prefix, show, hide in sass[module]["forward"]:
+            if prefix and not bare.startswith(prefix):
+                continue
+            inner = ("$" if name.startswith("$") else "") + bare[len(prefix):]
+            if (show is not None and inner not in show) or (hide is not None and inner in hide):
+                continue
+            found += members(target, inner, key, seen)
+        return found
+
+    importers = collections.defaultdict(set)
+    for rel_, scope_ in list(sass.items()):
+        for target in scope_["import"]:
+            importers[target].add(rel_)
+
+    def import_group(start):
+        """Every file joined to this one by `@import`, either way: one compilation shares their globals."""
+        seen, queue = [], [start]
+        while queue:
+            current = queue.pop(0)
+            if current in seen:
+                continue
+            seen.append(current)
+            queue += sass[current]["import"] + sorted(importers[current])
+        return seen
+
+    less_importers = collections.defaultdict(set)
+    for rel_, targets_ in list(less_imports.items()):
+        for target in targets_:
+            less_importers[target].add(rel_)
+    # A Less file every import of which is `(reference)`: its rules are output only where extended or called.
+    reference_only = {rel_ for rel_, sets in options.items() if sets and all("reference" in o for o in sets)}
+
+    def less_group(start):
+        seen, queue = [], [start]
+        while queue:
+            current = queue.pop(0)
+            if current in seen:
+                continue
+            seen.append(current)
+            queue += less_imports[current] + sorted(less_importers[current])
+        return seen
+
+    def less_variable(rel, name):
+        """The declarations a Less variable reads: lazy evaluation keeps the last one of a file; declarations in
+        several files of one compilation leave the order to the import order (uncertain)."""
+        found = [target for f in less_group(rel) for target in names[("less-variable", name, f)]]
+        by_file = collections.defaultdict(list)
+        for target in found:
+            by_file[nodes[target]["file"]].append(target)
+        last = [max(group, key=lambda target: nodes[target]["line"]) for group in by_file.values()]
+        return last, ("Less: the last declaration in import order wins" if len(last) > 1 else None)
+
+    def sass_targets(ref, key):
+        ns, rel, name = ref.get("ns"), ref["file"], ref["name"]
+        if ns is not None:
+            if ns in sass[rel]["builtin"]:
+                node(sass[rel]["builtin"][ns], "module", None, None,
+                     {"manager": "sass", "package": sass[rel]["builtin"][ns], "version": None})
+                return [(sass[rel]["builtin"][ns], ())], None
+            module = sass[rel]["use"].get(ns)
+            return ([(target, ()) for target in members(module, name, key)] if module else []), None
+        found = [target for f in closure(rel, ("import",)) for target in names[(key, name, f)]]
+        if "*" in sass[rel]["use"]:
+            found += members(sass[rel]["use"]["*"], name, key)
+        chain = ()
+        if not found:
+            found, chain = [target for f in import_group(rel) for target in names[(key, name, f)]], ("import-group",)
+        found = list(dict.fromkeys(found))
+        return [(target, chain) for target in found], ("Sass scope: several declarations" if len(found) > 1 else None)
+
+    values = {}  # (module, local name): (origin module, origin name), from `@value ... from`
+    for ref in refs:
+        if ref["kind"] == "css-value" and ref.get("origin"):
+            found = resolve(project_dir, ref["file"], ref["origin"])
+            if found[0] == "project":
+                values[(ref["module"], ref["local"])] = (found[1], ref["name"])
 
     def member(module, name):
         out, seen, queue = [], set(), [(module, name, ())]
+        out += [(target, ()) for target in names[("export", name, module)] + names[("css-value", name, module)]]
+        if (module, name) in values:
+            origin = values[(module, name)]
+            out += [(target, ("from",)) for target in names[("css-value", origin[1], origin[0])]]
         while queue:
             scope, current, chain = queue.pop(0)
             if (scope, current) in seen:
@@ -852,6 +1878,13 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
         targets, uncertain = [], None
         if "to" in ref:
             targets = [(ref["to"], ())]
+        elif kind in ("include", "script", "template"):
+            found = imports[id(ref)]
+            if found is None:
+                hole(ref["site"], kind, "unresolved-import", ref["symbol"], "no file of the snapshot")
+                continue
+            targets = [(found[0], (found[1],) if found[1] else ())]
+            node(found[0], "module", found[0], 1)
         elif kind == "import":
             found = ("external", "tailwindcss", {"manager": "npm", "package": "tailwindcss", "version": version},
                      None) if ref.get("package") else imports[id(ref)]
@@ -874,10 +1907,19 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             targets = [(tailwind_node(f"@layer {name}"), ())]
         elif kind in ("class", "id"):
             targets = [(target, ()) for target in names[(kind, name, None)]]
-            if kind == "class" and name in valid:
+            for scope, via in ref.get("scopes", ()):
+                targets += [(target, tuple(via)) for target in names[(kind, name, scope)]]
+            utility = stylesheet._split_variant(name.lstrip("!"))[1].strip("!")
+            own = names[("utility", utility)] + [target for (key, prefix), found in patterns.items()
+                                                 if utility.startswith(prefix) for target in found]
+            targets += [(target, ()) for target in own] if kind == "class" else []
+            if kind == "class" and NAMED_GROUP_RE.match(name) and tailwind.get("valid") is not None:
+                targets.append((tailwind_node(name.split("/")[0]), ("named-group",)))
+            elif kind == "class" and name in valid and not own:
                 targets.append((tailwind_node(name), ()))
         elif kind == "module-member":
-            found = resolve(project_dir, ref["file"], ref["spec"], script=True)
+            found = ("project", ref["scope"], None) if ref.get("scope") else \
+                resolve(project_dir, ref["file"], ref["spec"], script=True)
             if found[0] != "project":
                 hole(ref["site"], kind, "unresolved-import", ref["symbol"], ref["spec"])
                 continue
@@ -892,31 +1934,115 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                              "container": "the nearest ancestor container wins"}[kind]
         elif kind == "font-face":
             targets = [(target, ()) for target in names[(kind, name)]]
-        elif kind in ("sass-variable", "mixin"):
-            ns, rel = ref.get("ns"), ref["file"]
-            if ns is None:
-                scope = closure(rel, ("import",))
-                scope += [f for target in sass[rel]["use"].values() if "*" in sass[rel]["use"]
-                          for f in closure(sass[rel]["use"]["*"], ("forward",))]
-            else:
-                scope = closure(sass[rel]["use"][ns], ("forward",)) if ns in sass[rel]["use"] else []
-            key = "sass-variable" if kind == "sass-variable" else "mixin"
-            targets = [(target, ()) for f in dict.fromkeys(scope) for target in names[(key, name, f)]]
+        elif ref.get("stylus"):
+            key = "stylus-variable" if kind == "stylus-variable" else "stylus-mixin"
+            targets = [(target, ()) for f in less_group(ref["file"]) for target in names[(key, name, f)]]
+            if not targets and ref.get("optional"):
+                continue  # a keyword or a function of Stylus, not a name the project declares
             if len(targets) > 1:
-                uncertain = "Sass scope: several declarations"
+                uncertain = "Stylus: the definition in force where it is used is decided in order"
+        elif kind in ("sass-variable", "mixin", "function") and not ref.get("less"):
+            targets, uncertain = sass_targets(ref, kind)
+            if not targets and kind == "function" and ref.get("ns") is None:
+                continue  # a CSS or global Sass function, not a name the project declares
+        elif kind == "placeholder":
+            targets = [(target, ()) for target in names[("placeholder", name, None)]]
+        elif kind == "less-variable":
+            first, uncertain = less_variable(ref["file"], name[1:] if name.startswith("@@") else name)
+            targets = [(target, ()) for target in first]
+            if name.startswith("@@"):
+                for target in first:
+                    if literals.get(target):
+                        second, again = less_variable(ref["file"], "@" + literals[target])
+                        targets += [(found, ("variable-variable",)) for found in second]
+                        uncertain = uncertain or again
+        elif kind == "mixin" and ref.get("less"):
+            found = []
+            for alt in ref.get("alts") or [name]:  # the innermost scope that defines it wins
+                found = list(dict.fromkeys(target for f in less_group(ref["file"])
+                                           for target in names[("less-mixin", alt, f)]))
+                if found:
+                    break
+            targets = [(target, ()) for target in found]
+            if len(found) > 1 or any(target in guarded for target in found):
+                uncertain = "Less: every definition whose arity and guard match is applied"
+        elif kind == "custom-media":
+            targets = [(target, ()) for target in names[("custom-media", name)]]
+        elif kind == "custom-selector":
+            targets = [(target, ()) for target in names[("custom-selector", name)]]
+        elif kind == "css-value":
+            if ref.get("origin"):
+                origin = values.get((ref["module"], ref["local"]))
+                targets = [(target, ()) for target in names[("css-value", origin[1], origin[0])]] if origin else []
+            else:
+                targets = [(target, ()) for target in names[("css-value", name, ref["module"])]]
+                origin = values.get((ref["module"], name))
+                if not targets and origin:
+                    targets = [(target, ("from",)) for target in names[("css-value", origin[1], origin[0])]]
+            if not targets and ref.get("optional"):
+                continue  # a keyword, not one of the module's values
+        elif kind == "variant":
+            targets = [(target, ()) for target in names[("variant", name)]]
+            if not targets and ref.get("optional"):
+                continue  # one of Tailwind's own variants
+        elif kind in ("source", "config"):
+            path = ((project_dir / ref["file"]).parent / name).resolve()
+            try:
+                rel = path.relative_to(project_dir).as_posix()
+            except ValueError:
+                rel = None
+            if rel is None or not path.exists():
+                hole(ref["site"], kind, "unresolved-import", ref["symbol"], "no checkout path")
+                continue
+            node(rel, "directory" if path.is_dir() else "module", rel, None if path.is_dir() else 1)
+            targets = [(rel, ())]
+        elif kind == "plugin":
+            base = (project_dir / ref["file"]).parent
+            spec = name.split("?")[0]
+            local = next((candidate for candidate in (base / spec, base / (spec + ".js")) if candidate.is_file()), None)
+            if local is not None and local.resolve().is_relative_to(project_dir):
+                rel = local.resolve().relative_to(project_dir).as_posix()
+                node(rel, "module", rel, 1, None if rel in in_snapshot else
+                     {"manager": "checkout", "package": "unknown", "version": "unknown", "from": None})
+                targets = [(rel, ())]
+            else:
+                folder = _package(project_dir, base, spec.split("/")[0])
+                if folder is not None:
+                    meta = json.loads((folder / "package.json").read_text(encoding="utf-8")) \
+                        if (folder / "package.json").is_file() else {}
+                    node(spec, "module", None, None, {"manager": "npm", "package": spec, "version": meta.get("version")})
+                    targets = [(spec, ())]
+        if kind in ("class", "id") and targets:
+            loops = [generated[(target, (kind, name, None))] for target, _ in targets
+                     if (target, (kind, name, None)) in generated]
+            if loops:
+                uncertain = loops[0]
+            elif any(nodes[target]["file"] in reference_only for target, _ in targets if target in nodes):
+                uncertain = "imported with (reference): output only where extended or called as a mixin"
         if not targets:
             cls = {"class": "no-rule", "id": "no-rule", "module-member": "unknown-member", "composes": "no-rule",
                    "custom-property": "undeclared", "keyframes": "no-keyframes", "font-face": "no-font-face",
-                   "container": "no-container", "sass-variable": "undeclared", "mixin": "undeclared"}[kind]
+                   "container": "no-container", "sass-variable": "undeclared", "mixin": "undeclared",
+                   "function": "undeclared", "placeholder": "no-placeholder", "less-variable": "undeclared",
+                   "v-bind": "undeclared", "variant": "undeclared", "custom-media": "undeclared",
+                   "stylus-variable": "undeclared", "custom-selector": "undeclared", "css-value": "undeclared",
+                   "plugin": "unresolved-import"}[kind]
             reason = f"fallback {ref['fallback']}" if ref.get("fallback") else "-"
             if kind in ("class", "id") and (kind, name) in cssinjs:
                 cls, reason = "css-in-js", f"a selector key of a script's object literal at {cssinjs[(kind, name)]}"
             elif kind == "class" and tailwind.get("valid") is not None and NAMED_GROUP_RE.match(name):
                 cls, reason = "tailwind-named-group", f"Tailwind {version}: a variant anchor, not a utility"
+            elif kind in ("class", "id") and any(
+                    {"class": ".", "id": "#"}[kind] == mark and (prefix or suffix) and name.startswith(prefix)
+                    and name.endswith(suffix) and len(name) > len(prefix) + len(suffix)
+                    for (mark, prefix, suffix), _ in interpolated):  # a bare `.#{$x}` would claim every name
+                where = next(site for (mark, prefix, suffix), site in interpolated
+                             if (prefix or suffix) and name.startswith(prefix) and name.endswith(suffix))
+                cls, reason = "interpolated-selector", f"a selector built at compile time at {where} may name it"
             hole(ref["site"], kind, cls, name if kind in ("class", "id", "module-member", "composes") else ref["symbol"],
                  reason)
             continue
-        candidates = sorted(dict.fromkeys(target for target, _ in targets))
+        candidates = sorted(dict.fromkeys(target for target, _ in targets)) if uncertain else None
         for target, _ in targets:
             if target not in nodes:
                 nodes[target] = dict(pending[target])
@@ -927,8 +2053,13 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             seen.add((ref["from"], target, ref["site"], kind, ref["symbol"], chain))
             edge = {"from": ref["from"], "to": target, "site": ref["site"], "kind": kind, "chain": list(chain),
                     "end": "external" if nodes[target]["external"] else "project", "symbol": ref["symbol"]}
-            if uncertain:
-                edge["uncertain"] = {"reason": uncertain, "candidates": candidates}
+            reason = uncertain
+            if kind in LOADED_KINDS and not COMPILE_TIME & set(chain) and not loaded(ref["file"], target):
+                reason = f"{uncertain}; sheet-not-proven-loaded" if uncertain else "sheet-not-proven-loaded"
+            if reason:
+                # The candidates are those one cascade or one compilation picks among; a sheet not proven loaded
+                # has none to pick: its arc stands alone (listing every rule of a class on every arc is quadratic).
+                edge["uncertain"] = {"reason": reason, **({"candidates": candidates} if uncertain else {})}
             edges.append(edge)
     # Read completely: a file read in part (`PARTLY`) is listed as missing with what is left out.
     names_read = (read | {rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)}) - set(missing)

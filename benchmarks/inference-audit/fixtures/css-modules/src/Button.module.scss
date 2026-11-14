@@ -1,0 +1,6 @@
+@value brand, accent from "./colors.module.css";
+$pad: 4px;
+:export { gap: $pad; }
+.primary { composes: base from "./colors.module.css"; color: accent; padding: $pad; }
+:global(.dark) .primary { color: white; }
+.local :local(.inner) { margin: 0; }

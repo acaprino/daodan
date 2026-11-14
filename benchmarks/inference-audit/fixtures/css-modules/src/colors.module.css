@@ -1,0 +1,3 @@
+@value brand: #0af;
+@value accent: red;
+.base { color: brand; }

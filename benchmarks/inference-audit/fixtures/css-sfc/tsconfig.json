@@ -1,0 +1,5 @@
+{
+  "compilerOptions": { "target": "es2020", "module": "esnext", "moduleResolution": "bundler", "strict": false, "noEmit": true, "skipLibCheck": true,
+    "baseUrl": ".", "paths": { "@/*": ["src/*"] } },
+  "include": ["src"]
+}

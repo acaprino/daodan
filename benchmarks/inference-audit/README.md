@@ -794,6 +794,8 @@ Non verificato:
 
 ### 14 novembre 2026, grafo dei fogli di stile: CSS
 
+Aggiornato lo stesso giorno con tutti i dialetti, i blocchi `<style>` e la regola di pagina: cosa cambia è nei punti marcati «Ora», le misure nuove nelle sezioni in fondo («fogli di stile su progetti reali»). Le cifre qui sotto restano quelle dei primi due giri su tududi.
+
 Verdetto: su tududi il grafo è corretto e completo per i file che legge. La verifica a mano dà 20 su 20. Su 1.708 file dati non ne manca nessuno, e un file che nessun lettore prende ora finisce fra i mancanti con il motivo, mai perso.
 
 Font Awesome 6.4.0 sta in `vendor/`, fuori dallo snapshot, ma le pagine della landing lo caricano: ora è letto come foglio esterno, e le sue classi finiscono su nodi esterni con pacchetto e versione. I buchi rimasti hanno ciascuno la sua classe. I falsi `no-rule` non ci sono più: diventano `css-in-js` (24), `tailwind-named-group` (2) ed `ejs-glued` (5).
@@ -812,7 +814,12 @@ Cos'è il grafo di un foglio di stile. Non ci sono chiamate: ci sono nomi che la
 - Un percorso URL (`/landing-assets/x.css`) va ai file del checkout che finiscono con la sua coda più lunga. La coda è il percorso intero, o almeno i suoi ultimi due segmenti. La regola è `url-suffix`; più file trovati danno archi incerti.
 - Più dichiarazioni dello stesso nome. Per proprietà custom, keyframes e container la cascata ne sceglie una per elemento: sono archi `uncertain`, uno per candidato, ciascuno con la lista intera. Le regole di una classe e i `@font-face` di una famiglia valgono tutti insieme: archi certi.
 - Buco: un nome che nessuno dichiara (`no-rule`, `undeclared`...). Il buco è `css-in-js` quando un oggetto di uno script ha una chiave selettore, con un blocco di dichiarazioni come valore, che nomina quella classe; `tailwind-named-group` per `group/x` e `peer/x`. Buco anche una classe costruita a runtime, con la sua forma: `template`, `concatenation`, `ejs` (solo il tag), `ejs-glued` (testo incollato al tag), `parameter`, `call`, `property`, `element-access`, `variable`. Mai una supposizione.
-- File non letti: un foglio o un file di markup che nessun lettore prende (`.sass`, Stylus, `.vue`, `.svelte`, `.astro`, linguaggi di template) va in `files.missing` con il motivo. Anche `.less` ci va, letto in parte: regole e proprietà custom sì, variabili `@x` e chiamate di mixin no. `indexed` conta solo i file letti per intero.
+- File non letti: un foglio o un file di markup che nessun lettore prende va in `files.missing` con il motivo. `indexed` conta solo i file letti per intero.
+  - Ora: SCSS e Sass indentato con `sass-parser`, Less con `less`, Stylus con `stylus`, Vue, Svelte e Astro con i loro compilatori (blocchi `<style>` per dialetto, scoped, module, `:global`, `:deep`, `v-bind()`, `class:list`, `:class`, `class:name`). Restano fuori solo i linguaggi di template diversi da HTML ed EJS (Handlebars, Nunjucks, Twig, Pug, Liquid, Jinja).
+- Ora, regola di pagina: un'unità è una pagina HTML/EJS che nessun template include, con i suoi include, i fogli che linka o contiene, gli script che carica e i loro import; oppure un bundle di moduli che nessuna pagina carica, con i fogli importati e i blocchi `<style>` dei componenti. Un foglio porta i fogli che importa; Tailwind viene con il foglio che lo carica. Un arco di classe, id, proprietà custom, keyframes, font-face o container è certo se un'unità contiene sito e foglio del bersaglio; altrimenti resta, incerto, con `sheet-not-proven-loaded`. `@apply`, `@extend`, `:extend`, `composes` e `safelist` sono a compilazione: fuori dalla regola.
+- Ora, CSS-in-JS: letto dal programma TypeScript, riconosciuto dal pacchetto che dichiara il nome. Template di styled-components ed emotion, oggetti di vanilla-extract, `EditorView.theme` di CodeMirror, Stitches, MUI `styled` e `sx`: le loro regole sono nodi. Un selettore con un'interpolazione non letterale è un buco `interpolated-selector` con la forma.
+- Ora, altre fonti di classi: `[class.x]`, `[ngClass]` e `[class]` di Angular, con `@Component` che lega template e fogli; le tabelle di `cva` e `tailwind-variants`; un helper del progetto (`cn`) che rende la chiamata di clsx o tailwind-merge sul suo parametro.
+- Ora, Vue: una regola `scoped` arriva al markup del suo componente e, con catena `child-root`, all'elemento radice di ogni figlio che il suo template rende (anche attraverso un barrel `export { default as X } from "./X.vue"`); un nome dentro `:deep()` arriva al componente e a tutto ciò che sta sotto di lui, mai agli altri; `:global()` e i blocchi senza `scoped` sono globali; `<style module>` si legge da `$style.x`. Gli alias di `paths` del tsconfig (`@/x`, con catena `paths`) valgono per import di script e di fogli, anche dentro un blocco SCSS.
 - `chain` dice la regola che ha portato al bersaglio: `literal-type` (tipo stringa letterale del checker), `initializer` (una const o una proprietà di un oggetto const), `clsx`, `classList`, `@apply`, `composes`, `style-object`, `css-text`, `url-suffix`.
 
 Quale strumento dà cosa (fonti primarie):
@@ -828,6 +835,13 @@ Quale strumento dà cosa (fonti primarie):
 | API JS di Sass | `loadedUrls` (i file caricati) e la source map dell'uscita | no: dà i file, non variabili e mixin; tududi non ha Sass |
 | `typescript-plugin-css-modules` | i tipi di `styles.foo` nell'editor | no: plugin del language service, non un'esecuzione unica; il compilatore basta |
 | stylelint `no-unknown-custom-properties`, `no-unknown-animations` | sì o no su un nome, "nella stessa sorgente o nei `referenceFiles`" | no: un verdetto, non archi |
+| `sass-parser` 0.5.6 (team di Sass, MIT) | l'albero del parser di Dart Sass per SCSS e Sass indentato, con espressioni, `@use`/`@forward` (prefisso, show, hide), flag delle variabili | sì: SCSS e Sass; il README lo dice in sviluppo, ma sui casi ha letto tutto tranne il getter `important`, che si evita |
+| `postcss-scss` 4.0.9, `postcss-sass` 0.5.0, `sugarss` 5.0.2 | sintassi PostCSS senza i fatti Sass; `postcss-sass` è fermo al 2022; `sugarss` non è Sass | no |
+| `less` 4.9.1 (Apache-2.0) | il parser di riferimento: variabili a ogni livello, mixin e chiamate, guard, `:extend`, opzioni di `@import`, `@plugin`, senza valutare | sì; la riga d'inizio di un mixin si prende dove il parser comincia a leggerlo, perché non la conserva |
+| `postcss-less` 7.1.1 | la sintassi, con le chiamate di mixin come regole marcate | no: il parser di Less dice di più |
+| `stylus` 0.64.0 (MIT, ultima uscita ottobre 2024) | l'unico parser di Stylus | sì |
+| `@vue/compiler-sfc` 3.5.45, `svelte/compiler` 5.57.3, `@astrojs/compiler` 4.0.0 (MIT) | i blocchi, gli attributi e le espressioni dei template, gli import | sì; le espressioni di Astro e Vue sono testo, lette con acorn (dipendenza di Svelte) |
+| Tailwind 4 (`__unstable__loadDesignSystem` di `@tailwindcss/node`) | il design system del foglio d'ingresso: `@theme`, `@utility`, `@custom-variant`, `@source`, `@plugin` | sì, con `getClassOrder` come per la 3 |
 | indicizzatori SCIP o LSIF | nessuno per CSS (elenco nel README di SCIP) | — |
 
 Nessuno dà il nome usato collegato alle sue dichiarazioni fra file e markup. Questo lavoro lo fa `css.graph`: è un confronto di nomi su ciò che i quattro strumenti hanno letto, con gli ambiti di Sass e dei CSS Module.
@@ -842,7 +856,7 @@ Nessuno dà il nome usato collegato alle sue dichiarazioni fra file e markup. Qu
 
 Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python benchmarks/inference-audit/lang_css.py spawn --cases tududi` e `fetch --cases tududi`.
 
-Prova locale: `python -m pytest benchmarks/inference-audit/test_css_graph.py`. Sono 6 test, 1 s: 81 archi e 9 buchi scritti a mano prima di eseguire qualunque cosa. Serve Node. La fixture contiene:
+Prova locale: `python -m pytest benchmarks/inference-audit/test_css_graph.py`. Ora sono 26 test su dieci fixture (`fixtures/css*`), circa 20 s: archi, buchi e incerti scritti a mano prima del codice. Servono Node e npm; i motori di `adapters/css_engines.json` si installano una volta nella cartella temporanea e `DAODAN_CSS_ENGINES` li indica. La prima fixture contiene:
 - un foglio vendorizzato, raggiunto da un percorso URL;
 - `animate.css` da npm;
 - un link CDN, servito da un sostituto del download;
@@ -928,15 +942,17 @@ Verifica a mano: 20 usi scelti leggendo il sorgente prima che esistesse un grafo
 
 Nessun errore da spiegare. Nessuno dei 7 archi sbagliati verso `.sr-only` di Font Awesome cade fra i 20 siti.
 
-Cosa manca:
-- Quale foglio carica ogni pagina. Su tududi produce i 7 archi sbagliati descritti sopra; in un progetto con più app che condividono i nomi ne produrrebbe di più.
-- CSS-in-JS (`EditorView.theme`, styled-components, emotion): solo riconosciuto, per dare la classe `css-in-js` al buco; le regole non sono nodi.
+Cosa manca (ora):
+- Le convenzioni dei framework per il caricamento: il layout di Next.js sulle sue pagine, `static/` di Sapper, `styles` di `angular.json`, HtmlWebpackPlugin. Lì gli archi restano incerti.
+- Lo `<style>` dentro JSX (`<style>{`...`}</style>`) e gli script inline delle pagine HTML: non letti.
+- Le proprietà custom create a run time (`createTheme` di styled-components): buchi `undeclared`.
+- Un selettore costruito da una variabile di modulo (`.#{iv.$class-prefix}button` di Bulma): buco, perché `!default` si può sovrascrivere.
+- L'incapsulamento di Angular: le regole di `styleUrls` sono nomi globali.
+- `@counter-style`, `anchor-name`, `@position-try`, `keyframes``…`` di CSS-in-JS: non letti.
+- UnoCSS: le sue utility non sono lette (servirebbe il generatore di UnoCSS con il `uno.config.ts` del progetto, come per Tailwind); i loro token restano buchi `no-rule`. Neanche la modalità attributify (`un-` sugli attributi).
+- Vue: i componenti registrati senza import (`unplugin-vue-components`, registrazione globale) non entrano nell'albero padre-figlio; `:slotted()` è letto come globale.
 - Classi incollate a un tag EJS (`plan-step`, `compare-cell`, `lang-chip`, `nav-dd-item`, `nav-mobile-lang`): hanno regole ma restano buchi `ejs-glued`, perché l'uscita del tag non è valutata.
-- LESS: variabili `@x` e chiamate di mixin. Il file è dichiarato letto in parte.
 - Variabili e mixin Sass dei pacchetti esterni: non letti.
-- Tailwind 4: l'adattatore legge solo la 3. Con la 4 ogni utility finirebbe come buco `no-rule`.
-- I gruppi Tailwind con nome: la classe del buco li separa, ma non vanno a Tailwind.
-- Sass, CSS Module, `node_modules` e CDN: provati solo sulla fixture. tududi non ne ha.
 
 Cosa manca a `scip_graph.py`, che non è stato toccato:
 - `build` e `Traversal` richiedono un indice SCIP: per il CSS non servono. Dal modulo uso `report`, `measured`, `_examples` e la forma del JSON. Gli archi incerti con i candidati entrano nella forma attuale, un arco per candidato: non serve altro.
@@ -1123,6 +1139,18 @@ Non verificato:
 - perché scip-clang perde `extern "C"`: visto sulla fixture e su tinyxml2, non cercato nel suo sorgente;
 - i 26 metodi riferiti e mai definiti, oltre ai costruttori dei template e ai prototipi privati.
 
+### 14 novembre 2026, lettore C e C++ dello snapshot
+
+Lo snapshot del prodotto legge C e C++ (`languages/cfamily.py`, prove in `tests/test_codebase_map_clang_reader.py`). Le due sezioni sopra restano misurate con `SyntaxSnapshot`, che resta per i risultati salvati. `Index.tree` ha ora `c` e `cpp`.
+
+| Parametro | Valore |
+| --- | --- |
+| fixture | `test_clang_graph.py` gira anche sullo snapshot del prodotto: fini uguali in C 17 su 17, in C++ 14 su 15 |
+| la differenza | `new geo::Square(3.0)`: lo snapshot legge la chiamata su `Square` (8:33), dove l'indice nomina la classe; il sostituto la legge dove inizia il tipo (8:28), dove nomina il costruttore |
+| zlib `51b7f2abdade` | 74 file letti, 66 C e 8 C++ (`contrib/iostream*`); fatti semantici per 15 file C e gli 8 C++; 664 chiamate, 63 risolte nel file; 3,7 s |
+| tinyxml2 `9148bdf719e9` | 4 file C++, fatti semantici per 2 (`tinyxml2.h` e `xmltest.cpp` hanno errori di sintassi); 706 chiamate, nessuna risolta nel file; 12,2 s |
+| file con errori | 51 file C di zlib: macro come `local int f(`, `uch FAR uchf`, `z_const`. Togliendo sei nomi di zlib (`local`, `FAR`, `z_const`, `ZEXTERN`, `ZEXPORTVA`, `OF`) i file interi diventano 39 su 66 |
+
 ## 14 novembre 2026, fonti del programma intero: JavaScript e TypeScript
 
 Accanto al grafo letto dall'indice SCIP ci sono due seconde fonti, ciascuna in un suo adapter con la stessa forma
@@ -1281,3 +1309,139 @@ Non verificato:
 - se le versioni `@types` installate (le ultime) corrispondono a quelle dei pacchetti;
 - 198 siti TS e 72 di Jelly che non trovano la chiamata nello snapshot (0,2%);
 - test automatici per i due adapter.
+
+
+## 14 novembre 2026, fogli di stile su progetti reali: tutti i dialetti e la regola di pagina
+
+Verdetto: sui quattro progetti misurati la verifica a mano dà 65 su 66; l'unico errore (Bootstrap) è corretto nel codice ma non ancora rimisurato su Modal. Nessun file perso senza motivo. La regola di pagina rende incerti, senza toglierli, gli archi verso fogli che il codice non prova caricati: su tududi i 7 archi `sr-only` verso Font Awesome. styled-components-website e Bulma non sono misurati: il primo per un `overrides` che npm rifiuta, il secondo per un giro oltre il limite; i due difetti sono corretti, ma le credenziali di Modal sono sparite da questa macchina e il giro di conferma non è partito.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | tududi `71da9d7b34df`, Bootstrap 3.4.1 `68b0d231a132` (Less), hn.svelte.dev `0010bbea0678` (Svelte 3, stili scoped), saas-starter `6e33e58b1e55` (Tailwind 4.1.7), styled-components-website `e70dc5c3f513`, Bulma 1.0.4 `e133d45b7a82` (SCSS con `@use`, `@forward`, mixin) |
+| motori | `adapters/css_engines.json`: sass-parser 0.5.6, less 4.9.1, stylus 0.64.0, @vue/compiler-sfc 3.5.45, svelte 5.57.3, @astrojs/compiler 4.0.0, TypeScript 5.9.3 quando il progetto non ha il suo; Tailwind e i pacchetti del progetto da `npm ci --ignore-scripts` |
+| container | 2 CPU, 8 GiB; hash dei file `css*` degli adattatori stampato all'avvio, uguale a quello locale (`css.py` `517c5214a3d8` per i giri di tududi, Bootstrap e saas-starter) |
+| verifica a mano | 15 usi per caso (16 per hn.svelte.dev, i 20 di prima per tududi), attese scritte leggendo il sorgente prima del grafo (`HAND` in `lang_css.py`); `all` è una scansione propria che appiattisce il nesting |
+| costo | letto dal conto di Modal: 0,0217 USD nell'ora delle 11 e il resto nell'ora delle 12, non ancora chiusa quando le credenziali sono sparite; stima sotto 0,05 USD |
+
+Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python benchmarks/inference-audit/lang_css.py spawn --cases tududi,bootstrap3,hn-svelte,saas-starter,sc-website,bulma` e `fetch`.
+
+### tududi, prima e dopo
+
+- File: 1.708 trovati, 1.708 letti interi, 0 mancanti. Pacchetti installati in 475,4 s, giro intero 498,2 s.
+- Nodi: class external 1.849, rule 707, font-face 69, module 20, custom-property 13, keyframes 9, module external 2, layer external 2, font-face external 1.
+- Archi: class external 37.158, class project 1.703, custom-property project 51, font-face external 1, font-face project 670, id project 1, import external 4, import project 3, include project 26, keyframes project 9, layer external 3.
+- Incerti: 924 archi su 667 riferimenti.
+
+| Buco | Quanti | Esempi |
+| --- | --- | --- |
+| `no-rule id` | 98 | `backend/modules/landing/views/cloud.ejs:71 cloud-pricing`, `frontend/components/Note/PublicShareModal.tsx:226 public-share-access`, `frontend/components/Sidebar/AppLauncherModal.tsx:333 app-launcher-title` |
+| `parameter class` | 68 | `frontend/components/Billing/TrialLockNotice.tsx:46 className`, `frontend/components/Shared/Icons/FileIcon.tsx:29 className`, `frontend/components/Project/ProjectItem.tsx:507 ring` |
+| `call class` | 67 | `frontend/components/Note/NoteBackgroundPicker.tsx:42 swatch(!value)`, `frontend/components/Task/TaskRow/TaskRowCollapsed.tsx:333 sheetTitleWeightClass( toPriorit`, `frontend/components/Sidebar/SidebarNotesTree.tsx:284 itemClass(false)` |
+| `no-rule class` | 55 | `frontend/components/Shared/MermaidDiagram.tsx:149 mermaid-diagram`, `frontend/components/Shared/BlankSlate.tsx:47 max-w`, `frontend/components/Views.tsx:216 task-list-container` |
+| `property class` | 28 | `frontend/components/Shared/CalloutBlock.tsx:62 config.borderClass`, `frontend/components/Profile/tabs/ApiKeysTab.tsx:248 status.className`, `frontend/components/Kanban/KanbanBoard.tsx:371 cfg.bg` |
+| `no-font-face font-face` | 9 | `backend/modules/landing/views/partials/styles.ejs:6 -apple-system`, `backend/modules/landing/views/partials/styles.ejs:679 -apple-system`, `backend/modules/landing/views/partials/styles.ejs:740 SFMono-Regular` |
+| `property id` | 6 | `frontend/components/Task/TaskList.tsx:147 task.uid`, `frontend/components/Areas.tsx:437 area.uid`, `frontend/components/Goals.tsx:347 goal.uid` |
+| `ejs-glued class` | 5 | `backend/modules/landing/views/landing.ejs:413 plan-step<%= i % 2 ? ' plan-step-flip' : '' `, `backend/modules/landing/views/landing.ejs:752 compare-cell<%= i === 0 ? ' compare-us' : ''`, `backend/modules/landing/views/partials/nav.ejs:34 nav-dd-item<%= l.code === i18n.locale ? ` |
+| `element-access class` | 5 | `frontend/components/Spreadsheet/ImportWizard.tsx:368 styles[row.action]`, `frontend/components/Inbox/QuickCaptureInput.tsx:3196 TOKEN_TEXT_CLASS[ segment .kind ]`, `frontend/components/Goal/GoalHero.tsx:133 GOAL_STATUS_TINT[goal.status]` |
+| `ejs class` | 3 | `backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>`, `backend/modules/landing/views/landing.ejs:415 <%= step.icon %>`, `backend/modules/landing/views/landing.ejs:462 <%= card.icon %>` |
+| `ejs id` | 1 | `backend/modules/landing/views/landing.ejs:805 <%= faqAnchor(item) %>` |
+| `template class` | 1 | `frontend/components/Shared/CalloutBlock.tsx:62 callout-${type.toLowerCase()}` |
+| `parameter id` | 1 | `frontend/components/Shared/SelectMenu.tsx:87 id` |
+| `template id` | 1 | `frontend/components/Profile/tabs/OidcProviderConfig.tsx:352 oidc-auto-provision-${index}` |
+| `variable class` | 1 | `frontend/components/Habits/HabitHeatmap.tsx:127 className` |
+| `unresolved-import script` | 1 | `backend/modules/landing/views/partials/head-assets.ejs:10 https://dyneteq.com/admin/s.js` |
+
+Verifica a mano: 20 su 20.
+
+Prima e dopo, sullo stesso commit:
+- buchi da 375 a 350: i 24 `css-in-js` sono diventati 69 archi verso le regole di `EditorView.theme` (`Note/editor/livePreviewTheme.ts`, `blockHandle.ts`), i 2 `tailwind-named-group` archi a `tailwindcss group` (catena `named-group`);
+- i 7 archi da `sr-only` dell'app React a Font Awesome restano e sono incerti (`sheet-not-proven-loaded`): l'app non carica il foglio della landing;
+- nuovi 26 archi `include` fra template EJS, che fanno delle pagine della landing un'unità con i loro partial;
+- 924 archi incerti, 897 per la regola di pagina: 639 verso Tailwind da sette file che il bundle dell'app non raggiunge (366 da `ProjectInsightsPanel.tsx`, 203 da `ProjectBanner.tsx`, poi due test), 144 verso `markdown.css`, 59 `@font-face` di `fonts.css` da pagine della landing; queste ultime due cause non sono indagate.
+
+### Bootstrap 3.4.1 (Less)
+
+- File: 282 trovati, 280 letti interi, 2 mancanti: `docs/_pug/customizer-nav.pug` (template language: no reader); `docs/_pug/customizer-variables.pug` (template language: no reader). Pacchetti installati in 200,0 s, giro intero 208,5 s.
+- Nodi: rule 2.775, class external 654, variable 399, module 264, mixin 115, module external 5, keyframes 2, font-face external 2, font-face 1, id external 1.
+- Archi: class external 14.612, class project 130.517, font-face external 2, font-face project 1, id external 1, id project 31, import external 34, import project 137, less-variable project 1.521, mixin project 263, script project 95.
+- Incerti: 143.192 archi su 7.228 riferimenti.
+
+| Buco | Quanti | Esempi |
+| --- | --- | --- |
+| `no-rule id` | 1.353 | `docs/_includes/ads.html:1 _carbonads_js`, `docs/_includes/customizer-variables.html:103 input-@font-family-base`, `docs/_includes/customizer-variables.html:1630 help-block-@thumbnail-padding` |
+| `interpolated-selector class` | 131 | `docs/_includes/components/glyphicons.html:10 {{`, `docs/_includes/js/scrollspy.html:18 bs-example-js-navbar-scrollspy`, `docs/examples/theme/index.html:412 collapsed` |
+| `unresolved-import script` | 56 | `docs/_includes/ads.html:1 https://cdn.carbonads.com/carbon.js?zoneid=1673&serve=C6AILKT&pl`, `docs/examples/cover/index.html:80 ../../dist/js/bootstrap.min.js`, `docs/examples/sticky-footer-navbar/index.html:91 ../../dist/js/bootstrap.min.js` |
+| `no-font-face font-face` | 22 | `docs/assets/css/docs.css:1241 Menlo`, `docs/assets/css/docs.min.css:10 Courier New`, `docs/assets/less/customizer.less:31 Menlo` |
+| `interpolated-selector rule` | 15 | `less/mixins/grid-framework.less:17 @{list}`, `less/mixins/grid-framework.less:62 .col-@{class}-pull-@{index}`, `less/mixins/list-group.less:12 a.list-group-item-@{state} .list-group-item-heading, button` |
+| `unresolved-import import` | 7 | `docs/_includes/getting-started/download.html:34 {{ site.cdn.css }}`, `docs/_includes/getting-started/template.html:18 {{ site.cdn.css }}`, `docs/_includes/header.html:19 {{ site.baseurl }}/dist/css/bootstrap.css` |
+| `undeclared mixin` | 6 | `less/mixins/grid-framework.less:10 .col`, `less/mixins/grid-framework.less:26 .col`, `less/mixins/grid-framework.less:36 .col` |
+| `url-scheme import` | 2 | `docs/_includes/header.html:25 data:text/css;charset=utf-8,`, `docs/_includes/header.html:27 data:text/css;charset=utf-8,` |
+| `variable id` | 1 | `docs/assets/js/docs.min.js:1 c` |
+| `element-access class` | 1 | `docs/assets/js/docs.min.js:1 this.options["class"]` |
+
+Verifica a mano: 14 su 15.
+- `docs/examples/starter-template/index.html:39` `.collapsed`: mancano {'.collapsed': ['hole:no-rule']}, in più {'.collapsed': ['hole:interpolated-selector']}.
+
+Note:
+- La verifica a mano è ricalcolata in locale dal grafo scaricato, con le attese corrette prima di guardarlo: la prima lista nominava un foglio che nessuna pagina carica (`dist/css/bootstrap.css` è in una stringa di un test JS) e una riga sbagliata (`.starter-template` è alla 59).
+- L'errore `.collapsed`: un selettore interpolato senza prefisso né suffisso (`@{list}`) dichiarava di poter generare ogni nome. Corretto (serve un prefisso o un suffisso), da rimisurare.
+- 143.192 archi incerti su 147.214: le pagine caricano i fogli compilati di `dist`, mai i sorgenti Less. Che `dist/css/bootstrap.css` nasca da `less/bootstrap.less` lo dice il Gruntfile, non il codice dei fogli.
+- I 6 `undeclared mixin .col` sono un mixin definito dentro un altro mixin: ora si cerca dallo scope più interno (fixture), da rimisurare. I 131 `interpolated-selector` contano anche i tag Liquid (`{{`): ora sono buchi `template-tag`.
+
+### hn.svelte.dev (Svelte 3, stili scoped)
+
+- File: 20 trovati, 20 letti interi, 0 mancanti. Pacchetti installati in 43,8 s, giro intero 46,1 s.
+- Nodi: rule 60, module 14, custom-property 6, keyframes 1.
+- Archi: class project 48, custom-property project 24, keyframes project 1.
+- Incerti: 27 archi su 13 riferimenti.
+
+| Buco | Quanti | Esempi |
+| --- | --- | --- |
+| `no-font-face font-face` | 12 | `static/global.css:15 Roboto`, `static/global.css:15 Oxygen`, `static/global.css:15 Droid Sans` |
+| `no-rule class` | 3 | `src/components/ThemeToggler.svelte:39 light`, `src/routes/[list]/[page].svelte:55 more`, `src/routes/user/[name].svelte:37 about` |
+| `unresolved-import import` | 1 | `src/template.html:24 global.css` |
+| `no-rule id` | 1 | `src/template.html:45 sapper` |
+
+Verifica a mano: 16 su 16.
+
+Note:
+- Le regole di un componente arrivano solo al suo markup; `:global(html).dark .x` dà `dark` a tutti. Un composto aperto da `:global(...)` è globale per intero, come in Svelte: il primo giro lo leggeva a metà (15 su 16), corretto.
+- `src/template.html` linka `global.css`, che Sapper serve da `static/`: la convenzione non è nel codice, quindi buco `unresolved-import` e archi verso `static/global.css` incerti.
+
+### saas-starter (Tailwind 4.1.7)
+
+- File: 43 trovati, 43 letti interi, 0 mancanti. Pacchetti installati in 37,1 s, giro intero 43,5 s.
+- Nodi: class external 280, custom-property 177, rule 10, module external 2, custom-property external 2, layer external 2, variant 1, module 1.
+- Archi: class external 818, custom-property external 8, custom-property project 222, import external 2, import project 1, layer external 5, variant project 5.
+- Incerti: 1.034 archi su 868 riferimenti.
+
+| Buco | Quanti | Esempi |
+| --- | --- | --- |
+| `call class` | 24 | `components/ui/card.tsx:9 cn( "bg-card text-card-foreground flex flex-col gap-6 rounded-xl `, `components/ui/input.tsx:10 cn( "file:text-foreground placeholder:text-muted-foreground sel`, `components/ui/dropdown-menu.tsx:76 cn( "focus:bg-accent focus:text-accent-foreground data-` |
+| `no-rule id` | 11 | `app/(dashboard)/dashboard/general/page.tsx:40 name`, `app/(dashboard)/dashboard/page.tsx:227 member`, `app/(dashboard)/dashboard/security/page.tsx:82 confirm-password` |
+| `no-font-face font-face` | 3 | `app/globals.css:80 Manrope`, `app/globals.css:80 Arial`, `app/globals.css:80 Helvetica` |
+| `property class` | 1 | `app/layout.tsx:26 manrope.className` |
+| `no-rule class` | 1 | `app/(dashboard)/dashboard/security/page.tsx:38 bold` |
+
+Verifica a mano: 15 su 15.
+
+Note:
+- Tailwind 4 è letto dal suo design system (`@theme`, `@custom-variant dark`, `@import "tw-animate-css"` come foglio esterno): 818 archi verso utility.
+- 1.034 archi incerti: con l'App Router di Next.js il layout `app/layout.tsx`, che importa `globals.css`, avvolge le pagine per convenzione, senza import. Da leggere come regola di framework (task 11 del piano).
+- I 24 buchi `call` sono `cn(...)`, l'helper del progetto su clsx e tailwind-merge: ora riconosciuto quando rende la chiamata dell'helper sul suo parametro (fixture), da rimisurare.
+
+### v3-admin-vite (Vue 3), styled-components-website e Bulma: non misurati
+
+- styled-components-website: `npm install` fallisce con `EOVERRIDE` (gli `overrides` di npm contro una dipendenza diretta; il progetto usa pnpm). Senza pacchetti il programma TypeScript non vede styled-components, e i template non sono riconosciuti: il giro (5,7 s) non vale come misura. Aggiunto il ripiego: pnpm alla versione di `packageManager`, dal lockfile, senza script.
+- Bulma: il giro ha superato i 50 minuti. Causa: ogni arco incerto portava la lista intera dei candidati, e una classe come `.button` ha migliaia di regole fra i 14 fogli compilati del checkout (`css/`, `css/versions/`, `docs/assets/css/website.css`). Ora la lista c'è solo quando una cascata o una compilazione sceglie fra candidati, e si calcola solo allora.
+- v3-admin-vite `c2c895d71d57`: scelto come caso Vue dalle pagine del repository, senza clone locale. Sono 47 `.vue` con 36 blocchi `<style lang="scss" scoped>` e uno SCSS globale, fogli globali importati da `src/main.ts` (normalize, Element Plus, vxe-table, `@@/assets/styles/index.scss`), alias `@` e `@@`, componenti di layout attraverso un barrel. I 15 usi della verifica a mano sono scritti dal sorgente in `HAND["v3-admin-vite"]` di `lang_css.py`, prima di qualunque grafo; il caso stampa anche file `.vue` trovati e letti, blocchi per tipo e `lang`, e dove finiscono gli archi delle classi dei template (componente proprio, padre, altro componente, foglio globale; certi o incerti).
+- Il giro di conferma con il codice finale non è partito per nessun caso: il file delle credenziali di Modal di questa macchina non esiste più (AuthError «Token missing»).
+
+Vue, cosa sta nello snapshot del prodotto e cosa vede solo il grafo:
+- Snapshot: per ogni `.vue` i simboli dello script e una regola per ogni selettore dei blocchi `<style>` (CSS, SCSS, Sass, LESS), con lo span esatto e il selettore appiattito (`.login-container .login-card .content :deep(.el-input-group__append)`); un blocco Stylus è nominato nelle note. Non sa se un blocco è `scoped` o `module`, non legge le classi del template e non collega nulla.
+- Solo il grafo: il tipo di ogni blocco, le classi del template (`class`, `:class`, `id`), `$style.x`, `v-bind()`, l'albero padre-figlio, gli alias, gli import dei fogli da `main` e la regola di pagina.
+
+Cosa manca a questa misura:
+- il giro di conferma con il codice finale, per tutti i casi;
+- v3-admin-vite, Bulma e styled-components-website;
+- i casi Vue e Stylus reali: provati solo sulle fixture.

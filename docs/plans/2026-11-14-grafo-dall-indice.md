@@ -1,6 +1,8 @@
 # Piano: il grafo del codice dall'indice del progetto
 
 **Stato:** approvato il 14 novembre 2026; risposte del proprietario nella sezione 6.
+C e C++ aggiunti il 14 novembre 2026 su richiesta del proprietario: task 10.
+Fogli di stile e loro dialetti aggiunti il 14 novembre 2026 su richiesta del proprietario: task 11.
 
 > **Per chi esegue:** un task alla volta, nell'ordine. Si segnano solo i passi verificati. Ogni task lascia il prodotto funzionante e non peggiore sulle misure indicate.
 
@@ -227,12 +229,12 @@ Percorsi `scripts/` = plugins/codebase-map/skills/map/scripts/.
 - `flows.py` :335, :435 e :769: leggono dalla vista.
 - `scope_planner.py` :514: `conflicts` resta solo per i linguaggi con motore per posizione.
 
-- [ ] **Test prima:** in `tests/test_codebase_map_edge_view.py`, una classe che scrive lo store dal grafo della fixture TS. Controlla, per ogni chiamata e lettura attesa: bersaglio, `resolver`, esterno con pacchetto, incerto come candidato, buco, una sola fonte.
-- [ ] **Test prima:** in `tests/test_codebase_map_flows.py`, un collegamento che nasce da una lettura nota solo allo store.
-- [ ] Restano verdi: `EdgeViewTests`, `MethodTargetTests`, `ImplementationTests`, `test_codebase_map_flows.py`, `test_codebase_map_stale_callers.py`, `test_codebase_map_edit_impact.py`. Per i linguaggi con motore per posizione il comportamento non cambia.
-- [ ] Un test decide se una fine «costruttore» nomina la sua classe (requisito 14) o il costruttore: sono i 25 casi di javapoet.
-- [ ] **Verifica:** i file di test sopra, in pochi secondi.
-- [ ] **Si cancella:** la lettura dello schema 4 e le letture dirette di `sem_references` in `flows.py`.
+- [x] **Test prima:** in `tests/test_codebase_map_edge_view.py`, una classe che scrive lo store dal grafo della fixture TS. Controlla, per ogni chiamata e lettura attesa: bersaglio, `resolver`, esterno con pacchetto, incerto come candidato, buco, una sola fonte.
+- [x] **Test prima:** in `tests/test_codebase_map_flows.py`, un collegamento che nasce da una lettura nota solo allo store.
+- [x] Restano verdi: `EdgeViewTests`, `MethodTargetTests`, `ImplementationTests`, `test_codebase_map_flows.py`, `test_codebase_map_stale_callers.py`, `test_codebase_map_edit_impact.py`. Per i linguaggi con motore per posizione il comportamento non cambia.
+- [x] Un test decide se una fine «costruttore» nomina la sua classe (requisito 14) o il costruttore: sono i 25 casi di javapoet.
+- [x] **Verifica:** i file di test sopra, in pochi secondi.
+- [x] **Si cancella:** la lettura dello schema 4 e le letture dirette di `sem_references` in `flows.py`.
 
 ### Task 4: stage dell'indicizzatore nel passaggio
 
@@ -257,6 +259,24 @@ Percorsi `scripts/` = plugins/codebase-map/skills/map/scripts/.
 - [ ] Un test con l'indicizzatore vero in `tests/test_codebase_map_mcp_wire.py`, saltato quando lo strumento non è nella cache, come oggi.
 - [ ] **Verifica:** i test sopra, in pochi secondi. Un run vero su chi e semver in locale solo dopo aver chiesto, altrimenti su Modal.
 - [ ] **Si cancella:** `index()`, `install_commands()` e `_install()` del benchmark.
+
+**Prima metà (14 novembre 2026): gli `index()` del plugin per Go, Rust, TypeScript e JavaScript, Python.**
+- [x] `index(project_dir, work_dir, files=None)` in `indexers/{go,rust,typescript,python}.py`, sulle funzioni del prodotto: `build_mirror` (specchio rimosso dopo il run), `GoEngine.go_environment`, `RustEngine.prepare`, `npm_modules`, `python_environment`. La parte comune è `indexers/runtime.py`: Node fissato con `SHASUMS256`, pacchetti npm con `--ignore-scripts`, `MIN_FREE` per indicizzatore (512, 1.280, 2.304 e 512 MB, dai picchi misurati), niente download sotto 1 GB di disco, `unavailable` con `install` e `failed` con coda dello stderr ed `errors`.
+- [x] Nello specchio è reale ogni cartella con un file Go e ogni cartella con un `Cargo.toml`: `./...` non segue i collegamenti, e `go.sum` e `Cargo.lock` finiscono in una copia.
+- [x] `tests/test_codebase_map_indexers.py`: 14 test in circa 1 s, con indicizzatore e download finti. Coprono hash del progetto, specchio rimosso, riga d'installazione, `failed`, download impossibile, checksum sbagliato, memoria, disco, e il contratto letto da `code_graph.build` sulle fixture committate.
+
+Resta per la seconda metà:
+- In `ENGINES` sei voci: `scip-go` (go), `scip-rust` (rust), `scip-typescript` (typescript, javascript), `scip-python` (python), `scip-java` (java), `scip-kotlin` (kotlin). Due campi nuovi in `EngineSpec`: `min_free`, il `MIN_FREE` del modulo, e `needs_container`, vero per Java e Kotlin. `ENGINE_LANGUAGES` resta sui motori di oggi fino al task 5.
+- Lo stage chiama `indexers.<modulo>.index(...)` e riporta `state`, `reason` e `install` come li restituisce.
+- In `tests/test_codebase_map_resolve_edges.py`, `IndexerStageTests`: `test_entry_is_fresh_with_its_resolver`, `test_failed_index_leaves_failed`, `test_unavailable_index_leaves_unavailable_with_install`, `test_container_language_without_container_is_unavailable`, `test_memory_under_min_free_starts_no_stage`. Hash, riga di log e checksum restano nei test sopra.
+- Node e npm passano da `indexers/runtime.py` a `resolve_edges.py` quando `TypeScriptEngine` e `npm_modules` usano il Node fissato invece di quello sul PATH (requisito 12).
+
+Su Windows nulla è misurato. Punti da verificare al primo run:
+- picco di memoria: `code_graph.measured` non lo misura (`peak_mb` nullo);
+- specchio di junction in `%TEMP%`: Go 1.23 legge una junction come cartella e la percorre; cargo e Node potrebbero risolverla nel progetto; un processo figlio sopravvissuto al timeout blocca la rimozione;
+- Node da `.zip`: `node.exe` e `node_modules/npm` in cima, `npm.cmd` per `npm_modules` (`shell=True`);
+- Python: `Scripts` e `Lib/site-packages`; i percorsi del file d'ambiente hanno `/`, mentre `pip show -f` su Windows darebbe `\`;
+- percorsi oltre 260 caratteri in `_install` e nella rimozione dello specchio; CRLF con `autocrlf=true`.
 
 ### Task 5: cambio di fonte, un linguaggio alla volta
 
@@ -327,6 +347,48 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
   - Escono `.scip` e `kotlin-configs/`, che servono a `refine`.
 - [ ] **Soglia:** come nel task 5, su javapoet e klaxon, con il confronto fra passo per posizione e indice misurato.
 - [ ] **Si cancella:** `JavaEngine`, `KotlinEngine` e `engines/KotlinResolver.kt`, solo se la domanda 2 esclude le richieste mirate per la JVM.
+
+### Task 10: C e C++
+
+**File:**
+- Lettore: `scripts/languages/cfamily.py`, `_CFamilyEvidence` in `scripts/languages/semantic.py`, `scripts/languages/__init__.py`, `scripts/languages/_treesitter.py`, `scripts/snapshot.py` (`parser_profile`, `resolve_module` per `#include`).
+- Indicizzatore: `scripts/indexers/clang.py`, la parte di lettura di `benchmarks/inference-audit/adapters/clang.py`.
+
+- [x] **Test prima:** `tests/test_codebase_map_clang_reader.py` su `tests/fixtures/clang-reader/{c,cpp}`, 77 prove con le attese scritte dal sorgente:
+  - dichiarazioni, con il prototipo come `contract`; export senza `static`;
+  - `#include "x.h"` arriva al file del progetto, `<x.h>` è esterno;
+  - chiamate e letture con la loro fine; il `static` omonimo di un altro file non è mai scelto.
+- [x] **Regola per `.h`:** è C++ se il testo, commenti e stringhe esclusi, ha un namespace, una classe, un template, un'etichetta di accesso o `using namespace`; altrimenti è C.
+- [x] **Verifica:** `benchmarks/inference-audit/test_clang_graph.py` gira anche sullo snapshot del prodotto. In C le fini sono uguali in 17 chiamate su 17, in C++ in 14 su 15.
+  - La differenza: `new geo::Square(3.0)` si legge su `Square`, dove l'indice nomina la classe. Il sostituto lo leggeva dove inizia il tipo, dove l'indice nomina il costruttore. Decide il requisito 14 (task 3).
+- [ ] **File con macro:** su zlib si leggono interi 15 file C su 66. Gli altri 51 hanno errori di sintassi da macro (`local int f(`, `uch FAR uchf`, `z_const`) e restano senza fatti semantici.
+  - Togliendo sei macro di zlib i file interi diventano 39 su 66.
+  - Serve una regola che legga i `#define` del progetto, non un elenco di nomi.
+- [ ] **Nomi dalle intestazioni:** oggi un nome che arriva da un `#include` resta `scope-unresolved`. Serve una regola in `resolution.py`, usata da entrambi i proprietari: cerca fra gli export delle intestazioni incluse che si risolvono a un solo file, e accetta un solo bersaglio.
+- [ ] **Indicizzatore nel container:** dopo il task 9, nello stesso container.
+  - Immagine Ubuntu 24.04 (glibc 2.38) con CMake e gcc; scip-clang v0.4.1 fissato con sha256.
+  - Database di compilazione dal configure e dalla build di CMake su una copia, con le regole di rete del task 9.
+  - `indexers/clang.py`: `dedupe`, `utf8_columns`, `enclose`, `same_range`, `hops`, `refine`, `classifier`.
+- [ ] **Richieste mirate per `extern "C"`:** in C++ scip-clang non scrive occorrenze per una funzione `extern "C"`. Sono 91 chiamate della libreria C in tinyxml2, più `c_helper` nella fixture. Il task 8 le chiede per posizione; senza risposta restano buchi con questa causa.
+- [ ] **Soglia:** come nel task 5, su zlib e tinyxml2.
+  - Conteggi uguali a `results/graph-c-zlib.json` e `results/graph-cpp-tinyxml2.json`.
+  - Verifica a mano 20 su 20 su zlib e almeno 16 su 20 su tinyxml2.
+  - Tempo e picco annotati.
+- [ ] **Si cancella:** `SyntaxSnapshot` del benchmark, quando lo snapshot del prodotto dà i fatti semantici anche ai file di zlib e tinyxml2 che oggi non legge interi. Fino ad allora i risultati salvati dipendono da lui.
+
+### Task 11: fogli di stile
+
+**File:**
+- Lettore: `scripts/languages/stylesheet.py` (Sass indentato come lo SCSS che l'indentazione implica), `scripts/languages/markup.py` (le regole dei blocchi `<style>` di HTML, EJS, Astro e template), `scripts/languages/sfc.py` (le regole dei blocchi `<style>` di Vue e Svelte accanto allo script), `scripts/languages/__init__.py` (`.sass`, `.pcss`, `.postcss`, la lingua `markup`), `scripts/snapshot.py` (Stylus e Pug a livello di file con il motivo, citazioni dei selettori), `scripts/doc_review.py`.
+- Grafo: `benchmarks/inference-audit/adapters/css.py` e un adattatore per motore, con il suo `.js`: `css_sass` (sass-parser), `css_less` (less), `css_stylus` (stylus), `css_vue` (@vue/compiler-sfc), `css_svelte` (svelte/compiler), `css_astro` (@astrojs/compiler), `css_typescript` (TypeScript: CSS-in-JS, cva, tailwind-variants, Angular), `css_tailwind` (Tailwind 3 e 4); `css_expressions.js` per le espressioni di classe dei template; motori fissati in `css_engines.json`.
+
+- [x] **Test prima:** `tests/test_codebase_map_stylesheet_dialects.py`, attese scritte dal sorgente: Sass indentato uguale al suo SCSS riga per riga, PostCSS come CSS, Stylus e Pug elencati con il motivo, blocchi `<style>` di Vue, Svelte, HTML, EJS e Astro, CSS moderno blocco per blocco.
+- [x] **Test prima:** `benchmarks/inference-audit/test_css_graph.py` su dieci fixture (`fixtures/css*`), archi, buchi e incerti scritti a mano prima del codice: Sass, Less, Stylus, componenti, pagine, CSS-in-JS, Tailwind 4, CSS moderno, CSS Modules, Angular e tabelle di varianti.
+- [x] **Regola di pagina:** un arco di classe, id, proprietà custom, keyframes, font-face o container è certo solo se un'unità del codice contiene il sito e il foglio del bersaglio: una pagina HTML/EJS con i suoi include, i fogli che linka o contiene e gli script che carica, oppure un bundle di moduli che nessuna pagina carica. Altrimenti resta, incerto, con `sheet-not-proven-loaded`.
+- [ ] **Adattatori nel plugin, dopo lo store del task 3:** la parte di lettura in `scripts/indexers/css*.py`; i motori Node installati da Daodan nella sua cache, mai dal progetto.
+- [ ] **Convenzioni dei framework per il caricamento:** il layout di Next.js sulle pagine del suo albero, `static/` di Sapper, `angular.json` `styles`, HtmlWebpackPlugin. Oggi i loro archi restano incerti.
+- [ ] **Soglia:** su tududi, Bulma, Bootstrap 3, hn.svelte.dev, saas-starter e styled-components-website i conteggi di `results/graph-css-<caso>-checks.json`, nessun file perso senza motivo, verifica a mano almeno 15 su 15 per caso; oggi 20 su 20 su tududi, 16 su 16 su hn.svelte.dev, 15 su 15 su saas-starter, 14 su 15 su Bootstrap 3 (`benchmarks/inference-audit/README.md`, «fogli di stile su progetti reali»). v3-admin-vite (Vue 3), Bulma e styled-components-website non sono ancora misurati.
+- [ ] **Si cancella:** `adapters/css*.py` del benchmark, quando le parti di lettura sono nel plugin.
 
 ## 8. Rischi
 

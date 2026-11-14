@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@source "../templates";
+@theme {
+  --color-brand: #0af;
+}
+@utility tab-4 {
+  tab-size: 4;
+}
+@utility scrollbar-* {
+  scrollbar-width: --value("thin", "none");
+}
+@custom-variant pointer-coarse (@media (pointer: coarse));
+.card { @apply bg-brand p-4; }

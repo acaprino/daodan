@@ -930,6 +930,14 @@ def csharp_semantics(root, src):
     return treesitter_semantics(root, src, "csharp")
 
 
+def c_semantics(root, src, statics=()):
+    return _CFamilyEvidence(src, "c", statics).extract(root)
+
+
+def cpp_semantics(root, src, statics=()):
+    return _CFamilyEvidence(src, "cpp", statics).extract(root)
+
+
 _TS_SKIP_NODES = frozenset({
     "line_comment", "block_comment", "doc_comment", "comment",
     "package_declaration", "package_clause", "package_header", "modifiers", "modifier",
@@ -1002,6 +1010,10 @@ class _TreeSitterEvidence(_Evidence):
             if node.type != "macro_invocation":
                 self.tag_calls.add((node.start_byte, node.end_byte, node.type))
         self.walk(root)
+        return self.settle()
+
+    def settle(self):
+        """Move each assignment to the scope that binds its name, then sort the facts."""
         write_ids = {d["id"] for d in self.writes}
         bindings = {(d["scope"], d["name"]) for d in self.data["declarations"]
                     if d["id"] not in write_ids and d.get("lexical") is not False}
@@ -1680,3 +1692,475 @@ class _TreeSitterEvidence(_Evidence):
         for child in node.named_children:
             self.walk(child)
 
+
+# ---------------------------------------------------------------------------
+# C and C++.
+# ---------------------------------------------------------------------------
+
+# A declarator wraps its name: `*p`, `&r`, `a[3]`, `x = 1`, `(*fp)(int)`.
+_C_WRAPPERS = frozenset({"init_declarator", "pointer_declarator", "reference_declarator", "attributed_declarator",
+                         "array_declarator", "parenthesized_declarator"})
+_C_NAMES = frozenset({"identifier", "field_identifier", "type_identifier", "qualified_identifier",
+                      "destructor_name", "operator_name", "operator_cast", "template_function"})
+_C_RECORDS = frozenset({"struct_specifier", "union_specifier", "class_specifier", "enum_specifier"})
+_C_CASTS = frozenset({"static_cast", "dynamic_cast", "reinterpret_cast", "const_cast"})
+_C_CONDITIONS = frozenset({"condition", "name"})  # what a `#if` or `#ifdef` tests, never code
+_C_SKIP = frozenset({"preproc_def", "preproc_function_def", "preproc_call", "access_specifier",
+                     "friend_declaration", "static_assert_declaration", "attribute_specifier",
+                     "attribute_declaration", "ms_declspec_modifier", "namespace_alias_definition",
+                     "template_parameter_list", "gnu_asm_expression", "concept_definition"})
+INCLUDED_NAMES = "names the translation unit brings (includes, the including file) are not read"
+
+
+def c_declarator(node):
+    """`(name node, function declarator or None)` of a declarator chain; `(None, None)` without a name.
+
+    A function declarator whose own declarator is a name declares a function; one around a parenthesized
+    declarator (`(*fp)(int)`) declares a pointer to a function, which is a variable named inside.
+    """
+    while node is not None:
+        if node.type == "function_declarator":
+            inner = node.child_by_field_name("declarator")
+            if inner is not None and inner.type in _C_NAMES:
+                return inner, node
+            node = inner
+        elif node.type in _C_NAMES:
+            return node, None
+        elif node.type in _C_WRAPPERS:
+            node = node.child_by_field_name("declarator") or next(
+                (c for c in node.named_children if c.type in _C_WRAPPERS or c.type in _C_NAMES
+                 or c.type == "function_declarator"), None)
+        else:
+            return None, None
+    return None, None
+
+
+def c_name_node(node):
+    """The innermost name of a declarator name: `area` of `geo::Circle::area`, `twice` of `twice<int>`."""
+    while node is not None and node.type in ("qualified_identifier", "template_function", "template_type",
+                                             "template_method"):
+        node = node.child_by_field_name("name")
+    return node
+
+
+def c_callable_name(node, text):
+    """A declarator name as the snapshot names it: `Circle.area` for `Circle::area`, scopes joined by `.`."""
+    if node is None:
+        return ""
+    if node.type == "qualified_identifier":
+        scope = node.child_by_field_name("scope")
+        head = c_callable_name(scope, text) if scope is not None else ""
+        tail = c_callable_name(node.child_by_field_name("name"), text)
+        return f"{head}.{tail}" if head and tail else tail
+    if node.type in ("template_function", "template_type", "template_method"):
+        return c_callable_name(node.child_by_field_name("name"), text)
+    return " ".join(text(node).split())
+
+
+def c_is_static(node, text, statics=()):
+    """`static` written, or a blanked macro that can expand to it (`local int f(`) before the declarator."""
+    if any(c.type == "storage_class_specifier" and text(c).strip() == "static" for c in node.children):
+        return True
+    declarator = node.child_by_field_name("declarator")
+    limit = declarator.start_byte if declarator is not None else node.end_byte
+    # The blanked macro is whitespace to the grammar, so it sits between the previous node and this one.
+    previous = node.prev_sibling
+    start = previous.end_byte if previous is not None else (node.parent.start_byte if node.parent else 0)
+    return any(start <= offset < limit for offset in statics)
+
+
+class _CFamilyEvidence(_TreeSitterEvidence):
+    """C and C++ declarations, scopes, includes and references.
+
+    The file's own top-level names sit in a scope below the module scope. The module scope stands for what the
+    translation unit brings, its includes or, for a header, the file that includes it: it is always blocked, so
+    a name the file does not declare stops there, never at a builtin. A prototype is a declaration with
+    `contract`; in C it gives way to a definition of the same name in the same scope; a file-scope function records its `linkage`. C has no overloads, C++
+    does: a C++ function outside a class binds no name, since the translation unit can add an overload and
+    argument-dependent lookup can add candidates. Struct, union and enum tags are not ordinary identifiers in C,
+    so they bind no name there. A
+    class with a base, and the body of a member defined outside its class, stop the lookup at the members the
+    file cannot list. A call to a function-like macro the file defines, or through `(*f)` or `(f)`, is dynamic.
+    """
+
+    def __init__(self, src, language, statics=()):
+        super().__init__(src, language)
+        self.macros = set()
+        self.top = None
+        self.statics = statics
+
+    def extract(self, root):
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            if node.type == "preproc_function_def":
+                name = node.child_by_field_name("name")
+                if name is not None:
+                    self.macros.add(self.text(name))
+            stack.extend(node.named_children)
+        self.scope_by_id["module"].update(unresolved=True, reason=INCLUDED_NAMES)
+        self.top = self.scope = self.new_scope("block", self.span(root))
+        self.walk(root)
+        self.scope = "module"
+        if self.language == "c":
+            defined = {(d["scope"], d["name"]) for d in self.data["declarations"]
+                       if d["kind"] == "function" and not d.get("contract")}
+            for item in self.data["declarations"]:
+                if item.get("contract") and (item["scope"], item["name"]) in defined:
+                    item["lexical"] = False
+        self.data["exports"] = [{"exported": name, "local": name}
+                                for name in dict.fromkeys(e["exported"] for e in self.data["exports"])]
+        return self.settle()
+
+    # -- helpers ---------------------------------------------------------------------------------------------
+
+    def parts(self, node):
+        if node is None:
+            return []
+        t = node.type
+        if t in ("identifier", "field_identifier", "type_identifier", "namespace_identifier", "this",
+                 "destructor_name", "operator_name"):
+            return [self.text(node)]
+        if t == "qualified_identifier":
+            scope = node.child_by_field_name("scope")
+            head = self.parts(scope) if scope is not None else []
+            tail = self.parts(node.child_by_field_name("name"))
+            return head + tail if head and tail else []
+        if t in ("template_function", "template_type", "template_method"):
+            return self.parts(node.child_by_field_name("name"))
+        if t == "field_expression":
+            head = self.parts(node.child_by_field_name("argument"))
+            field = node.child_by_field_name("field")
+            tail = self.parts(field) if field is not None else []
+            return head + tail if head and len(tail) == 1 else []
+        return []
+
+    def callee_span(self, node, parts):
+        span = self.span(node)
+        named = self.last_name(node, parts[-1]) if parts else None
+        if named is not None:
+            span = span[:2] + [named.end_point[0] + 1, named.end_point[1]]
+        return span
+
+    def in_class(self):
+        return self.scope_by_id[self.scope]["kind"] == "class"
+
+    def export(self, name, static):
+        if self.scope == self.top and name and not static:
+            self.data["exports"].append({"exported": name, "local": name})
+
+    def enter(self, kind, node, caller=None, declaration=None, blocked=None):
+        scope = self.new_scope(kind, self.span(node), caller=caller)
+        if declaration is not None:
+            self.scope_by_id[scope]["declaration"] = declaration
+        if blocked:
+            self.scope_by_id[scope].update(unresolved=True, reason=blocked)
+        previous = self.scope, self.caller
+        self.scope = scope
+        if caller is not None:
+            self.caller = caller
+        return previous
+
+    def leave(self, previous):
+        self.scope, self.caller = previous
+
+    def callable_declaration(self, name_node, node, kind, *, contract, static):
+        """Declare a function or method named by `name_node`; returns its identity."""
+        head = c_name_node(name_node)
+        qualified = name_node.type == "qualified_identifier"
+        name = c_callable_name(name_node, self.text)
+        lexical = not (qualified or (self.language == "cpp" and not self.in_class()))
+        extra = {"name_span": self.span(head if head is not None else name_node)}
+        if head is not None and head.type == "destructor_name" and head.named_children:
+            extra["signature_spans"] = [self.span(head.named_children[0])]  # `~Name` is also named at `Name`
+        if contract:
+            extra["contract"] = True
+        if not lexical:
+            extra["lexical"] = False
+        if self.scope == self.top and not qualified:
+            extra["linkage"] = "internal" if static else "external"
+        identity = self.declaration(name, kind, self.span(node), extra=extra)
+        if not qualified:
+            self.export(name, static)
+        return identity
+
+    def bind_parameters(self, params):
+        for param in params.named_children if params is not None else ():
+            if param.type == "identifier":  # K&R: the names, typed by declarations before the body
+                self.declaration(self.text(param), "parameter", self.span(param))
+                continue
+            if param.type not in ("parameter_declaration", "optional_parameter_declaration",
+                                  "variadic_parameter_declaration"):
+                continue
+            name, function = c_declarator(param.child_by_field_name("declarator"))
+            if name is not None and function is None and name.type == "identifier":
+                self.declaration(self.text(name), "parameter", self.span(name))
+            self.walk(param.child_by_field_name("default_value"))
+
+    # -- declarations ----------------------------------------------------------------------------------------
+
+    def function(self, node):
+        name_node, declarator = c_declarator(node.child_by_field_name("declarator"))
+        body = node.child_by_field_name("body")
+        if name_node is None or declarator is None:
+            self.note("function definition without a declarator name")
+            previous = self.enter("block", node)
+            self.walk(body, create_block=False)
+            self.leave(previous)
+            return
+        identity = self.callable_declaration(name_node, node, "function", contract=False,
+                                             static=c_is_static(node, self.text, self.statics))
+        outside = None
+        if name_node.type == "qualified_identifier":
+            # A member defined outside its class: the class's members are names this body can see.
+            outside = self.enter("block", node, blocked="members of the qualifying class are not read")
+        previous = self.enter("function", node, caller=identity)
+        self.bind_parameters(declarator.child_by_field_name("parameters"))
+        for child in node.named_children:
+            if child.type == "field_initializer_list":
+                for item in child.named_children:
+                    for argument in item.named_children:
+                        if argument.type in ("argument_list", "initializer_list"):
+                            self.walk(argument)
+        self.walk(body, create_block=False)
+        self.leave(previous)
+        if outside is not None:
+            self.leave(outside)
+
+    def declaration_node(self, node):
+        """A `declaration` or `field_declaration`: prototypes, variables and fields, and a record in its type."""
+        self.record(node.child_by_field_name("type"))
+        static = c_is_static(node, self.text, self.statics)
+        member = self.in_class()
+        for declarator in node.children_by_field_name("declarator"):
+            name_node, function = c_declarator(declarator)
+            if name_node is not None and function is not None:
+                self.callable_declaration(name_node, function, "method" if member else "function",
+                                          contract=True, static=static)
+                continue
+            # A C struct's fields are no names a lookup finds; a C++ class's are, in its scope.
+            if name_node is not None and (node.type == "declaration" or self.language == "cpp"):
+                qualified = name_node.type == "qualified_identifier"
+                name = c_callable_name(name_node, self.text)
+                identity = self.declaration(name, "binding", self.span(c_name_node(name_node) or name_node))
+                if qualified:
+                    self.declaration_by_id[identity]["lexical"] = False
+                else:
+                    self.export(name, static)
+            value = declarator.child_by_field_name("value") if declarator.type == "init_declarator" else None
+            self.walk(value)
+        self.walk(node.child_by_field_name("default_value"))
+
+    def type_definition(self, node):
+        self.record(node.child_by_field_name("type"))
+        for declarator in node.children_by_field_name("declarator"):
+            name_node, _ = c_declarator(declarator)
+            if name_node is not None:
+                name = self.text(name_node)
+                self.declaration(name, "class", self.span(node), extra={"name_span": self.span(name_node)})
+                self.export(name, False)
+
+    def record(self, node):
+        """A struct, union, class or enum with a body; a mention of one without a body declares nothing."""
+        if node is None or node.type not in _C_RECORDS or node.child_by_field_name("body") is None:
+            return
+        name_node = node.child_by_field_name("name")
+        body = node.child_by_field_name("body")
+        identity = None
+        if name_node is not None:
+            head = c_name_node(name_node)
+            name = c_callable_name(name_node, self.text)
+            extra = {"name_span": self.span(head if head is not None else name_node)}
+            if self.language == "c" or name_node.type == "qualified_identifier":
+                extra["lexical"] = False  # a C tag is not an ordinary identifier
+            identity = self.declaration(name, "class", self.span(node), extra=extra)
+            if self.language == "cpp":
+                self.export(name, False)
+        if node.type == "enum_specifier":
+            scoped = any(c.type in ("class", "struct") for c in node.children)
+            for item in body.named_children:
+                if item.type != "enumerator":
+                    continue
+                enumerator = item.child_by_field_name("name")
+                if enumerator is not None and not scoped:
+                    self.declaration(self.text(enumerator), "binding", self.span(enumerator))
+                self.walk(item.child_by_field_name("value"))
+            return
+        if self.language == "c":
+            for field in body.named_children:  # C tags declared inside a struct are file-scope tags
+                if field.type == "field_declaration":
+                    self.record(field.child_by_field_name("type"))
+            return
+        based = any(c.type == "base_class_clause" for c in node.children)
+        previous = self.enter("class", node, declaration=identity,
+                              blocked="base class members are not read" if based else None)
+        for member in body.named_children:
+            self.walk(member, create_block=False)
+        self.leave(previous)
+
+    def namespace(self, node):
+        name_node = node.child_by_field_name("name")
+        identity = None
+        if name_node is not None:
+            name = ".".join(self.text(name_node).replace("::", " ").split())
+            identity = self.declaration(name, "class", self.span(node), extra={"lexical": False})
+        previous = self.enter("block", node, declaration=identity)
+        body = node.child_by_field_name("body")
+        for child in body.named_children if body is not None else ():
+            self.walk(child, create_block=False)
+        self.leave(previous)
+
+    def using(self, node):
+        if any(c.type == "namespace" for c in node.children):
+            self.block("using-directive brings names that are not read")
+            return
+        target = next((c for c in node.named_children if c.type in ("qualified_identifier", "identifier")), None)
+        name = c_name_node(target)
+        if target is not None and name is not None:
+            self.data["imports"].append({
+                "scope": self.scope, "local": self.text(name), "module": self.text(target),
+                "imported": self.text(name), "mode": "named", "span": self.span(name)})
+
+    def include(self, node):
+        path = node.child_by_field_name("path")
+        if path is None or path.type not in ("system_lib_string", "string_literal"):
+            self.note("include through a macro is not read")
+            return
+        module = self.text(path) if path.type == "system_lib_string" else self.text(path)[1:-1]
+        self.data["imports"].append({"scope": "module", "local": "*", "module": module, "imported": "*",
+                                     "mode": "namespace", "span": self.span(path)})
+
+    # -- expressions -----------------------------------------------------------------------------------------
+
+    def call(self, node):
+        function = node.child_by_field_name("function")
+        arguments = node.child_by_field_name("arguments")
+        if function is None:
+            self.walk(arguments)
+            return
+        if function.type in ("primitive_type", "sized_type_specifier", "type_descriptor") or (
+                function.type == "template_function"
+                and self.text(function.child_by_field_name("name")) in _C_CASTS):
+            self.walk(arguments)  # `int(x)`, `static_cast<T>(x)`: a conversion, not a call
+            return
+        target, dynamic = function, False
+        while target is not None and target.type in ("parenthesized_expression", "pointer_expression"):
+            if target.type == "pointer_expression":
+                operator = target.child_by_field_name("operator")
+                if operator is None or operator.type != "*":
+                    break
+                target = target.child_by_field_name("argument")
+            else:
+                target = target.named_children[0] if target.named_children else None
+            dynamic = True
+        parts = self.parts(target)
+        reason = "dynamic-callee" if dynamic or (len(parts) == 1 and parts[0] in self.macros) else None
+        if not parts:
+            member = self.member_name(target) if target is not None else None
+            if member is not None:
+                parts = ["(expr)", self.text(member)]
+                self.walk(target.child_by_field_name("argument"))
+            elif target is not None:
+                self.walk(target)
+            reason = "dynamic-callee"
+        self.reference(parts, "call", self.callee_span(target if target is not None else function, parts), reason)
+        self.walk(arguments)
+
+    def new(self, node):
+        kind = node.child_by_field_name("type")
+        if kind is not None and kind.type not in ("primitive_type", "sized_type_specifier",
+                                                  "placeholder_type_specifier"):
+            parts = self.parts(kind)
+            self.reference(parts, "call", self.callee_span(kind, parts), None if parts else "dynamic-callee")
+        for field in ("placement", "declarator", "arguments"):
+            self.walk(node.child_by_field_name(field))
+
+    def lambda_(self, node):
+        self.walk(node.child_by_field_name("captures"))
+        identity = self.declaration("(lambda)", "function", self.span(node), extra={"lexical": False})
+        previous = self.enter("function", node, caller=identity)
+        declarator = node.child_by_field_name("declarator")
+        self.bind_parameters(declarator.child_by_field_name("parameters") if declarator is not None else None)
+        self.walk(node.child_by_field_name("body"), create_block=False)
+        self.leave(previous)
+
+    def range_for(self, node):
+        self.walk(node.child_by_field_name("right"))
+        previous = self.enter("block", node)
+        declarator = node.child_by_field_name("declarator")
+        names = declarator.named_children if declarator is not None and \
+            declarator.type == "structured_binding_declarator" else [c_declarator(declarator)[0]]
+        for name in names:
+            if name is not None and name.type == "identifier":
+                self.declaration(self.text(name), "binding", self.span(name))
+        self.walk(node.child_by_field_name("body"), create_block=False)
+        self.leave(previous)
+
+    def catch(self, node):
+        previous = self.enter("block", node)
+        self.bind_parameters(node.child_by_field_name("parameters"))
+        self.walk(node.child_by_field_name("body"), create_block=False)
+        self.leave(previous)
+
+    def walk(self, node, create_block=True):
+        if node is None or node.type in _TS_SKIP_NODES or node.type in _C_SKIP:
+            return
+        t = node.type
+        if t == "preproc_include":
+            self.include(node)
+        elif t.startswith("preproc_"):  # `#if` and its branches: every branch is read, the tests never are
+            for index, child in enumerate(node.children):
+                if child.is_named and node.field_name_for_child(index) not in _C_CONDITIONS:
+                    self.walk(child, create_block)
+        elif t == "function_definition":
+            self.function(node)
+        elif t in ("declaration", "field_declaration"):
+            self.declaration_node(node)
+        elif t == "type_definition":
+            self.type_definition(node)
+        elif t == "alias_declaration":
+            name = node.child_by_field_name("name")
+            if name is not None:
+                self.declaration(self.text(name), "class", self.span(node), extra={"name_span": self.span(name)})
+                self.export(self.text(name), False)
+        elif t in _C_RECORDS:
+            self.record(node)
+        elif t == "namespace_definition":
+            self.namespace(node)
+        elif t == "using_declaration":
+            self.using(node)
+        elif t in ("linkage_specification", "template_declaration", "declaration_list", "translation_unit",
+                   "template_instantiation"):
+            for child in node.named_children:
+                if child.type not in ("string_literal", "template_parameter_list"):
+                    self.walk(child, create_block=False)
+        elif t == "compound_statement":
+            previous = self.enter("block", node) if create_block else None
+            for child in node.named_children:
+                self.walk(child)
+            if previous is not None:
+                self.leave(previous)
+        elif t == "call_expression":
+            self.call(node)
+        elif t == "new_expression":
+            self.new(node)
+        elif t == "lambda_expression":
+            self.lambda_(node)
+        elif t == "for_range_loop":
+            self.range_for(node)
+        elif t == "catch_clause":
+            self.catch(node)
+        elif t in ("cast_expression", "sizeof_expression", "compound_literal_expression", "alignof_expression"):
+            self.walk(node.child_by_field_name("value"))
+        elif t in ("qualified_identifier", "template_function"):
+            parts = self.parts(node)
+            if parts:
+                self.reference(parts, "read", self.callee_span(node, parts))
+        elif t == "field_expression":
+            parts = self.parts(node)
+            if parts:
+                self.reference(parts, "read", self.span(node))
+            else:
+                self.walk(node.child_by_field_name("argument"))
+        else:
+            super().walk(node, create_block)

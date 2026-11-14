@@ -4,7 +4,7 @@ Usage Finder Module.
 Finds where symbols are used across the codebase. Multi-language:
 - Source file types: .py, .java, .js/.mjs/.cjs/.jsx, .ts/.tsx, .rs,
   .sql/.ddl/.dml, PL/SQL extensions (.pks, .pkb, .plsql, .pls, .pck, .prc,
-  .fnc, .trg), and stylesheets (.css, .scss, .less).
+  .fnc, .trg), and stylesheets (.css, .scss, .sass, .less, .pcss).
 - Import patterns are language-aware (Python `import`/`from`, Java `import`,
   JS/TS `import`/`require`; Rust, SQL/PL-SQL and stylesheets have no import
   pattern, so only raw usages are reported for them). Markup (.vue, .svelte,

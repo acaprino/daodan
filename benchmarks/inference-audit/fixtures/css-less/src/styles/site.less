@@ -1,0 +1,33 @@
+@import (reference) "mixins";
+@import "vars.less";
+@plugin "plugins/units";
+@detached: { color: red; };
+@map: { primary: blue; };
+.box {
+  margin: @gap;
+  color: @@name;
+  .bordered(4px);
+  .plain;
+  #ns > .m();
+  #ns.m();
+  &:extend(.card all);
+  width: (@gap * 2);
+  @detached();
+  background: @map[primary];
+  @local: 1px;
+  padding: @local;
+  @media (min-width: 768px) { color: green; }
+}
+.card:extend(.box) { x: y; }
+@prefix: ~"app";
+.@{prefix}-btn { a: b; }
+.loop(@i) when (@i > 0) {
+  .w-@{i} { width: (@i * 25%); }
+  .loop(@i - 1);
+}
+.loop(2);
+.ghost { color: @missing; .nope(); }
+.outer() {
+  .inner() { color: red; }
+  .inner();
+}

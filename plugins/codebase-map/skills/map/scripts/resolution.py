@@ -24,8 +24,8 @@ from __future__ import annotations
 from pathlib import PurePosixPath
 from typing import Protocol
 
-__all__ = ["LEXICAL_RESOLVER", "MRO_LIMIT", "TARGET_KINDS", "ResolutionLookup",
-           "class_named", "instance_method", "module_attribute"]
+__all__ = ["C_FAMILY", "LEXICAL_RESOLVER", "MRO_LIMIT", "TARGET_KINDS", "ResolutionLookup",
+           "class_named", "included_definition", "instance_method", "module_attribute"]
 
 
 # The resolver identity stamped on every reference the lexical rules answer, so an
@@ -43,9 +43,12 @@ TARGET_KINDS = frozenset({"function", "class"})
 # this bound stay unresolved instead of yielding a partial method lookup.
 MRO_LIMIT = 8
 
+# Languages whose files share one namespace of functions with external linkage.
+C_FAMILY = frozenset({"c", "cpp"})
+
 
 class ResolutionLookup(Protocol):
-    """The seven facts a resolution rule may ask storage for.
+    """The eight facts a resolution rule may ask storage for.
 
     Identities are file-qualified (`"<rel>::<source id>"`); scope ids and source
     ids are file-local and always paired with their `rel`.
@@ -71,6 +74,9 @@ class ResolutionLookup(Protocol):
 
     def exported_target(self, rel: str, exported: str):
         """`(identity, None)` for a file's exported name, `(None, reason)` otherwise."""
+
+    def declarations_named(self, name: str) -> list[dict]:
+        """Every declaration of kind `function` named `name`, in any file: payloads with `id` and `file`."""
 
 
 def class_named(lookup: ResolutionLookup, rel: str, scope_id: str, dotted: str) -> str | None:
@@ -289,3 +295,50 @@ def module_attribute(lookup: ResolutionLookup, rel: str, imported: dict,
         return None, "module-attribute-package-unavailable"
     identity, reason = lookup.exported_target(matches[0], name)
     return identity, reason or "module-attribute"
+
+
+def included_definition(lookup: ResolutionLookup, rel: str, scope_id: str,
+                        name: str) -> tuple[str | None, str | None]:
+    """Resolve a C or C++ name the file does not declare to its one definition with external linkage.
+
+    It applies where the lexical walk stops at the module scope, which stands for what the translation unit
+    brings: `(None, None)` anywhere else, so the lexical reason stands. The file must see a file-scope declaration
+    of the name with external linkage in a project header it includes, directly or not; exactly one project
+    file must define the name with external linkage. A `static` namesake has internal linkage and is never a
+    candidate. Several definitions give no target: which one links depends on the build.
+    """
+    if lookup.language(rel) not in C_FAMILY:
+        return None, None
+    root = None
+    while scope_id is not None:
+        scope = lookup.scope_record(rel, scope_id)
+        if scope is None or lookup.bindings_named(rel, scope_id, name):
+            return None, None
+        if scope.get("unresolved"):
+            if scope.get("parent") is not None:
+                return None, None  # a class or qualified body the file cannot list, not the translation unit
+            root = scope_id
+            break
+        scope_id = scope.get("parent")
+    if root is None:
+        return None, None
+    visible, stack, current = set(), [rel], root
+    while stack:
+        item = stack.pop()
+        for kind, binding in lookup.bindings_named(item, current if item == rel else "module", "*"):
+            if kind != "import":
+                continue
+            for target in lookup.targets(item, binding["module"]):
+                if target not in visible and target != rel:
+                    visible.add(target)
+                    stack.append(target)
+    external = [item for item in lookup.declarations_named(name) if item.get("linkage") == "external"
+                and lookup.language(item["file"]) in C_FAMILY]
+    if not any(item["file"] in visible for item in external):
+        return None, "included-name-undeclared"
+    definitions = [item for item in external if not item.get("contract")]
+    if not definitions:
+        return None, "included-definition-missing"
+    if len(definitions) > 1:
+        return None, "included-definition-ambiguous"
+    return definitions[0]["id"], "included-declaration"

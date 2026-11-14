@@ -1,5 +1,6 @@
 """C and C++ through scip-clang: the ends of two small projects in `fixtures/c` and `fixtures/cpp`, each with
-the index scip-clang v0.4.1 wrote, read with `adapters/clang.py` and the shared `scip_graph.py`.
+the index scip-clang v0.4.1 wrote, read with `adapters/clang.py` and the shared `scip_graph.py`, once on the
+adapter's `SyntaxSnapshot` and once on the product snapshot, against the same expectations.
 
     python -m pytest benchmarks/inference-audit/test_clang_graph.py
 
@@ -64,6 +65,11 @@ CPP_ENDS = {
     "main.cpp:17:31 c_helper": {"hole no-occurrence"},  # `extern "C"`: scip-clang writes no occurrence at all
     "main.cpp:18:4 printf": {"hole no-occurrence"},  # the C library, `extern "C"` in C++
 }
+# Where the product snapshot gives another end, and why. Its call site is the callee's last name, as for every
+# language; the stand-in reads a `new` where the type starts, which is where scip-clang names the constructor.
+PRODUCT_KNOWN = {
+    "main.cpp:8:28 Square": "the product's site is `Square` (8:33), where the index names the class shapes.hpp:19",
+}
 # Occurrences that are no syntactic call: `file:line`, the text the index names, its ends.
 CPP_OCCURRENCES = {
     ("main.cpp", 12, "+"): {"shapes.cpp:13"},  # operator+
@@ -107,6 +113,110 @@ def graphs():
         rows = {f"{identity} {row['name']}": row for identity, row in references.items()}
         out[name] = {"index": index, "snapshot": snapshot, "traversal": traversal, "graph": graph, "rows": rows}
     return out
+
+
+@pytest.fixture(scope="module")
+def product(tmp_path_factory):
+    """The same graphs on the product snapshot: its references and declarations, the adapter's index fixes and
+    hops (which read the index and tree-sitter, not a snapshot)."""
+    import snapshot as product_snapshot
+    out = {}
+    for name, project in PROJECTS.items():
+        root = FIXTURES / name
+        source = tmp_path_factory.mktemp(name) / name
+        shutil.copytree(root, source, ignore=shutil.ignore_patterns("index.scip"))
+        manifest = source.parent / "manifest.sqlite"
+        product_snapshot.write_snapshot(source, manifest)
+        with scip_graph.Snapshot(manifest) as snapshot:
+            index = scip_graph.Index(root)
+            index.load(root / "index.scip")
+            clang.dedupe(index)
+            clang.utf8_columns(index)
+            files = clang.perimeter(root, name)
+            clang.enclose(index, clang.SyntaxSnapshot(root, files, name))
+            hops = clang.hops(index, name)
+            traversal = scip_graph.Traversal(index, snapshot, hops, same_range=clang.same_range(index),
+                                             classify=clang.classifier(project))
+            reasons = clang.missing(index, [rel for rel in files if not index.documents.get(rel)])
+            graph, references = scip_graph.build(index, snapshot, name, hops, {}, reasons, traversal,
+                                                 refine=clang.refine)
+            lines = {}
+            for identity, rel, line, blob in snapshot.connection.execute(
+                    "SELECT id, file, l0, payload FROM sem_declarations"):
+                lines[identity] = f"{rel}:{(snapshot._unpack(blob) or {}).get('name_span', [line])[0]}"
+            rows = {}
+            for identity, rel, kind, _resolution, _lexical, span, parts, _reason in snapshot.references(name):
+                site = snapshot.callee(rel, span, parts)
+                if kind == "call" and site is not None:
+                    rows[f"{rel}:{site[0]}:{site[1]} {parts[-1]}"] = references[identity]
+            ends = {place: [end for key in sorted(keys) for end in traversal.ends(key)]
+                    for place, keys in _occurrence_keys(index, CPP_OCCURRENCES if name == "cpp" else {}).items()}
+            local = traversal.ends("main.cpp#local 0") if name == "cpp" else []
+        out[name] = {"graph": graph, "rows": rows, "lines": lines, "ends": ends, "local": local}
+    return out
+
+
+def _occurrence_keys(index, places) -> dict:
+    keys = {}
+    for rel, line, name in places:
+        text = index.line(rel, line)
+        keys[(rel, line, name)] = {o.key for o in index.documents[rel]
+                                   if o.line == line and not o.definition and text[o.start:o.end] == name}
+    return keys
+
+
+def product_labels(data, ends, hole: str = "") -> set:
+    """`labels`, with a project end named by the product declaration's `file:line`."""
+    if hole:
+        return {f"hole {hole}"}
+    found = {("impl " if "implementation" in end.chain else "") + data["lines"].get(end.target, end.target)
+             if end.cls == "project-callable" and end.target else target(end) for end in ends}
+    return {label for label in found if label} or {"value" if end.cls == "project-value" else end.cls
+                                                    for end in ends}
+
+
+def _product_cases(table: dict) -> list:
+    return [pytest.param(site, marks=pytest.mark.xfail(strict=True, reason=PRODUCT_KNOWN[site]))
+            if site in PRODUCT_KNOWN else site for site in sorted(table)]
+
+
+@pytest.mark.parametrize("site", _product_cases(C_ENDS))
+def test_c_fixture_end_on_the_product_snapshot(product, site):
+    row = product["c"]["rows"][site]
+    assert product_labels(product["c"], row["ends"], row["hole"]) == C_ENDS[site]
+
+
+@pytest.mark.parametrize("site", _product_cases(CPP_ENDS))
+def test_cpp_fixture_end_on_the_product_snapshot(product, site):
+    row = product["cpp"]["rows"][site]
+    assert product_labels(product["cpp"], row["ends"], row["hole"]) == CPP_ENDS[site]
+
+
+def test_product_snapshot_names_the_class_at_a_new(product):
+    """The one difference: `new geo::Square(3.0)` is read at `Square`, where the index names the class."""
+    row = product["cpp"]["rows"]["main.cpp:8:33 Square"]
+    assert product_labels(product["cpp"], row["ends"], row["hole"]) == {"shapes.hpp:19"}
+    assert set(product["c"]["rows"]) == set(C_ENDS)
+    assert set(product["cpp"]["rows"]) == set(CPP_ENDS) - set(PRODUCT_KNOWN) | {"main.cpp:8:33 Square"}
+
+
+@pytest.mark.parametrize("place", sorted(CPP_OCCURRENCES))
+def test_cpp_occurrence_end_on_the_product_snapshot(product, place):
+    assert product_labels(product["cpp"], product["cpp"]["ends"][place]) == CPP_OCCURRENCES[place]
+
+
+def test_product_snapshot_keeps_the_graph_facts(product):
+    """Edges from the enclosing function, the file without a document and the variable that is no alias."""
+    edges = [edge for edge in product["c"]["graph"]["edges"] if edge["site"] == "main.c:13"]
+    assert {edge["from"] for edge in edges} == {"cxx . cfixture 0$ main(b126dc7c1de90089)."}
+    missing = {item["path"]: item["reason"] for item in product["c"]["graph"]["files"]["missing"]}
+    assert missing == {"platform_win.c": "no compile command: not built by the default configuration"}
+    assert [(end.cls, end.chain) for end in product["cpp"]["local"]] == [("project-value", ())]
+    chains = {site: {tuple(end.chain) for end in product[name]["rows"][site]["ends"] if end.cls == "project-callable"}
+              for name, site in (("c", "main.c:16:11 platform_init"), ("cpp", "main.cpp:14:42 doubled"),
+                                 ("cpp", "main.cpp:14:11 twice"), ("c", "main.c:9:21 add"))}
+    assert chains == {"main.c:16:11 platform_init": {("declaration",)}, "main.cpp:14:42 doubled": {("lambda",)},
+                      "main.cpp:14:11 twice": {("same-range",)}, "main.c:9:21 add": {()}}
 
 
 @pytest.mark.parametrize("site", sorted(C_ENDS))
@@ -201,15 +311,16 @@ def test_repeated_occurrences_are_kept_once():
     assert all(len(items) == len(set(items)) for items in index.documents.values())
 
 
-def test_product_snapshot_holds_no_c_or_cpp(tmp_path):
-    """The reason the adapter stands in for the snapshot: the product reads no C or C++ file."""
-    source = tmp_path / "c"
-    shutil.copytree(FIXTURES / "c", source, ignore=shutil.ignore_patterns("index.scip"))
-    manifest = tmp_path / "manifest.sqlite"
-    done = subprocess.run([sys.executable, "-I", "snapshot.py", "write", str(source), "--out", str(manifest),
-                           "--no-engine", "--no-index", "--no-modules"], cwd=plugin_scripts.SCRIPTS,
-                          capture_output=True, text=True, timeout=300)
-    assert done.returncode == 0, done.stderr
-    with sqlite3.connect(manifest) as connection:
-        files = {row[0] for row in connection.execute("SELECT path FROM files")}
-    assert files == {"CMakeLists.txt"}
+def test_product_snapshot_reads_every_c_and_cpp_file(tmp_path):
+    """The product reads the fixtures in their languages, with semantic facts for each file."""
+    for name in PROJECTS:
+        source = tmp_path / name
+        shutil.copytree(FIXTURES / name, source, ignore=shutil.ignore_patterns("index.scip"))
+        manifest = tmp_path / f"{name}.sqlite"
+        done = subprocess.run([sys.executable, "-I", "snapshot.py", "write", str(source), "--out", str(manifest),
+                               "--no-engine", "--no-index", "--no-modules"], cwd=plugin_scripts.SCRIPTS,
+                              capture_output=True, text=True, timeout=300)
+        assert done.returncode == 0, done.stderr
+        with sqlite3.connect(manifest) as connection:
+            files = dict(connection.execute("SELECT file, language || ' ' || status FROM sem_coverage WHERE language IS NOT NULL"))
+        assert files == {rel: f"{name} ast" for rel in clang.perimeter(FIXTURES / name, name)}

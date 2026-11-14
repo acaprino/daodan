@@ -498,7 +498,8 @@ class PresentationInventoryTests(unittest.TestCase):
     dark-theme rule overrode a consent modal's positioning and locked users
     out, and the manifest of the run that missed it held not one `.css` path,
     by construction. Stylesheets have their own adapter since 4.2.0 (see
-    test_xray_stylesheet.py); markup stays a file-level entry.
+    test_xray_stylesheet.py); markup is read for the rules of its `<style>`
+    blocks, and without any it has no symbols.
     """
 
     def setUp(self):
@@ -515,10 +516,10 @@ class PresentationInventoryTests(unittest.TestCase):
     def key(self, suffix):
         return next(k for k in self.manifest["files"] if k.endswith(suffix))
 
-    def test_markup_is_recorded_as_a_file_level_entry(self):
+    def test_markup_without_style_blocks_is_recorded_without_symbols(self):
         for suffix in ("index.html",):
             entry = self.manifest["files"][self.key(suffix)]
-            self.assertIsNone(entry["language"])
+            self.assertEqual(entry["language"], "markup")
             self.assertEqual(entry["symbols"], {})
             for field in ("size", "mtime", "hash", "lines"):
                 self.assertIn(field, entry)
@@ -529,7 +530,7 @@ class PresentationInventoryTests(unittest.TestCase):
         result = self.snapshot.compare_files(self.manifest, self.src)
         self.assertEqual(result["modified"], [self.key("styles/theme.css")])
 
-    def test_contracts_build_files_infrastructure_and_templates_are_file_level_entries(self):
+    def test_contracts_build_files_infrastructure_and_pug_are_file_level_entries(self):
         files = {
             "api/service.proto": 'syntax = "proto3";\nmessage Ping {}\n',
             "api/schema.graphql": "type Query { ping: String }\n",
@@ -537,9 +538,7 @@ class PresentationInventoryTests(unittest.TestCase):
             "infra/main.tf": 'resource "null_resource" "x" {}\n',
             "service/build.gradle": "plugins { id 'java' }\n",
             "app/App.csproj": "<Project />\n",
-            "web/page.jsp": "<%@ page %>\n",
-            "web/view.cshtml": "@model Foo\n",
-            "web/layout.twig": "{% block body %}{% endblock %}\n",
+            "web/page.pug": "p hello\n",
         }
         for relative, content in files.items():
             write(self.src, relative, content)

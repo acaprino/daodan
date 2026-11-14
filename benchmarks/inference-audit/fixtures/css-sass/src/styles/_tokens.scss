@@ -1,0 +1,7 @@
+$gap: 4px !default;
+$radius: 2px;
+$palette: (primary: blue, secondary: green);
+$private-x: 1px;
+@function double($n) {
+  @return $n * 2;
+}

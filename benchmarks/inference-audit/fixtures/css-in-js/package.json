@@ -1,0 +1,17 @@
+{
+  "name": "css-in-js-fixture",
+  "private": true,
+  "devDependencies": {
+    "@codemirror/view": "6.43.15",
+    "@emotion/css": "11.13.5",
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@mui/system": "9.5.0",
+    "@stitches/react": "1.2.8",
+    "@types/react": "19.3.0",
+    "@vanilla-extract/css": "1.21.3",
+    "react": "19.3.1",
+    "styled-components": "6.6.0",
+    "typescript": "5.9.3"
+  }
+}

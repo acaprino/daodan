@@ -1,0 +1,7 @@
+{
+  "name": "css-sfc-fixture",
+  "private": true,
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

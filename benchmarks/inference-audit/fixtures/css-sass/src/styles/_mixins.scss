@@ -1,0 +1,8 @@
+@use "tokens";
+@mixin pad($x: tokens.$gap) {
+  padding: $x;
+  @content;
+}
+%focus-ring {
+  outline: 1px solid;
+}

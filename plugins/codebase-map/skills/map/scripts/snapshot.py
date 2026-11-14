@@ -155,19 +155,21 @@ MANIFEST_FILES = frozenset({
     "build.zig.zon", "dune-project", "Dockerfile",
 })
 
-# Presentation files no adapter parses: markup, single-file components and
-# indented Sass. They carry no symbols, but they decide whether a screen
-# renders, scrolls and can be completed, so they enter the manifest as
-# file-level entries: a phase file can cite them and an incremental run notices
-# when one changes. The set exists because a run once held not one `.css` path
-# while a global dark-theme rule was overriding a consent modal's positioning
-# and locking users out. CSS, SCSS and LESS left it for their own adapter,
-# which records every rule as a symbol.
-PRESENTATION_EXTENSIONS = frozenset({
-    ".astro", ".cshtml", ".ejs", ".ftl", ".hbs", ".htm", ".html", ".jsp",
-    ".jspx", ".liquid", ".mustache", ".pug", ".razor", ".sass",
-    ".twig", ".vm", ".xhtml",
-})
+# Presentation files no adapter parses: Pug and Stylus. They carry no symbols,
+# but they decide whether a screen renders, scrolls and can be completed, so
+# they enter the manifest as file-level entries: a phase file can cite them and
+# an incremental run notices when one changes. The set exists because a run
+# once held not one `.css` path while a global dark-theme rule was overriding a
+# consent modal's positioning and locking users out. Stylesheets and the style
+# blocks of markup and components left it for their adapters, which record
+# every rule as a symbol.
+PRESENTATION_EXTENSIONS = frozenset({".pug", ".styl", ".stylus"})
+# A presentation file the product cannot read says so in its entry, never silently.
+UNREAD_STYLESHEETS = {
+    ".pug": "not read: no Pug reader in the product",
+    ".styl": "not read: no Stylus reader in the product",
+    ".stylus": "not read: no Stylus reader in the product",
+}
 
 # What the Codebase Map never reads; such a file never enters the manifest, not even as a hash.
 # The obvious credential files, by name alone.
@@ -312,7 +314,7 @@ def parser_fingerprint() -> str:
 def parser_profile(path: Path, language: str | None = None) -> dict:
     """Effective backend for this file, without reading its source bytes."""
     language = language or SUPPORTED_EXTENSIONS.get(path.suffix.lower())
-    if language in {"java", "javascript", "typescript", "rust", "go", "kotlin", "csharp", "vue", "svelte"}:
+    if language in {"java", "javascript", "typescript", "rust", "go", "kotlin", "csharp", "vue", "svelte", "c", "cpp"}:
         from languages._treesitter import get_parser
         grammar = "tsx" if path.suffix.lower() == ".tsx" else ("typescript" if language in {"vue", "svelte"} else language)
         loaded = get_parser(grammar)
@@ -326,7 +328,7 @@ def parser_profile(path: Path, language: str | None = None) -> dict:
                     profile[attribute] = list(value) if isinstance(value, tuple) else value
         return profile
     return {"language": language, "backend": {
-        "python": "stdlib-ast", "css": "stylesheet", "sql": "regex", "plsql": "regex",
+        "python": "stdlib-ast", "css": "stylesheet", "markup": "stylesheet", "sql": "regex", "plsql": "regex",
     }.get(language, "file-level")}
 
 
@@ -546,6 +548,8 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
         "parser_notes": [],
         "status": "file-level",
     }
+    if path.suffix.lower() in UNREAD_STYLESHEETS:
+        entry["parser_notes"] = [UNREAD_STYLESHEETS[path.suffix.lower()]]
     if language and len(data) > MAX_PARSE_BYTES:
         entry["status"] = "parse-skipped"
         entry["parser_notes"] = ["source exceeds parsing size limit"]
@@ -1326,7 +1330,8 @@ _PACKAGE_FILES = ("__init__.py", "index.ts", "index.tsx", "index.js", "index.jsx
 # A stylesheet resolves stylesheets only, and only these ways: a TypeScript
 # `import "./theme"` never means `theme.css`, and a Python `import app` never
 # means `app/static/app.css`, so none of this is tried for any other importer.
-_STYLESHEET_SUFFIXES = (".css", ".scss", ".less")
+_STYLESHEET_SUFFIXES = (".css", ".scss", ".sass", ".less", ".pcss", ".postcss")
+_C_FAMILY_SUFFIXES = (".c", ".h", ".cc", ".cpp", ".cxx", ".hpp", ".hh", ".hxx")
 
 
 def _by_basename(paths) -> dict[str, list[str]]:
@@ -1391,7 +1396,7 @@ def _resolve_stylesheet(module: str, importer: str, known: dict[str, list[str]])
     partial = f"{head}/_{tail}" if head else f"_{tail}"
     lowered = importer.lower()
     candidates = [joined]
-    if lowered.endswith(".scss"):
+    if lowered.endswith((".scss", ".sass")):
         for ext in (".sass", ".scss", ".css"):
             candidates += [joined + ext, partial + ext]
         candidates += [f"{joined}/{name}" for name in
@@ -1831,6 +1836,17 @@ def resolve_module(
         return None
     if importer.lower().endswith(_STYLESHEET_SUFFIXES):
         return _resolve_stylesheet(module, importer, known)
+    if importer.lower().endswith(_C_FAMILY_SUFFIXES):
+        # `#include <x.h>` names a system or search-path header: external. `#include "x.h"` is
+        # looked up next to the including file first; the search paths are the build's, unknown
+        # here, so otherwise only a single project file ending in that path matches.
+        if module.startswith("<"):
+            return None
+        base = importer.rsplit("/", 1)[0] if "/" in importer else ""
+        joined = os.path.normpath(os.path.join(base, module)).replace(os.sep, "/")
+        if joined in known.get(joined.rsplit("/", 1)[-1], []):
+            return joined
+        return _lookup(module, known, importer)
     candidates: list[str] = []
     if module.startswith("."):
         base = importer.rsplit("/", 1)[0] if "/" in importer else ""
@@ -1981,6 +1997,9 @@ PHASE_FILES = (
 
 # `src/app/service.py::Class.method`
 CITE_SYMBOL = re.compile(r"([\w./\\-]+\.[A-Za-z0-9_]+)::([A-Za-z_][\w.]*)")
+# Files whose symbols include stylesheet rules: their selectors are cited whole.
+_RULE_SUFFIXES = _STYLESHEET_SUFFIXES + (".vue", ".svelte") + tuple(
+    suffix for suffix, language in SUPPORTED_EXTENSIONS.items() if language == "markup")
 # `theme.css::.dark #root > div:first-child`: a stylesheet symbol carries spaces
 # and punctuation the bare form cannot, so it is cited inside backticks and
 # matched whole.
@@ -1998,7 +2017,7 @@ def cited_symbols(line: str) -> list[tuple[str, str]]:
     # word: `theme.css::body > div` names `body > div`, not `body`. Its span is
     # blanked before the bare pattern runs.
     bare = CITE_SYMBOL_QUOTED.sub(
-        lambda m: " " * len(m.group(0)) if m.group(1).lower().endswith(_STYLESHEET_SUFFIXES) else m.group(0),
+        lambda m: " " * len(m.group(0)) if m.group(1).lower().endswith(_RULE_SUFFIXES) else m.group(0),
         line,
     )
     return list(dict.fromkeys(CITE_SYMBOL.findall(bare) + quoted))
@@ -3429,7 +3448,7 @@ def cmd_scope(args: argparse.Namespace) -> int:
         # By extension alone: this runs before the user has confirmed anything,
         # so it reads no file. The manifest may name a language more precisely.
         language = SUPPORTED_EXTENSIONS.get(suffix)
-        if language:
+        if language and language != "markup":  # markup is presentation, read for its style blocks
             sets["parsed_source"] += 1
             languages[language] = languages.get(language, 0) + 1
         elif suffix in DOC_EXTENSIONS:

@@ -7,11 +7,12 @@ Debian package owning most of its headers) and runs scip-clang from the copy's r
 a function declared in a header and defined in a source file is one symbol, defined at its body; the
 declaration is a reference.
 
-The Daodan snapshot holds no C or C++ file (no language adapter for them), so `SyntaxSnapshot` stands in for
-it with tree-sitter: the perimeter (files Git tracks, dot directories left out), the functions, methods,
-classes, prototypes and lambdas declared at each name, and the call sites (`call_expression` and
-`new_expression`, casts written as calls left out) the graph's holes are counted on. Annotation macros
-(`class EXPORT Name`, `int ZEXPORT f(`) are blanked before parsing, positions unchanged.
+The product snapshot reads C and C++ (`languages/cfamily.py`), but gives no semantic facts for a file
+tree-sitter cannot parse whole (51 of 66 zlib C files, 2 of 4 tinyxml2 files), so the stored results keep
+`SyntaxSnapshot`, which reads every tree as it is: the perimeter (files Git tracks, dot directories left out),
+the functions, methods, classes, prototypes and lambdas declared at each name, and the call sites
+(`call_expression` and `new_expression`, casts written as calls left out) the graph's holes are counted on.
+Annotation macros (`class EXPORT Name`, `int ZEXPORT f(`) are blanked before parsing, positions unchanged.
 
 scip-clang writes what a macro expands to at the expansion: the call `SQUARE(n)` references the macro and the
 function its body calls, at the same range, so macros need no hop. `hops` states two things the index leaves

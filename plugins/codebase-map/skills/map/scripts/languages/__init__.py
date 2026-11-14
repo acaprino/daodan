@@ -7,7 +7,7 @@ imports, external calls) and comment syntax info.
 
 Supported languages:
     Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust, Go,
-    CSS (incl. SCSS and LESS).
+    CSS (incl. SCSS and LESS), C, C++.
 
 Tree-sitter is used when available via the optional `tree-sitter-language-pack`
 package, with regex-based fallback per language. Python uses the stdlib `ast`
@@ -64,6 +64,9 @@ class Language:
     CSHARP = "csharp"
     VUE = "vue"
     SVELTE = "svelte"
+    MARKUP = "markup"
+    C = "c"
+    CPP = "cpp"
 
 
 SUPPORTED_LANGUAGES: tuple[str, ...] = (
@@ -80,6 +83,9 @@ SUPPORTED_LANGUAGES: tuple[str, ...] = (
     Language.CSHARP,
     Language.VUE,
     Language.SVELTE,
+    Language.MARKUP,
+    Language.C,
+    Language.CPP,
 )
 
 
@@ -118,14 +124,29 @@ SUPPORTED_EXTENSIONS: dict[str, str] = {
     ".kts": Language.KOTLIN,
     # C#.
     ".cs": Language.CSHARP,
+    # C and C++. A `.h` header is C unless its text says C++ (see detect_language).
+    ".c": Language.C,
+    ".h": Language.C,
+    ".cc": Language.CPP,
+    ".cpp": Language.CPP,
+    ".cxx": Language.CPP,
+    ".hpp": Language.CPP,
+    ".hh": Language.CPP,
+    ".hxx": Language.CPP,
     # Single-file frontend components.
     ".vue": Language.VUE,
     ".svelte": Language.SVELTE,
-    # Stylesheets. Indented Sass (.sass) has no braces to tokenize and stays a
-    # file-level entry in the snapshot manifest.
+    # Markup: the rules of its `<style>` blocks.
+    **dict.fromkeys((".astro", ".cshtml", ".ejs", ".ftl", ".hbs", ".htm", ".html", ".jsp", ".jspx", ".liquid",
+                     ".mustache", ".razor", ".twig", ".vm", ".xhtml"), Language.MARKUP),
+    # Stylesheets. Indented Sass is read as the SCSS its indentation implies;
+    # PostCSS sheets are CSS.
     ".css": Language.CSS,
     ".scss": Language.CSS,
+    ".sass": Language.CSS,
     ".less": Language.CSS,
+    ".pcss": Language.CSS,
+    ".postcss": Language.CSS,
 }
 
 
@@ -150,6 +171,16 @@ _PLSQL_LITERAL_MARKERS = (
 )
 _PLSQL_ROWTYPE_RE = re.compile(r"\w%(?:rowtype|type)\b", re.IGNORECASE)
 
+# A `.h` header is C++ when its text, comments and string literals left out, has
+# a construct C does not: a namespace or class body, a template, an access label,
+# a using-directive. `extern "C"` under `__cplusplus` is a C header's own guard.
+_C_NOISE_RE = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'', re.DOTALL)
+_CPP_HEADER_RE = re.compile(
+    r"\bnamespace\s+\w+\s*\{|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<"
+    r"|^\s*(?:public|private|protected)\s*:|\busing\s+namespace\b",
+    re.MULTILINE,
+)
+
 
 def detect_language(file_path: Path, content: str | None = None) -> str | None:
     """
@@ -160,6 +191,9 @@ def detect_language(file_path: Path, content: str | None = None) -> str | None:
     """
     suffix = file_path.suffix.lower()
     lang = SUPPORTED_EXTENSIONS.get(suffix)
+
+    if suffix == ".h" and content is not None and _CPP_HEADER_RE.search(_C_NOISE_RE.sub(" ", content)):
+        return Language.CPP
 
     # Disambiguate .sql vs PL/SQL by content if provided.
     if lang == Language.SQL and content is not None:
@@ -224,4 +258,13 @@ def get_adapter(language: str) -> LanguageAdapter:
     if language == Language.SVELTE:
         from . import sfc as _mod
         return _mod.svelte_adapter
+    if language == Language.MARKUP:
+        from . import markup as _mod
+        return _mod.adapter
+    if language == Language.C:
+        from . import cfamily as _mod
+        return _mod.c_adapter
+    if language == Language.CPP:
+        from . import cfamily as _mod
+        return _mod.cpp_adapter
     raise ValueError(f"Unsupported language: {language!r}")

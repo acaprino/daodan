@@ -51,7 +51,7 @@ def _analyze_single_file(file_path, find_usages, project_root, symbol, snapshot_
     Perform complete analysis of a single source file.
 
     Args:
-        file_path: Path to the source file (.py/.java/.js/.ts/.sql/PL-SQL/.rs/.css/.scss/.less)
+        file_path: Path to the source file (.py/.java/.js/.ts/.sql/PL-SQL/.rs/.css/.scss/.sass/.less)
         find_usages: Whether to find usages of exported symbols
         project_root: Root of the project (for usage finding)
         symbol: Restrict the usage search to this single exported symbol.

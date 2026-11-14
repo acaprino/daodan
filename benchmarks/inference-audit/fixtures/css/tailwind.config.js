@@ -3,4 +3,5 @@ module.exports = {
   content: ['./src/**/*.{tsx,html,ejs}'],
   theme: { extend: {} },
   plugins: [],
+  safelist: ['animate-spin'],
 };

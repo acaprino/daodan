@@ -1,0 +1,21 @@
+@import url("base.css") layer(base) supports(display: grid) screen;
+@layer base, components;
+@custom-media --narrow (max-width: 30em);
+@property --angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.card {
+  color: red;
+  & .title { rotate: var(--angle); }
+  &:has(.icon) { padding: 0; }
+}
+@scope (.panel) to (.panel-body) {
+  .heading { margin: 0; }
+}
+@media (--narrow) {
+  :is(.card, .tile) > :where(.badge) { display: none; }
+}
+@media (--wide) { .x { a: b; } }
+@supports (display: grid) {
+  @container side (min-width: 20em) { .tile { gap: 1em; } }
+}
+.side { container: side / inline-size; }
+@layer components { .btn { color: blue; } }

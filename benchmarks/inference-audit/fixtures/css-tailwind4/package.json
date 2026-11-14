@@ -1,0 +1,8 @@
+{
+  "name": "css-tailwind4-fixture",
+  "private": true,
+  "devDependencies": {
+    "@tailwindcss/node": "4.3.5",
+    "tailwindcss": "4.3.5"
+  }
+}

@@ -124,7 +124,9 @@ class DocReviewer:
     MARKER_SYMBOL_PATTERN = re.compile(r'([^:@]+)::([A-Za-z_][\w.]+)(?:\s*@\s*(.+))?')
     # A stylesheet symbol is a selector, `modal.css::@media (max-width: 600px) { .modal }`:
     # everything after `::` is the name. No `@ date` suffix, because `@media` uses the `@`.
-    MARKER_STYLESHEET_PATTERN = re.compile(r'([^:]+\.(?:css|scss|less))::(.+)$')
+    MARKER_STYLESHEET_PATTERN = re.compile(
+        r'([^:]+\.(?:css|scss|sass|less|pcss|postcss|html?|xhtml|ejs|astro|hbs|mustache|liquid|twig|jspx?|cshtml'
+        r'|razor|ftl|vm))::(.+)$')
     MARKER_LINE_PATTERN = re.compile(r'([^:@]+):(\d+)(?:\s*@\s*(.+))?')
 
     def __init__(self, base_path: str = "."):
@@ -660,7 +662,9 @@ class DocReviewer:
             return validation
 
         # Use AST to verify symbol exists
-        if AST_AVAILABLE and source_path.suffix.lower() in ('.py', '.css', '.scss', '.less'):
+        if AST_AVAILABLE and (source_path.suffix.lower() in ('.py', '.css', '.scss', '.sass', '.less', '.pcss',
+                                                             '.postcss')
+                              or self.MARKER_STYLESHEET_PATTERN.match(f"{source_path.name}::x")):
             try:
                 parse_result = parse_file(source_path)
 

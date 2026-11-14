@@ -58,6 +58,8 @@ _LANG_PACK_ALIASES = {
     "csharp": "csharp",
     "c_sharp": "csharp",
     "kotlin": "kotlin",
+    "c": "c",
+    "cpp": "cpp",
 }
 
 # Per-grammar package names for the fallback strategy.
@@ -72,6 +74,8 @@ _GRAMMAR_MODULES = {
     "go": "tree_sitter_go",
     "csharp": "tree_sitter_c_sharp",
     "kotlin": "tree_sitter_kotlin",
+    "c": "tree_sitter_c",
+    "cpp": "tree_sitter_cpp",
 }
 
 # TypeError is included because a version mismatch between `tree-sitter` and a
@@ -334,6 +338,8 @@ _CALL_QUERIES = {
     "go": "(call_expression) @call",
     "kotlin": "(call_expression) @call",
     "csharp": "[(invocation_expression) (object_creation_expression)] @call",
+    "c": "(call_expression) @call",
+    "cpp": "[(call_expression) (new_expression)] @call",
 }
 
 
@@ -359,6 +365,7 @@ def _reference_name(node: Any, source_bytes: bytes) -> str:
             or node.child_by_field_name("expression")
             or node.child_by_field_name("value")
             or node.child_by_field_name("path")
+            or node.child_by_field_name("argument")  # C and C++ `s.f`, `p->f`
         )
         member = (
             node.child_by_field_name("property")

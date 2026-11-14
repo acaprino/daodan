@@ -1,0 +1,10 @@
+.bordered(@w: 2px) when (@w > 1px) {
+  border: @w solid @brand;
+}
+.bordered(@w) when (@w <= 1px) {
+  border: none;
+}
+#ns {
+  .m() { color: @brand; }
+}
+.plain { margin: 0; }

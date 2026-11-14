@@ -1,6 +1,6 @@
 # Codebase Map: linguaggi e motori di inferenza
 
-Aggiornato al 9 novembre 2026.
+Aggiornato al 14 novembre 2026.
 
 Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il risolutore lessicale. Per alcuni linguaggi un motore di inferenza risolve in background ciò che il lessicale non prova. La copertura è sempre **risolte su risolvibili**: le chiamate esterne, cioè builtin riconosciuti e destinazioni provate esterne dal motore, sono fuori dal denominatore. Spec e misure complete: `docs/specs/2026-11-08-risoluzione-chiamate-motore.md`.
 
@@ -11,15 +11,17 @@ Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il 
 | Python | `.py` `.pyi` | `ast` della libreria standard | Jedi | l'ambiente del progetto (`.venv`, `venv`, `VIRTUAL_ENV`) |
 | TypeScript | `.ts` `.tsx` `.mts` `.cts` | tree-sitter | typescript-language-server | `node_modules` del progetto, altrimenti installate da Daodan |
 | JavaScript | `.js` `.jsx` `.mjs` `.cjs` | tree-sitter | typescript-language-server | come TypeScript |
-| Vue, Svelte | `.vue` `.svelte` | tree-sitter sui soli blocchi `<script>` | typescript-language-server | come TypeScript |
+| Vue, Svelte | `.vue` `.svelte` | tree-sitter sui blocchi `<script>`, tokenizer sui blocchi `<style>` (CSS, SCSS, Sass, LESS; Stylus nominato nelle note, non letto) | typescript-language-server | come TypeScript |
 | Java | `.java` | tree-sitter | Eclipse JDT LS | lette da Maven e Gradle, scaricate da Daodan |
 | Kotlin | `.kt` `.kts` | tree-sitter | Kotlin Analysis API | come Java |
 | Rust | `.rs` | tree-sitter | rust-analyzer | le dipendenze di Cargo, scaricate da Daodan |
 | Go | `.go` | tree-sitter | gopls | i moduli di `go.mod`, scaricati da Daodan |
 | C# | `.cs` | tree-sitter | **da fare**: motore da scegliere (server LSP o SCIP) | — |
 | SQL, PL/SQL | `.sql` `.ddl` `.dml` `.pks` `.pkb` `.pls` e altri | regex DDL e sqlglot, installato da Daodan con il server MCP | non applicabile: dipendenze fra tabelle, non chiamate | — |
-| CSS, SCSS, LESS | `.css` `.scss` `.less` | tokenizer | non applicabile | — |
-| C, C++ | `.c` `.h` `.cpp` `.hpp` e altri | **da fare**: adattatore tree-sitter (dichiarazioni, chiamate, `#include`) | **da fare**: clangd | — |
+| CSS, SCSS, Sass, LESS, PostCSS | `.css` `.scss` `.sass` `.less` `.pcss` `.postcss` | tokenizer; il Sass indentato è letto come lo SCSS che l'indentazione implica, riga per riga | non applicabile | — |
+| Markup | `.html` `.htm` `.xhtml` `.ejs` `.astro` `.hbs` `.mustache` `.liquid` `.twig` `.jsp` `.jspx` `.cshtml` `.razor` `.ftl` `.vm` | tokenizer sui soli blocchi `<style>`: le loro regole sono simboli | non applicabile | — |
+| Stylus, Pug | `.styl` `.stylus` `.pug` | nessun lettore nel prodotto: voce a livello di file con il motivo nelle note | non applicabile | — |
+| C, C++ | `.c` `.h` (C); `.cc` `.cpp` `.cxx` `.hpp` `.hh` `.hxx` (C++); un `.h` è C++ se il testo ha namespace, classi, template, etichette di accesso o `using namespace` | tree-sitter | **da fare**: scip-clang, piano `docs/plans/2026-11-14-grafo-dall-indice.md`, task 10 | — |
 
 ## Motori
 
@@ -65,5 +67,6 @@ Vue e Svelte sono verificati su una fixture, non su un progetto pubblico.
 - **Kotlin standalone.** La modalità standalone dell'Analysis API non è stabile: la versione è fissata e un aggiornamento può richiedere adattamenti.
 - **Rust.** Le macro procedurali e i build script restano spenti: ciò che generano non ha tipi, quindi le chiamate a funzioni generate restano senza risposta. Le dipendenze di Cargo si scaricano nella cartella condivisa; senza la toolchain completa Daodan scarica 550 MB di Rust.
 - **Go.** Una chiamata su un valore di funzione o su un'interfaccia anonima non ha una dichiarazione a cui arrivare.
-- **Da fare.** C#: scegliere il motore misurando server LSP e SCIP. C e C++: prima l'adattatore tree-sitter, poi clangd.
+- **C e C++.** Un file che tree-sitter non legge intero non ha fatti semantici, solo i simboli: macro come `local int f(` o `uch FAR uchf` lasciano errori di sintassi in 51 file C su 66 di zlib e in 2 file su 4 di tinyxml2. Il risolutore lessicale risolve solo dentro il file: ciò che arriva da un `#include` resta senza risposta, e in C++ una funzione fuori da una classe non è mai risolta lessicalmente, perché un'intestazione può aggiungerne un overload.
+- **Da fare.** C#: scegliere il motore misurando server LSP e SCIP. C e C++: l'indice di scip-clang.
 - **Da fare: passo dinamico.** Ciò che il motore non prova perché si decide in esecuzione (JavaScript dinamico, Python senza tipi, valori di funzione in Go) si osserva eseguendo i test del progetto in un container. JavaScript è il primo linguaggio. Oggi nessun motore esegue codice del progetto. Spec: `docs/specs/2026-11-12-passo-dinamico.md`; piano: `docs/plans/2026-11-12-passo-dinamico.md`.

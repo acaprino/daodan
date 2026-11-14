@@ -1,0 +1,11 @@
+---
+const big = true;
+---
+<h1 class:list={['title', { big }]} class="card dark">Hi</h1>
+<style>
+  .title { color: red; }
+  .big { font-size: 3em; }
+</style>
+<style is:global>
+  .card { border: 0; }
+</style>

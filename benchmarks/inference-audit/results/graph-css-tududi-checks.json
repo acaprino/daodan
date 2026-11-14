@@ -2,22 +2,36 @@
  "case": "tududi",
  "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
  "code": {
-  "css.py": "d1e4c319a3ec",
-  "css_typescript.py": "ee1da56caf29",
-  "css_typescript.js": "6d12fd6caa80",
-  "css_tailwind.py": "82004909d5cf",
-  "css_tailwind.js": "33c379d02890"
+  "css.py": "517c5214a3d8",
+  "css_astro.js": "60aedc755928",
+  "css_astro.py": "83ae4f9723f2",
+  "css_engines.json": "2cf04c7179fb",
+  "css_expressions.js": "f576bae77c67",
+  "css_less.js": "7ea43d4fc4c2",
+  "css_less.py": "1f082b76eb1f",
+  "css_sass.js": "446f2ff01f26",
+  "css_sass.py": "45180a7e614c",
+  "css_stylus.js": "22c5cf93eff5",
+  "css_stylus.py": "bbe7cdfae4fe",
+  "css_svelte.js": "3814c915a7a8",
+  "css_svelte.py": "6c91a62cd587",
+  "css_tailwind.js": "4dca22ec9809",
+  "css_tailwind.py": "c9419a41c53a",
+  "css_typescript.js": "198b20335c87",
+  "css_typescript.py": "6ff05448a8d6",
+  "css_vue.js": "4fbf1fcf22e4",
+  "css_vue.py": "93c02e4a9797"
  },
  "files_given": 1708,
- "npm_install_seconds": 695.0,
+ "npm_install_seconds": 475.4,
  "node_modules": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules",
  "report": {
   "language": "css",
   "indexer": {
    "name": "codebase-map stylesheet.py + typescript + tailwindcss",
-   "version": "5986a74f4b18 + 5.9.3 + 3.4.19",
-   "seconds": 23.3,
-   "peak_mb": 1458
+   "version": "e62b3f368913 + 5.9.3 + 3.4.19",
+   "seconds": 18.0,
+   "peak_mb": 1529
   },
   "files": {
    "snapshot": 1708,
@@ -25,8 +39,8 @@
    "missing": [],
    "missing_count": 0
   },
-  "nodes": 2573,
-  "edges": 39544,
+  "nodes": 2672,
+  "edges": 39629,
   "symbols_by_kind": {
    "external class": 1849,
    "external font-face": 1,
@@ -36,38 +50,40 @@
    "project font-face": 69,
    "project keyframes": 9,
    "project module": 20,
-   "project rule": 608
+   "project rule": 707
   },
   "edges_by_end": {
-   "external class": 37156,
+   "external class": 37158,
    "external font-face": 1,
    "external import": 4,
    "external layer": 3,
-   "project class": 1646,
+   "project class": 1703,
    "project custom-property": 51,
    "project font-face": 670,
    "project id": 1,
    "project import": 3,
+   "project include": 26,
    "project keyframes": 9
   },
   "callable_chain_hops": {},
   "hop_tags": {
    "literal-type": 3312,
    "initializer": 939,
-   "classList": 305,
+   "classList": 309,
+   "className=": 67,
    "css-text": 51,
-   "className=": 14,
    "@apply": 11,
    "style-object": 10,
-   "url-suffix": 2
+   "url-suffix": 2,
+   "named-group": 2
   },
   "edges_uncertain": {
+   "sheet-not-proven-loaded": 897,
    "cascade and inheritance pick one per element": 27
   },
   "edges_removed": {},
   "holes_by_class": {
    "call class": 67,
-   "css-in-js class": 24,
    "ejs class": 3,
    "ejs id": 1,
    "ejs-glued class": 5,
@@ -79,9 +95,9 @@
    "parameter id": 1,
    "property class": 28,
    "property id": 6,
-   "tailwind-named-group class": 2,
    "template class": 1,
    "template id": 1,
+   "unresolved-import script": 1,
    "variable class": 1
   },
   "holes": [
@@ -196,36 +212,6 @@
     ]
    },
    {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:42",
-    "count": 2,
-    "examples": [
-     "frontend/components/Note/editor/inlineMarkdown.ts:43 cm-md-wikilink-chip",
-     "frontend/components/Note/editor/linkClicks.ts:23 cm-md-wikilink-chip"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:403",
-    "count": 2,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:83 cm-block-handle-btn",
-     "frontend/components/Note/editor/blockHandle.ts:103 cm-block-handle-btn"
-    ]
-   },
-   {
-    "class": "tailwind-named-group",
-    "kind": "class",
-    "reason": "Tailwind 3.4.19: a variant anchor, not a utility",
-    "count": 2,
-    "examples": [
-     "frontend/components/Insights/ReportsOverview.tsx:129 group/tip",
-     "frontend/components/Everyone/BoardTaskRow.tsx:98 group/check"
-    ]
-   },
-   {
     "class": "ejs",
     "kind": "id",
     "reason": "-",
@@ -271,195 +257,24 @@
     ]
    },
    {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:32",
+    "class": "unresolved-import",
+    "kind": "script",
+    "reason": "no checkout file",
     "count": 1,
     "examples": [
-     "frontend/components/Note/editor/inlineMarkdown.ts:43 cm-md-wikilink"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:152",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:27 cm-md-hr"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:82",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:41 cm-md-bullet"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:94",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:61 cm-md-checkbox"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:75",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:105 cm-md-callout-label"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:120",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:135 cm-md-code-lang"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:131",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:142 cm-md-code-copy"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:160",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:187 cm-md-image"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:168",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:198 cm-md-image-broken"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:171",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:242 cm-md-table-wrap"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:176",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:244 cm-md-table"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/livePreviewTheme.ts:197",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/widgets.tsx:294 cm-md-mermaid"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:397",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:79 cm-block-handle-layer"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:437",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:83 cm-block-handle-plus"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:438",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:103 cm-block-handle-drag"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:439",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:117 cm-block-handle-dropline"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:450",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:226 cm-block-handle-menu"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:476",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:231 cm-block-handle-menu-item"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:495",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:245 cm-block-handle-menu-separator"
-    ]
-   },
-   {
-    "class": "css-in-js",
-    "kind": "class",
-    "reason": "a selector key of a script's object literal at frontend/components/Note/editor/blockHandle.ts:469",
-    "count": 1,
-    "examples": [
-     "frontend/components/Note/editor/blockHandle.ts:250 cm-block-handle-menu-label"
+     "backend/modules/landing/views/partials/head-assets.ejs:10 https://dyneteq.com/admin/s.js"
     ]
    }
   ],
   "external_packages": {
-   "npm tailwindcss@3.4.19": 37062,
+   "npm tailwindcss@3.4.19": 37064,
    "checkout Font Awesome Free@6.4.0": 102
   }
  },
  "summary": {
   "nodes_by_kind": {
    "class external": 1849,
-   "rule": 608,
+   "rule": 707,
    "font-face": 69,
    "module": 20,
    "custom-property": 13,
@@ -469,30 +284,32 @@
    "font-face external": 1
   },
   "edges_by_kind_end": {
-   "class external": 37156,
-   "class project": 1646,
+   "class external": 37158,
+   "class project": 1703,
    "custom-property project": 51,
    "font-face external": 1,
    "font-face project": 670,
    "id project": 1,
    "import external": 4,
    "import project": 3,
+   "include project": 26,
    "keyframes project": 9,
    "layer external": 3
   },
   "edges_by_chain": {
-   "-": 35476,
+   "-": 35502,
    "literal-type": 2736,
    "initializer > literal-type": 564,
    "initializer": 375,
-   "classList": 303,
+   "classList": 307,
+   "className=": 57,
    "css-text": 51,
    "@apply": 11,
    "className= > literal-type": 10,
    "style-object": 10,
-   "className=": 4,
    "url-suffix": 2,
-   "classList > literal-type": 2
+   "classList > literal-type": 2,
+   "named-group": 2
   },
   "holes_by_class": {
    "no-rule id": {
@@ -535,14 +352,6 @@
      "frontend/components/Kanban/KanbanBoard.tsx:371 cfg.bg"
     ]
    },
-   "css-in-js class": {
-    "count": 24,
-    "examples": [
-     "frontend/components/Note/editor/inlineMarkdown.ts:43 cm-md-wikilink",
-     "frontend/components/Note/editor/widgets.tsx:187 cm-md-image",
-     "frontend/components/Note/editor/blockHandle.ts:83 cm-block-handle-plus"
-    ]
-   },
    "no-font-face font-face": {
     "count": 9,
     "examples": [
@@ -583,13 +392,6 @@
      "backend/modules/landing/views/landing.ejs:462 <%= card.icon %>"
     ]
    },
-   "tailwind-named-group class": {
-    "count": 2,
-    "examples": [
-     "frontend/components/Insights/ReportsOverview.tsx:129 group/tip",
-     "frontend/components/Everyone/BoardTaskRow.tsx:98 group/check"
-    ]
-   },
    "ejs id": {
     "count": 1,
     "examples": [
@@ -619,104 +421,106 @@
     "examples": [
      "frontend/components/Habits/HabitHeatmap.tsx:127 className"
     ]
+   },
+   "unresolved-import script": {
+    "count": 1,
+    "examples": [
+     "backend/modules/landing/views/partials/head-assets.ejs:10 https://dyneteq.com/admin/s.js"
+    ]
    }
   },
   "uncertain": {
-   "edges": 27,
-   "references": 3,
+   "edges": 924,
+   "references": 667,
    "examples": [
     {
-     "site": "frontend/components/Note/NoteFocusMode.tsx:53",
-     "symbol": "--note-tint",
-     "to": "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+     "site": "backend/modules/landing/views/cloud.ejs:72",
+     "symbol": ".container",
+     "to": "tailwindcss container",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element",
+      "reason": "sheet-not-proven-loaded",
       "candidates": [
-       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Notes.tsx:103 --note-tint",
-       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+       "backend/modules/landing/views/partials/styles.ejs:261 .container",
+       "tailwindcss container"
       ]
      }
     },
     {
-     "site": "frontend/components/Note/NoteFocusMode.tsx:53",
-     "symbol": "--note-tint",
-     "to": "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+     "site": "frontend/components/Project/ProjectBanner.tsx:125",
+     "symbol": ".max-w-2xl",
+     "to": "tailwindcss max-w-2xl",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element",
+      "reason": "sheet-not-proven-loaded",
       "candidates": [
-       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Notes.tsx:103 --note-tint",
-       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+       "tailwindcss max-w-2xl"
       ]
      }
     },
     {
-     "site": "frontend/components/Note/NoteSidePanel.tsx:131",
-     "symbol": "--note-tint",
-     "to": "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+     "site": "frontend/components/Project/ProjectInsightsPanel.tsx:95",
+     "symbol": ".border",
+     "to": "tailwindcss border",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element",
+      "reason": "sheet-not-proven-loaded",
       "candidates": [
-       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Notes.tsx:103 --note-tint",
-       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+       "tailwindcss border"
       ]
      }
     },
     {
-     "site": "frontend/components/Note/NoteSidePanel.tsx:131",
-     "symbol": "--note-tint",
-     "to": "frontend/components/Notes.tsx:103 --note-tint",
+     "site": "frontend/components/Project/ProjectInsightsPanel.tsx:255",
+     "symbol": ".bg-red-100",
+     "to": "tailwindcss bg-red-100",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element",
+      "reason": "sheet-not-proven-loaded",
       "candidates": [
-       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Notes.tsx:103 --note-tint",
-       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+       "tailwindcss bg-red-100"
       ]
      }
     },
     {
-     "site": "frontend/components/Notes.tsx:101",
-     "symbol": "--note-tint",
-     "to": "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+     "site": "frontend/components/Shared/__tests__/MarkdownRenderer.checkbox.test.tsx:13",
+     "symbol": ".markdown-content",
+     "to": "frontend/styles/markdown.css:163 .dark .markdown-content .markdown-table thead th",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element",
+      "reason": "sheet-not-proven-loaded",
       "candidates": [
-       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
-       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
-       "frontend/components/Notes.tsx:103 --note-tint",
-       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
-       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+       "frontend/styles/markdown.css:105 .markdown-content pre code",
+       "frontend/styles/markdown.css:112 .markdown-content code",
+       "frontend/styles/markdown.css:117 .markdown-content pre > code",
+       "frontend/styles/markdown.css:123 .markdown-content pre",
+       "frontend/styles/markdown.css:129 .markdown-content table",
+       "frontend/styles/markdown.css:136 .markdown-content .markdown-table-wrapper",
+       "frontend/styles/markdown.css:146 .dark .markdown-content .markdown-table-wrapper",
+       "frontend/styles/markdown.css:152 .markdown-content .markdown-table-wrapper .markdown-table",
+       "frontend/styles/markdown.css:157 .markdown-content .markdown-table thead th",
+       "frontend/styles/markdown.css:163 .dark .markdown-content .markdown-table thead th",
+       "frontend/styles/markdown.css:169 .markdown-content .markdown-table tbody tr:nth-child(odd) td",
+       "frontend/styles/markdown.css:173 .dark .markdown-content .markdown-table tbody tr:nth-child(odd) td",
+       "frontend/styles/markdown.css:177 .markdown-content .markdown-table th, .markdown-content .markdown-table td",
+       "frontend/styles/markdown.css:182 .markdown-content .markdown-table tr:last-child td",
+       "frontend/styles/markdown.css:186 .markdown-content .markdown-table td + td, .markdown-content .markdown-table th + th",
+       "frontend/styles/markdown.css:191 .dark .markdown-content .markdown-table th, .dark .markdown-content .markdown-table td",
+       "frontend/styles/markdown.css:196 .dark .markdown-content .markdown-table td + td, .dark .markdown-content .markdown-table th + th",
+       "frontend/styles/markdown.css:201 .markdown-content blockquote",
+       "frontend/styles/markdown.css:206 .dark .markdown-content blockquote",
+       "frontend/styles/markdown.css:211 .markdown-content ul li:has(input[type=\"checkbox\"])",
+       "frontend/styles/markdown.css:216 .markdown-content input[type=\"checkbox\"]",
+       "frontend/styles/markdown.css:222 .markdown-content li > p",
+       "frontend/styles/markdown.css:227 .markdown-content li:has(> p) + li",
+       "frontend/styles/markdown.css:232 .markdown-content ul ul",
+       "frontend/styles/markdown.css:236 .markdown-content ul ul ul",
+       "frontend/styles/markdown.css:240 .markdown-content ul ul ul ul",
+       "frontend/styles/markdown.css:245 .markdown-content ul ul, .markdown-content ol ol, .markdown-content ul ol, .markdown-content ol ul",
+       "frontend/styles/markdown.css:254 .markdown-content pre",
+       "frontend/styles/markdown.css:260 .dark .markdown-content pre",
+       "frontend/styles/markdown.css:266 @media (max-width: 768px) { .markdown-content table }",
+       "frontend/styles/markdown.css:270 @media (max-width: 768px) { .markdown-content th, .markdown-content td }",
+       "frontend/styles/markdown.css:3 .markdown-content pre code, .markdown-content pre code.hljs, .hljs",
+       "frontend/styles/markdown.css:59 .dark .hljs, .dark .markdown-content pre code, .dark .markdown-content pre code.hljs",
+       "frontend/styles/markdown.css:90 .markdown-content",
+       "frontend/styles/markdown.css:95 .markdown-content p:last-child",
+       "frontend/styles/markdown.css:99 .markdown-content pre"
       ]
      }
     }
@@ -925,5 +729,5 @@
    "graph_ends": 1
   }
  ],
- "seconds": 723.4
+ "seconds": 498.2
 }

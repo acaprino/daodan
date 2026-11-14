@@ -2,7 +2,8 @@
 id, a CSS Module member, a custom property or a stylesheet import is written (`css_typescript.js`).
 
 `index` writes a tsconfig holding the given files (`allowJs`, the project's own tsconfig extended when there is
-one) and runs the script with the project's TypeScript (`node_modules/typescript`), else `DAODAN_TS_MODULE`.
+one) and runs the script with the project's TypeScript (`node_modules/typescript`), else `DAODAN_TS_MODULE`,
+else the TypeScript pinned with the CSS engines.
 A class expression is evaluated, not guessed: a string, a template, a condition, `&&`, `||`, `+`, a call to
 `clsx`, `classnames` or `tailwind-merge` (recognised by the package that declares the callee), `[...].join(' ')`,
 and a name only through what the checker states: a string literal type, or the initializer of a const or of a
@@ -24,10 +25,14 @@ SCRIPT = Path(__file__).resolve().with_suffix(".js")
 
 
 def _typescript(project_dir: Path) -> Path | None:
+    """The project's TypeScript, else `DAODAN_TS_MODULE`, else the one pinned with the CSS engines."""
     own = project_dir / "node_modules/typescript"
     if own.is_dir():
         return own
-    return Path(os.environ["DAODAN_TS_MODULE"]) if os.environ.get("DAODAN_TS_MODULE") else None
+    if os.environ.get("DAODAN_TS_MODULE"):
+        return Path(os.environ["DAODAN_TS_MODULE"])
+    pinned = Path(os.environ.get("DAODAN_CSS_ENGINES", "")) / "typescript"
+    return pinned if os.environ.get("DAODAN_CSS_ENGINES") and pinned.is_dir() else None
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> dict:

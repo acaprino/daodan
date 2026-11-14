@@ -114,10 +114,9 @@ def xray(*args):
 
 class StylesheetRegistryTests(unittest.TestCase):
     def test_stylesheet_extensions_map_to_the_css_adapter(self):
-        for suffix in (".css", ".scss", ".less"):
+        # Indented Sass is read as the SCSS its indentation implies, PostCSS sheets as CSS.
+        for suffix in (".css", ".scss", ".sass", ".less", ".pcss", ".postcss"):
             self.assertEqual(SUPPORTED_EXTENSIONS.get(suffix), "css")
-        # Indented Sass has no braces to tokenize: it stays a file-level entry.
-        self.assertNotIn(".sass", SUPPORTED_EXTENSIONS)
 
     def test_parse_file_dispatches_a_stylesheet(self):
         from ast_parser import parse_file

@@ -1,0 +1,13 @@
+{
+  "name": "css-markup-fixture",
+  "private": true,
+  "devDependencies": {
+    "@angular/core": "22.2.6",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "rxjs": "7.8.2",
+    "tailwind-merge": "3.3.1",
+    "tailwind-variants": "4.0.2",
+    "typescript": "5.9.3"
+  }
+}

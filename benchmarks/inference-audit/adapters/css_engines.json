@@ -1,0 +1,14 @@
+{
+  "name": "daodan-css-engines",
+  "private": true,
+  "description": "The parsers the CSS graph drives, pinned; installed once into the folder DAODAN_CSS_ENGINES names.",
+  "dependencies": {
+    "@astrojs/compiler": "4.0.0",
+    "@vue/compiler-sfc": "3.5.45",
+    "less": "4.9.1",
+    "sass-parser": "0.5.6",
+    "stylus": "0.64.0",
+    "svelte": "5.57.3",
+    "typescript": "5.9.3"
+  }
+}

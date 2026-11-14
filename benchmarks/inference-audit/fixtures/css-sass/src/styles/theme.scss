@@ -1,0 +1,31 @@
+@use "sass:math";
+@use "tokens" with ($gap: 8px);
+@use "index" as kit;
+@import "legacy";
+
+$local-gap: kit.$gap;
+
+.card {
+  margin: math.div(kit.$radius, 2);
+  width: kit.double(3px);
+  @include kit.mx-pad(1px) {
+    color: red;
+  }
+  @extend %focus-ring;
+  &__title {
+    $inner: 2px !global;
+    padding: $local-gap $inner;
+  }
+  @each $name, $tone in (primary: blue, danger: red) {
+    &--#{$name} { color: $tone; }
+  }
+  @for $i from 1 through 2 {
+    .m-#{$i} { margin: $i * 4px; }
+  }
+  @each $size in tokens.$palette {
+    .size-#{$size} { width: 1px; }
+  }
+}
+.uses-inner { margin: $inner; }
+.ghost { margin: kit.$private-x; }
+.from-import { @include legacy-pad(2px); }

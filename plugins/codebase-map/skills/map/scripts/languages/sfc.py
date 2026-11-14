@@ -4,7 +4,8 @@ Single-File Component (Vue `.vue` and Svelte `.svelte`) adapter.
 Masks everything outside `<script ...>...</script>` blocks with spaces while
 preserving exact UTF-8 byte offsets and line numbers, then delegates script
 parsing to the TypeScript or JavaScript adapter so `ParseResult.semantic` spans
-align 1:1 with the original `.vue` or `.svelte` file on disk.
+align 1:1 with the original `.vue` or `.svelte` file on disk. The rules of the
+`<style>` blocks are added beside the script's symbols (`markup.style_symbols`).
 """
 
 from __future__ import annotations
@@ -50,6 +51,13 @@ class _SfcAdapter:
         self.language = language
 
     def parse(self, content: str, file_path: str) -> ParseResult:
+        from .markup import style_symbols
+
+        result = self._script(content, file_path)
+        style_symbols(content, result)
+        return result
+
+    def _script(self, content: str, file_path: str) -> ParseResult:
         from . import javascript as _js
         from . import typescript as _ts
 
