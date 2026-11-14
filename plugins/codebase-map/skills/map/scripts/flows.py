@@ -317,8 +317,10 @@ def object_keys(text: str) -> list[str] | None:
 # ---------------------------------------------------------------- snapshot facts
 
 class Facts:
-    def __init__(self, store, db):
+    def __init__(self, store, db, view: dict | None = None):
+        """References are read only through the snapshot's edge view (`view`, loaded when not given)."""
         self.store, self.db = store, db
+        view = view if view is not None else edge_view.load_edge_view(store)
         self.source = Source(store)
         self.declarations = {row[0]: {"id": row[0], "file": row[1], "name": row[2], "kind": row[3],
                                       "line": row[4], "column": row[5], "end": row[6], **_unpack(row[7])}
@@ -331,9 +333,13 @@ class Facts:
             if declaration.get("scope") == "module":
                 self.by_name[declaration["name"]].append(declaration)
         self.reads = defaultdict(list)
-        for ref_id, file, l0, c0, target in db.execute(
-                "SELECT id,file,l0,c0,target_id FROM sem_references WHERE kind='read'"):
-            self.reads[(file, l0, c0)].append(target)
+        for ref in view["reads"]:
+            span = ref.get("span") or [None, None]
+            self.reads[(ref["file"], span[0], span[1])].append(ref["target_id"])
+        self.called = defaultdict(list)
+        for ref in view["references"]:
+            if ref["resolution"] == "resolved":
+                self.called[ref["caller"]].append(ref["target_id"])
         self.imports = defaultdict(set)
         for source, target in db.execute("SELECT source,target FROM sem_edges"):
             self.imports[source].add(target)
@@ -431,9 +437,7 @@ class Facts:
                       and d["column"] == column and d["name"] == "(anonymous)"), None)
         if arrow is None:
             return None
-        calls = [row[0] for row in self.db.execute(
-            "SELECT target_id FROM sem_references WHERE kind='call' AND caller=? AND resolution='resolved'",
-            (arrow["id"],))]
+        calls = self.called.get(arrow["id"], [])
         return self.node(calls[0]) if len(calls) == 1 else None
 
     def written_function(self, file: str, line: int, column: int) -> dict | None:
@@ -676,8 +680,8 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
     accesses, entries, actions, routes_offered, route_calls, gaps, calls = [], [], [], [], [], [], []
     held: dict[tuple[str, str], str] = {}
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
-        facts = Facts(store, db)
         view = edge_view.load_edge_view(store)
+        facts = Facts(store, db, view)
         _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
         members = {id(rule): facts.property_functions(rule["actions_in"]) for rule in rules if rule.get("actions_in")}
         plain = []
@@ -765,9 +769,9 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                 elif link == "ingresso":
                     entries.append({"symbol": owner, "kind": rule["entry"], "site": site})
         # A component written as an element is rendered: React calls it, so its parent reaches it.
-        for file, holder, line, column, blob in db.execute(
-                "SELECT file, caller, l0, c0, payload FROM sem_references WHERE kind='read'"):
-            parts = _unpack(blob).get("parts") or []
+        for read in view["reads"]:
+            file, holder, (line, column) = read["file"], read.get("caller"), (read.get("span") or [None, None])[:2]
+            parts = read.get("parts") or []
             if len(parts) != 1 or not line or not facts.source.before(file, line, column).rstrip().endswith("<"):
                 continue
             found = facts.targets(str(parts[0]), file, line, column, ("function", "class"))

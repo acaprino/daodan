@@ -104,6 +104,9 @@ CANDIDATE_REASONS = {
     "project-not-a-symbol": "engine-project-not-a-symbol",
     "ambiguous-target": "engine-ambiguous-target",
 }
+# The end class a per-position verdict is stored as; a candidate verdict is stored `uncertain`.
+POSITION_ENDS = {"external-definition": "external", "project-not-a-symbol": "project-value",
+                 "ambiguous-target": "project-callable"}
 
 
 class Location(NamedTuple):
@@ -2805,9 +2808,12 @@ def edge_destination(out: Path, manifest: Path, sources: dict[str, Path]) -> Pat
     return out
 
 
-EDGE_SCHEMA = 4
-EDGE_COLUMNS = ("reference_id", "file", "language", "caller", "target_id", "verdict", "resolver", "confidence",
-                "l0", "c0", "payload")
+EDGE_SCHEMA = 5
+# One row per end of a reference: `verdict` is the end's class, `confidence` confirmed, uncertain or observed.
+EDGE_COLUMNS = ("reference_id", "file", "language", "kind", "caller", "l0", "c0", "verdict", "target_id", "symbol",
+                "resolver", "confidence", "payload")
+HOLE_COLUMNS = ("reference_id", "file", "language", "kind", "l0", "c0", "class", "reason", "resolver")
+EXTERNAL_COLUMNS = ("symbol", "manager", "package", "version")
 
 
 def default_edge_store(manifest: Path) -> Path:
@@ -2827,8 +2833,8 @@ def store_binding(store, manifest: Path, fingerprint: str, entries: dict, report
     for entry in values:
         for key, count in (entry.get("verdicts") or {}).items():
             verdicts[key] = verdicts.get(key, 0) + count
-    confirmed = sum(entry["confirmed"] for entry in values)
-    candidates = sum(entry["candidates"] for entry in values)
+    confirmed = sum(entry.get("confirmed", 0) for entry in values)
+    candidates = sum(entry.get("candidates", 0) for entry in values)
     reasons = {entry.get("no_edges_reason") for entry in values} - {None}
     return {
         "schema": EDGE_SCHEMA,
@@ -2839,10 +2845,10 @@ def store_binding(store, manifest: Path, fingerprint: str, entries: dict, report
         "languages": entries,
         "engine_reports": dict(sorted(reports.items())),
         "engine": " + ".join(sorted({entry["engine"] for entry in values})) or None,
-        "population": sum(entry["population"] for entry in values),
-        "selected": sum(entry["selected"] for entry in values),
-        "asked": sum(entry["asked"] for entry in values),
-        "stride": max([entry["stride"] for entry in values] or [1]),
+        "population": sum(entry.get("population", 0) for entry in values),
+        "selected": sum(entry.get("selected", 0) for entry in values),
+        "asked": sum(entry.get("asked", 0) for entry in values),
+        "stride": max([entry.get("stride", 1) for entry in values] or [1]),
         "confirmed": confirmed,
         "candidates": candidates,
         "no_edges_reason": None if confirmed or candidates else (reasons.pop() if len(reasons) == 1 else
@@ -2852,29 +2858,44 @@ def store_binding(store, manifest: Path, fingerprint: str, entries: dict, report
     }
 
 
-def write_edge_store(out: Path, edges: list[dict], binding: dict) -> Path:
-    """Write the engine's edges atomically, so a partial pass leaves no store."""
+def write_edge_store(out: Path, edges: list[dict], binding: dict, holes: list[dict] = ()) -> Path:
+    """Write the store atomically, so a partial pass leaves no store.
+
+    An edge's `external` (`{manager, package, version}`) is kept once per symbol in `externals`.
+    """
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     descriptor, name = tempfile.mkstemp(prefix=f".{out.name}.", suffix=".partial", dir=out.parent)
     os.close(descriptor)
     temporary = Path(name)
+    externals = {edge["symbol"]: edge["external"] for edge in edges if edge.get("external") and edge.get("symbol")}
     try:
         connection = sqlite3.connect(temporary)
         try:
             connection.execute("CREATE TABLE meta(key TEXT PRIMARY KEY,value BLOB NOT NULL)")
             connection.execute(
-                "CREATE TABLE edges(reference_id TEXT PRIMARY KEY,file TEXT NOT NULL,language TEXT,caller TEXT,"
-                "target_id TEXT,verdict TEXT NOT NULL,resolver TEXT NOT NULL,"
-                "confidence TEXT NOT NULL,l0 INTEGER,c0 INTEGER,payload BLOB NOT NULL)")
+                "CREATE TABLE edges(reference_id TEXT,file TEXT NOT NULL,language TEXT,kind TEXT NOT NULL,caller TEXT,"
+                "l0 INTEGER,c0 INTEGER,verdict TEXT NOT NULL,target_id TEXT,symbol TEXT,resolver TEXT NOT NULL,"
+                "confidence TEXT NOT NULL,payload BLOB NOT NULL)")
+            connection.execute(
+                "CREATE TABLE holes(reference_id TEXT,file TEXT NOT NULL,language TEXT,kind TEXT NOT NULL,"
+                "l0 INTEGER,c0 INTEGER,class TEXT NOT NULL,reason TEXT,resolver TEXT NOT NULL)")
+            connection.execute("CREATE TABLE externals(symbol TEXT PRIMARY KEY,manager TEXT,package TEXT,version TEXT)")
+            connection.execute("CREATE INDEX edges_reference ON edges(reference_id)")
             connection.execute("CREATE INDEX edges_file ON edges(file)")
             connection.execute("CREATE INDEX edges_target ON edges(target_id)")
+            connection.execute("CREATE INDEX holes_reference ON holes(reference_id)")
             connection.executemany("INSERT INTO meta VALUES(?,?)",
                                    [(key, _pack(value)) for key, value in sorted(binding.items())])
             connection.executemany(
                 f"INSERT INTO edges VALUES({','.join('?' for _ in EDGE_COLUMNS)})",
                 [tuple(_pack(edge[key]) if key == "payload" else edge.get(key) for key in EDGE_COLUMNS)
                  for edge in edges])
+            connection.executemany(f"INSERT INTO holes VALUES({','.join('?' for _ in HOLE_COLUMNS)})",
+                                   [tuple(hole.get(key) for key in HOLE_COLUMNS) for hole in holes])
+            connection.executemany("INSERT INTO externals VALUES(?,?,?,?)",
+                                   [(symbol, *(package.get(key) for key in EXTERNAL_COLUMNS[1:]))
+                                    for symbol, package in sorted(externals.items())])
             connection.commit()
         finally:
             connection.close()
@@ -2912,9 +2933,14 @@ def read_edge_store(path: Path, store) -> tuple[list[dict] | None, dict | None, 
                 f"the edge store was written under resolver version {binding.get('resolver_version')}, "
                 f"expected {semantic_store.RESOLVER_VERSION}",
             )
-        edges = [{key: _unpack(value) if key == "payload" else value for key, value in zip(EDGE_COLUMNS, row)}
-                 for row in connection.execute(
-                     f"SELECT {','.join(EDGE_COLUMNS)} FROM edges ORDER BY file,l0,c0")]
+        externals = {row[0]: dict(zip(EXTERNAL_COLUMNS[1:], row[1:]))
+                     for row in connection.execute(f"SELECT {','.join(EXTERNAL_COLUMNS)} FROM externals")}
+        edges = []
+        for row in connection.execute(f"SELECT {','.join(EDGE_COLUMNS)} FROM edges ORDER BY file,l0,c0"):
+            edge = {key: _unpack(value) if key == "payload" else value for key, value in zip(EDGE_COLUMNS, row)}
+            if edge["verdict"] == "external":
+                edge["external"] = externals.get(edge["symbol"])
+            edges.append(edge)
         if getattr(store, "format", None) == "sqlite" and getattr(store, "connection", None) is not None:
             with semantic_store.semantic_reader(store) as sem_db:
                 valid_targets = {
@@ -2926,17 +2952,20 @@ def read_edge_store(path: Path, store) -> tuple[list[dict] | None, dict | None, 
                 valid_refs = {
                     row[0]: (row[1], row[2])
                     for row in sem_db.execute(
-                        "SELECT id,file,caller FROM sem_references WHERE kind='call'"
+                        "SELECT id,file,caller FROM sem_references WHERE kind IN ('call','read')"
                     )
                 }
             for edge in edges:
                 ref_id = edge.get("reference_id")
+                if ref_id is None:
+                    # A site the snapshot lists no reference for: kept, read by no consumer.
+                    continue
                 if ref_id not in valid_refs:
                     return None, binding, f"engine edge reference is not in snapshot: {ref_id}"
                 ref_file, ref_caller = valid_refs[ref_id]
                 if edge.get("file") != ref_file or edge.get("caller") != ref_caller:
                     return None, binding, f"engine edge callsite metadata mismatch for {ref_id}"
-                if edge.get("confidence") == "confirmed" or str(edge.get("verdict", "")).startswith("edge-"):
+                if edge.get("verdict") == "project-callable" and edge.get("confidence") != "uncertain":
                     target_id = edge.get("target_id")
                     if not target_id or target_id not in valid_targets:
                         return None, binding, f"engine edge target is not in snapshot: {target_id}"
@@ -2946,6 +2975,16 @@ def read_edge_store(path: Path, store) -> tuple[list[dict] | None, dict | None, 
     finally:
         if connection is not None:
             connection.close()
+
+
+def read_edge_holes(path: Path) -> list[dict]:
+    """The holes of a store `read_edge_store` accepted: references with no answer, by class."""
+    connection = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
+    try:
+        return [dict(zip(HOLE_COLUMNS, row)) for row in connection.execute(
+            f"SELECT {','.join(HOLE_COLUMNS)} FROM holes ORDER BY file,l0,c0")]
+    finally:
+        connection.close()
 
 
 MEMORY_EXHAUSTED = re.compile(r"MemoryError|out of memory|OutOfMemoryError|bad_alloc|Cannot allocate memory",
@@ -3173,6 +3212,12 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         # The calls the lexical resolver bound, with the target the engine is checked against.
         lexical = dict(connection.execute(
             "SELECT id, target_id FROM sem_references WHERE kind='call' AND resolution='resolved'"))
+        # Every call and read of these languages ends in an edge row or a hole (`holes_of`, by reference).
+        sites = connection.execute(
+            f"SELECT r.id, r.file, r.kind, r.l0, r.c0, c.language, r.resolution FROM sem_references r "
+            f"JOIN sem_coverage c ON c.file=r.file WHERE r.kind IN ('call','read') AND c.language IN ({placeholders}) "
+            f"ORDER BY r.id", tuple(languages)).fetchall()
+        holes_of: dict[str, tuple[str, str]] = {}
         callee_names = project_callee_names(connection)
         counts = {language: {"population": 0, "selected": 0, "asked": 0, "reused": 0, "confirmed": 0,
                              "candidates": 0, "verdicts": {}, "excluded_classes": {},
@@ -3191,6 +3236,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             else:
                 excluded = counts[row[7]]["excluded_classes"]
                 excluded[reference_class] = excluded.get(reference_class, 0) + 1
+                holes_of[row[0]] = ("not-asked", reference_class)
 
         # Reuse: same engine context, same file and imports, same target bytes.
         context = None if dry_run else getattr(engine, "context", lambda: None)()
@@ -3232,13 +3278,14 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         if limit is not None:
             selected = selected[:limit]
 
-        kept_entries, kept_edges, kept_reports = {}, [], {}
+        kept_entries, kept_edges, kept_holes, kept_reports = {}, [], [], {}
         if destination.is_file():
             previous, previous_binding, previous_reason = read_edge_store(destination, store)
             if previous_reason is None:
                 kept_entries = {language: entry for language, entry in
                                 (previous_binding.get("languages") or {}).items() if language not in counts}
                 kept_edges = [edge for edge in previous if edge.get("language") in kept_entries]
+                kept_holes = [hole for hole in read_edge_holes(destination) if hole["language"] in kept_entries]
                 kept_reports = {key: value for key, value in (previous_binding.get("engine_reports") or {}).items()
                                 if key in {entry["engine"] for entry in kept_entries.values()}}
 
@@ -3265,45 +3312,64 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                 contracts[identity] = bool(row and (_unpack(row[0]) or {}).get("contract"))
             return contracts[identity]
 
-        def count(language, verdict, reference_id=None):
-            """One verdict on an unresolved call; the bound calls are counted in `checked`."""
+        def count(language, verdict, reference_id=None, asked=False):
+            """One verdict on an unresolved call; the bound calls are counted in `checked`.
+
+            A call named by `reference_id` gets no edge: a hole, `engine-unresolved` once asked, else `not-asked`.
+            """
+            if reference_id is not None:
+                holes_of[reference_id] = ("engine-unresolved" if asked else "not-asked", verdict)
             if reference_id in lexical:
                 return
             verdicts = counts[language]["verdicts"]
             verdicts[verdict] = verdicts.get(verdict, 0) + 1
 
         def record(reference_id, rel, language, payload, verdict, target_id, resolver, line, column):
+            """One answer as an edge row: the end class in `verdict`, the engine's own verdict in `payload.detail`."""
             if reference_id in lexical:
                 # The engine agrees with the lexical target, names another declaration or a place outside.
                 checked = counts[language]["checked"]
                 if verdict.startswith("edge-") and target_id:
                     checked["same" if target_id == lexical[reference_id] else "corrected"] += 1
-                    confidence = "confirmed"
                 elif verdict == "external-definition":
                     checked["external"] += 1
-                    confidence = "external"
                 else:
+                    holes_of[reference_id] = ("engine-unresolved", verdict)
                     return
             else:
                 count(language, verdict)
                 if verdict.startswith("edge-") and target_id:
                     counts[language]["confirmed"] += 1
-                    confidence = "confirmed"
                 elif verdict in CANDIDATE_REASONS:
                     counts[language]["candidates"] += 1
-                    confidence = "candidate"
                 else:
+                    # Any other verdict, an outside place included, is a hole: the view reads the call as today.
+                    holes_of[reference_id] = ("engine-unresolved", verdict)
                     return
+            sure = verdict.startswith("edge-") or verdict == "external-definition"
+            confidence = "confirmed" if sure else "uncertain"
+            doubt = {} if sure else {"uncertain": {"reason": verdict, "candidates": []}}
             edges.append({
-                "reference_id": reference_id, "file": rel, "language": language,
+                "reference_id": reference_id, "file": rel, "language": language, "kind": "call",
                 # The stored payload already qualifies its caller with its file.
-                "caller": payload.get("caller"), "target_id": target_id, "verdict": verdict,
-                "resolver": resolver, "confidence": confidence, "l0": line, "c0": column,
-                "payload": {**payload, "resolver": resolver, "confidence": confidence, "reason": f"engine-{verdict}"},
+                "caller": payload.get("caller"), "l0": line, "c0": column,
+                "verdict": "project-callable" if verdict.startswith("edge-") else POSITION_ENDS[verdict],
+                "target_id": target_id, "symbol": None, "resolver": resolver, "confidence": confidence,
+                "payload": {**payload, "resolver": resolver, "confidence": confidence, "reason": f"engine-{verdict}",
+                            "detail": verdict, "chain": [], **doubt},
             })
 
         def identity():
             return engine.identity() if progress["probed"] else (progress["reused_identity"] or engine.name)
+
+        def holes():
+            answered = {edge["reference_id"] for edge in edges}
+            return [{"reference_id": reference_id, "file": rel, "language": language, "kind": kind, "l0": l0, "c0": c0,
+                     "class": holes_of.get(reference_id, ("not-asked",))[0], "resolver": identity(),
+                     "reason": holes_of[reference_id][1] if reference_id in holes_of else
+                     "read" if kind == "read" else "not-selected" if resolution in ("unresolved", "resolved")
+                     else resolution}
+                    for reference_id, rel, kind, l0, c0, language, resolution in sites if reference_id not in answered]
 
         def publish(partial):
             """Verify the sources, then write the store and the new answers; a failure or None."""
@@ -3337,7 +3403,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             if dry_run:
                 return None
             try:
-                progress["written"] = write_edge_store(destination, kept_edges + edges, binding)
+                progress["written"] = write_edge_store(destination, kept_edges + edges, binding, kept_holes + holes())
             except (OSError, sqlite3.Error, ValueError) as error:
                 return {"reason": f"could not publish the engine edge store: {error}", "stage": "write"}
             if cache_path is not None:
@@ -3411,7 +3477,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
                 except (EngineFailure, MemoryError):
                     raise
                 except Exception as error:
-                    count(language, f"infer-error:{type(error).__name__}", reference_id)
+                    count(language, f"infer-error:{type(error).__name__}", reference_id, asked=True)
                     continue
                 finally:
                     latencies.append(time.perf_counter() - started)

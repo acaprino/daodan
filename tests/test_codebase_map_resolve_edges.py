@@ -124,8 +124,8 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIsNone(reason, reason)
         self.assertEqual(len(edges), 1)
         edge = edges[0]
-        self.assertEqual((edge["verdict"], edge["confidence"], edge["resolver"]),
-                         ("edge-call", "confirmed", "stub@1.0"))
+        self.assertEqual((edge["verdict"], edge["payload"]["detail"], edge["confidence"], edge["resolver"]),
+                         ("project-callable", "edge-call", "confirmed", "stub@1.0"))
         self.assertTrue(edge["target_id"].startswith("app/tool.py::"), edge["target_id"])
         # The stored payload qualifies its caller already; qualifying it twice
         # produced `app/use.py::app/use.py::function@2:4` in a real jedi run.
@@ -238,7 +238,7 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual((report["confirmed_edges"], report["candidates"]), (0, 1))
         edges, _binding, reason = self.stored_edges()
         self.assertIsNone(reason)
-        self.assertEqual(edges[0]["verdict"], "ambiguous-target")
+        self.assertEqual(edges[0]["payload"]["detail"], "ambiguous-target")
 
     def test_identical_engine_answers_can_converge_on_one_declaration(self):
         owner = self
@@ -311,7 +311,7 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(report["confirmed_edges"], 1, report)
         edges, _binding, reason = self.stored_edges()
         self.assertIsNone(reason)
-        self.assertEqual((edges[0]["target_id"], edges[0]["verdict"]),
+        self.assertEqual((edges[0]["target_id"], edges[0]["payload"]["detail"]),
                          ("app/tool.py::class@9:0", "edge-instantiation"))
 
     def test_an_async_declaration_uses_its_name_position(self):
@@ -328,7 +328,7 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(edges[0]["target_id"], "app/tool.py::function@2:4")
 
     def test_a_target_outside_the_inventory_is_external_and_produces_no_edge(self):
-        _identity, before = self.unresolved_run_reference()
+        identity, before = self.unresolved_run_reference()
         outside = self.root.parent / "elsewhere" / "venv" / "lib.py"
         engine = StubEngine(answers={("use.py", before["span"][0]): Definition(outside, "run")})
         report = self.run_engine(engine)
@@ -339,6 +339,13 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIsNone(reason)
         self.assertEqual(edges, [])
         self.assertEqual((binding["confirmed"], binding["candidates"]), (0, 0))
+        # Without an edge every call and read of the language is a hole, with its class and reason.
+        holes = {hole["reference_id"]: (hole["class"], hole["reason"]) for hole in resolve_edges.read_edge_holes(self.edges)}
+        self.assertEqual(holes[identity], ("engine-unresolved", "external-definition"))
+        with open_snapshot(self.manifest) as store:
+            sites = {row[0] for row in store.connection.execute(
+                "SELECT id FROM sem_references WHERE kind IN ('call','read')")}
+        self.assertEqual(set(holes), sites)
 
     def test_a_project_name_that_is_no_symbol_stays_a_candidate(self):
         _identity, before = self.unresolved_run_reference()
@@ -350,9 +357,9 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual((report["candidates"], report["confirmed_edges"]), (1, 0))
         edges, _binding, reason = self.stored_edges()
         self.assertIsNone(reason, reason)
-        self.assertEqual([(edge["verdict"], edge["confidence"], edge["target_id"])
+        self.assertEqual([(edge["payload"]["detail"], edge["confidence"], edge["target_id"])
                           for edge in edges],
-                         [("project-not-a-symbol", "candidate", None)])
+                         [("project-not-a-symbol", "uncertain", None)])
 
     def test_an_unready_engine_is_a_declared_degradation_that_writes_nothing(self):
         engine = StubEngine(ready=False, reason="jedi is not installed")
@@ -853,7 +860,7 @@ class HomonymHolderTests(unittest.TestCase):
             edges, _binding, reason = resolve_edges.read_edge_store(self.edges, store)
         self.assertIsNone(reason)
         _names, calls = self.calls()
-        by_reference = {edge["reference_id"]: edge["verdict"] for edge in edges}
+        by_reference = {edge["reference_id"]: edge["payload"]["detail"] for edge in edges}
         return {file: by_reference.get(identity) for file, (identity, _payload) in calls.items()}
 
     def test_the_name_filter_asks_the_engine_about_every_held_call(self):
@@ -882,7 +889,7 @@ class HomonymHolderTests(unittest.TestCase):
             edges, _, _ = resolve_edges.read_edge_store(self.edges, store)
         _, calls = self.calls()
         found = next(edge for edge in edges if edge["reference_id"] == calls["web/label.ts"][0])
-        self.assertEqual(found["verdict"], "edge-call")
+        self.assertEqual(found["payload"]["detail"], "edge-call")
 
     def test_following_a_holder_uses_the_callable_not_the_factory(self):
         for language, rel in (("typescript", "web/label.ts"), ("python", "app/label.py")):
@@ -901,7 +908,7 @@ class HomonymHolderTests(unittest.TestCase):
             edges, _, reason = resolve_edges.read_edge_store(self.edges, store)
         self.assertIsNone(reason)
         _, calls = self.calls()
-        verdicts = {edge["reference_id"]: edge["verdict"] for edge in edges}
+        verdicts = {edge["reference_id"]: edge["payload"]["detail"] for edge in edges}
         for rel in ("web/memo.ts", "app/memo.py"):
             self.assertEqual(verdicts[calls[rel][0]], "project-not-a-symbol")
 

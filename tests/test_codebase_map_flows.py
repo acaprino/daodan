@@ -399,5 +399,48 @@ class HandlerRouteTests(unittest.TestCase):
                 flows.validate_rules([rule])
 
 
+class StoreReadTests(unittest.TestCase):
+    """A component the lexical resolver cannot place, named by a read the edge store answers."""
+
+    SOURCES = {
+        "web/Paywall.tsx": "export function Paywall() {\n  return null;\n}\n",
+        "web/ui.ts": "import { Paywall } from './Paywall';\nexport const Gate = Paywall;\n",
+        "web/Home.tsx": "import { Gate } from './ui';\nexport function Home() {\n  return <div><Gate /></div>;\n}\n",
+    }
+
+    def test_a_read_known_only_to_the_store_links_the_parent_to_the_component(self):
+        import resolve_edges
+        from snapshot_store import open_snapshot
+        work = Path(tempfile.mkdtemp(prefix="flow-store-")).resolve()
+        self.addCleanup(shutil.rmtree, work, True)
+        for rel, text in self.SOURCES.items():
+            (work / "app" / rel).parent.mkdir(parents=True, exist_ok=True)
+            (work / "app" / rel).write_text(text, encoding="utf-8", newline="\n")
+        manifest = work / "manifest.sqlite"
+        snapshot.write_snapshot(work / "app", manifest)
+        link = ("web/Home.tsx::Home", "web/Paywall.tsx::Paywall", "web/Home.tsx:3")
+
+        def calls():
+            return {(e["from"], e["to"], e["site"]) for e in flows.link_facts(manifest, [])["edges"]
+                    if e["type"] == "chiama"}
+
+        self.assertNotIn(link, calls())
+        with open_snapshot(manifest) as store:
+            identity, caller, resolution = store.connection.execute(
+                "SELECT id, caller, resolution FROM sem_references WHERE file='web/Home.tsx' AND kind='read'").fetchone()
+            target = store.connection.execute(
+                "SELECT id FROM sem_declarations WHERE file='web/Paywall.tsx' AND name='Paywall'").fetchone()[0]
+            self.assertEqual(resolution, "unresolved")
+            binding = resolve_edges.store_binding(store, manifest, store.metadata.get("parser_fingerprint"),
+                                                  {"typescript": {"engine": "scip-typescript@0.5.2", "state": "fresh"}},
+                                                  {})
+        resolve_edges.write_edge_store(resolve_edges.default_edge_store(manifest), [{
+            "reference_id": identity, "file": "web/Home.tsx", "language": "typescript", "kind": "read",
+            "caller": caller, "l0": 3, "c0": 15, "verdict": "project-callable", "target_id": target,
+            "symbol": "scip-typescript npm app 1.0.0 web/`Paywall.tsx`/Paywall().", "resolver": "scip-typescript@0.5.2",
+            "confidence": "confirmed", "payload": {"chain": ["same-range"]}}], binding)
+        self.assertIn(link, calls())
+
+
 if __name__ == "__main__":
     unittest.main()

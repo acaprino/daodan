@@ -435,7 +435,7 @@ class SqlAstAndScipEngineTests(unittest.TestCase):
             self.assertIsNone(reason)
             self.assertEqual(len(edges), 1)
             self.assertEqual(edges[0]["resolver"], "scip:scip-typescript@0.3.14")
-            self.assertEqual(edges[0]["verdict"], "edge-call")
+            self.assertEqual(edges[0]["payload"]["detail"], "edge-call")
             self.assertTrue(
                 edges[0]["target_id"].startswith(("worker.ts::method@", "worker.ts::function@")),
                 edges[0]["target_id"],

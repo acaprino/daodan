@@ -261,6 +261,31 @@ def test_file_without_declarations_is_inside_the_snapshot(tmp_path):
     assert snapshot.grade("a.kt", 1, 0) == ("value", "file without declarations in the snapshot")
     assert snapshot.grade("b.kt", 1, 0) == ("outside", None)
 
+# 5. A constructor names its class (requirement 14 of the engine specification): javapoet's 25 calls where the lexical
+# resolver gives the class and scip-java the constructor.
+
+def test_a_constructor_end_names_its_class(tmp_path):
+    import snapshot
+    project = tmp_path / "proj"
+    (project / "fx").mkdir(parents=True)
+    (project / "fx/Box.java").write_text("package fx;\n\nclass Box {\n    final int size;\n\n"
+                                         "    Box(int size) { this.size = size; }\n\n"
+                                         "    static Box make() {\n        return new Box(3);\n    }\n}\n",
+                                         encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    box, init = "scip-java maven . . fx/Box#", "scip-java maven . . fx/Box#`<init>`()."
+    (tmp_path / "index.scip").write_bytes(document("fx/Box.java", [
+        occurrence(3, 6, 9, box, True), occurrence(6, 4, 7, init, True), occurrence(9, 19, 22, init)]))
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(tmp_path / "index.scip")
+        _graph, references = code_graph.build(index, snap, "java", {}, {})
+    calls = [row for row in references.values() if row["kind"] == "call"]
+    assert [(end.cls, end.target) for row in calls for end in row["ends"]] == \
+        [("project-callable", "fx/Box.java::class@3:0")]
+
+
 # The fixtures: one small project per indexer in `fixtures/code-graph/<name>/`, with the index its engine wrote.
 # `ts-ends.json` and `RUST_ENDS` hold the ends of `ts` and `rust`; each other fixture has `expected.json`, ends
 # written from its sources before any index existed: `"FILE:LINE NAME"` (the snapshot reference whose name ends

@@ -21,11 +21,12 @@ checkout-relative directory a run names its documents from, `indexer` is `{"name
 Everything else is here: every document, occurrence and SymbolInformation decoded (`Index`); the Daodan
 snapshot a graph is measured against (`Snapshot`); from each referenced symbol every chain the index states,
 followed with cycle protection and no step limit (`Traversal`); the graph every language emits (`build`) and
-its counts (`report`). A chain follows only a definition sharing its range with a reference to a symbol not
-also defined there (two definitions at one range are facets of one declaration, never aliases), an adapter
-hop, and the implementations a member's SymbolInformation states (`is_implementation`). It ends on a
-function, method or class the snapshot declares, an external symbol, a namespace the adapter names, a project
-value with no stated alias, or a dead end: a `local` or project symbol the index defines nowhere, a cycle.
+its counts (`report`); the edge store it is saved in (`write_store`). A chain follows only a definition
+sharing its range with a reference to a symbol not also defined there (two definitions at one range are
+facets of one declaration, never aliases), an adapter hop, and the implementations a member's
+SymbolInformation states (`is_implementation`). It ends on a function, method or class the snapshot declares
+(a constructor names its class), an external symbol, a namespace the adapter names, a project value with no
+stated alias, or a dead end: a `local` or project symbol the index defines nowhere, a cycle.
 """
 from __future__ import annotations
 
@@ -423,7 +424,7 @@ class Snapshot:
         from snapshot_store import _unpack, open_snapshot
         self._rx, self._unpack = rx, _unpack
         self._context = open_snapshot(self.manifest)
-        store = self._context.__enter__()
+        self.store = store = self._context.__enter__()
         self.connection = store.connection
         root = (Path(store["root"]) / store["target"]).resolve()
         self.root = root.parent if root.is_file() else root
@@ -440,9 +441,19 @@ class Snapshot:
             self.rel[checkout], self.checkout[rel] = rel, checkout
         self._lines: dict = {}
         self.functions = collections.defaultdict(dict)
-        for identity, rel, line, column in self.connection.execute(
-                "SELECT id, file, l0, c0 FROM sem_declarations WHERE kind IN ('function','method','class')"):
+        declarations = self.connection.execute(
+            "SELECT id, file, name, kind, l0, c0, payload FROM sem_declarations "
+            "WHERE kind IN ('function','method','class')").fetchall()
+        for identity, rel, _name, _kind, line, column, _blob in declarations:
             self.functions[rel][(line, column)] = identity
+        # A constructor names its class (requirement 14 of the engine specification): a function a class
+        # declares under the class's own name. JavaScript's `constructor` is marked by the snapshot itself.
+        classes = {identity: name for identity, _rel, name, kind, *_rest in declarations if kind == "class"}
+        self.constructs = {}
+        for identity, rel, name, kind, _line, _column, blob in declarations:
+            owner = f"{rel}::{str((_unpack(blob) or {}).get('scope') or '').removeprefix('scope-')}"
+            if kind != "class" and classes.get(owner) == name:
+                self.constructs[identity] = owner
         self._tables: dict = {}
         return self
 
@@ -482,7 +493,7 @@ class Snapshot:
         location = self._rx.Location(self.paths[rel], line, column)
         verdict, target = self._rx.grade(location, self.inventory, self._tables, self.store_root, self._table)
         if verdict.startswith("edge-") and target:
-            return "callable", target["id"]
+            return "callable", self.constructs.get(target["id"], target["id"])
         return ("outside", None) if verdict == "external-definition" else ("value", verdict)
 
     def _table(self, rel: str):
@@ -677,7 +688,7 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
             for end in ends(position, [occurrence.key]):
                 edges.append({"from": source, "to": end.key, "symbol": occurrence.key,
                               "site": f"{rel}:{occurrence.line}", "kind": kind, "chain": list(end.chain),
-                              "end": end.cls})
+                              "end": end.cls, "target": end.target})
     for rel in documents:
         nodes.setdefault(rel, {"id": rel, "kind": "module", "file": rel, "line": 1, "external": None})
     for edge in edges:
@@ -721,6 +732,70 @@ def _refined(index: Index, graph: dict, refine) -> None:
                 item["by"] = "refine"
     graph["removed"] += [edge for edge in graph["edges"] if edge.get("removed")]
     graph["edges"] = [edge for edge in graph["edges"] if not edge.get("removed")]
+
+
+def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Path:
+    """Save `build`'s graphs, `{language: (graph, references)}`, as the snapshot's edge store, replacing it.
+
+    A snapshot reference's ends are its rows, `uncertain` where `refine` marked the edge of that end at its
+    site; an end `refine` removed is counted in `edges_removed` and not saved. A reference the index answers
+    nothing at, or only with removed ends, is a hole, like an implicit call an adapter adds. An occurrence the
+    snapshot lists no reference for is a row of kind `unknown`, which no consumer reads. `symbol` is the key
+    the end is at; an external end's package goes to `externals`.
+    """
+    import resolve_edges as rx
+    known = {identity: (caller, l0, c0) for identity, caller, l0, c0 in snapshot.connection.execute(
+        "SELECT id, caller, l0, c0 FROM sem_references")}
+    edges, holes, entries = [], [], {}
+    for language, (graph, references) in sorted(built.items()):
+        packages = {node["id"]: node["external"] for node in graph["nodes"]}
+        kept = {(edge["site"], edge["to"], tuple(edge["chain"])) for edge in graph["edges"]}
+        doubts = {(edge["site"], edge["to"], tuple(edge["chain"])): edge["uncertain"]
+                  for edge in graph["edges"] if edge.get("uncertain")}
+        removed = {(edge["site"], edge["to"], tuple(edge["chain"])): edge["removed"] for edge in graph["removed"]}
+
+        def row(place: dict, end_class: str, key: str, target, chain, detail: str, doubt=None, **payload) -> dict:
+            external = (packages.get(key) or package(key)) if end_class == "external" else None
+            return {**place, "language": language, "verdict": end_class, "target_id": target, "symbol": key,
+                    "resolver": resolver, "confidence": "uncertain" if doubt else "confirmed",
+                    "external": external, "payload": {**payload, "chain": list(chain), "detail": detail,
+                                                      **({"uncertain": doubt} if doubt else {})}}
+
+        for identity, reference in references.items():
+            rel, line = reference["site"].rsplit(":", 1)
+            site = f"{snapshot.checkout.get(rel, rel)}:{line}"
+            caller, l0, c0 = known[identity]
+            place = {"reference_id": identity, "file": rel, "kind": reference["kind"], "caller": caller,
+                     "l0": l0, "c0": c0}
+            ends = [end for end in reference["ends"] if (site, end.key, end.chain) in kept
+                    or (site, end.key, end.chain) not in removed]
+            hole = reference["hole"] or ("" if ends else "removed")
+            if hole:
+                reason = reference["reason"] if reference["hole"] else removed[(site, reference["ends"][0].key,
+                                                                                reference["ends"][0].chain)]
+                holes.append({**place, "language": language, "class": hole, "reason": reason, "resolver": resolver})
+                continue
+            edges += [row(place, end.cls, end.key, end.target, end.chain, end.detail,
+                          doubts.get((site, end.key, end.chain))) for end in ends]
+        for edge in graph["edges"]:
+            if edge["kind"] == "unknown":
+                rel, line = edge["site"].rsplit(":", 1)
+                place = {"reference_id": None, "file": snapshot.rel.get(rel, rel), "kind": "unknown", "caller": None,
+                         "l0": int(line), "c0": None}
+                edges.append(row(place, edge["end"], edge["to"], edge.get("target"), edge["chain"], "",
+                                 edge.get("uncertain"), **{"from": edge["from"]}))
+        for hole in graph["holes"]:
+            if hole.get("by") == "refine":
+                rel, line = hole["site"].rsplit(":", 1)
+                holes.append({"reference_id": None, "file": snapshot.rel.get(rel, rel), "language": language,
+                              "kind": hole["kind"], "l0": int(line), "c0": None, "class": hole["class"],
+                              "reason": hole["reason"], "resolver": resolver})
+        entries[language] = {"engine": resolver, "state": "fresh", "indexer": graph["indexer"],
+                             "files": graph["files"],
+                             "edges_removed": dict(collections.Counter(edge["removed"] for edge in graph["removed"]))}
+    binding = rx.store_binding(snapshot.store, snapshot.manifest,
+                               snapshot.store.metadata.get("parser_fingerprint"), entries, {})
+    return rx.write_edge_store(out, edges, binding, holes)
 
 
 def _examples(items: list, size: int = 3) -> list:

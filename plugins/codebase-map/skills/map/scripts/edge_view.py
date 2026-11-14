@@ -1,11 +1,13 @@
-"""Shared read-only view over lexical references and verified engine edges.
+"""Shared read-only view over lexical references and verified engine edges: calls and reads.
 
 Consumers read this module instead of opening `engine-edges.sqlite` directly or
-running an engine at query time. Where an engine checked a call the lexical
-resolver bound, its answer is the target: another declaration replaces the lexical
-one, a definition outside the project removes the edge. A lexical target the caller
-overrides stays, and its divergence from the engine is surfaced in `conflicts`.
-Candidate answers stay outside confirmed call edges.
+running an engine at query time. Each reference has one source: the edge store's
+rows for it when it has any (a hole is no answer), else the lexical resolver. Two
+answers never merge: where the store names another declaration it wins, and the
+difference is counted in `coverage.lexical_disagreements`; a definition outside the
+project removes the edge. A lexical target the caller overrides stays, and its
+divergence from the store is surfaced in `conflicts`. Candidate answers stay outside
+confirmed edges.
 
 Standard library only.
 """
@@ -149,13 +151,54 @@ def classify_target_kind(store: SnapshotStore, target_id: str | None) -> str | N
         return _build_target_kinds(store, sem_db).get(target_id, "concrete")
 
 
+def _store_answer(rows, target_kinds: dict) -> dict | None:
+    """The one answer the store's rows give a reference, or None when they give none.
+
+    A direct callable end is the target; a contract with one project implementation and no
+    external end points to the implementation; several callable ends, or an uncertain one, are a
+    candidate; with only external ends the reference is external; with only values it stays
+    unresolved, `project-value`. A dead end, or a target outside the declarations, answers nothing.
+    """
+    rows = [row for row in rows if row["verdict"] != "dead-end" and not (
+        row["verdict"] == "project-callable" and row["confidence"] != "uncertain"
+        and row.get("target_id") not in target_kinds)]
+    if not rows:
+        return None
+    sure = [row for row in rows if row["confidence"] != "uncertain"]
+    reached = [row for row in sure if row["verdict"] == "project-callable"]
+    chains = {id(row): (row.get("payload") or {}).get("chain") or () for row in reached}
+    direct = list(dict.fromkeys(row["target_id"] for row in reached if "implementation" not in chains[id(row)]))
+    implemented = list(dict.fromkeys(row["target_id"] for row in reached if "implementation" in chains[id(row)]))
+    external = [row for row in sure if row["verdict"] == "external"]
+    target = None
+    if len(direct) == 1:
+        target = direct[0]
+        if target_kinds.get(target) in ("interface", "protocol") and len(implemented) == 1 and not external:
+            target = implemented[0]
+    elif not direct and len(implemented) == 1 and not external:
+        target = implemented[0]
+    if target is not None:
+        return {"target": target, "row": next(row for row in reached if row["target_id"] == target)}
+    doubtful = [row for row in rows if row["confidence"] == "uncertain"]
+    if doubtful:
+        row = next((row for row in doubtful if row.get("target_id")), doubtful[0])
+        return {"target": None, "row": row, "candidate": row["payload"].get("uncertain", {}).get("reason")}
+    if len(set(direct + implemented)) > 1:
+        return {"target": None, "row": reached[0], "candidate": "several-targets"}
+    if external:
+        return {"target": None, "row": external[0], "external": external[0].get("external"),
+                "reason": external[0]["payload"].get("reason") or "external"}
+    values = any(row["verdict"] == "project-value" for row in sure)
+    return {"target": None, "row": sure[0], "reason": "project-value" if values else sure[0]["verdict"]}
+
+
 def load_edge_view(
     store: SnapshotStore | Path | str,
     *,
     engine_store: Path | str | None = None,
     lexical_overrides: dict[str, str] | None = None,
 ) -> dict:
-    """Merge lexical call references with verified engine edges for one snapshot."""
+    """One source per call and read reference of one snapshot: the edge store, else the lexical resolver."""
     with ExitStack() as stack:
         if not isinstance(store, SnapshotStore):
             store = stack.enter_context(open_snapshot(Path(store)))
@@ -181,8 +224,10 @@ def load_edge_view(
                     "confirmed": 0,
                     "candidates": 0,
                     "no_edges_reason": "json-manifest",
+                    "lexical_disagreements": 0,
                 },
                 "references": [],
+                "reads": [],
                 "candidates": [],
                 "conflicts": [],
                 "gaps": ["JSON snapshot holds no semantic reference table"],
@@ -193,6 +238,7 @@ def load_edge_view(
         edge_path = Path(engine_store) if engine_store is not None else resolve_edges.default_edge_store(store.path)
         gaps: list[str] = []
         engine_edges: list[dict] = []
+        holes: dict[str, str] = {}
         binding: dict | None = None
 
         engine_pass = None
@@ -209,6 +255,8 @@ def load_edge_view(
                 gaps.append(reason or "engine edge store rejected")
             else:
                 engine_edges = loaded_edges
+                holes = {hole["reference_id"]: hole["class"] for hole in resolve_edges.read_edge_holes(edge_path)
+                         if hole["reference_id"] is not None}
                 population = int(binding.get("population", 0))
                 selected = int(binding.get("selected", 0))
                 asked = int(binding.get("asked", 0))
@@ -224,27 +272,31 @@ def load_edge_view(
                 else:
                     coverage_status = "complete"
 
-        engine_by_ref: dict[str, dict] = {edge["reference_id"]: edge for edge in engine_edges}
+        rows_by_ref: dict[str, list[dict]] = {}
+        for edge in engine_edges:
+            if edge.get("reference_id") is not None:
+                rows_by_ref.setdefault(edge["reference_id"], []).append(edge)
         overrides = dict(lexical_overrides or {})
         references: list[dict] = []
+        reads: list[dict] = []
         candidates: list[dict] = []
         conflicts: list[dict] = []
+        disagreements = 0
 
         rows = sem_db.execute(
-            "SELECT id, file, caller, target_id, resolution, payload FROM sem_references "
-            "WHERE kind='call' ORDER BY file, l0, c0, id"
+            "SELECT id, kind, file, caller, target_id, resolution, payload FROM sem_references "
+            "WHERE kind IN ('call','read') ORDER BY file, l0, c0, id"
         ).fetchall()
         counter = resolve_edges.ResolutionCounter(resolve_edges.project_callee_names(sem_db))
         languages = dict(sem_db.execute("SELECT file, language FROM sem_coverage"))
 
-        for ref_id, file_rel, caller, target_id, res_state, blob in rows:
+        for ref_id, kind, file_rel, caller, target_id, res_state, blob in rows:
             payload = _unpack(blob)
             if ref_id in overrides:
                 target_id = overrides[ref_id]
                 res_state = "resolved" if target_id else "unresolved"
                 payload = {**payload, "target_id": target_id, "resolution": res_state}
             lex_resolver = payload.get("resolver") or resolution.LEXICAL_RESOLVER
-            eng = engine_by_ref.get(ref_id)
 
             record = {
                 **payload,
@@ -262,34 +314,21 @@ def load_edge_view(
                 "target_kind": target_kinds.get(target_id) if target_id else None,
             }
 
-            if eng is not None:
-                eng_conf = eng.get("confidence")
-                eng_target = eng.get("target_id")
-                eng_resolver = eng.get("resolver")
-                if res_state == "resolved":
-                    if eng_conf == "confirmed" and eng_target == target_id:
-                        if eng_resolver not in record["provenance"]:
-                            record["provenance"].append(eng_resolver)
-                    elif ref_id not in overrides:
-                        if eng_conf == "confirmed" and eng_target in target_kinds:
-                            record.update(
-                                target_id=eng_target,
-                                resolver=eng_resolver,
-                                provenance=[eng_resolver],
-                                reason=eng.get("payload", {}).get("reason") or f"engine-{eng.get('verdict')}",
-                                target_kind=target_kinds.get(eng_target, "concrete"),
-                            )
-                        elif eng_conf == "external":
-                            record.update(
-                                target_id=None,
-                                resolution="unresolved",
-                                resolver=eng_resolver,
-                                confidence=None,
-                                provenance=[],
-                                reason=f"engine-{eng.get('verdict')}",
-                                target_kind=None,
-                            )
-                    elif eng_conf == "confirmed" and eng_target:
+            answer = _store_answer(rows_by_ref.get(ref_id, ()), target_kinds)
+            if answer is None:
+                # No answer from the store: the lexical one stands, and a hole says why the store has none.
+                if ref_id in holes:
+                    record["hole"] = holes[ref_id]
+            else:
+                found, row = answer["target"], answer["row"]
+                eng_resolver = row.get("resolver")
+                eng_reason = (row.get("payload") or {}).get("reason")
+                if found is not None and res_state == "resolved" and found == target_id:
+                    if eng_resolver not in record["provenance"]:
+                        record["provenance"].append(eng_resolver)
+                elif ref_id in overrides and res_state == "resolved":
+                    # A lexical target the caller overrides stays; a different store target is a conflict.
+                    if found is not None:
                         conflicts.append({
                             "reference_id": ref_id,
                             "file": file_rel,
@@ -297,34 +336,47 @@ def load_edge_view(
                             "span": payload.get("span"),
                             "lexical_target_id": target_id,
                             "lexical_resolver": lex_resolver,
-                            "engine_target_id": eng_target,
+                            "engine_target_id": found,
                             "engine_resolver": eng_resolver,
                             "reason": "divergent-lexical-and-engine-targets",
                         })
+                elif found is not None:
+                    disagreements += res_state == "resolved"
+                    record.update(
+                        target_id=found,
+                        resolution="resolved",
+                        resolver=eng_resolver,
+                        confidence="confirmed",
+                        provenance=[eng_resolver],
+                        reason=eng_reason or f"engine-{row.get('verdict')}",
+                        target_kind=target_kinds.get(found, "concrete"),
+                    )
+                elif "candidate" in answer:
+                    candidate_entry = {
+                        "reference_id": ref_id,
+                        "file": file_rel,
+                        "caller": caller,
+                        "span": payload.get("span"),
+                        "verdict": answer["candidate"],
+                        "resolver": eng_resolver,
+                        "target_id": row.get("target_id"),
+                    }
+                    record["engine_candidate"] = candidate_entry
+                    candidates.append(candidate_entry)
+                    if res_state == "resolved":
+                        # The store wins and names no single target.
+                        record.update(target_id=None, resolution="unresolved", resolver=eng_resolver,
+                                      confidence=None, provenance=[], target_kind=None,
+                                      reason=eng_reason or answer["candidate"])
                 else:
-                    if eng_conf == "confirmed" and eng_target and eng_target in target_kinds:
-                        record.update(
-                            target_id=eng_target,
-                            resolution="resolved",
-                            resolver=eng_resolver,
-                            confidence="confirmed",
-                            provenance=[eng_resolver],
-                            reason=eng.get("payload", {}).get("reason") or f"engine-{eng.get('verdict')}",
-                            target_kind=target_kinds.get(eng_target, "concrete"),
-                        )
-                    elif eng_conf == "candidate":
-                        candidate_entry = {
-                            "reference_id": ref_id,
-                            "file": file_rel,
-                            "caller": caller,
-                            "span": payload.get("span"),
-                            "verdict": eng.get("verdict"),
-                            "resolver": eng_resolver,
-                            "target_id": eng_target,
-                        }
-                        record["engine_candidate"] = candidate_entry
-                        candidates.append(candidate_entry)
+                    record.update(target_id=None, resolution="unresolved", resolver=eng_resolver,
+                                  confidence=None, provenance=[], target_kind=None, reason=answer["reason"])
+                    if answer.get("external"):
+                        record["external"] = answer["external"]
 
+            if kind == "read":
+                reads.append(record)
+                continue
             counter.add(languages.get(file_rel), res_state, payload,
                         engine_resolved=record["resolution"] == "resolved" and record["target_id"] != target_id,
                         engine_external=res_state == "resolved" and record["resolution"] != "resolved")
@@ -361,10 +413,12 @@ def load_edge_view(
                 "confirmed": confirmed,
                 "candidates": cand_count,
                 "no_edges_reason": no_edges_reason,
+                "lexical_disagreements": disagreements,
                 "engine_pass": engine_pass,
                 "resolution": counter.summary(None if coverage_status == "rejected_store" else binding),
             },
             "references": references,
+            "reads": reads,
             "candidates": candidates,
             "conflicts": conflicts,
             "gaps": gaps,

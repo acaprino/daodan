@@ -994,7 +994,10 @@ def install_edge_view(db, store, *, engine_store=None, limit=100):
         "SELECT 1 FROM sqlite_temp_master WHERE name='q_cover'").fetchone() else "sem_coverage"
     allowed = {r[0] for r in db.execute(f"SELECT file FROM {coverage} WHERE verified=1")}
     targets = {r[0] for r in db.execute("SELECT id,file FROM sem_declarations") if r[1] in allowed}
-    for ref in view["references"]:
+    # A read is rewritten only where the store changed its answer; a call carries the view's record, as before.
+    changed = [ref for ref in view["reads"]
+               if (ref["target_id"], ref["resolution"]) != (ref["lexical_target_id"], ref["lexical_resolution"])]
+    for ref in view["references"] + changed:
         if ref["file"] not in allowed or (ref["target_id"] and ref["target_id"] not in targets):
             continue
         db.execute("UPDATE effective_references SET target_id=?,resolution=?,payload=? WHERE id=?",
