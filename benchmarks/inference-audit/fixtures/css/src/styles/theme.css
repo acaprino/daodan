@@ -1,0 +1,48 @@
+@import "./base.css";
+@import "tailwindcss/base";
+@layer reset, brand;
+
+:root {
+  --accent: #09f;
+  --gap: 4px;
+}
+
+.dark {
+  --accent: #0cf;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@font-face {
+  font-family: "Brand Sans";
+  src: url(brand.woff2) format("woff2");
+}
+
+@keyframes spin {
+  to { transform: rotate(var(--angle)); }
+}
+
+@layer brand {
+  .btn {
+    color: var(--accent);
+    margin: var(--gap) var(--missing, 2px);
+    animation: spin 1s linear infinite;
+    font-family: "Brand Sans", system-ui, sans-serif;
+  }
+}
+
+.sidebar {
+  container: side / inline-size;
+}
+
+@container side (min-width: 400px) {
+  .card { padding: 2rem; }
+}
+
+@layer reset {
+  * { margin: 0; }
+}

@@ -1,0 +1,16 @@
+.base {
+  padding: 4px;
+}
+
+.primary {
+  composes: base;
+  color: var(--accent);
+}
+
+.ghost {
+  composes: card from global;
+}
+
+:global(.dark) .primary {
+  color: white;
+}

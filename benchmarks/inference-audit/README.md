@@ -791,3 +791,139 @@ Non verificato:
 - La corrispondenza fra implementazione locale e classe JVM, fatta per vicinanza di riga: in questi due casi nessuna resta senza classe.
 - Kotlin 2.x, che compila le lambda con `invokedynamic`; le coroutine; altri progetti; Gradle 8.
 - I picchi di RAM fra un campione e l'altro (due al secondo, sotto gVisor).
+
+### 14 novembre 2026, grafo dei fogli di stile: CSS
+
+Verdetto: su tududi il grafo è corretto e quasi completo. La verifica a mano dà 20 su 20 e su 1.708 file dati non ne manca nessuno. Ci sono però tre buchi falsi: le regole esistono, ma in posti che il grafo non legge. Sono 94 classi di Font Awesome (foglio in `vendor/`, fuori dal perimetro dello snapshot), 24 classi `cm-*` dei temi CodeMirror scritti in TypeScript (CSS-in-JS) e 2 gruppi Tailwind con nome (`group/tip`). Nessuno strumento esistente risolve i nomi CSS fra file e markup. Gli strumenti esistenti leggono e dicono cosa c'è; il collegamento per nome lo fa `adapters/css.py`.
+
+Cos'è il grafo di un foglio di stile. Non ci sono chiamate: ci sono nomi che la cascata risolve quando la pagina gira.
+- Nodi: regole (per selettore appiattito, con le at-rule intorno), `@keyframes`, `@font-face` (per famiglia), `@property`, dichiarazioni di proprietà custom (`--x`, nei fogli, negli attributi `style`, negli oggetti `style` e in `setProperty` degli script, nelle proprietà arbitrarie Tailwind `[--x:...]`), nomi di container, prima comparsa di un `@layer` nel file, variabili e mixin Sass, file. Le utility Tailwind sono nodi esterni (pacchetto e versione).
+- Correzione rispetto alla richiesta: classi e id non sono nodi del progetto. Sono nomi portati dalle regole: l'arco va a ogni regola che li nomina. Le classi di un CSS Module sono nomi della regola con l'ambito del modulo.
+- Archi nei fogli: `var(--x)` a tutte le dichiarazioni di `--x`; `animation` a `@keyframes`; `font-family` e `font` a ogni `@font-face` della famiglia; `@container` al nome; un `@layer` ripetuto alla sua prima comparsa (che fissa l'ordine); `@import`, `@use`, `@forward` al file; `composes` alle regole; `$x`, `ns.$x` e `@include` attraverso gli ambiti di `@use`, `@forward` e `@import`.
+- Archi da markup e codice: `class`, `className`, `*ClassName`, `id`, `classList`, `setAttribute`, `clsx`, `classnames` e `tailwind-merge` (riconosciuti dal pacchetto che dichiara la funzione, mai dal nome), `@apply`, `@extend`, `styles.foo` dei CSS Module, `<link rel=stylesheet>` e `import './x.css'`.
+- Più dichiarazioni dello stesso nome. Per proprietà custom, keyframes e container la cascata ne sceglie una per elemento: sono archi `uncertain`, uno per candidato, ciascuno con la lista intera. Le regole di una classe e i `@font-face` di una famiglia valgono tutti insieme: archi certi.
+- Buco: un nome che nessuno dichiara (`no-rule`, `undeclared`...). Buco anche una classe costruita a runtime, con la sua forma: `template`, `concatenation`, `ejs`, `parameter`, `call`, `property`, `element-access`, `variable`. Mai una supposizione.
+- `chain` dice la regola che ha portato al bersaglio: `literal-type` (tipo stringa letterale del checker), `initializer` (una const o una proprietà di un oggetto const), `clsx`, `classList`, `@apply`, `composes`, `style-object`, `css-text`.
+
+Quale strumento dà cosa (fonti primarie):
+
+| Strumento | Cosa dà | Usato |
+| --- | --- | --- |
+| parser del prodotto `languages/stylesheet.py` (CSS, SCSS, LESS) | albero delle regole: selettori appiattiti, contesto delle at-rule, layer, keyframes, mixin, import, `@apply` espanso | sì: i nodi; l'adattatore guarda ogni istruzione mentre il parser la legge, per `var()`, `animation`, `font-family`, `composes`, `@include`, `$x`, `@layer` |
+| `html.parser` della libreria standard | `class`, `id`, `style`, `<style>`, `<link>` di HTML ed EJS | sì |
+| TypeScript del progetto (5.9.3), un programma | attributi JSX, `classList`, helper di classi, tipi letterali, inizializzatori const, import e membri dei CSS Module, oggetti `style`, `setProperty`, import di fogli | sì |
+| Tailwind del progetto (3.4.19), `getClassOrder` col suo `tailwind.config.js` | quali token sono utility | sì |
+| PostCSS (con selector e value parser) | l'albero di un file; niente fra file | no: lo stesso albero lo dà il parser del prodotto |
+| `vscode-css-languageservice` | definizioni, riferimenti e link di un documento alla volta (`findReferences(document, position, stylesheet)`) | no: niente fra file, niente markup |
+| API JS di Sass | `loadedUrls` (i file caricati) e la source map dell'uscita | no: dà i file, non variabili e mixin; tududi non ha Sass |
+| `typescript-plugin-css-modules` | i tipi di `styles.foo` nell'editor | no: plugin del language service, non un'esecuzione unica; il compilatore basta |
+| stylelint `no-unknown-custom-properties`, `no-unknown-animations` | sì o no su un nome, "nella stessa sorgente o nei `referenceFiles`" | no: un verdetto, non archi |
+| indicizzatori SCIP o LSIF | nessuno per CSS (elenco nel README di SCIP) | — |
+
+Nessuno dà il nome usato collegato alle sue dichiarazioni fra file e markup. Questo lavoro lo fa `css.graph`: è un confronto di nomi su ciò che i quattro strumenti hanno letto, con gli ambiti di Sass e dei CSS Module.
+
+| Parametro | Valore |
+| --- | --- |
+| caso | tududi `71da9d7b34dfd1600657e9c5ddf40420206fd263`, i file dello snapshot già sul volume (`scip-inputs/tududi/manifest.sqlite`): 3 CSS, 15 EJS, 2 HTML, 1.038 JS, 650 TS |
+| pacchetti | `npm ci --ignore-scripts` come il passo dei motori (`resolve_edges.npm_modules`), 582,2 s |
+| motori | parser del prodotto (sha `5986a74f4b18`) 0,1 s; TypeScript 5.9.3 19,2 s, picco 1.428 MB; Tailwind 3.4.19 0,8 s, 182 MB |
+| container | 2 CPU, 8 GiB, 607,2 s; hash dei cinque file degli adattatori stampato all'avvio, uguale a quello locale (`css.py` `4932545239f5`) |
+| file | `adapters/css.py` (fogli, HTML/EJS, montaggio del grafo), `adapters/css_typescript.py` e `.js`, `adapters/css_tailwind.py` e `.js`, `lang_css.py` (app `daodan-graph-css`), `test_css_graph.py`, `fixtures/css/`, `results/graph-css-tududi-checks.json`; il grafo resta sul volume (`graph-css-tududi.json.gz`, `fetch --graph`) |
+
+Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python benchmarks/inference-audit/lang_css.py spawn --cases tududi` e `fetch --cases tududi`. Prova locale: `python -m pytest benchmarks/inference-audit/test_css_graph.py` (5 test, 1 s: 74 archi e 6 buchi scritti a mano prima di eseguire qualunque cosa; serve Node).
+
+Fogli trovati e letti:
+- Nel checkout: 4 file `.css`, 6 blocchi `<style>` (5 EJS e `public/index.html`) e 42 attributi `style`.
+- Nello snapshot: 3 file `.css`. Font Awesome Free 6.4.0 (`backend/modules/landing/public/vendor/fontawesome/css/all.min.css`) è fuori, perché il perimetro esclude `vendor` (`tree_scope.py:59`).
+- Letti: tutti i 1.708 file dati, 0 mancanti.
+
+Nodi, 2.537:
+- 1.815 utility Tailwind esterne;
+- 608 regole: `styles.ejs` 474, `markdown.css` 56, `tailwind.css` 39, gli altri blocchi `<style>` 39;
+- 69 `@font-face`, 20 file, 13 proprietà custom, 9 `@keyframes`;
+- 2 layer di Tailwind e 1 modulo `tailwindcss`.
+
+Le 13 proprietà custom sono tutte negli script: 6 chiavi di oggetti `style`, 6 proprietà arbitrarie Tailwind, 1 `setProperty`. I fogli di tududi non ne dichiarano.
+
+Archi, 39.441:
+
+| Tipo | Verso il progetto | Verso l'esterno |
+| --- | --- | --- |
+| classe | 1.646 | 37.056 (Tailwind) |
+| `@font-face` | 670 | 0 |
+| proprietà custom | 51 | 0 |
+| `@keyframes` | 9 | 0 |
+| import | 2 | 3 (`@tailwind`) |
+| layer | 0 | 3 (`@layer base`, `utilities` di Tailwind) |
+| id | 1 | 0 |
+
+Per regola: diretto 35.375, `literal-type` 2.736, `initializer` 939 (564 col tipo letterale), `classList` 305, `css-text` 51, `className=` 14, `@apply` 11, `style-object` 10.
+
+Nessun arco di classe passa fra l'app React e le pagine della landing. L'unico arco fra le due cartelle è legittimo: `SearchMenu.tsx:507` `Lora` va ai 10 `@font-face` di `public/index.html`, che è la pagina dell'app.
+
+Archi incerti: 27, su 3 letture di `--note-tint` (`NoteFocusMode.tsx:53`, `NoteSidePanel.tsx:131`, `Notes.tsx:101`). Ognuna ha 9 candidati: 3 chiavi di oggetti `style` e 6 proprietà arbitrarie `[--note-tint:...]`, chiare e scure. Le altre quattro proprietà custom hanno una sola dichiarazione.
+
+Esterni: solo `tailwindcss` 3.4.19 (npm), 37.062 archi. Nessun foglio importato da `node_modules`.
+
+Buchi, 472:
+
+| Classe | Quanti | Esempi |
+| --- | --- | --- |
+| `no-rule` classe | 175 | `cloud.ejs:49 fas`, `landing.ejs:844 fas`, `Note/editor/blockHandle.ts:226 cm-block-handle-menu` |
+| `no-rule` id | 98 | `cloud.ejs:71 cloud-pricing`, `PublicShareModal.tsx:226 public-share-access`, `AppLauncherModal.tsx:333 app-launcher-title` |
+| `parameter` | 69 | `TrialLockNotice.tsx:46 className`, `FileIcon.tsx:29 className`, `ProjectItem.tsx:507 ring` |
+| `call` | 67 | `NoteBackgroundPicker.tsx:42 swatch(!value)`, `TaskRowCollapsed.tsx:333 sheetTitleWeightClass(...)`, `SidebarNotesTree.tsx:284 itemClass(false)` |
+| `property` | 34 | `CalloutBlock.tsx:62 config.borderClass`, `ApiKeysTab.tsx:248 status.className`, `TaskList.tsx:147 task.uid` |
+| `no-font-face` | 10 | `styles.ejs:6 -apple-system`, `styles.ejs:679 -apple-system`, `styles.ejs:740 SFMono-Regular` (font di sistema) |
+| `ejs` | 9 | `landing.ejs:384 <%= pain.icon %>`, `landing.ejs:413 plan-step<%= ... %>`, `nav.ejs:34 nav-dd-item<%= ... %>` |
+| `element-access` | 5 | `ImportWizard.tsx:368 styles[row.action]`, `QuickCaptureInput.tsx:3196 TOKEN_TEXT_CLASS[...]`, `GoalHero.tsx:133 GOAL_STATUS_TINT[goal.status]` |
+| `url-path` | 2 | `head-assets.ejs:11 /landing-assets/fonts/fonts.css`, `:12 .../all.min.css` (cartella servita da Express) |
+| `template` | 2 | `CalloutBlock.tsx:62 callout-${type.toLowerCase()}`, `OidcProviderConfig.tsx:352 oidc-auto-provision-${index}` |
+| `variable` | 1 | `HabitHeatmap.tsx:127 className` |
+
+Le 175 classi senza regola:
+- 94 Font Awesome e 24 `cm-*` (22 nomi): falsi buchi (vedi verdetto). Le regole `cm-*` sono chiavi di `EditorView.theme({...})` in `Note/editor/livePreviewTheme.ts` e `blockHandle.ts`.
+- 2 `group/tip` e `group/check`: falsi buchi. Tailwind 3.4 non dà un ordine ai gruppi con nome.
+- 55 veri. Tra questi:
+  - classi senza effetto: `bg-black/2`, `text-md`, `max-w`, `transition-width`, `scrollbar-*` (plugin non installato), `prose`, `dark:prose-invert` e `not-prose` (typography non configurato);
+  - agganci per JS e test: `task-list-container` 11 volte;
+  - `HabitCheckIn.tsx:154 ${ACCENT.solid}`, un errore di tududi: il segnaposto sta in una stringa normale, non in un template, e la classe accento non arriva mai.
+
+I 98 id senza regola sono etichette, `aria` e ancore che nessun foglio nomina.
+
+Verifica a mano: 20 usi scelti leggendo il sorgente prima che esistesse un grafo di tududi (`HAND` in `lang_css.py`). L'atteso "tutte le regole che nominano la classe" è contato da una scansione indipendente (`_rules_naming`), non dal parser del prodotto.
+
+| Gruppo | Giusti | Siti |
+| --- | --- | --- |
+| markup verso regole | 10 su 10 | `TabsNav.tsx:17 scrollbar-hide` (2 regole); `AreaDetails.tsx:357` `task-sheet-rails` (5) e `task-sheet` da `${TASK_SHEET_CLASS}` importata (15); `MarkdownRenderer.tsx:245 markdown-content` (36); `SidebarResizeHandle.tsx:60 classList.add(RESIZING_CLASS)`; `AdminGroupsPanel.tsx:621 line-clamp-1` (2 regole del progetto più l'utility); `TaskContentCard.tsx:111 prose` (buco); `nav.ejs:5 nav-wrap` (blocco `<style>` di `styles.ejs`); `App.tsx:337 classList.toggle('dark')` (19 regole più Tailwind); `HabitCheckIn.tsx:147 ${FORM.input} w-20` (19 utility da un oggetto const) |
+| proprietà custom | 5 su 5 | `CaptureHost.tsx:151 --capture-dock-left` (dentro un valore arbitrario Tailwind); `NoteFocusMode.tsx:53 --note-tint` (6 siti); `CaptureHost.tsx:27` e `tailwind.config.js:11 --sidebar-width` (`setProperty`); `colorPalette.ts:72 --accent-light` |
+| altri | 5 su 5 | `tailwind.css:18 spin` e `:37 border-pulse-dark` (keyframes); `styles.ejs:12` `Manrope` e `Inter` (24 e 35 `@font-face`); `Layout.tsx:12 import './styles/tailwind.css'`; `tailwind.css:121 @apply outline-none` (utility) |
+
+Nessun errore da spiegare. In più, i buchi hanno mostrato quattro classi di mancati, nessuna tra i 20 siti:
+1. Font Awesome fuori dallo snapshot.
+2. CSS-in-JS di CodeMirror.
+3. Gruppi Tailwind con nome.
+4. Le classi incollate a un'espressione EJS. `plan-step`, `compare-cell`, `lang-chip`, `nav-dd-item` e `nav-mobile-lang` hanno regole, ma restano nel buco `ejs`, perché l'adattatore non valuta l'uscita dell'espressione.
+
+Cosa manca, oltre ai buchi sopra:
+- Quale foglio carica ogni pagina: non è nel grafo. Una classe va a ogni regola del progetto che la nomina. Su tududi non nasce nessun arco sbagliato, ma in un progetto con più app che condividono i nomi sì.
+- `<link href="/landing-assets/...">`: è una rotta di Express, resta un buco. `fonts.css` è raggiunto solo per nome di famiglia.
+- Non letti e non elencati fra i mancanti (perdita silenziosa da correggere): indented Sass (`.sass`), `.vue`, `.svelte`. Lo stesso vale per i file che lo snapshot non classifica come CSS, JS o TS, salvo HTML ed EJS.
+- LESS: le variabili `@x` e le chiamate di mixin non sono nel grafo.
+- Tailwind 4: l'adattatore legge solo la 3. Con la 4 ogni utility finirebbe come buco `no-rule`.
+- CSS-in-JS: nessuno (`EditorView.theme`, styled-components, emotion).
+- Sass e CSS Module: provati solo sulla fixture. tududi non ne ha.
+
+Cosa manca a `scip_graph.py`, che non è stato toccato:
+- `build` e `Traversal` richiedono un indice SCIP: per il CSS non servono. Dal modulo uso `report`, `measured`, `_examples` e la forma del JSON. Gli archi incerti con i candidati entrano nella forma attuale, un arco per candidato: non serve altro.
+- `code_sha256` fa l'hash solo di `adapters/*.py`. I due `.js` di questo lavoro e `ts_compiler.js` restano fuori: `lang_css.py` fa l'hash dei suoi cinque file da sé.
+- `files.snapshot` e `indexed` contano una lingua; il CSS legge tre tipi di file, quindi conto tutti i file dati.
+
+Costo: una chiamata, 0,0307 USD letti dal conto di Modal (CPU 0,0184, memoria 0,0121, traffico 0,0002). Il 96% del tempo è `npm ci`. Nessun fallimento.
+
+Non verificato:
+- Gli archi fuori dai 20 siti: ho controllato i conteggi e le classi dei buchi, non ogni arco. I 37.056 archi Tailwind valgono quanto il verdetto di `getClassOrder`.
+- Che ogni token con tipo letterale sia davvero una classe: il tipo di un parametro dichiara i valori possibili (`literal-type` su 3.312 archi), ma con `strict: false` il tipo può mentire.
+- I 42 attributi `style` uno per uno, e quelli con EJS dentro.
+- Le tre regole di `tailwind.config.js` (`keyframes`, `animation`): stanno dentro l'esterno Tailwind, non sono nodi.
+- La fixture gira su Windows con un junction per `node_modules`; su Modal ha girato solo tududi.

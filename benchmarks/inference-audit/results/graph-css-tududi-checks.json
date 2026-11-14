@@ -1,0 +1,693 @@
+{
+ "case": "tududi",
+ "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263",
+ "code": {
+  "css.py": "4932545239f5",
+  "css_typescript.py": "ee1da56caf29",
+  "css_typescript.js": "05d470ef8fa8",
+  "css_tailwind.py": "82004909d5cf",
+  "css_tailwind.js": "33c379d02890"
+ },
+ "files_given": 1708,
+ "npm_install_seconds": 582.2,
+ "node_modules": "/root/.cache/daodan/npm/0bedb579e72b470d/node_modules",
+ "report": {
+  "language": "css",
+  "indexer": {
+   "name": "codebase-map stylesheet.py + typescript + tailwindcss",
+   "version": "5986a74f4b18 + 5.9.3 + 3.4.19",
+   "seconds": 20.1,
+   "peak_mb": 1428
+  },
+  "files": {
+   "snapshot": 1708,
+   "indexed": 1708,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 2537,
+  "edges": 39441,
+  "symbols_by_kind": {
+   "external class": 1815,
+   "external layer": 2,
+   "external module": 1,
+   "project custom-property": 13,
+   "project font-face": 69,
+   "project keyframes": 9,
+   "project module": 20,
+   "project rule": 608
+  },
+  "edges_by_end": {
+   "external class": 37056,
+   "external import": 3,
+   "external layer": 3,
+   "project class": 1646,
+   "project custom-property": 51,
+   "project font-face": 670,
+   "project id": 1,
+   "project import": 2,
+   "project keyframes": 9
+  },
+  "callable_chain_hops": {},
+  "hop_tags": {
+   "literal-type": 3312,
+   "initializer": 939,
+   "classList": 305,
+   "css-text": 51,
+   "className=": 14,
+   "@apply": 11,
+   "style-object": 10
+  },
+  "edges_uncertain": {
+   "cascade and inheritance pick one per element": 27
+  },
+  "edges_removed": {},
+  "holes_by_class": {
+   "call class": 67,
+   "ejs class": 8,
+   "ejs id": 1,
+   "element-access class": 5,
+   "no-font-face font-face": 10,
+   "no-rule class": 175,
+   "no-rule id": 98,
+   "parameter class": 68,
+   "parameter id": 1,
+   "property class": 28,
+   "property id": 6,
+   "template class": 1,
+   "template id": 1,
+   "url-path import": 2,
+   "variable class": 1
+  },
+  "holes": [
+   {
+    "class": "no-rule",
+    "kind": "class",
+    "reason": "-",
+    "count": 175,
+    "examples": [
+     "backend/modules/landing/views/cloud.ejs:49 fas",
+     "backend/modules/landing/views/landing.ejs:844 fas",
+     "frontend/components/Note/editor/blockHandle.ts:226 cm-block-handle-menu"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "id",
+    "reason": "-",
+    "count": 98,
+    "examples": [
+     "backend/modules/landing/views/cloud.ejs:71 cloud-pricing",
+     "frontend/components/Note/PublicShareModal.tsx:226 public-share-access",
+     "frontend/components/Sidebar/AppLauncherModal.tsx:333 app-launcher-title"
+    ]
+   },
+   {
+    "class": "parameter",
+    "kind": "class",
+    "reason": "-",
+    "count": 68,
+    "examples": [
+     "frontend/components/Billing/TrialLockNotice.tsx:46 className",
+     "frontend/components/Shared/Icons/FileIcon.tsx:29 className",
+     "frontend/components/Project/ProjectItem.tsx:507 ring"
+    ]
+   },
+   {
+    "class": "call",
+    "kind": "class",
+    "reason": "-",
+    "count": 67,
+    "examples": [
+     "frontend/components/Note/NoteBackgroundPicker.tsx:42 swatch(!value)",
+     "frontend/components/Task/TaskRow/TaskRowCollapsed.tsx:333 sheetTitleWeightClass( toPriorityLevel(task.priority), isTaskCompleted(task.status) )",
+     "frontend/components/Sidebar/SidebarNotesTree.tsx:284 itemClass(false)"
+    ]
+   },
+   {
+    "class": "property",
+    "kind": "class",
+    "reason": "-",
+    "count": 28,
+    "examples": [
+     "frontend/components/Shared/CalloutBlock.tsx:62 config.borderClass",
+     "frontend/components/Profile/tabs/ApiKeysTab.tsx:248 status.className",
+     "frontend/components/Kanban/KanbanBoard.tsx:371 cfg.bg"
+    ]
+   },
+   {
+    "class": "no-font-face",
+    "kind": "font-face",
+    "reason": "-",
+    "count": 10,
+    "examples": [
+     "backend/modules/landing/views/partials/styles.ejs:6 -apple-system",
+     "backend/modules/landing/views/partials/styles.ejs:679 -apple-system",
+     "backend/modules/landing/views/partials/styles.ejs:740 SFMono-Regular"
+    ]
+   },
+   {
+    "class": "ejs",
+    "kind": "class",
+    "reason": "-",
+    "count": 8,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
+     "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
+     "backend/modules/landing/views/landing.ejs:910 lang-chip<%= l.code === i18n.locale ? ' is-current' : '' %>"
+    ]
+   },
+   {
+    "class": "property",
+    "kind": "id",
+    "reason": "-",
+    "count": 6,
+    "examples": [
+     "frontend/components/Task/TaskList.tsx:147 task.uid",
+     "frontend/components/Areas.tsx:437 area.uid",
+     "frontend/components/Goals.tsx:347 goal.uid"
+    ]
+   },
+   {
+    "class": "element-access",
+    "kind": "class",
+    "reason": "-",
+    "count": 5,
+    "examples": [
+     "frontend/components/Spreadsheet/ImportWizard.tsx:368 styles[row.action]",
+     "frontend/components/Inbox/QuickCaptureInput.tsx:3196 TOKEN_TEXT_CLASS[ segment .kind ]",
+     "frontend/components/Goal/GoalHero.tsx:133 GOAL_STATUS_TINT[goal.status]"
+    ]
+   },
+   {
+    "class": "url-path",
+    "kind": "import",
+    "reason": "a URL path the server maps, not a file",
+    "count": 2,
+    "examples": [
+     "backend/modules/landing/views/partials/head-assets.ejs:11 /landing-assets/fonts/fonts.css",
+     "backend/modules/landing/views/partials/head-assets.ejs:12 /landing-assets/vendor/fontawesome/css/all.min.css"
+    ]
+   },
+   {
+    "class": "ejs",
+    "kind": "id",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:805 <%= faqAnchor(item) %>"
+    ]
+   },
+   {
+    "class": "template",
+    "kind": "class",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "frontend/components/Shared/CalloutBlock.tsx:62 callout-${type.toLowerCase()}"
+    ]
+   },
+   {
+    "class": "parameter",
+    "kind": "id",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "frontend/components/Shared/SelectMenu.tsx:87 id"
+    ]
+   },
+   {
+    "class": "template",
+    "kind": "id",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "frontend/components/Profile/tabs/OidcProviderConfig.tsx:352 oidc-auto-provision-${index}"
+    ]
+   },
+   {
+    "class": "variable",
+    "kind": "class",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "frontend/components/Habits/HabitHeatmap.tsx:127 className"
+    ]
+   }
+  ],
+  "external_packages": {
+   "npm tailwindcss@3.4.19": 37062
+  }
+ },
+ "summary": {
+  "nodes_by_kind": {
+   "class external": 1815,
+   "rule": 608,
+   "font-face": 69,
+   "module": 20,
+   "custom-property": 13,
+   "keyframes": 9,
+   "layer external": 2,
+   "module external": 1
+  },
+  "edges_by_kind_end": {
+   "class external": 37056,
+   "class project": 1646,
+   "custom-property project": 51,
+   "font-face project": 670,
+   "id project": 1,
+   "import external": 3,
+   "import project": 2,
+   "keyframes project": 9,
+   "layer external": 3
+  },
+  "edges_by_chain": {
+   "-": 35375,
+   "literal-type": 2736,
+   "initializer > literal-type": 564,
+   "initializer": 375,
+   "classList": 303,
+   "css-text": 51,
+   "@apply": 11,
+   "className= > literal-type": 10,
+   "style-object": 10,
+   "className=": 4,
+   "classList > literal-type": 2
+  },
+  "holes_by_class": {
+   "no-rule class": {
+    "count": 175,
+    "examples": [
+     "backend/modules/landing/views/cloud.ejs:49 fas",
+     "backend/modules/landing/views/landing.ejs:844 fas",
+     "frontend/components/Note/editor/blockHandle.ts:226 cm-block-handle-menu"
+    ]
+   },
+   "no-rule id": {
+    "count": 98,
+    "examples": [
+     "backend/modules/landing/views/cloud.ejs:71 cloud-pricing",
+     "frontend/components/Note/PublicShareModal.tsx:226 public-share-access",
+     "frontend/components/Sidebar/AppLauncherModal.tsx:333 app-launcher-title"
+    ]
+   },
+   "parameter class": {
+    "count": 68,
+    "examples": [
+     "frontend/components/Billing/TrialLockNotice.tsx:46 className",
+     "frontend/components/Shared/Icons/FileIcon.tsx:29 className",
+     "frontend/components/Project/ProjectItem.tsx:507 ring"
+    ]
+   },
+   "call class": {
+    "count": 67,
+    "examples": [
+     "frontend/components/Note/NoteBackgroundPicker.tsx:42 swatch(!value)",
+     "frontend/components/Task/TaskRow/TaskRowCollapsed.tsx:333 sheetTitleWeightClass( toPriorityLevel(task.priority), isTaskCompleted(task.status) )",
+     "frontend/components/Sidebar/SidebarNotesTree.tsx:284 itemClass(false)"
+    ]
+   },
+   "property class": {
+    "count": 28,
+    "examples": [
+     "frontend/components/Shared/CalloutBlock.tsx:62 config.borderClass",
+     "frontend/components/Profile/tabs/ApiKeysTab.tsx:248 status.className",
+     "frontend/components/Kanban/KanbanBoard.tsx:371 cfg.bg"
+    ]
+   },
+   "no-font-face font-face": {
+    "count": 10,
+    "examples": [
+     "backend/modules/landing/views/partials/styles.ejs:6 -apple-system",
+     "backend/modules/landing/views/partials/styles.ejs:679 -apple-system",
+     "backend/modules/landing/views/partials/styles.ejs:740 SFMono-Regular"
+    ]
+   },
+   "ejs class": {
+    "count": 8,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
+     "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
+     "backend/modules/landing/views/landing.ejs:910 lang-chip<%= l.code === i18n.locale ? ' is-current' : '' %>"
+    ]
+   },
+   "property id": {
+    "count": 6,
+    "examples": [
+     "frontend/components/Task/TaskList.tsx:147 task.uid",
+     "frontend/components/Areas.tsx:437 area.uid",
+     "frontend/components/Goals.tsx:347 goal.uid"
+    ]
+   },
+   "element-access class": {
+    "count": 5,
+    "examples": [
+     "frontend/components/Spreadsheet/ImportWizard.tsx:368 styles[row.action]",
+     "frontend/components/Inbox/QuickCaptureInput.tsx:3196 TOKEN_TEXT_CLASS[ segment .kind ]",
+     "frontend/components/Goal/GoalHero.tsx:133 GOAL_STATUS_TINT[goal.status]"
+    ]
+   },
+   "url-path import": {
+    "count": 2,
+    "examples": [
+     "backend/modules/landing/views/partials/head-assets.ejs:11 /landing-assets/fonts/fonts.css",
+     "backend/modules/landing/views/partials/head-assets.ejs:12 /landing-assets/vendor/fontawesome/css/all.min.css"
+    ]
+   },
+   "ejs id": {
+    "count": 1,
+    "examples": [
+     "backend/modules/landing/views/landing.ejs:805 <%= faqAnchor(item) %>"
+    ]
+   },
+   "template class": {
+    "count": 1,
+    "examples": [
+     "frontend/components/Shared/CalloutBlock.tsx:62 callout-${type.toLowerCase()}"
+    ]
+   },
+   "parameter id": {
+    "count": 1,
+    "examples": [
+     "frontend/components/Shared/SelectMenu.tsx:87 id"
+    ]
+   },
+   "template id": {
+    "count": 1,
+    "examples": [
+     "frontend/components/Profile/tabs/OidcProviderConfig.tsx:352 oidc-auto-provision-${index}"
+    ]
+   },
+   "variable class": {
+    "count": 1,
+    "examples": [
+     "frontend/components/Habits/HabitHeatmap.tsx:127 className"
+    ]
+   }
+  },
+  "uncertain": {
+   "edges": 27,
+   "references": 3,
+   "examples": [
+    {
+     "site": "frontend/components/Note/NoteFocusMode.tsx:53",
+     "symbol": "--note-tint",
+     "to": "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Notes.tsx:103 --note-tint",
+       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+      ]
+     }
+    },
+    {
+     "site": "frontend/components/Note/NoteFocusMode.tsx:53",
+     "symbol": "--note-tint",
+     "to": "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Notes.tsx:103 --note-tint",
+       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+      ]
+     }
+    },
+    {
+     "site": "frontend/components/Note/NoteSidePanel.tsx:131",
+     "symbol": "--note-tint",
+     "to": "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Notes.tsx:103 --note-tint",
+       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+      ]
+     }
+    },
+    {
+     "site": "frontend/components/Note/NoteSidePanel.tsx:131",
+     "symbol": "--note-tint",
+     "to": "frontend/components/Notes.tsx:103 --note-tint",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Notes.tsx:103 --note-tint",
+       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+      ]
+     }
+    },
+    {
+     "site": "frontend/components/Notes.tsx:101",
+     "symbol": "--note-tint",
+     "to": "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "frontend/components/Note/NoteFocusMode.tsx:100 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:100 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Note/NoteFocusMode.tsx:55 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:132 --note-tint",
+       "frontend/components/Note/NoteSidePanel.tsx:152 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Note/NoteSidePanel.tsx:152 dark:[--note-tint:rgb(17_24_39/0.75)]",
+       "frontend/components/Notes.tsx:103 --note-tint",
+       "frontend/components/Notes.tsx:553 [--note-tint:rgb(255_255_255/0.75)]",
+       "frontend/components/Notes.tsx:553 dark:[--note-tint:rgb(17_24_39/0.75)]"
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "hand_check": [
+  {
+   "site": "frontend/components/Profile/tabs/TabsNav.tsx:17",
+   "kind": "class",
+   "symbol": ".scrollbar-hide",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "frontend/components/Area/AreaDetails.tsx:357",
+   "kind": "class",
+   "symbol": ".task-sheet-rails",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 5,
+   "graph_ends": 5
+  },
+  {
+   "site": "frontend/components/Area/AreaDetails.tsx:357",
+   "kind": "class",
+   "symbol": ".task-sheet",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 15,
+   "graph_ends": 15
+  },
+  {
+   "site": "frontend/components/Shared/MarkdownRenderer.tsx:245",
+   "kind": "class",
+   "symbol": ".markdown-content",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 36,
+   "graph_ends": 36
+  },
+  {
+   "site": "frontend/components/Sidebar/SidebarResizeHandle.tsx:60",
+   "kind": "class",
+   "symbol": ".sidebar-resizing",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/components/Admin/AdminGroupsPanel.tsx:621",
+   "kind": "class",
+   "symbol": ".line-clamp-1",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 3,
+   "graph_ends": 3
+  },
+  {
+   "site": "frontend/components/Task/TaskDetails/TaskContentCard.tsx:111",
+   "kind": "class",
+   "symbol": ".prose",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "backend/modules/landing/views/partials/nav.ejs:5",
+   "kind": "class",
+   "symbol": ".nav-wrap",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/App.tsx:337",
+   "kind": "class",
+   "symbol": ".dark",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 20,
+   "graph_ends": 20
+  },
+  {
+   "site": "frontend/components/Habits/HabitCheckIn.tsx:147",
+   "kind": "class",
+   "symbol": "*",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 19,
+   "graph_ends": 19
+  },
+  {
+   "site": "frontend/components/Capture/CaptureHost.tsx:151",
+   "kind": "custom-property",
+   "symbol": "--capture-dock-left",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/components/Note/NoteFocusMode.tsx:53",
+   "kind": "custom-property",
+   "symbol": "--note-tint",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 6,
+   "graph_ends": 6
+  },
+  {
+   "site": "frontend/components/Capture/CaptureHost.tsx:27",
+   "kind": "custom-property",
+   "symbol": "--sidebar-width",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/constants/colorPalette.ts:72",
+   "kind": "custom-property",
+   "symbol": "--accent-light",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "tailwind.config.js:11",
+   "kind": "custom-property",
+   "symbol": "--sidebar-width",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/styles/tailwind.css:18",
+   "kind": "keyframes",
+   "symbol": "spin",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/styles/tailwind.css:37",
+   "kind": "keyframes",
+   "symbol": "border-pulse-dark",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "backend/modules/landing/views/partials/styles.ejs:12",
+   "kind": "font-face",
+   "symbol": "*",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 59,
+   "graph_ends": 59
+  },
+  {
+   "site": "frontend/Layout.tsx:12",
+   "kind": "import",
+   "symbol": "./styles/tailwind.css",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "frontend/styles/tailwind.css:121",
+   "kind": "class",
+   "symbol": ".outline-none",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  }
+ ],
+ "seconds": 607.2
+}

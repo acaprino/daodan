@@ -1,0 +1,6 @@
+$gap: 4px !default;
+$radius: 2px;
+
+@mixin pad($x) {
+  padding: $x;
+}

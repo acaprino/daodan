@@ -1,0 +1,12 @@
+@use "tokens";
+
+$gap: 12px;
+
+.panel {
+  margin: $gap;
+  border-radius: tokens.$radius;
+  @include tokens.pad(tokens.$gap);
+  &__title {
+    color: red;
+  }
+}
