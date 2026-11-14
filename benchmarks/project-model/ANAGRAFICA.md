@@ -7,72 +7,72 @@ Si rigenera con `python catalog.py`.
 
 ## Dominio dei casi
 
-"Dai dati": il caso segue da `expected.json` e `python score.py --check all` controlla che la lista lo dica.
-"Misurato": il caso è uno di quelli misurati nella [ricerca](../../docs/research/2026-11-14-project-model-detection.md), §3.2.
+Assegnazione: "dai dati" se il caso segue da `expected.json`, e `python score.py --check all` fallisce quando la lista e i dati non concordano; "letto" se l'ha assegnato chi ha letto i file della fixture.
+Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11-14-project-model-detection.md), §3.2, da cui il caso viene.
 
-| Gruppo | Caso | Definizione | Progetti | Nota |
-| --- | --- | --- | --- | --- |
-| Struttura | `workspace-glob` | I membri del workspace vengono da un glob o dalla scoperta dei file, con esclusioni o ricorsione, non da un elenco. | 10 |  |
-| Struttura | `virtual-root` | La radice del workspace non è un'unità o non ha un file di build proprio. | 5 |  |
-| Struttura | `nested-module` | Un modulo con il suo manifesto sta dentro la cartella di un altro, e il comando del genitore non lo vede. | 10 | misurato (chi) |
-| Struttura | `independent-units` | Più unità nella stessa cartella, senza un workspace che le unisca. | 10 |  |
-| Struttura | `shared-root` | Due sistemi di build o due ecosistemi nella stessa cartella. | 10 | dai dati |
-| Struttura | `one-unit-many-parts` | Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point. | 2 | misurato (tududi) |
-| Struttura | `targets-as-units` | Le unità sono target dichiarati in un file di build (CMake, Meson, Make, Bazel, sbt, angular.json, Xcode), non pacchetti con un manifesto ciascuno. | 15 |  |
-| Struttura | `no-build-file` | Codice senza file di build, oppure nessun codice. | 14 | dai dati |
-| Struttura | `unit-no-name` | Un'unità senza nome dichiarato, nominata per radice. | 26 | dai dati |
-| Struttura | `shared-name` | Due unità con lo stesso nome. | 6 | dai dati |
-| Struttura | `name-mismatch` | Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto. | 15 |  |
-| Struttura | `custom-source-roots` | Le radici dei sorgenti non sono quelle di default e si leggono dalla configurazione del build. | 11 |  |
-| Struttura | `source-sets` | Più source set o target in un'unità, con dipendenze e task di compilazione propri. | 5 | misurato (Kotlin) |
-| Struttura | `path-alias` | Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti. | 10 | misurato (app React) |
-| Struttura | `file-in-several-units` | Lo stesso file sorgente è compilato in più unità o target. | 7 | misurato (workspace Rust) |
-| Struttura | `inherited-settings` | Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore. | 9 |  |
-| Struttura | `build-variants` | Unità, file o dipendenze cambiano con un'opzione di build: tag, feature, profilo, preset, flavor, piattaforma. | 15 |  |
-| Versioni | `version-disagree` | La stessa toolchain è chiesta in più file con valori diversi. | 18 |  |
-| Versioni | `version-in-wrapper` | La versione del build tool è scritta solo nel wrapper. | 7 |  |
-| Versioni | `version-matrix` | Più versioni da una matrice CI o di ambienti di test, una voce per versione. | 7 |  |
-| Versioni | `version-range` | La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file. | 11 |  |
-| Versioni | `version-absent` | Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna. | 18 |  |
-| Versioni | `version-in-image` | La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI. | 12 |  |
-| Versioni | `toolchain-in-dependencies` | L'interprete o l'SDK compare fra le dipendenze (python, php, sdk: flutter), ma è una toolchain. | 6 |  |
-| Versioni | `platform-sdk` | L'unità chiede un SDK di piattaforma (Android, Xcode, MAUI, Flutter) che non è un pacchetto. | 5 | misurato (Android Gradle) |
-| Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 54 |  |
-| Dipendenze | `locked-versions` | Le versioni risolte si leggono da un lockfile. | 33 | misurato (uv.lock) |
-| Dipendenze | `transitive-not-direct` | Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette. | 8 |  |
-| Dipendenze | `version-from-bom` | Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build. | 11 |  |
-| Dipendenze | `version-indirect` | La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza. | 13 |  |
-| Dipendenze | `internal-link` | Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on. | 17 |  |
-| Dipendenze | `git-dependency` | Dipendenza presa da un URL git, un tarball o un sottomodulo, non dal registro. | 6 |  |
-| Dipendenze | `computed-dependencies` | Le dipendenze nascono da codice del progetto (cicli, condizioni, funzioni): leggere le righe non basta a trovarle tutte. | 4 |  |
-| Dipendenze | `declared-in-source` | Dipendenze dichiarate dentro un file sorgente: PEP 723, %pip, import map in HTML, #Requires. | 3 |  |
-| Dipendenze | `undeclared-imports` | Pacchetti importati dal codice e dichiarati da nessun file. | 4 |  |
-| Dipendenze | `scope-from-groups` | Lo scope si legge da gruppi, extra o configurazioni del build tool. | 11 |  |
-| Dipendenze | `build-only-dependency` | Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires. | 41 | dai dati |
-| Dipendenze | `two-package-managers` | Due gestori di pacchetti dichiarano le dipendenze della stessa unità. | 2 |  |
-| Dipendenze | `included-requirement-files` | Liste divise su file inclusi (-r) o su vincoli (-c) che non aggiungono dipendenze. | 3 |  |
-| Linguaggi e file | `ambiguous-extension` | L'estensione non dice il linguaggio: lo dice il contenuto. | 17 |  |
-| Linguaggi e file | `shebang-only` | File senza estensione, riconoscibile solo dalla riga #!. | 5 |  |
-| Linguaggi e file | `generated-file` | File generato da escludere. | 16 | dai dati |
-| Linguaggi e file | `false-generated` | File che sembra generato ma è sorgente del progetto. | 5 |  |
-| Linguaggi e file | `vendored-code` | Codice di terzi copiato nel repository. | 16 | dai dati |
-| Linguaggi e file | `documentation-tree` | Albero di documentazione da escludere. | 17 | dai dati |
-| Linguaggi e file | `binary-file` | File binari da escludere. | 16 | dai dati |
-| Linguaggi e file | `committed-ignored` | File committato anche se .gitignore lo esclude. | 2 |  |
-| Linguaggi e file | `symlinks` | Link simbolici nel repository. | 2 |  |
-| Linguaggi e file | `templated-config` | Configurazione che un parser rigido non legge: JSON con commenti, YAML con template, ERB. | 4 |  |
-| Linguaggi e file | `dot-folder-facts` | Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config). | 10 |  |
-| Esecuzione | `needs-build` | Il modello completo esiste solo eseguendo la build, quindi in un container. | 24 | dai dati |
-| Esecuzione | `install-scripts` | Installare le dipendenze esegue codice del progetto. | 2 |  |
-| Esecuzione | `build-generates-code` | Parte del codice o della configurazione esiste solo dopo un passo di build. | 15 |  |
-| Esecuzione | `submodule-absent` | Un sottomodulo Git dichiarato ma assente. | 2 | dai dati; misurato (sottomoduli Git) |
-| Esecuzione | `missing-file` | Un file nominato dalla configurazione non è nel repository. | 14 |  |
-| Servizi e framework | `service-in-infra` | Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze. | 11 |  |
-| Servizi e framework | `service-from-config` | Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente. | 7 |  |
-| Servizi e framework | `saas-service` | Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione. | 8 |  |
-| Servizi e framework | `framework-from-files` | Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata. | 5 |  |
-| Collegamenti | `undeclared-connections` | Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections. | 13 | dai dati |
-| Collegamenti | `shared-contract` | Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse. | 7 |  |
+| Gruppo | Caso | Definizione | Progetti | Assegnazione | Incidente misurato |
+| --- | --- | --- | --- | --- | --- |
+| Struttura | `workspace-glob` | I membri del workspace vengono da un glob o dalla scoperta dei file, con esclusioni o ricorsione, non da un elenco. | 10 | letto |  |
+| Struttura | `virtual-root` | La radice del workspace non è un'unità o non ha un file di build proprio. | 5 | letto |  |
+| Struttura | `nested-module` | Un modulo con il suo manifesto sta dentro la cartella di un altro, e il comando del genitore non lo vede. | 10 | letto | chi: moduli Go annidati in _examples/* che ./... salta |
+| Struttura | `independent-units` | Più unità nella stessa cartella, senza un workspace che le unisca. | 10 | letto |  |
+| Struttura | `shared-root` | Due sistemi di build o due ecosistemi nella stessa cartella. | 10 | dai dati |  |
+| Struttura | `one-unit-many-parts` | Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point. | 2 | letto | tududi: frontend e backend si installano da un solo package.json radice |
+| Struttura | `targets-as-units` | Le unità sono target dichiarati in un file di build (CMake, Meson, Make, Bazel, sbt, angular.json, Xcode), non pacchetti con un manifesto ciascuno. | 15 | letto |  |
+| Struttura | `no-build-file` | Codice senza file di build, oppure nessun codice. | 14 | dai dati |  |
+| Struttura | `unit-no-name` | Un'unità senza nome dichiarato, nominata per radice. | 26 | dai dati |  |
+| Struttura | `shared-name` | Due unità con lo stesso nome. | 6 | dai dati |  |
+| Struttura | `name-mismatch` | Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto. | 15 | letto |  |
+| Struttura | `custom-source-roots` | Le radici dei sorgenti non sono quelle di default e si leggono dalla configurazione del build. | 11 | letto |  |
+| Struttura | `source-sets` | Più source set o target in un'unità, con dipendenze e task di compilazione propri. | 5 | letto | Kotlin: più task di compilazione, overload referenziati fra loro |
+| Struttura | `path-alias` | Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti. | 10 | letto | app React: alias @/ in tsconfig.app.json sopra un tsconfig base |
+| Struttura | `file-in-several-units` | Lo stesso file sorgente è compilato in più unità o target. | 7 | letto | workspace Rust: un modulo di test condiviso fra più crate di test |
+| Struttura | `inherited-settings` | Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore. | 9 | letto |  |
+| Struttura | `build-variants` | Unità, file o dipendenze cambiano con un'opzione di build: tag, feature, profilo, preset, flavor, piattaforma. | 15 | letto |  |
+| Versioni | `version-disagree` | La stessa toolchain è chiesta in più file con valori diversi. | 18 | letto |  |
+| Versioni | `version-in-wrapper` | La versione del build tool è scritta solo nel wrapper. | 7 | letto |  |
+| Versioni | `version-matrix` | Più versioni da una matrice CI o di ambienti di test, una voce per versione. | 7 | letto |  |
+| Versioni | `version-range` | La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file. | 11 | letto |  |
+| Versioni | `version-absent` | Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna. | 18 | letto |  |
+| Versioni | `version-in-image` | La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI. | 12 | letto |  |
+| Versioni | `toolchain-in-dependencies` | L'interprete o l'SDK compare fra le dipendenze (python, php, sdk: flutter), ma è una toolchain. | 6 | letto |  |
+| Versioni | `platform-sdk` | L'unità chiede un SDK di piattaforma (Android, Xcode, MAUI, Flutter) che non è un pacchetto. | 5 | letto | Android Gradle: serve l'SDK di Android e chiama cargo |
+| Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 54 | letto |  |
+| Dipendenze | `locked-versions` | Le versioni risolte si leggono da un lockfile. | 33 | letto | progetto Python con le versioni in uv.lock |
+| Dipendenze | `transitive-not-direct` | Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette. | 8 | letto |  |
+| Dipendenze | `version-from-bom` | Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build. | 11 | letto |  |
+| Dipendenze | `version-indirect` | La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza. | 13 | letto |  |
+| Dipendenze | `internal-link` | Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on. | 17 | letto |  |
+| Dipendenze | `git-dependency` | Dipendenza presa da un URL git, un tarball o un sottomodulo, non dal registro. | 6 | letto |  |
+| Dipendenze | `computed-dependencies` | Le dipendenze nascono da codice del progetto (cicli, condizioni, funzioni): leggere le righe non basta a trovarle tutte. | 4 | letto |  |
+| Dipendenze | `declared-in-source` | Dipendenze dichiarate dentro un file sorgente: PEP 723, %pip, import map in HTML, #Requires. | 3 | letto |  |
+| Dipendenze | `undeclared-imports` | Pacchetti importati dal codice e dichiarati da nessun file. | 4 | letto |  |
+| Dipendenze | `scope-from-groups` | Lo scope si legge da gruppi, extra o configurazioni del build tool. | 11 | letto |  |
+| Dipendenze | `build-only-dependency` | Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires. | 41 | dai dati |  |
+| Dipendenze | `two-package-managers` | Due gestori di pacchetti dichiarano le dipendenze della stessa unità. | 2 | letto |  |
+| Dipendenze | `included-requirement-files` | Liste divise su file inclusi (-r) o su vincoli (-c) che non aggiungono dipendenze. | 3 | letto |  |
+| Linguaggi e file | `ambiguous-extension` | L'estensione non dice il linguaggio: lo dice il contenuto. | 17 | letto |  |
+| Linguaggi e file | `shebang-only` | File senza estensione, riconoscibile solo dalla riga #!. | 5 | letto |  |
+| Linguaggi e file | `generated-file` | File generato da escludere. | 16 | dai dati |  |
+| Linguaggi e file | `false-generated` | File che sembra generato ma è sorgente del progetto. | 5 | letto |  |
+| Linguaggi e file | `vendored-code` | Codice di terzi copiato nel repository. | 16 | dai dati |  |
+| Linguaggi e file | `documentation-tree` | Albero di documentazione da escludere. | 17 | dai dati |  |
+| Linguaggi e file | `binary-file` | File binari da escludere. | 16 | dai dati |  |
+| Linguaggi e file | `committed-ignored` | File committato anche se .gitignore lo esclude. | 2 | letto |  |
+| Linguaggi e file | `symlinks` | Link simbolici nel repository. | 2 | letto |  |
+| Linguaggi e file | `templated-config` | Configurazione che un parser rigido non legge: JSON con commenti, YAML con template, ERB. | 4 | letto |  |
+| Linguaggi e file | `dot-folder-facts` | Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config). | 10 | letto |  |
+| Esecuzione | `needs-build` | Il modello completo esiste solo eseguendo la build, quindi in un container. | 24 | dai dati |  |
+| Esecuzione | `install-scripts` | Installare le dipendenze esegue codice del progetto. | 2 | letto |  |
+| Esecuzione | `build-generates-code` | Parte del codice o della configurazione esiste solo dopo un passo di build. | 15 | letto |  |
+| Esecuzione | `submodule-absent` | Un sottomodulo Git dichiarato ma assente. | 2 | dai dati | sottomoduli Git assenti da un archivio |
+| Esecuzione | `missing-file` | Un file nominato dalla configurazione non è nel repository. | 14 | letto |  |
+| Servizi e framework | `service-in-infra` | Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze. | 11 | letto |  |
+| Servizi e framework | `service-from-config` | Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente. | 7 | letto |  |
+| Servizi e framework | `saas-service` | Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione. | 8 | letto |  |
+| Servizi e framework | `framework-from-files` | Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata. | 5 | letto |  |
+| Collegamenti | `undeclared-connections` | Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections. | 13 | dai dati |  |
+| Collegamenti | `shared-contract` | Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse. | 7 | letto |  |
 
 ## Progetti
 
@@ -1837,7 +1837,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-chi
 
-- Origine: [github.com/go-chi/chi](https://github.com/go-chi/chi.git) al commit `c64ed7d6635f33a8b2feaff7dcfa55677023ac7d`, licenza non indicata in source.json.
+- Origine: [github.com/go-chi/chi](https://github.com/go-chi/chi.git) al commit `c64ed7d6635f33a8b2feaff7dcfa55677023ac7d`, licenza MIT.
 - Linguaggi: Go, Makefile.
 - Unità: go-module (3).
 - Workspace: nessuno.
@@ -1856,7 +1856,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-javapoet
 
-- Origine: [github.com/square/javapoet](https://github.com/square/javapoet.git) al commit `b9017a9503b76e11b4ad4c1a9f050e2d29112cb0`, licenza non indicata in source.json.
+- Origine: [github.com/square/javapoet](https://github.com/square/javapoet.git) al commit `b9017a9503b76e11b4ad4c1a9f050e2d29112cb0`, licenza Apache-2.0.
 - Linguaggi: Java.
 - Unità: maven-module.
 - Workspace: maven.
@@ -1875,7 +1875,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-klaxon
 
-- Origine: [github.com/cbeust/klaxon](https://github.com/cbeust/klaxon.git) al commit `1173bdc568a6d339b45cf24a6a9c5c2f6847f42d`, licenza non indicata in source.json.
+- Origine: [github.com/cbeust/klaxon](https://github.com/cbeust/klaxon.git) al commit `1173bdc568a6d339b45cf24a6a9c5c2f6847f42d`, licenza Apache-2.0.
 - Linguaggi: Batchfile, Java, JavaScript, Kotlin, Shell.
 - Unità: gradle-project (4), kobalt-project (2).
 - Workspace: gradle.
@@ -1900,7 +1900,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-python-semver
 
-- Origine: [github.com/python-semver/python-semver](https://github.com/python-semver/python-semver.git) al commit `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, licenza non indicata in source.json.
+- Origine: [github.com/python-semver/python-semver](https://github.com/python-semver/python-semver.git) al commit `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, licenza BSD-3-Clause.
 - Linguaggi: Makefile, Python.
 - Unità: python-project.
 - Workspace: nessuno.
@@ -1923,7 +1923,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-semver
 
-- Origine: [github.com/dtolnay/semver](https://github.com/dtolnay/semver.git) al commit `280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe`, licenza non indicata in source.json.
+- Origine: [github.com/dtolnay/semver](https://github.com/dtolnay/semver.git) al commit `280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe`, licenza MIT OR Apache-2.0.
 - Linguaggi: Rust.
 - Unità: cargo-crate (2).
 - Workspace: cargo.
@@ -1944,7 +1944,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-tinyxml2
 
-- Origine: [github.com/leethomason/tinyxml2](https://github.com/leethomason/tinyxml2.git) al commit `9148bdf719e997d1f474be6bcc7943881046dba1`, licenza non indicata in source.json.
+- Origine: [github.com/leethomason/tinyxml2](https://github.com/leethomason/tinyxml2.git) al commit `9148bdf719e997d1f474be6bcc7943881046dba1`, licenza Zlib.
 - Linguaggi: C++, CMake, Makefile, Meson, Python.
 - Unità: cmake-target (3), make-target (2), meson-target (2).
 - Workspace: nessuno.
@@ -1969,7 +1969,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-tududi
 
-- Origine: [github.com/chrisvel/tududi](https://github.com/chrisvel/tududi.git) al commit `71da9d7b34dfd1600657e9c5ddf40420206fd263`, licenza non indicata in source.json.
+- Origine: [github.com/chrisvel/tududi](https://github.com/chrisvel/tududi.git) al commit `71da9d7b34dfd1600657e9c5ddf40420206fd263`, licenza MIT.
 - Linguaggi: CSS, Dockerfile, EJS, HTML, JavaScript, Shell, TSX, TypeScript.
 - Unità: npm-package.
 - Workspace: nessuno.
@@ -1991,7 +1991,7 @@ Si rigenera con `python catalog.py`.
 
 #### mix-real-zlib
 
-- Origine: [github.com/madler/zlib](https://github.com/madler/zlib.git) al commit `51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf`, licenza non indicata in source.json.
+- Origine: [github.com/madler/zlib](https://github.com/madler/zlib.git) al commit `51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf`, licenza Zlib.
 - Linguaggi: Ada, Assembly, C, C#, C++, CMake, DIGITAL Command Language, HTML, M4Sugar, Makefile, Module Management System, Pascal, Roff Manpage, Shell.
 - Unità: cmake-target (6), dotnet-project (2), make-target (78), msbuild-project (36).
 - Workspace: nessuno.

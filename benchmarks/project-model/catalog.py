@@ -76,13 +76,15 @@ def render(domain, docs, sources):
            "Si rigenera con `python catalog.py`.", "",
            f"{len(docs)} progetti, {len(domain['cases'])} casi in {len(domain['groups'])} gruppi.", "",
            "## Dominio dei casi", "",
-           "\"Dai dati\": il caso segue da `expected.json` e `python score.py --check all` controlla che la lista lo dica.",
-           f"\"Misurato\": il caso è uno di quelli misurati nella [ricerca]({RESEARCH}), §3.2.", "",
-           "| Gruppo | Caso | Definizione | Progetti | Nota |", "| --- | --- | --- | --- | --- |"]
+           "Assegnazione: \"dai dati\" se il caso segue da `expected.json`, e `python score.py --check all` fallisce "
+           "quando la lista e i dati non concordano; \"letto\" se l'ha assegnato chi ha letto i file della fixture.",
+           f"Incidente misurato: il caso misurato nella [ricerca]({RESEARCH}), §3.2, da cui il caso viene.", "",
+           "| Gruppo | Caso | Definizione | Progetti | Assegnazione | Incidente misurato |",
+           "| --- | --- | --- | --- | --- | --- |"]
     for c in domain["cases"]:
-        note = [x for x in ("dai dati" if c["id"] in score.DERIVED else "",
-                            f"misurato ({c['measured']})" if c.get("measured") else "") if x]
-        out.append(f"| {titles[c['group']]} | `{c['id']}` | {c['definition']} | {len(cover[c['id']])} | {'; '.join(note)} |")
+        how = "dai dati" if c["id"] in score.DERIVED else "letto"
+        out.append(f"| {titles[c['group']]} | `{c['id']}` | {c['definition']} | {len(cover[c['id']])} | {how} "
+                   f"| {c.get('measured', '')} |")
     out += ["", "## Progetti"]
     for family in score.FAMILIES:
         names = [n for n in docs if n.split("-", 1)[0] == family]

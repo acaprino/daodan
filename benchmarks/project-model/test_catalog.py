@@ -24,7 +24,8 @@ class Render(unittest.TestCase):
                      "- Unità: go-module (2).",
                      "  - go: 1.22 (`go.mod`); 1.23 (`sub/go.mod`)",
                      "  - `nested-module`: Modulo annidato.",
-                     "| Struttura | `nested-module` | Modulo annidato. | 1 | misurato (chi) |",
+                     "| Struttura | `nested-module` | Modulo annidato. | 1 | letto | chi |",
+                     "| Struttura | `no-build-file` | Codice senza file di build. | 0 | dai dati |  |",
                      "- `no-build-file`: nessun progetto"):
             self.assertIn(line, text.splitlines())
 
