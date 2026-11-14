@@ -1,6 +1,7 @@
 // The TypeScript compiler over a project's scripts, in one process: every place a class, an id, a CSS Module
 // member, a custom property or a stylesheet import is written. usage: node css_typescript.js CONFIG.json OUT.json
-// CONFIG: {"tsconfig": the generated tsconfig, "root": the project, "files": [project-relative paths to read]}.
+// CONFIG: {"engines": node_modules folder, "tsconfig": the generated tsconfig, "root": the project,
+// "files": [project-relative paths to read]}.
 // A class expression is evaluated to its alternatives, each a list of parts: {s, c} text with the rules that
 // stated it (`literal-type`: the checker's string literal type; `initializer`: a const's or a const object's
 // initializer; `clsx`...), {h, x, ctx} a value not known statically (h its kind, x its text, ctx `template` or
@@ -13,11 +14,11 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const ts = require(process.env.DAODAN_TS_MODULE || "typescript");
 
 const [configPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
+const ts = require(path.join(cfg.engines, "typescript"));  // the TypeScript pinned with the engines
 const parsed = ts.getParsedCommandLineOfConfigFile(cfg.tsconfig, {}, {
   ...ts.sys, onUnRecoverableConfigFileDiagnostic: (d) => { throw new Error(ts.flattenDiagnosticMessageText(d.messageText, "\n")); },
 });

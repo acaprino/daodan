@@ -1,12 +1,13 @@
 """CSS, the graph of the stylesheets and of every place that names what they declare, on Modal.
 
-Wiring only: the CSS adapters (`adapters/css*.py` and their `.js`: the product's stylesheet parser and the HTML parser,
-the official parsers of Sass, Less and Stylus, the compilers of Vue, Svelte and Astro, the TypeScript compiler and
-the project's Tailwind; `css.py` assembles the graph) and the volume. One container per case: the checkout at its
-pinned commit, its files (tududi: the snapshot `modal_scip.py` kept, `scip-inputs/tududi/manifest.sqlite`; the others:
-the walk of `css.walk`, the snapshot's perimeter), the pinned engines (`adapters/css_engines.json`, in the image), the
-project's packages as the engine pass installs them (`npm ci --ignore-scripts`), then the graph and the hand check.
-No model.
+Wiring only: the plugin's stylesheet graph (`indexers/css*.py` and their `.js`: the product's stylesheet parser and
+the HTML parser, the official parsers of Sass, Less and Stylus, the compilers of Vue, Svelte and Astro, the TypeScript
+compiler and the project's Tailwind; `css.py` assembles the graph), a Node runner for its engines and the volume. One
+container per case: the checkout at its pinned commit, its files (tududi: the snapshot `modal_scip.py` kept,
+`scip-inputs/tududi/manifest.sqlite`; the others: the walk of `css.walk`, the snapshot's perimeter), the pinned
+engines (`indexers/css_engines/`, installed in the image from the lockfile), the project's packages as the engine pass
+installs them (`npm ci --ignore-scripts`), then the graph and the hand check. No model. No CDN sheet is fetched:
+`remote` is empty, so a linked CDN sheet leaves its page's undeclared names as `remote-sheet` holes.
 
     modal deploy benchmarks/inference-audit/lang_css.py
     python benchmarks/inference-audit/lang_css.py spawn --cases tududi,bulma
@@ -14,6 +15,10 @@ No model.
 
 Writes `results/graph-css-<case>-checks.json` (counts, hand check, run); the graph stays on the volume
 (`inference-audit/graph-css-<case>.json.gz`, fetched beside the checks with `fetch --graph`).
+
+`fixtures` records the engine runs of the plugin's test fixtures (`tests/test_codebase_map_css_graph.py`), and
+`fetch --fixtures` writes them to `tests/fixtures/css-graph/recorded/` with the engines' lockfile
+(`indexers/css_engines/package-lock.json`, written by npm in the image when it is not there yet).
 """
 from __future__ import annotations
 
@@ -36,11 +41,12 @@ TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
 import code_graph as scip_graph  # noqa: E402
-from adapters import css  # noqa: E402
+from indexers import css  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
 NODE = ("v22.23.4", "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce")  # as modal_scip.py
-CODE = tuple(sorted(path.name for path in (HERE / "adapters").glob("css*") if path.suffix in (".py", ".js", ".json")))
+ENGINES = PLUGIN / "scripts/indexers/css_engines"
+TESTS = HERE.parents[1] / "tests" if LOCAL else Path("/tests")
 # One small project per family, pinned by commit (tududi from modal_audit.CASES).
 CSS_CASES = {
     "tududi": CASES["tududi"],
@@ -200,13 +206,16 @@ HAND = {
         ("app/page.tsx", 17, "class", ".hero-header", ["all"]), ("app/page.tsx", 24, "class", ".hero-tagline", ["all"]),
         ("app/page.tsx", 27, "class", ".hero-subtitle", ["all"]), ("app/page.tsx", 36, "class", ".hero-used-by", ["all"]),
         ("components/ClientLayout.tsx", 27, "class", ".root", [f"{GS}:104"]),  # createGlobalStyle
-        ("app/error.tsx", 5, "class", ".error-page", ["app/error.tsx:11", "app/error.tsx:22", "app/error.tsx:28"]),
+        # the rules of the `<style>` inside JSX (lines 10-50), which the graph does not read
+        ("app/error.tsx", 5, "class", ".error-page", [f"app/error.tsx:{line}" for line in (11, 22, 28, 34, 46)]),
         ("components/LiveEdit.tsx", 46, "class", ".notranslate", ["hole:no-rule"]),
         ("app/error.tsx", 39, "custom-property", "--sc-color-border", [f"{GS}:386", f"{GS}:396"]),
+        ("app/error.tsx", 30, "custom-property", "--sc-color-textSecondary", [f"{GS}:388", f"{GS}:398"]),
+        ("app/homepage.css", 34, "custom-property", "--sc-color-textMuted", [f"{GS}:389", f"{GS}:399"]),
         # declared at run time by styled-components' createTheme, never written as a declaration
         *[("app/error.tsx", line, "custom-property", name, ["hole:undeclared"]) for line, name in (
-            (19, "--sc-color-text"), (24, "--sc-text-2xl"), (29, "--sc-text-base"), (30, "--sc-color-textSecondary"),
-            (40, "--sc-radius-md"), (41, "--sc-color-surface"))],
+            (19, "--sc-color-text"), (24, "--sc-text-2xl"), (29, "--sc-text-base"), (40, "--sc-radius-md"),
+            (41, "--sc-color-surface"))],
     ],
 }
 
@@ -222,17 +231,16 @@ def _image():
             f"echo '{NODE[1]}  /tmp/{node}' | sha256sum -c -",
             f"mkdir -p /opt/node && tar -xJf /tmp/{node} -C /opt/node --strip-components=1 && rm /tmp/{node}",
         )
-        .env({"PATH": "/opt/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-              "DAODAN_NODE_BIN": "/opt/node/bin", "DAODAN_CSS_ENGINES": "/engines/node_modules"})
-        .add_local_file(HERE / "adapters/css_engines.json" if LOCAL else Path("/audit/adapters/css_engines.json"),
-                        "/engines/package.json", copy=True)
-        .run_commands("cd /engines && npm install --ignore-scripts --no-audit --no-fund --loglevel=error")
+        .pip_install("pytest==8.4.2")
+        .env({"PATH": "/opt/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"})
+        .add_local_dir(ENGINES, "/engines", copy=True)
+        # The lockfile pins every package with its integrity; without it npm resolves and writes one.
+        .run_commands("cd /engines && if [ -f package-lock.json ]; then npm ci --ignore-scripts --no-audit --no-fund "
+                      "--loglevel=error; else npm install --ignore-scripts --no-audit --no-fund --loglevel=error; fi")
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
-        .add_local_file(HERE / "plugin_scripts.py" if LOCAL else Path("/audit/plugin_scripts.py"),
-                        "/audit/plugin_scripts.py")
-        .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
-                       ignore=["**/__pycache__/**"])
+        .add_local_dir(TESTS / "fixtures/css-graph", "/tests/fixtures/css-graph", ignore=["recorded/**"])
+        .add_local_file(TESTS / "test_codebase_map_css_graph.py", "/tests/test_codebase_map_css_graph.py")
     )
 
 
@@ -242,8 +250,27 @@ volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 def code_sha256() -> dict:
     folder = Path(css.__file__).parent
-    names = sorted(path.name for path in folder.glob("css*") if path.suffix in (".py", ".js", ".json"))
-    return {name: hashlib.sha256((folder / name).read_bytes()).hexdigest()[:12] for name in names}
+    paths = [path for path in folder.glob("css*") if path.suffix in (".py", ".js")] + \
+        [path for path in (folder / "css_engines").glob("*.json")]
+    return {path.relative_to(folder).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+            for path in sorted(paths)}
+
+
+def node_runner(engines: Path, project: Path, work: Path):
+    """The runner the stylesheet graph's engines run through (`indexers/css_sass.py`): `node <script> IN OUT` in the
+    project's folder, IN the payload with `engines` added."""
+    import os
+
+    def runner(script, payload):
+        work.mkdir(parents=True, exist_ok=True)
+        settings, output = work / f"{Path(script).stem}-in.json", work / f"{Path(script).stem}-out.json"
+        settings.write_text(json.dumps({**payload, "engines": str(engines)}), encoding="utf-8")
+        output.unlink(missing_ok=True)
+        measured = scip_graph.measured(["node", str(script), str(settings), str(output)], str(project),
+                                       {**os.environ, "NODE_OPTIONS": "--max-old-space-size=6144"}, 3600)
+        data = json.loads(output.read_text(encoding="utf-8")) if output.is_file() else None
+        return data, measured
+    return runner
 
 
 def inventory(manifest: Path) -> list[str]:
@@ -477,7 +504,7 @@ def css_case(name: str) -> dict:
     installed = round(time.time() - begun, 1)
     if modules is not None and not (target / "node_modules").exists():
         os.symlink(modules, target / "node_modules", target_is_directory=True)
-    graph = css.run(target, work / "engine", files)
+    graph = css.run(target, work / "engine", node_runner(Path("/engines/node_modules"), target, work / "runs"), files)
     checks = {"case": name, "commit": case["commit"], "code": code_sha256(), "files_given": len(files),
               "npm_install_seconds": installed, "node_modules": str(modules),
               "report": scip_graph.report(graph), "summary": summary(graph),
@@ -494,16 +521,62 @@ def css_case(name: str) -> dict:
             "right": sum(item["right"] for item in checks["hand_check"]), "seconds": checks["seconds"]}
 
 
+@app.function(cpu=2, memory=4096, timeout=1800, volumes={"/results": volume})
+def fixtures() -> dict:
+    """Each test fixture of the stylesheet graph with its packages (`npm install --ignore-scripts`), its engine runs
+    recorded (`record` of the test), on the volume beside the engines' lockfile."""
+    import shutil
+    import subprocess
+    sys.path.insert(0, "/tests")
+    from test_codebase_map_css_graph import record
+    print("code", code_sha256(), flush=True)
+    store = Path("/results") / TAG / "css-fixtures"
+    store.mkdir(parents=True, exist_ok=True)
+    out = {}
+    for fixture in sorted(Path("/tests/fixtures/css-graph").iterdir()):
+        if not fixture.is_dir() or fixture.name == "recorded":
+            continue
+        project = Path("/work/fixtures") / fixture.name / "fixture"
+        shutil.rmtree(project.parent, ignore_errors=True)
+        shutil.copytree(fixture, project)
+        if (project / "package.json").is_file():
+            subprocess.run(["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error",
+                            "--no-package-lock"], cwd=project, check=True, capture_output=True, text=True, timeout=900)
+        work = project.parent / "work"
+        work.mkdir()
+        recording = record(project, work, node_runner(Path("/engines/node_modules"), project, project.parent / "runs"))
+        (store / f"{fixture.name}.json").write_text(json.dumps(recording, indent=1, ensure_ascii=False) + "\n",
+                                                    encoding="utf-8")
+        out[fixture.name] = {"calls": len(recording["calls"]), "packages": len(recording["packages"]),
+                             "failed": [call["script"] for call in recording["calls"] if call["data"] is None]}
+        print(fixture.name, out[fixture.name], flush=True)
+    shutil.copyfile("/engines/package-lock.json", store / "package-lock.json")
+    volume.commit()
+    return out
+
+
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("spawn", "fetch"))
+    parser.add_argument("command", choices=("spawn", "fetch", "fixtures"))
     parser.add_argument("--cases", default="tududi")
     parser.add_argument("--graph", action="store_true", help="with fetch: also the graph, gzipped")
+    parser.add_argument("--fixtures", action="store_true", help="with fetch: the recorded fixtures and the lockfile")
     args = parser.parse_args()
     chosen = [c.strip() for c in args.cases.split(",") if c.strip()]
-    if args.command == "spawn":
+    if args.command == "fixtures":
+        print("local code", code_sha256())
+        print("fixtures", modal.Function.from_name("daodan-graph-css", "fixtures").spawn().object_id)
+    elif args.fixtures:
+        recorded = TESTS / "fixtures/css-graph/recorded"
+        recorded.mkdir(parents=True, exist_ok=True)
+        for entry in volume.listdir(f"{TAG}/css-fixtures"):
+            name = Path(entry.path).name
+            data = b"".join(volume.read_file(entry.path)).replace(b"\r\n", b"\n")
+            (ENGINES / name if name == "package-lock.json" else recorded / name).write_bytes(data)
+            print(name, len(data))
+    elif args.command == "spawn":
         print("local code", code_sha256())
         function = modal.Function.from_name("daodan-graph-css", "css_case")
         for name in chosen:

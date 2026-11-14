@@ -1,0 +1,614 @@
+{
+ "calls": [
+  {
+   "script": "css_vue",
+   "payload": {
+    "items": [
+     {
+      "key": "src/App.vue",
+      "path": "{project}/src/App.vue"
+     },
+     {
+      "key": "src/Child.vue",
+      "path": "{project}/src/Child.vue"
+     },
+     {
+      "key": "src/Other.vue",
+      "path": "{project}/src/Other.vue"
+     }
+    ]
+   },
+   "data": {
+    "version": "3.5.45",
+    "seconds": 0.214,
+    "components": {
+     "src/App.vue": {
+      "blocks": [
+       {
+        "line": 16,
+        "lang": "css",
+        "scoped": true,
+        "module": null,
+        "text": "\n.card { color: v-bind(color); }\n.card :deep(.inner) { padding: 0; }\n.on { font-weight: bold; }\n"
+       },
+       {
+        "line": 22,
+        "lang": "css",
+        "scoped": false,
+        "module": "$style",
+        "text": "\n.title { font-size: 2em; }\n"
+       },
+       {
+        "line": 26,
+        "lang": "scss",
+        "scoped": false,
+        "module": null,
+        "text": "\n$pad: 4px;\n.text { padding: $pad; }\n"
+       }
+      ],
+      "classes": [
+       {
+        "kind": "id",
+        "line": 2,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "app"
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 2,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "card"
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 2,
+        "chain": [
+         ":class"
+        ],
+        "alts": [
+         [
+          {
+           "s": "active",
+           "l": 2
+          }
+         ],
+         [
+          {
+           "s": "is-wide",
+           "l": 2
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 3,
+        "chain": [
+         ":class"
+        ],
+        "alts": [
+         [
+          {
+           "s": " "
+          },
+          {
+           "s": " "
+          },
+          {
+           "s": "on",
+           "l": 3
+          },
+          {
+           "s": " "
+          },
+          {
+           "s": "off",
+           "l": 3
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 3,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "text"
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 4,
+        "chain": [
+         ":class"
+        ],
+        "alts": [
+         [
+          {
+           "h": "variable",
+           "x": "color"
+          }
+         ]
+        ]
+       }
+      ],
+      "members": [
+       {
+        "line": 3,
+        "scope": "$style",
+        "name": "title"
+       }
+      ],
+      "styles": [],
+      "imports": [
+       {
+        "line": 10,
+        "spec": "./components",
+        "names": [
+         "Child"
+        ]
+       }
+      ],
+      "bindings": [
+       {
+        "name": "Child",
+        "line": 10
+       },
+       {
+        "name": "on",
+        "line": 11
+       },
+       {
+        "name": "wide",
+        "line": 12
+       },
+       {
+        "name": "color",
+        "line": 13
+       }
+      ],
+      "components": [
+       "Child"
+      ],
+      "roots": [
+       2
+      ]
+     },
+     "src/Child.vue": {
+      "blocks": [
+       {
+        "line": 4,
+        "lang": "less",
+        "scoped": true,
+        "module": null,
+        "text": "\n@c: blue;\n.inner { color: @c; }\n"
+       }
+      ],
+      "classes": [
+       {
+        "kind": "class",
+        "line": 2,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "inner card on"
+          }
+         ]
+        ]
+       }
+      ],
+      "members": [],
+      "styles": [],
+      "imports": [],
+      "bindings": [],
+      "components": [],
+      "roots": [
+       2
+      ]
+     },
+     "src/Other.vue": {
+      "blocks": [],
+      "classes": [
+       {
+        "kind": "class",
+        "line": 1,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "inner"
+          }
+         ]
+        ]
+       }
+      ],
+      "members": [],
+      "styles": [],
+      "imports": [],
+      "bindings": [],
+      "components": [],
+      "roots": [
+       1
+      ]
+     }
+    }
+   },
+   "measured": {
+    "seconds": 0.3,
+    "peak_mb": 141,
+    "stderr_tail": "DAODAN_MAXRSS_KB=143932\n"
+   }
+  },
+  {
+   "script": "css_svelte",
+   "payload": {
+    "items": [
+     {
+      "key": "src/Card.svelte",
+      "path": "{project}/src/Card.svelte"
+     }
+    ]
+   },
+   "data": {
+    "version": "5.57.3",
+    "seconds": 0.093,
+    "components": {
+     "src/Card.svelte": {
+      "blocks": [
+       {
+        "line": 9,
+        "lang": "css",
+        "scoped": true,
+        "module": null,
+        "text": "\n  .card { color: red; }\n  .label { color: blue; }\n  :global(.on) { color: green; }\n  :global(html).dark .label { color: white; }\n"
+       }
+      ],
+      "classes": [
+       {
+        "kind": "class",
+        "line": 5,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "card ",
+           "l": 5
+          },
+          {
+           "s": "on",
+           "l": 5
+          }
+         ],
+         [
+          {
+           "s": "card ",
+           "l": 5
+          },
+          {
+           "s": "",
+           "l": 5
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 5,
+        "chain": [
+         "class:"
+        ],
+        "alts": [
+         [
+          {
+           "s": "active"
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 6,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "label",
+           "l": 6
+          }
+         ]
+        ]
+       }
+      ],
+      "styles": [],
+      "imports": []
+     }
+    }
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 139,
+    "stderr_tail": "DAODAN_MAXRSS_KB=142428\n"
+   }
+  },
+  {
+   "script": "css_astro",
+   "payload": {
+    "items": [
+     {
+      "key": "src/Title.astro",
+      "path": "{project}/src/Title.astro"
+     }
+    ]
+   },
+   "data": {
+    "version": "4.0.0",
+    "seconds": 0.259,
+    "components": {
+     "src/Title.astro": {
+      "blocks": [
+       {
+        "line": 5,
+        "lang": "css",
+        "scoped": true,
+        "module": null,
+        "vars": [],
+        "text": "\n  .title { color: red; }\n  .big { font-size: 3em; }\n"
+       },
+       {
+        "line": 9,
+        "lang": "css",
+        "scoped": false,
+        "module": null,
+        "vars": [],
+        "text": "\n  .card { border: 0; }\n"
+       }
+      ],
+      "classes": [
+       {
+        "kind": "class",
+        "line": 4,
+        "chain": [
+         "class:list"
+        ],
+        "alts": [
+         [
+          {
+           "s": " "
+          },
+          {
+           "s": "title",
+           "l": 4
+          },
+          {
+           "s": " "
+          },
+          {
+           "s": "big",
+           "l": 4
+          }
+         ]
+        ]
+       },
+       {
+        "kind": "class",
+        "line": 4,
+        "chain": [],
+        "alts": [
+         [
+          {
+           "s": "card dark",
+           "l": 4
+          }
+         ]
+        ]
+       }
+      ],
+      "styles": [],
+      "imports": []
+     }
+    }
+   },
+   "measured": {
+    "seconds": 0.4,
+    "peak_mb": 168,
+    "stderr_tail": "DAODAN_MAXRSS_KB=171576\n"
+   }
+  },
+  {
+   "script": "css_sass",
+   "payload": {
+    "items": [
+     {
+      "key": "src/App.vue#2",
+      "text": "\n$pad: 4px;\n.text { padding: $pad; }\n",
+      "syntax": "scss"
+     }
+    ]
+   },
+   "data": {
+    "version": "0.5.6",
+    "seconds": 0.631,
+    "sheets": {
+     "src/App.vue#2": {
+      "tree": [
+       {
+        "t": "var",
+        "line": 2,
+        "end": 2,
+        "name": "$pad",
+        "ns": null,
+        "flags": [],
+        "refs": []
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".text"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "padding",
+          "value": "$pad",
+          "important": false,
+          "refs": [
+           {
+            "k": "var",
+            "name": "$pad",
+            "ns": null,
+            "line": 3
+           }
+          ],
+          "kids": []
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "measured": {
+    "seconds": 0.8,
+    "peak_mb": 174,
+    "stderr_tail": "DAODAN_MAXRSS_KB=178648\n"
+   }
+  },
+  {
+   "script": "css_less",
+   "payload": {
+    "items": [
+     {
+      "key": "src/Child.vue#0",
+      "text": "\n@c: blue;\n.inner { color: @c; }\n"
+     }
+    ]
+   },
+   "data": {
+    "version": "4.9.1",
+    "seconds": 0.044,
+    "sheets": {
+     "src/Child.vue#0": {
+      "tree": [
+       {
+        "t": "var",
+        "line": 2,
+        "end": 2,
+        "name": "@c",
+        "literal": "blue",
+        "refs": [],
+        "kids": null
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".inner"
+        ],
+        "refs": [],
+        "extends": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "color",
+          "value": "@c",
+          "refs": [
+           {
+            "k": "var",
+            "name": "@c",
+            "line": 3
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 127,
+    "stderr_tail": "DAODAN_MAXRSS_KB=130456\n"
+   }
+  },
+  {
+   "script": "css_typescript",
+   "payload": {
+    "tsconfig": "{work}/css-tsconfig.json",
+    "root": "{project}",
+    "files": [
+     "src/components/index.ts",
+     "src/main.ts"
+    ]
+   },
+   "data": {
+    "typescript": "5.9.3",
+    "files": [
+     "src/components/index.ts",
+     "src/main.ts"
+    ],
+    "records": [
+     {
+      "t": "module",
+      "file": "src/components/index.ts",
+      "line": 1,
+      "spec": "../Child.vue",
+      "to": null
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 1,
+      "spec": "vue",
+      "to": null
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 2,
+      "spec": "@/App.vue",
+      "to": null
+     },
+     {
+      "t": "import",
+      "file": "src/main.ts",
+      "line": 3,
+      "spec": "@/global.css"
+     }
+    ],
+    "seconds": 1.218
+   },
+   "measured": {
+    "seconds": 1.4,
+    "peak_mb": 257,
+    "stderr_tail": "DAODAN_MAXRSS_KB=262840\n"
+   }
+  }
+ ],
+ "packages": {},
+ "directories": []
+}

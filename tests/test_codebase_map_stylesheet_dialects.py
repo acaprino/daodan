@@ -283,7 +283,7 @@ class StyleBlockTests(unittest.TestCase):
 
 class ModernCssTests(unittest.TestCase):
     def test_every_modern_block_is_a_symbol(self):
-        sheet = (REPO_ROOT / "benchmarks/inference-audit/fixtures/css-modern/src/modern.css").read_text(encoding="utf-8")
+        sheet = (REPO_ROOT / "tests/fixtures/css-graph/css-modern/src/modern.css").read_text(encoding="utf-8")
         self.assertEqual(symbols(get_adapter("css").parse(sheet, "modern.css")), [
             ("@property --angle", "at-rule", 4, 4),
             (".card", "rule", 5, 9),

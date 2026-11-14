@@ -1,0 +1,85 @@
+{
+ "calls": [
+  {
+   "script": "css_typescript",
+   "payload": {
+    "tsconfig": "{work}/css-tsconfig.json",
+    "root": "{project}",
+    "files": [
+     "admin/Panel.tsx",
+     "frontend/src/App.tsx",
+     "frontend/src/main.tsx"
+    ]
+   },
+   "data": {
+    "typescript": "5.9.3",
+    "files": [
+     "admin/Panel.tsx",
+     "frontend/src/App.tsx",
+     "frontend/src/main.tsx"
+    ],
+    "records": [
+     {
+      "t": "classes",
+      "file": "admin/Panel.tsx",
+      "line": 1,
+      "kind": "class",
+      "chain": [],
+      "alts": [
+       [
+        {
+         "s": "shell ic",
+         "l": 1
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "frontend/src/App.tsx",
+      "line": 1,
+      "kind": "class",
+      "chain": [],
+      "alts": [
+       [
+        {
+         "s": "sr-only shell",
+         "l": 1
+        }
+       ]
+      ]
+     },
+     {
+      "t": "decl",
+      "file": "frontend/src/App.tsx",
+      "line": 1,
+      "property": "font-family",
+      "value": "Lora",
+      "via": "style-object"
+     },
+     {
+      "t": "module",
+      "file": "frontend/src/main.tsx",
+      "line": 1,
+      "spec": "./App",
+      "to": "{project}/frontend/src/App.tsx"
+     },
+     {
+      "t": "import",
+      "file": "frontend/src/main.tsx",
+      "line": 2,
+      "spec": "./app.css"
+     }
+    ],
+    "seconds": 1.124
+   },
+   "measured": {
+    "seconds": 1.3,
+    "peak_mb": 249,
+    "stderr_tail": "DAODAN_MAXRSS_KB=255104\n"
+   }
+  }
+ ],
+ "packages": {},
+ "directories": []
+}

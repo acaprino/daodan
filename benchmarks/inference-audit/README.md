@@ -856,7 +856,7 @@ Nessuno dà il nome usato collegato alle sue dichiarazioni fra file e markup. Qu
 
 Esecuzione: `modal deploy benchmarks/inference-audit/lang_css.py`, poi `python benchmarks/inference-audit/lang_css.py spawn --cases tududi` e `fetch --cases tududi`.
 
-Prova locale: `python -m pytest benchmarks/inference-audit/test_css_graph.py`. Ora sono 26 test su dieci fixture (`fixtures/css*`), circa 20 s: archi, buchi e incerti scritti a mano prima del codice. Servono Node e npm; i motori di `adapters/css_engines.json` si installano una volta nella cartella temporanea e `DAODAN_CSS_ENGINES` li indica. La prima fixture contiene:
+Prova locale: `python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_css_graph.py`, sulle fixture di `tests/fixtures/css-graph/`, con archi, buchi e incerti scritti a mano prima del codice. Le esecuzioni dei motori sono registrate su Modal e rigiocate, quindi non servono né Node né npm (sezione «il grafo dei fogli di stile nel plugin»). La prima fixture contiene:
 - un foglio vendorizzato, raggiunto da un percorso URL;
 - `animate.css` da npm;
 - un link CDN, servito da un sostituto del download;
@@ -1526,6 +1526,33 @@ Cosa manca a questa misura:
 - styled-components-website, e un caso Svelte 5 e uno Stylus reali: provati solo sulle fixture;
 - le convenzioni dei framework per il caricamento (layout di Next.js, `static/` di Sapper);
 - UnoCSS (v3-admin-vite lo usa poco: i suoi token restano `no-rule`).
+
+### 14 novembre 2026, il grafo dei fogli di stile nel plugin
+
+Il grafo dei fogli di stile ora sta nel plugin, in `plugins/codebase-map/skills/map/scripts/indexers/`: `css.py`, un adattatore per motore con il suo `.js`, e i motori fissati in `css_engines/` (`package.json`, `package-lock.json` con l'integrity sha512 di tutti i 126 pacchetti). `lang_css.py` resta il driver per Modal e importa dal plugin. Nel prodotto lo stage non è ancora attivo: arriva con il giro guidato dalla pre-mappa.
+
+Cosa cambia rispetto al benchmark:
+- Nessun adattatore installa o lancia un motore. Ognuno riceve un runner, `runner(script, payload)`. Su Modal è `node_runner` di `lang_css.py`; nel prodotto lo darà il container.
+- Ciò che il codice carica insieme è un dato in ingresso. `units` sono le unità che la pre-mappa afferma, e valgono accanto a pagine e bundle presi dagli import del grafo.
+- Anche i fogli CDN sono un dato in ingresso, `remote`: il lettore non scarica nulla. Senza il testo del foglio, un nome che nessun altro dichiara diventa un buco `remote-sheet` con l'URL, su ogni pagina che lo carica. `lang_css.py` passa `remote` vuoto, quindi i fogli CDN di Bootstrap 3 e di Bulma lasciano buchi `remote-sheet` (conteggi nel task 11 del piano).
+- `rows` dà le righe dello store. Tutte sono sotto l'etichetta `stylesheet` e hanno `reference_id` nullo; la fine è `external`, `namespace` (un file) o `project-value`. La copertura conta ogni sito del grafo, e un sito senza righe è una violazione.
+- TypeScript è sempre il 5.9.3 fissato con i motori, mai quello del progetto.
+
+| Parametro | Valore |
+| --- | --- |
+| registrazione | `lang_css.py fixtures` su Modal, una funzione per le undici fixture: i pacchetti di ogni fixture con `npm install --ignore-scripts`, i motori installati con `npm ci` dal lockfile; per ogni fixture le esecuzioni dei motori e i file di `node_modules` che il grafo stesso guarda; `fetch --fixtures` li scrive in `tests/fixtures/css-graph/recorded/` (245 KB) |
+| codice | hash dei file `indexers/css*` e `css_engines/*.json` stampato su Modal, uguale a quello locale |
+| costo | 0,0158 USD dal conto di Modal (ora 19 UTC: quattro registrazioni e i deploy, letto alle 19:41) |
+| test | `tests/test_codebase_map_css_graph.py`: 31 test in circa 2 s; i 26 del benchmark e 5 nuovi (un foglio CDN senza testo, un'unità affermata dalla pre-mappa, le righe dello store, la copertura, una violazione) |
+
+styled-components-website ha ora 15 attese scritte dal sorgente al commit fissato, prima di ogni giro (`HAND` in `lang_css.py`). Rispetto alle 14 di prima:
+- `.error-page` ha 5 regole, non 3;
+- `--sc-color-textSecondary` è dichiarata due volte in `GlobalStyles.tsx` (388 e 398), quindi non è un buco;
+- si aggiunge `homepage.css:34 --sc-color-textMuted` verso `GlobalStyles.tsx` 389 e 399.
+
+Le attese su `error.tsx` stanno nello `<style>` dentro JSX, che il grafo non legge: lì il grafo deve risultare sbagliato finché non lo legge.
+
+Differenza dichiarata per il prossimo giro: v3-admin-vite non ha un lockfile npm. Senza pnpm, che arriva con la pre-mappa, i fogli di Element Plus e vxe-table diventano buchi e i suoi conteggi cambiano.
 
 ### 14 novembre 2026, Java e Kotlin nel container del plugin
 

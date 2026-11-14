@@ -1,0 +1,295 @@
+{
+ "calls": [
+  {
+   "script": "css_typescript",
+   "payload": {
+    "tsconfig": "{work}/css-tsconfig.json",
+    "root": "{project}",
+    "files": [
+     "src/app.component.ts",
+     "src/button.tsx",
+     "src/main.ts",
+     "src/use.tsx",
+     "src/utils.ts"
+    ]
+   },
+   "data": {
+    "typescript": "5.9.3",
+    "files": [
+     "src/app.component.ts",
+     "src/button.tsx",
+     "src/utils.ts",
+     "src/use.tsx",
+     "src/main.ts"
+    ],
+    "records": [
+     {
+      "t": "module",
+      "file": "src/app.component.ts",
+      "line": 1,
+      "spec": "@angular/core",
+      "to": "{project}/node_modules/@angular/core/types/core.d.ts"
+     },
+     {
+      "t": "template",
+      "file": "src/app.component.ts",
+      "line": 2,
+      "spec": "./app.component.html"
+     },
+     {
+      "t": "import",
+      "file": "src/app.component.ts",
+      "line": 2,
+      "spec": "./styles.css",
+      "component": true
+     },
+     {
+      "t": "module",
+      "file": "src/button.tsx",
+      "line": 1,
+      "spec": "class-variance-authority",
+      "to": "{project}/node_modules/class-variance-authority/dist/index.d.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/button.tsx",
+      "line": 2,
+      "spec": "tailwind-variants",
+      "to": "{project}/node_modules/tailwind-variants/dist/index.d.ts"
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 3,
+      "kind": "class",
+      "chain": [
+       "cva"
+      ],
+      "alts": [
+       [
+        {
+         "s": "btn"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 4,
+      "kind": "class",
+      "chain": [
+       "cva"
+      ],
+      "alts": [
+       [
+        {
+         "s": "btn-primary"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 4,
+      "kind": "class",
+      "chain": [
+       "cva"
+      ],
+      "alts": [
+       [
+        {
+         "s": "btn-ghost"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 4,
+      "kind": "class",
+      "chain": [
+       "cva"
+      ],
+      "alts": [
+       [
+        {
+         "s": "faded"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 5,
+      "kind": "class",
+      "chain": [
+       "cva"
+      ],
+      "alts": [
+       [
+        {
+         "s": "raised"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 7,
+      "kind": "class",
+      "chain": [
+       "tailwind-variants"
+      ],
+      "alts": [
+       [
+        {
+         "s": "card"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 7,
+      "kind": "class",
+      "chain": [
+       "tailwind-variants"
+      ],
+      "alts": [
+       [
+        {
+         "s": "card-title"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 7,
+      "kind": "class",
+      "chain": [
+       "tailwind-variants"
+      ],
+      "alts": [
+       [
+        {
+         "s": "card-lg"
+        }
+       ]
+      ]
+     },
+     {
+      "t": "classes",
+      "file": "src/button.tsx",
+      "line": 8,
+      "kind": "class",
+      "chain": [],
+      "alts": [
+       []
+      ]
+     },
+     {
+      "t": "module",
+      "file": "src/utils.ts",
+      "line": 1,
+      "spec": "clsx",
+      "to": "{project}/node_modules/clsx/clsx.d.mts"
+     },
+     {
+      "t": "module",
+      "file": "src/utils.ts",
+      "line": 2,
+      "spec": "tailwind-merge",
+      "to": "{project}/node_modules/tailwind-merge/dist/types.d.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/use.tsx",
+      "line": 1,
+      "spec": "./utils",
+      "to": "{project}/src/utils.ts"
+     },
+     {
+      "t": "classes",
+      "file": "src/use.tsx",
+      "line": 2,
+      "kind": "class",
+      "chain": [],
+      "alts": [
+       [
+        {
+         "s": " ",
+         "c": [
+          "tailwind-merge"
+         ]
+        },
+        {
+         "s": "card",
+         "l": 2,
+         "c": [
+          "tailwind-merge"
+         ]
+        },
+        {
+         "s": " ",
+         "c": [
+          "tailwind-merge"
+         ]
+        },
+        {
+         "s": "tag",
+         "l": 2,
+         "c": [
+          "tailwind-merge"
+         ]
+        },
+        {
+         "s": " ",
+         "c": [
+          "tailwind-merge"
+         ]
+        }
+       ]
+      ]
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 1,
+      "spec": "./app.component",
+      "to": "{project}/src/app.component.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 2,
+      "spec": "./button",
+      "to": "{project}/src/button.tsx"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 3,
+      "spec": "./use",
+      "to": "{project}/src/use.tsx"
+     }
+    ],
+    "seconds": 1.688
+   },
+   "measured": {
+    "seconds": 1.9,
+    "peak_mb": 282,
+    "stderr_tail": "DAODAN_MAXRSS_KB=289172\n"
+   }
+  }
+ ],
+ "packages": {},
+ "directories": []
+}

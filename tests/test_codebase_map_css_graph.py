@@ -1,28 +1,136 @@
-"""The CSS graph of `fixtures/css` against arcs written by hand, from the fixture's text, before any adapter ran.
+"""The stylesheet graph (`indexers/css.py`) of the fixtures `fixtures/css-graph/*` against arcs, holes and uncertain
+arcs written by hand, from each fixture's text, before any adapter ran.
 
-    python -m pytest benchmarks/inference-audit/test_css_graph.py
+    python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_css_graph.py
 
-Needs Node and npm: the fixture's packages (`fixtures/css/package.json`) are installed once into a folder of the
-system temp directory and linked into a copy of the fixture; without npm the test is skipped. The CDN sheet the
-fixture links is served by a stand-in for the download, so the test needs no network beyond npm.
+The engines do not run here: each fixture's runs of the pinned engines (`indexers/css_engines/`), with the package
+files the graph itself reads (`node_modules`), were recorded once on Modal into `fixtures/css-graph/recorded/<name>.json`
+and are replayed by payload. A payload nothing recorded fails the test. To record them again:
+
+    modal deploy benchmarks/inference-audit/lang_css.py
+    python benchmarks/inference-audit/lang_css.py fixtures
 """
 from __future__ import annotations
 
-import hashlib
-import os
+import json
 import shutil
-import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-from adapters import css  # noqa: E402
+SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+from indexers import css  # noqa: E402
 
-FIXTURE = HERE / "fixtures/css"
+FIXTURES = HERE / "fixtures/css-graph"
+RECORDED = FIXTURES / "recorded"
+
+
+def normal(value, project: str, work: str):
+    """A payload or an output with the project's and the work folder's paths as `{project}` and `{work}`, `/` as the
+    separator: the same on every machine."""
+    if isinstance(value, dict):
+        return {key: normal(item, project, work) for key, item in value.items()}
+    if isinstance(value, list):
+        return [normal(item, project, work) for item in value]
+    if isinstance(value, str):
+        for root, mark in ((project, "{project}"), (work, "{work}")):
+            if value.startswith(root):
+                return mark + value[len(root):].replace(chr(92), "/")
+        return value.replace(project, "{project}").replace(work, "{work}")
+    return value
+
+
+def local(value, project: str, work: str):
+    """A recorded output with `{project}` and `{work}` as this machine's folders."""
+    if isinstance(value, dict):
+        return {key: local(item, project, work) for key, item in value.items()}
+    if isinstance(value, list):
+        return [local(item, project, work) for item in value]
+    if isinstance(value, str):
+        return value.replace("{project}", project).replace("{work}", work)
+    return value
+
+
+def key(script, payload) -> tuple:
+    return Path(script).stem, json.dumps(payload, sort_keys=True)
+
+
+def replayer(recording: dict, project: Path, work: Path):
+    """A runner that answers each engine run with the one recorded for the same payload."""
+    roots = str(project), str(work)
+    calls = {key(call["script"], call["payload"]): call for call in recording["calls"]}
+
+    def runner(script, payload):
+        call = calls.get(key(script, normal(payload, *roots)))
+        assert call is not None, f"no recorded run of {Path(script).stem} for this payload: record the fixtures again"
+        return local(call["data"], project.as_posix(), work.as_posix()), call["measured"]
+    return runner
+
+
+def record(project: Path, work: Path, runner) -> dict:
+    """The recording of a fixture (`replayer`): its engine runs through a real runner, and every file and folder of
+    `node_modules` the graph itself looks at, each file with its text. On Modal only (`lang_css.py fixtures`)."""
+    import os
+    roots, calls, seen = (str(project), str(work)), [], set()
+
+    def recording(script, payload):
+        data, measured = runner(script, payload)
+        calls.append({"script": Path(script).stem, "payload": normal(payload, *roots), "data": normal(data, *roots),
+                      "measured": {name: measured.get(name) for name in ("seconds", "peak_mb", "stderr_tail")}})
+        return data, measured
+
+    watching, stat = [True], os.stat
+
+    def watched(path, *args, **kwargs):
+        if watching[0] and isinstance(path, (str, os.PathLike)):
+            seen.add(os.fspath(path))
+        return stat(path, *args, **kwargs)
+
+    def hook(event, args):
+        if watching[0] and event == "open" and isinstance(args[0], (str, os.PathLike)):
+            seen.add(os.fspath(args[0]))
+    files = css.walk(project)  # before watching: the walk looks at every file and skips `node_modules`
+    sys.addaudithook(hook)
+    os.stat = watched
+    try:
+        css.run(project, work, recording, files)
+    finally:
+        os.stat, watching[0] = stat, False
+    packages, directories = {}, set()
+    for found in sorted(seen):
+        path = Path(found)
+        try:
+            rel = path.relative_to(project).as_posix()
+        except ValueError:
+            continue
+        if rel.split("/")[0] != "node_modules":
+            continue
+        if path.is_file():
+            packages[rel] = path.read_text(encoding="utf-8", errors="replace")
+        elif path.is_dir():
+            directories.add(rel)
+    return {"calls": calls, "packages": packages, "directories": sorted(directories)}
+
+
+def _run(name: str, tmp_path_factory, remote=None, units=None) -> dict:
+    """The fixture's graph: a copy of it, the package files the graph reads, the recorded engine runs."""
+    project = (tmp_path_factory.mktemp(name) / "fixture").resolve()
+    shutil.copytree(FIXTURES / name, project)
+    recording = json.loads((RECORDED / f"{name}.json").read_text(encoding="utf-8"))
+    for rel in recording["directories"]:
+        (project / rel).mkdir(parents=True, exist_ok=True)
+    for rel, text in recording["packages"].items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    work = project.parent / "work"
+    work.mkdir()
+    return css.run(project, work, replayer(recording, project, work), units=units, remote=remote)
+
+
 T, B, M = "src/styles/theme.css", "src/styles/base.css", "src/styles/Button.module.css"
 K, S, H, E, A = "src/styles/_tokens.scss", "src/styles/main.scss", "src/index.html", "src/page.ejs", "src/App.tsx"
 
@@ -138,54 +246,6 @@ UNCERTAIN = {**CASCADE,
              ("src/Widget.vue:2", ".card"): set(CARD), ("src/Card.svelte:1", ".card"): set(CARD)}
 
 
-def _link(target: Path, link: Path) -> None:
-    try:
-        link.symlink_to(target, target_is_directory=True)
-    except OSError:  # Windows without the symlink privilege: a junction needs none
-        import _winapi
-        _winapi.CreateJunction(str(target), str(link))
-
-
-def _installed(manifest: Path, prefix: str) -> Path:
-    """The `node_modules` of a package manifest, installed once into a folder of the system temp directory."""
-    npm = shutil.which("npm")
-    if npm is None or shutil.which("node") is None:
-        pytest.skip("Node and npm are needed")
-    data = manifest.read_bytes()
-    cache = Path(tempfile.gettempdir()) / f"{prefix}-{hashlib.sha256(data).hexdigest()[:12]}"
-    if not (cache / "node_modules/.package-lock.json").is_file():
-        cache.mkdir(parents=True, exist_ok=True)
-        (cache / "package.json").write_bytes(data)
-        subprocess.run([npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"],
-                       cwd=cache, check=True, shell=os.name == "nt", capture_output=True)
-    return cache / "node_modules"
-
-
-@pytest.fixture(scope="module")
-def engines():
-    folder = _installed(HERE / "adapters/css_engines.json", "daodan-css-engines")
-    previous = os.environ.get("DAODAN_CSS_ENGINES")
-    os.environ["DAODAN_CSS_ENGINES"] = str(folder)
-    yield folder
-    if previous is None:
-        os.environ.pop("DAODAN_CSS_ENGINES", None)
-    else:
-        os.environ["DAODAN_CSS_ENGINES"] = previous
-
-
-def _run(name: str, tmp_path_factory, served=None) -> dict:
-    fixture = HERE / "fixtures" / name
-    project = tmp_path_factory.mktemp(name) / "fixture"
-    shutil.copytree(fixture, project)
-    if (fixture / "package.json").is_file():
-        _link(_installed(fixture / "package.json", f"daodan-{name}-fixture"), project / "node_modules")
-    download, css._download = css._download, (served or {}).get
-    try:
-        return css.run(project, project.parent / "work")
-    finally:
-        css._download = download
-
-
 def _arcs(graph: dict) -> set:
     return {(e["site"], e["kind"], e["symbol"], e["to"], e["end"], tuple(e["chain"])) for e in graph["edges"]}
 
@@ -210,8 +270,8 @@ def _uncertain(graph: dict) -> dict:
 
 
 @pytest.fixture(scope="module")
-def graph(tmp_path_factory, engines):
-    return _run("css", tmp_path_factory, {CDN: ".ui-btn { color: red; }"})
+def graph(tmp_path_factory):
+    return _run("css", tmp_path_factory, remote={CDN: ".ui-btn { color: red; }"})
 
 
 def test_every_arc_and_nothing_else(graph):
@@ -265,7 +325,7 @@ def test_files_read(graph):
     assert graph["files"]["indexed"] == 13 and graph["files"]["snapshot"] == 13
 
 
-# fixtures/css-sass: SCSS and indented Sass through the official Sass parser. Written from the fixture's text.
+# css-sass: SCSS and indented Sass through the official Sass parser. Written from the fixture's text.
 ST, SK, SX, SI, SL, SH = ("src/styles/theme.scss", "src/styles/_tokens.scss", "src/styles/_mixins.scss",
                           "src/styles/_index.scss", "src/styles/legacy.sass", "src/index.html")
 S_CARD, S_TITLE, S_GEN, S_M, S_SIZE = (f"{ST}:8 .card", f"{ST}:15 .card__title", f"{ST}:20 .card--#{{$name}}",
@@ -319,7 +379,7 @@ SASS_UNCERTAIN = {(f"{SH}:3", ".card--primary"): {S_GEN}, (f"{SH}:3", ".m-1"): {
 
 
 @pytest.fixture(scope="module")
-def sass_graph(tmp_path_factory, engines):
+def sass_graph(tmp_path_factory):
     return _run("css-sass", tmp_path_factory)
 
 
@@ -334,7 +394,7 @@ def test_sass_holes_and_uncertain_arcs(sass_graph):
     assert sass_graph["files"] == {"snapshot": 6, "indexed": 6, "missing": []}
 
 
-# fixtures/css-less: Less through its own parser. Written from the fixture's text.
+# css-less: Less through its own parser. Written from the fixture's text.
 LV, LX, LS, LP, LH = ("src/styles/vars.less", "src/styles/mixins.less", "src/styles/site.less",
                       "src/styles/plugins/units.js", "src/index.html")
 L_BORDERED = [f"{LX}:1 @mixin .bordered", f"{LX}:4 @mixin .bordered"]
@@ -387,7 +447,7 @@ LESS_UNCERTAIN = {(f"{LS}:9", ".bordered"): set(L_BORDERED), (f"{LS}:26", ".loop
 
 
 @pytest.fixture(scope="module")
-def less_graph(tmp_path_factory, engines):
+def less_graph(tmp_path_factory):
     return _run("css-less", tmp_path_factory)
 
 
@@ -402,7 +462,7 @@ def test_less_holes_and_uncertain_arcs(less_graph):
     assert less_graph["files"] == {"snapshot": 5, "indexed": 5, "missing": []}
 
 
-# fixtures/css-sfc: Vue, Svelte and Astro through their own compilers. Written from the fixture's text.
+# css-sfc: Vue, Svelte and Astro through their own compilers. Written from the fixture's text.
 VA, VC, VS, VT, VG, VM = ("src/App.vue", "src/Child.vue", "src/Card.svelte", "src/Title.astro", "src/global.css",
                           "src/main.ts")
 V_CARD_GLOBAL = [f"{VG}:1 .card", f"{VT}:10 .card"]
@@ -442,7 +502,7 @@ SFC_HOLES = {
 
 
 @pytest.fixture(scope="module")
-def sfc_graph(tmp_path_factory, engines):
+def sfc_graph(tmp_path_factory):
     return _run("css-sfc", tmp_path_factory)
 
 
@@ -464,7 +524,7 @@ def test_sfc_holes_and_files(sfc_graph):
     assert sfc_graph["files"] == {"snapshot": 8, "indexed": 8, "missing": []}
 
 
-# fixtures/css-pages: which sheet applies where. Written from the fixture's text.
+# css-pages: which sheet applies where. Written from the fixture's text.
 PL, PH, PN = "backend/views/landing.ejs", "backend/views/partials/head.ejs", "backend/views/partials/nav.ejs"
 PI = "backend/public/vendor/icons/icons.css"
 FI, FF, FM, FA, FC, AP = ("frontend/index.html", "frontend/fonts.css", "frontend/src/main.tsx", "frontend/src/App.tsx",
@@ -491,7 +551,7 @@ PAGES_UNCERTAIN = {(f"{FA}:1", ".sr-only"): {f"{PI} .sr-only"}, (f"{AP}:1", ".sh
 
 
 @pytest.fixture(scope="module")
-def pages_graph(tmp_path_factory, engines):
+def pages_graph(tmp_path_factory):
     return _run("css-pages", tmp_path_factory)
 
 
@@ -507,7 +567,7 @@ def test_a_sheet_applies_where_its_page_or_bundle_loads_it(pages_graph):
     assert pages_graph["files"] == {"snapshot": 9, "indexed": 9, "missing": []}
 
 
-# fixtures/css-in-js: CSS-in-JS recognised by the package of the callee or tag. Written from the fixture's text.
+# css-in-js: CSS-in-JS recognised by the package of the callee or tag. Written from the fixture's text.
 JT, JD, JS_, JV = "src/theme.ts", "src/dom.ts", "src/styled.tsx", "src/styles.css.ts"
 J_INK = f"{JS_}:10 --ink"
 CSSINJS_EXPECTED = [
@@ -530,7 +590,7 @@ CSSINJS_NODES = {f"{JT}:2 &", f"{JT}:3 &", f"{JT}:5 &.cm-focused .cm-cursor", f"
 
 
 @pytest.fixture(scope="module")
-def cssinjs_graph(tmp_path_factory, engines):
+def cssinjs_graph(tmp_path_factory):
     return _run("css-in-js", tmp_path_factory)
 
 
@@ -548,7 +608,7 @@ def test_css_in_js_rules_are_nodes_and_unknown_shapes_are_holes(cssinjs_graph):
     assert cssinjs_graph["files"] == {"snapshot": 7, "indexed": 7, "missing": []}
 
 
-# fixtures/css-tailwind4: Tailwind 4's CSS-first configuration. Written from the fixture's text.
+# css-tailwind4: Tailwind 4's CSS-first configuration. Written from the fixture's text.
 TA, TP = "src/app.css", "templates/page.html"
 TAILWIND4_EXPECTED = [
     *_rows(f"{TA}:1", "import", "tailwindcss", ["tailwindcss/index.css"]),
@@ -568,7 +628,7 @@ TAILWIND4_EXPECTED = [
 
 
 @pytest.fixture(scope="module")
-def tailwind4_graph(tmp_path_factory, engines):
+def tailwind4_graph(tmp_path_factory):
     return _run("css-tailwind4", tmp_path_factory)
 
 
@@ -586,7 +646,7 @@ def test_tailwind4_holes_and_version(tailwind4_graph):
     assert tailwind4_graph["files"] == {"snapshot": 2, "indexed": 2, "missing": []}
 
 
-# fixtures/css-modern: modern CSS through the product's parser. Written from the fixture's text.
+# css-modern: modern CSS through the product's parser. Written from the fixture's text.
 MM, MB, MH = "src/modern.css", "src/base.css", "src/index.html"
 M_CARD, M_TITLE, M_HAS = f"{MM}:5 .card", f"{MM}:7 .card .title", f"{MM}:8 .card:has(.icon)"
 M_SCOPE = f"{MM}:11 @scope (.panel) to (.panel-body) {{ .heading }}"
@@ -613,7 +673,7 @@ MODERN_EXPECTED = [
 
 
 @pytest.fixture(scope="module")
-def modern_graph(tmp_path_factory, engines):
+def modern_graph(tmp_path_factory):
     return _run("css-modern", tmp_path_factory)
 
 
@@ -630,7 +690,7 @@ def test_modern_css_holes(modern_graph):
     assert modern_graph["files"] == {"snapshot": 3, "indexed": 3, "missing": []}
 
 
-# fixtures/css-stylus: Stylus through its own parser. Written from the fixture's text.
+# css-stylus: Stylus through its own parser. Written from the fixture's text.
 YV, YS, YH = "src/vars.styl", "src/site.styl", "src/index.html"
 Y_PAD, Y_M = f"{YS}:2 @mixin pad", f"{YS}:15 .m-{{i}}"
 Y_CARD = [f"{YS}:4 .card", f"{YS}:7 .card:hover", f"{YS}:9 .card .title, .card .sub",
@@ -655,7 +715,7 @@ STYLUS_EXPECTED = [
 
 
 @pytest.fixture(scope="module")
-def stylus_graph(tmp_path_factory, engines):
+def stylus_graph(tmp_path_factory):
     return _run("css-stylus", tmp_path_factory)
 
 
@@ -670,7 +730,7 @@ def test_stylus_holes_and_uncertain_arcs(stylus_graph):
     assert stylus_graph["files"] == {"snapshot": 3, "indexed": 3, "missing": []}
 
 
-# fixtures/css-modules: CSS Modules (`@value`, `:export`, `composes from`, `:global`, `:local`) and PostCSS.
+# css-modules: CSS Modules (`@value`, `:export`, `composes from`, `:global`, `:local`) and PostCSS.
 CM, CB, CT, CA = "src/colors.module.css", "src/Button.module.scss", "src/theme.pcss", "src/App.tsx"
 C_BRAND, C_ACCENT = f"{CM}:1 @value brand", f"{CM}:2 @value accent"
 MODULES_EXPECTED = [
@@ -696,7 +756,7 @@ MODULES_EXPECTED = [
 
 
 @pytest.fixture(scope="module")
-def modules_graph(tmp_path_factory, engines):
+def modules_graph(tmp_path_factory):
     return _run("css-modules", tmp_path_factory)
 
 
@@ -711,7 +771,7 @@ def test_css_modules_holes(modules_graph):
     assert modules_graph["files"] == {"snapshot": 4, "indexed": 4, "missing": []}
 
 
-# fixtures/css-markup: Angular template bindings and cva / tailwind-variants tables. Written from the fixture's text.
+# css-markup: Angular template bindings and cva / tailwind-variants tables. Written from the fixture's text.
 KH, KC, KT, KS = "src/app.component.html", "src/app.component.ts", "src/button.tsx", "src/styles.css"
 K_BTN, K_FADED, K_CARDX = f"{KS}:6 .btn, .btn-primary, .btn-ghost", f"{KS}:7 .faded, .raised", \
     f"{KS}:8 .card-title, .card-lg"
@@ -739,7 +799,7 @@ MARKUP_EXPECTED = [
 
 
 @pytest.fixture(scope="module")
-def markup_graph(tmp_path_factory, engines):
+def markup_graph(tmp_path_factory):
     return _run("css-markup", tmp_path_factory)
 
 
@@ -753,3 +813,78 @@ def test_markup_class_sources_holes(markup_graph):
                                     (f"{KH}:2", "class", "concatenation", "tag-${kind}")}
     assert _uncertain(markup_graph) == {}
     assert markup_graph["files"] == {"snapshot": 7, "indexed": 7, "missing": []}
+
+
+# Inputs, not discoveries: a CDN sheet without its text, a unit the pre-map states. Written from the fixtures' text.
+@pytest.fixture(scope="module")
+def unread_cdn_graph(tmp_path_factory):
+    return _run("css", tmp_path_factory)
+
+
+def test_a_cdn_sheet_without_its_text_leaves_the_names_of_its_page_as_remote_sheet_holes(unread_cdn_graph):
+    # index.html links the CDN sheet: `lead` (line 12) and `ui-btn` (line 15) may be declared there, and so may
+    # `--missing`, read by theme.css (line 32), which the page loads too; App.tsx's `ghost-x` is in a bundle that
+    # does not load it, and stays `no-rule`.
+    ui_btn = (f"{H}:15", "class", ".ui-btn", f"{CDN} .ui-btn", "external", ())
+    assert _arcs(unread_cdn_graph) == set(EXPECTED) - {ui_btn}
+    assert _holes(unread_cdn_graph) == (HOLES - {(f"{H}:12", "class", "no-rule", "lead"),
+                                                 (f"{T}:32", "custom-property", "undeclared", "--missing")}) | {
+        (f"{H}:12", "class", "remote-sheet", "lead"), (f"{H}:15", "class", "remote-sheet", "ui-btn"),
+        (f"{T}:32", "custom-property", "remote-sheet", "--missing")}
+    reasons = {h["reason"] for h in unread_cdn_graph["holes"] if h["class"] == "remote-sheet"}
+    assert reasons == {f"a sheet not read may declare it: {CDN}"}
+    nodes = {node["id"]: node for node in unread_cdn_graph["nodes"]}
+    assert nodes[CDN]["external"] == {"manager": "npm", "package": "@acme/ui", "version": "1.2.3", "from": "url"}
+
+
+@pytest.fixture(scope="module")
+def stated_pages_graph(tmp_path_factory):
+    return _run("css-pages", tmp_path_factory, units=[["admin/Panel.tsx", "frontend/src/app.css"]])
+
+
+def test_a_unit_the_premap_states_proves_its_sheets_loaded(stated_pages_graph):
+    # The pre-map says admin/Panel.tsx loads frontend/src/app.css (as `styles` of `angular.json` would): its
+    # `.shell` arc is certain; `.ic` of the icons sheet stays unproven.
+    assert _arcs(stated_pages_graph) == set(PAGES_EXPECTED)
+    expected = {key: value for key, value in PAGES_UNCERTAIN.items() if key != (f"{AP}:1", ".shell")}
+    assert _uncertain(stated_pages_graph) == expected
+
+
+# The edge store's rows.
+def test_rows_hold_every_arc_and_hole_under_one_label_with_its_end(graph, tmp_path):
+    import resolve_edges as rx
+    edges, holes, coverage = css.rows(graph, "stylesheet@test")
+    assert len(edges) == len(graph["edges"]) and len(holes) == len(graph["holes"])
+    assert {row["language"] for row in edges + holes} == {"stylesheet"}
+    assert {row["reference_id"] for row in edges + holes} == {None}
+    by_site = {(row["file"], row["l0"], row["kind"], row["symbol"]): row for row in edges}
+    cdn = by_site[(H, 14, "import", CDN)]
+    assert (cdn["verdict"], cdn["external"]["package"], cdn["external"]["version"]) == ("external", "@acme/ui", "1.2.3")
+    assert by_site[(T, 1, "import", B)]["verdict"] == "namespace"
+    spin = by_site[(T, 33, "keyframes", SPIN)]
+    assert (spin["verdict"], spin["confidence"], spin["payload"]["name"]) == ("project-value", "confirmed", "spin")
+    accent = by_site[(T, 31, "custom-property", f"{T}:6 --accent")]
+    assert accent["confidence"] == "uncertain" and set(accent["payload"]["uncertain"]["candidates"]) == set(ACCENT)
+    missing = next(row for row in holes if (row["file"], row["l0"], row["class"]) == (T, 32, "undeclared"))
+    assert missing["reason"].startswith("--missing")
+    rx.write_edge_store(tmp_path / "edges.sqlite", edges, {"schema": rx.EDGE_SCHEMA}, holes)
+    import sqlite3
+    with sqlite3.connect(tmp_path / "edges.sqlite") as connection:
+        assert connection.execute("SELECT manager, package, version FROM externals WHERE symbol = ?",
+                                  (CDN,)).fetchone() == ("npm", "@acme/ui", "1.2.3")
+
+
+def test_the_coverage_counts_every_site_once(graph):
+    _edges, _holes_, coverage = css.rows(graph, "stylesheet@test")
+    assert "violations" not in coverage
+    assert coverage["sites"] == len(graph["sites"])
+    assert coverage["sites"] == sum(coverage["answered"].values()) + sum(
+        item["count"] for item in coverage["holes"].values())
+    assert coverage["files"] == graph["files"] and coverage["state"] == "lower-bound"
+
+
+def test_a_site_without_a_row_breaks_the_coverage(graph):
+    hole = next(item for item in graph["holes"] if item["class"] == "undeclared")
+    broken = {**graph, "holes": [item for item in graph["holes"] if item is not hole]}
+    _edges, _holes_, coverage = css.rows(broken, "stylesheet@test")
+    assert coverage["violations"] == {"custom-property": [f"{hole['site']} {hole['ref'][2]}"]}

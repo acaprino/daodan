@@ -1,0 +1,282 @@
+{
+ "calls": [
+  {
+   "script": "css_sass",
+   "payload": {
+    "items": [
+     {
+      "key": "src/Button.module.scss",
+      "path": "{project}/src/Button.module.scss",
+      "syntax": "scss"
+     }
+    ]
+   },
+   "data": {
+    "version": "0.5.6",
+    "seconds": 0.568,
+    "sheets": {
+     "src/Button.module.scss": {
+      "tree": [
+       {
+        "t": "at",
+        "line": 1,
+        "end": 1,
+        "name": "value",
+        "params": "brand, accent from \"./colors.module.css\"",
+        "refs": [],
+        "kids": null
+       },
+       {
+        "t": "var",
+        "line": 2,
+        "end": 2,
+        "name": "$pad",
+        "ns": null,
+        "flags": [],
+        "refs": []
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ":export"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "gap",
+          "value": "$pad",
+          "important": false,
+          "refs": [
+           {
+            "k": "var",
+            "name": "$pad",
+            "ns": null,
+            "line": 3
+           }
+          ],
+          "kids": []
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 4,
+        "end": 4,
+        "sel": [
+         ".primary"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "composes",
+          "value": "base from \"./colors.module.css\"",
+          "important": false,
+          "refs": [],
+          "kids": []
+         },
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "color",
+          "value": "accent",
+          "important": false,
+          "refs": [],
+          "kids": []
+         },
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "padding",
+          "value": "$pad",
+          "important": false,
+          "refs": [
+           {
+            "k": "var",
+            "name": "$pad",
+            "ns": null,
+            "line": 4
+           }
+          ],
+          "kids": []
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 5,
+        "end": 5,
+        "sel": [
+         ":global(.dark) .primary"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 5,
+          "end": 5,
+          "prop": "color",
+          "value": "white",
+          "important": false,
+          "refs": [],
+          "kids": []
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 6,
+        "end": 6,
+        "sel": [
+         ".local :local(.inner)"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 6,
+          "end": 6,
+          "prop": "margin",
+          "value": "0",
+          "important": false,
+          "refs": [],
+          "kids": []
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "measured": {
+    "seconds": 0.7,
+    "peak_mb": 173,
+    "stderr_tail": "DAODAN_MAXRSS_KB=177268\n"
+   }
+  },
+  {
+   "script": "css_typescript",
+   "payload": {
+    "tsconfig": "{work}/css-tsconfig.json",
+    "root": "{project}",
+    "files": [
+     "src/App.tsx"
+    ]
+   },
+   "data": {
+    "typescript": "5.9.3",
+    "files": [
+     "src/App.tsx"
+    ],
+    "records": [
+     {
+      "t": "import",
+      "file": "src/App.tsx",
+      "line": 1,
+      "spec": "./Button.module.scss"
+     },
+     {
+      "t": "import",
+      "file": "src/App.tsx",
+      "line": 2,
+      "spec": "./colors.module.css"
+     },
+     {
+      "t": "import",
+      "file": "src/App.tsx",
+      "line": 3,
+      "spec": "./theme.pcss"
+     },
+     {
+      "t": "classes",
+      "file": "src/App.tsx",
+      "line": 4,
+      "kind": "class",
+      "chain": [],
+      "alts": [
+       [
+        {
+         "s": "",
+         "l": 4
+        },
+        {
+         "m": "primary",
+         "x": "styles.primary"
+        },
+        {
+         "s": " ",
+         "l": 4
+        },
+        {
+         "m": "gap",
+         "x": "styles.gap"
+        },
+        {
+         "s": " ",
+         "l": 4
+        },
+        {
+         "m": "brand",
+         "x": "colors.brand"
+        },
+        {
+         "s": " ",
+         "l": 4
+        },
+        {
+         "m": "inner",
+         "x": "styles.inner"
+        },
+        {
+         "s": " card title",
+         "l": 4
+        }
+       ]
+      ]
+     },
+     {
+      "t": "member",
+      "file": "src/App.tsx",
+      "line": 4,
+      "spec": "./Button.module.scss",
+      "name": "primary"
+     },
+     {
+      "t": "member",
+      "file": "src/App.tsx",
+      "line": 4,
+      "spec": "./Button.module.scss",
+      "name": "gap"
+     },
+     {
+      "t": "member",
+      "file": "src/App.tsx",
+      "line": 4,
+      "spec": "./colors.module.css",
+      "name": "brand"
+     },
+     {
+      "t": "member",
+      "file": "src/App.tsx",
+      "line": 4,
+      "spec": "./Button.module.scss",
+      "name": "inner"
+     }
+    ],
+    "seconds": 1.106
+   },
+   "measured": {
+    "seconds": 1.3,
+    "peak_mb": 249,
+    "stderr_tail": "DAODAN_MAXRSS_KB=255016\n"
+   }
+  }
+ ],
+ "packages": {},
+ "directories": []
+}

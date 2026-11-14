@@ -1,0 +1,448 @@
+{
+ "calls": [
+  {
+   "script": "css_typescript",
+   "payload": {
+    "tsconfig": "{work}/css-tsconfig.json",
+    "root": "{project}",
+    "files": [
+     "src/Box.tsx",
+     "src/dom.ts",
+     "src/main.ts",
+     "src/stitches.ts",
+     "src/styled.tsx",
+     "src/styles.css.ts",
+     "src/theme.ts"
+    ]
+   },
+   "data": {
+    "typescript": "5.9.3",
+    "files": [
+     "src/Box.tsx",
+     "src/dom.ts",
+     "src/theme.ts",
+     "src/styled.tsx",
+     "src/styles.css.ts",
+     "src/stitches.ts",
+     "src/main.ts"
+    ],
+    "records": [
+     {
+      "t": "module",
+      "file": "src/Box.tsx",
+      "line": 1,
+      "spec": "@mui/system",
+      "to": "{project}/node_modules/@mui/system/index.d.mts"
+     },
+     {
+      "t": "cssinjs",
+      "file": "src/Box.tsx",
+      "line": 2,
+      "root": "&",
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "sel": [
+         "& .MuiChip-root"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "prop": "margin",
+          "value": "1",
+          "refs": []
+         }
+        ]
+       },
+       {
+        "t": "decl",
+        "line": 2,
+        "prop": "color",
+        "value": "red",
+        "refs": []
+       }
+      ]
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/Box.tsx",
+      "line": 2,
+      "selector": "& .MuiChip-root"
+     },
+     {
+      "t": "classes",
+      "file": "src/dom.ts",
+      "line": 2,
+      "kind": "class",
+      "chain": [
+       "classList"
+      ],
+      "alts": [
+       [
+        {
+         "s": " "
+        },
+        {
+         "s": "cm-content",
+         "l": 2
+        },
+        {
+         "s": " "
+        },
+        {
+         "s": "cm-md-link",
+         "l": 2
+        },
+        {
+         "s": " "
+        },
+        {
+         "s": "cm-ghost",
+         "l": 2
+        },
+        {
+         "s": " "
+        },
+        {
+         "s": "title",
+         "l": 2
+        },
+        {
+         "s": " "
+        },
+        {
+         "s": "btn-primary",
+         "l": 2
+        }
+       ]
+      ]
+     },
+     {
+      "t": "module",
+      "file": "src/theme.ts",
+      "line": 1,
+      "spec": "@codemirror/view",
+      "to": "{project}/node_modules/@codemirror/view/dist/index.d.ts"
+     },
+     {
+      "t": "cssinjs",
+      "file": "src/theme.ts",
+      "line": 2,
+      "root": "&",
+      "tree": [
+       {
+        "t": "rule",
+        "line": 3,
+        "sel": [
+         "&"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "prop": "color",
+          "value": "var(--ink)",
+          "refs": []
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 4,
+        "sel": [
+         ".cm-content"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "prop": "padding",
+          "value": "4px",
+          "refs": []
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 5,
+        "sel": [
+         "&.cm-focused .cm-cursor"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 5,
+          "prop": "border-left-color",
+          "value": "red",
+          "refs": []
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/theme.ts",
+      "line": 4,
+      "selector": ".cm-content"
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/theme.ts",
+      "line": 5,
+      "selector": "&.cm-focused .cm-cursor"
+     },
+     {
+      "t": "cssinjs",
+      "file": "src/theme.ts",
+      "line": 7,
+      "root": "&",
+      "tree": [
+       {
+        "t": "rule",
+        "line": 8,
+        "sel": [
+         "&dark .cm-md-link"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 8,
+          "prop": "color",
+          "value": "blue",
+          "refs": []
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/theme.ts",
+      "line": 8,
+      "selector": "&dark .cm-md-link"
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/theme.ts",
+      "line": 11,
+      "selector": ".cm-ghost"
+     },
+     {
+      "t": "module",
+      "file": "src/styled.tsx",
+      "line": 1,
+      "spec": "styled-components",
+      "to": "{project}/node_modules/styled-components/dist/index.d.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/styled.tsx",
+      "line": 2,
+      "spec": "@emotion/css",
+      "to": "{project}/node_modules/@emotion/css/dist/emotion-css.cjs.d.mts"
+     },
+     {
+      "t": "cssinjs-text",
+      "file": "src/styled.tsx",
+      "line": 3,
+      "text": "\n  color: var(--ink);\n  .dark & { color: white; }\n  & .title { margin: 0; }\n  __dd0__\n",
+      "global": false,
+      "holes": {
+       "__dd0__": "(p: any) => p.extra"
+      }
+     },
+     {
+      "t": "cssinjs-text",
+      "file": "src/styled.tsx",
+      "line": 9,
+      "text": "\n  :root { --ink: #111; }\n  .btn-primary { color: red; }\n  .__dd1__ { color: blue; }\n",
+      "global": true,
+      "holes": {
+       "__dd1__": "(p: any) => p.name"
+      }
+     },
+     {
+      "t": "cssinjs-text",
+      "file": "src/styled.tsx",
+      "line": 14,
+      "text": "\n  padding: 2px;\n  &:hover .title { padding: 4px; }\n",
+      "global": false,
+      "holes": {}
+     },
+     {
+      "t": "module",
+      "file": "src/styles.css.ts",
+      "line": 1,
+      "spec": "@vanilla-extract/css",
+      "to": "{project}/node_modules/@vanilla-extract/css/dist/vanilla-extract-css.cjs.d.ts"
+     },
+     {
+      "t": "cssinjs",
+      "file": "src/styles.css.ts",
+      "line": 2,
+      "root": "&",
+      "tree": [
+       {
+        "t": "decl",
+        "line": 3,
+        "prop": "padding",
+        "value": "4",
+        "refs": []
+       },
+       {
+        "t": "block",
+        "line": 4,
+        "refs": [],
+        "kids": [
+         {
+          "t": "rule",
+          "line": 4,
+          "sel": [
+           ".dark &"
+          ],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 4,
+            "prop": "color",
+            "value": "white",
+            "refs": []
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/styles.css.ts",
+      "line": 4,
+      "selector": ".dark &"
+     },
+     {
+      "t": "cssinjs",
+      "file": "src/styles.css.ts",
+      "line": 6,
+      "root": ".prose a",
+      "tree": [
+       {
+        "t": "decl",
+        "line": 6,
+        "prop": "color",
+        "value": "var(--ink)",
+        "refs": []
+       }
+      ]
+     },
+     {
+      "t": "module",
+      "file": "src/stitches.ts",
+      "line": 1,
+      "spec": "@stitches/react",
+      "to": "{project}/node_modules/@stitches/react/types/index.d.ts"
+     },
+     {
+      "t": "cssinjs",
+      "file": "src/stitches.ts",
+      "line": 2,
+      "root": "&",
+      "tree": [
+       {
+        "t": "rule",
+        "line": 3,
+        "sel": [
+         "&:hover"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "prop": "color",
+          "value": "red",
+          "refs": []
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 4,
+        "sel": [
+         "& .icon"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "prop": "width",
+          "value": "10",
+          "refs": []
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "t": "css-in-js",
+      "file": "src/stitches.ts",
+      "line": 4,
+      "selector": "& .icon"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 1,
+      "spec": "./theme",
+      "to": "{project}/src/theme.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 2,
+      "spec": "./dom",
+      "to": "{project}/src/dom.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 3,
+      "spec": "./styled",
+      "to": "{project}/src/styled.tsx"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 4,
+      "spec": "./styles.css",
+      "to": "{project}/src/styles.css.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 5,
+      "spec": "./stitches",
+      "to": "{project}/src/stitches.ts"
+     },
+     {
+      "t": "module",
+      "file": "src/main.ts",
+      "line": 6,
+      "spec": "./Box",
+      "to": "{project}/src/Box.tsx"
+     }
+    ],
+    "seconds": 2.395
+   },
+   "measured": {
+    "seconds": 2.6,
+    "peak_mb": 315,
+    "stderr_tail": "DAODAN_MAXRSS_KB=323044\n"
+   }
+  }
+ ],
+ "packages": {},
+ "directories": []
+}

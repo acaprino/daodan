@@ -21,11 +21,17 @@ concatenation, a value the TypeScript checker cannot state, a token glued to an 
 A stylesheet or markup file no reader here takes is listed in `files.missing` with the reason, never dropped. An arc's `chain` lists the rules that led from
 the site to the target (`literal-type`, `initializer`, `clsx`, `classList`, `@apply`, `composes`...).
 
-Three engines, an adapter each. This one: the product's stylesheet parser (`languages/stylesheet.py`, CSS, SCSS,
-LESS), every statement it reads observed as it reads it (the parser keeps no `@apply`, `@include` or import
-line), and the standard library's HTML parser for HTML and EJS (class, id, style, `<style>`, `<link>`).
-`css_typescript.py`: the TypeScript compiler over JS/TS/JSX/TSX. `css_tailwind.py`: the project's Tailwind,
-which says which class tokens are its utilities. `run` wires the three; `graph` resolves and assembles.
+An adapter per engine. This one: the product's stylesheet parser (`languages/stylesheet.py`, CSS, SCSS, LESS), every
+statement it reads observed as it reads it (the parser keeps no `@apply`, `@include` or import line), and the
+standard library's HTML parser for HTML and EJS (class, id, style, `<style>`, `<link>`). The others run a pinned
+Node engine through the `runner` the stage supplies (`css_sass`): Sass, Less, Stylus, the compilers of Vue, Svelte
+and Astro, the TypeScript compiler over JS/TS/JSX/TSX, and the project's Tailwind, which says which class tokens are
+its utilities. `run` wires them; `graph` resolves and assembles; `rows` gives the edge store's rows.
+
+What the code loads together is an input, never discovered here: `units`, the units of code the pre-map states
+(the files and sheets each one loads together), beside the pages and bundles the graph's own imports state; and
+`remote`, the text of the sheets the markup links from a CDN, which the caller takes from the package registry.
+Nothing here reads the network or runs a program.
 """
 from __future__ import annotations
 
@@ -35,18 +41,16 @@ import html.parser
 import json
 import os
 import re
-import sys
 import time
 import urllib.parse
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
-from languages import stylesheet  # noqa: E402
-from tree_scope import DEPENDENCY_DIRS  # noqa: E402
+from languages import stylesheet
+from tree_scope import DEPENDENCY_DIRS
 
-from . import css_astro, css_less, css_sass, css_stylus, css_svelte, css_tailwind, css_typescript, css_vue  # noqa: E402
+from . import css_astro, css_less, css_sass, css_stylus, css_svelte, css_tailwind, css_typescript, css_vue
 
+LANGUAGE = "stylesheet"  # the label of the graph and of every store row, whatever file holds the site
 STYLESHEETS = (".css", ".scss", ".sass", ".less", ".pcss", ".postcss", ".styl", ".stylus")
 MARKUP = (".html", ".htm", ".ejs")
 COMPONENTS = {".vue": css_vue, ".svelte": css_svelte, ".astro": css_astro}
@@ -108,49 +112,55 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:12]
 
 
+# The files the graph reads, or lists as missing with the reason.
+SUFFIXES = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + tuple(UNREAD)
+MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on tududi (benchmarks/inference-audit, 14 November 2026)
+
+
 def walk(project_dir: Path) -> list[str]:
     """The project's stylesheet, markup and script files, outside dot and dependency directories (the snapshot's
     perimeter, `tree_scope.DEPENDENCY_DIRS`); the ones no reader takes included, to be listed as missing."""
-    suffixes = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + tuple(UNREAD)
     return sorted(path.relative_to(project_dir).as_posix() for path in Path(project_dir).rglob("*")
-                  if path.is_file() and path.suffix.lower() in suffixes
+                  if path.is_file() and path.suffix.lower() in SUFFIXES
                   and not any(part in DEPENDENCY_DIRS or part.startswith(".")
                               for part in path.relative_to(project_dir).parts))
 
 
-def run(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> dict:
-    """The three adapters over a project, then the graph."""
+def run(project_dir: Path, work_dir: Path, runner, files: list[str] | None = None, units: list | None = None,
+        remote: dict | None = None) -> dict:
+    """The adapters over a project, then the graph. `runner` runs an engine script (`css_sass`); `work_dir` holds
+    the files a run writes; `units` and `remote` as `graph` takes them."""
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
     files = walk(project_dir) if files is None else files
     own = index(project_dir, work_dir, files)
-    sass = sass_sheets(project_dir, work_dir, files)
-    less = less_sheets(project_dir, work_dir, files)
-    stylus = engine_sheets(css_stylus, "stylus", project_dir, work_dir, files)
-    components = component_files(project_dir, work_dir, files)
+    sass = sass_sheets(runner, project_dir, files)
+    less = less_sheets(runner, project_dir, files)
+    stylus = engine_sheets(runner, css_stylus, "stylus", project_dir, files)
+    components = component_files(runner, project_dir, files)
     script_files = [rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)]
-    scripts = css_typescript.index(project_dir, work_dir, script_files) if script_files else \
+    scripts = css_typescript.index(project_dir, work_dir, runner, script_files) if script_files else \
         {"indexer": None, "records": [], "missing": {}}
     records = (own["records"] + sass["records"] + less["records"] + stylus["records"] + components["records"] +
                scripts["records"])
     entries = sorted({r["file"] for r in records if r["t"] == "ref" and r["kind"] == "import"
                       and r["name"] == "tailwindcss" and r["file"].lower().endswith(STYLESHEETS)})
-    tailwind = css_tailwind.index(project_dir, work_dir, sorted(class_tokens(records)), entries)
+    tailwind = css_tailwind.index(project_dir, runner, sorted(class_tokens(records)), entries)
     engines = [engine for engine in (own["indexer"], sass["indexer"], less["indexer"], stylus["indexer"],
                                      *components["indexers"], scripts["indexer"], tailwind["indexer"]) if engine]
     return graph(project_dir, records, tailwind, files, engines,
                  {**own["missing"], **sass["missing"], **less["missing"], **stylus["missing"],
-                  **components["missing"], **scripts["missing"]})
+                  **components["missing"], **scripts["missing"]}, units, remote)
 
 
-def component_files(project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+def component_files(runner, project_dir: Path, files: list[str]) -> dict:
     """Vue, Svelte and Astro files through their own compilers: their style blocks read by the reader of each block's
     dialect (scoped to the component, or a CSS Module of it), their class and id sites, `$style.x` members, `v-bind()`
     to the script binding it reads, and the scoped rules of a Vue parent on its child's root element."""
     records, missing, indexers, found = [], {}, [], {}
     for suffix, engine in COMPONENTS.items():
         items = [{"key": rel, "path": str(Path(project_dir) / rel)} for rel in files if rel.lower().endswith(suffix)]
-        result = engine.index(work_dir, items)
+        result = engine.index(runner, items)
         indexers.append(result["indexer"])
         for item in items:
             data = result["components"].get(item["key"], {"error": "not parsed"})
@@ -237,7 +247,7 @@ def component_files(project_dir: Path, work_dir: Path, files: list[str]) -> dict
         if record.get("root"):
             record["scopes"] += [[f"scoped:{parent}", ["child-root"]] for parent in sorted(parents_of[record["file"]])]
     for engine, items in ((css_sass, sass_items), (css_less, less_items), (css_stylus, stylus_items)):
-        parsed = engine.index(work_dir, items)
+        parsed = engine.index(runner, items)
         if items:
             indexers.append(parsed["indexer"])
         for item in items:
@@ -251,16 +261,16 @@ def component_files(project_dir: Path, work_dir: Path, files: list[str]) -> dict
     return {"records": records, "missing": missing, "indexers": indexers}
 
 
-def less_sheets(project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+def less_sheets(runner, project_dir: Path, files: list[str]) -> dict:
     """The Less files through Less's own parser (`css_less`), as records."""
-    return engine_sheets(css_less, "less", project_dir, work_dir, files)
+    return engine_sheets(runner, css_less, "less", project_dir, files)
 
 
-def engine_sheets(engine, dialect: str, project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+def engine_sheets(runner, engine, dialect: str, project_dir: Path, files: list[str]) -> dict:
     """The files of one dialect through its own parser, as records."""
     items = [{"key": rel, "path": str(Path(project_dir) / rel)} for rel in files
              if rel.lower().endswith(engine.SUFFIXES)]
-    parsed = engine.index(work_dir, items)
+    parsed = engine.index(runner, items)
     records, missing = [], {}
     for item in items:
         rel, sheet = item["key"], parsed["sheets"].get(item["key"], {"error": "not parsed"})
@@ -272,11 +282,11 @@ def engine_sheets(engine, dialect: str, project_dir: Path, work_dir: Path, files
     return {"indexer": parsed["indexer"], "records": records, "missing": missing}
 
 
-def sass_sheets(project_dir: Path, work_dir: Path, files: list[str]) -> dict:
+def sass_sheets(runner, project_dir: Path, files: list[str]) -> dict:
     """The SCSS and indented Sass files through the official Sass parser (`css_sass`), as records."""
     items = [{"key": rel, "path": str(Path(project_dir) / rel), "syntax": "sass" if rel.lower().endswith(".sass")
               else "scss"} for rel in files if rel.lower().endswith(css_sass.SUFFIXES)]
-    parsed = css_sass.index(work_dir, items)
+    parsed = css_sass.index(runner, items)
     records, missing = [], {}
     for item in items:
         rel, sheet = item["key"], parsed["sheets"].get(item["key"], {"error": "not parsed"})
@@ -1277,17 +1287,6 @@ def sheet_package(text: str, rel: str) -> dict:
     return {"manager": "checkout", "package": "unknown", "version": "unknown", "from": None}
 
 
-def _download(url: str) -> str | None:
-    """A CDN sheet's text, None when it cannot be fetched. Nothing about the project is sent."""
-    import urllib.request
-    try:
-        request = urllib.request.Request(url, headers={"User-Agent": "daodan-graph"})
-        with urllib.request.urlopen(request, timeout=30) as response:
-            return response.read(8 << 20).decode("utf-8", errors="replace")
-    except Exception:
-        return None
-
-
 def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: Path | None = None,
             sass: bool | None = None):
     """Where an import leads: `("project", rel, chain)` (a checkout file, inside the snapshot or not),
@@ -1474,12 +1473,14 @@ def _page_file(project_dir: Path, ref: dict, in_snapshot: set):
     return (target, None) if target in in_snapshot else None
 
 
-def load_units(refs: list, imports: dict, loads: dict, in_snapshot: set, read: set) -> dict:
+def load_units(refs: list, imports: dict, loads: dict, in_snapshot: set, read: set, stated=()) -> dict:
     """For every file, the sets of what is loaded together with it, each set one unit stated by the code: a page
     (an HTML or EJS file no template includes, with its includes, the sheets they link or hold, the scripts they
     load and what those import) or a module bundle no page loads (a script or component nothing imports, with every
     module it imports, the sheets those import and the component style blocks among them). A sheet brings what it
-    imports. Tailwind's utilities (`tailwindcss`) come with any sheet that loads Tailwind."""
+    imports. Tailwind's utilities (`tailwindcss`) come with any sheet that loads Tailwind. `stated`: the units the
+    pre-map states, each the files and sheets it loads together (an entry with the sheets the build adds to it, a
+    layout with the pages it wraps); each member brings what it includes, loads and imports, as above."""
     includes, scripts, sheets = collections.defaultdict(set), collections.defaultdict(set), collections.defaultdict(set)
     for ref in refs:
         found = imports.get(id(ref))
@@ -1526,6 +1527,11 @@ def load_units(refs: list, imports: dict, loads: dict, in_snapshot: set, read: s
         units.append(unit(templates | bundle))
     for root in sorted(modules - imported - entries):
         units.append(unit(closure([root], loads)))
+    for members in stated:
+        members = set(members)
+        templates = closure(sorted(members & markup), includes) | members
+        units.append(unit(templates | closure([s for t in sorted(templates) for s in scripts.get(t, ())] +
+                                              sorted(members & modules), loads)))
     by_file = collections.defaultdict(list)
     for members in units:
         for member in members:
@@ -1534,9 +1540,14 @@ def load_units(refs: list, imports: dict, loads: dict, in_snapshot: set, read: s
 
 
 def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[str], engines: list[dict],
-          missing: dict) -> dict:
-    """The common graph from the three adapters' records: nodes, arcs (`uncertain` with every candidate when the
-    cascade picks one at run time), holes; Tailwind's verdict on class tokens in `tailwind`."""
+          missing: dict, units: list | None = None, remote: dict | None = None) -> dict:
+    """The common graph from the adapters' records: nodes, arcs (`uncertain` with every candidate when the cascade
+    picks one at run time), holes; Tailwind's verdict on class tokens in `tailwind`.
+
+    `units`: the units of code the pre-map states (`load_units`). `remote`: `{url: text}` of the CDN sheets the
+    markup links, as the caller took them from the package registry; a linked sheet without its text is an external
+    node, and a name of a page that loads it which nothing else declares is a hole `remote-sheet` with its URL.
+    `sites` lists every reference, `[site, kind, symbol]`, the key of its arcs and holes (`ref`)."""
     project_dir = Path(project_dir).resolve()
     nodes, edges, holes, refs = {}, [], [], []
     names = collections.defaultdict(list)
@@ -1559,8 +1570,11 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 names[key].append(record["id"])
                 owned[record["id"]].append(key)
 
+    current = [None]  # the reference being resolved: its holes are its site's
+
     def hole(site, kind, cls, name, reason="-"):
-        holes.append({"site": site, "name": name, "kind": kind, "class": cls, "reason": reason})
+        holes.append({"site": site, "name": name, "kind": kind, "class": cls, "reason": reason,
+                      "ref": list(current[0] or (site, kind, name))})
 
     generated, interpolated = {}, []  # (node, name key): the loop it came from; compile-time selector patterns
     loads = collections.defaultdict(set)  # a script module: the project modules it loads
@@ -1691,7 +1705,7 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             text = Path(found[3]).read_text(encoding="utf-8", errors="replace")
             external_sheet(found[1], found[2], text, None, found[3], stylesheet.dialect_for(str(found[3])))
         elif found[0] == "remote" and found[1] not in sheets:
-            text = _download(found[1])
+            text = (remote or {}).get(found[1])
             if text is not None:
                 external = dict(found[2])
                 banner = BANNER_RE.match(text[:600])
@@ -1739,7 +1753,8 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 if key[0] == "class" and key[2] == ref["module"]:
                     composes[(key[2], key[1])].append((composes_scope(ref), ref["name"]))
 
-    units = load_units(refs, imports, loads, in_snapshot, read)
+    units = load_units(refs, imports, loads, in_snapshot, read, units or ())
+    unread = {found[1] for found in imports.values() if found and found[0] == "remote" and found[1] not in sheets}
     patterns = {key: found for key, found in names.items() if key[0] == "utility-pattern"}
     patterns = {(key[0], key[1]): found for key, found in patterns.items()}
     for ref in list(refs):  # a class token's custom variants (`pointer-coarse:p-2`) name them
@@ -1872,9 +1887,11 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 queue.append((target_scope, composed, (*chain, "composes")))
         return out
 
-    seen = set()
+    seen, considered = set(), []
     for ref in refs:
         kind, name = ref["kind"], ref["name"]
+        current[0] = (ref["site"], kind, ref["symbol"])
+        considered.append(current[0])
         targets, uncertain = [], None
         if "to" in ref:
             targets = [(ref["to"], ())]
@@ -1894,8 +1911,6 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             if found[0] in ("external", "remote"):
                 node(found[1], "module", None, None, found[2])
                 targets = [(found[1], ())]
-                if found[0] == "remote" and found[1] not in sheets:
-                    hole(ref["site"], kind, "not-read", ref["symbol"], "the sheet could not be downloaded")
             else:  # checkout files: a project module, or a sheet outside the snapshot read as external
                 rels = [found[1]] if found[0] == "project" else found[1]
                 for rel in rels:
@@ -1938,12 +1953,14 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             key = "stylus-variable" if kind == "stylus-variable" else "stylus-mixin"
             targets = [(target, ()) for f in less_group(ref["file"]) for target in names[(key, name, f)]]
             if not targets and ref.get("optional"):
+                considered.pop()  # not a reference to a name the project declares
                 continue  # a keyword or a function of Stylus, not a name the project declares
             if len(targets) > 1:
                 uncertain = "Stylus: the definition in force where it is used is decided in order"
         elif kind in ("sass-variable", "mixin", "function") and not ref.get("less"):
             targets, uncertain = sass_targets(ref, kind)
             if not targets and kind == "function" and ref.get("ns") is None:
+                considered.pop()  # not a reference to a name the project declares
                 continue  # a CSS or global Sass function, not a name the project declares
         elif kind == "placeholder":
             targets = [(target, ()) for target in names[("placeholder", name, None)]]
@@ -1980,10 +1997,12 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 if not targets and origin:
                     targets = [(target, ("from",)) for target in names[("css-value", origin[1], origin[0])]]
             if not targets and ref.get("optional"):
+                considered.pop()  # not a reference to a name the project declares
                 continue  # a keyword, not one of the module's values
         elif kind == "variant":
             targets = [(target, ()) for target in names[("variant", name)]]
             if not targets and ref.get("optional"):
+                considered.pop()  # not a reference to a name the project declares
                 continue  # one of Tailwind's own variants
         elif kind in ("source", "config"):
             path = ((project_dir / ref["file"]).parent / name).resolve()
@@ -2039,6 +2058,11 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 where = next(site for (mark, prefix, suffix), site in interpolated
                              if (prefix or suffix) and name.startswith(prefix) and name.endswith(suffix))
                 cls, reason = "interpolated-selector", f"a selector built at compile time at {where} may name it"
+            elif kind in LOADED_KINDS and cls in ("no-rule", "undeclared", "no-keyframes", "no-font-face",
+                                                  "no-container"):
+                away = sorted({url for unit in units.get(ref["file"], ()) for url in unit if url in unread})
+                if away:
+                    cls, reason = "remote-sheet", f"a sheet not read may declare it: {', '.join(away)}"
             hole(ref["site"], kind, cls, name if kind in ("class", "id", "module-member", "composes") else ref["symbol"],
                  reason)
             continue
@@ -2065,11 +2089,57 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
     names_read = (read | {rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)}) - set(missing)
     indexed = [rel for rel in files if rel in names_read]
     lost = [{"path": rel, "reason": missing.get(rel) or "not read"} for rel in files if rel not in names_read]
-    return {"language": "css",
+    return {"language": LANGUAGE,
             "indexer": {"name": " + ".join(engine["name"] for engine in engines),
                         "version": " + ".join(str(engine.get("version")) for engine in engines),
                         "seconds": round(sum(engine.get("seconds") or 0 for engine in engines), 1),
                         "peak_mb": max((engine.get("peak_mb") or 0 for engine in engines), default=None)},
             "engines": engines,
             "files": {"snapshot": len(files), "indexed": len(indexed), "missing": lost},
-            "nodes": list(nodes.values()), "edges": edges, "holes": holes, "removed": []}
+            "nodes": list(nodes.values()), "edges": edges, "holes": holes, "removed": [],
+            "sites": [list(key) for key in sorted(set(considered) | {tuple(item["ref"]) for item in holes},
+                                                  key=lambda key: tuple(map(str, key)))]}
+
+
+
+def _place(site: str) -> tuple[str, int | None]:
+    rel, _, line = site.rpartition(":")
+    return (rel, int(line)) if line.isdigit() else (site, None)
+
+
+def rows(graph: dict, resolver: str) -> tuple[list[dict], list[dict], dict]:
+    """The graph as the edge store's rows (`resolve_edges.write_edge_store`): edges, holes and the coverage entry.
+
+    The snapshot lists no reference in a stylesheet: a row has no `reference_id`, its site is `file` and `l0`, `kind`
+    the kind of the name, `caller` what holds the site, `symbol` the node reached; the payload keeps the name as
+    written (`name`), the `chain` and, for an uncertain arc, `uncertain`. The end is `external` for a node outside
+    the project (its package goes to `externals`), `namespace` for a file, `project-value` for any other
+    declaration. A hole keeps the graph's class, its reason led by the name. The coverage
+    (`resolve_edges.language_coverage`) counts the graph's `sites`: one without a row is a violation."""
+    import resolve_edges as rx
+    nodes = {node["id"]: node for node in graph["nodes"]}
+    edges, holes, keyed_edges, keyed_holes = [], [], [], []
+    for edge in graph["edges"]:
+        rel, line = _place(edge["site"])
+        target = nodes[edge["to"]]
+        verdict = "external" if target["external"] else \
+            "namespace" if target["kind"] in ("module", "directory") else "project-value"
+        row = {"reference_id": None, "file": rel, "language": LANGUAGE, "kind": edge["kind"], "caller": edge["from"],
+               "l0": line, "c0": None, "verdict": verdict, "target_id": None, "symbol": edge["to"],
+               "resolver": resolver, "confidence": "uncertain" if edge.get("uncertain") else "confirmed",
+               "external": target["external"],
+               "payload": {"name": edge["symbol"], "chain": list(edge["chain"]), "detail": "",
+                           **({"uncertain": edge["uncertain"]} if edge.get("uncertain") else {})}}
+        edges.append(row)
+        keyed_edges.append({**row, "reference_id": (edge["site"], edge["kind"], edge["symbol"])})
+    for item in graph["holes"]:
+        rel, line = _place(item["site"])
+        reason = item["name"] if item["reason"] in (None, "-") else f"{item['name']}: {item['reason']}"
+        row = {"reference_id": None, "file": rel, "language": LANGUAGE, "kind": item["kind"], "l0": line, "c0": None,
+               "class": item["class"], "reason": reason, "resolver": resolver}
+        holes.append(row)
+        keyed_holes.append({**row, "reference_id": tuple(item["ref"])})
+    sites = [{"reference_id": tuple(key), "kind": key[1], "site": f"{key[0]} {key[2]}", "lexical": False}
+             for key in graph["sites"]]
+    coverage = rx.language_coverage(sites, keyed_edges, keyed_holes, graph["files"])
+    return edges, holes, coverage
