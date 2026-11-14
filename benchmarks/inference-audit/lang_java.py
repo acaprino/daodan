@@ -31,7 +31,9 @@ RESULTS = HERE / "results"
 TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
+import indexers.java  # noqa: E402
 from adapters import java  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
@@ -119,7 +121,8 @@ def _image():
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
-        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_file(HERE / "plugin_scripts.py" if LOCAL else Path("/audit/plugin_scripts.py"),
+                        "/audit/plugin_scripts.py")
         .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
                        ignore=["**/__pycache__/**"])
     )
@@ -163,7 +166,7 @@ def index_case(label: str = "") -> dict:
     import shutil
     import time
     started = time.time()
-    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
+    print("code", plugin_scripts.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     peak = _Peak()
     peak.thread.start()
     case = CASES[CASE]
@@ -207,7 +210,7 @@ def write(folder: Path, manifest: Path, source: Path, out: Path) -> tuple[Path, 
     index = scip_graph.Index(source)
     for name, prefix in engine["indexes"]:
         index.load(folder / name, prefix)
-    hops, veto, sites = java.hops(index), java.same_range(index), java.static(index)
+    hops, veto, sites = indexers.java.hops(index), indexers.java.same_range(index), indexers.java.static(index)
     with scip_graph.Snapshot(manifest) as snapshot:
         traversal = scip_graph.Traversal(index, snapshot, hops, same_range=veto)
         graph, references = scip_graph.build(index, snapshot, LANGUAGE, hops, engine["indexer"], None, traversal,

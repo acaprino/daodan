@@ -1,20 +1,22 @@
 """A whole-project SCIP index read completely as one code graph: the part that knows no language.
 
-What is specific to an indexer lives in `adapters/<language>.py`, two functions:
+What is specific to an indexer lives in its adapter, `indexers/<language>.py`:
 
-    index(project_dir, work_dir, files=None) -> {"indexes": [[path, prefix], ...], "indexer": {...}, "runs": [...]}
     hops(index) -> {symbol key: [(target, tag), ...]}
 
-`prefix` is the checkout-relative directory an indexer run names its documents from; `indexer` is
-`{"name", "version", "seconds", "peak_mb"}`. A hop's target is another symbol key, or `(rel, line, byte
-column)` where a function the snapshot declares starts; its tag names the engine quirk it reads. An adapter
-may add, each passed by its driver to `Traversal` or `build`:
+A hop's target is another symbol key, or `(rel, line, byte column)` where a function the snapshot declares
+starts; its tag names the engine quirk it reads. An adapter may add, each passed by its driver to `Traversal`
+or `build`:
 
     missing(index, rels) -> {rel: reason}       snapshot files the index holds no document for
     same_range(index) -> {(definition key, other key): bool}   at a shared range: True alias, False never
     classify(key) -> "project" | "namespace" | {"manager", "package", "version"} | None (the default rule)
     static(index) -> {(rel, line, byte column)}  member references dispatched statically
     refine(index, graph) -> None                 holes added, edges marked `uncertain` or `removed`
+
+An indexer run gives `{"indexes": [[path, prefix], ...], "indexer": {...}, "runs": [...]}`: `prefix` is the
+checkout-relative directory a run names its documents from, `indexer` is `{"name", "version", "seconds",
+"peak_mb"}`; `measured`, `module_runs` and `indexer` build it.
 
 Everything else is here: every document, occurrence and SymbolInformation decoded (`Index`); the Daodan
 snapshot a graph is measured against (`Snapshot`); from each referenced symbol every chain the index states,
@@ -28,17 +30,11 @@ value with no stated alias, or a dead end: a `local` or project symbol the index
 from __future__ import annotations
 
 import collections
-import hashlib
 import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import NamedTuple
-
-# The plugin's scripts: beside the checkout this file sits in, or where the Modal images mount them.
-_SCRIPTS = next((parent / "plugins/codebase-map/skills/map/scripts" for parent in Path(__file__).resolve().parents
-                 if (parent / "plugins/codebase-map/skills/map/scripts").is_dir()), Path("/daodan/map/scripts"))
-sys.path.insert(0, str(_SCRIPTS))
 
 UNITS = {1: "utf-8", 2: "utf-16", 3: "utf-32"}
 # SymbolInformation.Kind numbers, grouped into the kinds a graph reports.
@@ -771,14 +767,6 @@ def report(graph: dict) -> dict:
                   for (cls, kind, reason), items in sorted(holes.items(), key=lambda pair: -len(pair[1]))][:40],
         "external_packages": dict(packages.most_common(20)),
     }
-
-
-def code_sha256() -> dict[str, str]:
-    """The first twelve hex digits of the sha256 of this module and of each adapter beside it: what a container
-    runs, to compare with the checkout before trusting its results."""
-    here = Path(__file__).resolve().parent
-    files = [here / "scip_graph.py", *sorted((here / "adapters").glob("*.py"))]
-    return {path.relative_to(here).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()[:12] for path in files}
 
 
 def measured(command: list[str], cwd: str, env: dict | None, timeout: int) -> dict:

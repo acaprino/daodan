@@ -199,9 +199,9 @@ Percorsi `scripts/` = plugins/codebase-map/skills/map/scripts/.
 - `benchmarks/inference-audit/fixtures/{ts,rust}` passano in `tests/fixtures/code-graph/`: indici di 35 KB e 4 KB.
 - `lang_{java,kotlin,python}.py` e `modal_scip.py` importano dagli script del plugin, montati in `/daodan/map/scripts`. `code_sha256` resta nel benchmark e fa l'hash dei file del plugin.
 
-- [ ] **Test prima:** il test spostato importa `code_graph`; è rosso finché il modulo non esiste.
-- [ ] **Verifica:** `tests/test_codebase_map_code_graph.py`, in pochi secondi.
-- [ ] **Si cancella:** `benchmarks/inference-audit/scip_graph.py`, le parti di lettura di `adapters/`, `test_scip_graph.py`, `fixtures/`.
+- [x] **Test prima:** il test spostato importa `code_graph`; è rosso finché il modulo non esiste.
+- [x] **Verifica:** `tests/test_codebase_map_code_graph.py`, in pochi secondi.
+- [x] **Si cancella:** `benchmarks/inference-audit/scip_graph.py`, le parti di lettura di `adapters/`, `test_scip_graph.py`, `fixtures/`.
 
 ### Task 2: contratto e una fixture per linguaggio
 

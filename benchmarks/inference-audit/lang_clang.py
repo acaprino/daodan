@@ -35,7 +35,8 @@ AUDIT = HERE if LOCAL else Path("/audit")
 TAG = "inference-audit"
 sys.path.insert(0, str(AUDIT))
 sys.path.insert(0, SCRIPTS)
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
 from adapters import clang as adapter  # noqa: E402
 from modal_audit import _source  # noqa: E402
 
@@ -132,7 +133,7 @@ def _image():
         .run_commands(*adapter.install_commands())
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(AUDIT / "modal_audit.py", "/audit/modal_audit.py")
-        .add_local_file(AUDIT / "scip_graph.py", "/audit/scip_graph.py")
+        .add_local_file(AUDIT / "plugin_scripts.py", "/audit/plugin_scripts.py")
         .add_local_dir(AUDIT / "adapters", "/audit/adapters", ignore=["**/__pycache__/**"])
         .add_local_dir(AUDIT / "fixtures/c", "/audit/fixtures/c", ignore=["index.scip"])
         .add_local_dir(AUDIT / "fixtures/cpp", "/audit/fixtures/cpp", ignore=["index.scip"])
@@ -189,7 +190,7 @@ def index_case(case: str, label: str = "") -> dict:
     import shutil
     import time
     started = time.time()
-    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
+    print("code", plugin_scripts.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     peak = _Peak()
     peak.thread.start()
     spec = CASES[case]
@@ -198,7 +199,7 @@ def index_case(case: str, label: str = "") -> dict:
     store.mkdir(parents=True, exist_ok=True)
     target = _source(work / "src", spec, None)
     manifest = work / "snapshot/manifest.sqlite"
-    run = {"case": case, "commit": spec["commit"], "label": label, "code": scip_graph.code_sha256()}
+    run = {"case": case, "commit": spec["commit"], "label": label, "code": plugin_scripts.code_sha256()}
     run["snapshot"] = scip_graph.measured([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out",
                                            str(manifest), "--no-engine", "--no-index"], SCRIPTS, None, 1800)
     run["snapshot_facts"] = snapshot_facts(manifest) if manifest.is_file() else None
@@ -232,8 +233,8 @@ def index_case(case: str, label: str = "") -> dict:
 def index_fixtures(label: str = "") -> dict:
     """The two fixtures indexed as the cases are; their indexes and the indexer's help land on the volume."""
     import shutil
-    print("code", scip_graph.code_sha256(), flush=True)
-    out = {"label": label, "code": scip_graph.code_sha256()}
+    print("code", plugin_scripts.code_sha256(), flush=True)
+    out = {"label": label, "code": plugin_scripts.code_sha256()}
     for name, project in FIXTURES.items():
         work = Path("/work/fixtures") / name
         source = work / "source"
@@ -534,7 +535,7 @@ if __name__ == "__main__":
     parser.add_argument("--dir", help="with graph: a directory filled by fetch --files")
     args = parser.parse_args()
     if args.command == "spawn":
-        print("local code", scip_graph.code_sha256())
+        print("local code", plugin_scripts.code_sha256())
         if args.fixtures:
             print("fixtures", modal.Function.from_name("daodan-graph-clang", "index_fixtures").spawn(args.label).object_id)
         else:

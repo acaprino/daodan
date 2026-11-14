@@ -17,7 +17,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import code_graph as scip_graph  # noqa: E402
 
 VERSION = "6.0.2"  # @typescript/typescript6, which re-exports typescript 6.0.x
 TOOLS = Path(os.environ.get("DAODAN_STRONG_JS", "/opt/strong-js"))  # where the npm tools are installed

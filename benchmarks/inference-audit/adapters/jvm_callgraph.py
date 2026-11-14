@@ -22,7 +22,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import code_graph as scip_graph  # noqa: E402
 
 VERSION = "1.9.0"  # com.ibm.wala:com.ibm.wala.core on Maven Central, released 2026-10-30
 SOURCE = Path(__file__).with_name("JvmCallGraph.java")

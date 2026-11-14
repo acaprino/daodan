@@ -41,7 +41,7 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
 from languages import stylesheet  # noqa: E402
 from tree_scope import DEPENDENCY_DIRS  # noqa: E402
 

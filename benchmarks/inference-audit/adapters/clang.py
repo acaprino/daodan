@@ -41,7 +41,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import code_graph as scip_graph  # noqa: E402
 
 VERSION = "v0.4.1"  # github.com/sourcegraph/scip-clang, released 2026-10-22, LLVM 21
 URL = f"https://github.com/sourcegraph/scip-clang/releases/download/{VERSION}/scip-clang-x86_64-linux"

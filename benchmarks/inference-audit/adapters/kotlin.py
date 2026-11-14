@@ -1,43 +1,28 @@
-"""scip-java for Kotlin: how this engine builds its index and what its index leaves to the reader.
+"""scip-java for Kotlin: how this engine builds its index. What its index leaves to the reader is the
+plugin's `indexers/kotlin.py`.
 
 `index` runs `scip-java index` (0.14: the Gradle build with scip-java's init script, then its standalone
 Kotlin Analysis API indexer over the sources and classpath each KotlinCompile task dumps to
-`kotlin-configs/`) on a copy of the checkout. What the index states its own way, and how it is read here:
-- relationships: the indexer writes `is_implementation` on the overriding member, pointing to the member it
-  overrides; the aggregator adds the reverse one on the overridden member (`is_implementation` and
-  `is_reference`, ScipAggregator.java), which `forward_only` drops so the shared reader sees one direction;
-- a property reference is written as the property plus its getter (and setter) at the same range, a
-  companion member through its class symbol, an extension function as its own symbol: no hop is needed;
-- the overload number `(+N)` follows source order for a declaration with source and compiled member order
-  for one on another task's classpath, so a reference across compile tasks to an overloaded project function,
-  and an override relation across tasks, can name the wrong overload: `refine` marks those edges uncertain
-  with every overload of the name in the target class as candidates;
-- calls the index never writes (`x[k]`, `x[k] = v`, the `for` iterator, `by` delegates, `componentN`) are
-  found with tree-sitter and become holes of class `implicit-operator`;
-- the package placeholder `. .` names both project symbols (the test tasks) and every Kotlin builtin or stdlib
-  symbol: `classify` keeps it a project symbol only under a package path where the index defines `. .`
-  symbols, else an external with manager `unknown` and the Kotlin package path; a namespace symbol (`package`
-  and `import` lines, never defined) is a namespace.
+`kotlin-configs/`) on a copy of the checkout. The indexer writes `is_implementation` on the overriding member,
+pointing to the member it overrides; the aggregator adds the reverse one on the overridden member
+(`is_implementation` and `is_reference`, ScipAggregator.java), which `forward_only` drops so the shared reader
+sees one direction.
 """
 from __future__ import annotations
 
-import collections
 import os
-import re
 import shutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import code_graph  # noqa: E402
 
 VERSION = "0.14.2"  # org.scip-code:scip-java on Maven Central, Kotlin through scip-kotlin-analysis 0.14.2
 JDK = "https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jdk/hotspot/normal/eclipse"
 JAVA = "/opt/jdk/bin/java"
 CLASSPATH = "/opt/scip-java/classpath.txt"  # strings: the image is defined on any host
-OVERLOAD = re.compile(r"^(.*[#/])([^#/().]+|`[^`]+`)\((?:\+\d+)?\)\.$")  # owner, name of a method symbol
-OPERATORS = {"indexed read": "get", "indexed assignment": "set", "for loop": "iterator",
-             "property delegate": "getValue", "destructuring entry": "componentN"}
 
 
 def install_commands() -> list[str]:
@@ -64,7 +49,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> 
     output = work_dir / "scip-java-0.scip"
     command = [JAVA, "-Xmx4g", "-cp", Path(CLASSPATH).read_text().strip(), "org.scip_code.scip_java.ScipJava", "index",
                "--output", str(output)]
-    run = {"prefix": "", **scip_graph.measured(command, str(mirror), env, 3600)}
+    run = {"prefix": "", **code_graph.measured(command, str(mirror), env, 3600)}
     run["index_bytes"] = output.stat().st_size if output.is_file() else 0
     configs = mirror / "build/scip-targetroot/kotlin-configs"
     if configs.is_dir():
@@ -74,7 +59,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> 
     if output.is_file():
         run["reverse_relationships_dropped"] = forward_only(output, forward)
     return {"indexes": [[run["index"], ""]] if run["index"] else [], "runs": [run],
-            "indexer": scip_graph.indexer("scip-java", VERSION, [run]), "configs": str(work_dir / "kotlin-configs")}
+            "indexer": code_graph.indexer("scip-java", VERSION, [run]), "configs": str(work_dir / "kotlin-configs")}
 
 
 # The aggregator's reverse relationships, dropped from a copy of the index.
@@ -93,12 +78,12 @@ def _spans(data: bytes):
     at = 0
     while at < len(data):
         start = at
-        tag, at = scip_graph._varint(data, at)
+        tag, at = code_graph._varint(data, at)
         number, wire = tag >> 3, tag & 7
         if wire == 0:
-            value, at = scip_graph._varint(data, at)
+            value, at = code_graph._varint(data, at)
         elif wire == 2:
-            length, at = scip_graph._varint(data, at)
+            length, at = code_graph._varint(data, at)
             value, at = data[at:at + length], at + length
         elif wire in (1, 5):
             value, at = data[at:at + (8 if wire == 1 else 4)], at + (8 if wire == 1 else 4)
@@ -122,7 +107,7 @@ def _information(data: bytes) -> tuple[bytes, int]:
     def keep(number, wire, value):
         if number != 4 or wire != 2:
             return True
-        flags = {field: item for field, kind, item in scip_graph._fields(value) if kind == 0}
+        flags = {field: item for field, kind, item in code_graph._fields(value) if kind == 0}
         return not (flags.get(2) and flags.get(3))  # is_reference and is_implementation: the reverse one
     return _rebuilt(data, keep)
 
@@ -150,133 +135,3 @@ def forward_only(source: Path, out: Path) -> int:
             result += data[start:end]
     Path(out).write_bytes(bytes(result))
     return total
-
-
-def hops(index) -> dict:
-    """None: the index states its aliases at the reference itself (see the module docstring)."""
-    return {}
-
-
-def _package_path(descriptors: str) -> str:
-    return "/".join(name for name, kind in scip_graph.descriptors(descriptors) if kind == "namespace")
-
-
-def classify(index):
-    """The classification of a symbol key for the shared traversal (see the module docstring)."""
-    own = {_package_path(parts[4]) for parts in map(scip_graph.split_symbol, map(scip_graph._global, index.defs))
-           if parts and parts[2] == "."}
-
-    def classified(key: str):
-        if key.endswith("/"):
-            return "namespace"
-        parts = scip_graph.split_symbol(scip_graph._global(key))
-        if parts is None or parts[2] != "." or key in index.defs:
-            return None
-        path = _package_path(parts[4])
-        return "project" if path in own else {"manager": "unknown", "package": path, "version": "unknown"}
-    return classified
-
-
-# Compile tasks, from the sources each KotlinCompile task listed for the indexer.
-
-def tasks(configs_dir: Path | None) -> dict[str, str]:
-    """Checkout-relative path -> the compile task whose dump lists it."""
-    out = {}
-    for config in sorted(Path(configs_dir).glob("*.txt")) if configs_dir and Path(configs_dir).is_dir() else ():
-        rows = config.read_text(encoding="utf-8").splitlines()
-        root = next((row.split(" ", 1)[1] for row in rows if row.startswith("sourceroot ")), "")
-        for row in rows:
-            if row.startswith("source ") and root and row.split(" ", 1)[1].startswith(root):
-                out[Path(row.split(" ", 1)[1]).relative_to(root).as_posix()] = config.stem
-    return out
-
-
-def missing(index, rels: list[str], compiled: dict[str, str] | None = None) -> dict:
-    """Why a Kotlin file has no document: no compile task the indexer reads lists it."""
-    reasons = {}
-    for rel in rels:
-        if compiled and rel in compiled:
-            continue
-        if rel.endswith(".kts"):
-            reasons[rel] = "Gradle script: no KotlinCompile task compiles it"
-        elif rel.startswith("buildSrc/"):
-            reasons[rel] = "buildSrc: compiled by its own build, where scip-java's tasks do not run"
-        else:
-            reasons[rel] = "in no Gradle source set: no KotlinCompile task lists it"
-    return reasons
-
-
-# Edges and holes only this engine's reader can judge.
-
-def _overloads(index) -> dict[tuple[str, str], list[str]]:
-    groups = collections.defaultdict(list)
-    for key in index.defs:
-        match = OVERLOAD.match(key) if "#local " not in key and not key.startswith("local ") else None
-        if match:
-            groups[match.groups()].append(key)
-    return {name: sorted(keys) for name, keys in groups.items() if len(keys) > 1}
-
-
-def _task(index, compiled: dict, key: str) -> str | None:
-    places = index.defs.get(key)
-    return compiled.get(places[0][0]) if places else None
-
-
-def _implicit(index) -> list[dict]:
-    """Implicit calls the index holds no occurrence for where they are written."""
-    holes = []
-    for rel in sorted(index.documents):
-        if not rel.endswith(".kt"):
-            continue
-        tree = index.tree(rel, "kotlin")
-        if tree is None:
-            continue
-        stack = [tree.root_node]
-        while stack:
-            node = stack.pop()
-            stack.extend(node.children)
-            places = []
-            if node.type == "indexing_suffix":
-                parent = node.parent
-                role = ("indexed assignment" if parent is not None and parent.type == "directly_assignable_expression"
-                        else "indexed read")
-                places.append((role, node, OPERATORS[role]))
-            elif node.type == "for_statement":
-                token = next((child for child in node.children if child.type == "in"), None)
-                if token is not None:
-                    places.append(("for loop", token, "iterator"))
-            elif node.type == "property_delegate":
-                places.append(("property delegate", node, "getValue"))
-            elif node.type == "multi_variable_declaration":
-                entries = [child for child in node.children if child.type == "variable_declaration"]
-                places += [("destructuring entry", entry, f"component{number}")
-                           for number, entry in enumerate(entries, 1)]
-            for role, place, name in places:
-                line = place.start_point[0] + 1
-                native = index.from_bytes(rel, line, place.start_point[1])
-                written = [item for item in index.at.get((rel, line, native), ())
-                           if not item.definition and "#local " not in item.key]
-                if not written:
-                    holes.append({"site": f"{rel}:{line}", "name": name, "kind": "call", "class": "implicit-operator",
-                                  "reason": role})
-    return holes
-
-
-def refine(index, graph: dict, compiled: dict[str, str]) -> None:
-    """Mark the edges an overload number can make wrong, and add the implicit-call holes."""
-    overloads = _overloads(index)
-
-    def candidates(key: str) -> list[str] | None:
-        match = OVERLOAD.match(key)
-        return overloads.get(match.groups()) if match else None
-
-    for edge in graph["edges"]:
-        symbol, target = edge["symbol"], edge["to"]
-        site = compiled.get(edge["site"].rsplit(":", 1)[0])
-        if candidates(symbol) and site and _task(index, compiled, symbol) not in (None, site):
-            edge["uncertain"] = {"reason": "overload-across-tasks", "candidates": candidates(target) or [target]}
-        elif ("implementation" in edge["chain"] and (candidates(symbol) or candidates(target))
-              and None not in (_task(index, compiled, target), _task(index, compiled, symbol))
-              and _task(index, compiled, target) != _task(index, compiled, symbol)):
-            edge["uncertain"] = {"reason": "override-across-tasks", "candidates": candidates(target) or [target]}
-    graph["holes"] += _implicit(index)

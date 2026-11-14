@@ -32,7 +32,8 @@ RESULTS = HERE / "results"
 TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
 from adapters import go, typescript  # noqa: E402
 from modal_audit import CASES, _run, _source  # noqa: E402
 
@@ -147,7 +148,8 @@ def _image():
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
-        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_file(HERE / "plugin_scripts.py" if LOCAL else Path("/audit/plugin_scripts.py"),
+                        "/audit/plugin_scripts.py")
         .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
                        ignore=["**/__pycache__/**"])
     )
@@ -158,7 +160,7 @@ volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
 def _adapter(language: str):
-    return importlib.import_module(f"adapters.{ADAPTERS[language]}")
+    return importlib.import_module(f"indexers.{ADAPTERS[language]}")
 
 
 def _sample(items: list, size: int = EXAMPLES) -> list:
@@ -436,7 +438,7 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
     the indexers (again with `reindex`, from the volume otherwise; kept either way); the graphs and the join."""
     import shutil
     import time
-    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
+    print("code", plugin_scripts.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     started = time.time()
     work = Path("/work") / name  # the kept snapshot binds its sources here
     shutil.rmtree(work, ignore_errors=True)  # a warm container may have run this case before
@@ -480,7 +482,7 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
         inputs = {**{key: value for key, value in inputs.items() if key != "indexers"}, "indexers": indexers}
         (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         volume.commit()
-    result["indexers"], result["code"] = indexers, scip_graph.code_sha256()
+    result["indexers"], result["code"] = indexers, plugin_scripts.code_sha256()
     indexes = [(Path(path), prefix) for info in indexers.values() for path, prefix in info.get("indexes", ())]
     begun = time.time()
     try:

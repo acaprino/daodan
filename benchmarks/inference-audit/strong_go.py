@@ -25,8 +25,10 @@ HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 import modal_scip  # noqa: E402  (puts the plugin's scripts on the path)
-import scip_graph  # noqa: E402
-from adapters import go, go_callgraph  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
+from adapters import go_callgraph  # noqa: E402
+from indexers import go  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
 TAG = "inference-audit"
@@ -305,7 +307,7 @@ def strong_case(label: str = "") -> dict:
     manifest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(kept / "manifest.sqlite", manifest)
     indexers = modal_scip._kept_indexers(kept, json.loads((kept / "inputs.json").read_text(encoding="utf-8")))
-    result = {"case": CASE, "commit": CASES[CASE]["commit"], "code": scip_graph.code_sha256()}
+    result = {"case": CASE, "commit": CASES[CASE]["commit"], "code": plugin_scripts.code_sha256()}
     begun = time.time()
     output = go_callgraph.analyze(target, work / "callgraph")
     result["engine"], result["engine_wall_seconds"] = output["engine"], round(time.time() - begun, 1)

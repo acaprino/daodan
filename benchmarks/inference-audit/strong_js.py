@@ -36,8 +36,10 @@ RESULTS = HERE / "results"
 TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
-import scip_graph  # noqa: E402
-from adapters import js_jelly, ts_compiler, typescript  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
+from adapters import js_jelly, ts_compiler  # noqa: E402
+from indexers import typescript  # noqa: E402
 if modal is not None:
     from modal_audit import CASES, _source  # noqa: E402
 
@@ -100,7 +102,8 @@ def _image():
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
-        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_file(HERE / "plugin_scripts.py" if LOCAL else Path("/audit/plugin_scripts.py"),
+                        "/audit/plugin_scripts.py")
         .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
                        ignore=["**/__pycache__/**"])
     )
@@ -398,7 +401,7 @@ def run_all(project: Path, work: Path, manifest: Path, index_paths: list, files:
             jelly_timeout: int, keep: Path | None, with_types: bool, reuse: bool = False) -> dict:
     """Both sources and the comparison; with `reuse`, the edges an earlier run kept in `keep` instead."""
     import time
-    result, sources, timing = {"code": scip_graph.code_sha256()}, {}, {}
+    result, sources, timing = {"code": plugin_scripts.code_sha256()}, {}, {}
     begun = time.time()
     index, extra = index_sites(manifest, index_paths)
     snapshot = extra["snapshot"]
@@ -451,7 +454,7 @@ def strong_case(name: str, case: dict, label: str = "", jelly_timeout: int = 120
     """One case; with `reuse` (a stem), the comparison again over the edges that run kept, engines not rerun."""
     import shutil
     import time
-    print("code", scip_graph.code_sha256(), flush=True)
+    print("code", plugin_scripts.code_sha256(), flush=True)
     started = time.time()
     work = Path("/work") / name
     shutil.rmtree(work, ignore_errors=True)

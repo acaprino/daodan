@@ -1,15 +1,13 @@
-"""scip-java for Java: how the indexer runs and what its index leaves to the reader.
+"""scip-java for Java: how the indexer runs. What its index leaves to the reader is the plugin's
+`indexers/java.py`.
 
 `index` compiles a copy of the checkout with scip-java (Maven and the SemanticDB javac plugin): unchanged
 first, then with the plain javac when the unchanged build gives no index. The default aggregation writes each
 `is_implementation` twice, from child to parent and from parent to child with the same flags, so the shared
 traversal would take a method's parent and siblings for its implementations; the same build is aggregated once
 more with `--no-emit-inverse-relationships`, and that index, whose occurrences are checked equal, is the one
-read. `hops` is empty: `new X()` already names the constructor, an implicit constructor is defined at its
-class's name, Java has no aliases, and implementations come from `is_implementation`. `static` names the calls
-through `super`, bound statically, which take no implementation; `same_range` keeps an enum constant from
-aliasing the constructor it runs. `class_file_declaration` reads the overload an external `name(+n)` names
-from the class-file member order: the hand check uses it, the graph does not.
+read. `class_file_declaration` reads the overload an external `name(+n)` names from the class-file member
+order: the hand check uses it, the graph does not.
 """
 from __future__ import annotations
 
@@ -23,7 +21,8 @@ from functools import lru_cache
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import code_graph  # noqa: E402
 
 VERSION = "0.13.2"  # org.scip-code:scip-java on Maven Central, released 2026-10-22
 LAUNCHER = "/opt/scip-java/scip-java"
@@ -105,16 +104,16 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None,
     for patched in (False, True):
         removed = _plain_javac(mirror / "pom.xml") if patched else None
         run = {"step": "index", "tools": tools, "patched_pom_removed": removed,
-               **scip_graph.measured([LAUNCHER, "index", "--output", str(output)], str(mirror), env, 3000)}
+               **code_graph.measured([LAUNCHER, "index", "--output", str(output)], str(mirror), env, 3000)}
         run["index_bytes"] = output.stat().st_size if output.is_file() else 0
         runs.append(run)
         if run["returncode"] == 0 and run["index_bytes"]:
             break
     if not (runs[-1]["returncode"] == 0 and runs[-1]["index_bytes"]):
-        return {"indexes": [], "runs": runs, "indexer": scip_graph.indexer("scip-java", VERSION, runs)}
+        return {"indexes": [], "runs": runs, "indexer": code_graph.indexer("scip-java", VERSION, runs)}
     forward = work_dir / "index-forward.scip"
     runs.append({"step": "aggregate without inverse relationships",
-                 **scip_graph.measured([LAUNCHER, "aggregate", "--no-emit-inverse-relationships", "--output",
+                 **code_graph.measured([LAUNCHER, "aggregate", "--no-emit-inverse-relationships", "--output",
                                         str(forward), str(mirror / "target/scip-targetroot")], str(mirror), env, 600)})
     commands = [["javap", "-p", "-v", *names] if not path else
                 ["javap", "-p", "-v", "-cp", str(Path.home() / ".m2/repository" / path), *names]
@@ -127,47 +126,16 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None,
     runs[-1]["same_occurrences"] = same = forward.is_file() and same_occurrences(project_dir, output, forward)
     # Without an equal forward index the default one is read, and its implementations include the inverses.
     return {"indexes": [[str(forward if same else output), ""]], "runs": runs,
-            "indexer": scip_graph.indexer("scip-java", VERSION, runs)}
+            "indexer": code_graph.indexer("scip-java", VERSION, runs)}
 
 
 def same_occurrences(root: Path, default: Path, forward: Path) -> bool:
     loaded = []
     for path in (default, forward):
-        item = scip_graph.Index(root)
+        item = code_graph.Index(root)
         item.load(path)
         loaded.append(item.documents)
     return loaded[0] == loaded[1]
-
-
-def hops(index) -> dict:
-    """None: see the module's docstring."""
-    return {}
-
-
-def static(index) -> set[tuple[str, int, int]]:
-    """`(rel, line, byte column)` of each method name called through `super` (`super.m()`), bound statically."""
-    out = set()
-    for rel, occurrences in index.documents.items():
-        ordered = sorted(occurrences, key=lambda o: (o.line, o.start))
-        for before, after in zip(ordered, ordered[1:]):
-            text = index.line(rel, before.line) or ""
-            # `super(...)` names a constructor; `super.m` is `super`, a dot, then the method's name.
-            if text[before.start:before.end] == "super" and not before.key.endswith(").")                     and (after.line, after.start) == (before.end_line, before.end + 1) and not after.definition:
-                out.add((rel, after.line, index.to_bytes(rel, after.line, after.start)))
-    return out
-
-
-def same_range(index) -> dict[tuple[str, str], bool]:
-    """Never an alias: at each enum constant's name scip-java writes its definition and a reference to the enum
-    constructor it runs; a read of the constant is not a call of the constructor."""
-    out = {}
-    for rel, occurrences in index.documents.items():
-        for occurrence in occurrences:
-            if occurrence.definition:
-                for other in index.at.get((rel, occurrence.line, occurrence.start), ()):
-                    if not other.definition and "`<init>`" in other.key and other.key != occurrence.key                             and (other.end_line, other.end) == (occurrence.end_line, occurrence.end):
-                        out[(occurrence.key, other.key)] = False
-    return out
 
 
 @lru_cache(maxsize=4)

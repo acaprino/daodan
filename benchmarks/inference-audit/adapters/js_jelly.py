@@ -21,7 +21,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402,F401  (puts the plugin's scripts on the path)
+import code_graph as scip_graph  # noqa: E402
 from adapters import ts_compiler  # noqa: E402
 
 VERSION = "0.13.0"  # @cs-au-dk/jelly
@@ -29,7 +30,7 @@ WRAPPERS = {"parenthesized_expression", "non_null_expression", "as_expression", 
 
 
 def _trees():
-    from adapters import typescript
+    from indexers import typescript
     from languages._treesitter import get_parser
     cache = {}
 

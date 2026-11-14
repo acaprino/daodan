@@ -35,8 +35,9 @@ OUT = f"{TAG}/strong-python"
 LANGUAGE = "python"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
-import scip_graph  # noqa: E402
-from adapters import python as adapter  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
+from indexers import python as adapter  # noqa: E402
 
 CASES = {"semver": {"target": "."}}
 
@@ -47,7 +48,8 @@ def _image():
         .apt_install("git", "ca-certificates")
         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "jedi>=0.19")
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
-        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_file(HERE / "plugin_scripts.py" if LOCAL else Path("/audit/plugin_scripts.py"),
+                        "/audit/plugin_scripts.py")
         .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
                        ignore=["**/__pycache__/**"])
     )
@@ -250,7 +252,7 @@ def strong_case(name: str, hand: list, reuse: bool = False) -> dict:
     for item in store.iterdir():
         if item.is_file() and item.name != "work.tar.gz":
             shutil.copyfile(item, work / item.name)
-    print("code", scip_graph.code_sha256(), flush=True)
+    print("code", plugin_scripts.code_sha256(), flush=True)
     engine = json.loads((work / "engine.json").read_text(encoding="utf-8"))
     folder = Path("/results") / OUT
     if reuse:
@@ -268,7 +270,7 @@ def strong_case(name: str, hand: list, reuse: bool = False) -> dict:
         jedi_output = json.loads(output.read_text(encoding="utf-8"))
     result = compare(work, engine, jedi_output, hand if name == "semver" else [], name)
     result.update({"case": name, "engine": jedi_output["engine"], "run": {k: run[k] for k in ("seconds", "peak_mb")},
-                   "environment": built, "code": scip_graph.code_sha256()})
+                   "environment": built, "code": plugin_scripts.code_sha256()})
     folder.mkdir(parents=True, exist_ok=True)
     (folder / f"{name}.json").write_text(json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     (folder / f"{name}-jedi.json").write_text(json.dumps(jedi_output, ensure_ascii=False) + "\n", encoding="utf-8",

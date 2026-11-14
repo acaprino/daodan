@@ -1,11 +1,13 @@
-"""The shared module's mechanisms, on SCIP indexes written in memory and a stand-in snapshot; then the chain
-ends of two small projects in `fixtures/`, each with the index its engine wrote, read with its adapter.
+"""The code graph's mechanisms, on SCIP indexes written in memory and a stand-in snapshot; then the chain
+ends of two small projects in `fixtures/code-graph/`, each with the index its engine wrote, read with its
+indexer module.
 
-    python -m pytest benchmarks/inference-audit/test_scip_graph.py
+    python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_code_graph.py
 
 Rebuild a fixture's index after changing its sources (the snapshot is written by the test):
 `scip-typescript index --cwd . --output index.scip --no-progress-bar` (0.5.2, with `node_modules` beside
-`fixtures/ts`, removed afterwards) in `fixtures/ts`; `rust-analyzer scip . --output index.scip` in `fixtures/rust`.
+`ts`, removed afterwards) in `fixtures/code-graph/ts`; `rust-analyzer scip . --output index.scip` in
+`fixtures/code-graph/rust`.
 """
 from __future__ import annotations
 
@@ -18,8 +20,10 @@ from pathlib import Path
 import pytest
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-import scip_graph  # noqa: E402
+SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+import code_graph  # noqa: E402
 
 P = "scip-x mgr pkg 1.0 "  # a project symbol's prefix
 
@@ -62,10 +66,10 @@ def document(rel: str, occurrences: list[bytes], informations: list[bytes] = (),
                   + b"".join(_field(3, i) for i in informations))
 
 
-def load(tmp_path: Path, *documents: bytes) -> scip_graph.Index:
+def load(tmp_path: Path, *documents: bytes) -> code_graph.Index:
     path = tmp_path / "index.scip"
     path.write_bytes(b"".join(documents))
-    index = scip_graph.Index(tmp_path)
+    index = code_graph.Index(tmp_path)
     index.load(path)
     return index
 
@@ -99,7 +103,7 @@ class Snapshot:
 
 
 def ends(index, snapshot, key, **options):
-    return scip_graph.Traversal(index, snapshot, {}, **options).ends(key)
+    return code_graph.Traversal(index, snapshot, {}, **options).ends(key)
 
 
 # 1. Same-range aliasing: a definition and a reference are aliases, two definitions never; the adapter decides.
@@ -157,13 +161,13 @@ def test_adapter_classifies_external_namespace_and_project(tmp_path):
     index, own, string, namespace = _placeholder(tmp_path)
     stdlib = {"manager": "maven", "package": "kotlin-stdlib", "version": "unknown"}
     table = {string: stdlib, namespace: "namespace", own: "project"}
-    traversal = scip_graph.Traversal(index, Snapshot({}), {}, classify=table.get)
+    traversal = code_graph.Traversal(index, Snapshot({}), {}, classify=table.get)
     assert [(end.cls, end.detail) for end in traversal.ends(string)] == [("external", "maven kotlin-stdlib@unknown")]
     assert [end.cls for end in traversal.ends(namespace)] == ["namespace"]
     assert [end.cls for end in traversal.ends(own)] == ["project-value"]
-    project = scip_graph.Traversal(index, Snapshot({}), {}, classify=lambda key: "project")
+    project = code_graph.Traversal(index, Snapshot({}), {}, classify=lambda key: "project")
     assert [end.detail for end in project.ends("scip-java maven lib 2.0 lib/Other#")] == ["undefined-project-symbol"]
-    graph, _ = scip_graph.build(index, Snapshot({}, [(1, "a.x", "read", 2, 0), (2, "a.x", "read", 3, 0)]), "x", {},
+    graph, _ = code_graph.build(index, Snapshot({}, [(1, "a.x", "read", 2, 0), (2, "a.x", "read", 3, 0)]), "x", {},
                                 {}, traversal=traversal)
     nodes = {node["id"]: node for node in graph["nodes"]}
     assert nodes[string]["external"] == stdlib and nodes[namespace]["external"] is None
@@ -174,7 +178,7 @@ def test_adapter_classifies_external_namespace_and_project(tmp_path):
 
 def test_edges_carry_symbol(tmp_path):
     index, snapshot, (_q, _g, c, d) = _shared_range(tmp_path)
-    graph, _ = scip_graph.build(index, snapshot, "x", {}, {})
+    graph, _ = code_graph.build(index, snapshot, "x", {}, {})
     assert graph["edges"] and all(edge["symbol"] in (_q, _g, d) for edge in graph["edges"])
     assert all("uncertain" not in edge for edge in graph["edges"])
     assert graph["removed"] == []
@@ -192,20 +196,20 @@ def test_refine_changes_are_tagged(tmp_path):
         graph["holes"].append({"site": "a.x:9", "name": "get", "kind": "call", "class": "implicit-operator",
                                "reason": "indexed read"})
 
-    plain, _ = scip_graph.build(index, snapshot, "x", {}, {})
-    graph, _ = scip_graph.build(index, snapshot, "x", {}, {}, refine=refine)
+    plain, _ = code_graph.build(index, snapshot, "x", {}, {})
+    graph, _ = code_graph.build(index, snapshot, "x", {}, {}, refine=refine)
     assert len(graph["edges"]) == len(plain["edges"]) - 1
     assert [edge["removed"] for edge in graph["removed"]] == ["not a call"]
     assert graph["edges"][0]["uncertain"]["reason"] == "overload"
     assert [hole.get("by") for hole in graph["holes"]] == ["refine"]
-    counts = scip_graph.report(graph)
+    counts = code_graph.report(graph)
     assert counts["edges_uncertain"] == {"overload": 1} and counts["edges_removed"] == {"not a call": 1}
 
 
 def test_refine_cannot_drop_untagged(tmp_path):
     index, snapshot, _keys = _shared_range(tmp_path)
     with pytest.raises(ValueError, match="removed"):
-        scip_graph.build(index, snapshot, "x", {}, {}, refine=lambda seen, graph: graph["edges"].pop())
+        code_graph.build(index, snapshot, "x", {}, {}, refine=lambda seen, graph: graph["edges"].pop())
 
 
 # 5. Statically dispatched sites take no implementation edges.
@@ -219,7 +223,7 @@ def test_static_sites_take_no_implementation(tmp_path):
                                     [information(sub, implements=base)], unit=2))
     snapshot = Snapshot({("a.x", 1, 0): "base", ("a.x", 2, 0): "sub"},
                         [(1, "a.x", "call", 3, 2), (2, "a.x", "call", 4, 3)])
-    graph, references = scip_graph.build(index, snapshot, "x", {}, {}, static={("a.x", 4, 3)})
+    graph, references = code_graph.build(index, snapshot, "x", {}, {}, static={("a.x", 4, 3)})
     by_site = {}
     for edge in graph["edges"]:
         by_site.setdefault(edge["site"], []).append((edge["to"], edge["chain"]))
@@ -238,31 +242,17 @@ def test_signature_documentation_is_kept(tmp_path):
     assert index.info[key]["signature"] == "void m(int a)"
 
 
-# 7. The map's scripts are found from any depth, or the Modal mount is assumed.
-
-def test_scripts_lookup_from_a_shallow_folder(tmp_path):
-    (tmp_path / "scip_graph.py").write_bytes((HERE / "scip_graph.py").read_bytes())
-    code = "import sys; sys.path.insert(0, '.'); import scip_graph; print(scip_graph._SCRIPTS.as_posix())"
-    found = subprocess.run([sys.executable, "-I", "-c", code],
-                           cwd=tmp_path, capture_output=True, text=True, timeout=60)
-    assert found.returncode == 0, found.stderr
-    assert found.stdout.strip() in ("/daodan/map/scripts",
-                                    *(str(parent / "plugins/codebase-map/skills/map/scripts").replace("\\", "/")
-                                      for parent in tmp_path.parents))
-
-
-
 # A file the snapshot holds without declarations (lexical coverage) is the project's, not outside it.
 
 def test_file_without_declarations_is_inside_the_snapshot(tmp_path):
-    snapshot = scip_graph.Snapshot.__new__(scip_graph.Snapshot)
+    snapshot = code_graph.Snapshot.__new__(code_graph.Snapshot)
     snapshot.paths, snapshot.inventory = {"a.kt": tmp_path / "a.kt"}, set()
     assert snapshot.grade("a.kt", 1, 0) == ("value", "file without declarations in the snapshot")
     assert snapshot.grade("b.kt", 1, 0) == ("outside", None)
 
 # The fixtures: 30 ends in a JS/TS project (`ts-ends.json`), 6 in two Rust test crates sharing one module file.
 
-FIXTURES = HERE / "fixtures"
+FIXTURES = HERE / "fixtures/code-graph"
 TS_ENDS = json.loads((FIXTURES / "ts-ends.json").read_text(encoding="utf-8"))
 RUST_ENDS = {  # site -> the snapshot declaration, or `external`, and the chain that reaches it
     "call tests/test_a.rs:7 assert_len": ("tests/util/mod.rs::function@5:0", []),
@@ -277,24 +267,24 @@ RUST_ENDS = {  # site -> the snapshot declaration, or `external`, and the chain 
 @pytest.fixture(scope="module")
 def fixture_rows(tmp_path_factory):
     """`{fixture: {"kind site name": reference}}`, each fixture copied out of the checkout and snapshotted."""
-    from adapters import rust, typescript
+    from indexers import rust, typescript
     rows = {}
     for name, adapter in (("ts", typescript), ("rust", rust)):
         source = tmp_path_factory.mktemp(name) / name
         shutil.copytree(FIXTURES / name, source)
         manifest = source.parent / "manifest.sqlite"
         done = subprocess.run([sys.executable, "-I", "snapshot.py", "write", str(source), "--out", str(manifest),
-                               "--no-engine", "--no-index", "--no-modules"], cwd=scip_graph._SCRIPTS,
+                               "--no-engine", "--no-index", "--no-modules"], cwd=SCRIPTS,
                               capture_output=True, text=True, timeout=300)
         assert done.returncode == 0, done.stderr
         found = rows[name] = {}
-        with scip_graph.Snapshot(manifest) as snapshot:
-            index = scip_graph.Index(snapshot.root)
+        with code_graph.Snapshot(manifest) as snapshot:
+            index = code_graph.Index(snapshot.root)
             index.load(source / "index.scip")
             hops = adapter.hops(index)
-            traversal = scip_graph.Traversal(index, snapshot, hops)
+            traversal = code_graph.Traversal(index, snapshot, hops)
             for language in sorted(set(snapshot.languages.values()) & {"javascript", "typescript", "rust"}):
-                _graph, references = scip_graph.build(index, snapshot, language, hops, {}, {}, traversal)
+                _graph, references = code_graph.build(index, snapshot, language, hops, {}, {}, traversal)
                 found.update({f"{row['kind']} {row['site']} {row['name']}": row for row in references.values()})
     return rows
 
@@ -324,8 +314,3 @@ def test_rust_fixture_end(fixture_rows, site):
     else:
         assert any(end.target == target and list(end.chain) == chain for end in ends)
 
-
-def test_code_digests_name_the_module_and_each_adapter():
-    digests = scip_graph.code_sha256()
-    assert {"scip_graph.py", "adapters/go.py", "adapters/kotlin.py"} <= set(digests)
-    assert all(len(value) == 12 for value in digests.values())

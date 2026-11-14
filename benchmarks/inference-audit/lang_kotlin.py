@@ -31,7 +31,9 @@ TAG = "inference-audit"
 STORE = f"{TAG}/graph-kotlin"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
+import indexers.kotlin  # noqa: E402
 from adapters import kotlin as adapter  # noqa: E402
 from modal_audit import CASES, _run, _source  # noqa: E402
 
@@ -119,7 +121,8 @@ def _image():
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(HERE / "modal_audit.py" if LOCAL else Path("/audit/modal_audit.py"), "/audit/modal_audit.py")
         .add_local_file(HERE / "probe.py" if LOCAL else Path("/audit/probe.py"), "/audit/probe.py")
-        .add_local_file(HERE / "scip_graph.py" if LOCAL else Path("/audit/scip_graph.py"), "/audit/scip_graph.py")
+        .add_local_file(HERE / "plugin_scripts.py" if LOCAL else Path("/audit/plugin_scripts.py"),
+                        "/audit/plugin_scripts.py")
         .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
                        ignore=["**/__pycache__/**"])
     )
@@ -169,15 +172,15 @@ def graph(index_path: Path, manifest: Path, source: Path, configs: Path | None, 
     """The graph, and what the result file reports of it."""
     index = scip_graph.Index(source)
     index.load(index_path, "")
-    compiled = adapter.tasks(configs)
-    hops = adapter.hops(index)
+    compiled = indexers.kotlin.tasks(configs)
+    hops = indexers.kotlin.hops(index)
     with scip_graph.Snapshot(manifest) as snapshot:
-        traversal = scip_graph.Traversal(index, snapshot, hops, classify=adapter.classify(index))
+        traversal = scip_graph.Traversal(index, snapshot, hops, classify=indexers.kotlin.classify(index))
         absent = [snapshot.checkout[rel] for rel in snapshot.inventory if snapshot.languages.get(rel) == "kotlin"
                   and rel in snapshot.checkout and snapshot.checkout[rel] not in index.documents]
         built, _references = scip_graph.build(index, snapshot, "kotlin", hops, indexer,
-                                              adapter.missing(index, absent, compiled), traversal,
-                                              refine=lambda read, graph: adapter.refine(read, graph, compiled))
+                                              indexers.kotlin.missing(index, absent, compiled), traversal,
+                                              refine=lambda read, graph: indexers.kotlin.refine(read, graph, compiled))
         checks = hand_check(index, traversal, built)
     edges = built["edges"]
     uncertain = [edge for edge in edges if edge.get("uncertain")]
@@ -205,7 +208,7 @@ def kotlin_case(stage: str = "graph") -> dict:
     import shutil
     import time
     started = time.time()
-    print("code", scip_graph.code_sha256(), flush=True)  # compared with the checkout before trusting the run
+    print("code", plugin_scripts.code_sha256(), flush=True)  # compared with the checkout before trusting the run
     case = CASES[CASE]
     work = Path("/work") / CASE
     engine = work / "engine"

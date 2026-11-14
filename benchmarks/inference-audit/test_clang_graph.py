@@ -18,7 +18,8 @@ import pytest
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import scip_graph  # noqa: E402
+import plugin_scripts  # noqa: E402
+import code_graph as scip_graph  # noqa: E402
 from adapters import clang  # noqa: E402
 
 FIXTURES = HERE / "fixtures"
@@ -206,7 +207,7 @@ def test_product_snapshot_holds_no_c_or_cpp(tmp_path):
     shutil.copytree(FIXTURES / "c", source, ignore=shutil.ignore_patterns("index.scip"))
     manifest = tmp_path / "manifest.sqlite"
     done = subprocess.run([sys.executable, "-I", "snapshot.py", "write", str(source), "--out", str(manifest),
-                           "--no-engine", "--no-index", "--no-modules"], cwd=scip_graph._SCRIPTS,
+                           "--no-engine", "--no-index", "--no-modules"], cwd=plugin_scripts.SCRIPTS,
                           capture_output=True, text=True, timeout=300)
     assert done.returncode == 0, done.stderr
     with sqlite3.connect(manifest) as connection:
